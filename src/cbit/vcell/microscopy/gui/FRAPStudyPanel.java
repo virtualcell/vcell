@@ -211,14 +211,20 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   				//check if save is needed before loading data
 	  	   				if(getFrapWorkspace().getFrapStudy().isSaveNeeded())
 	  	   				{
-	  	   					String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "There are unsaved changes. Save current document before loading new data?", new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
-	  	   					if(choice.equals(UserMessage.OPTION_OK))
+	  	   					String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "There are unsaved changes. " +
+	  	   							"Save current document before loading new data?", 
+	  	   							new String[]{VirtualFrapMainFrame.SAVE_LOAD,VirtualFrapMainFrame.DISCARD_LOAD, UserMessage.OPTION_CANCEL}, VirtualFrapMainFrame.SAVE_LOAD);
+	  	   					if(choice.equals(VirtualFrapMainFrame.SAVE_LOAD))
 	  	   					{
 	  	   						AsynchClientTask[] saveTasks = save();
 	  	   						for(int i=0; i<saveTasks.length; i++)
 	  	   						{
 	  	   							totalTasks.add(saveTasks[i]);
 	  	   						}
+	  	   					}
+	  	   					else if(choice.equals(UserMessage.OPTION_CANCEL))
+	  	   					{
+	  	   						return;
 	  	   					}
 	  	   				}
 	  	   				
@@ -1399,14 +1405,20 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	    //check if save is needed before loading data
 	    if(getFrapWorkspace().getFrapStudy().isSaveNeeded())
 	    {
-			String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "There are unsaved changes. Save current document before loading new document?", new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
-			if(choice.equals(UserMessage.OPTION_OK))
+			String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "There are unsaved changes. " +
+					"Save current document before loading new data?", 
+					new String[]{VirtualFrapMainFrame.SAVE_LOAD,VirtualFrapMainFrame.DISCARD_LOAD, UserMessage.OPTION_CANCEL}, VirtualFrapMainFrame.SAVE_LOAD);
+			if(choice.equals(VirtualFrapMainFrame.SAVE_LOAD))
 			{
 				AsynchClientTask[] saveTasks = save();
 				for(int i=0; i<saveTasks.length; i++)
 				{
 					totalTasks.add(saveTasks[i]);
 				}
+			}
+			else if(choice.equals(UserMessage.OPTION_CANCEL))
+			{
+				return new AsynchClientTask[0];
 			}
 	    }
 	    
@@ -1756,7 +1768,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				JMFPlayer.showMovieInDialog(get2DResultDialog(),movieURLString, movieFileString);
 			}
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{createMovieTask,showMovieTask}, false);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{createMovieTask,showMovieTask}, false, false, null, true);
 	}
 	
 	

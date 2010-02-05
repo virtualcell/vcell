@@ -76,9 +76,7 @@ public class FRAPWorkspace implements PropertyChangeListener{
 		if(fData != null)
 		{
 			ImageDataset oldImageSet = fData.getImageDataset();
-			Extent oldExtent = oldImageSet.getExtent();
 			
-			double[] timeSteps = oldImageSet.getImageTimeStamps();
 			UShortImage[] images = oldImageSet.getAllImages();
 			boolean isChanged = false;
 			if(dataVerifyInfo.getStartTimeIndex() > 0 || dataVerifyInfo.getEndTimeIndex() < (images.length-1))

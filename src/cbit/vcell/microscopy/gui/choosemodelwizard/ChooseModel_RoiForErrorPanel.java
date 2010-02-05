@@ -86,7 +86,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		add(centerPanel, BorderLayout.CENTER);
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] {0,7,7};
-		gridBagLayout.rowHeights = new int[] {0,7,7,7,7,7,7,7,7,7,7,7};
+		gridBagLayout.rowHeights = new int[] {0,7,7,7,7,7,7,7,7,7,7,7,0,0,0,0,0,7};
 		centerPanel.setLayout(gridBagLayout);
 
 		final JLabel selectTheRegionsLabel = new JLabel();
@@ -279,21 +279,17 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 	
 	public ROI[] getAllROIs()
 	{
-//		if(allROIs == null)
-//		{ 
-			//have to keep refreshing ROIs from new frapData
-			allROIs = new ROI[NUM_SELECTED_ROIS];
-			FRAPData frapData = frapWorkspace.getFrapStudy().getFrapData();
-			allROIs[IDX_ROI_BLEACHED] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
-			allROIs[IDX_ROI_BLEACHED_RING1] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name());
-			allROIs[IDX_ROI_BLEACHED_RING2] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name());
-			allROIs[IDX_ROI_BLEACHED_RING3] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name());
-			allROIs[IDX_ROI_BLEACHED_RING4] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name());
-			allROIs[IDX_ROI_BLEACHED_RING5] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name());
-			allROIs[IDX_ROI_BLEACHED_RING6] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name());
-			allROIs[IDX_ROI_BLEACHED_RING7] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name());
-			allROIs[IDX_ROI_BLEACHED_RING8] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name());
-//		}
+		allROIs = new ROI[NUM_SELECTED_ROIS];
+		FRAPData frapData = frapWorkspace.getFrapStudy().getFrapData();
+		allROIs[IDX_ROI_BLEACHED] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
+		allROIs[IDX_ROI_BLEACHED_RING1] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name());
+		allROIs[IDX_ROI_BLEACHED_RING2] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name());
+		allROIs[IDX_ROI_BLEACHED_RING3] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name());
+		allROIs[IDX_ROI_BLEACHED_RING4] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name());
+		allROIs[IDX_ROI_BLEACHED_RING5] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name());
+		allROIs[IDX_ROI_BLEACHED_RING6] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name());
+		allROIs[IDX_ROI_BLEACHED_RING7] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name());
+		allROIs[IDX_ROI_BLEACHED_RING8] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name());
 		return allROIs;
 	}
 	
@@ -405,67 +401,213 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		}
 	}
 	
+	public void setAllCheckboxesEnabled(boolean enabled)
+	{
+		roi_bleachedCheckBox.setEnabled(enabled);
+		roi_bleached_ring1CheckBox.setEnabled(enabled);
+		roi_bleached_ring2CheckBox.setEnabled(enabled);
+		roi_bleached_ring3CheckBox.setEnabled(enabled);
+		roi_bleached_ring4CheckBox.setEnabled(enabled);
+		roi_bleached_ring5CheckBox.setEnabled(enabled);
+		roi_bleached_ring6CheckBox.setEnabled(enabled);
+		roi_bleached_ring7CheckBox.setEnabled(enabled);
+		roi_bleached_ring8CheckBox.setEnabled(enabled);
+	}
+	
+	public void setAllCheckboxesSelected(boolean selected)
+	{
+		roi_bleachedCheckBox.setSelected(selected);
+		roi_bleached_ring1CheckBox.setSelected(selected);
+		roi_bleached_ring2CheckBox.setSelected(selected);
+		roi_bleached_ring3CheckBox.setSelected(selected);
+		roi_bleached_ring4CheckBox.setSelected(selected);
+		roi_bleached_ring5CheckBox.setSelected(selected);
+		roi_bleached_ring6CheckBox.setSelected(selected);
+		roi_bleached_ring7CheckBox.setSelected(selected);
+		roi_bleached_ring8CheckBox.setSelected(selected);
+	}
+	
+	public void setCheckboxesForDisplay(boolean[] selectedROIs)
+	{
+		setAllCheckboxesSelected(false);
+		for(int i=0; i<FRAPData.VFRAP_ROI_ENUM.values().length; i++)
+		{
+			if(selectedROIs[i] && FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED))
+			{
+				roi_bleachedCheckBox.setSelected(true);
+			}
+			else if(selectedROIs[i] && FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1))
+			{
+				roi_bleached_ring1CheckBox.setSelected(true);
+			}
+			else if(selectedROIs[i] && FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2))
+			{
+				roi_bleached_ring2CheckBox.setSelected(true);
+			}
+			else if(selectedROIs[i] && FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3))
+			{
+				roi_bleached_ring3CheckBox.setSelected(true);
+			}
+			else if(selectedROIs[i] && FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4))
+			{
+				roi_bleached_ring4CheckBox.setSelected(true);
+			}
+			else if(selectedROIs[i] && FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5))
+			{
+				roi_bleached_ring5CheckBox.setSelected(true);
+			}
+			else if(selectedROIs[i] && FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6))
+			{
+				roi_bleached_ring6CheckBox.setSelected(true);
+			}
+			else if(selectedROIs[i] && FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7))
+			{
+				roi_bleached_ring7CheckBox.setSelected(true);
+			}
+			else if(selectedROIs[i] && FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8))
+			{
+				roi_bleached_ring8CheckBox.setSelected(true);
+			}
+		}
+		setAllCheckboxesEnabled(false);
+	}
+	
+	public void refreshROIImageForDisplay()
+	{
+		FRAPData frapData = frapWorkspace.getFrapStudy().getFrapData();
+		ROI[] allROIs = getAllROIs();
+		Color[] allColors = getAllROIColors();
+		ArrayList<ROI> plottedROIs = new ArrayList<ROI>();
+		ArrayList<Color> plottedColors = new ArrayList<Color>();
+		
+		if(roi_bleachedCheckBox.isSelected())
+		{
+			plottedROIs.add(allROIs[IDX_ROI_BLEACHED]);
+			plottedColors.add(allColors[IDX_ROI_BLEACHED]);
+		}
+		if(roi_bleached_ring1CheckBox.isSelected())
+		{
+			plottedROIs.add(allROIs[IDX_ROI_BLEACHED_RING1]);
+			plottedColors.add(allColors[IDX_ROI_BLEACHED_RING1]);
+		}
+		if(roi_bleached_ring2CheckBox.isSelected())
+		{
+			plottedROIs.add(allROIs[IDX_ROI_BLEACHED_RING2]);
+			plottedColors.add(allColors[IDX_ROI_BLEACHED_RING2]);
+		}
+		if(roi_bleached_ring3CheckBox.isSelected())
+		{
+			plottedROIs.add(allROIs[IDX_ROI_BLEACHED_RING3]);
+			plottedColors.add(allColors[IDX_ROI_BLEACHED_RING3]);
+		}
+		if(roi_bleached_ring4CheckBox.isSelected())
+		{
+			plottedROIs.add(allROIs[IDX_ROI_BLEACHED_RING4]);
+			plottedColors.add(allColors[IDX_ROI_BLEACHED_RING4]);
+		}
+		if(roi_bleached_ring5CheckBox.isSelected())
+		{
+			plottedROIs.add(allROIs[IDX_ROI_BLEACHED_RING5]);
+			plottedColors.add(allColors[IDX_ROI_BLEACHED_RING5]);
+		}
+		if(roi_bleached_ring6CheckBox.isSelected())
+		{
+			plottedROIs.add(allROIs[IDX_ROI_BLEACHED_RING6]);
+			plottedColors.add(allColors[IDX_ROI_BLEACHED_RING6]);
+		}
+		if(roi_bleached_ring7CheckBox.isSelected())
+		{
+			plottedROIs.add(allROIs[IDX_ROI_BLEACHED_RING7]);
+			plottedColors.add(allColors[IDX_ROI_BLEACHED_RING7]);
+		}
+		if(roi_bleached_ring8CheckBox.isSelected())
+		{
+			plottedROIs.add(allROIs[IDX_ROI_BLEACHED_RING8]);
+			plottedColors.add(allColors[IDX_ROI_BLEACHED_RING8]);
+		}
+		
+		//show ROI image
+		ROI[] plottedROIArray = new ROI[plottedROIs.size()];
+		plottedROIArray = plottedROIs.toArray(plottedROIArray);
+		Color[] plottedColorArray = new Color[plottedColors.size()];
+		plottedColorArray = plottedColors.toArray(plottedColorArray);
+		roiImagePanel.refreshROIImage(plottedROIArray, plottedColorArray, frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()), Color.white);
+	}
+	
 	public void refreshCheckboxes()
 	{
 		FRAPData frapData = frapWorkspace.getFrapStudy().getFrapData();
 		ROI[] rois = frapData.getRois();
-		//enable all the checkboxes first
-		roi_bleachedCheckBox.setEnabled(true);
-		roi_bleached_ring1CheckBox.setEnabled(true);
-		roi_bleached_ring2CheckBox.setEnabled(true);
-		roi_bleached_ring3CheckBox.setEnabled(true);
-		roi_bleached_ring4CheckBox.setEnabled(true);
-		roi_bleached_ring5CheckBox.setEnabled(true);
-		roi_bleached_ring6CheckBox.setEnabled(true);
-		roi_bleached_ring7CheckBox.setEnabled(true);
-		roi_bleached_ring8CheckBox.setEnabled(true);
+		//disable all the checkboxes first
+		setAllCheckboxesEnabled(false);
+		setAllCheckboxesSelected(false);
+		//disable ROIs with 0 pixel in it
+		//or disselect checkboxes according to stored selected ROIS
+		boolean[] storedSelectedROIs = frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation(); 
 		
 		for(int i=0; i<rois.length; i++)
 		{
 			if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&
-			   frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).isAllPixelsZero())
+			    !frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).isAllPixelsZero())
 			{
-				roi_bleachedCheckBox.setEnabled(false);
+				roi_bleachedCheckBox.setEnabled(true);
+				roi_bleachedCheckBox.setSelected(storedSelectedROIs[i]);
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()) &&
-			   frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()).isAllPixelsZero())
+			    !frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()).isAllPixelsZero())
 			{
-				roi_bleached_ring1CheckBox.setEnabled(false);
+				roi_bleached_ring1CheckBox.setEnabled(true);
+				roi_bleached_ring1CheckBox.setSelected(storedSelectedROIs[i]);
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()) &&
-			   frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()).isAllPixelsZero())
+			    !frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()).isAllPixelsZero())
 			{
-				roi_bleached_ring2CheckBox.setEnabled(false);
+				roi_bleached_ring2CheckBox.setEnabled(true);
+				roi_bleached_ring2CheckBox.setSelected(storedSelectedROIs[i]);
+				
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()) &&
-			   frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()).isAllPixelsZero())
+			    !frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()).isAllPixelsZero())
 			{
-				roi_bleached_ring3CheckBox.setEnabled(false);
+				roi_bleached_ring3CheckBox.setEnabled(true);
+				
+				roi_bleached_ring3CheckBox.setSelected(storedSelectedROIs[i]);
+	
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name()) &&
-			   frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name()).isAllPixelsZero())
+			    !frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name()).isAllPixelsZero())
 			{
-				roi_bleached_ring4CheckBox.setEnabled(false);
+				roi_bleached_ring4CheckBox.setEnabled(true);
+				roi_bleached_ring4CheckBox.setSelected(storedSelectedROIs[i]);
+				
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name()) &&
-			   frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name()).isAllPixelsZero())
+			    !frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name()).isAllPixelsZero())
 			{
-				roi_bleached_ring5CheckBox.setEnabled(false);
+				roi_bleached_ring5CheckBox.setEnabled(true);
+				roi_bleached_ring5CheckBox.setSelected(storedSelectedROIs[i]);
+				
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name()) &&
-			   frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name()).isAllPixelsZero())
+			    !frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name()).isAllPixelsZero())
 			{
-				roi_bleached_ring6CheckBox.setEnabled(false);
+				roi_bleached_ring6CheckBox.setEnabled(true);
+				roi_bleached_ring6CheckBox.setSelected(storedSelectedROIs[i]);
+				
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name()) &&
-			   frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name()).isAllPixelsZero())
+			    !frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name()).isAllPixelsZero())
 			{
-				roi_bleached_ring7CheckBox.setEnabled(false);
+				roi_bleached_ring7CheckBox.setEnabled(true);
+				roi_bleached_ring7CheckBox.setSelected(storedSelectedROIs[i]);
+				
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name()) &&
-			   frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name()).isAllPixelsZero())
+			    !frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name()).isAllPixelsZero())
 			{
-				roi_bleached_ring8CheckBox.setEnabled(false);
+				roi_bleached_ring8CheckBox.setEnabled(true);
+				roi_bleached_ring8CheckBox.setSelected(storedSelectedROIs[i]);
+				
 			}
 		}
 	}

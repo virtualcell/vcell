@@ -48,7 +48,24 @@ public class ChooseModel_RoiForErrorDescriptor extends WizardPanelDescriptor{
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				frapWorkspace.getFrapStudy().setSelectedROIsForErrorCalculation(((ChooseModel_RoiForErrorPanel)getPanelComponent()).getSelectedROIs());
+				boolean[] selectedROIs = ((ChooseModel_RoiForErrorPanel)getPanelComponent()).getSelectedROIs();
+				boolean isOneSelected = false;
+				for(int i=0; i<selectedROIs.length; i++)
+				{
+					if(selectedROIs[i])
+					{
+						isOneSelected = true;
+						break;
+					}
+				}
+				if(isOneSelected)
+				{
+					frapWorkspace.getFrapStudy().setSelectedROIsForErrorCalculation(selectedROIs);
+				}
+				else
+				{
+					throw new Exception("At least one ROI has to be selected.");
+				}
 			}
 		};
 		tasks.add(aTask1);

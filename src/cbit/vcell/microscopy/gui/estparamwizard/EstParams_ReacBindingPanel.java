@@ -7,6 +7,8 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -14,6 +16,7 @@ import java.util.Hashtable;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -41,6 +44,7 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
+import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_RoiForErrorPanel;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
@@ -62,13 +66,10 @@ public class EstParams_ReacBindingPanel extends JPanel {
 	
 	private FRAPStudy fStudy = null;
 	private MultisourcePlotPane multisourcePlotPane;
+	private ChooseModel_RoiForErrorPanel roiPanel;
 	private Hashtable<AnalysisParameters, DataSource[]> allDataHash;
 	private double[][] currentSimResults = null; //a data structure used to store results according to the current params.
 	private double[] currentSimTimePoints = null; //used to store simulation time points according to the current params.
-	
-	private JRadioButton diffOneRadioButton = null;
-	private JRadioButton diffTwoRadioButton = null;
-	private JPanel questionPanel = null;
 	
 	public EstParams_ReacBindingPanel() {
 		final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -76,15 +77,11 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		gridBagLayout.columnWidths = new int[] {7};
 		setLayout(gridBagLayout);
 		
-		JPanel topPanel = new JPanel(new BorderLayout());
-		JPanel buttonPanel = new JPanel(new FlowLayout());
-				
 		//set up tabbed pane for two kinds of models.
 		paramPanel=new JPanel();
 		paramPanel.setForeground(new Color(0,0,244));
 		paramPanel.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
 		paramPanel.setLayout(new GridBagLayout());
-//		paramPanel.addTab(STR_PURE_DIFFUSION, null, panel_2, null);
 	
 		//card panel for reaction diffusion
 		JLabel reactionDiffPanelLabel = new JLabel();
@@ -96,7 +93,6 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		reactionDiffPanelLabel.setText("Analysis on Reaction Diffusion Model using FRAP Simulation Results");
 		
 		reactionDiffusionPanel = new FRAPReactionDiffusionParamPanel();
-//		reactionDiffusionPanel.setButtonsEnabled(false);
 		final GridBagConstraints gridBagConstraints_rdp = new GridBagConstraints();
 		gridBagConstraints_rdp.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_rdp.gridy = 1;
@@ -123,14 +119,12 @@ public class EstParams_ReacBindingPanel extends JPanel {
 				}
 		);
 		
-		topPanel.add(buttonPanel, BorderLayout.NORTH);
-		topPanel.add(paramPanel, BorderLayout.CENTER);
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_9.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_9.gridy = 0;
 		gridBagConstraints_9.gridx = 0;
-		add(topPanel, gridBagConstraints_9);
+		add(paramPanel, gridBagConstraints_9);
 		
 		
 		final JPanel panel_3 = new JPanel();
@@ -149,7 +143,25 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
 		panel_3.add(standardErrorRoiLabel, gridBagConstraints_4);
 		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 12));
-		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time");
+		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time          ");
+		
+		final JButton showRoisButton = new JButton();
+		showRoisButton.setFont(new Font("", Font.PLAIN, 11));
+		showRoisButton.setMargin(new Insets(0, 8, 0, 8));
+		showRoisButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				if(frapWorkspace != null && frapWorkspace.getFrapStudy() != null &&
+				   frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation() != null)
+				{
+					getROIPanel().setFrapWorkspace(frapWorkspace);
+					getROIPanel().setCheckboxesForDisplay(frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation());
+					getROIPanel().refreshROIImageForDisplay();
+				}
+				JOptionPane.showMessageDialog(EstParams_ReacBindingPanel.this, getROIPanel());
+			}
+		});
+		showRoisButton.setText("Show ROIs");
+		panel_3.add(showRoisButton, new GridBagConstraints());
 
 		final JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(Color.black, 1, false));
@@ -173,12 +185,16 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		gridBagConstraints_2.weighty = 1;
 		gridBagConstraints_2.weightx = 1;
 		panel.add(multisourcePlotPane, gridBagConstraints_2);
-		
-//		init();
 	}
-//	private void init(){
-//		
-//	}
+
+	private ChooseModel_RoiForErrorPanel getROIPanel()
+	{
+		if(roiPanel == null)
+		{
+			roiPanel = new ChooseModel_RoiForErrorPanel();
+		}
+		return roiPanel;
+	}
 
 	private void plotDerivedSimulationResults(AnalysisParameters[] anaParams)
 	{
@@ -434,25 +450,6 @@ public class EstParams_ReacBindingPanel extends JPanel {
 	public void setReacBindingParams(Parameter[] parameters)
 	{
 		getReactionDiffusionPanel().setParameters(parameters);
-	}
-	
-	public JPanel getQuestionPanel()
-	{
-		if(questionPanel == null)
-		{
-			questionPanel = new JPanel();
-			questionPanel.setLayout(new BoxLayout(questionPanel, BoxLayout.Y_AXIS));
-			questionPanel.add(new JLabel("Choose a model that the estimation is based on."));
-			ButtonGroup bg = new ButtonGroup();
-			diffOneRadioButton = new JRadioButton("Diffusion with one diffusing component");
-			diffTwoRadioButton = new JRadioButton("Diffusion with two diffusing components");
-			bg.add(diffOneRadioButton);
-			bg.add(diffTwoRadioButton);
-			diffTwoRadioButton.setSelected(true);
-			questionPanel.add(diffOneRadioButton);
-			questionPanel.add(diffTwoRadioButton);
-		}
-		return questionPanel;
 	}
 	
 	public void activateReacDiffEstPanel()

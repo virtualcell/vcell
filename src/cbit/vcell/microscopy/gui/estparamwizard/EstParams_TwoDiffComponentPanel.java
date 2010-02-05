@@ -17,6 +17,7 @@ import java.util.Hashtable;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -35,6 +36,7 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.ROIImagePanel;
+import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_RoiForErrorPanel;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
@@ -47,20 +49,16 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 	
 	private SpatialAnalysisResults spatialAnalysisResults; //will be initialized in setData
 	private final JPanel paramPanel; //exclusively display pure diffusion panel and reaction diffusion panel
-	private final JLabel interactiveAnalysisUsingLabel_1;
 	
-
-	private ROIImagePanel roiImagePanel;
 	private FRAPDiffTwoParamPanel diffTwoPanel;
 		
 	private FRAPOptData frapOptData;
 	private FRAPWorkspace frapWorkspace;
 	
 	private MultisourcePlotPane multisourcePlotPane;
+	private ChooseModel_RoiForErrorPanel roiPanel;
 	private Hashtable<AnalysisParameters, DataSource[]> allDataHash;
 	private double[][] currentEstimationResults = null; //a data structure used to store results according to the current params. 
-	
-	private boolean do_once = true;
 	
 	public EstParams_TwoDiffComponentPanel() {
 		super();
@@ -76,13 +74,13 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		paramPanel.setLayout(new GridBagLayout());
 		
 		//pure diffusion panel
-		interactiveAnalysisUsingLabel_1 = new JLabel();
+		JLabel interactiveAnalysisUsingLabel = new JLabel();
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.gridy = 0;
 		gridBagConstraints_8.gridx = 0;
-		paramPanel.add(interactiveAnalysisUsingLabel_1, gridBagConstraints_8);
-		interactiveAnalysisUsingLabel_1.setFont(new Font("", Font.PLAIN, 14));
-		interactiveAnalysisUsingLabel_1.setText("Interactive Analysis on 'Diffusion with Two Diffusing Components' Model using FRAP Simulation Results");
+		paramPanel.add(interactiveAnalysisUsingLabel, gridBagConstraints_8);
+		interactiveAnalysisUsingLabel.setFont(new Font("", Font.PLAIN, 14));
+		interactiveAnalysisUsingLabel.setText("Interactive Analysis on 'Diffusion with Two Diffusing Components' Model using FRAP Simulation Results");
 
 		diffTwoPanel = new FRAPDiffTwoParamPanel();
 //		pureDiffusionPanel.setSecondDiffComponentEnabled(true);
@@ -132,8 +130,26 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
 		panel_3.add(standardErrorRoiLabel, gridBagConstraints_4);
 		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 12));
-		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time");
+		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time          ");
 
+		final JButton showRoisButton = new JButton();
+		showRoisButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				if(frapWorkspace != null && frapWorkspace.getFrapStudy() != null &&
+				   frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation() != null)
+				{
+					getROIPanel().setFrapWorkspace(frapWorkspace);
+					getROIPanel().setCheckboxesForDisplay(frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation());
+					getROIPanel().refreshROIImageForDisplay();
+				}
+				JOptionPane.showMessageDialog(EstParams_TwoDiffComponentPanel.this, getROIPanel());
+			}
+		});
+		showRoisButton.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		showRoisButton.setMargin(new Insets(0, 8, 0, 8));
+		showRoisButton.setText("Show ROIs");
+		panel_3.add(showRoisButton, new GridBagConstraints());
+		
 		final JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(Color.black, 1, false));
 		panel.setLayout(new GridBagLayout());
@@ -156,13 +172,19 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		gridBagConstraints_2.weighty = 1;
 		gridBagConstraints_2.weightx = 1;
 		panel.add(multisourcePlotPane, gridBagConstraints_2);
-		
-//		init();
 	}
 
+	private ChooseModel_RoiForErrorPanel getROIPanel()
+	{
+		if(roiPanel == null)
+		{
+			roiPanel = new ChooseModel_RoiForErrorPanel();
+		}
+		return roiPanel;
+	}
+	
 	private void plotDerivedSimulationResults(AnalysisParameters[] anaParams)
 	{
-//		boolean isSimData = false;
 		try{
 			String description = null;
 			int totalROIlen = FRAPData.VFRAP_ROI_ENUM.values().length;

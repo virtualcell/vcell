@@ -90,6 +90,9 @@ public class VirtualFrapMainFrame extends JFrame
 	public static final String RUN_SIM_COMMAND = "Run Simulation";
 	public static final String SHOW_SIM_RESULT_COMMAND = "Show sim result";
 	
+	public static final String SAVE_LOAD = "Save";
+	public static final String DISCARD_LOAD = "Discard";
+	
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
 	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
 	private static final JMenuItem msave = new JMenuItem(SAVE_ACTION_COMMAND,'S');

@@ -769,6 +769,15 @@ public class FRAPStudy implements Matchable{
 		}
 	}
 	
+	public FRAPStudy()
+	{
+		selectedROIsForErrCalculation = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
+		for(int i=0; i<FRAPData.VFRAP_ROI_ENUM.values().length; i++)
+		{
+			selectedROIsForErrCalculation[i] = true;
+		}
+	}
+	
 	public ExternalDataInfo getFrapDataExternalDataInfo() {
 		return frapDataExternalDataInfo;
 	}
@@ -851,11 +860,21 @@ public class FRAPStudy implements Matchable{
 		propertyChangeSupport.firePropertyChange(FRAPWorkspace.PROPERTY_CHANGE_BEST_MODEL, oldModelIndex, bestModelIdx);
 	}
 	
-	
-	
-	
 	public void refreshDependentROIs(){
 		getFrapData().refreshDependentROIs();
+		clearEmptyFromStoredROIs();
+	}
+	
+	private void clearEmptyFromStoredROIs()
+	{
+		ROI[] rois = getFrapData().getRois();
+		for(int i=0; i<rois.length; i++)
+		{
+			if(rois[i].isAllPixelsZero())
+			{
+				selectedROIsForErrCalculation[i] = false;
+			}
+		}
 	}
 	
 	public void  saveImageDatasetAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newImageExtDataID,int startingIndexForRecovery) throws Exception{

@@ -1,4 +1,5 @@
 package cbit.vcell.microscopy;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -34,11 +35,11 @@ public static void writeXMLFile(FRAPStudy frapStudy,File outputFile,boolean bPri
 	
 	Xmlproducer vcellXMLProducer = new Xmlproducer(bPrintKeys);
 	Element root = MicroscopyXmlproducer.getXML(frapStudy,vcellXMLProducer,progressListener,bSaveCompressed);
-	String xmlString = XmlUtil.xmlToString(root);
-	java.io.FileWriter fileWriter = new java.io.FileWriter(outputFile);
-	fileWriter.write(xmlString);
-	fileWriter.flush();
-	fileWriter.close();
+	java.io.FileOutputStream fileOutStream = new java.io.FileOutputStream(outputFile);
+	BufferedOutputStream bufferedStream = new BufferedOutputStream(fileOutStream);
+	XmlUtil.writeXmlToStream(root, true, bufferedStream);
+	fileOutStream.flush();
+	fileOutStream.close();
 
 }
 
