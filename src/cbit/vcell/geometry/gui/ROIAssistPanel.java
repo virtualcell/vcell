@@ -201,7 +201,7 @@ public class ROIAssistPanel extends JPanel {
 
 		final JLabel lowerLabel = new JLabel();
 		lowerLabel.setFont(new Font("", Font.BOLD, 14));
-		lowerLabel.setText("ROi Shrink");
+		lowerLabel.setText("ROI Shrink");
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.insets = new Insets(0, 4, 0, 0);
 		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
