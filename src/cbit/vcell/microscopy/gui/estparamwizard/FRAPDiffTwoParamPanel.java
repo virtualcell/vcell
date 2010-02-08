@@ -388,18 +388,19 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 	public FRAPDiffTwoParamPanel() {
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] {0,0,0,0,7,7,0,0};
+		gridBagLayout.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0};
+		gridBagLayout.columnWidths = new int[] {0,10,3,0, 0,0,10};
 		setLayout(gridBagLayout);
 
 		final JLabel diffusionRateLabel = new JLabel();
 		diffusionRateLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
 		diffusionRateLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		diffusionRateLabel.setText("Primary  Diff.  Rate(um2/s):");
+		diffusionRateLabel.setText("Diff.  Rate(um2/s):");
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_9.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_9.weightx = 0;
-		gridBagConstraints_9.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_9.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_9.gridy = 0;
 		gridBagConstraints_9.gridx = 0;
 		add(diffusionRateLabel, gridBagConstraints_9);
@@ -409,8 +410,8 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		diffusionRateTextField.getDocument().addUndoableEditListener(EDIT_LISTENER);
 		diffusionRateTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.weightx = 0;
-		gridBagConstraints.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.gridx = 1;
@@ -422,7 +423,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		diffusionRateSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.weightx = 0;
-		gridBagConstraints_1.insets = new Insets(2, 0, 2, 2);
+		gridBagConstraints_1.insets = new Insets(2, 0, 5, 5);
 		gridBagConstraints_1.gridy = 0;
 		gridBagConstraints_1.gridx = 2;
 		add(diffusionRateSetButton, gridBagConstraints_1);
@@ -431,8 +432,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		diffusionRateSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		diffusionRateSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-		gridBagConstraints_4.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints_4.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_4.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_4.weightx = 1;
 		gridBagConstraints_4.gridy = 0;
@@ -443,14 +443,14 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		secondDiffusionRateLabel.setInheritsPopupMenu(true);
 		secondDiffusionRateLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 		secondDiffusionRateLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
-		secondDiffusionRateLabel.setText("Secondary  Diff. Rate(um2/s):");
+		secondDiffusionRateLabel.setText("2nd Diff. Rate(um2/s):");
 		final GridBagConstraints gridBagConstraints_14 = new GridBagConstraints();
 		gridBagConstraints_14.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_14.weightx = 0;
 		gridBagConstraints_14.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_14.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_14.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_14.gridy = 0;
-		gridBagConstraints_14.gridx = 6;
+		gridBagConstraints_14.gridx = 5;
 		add(secondDiffusionRateLabel, gridBagConstraints_14);
 
 		secondDiffTextField = new JTextField();
@@ -458,11 +458,11 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		secondDiffTextField.getDocument().addUndoableEditListener(EDIT_LISTENER);
 		secondDiffTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 		final GridBagConstraints gridBagConstraints_17 = new GridBagConstraints();
-		gridBagConstraints_17.weightx = 0;
-		gridBagConstraints_17.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_17.weightx = 1.0;
+		gridBagConstraints_17.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_17.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_17.gridy = 0;
-		gridBagConstraints_17.gridx = 7;
+		gridBagConstraints_17.gridx = 6;
 		add(secondDiffTextField, gridBagConstraints_17);
 
 		secondDiffSetButton = new JButton();
@@ -471,9 +471,9 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		secondDiffSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_20 = new GridBagConstraints();
 		gridBagConstraints_20.weightx = 0;
-		gridBagConstraints_20.insets = new Insets(2, 0, 2, 2);
+		gridBagConstraints_20.insets = new Insets(2, 0, 5, 5);
 		gridBagConstraints_20.gridy = 0;
-		gridBagConstraints_20.gridx = 8;
+		gridBagConstraints_20.gridx = 7;
 		add(secondDiffSetButton, gridBagConstraints_20);
 
 		secondDiffSlider = new JSlider();
@@ -481,20 +481,20 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		secondDiffSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_22 = new GridBagConstraints();
 		gridBagConstraints_22.weightx = 1;
-		gridBagConstraints_22.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints_22.insets = new Insets(2, 2, 5, 2);
 		gridBagConstraints_22.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_22.gridy = 0;
-		gridBagConstraints_22.gridx = 9;
+		gridBagConstraints_22.gridx = 8;
 		add(secondDiffSlider, gridBagConstraints_22);
 
 		final JLabel mobileFractionLabel = new JLabel();
 		mobileFractionLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
 		mobileFractionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		mobileFractionLabel.setText("Primary  Mobile Fraction:");
+		mobileFractionLabel.setText("Mobile Fraction:");
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
 		gridBagConstraints_11.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_11.weightx = 0;
-		gridBagConstraints_11.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_11.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_11.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_11.gridy = 1;
 		gridBagConstraints_11.gridx = 0;
@@ -505,8 +505,8 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		mobileFractionTextField.getDocument().addUndoableEditListener(EDIT_LISTENER);
 		mobileFractionTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
-		gridBagConstraints_2.weightx = 0;
-		gridBagConstraints_2.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_2.weightx = 1.0;
+		gridBagConstraints_2.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_2.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_2.gridy = 1;
 		gridBagConstraints_2.gridx = 1;
@@ -518,7 +518,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		mobileFractionSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.weightx = 0;
-		gridBagConstraints_5.insets = new Insets(2, 0, 2, 2);
+		gridBagConstraints_5.insets = new Insets(2, 0, 5, 5);
 		gridBagConstraints_5.gridy = 1;
 		gridBagConstraints_5.gridx = 2;
 		add(mobileFractionSetButton, gridBagConstraints_5);
@@ -527,7 +527,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		mobileFractionSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		mobileFractionSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
-		gridBagConstraints_6.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints_6.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_6.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_6.weightx = 1;
 		gridBagConstraints_6.gridy = 1;
@@ -536,14 +536,14 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 
 		secondMobileFractionLabel = new JLabel();
 		secondMobileFractionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		secondMobileFractionLabel.setText("Secondary Mobile Fraction:");
+		secondMobileFractionLabel.setText("2nd Mobile Fraction:");
 		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
 		gridBagConstraints_15.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_15.weightx = 0;
 		gridBagConstraints_15.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_15.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_15.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_15.gridy = 1;
-		gridBagConstraints_15.gridx = 6;
+		gridBagConstraints_15.gridx = 5;
 		add(secondMobileFractionLabel, gridBagConstraints_15);
 
 		secondMobileFracTextField = new JTextField();
@@ -551,11 +551,11 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		secondMobileFracTextField.getDocument().addUndoableEditListener(EDIT_LISTENER);
 		secondMobileFracTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 		final GridBagConstraints gridBagConstraints_18 = new GridBagConstraints();
-		gridBagConstraints_18.weightx = 0;
-		gridBagConstraints_18.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_18.weightx = 1.0;
+		gridBagConstraints_18.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_18.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_18.gridy = 1;
-		gridBagConstraints_18.gridx = 7;
+		gridBagConstraints_18.gridx = 6;
 		add(secondMobileFracTextField, gridBagConstraints_18);
 
 		secondMobileFracSetButton = new JButton();
@@ -564,30 +564,30 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		secondMobileFracSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_21 = new GridBagConstraints();
 		gridBagConstraints_21.weightx = 0;
-		gridBagConstraints_21.insets = new Insets(0, 0, 2, 2);
+		gridBagConstraints_21.insets = new Insets(0, 0, 5, 5);
 		gridBagConstraints_21.gridy = 1;
-		gridBagConstraints_21.gridx = 8;
+		gridBagConstraints_21.gridx = 7;
 		add(secondMobileFracSetButton, gridBagConstraints_21);
 
 		secondMobileFracSlider = new JSlider();
 		secondMobileFracSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		secondMobileFracSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_23 = new GridBagConstraints();
-		gridBagConstraints_23.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints_23.insets = new Insets(2, 2, 5, 2);
 		gridBagConstraints_23.weightx = 1;
 		gridBagConstraints_23.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_23.gridy = 1;
-		gridBagConstraints_23.gridx = 9;
+		gridBagConstraints_23.gridx = 8;
 		add(secondMobileFracSlider, gridBagConstraints_23);
 
 		final JLabel bleachWhileMonitorLabel = new JLabel();
 		bleachWhileMonitorLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
 		bleachWhileMonitorLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		bleachWhileMonitorLabel.setText("Bleach While Monitor Rate(1/s):");
+		bleachWhileMonitorLabel.setText("Bleach Rate(1/s):");
 		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
 		gridBagConstraints_12.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_12.weightx = 0;
-		gridBagConstraints_12.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_12.insets = new Insets(2, 2, 2, 5);
 		gridBagConstraints_12.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_12.gridy = 2;
 		gridBagConstraints_12.gridx = 0;
@@ -598,8 +598,8 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		bleachWhileMonitorRateTextField.getDocument().addUndoableEditListener(EDIT_LISTENER);
 		bleachWhileMonitorRateTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-		gridBagConstraints_3.weightx = 0;
-		gridBagConstraints_3.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_3.weightx = 1.0;
+		gridBagConstraints_3.insets = new Insets(2, 2, 2, 5);
 		gridBagConstraints_3.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_3.gridy = 2;
 		gridBagConstraints_3.gridx = 1;
@@ -611,7 +611,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		bleachWhileMonitorSetButton.setText("Set");
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.weightx = 0;
-		gridBagConstraints_10.insets = new Insets(2, 0, 2, 2);
+		gridBagConstraints_10.insets = new Insets(2, 0, 2, 5);
 		gridBagConstraints_10.gridy = 2;
 		gridBagConstraints_10.gridx = 2;
 		add(bleachWhileMonitorSetButton, gridBagConstraints_10);
@@ -621,7 +621,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		bleachWhileMonitorSlider.setPaintLabels(true);
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_7.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints_7.insets = new Insets(2, 2, 2, 5);
 		gridBagConstraints_7.weightx = 1;
 		gridBagConstraints_7.gridy = 2;
 		gridBagConstraints_7.gridx = 3;
@@ -629,25 +629,26 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 
 		final JLabel immboileFractionLabel = new JLabel();
 		immboileFractionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		immboileFractionLabel.setText("Model    Immobile    Fraction:");
+		immboileFractionLabel.setText("Immobile Fraction:");
 		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
 		gridBagConstraints_16.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_16.weightx = 0;
 		gridBagConstraints_16.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_16.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_16.insets = new Insets(2, 2, 2, 5);
 		gridBagConstraints_16.gridy = 2;
-		gridBagConstraints_16.gridx = 6;
+		gridBagConstraints_16.gridx = 5;
 		add(immboileFractionLabel, gridBagConstraints_16);
 
 		immoFracValueLabel = new JLabel();
 		immoFracValueLabel.setIconTextGap(0);
 		immoFracValueLabel.setText("       ");
 		final GridBagConstraints gridBagConstraints_19 = new GridBagConstraints();
+		gridBagConstraints_19.insets = new Insets(0, 0, 0, 5);
 		gridBagConstraints_19.gridwidth = 2;
 		gridBagConstraints_19.weightx = 0;
 		gridBagConstraints_19.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_19.gridy = 2;
-		gridBagConstraints_19.gridx = 7;
+		gridBagConstraints_19.gridx = 6;
 		add(immoFracValueLabel, gridBagConstraints_19);
 		
 		initialize();
@@ -657,14 +658,14 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.insets = new Insets(0, 0, 0, 0);
 		gridBagConstraints_8.gridy = 2;
-		gridBagConstraints_8.gridx = 9;
+		gridBagConstraints_8.gridx = 8;
 		add(getOptimalButton, gridBagConstraints_8);
 		getOptimalButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				runAndSetBestParameters();
 			}
 		});
-		getOptimalButton.setText("Get Best Parameters");
+		getOptimalButton.setText("Estimate");
 		getOptimalButton.setToolTipText("Set best parameters through optimization with experimental data");
 	}
 
