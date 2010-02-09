@@ -60,6 +60,7 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.CurrentClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
@@ -143,6 +144,7 @@ import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.DataProcessingInstructions;
@@ -2131,13 +2133,13 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		mathdes.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
 	} catch (MappingException e) {
 		e.printStackTrace();
-		throw new XmlParseException("A MappingException was fired when adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
+		throw new XmlParseException("Error adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
 	} catch (MathException e) {
 		e.printStackTrace();
-		throw new XmlParseException("A MathException was fired when adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
+		throw new XmlParseException("Error adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
 	} catch (ExpressionBindingException e) {
 		e.printStackTrace();
-		throw new XmlParseException("A ExpressionBindingException was fired when adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
+		throw new XmlParseException("Error adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
 	}
 
 	//Retrieve CompartmentsSubdomains
@@ -2148,7 +2150,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 			mathdes.addSubDomain( getCompartmentSubDomain(tempelement, mathdes) );
 		} catch (MathException e) {
 			e.printStackTrace();
-			throw new XmlParseException("A MathException was fired when adding a new CompartmentSubDomain to the MathDescription " + name+" : "+e.getMessage());
+			throw new XmlParseException("Error adding a new CompartmentSubDomain to the MathDescription " + name+" : "+e.getMessage());
 		}
 	}
 
@@ -2160,7 +2162,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 			mathdes.addSubDomain( getMembraneSubDomain(tempelement, mathdes) );
 		} catch (MathException e) {
 			e.printStackTrace();
-			throw new XmlParseException("A MathException was fired when adding a new MembraneSubDomain to the MathDescription " + name+" : "+e.getMessage());
+			throw new XmlParseException("Error adding a new MembraneSubDomain to the MathDescription " + name+" : "+e.getMessage());
 		}
 	}
 	
@@ -2171,7 +2173,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 			mathdes.addSubDomain( getFilamentSubDomain(tempelement, mathdes) );
 		} catch (MathException e) {
 			e.printStackTrace();
-			throw new XmlParseException("A MathException was fired when adding a new FilamentSubDomain to the MathDescription " + name+" : "+e.getMessage());
+			throw new XmlParseException("Error adding a new FilamentSubDomain to the MathDescription " + name+" : "+e.getMessage());
 		}
 	}
 	
@@ -2179,7 +2181,12 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 	while (iterator.hasNext()) {
 		tempelement = (Element)iterator.next();
 		Event event = getEvent(mathdes, tempelement);
-		mathdes.addEvent(event);
+		try {
+			mathdes.addEvent(event);
+		} catch (MathException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException(e.getMessage());
+		}
 	}
 	return mathdes;
 }
@@ -2228,6 +2235,58 @@ private Event getEvent(MathDescription mathdesc, Element eventElement) throws Xm
 	
 	Event event = new Event(name, triggerExp, delay, eventAssignmentList);
 	return event;
+}
+
+private BioEvent getBioEvent(SimulationContext simContext, Element bioEventElement) throws XmlParseException  {
+
+	String name = bioEventElement.getAttributeValue(XMLTags.NameAttrTag);
+	Element element = bioEventElement.getChild(XMLTags.TriggerTag, vcNamespace);
+	Expression triggerExp = null;
+	try {
+		triggerExp = new Expression(element.getText());
+	} catch (ExpressionException e) {
+		e.printStackTrace();
+		throw new XmlParseException(e.getMessage());
+	}
+	
+	element = bioEventElement.getChild(XMLTags.DelayTag, vcNamespace);
+	BioEvent.Delay delay = null;
+	if (element != null) {
+		try {			
+			boolean useValuesFromTriggerTime = Boolean.valueOf(element.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
+			Expression durationExp = new Expression(element.getText());
+			delay = new BioEvent.Delay(useValuesFromTriggerTime, durationExp);
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+	
+	ArrayList<BioEvent.EventAssignment> eventAssignmentList = new ArrayList<BioEvent.EventAssignment>();
+	Iterator<Element> iter = bioEventElement.getChildren(XMLTags.EventAssignmentTag, vcNamespace).iterator();
+	while (iter.hasNext()) {
+		element = iter.next();
+		try {
+			String varname = element.getAttributeValue(XMLTags.EventAssignmentVariableAttrTag);
+			Expression assignExp = new Expression(element.getText());
+			SymbolTableEntry target = simContext.getEntry(varname);
+			BioEvent.EventAssignment eventAssignment = new BioEvent.EventAssignment(target, assignExp);
+			eventAssignmentList.add(eventAssignment);
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+	
+	BioEvent bioEvent = new BioEvent(name, triggerExp, delay, eventAssignmentList);
+	bioEvent.setSimulationContext(simContext);
+	try {
+		bioEvent.bind();
+	} catch (ExpressionBindingException e) {
+		e.printStackTrace(System.out);
+		throw new XmlParseException(e.getMessage());
+	}
+	return bioEvent;
 }
 
 /**
@@ -3686,7 +3745,6 @@ public SimulationContext getSimulationContext(Element param, BioModel biomodel) 
 
 	//Retrieve Electrical context
 	org.jdom.Element electElem = param.getChild(XMLTags.ElectricalContextTag, vcNamespace);
-	
 	//this information is optional!
 	if (electElem != null) {
 		if (electElem.getChild(XMLTags.ClampTag, vcNamespace)!=null) {
@@ -3714,6 +3772,20 @@ public SimulationContext getSimulationContext(Element param, BioModel biomodel) 
 			}
 		}
 	}	
+
+	// Retrieve (bio)events 
+	iterator = param.getChildren(XMLTags.EventTag, vcNamespace).iterator();
+	while (iterator.hasNext()) {
+		tempelement = (Element)iterator.next();
+		BioEvent bioEvent = getBioEvent(newsimcontext, tempelement);
+		try {
+			newsimcontext.addBioEvent(bioEvent);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error adding event '" + bioEvent.getName() + "' to simulationContext : " + e.getMessage());
+		}
+	}
+
 
 	org.jdom.Element analysisTaskListElement = param.getChild(XMLTags.AnalysisTaskListTag, vcNamespace);
 	if (analysisTaskListElement!=null){

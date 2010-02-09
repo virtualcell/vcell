@@ -32,6 +32,7 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.CurrentClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
@@ -1216,6 +1217,14 @@ public org.jdom.Element getXML(cbit.vcell.mapping.SimulationContext param, cbit.
 	if (param.getAnalysisTasks()!=null && param.getAnalysisTasks().length>0){
 		simulationcontext.addContent( getXML(param.getAnalysisTasks()) );
 	}
+	
+	// Add (Bio)events
+	if (param.getBioEvents()!=null && param.getBioEvents().length>0){
+		for (int i = 0; i < param.getBioEvents().length; i++) {
+			simulationcontext.addContent( getXML(param.getBioEvents()[i]) );
+		}
+	}
+	
 	//Add Metadata (if any)
 	if ( param.getVersion() != null) {
 		simulationcontext.addContent( getXML(param.getVersion(), param) );
@@ -3259,4 +3268,34 @@ public org.jdom.Element getXML(Event event) throws XmlParseException{
 
 	return eventElement;
 }
+
+// For events in SimulationContext - XML is very similar to math events
+public org.jdom.Element getXML(BioEvent bioEvent) throws XmlParseException{
+	org.jdom.Element eventElement = new org.jdom.Element(XMLTags.EventTag);
+	eventElement.setAttribute(XMLTags.NameAttrTag, bioEvent.getName());
+
+	Element element = new org.jdom.Element(XMLTags.TriggerTag);
+	element.addContent(bioEvent.getTriggerExpression().infix());
+	eventElement.addContent(element);
+
+	BioEvent.Delay delay = bioEvent.getDelay();
+	if (delay != null) {
+		element = new org.jdom.Element(XMLTags.DelayTag);		
+		element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
+		element.addContent(delay.getDurationExpression().infix());
+		eventElement.addContent(element);
+	}
+	ArrayList<BioEvent.EventAssignment> eventAssignmentsList = bioEvent.getEventAssignments();
+	for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
+		element = new org.jdom.Element(XMLTags.EventAssignmentTag);
+		element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
+		element.addContent(eventAssignment.getAssignmentExpression().infix());
+		eventElement.addContent(element);
+	}
+
+	return eventElement;
+}
+
+
+
 }

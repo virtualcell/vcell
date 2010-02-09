@@ -544,7 +544,8 @@ private void refreshTotalMatrices() throws Exception {
 			totalSchemeMatrix.set_elem(i,j,stoichiometry);
 			
 			if (stoichiometry != 0){
-				if (!(reactionSteps[j] instanceof DiffusionReactionStep) && !reactionSpecs[j].isFast() && !reactionSpecs[j].isExcluded()){
+				if (!(reactionSteps[j] instanceof DiffusionReactionStep) && !(reactionSteps[j] instanceof EventReactionStep) &&
+					!reactionSpecs[j].isFast() && !reactionSpecs[j].isExcluded()){
 					ReactionParticipant[] rps1 = reactionSteps[j].getReactionParticipants();
 					ReactionParticipant rp0 = null;
 					for (ReactionParticipant rp : rps1) {
@@ -691,13 +692,16 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 		}
 	}
 	//
-	// add DiffusionReactionStep for each diffusing species to eliminate 
-	// those species from conserved moieties
+	// add DiffusionReactionStep for each diffusing species and EventReactionStep for each speciesContext that has 
+	// event assignment(s) [that is a target variable in event assignment(s)] to eliminate those species from conserved moieties
 	//
 	for (int i=0;i<scmList.size();i++){
 		SpeciesContextMapping scm = (SpeciesContextMapping)scmList.elementAt(i);
 		if (scm.isPDERequired()){
 			rsList.addElement(new DiffusionReactionStep("DiffusionReactionStep"+i,scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+		}
+		if (scm.hasEventAssignment()){
+			rsList.addElement(new EventReactionStep("EventReactionStep"+i,scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
 		}
 	}
 	if (rsList.size()>0){
