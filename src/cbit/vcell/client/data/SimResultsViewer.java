@@ -222,7 +222,7 @@ private void initialize() throws DataAccessException {
 		}
 		panel.add(tablePanel, BorderLayout.CENTER);
 				
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		JPanel buttonPanel = new JPanel(new FlowLayout());
 		JButton button = new JButton("Time Plot with Multiple Parameter Value Sets");
 		buttonPanel.add(button);
 		panel.add(buttonPanel, BorderLayout.SOUTH);
