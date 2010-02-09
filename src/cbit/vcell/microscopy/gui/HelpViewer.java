@@ -41,7 +41,7 @@ private static void printUsage(){
 */
 
 public HelpViewer() {
-    super("Virtual Frap Help");
+    super("Virtual Frap Help for Version 0.9");
     setIconImage(new ImageIcon(getClass().getResource("/images/logo.gif")).getImage());
 
     URL resourceURL = HelpViewer.class.getResource("/doc/HelpSet.hs");

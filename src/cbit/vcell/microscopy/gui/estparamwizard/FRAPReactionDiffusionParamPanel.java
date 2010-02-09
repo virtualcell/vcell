@@ -106,8 +106,8 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		gridBagConstraints_1.gridwidth = 2;
 		gridBagConstraints_1.gridy = 1;
 		gridBagConstraints_1.gridx = 10;
-		add(parameterScanButton, gridBagConstraints_1);
-		add(freeDiffRateLabel, gridBagConstraints_9);
+//		add(parameterScanButton, gridBagConstraints_1);
+//		add(freeDiffRateLabel, gridBagConstraints_9);
 
 		freeDiffRateTextField = new JTextField();
 		freeDiffRateTextField.setPreferredSize(new Dimension(125, 20));
@@ -182,7 +182,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		add(complexFractionTextField, gridBagConstraints_6);
 
 		final JLabel onRateLabel = new JLabel();
-		onRateLabel.setText("Psedo Reaction on Rate(1/s):");
+		onRateLabel.setText("Pseudo Reaction on Rate(1/s):");
 		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
 		gridBagConstraints_15.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_15.insets = new Insets(2, 2, 2, 2);
