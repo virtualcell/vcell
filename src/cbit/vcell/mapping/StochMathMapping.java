@@ -546,7 +546,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 			{
 				try {
 					double value = parm.getExpression().evaluateConstant();
-					varHash.addVariable(new Constant(getMathSymbol0(parm,sm),new Expression(value)));
+					varHash.addVariable(new Constant(getMathSymbol(parm,sm),new Expression(value)));
 				}catch (ExpressionException e){
 					//varHash.addVariable(new Function(getMathSymbol0(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
 					e.printStackTrace(System.out);
@@ -769,7 +769,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					//add probability to function or constant
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
 										
-					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol0(probParm,sm)));
+					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,sm)));
 					// actions
 					ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
 					for(int j=0; j<reacPart.length; j++)
@@ -821,7 +821,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					//add probability to function or constant
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
 									
-					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol0(probRevParm,sm)));
+					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,sm)));
 					// actions
 					ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
 					for(int j=0; j<reacPart.length; j++)
@@ -898,21 +898,21 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						//add probability to function or constant
 						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm),getIdentifierSubstitutions(probExp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
 										
-						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol0(probParm,sm)));
+						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,sm)));
 						// actions
 						Action action = null;
 						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
 						
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(-1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(-1));
 							jp.addAction(action);
 						}	
 						
 						sc = fluxFunc.getSpeciesContextInside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(1));
 							jp.addAction(action);
 						}
 							
@@ -952,20 +952,20 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						//add probability to function or constant
 						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(probRevExp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
 										
-						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol0(probRevParm,sm)));
+						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,sm)));
 						// actions
 						Action action = null;
 						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(1));
 							jp.addAction(action);
 						}
 							
 						sc = fluxFunc.getSpeciesContextInside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol0(spCountParam, sm)),"inc", new Expression(-1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(-1));
 							jp.addAction(action);
 						}
 						
@@ -994,7 +994,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getInitialCountParameter();//stochastic use initial number of particles
 			//stochastic variables initial expression.
 			if (initParm!=null){
-				VarIniCondition varIni = new VarIniCondition(var,new Expression(getMathSymbol0(initParm, sm)));
+				VarIniCondition varIni = new VarIniCondition(var,new Expression(getMathSymbol(initParm, sm)));
 				subDomain.addVarIniCondition(varIni);
 			}
 		}
@@ -1122,7 +1122,8 @@ private void refreshSpeciesContextMappings() throws cbit.vcell.parser.Expression
 		SpeciesContextSpec scs = speciesContextSpecs[i];
 
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
-		scm.setPDERequired(isPDERequired(scs.getSpeciesContext()));
+		scm.setPDERequired(getSimulationContext().isPDERequired(scs.getSpeciesContext()));
+		scm.setHasEventAssignment(getSimulationContext().hasEventAssignment(scs.getSpeciesContext()));
 //		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
 //		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){

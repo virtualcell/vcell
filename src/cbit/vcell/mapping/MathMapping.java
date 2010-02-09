@@ -1,9 +1,12 @@
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
@@ -13,6 +16,7 @@ import org.vcell.util.TokenMangler;
 
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
@@ -24,6 +28,7 @@ import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
+import cbit.vcell.math.Event;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
 import cbit.vcell.math.FastSystem;
@@ -37,8 +42,10 @@ import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.Event.Delay;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
@@ -55,7 +62,9 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -78,6 +87,7 @@ public class MathMapping implements ScopedSymbolTable {
 	public static final String MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION = "_Conc";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT = "_initCount";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION = "_init";
+	public static final String MATH_FUNC_SUFFIX_EVENTASSIGN_INIT = "_init";
 	
 	private SimulationContext simContext = null;
 	protected MathDescription mathDesc = null;
@@ -98,7 +108,8 @@ public class MathMapping implements ScopedSymbolTable {
 	public static final int PARAMETER_ROLE_P_reverse = 4;
 	public static final int PARAMETER_ROLE_CONCENRATION = 5;
 	public static final int PARAMETER_ROLE_COUNT = 6;
-	public static final int NUM_PARAMETER_ROLES = 7;
+	public static final int PARAMETER_ROLE_EVENTASSIGN_INITCONDN = 7;
+	public static final int NUM_PARAMETER_ROLES = 8;
 		
 	private Vector<StructureAnalyzer> structureAnalyzerList = new Vector<StructureAnalyzer>();
 	
@@ -309,6 +320,11 @@ public class MathMapping implements ScopedSymbolTable {
 		}
 	}
 
+	public class EventAssignmentInitParameter extends MathMappingParameter {
+		protected EventAssignmentInitParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
+			super(argName,argExpression,argRole,argVCUnitDefinition);
+		}
+	}
 
 	static {
 		System.out.println("MathMapping: capacitances must not be overridden and must be constant (used as literals in KVL)");
@@ -404,6 +420,22 @@ MathMapping.SpeciesCountParameter addSpeciesCountParameter(String name, Expressi
 		return (MathMapping.SpeciesCountParameter)previousParameter;
 	}
 	//expression.bindExpression(this);
+	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	setMathMapppingParameters(newParameters);
+	return newParameter;
+}
+
+MathMapping.EventAssignmentInitParameter addEventAssignmentInitParameter(String name, Expression expr, int role, VCUnitDefinition unitDefn) throws PropertyVetoException {
+
+	MathMapping.EventAssignmentInitParameter newParameter = new MathMapping.EventAssignmentInitParameter(name,expr,role,unitDefn);
+	MathMapping.MathMappingParameter previousParameter = getMathMappingParameter(name);
+	if(previousParameter != null){
+		System.out.println("MathMapping.MathMappingParameter addEventAssignInitParameter found duplicate parameter for name "+name);
+		if(!previousParameter.compareEqual(newParameter)){
+			throw new RuntimeException("MathMapping.MathMappingParameter addEventAssignInitParameter found duplicate parameter for name '"+name+"'.");
+		}
+		return (MathMapping.EventAssignmentInitParameter)previousParameter;
+	}
 	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
@@ -779,7 +811,7 @@ protected void refreshLocalNameCount() {
  * @param origExp cbit.vcell.parser.Expression
  * @param structureMapping cbit.vcell.mapping.StructureMapping
  */
-protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMapping) throws MappingException {
+private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMapping) throws MappingException {
 	String steName = ste.getName();
 	if (ste instanceof Kinetics.KineticsParameter){
 		Integer count = localNameCountHash.get(steName);
@@ -804,6 +836,10 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 	if (ste instanceof MathMapping.SpeciesCountParameter){
 		MathMapping.SpeciesCountParameter countParm = (MathMapping.SpeciesCountParameter)ste;
 		return countParm.getSpeciesContextSpec().getSpeciesContext().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
+	}
+	if (ste instanceof MathMapping.EventAssignmentInitParameter){
+		MathMapping.EventAssignmentInitParameter eventInitParm = (MathMapping.EventAssignmentInitParameter)ste;
+		return eventInitParm.getName() + MATH_FUNC_SUFFIX_EVENTASSIGN_INIT;
 	}
 
 	if (ste instanceof ReservedSymbol){
@@ -1227,97 +1263,6 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (8/8/01 3:46:23 PM)
- * @return boolean
- * @param speciesContext cbit.vcell.model.SpeciesContext
- */
-protected boolean isPDERequired(SpeciesContext speciesContext) {
-	//
-	// compartmental models never need diffusion
-	//
-	if (simContext.getGeometryContext().getGeometry().getDimension() == 0){
-		return false;
-	}
-
-	//
-	// if speciesContext is from a structure which is not spatially resolved, then it won't diffuse (PDE not required).
-	//
-	StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
-	if (sm instanceof FeatureMapping){
-		if (!((FeatureMapping)sm).getResolved()){
-			return false;
-		}
-	} else if (sm instanceof MembraneMapping){
-		if (!((MembraneMapping)sm).getResolved(simContext)){
-			return false;
-		}
-	} else {
-		return false;	// not Feature and not Membrane ... can't diffuse now.
-	}
-
-	//
-	// check if any resolved speciesContext from the same species needs diffusion/advection
-	//
-	boolean bPDENeeded = false;
-	SpeciesContext speciesContexts[] = simContext.getGeometryContext().getModel().getSpeciesContexts();
-	for (int i = 0; i < speciesContexts.length; i++){
-		if (speciesContexts[i].getSpecies().compareEqual(speciesContext.getSpecies())){
-			StructureMapping otherSM = simContext.getGeometryContext().getStructureMapping(speciesContexts[i].getStructure());
-			SpeciesContextSpec otherSCS = simContext.getReactionContext().getSpeciesContextSpec(speciesContexts[i]);
-			//
-			// another speciesContext needs diffusion if it is from a spatially resolved structure and has non-zero diffusion
-			//
-			if (otherSM instanceof FeatureMapping && ((FeatureMapping)otherSM).getResolved() && (otherSCS.isDiffusing() || otherSCS.isAdvecting())){
-				bPDENeeded = true;
-			}
-			if (otherSM instanceof MembraneMapping && ((MembraneMapping)otherSM).getResolved(simContext) && (otherSCS.isDiffusing() || otherSCS.isAdvecting())){
-				bPDENeeded = true;
-			}
-		}
-	}
-	
-	//
-	// if this speciesContextSpec specifically disables diffusion, but is required elsewhere to make "global" PDE work,
-	// then tell it that diffusion is required and give it a zero diffusion rate.
-	//
-	if (bPDENeeded){
-		System.out.println("WARNING: MathMapping.isDiffusionRequired("+speciesContext+"), diffusion is disabled for "+speciesContext+" but needed for resolved species "+speciesContext.getSpecies());
-	}
-
-	return bPDENeeded;
-}
-
-//protected boolean isAdvectionRequired(SpeciesContext speciesContext) {
-//	//
-//	// compartmental models never need advection
-//	//
-//	if (simContext.getGeometryContext().getGeometry().getDimension() == 0){
-//		return false;
-//	}
-//
-//	//
-//	// if speciesContext is from a structure which is not spatially resolved, then it won't diffuse (PDE not required).
-//	//
-//	StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
-//	if (sm instanceof FeatureMapping){
-//		if (!((FeatureMapping)sm).getResolved()){
-//			return false;
-//		}
-//	} else {
-//		return false;	// not Feature : advection NOT allowed at present (even for membranes)
-//	}
-//
-//	//
-//	// check if resolved speciesContext has velocity parameters
-//	//
-//	SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(speciesContext);
-//	return scs.isAdvecting();
-//}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (11/2/2005 4:42:01 PM)
@@ -1496,13 +1441,41 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	}
 
 	// deals with model parameters
+	Hashtable<VolVariable, EventAssignmentInitParameter> eventVolVarHash = new Hashtable<VolVariable, EventAssignmentInitParameter>();
 	ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
 	if (simContext.getGeometry().getDimension() == 0) {
 		//
 		// global parameters from model (that presently are constants)
 		//
+		BioEvent[] bioEvents = simContext.getBioEvents();
+		ArrayList<SymbolTableEntry> eventAssignTargets = new ArrayList<SymbolTableEntry>();
+		if (bioEvents != null && bioEvents.length > 0) {
+			for (BioEvent be : bioEvents) {
+				for (EventAssignment ea : be.getEventAssignments()) {
+					if (!eventAssignTargets.contains(ea.getTarget())) {
+						eventAssignTargets.add(ea.getTarget());
+					}
+				}
+			}
+		}
 		for (int j=0;j<modelParameters.length;j++){
-			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), modelParameters[j].getExpression()));
+			Expression modelParamExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), null);
+			if (eventAssignTargets.contains(modelParameters[j])) {
+				EventAssignmentInitParameter eap = null;
+				try {
+					eap = addEventAssignmentInitParameter(modelParameters[j].getName(), modelParameters[j].getExpression(), 
+							PARAMETER_ROLE_EVENTASSIGN_INITCONDN, modelParameters[j].getUnitDefinition());
+				} catch (PropertyVetoException e) {
+					e.printStackTrace(System.out);
+					throw new MappingException(e.getMessage());
+				}
+				// varHash.addVariable(newFunctionOrConstant(getMathSymbol(eap, null), modelParamExpr));
+				VolVariable volVar = new VolVariable(modelParameters[j].getName());
+				varHash.addVariable(volVar);
+				eventVolVarHash.put(volVar, eap);
+			} else {
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), modelParamExpr));
+			}
 		}
 	} else {
 		// populate in globalParameterVariants hashtable
@@ -1995,7 +1968,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	// conserved constants  (e.g. K = A + B + C) (these are treated as functions now)
 	//
 	for (int i = 0; i < fieldMathMappingParameters.length; i++){
-		varHash.addVariable(new Function(getMathSymbol(fieldMathMappingParameters[i],null),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),null)));
+		varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],null),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),null)));
 	}
 
 	//
@@ -2430,6 +2403,48 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		}
 	}
 
+	// create equations for event assign targets that are model params/strutureSize, etc.
+	Set<VolVariable> hashKeySet = eventVolVarHash.keySet();
+	Iterator<VolVariable> volVarsIter = hashKeySet.iterator();
+	// working under teh assumption that we are dealing with non-spatial math, hence only one compartment domain!
+	SubDomain subDomain = mathDesc.getSubDomains().nextElement();
+	while (volVarsIter.hasNext()) {
+		VolVariable volVar = volVarsIter.next();
+		EventAssignmentInitParameter eap = eventVolVarHash.get(volVar);
+		Expression rateExpr = new Expression(0.0);
+		Equation equation = new OdeEquation(volVar, new Expression(getMathSymbol(eap, null)), rateExpr);
+		subDomain.addEquation(equation);
+	}
+
+	// events - add events to math desc and odes for event assignments that have parameters as target variables
+
+	BioEvent[] bioevents = simContext.getBioEvents();
+	if (bioevents != null && bioevents.length > 0) {
+		for (BioEvent be : bioevents) {
+			// transform the bioEvent trigger/delay to math Event
+			Expression mathTriggerExpr = getIdentifierSubstitutions(be.getTriggerExpression(), VCUnitDefinition.UNIT_DIMENSIONLESS, null);
+			Delay mathDelay = null;
+			if (be.getDelay() != null) {
+				boolean bUseValsFromTriggerTime = be.getDelay().useValuesFromTriggerTime();
+				Expression mathDelayExpr = getIdentifierSubstitutions(be.getDelay().getDurationExpression(), VCUnitDefinition.UNIT_s, null);
+				mathDelay = new Delay(bUseValsFromTriggerTime, mathDelayExpr);
+			}
+			// now deal with (bio)event Assignment translation to math EventAssignment 
+			ArrayList<EventAssignment> eventAssignments = be.getEventAssignments();
+			ArrayList<Event.EventAssignment> mathEventAssignmentsList = new ArrayList<Event.EventAssignment>(); 
+			for (EventAssignment ea : eventAssignments) {
+				SymbolTableEntry ste = simContext.getEntry(ea.getTarget().getName());
+				VCUnitDefinition eventAssignVarUnit = getEventVarUnit(ste);
+				Variable variable = varHash.getVariable(ste.getName());
+				Event.EventAssignment mathEA = new Event.EventAssignment(variable, getIdentifierSubstitutions(ea.getAssignmentExpression(), eventAssignVarUnit, null));
+				mathEventAssignmentsList.add(mathEA);
+			}
+			// use the translated trigger, delay and event assignments to create (math) event
+			Event mathEvent = new Event(be.getName(), mathTriggerExpr, mathDelay, mathEventAssignmentsList);
+			mathDesc.addEvent(mathEvent);
+		}
+	}
+	
 	if (!mathDesc.isValid()){
 		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 	}
@@ -2439,6 +2454,19 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 }
 
+private VCUnitDefinition getEventVarUnit(SymbolTableEntry var) {
+	VCUnitDefinition varUnit = VCUnitDefinition.UNIT_DIMENSIONLESS; 
+	if (var instanceof SpeciesContext) {
+		varUnit = ((SpeciesContext)var).getUnitDefinition();
+	} else if (var instanceof ModelParameter) {
+		varUnit = ((ModelParameter)var).getUnitDefinition();
+	} else if (var instanceof StructureSize) {
+		varUnit = ((StructureSize)var).getUnitDefinition();
+	} else if (var instanceof MembraneVoltage) {
+		varUnit = ((MembraneVoltage)var).getUnitDefinition();
+	}
+	return varUnit;
+}
 /**
  * This method was created in VisualAge.
  */
@@ -2459,7 +2487,8 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
 
-		scm.setPDERequired(isPDERequired(scs.getSpeciesContext()));
+		scm.setPDERequired(simContext.isPDERequired(scs.getSpeciesContext()));
+		scm.setHasEventAssignment(simContext.hasEventAssignment(scs.getSpeciesContext()));
 //		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
 //		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){
@@ -2572,7 +2601,7 @@ private void refreshVariables() throws MappingException {
 	}
 
 	//
-	// non-constant independant variables require either a membrane or volume variable
+	// non-constant independent variables require either a membrane or volume variable
 	//
 	enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
@@ -2599,7 +2628,6 @@ private void refreshVariables() throws MappingException {
 			mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
 		}
 	}
-
 }
 
 

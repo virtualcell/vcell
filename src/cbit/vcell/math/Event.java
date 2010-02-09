@@ -220,6 +220,9 @@ public class Event implements Matchable, Serializable {
 		}
 		
 		Event event = (Event) obj;		
+		if (!Compare.isEqual(getName(),event.getName())){
+			return false;
+		}
 		if (!Compare.isEqual(triggerExpression, event.triggerExpression)) {
 			return false;
 		}

@@ -5,7 +5,9 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
@@ -30,7 +32,9 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.math.Event;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OutputFunctionContext;
@@ -42,6 +46,7 @@ import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
@@ -227,6 +232,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private java.lang.String fieldDescription = new String();
 	private double fieldTemperatureKelvin = 300;
 	private ElectricalStimulus[] fieldElectricalStimuli = new ElectricalStimulus[0];
+	private BioEvent[] fieldBioEvents = null;
 	private Electrode fieldGroundElectrode = null;
 	private SimulationContextNameScope nameScope = new SimulationContextNameScope();
 	private transient BioModel bioModel = null;
@@ -387,6 +393,14 @@ public void addAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoExcept
 	}
 }
 
+public void addBioEvent(BioEvent bioEvent) throws PropertyVetoException {
+	if (fieldBioEvents==null){
+		setBioEvents(new BioEvent[] { bioEvent });
+	}else{
+		BioEvent[] newBioEvents = (BioEvent[])BeanUtils.addElement(fieldBioEvents, bioEvent);
+		setBioEvents(newBioEvents);
+	}
+}
 
 /**
  * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
@@ -578,6 +592,11 @@ public boolean compareEqual(Matchable object) {
 	if (!Compare.isEqualOrNull(fieldAnalysisTasks,simContext.fieldAnalysisTasks)){
 		return false;
 	}
+	
+	if (!Compare.isEqualOrNull(fieldBioEvents,simContext.fieldBioEvents)){
+		return false;
+	}
+
 	if (!outputFunctionContext.compareEqual(simContext.outputFunctionContext)){
 		return false;
 	}
@@ -776,6 +795,9 @@ public AnalysisTask[] getAnalysisTasks() {
 	return fieldAnalysisTasks;
 }
 
+public BioEvent[] getBioEvents() {
+	return fieldBioEvents;
+}
 
 /**
  * Gets the analysisTasks index property (cbit.vcell.modelopt.AnalysisTask) value.
@@ -1325,6 +1347,12 @@ public void refreshDependencies() {
 			fieldAnalysisTasks[i].refreshDependencies();
 		}
 	}
+	
+	if (fieldBioEvents != null) {
+		for (int i = 0; i < fieldBioEvents.length; i++) {
+			fieldBioEvents[i].refreshDependencies();
+		}
+	}
 }
 
 
@@ -1430,6 +1458,20 @@ public void removeAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoExc
 	setAnalysisTasks(newAnalysisTasks);
 }
 
+public void removeBioEvent(BioEvent bioEvent) throws PropertyVetoException {
+	boolean bFound = false;
+	for (int i = 0; fieldBioEvents!=null && i < fieldBioEvents.length; i++){
+		if (fieldBioEvents[i] == bioEvent){
+			bFound = true;
+			break;
+		}
+	}
+	if (!bFound){
+		throw new RuntimeException("event not found");
+	}
+	BioEvent[] newBioEvents = (BioEvent[])BeanUtils.removeElement(fieldBioEvents,bioEvent);
+	setBioEvents(newBioEvents);
+}
 
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
@@ -1493,6 +1535,12 @@ public void setAnalysisTasks(AnalysisTask[] analysisTasks) throws java.beans.Pro
 	firePropertyChange("analysisTasks", oldValue, analysisTasks);
 }
 
+public void setBioEvents(BioEvent[] bioEvents) throws java.beans.PropertyVetoException {
+	BioEvent[] oldValue = fieldBioEvents;
+	fireVetoableChange("bioevents", oldValue, bioEvents);
+	fieldBioEvents = bioEvents;
+	firePropertyChange("bioevents", oldValue, bioEvents);
+}
 
 /**
  * Insert the method's description here.
@@ -1730,7 +1778,38 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		Simulation newSimulations[] = extractLocalSimulations((Simulation[])evt.getNewValue());
 		fireVetoableChange("simulations",oldSimulations,newSimulations);
 	}
+	
+	if (evt.getSource() == this && evt.getPropertyName().equals("bioevents")) {
+		BioEvent newBioevents[] = (BioEvent[])evt.getNewValue();
+		if (newBioevents==null){
+			throw new PropertyVetoException("Bioevents cannot be null",evt);
+		}
+		//
+		// check that names are not duplicated and that no names are ReservedSymbols
+		//
+		HashSet<String> nameSet = new HashSet<String>();
+		for (int i=0;i<newBioevents.length;i++){
+			String name = newBioevents[i].getName();
+			if (nameSet.contains(name)){
+				throw new PropertyVetoException("multiple bioevents with same name '"+name+"' defined",evt);
+			}
+			if (ReservedSymbol.fromString(name)!=null){
+				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a bioevent name",evt);
+			}
+			nameSet.add(name);
+		}
+	}
 }
+
+public BioEvent getBioEvent(String name) {
+	for (BioEvent be : fieldBioEvents) {
+		if (be.getName().equals(name)) {
+			return be;
+		}
+	}	
+	return null;
+}
+
 
 public void checkValidity() throws MappingException
 {
@@ -1887,4 +1966,98 @@ public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
 	};
 	return stef;
 }
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (8/8/01 3:46:23 PM)
+ * @param speciesContext cbit.vcell.model.SpeciesContext
+ * @return boolean
+ */
+protected boolean isPDERequired(SpeciesContext speciesContext) {
+	//
+	// compartmental models never need diffusion
+	//
+	if (getGeometryContext().getGeometry().getDimension() == 0){
+		return false;
+	}
+
+	//
+	// if speciesContext is from a structure which is not spatially resolved, then it won't diffuse (PDE not required).
+	//
+	StructureMapping sm = getGeometryContext().getStructureMapping(speciesContext.getStructure());
+	if (sm instanceof FeatureMapping){
+		if (!((FeatureMapping)sm).getResolved()){
+			return false;
+		}
+	} else if (sm instanceof MembraneMapping){
+		if (!((MembraneMapping)sm).getResolved(this)){
+			return false;
+		}
+	} else {
+		return false;	// not Feature and not Membrane ... can't diffuse now.
+	}
+
+	//
+	// check if any resolved speciesContext from the same species needs diffusion/advection
+	//
+	boolean bPDENeeded = false;
+	SpeciesContext speciesContexts[] = getModel().getSpeciesContexts();
+	for (int i = 0; i < speciesContexts.length; i++){
+		if (speciesContexts[i].getSpecies().compareEqual(speciesContext.getSpecies())){
+			StructureMapping otherSM = getGeometryContext().getStructureMapping(speciesContexts[i].getStructure());
+			SpeciesContextSpec otherSCS = getReactionContext().getSpeciesContextSpec(speciesContexts[i]);
+			//
+			// another speciesContext needs diffusion if it is from a spatially resolved structure and has non-zero diffusion
+			//
+			if (otherSM instanceof FeatureMapping && ((FeatureMapping)otherSM).getResolved() && (otherSCS.isDiffusing() || otherSCS.isAdvecting())){
+				bPDENeeded = true;
+			}
+			if (otherSM instanceof MembraneMapping && ((MembraneMapping)otherSM).getResolved(this) && (otherSCS.isDiffusing() || otherSCS.isAdvecting())){
+				bPDENeeded = true;
+			}
+		}
+	}
+	
+	//
+	// if this speciesContextSpec specifically disables diffusion, but is required elsewhere to make "global" PDE work,
+	// then tell it that diffusion is required and give it a zero diffusion rate.
+	//
+	if (bPDENeeded){
+		System.out.println("WARNING: isDiffusionRequired("+speciesContext+"), diffusion is disabled for "+speciesContext+" but needed for resolved species "+speciesContext.getSpecies());
+	}
+
+	return bPDENeeded;
+}
+
+protected boolean hasEventAssignment(SpeciesContext speciesContext) {
+	//
+	// spatial and stochastic models don't have events yet.
+	//
+	if (getGeometryContext().getGeometry().getDimension() != 0 || isStoch()){
+		return false;
+	}
+
+	SpeciesContextSpec speciesContextSpec = getReactionContext().getSpeciesContextSpec(speciesContext);
+	//
+	// check if speciesContext is a target variable in the (bio)events in the simContext
+	//
+	BioEvent[] eventsList = getBioEvents();
+	if (eventsList != null && eventsList.length > 0) {
+		for (BioEvent event : eventsList) {
+			ArrayList<EventAssignment> eventAssgnments = event.getEventAssignments();
+			for (EventAssignment eventAssign : eventAssgnments) {
+				if (eventAssign.getTarget() == speciesContext) {
+					if (!speciesContextSpec.isConstant()) {
+						return true;
+					} else {
+						throw new RuntimeException("Cannot have event for a species that is clamped.");
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
 }

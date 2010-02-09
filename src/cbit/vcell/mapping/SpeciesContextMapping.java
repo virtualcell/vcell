@@ -18,8 +18,9 @@ public class SpeciesContextMapping {
 	//
 	// input to structural analysis
 	//
-	private boolean bFastParticipant  = false;
-	private boolean bPDERequired	  = false;
+	private boolean bFastParticipant    = false;
+	private boolean bPDERequired	    = false;
+	private boolean bHasEventAssignment = false;
 //	private boolean bAdvecting        = false;
 //	private boolean bDiffusing        = false;
 
@@ -93,6 +94,10 @@ public boolean isPDERequired() {
 	return this.bPDERequired;
 }
 
+public boolean hasEventAssignment() {
+	return this.bHasEventAssignment;
+}
+
 /*
 public boolean isDiffusing() {
 	return this.bDiffusing;
@@ -123,6 +128,10 @@ public void setFastInvariant(Expression fastInvariantExpression) {
 
 public void setPDERequired(boolean pdeRequired) {
 	this.bPDERequired = pdeRequired;
+}
+
+public void setHasEventAssignment(boolean hasEventAssignment) {
+	this.bHasEventAssignment = hasEventAssignment;
 }
 
 /*
