@@ -7,10 +7,12 @@ import java.awt.BasicStroke;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
@@ -747,8 +749,8 @@ private javax.swing.JLabel getJLabelTitle() {
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
 			ivjJLabelTitle.setText("Title");
-			ivjJLabelTitle.setForeground(java.awt.Color.black);
-			ivjJLabelTitle.setFont(new java.awt.Font("Arial", 1, 12));
+			ivjJLabelTitle.setFont(ivjJLabelTitle.getFont().deriveFont(Font.BOLD));
+			ivjJLabelTitle.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
 			ivjJLabelTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			// user code begin {1}
 			// user code end

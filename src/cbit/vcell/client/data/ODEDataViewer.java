@@ -11,7 +11,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
-import cbit.plot.Plot2D;
 import cbit.plot.PlotPane;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.server.DataManager;
@@ -36,10 +35,9 @@ public class ODEDataViewer extends DataViewer {
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == ODEDataViewer.this && (evt.getPropertyName().equals("odeSolverResultSet"))) 
-				connPtoP1SetTarget();
 			if (evt.getSource() == ODEDataViewer.this && (evt.getPropertyName().equals("odeSolverResultSet")))
 			{
+				connPtoP1SetTarget();
 				if(getOdeSolverResultSet()!=null)
 				{
 					iniHistogramDisplay();
@@ -47,9 +45,6 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 			}
 			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("odeSolverResultSet"))) 
 				connPtoP1SetSource();
-			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("singleXPlot2D"))) 
-				connEtoM2(evt);
-			//add March 29, 2007. to display histogram,which is not singleXPlot2D.
 			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("Plot2D"))) 
 				connEtoM2(evt);
 		};
@@ -346,16 +341,13 @@ public void iniHistogramDisplay()
 
 @Override
 public void showTimePlotMultipleScans(DataManager dataManager) {
-	int[] yIndices = getODESolverPlotSpecificationPanel1().getYIndices();
-	if (yIndices.length > 1) {
-		DialogUtils.showErrorDialog(this, "Please choose only one variable to do time plot with multiple parameter value sets!");
+	String[] selectedVariableNames = getODESolverPlotSpecificationPanel1().getSelectedVariableNames();
+	if (selectedVariableNames.length == 0) {
+		DialogUtils.showErrorDialog(this, "Please choose one or more variables!");
 		return;
 	}
-	Plot2D plot2d = getODESolverPlotSpecificationPanel1().getPlot2D();
-	String[] plotNames = plot2d.getPlotNames();
-	String varname = plotNames[yIndices[0]];
-	ODETimePlotMultipleScansPanel panel = new ODETimePlotMultipleScansPanel(varname, getSimulation(), dataManager);
-	final JInternalFrameEnhanced frame = new JInternalFrameEnhanced("Time Plot with multiple parameter value sets for Variable [" + varname + "]", 
+	ODETimePlotMultipleScansPanel panel = new ODETimePlotMultipleScansPanel(selectedVariableNames, getSimulation(), dataManager);
+	final JInternalFrameEnhanced frame = new JInternalFrameEnhanced("Time Plot with multiple parameter value sets", 
 			true, true, true, true);
 	frame.add(panel);
 	frame.setSize(600, 600);
