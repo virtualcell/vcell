@@ -1,7 +1,6 @@
 package cbit.vcell.client.data;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -27,6 +26,7 @@ import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -41,7 +41,7 @@ public class ODETimePlotMultipleScansPanel extends JPanel {
 	private DataManager dataManager = null;
 	private JTable scanChoiceTable = null;
 	private PlotPane plotPane = null;
-	private String variableName = null;
+	private String[] variableNames = null;
 
 /**
  * Insert the method's description here.
@@ -49,8 +49,8 @@ public class ODETimePlotMultipleScansPanel extends JPanel {
  * @param simulation cbit.vcell.solver.Simulation
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  */
-public ODETimePlotMultipleScansPanel(String varname, Simulation arg_simulation, DataManager arg_dataManager) {
-	variableName = varname;
+public ODETimePlotMultipleScansPanel(String[] varnames, Simulation arg_simulation, DataManager arg_dataManager) {
+	variableNames = varnames;
 	simulation = arg_simulation;
 	this.dataManager = arg_dataManager;
 	initialize();
@@ -65,20 +65,9 @@ private void initialize()  {
 
 	setLayout(new BorderLayout());
 	int scanCount = simulation.getScanCount();
-
-	JPanel northPanel = new JPanel();
-	northPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-	
-	JLabel title = new JLabel("Time Plot ---- " + variableName);
-	title.setHorizontalAlignment(SwingConstants.LEFT);
-	title.setFont(title.getFont().deriveFont(Font.BOLD));
-	northPanel.add(title);	
-	
-	add(northPanel, BorderLayout.NORTH);	
 	
 	plotPane = new PlotPane();
 	add(plotPane, BorderLayout.CENTER);
-
 	
 	JPanel parameterPanel = new JPanel();
 	parameterPanel.setLayout(new BorderLayout());
@@ -181,34 +170,45 @@ private void updateScanParamChoices(){
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			int[] jobIndexes = scanChoiceTable.getSelectedRows();
 			VCSimulationIdentifier vcSimulationIdentifier = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-			PlotData[] plotDatas = new PlotData[jobIndexes.length];
-			String[] plotNames = new String[jobIndexes.length];
+			int plotCount = jobIndexes.length * variableNames.length;
+			SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[plotCount];
+			PlotData[] plotDatas = new PlotData[plotCount];
+			String[] plotNames = new String[plotCount];
+			int plotIndex = 0;
 			for (int ji = 0; ji < jobIndexes.length; ji ++) {
 				int jobIndex = jobIndexes[ji];
 				final VCDataIdentifier vcdid = new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
 				ODEDataManager odeDatamanager = new ODEDataManager(dataManager.getVCDataManager(), vcdid);
-				plotNames[ji] = variableName + " -- Job " + jobIndex;
 				ODESolverResultSet odeSolverResultSet = odeDatamanager.getODESolverResultSet();
 				int tcol = odeSolverResultSet.findColumn(ReservedSymbol.TIME.getName());
-				int varcol = odeSolverResultSet.findColumn(variableName);
 				double[] tdata = odeSolverResultSet.extractColumn(tcol);
-				double[] vdata = odeSolverResultSet.extractColumn(varcol);
-				plotDatas[ji] = new PlotData(tdata, vdata);
+				for (int v = 0; v < variableNames.length; v ++) {
+					String varname = variableNames[v];
+					int varcol = odeSolverResultSet.findColumn(varname);
+					double[] vdata = odeSolverResultSet.extractColumn(varcol);
+					plotNames[plotIndex] = varname + " -- Job " + jobIndex;
+					plotDatas[plotIndex] = new PlotData(tdata, vdata);
+					symbolTableEntries[plotIndex] = simulation.getMathDescription().getVariable(varname);
+					plotIndex ++;
+				}
 			}
 			hashTable.put("plotDatas", plotDatas);
 			hashTable.put("plotNames", plotNames);
+			hashTable.put("symbolTableEntries", symbolTableEntries);
 		}
 	};
-	AsynchClientTask task2 = new AsynchClientTask("show results", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+	AsynchClientTask task2 = new AsynchClientTask("show results", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {	
 			PlotData[] plotDatas = (PlotData[])hashTable.get("plotDatas");
 			String[] plotNames = (String[])hashTable.get("plotNames");
+			SymbolTableEntry[] symbolTableEntries = (SymbolTableEntry[])hashTable.get("symbolTableEntries");
 			if (plotDatas == null || plotNames == null) {
 				plotPane.setPlot2D(null);
 				return;
 			}
-			Plot2D plot2D = new Plot2D(null, plotNames, plotDatas, new String[] {null, "t", ""});				
+			Plot2D plot2D = new Plot2D(symbolTableEntries, plotNames, plotDatas, 
+					new String[] {"Time Plot", ReservedSymbol.TIME.getName(), ""});				
 			plotPane.setPlot2D(plot2D);
 		}
 	};

@@ -21,14 +21,14 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.plot.Plot2D;
-import cbit.plot.PlotData;
 import cbit.plot.PlotPane;
+import cbit.plot.SingleXPlot2D;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.SampledCurve;
-import cbit.vcell.math.VolVariable;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
@@ -90,29 +90,14 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 			final int numSelectedSpatialPoints = pointVector.size();
 			int[][] indices = new int[numSelectedVariables][numSelectedSpatialPoints];
 			//
-			final String[] plotNames = new String[numSelectedVariables * numSelectedSpatialPoints];
-			final SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[numSelectedVariables * numSelectedSpatialPoints];
 			for (int i = 0; i < numSelectedSpatialPoints; i++){
 				for (int v = 0; v < numSelectedVariables; v ++) {
-					String varName = selectedVarNames[v];
 					if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
 						SpatialSelectionVolume ssv = (SpatialSelectionVolume)pointVector.get(i);
 						indices[v][i] = ssv.getIndex(0);
 					}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
 						SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)pointVector.get(i);
 						indices[v][i] = ssm.getIndex(0);
-					}
-					int plotIndex = v * numSelectedSpatialPoints + i;
-					plotNames[plotIndex] = varName + " at P["+i+"]";
-					try{
-						if(simulation != null && simulation.getMathDescription() != null){
-							symbolTableEntries[plotIndex] = simulation.getMathDescription().getEntry(varName);
-						}
-						if(symbolTableEntries[plotIndex] == null){
-							symbolTableEntries[plotIndex] = new VolVariable(varName);
-						}
-					}catch(ExpressionBindingException e){
-						e.printStackTrace();
 					}
 				}
 			}
@@ -135,17 +120,24 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(PDEDataViewer.StringKey_timeSeriesJobResults);
-					PlotData[] plotDatas = new PlotData[numSelectedVariables * numSelectedSpatialPoints];
-					int plotCount = 0;
+					int plotCount = numSelectedVariables * numSelectedSpatialPoints;
+					SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[plotCount];
+					String[] plotNames = new String[plotCount];
+					double[][] plotDatas = new double[1 + plotCount][];
+					plotDatas[0] = timePoints;
+					int plotIndex = 0;
 					for (int v = 0; v < numSelectedVariables; v ++) {
 						String varName = selectedVarNames[v];
 						double[][] data = tsJobResultsNoStats.getTimesAndValuesForVariable(varName);
 						for (int i = 1; i < data.length; i++) {
-							plotDatas[plotCount ++] = new PlotData(data[0], data[i]);
+							symbolTableEntries[plotIndex] = simulation.getMathDescription().getEntry(varName);
+							plotNames[plotIndex] = varName + " at P[" + (i-1) + "]";
+							plotDatas[plotIndex + 1] = data[i];
+							plotIndex ++;
 						}
 					}
-					Plot2D plot2D = new Plot2D(symbolTableEntries, plotNames, plotDatas, 
-							new String[] {null, "t", ""});				
+					Plot2D plot2D = new SingleXPlot2D(symbolTableEntries, ReservedSymbol.TIME.getName(), plotNames, plotDatas, 
+							new String[] {"Time Plot", ReservedSymbol.TIME.getName(), ""});				
 					plotPane.setPlot2D(plot2D);
 				}						
 			};		
@@ -176,12 +168,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 			String point = "P[" + i +"]  (" + niceCoordinateString(tp)+")";
 			pointListModel.addElement(point);
 			try{				
-				if(simulation != null && simulation.getMathDescription() != null){
-					symbolTableEntries[0] = simulation.getMathDescription().getEntry(varName);
-				}
-				if(symbolTableEntries[0] == null){
-					symbolTableEntries[0] = new VolVariable(varName);
-				}
+				symbolTableEntries[0] = simulation.getMathDescription().getEntry(varName);
 			}catch(ExpressionBindingException e){
 				e.printStackTrace();
 			}
@@ -194,14 +181,9 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		pointJList.setSelectionForeground(Color.black);
 		
 		plotPane = new PlotPane();
-		PlotData[] plotDatas = new PlotData[pointVector.size()];
-		int plotCount = 0;
-		double[][] data = tsJobResultsNoStats.getTimesAndValuesForVariable(varName);
-		for (int i = 1; i < data.length; i++) {
-			plotDatas[plotCount ++] = new PlotData(data[0], data[i]);
-		}		
-		Plot2D plot2D = new Plot2D(symbolTableEntries, plotNames, plotDatas, 
-				new String[] {null, "t", ""});				
+		double[][] plotDatas = tsJobResultsNoStats.getTimesAndValuesForVariable(varName);
+		Plot2D plot2D = new SingleXPlot2D(symbolTableEntries, ReservedSymbol.TIME.getName(), plotNames, plotDatas, 
+				new String[] {"Time Plot", ReservedSymbol.TIME.getName(), ""});				
 		plotPane.setPlot2D(plot2D);
 		
 		DefaultListModel dlm = new DefaultListModel();

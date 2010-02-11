@@ -1400,7 +1400,7 @@ private javax.swing.JLabel getYAxisLabel() {
  * @return The yIndices property value.
  * @see #setYIndices
  */
-public int[] getYIndices() {
+private int[] getYIndices() {
 	return fieldYIndices;
 }
 
@@ -2093,4 +2093,12 @@ private void disableOrEnableFunctionButtons() {
 	getDeleteFunctionButton().setEnabled(false);
 }
 
+public String[] getSelectedVariableNames() {
+	Object[] selectedValues = getYAxisChoice().getSelectedValues();
+	String[] selectedNames = new String[selectedValues.length];
+	for (int i = 0; i < selectedNames.length; i++) {
+		selectedNames[i] = selectedValues[i].toString();
+	}
+	return selectedNames;
+}
 }
