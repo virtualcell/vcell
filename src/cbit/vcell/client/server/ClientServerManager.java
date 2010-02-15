@@ -1,6 +1,5 @@
 package cbit.vcell.client.server;
-import java.awt.Component;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -9,14 +8,22 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
 
 import cbit.rmi.event.RemoteMessageHandler;
-import cbit.vcell.export.server.*;
-import cbit.vcell.field.FieldDataFileOperationResults;
-import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.clientdb.*;
-import cbit.vcell.server.*;
-import cbit.vcell.desktop.controls.*;
+import cbit.vcell.clientdb.ClientDocumentManager;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.controls.SessionManager;
+import cbit.vcell.export.server.ExportController;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.server.AuthenticationException;
+import cbit.vcell.server.ConnectionException;
+import cbit.vcell.server.DataSetController;
+import cbit.vcell.server.RMIVCellConnectionFactory;
+import cbit.vcell.server.SimulationController;
+import cbit.vcell.server.UserMetaDbServer;
+import cbit.vcell.server.VCellConnection;
+import cbit.vcell.server.VCellConnectionFactory;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2004 4:31:18 PM)
@@ -25,8 +32,7 @@ import cbit.vcell.desktop.controls.*;
 public class ClientServerManager implements SessionManager,DataSetControllerProvider {
 
 
-	public static final String ONLINEHELP_URL_STRING = "http://www.vcell.org/onlinehelp";
-	public static final String REGISTER_URL_STRING = "http://www.vcell.org/register";
+	public static final String ONLINEHELP_URL_STRING = "http://www.vcell.org/vcell_software/user_materials.html";
 	public static final String BAD_CONNECTION_MESSAGE1 = "Your computer is unable to connect to the Virtual Cell server";
 	public static final String BAD_CONNECTION_MESSAGE2 = "Please try again later.\n\nIf problem persists, it may be due to a firewall problem. Contact your network administrator and send the error message below to vcell_support@uchc.edu.";						
 
