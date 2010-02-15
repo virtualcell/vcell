@@ -3,11 +3,6 @@ package cbit.vcell.solver;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.*;
-import cbit.vcell.parser.*;
-import cbit.vcell.solver.stoch.StochHybridOptions;
-import cbit.vcell.solver.stoch.StochSimOptions;
-import cbit.vcell.math.VCML;
 import java.beans.PropertyVetoException;
 
 import org.vcell.util.BeanUtils;
@@ -16,12 +11,28 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.VCML;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.stoch.StochHybridOptions;
+import cbit.vcell.solver.stoch.StochSimOptions;
+
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:15 PM)
  * @author: John Wagner
  */
 public class SolverTaskDescription implements Matchable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener, java.io.Serializable {
+	public static final String PROPERTY_ERROR_TOLERANCE = "errorTolerance";
+	public static final String PROPERTY_USE_SYMBOLIC_JACOBIAN = "useSymbolicJacobian";
+	public static final String PROPERTY_OUTPUT_TIME_SPEC = "outputTimeSpec";
+	public static final String PROPERTY_SOLVER_DESCRIPTION = "solverDescription";
+	public static final String PROPERTY_TIME_BOUNDS = "timeBounds";
+	public static final String PROPERTY_TIME_STEP = "timeStep";
+	public static final String PROPERTY_STOCH_SIM_OPTIONS = "StochSimOptions";
+	public static final String PROPERTY_STOP_AT_SPATIALLY_UNIFORM = "StopAtSpatiallyUniform";
+	
+	
 	//  Or TASK_NONE for use as a default?
 	public static final int TASK_UNSTEADY = 0;
 	public static final int TASK_STEADY   = 1;
@@ -118,15 +129,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
  * is used when creating a new SolverTaskDescription.
@@ -156,22 +158,12 @@ public SolverTaskDescription(Simulation simulation) {
 	setSimulation(simulation);
 }
 
-
 /**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
-
-
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
-}
-
 
 /**
  * This method was created in VisualAge.
@@ -204,23 +196,6 @@ public boolean compareEqual(Matchable object) {
 	return (false);
 }
 
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
@@ -228,43 +203,10 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(evt);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, int oldValue, int newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
 /**
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
 public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
@@ -580,7 +522,7 @@ private boolean isAllowableSolverDescription(SolverDescription argSolverDescript
  *   and the property that has changed.
  */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == this && (evt.getPropertyName().equals("solverDescription"))) {
+	if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_SOLVER_DESCRIPTION))) {
 		try {
 			SolverDescription solverDescription = getSolverDescription();
 			if (solverDescription.equals(SolverDescription.SundialsPDE) || solverDescription.isSemiImplicitPdeSolver()) {
@@ -718,7 +660,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 			//  code allows us to read the old format.
 			if (token.equalsIgnoreCase(VCML.MaxTime)) {
 				token = tokens.nextToken();
-				double dummyMaxTime = Double.parseDouble(token);
+//				double dummyMaxTime = Double.parseDouble(token);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.TimeBounds)) {
@@ -817,28 +759,11 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
-
 /**
  * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
-}
-
-
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
 }
 
 
@@ -850,9 +775,9 @@ public synchronized void removeVetoableChangeListener(java.lang.String propertyN
  */
 public void setErrorTolerance(ErrorTolerance errorTolerance) throws java.beans.PropertyVetoException {
 	ErrorTolerance oldValue = fieldErrorTolerance;
-	fireVetoableChange("errorTolerance", oldValue, errorTolerance);
+	fireVetoableChange(PROPERTY_ERROR_TOLERANCE, oldValue, errorTolerance);
 	fieldErrorTolerance = errorTolerance;
-	firePropertyChange("errorTolerance", oldValue, errorTolerance);
+	firePropertyChange(PROPERTY_ERROR_TOLERANCE, oldValue, errorTolerance);
 }
 
 
@@ -864,9 +789,9 @@ public void setErrorTolerance(ErrorTolerance errorTolerance) throws java.beans.P
  */
 public void setOutputTimeSpec(OutputTimeSpec outputTimeSpec) throws java.beans.PropertyVetoException {
 	OutputTimeSpec oldValue = fieldOutputTimeSpec;
-	fireVetoableChange("outputTimeSpec", oldValue, outputTimeSpec);
+	fireVetoableChange(PROPERTY_OUTPUT_TIME_SPEC, oldValue, outputTimeSpec);
 	fieldOutputTimeSpec = outputTimeSpec;
-	firePropertyChange("outputTimeSpec", oldValue, outputTimeSpec);
+	firePropertyChange(PROPERTY_OUTPUT_TIME_SPEC, oldValue, outputTimeSpec);
 }
 
 
@@ -875,8 +800,8 @@ public void setOutputTimeSpec(OutputTimeSpec outputTimeSpec) throws java.beans.P
  * @param sensitivityParameter The new value for the property.
  * @see #getSensitivityParameter
  */
-public void setSensitivityParameter(cbit.vcell.math.Constant sensitivityParameter) throws java.beans.PropertyVetoException {
-	cbit.vcell.math.Constant oldValue = fieldSensitivityParameter;
+public void setSensitivityParameter(Constant sensitivityParameter) throws java.beans.PropertyVetoException {
+	Constant oldValue = fieldSensitivityParameter;
 	fireVetoableChange("sensitivityParameter", oldValue, sensitivityParameter);
 	fieldSensitivityParameter = sensitivityParameter;
 	firePropertyChange("sensitivityParameter", oldValue, sensitivityParameter);
@@ -908,9 +833,9 @@ private void setSimulation(Simulation simulation) {
  */
 public void setSolverDescription(SolverDescription solverDescription) throws java.beans.PropertyVetoException {
 	SolverDescription oldValue = fieldSolverDescription;
-	fireVetoableChange("solverDescription", oldValue, solverDescription);
+	fireVetoableChange(PROPERTY_SOLVER_DESCRIPTION, oldValue, solverDescription);
 	fieldSolverDescription = solverDescription;
-	firePropertyChange("solverDescription", oldValue, solverDescription);
+	firePropertyChange(PROPERTY_SOLVER_DESCRIPTION, oldValue, solverDescription);
 }
 
 
@@ -920,7 +845,9 @@ public void setSolverDescription(SolverDescription solverDescription) throws jav
  * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
  */
 public void setStochOpt(StochSimOptions newStochOpt) {
+	StochSimOptions oldValue = fieldStochOpt;
 	fieldStochOpt = newStochOpt;
+	firePropertyChange(PROPERTY_STOCH_SIM_OPTIONS, oldValue, newStochOpt);
 }
 
 
@@ -946,9 +873,9 @@ public void setTimeBounds(TimeBounds timeBounds) throws java.beans.PropertyVetoE
 	//  Only here to ensure it is being used correctly.
 	// cbit.util.Assertion.assertNotNull(timeBounds);
 	TimeBounds oldValue = fieldTimeBounds;
-	fireVetoableChange("timeBounds", oldValue, timeBounds);
+	fireVetoableChange(PROPERTY_TIME_BOUNDS, oldValue, timeBounds);
 	fieldTimeBounds = timeBounds;
-	firePropertyChange("timeBounds", oldValue, timeBounds);
+	firePropertyChange(PROPERTY_TIME_BOUNDS, oldValue, timeBounds);
 }
 
 
@@ -962,9 +889,9 @@ public void setTimeStep(TimeStep timeStep) throws java.beans.PropertyVetoExcepti
 	//  Only here to ensure it is being used correctly.
 	// cbit.util.Assertion.assertNotNull(timeStep);
 	TimeStep oldValue = fieldTimeStep;
-	fireVetoableChange("timeStep", oldValue, timeStep);
+	fireVetoableChange(PROPERTY_TIME_STEP, oldValue, timeStep);
 	fieldTimeStep = timeStep;
-	firePropertyChange("timeStep", oldValue, timeStep);
+	firePropertyChange(PROPERTY_TIME_STEP, oldValue, timeStep);
 }
 
 
@@ -976,7 +903,7 @@ public void setTimeStep(TimeStep timeStep) throws java.beans.PropertyVetoExcepti
 public void setUseSymbolicJacobian(boolean useSymbolicJacobian) {
 	boolean oldValue = fieldUseSymbolicJacobian;
 	fieldUseSymbolicJacobian = useSymbolicJacobian;
-	firePropertyChange("useSymbolicJacobian", new Boolean(oldValue), new Boolean(useSymbolicJacobian));
+	firePropertyChange(PROPERTY_USE_SYMBOLIC_JACOBIAN, new Boolean(oldValue), new Boolean(useSymbolicJacobian));
 }
 
 
@@ -986,7 +913,7 @@ public void setUseSymbolicJacobian(boolean useSymbolicJacobian) {
  *   and the property that has changed.
  */
 public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	if (evt.getSource() == this && evt.getPropertyName().equals("solverDescription")) {
+	if (evt.getSource() == this && evt.getPropertyName().equals(PROPERTY_SOLVER_DESCRIPTION)) {
 		SolverDescription newSolverDescription = (SolverDescription)evt.getNewValue();
 		if (!isAllowableSolverDescription(newSolverDescription)){
 			throw new java.beans.PropertyVetoException("solverDescription '"+newSolverDescription.getDisplayLabel()+"' is not appropriate",evt);
@@ -999,6 +926,8 @@ public boolean isStopAtSpatiallyUniform() {
 }
 
 public void setStopAtSpatiallyUniform(boolean stopAtSpatiallyUniform) {
+	boolean oldValue = bStopAtSpatiallyUniform;
 	bStopAtSpatiallyUniform = stopAtSpatiallyUniform;
+	firePropertyChange(PROPERTY_STOP_AT_SPATIALLY_UNIFORM, oldValue, bStopAtSpatiallyUniform);
 }
 }

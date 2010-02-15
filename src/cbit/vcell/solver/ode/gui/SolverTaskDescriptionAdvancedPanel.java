@@ -4,45 +4,22 @@
 ©*/
 
 package cbit.vcell.solver.ode.gui;
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Insets;
-import java.beans.PropertyVetoException;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.NumberUtils;
-import org.vcell.util.Range;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.UserMessage;
-import cbit.vcell.math.Constant;
-import cbit.vcell.solver.DataProcessingInstructions;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.ExplicitOutputTimeSpec;
-import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 
@@ -51,20 +28,17 @@ import cbit.vcell.solver.stoch.StochSimOptions;
  * Creation date: (8/19/2000 8:59:25 PM)
  * @author: John Wagner
  */
-public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
-	private javax.swing.JPanel ivjPanel2 = null;
+public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
+	private javax.swing.JPanel ivjSolverPanel = null;
 	private javax.swing.JLabel ivjIntegratorLabel = null;
-	private javax.swing.JTextField ivjKeepEveryTextField = null;
-	private javax.swing.JLabel ivjPointsLabel = null;
-	Constant fieldSensitivityParameter = null;
-	private javax.swing.JTextField ivjKeepAtMostTextField = null;
+	
 	private ErrorTolerancePanel ivjErrorTolerancePanel = null;
 	private TimeBoundsPanel ivjTimeBoundsPanel = null;
 	private TimeStepPanel ivjTimeStepPanel = null;
-	private cbit.vcell.solver.SolverTaskDescription fieldSolverTaskDescription = null;
+	private SolverTaskDescription fieldSolverTaskDescription = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private SolverTaskDescription ivjTornOffSolverTaskDescription = null;
-	private javax.swing.JLabel ivjKeepAtMostLabel = null;
+
 	private javax.swing.JComboBox ivjSolverComboBox = null;
 	private javax.swing.JButton ivjQuestionButton = null;
 	private javax.swing.DefaultComboBoxModel fieldSolverComboBoxModel = null;
@@ -73,27 +47,16 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel imple
 	private boolean ivjConnPtoP4Aligning = false;
 	private boolean ivjConnPtoP7Aligning = false;
 	private Object ivjSolverComboBoxModel = null;
-	private javax.swing.JPanel ivjJPanel1 = null;
-	private javax.swing.JLabel ivjTimeStepUnitsLabel = null;
-	private javax.swing.ButtonGroup ivjbuttonGroup1 = null;
-	private javax.swing.JLabel ivjJLabel3 = null;
-	private javax.swing.JTextField ivjOutputTimesTextField = null;
-	private javax.swing.JRadioButton ivjDefaultOutputRadioButton = null;
-	private javax.swing.JRadioButton ivjExplicitOutputRadioButton = null;
-	private javax.swing.JRadioButton ivjUniformOutputRadioButton = null;
-	private javax.swing.JPanel ivjDefaultOutputPanel = null;
-	private javax.swing.JPanel ivjExplicitOutputPanel = null;
-	private javax.swing.JPanel ivjUniformOutputPanel = null;
-	private javax.swing.JTextField ivjOutputTimeStepTextField = null;
-	private javax.swing.JLabel ivjJLabel4 = null;
+	private OutputOptionsPanel ivjOutputOptionsPanel = null;
+
 	private javax.swing.JLabel ivjJLabelTitle = null;
 	private javax.swing.JRadioButton trajectoryRadioButton = null;
 	private javax.swing.JRadioButton histogramRadioButton = null;
 	private javax.swing.ButtonGroup buttonGroupTrials = null;
 	private javax.swing.JLabel numOfTrialsLabel = null;
 	private javax.swing.JTextField ivjJTextFieldNumOfTrials = null;
-	private javax.swing.JRadioButton ivjCustomizedSeed = null;
-	private javax.swing.JRadioButton ivjRandomSeed = null;
+	private javax.swing.JRadioButton ivjCustomizedSeedRadioButton = null;
+	private javax.swing.JRadioButton ivjRandomSeedRadioButton = null;
 	private javax.swing.ButtonGroup ivjButtonGroupSeed = null;
 	private javax.swing.JTextField ivjJTextFieldCustomSeed = null;
 	
@@ -106,193 +69,95 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel imple
 	private javax.swing.JLabel ivjMSRToleranceLabel = null;
 	private javax.swing.JTextField ivjMSRToleranceTextField = null;
 	private javax.swing.JLabel ivjSDEToleranceLabel = null;
-	private javax.swing.JTextField ivjSDEToleranceTextField = null;
+	private javax.swing.JTextField ivjSDEToleranceTextField = null;	
 	
-	private JPanel stopSpatiallyUniformPanel = null;
-	private JCheckBox stopSpatiallyUniformCheckBox = null;
-	private JCheckBox dataProcessorCheckBox = null;
-	private JButton editDataProcessorButton = null;
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	
+	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
+		public void actionPerformed(java.awt.event.ActionEvent e) {
+			if (e.getSource() == getCustomizedSeedRadioButton()){
+				connEtoC23(e);
+			}
+			if (e.getSource() == getRandomSeedRadioButton()) {
+				connEtoC24(e);
+			}
+			if (e.getSource() == getTrajectoryButton()){
+				trajectoryButton_ActionPerformed(e);
+			}
+			if (e.getSource() == getHistogramButton()){
+				histogramButton_ActionPerformed(e);
+			}
+			if(e.getSource() == getQuestionButton())
+			{
+				displayHelpInfo();
+			}			
+		}
+		
+		public void propertyChange(java.beans.PropertyChangeEvent evt) {
+			if (evt.getSource() == SolverTaskDescriptionAdvancedPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) { 
+				connPtoP1SetTarget();
+				solverTaskDescriptionAdvancedPanel_SolverTaskDescription();
+			}
+			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_TIME_STEP))) 
+				connPtoP3SetTarget();
+			if (evt.getSource() == getTimeStepPanel() && (evt.getPropertyName().equals("timeStep"))) 
+				connPtoP3SetSource();
+			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_ERROR_TOLERANCE))) 
+				connPtoP4SetTarget();
+			if (evt.getSource() == getErrorTolerancePanel() && (evt.getPropertyName().equals("errorTolerance"))) 
+				connPtoP4SetSource();
+			if (evt.getSource() == getSolverComboBox() && (evt.getPropertyName().equals("model"))) 
+				connPtoP7SetSource();
+			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_SOLVER_DESCRIPTION))) {
+				onPropertyChange_solverDescription();
+			}
+			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_TIME_BOUNDS))) { 
+				connPtoP2SetTarget();
+			}
+			if (evt.getSource() == getTimeBoundsPanel() && (evt.getPropertyName().equals("timeBounds"))) 
+				connPtoP2SetSource();
+			
+			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_STOP_AT_SPATIALLY_UNIFORM))) { 
+				BeanUtils.enableComponents(getErrorTolerancePanel(), getSolverTaskDescription().isStopAtSpatiallyUniform());
+			}			
+		}
+		
+		public void itemStateChanged(java.awt.event.ItemEvent e) {
+			if (e.getSource() == getSolverComboBox()) 
+				connEtoM6(e);
+		}
+		
+		/**
+		 * Method to handle events for the FocusListener interface.
+		 * @param e java.awt.event.FocusEvent
+		 */
+		public void focusGained(java.awt.event.FocusEvent e) {
+		}
 
+
+		/**
+		 * Method to handle events for the FocusListener interface.
+		 * @param e java.awt.event.FocusEvent
+		 */
+		public void focusLost(java.awt.event.FocusEvent e) {
+			if (!e.isTemporary()) {
+				//Stoch options
+				if (e.getSource() == getJTextFieldCustomSeed() 
+						|| e.getSource() == getJTextFieldNumOfTrials()
+						|| e.getSource() == getEpsilonTextField() 
+						|| e.getSource() == getLambdaTextField()
+						|| e.getSource() == getMSRToleranceTextField()
+						|| e.getSource() == getSDEToleranceTextField()) { 
+					updateStochOptions();
+				}
+			}
+		}
+	}
+	
 public SolverTaskDescriptionAdvancedPanel() {
 	super();
 	initialize();
 }
-
-/**
- * Comment
- */
-private void actionOutputOptionButtonState(java.awt.event.ItemEvent itemEvent) throws Exception {
-	
-	if(itemEvent.getStateChange() != java.awt.event.ItemEvent.SELECTED){
-		return;
-	}
-	
-	if (getSolverTaskDescription()==null){
-		return;
-	}
-
-	OutputTimeSpec outputTimeSpec = getSolverTaskDescription().getOutputTimeSpec();
-	if(itemEvent.getSource() == getDefaultOutputRadioButton() && !outputTimeSpec.isDefault()){
-		getSolverTaskDescription().setOutputTimeSpec(new DefaultOutputTimeSpec());
-	} else if(itemEvent.getSource() == getUniformOutputRadioButton() && !outputTimeSpec.isUniform()){
-		double outputTime = 0.0;
-		if (getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) ||
-				getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
-			String floatStr = "" + (float)(((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery() * getSolverTaskDescription().getTimeStep().getDefaultTimeStep());
-			outputTime = Double.parseDouble(floatStr);
-		} else {
-			TimeBounds timeBounds = getTornOffSolverTaskDescription().getTimeBounds();
-			Range outputTimeRange = NumberUtils.getDecimalRange(timeBounds.getStartingTime(), timeBounds.getEndingTime()/100, true, true);
-			outputTime = outputTimeRange.getMax();
-		}
-		getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
-	} else if(itemEvent.getSource() == getExplicitOutputRadioButton() && !outputTimeSpec.isExplicit()){
-		TimeBounds timeBounds = getTornOffSolverTaskDescription().getTimeBounds();
-		getSolverTaskDescription().setOutputTimeSpec(new ExplicitOutputTimeSpec(new double[]{timeBounds.getStartingTime(), timeBounds.getEndingTime()}));
-	}
-}
-
-
-/**
- * Method to handle events for the ActionListener interface.
- * @param e java.awt.event.ActionEvent
- */
-public void actionPerformed(java.awt.event.ActionEvent e) {
-	if (e.getSource() == getCustomizedSeed()){
-		connEtoC23(e);
-	}
-	if (e.getSource() == getRandomSeed()) {
-		connEtoC24(e);
-	}
-	if (e.getSource() == getTrajectoryButton()){
-		trajectoryButton_ActionPerformed(e);
-	}
-	if (e.getSource() == getHistogramButton()){
-		histogramButton_ActionPerformed(e);
-	}
-	if(e.getSource() == getQuestionButton())
-	{
-		displayHelpInfo();
-	}
-	if (e.getSource() == stopSpatiallyUniformCheckBox) {
-		getSolverTaskDescription().setStopAtSpatiallyUniform(stopSpatiallyUniformCheckBox.isSelected());
-		if (stopSpatiallyUniformCheckBox.isSelected()) {
-			try {
-				BeanUtils.enableComponents(getErrorTolerancePanel(), true);
-				getSolverTaskDescription().setErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
-			} catch (PropertyVetoException e1) {
-				e1.printStackTrace();
-			}
-		} else {
-			BeanUtils.enableComponents(getErrorTolerancePanel(), false);
-		}
-	}
-	if (e.getSource() == dataProcessorCheckBox) {
-		if (dataProcessorCheckBox.isSelected()) {
-			editDataProcessor(false);
-			if (getSolverTaskDescription().getSimulation().getDataProcessingInstructions() == null) {
-				editDataProcessorButton.setEnabled(false);
-				dataProcessorCheckBox.setSelected(false);
-			} else {
-				editDataProcessorButton.setEnabled(true);
-			}
-		} else {
-			editDataProcessorButton.setEnabled(false);
-			getSolverTaskDescription().getSimulation().setDataProcessingInstructions(null);
-		}
-	}
-	if (e.getSource() == editDataProcessorButton) {
-		editDataProcessor(true);
-		editDataProcessorButton.setEnabled(true);
-	}
-}
-
-private void editDataProcessor(boolean bEdit) {
-	DataProcessingInstructions dpi = getSolverTaskDescription().getSimulation().getDataProcessingInstructions();
-	
-	JPanel mainPanel = new JPanel(new BorderLayout());
-	
-	JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-	JLabel nameLabel = new JLabel("Name");			
-	panel.add(nameLabel);
-	JTextField nameField = new JTextField();
-	if (dpi != null) {
-		nameField.setText(dpi.getScriptName());
-	} else {
-		nameField.setText("VFRAP");
-	}
-	nameField.setColumns(20);
-	panel.add(nameField);
-	mainPanel.add(panel, BorderLayout.NORTH);
-	
-	panel = new JPanel(new GridBagLayout());			
-	JLabel label = new JLabel("Text");
-	GridBagConstraints cbc = new GridBagConstraints();
-	cbc.gridx = 0;
-	cbc.gridy = 0;
-	cbc.insets = new Insets(4,4,4,8);
-	panel.add(label, cbc);
-	
-	JScrollPane sp = new JScrollPane();
-	sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-	sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-	JTextArea textArea = new JTextArea();
-	if (dpi != null) {
-		textArea.setText(dpi.getScriptInput());
-	}
-	textArea.setColumns(20);
-	textArea.setRows(10);
-	sp.setViewportView(textArea);			
-	
-	cbc = new GridBagConstraints();
-	cbc.gridx = 1;
-	cbc.gridy = 0;
-	cbc.weightx = 1;
-	cbc.weighty = 1;
-	cbc.fill = GridBagConstraints.BOTH;
-	panel.add(sp, cbc);			
-	mainPanel.add(panel, BorderLayout.CENTER);
-	
-	mainPanel.setMinimumSize(new Dimension(300,200));
-	mainPanel.setSize(new Dimension(300,200));
-	mainPanel.setPreferredSize(new Dimension(300,200));
-	
-	int ok = DialogUtils.showComponentOKCancelDialog(SolverTaskDescriptionAdvancedPanel.this, mainPanel, "Add Data Processor");
-	if (ok == JOptionPane.OK_OPTION && nameField.getText().length() > 0 && textArea.getText().length() > 0) {
-		getSolverTaskDescription().getSimulation().setDataProcessingInstructions(new DataProcessingInstructions(nameField.getText(), textArea.getText()));
-	} else {
-		if (!bEdit) {
-			getSolverTaskDescription().getSimulation().setDataProcessingInstructions(null);
-		}
-	}
-}
-
-
-/**
- * Comment
- */
-private void buttonGroup_Initialize() {
-	getbuttonGroup1().add(getDefaultOutputRadioButton());
-	getbuttonGroup1().add(getUniformOutputRadioButton());
-	getbuttonGroup1().add(getExplicitOutputRadioButton());
-}
-
-
-/**
- * Comment
- */
-public void checkTimeBounds(cbit.vcell.solver.TimeBounds arg1) {
-	OutputTimeSpec ots = getSolverTaskDescription().getOutputTimeSpec();
-	if (ots.isExplicit()) {
-		double[] times = ((ExplicitOutputTimeSpec)ots).getOutputTimes();
-			
-		if (times[0] < arg1.getStartingTime() || times[times.length - 1] > arg1.getEndingTime()) {
-			PopupGenerator.showErrorDialog(this, "Output time should be within (" + arg1.getStartingTime() + "," + arg1.getEndingTime() + ")");
-		}
-	}
-}
-
 
 /**
  * connEtoC1:  (TornOffSolverTaskDescription.this --> SolverTaskDescriptionAdvancedPanel.enableTimeStep()V)
@@ -305,193 +170,6 @@ private void connEtoC1(SolverTaskDescription value) {
 		handleException(ivjExc);
 	}
 }
-
-/**
- * connEtoC10:  (TimeStepTextField.focus.focusLost(java.awt.event.FocusEvent) --> SolverTaskDescriptionAdvancedPanel.outputTimeIntervalForTimeStep(Ljava.awt.event.FocusEvent;)V)
- * @param arg1 java.awt.event.FocusEvent
- */
-private void connEtoC10(java.awt.event.FocusEvent arg1) {
-	try {
-		this.setNewOutputOption(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC11:  (TornOffSolverTaskDescription.solverDescription --> SolverTaskDescriptionAdvancedPanel.enableErrorTolerance()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void connEtoC11(java.beans.PropertyChangeEvent arg1) {
-	try {
-		this.enableVariableTimeStepOptions();
-		if(getTornOffSolverTaskDescription()!= null && getTornOffSolverTaskDescription().getSolverDescription() != null)
-		{
-			if(getTornOffSolverTaskDescription().getSolverDescription().isSTOCHSolver())
-			{
-				updateStochOptionsDisplay();
-			}
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC12:  (TornOffSolverTaskDescription.outputTimeSpec --> SolverTaskDescriptionAdvancedPanel.setOutputOptionFields(Lcbit.vcell.solver.OutputTimeSpec;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void connEtoC12(java.beans.PropertyChangeEvent arg1) {
-	try {
-		this.setOutputOptionFields(getTornOffSolverTaskDescription().getOutputTimeSpec());
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC13:  (ExplicitOutputRadioButton.item.itemStateChanged(java.awt.event.ItemEvent) --> SolverTaskDescriptionAdvancedPanel.actionTimeIntervalButtonState(Ljava.awt.event.ItemEvent;)V)
- * @param arg1 java.awt.event.ItemEvent
- */
-private void connEtoC13(java.awt.event.ItemEvent arg1) {
-	try {
-		this.actionOutputOptionButtonState(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC14:  (KeepEveryTextField.focus.focusLost(java.awt.event.FocusEvent) --> SolverTaskDescriptionAdvancedPanel.setNewOutputOption(Ljava.awt.event.FocusEvent;)V)
- * @param arg1 java.awt.event.FocusEvent
- */
-private void connEtoC14(java.awt.event.FocusEvent arg1) {
-	try {
-		this.setNewOutputOption(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC15:  (KeepAtMostTextField.focus.focusLost(java.awt.event.FocusEvent) --> SolverTaskDescriptionAdvancedPanel.setNewOutputOption(Ljava.awt.event.FocusEvent;)V)
- * @param arg1 java.awt.event.FocusEvent
- */
-private void connEtoC15(java.awt.event.FocusEvent arg1) {
-	try {
-		this.setNewOutputOption(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC16:  (TornOffSolverTaskDescription.outputTimeSpec --> SolverTaskDescriptionAdvancedPanel.enableOutputOptionPanel()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void connEtoC16(java.beans.PropertyChangeEvent arg1) {
-	try {
-		this.enableOutputOptionPanel();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC17:  (OutputTimesTextField.focus.focusLost(java.awt.event.FocusEvent) --> SolverTaskDescriptionAdvancedPanel.setNewOutputOption(Ljava.awt.event.FocusEvent;)V)
- * @param arg1 java.awt.event.FocusEvent
- */
-private void connEtoC17(java.awt.event.FocusEvent arg1) {
-	try {
-		this.setNewOutputOption(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC18:  (TornOffSolverTaskDescription.this --> SolverTaskDescriptionAdvancedPanel.setOutputOptionFields(Lcbit.vcell.solver.OutputTimeSpec;)V)
- * @param value cbit.vcell.solver.SolverTaskDescription
- */
-private void connEtoC18(SolverTaskDescription value) {
-	try {
-		if ((getTornOffSolverTaskDescription() != null)) {
-			this.setOutputOptionFields(getTornOffSolverTaskDescription().getOutputTimeSpec());
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC19:  (TornOffSolverTaskDescription.solverDescription --> SolverTaskDescriptionAdvancedPanel.setOutputOptionFields(Lcbit.vcell.solver.OutputTimeSpec;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void connEtoC19(java.beans.PropertyChangeEvent arg1) {
-	try {
-		if ((getTornOffSolverTaskDescription() != null)) {
-			this.setOutputOptionFields(getTornOffSolverTaskDescription().getOutputTimeSpec());
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC2:  (TornOffSolverTaskDescription.solverDescription --> SolverTaskDescriptionAdvancedPanel.enableTimeStep()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void connEtoC2(java.beans.PropertyChangeEvent arg1) {
-	try {
-		this.enableVariableTimeStepOptions();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC20:  (TornOffSolverTaskDescription.timeBounds --> SolverTaskDescriptionAdvancedPanel.tornOffSolverTaskDescription_TimeBounds()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void connEtoC20(java.beans.PropertyChangeEvent arg1) {
-	try {
-		this.tornOffSolverTaskDescription_TimeBounds();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC21:  (SolverTaskDescriptionAdvancedPanel.initialize() --> SolverTaskDescriptionAdvancedPanel.makeBold()V)
- */
-private void connEtoC21() {
-	try {
-		this.makeBold();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC22:  (SolverTaskDescriptionAdvancedPanel.initialize() --> SolverTaskDescriptionAdvancedPanel.solverTaskDescriptionAdvancedPanel_Initialize()V)
- */
-private void connEtoC22() {
-	try {
-		this.solverTaskDescriptionAdvancedPanel_Initialize();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC23:  (CustomizedSeed.action.actionPerformed(java.awt.event.ActionEvent) --> SolverTaskDescriptionAdvancedPanel.customizedSeed_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
@@ -512,67 +190,19 @@ private void connEtoC23(java.awt.event.ActionEvent arg1) {
  */
 private void connEtoC24(java.awt.event.ActionEvent arg1) {
 	try {
-		this.randomSeed_ActionPerformed(arg1);
+		this.randomSeedRadioButton_ActionPerformed(arg1);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
 }
 
 
-/**
- * connEtoC25:  (SolverTaskDescriptionAdvancedPanel.solverTaskDescription --> SolverTaskDescriptionAdvancedPanel.solverTaskDescriptionAdvancedPanel_SolverTaskDescription(Lcbit.vcell.solver.SolverTaskDescription;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void connEtoC25(java.beans.PropertyChangeEvent arg1) {
-	try {
-		this.solverTaskDescriptionAdvancedPanel_SolverTaskDescription();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC3:  (JRadioButton1.item.itemStateChanged(java.awt.event.ItemEvent) --> SolverTaskDescriptionAdvancedPanel.actionTimeIntervalButtonState(Ljava.awt.event.ItemEvent;)V)
- * @param arg1 java.awt.event.ItemEvent
- */
-private void connEtoC3(java.awt.event.ItemEvent arg1) {
-	try {
-		this.actionOutputOptionButtonState(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC4:  (JRadioButton2.item.itemStateChanged(java.awt.event.ItemEvent) --> SolverTaskDescriptionAdvancedPanel.actionTimeIntervalButtonState(Ljava.awt.event.ItemEvent;)V)
- * @param arg1 java.awt.event.ItemEvent
- */
-private void connEtoC4(java.awt.event.ItemEvent arg1) {
-	try {
-		this.actionOutputOptionButtonState(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC5:  (TornOffSolverTaskDescription.solver --> SolverTaskDescriptionAdvancedPanel.updateSolverNameDisplay(Ljava.lang.String;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void connEtoC5(java.beans.PropertyChangeEvent arg1) {
-	try {
-		this.updateSolverNameDisplay(getTornOffSolverTaskDescription().getSolverDescription());
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
 
 /**
  * connEtoC6:  (TornOffSolverTaskDescription.this --> SolverTaskDescriptionAdvancedPanel.updateSolverNameDisplay(Ljava.lang.String;)V)
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
-private void connEtoC6(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoC6(SolverTaskDescription value) {
 	try {
 		if ((getTornOffSolverTaskDescription() != null)) {
 			this.updateSolverNameDisplay(getTornOffSolverTaskDescription().getSolverDescription());
@@ -583,46 +213,10 @@ private void connEtoC6(cbit.vcell.solver.SolverTaskDescription value) {
 }
 
 /**
- * connEtoC7:  (TornOffSolverTaskDescription.solverDescription --> SolverTaskDescriptionAdvancedPanel.enableOutputIntevalPanel(Lcbit.vcell.solver.SolverTaskDescription;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
-	try {
-		this.enableOutputOptionPanel();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC8:  (TornOffSolverTaskDescription.this --> SolverTaskDescriptionAdvancedPanel.enableOutputIntevalPanel(Lcbit.vcell.solver.SolverDescription;)V)
- * @param value cbit.vcell.solver.SolverTaskDescription
- */
-private void connEtoC8(cbit.vcell.solver.SolverTaskDescription value) {
-	try {
-		this.enableOutputOptionPanel();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC9:  (SolverTaskDescriptionAdvancedPanel.initialize() --> SolverTaskDescriptionAdvancedPanel.buttonGroup_Initialize()V)
- */
-private void connEtoC9() {
-	try {
-		this.buttonGroup_Initialize();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoM13:  (TornOffSolverTaskDescription.this --> SolverComboBoxModel.this)
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
-private void connEtoM13(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoM13(SolverTaskDescription value) {
 	try {
 		setSolverComboBoxModel(this.createSolverComboBoxModel(getTornOffSolverTaskDescription()));
 	} catch (java.lang.Throwable ivjExc) {
@@ -900,7 +494,6 @@ private void trajectoryButton_ActionPerformed(java.awt.event.ActionEvent actionE
 	getJTextFieldNumOfTrials().setText("1");
 	getJTextFieldNumOfTrials().setEnabled(false);
 	updateStochOptions();
-	enableOutputOptionPanel();
 }
 
 private void histogramButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
@@ -917,89 +510,6 @@ private void histogramButton_ActionPerformed(java.awt.event.ActionEvent actionEv
 		}
 	}
 	updateStochOptions();
-	enableOutputOptionPanel();
-}
-/**
- * Comment
- */
-private void enableOutputOptionPanel() {
-	// enables the panel where the output interval is set if the solver is IDA
-	// Otherwise, that panel is disabled. 
-
-	getDefaultOutputRadioButton().setEnabled(false);
-	getUniformOutputRadioButton().setEnabled(false);	
-	getExplicitOutputRadioButton().setEnabled(false);
-	BeanUtils.enableComponents(getDefaultOutputPanel(), false);
-	BeanUtils.enableComponents(getUniformOutputPanel(), false);
-	BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-
-	SolverTaskDescription solverTaskDescription = getSolverTaskDescription();
-	if (solverTaskDescription==null || solverTaskDescription.getSolverDescription()==null){
-		// if solver is not IDA, if the output Time step radio button had been set, 
-		// change the setting to the 'keep every' radio button and flush the contents of the output timestep text field. 
-		// Also, disable its radiobutton and fields.		
-		return;
-	}
-	
-	SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
-	if (solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
-		stopSpatiallyUniformPanel.setVisible(true);
-		stopSpatiallyUniformCheckBox.setSelected(solverTaskDescription.isStopAtSpatiallyUniform());
-		dataProcessorCheckBox.setVisible(true);
-		editDataProcessorButton.setVisible(true);
-		DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();
-		if (dpi != null) {
-			dataProcessorCheckBox.setSelected(true);
-			editDataProcessorButton.setEnabled(true);
-		} else {
-			editDataProcessorButton.setEnabled(false);
-		}
-	} else {
-		dataProcessorCheckBox.setVisible(false);
-		editDataProcessorButton.setVisible(false);
-		stopSpatiallyUniformPanel.setVisible(false);
-	}
-	
-	//Amended June 2009, no output option for stochastic gibson multiple trials
-	if(solverTaskDescription.getStochOpt()!= null && solverTaskDescription.getStochOpt().getNumOfTrials()>1
-	   && solverTaskDescription.getSolverDescription().equals(SolverDescription.StochGibson))
-	{
-		return;
-	}
-	OutputTimeSpec ots = getSolverTaskDescription().getOutputTimeSpec();
-	
-	DefaultOutputTimeSpec dots = new DefaultOutputTimeSpec();
-	UniformOutputTimeSpec uots = new UniformOutputTimeSpec(0.1);
-	ExplicitOutputTimeSpec eots = new ExplicitOutputTimeSpec(new double[] {0.1});
-	
-	if (solverDesc.supports(dots)) {
-		if (!solverDesc.equals(SolverDescription.FiniteVolume) && !solverDesc.equals(SolverDescription.FiniteVolumeStandalone) 
-				|| ots.isDefault()) {
-			getDefaultOutputRadioButton().setEnabled(true);
-			if (getDefaultOutputRadioButton().isSelected() || ots.isDefault()) {
-				BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-			}
-		}
-	}
-	if (solverDesc.supports(uots)) {
-		getUniformOutputRadioButton().setEnabled(true);
-		if (getUniformOutputRadioButton().isSelected() || ots.isUniform()) {
-			BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		}
-	}
-	if (solverDesc.supports(eots)) {
-		getExplicitOutputRadioButton().setEnabled(true);
-		if (getExplicitOutputRadioButton().isSelected() || ots.isExplicit()) {
-			BeanUtils.enableComponents(getExplicitOutputPanel(), true);
-		}
-	}
-	if (solverDesc.equals(SolverDescription.StochGibson) 
-			|| solverDesc.equals(SolverDescription.FiniteVolume)
-			|| solverDesc.equals(SolverDescription.FiniteVolumeStandalone)
-		){
-		getKeepAtMostTextField().setText("");
-		getKeepAtMostTextField().setEnabled(false);
-	}
 }
 
 
@@ -1042,58 +552,6 @@ private void enableVariableTimeStepOptions() {
 }
 
 
-/**
- * Method to handle events for the FocusListener interface.
- * @param e java.awt.event.FocusEvent
- */
-public void focusGained(java.awt.event.FocusEvent e) {
-}
-
-
-/**
- * Method to handle events for the FocusListener interface.
- * @param e java.awt.event.FocusEvent
- */
-public void focusLost(java.awt.event.FocusEvent e) {
-	if (e.getSource() == getOutputTimeStepTextField()) 
-		connEtoC10(e);
-	if (e.getSource() == getKeepEveryTextField()) 
-		connEtoC14(e);
-	if (e.getSource() == getKeepAtMostTextField()) 
-		connEtoC15(e);
-	if (e.getSource() == getOutputTimesTextField()) 
-		connEtoC17(e);
-	//Stoch options
-	if (e.getSource() == getJTextFieldCustomSeed() && !e.isTemporary()) 
-		updateStochOptions();
-	if (e.getSource() == getJTextFieldNumOfTrials() && !e.isTemporary()) 
-		updateStochOptions();
-	//Stoch hybrid options
-	if (e.getSource() == getEpsilonTextField() && !e.isTemporary()) 
-		updateStochOptions();
-	if (e.getSource() == getLambdaTextField() && !e.isTemporary()) 
-		updateStochOptions();
-	if (e.getSource() == getMSRToleranceTextField() && !e.isTemporary()) 
-		updateStochOptions();
-	if (e.getSource() == getSDEToleranceTextField() && !e.isTemporary()) 
-		updateStochOptions();
-	
-}
-
-/**
- * Return the buttonGroup1 property value.
- * @return javax.swing.ButtonGroup
- */
-private javax.swing.ButtonGroup getbuttonGroup1() {
-	if (ivjbuttonGroup1 == null) {
-		try {
-			ivjbuttonGroup1 = new javax.swing.ButtonGroup();
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjbuttonGroup1;
-}
 
 /**
  * Return the ButtonGroupSeed property value.
@@ -1165,83 +623,17 @@ private javax.swing.ButtonGroup getButtonGroupSeed() {
  * Return the CustomizedSeed property value.
  * @return javax.swing.JRadioButton
  */
-private javax.swing.JRadioButton getCustomizedSeed() {
-	if (ivjCustomizedSeed == null) {
+private javax.swing.JRadioButton getCustomizedSeedRadioButton() {
+	if (ivjCustomizedSeedRadioButton == null) {
 		try {
-			ivjCustomizedSeed = new javax.swing.JRadioButton();
-			ivjCustomizedSeed.setName("CustomizedSeed");
-			ivjCustomizedSeed.setText("Customized Seed");
+			ivjCustomizedSeedRadioButton = new javax.swing.JRadioButton();
+			ivjCustomizedSeedRadioButton.setName("CustomizedSeed");
+			ivjCustomizedSeedRadioButton.setText("Customized Seed");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjCustomizedSeed;
-}
-
-
-/**
- * Return the Panel3 property value.
- * @return javax.swing.JPanel
- */
-private javax.swing.JPanel getDefaultOutputPanel() {
-	if (ivjDefaultOutputPanel == null) {
-		try {
-			ivjDefaultOutputPanel = new javax.swing.JPanel();
-			ivjDefaultOutputPanel.setName("DefaultOutputPanel");
-			ivjDefaultOutputPanel.setOpaque(false);
-			ivjDefaultOutputPanel.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsKeepAtMostLabel = new java.awt.GridBagConstraints();
-			constraintsKeepAtMostLabel.gridx = 2; constraintsKeepAtMostLabel.gridy = 0;
-			constraintsKeepAtMostLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getDefaultOutputPanel().add(getKeepAtMostLabel(), constraintsKeepAtMostLabel);
-
-			java.awt.GridBagConstraints constraintsKeepEveryTextField = new java.awt.GridBagConstraints();
-			constraintsKeepEveryTextField.gridx = 0; constraintsKeepEveryTextField.gridy = 0;
-			constraintsKeepEveryTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsKeepEveryTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getDefaultOutputPanel().add(getKeepEveryTextField(), constraintsKeepEveryTextField);
-
-
-			java.awt.GridBagConstraints constraintsKeepAtMostTextField = new java.awt.GridBagConstraints();
-			constraintsKeepAtMostTextField.gridx = 3; constraintsKeepAtMostTextField.gridy = 0;
-			constraintsKeepAtMostTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsKeepAtMostTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getDefaultOutputPanel().add(getKeepAtMostTextField(), constraintsKeepAtMostTextField);
-
-			java.awt.GridBagConstraints constraintsPointsLabel = new java.awt.GridBagConstraints();
-			constraintsPointsLabel.gridx = 4; constraintsPointsLabel.gridy = 0;
-			constraintsPointsLabel.anchor = java.awt.GridBagConstraints.WEST;
-			constraintsPointsLabel.weightx = 1.0;
-			constraintsPointsLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getDefaultOutputPanel().add(getPointsLabel(), constraintsPointsLabel);
-
-			java.awt.GridBagConstraints constraintsJLabel4 = new java.awt.GridBagConstraints();
-			constraintsJLabel4.gridx = 1; constraintsJLabel4.gridy = 0;
-			constraintsJLabel4.insets = new java.awt.Insets(4, 4, 4, 4);
-			getDefaultOutputPanel().add(getJLabel4(), constraintsJLabel4);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjDefaultOutputPanel;
-}
-
-/**
- * Return the JRadioButton1 property value.
- * @return javax.swing.JRadioButton
- */
-private javax.swing.JRadioButton getDefaultOutputRadioButton() {
-	if (ivjDefaultOutputRadioButton == null) {
-		try {
-			ivjDefaultOutputRadioButton = new javax.swing.JRadioButton();
-			ivjDefaultOutputRadioButton.setName("DefaultOutputRadioButton");
-			ivjDefaultOutputRadioButton.setText("Keep Every");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjDefaultOutputRadioButton;
+	return ivjCustomizedSeedRadioButton;
 }
 
 /**
@@ -1258,54 +650,6 @@ private ErrorTolerancePanel getErrorTolerancePanel() {
 		}
 	}
 	return ivjErrorTolerancePanel;
-}
-
-
-/**
- * Return the JPanel2 property value.
- * @return javax.swing.JPanel
- */
-private javax.swing.JPanel getExplicitOutputPanel() {
-	if (ivjExplicitOutputPanel == null) {
-		try {
-			ivjExplicitOutputPanel = new javax.swing.JPanel();
-			ivjExplicitOutputPanel.setName("ExplicitOutputPanel");
-			ivjExplicitOutputPanel.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsOutputTimesTextField = new java.awt.GridBagConstraints();
-			constraintsOutputTimesTextField.gridx = 0; constraintsOutputTimesTextField.gridy = 0;
-			constraintsOutputTimesTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsOutputTimesTextField.weightx = 1.0;
-			constraintsOutputTimesTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getExplicitOutputPanel().add(getOutputTimesTextField(), constraintsOutputTimesTextField);
-
-			java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
-			constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 1;
-			constraintsJLabel3.gridwidth = 2;
-			constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
-			getExplicitOutputPanel().add(getJLabel3(), constraintsJLabel3);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjExplicitOutputPanel;
-}
-
-/**
- * Return the JRadioButton3 property value.
- * @return javax.swing.JRadioButton
- */
-private javax.swing.JRadioButton getExplicitOutputRadioButton() {
-	if (ivjExplicitOutputRadioButton == null) {
-		try {
-			ivjExplicitOutputRadioButton = new javax.swing.JRadioButton();
-			ivjExplicitOutputRadioButton.setName("ExplicitOutputRadioButton");
-			ivjExplicitOutputRadioButton.setText("Output Times");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjExplicitOutputRadioButton;
 }
 
 /**
@@ -1326,41 +670,6 @@ private javax.swing.JLabel getIntegratorLabel() {
 }
 
 /**
- * Return the JLabel3 property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getJLabel3() {
-	if (ivjJLabel3 == null) {
-		try {
-			ivjJLabel3 = new javax.swing.JLabel();
-			ivjJLabel3.setName("JLabel3");
-			ivjJLabel3.setText("(Comma or space separated numbers, e.g. 0.5, 0.8, 1.2, 1.7)");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel3;
-}
-
-/**
- * Return the JLabel4 property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getJLabel4() {
-	if (ivjJLabel4 == null) {
-		try {
-			ivjJLabel4 = new javax.swing.JLabel();
-			ivjJLabel4.setName("JLabel4");
-			ivjJLabel4.setText("time samples");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel4;
-}
-
-
-/**
  * Return the JLabelTitle property value.
  * @return javax.swing.JLabel
  */
@@ -1368,14 +677,12 @@ private javax.swing.JLabel getJLabel4() {
 private javax.swing.JLabel getJLabelTitle() {
 	if (ivjJLabelTitle == null) {
 		try {
-			org.vcell.util.gui.EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new org.vcell.util.gui.EmptyBorderBean();
-			ivjLocalBorder.setInsets(new java.awt.Insets(10, 0, 10, 0));
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
-			ivjJLabelTitle.setBorder(ivjLocalBorder);
+			ivjJLabelTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 			ivjJLabelTitle.setText("Choose solver algorithm and fine-tune time conditions:");
 			ivjJLabelTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+			ivjJLabelTitle.setFont(ivjJLabelTitle.getFont().deriveFont(java.awt.Font.BOLD));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1391,86 +698,15 @@ private javax.swing.JLabel getJLabelTitle() {
  * Return the JPanel1 property value.
  * @return javax.swing.JPanel
  */
-private javax.swing.JPanel getJPanel1() {
-	if (ivjJPanel1 == null) {
+private OutputOptionsPanel getOutputOptionsPanel() {
+	if (ivjOutputOptionsPanel == null) {
 		try {
-			ivjJPanel1 = new javax.swing.JPanel();
-			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsDefaultOutputRadioButton = new java.awt.GridBagConstraints();
-			constraintsDefaultOutputRadioButton.gridx = 0; constraintsDefaultOutputRadioButton.gridy = 0;
-			constraintsDefaultOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			constraintsDefaultOutputRadioButton.anchor = GridBagConstraints.LINE_START;
-			getJPanel1().add(getDefaultOutputRadioButton(), constraintsDefaultOutputRadioButton);
-
-			java.awt.GridBagConstraints constraintsUniformOutputRadioButton = new java.awt.GridBagConstraints();
-			constraintsUniformOutputRadioButton.gridx = 0; constraintsUniformOutputRadioButton.gridy = 1;
-			constraintsUniformOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			constraintsUniformOutputRadioButton.anchor = GridBagConstraints.LINE_START;
-			getJPanel1().add(getUniformOutputRadioButton(), constraintsUniformOutputRadioButton);
-
-			java.awt.GridBagConstraints constraintsExplicitOutputRadioButton = new java.awt.GridBagConstraints();
-			constraintsExplicitOutputRadioButton.gridx = 0; constraintsExplicitOutputRadioButton.gridy = 2;
-			constraintsExplicitOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			constraintsExplicitOutputRadioButton.anchor = GridBagConstraints.FIRST_LINE_START;
-			getJPanel1().add(getExplicitOutputRadioButton(), constraintsExplicitOutputRadioButton);
-
-			java.awt.GridBagConstraints constraintsDefaultOutputPanel = new java.awt.GridBagConstraints();
-			constraintsDefaultOutputPanel.gridx = 1; constraintsDefaultOutputPanel.gridy = 0;
-			constraintsDefaultOutputPanel.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsDefaultOutputPanel.weightx = 1.0;
-			constraintsDefaultOutputPanel.weighty = 1.0;
-			constraintsDefaultOutputPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel1().add(getDefaultOutputPanel(), constraintsDefaultOutputPanel);
-
-			java.awt.GridBagConstraints constraintsUniformOutputPanel = new java.awt.GridBagConstraints();
-			constraintsUniformOutputPanel.gridx = 1; constraintsUniformOutputPanel.gridy = 1;
-			constraintsUniformOutputPanel.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsUniformOutputPanel.weightx = 1.0;
-			constraintsUniformOutputPanel.weighty = 1.0;
-			constraintsUniformOutputPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel1().add(getUniformOutputPanel(), constraintsUniformOutputPanel);
-
-			java.awt.GridBagConstraints constraintsExplicitOutputPanel = new java.awt.GridBagConstraints();
-			constraintsExplicitOutputPanel.gridx = 1; constraintsExplicitOutputPanel.gridy = 2;
-			constraintsExplicitOutputPanel.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsExplicitOutputPanel.anchor = GridBagConstraints.PAGE_START;
-			constraintsExplicitOutputPanel.weightx = 1.0;
-			constraintsExplicitOutputPanel.weighty = 1.0;
-			constraintsExplicitOutputPanel.insets = new java.awt.Insets(0, 4, 4, 4);
-			getJPanel1().add(getExplicitOutputPanel(), constraintsExplicitOutputPanel);
-			
-			stopSpatiallyUniformPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));		
-			stopSpatiallyUniformCheckBox = new JCheckBox("Stop at Spatially Uniform");
-			stopSpatiallyUniformPanel.add(stopSpatiallyUniformCheckBox);
-			java.awt.GridBagConstraints gridbag1 = new java.awt.GridBagConstraints();
-			gridbag1.gridx = 0; gridbag1.gridy = 3;
-			gridbag1.fill = GridBagConstraints.HORIZONTAL;
-			gridbag1.gridwidth = 4;
-			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
-			getJPanel1().add(stopSpatiallyUniformPanel, gridbag1);
-
-			JPanel panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));		
-			dataProcessorCheckBox = new JCheckBox("Data Processing Script");
-			panel1.add(dataProcessorCheckBox);
-			editDataProcessorButton = new JButton("Edit...");
-			panel1.add(editDataProcessorButton);
-			
-			gridbag1 = new java.awt.GridBagConstraints();
-			gridbag1.gridx = 0; gridbag1.gridy = 4;
-			gridbag1.fill = GridBagConstraints.HORIZONTAL;
-			gridbag1.gridwidth = 4;
-			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
-			getJPanel1().add(panel1, gridbag1);
-			
-			TitledBorder tb=new TitledBorder(new EtchedBorder(),"Output Options", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11));
-     	    getJPanel1().setBorder(tb);
+			ivjOutputOptionsPanel = new OutputOptionsPanel();
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel1;
+	return ivjOutputOptionsPanel;
 }
 
 /**
@@ -1497,10 +733,10 @@ private javax.swing.JPanel getJPanelStoch() {
 			// 2
 			JPanel seedPanel = new JPanel(new GridLayout(0,1));
 			JPanel panelb = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			panelb.add(getRandomSeed());
+			panelb.add(getRandomSeedRadioButton());
 			seedPanel.add(panelb);
 			panelb = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			panelb.add(getCustomizedSeed());
+			panelb.add(getCustomizedSeedRadioButton());
 			panelb.add(getJTextFieldCustomSeed());
 			seedPanel.add(panelb);
 			seedPanel.setBorder(new EtchedBorder());
@@ -1577,61 +813,7 @@ private javax.swing.JTextField getJTextFieldNumOfTrials() {
 	return ivjJTextFieldNumOfTrials;
 }
 
-/**
- * Return the PointsLabel property value.
- * @return java.awt.Label
- */
-private javax.swing.JLabel getKeepAtMostLabel() {
-	if (ivjKeepAtMostLabel == null) {
-		try {
-			ivjKeepAtMostLabel = new javax.swing.JLabel();
-			ivjKeepAtMostLabel.setName("KeepAtMostLabel");
-			ivjKeepAtMostLabel.setText("and at most");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjKeepAtMostLabel;
-}
 
-/**
- * Return the JTextField property value.
- * @return javax.swing.JTextField
- */
-private javax.swing.JTextField getKeepAtMostTextField() {
-	if (ivjKeepAtMostTextField == null) {
-		try {
-			ivjKeepAtMostTextField = new javax.swing.JTextField();
-			ivjKeepAtMostTextField.setName("KeepAtMostTextField");
-			ivjKeepAtMostTextField.setText("");
-			ivjKeepAtMostTextField.setMinimumSize(new java.awt.Dimension(66, 21));
-			ivjKeepAtMostTextField.setColumns(6);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjKeepAtMostTextField;
-}
-
-/**
- * Return the KeepEveryTextField property value.
- * @return java.awt.TextField
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTextField getKeepEveryTextField() {
-	if (ivjKeepEveryTextField == null) {
-		try {
-			ivjKeepEveryTextField = new javax.swing.JTextField();
-			ivjKeepEveryTextField.setName("KeepEveryTextField");
-			ivjKeepEveryTextField.setText("");
-			ivjKeepEveryTextField.setMinimumSize(new java.awt.Dimension(21, 22));
-			ivjKeepEveryTextField.setColumns(6);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjKeepEveryTextField;
-}
 
 /**
  * Return the NumOfTrials property value.
@@ -1650,115 +832,62 @@ private javax.swing.JLabel getNumOfTrialsLabel() {
 	return numOfTrialsLabel;
 }
 
-
-/**
- * Return the TimeStepTextField property value.
- * @return javax.swing.JTextField
- */
-private javax.swing.JTextField getOutputTimeStepTextField() {
-	if (ivjOutputTimeStepTextField == null) {
-		try {
-			ivjOutputTimeStepTextField = new javax.swing.JTextField();
-			ivjOutputTimeStepTextField.setName("OutputTimeStepTextField");
-			ivjOutputTimeStepTextField.setMinimumSize(new java.awt.Dimension(60, 20));
-			ivjOutputTimeStepTextField.setColumns(10);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjOutputTimeStepTextField;
-}
-
-/**
- * Return the JTextField1 property value.
- * @return javax.swing.JTextField
- */
-private javax.swing.JTextField getOutputTimesTextField() {
-	if (ivjOutputTimesTextField == null) {
-		try {
-			ivjOutputTimesTextField = new javax.swing.JTextField();
-			ivjOutputTimesTextField.setName("OutputTimesTextField");
-			ivjOutputTimesTextField.setColumns(20);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjOutputTimesTextField;
-}
-
 /**
  * Return the Panel2 property value.
  * @return java.awt.Panel
  */
-private javax.swing.JPanel getPanel2() {
-	if (ivjPanel2 == null) {
+private javax.swing.JPanel getSolverPanel() {
+	if (ivjSolverPanel == null) {
 		try {
-			ivjPanel2 = new javax.swing.JPanel();
-			ivjPanel2.setName("Panel2");
-			ivjPanel2.setOpaque(false);
-			ivjPanel2.setLayout(new java.awt.GridBagLayout());
+			ivjSolverPanel = new javax.swing.JPanel();
+			ivjSolverPanel.setName("Panel2");
+			ivjSolverPanel.setOpaque(false);
+			ivjSolverPanel.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsIntegratorLabel = new java.awt.GridBagConstraints();
 			constraintsIntegratorLabel.gridx = 0; constraintsIntegratorLabel.gridy = 0;
 			constraintsIntegratorLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsIntegratorLabel.anchor = java.awt.GridBagConstraints.WEST;
 			constraintsIntegratorLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getPanel2().add(getIntegratorLabel(), constraintsIntegratorLabel);
+			ivjSolverPanel.add(getIntegratorLabel(), constraintsIntegratorLabel);
 
 			java.awt.GridBagConstraints constraintsSolverComboBox = new java.awt.GridBagConstraints();
 			constraintsSolverComboBox.gridx = 1; constraintsSolverComboBox.gridy = 0;
 			constraintsSolverComboBox.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsSolverComboBox.anchor = java.awt.GridBagConstraints.EAST;
 			constraintsSolverComboBox.insets = new java.awt.Insets(4, 4, 4, 4);
-			getPanel2().add(getSolverComboBox(), constraintsSolverComboBox);
+			ivjSolverPanel.add(getSolverComboBox(), constraintsSolverComboBox);
 			
 			java.awt.GridBagConstraints constraintsQuestionButton = new java.awt.GridBagConstraints();
 			constraintsQuestionButton.gridx = 2; constraintsQuestionButton.gridy = 0;
 			constraintsQuestionButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsQuestionButton.anchor = java.awt.GridBagConstraints.EAST;
 			constraintsQuestionButton.insets = new java.awt.Insets(6, 6, 6, 6);
-			getPanel2().add(getQuestionButton(), constraintsQuestionButton);
+			ivjSolverPanel.add(getQuestionButton(), constraintsQuestionButton);
 			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjPanel2;
-}
-
-/**
- * Return the PointsLabel property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getPointsLabel() {
-	if (ivjPointsLabel == null) {
-		try {
-			ivjPointsLabel = new javax.swing.JLabel();
-			ivjPointsLabel.setName("PointsLabel");
-			ivjPointsLabel.setText("time samples");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjPointsLabel;
+	return ivjSolverPanel;
 }
 
 /**
  * Return the RandomSeed property value.
  * @return javax.swing.JRadioButton
  */
-private javax.swing.JRadioButton getRandomSeed() {
-	if (ivjRandomSeed == null) {
+private javax.swing.JRadioButton getRandomSeedRadioButton() {
+	if (ivjRandomSeedRadioButton == null) {
 		try {
-			ivjRandomSeed = new javax.swing.JRadioButton();
-			ivjRandomSeed.setName("RandomSeed");
-			ivjRandomSeed.setSelected(true);
-			ivjRandomSeed.setText("Random Seed");
+			ivjRandomSeedRadioButton = new javax.swing.JRadioButton();
+			ivjRandomSeedRadioButton.setName("RandomSeed");
+			ivjRandomSeedRadioButton.setSelected(true);
+			ivjRandomSeedRadioButton.setText("Random Seed");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjRandomSeed;
+	return ivjRandomSeedRadioButton;
 }
 
 /**
@@ -1836,80 +965,12 @@ private TimeStepPanel getTimeStepPanel() {
 	return ivjTimeStepPanel;
 }
 
-
-/**
- * Return the TimeStepUnitsLabel property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getTimeStepUnitsLabel() {
-	if (ivjTimeStepUnitsLabel == null) {
-		try {
-			ivjTimeStepUnitsLabel = new javax.swing.JLabel();
-			ivjTimeStepUnitsLabel.setName("TimeStepUnitsLabel");
-			ivjTimeStepUnitsLabel.setPreferredSize(new java.awt.Dimension(28, 14));
-			ivjTimeStepUnitsLabel.setText("secs");
-			ivjTimeStepUnitsLabel.setMaximumSize(new java.awt.Dimension(200, 14));
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjTimeStepUnitsLabel;
-}
-
-
 /**
  * Return the TornOffSolverTaskDescription property value.
  * @return cbit.vcell.solver.SolverTaskDescription
  */
 private SolverTaskDescription getTornOffSolverTaskDescription() {
 	return ivjTornOffSolverTaskDescription;
-}
-
-
-/**
- * Return the Panel4 property value.
- * @return javax.swing.JPanel
- */
-private javax.swing.JPanel getUniformOutputPanel() {
-	if (ivjUniformOutputPanel == null) {
-		try {
-			ivjUniformOutputPanel = new javax.swing.JPanel();
-			ivjUniformOutputPanel.setName("UniformOutputPanel");
-			ivjUniformOutputPanel.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsTimeStepUnitsLabel = new java.awt.GridBagConstraints();
-			constraintsTimeStepUnitsLabel.gridx = 1; constraintsTimeStepUnitsLabel.gridy = 0;
-			constraintsTimeStepUnitsLabel.anchor = java.awt.GridBagConstraints.WEST;
-			constraintsTimeStepUnitsLabel.weightx = 1.0;
-			constraintsTimeStepUnitsLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getUniformOutputPanel().add(getTimeStepUnitsLabel(), constraintsTimeStepUnitsLabel);
-
-			java.awt.GridBagConstraints constraintsOutputTimeStepTextField = new java.awt.GridBagConstraints();
-			constraintsOutputTimeStepTextField.gridx = 0; constraintsOutputTimeStepTextField.gridy = 0;
-			constraintsOutputTimeStepTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getUniformOutputPanel().add(getOutputTimeStepTextField(), constraintsOutputTimeStepTextField);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjUniformOutputPanel;
-}
-
-/**
- * Return the JRadioButton2 property value.
- * @return javax.swing.JRadioButton
- */
-private javax.swing.JRadioButton getUniformOutputRadioButton() {
-	if (ivjUniformOutputRadioButton == null) {
-		try {
-			ivjUniformOutputRadioButton = new javax.swing.JRadioButton();
-			ivjUniformOutputRadioButton.setName("UniformOutputRadioButton");
-			ivjUniformOutputRadioButton.setText("Output Interval");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjUniformOutputRadioButton;
 }
 
 /**
@@ -1946,33 +1007,23 @@ private void handleException(java.lang.Throwable exception) {
  * @exception java.lang.Exception The exception description.
  */
 private void initConnections() throws java.lang.Exception {
-	this.addPropertyChangeListener(this);
-	getTimeStepPanel().addPropertyChangeListener(this);
-	getErrorTolerancePanel().addPropertyChangeListener(this);
-	getSolverComboBox().addPropertyChangeListener(this);
-	getSolverComboBox().addItemListener(this);
-	getQuestionButton().addActionListener(this);
-	getOutputTimeStepTextField().addFocusListener(this);
-	getDefaultOutputRadioButton().addItemListener(this);
-	getUniformOutputRadioButton().addItemListener(this);
-	getExplicitOutputRadioButton().addItemListener(this);
-	getKeepEveryTextField().addFocusListener(this);
-	getKeepAtMostTextField().addFocusListener(this);
-	getOutputTimesTextField().addFocusListener(this);
-	getTimeBoundsPanel().addPropertyChangeListener(this);
-	getCustomizedSeed().addActionListener(this);
-	getRandomSeed().addActionListener(this);
-	getTrajectoryButton().addActionListener(this);
-	getHistogramButton().addActionListener(this);
-	getJTextFieldCustomSeed().addFocusListener(this);
-	getJTextFieldNumOfTrials().addFocusListener(this);
-	getEpsilonTextField().addFocusListener(this);
-	getLambdaTextField().addFocusListener(this);
-	getMSRToleranceTextField().addFocusListener(this);
-	getSDEToleranceTextField().addFocusListener(this);
-	stopSpatiallyUniformCheckBox.addActionListener(this);
-	dataProcessorCheckBox.addActionListener(this);
-	editDataProcessorButton.addActionListener(this);
+	this.addPropertyChangeListener(ivjEventHandler);
+	getTimeStepPanel().addPropertyChangeListener(ivjEventHandler);
+	getErrorTolerancePanel().addPropertyChangeListener(ivjEventHandler);
+	getSolverComboBox().addPropertyChangeListener(ivjEventHandler);
+	getSolverComboBox().addItemListener(ivjEventHandler);
+	getQuestionButton().addActionListener(ivjEventHandler);
+	getTimeBoundsPanel().addPropertyChangeListener(ivjEventHandler);
+	getCustomizedSeedRadioButton().addActionListener(ivjEventHandler);
+	getRandomSeedRadioButton().addActionListener(ivjEventHandler);
+	getTrajectoryButton().addActionListener(ivjEventHandler);
+	getHistogramButton().addActionListener(ivjEventHandler);
+	getJTextFieldCustomSeed().addFocusListener(ivjEventHandler);
+	getJTextFieldNumOfTrials().addFocusListener(ivjEventHandler);
+	getEpsilonTextField().addFocusListener(ivjEventHandler);
+	getLambdaTextField().addFocusListener(ivjEventHandler);
+	getMSRToleranceTextField().addFocusListener(ivjEventHandler);
+	getSDEToleranceTextField().addFocusListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
@@ -1985,10 +1036,18 @@ private void initConnections() throws java.lang.Exception {
  */
 private void initialize() {
 	try {
-		setName("ODEAdvancedPanel");
 		setLayout(new java.awt.GridBagLayout());
 		setSize(607, 419);
 
+		// 0
+		java.awt.GridBagConstraints constraintsJLabelTitle = new java.awt.GridBagConstraints();
+		constraintsJLabelTitle.gridx = 0; constraintsJLabelTitle.gridy = 0;
+		constraintsJLabelTitle.gridwidth = 4;
+		constraintsJLabelTitle.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJLabelTitle.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelTitle(), constraintsJLabelTitle);
+		
+		// 1
 		java.awt.GridBagConstraints constraintsPanel2 = new java.awt.GridBagConstraints();
 		constraintsPanel2.gridx = 0; constraintsPanel2.gridy = 1;
 		constraintsPanel2.gridwidth = 4;
@@ -1996,8 +1055,9 @@ private void initialize() {
 		constraintsPanel2.weightx = 1.0;
 		constraintsPanel2.weighty = 1.0;
 		constraintsPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getPanel2(), constraintsPanel2);
+		add(getSolverPanel(), constraintsPanel2);
 
+		// 2
 		java.awt.GridBagConstraints constraintsTimeBoundsPanel = new java.awt.GridBagConstraints();
 		constraintsTimeBoundsPanel.gridx = 0; constraintsTimeBoundsPanel.gridy = 2;
 		constraintsTimeBoundsPanel.fill = java.awt.GridBagConstraints.BOTH;
@@ -2021,23 +1081,8 @@ private void initialize() {
 		constraintsErrorTolerancePanel.weighty = 1.0;
 		constraintsErrorTolerancePanel.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getErrorTolerancePanel(), constraintsErrorTolerancePanel);
-		
-		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 4;
-		constraintsJPanel1.gridwidth = 4;
-		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel1.weightx = 1.0;
-		constraintsJPanel1.weighty = 1.0;
-		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel1(), constraintsJPanel1);
 
-		java.awt.GridBagConstraints constraintsJLabelTitle = new java.awt.GridBagConstraints();
-		constraintsJLabelTitle.gridx = 0; constraintsJLabelTitle.gridy = 0;
-		constraintsJLabelTitle.gridwidth = 4;
-		constraintsJLabelTitle.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabelTitle.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabelTitle(), constraintsJLabelTitle);
-
+		// 3
 		java.awt.GridBagConstraints constraintsJPanelStoch = new java.awt.GridBagConstraints();
 		constraintsJPanelStoch.gridx = 0; constraintsJPanelStoch.gridy = 3;
 		constraintsJPanelStoch.gridwidth = 4;
@@ -2046,30 +1091,31 @@ private void initialize() {
 		constraintsJPanelStoch.weighty = 1.0;
 		constraintsJPanelStoch.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJPanelStoch(), constraintsJPanelStoch);
+		
+		// 4
+		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
+		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 4;
+		constraintsJPanel1.gridwidth = 4;
+		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsJPanel1.weightx = 1.0;
+		constraintsJPanel1.weighty = 1.0;
+		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getOutputOptionsPanel(), constraintsJPanel1);
+
+		getButtonGroupSeed().add(getRandomSeedRadioButton());
+		getButtonGroupSeed().add(getCustomizedSeedRadioButton());
+		
+		//trial radio button group
+		getButtonGroupTrials().add(getTrajectoryButton());
+		getButtonGroupTrials().add(getHistogramButton());
+		BeanUtils.enableComponents(getJPanelStoch(),false);
+		
 		initConnections();
-		connEtoC9();
-		connEtoC21();
-		connEtoC22();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
 }
 
-/**
- * Method to handle events for the ItemListener interface.
- * @param e java.awt.event.ItemEvent
- *
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void itemStateChanged(java.awt.event.ItemEvent e) {
-	if (e.getSource() == getSolverComboBox()) 
-		connEtoM6(e);
-	if (e.getSource() == getDefaultOutputRadioButton()) 
-		connEtoC3(e);
-	if (e.getSource() == getUniformOutputRadioButton()) 
-		connEtoC4(e);
-	if (e.getSource() == getExplicitOutputRadioButton()) 
-		connEtoC13(e);
-}
 
 /**
  * main entrypoint - starts the part when it is run as an application
@@ -2087,7 +1133,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -2095,56 +1140,6 @@ public static void main(java.lang.String[] args) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");
 		exception.printStackTrace(System.out);
 	}
-}
-
-
-/**
- * Comment
- */
-private void makeBold() {
-	getJLabelTitle().setFont(getJLabelTitle().getFont().deriveFont(java.awt.Font.BOLD));
-}
-
-
-/**
- * Method to handle events for the PropertyChangeListener interface.
- * @param evt java.beans.PropertyChangeEvent
- */
-public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == this && (evt.getPropertyName().equals("solverTaskDescription"))) 
-		connPtoP1SetTarget();
-	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("timeStep"))) 
-		connPtoP3SetTarget();
-	if (evt.getSource() == getTimeStepPanel() && (evt.getPropertyName().equals("timeStep"))) 
-		connPtoP3SetSource();
-	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("errorTolerance"))) 
-		connPtoP4SetTarget();
-	if (evt.getSource() == getErrorTolerancePanel() && (evt.getPropertyName().equals("errorTolerance"))) 
-		connPtoP4SetSource();
-	if (evt.getSource() == getSolverComboBox() && (evt.getPropertyName().equals("model"))) 
-		connPtoP7SetSource();
-	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("solverDescription"))) 
-		connEtoC5(evt);
-	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("solverDescription"))) 
-		connEtoC2(evt);
-	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("solverDescription"))) 
-		connEtoC7(evt);
-	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("solverDescription"))) 
-		connEtoC11(evt);
-	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("outputTimeSpec"))) 
-		connEtoC12(evt);
-	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("outputTimeSpec"))) 
-		connEtoC16(evt);
-	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("solverDescription"))) 
-		connEtoC19(evt);
-	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("timeBounds"))) 
-		connPtoP2SetTarget();
-	if (evt.getSource() == getTimeBoundsPanel() && (evt.getPropertyName().equals("timeBounds"))) 
-		connPtoP2SetSource();
-	if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals("timeBounds"))) 
-		connEtoC20(evt);
-	if (evt.getSource() == this && (evt.getPropertyName().equals("solverTaskDescription"))) 
-		connEtoC25(evt);
 }
 
 /**
@@ -2156,57 +1151,45 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * SDE Tolerance : Maximum allowed value of the drift and diffusion errors
  */
 private void updateStochOptions(){
-	if(!getJPanelStoch().isEnabled()){
+	if(!getJPanelStoch().isVisible()){
 		return;
 	}
 	try{
-		StochSimOptions sso = getSolverTaskDescription().getStochOpt();
 		if(getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))
 		{
-			if(sso == null)
-			{
-				sso = new StochSimOptions();
-			}
-			sso.setUseCustomSeed(getCustomizedSeed().isSelected());
+			StochSimOptions newsso = new StochSimOptions();			
+			newsso.setUseCustomSeed(getCustomizedSeedRadioButton().isSelected());
 			int trials = Integer.parseInt(getJTextFieldNumOfTrials().getText());
 			if(getHistogramButton().isSelected() && (trials <= 1))
 			{
 				throw new Exception("Number of trials should be greater than 1 for histogram.");
 			}
-			sso.setNumOfTrials(trials);
-			if(getCustomizedSeed().isSelected())
-				sso.setCustomSeed(Integer.parseInt(getJTextFieldCustomSeed().getText()));
-			getSolverTaskDescription().setStochOpt(sso);
+			newsso.setNumOfTrials(trials);
+			if(getCustomizedSeedRadioButton().isSelected())
+				newsso.setCustomSeed(Integer.parseInt(getJTextFieldCustomSeed().getText()));
+			getSolverTaskDescription().setStochOpt(newsso);
 		}
 		else
 		{
-			StochHybridOptions sho = null;
-			if(sso == null || !(sso instanceof StochHybridOptions))
-			{
-				sho = new StochHybridOptions();
-			}
-			else
-			{
-				sho = (StochHybridOptions)sso;
-			}
-			sho.setUseCustomSeed(getCustomizedSeed().isSelected());
+			StochHybridOptions newsho = new StochHybridOptions();
+			newsho.setUseCustomSeed(getCustomizedSeedRadioButton().isSelected());
 			int trials = Integer.parseInt(getJTextFieldNumOfTrials().getText());
 			if(getHistogramButton().isSelected() && (trials <= 1))
 			{
 				throw new Exception("Number of trials should be greater than 1 for histogram.");
 			}
-			sho.setNumOfTrials(trials);
-			if(getCustomizedSeed().isSelected())
-				sho.setCustomSeed(Integer.parseInt(getJTextFieldCustomSeed().getText()));
+			newsho.setNumOfTrials(trials);
+			if(getCustomizedSeedRadioButton().isSelected())
+				newsho.setCustomSeed(Integer.parseInt(getJTextFieldCustomSeed().getText()));
 			if(getEpsilonTextField().isEnabled() && !getEpsilonTextField().getText().equals(""))
-				sho.setEpsilon(Double.parseDouble(getEpsilonTextField().getText()));
+				newsho.setEpsilon(Double.parseDouble(getEpsilonTextField().getText()));
 			if(getLambdaTextField().isEnabled() && !getLambdaTextField().getText().equals(""))
-				sho.setLambda(Double.parseDouble(getLambdaTextField().getText()));
+				newsho.setLambda(Double.parseDouble(getLambdaTextField().getText()));
 			if(getMSRToleranceTextField().isEnabled() && !getMSRToleranceTextField().getText().equals(""))
-				sho.setMSRTolerance(Double.parseDouble(getMSRToleranceTextField().getText()));
+				newsho.setMSRTolerance(Double.parseDouble(getMSRToleranceTextField().getText()));
 			if(getSDEToleranceTextField().isEnabled() && !getSDEToleranceTextField().getText().equals(""))
-				sho.setSDETolerance(Double.parseDouble(getSDEToleranceTextField().getText()));
-			getSolverTaskDescription().setStochOpt(sho);
+				newsho.setSDETolerance(Double.parseDouble(getSDEToleranceTextField().getText()));
+			getSolverTaskDescription().setStochOpt(newsho);
 		}
 	}catch(Exception e){
 		PopupGenerator.showErrorDialog(this, "Error setting stochastic options\n"+e.getMessage());
@@ -2216,135 +1199,10 @@ private void updateStochOptions(){
 /**
  * Comment
  */
-private void randomSeed_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+private void randomSeedRadioButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	getJTextFieldCustomSeed().setEnabled(false);
 	updateStochOptions();
 }
-
-
-/**
- * Comment
- */
-private void setNewOutputOption(java.awt.event.FocusEvent focusEvent) {
-	try {
-		OutputTimeSpec ots = null;
-		if(getDefaultOutputRadioButton().isSelected()){
-			int keepEvery = Integer.parseInt(getKeepEveryTextField().getText());
-			if (getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) ||
-					getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone) ||
-					getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson)) 
-			{
-				ots = new DefaultOutputTimeSpec(keepEvery);
-			} else {
-				int keepAtMost = Integer.parseInt(getKeepAtMostTextField().getText());
-				ots = new DefaultOutputTimeSpec(keepEvery, keepAtMost);
-			}
-		} else if(getUniformOutputRadioButton().isSelected()) {
-			double outputTime = Double.parseDouble(getOutputTimeStepTextField().getText());
-			if (getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) ||
-					getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
-				double timeStep = getTornOffSolverTaskDescription().getTimeStep().getDefaultTimeStep();
-				boolean bValid = true;
-				String suggestedInterval = outputTime + "";
-				if (outputTime < timeStep) {
-					suggestedInterval = timeStep + "";
-					bValid = false;
-				} else {
-					float n = (float)(outputTime/timeStep);
-					if (n != (int)n) {
-						bValid = false;
-						suggestedInterval = ((float)((int)(n + 0.5) * timeStep)) + "";
-					}
-				}
-				if (!bValid) {
-					String ret = PopupGenerator.showWarningDialog(this, "Output Interval must be integer multiple of time step. " 
-							+ "OK to change Output Interval to " + suggestedInterval + "?", 
-							new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
-					if (ret.equals(UserMessage.OPTION_YES)) {
-						outputTime = Double.parseDouble(suggestedInterval);
-					} else {
-						SwingUtilities.invokeLater(new Runnable() { 
-						    public void run() { 
-						    	getOutputTimeStepTextField().requestFocus();
-						    }
-						});
-					}
-				}
-			}
-			ots = new UniformOutputTimeSpec(outputTime);		
-		} else if (getExplicitOutputRadioButton().isSelected()) {
-			String line = getOutputTimesTextField().getText();
-			double startingTime = getTornOffSolverTaskDescription().getTimeBounds().getStartingTime();
-			double endingTime = getTornOffSolverTaskDescription().getTimeBounds().getEndingTime();
-			ots = ExplicitOutputTimeSpec.fromString(line);
-			double[] times = ((ExplicitOutputTimeSpec)ots).getOutputTimes();
-			
-			if (times[0] < startingTime || times[times.length - 1] > endingTime) {
-				String ret = PopupGenerator.showWarningDialog(this, "Output times should be within [" + startingTime + "," + endingTime + "], OK to change END TIME?", 
-					new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
-				if (ret.equals(UserMessage.OPTION_YES)) {
-					getTornOffSolverTaskDescription().setTimeBounds(new TimeBounds(startingTime, times[times.length - 1]));
-				} else {
-					SwingUtilities.invokeLater(new Runnable() { 
-					    public void run() { 
-					         getOutputTimesTextField().requestFocus();
-					    }
-					});
-				}
-			}
-
-		}	
-
-		try  {
-			getTornOffSolverTaskDescription().setOutputTimeSpec(ots);
-		} catch (java.beans.PropertyVetoException e) {
-			throw new RuntimeException("Problems while setting the output options " + e.getMessage());
-		}
-	} catch (Exception e) {
-		DialogUtils.showErrorDialog(this, "Error in Value : " + e.getMessage());
-	}
-}
-
-
-/**
- * Comment
- */
-public void setOutputOptionFields(cbit.vcell.solver.OutputTimeSpec arg1) {
-
-	if (arg1.isDefault()) {
-		// if solver is not IDA, if the output Time step radio button had been set, 
-		// change the setting to the 'keep every' radio button and flush the contents of the output timestep text field. 
-		// Also, disable its radiobutton and fields.
-		getDefaultOutputRadioButton().setSelected(true);
-		getKeepEveryTextField().setText(((DefaultOutputTimeSpec)arg1).getKeepEvery() + "");
-		if (getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) 
-				|| getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
-			getKeepAtMostTextField().setText("");
-		} else {
-			getKeepAtMostTextField().setText(((DefaultOutputTimeSpec)arg1).getKeepAtMost() + "");
-		}
-		getOutputTimeStepTextField().setText("");
-		getOutputTimesTextField().setText("");
-	} else if (arg1.isUniform()) {
-		getUniformOutputRadioButton().setSelected(true);
-		getKeepEveryTextField().setText("");
-		getKeepAtMostTextField().setText("");
-		getOutputTimeStepTextField().setText(((UniformOutputTimeSpec)arg1).getOutputTimeStep() + "");
-		getOutputTimesTextField().setText("");
-	} else if (arg1.isExplicit()) {
-		getExplicitOutputRadioButton().setSelected(true);
-		getKeepEveryTextField().setText("");
-		getKeepAtMostTextField().setText("");
-		getOutputTimeStepTextField().setText("");
-		getOutputTimesTextField().setText(((ExplicitOutputTimeSpec)arg1).toCommaSeperatedOneLineOfString() + "");
-		getOutputTimesTextField().setCaretPosition(0);
-	}
-
-	// If the solver is IDA and if the output time step has been set, set/enable the appropriate radio buttons and text fields
-	// If the output time step hasn't been set (for IDA solver), set the field to blank; and select 'keep every' radio button.
-	// This will also hold for the case when solver is not IDA.		
-}
-
 
 /**
  * Set the model1 to a new value.
@@ -2374,8 +1232,8 @@ private void setSolverComboBoxModel(java.lang.Object newValue) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSolverTaskDescription
  */
-public void setSolverTaskDescription(cbit.vcell.solver.SolverTaskDescription solverTaskDescription) throws java.beans.PropertyVetoException {
-	cbit.vcell.solver.SolverTaskDescription oldValue = fieldSolverTaskDescription;
+public void setSolverTaskDescription(SolverTaskDescription solverTaskDescription) throws java.beans.PropertyVetoException {
+	SolverTaskDescription oldValue = fieldSolverTaskDescription;
 	fireVetoableChange("solverTaskDescription", oldValue, solverTaskDescription);
 	fieldSolverTaskDescription = solverTaskDescription;
 	firePropertyChange("solverTaskDescription", oldValue, solverTaskDescription);
@@ -2387,19 +1245,19 @@ public void setSolverTaskDescription(cbit.vcell.solver.SolverTaskDescription sol
  * @param newValue cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTornOffSolverTaskDescription(cbit.vcell.solver.SolverTaskDescription newValue) {
+private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 	if (ivjTornOffSolverTaskDescription != newValue) {
 		try {
-			cbit.vcell.solver.SolverTaskDescription oldValue = getTornOffSolverTaskDescription();
+			SolverTaskDescription oldValue = getTornOffSolverTaskDescription();
 			/* Stop listening for events from the current object */
 			if (ivjTornOffSolverTaskDescription != null) {
-				ivjTornOffSolverTaskDescription.removePropertyChangeListener(this);
+				ivjTornOffSolverTaskDescription.removePropertyChangeListener(ivjEventHandler);
 			}
 			ivjTornOffSolverTaskDescription = newValue;
 
 			/* Listen for events from the new object */
 			if (ivjTornOffSolverTaskDescription != null) {
-				ivjTornOffSolverTaskDescription.addPropertyChangeListener(this);
+				ivjTornOffSolverTaskDescription.addPropertyChangeListener(ivjEventHandler);
 			}
 			connPtoP1SetSource();
 			connEtoM13(ivjTornOffSolverTaskDescription);
@@ -2407,8 +1265,7 @@ private void setTornOffSolverTaskDescription(cbit.vcell.solver.SolverTaskDescrip
 			connPtoP4SetTarget();
 			connEtoC6(ivjTornOffSolverTaskDescription);
 			connEtoC1(ivjTornOffSolverTaskDescription);
-			connEtoC8(ivjTornOffSolverTaskDescription);
-			connEtoC18(ivjTornOffSolverTaskDescription);
+			getOutputOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			connPtoP2SetTarget();
 			firePropertyChange("solverTaskDescription", oldValue, newValue);
 			// user code begin {1}
@@ -2426,62 +1283,27 @@ private void setTornOffSolverTaskDescription(cbit.vcell.solver.SolverTaskDescrip
 /**
  * Comment
  */
-private void solverTaskDescriptionAdvancedPanel_Initialize() {
-	//seed radio button group
-	getButtonGroupSeed().add(getRandomSeed());
-	getButtonGroupSeed().add(getCustomizedSeed());
-//	cbit.util.BeanUtils.enableComponents(getJPanelStoch(),false);
-	//trial radio button group
-	getButtonGroupTrials().add(getTrajectoryButton());
-	getButtonGroupTrials().add(getHistogramButton());
-	org.vcell.util.BeanUtils.enableComponents(getJPanelStoch(),false);
-}
-
-/**
- * Comment
- */
 private void solverTaskDescriptionAdvancedPanel_SolverTaskDescription() {
-	if (getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null) {
-		boolean isStoch = getSolverTaskDescription().getSolverDescription().isSTOCHSolver();
-		if (isStoch) {
-			getJPanelStoch().setVisible(true);
-			updateStochOptionsDisplay();
-		} else {
-			getJPanelStoch().setVisible(false);
+	try {
+		if (getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null) {
+			boolean isStoch = getSolverTaskDescription().getSolverDescription().isSTOCHSolver();
+			if (isStoch) {
+				getJPanelStoch().setVisible(true);
+				updateStochOptionsDisplay();
+			} else {
+				getJPanelStoch().setVisible(false);
+			}
 		}
-	}
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}	
 }
 
 
 /**
  * Comment
  */
-public void tornOffSolverTaskDescription_TimeBounds() {
-	SolverTaskDescription std = getTornOffSolverTaskDescription();
-	OutputTimeSpec ots = std.getOutputTimeSpec();
-	if (ots.isExplicit()) {
-		double startingTime = getTornOffSolverTaskDescription().getTimeBounds().getStartingTime();
-		double endingTime = getTornOffSolverTaskDescription().getTimeBounds().getEndingTime();
-		double[] times = ((ExplicitOutputTimeSpec)ots).getOutputTimes();
-			
-		if (times[0] < startingTime || times[times.length - 1] > endingTime) {
-			PopupGenerator.showErrorDialog(this, "Output times should be within [" + startingTime + "," + endingTime + "]");
-			javax.swing.SwingUtilities.invokeLater(new Runnable() { 
-			    public void run() { 
-			          getOutputTimesTextField().requestFocus();
-			    } 
-
-			});		
-		}
-	}
-	return;
-}
-
-
-/**
- * Comment
- */
-private void updateSolverNameDisplay(cbit.vcell.solver.SolverDescription argSolverDescription) {
+private void updateSolverNameDisplay(SolverDescription argSolverDescription) {
 	if (argSolverDescription == null){
 		getSolverComboBox().setEnabled(false);
 	}else{
@@ -2504,10 +1326,7 @@ private javax.swing.JLabel getEpsilonLabel() {
 			ivjEpsilonLabel = new javax.swing.JLabel();
 			ivjEpsilonLabel.setName("EpsilonLabel");
 			ivjEpsilonLabel.setText("Epsilon");
-			ivjEpsilonLabel.setPreferredSize(new Dimension(75, 20));
-			//ivjEpsilonLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-			//ivjEpsilonLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-			
+			ivjEpsilonLabel.setPreferredSize(new Dimension(75, 20));			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -2520,7 +1339,6 @@ private javax.swing.JTextField getEpsilonTextField() {
 		try {
 			ivjEpsilonTextField = new javax.swing.JTextField();
 			ivjEpsilonTextField.setName("JTextFieldEpsilon");
-			//ivjEpsilonTextField.setPreferredSize(new java.awt.Dimension(70, 20));
 			ivjEpsilonTextField.setColumns(10);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2536,9 +1354,6 @@ private javax.swing.JLabel getLambdaLabel() {
 			ivjLambdaLabel.setName("LambdaLabel");
 			ivjLambdaLabel.setText("Lambda");
 			ivjLambdaLabel.setPreferredSize(new java.awt.Dimension(75, 20));
-			//ivjLambdaLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-			//ivjLambdaLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -2551,7 +1366,6 @@ private javax.swing.JTextField getLambdaTextField() {
 		try {
 			ivjLambdaTextField = new javax.swing.JTextField();
 			ivjLambdaTextField.setName("JTextFieldLambda");
-			//ivjLambdaTextField.setPreferredSize(new java.awt.Dimension(60, 20));
 			ivjLambdaTextField.setColumns(10);
 			
 		} catch (java.lang.Throwable ivjExc) {
@@ -2568,9 +1382,6 @@ private javax.swing.JLabel getMSRToleranceLabel() {
 			ivjMSRToleranceLabel.setName("MSRLabel");
 			ivjMSRToleranceLabel.setText("MSR Tolerance");
 			ivjMSRToleranceLabel.setPreferredSize(new java.awt.Dimension(75, 20));
-			//ivjMSRToleranceLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-			//ivjMSRToleranceLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -2583,7 +1394,6 @@ private javax.swing.JTextField getMSRToleranceTextField() {
 		try {
 			ivjMSRToleranceTextField = new javax.swing.JTextField();
 			ivjMSRToleranceTextField.setName("JTextFieldMSRTolerance");
-			//ivjMSRToleranceTextField.setPreferredSize(new java.awt.Dimension(60, 20));
 			ivjMSRToleranceTextField.setColumns(10);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2599,9 +1409,6 @@ private javax.swing.JLabel getSDEToleranceLabel() {
 			ivjSDEToleranceLabel.setName("SDELabel");
 			ivjSDEToleranceLabel.setText("SDE Tolerance");
 			ivjSDEToleranceLabel.setPreferredSize(new java.awt.Dimension(75, 20));
-			//ivjSDEToleranceLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-			//ivjSDEToleranceLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -2614,7 +1421,6 @@ private javax.swing.JTextField getSDEToleranceTextField() {
 		try {
 			ivjSDEToleranceTextField = new javax.swing.JTextField();
 			ivjSDEToleranceTextField.setName("JTextFieldSDETolerance");
-			//ivjSDEToleranceTextField.setPreferredSize(new java.awt.Dimension(60, 20));
 			ivjSDEToleranceTextField.setColumns(10);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2659,7 +1465,6 @@ private void setHybridOptions(boolean b)
  */
 private void updateStochOptionsDisplay()
 {
-	//cbit.util.BeanUtils.enableComponents(getJPanelStoch(),true);
 	StochSimOptions sso = getSolverTaskDescription().getStochOpt();
 	if(getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))
 	{
@@ -2688,7 +1493,7 @@ private void updateStochOptionsDisplay()
 }
 
 private void displayStochPanel() {
-	org.vcell.util.BeanUtils.enableComponents(getJPanelStoch(),true);
+	BeanUtils.enableComponents(getJPanelStoch(),true);
 	StochSimOptions sso = getSolverTaskDescription().getStochOpt();	
 	
 	long numTrials = sso.getNumOfTrials();
@@ -2705,10 +1510,10 @@ private void displayStochPanel() {
 	
 	getJTextFieldCustomSeed().setEnabled(isUseCustomSeed);
 	if(isUseCustomSeed){
-		getCustomizedSeed().setSelected(true);
+		getCustomizedSeedRadioButton().setSelected(true);
 		getJTextFieldCustomSeed().setEnabled(true);		
 	}else{
-		getRandomSeed().setSelected(true);
+		getRandomSeedRadioButton().setSelected(true);
 		getJTextFieldCustomSeed().setEnabled(false);
 	}
 	getJTextFieldCustomSeed().setText(customSeed+"");
@@ -2728,4 +1533,24 @@ private void displayStochPanel() {
 		getSDEToleranceTextField().setText(sho.getSDETolerance()+"");
 	}
 }
+
+private void onPropertyChange_solverDescription() {	
+	try {
+		if (getSolverTaskDescription() == null) {
+			return;
+		}
+		SolverDescription solverDescription = getSolverTaskDescription().getSolverDescription();
+		updateSolverNameDisplay(solverDescription);
+		enableVariableTimeStepOptions();
+		
+		enableVariableTimeStepOptions();
+		if(solverDescription.isSTOCHSolver())
+		{
+			updateStochOptionsDisplay();
+		}	
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}	
+}
+
 }
