@@ -539,6 +539,23 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			} else if (!solverDescription.supports(getOutputTimeSpec())){
 				setOutputTimeSpec(solverDescription.createOutputTimeSpec(this));
 			}
+			if (solverDescription.isSTOCHSolver()) {
+				if (solverDescription.equals(SolverDescription.StochGibson)) {
+					if (fieldStochOpt == null) {					
+						setStochOpt(new StochSimOptions());
+					} else {
+						setStochOpt(new StochSimOptions(fieldStochOpt));
+					}
+				} else {
+					if (fieldStochOpt == null) {
+						setStochOpt(new StochHybridOptions());
+					} else if (fieldStochOpt instanceof StochHybridOptions) {
+						setStochOpt(new StochHybridOptions((StochHybridOptions)fieldStochOpt));
+					} else {
+						setStochOpt(new StochHybridOptions(fieldStochOpt.isUseCustomSeed(), fieldStochOpt.getCustomSeed(), fieldStochOpt.getNumOfTrials()));
+					}
+				}
+			}
 		} catch (PropertyVetoException e) {
 			e.printStackTrace();
 		}

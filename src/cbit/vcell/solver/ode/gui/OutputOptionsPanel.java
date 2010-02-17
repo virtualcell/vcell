@@ -22,7 +22,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
@@ -70,7 +69,7 @@ public class OutputOptionsPanel extends JPanel {
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
-	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
+	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == OutputOptionsPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) { 
 				refresh();
@@ -99,8 +98,7 @@ public class OutputOptionsPanel extends JPanel {
 						e1.printStackTrace();
 					}
 				}
-			}
-			if (e.getSource() == dataProcessorCheckBox) {
+			} else if (e.getSource() == dataProcessorCheckBox) {
 				if (dataProcessorCheckBox.isSelected()) {
 					editDataProcessor(false);
 					if (getSolverTaskDescription().getSimulation().getDataProcessingInstructions() == null) {
@@ -113,18 +111,14 @@ public class OutputOptionsPanel extends JPanel {
 					editDataProcessorButton.setEnabled(false);
 					getSolverTaskDescription().getSimulation().setDataProcessingInstructions(null);
 				}
-			}
-			if (e.getSource() == editDataProcessorButton) {
+			} else if (e.getSource() == editDataProcessorButton) {
 				editDataProcessor(true);
 				editDataProcessorButton.setEnabled(true);
+			} else if (e.getSource() == getDefaultOutputRadioButton() ||
+					e.getSource() == getUniformOutputRadioButton() ||
+					e.getSource() == getExplicitOutputRadioButton()) { 
+					actionOutputOptionButtonState(e);
 			}
-		}
-		
-		public void itemStateChanged(java.awt.event.ItemEvent e) {
-			if (e.getSource() == getDefaultOutputRadioButton() ||
-				e.getSource() == getUniformOutputRadioButton() ||
-				e.getSource() == getExplicitOutputRadioButton()) 
-				actionOutputOptionButtonState(e);
 		}
 		
 		public void focusGained(java.awt.event.FocusEvent e) {
@@ -148,6 +142,7 @@ public class OutputOptionsPanel extends JPanel {
 	}
 	public OutputOptionsPanel() {
 		super();
+		addPropertyChangeListener(ivjEventHandler);
 		initialize();
 	}
 	
@@ -462,7 +457,6 @@ public class OutputOptionsPanel extends JPanel {
 			getbuttonGroup1().add(getUniformOutputRadioButton());
 			getbuttonGroup1().add(getExplicitOutputRadioButton());
 			
-			initConnections();
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -621,12 +615,11 @@ public class OutputOptionsPanel extends JPanel {
 	 * Initializes connections
 	 * @exception java.lang.Exception The exception description.
 	 */
-	private void initConnections() throws java.lang.Exception {
-		addPropertyChangeListener(ivjEventHandler);
+	private void initConnections() {
 		getOutputTimeStepTextField().addFocusListener(ivjEventHandler);
-		getDefaultOutputRadioButton().addItemListener(ivjEventHandler);
-		getUniformOutputRadioButton().addItemListener(ivjEventHandler);
-		getExplicitOutputRadioButton().addItemListener(ivjEventHandler);
+		getDefaultOutputRadioButton().addActionListener(ivjEventHandler);
+		getUniformOutputRadioButton().addActionListener(ivjEventHandler);
+		getExplicitOutputRadioButton().addActionListener(ivjEventHandler);
 		getKeepEveryTextField().addFocusListener(ivjEventHandler);
 		getKeepAtMostTextField().addFocusListener(ivjEventHandler);
 		getOutputTimesTextField().addFocusListener(ivjEventHandler);
@@ -782,20 +775,16 @@ public class OutputOptionsPanel extends JPanel {
 		}			
 	}
 	
-	private void actionOutputOptionButtonState(java.awt.event.ItemEvent itemEvent) {
+	private void actionOutputOptionButtonState(java.awt.event.ActionEvent actionEvent) {
 		try {
-			if(itemEvent.getStateChange() != java.awt.event.ItemEvent.SELECTED){
-				return;
-			}
-			
 			if (getSolverTaskDescription()==null){
 				return;
 			}
 	
 			OutputTimeSpec outputTimeSpec = getSolverTaskDescription().getOutputTimeSpec();
-			if(itemEvent.getSource() == getDefaultOutputRadioButton() && !outputTimeSpec.isDefault()){
+			if(actionEvent.getSource() == getDefaultOutputRadioButton() && !outputTimeSpec.isDefault()){
 				getSolverTaskDescription().setOutputTimeSpec(new DefaultOutputTimeSpec());
-			} else if(itemEvent.getSource() == getUniformOutputRadioButton() && !outputTimeSpec.isUniform()){
+			} else if(actionEvent.getSource() == getUniformOutputRadioButton() && !outputTimeSpec.isUniform()){
 				double outputTime = 0.0;
 				if (getSolverTaskDescription().getSolverDescription().isSemiImplicitPdeSolver()) {
 					String floatStr = "" + (float)(((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery() * getSolverTaskDescription().getTimeStep().getDefaultTimeStep());
@@ -806,7 +795,7 @@ public class OutputOptionsPanel extends JPanel {
 					outputTime = outputTimeRange.getMax();
 				}
 				getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
-			} else if(itemEvent.getSource() == getExplicitOutputRadioButton() && !outputTimeSpec.isExplicit()){
+			} else if(actionEvent.getSource() == getExplicitOutputRadioButton() && !outputTimeSpec.isExplicit()){
 				TimeBounds timeBounds = getSolverTaskDescription().getTimeBounds();
 				getSolverTaskDescription().setOutputTimeSpec(new ExplicitOutputTimeSpec(new double[]{timeBounds.getStartingTime(), timeBounds.getEndingTime()}));
 			}
@@ -819,6 +808,9 @@ public class OutputOptionsPanel extends JPanel {
 	 * Comment
 	 */
 	private void refresh() {
+		if (getSolverTaskDescription() == null) {
+			return;
+		}
 		// enables the panel where the output interval is set if the solver is IDA
 		// Otherwise, that panel is disabled. 
 
@@ -940,6 +932,8 @@ public class OutputOptionsPanel extends JPanel {
 		}		
 		solverTaskDescription = newValue;
 		firePropertyChange("solverTaskDescription", oldValue, newValue);
+		
+		initConnections();
 	}
 	
 	
