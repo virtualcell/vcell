@@ -1,22 +1,14 @@
 package cbit.vcell.solver.stoch;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Matchable;
 
-/**
- * This class is used to store some stochastic simulation
- * required information, including  use custom seed or not,
- * custom seed and number of trials. This data structure is
- * stored in SolverTaskDescription.
- * Creation date: (12/6/2006 9:52:07 AM)
- * @author: Tracy LI
- * @version: 1.0 Beta
- */
-import cbit.vcell.math.*;
+import cbit.vcell.math.VCML;
 
-public class StochSimOptions implements java.io.Serializable, org.vcell.util.Matchable {
-	private boolean useCustomSeed = false;
-	private int customSeed = 0;
-	private long numOfTrials = 1;
+public class StochSimOptions implements java.io.Serializable, Matchable {
+	protected boolean useCustomSeed = false;
+	protected int customSeed = 0;
+	protected long numOfTrials = 1;
 
 /**
  * StochSimOptions constructor comment.
@@ -42,25 +34,37 @@ public StochSimOptions(boolean arg_useCustomSeed, int arg_customSeed, long arg_n
 	numOfTrials = arg_numOfTrials;
 }
 
+public StochSimOptions(StochSimOptions sso) 
+{
+	useCustomSeed = sso.useCustomSeed;
+	customSeed = sso.customSeed;
+	numOfTrials = sso.numOfTrials;
+}
 
 /**
  * Checks for internal representation of objects
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) 
+public boolean compareEqual(Matchable obj) 
 {
 	if (this == obj) {
 		return true;
 	}
 	if (obj != null && obj instanceof StochSimOptions) {
 		StochSimOptions stochOpt = (StochSimOptions) obj;
-		if (isUseCustomSeed() != stochOpt.isUseCustomSeed()) return false;
-		if (isUseCustomSeed() == true)
-		{
-			if (getCustomSeed() != stochOpt.getCustomSeed()) return false;
+		if (isUseCustomSeed() != stochOpt.isUseCustomSeed()) {
+			return false;
 		}
-		if (getNumOfTrials() != stochOpt.getNumOfTrials()) return false;
+		if (isUseCustomSeed())
+		{
+			if (getCustomSeed() != stochOpt.getCustomSeed()) {
+				return false;
+			}
+		}
+		if (getNumOfTrials() != stochOpt.getNumOfTrials()) {
+			return false;
+		}
 		return true;
 	}
 	return false;
@@ -161,25 +165,27 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException
 			}
 			if (token.equalsIgnoreCase(VCML.UseCustomSeed)) {
 				token = tokens.nextToken();
-				setUseCustomSeed(Boolean.parseBoolean(token));
+				useCustomSeed = Boolean.parseBoolean(token);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.CustomSeed)) {
 				token = tokens.nextToken();
 				int val1 = Integer.parseInt(token);
-				if(val1 < 0)
+				if(val1 < 0) {
 					throw new DataAccessException("unexpected token " + token + ", seed is required to be an unsigned interger. ");
-				else 
-					setCustomSeed(val1);
+				} else {
+					customSeed = val1;
+				}
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.NumOfTrials)) {
 				token = tokens.nextToken();
 				int val2 = Integer.parseInt(token);
-				if(val2 < 1 )
+				if(val2 < 1 ) {
 					throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be at least 1. ");
-				else
-					setNumOfTrials(val2);
+				} else {
+					numOfTrials = val2;
+				}
 				continue;
 			}
 			throw new DataAccessException("unexpected identifier " + token);
@@ -190,33 +196,4 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (12/6/2006 10:51:09 AM)
- * @param newCustomSeed int
- */
-public void setCustomSeed(int newCustomSeed) {
-	customSeed = newCustomSeed;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/6/2006 10:51:09 AM)
- * @param newNumOfTrials long
- */
-public void setNumOfTrials(long newNumOfTrials) {
-	numOfTrials = newNumOfTrials;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/6/2006 10:51:09 AM)
- * @param newUseCustomSeed boolean
- */
-public void setUseCustomSeed(boolean newUseCustomSeed) {
-	useCustomSeed = newUseCustomSeed;
-}
 }

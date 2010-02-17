@@ -2,6 +2,7 @@ package cbit.vcell.solver.stoch;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.math.VCML;
 
@@ -30,37 +31,29 @@ public class StochHybridOptions extends StochSimOptions {
 		super(arg_useCustomSeed, arg_customSeed, arg_numOfTrials);
 	}
 
+	public StochHybridOptions(StochHybridOptions sho)
+	{
+		super(sho);
+		epsilon = sho.epsilon;
+		lambda = sho.lambda;
+		MSRTolerance = sho.MSRTolerance;
+		SDETolerance = sho.SDETolerance;
+	}	
 	
 	public double getEpsilon() {
 		return epsilon;
-	}
-
-	public void setEpsilon(double epsilon) {
-		this.epsilon = epsilon;
 	}
 
 	public double getLambda() {
 		return lambda;
 	}
 
-	public void setLambda(double lambda) {
-		this.lambda = lambda;
-	}
-
 	public double getMSRTolerance() {
 		return MSRTolerance;
 	}
 
-	public void setMSRTolerance(double tolerance) {
-		MSRTolerance = tolerance;
-	}
-
 	public double getSDETolerance() {
 		return SDETolerance;
-	}
-
-	public void setSDETolerance(double tolerance) {
-		SDETolerance = tolerance;
 	}
 	
 	/**
@@ -134,7 +127,7 @@ public class StochHybridOptions extends StochSimOptions {
 				}
 				if (token.equalsIgnoreCase(VCML.UseCustomSeed)) {
 					token = tokens.nextToken();
-					setUseCustomSeed(Boolean.parseBoolean(token));
+					useCustomSeed = Boolean.parseBoolean(token);
 					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.CustomSeed)) {
@@ -143,7 +136,7 @@ public class StochHybridOptions extends StochSimOptions {
 					if(val1 < 0)
 						throw new DataAccessException("unexpected token " + token + ", seed is required to be an unsigned interger. ");
 					else 
-						setCustomSeed(val1);
+						customSeed = val1;
 					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.NumOfTrials)) {
@@ -152,7 +145,7 @@ public class StochHybridOptions extends StochSimOptions {
 					if(val2 < 1 )
 						throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be at least 1. ");
 					else
-						setNumOfTrials(val2);
+						numOfTrials = val2;
 					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.Epsilon)) {
@@ -161,7 +154,7 @@ public class StochHybridOptions extends StochSimOptions {
 					if(val3 < 1 )
 						throw new DataAccessException("unexpected token " + token + ", Minimum number of molecue is requied to be greater than or equal to 1. ");
 					else
-						setEpsilon(val3);
+						epsilon = val3;
 					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.Lambda)) {
@@ -170,7 +163,7 @@ public class StochHybridOptions extends StochSimOptions {
 					if(val4 <= 0 )
 						throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be greater than 0. ");
 					else
-						setLambda(val4);
+						lambda = val4;
 					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.MSRTolerance)) {
@@ -179,7 +172,7 @@ public class StochHybridOptions extends StochSimOptions {
 					if(val5 <= 0 )
 						throw new DataAccessException("unexpected token " + token + ", Maximum allowed effect of slow reactions is requied to be greater than 0. ");
 					else
-						setMSRTolerance(val5);
+						MSRTolerance = val5;
 					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.SDETolerance)) {
@@ -188,7 +181,7 @@ public class StochHybridOptions extends StochSimOptions {
 					if(val6 <= 0 )
 						throw new DataAccessException("unexpected token " + token + ", SDE allowed value of drift and diffusion errors is requied to be greater than 0. ");
 					else
-						setSDETolerance(val6);
+						SDETolerance = val6;
 					continue;
 				}
 				throw new DataAccessException("unexpected identifier " + token);
@@ -204,7 +197,7 @@ public class StochHybridOptions extends StochSimOptions {
 	 * @return boolean
 	 * @param obj java.lang.Object
 	 */
-	public boolean compareEqual(org.vcell.util.Matchable obj) 
+	public boolean compareEqual(Matchable obj) 
 	{
 		if (this == obj) {
 			return true;
