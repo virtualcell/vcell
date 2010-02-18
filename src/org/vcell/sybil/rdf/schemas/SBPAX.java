@@ -1,11 +1,10 @@
 package org.vcell.sybil.rdf.schemas;
 
-/*   SBPAX  --- by Oliver Ruebenacker, UCHC --- April 2008 to March 2009
+/*   SBPAX  --- by Oliver Ruebenacker, UCHC --- April 2008 to November 2009
  *   The SBPAX schema
  */
 
 import java.util.List;
-
 import org.vcell.sybil.rdf.NameSpace;
 import org.vcell.sybil.rdf.OntSpecUtil;
 import org.vcell.sybil.rdf.OntUtil;
@@ -21,8 +20,10 @@ import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.ontology.TransitiveProperty;
+import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFList;
 import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
@@ -94,6 +95,21 @@ public class SBPAX {
 	public static final OntClass SystemModel = schema.createClass(ns + "SystemModel");
 	public static final OntClass Unit = schema.createClass(ns + "Unit");	
 	
+	public static final OntClass Protein = schema.createClass(ns + "Protein");	
+	public static final OntClass RNA = schema.createClass(ns + "RNA");	
+	public static final OntClass DNA = schema.createClass(ns + "DNA");	
+	public static final OntClass Complex = schema.createClass(ns + "Complex");	
+	public static final OntClass Metabolite = schema.createClass(ns + "Metabolite");	
+
+	public static final RDFList substanceClassList = schema.createList().with(Protein).with(DNA)
+	.with(RNA).with(Complex).with(Metabolite);
+	
+	public static final Bag defaultUSTBag = schema.createBag(ns + "defaultUSTBag");
+	
+	static {
+		defaultUSTBag.add(Metabolite);
+	}
+	
 	public static final ObjectProperty consistsOf = schema.createObjectProperty(ns + "consistsOf");
 	public static final ObjectProperty hasComponent = schema.createObjectProperty(ns + "hasComponent");
 	public static final ObjectProperty hasModel = schema.createObjectProperty(ns + "hasModel");
@@ -156,6 +172,12 @@ public class SBPAX {
 		Quantity.addSubClass(Amount);
 		SetOp.addSubClass(BinarySetOp);
 
+		Substance.addSubClass(Protein);
+		Substance.addSubClass(DNA);
+		Substance.addSubClass(RNA);
+		Substance.addSubClass(Complex);
+		Substance.addSubClass(Metabolite);
+		
 		OntUtil.makeAllDisjoint(new SetOfThree<OntClass>(ProcessParticipantLeft, ProcessParticipantRight,
 				ProcessParticipantCatalyst));
 		
@@ -255,10 +277,16 @@ public class SBPAX {
 		schema.add(BioPAX2.conversion, RDFS.subClassOf, Process);		
 		schema.add(BioPAX2.sequenceFeature, RDFS.subClassOf, SequenceFeature);		
 		schema.add(BioPAX2.physicalEntityParticipant, RDFS.subClassOf, ProcessParticipant);		
-		schema.add(Location, RDFS.subClassOf, BioPAX2.openControlledVocabulary);
+		// schema.add(Location, RDFS.subClassOf, BioPAX2.openControlledVocabulary);
 		
 		schema.add(BioPAX2.LEFT, RDFS.subPropertyOf, hasParticipantLeft);		
-		schema.add(BioPAX2.RIGHT, RDFS.subPropertyOf, hasParticipantRight);		
+		schema.add(BioPAX2.RIGHT, RDFS.subPropertyOf, hasParticipantRight);	
+		
+		schema.add(BioPAX2.protein, RDFS.subClassOf, Protein);		
+		schema.add(BioPAX2.dna, RDFS.subClassOf, DNA);		
+		schema.add(BioPAX2.rna, RDFS.subClassOf, RNA);		
+		schema.add(BioPAX2.complex, RDFS.subClassOf, Complex);		
+		schema.add(BioPAX2.smallMolecule, RDFS.subClassOf, Metabolite);		
 	}
 	
 	static {

@@ -11,7 +11,8 @@ import java.util.Map.Entry;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.sybil.rdf.RDFBox;
+import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
 import org.vcell.util.document.KeyValue;
 
 import com.hp.hpl.jena.rdf.model.Model;
@@ -33,12 +34,12 @@ import cbit.vcell.xml.XMLTags;
  *
  */
 
-public class VCMetaData implements RDFBox {
+public class VCMetaData {
 	
 	public static final Namespace nsVCML = Namespace.getNamespace("vcml",XMLTags.VCML_NS);
 
 	protected IdentifiableProvider identifiableProvider;
-	protected RDFBox rdfBox = new RDFBox.Default();
+	protected SBBox rdfBox = SBBoxFactory.create();
 	protected String baseURI;
 	protected OpenRegistry registry = new OpenRegistry();
 	private IdentityHashMap<OpenEntry, NonRDFAnnotation> nonRDFAnnotationMap =
@@ -51,6 +52,8 @@ public class VCMetaData implements RDFBox {
 		this.keyValue = key;
 	}
 
+	public SBBox box() { return rdfBox; }
+	
 	public Model getRdf() { return rdfBox.getRdf(); }
 	public String getBaseURI() { return baseURI; }
 	public OpenRegistry getRegistry() { return registry; }
