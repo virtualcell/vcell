@@ -1,4 +1,4 @@
-package cbit.vcell.microscopy.gui.choosemodelwizard;
+package cbit.vcell.microscopy.batchrun.gui.chooseModelWizard;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -8,37 +8,38 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import org.vcell.wizard.WizardPanelDescriptor;
 
-public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
+public class ModelTypesDescriptor extends WizardPanelDescriptor {
     
-    public static final String IDENTIFIER = "ChooseModel_ModelTypes";
-    private FRAPSingleWorkspace frapWorkspace = null;
-    private ChooseModel_ModelTypesPanel modelTypesPanel = new ChooseModel_ModelTypesPanel();
+    public static final String IDENTIFIER = "BatchRun_ModelTypes";
+    private FRAPBatchRunWorkspace batchRunWorkspace = null;
+    private ModelTypesPanel modelTypesPanel = new ModelTypesPanel();
     
-    public ChooseModel_ModelTypesDescriptor () {
+    public ModelTypesDescriptor () {
     	super();
     	setPanelDescriptorIdentifier(IDENTIFIER);
         setPanelComponent(modelTypesPanel);
     }
     
     public String getNextPanelDescriptorID() {
-        return ChooseModel_RoiForErrorDescriptor.IDENTIFIER;
+        return RoiForErrorDescriptor.IDENTIFIER;
     }
     
     public String getBackPanelDescriptorID() {
         return null;
     }  
     
-    public void setFrapWorkspace(FRAPSingleWorkspace arg_FrapWorkspace)
+    public void setBatchRunWorkspace(FRAPBatchRunWorkspace arg_batchRunWorkspace)
     {
-    	frapWorkspace = arg_FrapWorkspace;
+    	batchRunWorkspace = arg_batchRunWorkspace;
     }
     
     public void aboutToDisplayPanel() 
     {
-    	FRAPStudy fStudy = frapWorkspace.getWorkingFrapStudy();
+    	FRAPStudy fStudy = batchRunWorkspace.getWorkingFrapStudy();
     	//if there are models selected and saved, load the model types. otherwise, apply default(diffusion with one component is selected).
     	if(fStudy.getModels() != null && fStudy.getModels().length > 0 && fStudy.getSelectedModels().size() > 0)
     	{
@@ -72,8 +73,7 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				FRAPStudy fStudy = frapWorkspace.getWorkingFrapStudy();
-				if(fStudy != null)
+				if(batchRunWorkspace != null)
 		    	{
 					boolean[] models = modelTypesPanel.getModelTypes();
 					boolean isOneSelected = false;
@@ -87,8 +87,8 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 					}
 					if(isOneSelected)
 					{
-			    		//update selected models in FrapStudy
-			    		fStudy.refreshModels(models);
+			    		//update selected models in batchRunWorkspace and all frapStudies in the BatchRun
+						batchRunWorkspace.refreshModels(models);
 					}
 					else
 					{

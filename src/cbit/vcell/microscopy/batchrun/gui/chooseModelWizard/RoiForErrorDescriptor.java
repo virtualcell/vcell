@@ -1,4 +1,4 @@
-package cbit.vcell.microscopy.gui.choosemodelwizard;
+package cbit.vcell.microscopy.batchrun.gui.chooseModelWizard;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -6,18 +6,19 @@ import java.util.Hashtable;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
 
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
-public class ChooseModel_RoiForErrorDescriptor extends WizardPanelDescriptor{
+public class RoiForErrorDescriptor extends WizardPanelDescriptor{
     
-    public static final String IDENTIFIER = "ChooseModel_RoiForError";
-    public FRAPSingleWorkspace frapWorkspace = null;
+    public static final String IDENTIFIER = "BatchRun_RoiForError";
+    public FRAPBatchRunWorkspace bathRunWorkspace = null;
     
-    public ChooseModel_RoiForErrorDescriptor () {
-        super(IDENTIFIER, new ChooseModel_RoiForErrorPanel());
+    public RoiForErrorDescriptor () {
+        super(IDENTIFIER, new RoiForErrorPanel());
     }
     
     public String getNextPanelDescriptorID() {
@@ -25,19 +26,19 @@ public class ChooseModel_RoiForErrorDescriptor extends WizardPanelDescriptor{
     }
     
     public String getBackPanelDescriptorID() {
-        return ChooseModel_ModelTypesDescriptor.IDENTIFIER;
+        return ModelTypesDescriptor.IDENTIFIER;
     }
     
     public void aboutToDisplayPanel() 
     {
-    	((ChooseModel_RoiForErrorPanel)getPanelComponent()).refreshCheckboxes();
-    	((ChooseModel_RoiForErrorPanel)getPanelComponent()).refreshROIImage();
+    	((RoiForErrorPanel)getPanelComponent()).refreshCheckboxes();
+    	((RoiForErrorPanel)getPanelComponent()).refreshROIImage();
 	}
     
-    public void setFrapWorkspace(FRAPSingleWorkspace arg_FrapWorkspace)
+    public void setBatchRunWorkspace(FRAPBatchRunWorkspace arg_BarchRunWorkspace)
     {
-    	frapWorkspace = arg_FrapWorkspace;
-    	((ChooseModel_RoiForErrorPanel)getPanelComponent()).setFrapWorkspace(arg_FrapWorkspace);
+    	bathRunWorkspace = arg_BarchRunWorkspace;
+    	((RoiForErrorPanel)getPanelComponent()).setFrapWorkspace(arg_BarchRunWorkspace.getWorkingSingleWorkspace());
     }
     
     public ArrayList<AsynchClientTask> preNextProcess()
@@ -48,7 +49,7 @@ public class ChooseModel_RoiForErrorDescriptor extends WizardPanelDescriptor{
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				boolean[] selectedROIs = ((ChooseModel_RoiForErrorPanel)getPanelComponent()).getSelectedROIs();
+				boolean[] selectedROIs = ((RoiForErrorPanel)getPanelComponent()).getSelectedROIs();
 				boolean isOneSelected = false;
 				for(int i=0; i<selectedROIs.length; i++)
 				{
@@ -60,7 +61,7 @@ public class ChooseModel_RoiForErrorDescriptor extends WizardPanelDescriptor{
 				}
 				if(isOneSelected)
 				{
-					frapWorkspace.getWorkingFrapStudy().setSelectedROIsForErrorCalculation(selectedROIs);
+					bathRunWorkspace.setSelectedROIsForErrorCalculation(selectedROIs);
 				}
 				else
 				{

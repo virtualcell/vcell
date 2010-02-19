@@ -92,15 +92,19 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
 					if(distinctCellAreaLocations != null){
 						throw new Exception("CELL ROI has at least 2 discontinuous areas at image locations \n"+
 								"x="+distinctCellAreaLocations[0].x+",y="+distinctCellAreaLocations[0].y+
-								" and "+
-								"x="+distinctCellAreaLocations[1].x+",y="+distinctCellAreaLocations[1].y+"\n"+
-						"Use ROI editing tools to define a single continuous CELL ROI");				
+								" and " + "x="+distinctCellAreaLocations[1].x+",y="+distinctCellAreaLocations[1].y+"\n"+
+								"Use ROI editing tools to define a single continuous CELL ROI");				
 					}
 					
 					fStudy.setStartingIndexForRecovery(startIndex);
 					getFrapWorkspace().setFrapStudy(fStudy, true);
+					//generate ROI rings
+					fStudy.refreshDependentROIs();
 				}
-				else throw new Exception(msg);
+				else
+				{
+					throw new Exception(msg);
+				}
 			}
 		};
 		

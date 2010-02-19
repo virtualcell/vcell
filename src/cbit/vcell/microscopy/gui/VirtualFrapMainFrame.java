@@ -66,10 +66,13 @@ public class VirtualFrapMainFrame extends JFrame
 	
 	public static final boolean SAVE_COMPRESSED = true;
 	
-	public static Dimension INIT_WINDOW_SIZE = new Dimension(1024, 768);
-//	       new Dimension(
-//	    	   (Toolkit.getDefaultToolkit().getScreenSize().width > 1024)?((int)(Toolkit.getDefaultToolkit().getScreenSize().width*0.8)): 1024,
-//	  	       (Toolkit.getDefaultToolkit().getScreenSize().height > 768)? ((int)(Toolkit.getDefaultToolkit().getScreenSize().height*0.85)): 768);
+	public static final int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+	public static final int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+	public static final int appWidth = Math.min(screenWidth,1024);
+	public static final int appHeight = Math.min(screenHeight,768);
+	public static final int iniFrameLocX = (screenWidth - appWidth)/2;
+	public static final int iniFrameLocY = (screenHeight - appHeight)/2;
+	public static final Dimension INIT_WINDOW_SIZE = new Dimension(appWidth, appHeight);
 
 	private MenuHandler menuHandler = new MenuHandler();
 	private static final String VERSION_NUMBER = "VFrap 1.0";
@@ -405,11 +408,9 @@ public class VirtualFrapMainFrame extends JFrame
     
     //set window size
     setSize(INIT_WINDOW_SIZE);
-    setLocation(
-    	(Toolkit.getDefaultToolkit().getScreenSize().width-getSize().width)/2,
-    	(Toolkit.getDefaultToolkit().getScreenSize().height-getSize().height)/2);
+    setLocation( iniFrameLocX, iniFrameLocY);
+    
     updateStatus("This is the main frame of Virtual Frap.");
-	
     //to handle the close button of the frame
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     addWindowListener(new WindowAdapter() {

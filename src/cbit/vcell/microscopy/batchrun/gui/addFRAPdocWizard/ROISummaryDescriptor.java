@@ -102,6 +102,8 @@ public class ROISummaryDescriptor extends WizardPanelDescriptor {
 					
 					fStudy.setStartingIndexForRecovery(startIndex);
 					getBatchRunWorkspace().setWorkingFRAPStudy(fStudy);
+					//generate ROI rings
+					fStudy.refreshDependentROIs();
 				}
 				else throw new Exception(msg);
 			}

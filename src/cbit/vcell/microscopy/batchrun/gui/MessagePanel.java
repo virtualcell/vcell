@@ -7,8 +7,11 @@ import java.awt.FlowLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 
-public class MessagePanel extends JPanel
+import cbit.vcell.client.task.ClientTaskStatusSupport;
+
+public class MessagePanel extends JPanel implements ClientTaskStatusSupport
 {
 	private JLabel message = null;
 	private JProgressBar progress = null;
@@ -32,25 +35,49 @@ public class MessagePanel extends JPanel
 			progress = new JProgressBar();
 			progress.setMaximum(100);
 			progress.setMinimum(0);
-//			progress.setSize(100, 25);
+			progress.setStringPainted(true);
 			add(progress);
 		}
 //		setSize(600,35);
 		setPreferredSize(new Dimension(600,30));
 	}
 	
-	public void setProgress(int prog)
+	public void setProgress(final int prog)
 	{
 		if(progress != null)
 		{
-			progress.setValue(prog);
-			progress.updateUI();
+			SwingUtilities.invokeLater(new Runnable() {
+				
+				public void run() {
+					progress.setValue(prog);
+//					progress.updateUI();
+				}
+			});
+			
 		}
 	}
 	
 	public void setProgressCompleted()
 	{
-		this.remove(progress);
-		this.add(new JLabel("  Done."));
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			public void run() {
+				MessagePanel.this.remove(progress);
+				MessagePanel.this.add(new JLabel("  Done."));
+			}
+		});
+		
+	}
+
+	public int getProgress() {
+		return progress.getValue();
+	}
+
+	public boolean isInterrupted() {
+		return false;
+	}
+
+	public void setMessage(String msg) {
+		message.setText(msg);
 	}
 }

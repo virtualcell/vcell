@@ -81,7 +81,7 @@ public class VirtualFrapLoader {
     public static JFileChooser saveMovieFileChooser;
     //set default font 
     public static Font defaultFont = new Font("Tahoma", Font.PLAIN, 11); 
-    //set the only one instance of the main frame 
+    //the only one instance of the main frame 
     public static VirtualFrapMainFrame mf; 
 	
 	public static void main(final String[] args)
@@ -159,6 +159,7 @@ public class VirtualFrapLoader {
 		        UIManager.put ("FileChooser.font", defaultFont);
 							
 				mf = new VirtualFrapMainFrame(localWorkspace, frapWorkspace, batchRunWorkspace);
+				System.out.println(mf.getLocation().x + "---"+mf.getLocation().y);
 				mf.setMainFrameTitle("");
 				mf.setVisible(true);
 			

@@ -1,4 +1,4 @@
-package cbit.vcell.microscopy.gui.choosemodelwizard;
+package cbit.vcell.microscopy.batchrun.gui.chooseModelWizard;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -26,7 +26,7 @@ import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.ROIImagePanel;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 
-public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListener
+public class RoiForErrorPanel extends JPanel implements ActionListener
 {
 	private JTable table;
 	JPanel centerPanel = null;
@@ -69,7 +69,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 	boolean[] selectedROIs = null;
 	
 	
-	public ChooseModel_RoiForErrorPanel() {
+	public RoiForErrorPanel() {
 		super();
 		setLayout(new BorderLayout());
 
@@ -538,7 +538,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 	{
 		FRAPData frapData = frapWorkspace.getWorkingFrapStudy().getFrapData();
 		ROI[] rois = frapData.getRois();
-		//disable all the checkboxes first
+		//enable all the checkboxes first
 		setAllCheckboxesEnabled(false);
 		setAllCheckboxesSelected(false);
 		//disable ROIs with 0 pixel in it

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 
+import org.vcell.util.Origin;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 
@@ -13,21 +14,31 @@ import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.DataProcessingInstructions;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solvers.CartesianMesh;
+
 
 public class FRAPOptData {
 	public static String[] ONEDIFFRATE_PARAMETER_NAMES = new String[]{"diffRate",
@@ -89,7 +100,7 @@ public class FRAPOptData {
 	private static final String REFERENCE_DIFF_RATE_STR = REFERENCE_DIFF_RATE_COEFFICIENT +"*(t+"+ REFERENCE_DIFF_DELTAT +")";
 		
 	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace,
-			ClientTaskStatusSupport progressListener/*, boolean bRefSim*/) throws Exception
+			ClientTaskStatusSupport progressListener) throws Exception
 	{
 		expFrapStudy = argExpFrapStudy;
 		setNumEstimatedParams(numberOfEstimatedParams);
@@ -221,13 +232,18 @@ public class FRAPOptData {
 			new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
 		VCSimulationDataIdentifier vcSimDataID =
 			new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
-		//original simulation time points
-		final double[] rawRefDataTimePoints = getLocalWorkspace().getVCDataManager().getDataSetTimes(vcSimDataID);
+		//read results from netCDF file
+		String ncFileStr = new File(getLocalWorkspace().getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION).getAbsolutePath();
+		NetCDFRefDataReader refDataReader = new NetCDFRefDataReader(ncFileStr);
+		//get ref sim time points
+		double[] rawRefDataTimePoints = refDataReader.getTimePoints();
 		//get shifted time points
 		refDataTimePoints = timeShiftForBaseDiffRate(rawRefDataTimePoints);
-		//get sim data
-		dimensionReducedRefData = FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID, rawRefDataTimePoints,
-					 			  getExpFrapStudy().getFrapData().getRois(), progressListener, true);
+		//get summarized raw ref data
+		double[][] rawData = refDataReader.getRegionVar(); //contains only 8rois +1(the area that beyond 8 rois)
+		//extend to whole roi data
+		dimensionReducedRefData = extendFromSimToFullROIData(rawData, refDataTimePoints.length);
+		
 		System.out.println("generating dimension reduced ref data, done ....");
 		
 		//if reference simulation completes successfully, we save reference data info and remove old simulation files.
@@ -235,13 +251,11 @@ public class FRAPOptData {
 		Arrays.fill(selectedROIs, true);
 		getExpFrapStudy().setStoredRefData(FRAPOptimization.doubleArrayToSimpleRefData(dimensionReducedRefData, getRefDataTimePoints(), 0, selectedROIs));
 
-		//TODO: there is situation that no xml file name exists. we have to save again here, because if user doesn't press "save button" the reference simulation external info won't be saved.
-//		MicroscopyXmlproducer.writeXMLFile(getExpFrapStudy(), new File(getExpFrapStudy().getXmlFilename()), true, null, VirtualFrapMainFrame.SAVE_COMPRESSED);
 		//remove reference simulation files
-		if(referenceSimKeyValue!= null)
-		{
-			FRAPStudy.removeSimulationFiles(referenceSimKeyValue, getLocalWorkspace());
-		}
+		FRAPStudy.removeSimulationFiles(referenceSimKeyValue, getLocalWorkspace()); 
+		//remove experimental and roi external files
+		FRAPStudy.removeExternalFiles(getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(), 
+				                      getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), getLocalWorkspace());
 	}
 	
 	private double[] timeShiftForBaseDiffRate(double[] timePoints)
@@ -256,6 +270,50 @@ public class FRAPOptData {
 		}
 		return shiftedTimePoints;
 	}
+	/*
+	 * From netCDF file, the rawdata contains average data over time under difference 8 roi rings,
+	 * which are stored in colume1 to colume8. colume0 stores the time average data from region0
+	 * which is the area beyond ring1-8.
+	 * Here we want to generate a double array which includes all roi data (bleached, bg, cell, ring1 to ring8)
+	 */
+	private double[][] extendFromSimToFullROIData(double[][] rawData, int numTimePoints)
+	{
+		double[][] results = null;
+
+		int numRois = FRAPData.VFRAP_ROI_ENUM.values().length;
+		if(rawData != null && rawData.length > 0)
+		{
+			//get bleached roi data from ring1, ring2 and ring3 data
+			double[] ring1Data = rawData[1];
+			double[] ring2Data = rawData[2];
+			double[] ring3Data = rawData[3];
+			int numRing1Pixels = expFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()).getNonzeroPixelsCount();
+			int numRing2Pixels = expFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()).getNonzeroPixelsCount();
+			int numRing3Pixels = expFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()).getNonzeroPixelsCount();
+			results = new double[numRois][numTimePoints];
+			int totalRoiRings = 8;
+			int ring1IdxInRawData = 1;
+			int ring1IdxDiff = 2; //because ring1 index in restuls is 3  
+			//move ring1-8(colume 1-8) in rawData to the last 8 columes in results
+			for(int i=ring1IdxInRawData; i<(ring1IdxInRawData+totalRoiRings); i++)
+			{
+				results[i+ring1IdxDiff] = rawData[i];
+			}
+			//get bleached roi time average data and store it in results colume 0
+			double[] bleachedRoiData = new double[numTimePoints];
+			for(int i=0; i<numTimePoints; i++)
+			{
+				bleachedRoiData[i]= (ring1Data[i]*numRing1Pixels + ring2Data[i]*numRing2Pixels + ring3Data[i] *numRing3Pixels)/(numRing1Pixels+numRing2Pixels+numRing3Pixels); 
+			}
+			results[0] = bleachedRoiData;
+			//put rawData[0] to the second and third column in results (for background and cell)
+			//they are not used for optimization, and since we have no way to get the time average data for them
+			//we then use rawData colume 0 to fill them.
+			results[1]=rawData[0];
+			results[2]=rawData[0];        
+		}			                
+		return results;
+	}
 	
 	public KeyValue runRefSimulation(final ClientTaskStatusSupport progressListener) throws Exception
 	{
@@ -264,11 +322,13 @@ public class FRAPOptData {
 			progressListener.setMessage("Running Reference Simulation...");
 		}
 		try{
+			FieldDataIdentifierSpec psfFieldFunc = FRAPStudy.getPSFFieldData(getLocalWorkspace());
 			bioModel = FRAPStudy.createNewRefBioModel(expFrapStudy,
 													REFERENCE_DIFF_RATE_STR, 
 													getRefTimeStep(), 
 													LocalWorkspace.createNewKeyValue(), 
-													LocalWorkspace.getDefaultOwner(), 
+													LocalWorkspace.getDefaultOwner(),
+													psfFieldFunc,
 													expFrapStudy.getStartingIndexForRecovery());
 			
 			//change time bound and time step
@@ -277,18 +337,27 @@ public class FRAPOptData {
 			sim.getSolverTaskDescription().setTimeStep(getRefTimeStep());
 			sim.getSolverTaskDescription().setOutputTimeSpec(getRefTimeSpec());
 			
+			DataProcessingInstructions dpi = getExpFrapStudy().getDataProcessInstructions(getLocalWorkspace());//coding...
+			sim.setDataProcessingInstructions(dpi);
 			System.out.println("run FRAP Reference Simulation...");
 
 			//run simulation
-			FRAPStudy.runFVSolverStandalone(
+			FRAPStudy.runFVSolverStandalone_ref(
 				new File(getLocalWorkspace().getDefaultSimDataDirectory()),
 				new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 				bioModel.getSimulations(0),
 				getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
 				getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
+				psfFieldFunc.getExternalDataIdentifier(),
 				progressListener, true);
+
+			KeyValue referenceSimKeyValue = sim.getVersion().getVersionKey();
+			VCSimulationIdentifier vcSimID = 
+				new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
+			VCSimulationDataIdentifier vcSimDataID =
+				new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
 			
-			return sim.getVersion().getVersionKey();
+			return referenceSimKeyValue;
 		}catch(Exception e){
 			if(bioModel != null && bioModel.getSimulations() != null){
 				FRAPStudy.removeExternalDataAndSimulationFiles(
