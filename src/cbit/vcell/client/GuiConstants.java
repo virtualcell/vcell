@@ -25,5 +25,7 @@ public class GuiConstants {
 	public static final String ACTIONCMD_OPEN_GEOMETRY = "Open Geometry";
 	public static final String ACTIONCMD_VIEW_SURFACES = "View Surfaces";
 	
+	public static final String ACTIONCMD_ADD_EVENT = "Add Event";
+	
 	public static final String VCELL_SUPPORT_ACCOUNT_ID = "VCellSupport";
 }

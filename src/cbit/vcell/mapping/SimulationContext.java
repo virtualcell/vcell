@@ -301,6 +301,17 @@ public SimulationContext(SimulationContext simulationContext, boolean arg_isStoc
 			throw new RuntimeException("");
 		}
 	}
+	
+	if (!isStoch) {
+		BioEvent[] bioEvents = simulationContext.getBioEvents();
+		if (bioEvents != null) {
+			fieldBioEvents = new BioEvent[bioEvents.length];
+			for (int i = 0; i < bioEvents.length; i++) {
+				fieldBioEvents[i] = new BioEvent(bioEvents[i], this);
+			}
+		}
+	}
+	
 	refreshDependencies();
 }
 
@@ -1636,6 +1647,14 @@ public void setGeometry(Geometry geometry) throws MappingException {
 		}
 		oldGeometry.getGeometrySpec().removePropertyChangeListener(this);
 		getGeometry().getGeometrySpec().addPropertyChangeListener(this);
+		if (geometry != null && geometry.getDimension() > 0) {
+			try {
+				setBioEvents(null);
+			} catch (PropertyVetoException e) {				
+				e.printStackTrace(System.out);
+				throw new MappingException(e.getMessage());
+			}
+		}
 // now firing from geoContext
 //		firePropertyChange("geometry",oldGeometry,geometry);
 	}
@@ -1782,7 +1801,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	if (evt.getSource() == this && evt.getPropertyName().equals("bioevents")) {
 		BioEvent newBioevents[] = (BioEvent[])evt.getNewValue();
 		if (newBioevents==null){
-			throw new PropertyVetoException("Bioevents cannot be null",evt);
+			return;
 		}
 		//
 		// check that names are not duplicated and that no names are ReservedSymbols
@@ -2060,4 +2079,23 @@ protected boolean hasEventAssignment(SpeciesContext speciesContext) {
 	return false;
 }
 
+public BioEvent getEvent(String name) {
+	for (BioEvent e : fieldBioEvents) {
+		if (name.equals(e.getName())) {
+			return e;
+		}
+	}	
+	return null;
+}
+
+public String getFreeEventName() {	
+	int count=0;
+	while (true) {
+		String eventName = "event"+count;
+		if (getEvent(eventName) == null) {
+			return eventName;
+		}
+		count++;
+	}
+}
 }

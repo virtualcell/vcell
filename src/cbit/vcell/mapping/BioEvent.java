@@ -29,7 +29,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			this.target = argTarget;
 			this.assignmentExpression = assignment;
 		}
-		
+
 		public boolean compareEqual(Matchable obj) {
 			if (obj == null) {
 				return false;
@@ -70,6 +70,12 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			this.bUseValuesFromTriggerTime = bUseValuesFromTriggerTime;
 			this.durationExpression = durationExpression;
 		}
+		
+		public Delay(Delay argDelay) {
+			this.bUseValuesFromTriggerTime = argDelay.bUseValuesFromTriggerTime;
+			this.durationExpression = new Expression(argDelay.durationExpression);
+		}
+		
 		public boolean compareEqual(Matchable obj) {
 			if (obj == null) {
 				return false;
@@ -107,15 +113,39 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoPropertyChange;
 	
-	public BioEvent(String name, Expression triggerExpression, Delay delay, ArrayList<EventAssignment> eventAssignmentList) {
+	public BioEvent(String name, SimulationContext simContext) {
+		this(name, new Expression(0.0), null, new ArrayList<EventAssignment>(), simContext);		
+	}
+	
+	public BioEvent(String name, Expression triggerExpression, Delay delay, ArrayList<EventAssignment> eventAssignmentList, 
+			SimulationContext simContext) {
 		super();
 		this.name = name; 
 		this.triggerExpression = triggerExpression;
 		this.delay = delay;
 		this.eventAssignmentList = eventAssignmentList;
+		simulationContext = simContext;
 	}
 
-
+	public BioEvent(BioEvent argBioEvent, SimulationContext argSimContext) {
+		this.simulationContext = argSimContext;
+		this.name = argBioEvent.getName();
+		this.triggerExpression = new Expression(argBioEvent.getTriggerExpression());
+		if (argBioEvent.getDelay() != null) {
+			this.delay = new Delay(argBioEvent.getDelay());
+		}
+		for (int i = 0; i < argBioEvent.getNumEventAssignments(); i++) {
+			EventAssignment oldEA = argBioEvent.getEventAssignments().get(i);
+			EventAssignment newEA;
+			try {
+				newEA = new EventAssignment(simulationContext.getEntry(oldEA.getTarget().getName()), new Expression(oldEA.getAssignmentExpression()));
+			} catch (ExpressionBindingException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Error copying event assignment'" + oldEA.getTarget().getName() + "' in event '" + name + "' : " + e.getMessage());
+			}
+			this.eventAssignmentList.add(newEA);
+		}
+	}
 	public final Expression getTriggerExpression() {
 		return triggerExpression;
 	}
@@ -129,8 +159,20 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	}
 
 
-	public void setSimulationContext(SimulationContext simulationContext) {
-		this.simulationContext = simulationContext;
+//	public void setSimulationContext(SimulationContext simulationContext) {
+//		this.simulationContext = simulationContext;
+//	}
+
+	public void setTriggerExpression(Expression triggerExpr) {
+		Expression oldValue = triggerExpression;
+		this.triggerExpression = triggerExpr;
+		firePropertyChange("trigger", oldValue, triggerExpr);
+	}
+
+	public void setDelay(Delay newDelay) {
+		Delay oldValue = delay;
+		this.delay = newDelay;
+		firePropertyChange("delay", oldValue, newDelay);
 	}
 
 	public boolean compareEqual(Matchable obj) {
@@ -165,6 +207,13 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		return eventAssignmentList.size();
 	}
 	
+	/**
+	 * The addPropertyChangeListener method was generated to support the propertyChange field.
+	 */
+	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+		getPropertyChange().addPropertyChangeListener(listener);
+	}
+
 	public void addEventAssignment(EventAssignment eventAssign) throws PropertyVetoException {
 		if (eventAssign == null){
 			return;
@@ -180,6 +229,13 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		newEventAssignmentList.add(eventAssign);
 		setEventAssignmentsList(newEventAssignmentList);
 	}   
+
+	/**
+	 * The removePropertyChangeListener method was generated to support the propertyChange field.
+	 */
+	public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+		getPropertyChange().removePropertyChangeListener(listener);
+	}
 
 	public void removeEventAssignment(EventAssignment eventAssign) throws PropertyVetoException {
 		if (eventAssign == null){
