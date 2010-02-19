@@ -2278,8 +2278,8 @@ private BioEvent getBioEvent(SimulationContext simContext, Element bioEventEleme
 		}
 	}
 	
-	BioEvent bioEvent = new BioEvent(name, triggerExp, delay, eventAssignmentList);
-	bioEvent.setSimulationContext(simContext);
+	BioEvent bioEvent = new BioEvent(name, triggerExp, delay, eventAssignmentList, simContext);
+//	bioEvent.setSimulationContext(simContext);
 	try {
 		bioEvent.bind();
 	} catch (ExpressionBindingException e) {

@@ -14,6 +14,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 
 import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
@@ -25,6 +26,7 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	private Icon gParamIcon;
 	private Icon aParamIcon;
 	private Icon reactionsIcon;
+	private Icon eventIcon;
 	
 	
 	public SPPRTreeCellRenderer() {
@@ -39,8 +41,10 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	    gParamIcon = new ImageIcon(getClass().getResource("/images/gparamItem.gif"));
 	    aParamIcon = new ImageIcon(getClass().getResource("/images/aparamItem.gif"));
 	    reactionsIcon = new ImageIcon(getClass().getResource("/images/reactionsItem.gif"));
+	    eventIcon = new ImageIcon(getClass().getResource("/images/eventItem.gif"));
     	
-	    if((speciesIcon == null) || (gParamIcon == null) || (aParamIcon == null) || (reactionsIcon == null)) {
+	    if((speciesIcon == null) || (gParamIcon == null) || (aParamIcon == null) || 
+	       (reactionsIcon == null) || (eventIcon == null)) {
             System.err.println("At least one icon is missing.");
 	    }
     }
@@ -67,7 +71,7 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
     	} else if (userObj instanceof SPPRTreeFolderNode) {
         	SPPRTreeFolderNode folder = (SPPRTreeFolderNode)userObj; 
         	labelText = folder.getName();
-        	if (!SPPRTreeModel.FOLDER_NODE_IMPLEMENTED[folder.getId()]) {
+        	if (!SPPRTreeModel.FOLDER_NODE_IMPLEMENTED[folder.getId()] || !folder.isSupported()) {
 	        	setEnabled(false);
 	        	setDisabledIcon(this.getClosedIcon());
         	}
@@ -83,6 +87,19 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
         	icon = reactionsIcon;
         	labelText = ((ReactionStep)userObj).getName();
         	toolTipPrefix = "Reaction : ";
+        } else if (userObj instanceof BioEvent) {			// --- reaction
+        	BioEvent bioEvent = (BioEvent)userObj;
+        	SimulationContext simulationContext = bioEvent.getSimulationContext();
+			if (simulationContext.getGeometry() != null && simulationContext.getGeometry().getDimension() > 0 
+					|| simulationContext.isStoch()) {
+				setEnabled(false);
+				setDisabledIcon(this.getClosedIcon());
+			} else {
+				icon = eventIcon;
+				labelText = bioEvent.getName();
+				toolTipPrefix = "Event : ";
+			}
+			
 //        } else if (isApplicationParam(value)) {	// --- not implemented
 //        	icon = aParamIcon;
 //        	labelText = (String)((BioModelNode)value).getUserObject();

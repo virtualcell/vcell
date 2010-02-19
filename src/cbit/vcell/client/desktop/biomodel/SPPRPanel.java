@@ -3,13 +3,23 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.Enumeration;
 
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -19,8 +29,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.vcell.util.gui.DialogUtils;
+
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
@@ -28,6 +42,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.gui.ModelParameterPanel;
+import cbit.vcell.parser.ExpressionException;
 
 public class SPPRPanel extends JPanel {
 
@@ -37,28 +52,70 @@ public class SPPRPanel extends JPanel {
 	private InitialConditionsPanel initialConditionsPanel;
 	private ModelParameterPanel modelParameterPanel;
 	private ReactionSpecsPanel reactionSpecsPanel;
+	private EventsDisplayPanel eventsDisplayPanel = null;
 	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
 	private SPPRTreeModel spprTreeModel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 //	private FolderStatus folderStatus = new FolderStatus();
+	
+	// menu items to add events
+	private JMenuItem menuItemAddEvent = null;
+	private JPopupMenu addEventPopupMenu = null;
+	private JPopupMenu deleteEventPopupMenu = null;
+	private JMenuItem menuItemDeleteEvent = null;
 
-
-	class IvjEventHandler implements javax.swing.event.TreeSelectionListener, MouseListener {
+	class IvjEventHandler implements javax.swing.event.TreeSelectionListener, MouseListener, PropertyChangeListener, ActionListener {
 		
-		public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
-			if (e.getSource() == SPPRPanel.this.getSpprTree()) 
+		public void valueChanged(javax.swing.event.TreeSelectionEvent e) {			
+			if (e.getSource() == SPPRPanel.this.getSpprTree())
 				treeValueChanged(e);
 		}
-		public void mouseClicked(MouseEvent e) {}
+		public void mouseClicked(MouseEvent e) {
+			boolean bRightClick = SwingUtilities.isRightMouseButton(e);		
+			if (bRightClick) {
+				if (e.getSource() == SPPRPanel.this.getSpprTree()) {			
+					DefaultMutableTreeNode currentTreeSelection = (DefaultMutableTreeNode)getSpprTree().getLastSelectedPathComponent();
+					if(currentTreeSelection == null){
+						return;
+					}
+					Object selectedObject = currentTreeSelection.getUserObject();;
+					Point mousePoint = e.getPoint();
+					if (selectedObject instanceof SPPRTreeFolderNode) {
+						SPPRTreeFolderNode stfn = (SPPRTreeFolderNode)selectedObject;
+						if (stfn.getName().equals("Events")) {
+							getAddEventPopupMenu().show(getSpprTree(), mousePoint.x, mousePoint.y);
+						}
+					} else if (selectedObject instanceof BioEvent) {
+						getDeleteEventPopupMenu().show(getSpprTree(), mousePoint.x, mousePoint.y);
+					}
+				}					
+			} 
+
+		}
 		public void mouseEntered(MouseEvent e) {}
 		public void mouseExited(MouseEvent e) {}
 		public void mousePressed(MouseEvent e) {}
 		public void mouseReleased(MouseEvent e) {}
+	
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getSource() == getEventsDisplayPanel() && evt.getPropertyName().equals("selectedBioEvent")) {
+				getSpprTreeModel().setSelectedValue(evt.getNewValue());
+			}
+		}
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource().equals(getMenuItemAddEvent())) {
+				addEvent();
+			}
+			if (e.getSource().equals(getMenuItemDeleteEvent())) {
+				deleteEvent();
+			}
+			
+		}	
 	};
 	
 	public static void main(String[] args) {
 	}
-	
+
 	public SPPRPanel() {
 		super();
 		setLayout(new GridBagLayout());
@@ -71,6 +128,7 @@ public class SPPRPanel extends JPanel {
 		getInitialConditionsPanel().setSimulationContext(fieldSimulationContext);
 		getModelParameterPanel().setModel(fieldSimulationContext.getModel());
 		getReactionSpecsPanel().setSimulationContext(fieldSimulationContext);
+		getEventsDisplayPanel().setSimulationContext(fieldSimulationContext);
 		getSpprTreeModel().setSimulationContext(fieldSimulationContext);
 		getSpprTree().setSelectionRow(1);
 		getSpprTree().expandRow(1);
@@ -84,7 +142,11 @@ public class SPPRPanel extends JPanel {
 	private void initConnections() throws java.lang.Exception {
 //		System.out.println("SPPRPanel:  initConnections()");
 		spprTree.addTreeSelectionListener(ivjEventHandler);
+		spprTree.addMouseListener(ivjEventHandler);
 		spprTree.addTreeExpansionListener(getSpprTreeModel());
+		getEventsDisplayPanel().addPropertyChangeListener(ivjEventHandler);
+		getMenuItemAddEvent().addActionListener(ivjEventHandler);
+		getMenuItemDeleteEvent().addActionListener(ivjEventHandler);
 	}	
 
 	private void initialize() {
@@ -186,7 +248,7 @@ public class SPPRPanel extends JPanel {
 	
 	private void setupRightComponent(SPPRTreeFolderNode folderNode, Object leaf) {
 		int folderId = folderNode.getId();
-		if (SPPRTreeModel.FOLDER_NODE_IMPLEMENTED[folderId]) {
+		if (SPPRTreeModel.FOLDER_NODE_IMPLEMENTED[folderId] && folderNode.isSupported()) {
 			if(folderId == SPPRTreeModel.INITIAL_CONDITIONS_NODE) {
 				//  replace right-side panel only if the correct one is not there already
 				if(outerSplitPane.getRightComponent() != getInitialConditionsPanel()) {
@@ -203,6 +265,11 @@ public class SPPRPanel extends JPanel {
 					outerSplitPane.setRightComponent(getReactionSpecsPanel());
 				}
 				getReactionSpecsPanel().setScrollPaneTableCurrentRow((ReactionStep)leaf);	// notify right panel about selection change
+			} else if(folderId == SPPRTreeModel.EVENTS_NODE) {
+				if(outerSplitPane.getRightComponent() != getEventsDisplayPanel()) {
+					outerSplitPane.setRightComponent(getEventsDisplayPanel());
+				}
+				getEventsDisplayPanel().setScrollPaneTableCurrentRow((BioEvent)leaf);	// notify right panel about selection change
 			}
 		} else {
 			JPanel emptyPanel = new JPanel();
@@ -245,4 +312,97 @@ public class SPPRPanel extends JPanel {
 		}
 		return reactionSpecsPanel;
 	}	
+	private EventsDisplayPanel getEventsDisplayPanel() {
+		if (eventsDisplayPanel == null) {
+			try {
+				eventsDisplayPanel = new EventsDisplayPanel(true);
+				eventsDisplayPanel.setName("EventsDisplayPanel");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return eventsDisplayPanel;
+	}	
+	
+	private JMenuItem getMenuItemAddEvent() {
+		if (menuItemAddEvent == null) {
+			try {
+				menuItemAddEvent = new javax.swing.JMenuItem();
+				menuItemAddEvent.setName("JMenuItemAddEvent");
+				menuItemAddEvent.setMnemonic('a');
+				menuItemAddEvent.setText("Add Event");
+				menuItemAddEvent.setActionCommand(GuiConstants.ACTIONCMD_ADD_EVENT);
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return menuItemAddEvent;
+	}
+
+	private JPopupMenu getAddEventPopupMenu() {
+		if (addEventPopupMenu == null) {
+			try {
+				addEventPopupMenu = new javax.swing.JPopupMenu();
+				addEventPopupMenu.setName("EventPopupMenu");
+				addEventPopupMenu.add(getMenuItemAddEvent());
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return addEventPopupMenu;
+	}
+	
+	private JPopupMenu getDeleteEventPopupMenu() {
+		if (deleteEventPopupMenu == null) {
+			try {
+				deleteEventPopupMenu = new javax.swing.JPopupMenu();
+				deleteEventPopupMenu.add(getMenuItemDeleteEvent());
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return deleteEventPopupMenu;
+	}
+
+	private JMenuItem getMenuItemDeleteEvent() {
+		if (menuItemDeleteEvent == null) {
+			try {
+				menuItemDeleteEvent = new javax.swing.JMenuItem();
+				menuItemDeleteEvent.setName("JMenuItemAddEvent");
+				menuItemDeleteEvent.setMnemonic('a');
+				menuItemDeleteEvent.setText("Delete");
+				menuItemDeleteEvent.setActionCommand(GuiConstants.ACTIONCMD_ADD_EVENT);
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return menuItemDeleteEvent;
+	}
+
+	private void addEvent() {
+		String eventName = fieldSimulationContext.getFreeEventName();
+		try {
+			fieldSimulationContext.addBioEvent(new BioEvent(eventName, fieldSimulationContext));
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(this, "Error adding Event : " + e.getMessage());
+		}
+	}
+	
+	public void deleteEvent() {
+		DefaultMutableTreeNode currentTreeSelection = (DefaultMutableTreeNode)getSpprTree().getLastSelectedPathComponent();
+		if(currentTreeSelection == null){
+			return;
+		}
+		Object selectedObject = currentTreeSelection.getUserObject();;
+		if (selectedObject instanceof BioEvent) {
+			BioEvent bioEvent = (BioEvent)selectedObject;
+			try {
+				fieldSimulationContext.removeBioEvent(bioEvent);
+			} catch (PropertyVetoException ex) {
+				ex.printStackTrace(System.out);
+				DialogUtils.showErrorDialog(this, ex.getMessage());
+			}
+		}		
+	}
 }
