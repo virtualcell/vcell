@@ -629,7 +629,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	{
 		//only check when doing roiAssist for bleached, this is actually used by VFRAP. (VCell has Cell ROI only)
 		if(getRoiSouceData().getCurrentlyDisplayedROI().getROIName().equals(ROISourceData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&
-				getRoiSouceData().getRoi(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name()).isAllPixelsZero())
+				getRoiSouceData().getRoi(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)
 		{
 			DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this,"Cell ROI must be defined before using ROI Assist Tool to create Bleached ROI.");
 			return;
@@ -802,7 +802,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 	 */
 	public void setROI(ROI argROI)
 	{
-		if (argROI != null /*&& roi != argROI*/) {
+		if (argROI != null /*&& roi != argROI*/ /*&& (this.isShowing() || roi == null)*/)
+		{
 			roi = argROI;
 			roiName = roi.getROIName();
 			
@@ -1750,7 +1751,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 
 	public void setRoiSouceData(ROISourceData roiSourceData) 
 	{
-		
 		this.roiSourceData = roiSourceData;
 	}
 
