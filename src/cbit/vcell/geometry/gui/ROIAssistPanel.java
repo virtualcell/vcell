@@ -1062,7 +1062,7 @@ public class ROIAssistPanel extends JPanel {
 			return validateROI;
 		}
 //		ROI validateROI = frapData.getCurrentlyDisplayedROI();
-		if(validateROI.isAllPixelsZero()){
+		if(validateROI.getNonzeroPixelsCount() < 1){
 			return validateROI;
 		}
 		//

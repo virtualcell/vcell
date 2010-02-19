@@ -194,7 +194,7 @@ public class ROI implements Matchable {
 		}
 	}
 	
-	public boolean isAllPixelsZero()
+	/*public boolean isAllPixelsZero()
 	{
 		UShortImage[] images = getRoiImages();
 		for(int i=0; i<images.length; i++)
@@ -205,8 +205,19 @@ public class ROI implements Matchable {
 			}
 		}
 		return true;
-	}
+	}*/
 
+	public int getNonzeroPixelsCount()
+	{
+		UShortImage[] images = getRoiImages();
+		int totalPixelsCount = 0;
+		for(int i=0; i<images.length; i++)
+		{
+			totalPixelsCount += images[i].getNonzeroIndices().length;
+		}
+		return totalPixelsCount;
+	}
+	
 	public static void fillAtPoint(int startX, int startY,BufferedImage roiImage,int boundaryColor){
 			if(startX <0 ||startX>=roiImage.getWidth() || startY <0 ||startY>=roiImage.getHeight() ){
 				return;
