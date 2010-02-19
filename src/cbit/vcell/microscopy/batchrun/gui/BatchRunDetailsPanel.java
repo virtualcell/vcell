@@ -56,7 +56,6 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 	private JButton addButton, deleteButton, delAllButton;
 	
 	private Wizard batchRunAddDataWizard = null;
-//	private Wizard batchRunDefineROIWizard = null;
 	private BatchRunROIImgPanel imgPanel = null;
 	
 	private JSplitPane leftSplit = null;
@@ -85,7 +84,8 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 	    //topTabPane.addMouseListener(th);
 	    leftSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,getFrapBatchRunViewPanel(), getBottomPanel());
 	    leftSplit.setDividerSize(2);
-	    leftSplit.setDividerLocation(Math.round(Toolkit.getDefaultToolkit().getScreenSize().height*1/2));
+	    leftSplit.setDividerLocation(VirtualFrapBatchRunFrame.iniDividerLocation);
+//	    leftSplit.setDividerLocation(Math.round(Toolkit.getDefaultToolkit().getScreenSize().height*1/2));
 	    setLayout(new BorderLayout());
 	    add(leftSplit, BorderLayout.CENTER);
 	    setBorder(new EmptyBorder(0,0,0,0));
@@ -287,7 +287,6 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
         }
         else if(source == delAllButton)
         {
-        	System.out.println("Delete all button pressed.");
         	//clear tree selection
         	frapBatchRunViewTree.clear();
         	//remove the data & displayed image

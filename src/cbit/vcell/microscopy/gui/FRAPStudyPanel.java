@@ -961,15 +961,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		ROI bleachROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 		ROI bgROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
 		String msg = "";
-		if(cellROI.isAllPixelsZero())
+		if(cellROI.getNonzeroPixelsCount()<1)
 		{
 			msg = msg + "Cell ROI,";
 		}
-		if(bleachROI.isAllPixelsZero())
+		if(bleachROI.getNonzeroPixelsCount()<1)
 		{
 			msg = msg + "Bleached ROI,";
 		}
-		if(bgROI.isAllPixelsZero())
+		if(bgROI.getNonzeroPixelsCount()<1)
 		{
 			msg = msg + "Background ROI,";
 		}
@@ -2109,24 +2109,24 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			{
 					FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 										
-					boolean bExtDataOK = !areExternalDataOK(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo(),fStudy.getRoiExternalDataInfo());
+					boolean bExtDataOK = areExternalDataOK(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo(),fStudy.getRoiExternalDataInfo());
+					
+					if(!bExtDataOK)
 					{
-						if(!bExtDataOK)
-						{
-							refreshBiomodel();//refresh rois
-							//if external files are missing/currupt or ROIs are changed, create keys and save them
-							fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(), FRAPStudy.IMAGE_EXTDATA_NAME));
-							fStudy.setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(), FRAPStudy.ROI_EXTDATA_NAME));
-							try {
-								fStudy.saveROIsAsExternalData(getLocalWorkspace(), fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
-								fStudy.saveImageDatasetAsExternalData(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								((ResultDisplayPanel)getAnalysisResultsPanel()).setResultsButtonEnabled(false);
-							}
+						refreshBiomodel();//refresh rois
+						//if external files are missing/currupt or ROIs are changed, create keys and save them
+						fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(), FRAPStudy.IMAGE_EXTDATA_NAME));
+						fStudy.setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(), FRAPStudy.ROI_EXTDATA_NAME));
+						try {
+							fStudy.saveROIsAsExternalData(getLocalWorkspace(), fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+							fStudy.saveImageDatasetAsExternalData(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+							((ResultDisplayPanel)getAnalysisResultsPanel()).setResultsButtonEnabled(false);
 						}
 					}
+					
 					
 //						//save model do it later. 
 //						String savedFileName = (fStudy.getXmlFilename() == null || fStudy.getXmlFilename().length()<1)? null:fStudy.getXmlFilename();

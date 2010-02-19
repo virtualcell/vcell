@@ -11,6 +11,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Hashtable;
 
@@ -35,14 +36,21 @@ import javax.swing.undo.UndoableEdit;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.wizard.Wizard;
+import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
+import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.ModelTypesDescriptor;
+import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.RoiForErrorDescriptor;
 import cbit.vcell.microscopy.gui.AboutDialog;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.HelpViewer;
@@ -53,7 +61,9 @@ import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame.MenuHandler;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame.ToolBarHandler;
+import cbit.vcell.microscopy.gui.estparamwizard.MSEPanel;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
+import cbit.vcell.opt.Parameter;
 
 /**
  * This the bottom container of virtual FRAP Batch Run 
@@ -73,7 +83,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	
 	public static final boolean SAVE_COMPRESSED = true;
 	
-	public static Dimension INIT_WINDOW_SIZE = new Dimension(1024, 768);
+	public static final int iniDividerLocation = VirtualFrapMainFrame.iniFrameLocY + (VirtualFrapMainFrame.appHeight)/2;
 
 	private BatchRunMenuHandler menuHandler = new BatchRunMenuHandler();
 	
@@ -101,6 +111,9 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	public static ToolBar toolBar = null;
 	private HelpViewer hviewer = null;
 	  
+	//modeltype wizard
+	private Wizard modelTypeWizard = null;
+	
     public class BatchRunMenuHandler implements ActionListener
 	{
     	private void saveAndSaveAs(final boolean bSaveAs)
@@ -215,14 +228,137 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		  	   			menuHandler.actionPerformed(new ActionEvent(mHelpTopics,0,HELPTOPICS_ACTION_COMMAND));
 		  	   			break;
 			  	   	case ToolBar.BUT_RUN:
-			  	   		MessagePanel msgPanel = new MessagePanel("Start running c:\\VirtualMicroscopy\\test2.vfrap", false);
-			  	   		getBatchRunDisplayPanel().getJobStatusPanel().appendMessage(msgPanel);
 			  	   		
-			  	   		msgPanel = new MessagePanel("Saving information", true);
-			  	   		getBatchRunDisplayPanel().getJobStatusPanel().appendMessage(msgPanel);
-			  	   		int progCounter = 0;
-			  	   		msgPanel.setProgress(10);
-
+				  	   	final Wizard typeWizard = getChooseModelTypeWizard();
+			   			if(typeWizard != null)
+			   			{
+			   				typeWizard.showModalDialog(new Dimension(550,420));
+			   				if(typeWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
+			   				{
+								System.out.println("choose model done.");
+								//to run batch files
+								ArrayList<AsynchClientTask> batchRunTaskList = new ArrayList<AsynchClientTask>();
+								for(int i=0; i<batchRunWorkspace.getFrapStudyList().size(); i++)
+								{
+									final int finalIdx = i;
+									AsynchClientTask message1Task = new AsynchClientTask("Preparing for parameters estimation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+									{
+										public void run(Hashtable<String, Object> hashTable) throws Exception
+										{
+											appendJobStatus("Running "+((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx)).getXmlFilename(), false);
+										}
+										
+									};
+									
+									AsynchClientTask saveTask = new AsynchClientTask("Preparing for parameters estimation ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+									{
+										public void run(Hashtable<String, Object> hashTable) throws Exception
+										{
+											FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
+//											
+											//reference data is null, it is not stored, we have to run ref simulation then
+											//check external data info
+											if(!FRAPStudyPanel.areExternalDataOK(localWorkspace,fStudy.getFrapDataExternalDataInfo(), fStudy.getRoiExternalDataInfo()))
+											{
+												//if external files are missing/currupt or ROIs are changed, create keys and save them
+												fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME));
+												fStudy.setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.ROI_EXTDATA_NAME));
+												fStudy.saveROIsAsExternalData(localWorkspace, fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+												fStudy.saveImageDatasetAsExternalData(localWorkspace, fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+											}
+										}
+									
+									};
+									
+									AsynchClientTask message2Task = new AsynchClientTask("Running reference simulation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+									{
+										public void run(Hashtable<String, Object> hashTable) throws Exception
+										{
+											MessagePanel msgPanel = appendJobStatus("Running reference simulation ...", true);
+											hashTable.put("runRefStatus", msgPanel);
+										}
+										
+									};
+									
+									AsynchClientTask runRefSimTask = new AsynchClientTask("Running reference simulation ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+									{
+										public void run(Hashtable<String, Object> hashTable) throws Exception
+										{
+											FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
+											MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
+											//run ref sim
+											fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, localWorkspace, msgPanel));
+											msgPanel.setProgressCompleted();
+										}
+									
+									};
+									
+									AsynchClientTask message3Task = new AsynchClientTask("Running reference simulation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+									{
+										public void run(Hashtable<String, Object> hashTable) throws Exception
+										{
+											MessagePanel msgPanel = appendJobStatus("Running optimization ...", true);
+											hashTable.put("optimizationStatus", msgPanel);
+										}
+										
+									};
+									
+									AsynchClientTask runOptTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+									{
+										public void run(Hashtable<String, Object> hashTable) throws Exception
+										{
+											FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
+											
+											ArrayList<Integer> models = fStudy.getSelectedModels();
+											for(int i = 0; i<models.size(); i++)
+											{
+												if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+												{
+													if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() == null)
+													{
+														fStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF);
+														Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
+														Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
+														fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(bestParameters);
+													}
+													
+													
+												}
+												else if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+												{
+													if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() == null)
+													{
+														fStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF);
+														Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
+														Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
+														fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
+													}
+												}
+											}
+											MessagePanel msgPanel = (MessagePanel)hashTable.get("optimizationStatus");
+											msgPanel.setProgressCompleted();
+										}
+									
+									};
+									batchRunTaskList.add(message1Task);
+									batchRunTaskList.add(saveTask);
+									batchRunTaskList.add(message2Task);
+									batchRunTaskList.add(runRefSimTask);
+									batchRunTaskList.add(runOptTask);
+								}
+								AsynchClientTask[] tasks = batchRunTaskList.toArray(new AsynchClientTask[batchRunTaskList.size()]);
+								ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), tasks, true, false, false, null, true);
+								
+							}
+			   			}
+//			  	   		MessagePanel msgPanel = new MessagePanel("Start running c:\\VirtualMicroscopy\\test2.vfrap", false);
+//			  	   		getBatchRunDisplayPanel().getJobStatusPanel().appendMessage(msgPanel);
+//			  	   		
+//			  	   		msgPanel = new MessagePanel("Saving information", true);
+//			  	   		getBatchRunDisplayPanel().getJobStatusPanel().appendMessage(msgPanel);
+//			  	   		int progCounter = 0;
+//			  	   		msgPanel.setProgress(10);
+			  	   		
 //			  	   		msgPanel.setProgressCompleted();
 		  	   			break;
 		  	   		default:
@@ -247,7 +383,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	    enableSave(false);
 	    
 	    //set window size
-	    setSize(INIT_WINDOW_SIZE);
+	    setSize(VirtualFrapMainFrame.appWidth, VirtualFrapMainFrame.appHeight);
 	    setLocation(
 	    	(Toolkit.getDefaultToolkit().getScreenSize().width-getSize().width)/2,
 	    	(Toolkit.getDefaultToolkit().getScreenSize().height-getSize().height)/2);
@@ -413,5 +549,32 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		  {
 			  this.setTitle(str + " - " + BATCHRUN_VER_NUMBER);
 		  }
+	  }
+	  
+	  public Wizard getChooseModelTypeWizard()
+	  {
+	      if(modelTypeWizard == null)
+		  {
+			  modelTypeWizard = new Wizard(JOptionPane.getFrameForComponent(this));
+			  modelTypeWizard.getDialog().setTitle("Choose Model Type");
+	        
+	          WizardPanelDescriptor modelTypesDescriptor = new ModelTypesDescriptor();
+	          modelTypeWizard.registerWizardPanel(ModelTypesDescriptor.IDENTIFIER, modelTypesDescriptor);
+	          ((ModelTypesDescriptor)modelTypesDescriptor).setBatchRunWorkspace(batchRunWorkspace);
+	        
+	          WizardPanelDescriptor roiForErrorDescriptor = new RoiForErrorDescriptor();
+	          modelTypeWizard.registerWizardPanel(RoiForErrorDescriptor.IDENTIFIER, roiForErrorDescriptor);
+	          ((RoiForErrorDescriptor)roiForErrorDescriptor).setBatchRunWorkspace(batchRunWorkspace);
+		  }
+		  //always start from the first page
+		  modelTypeWizard.setCurrentPanel(ModelTypesDescriptor.IDENTIFIER);
+          return modelTypeWizard;
+	  }
+	  
+	  private MessagePanel appendJobStatus(String msg, boolean bProgress)
+	  {
+		  MessagePanel msgPanel = new MessagePanel(msg, bProgress);
+		  getBatchRunDisplayPanel().getJobStatusPanel().appendMessage(msgPanel);
+		  return msgPanel;
 	  }
 }

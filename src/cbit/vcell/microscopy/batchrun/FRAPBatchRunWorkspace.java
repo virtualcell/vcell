@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import org.vcell.util.Compare;
 
+import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
@@ -21,6 +22,8 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	private PropertyChangeSupport propertyChangeSupport;
 	private FRAPSingleWorkspace workingSingleWorkspace = null;
 	private Object displaySelection = null;
+	private FRAPModel selectedModel = null;
+	private boolean[] selectedROIsForErrCalculation = null;
 	
 	public FRAPBatchRunWorkspace() 
 	{
@@ -112,5 +115,45 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		{
 			firePropertyChange(PROPERTY_CHANGE_BATCHRUN_DISPLAY_PARAM, oldString, ((String)selection));
 		}
+	}
+	
+	public FRAPModel getSelectedModel() {
+		return selectedModel;
+	}
+
+	public void setSelectedModel(FRAPModel selectedModel) {
+		this.selectedModel = selectedModel;
+	}
+	
+	public void refreshModels(boolean[] modelBooleans)
+	{
+		for(int i =0; i<FRAPModel.NUM_MODEL_TYPES; i++)
+		{
+			if(modelBooleans[i])
+			{
+				setSelectedModel(new FRAPModel(FRAPModel.MODEL_TYPE_ARRAY[i], null, null, null));
+				break;
+			}
+		}
+		//update FRAPModels of FrapStudies in the BatchRun
+		for(int i=0; i<getFrapStudyList().size(); i++)
+		{
+			getFrapStudyList().get(i).refreshModels(modelBooleans);
+		}
+	}
+	
+	public void setSelectedROIsForErrorCalculation(boolean[] arg_selectedROIs)
+	{
+		selectedROIsForErrCalculation = arg_selectedROIs;
+		//update selectedROIs of FrapStudies in the BatchRun
+		for(int i=0; i<getFrapStudyList().size(); i++)
+		{
+			getFrapStudyList().get(i).setSelectedROIsForErrorCalculation(arg_selectedROIs);
+		}
+	}
+	
+	public boolean[] getSelectedROIsForErrorCalculation()
+	{
+		return selectedROIsForErrCalculation;
 	}
 }

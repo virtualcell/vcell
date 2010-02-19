@@ -32,8 +32,7 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 {
 	public final static String DISPLAY_PARAM_ID = "DISPLAY_PARAM";
 	public final static String DISPLAY_IMG_ID = "DISPLAY_IMG";
-	private final static int DEFAULT_DIVIDER_LOCATION = Math.round(Toolkit.getDefaultToolkit().getScreenSize().height*1/2);
-	private final static int DIVIDER_MAX_LOCATION = Toolkit.getDefaultToolkit().getScreenSize().height;
+	
 	private JSplitPane rightSplit = null;
 	private FRAPDataPanel frapDataPanel = null;
 	private JPanel topDisplayPanel = null;
@@ -49,7 +48,7 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 		super();
 	    rightSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getTopDisplayPanel(), getJobStatusPanel());
 	    rightSplit.setDividerSize(2);
-	    rightSplit.setDividerLocation(DEFAULT_DIVIDER_LOCATION);
+	    rightSplit.setDividerLocation(VirtualFrapBatchRunFrame.iniDividerLocation);
 	    setLayout(new BorderLayout());
 	    add(rightSplit, BorderLayout.CENTER);
 	    setBorder(new EmptyBorder(0,0,0,0));
@@ -146,7 +145,7 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 	public void showJobStatusPanel()
 	{
 		rightSplit.setBottomComponent(getJobStatusPanel());
-		rightSplit.setDividerLocation(DEFAULT_DIVIDER_LOCATION);
+		rightSplit.setDividerLocation(VirtualFrapBatchRunFrame.iniDividerLocation);
 	}
 	public void hideJobStatusPanel()
 	{

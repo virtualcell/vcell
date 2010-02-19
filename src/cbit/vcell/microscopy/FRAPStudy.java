@@ -49,6 +49,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
+import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
@@ -65,10 +66,13 @@ import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverEvent;
+import cbit.vcell.solver.SolverListener;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
@@ -87,6 +91,8 @@ public class FRAPStudy implements Matchable{
 	public static final String IMAGE_EXTDATA_NAME = "timeData";
 	public static final String ROI_EXTDATA_NAME = "roiData";
 	public static final String REF_EXTDATA_NAME = "refData";
+	public static final String ROI_SUMDATA_NAME = "sumROIData";
+	public static final String PSF_DATA_NAME = "psfData";
 	
 	private String name = null; 
 	private String description = null;
@@ -180,7 +186,6 @@ public class FRAPStudy implements Matchable{
 	private static File getMergedFunctionFile(ExternalDataIdentifier frapDataExtDataId,ExternalDataIdentifier roiExtDataId,
 			File simDataDirectory)
 	{
-			VCDataIdentifier[] vcIdentifierArray = new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId};
 			MergedDataInfo mergedDataInfo =
 				new MergedDataInfo(LocalWorkspace.getDefaultOwner(),
 					new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId}, FRAPStudyPanel.VFRAP_DS_PREFIX);
@@ -217,6 +222,7 @@ public class FRAPStudy implements Matchable{
 			TimeStep tStep,
 			KeyValue simKey,
 			User owner,
+			FieldDataIdentifierSpec psfFDIS,
 			int startingIndexForRecovery) throws Exception {
 
 		if(owner == null){
@@ -317,6 +323,11 @@ public class FRAPStudy implements Matchable{
 		}
 		MathMapping mathMapping = new MathMapping(simContext);
 		MathDescription mathDesc = mathMapping.getMathDescription();
+		
+		//Add PSF function
+		
+		mathDesc.addVariable(new Function(SimDataConstants.PSF_FUNCTION_NAME,
+					new Expression(psfFDIS.getFieldFuncArgs().infix())));
 		
 		simContext.setMathDescription(mathDesc);
 				
@@ -661,12 +672,13 @@ public class FRAPStudy implements Matchable{
 		runFVSolverStandalone(simulationDataDir, sessionLog, sim, imageDataExtDataID, roiExtDataID, progressListener, false);
 	}
 	
-	public static void runFVSolverStandalone(
+	public static void runFVSolverStandalone_ref(
 		File simulationDataDir,
 		SessionLog sessionLog,
 		Simulation sim,
 		ExternalDataIdentifier imageDataExtDataID,
 		ExternalDataIdentifier roiExtDataID,
+		ExternalDataIdentifier psfExtDataID,
 		ClientTaskStatusSupport progressListener,
 		boolean bCheckSteadyState) throws Exception{
 
@@ -677,6 +689,8 @@ public class FRAPStudy implements Matchable{
 				fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],imageDataExtDataID);
 			}else if (fieldFunctionArgs[i].getFieldName().equals(roiExtDataID.getName())){
 				fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],roiExtDataID);
+			}else if (fieldFunctionArgs[i].getFieldName().equals(psfExtDataID.getName())){
+				fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],psfExtDataID);
 			}else{
 				throw new RuntimeException("failed to resolve field named "+fieldFunctionArgs[i].getFieldName());
 			}
@@ -694,7 +708,7 @@ public class FRAPStudy implements Matchable{
 			simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 		}
 		
-		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);
+		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);		
 		fvSolver.startSolver();
 		
 		SolverStatus status = fvSolver.getSolverStatus();
@@ -704,7 +718,7 @@ public class FRAPStudy implements Matchable{
 			{
 				progressListener.setProgress((int)(fvSolver.getProgress()*100));
 			}
-			Thread.sleep(100);
+			Thread.sleep(1000);
 			status = fvSolver.getSolverStatus();
 		}
 
@@ -731,7 +745,78 @@ public class FRAPStudy implements Matchable{
 			throw new Exception("Sover did not finish normally." + status.toString());
 		}
 	}
+	
+	public static void runFVSolverStandalone(
+			File simulationDataDir,
+			SessionLog sessionLog,
+			Simulation sim,
+			ExternalDataIdentifier imageDataExtDataID,
+			ExternalDataIdentifier roiExtDataID,
+			ClientTaskStatusSupport progressListener,
+			boolean bCheckSteadyState) throws Exception{
 
+			FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
+			FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
+			for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
+				if (fieldFunctionArgs[i].getFieldName().equals(imageDataExtDataID.getName())){
+					fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],imageDataExtDataID);
+				}else if (fieldFunctionArgs[i].getFieldName().equals(roiExtDataID.getName())){
+					fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],roiExtDataID);
+				}else{
+					throw new RuntimeException("failed to resolve field named "+fieldFunctionArgs[i].getFieldName());
+				}
+			}
+			
+			int jobIndex = 0;
+			SimulationJob simJob = new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs);
+			
+			//FVSolverStandalone class expects the PropertyLoader.finiteVolumeExecutableProperty to exist
+			System.setProperty(PropertyLoader.finiteVolumeExecutableProperty, LocalWorkspace.getFinitVolumeExecutableFullPathname());
+			//if we need to check steady state, do the following two lines
+			if(bCheckSteadyState)
+			{
+				simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
+				simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
+			}
+			
+			FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);		
+			fvSolver.startSolver();
+			
+			SolverStatus status = fvSolver.getSolverStatus();
+			while (status.getStatus() != SolverStatus.SOLVER_FINISHED && status.getStatus() != SolverStatus.SOLVER_ABORTED )
+			{
+				if(progressListener != null)
+				{
+					progressListener.setProgress((int)(fvSolver.getProgress()*100));
+				}
+				Thread.sleep(1000);
+				status = fvSolver.getSolverStatus();
+			}
+
+			if(status.getStatus() == SolverStatus.SOLVER_FINISHED){
+				String roiMeshFileName =
+					SimulationData.createCanonicalMeshFileName(
+						roiExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+				String imageDataMeshFileName =
+					SimulationData.createCanonicalMeshFileName(
+						imageDataExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+				String simulationMeshFileName =
+					SimulationData.createCanonicalMeshFileName(
+						sim.getVersion().getVersionKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+				// delete old external data mesh files and copy simulation mesh file to them
+				File roiMeshFile = new File(simulationDataDir,roiMeshFileName);
+				File imgMeshFile = new File(simulationDataDir,imageDataMeshFileName);
+				File simMeshFile = new File(simulationDataDir,simulationMeshFileName);
+				if(!roiMeshFile.delete()){throw new Exception("Couldn't delete ROI Mesh file "+roiMeshFile.getAbsolutePath());}
+				if(!imgMeshFile.delete()){throw new Exception("Couldn't delete ImageData Mesh file "+imgMeshFile.getAbsolutePath());}
+				FileUtils.copyFile(simMeshFile, roiMeshFile);
+				FileUtils.copyFile(simMeshFile, imgMeshFile);
+			}
+			else{
+				throw new Exception("Sover did not finish normally." + status.toString());
+			}
+		}
+	
 	public static ExternalDataInfo createNewExternalDataInfo(LocalWorkspace localWorkspace,String extDataIDName){
 		File targetDir = new File(localWorkspace.getDefaultSimDataDirectory());
 		ExternalDataIdentifier newImageDataExtDataID =
@@ -1085,6 +1170,123 @@ public class FRAPStudy implements Matchable{
 	    	fdos.isize = isize;
 	    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
 	}
+	
+	public DataProcessingInstructions getDataProcessInstructions(LocalWorkspace localWorkspace)
+	{
+		//create ROI image
+		short[] roiFieldData = null;
+		ROI[] rois = getFrapData().getRois();
+		if(rois.length > 0)
+		{
+			Extent extent = rois[0].getRoiImages()[0].getExtent();
+			ISize isize = rois[0].getISize();
+			int numROIX = rois[0].getISize().getX();
+			int numROIY = rois[0].getISize().getY();
+			roiFieldData = new short[numROIX * numROIY];
+			short regionCounter = 1;
+			for(int roiIdx = FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.ordinal(); roiIdx<rois.length; roiIdx++)
+			{
+				short[] roiImg = rois[roiIdx].getPixelsXYZ();
+				for(int pixelIdx=0; pixelIdx<(numROIX*numROIY); pixelIdx++)
+				{
+					if(roiImg[pixelIdx] > 0)
+					{
+						roiFieldData[pixelIdx] = regionCounter;
+					}
+				}
+				regionCounter ++;
+			}
+			//create field data
+			int NumTimePoints = 1;
+			int NumChannels = 1; //8 rois integrated into 1 image
+			short[][][] pixData = new short[NumTimePoints][NumChannels][];
+			pixData[0][0] = roiFieldData;
+			//get extental data id
+			ExternalDataIdentifier newROIExtDataID = FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.ROI_SUMDATA_NAME).getExternalDataIdentifier();
+			CartesianMesh cartesianMesh;
+			try {
+				cartesianMesh = getCartesianMesh();
+			
+	    		Origin origin = new Origin(0,0,0);
+		    		    	
+		    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
+		    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+		    	fdos.cartesianMesh = cartesianMesh;
+		    	fdos.shortSpecData =  pixData;
+		    	fdos.specEDI = newROIExtDataID;
+		    	fdos.varNames = new String[] {"roiSumDataVar"};
+		    	fdos.owner = LocalWorkspace.getDefaultOwner();
+		    	fdos.times = new double[] { 0.0 };
+		    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
+		    	fdos.origin = origin;
+		    	fdos.extent = extent;
+		    	fdos.isize = isize;
+		    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return DataProcessingInstructions.getVFrapInstructions(new int[] {0}/* volumePoints*/, 
+					                                               new int[0]/* membranePoints*/,
+					                                               regionCounter /*numRegions*/, 
+					                                               0 /*zSlice*/, 
+					                                               newROIExtDataID.getKey()/* fieldDataKey*/, 
+					                                               new FieldFunctionArguments(FRAPStudy.ROI_SUMDATA_NAME, "roiSumDataVar", new Expression(0), VariableType.VOLUME)/*FieldFunctionArguments*/, 
+					                                               false/* bStoreEnabled*/); 
+					                                               
+		}
+		return null;
+	}
+	
+	public static FieldDataIdentifierSpec getPSFFieldData(LocalWorkspace localWorkspace)
+	{
+		//create ROI image
+		short[] psfFieldData = null;
+		psfFieldData = new short[9];
+		psfFieldData[4] = (short)1;
+		
+		//create field data
+		int NumTimePoints = 1;
+		int NumChannels = 1; //8 rois integrated into 1 image
+		short[][][] pixData = new short[NumTimePoints][NumChannels][1];
+		pixData[0][0] = psfFieldData;
+		//get extental data id
+		ExternalDataIdentifier newPsfExtDataID = FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.PSF_DATA_NAME).getExternalDataIdentifier();
+		CartesianMesh cartesianMesh;
+		try {
+			Origin origin = new Origin(0,0,0);
+			Extent ext =new Extent(1, 1, 1);
+			ISize isize = new ISize(3, 3, 1);
+			cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, ext, isize, new RegionImage( new VCImageUncompressed(null, new byte[isize.getXYZ()], ext, isize.getX(),isize.getY(),isize.getZ()),
+					0,null,null,RegionImage.NO_SMOOTHING));	
+    		
+	    		    	
+	    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
+	    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+	    	fdos.cartesianMesh = cartesianMesh;
+	    	fdos.shortSpecData =  pixData;
+	    	fdos.specEDI = newPsfExtDataID;
+	    	fdos.varNames = new String[] {"psfVar"};
+	    	fdos.owner = LocalWorkspace.getDefaultOwner();
+	    	fdos.times = new double[] { 0.0 };
+	    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
+	    	fdos.origin = origin;
+	    	fdos.extent = ext;
+	    	fdos.isize = isize;
+	    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+	    	
+	    	FieldFunctionArguments psfFieldFunc = new FieldFunctionArguments(
+	    			PSF_DATA_NAME, "psfVar", new Expression(0.0), VariableType.VOLUME);
+	    	
+	    	FieldDataIdentifierSpec fdis = new FieldDataIdentifierSpec(psfFieldFunc, newPsfExtDataID);
+	    	return fdis;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}					                                               
+	}
+	
 	//when creating double array for firstPostBleach and last PostBleach, etc images
 	//We'll clamp all pixel value <= 0 to 0 and add offset 1 to the whole image.
 	//For ROI images, we don't have to do so.
@@ -1318,7 +1520,7 @@ public class FRAPStudy implements Matchable{
 	public void setSaveNeeded(boolean bNeedSave) {
 		this.bSaveNeeded = bNeedSave;
 	}
-	
+		
 	public boolean areFRAPModelsEqual(FRAPModel[] arg_frapModels)
 	{
 		if((getModels() != null && arg_frapModels == null) ||
