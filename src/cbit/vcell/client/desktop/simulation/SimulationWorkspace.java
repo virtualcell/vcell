@@ -485,20 +485,22 @@ private long getEstimatedNumTimePointsForStoch(Simulation sim)
 			pExp = sim.substituteFunctions(pExp);
 			pExp = pExp.flatten();
 			String[] symbols = pExp.getSymbols();
-			//substitute stoch vars with it's initial condition expressions
-			for(int j=0; j<symbols.length; j++)
-			{
-				for(int k = 0; k < varInis.size(); k++)
+			if (symbols != null) {
+				//substitute stoch vars with it's initial condition expressions
+				for(int j=0; j<symbols.length; j++)
 				{
-					if(symbols[j].equals(varInis.elementAt(k).getVar().getName()))
+					for(int k = 0; k < varInis.size(); k++)
 					{
-						pExp.substituteInPlace(new Expression(symbols[j]), new Expression(varInis.elementAt(k).getIniVal()));
-						break;
+						if(symbols[j].equals(varInis.elementAt(k).getVar().getName()))
+						{
+							pExp.substituteInPlace(new Expression(symbols[j]), new Expression(varInis.elementAt(k).getIniVal()));
+							break;
+						}
 					}
 				}
+				pExp = sim.substituteFunctions(pExp);
+				pExp = pExp.flatten();
 			}
-			pExp = sim.substituteFunctions(pExp);
-			pExp = pExp.flatten();
 			double val = pExp.evaluateConstant();
 			if(maxProbability < val)
 			{
