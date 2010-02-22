@@ -15,8 +15,7 @@ import cbit.vcell.desktop.controls.*;
 public class ClientServerManager implements SessionManager,DataSetControllerProvider {
 
 
-	public static final String ONLINEHELP_URL_STRING = "http://www.vcell.org/onlinehelp";
-	public static final String REGISTER_URL_STRING = "http://www.vcell.org/register";
+	public static final String ONLINEHELP_URL_STRING = "http://www.vcell.org/vcell_software/user_materials.html";
 	static final String BAD_CONNECTION_MESSAGE = "Your computer is unable to connect to the Virtual Cell server. " 
 		+ "Please try again later.\n\nIf problem persists, it may be due to a firewall problem. Contact your network administrator and send the error message below to vcell_support@uchc.edu.";
 	
