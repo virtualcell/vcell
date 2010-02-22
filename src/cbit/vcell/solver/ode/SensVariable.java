@@ -4,13 +4,20 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.*;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 9:00:26 PM)
  * @author: John Wagner
  */
-public class SensVariable extends cbit.vcell.math.Variable {
+public class SensVariable extends Variable {
 	private VolVariable volVar = null;
 	private Constant parameter = null;
 /**
@@ -27,7 +34,7 @@ public SensVariable(VolVariable volVariable, Constant parameter) {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (!(obj instanceof SensVariable)){
 		return false;
 	}
@@ -36,10 +43,10 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 	}
 	SensVariable v = (SensVariable)obj;
 	
-	if (!org.vcell.util.Compare.isEqual(volVar,v.volVar)){
+	if (!Compare.isEqual(volVar,v.volVar)){
 		return false;
 	}
-	if (!org.vcell.util.Compare.isEqual(parameter,v.parameter)){
+	if (!Compare.isEqual(parameter,v.parameter)){
 		return false;
 	}
 	
@@ -76,5 +83,9 @@ public static String getSensName(VolVariable var, Constant parm) {
  */
 public VolVariable getVolVariable() {
 	return volVar;
+}
+@Override
+public String getVCML() throws MathException {
+	throw new MathException("VCML not supported for " + this.getClass().getName());
 }
 }

@@ -147,4 +147,14 @@ public class VCML {
 	public final static String Delay = "Delay";
 	public final static String Duration = "Duration";
 	public final static String EventAssignment = "EventAssignment";
+	
+	public final static String VolumeRandomVariable = "VolumeRandomVariable";
+	public final static String MembraneRandomVariable = "MembraneRandomVariable";
+	public final static String RandomVariable_Seed = "IntegerSeed";
+	public final static String GaussianDistribution = "GaussianDistribution";
+	public final static String GaussianDistribution_Mean = "Mean";
+	public final static String GaussianDistribution_StandardDeviation = "StandardDeviation";
+	public final static String UniformDistribution = "UniformDistribution";	
+	public final static String UniformDistribution_Minimum = "Minimum";
+	public final static String UniformDistribution_Maximum = "Maximum";
 }
