@@ -1249,13 +1249,15 @@ private void replaceFunction(AnnotatedFunction function) throws ExpressionExcept
 //	function.getExpression().flatten();
 	Vector<String> targetUserDefinedFunctionSymbols = new Vector<String>();
 	String[] newfuncSymbols = function.getExpression().getSymbols();
-	for (int i = 0; i < newfuncSymbols.length; i++) {
-		for (int j=0;j<annotatedFunctionList.size();j++){
-			if (annotatedFunctionList.elementAt(j).getName().equals(newfuncSymbols[i])){
-				if(!targetUserDefinedFunctionSymbols.contains(newfuncSymbols[i])){
-					targetUserDefinedFunctionSymbols.add(newfuncSymbols[i]);
+	if (newfuncSymbols != null) {
+		for (int i = 0; i < newfuncSymbols.length; i++) {
+			for (int j=0;j<annotatedFunctionList.size();j++){
+				if (annotatedFunctionList.elementAt(j).getName().equals(newfuncSymbols[i])){
+					if(!targetUserDefinedFunctionSymbols.contains(newfuncSymbols[i])){
+						targetUserDefinedFunctionSymbols.add(newfuncSymbols[i]);
+					}
+					break;
 				}
-				break;
 			}
 		}
 	}
@@ -1337,7 +1339,7 @@ private AnnotatedFunction[] getReferringUserFunctions(String symbolName) throws 
 			for (int j = 0; existingUserDefFunctionSymbols != null && j< existingUserDefFunctionSymbols.length; j++) {
 				if (existingUserDefFunctionSymbols[j].equals(symbolName)){
 					referringFunctionV.add(annotatedFunctionList.elementAt(i));
-				}				
+				}
 			}
 		}
 	}

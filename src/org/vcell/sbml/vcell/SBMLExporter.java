@@ -325,19 +325,21 @@ protected void addParameters() throws ExpressionException {
 			// Get the VC (from SpeciesContextSpec) and SBML concentration units (from sbmlExportSpec) and get the conversion factor ('factor').
 			// Replace the occurance of species in the 'paramExpr' with the new expr : species*factor.
 			String[] symbols = paramExpr.getSymbols();
-			for (int j = 0; j < symbols.length; j++) {
-				SpeciesContext vcSpeciesContext = vcModel.getSpeciesContext(symbols[j]); 
-				if (vcSpeciesContext != null) {
-					Species species = sbmlModel.getSpecies(vcSpeciesContext.getName());
-					cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getOverriddenSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
-					VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
-					VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
-					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
-					Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
-					paramExpr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
+			if (symbols != null) {
+				for (int j = 0; j < symbols.length; j++) {
+					SpeciesContext vcSpeciesContext = vcModel.getSpeciesContext(symbols[j]); 
+					if (vcSpeciesContext != null) {
+						Species species = sbmlModel.getSpecies(vcSpeciesContext.getName());
+						cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getOverriddenSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
+						VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
+						VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
+						SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
+						Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
+						paramExpr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
+					}
 				}
 			}
-
+			
 			ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
 			AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
 			sbmlParamAssignmentRule.setId(vcGlobalParams[i].getName());

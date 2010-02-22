@@ -323,9 +323,11 @@ protected void addInitialAssignments() {
 				}
 				// species init assgn expr in terms of another species?
 				String[] symbols = initAssignMathExpr.getSymbols();
-				for (int j = 0; j < symbols.length; j++) {
-					if (sbmlModel.getSpecies(symbols[i]) != null) {
-						logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "In VCell, species '"+initAssgnSymbol+"' initial assignment expression cannot contain another species in the model.");
+				if (symbols != null) {
+					for (int j = 0; j < symbols.length; j++) {
+						if (sbmlModel.getSpecies(symbols[i]) != null) {
+							logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "In VCell, species '"+initAssgnSymbol+"' initial assignment expression cannot contain another species in the model.");
+						}
 					}
 				}
 			}
