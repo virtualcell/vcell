@@ -416,4 +416,14 @@ public class XMLTags {
 	public final static String EventAssignmentTag = "EventAssignment";
 	public final static String EventAssignmentVariableAttrTag = "Variable";
 	
+	public final static String MembraneRandomVariableTag = "MembraneRandomVariable";
+	public final static String VolumeRandomVariableTag = "VolumeRandomVariable";
+	public final static String RandomVariableSeedTag = "IntegerSeed";
+	public final static String GaussianDistributionTag = "GaussianDistribution";
+	public final static String GaussianDistributionMeanTag = "Mean";
+	public final static String GaussianDistributionStandardDeviationTag = "StandardDeviation";
+	public final static String UniformDistributionTag = "UniformDistribution";
+	public final static String UniformDistributionMinimumTag = "Minimum";
+	public final static String UniformDistributionMaximumTag = "Maximum";
+	
 }

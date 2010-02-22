@@ -56,6 +56,7 @@ import cbit.vcell.math.FilamentRegionVariable;
 import cbit.vcell.math.FilamentSubDomain;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.Function;
+import cbit.vcell.math.GaussianDistribution;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
@@ -67,11 +68,14 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.Event.Delay;
@@ -1313,21 +1317,21 @@ public org.jdom.Element getXML(SpeciesContextSpec param) {
 	Expression velX = param.getVelocityXParameter().getExpression();
 	if (velX != null) {
 		velocityElement = new Element(XMLTags.VelocityTag);
-		velocityElement.setAttribute(XMLTags.XAttrTag, velX.infix());
+		velocityElement.setAttribute(XMLTags.XAttrTag, mangleExpression(velX));
 	}
 	Expression velY = param.getVelocityYParameter().getExpression();
 	if (velY != null) {
 		if (velocityElement == null) {
 			velocityElement = new Element(XMLTags.VelocityTag);
 		}
-		velocityElement.setAttribute(XMLTags.YAttrTag, velY.infix());
+		velocityElement.setAttribute(XMLTags.YAttrTag, mangleExpression(velY));
 	}
 	Expression velZ = param.getVelocityZParameter().getExpression();
 	if (velZ != null) {
 		if (velocityElement == null) {
 			velocityElement = new Element(XMLTags.VelocityTag);
 		}
-		velocityElement.setAttribute(XMLTags.ZAttrTag, velZ.infix());
+		velocityElement.setAttribute(XMLTags.ZAttrTag, mangleExpression(velZ));
 	}
 	if (velocityElement != null) {
 		speciesContextSpecElement.addContent(velocityElement);
@@ -1704,6 +1708,9 @@ public org.jdom.Element getXML(MathDescription mathdes) throws XmlParseException
         else if (var instanceof Function) {
             math.addContent(getXML((Function) var));
         }
+        else if (var instanceof RandomVariable) {
+            math.addContent(getXML((RandomVariable) var));
+        }
         else if (var instanceof InsideVariable) {
 	        //*** for internal use! Ignore it ***
 	        continue;
@@ -1758,6 +1765,61 @@ public org.jdom.Element getXML(MathDescription mathdes) throws XmlParseException
     return math;
 }
 
+
+private Element getXML(RandomVariable var) {
+	org.jdom.Element randomVariableElement = null;
+	if (var instanceof VolumeRandomVariable) {
+		randomVariableElement = new org.jdom.Element(XMLTags.VolumeRandomVariableTag);
+	} else {
+		randomVariableElement = new org.jdom.Element(XMLTags.MembraneRandomVariableTag);
+	}
+
+	randomVariableElement.setAttribute(XMLTags.NameAttrTag, mangle(var.getName()));
+	
+	if (var.getSeed() != null) {
+		Element seedElement = new Element(XMLTags.RandomVariableSeedTag);
+		seedElement.addContent(mangleExpression(var.getSeed()));
+		randomVariableElement.addContent(seedElement);
+	}
+	Element distElement = null;
+	if (var.getDistribution() instanceof UniformDistribution) {
+		distElement = getXML((UniformDistribution)var.getDistribution());
+	} else if (var.getDistribution() instanceof GaussianDistribution) {
+		distElement = getXML((GaussianDistribution)var.getDistribution());
+	}
+	randomVariableElement.addContent(distElement);
+	
+	return randomVariableElement;
+}
+
+
+private Element getXML(UniformDistribution uniDist) {	
+	Element element = new Element(XMLTags.UniformDistributionTag);
+	
+	Element loelement = new Element(XMLTags.UniformDistributionMinimumTag);
+	loelement.addContent(mangleExpression(uniDist.getMinimum()));
+	element.addContent(loelement);
+	
+	Element hielement = new Element(XMLTags.UniformDistributionMaximumTag);
+	hielement.addContent(mangleExpression(uniDist.getMaximum()));
+	element.addContent(hielement);		
+	
+	return element;
+}
+
+private Element getXML(GaussianDistribution gauDist) {
+	Element element = new Element(XMLTags.GaussianDistributionTag);
+	
+	Element muelement = new Element(XMLTags.GaussianDistributionMeanTag);
+	muelement.addContent(mangleExpression(gauDist.getMean()));
+	element.addContent(muelement);
+	
+	Element sigmaelement = new Element(XMLTags.GaussianDistributionStandardDeviationTag);
+	sigmaelement.addContent(mangleExpression(gauDist.getStandardDeviation()));
+	element.addContent(sigmaelement);		
+
+	return element;
+}
 
 /**
  * This method returns a XML representation of a MembraneRegionEquation object.
@@ -2083,21 +2145,21 @@ public org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 	Expression velX = param.getVelocityX();
 	if (velX != null) {
 		velocity = new Element(XMLTags.VelocityTag);
-		velocity.setAttribute(XMLTags.XAttrTag, velX.infix());
+		velocity.setAttribute(XMLTags.XAttrTag, mangleExpression(velX));
 	}
 	Expression velY = param.getVelocityY();
 	if (velY != null) {
 		if (velocity == null) {
 			velocity = new Element(XMLTags.VelocityTag);
 		}
-		velocity.setAttribute(XMLTags.YAttrTag, velY.infix());
+		velocity.setAttribute(XMLTags.YAttrTag, mangleExpression(velY));
 	}
 	Expression velZ = param.getVelocityZ();
 	if (velZ != null) {
 		if (velocity == null) {
 			velocity = new Element(XMLTags.VelocityTag);
 		}
-		velocity.setAttribute(XMLTags.ZAttrTag, velZ.infix());
+		velocity.setAttribute(XMLTags.ZAttrTag, mangleExpression(velZ));
 	}
 	if (velocity != null) {
 		pde.addContent(velocity);
@@ -3244,17 +3306,17 @@ public org.jdom.Element getXML(TimeStep param) {
 
 public org.jdom.Element getXML(Event event) throws XmlParseException{
 	org.jdom.Element eventElement = new org.jdom.Element(XMLTags.EventTag);
-	eventElement.setAttribute(XMLTags.NameAttrTag, event.getName());
+	eventElement.setAttribute(XMLTags.NameAttrTag, mangle(event.getName()));
 
 	Element element = new org.jdom.Element(XMLTags.TriggerTag);
-	element.addContent(event.getTriggerExpression().infix());
+	element.addContent(mangleExpression(event.getTriggerExpression()));
 	eventElement.addContent(element);
 
 	Delay delay = event.getDelay();
 	if (delay != null) {
 		element = new org.jdom.Element(XMLTags.DelayTag);		
 		element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
-		element.addContent(delay.getDurationExpression().infix());
+		element.addContent(mangleExpression(delay.getDurationExpression()));
 		eventElement.addContent(element);
 	}
 	Iterator<EventAssignment> iter = event.getEventAssignments();
@@ -3262,7 +3324,7 @@ public org.jdom.Element getXML(Event event) throws XmlParseException{
 		EventAssignment eventAssignment = iter.next();
 		element = new org.jdom.Element(XMLTags.EventAssignmentTag);
 		element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getVariable().getName());
-		element.addContent(eventAssignment.getAssignmentExpression().infix());
+		element.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
 		eventElement.addContent(element);
 	}
 
@@ -3272,24 +3334,24 @@ public org.jdom.Element getXML(Event event) throws XmlParseException{
 // For events in SimulationContext - XML is very similar to math events
 public org.jdom.Element getXML(BioEvent bioEvent) throws XmlParseException{
 	org.jdom.Element eventElement = new org.jdom.Element(XMLTags.EventTag);
-	eventElement.setAttribute(XMLTags.NameAttrTag, bioEvent.getName());
+	eventElement.setAttribute(XMLTags.NameAttrTag, mangle(bioEvent.getName()));
 
 	Element element = new org.jdom.Element(XMLTags.TriggerTag);
-	element.addContent(bioEvent.getTriggerExpression().infix());
+	element.addContent(mangleExpression(bioEvent.getTriggerExpression()));
 	eventElement.addContent(element);
 
 	BioEvent.Delay delay = bioEvent.getDelay();
 	if (delay != null) {
 		element = new org.jdom.Element(XMLTags.DelayTag);		
 		element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
-		element.addContent(delay.getDurationExpression().infix());
+		element.addContent(mangleExpression(delay.getDurationExpression()));
 		eventElement.addContent(element);
 	}
 	ArrayList<BioEvent.EventAssignment> eventAssignmentsList = bioEvent.getEventAssignments();
 	for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
 		element = new org.jdom.Element(XMLTags.EventAssignmentTag);
 		element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
-		element.addContent(eventAssignment.getAssignmentExpression().infix());
+		element.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
 		eventElement.addContent(element);
 	}
 

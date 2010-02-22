@@ -1406,6 +1406,8 @@ public String getVCML_database() throws MathException {
 	buffer.append("\n");
 	boolean bSpaceNeeded = false;
 	Enumeration<Variable> enum1 = getVariables();
+	
+	// ParameterVariable
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
 		if (var instanceof ParameterVariable){
@@ -1417,6 +1419,8 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
+	
+	// Constant
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -1429,6 +1433,8 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
+	
+	// VolVariable
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -1441,6 +1447,8 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
+	
+	// MemVariable
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -1453,6 +1461,8 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
+	
+	// FilamentVariable
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -1465,6 +1475,8 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
+	
+	// VolumeRegionVariable
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -1477,6 +1489,8 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
+	
+	// MembraneRegionVariable
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -1489,6 +1503,8 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
+	
+	// FilamentRegionVariable
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -1501,7 +1517,8 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
-	//Stochastic variables
+	
+	// StochVolVariable
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -1515,6 +1532,8 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
+	
+	// Function
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -1528,6 +1547,20 @@ public String getVCML_database() throws MathException {
 		bSpaceNeeded = false;
 	}
 	
+	enum1 = getVariables();
+	while (enum1.hasMoreElements()){
+		Variable var = enum1.nextElement();
+		if (var instanceof RandomVariable){
+			buffer.append(var.getVCML()+"\n");
+			bSpaceNeeded = true;
+		}
+	}		
+	if (bSpaceNeeded){
+		buffer.append("\n");
+		bSpaceNeeded = false;
+	}	
+	
+	// Event
 	for (Event event : eventList) {
 		buffer.append(event.getVCML() + "\n");
 	}
@@ -1535,76 +1568,6 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 	}
 	
-	Enumeration<SubDomain> enum2 = getSubDomains();
-	while (enum2.hasMoreElements()){
-		SubDomain subDomain = enum2.nextElement();
-		buffer.append(subDomain.getVCML(getGeometry().getDimension())+"\n");
-	}
-	buffer.append("}\n");
-	return buffer.toString();		
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public String getVCML_file() throws MathException {
-	StringBuffer buffer = new StringBuffer();
-	buffer.append(VCML.MathDescription+" "+version.getName()+" {\n");
-	buffer.append("\n");
-	Enumeration<Variable> enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof Constant){
-			buffer.append(var.getVCML()+"\n");
-		}
-	}		
-	buffer.append("\n");
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof VolVariable){
-			buffer.append(var.getVCML()+"\n");
-		}
-	}		
-	buffer.append("\n");
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof MemVariable){
-			buffer.append(var.getVCML()+"\n");
-		}
-	}		
-	buffer.append("\n");
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof FilamentVariable){
-			buffer.append(var.getVCML()+"\n");
-		}
-	}		
-	buffer.append("\n");
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof Function){
-			buffer.append(var.getVCML()+"\n");
-		}
-	}		
-/*
-	buffer.append("\n");
-	if (domain != null){
-		buffer.append(domain.getVCML());
-	
-	}
-*/
-
-	buffer.append("\n");
-	if (geometry != null){
-		buffer.append(geometry.getVCML());
-	}	
-	buffer.append("\n");
 	Enumeration<SubDomain> enum2 = getSubDomains();
 	while (enum2.hasMoreElements()){
 		SubDomain subDomain = enum2.nextElement();
@@ -2657,6 +2620,18 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 				token = tokens.nextToken();
 				Event event = new Event(token, this, tokens);
 				eventList.add(event);
+				continue;
+			}
+			if (token.equalsIgnoreCase(VCML.VolumeRandomVariable)) {
+				token = tokens.nextToken();
+				RandomVariable randomVariable = new VolumeRandomVariable(token, this, tokens);
+				varHash.addVariable(randomVariable);
+				continue;
+			}
+			if (token.equalsIgnoreCase(VCML.MembraneRandomVariable)) {
+				token = tokens.nextToken();
+				RandomVariable randomVariable = new MembraneRandomVariable(token, this, tokens);
+				varHash.addVariable(randomVariable);
 				continue;
 			}
 			throw new MathFormatException("unexpected identifier "+token);

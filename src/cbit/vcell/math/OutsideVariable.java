@@ -1,5 +1,8 @@
 package cbit.vcell.math;
 
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -23,7 +26,7 @@ public OutsideVariable(String name, String volVariableName) {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (!(obj instanceof OutsideVariable)){
 		return false;
 	}
@@ -31,7 +34,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 		return false;
 	}
 	OutsideVariable v = (OutsideVariable)obj;
-	if (!org.vcell.util.Compare.isEqual(volVariableName,v.volVariableName)){
+	if (!Compare.isEqual(volVariableName,v.volVariableName)){
 		return false;
 	}
 	
@@ -43,5 +46,9 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  */
 public String getVolVariableName() {
 	return volVariableName;
+}
+@Override
+public String getVCML() throws MathException {
+	throw new MathException("VCML not supported " + this.getClass().getName());
 }
 }

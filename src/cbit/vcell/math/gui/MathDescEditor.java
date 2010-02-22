@@ -26,6 +26,9 @@ public class MathDescEditor extends JPanel implements ActionListener, KeyListene
 	private JButton ivjApplyButton = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private MultiPurposeTextPanel vcmlPane = null;
+	
+	private final static List<String> autoCompletionWords = new ArrayList<String>();
+	private final static List<String> keywords = new ArrayList<String>();
 
 /**
  * Constructor
@@ -308,52 +311,60 @@ public boolean hasUnappliedChanges() {
 	return false;
 }
 
-public List<String> getAutoCompletionWords() {
-	 // must be ordered
-	 List<String> autoCompletionWords = new ArrayList<String>();
-	 autoCompletionWords.add(VCML.BoundaryXm);
-	 autoCompletionWords.add(VCML.CompartmentSubDomain);
-	 autoCompletionWords.add(VCML.Constant);
-	 autoCompletionWords.add(VCML.Diffusion);
-	 autoCompletionWords.add(VCML.Action);
-	 autoCompletionWords.add(VCML.FastInvariant);
-	 autoCompletionWords.add(VCML.FastRate);	 
-	 autoCompletionWords.add(getTemplate_FastSystem());
-	 autoCompletionWords.add(BoundaryConditionType.NEUMANN_STRING);
-	 autoCompletionWords.add(VCML.Function);
-	 autoCompletionWords.add(VCML.InFlux);
-	 autoCompletionWords.add(VCML.Initial);
-	 autoCompletionWords.add(getTemplate_JumpCondition());
-	 autoCompletionWords.add(getTemplate_JumpProcess());
-	 autoCompletionWords.add(VCML.MathDescription);
-	 autoCompletionWords.add(VCML.MembraneRate);
-	 autoCompletionWords.add(VCML.MembraneRegionVariable);
-	 autoCompletionWords.add(VCML.MembraneSubDomain);
-	 autoCompletionWords.add(VCML.MembraneVariable); 
-	 autoCompletionWords.add(getTemplate_OdeEquation());
-	 autoCompletionWords.add(VCML.OutFlux);
-	 autoCompletionWords.add(getTemplate_PdeEquation());
-	 autoCompletionWords.add(BoundaryConditionType.PERIODIC_STRING);
-	 autoCompletionWords.add(VCML.Priority);
-	 autoCompletionWords.add(VCML.ProbabilityRate);
-	 autoCompletionWords.add(VCML.Rate);
-	 autoCompletionWords.add(VCML.StochVolVariable);
-	 autoCompletionWords.add(VCML.UniformRate);
-	 autoCompletionWords.add(VCML.Value);
-	 autoCompletionWords.add(VCML.VarIniCondition);
-	 autoCompletionWords.add(VCML.VelocityX);
-	 autoCompletionWords.add(VCML.VolumeRate);
-	 autoCompletionWords.add(VCML.VolumeRegionVariable);
-	 autoCompletionWords.add(VCML.VolumeVariable);
-	 autoCompletionWords.add(VCML.Steady);
-	 autoCompletionWords.add(getTemplate_Event());
-	 autoCompletionWords.add(VCML.Delay);
-	 autoCompletionWords.add(VCML.Trigger);
-	 autoCompletionWords.add(VCML.Duration);
-	 autoCompletionWords.add(VCML.EventAssignment);
-	 autoCompletionWords.add(VCML.UseValuesFromTriggerTime);
-	 	 
-	 String functions[] = {
+private static List<String> getAutoCompletionWords() {
+	if (autoCompletionWords.size() == 0) {
+		autoCompletionWords.add(VCML.BoundaryXm);
+		autoCompletionWords.add(VCML.CompartmentSubDomain);
+		autoCompletionWords.add(VCML.Constant);
+		autoCompletionWords.add(VCML.Diffusion);
+		autoCompletionWords.add(VCML.Action);
+		autoCompletionWords.add(VCML.FastInvariant);
+		autoCompletionWords.add(VCML.FastRate);
+		autoCompletionWords.add(getTemplate_FastSystem());
+		autoCompletionWords.add(BoundaryConditionType.NEUMANN_STRING);
+		autoCompletionWords.add(VCML.Function);
+		autoCompletionWords.add(VCML.InFlux);
+		autoCompletionWords.add(VCML.Initial);
+		autoCompletionWords.add(getTemplate_JumpCondition());
+		autoCompletionWords.add(getTemplate_JumpProcess());
+		autoCompletionWords.add(VCML.MathDescription);
+		autoCompletionWords.add(VCML.MembraneRate);
+		autoCompletionWords.add(VCML.MembraneRegionVariable);
+		autoCompletionWords.add(VCML.MembraneSubDomain);
+		autoCompletionWords.add(VCML.MembraneVariable);
+		autoCompletionWords.add(getTemplate_OdeEquation());
+		autoCompletionWords.add(VCML.OutFlux);
+		autoCompletionWords.add(getTemplate_PdeEquation());
+		autoCompletionWords.add(BoundaryConditionType.PERIODIC_STRING);
+		autoCompletionWords.add(VCML.Priority);
+		autoCompletionWords.add(VCML.ProbabilityRate);
+		autoCompletionWords.add(VCML.Rate);
+		autoCompletionWords.add(VCML.StochVolVariable);
+		autoCompletionWords.add(VCML.UniformRate);
+		autoCompletionWords.add(VCML.Value);
+		autoCompletionWords.add(VCML.VarIniCondition);
+		autoCompletionWords.add(VCML.VelocityX);
+		autoCompletionWords.add(VCML.VolumeRate);
+		autoCompletionWords.add(VCML.VolumeRegionVariable);
+		autoCompletionWords.add(VCML.VolumeVariable);
+		autoCompletionWords.add(VCML.Steady);
+		autoCompletionWords.add(getTemplate_Event());
+		autoCompletionWords.add(VCML.Delay);
+		autoCompletionWords.add(VCML.Trigger);
+		autoCompletionWords.add(VCML.Duration);
+		autoCompletionWords.add(VCML.EventAssignment);
+		autoCompletionWords.add(VCML.UseValuesFromTriggerTime);
+		autoCompletionWords.add(getTemplate_VolumeRandomVariable());
+		autoCompletionWords.add(getTemplate_MembraneRandomVariable());
+		autoCompletionWords.add(getTemplate_UniformDistribution());
+		autoCompletionWords.add(VCML.RandomVariable_Seed);
+		autoCompletionWords.add(VCML.UniformDistribution_Minimum);
+		autoCompletionWords.add(VCML.UniformDistribution_Maximum);
+		autoCompletionWords.add(getTemplate_GaussianDistribution());
+		autoCompletionWords.add(VCML.GaussianDistribution_Mean);
+		autoCompletionWords.add(VCML.GaussianDistribution_StandardDeviation);
+
+		String functions[] = {
 	 		"abs()",
 	 		"acos()",
 	 		"acosh()",
@@ -393,22 +404,23 @@ public List<String> getAutoCompletionWords() {
 	 		"sqrt()",
 	 		"tan()",
 	 		"tanh()",
-	 };
-	 for (String f : functions) {
-	 	autoCompletionWords.add(f);
-	 }
-	 
-	 return autoCompletionWords;
+	 	};
+		for (String f : functions) {
+			autoCompletionWords.add(f);
+		}
+	}
+	
+	return autoCompletionWords;
 }
 
-public String getTemplate_OdeEquation() {	
+private static String getTemplate_OdeEquation() {	
 	return VCML.OdeEquation + " varName " + VCML.BeginBlock + "\n" 
 		+ "\t\t" + VCML.Rate + " 0.0;\n" 
 		+ "\t\t" + VCML.Initial + " 0.0;\n"
 		+ "\t}\n";
 }
 
-public String getTemplate_PdeEquation() {	
+private static String getTemplate_PdeEquation() {	
 	return VCML.PdeEquation + " varName " + VCML.BeginBlock + "\n"
 		+ "\t\t" + VCML.BoundaryXm + " 0.0;\n"
 		+ "\t\t" + VCML.BoundaryXp + " 0.0;\n"
@@ -417,28 +429,28 @@ public String getTemplate_PdeEquation() {
 		+ "\t\t" + VCML.Initial + " 0.0;\n"
 		+ "\t}\n";
 }
-public String getTemplate_JumpCondition() {	
+private static String getTemplate_JumpCondition() {	
 	return VCML.JumpCondition + " varName " + VCML.BeginBlock + "\n" 
 		+ "\t\t" + VCML.InFlux + " 0.0;\n" 
 		+ "\t\t" + VCML.OutFlux + " 0.0;\n" 
 		+ "\t}\n";
 }
 
-public String getTemplate_FastSystem() {	
+private static String getTemplate_FastSystem() {	
 	return VCML.FastSystem + " " + VCML.BeginBlock + "\n" 
 		+ "\t\t" + VCML.FastInvariant + " 0.0;\n" 
 		+ "\t\t" + VCML.FastRate + " 0.0;\n" 
 		+ "\t}\n";
 }
 
-public String getTemplate_JumpProcess() {	
+private static String getTemplate_JumpProcess() {	
 	return VCML.JumpProcess + " varName " + VCML.BeginBlock + "\n" 
 		+ "\t\t" + VCML.ProbabilityRate + " 0.0;\n" 
 		+ "\t\t Effect 0.0;\n" 
 		+ "\t}\n";
 }
 
-public String getTemplate_Event() {	
+private static String getTemplate_Event() {	
 	return VCML.Event + " event0 " + VCML.BeginBlock + "\n"
 		+ "\t" + VCML.Trigger + " 0.0;\n"
 		+ "\t" + VCML.Delay + " " +  VCML.BeginBlock + "\n"
@@ -449,68 +461,104 @@ public String getTemplate_Event() {
 		+ VCML.EndBlock + "\n";
 }
 
+private static String getTemplate_VolumeRandomVariable() {	
+	return VCML.VolumeRandomVariable + " rand0 " + VCML.BeginBlock + "\n"
+		+ "\t" + VCML.RandomVariable_Seed + " 5;\n"
+		+ "\t" + getTemplate_UniformDistribution()
+		+ VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_MembraneRandomVariable() {	
+	return VCML.MembraneRandomVariable + " rand0 " + VCML.BeginBlock + "\n"
+		+ "\t" + VCML.RandomVariable_Seed + " 5;\n"
+		+ "\t" + getTemplate_UniformDistribution()
+		+ VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_UniformDistribution() {	
+		return VCML.UniformDistribution + " " +  VCML.BeginBlock + "\n"
+		+ "\t\t" + VCML.UniformDistribution_Minimum + " 0.0;\n"
+		+ "\t\t" + VCML.UniformDistribution_Maximum + " 1.0;\n"
+		+ "\t" + VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_GaussianDistribution() {	
+	return VCML.GaussianDistribution + " " +  VCML.BeginBlock + "\n"
+	+ "\t\t" + VCML.GaussianDistribution_Mean + " 0.0;\n"
+	+ "\t\t" + VCML.GaussianDistribution_StandardDeviation + " 1.0;\n"
+	+ "\t" + VCML.EndBlock + "\n";
+}
+
 public JMenu getEditMenu() {
 	return getVCMLPane().createEditMenu();
 }
 
 
 public static List<String> getkeywords() {
-	 // must be ordered
-	 List<String> keywords = new ArrayList<String>();
-	 keywords.add(VCML.BoundaryXm);
-	 keywords.add(VCML.BoundaryXp);
-	 keywords.add(VCML.BoundaryYm);
-	 keywords.add(VCML.BoundaryYp);
-	 keywords.add(VCML.BoundaryZm);
-	 keywords.add(VCML.BoundaryZp);
-	 keywords.add(VCML.CompartmentSubDomain);
-	 keywords.add(VCML.Constant);
-	 keywords.add(VCML.Diffusion);
-	 keywords.add(VCML.Action);
-	 keywords.add(VCML.Exact);
-	 keywords.add(VCML.FastInvariant);
-	 keywords.add(VCML.FastRate);
-	 keywords.add(VCML.FastSystem);
-	 keywords.add(BoundaryConditionType.NEUMANN_STRING);
-	 keywords.add(VCML.Function);
-	 keywords.add(VCML.InFlux);
-	 keywords.add(VCML.Initial);
-	 keywords.add(VCML.JumpCondition);
-	 keywords.add(VCML.JumpProcess);
-	 keywords.add(VCML.MathDescription);
-	 keywords.add(VCML.MembraneRate);
-	 keywords.add(VCML.MembraneRegionEquation);
-	 keywords.add(VCML.MembraneRegionVariable);
-	 keywords.add(VCML.MembraneSubDomain);
-	 keywords.add(VCML.MembraneVariable); 
-	 keywords.add(VCML.OdeEquation);
-	 keywords.add(VCML.OutFlux);
-	 keywords.add(VCML.PdeEquation);
-	 keywords.add(BoundaryConditionType.PERIODIC_STRING);
-	 keywords.add(VCML.Priority);
-	 keywords.add(VCML.ProbabilityRate);
-	 keywords.add(VCML.Rate);
-	 keywords.add(VCML.StochVolVariable);
-	 keywords.add(VCML.UniformRate);
-	 keywords.add(VCML.Value);
-	 keywords.add(VCML.VarIniCondition);
-	 keywords.add(VCML.VelocityX);
-	 keywords.add(VCML.VelocityY);
-	 keywords.add(VCML.VelocityZ);
-	 keywords.add(VCML.VolumeRate);
-	 keywords.add(VCML.VolumeRegionEquation);
-	 keywords.add(VCML.VolumeRegionVariable);
-	 keywords.add(VCML.VolumeVariable);
-	 keywords.add(VCML.Steady);
-	 
-	 keywords.add(VCML.Event);
-	 keywords.add(VCML.Delay);
-	 keywords.add(VCML.Trigger);
-	 keywords.add(VCML.Duration);
-	 keywords.add(VCML.EventAssignment);
-	 keywords.add(VCML.UseValuesFromTriggerTime);
+	if (keywords.size() == 0) {
+		keywords.add(VCML.BoundaryXm);
+		keywords.add(VCML.BoundaryXp);
+		keywords.add(VCML.BoundaryYm);
+		keywords.add(VCML.BoundaryYp);
+		keywords.add(VCML.BoundaryZm);
+		keywords.add(VCML.BoundaryZp);
+		keywords.add(VCML.CompartmentSubDomain);
+		keywords.add(VCML.Constant);
+		keywords.add(VCML.Diffusion);
+		keywords.add(VCML.Action);
+		keywords.add(VCML.Exact);
+		keywords.add(VCML.FastInvariant);
+		keywords.add(VCML.FastRate);
+		keywords.add(VCML.FastSystem);
+		keywords.add(BoundaryConditionType.NEUMANN_STRING);
+		keywords.add(VCML.Function);
+		keywords.add(VCML.InFlux);
+		keywords.add(VCML.Initial);
+		keywords.add(VCML.JumpCondition);
+		keywords.add(VCML.JumpProcess);
+		keywords.add(VCML.MathDescription);
+		keywords.add(VCML.MembraneRate);
+		keywords.add(VCML.MembraneRegionEquation);
+		keywords.add(VCML.MembraneRegionVariable);
+		keywords.add(VCML.MembraneSubDomain);
+		keywords.add(VCML.MembraneVariable);
+		keywords.add(VCML.OdeEquation);
+		keywords.add(VCML.OutFlux);
+		keywords.add(VCML.PdeEquation);
+		keywords.add(BoundaryConditionType.PERIODIC_STRING);
+		keywords.add(VCML.Priority);
+		keywords.add(VCML.ProbabilityRate);
+		keywords.add(VCML.Rate);
+		keywords.add(VCML.StochVolVariable);
+		keywords.add(VCML.UniformRate);
+		keywords.add(VCML.Value);
+		keywords.add(VCML.VarIniCondition);
+		keywords.add(VCML.VelocityX);
+		keywords.add(VCML.VelocityY);
+		keywords.add(VCML.VelocityZ);
+		keywords.add(VCML.VolumeRate);
+		keywords.add(VCML.VolumeRegionEquation);
+		keywords.add(VCML.VolumeRegionVariable);
+		keywords.add(VCML.VolumeVariable);
+		keywords.add(VCML.Steady);
 
+		keywords.add(VCML.Event);
+		keywords.add(VCML.Delay);
+		keywords.add(VCML.Trigger);
+		keywords.add(VCML.Duration);
+		keywords.add(VCML.EventAssignment);
+		keywords.add(VCML.UseValuesFromTriggerTime);
 
+		keywords.add(VCML.VolumeRandomVariable);
+		keywords.add(VCML.MembraneRandomVariable);
+		keywords.add(VCML.RandomVariable_Seed);
+		keywords.add(VCML.UniformDistribution);
+		keywords.add(VCML.UniformDistribution_Minimum);
+		keywords.add(VCML.UniformDistribution_Maximum);
+		keywords.add(VCML.GaussianDistribution);
+		keywords.add(VCML.GaussianDistribution_Mean);
+		keywords.add(VCML.GaussianDistribution_StandardDeviation);
+	}
 	 return keywords;
 }
 }

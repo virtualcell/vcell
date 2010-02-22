@@ -8,13 +8,16 @@ import java.util.Map;
 
 import org.vcell.util.Matchable;
 
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.SymbolTableEntry;
+
 public class ReservedVariable extends Variable
 {
    public final static ReservedVariable TIME = new ReservedVariable("t",0);
    public final static ReservedVariable X    = new ReservedVariable("x",1);
    public final static ReservedVariable Y    = new ReservedVariable("y",2);
    public final static ReservedVariable Z    = new ReservedVariable("z",3);
+   
 private ReservedVariable(String name, int defaultIndex){
 	super(name);
 	setIndex(defaultIndex);
@@ -124,6 +127,10 @@ public static void getAll(Map<String, SymbolTableEntry> entryMap) {
 	entryMap.put(X.getName(), X);
 	entryMap.put(Y.getName(), Y);
 	entryMap.put(Z.getName(), Z);
+}
+@Override
+public String getVCML() throws MathException {
+	throw new MathException("VCML not supported " + this.getClass().getName());
 }
 
 }

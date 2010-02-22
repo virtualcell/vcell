@@ -79,6 +79,7 @@ import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.Distribution;
 import cbit.vcell.math.Event;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
@@ -87,6 +88,7 @@ import cbit.vcell.math.FilamentRegionVariable;
 import cbit.vcell.math.FilamentSubDomain;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.Function;
+import cbit.vcell.math.GaussianDistribution;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
@@ -94,6 +96,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRandomVariable;
 import cbit.vcell.math.MembraneRegionEquation;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
@@ -101,10 +104,13 @@ import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
+import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.Event.Delay;
@@ -2126,6 +2132,27 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		}
 	}
 
+	iterator = param.getChildren(XMLTags.VolumeRandomVariableTag, vcNamespace).iterator();
+	while ( iterator.hasNext() ){
+		tempelement = (Element)iterator.next();
+		try {
+			varHash.addVariable(getRandomVariable(tempelement));
+		}catch (MappingException e){
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+	iterator = param.getChildren(XMLTags.MembraneRandomVariableTag, vcNamespace).iterator();
+	while ( iterator.hasNext() ){
+		tempelement = (Element)iterator.next();
+		try {
+			varHash.addVariable(getRandomVariable(tempelement));
+		}catch (MappingException e){
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+	
 	//
 	// add all variables at once
 	//
@@ -2191,46 +2218,76 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 	return mathdes;
 }
 
+public RandomVariable getRandomVariable(Element param) throws XmlParseException {
+	//get attributes
+	String name = unMangle(param.getAttributeValue( XMLTags.NameAttrTag));
+	Element element = param.getChild(XMLTags.RandomVariableSeedTag, vcNamespace);
+	Expression seed = null;
+	if (element != null) {
+		seed = unMangleExpression(element.getText());
+	}
+	Distribution dist = null;
+	element = param.getChild(XMLTags.UniformDistributionTag, vcNamespace);
+	if (element != null) {	
+		dist = getUniformDistribution(element);
+	}	
+	element = param.getChild(XMLTags.GaussianDistributionTag, vcNamespace);
+	if (element != null) {	
+		dist = getGaussianDistribution(element);
+	}
+	
+	if (param.getName().equals(XMLTags.VolumeRandomVariableTag)) {
+		return new VolumeRandomVariable(name, seed, dist);
+	} else if (param.getName().equals(XMLTags.MembraneRandomVariableTag)) {
+		return new MembraneRandomVariable(name, seed, dist);
+	} else {
+		throw new XmlParseException(param.getName() + " is not supported!");
+	}
+}
+
+private GaussianDistribution getGaussianDistribution(Element distElement) {
+	Element element = distElement.getChild(XMLTags.GaussianDistributionMeanTag, vcNamespace);
+	Expression mu = unMangleExpression(element.getText());
+	
+	element = distElement.getChild(XMLTags.GaussianDistributionStandardDeviationTag, vcNamespace);
+	Expression sigma = unMangleExpression(element.getText());
+
+	return new GaussianDistribution(mu, sigma);
+}
+
+private UniformDistribution getUniformDistribution(Element distElement) {
+	Element element = distElement.getChild(XMLTags.UniformDistributionMinimumTag, vcNamespace);
+	Expression low = unMangleExpression(element.getText());
+	
+	element = distElement.getChild(XMLTags.UniformDistributionMaximumTag, vcNamespace);
+	Expression high = unMangleExpression(element.getText());
+
+	return new UniformDistribution(low, high);
+}
 
 private Event getEvent(MathDescription mathdesc, Element eventElement) throws XmlParseException  {
 
-	String name = eventElement.getAttributeValue(XMLTags.NameAttrTag);
+	String name = unMangle(eventElement.getAttributeValue(XMLTags.NameAttrTag));
 	Element element = eventElement.getChild(XMLTags.TriggerTag, vcNamespace);
-	Expression triggerExp = null;
-	try {
-		triggerExp = new Expression(element.getText());
-	} catch (ExpressionException e) {
-		e.printStackTrace();
-		throw new XmlParseException(e.getMessage());
-	}
+	Expression triggerExp = unMangleExpression(element.getText());
 	
 	element = eventElement.getChild(XMLTags.DelayTag, vcNamespace);
 	Delay delay = null;
 	if (element != null) {
-		try {			
-			boolean useValuesFromTriggerTime = Boolean.valueOf(element.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
-			Expression durationExp = new Expression(element.getText());
-			delay = new Delay(useValuesFromTriggerTime, durationExp);
-		} catch (ExpressionException e) {
-			e.printStackTrace();
-			throw new XmlParseException(e.getMessage());
-		}
+		boolean useValuesFromTriggerTime = Boolean.valueOf(element.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
+		Expression durationExp = unMangleExpression(element.getText());
+		delay = new Delay(useValuesFromTriggerTime, durationExp);
 	}
 	
 	ArrayList<EventAssignment> eventAssignmentList = new ArrayList<EventAssignment>();
 	Iterator<Element> iter = eventElement.getChildren(XMLTags.EventAssignmentTag, vcNamespace).iterator();
 	while (iter.hasNext()) {
 		element = iter.next();
-		try {
-			String varname = element.getAttributeValue(XMLTags.EventAssignmentVariableAttrTag);
-			Expression assignExp = new Expression(element.getText());
-			Variable var = mathdesc.getVariable(varname);
-			EventAssignment eventAssignment = new EventAssignment(var, assignExp);
-			eventAssignmentList.add(eventAssignment);
-		} catch (ExpressionException e) {
-			e.printStackTrace();
-			throw new XmlParseException(e.getMessage());
-		}
+		String varname = element.getAttributeValue(XMLTags.EventAssignmentVariableAttrTag);
+		Expression assignExp = unMangleExpression(element.getText());
+		Variable var = mathdesc.getVariable(varname);
+		EventAssignment eventAssignment = new EventAssignment(var, assignExp);
+		eventAssignmentList.add(eventAssignment);
 	}
 	
 	Event event = new Event(name, triggerExp, delay, eventAssignmentList);
@@ -2239,27 +2296,16 @@ private Event getEvent(MathDescription mathdesc, Element eventElement) throws Xm
 
 private BioEvent getBioEvent(SimulationContext simContext, Element bioEventElement) throws XmlParseException  {
 
-	String name = bioEventElement.getAttributeValue(XMLTags.NameAttrTag);
+	String name = unMangle(bioEventElement.getAttributeValue(XMLTags.NameAttrTag));
 	Element element = bioEventElement.getChild(XMLTags.TriggerTag, vcNamespace);
-	Expression triggerExp = null;
-	try {
-		triggerExp = new Expression(element.getText());
-	} catch (ExpressionException e) {
-		e.printStackTrace();
-		throw new XmlParseException(e.getMessage());
-	}
+	Expression triggerExp = unMangleExpression(element.getText());
 	
 	element = bioEventElement.getChild(XMLTags.DelayTag, vcNamespace);
 	BioEvent.Delay delay = null;
 	if (element != null) {
-		try {			
-			boolean useValuesFromTriggerTime = Boolean.valueOf(element.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
-			Expression durationExp = new Expression(element.getText());
-			delay = new BioEvent.Delay(useValuesFromTriggerTime, durationExp);
-		} catch (ExpressionException e) {
-			e.printStackTrace();
-			throw new XmlParseException(e.getMessage());
-		}
+		boolean useValuesFromTriggerTime = Boolean.valueOf(element.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
+		Expression durationExp = unMangleExpression(element.getText());
+		delay = new BioEvent.Delay(useValuesFromTriggerTime, durationExp);
 	}
 	
 	ArrayList<BioEvent.EventAssignment> eventAssignmentList = new ArrayList<BioEvent.EventAssignment>();
@@ -2268,11 +2314,11 @@ private BioEvent getBioEvent(SimulationContext simContext, Element bioEventEleme
 		element = iter.next();
 		try {
 			String varname = element.getAttributeValue(XMLTags.EventAssignmentVariableAttrTag);
-			Expression assignExp = new Expression(element.getText());
+			Expression assignExp = unMangleExpression(element.getText());
 			SymbolTableEntry target = simContext.getEntry(varname);
 			BioEvent.EventAssignment eventAssignment = new BioEvent.EventAssignment(target, assignExp);
 			eventAssignmentList.add(eventAssignment);
-		} catch (ExpressionException e) {
+		} catch (ExpressionBindingException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
 		}
@@ -3184,21 +3230,21 @@ public PdeEquation getPdeEquation(Element param, MathDescription mathDesc) throw
 	        boolean dummyVel = true;
 	        tempStr = velocityE.getAttributeValue(XMLTags.XAttrTag);
 	        if (tempStr != null) {
-	       		pdeEquation.setVelocityX(new Expression(tempStr));                  //all velocity dimensions are optional.
+	       		pdeEquation.setVelocityX(unMangleExpression(tempStr));                  //all velocity dimensions are optional.
 				if (dummyVel) {
 					dummyVel = false;
 				}
 	       	}
 	        tempStr = velocityE.getAttributeValue(XMLTags.YAttrTag);
 	        if (tempStr != null) {
-				pdeEquation.setVelocityY(new Expression(tempStr));
+				pdeEquation.setVelocityY(unMangleExpression(tempStr));
 				if (dummyVel) {
 					dummyVel = false;
 				}
 	        }
 	        tempStr = velocityE.getAttributeValue(XMLTags.ZAttrTag);
 	        if (tempStr != null) {
-				pdeEquation.setVelocityZ(new Expression(tempStr));
+				pdeEquation.setVelocityZ(unMangleExpression(tempStr));
 				if (dummyVel) {
 					dummyVel = false;
 				}
@@ -4266,21 +4312,21 @@ public void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext rx
 	        try {
 				tempStr = velocityE.getAttributeValue(XMLTags.XAttrTag);
 				if (tempStr != null) {
-					specspec.getVelocityXParameter().setExpression(new Expression(tempStr));       //all velocity dimensions are optional.
+					specspec.getVelocityXParameter().setExpression(unMangleExpression(tempStr));       //all velocity dimensions are optional.
 					if (dummyVel) {
 						dummyVel = false;
 					}
 				}
 				tempStr = velocityE.getAttributeValue(XMLTags.YAttrTag);
 				if (tempStr != null) {
-					specspec.getVelocityYParameter().setExpression(new Expression(tempStr));
+					specspec.getVelocityYParameter().setExpression(unMangleExpression(tempStr));
 					if (dummyVel) {
 						dummyVel = false;
 					}
 				}
 				tempStr = velocityE.getAttributeValue(XMLTags.ZAttrTag);
 				if (tempStr != null) {
-					specspec.getVelocityZParameter().setExpression(new Expression(tempStr));
+					specspec.getVelocityZParameter().setExpression(unMangleExpression(tempStr));
 					if (dummyVel) {
 						dummyVel = false;
 					}
