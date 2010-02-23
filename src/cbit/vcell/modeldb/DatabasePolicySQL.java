@@ -72,6 +72,7 @@ public static String enforceOwnershipInsert(User user, VersionTable vTable, Obje
 																(org.vcell.util.document.KeyValue) valueData[1],
 																(org.vcell.util.document.KeyValue) valueData[2],
 																(org.vcell.util.document.KeyValue) valueData[3],
+																(String) valueData[4],
 																version));
 	}else if (vTable instanceof MathDescTable) {
 		sb.append(((MathDescTable) vTable).getSQLValueList(	(cbit.vcell.math.MathDescription) valueData[0], 

@@ -1224,9 +1224,7 @@ public org.jdom.Element getXML(cbit.vcell.mapping.SimulationContext param, cbit.
 	
 	// Add (Bio)events
 	if (param.getBioEvents()!=null && param.getBioEvents().length>0){
-		for (int i = 0; i < param.getBioEvents().length; i++) {
-			simulationcontext.addContent( getXML(param.getBioEvents()[i]) );
-		}
+		simulationcontext.addContent( getXML(param.getBioEvents()) );
 	}
 	
 	//Add Metadata (if any)
@@ -3332,30 +3330,34 @@ public org.jdom.Element getXML(Event event) throws XmlParseException{
 }
 
 // For events in SimulationContext - XML is very similar to math events
-public org.jdom.Element getXML(BioEvent bioEvent) throws XmlParseException{
-	org.jdom.Element eventElement = new org.jdom.Element(XMLTags.EventTag);
-	eventElement.setAttribute(XMLTags.NameAttrTag, mangle(bioEvent.getName()));
+public org.jdom.Element getXML(BioEvent[] bioEvents) throws XmlParseException{
+	Element bioEventsElement = new Element(XMLTags.BioEventsTag);
+	for (int i = 0; i < bioEvents.length; i++) {
+		org.jdom.Element eventElement = new org.jdom.Element(XMLTags.BioEventTag);
+		eventElement.setAttribute(XMLTags.NameAttrTag, mangle(bioEvents[i].getName()));
 
-	Element element = new org.jdom.Element(XMLTags.TriggerTag);
-	element.addContent(mangleExpression(bioEvent.getTriggerExpression()));
-	eventElement.addContent(element);
-
-	BioEvent.Delay delay = bioEvent.getDelay();
-	if (delay != null) {
-		element = new org.jdom.Element(XMLTags.DelayTag);		
-		element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
-		element.addContent(mangleExpression(delay.getDurationExpression()));
+		Element element = new org.jdom.Element(XMLTags.TriggerTag);
+		element.addContent(mangleExpression(bioEvents[i].getTriggerExpression()));
 		eventElement.addContent(element);
-	}
-	ArrayList<BioEvent.EventAssignment> eventAssignmentsList = bioEvent.getEventAssignments();
-	for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
-		element = new org.jdom.Element(XMLTags.EventAssignmentTag);
-		element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
-		element.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
-		eventElement.addContent(element);
+
+		BioEvent.Delay delay = bioEvents[i].getDelay();
+		if (delay != null) {
+			element = new org.jdom.Element(XMLTags.DelayTag);		
+			element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
+			element.addContent(mangleExpression(delay.getDurationExpression()));
+			eventElement.addContent(element);
+		}
+		ArrayList<BioEvent.EventAssignment> eventAssignmentsList = bioEvents[i].getEventAssignments();
+		for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
+			element = new org.jdom.Element(XMLTags.EventAssignmentTag);
+			element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
+			element.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
+			eventElement.addContent(element);
+		}
+		bioEventsElement.addContent(eventElement);
 	}
 
-	return eventElement;
+	return bioEventsElement;
 }
 
 

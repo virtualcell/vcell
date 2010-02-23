@@ -25,6 +25,7 @@ import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.CurrentClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
@@ -705,6 +706,11 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 		}
 	}
 	
+	BioEvent[] bioEvents = SimContextTable.table.getBioEvents(con, simContext);
+	if (bioEvents != null && bioEvents.length > 0) {
+		simContext.setBioEvents(bioEvents);
+	}
+	
 	simContext.getModel().refreshDependencies();
 	simContext.refreshDependencies();  // really needed to calculate MembraneMapping parameters that are not stored (inside/outside flux correction factors).
 	
@@ -878,7 +884,7 @@ private void insertSimulationContext(InsertHashtable hash, Connection con, User 
 	insertReactionSpecsSQL(con, newVersion.getVersionKey(), simContext, updatedModel); // links to reactionSteps
 	insertAnalysisTasksSQL(con, newVersion.getVersionKey(), simContext); // inserts AnalysisTasks
 	ApplicationMathTable.table.saveOutputFunctionsSimContext(con, newVersion.getVersionKey(), simContext.getOutputFunctionContext().getOutputFunctionsList());
-	
+
 	hash.put(simContext,newVersion.getVersionKey());
 }
 
@@ -891,10 +897,23 @@ private void insertSimulationContextSQL(Connection con, User user,SimulationCont
 									throws SQLException,DataAccessException {
 										
 	String sql = null;
-	Object[] o = {simContext,mathDescKey,modelKey,geomKey};
+	String appComponentXmlStr = SimContextTable.table.getXMLStringForDatabase(simContext);
+	Object[] o = {simContext,mathDescKey,modelKey,geomKey, appComponentXmlStr};
 	sql = DatabasePolicySQL.enforceOwnershipInsert(user,simContextTable,o,version);
 //System.out.println(sql);
-	updateCleanSQL(con,sql);
+	if (appComponentXmlStr!=null){
+		varchar2_CLOB_update(
+			con,
+			sql,
+			appComponentXmlStr,
+			SimContextTable.table,
+			version.getVersionKey(),
+			SimContextTable.table.appComponentsLarge,
+			SimContextTable.table.appComponentsSmall
+			);
+	}else{
+		updateCleanSQL(con,sql);
+	}
 }
 
 
