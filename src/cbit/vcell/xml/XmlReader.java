@@ -3827,12 +3827,14 @@ public SimulationContext getSimulationContext(Element param, BioModel biomodel) 
 
 	// Retrieve (bio)events and add to simContext
 	tempelement = param.getChild(XMLTags.BioEventsTag, vcNamespace);
-	BioEvent[] bioEvents = getBioEvents(newsimcontext, tempelement);
-	try {
-		newsimcontext.setBioEvents(bioEvents);
-	} catch (PropertyVetoException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Error adding events to simulationContext : " + e.getMessage());
+	if(tempelement != null){
+		BioEvent[] bioEvents = getBioEvents(newsimcontext, tempelement);
+		try {
+			newsimcontext.setBioEvents(bioEvents);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error adding events to simulationContext : " + e.getMessage());
+		}
 	}
 
 	org.jdom.Element analysisTaskListElement = param.getChild(XMLTags.AnalysisTaskListTag, vcNamespace);
