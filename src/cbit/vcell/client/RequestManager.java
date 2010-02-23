@@ -9,6 +9,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
+import cbit.vcell.client.desktop.mathmodel.VCMLEditorPanel;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ConnectionStatus;
@@ -38,6 +39,7 @@ public interface RequestManager {
  */
 void changeGeometry(DocumentWindowManager requester, SimulationContext simContext);
 
+void changeGeometry(DocumentWindowManager requester,VCMLEditorPanel vcmlEditorPanel);
 
 /**
  * Insert the method's description here.

@@ -2396,6 +2396,12 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 
 		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
+		
+		SimulationContext[] scArr = savedBioModel.getSimulationContexts();
+		for (int i = 0; i < scArr.length; i++) {
+			updateGeometryRelatedHashes(scArr[i].getGeometry());
+		}
+		
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
 
 		return savedBioModel;
@@ -2430,11 +2436,12 @@ public Geometry save(Geometry geometry) throws DataAccessException {
 			xmlHash.put(savedKey, savedGeometryXML);
 		}
 
-		KeyValue imageRef = (savedGeometry.getGeometrySpec().getImage()!=null)?(savedGeometry.getGeometrySpec().getImage().getKey()):(null);
-		GeometryInfo savedGeometryInfo = new GeometryInfo(savedGeometry.getVersion(),savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef);
-		geoInfoHash.put(savedKey,savedGeometryInfo);
+		updateGeometryRelatedHashes(savedGeometry);
+//		KeyValue imageRef = (savedGeometry.getGeometrySpec().getImage()!=null)?(savedGeometry.getGeometrySpec().getImage().getKey()):(null);
+//		GeometryInfo savedGeometryInfo = new GeometryInfo(savedGeometry.getVersion(),savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef);
+//		geoInfoHash.put(savedKey,savedGeometryInfo);
 		
-		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedGeometryInfo));
+//		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, geoInfoHash.get(savedKey)/*savedGeometryInfo*/));
 
 		return savedGeometry;
 	}catch (RemoteException e){
@@ -2471,6 +2478,7 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 
 		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary());
 		mathModelInfoHash.put(savedKey,savedMathModelInfo);
+		updateGeometryRelatedHashes(savedMathModel.getMathDescription().getGeometry());
 		
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
 
@@ -2588,7 +2596,12 @@ public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String in
 
 		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
-		
+
+		SimulationContext[] scArr = savedBioModel.getSimulationContexts();
+		for (int i = 0; i < scArr.length; i++) {
+			updateGeometryRelatedHashes(scArr[i].getGeometry());
+		}
+
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
 
 		return savedBioModel;
@@ -2628,11 +2641,12 @@ public Geometry saveAsNew(Geometry geometry, java.lang.String newName) throws Da
 			xmlHash.put(savedKey, savedGeometryXML);
 		}
 
-		KeyValue imageRef = (savedGeometry.getGeometrySpec().getImage()!=null)?(savedGeometry.getGeometrySpec().getImage().getKey()):(null);
-		GeometryInfo savedGeometryInfo = new GeometryInfo(savedGeometry.getVersion(),savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef);
-		geoInfoHash.put(savedKey,savedGeometryInfo);
+		updateGeometryRelatedHashes(savedGeometry);
+//		KeyValue imageRef = (savedGeometry.getGeometrySpec().getImage()!=null)?(savedGeometry.getGeometrySpec().getImage().getKey()):(null);
+//		GeometryInfo savedGeometryInfo = new GeometryInfo(savedGeometry.getVersion(),savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef);
+//		geoInfoHash.put(savedKey,savedGeometryInfo);
 		
-		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedGeometryInfo));
+//		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, geoInfoHash.get(savedKey)/*savedGeometryInfo*/));
 
 		return savedGeometry;
 	}catch (RemoteException e){
@@ -2669,6 +2683,8 @@ public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String
 
 		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary());
 		mathModelInfoHash.put(savedKey,savedMathModelInfo);
+		
+		updateGeometryRelatedHashes(savedMathModel.getMathDescription().getGeometry());
 		
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
 
@@ -3098,4 +3114,21 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 public void updateServerSimulationStatusFromJobEvent(SimulationJobStatusEvent jobEvent) throws DataAccessException {
 	simulationStatusHash.put(jobEvent.getVCSimulationIdentifier().getSimulationKey(), SimulationStatus.updateFromJobEvent(getServerSimulationStatus(jobEvent.getVCSimulationIdentifier()), jobEvent));
 }
+private void updateGeometryRelatedHashes(Geometry savedGeometry){
+	if(savedGeometry == null || (savedGeometry.getVersion() != null && geoInfoHash.get(savedGeometry.getVersion().getVersionKey()) != null)){
+		return;
+	}
+	KeyValue imageRef = (savedGeometry.getGeometrySpec().getImage()!=null)?(savedGeometry.getGeometrySpec().getImage().getKey()):(null);
+	if(imageRef != null && imgInfoHash.get(imageRef) == null){
+		VCImage savedVCImage = savedGeometry.getGeometrySpec().getImage();
+		ISize size = new ISize(savedVCImage.getNumX(),savedVCImage.getNumY(),savedVCImage.getNumZ());
+		VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(), size, savedVCImage.getExtent(), null);
+		imgInfoHash.put(savedVCImage.getVersion().getVersionKey(),savedVCImageInfo);
+	}
+	GeometryInfo savedGeometryInfo = new GeometryInfo(savedGeometry.getVersion(),savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef);
+	geoInfoHash.put(savedGeometry.getVersion().getVersionKey(),savedGeometryInfo);
+	
+	fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, geoInfoHash.get(savedGeometry.getVersion().getVersionKey())));
+}
+
 }

@@ -10,11 +10,17 @@ import java.util.Vector;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
+import javax.swing.ListSelectionModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.VersionableType;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
@@ -33,6 +39,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.modeldb.VersionTable;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -46,6 +53,31 @@ public abstract class DocumentWindowManager extends TopLevelWindowManager implem
 	private JPanel jPanel = null;
 	private String documentID = null;
 	
+	public static class GeometrySelectionInfo{
+		private VCDocumentInfo vcDocumentInfo;
+		private VCDocument.DocumentCreationInfo selectedGeometryDocument;
+		
+		public GeometrySelectionInfo(VCDocumentInfo vcDocumentInfo){
+			if(!vcDocumentInfo.getVersionType().equals(VersionableType.BioModelMetaData) && 
+				!vcDocumentInfo.getVersionType().equals(VersionableType.MathModelMetaData) &&
+				!vcDocumentInfo.getVersionType().equals(VersionableType.Geometry)){
+				throw new IllegalArgumentException("GeometrySelectionInfo(VCDocumentInfo vcDocumentInfo) must be of VersionableType BioModelMetaData,MathModelMetaData or Geometry");				
+			}
+			this.vcDocumentInfo = vcDocumentInfo;
+		}
+		public GeometrySelectionInfo(VCDocument.DocumentCreationInfo selectedGeometryDocument){
+			if(selectedGeometryDocument.getDocumentType() != VCDocument.GEOMETRY_DOC){
+				throw new IllegalArgumentException("GeometrySelectionInfo(VCDocument.DocumentCreationInfo selectedGeometryDocument) must be of type VCDocument.GEOMETRY_DOC");
+			}
+			this.selectedGeometryDocument = selectedGeometryDocument;
+		}
+		public VCDocumentInfo getVCDocumentInfo(){
+			return vcDocumentInfo;
+		}
+		public VCDocument.DocumentCreationInfo getDocumentCreationInfo(){
+			return selectedGeometryDocument;
+		}
+	}
 /**
  * Insert the method's description here.
  * Creation date: (5/5/2004 5:14:36 PM)
@@ -176,7 +208,7 @@ public static JInternalFrameEnhanced createDefaultFrame(JPanel frameContent) {
 	}else if(frameContent instanceof GeometrySummaryViewer){
 		jif = new JInternalFrameEnhanced("Geometry Summary", true, true, true, true);
 		jif.setContentPane(frameContent);
-		jif.setSize(700,400);
+		jif.setSize(700,500);
 		jif.setMinimumSize(new Dimension(600,400));
 		jif.setLocation(200, 300);
 	}
@@ -416,10 +448,12 @@ public static void setDefaultTitle(JInternalFrame jif) {
 	Container contentPane = jif.getContentPane();
 	if(contentPane instanceof GeometrySummaryViewer){
 		Geometry geom = ((GeometrySummaryViewer)contentPane).getGeometry();
-		jif.setTitle("Info for Geometry "+(geom != null?geom.getName():""));
+		jif.setTitle("Viewer/Editor for Geometry "+
+				(geom != null?"'"+geom.getName()+"'"+(geom.getVersion() != null?" "+geom.getVersion().getDate():""):""));
 	}else if(contentPane instanceof SurfaceViewerPanel){
 		Geometry geom = ((SurfaceViewerPanel)contentPane).getGeometry();
-		jif.setTitle("Surface for Geometry "+(geom != null?geom.getName():""));
+		jif.setTitle("Surface for Geometry "+
+				(geom != null?"'"+geom.getName()+"'"+(geom.getVersion() != null?" "+geom.getVersion().getDate():""):""));
 	}
 	
 	
@@ -939,6 +973,95 @@ public void tileWindows(boolean horizontal) {
 		iframes[i].setBounds(bounds[i]);
 		iframes[i].show();
 	}
+}
+
+GeometrySelectionInfo selectGeometry() throws Exception,UserCancelException{
+	final int ANALYTIC_1D = 0;
+	final int ANALYTIC_2D = 1;
+	final int ANALYTIC_3D = 2;
+	final int IMAGE_DB = 3;
+	final int IMAGE_FILE = 4;
+	final int COPY_FROM_BIOMODEL = 5;
+	final int COPY_FROM_MATHMODEL = 6;
+	final int COPY_FROM_GEOMETRY = 7;
+	int[] geomType = null;
+
+	geomType = DialogUtils.showComponentOKCancelTableList(
+			getComponent(), 
+			"Choose new geometry type to create",
+			new String[] {"Geometry Type"}, 
+			new String[][] {{"Analytic Equations (1D)"},{"Analytic Equations (2D)"},{"Analytic Equations (3D)"},
+				{"Image based (legacy from database)"},{"Image based (import from file)"},
+				{"Copy from BioModel application"},{"Copy from MathModel"},{"Copy from saved Geometry"}}, ListSelectionModel.SINGLE_SELECTION);
+
+	VCDocument.DocumentCreationInfo documentCreationInfo = null;
+//	Geometry copiedGeom = null;
+	VCDocumentInfo vcDocumentInfo = null;
+	if(geomType[0] == ANALYTIC_1D){
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_1D);
+	}else if(geomType[0] == ANALYTIC_2D){
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_2D);
+	}else if(geomType[0] == ANALYTIC_3D){
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_3D);
+	}else if(geomType[0] == IMAGE_DB){
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE);
+	}else if(geomType[0] == IMAGE_FILE){
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
+	}else if(geomType[0] == COPY_FROM_BIOMODEL){
+		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.BIOMODEL_DOC);
+//		copiedGeom = ((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(vcDocumentInfo,true);
+	}else if(geomType[0] == COPY_FROM_MATHMODEL){
+		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.MATHMODEL_DOC);
+//		copiedGeom = ((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(vcDocumentInfo,true);
+	}else if(geomType[0] == COPY_FROM_GEOMETRY){
+		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.GEOMETRY_DOC);
+//		copiedGeom = ((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(vcDocumentInfo,true);
+	}else{
+		throw new IllegalArgumentException("Error selecting geometry, Unknown Geometry type "+geomType[0]);
+	}
+	DocumentWindowManager.GeometrySelectionInfo geometrySelectionInfo = null;
+	if(documentCreationInfo != null){
+		geometrySelectionInfo = new DocumentWindowManager.GeometrySelectionInfo(documentCreationInfo);
+	}else{
+		geometrySelectionInfo = new DocumentWindowManager.GeometrySelectionInfo(vcDocumentInfo);
+	}
+	
+	return geometrySelectionInfo;
+}
+
+void createGeometry(final GeometrySummaryViewer source,AsynchClientTask[] afterTasks){
+	
+	try{
+		final DocumentWindowManager.GeometrySelectionInfo geometrySelectionInfo = selectGeometry();
+		final Hashtable<String, Object> hash = new Hashtable<String, Object>();
+		AsynchClientTask[] createGeomTaskArr = new AsynchClientTask[0];
+		if(geometrySelectionInfo.getDocumentCreationInfo() != null){
+			createGeomTaskArr = ((ClientRequestManager)getRequestManager()).createNewDocument(this, geometrySelectionInfo.getDocumentCreationInfo());
+			hash.put("guiParent", (Component)getComponent());
+			hash.put("requestManager", getRequestManager());
+		}else{
+			createGeomTaskArr = new AsynchClientTask[1]; 
+			createGeomTaskArr[0] = new AsynchClientTask("loading Geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					Geometry copiedGeom =
+						((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(geometrySelectionInfo.getVCDocumentInfo(),true);
+					hash.put("doc",copiedGeom);
+				}			
+			};
+		}
+		createGeomTaskArr = (AsynchClientTask[])BeanUtils.addElements(createGeomTaskArr, afterTasks);
+		ClientTaskDispatcher.dispatch(getComponent(), hash, createGeomTaskArr, false);
+		
+	} catch (UserCancelException e1) {
+		return;
+	} catch (Exception e1) {
+		e1.printStackTrace();
+		DialogUtils.showErrorDialog(getComponent(), e1.getMessage());
+	}
+	
+
+
 }
 
 }

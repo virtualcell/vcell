@@ -22,9 +22,11 @@ public class GuiConstants {
 	public static final String ACTIONCMD_CHANGE_GEOMETRY = "Change Geometry...";
 	public static final String ACTIONCMD_VIEW_CHANGE_GEOMETRY = "View / Change Geometry";
 	public static final String ACTIONCMD_CREATE_MATH_MODEL = "Create Math Model";
-	public static final String ACTIONCMD_OPEN_GEOMETRY = "Open Geometry";
+//	public static final String ACTIONCMD_OPEN_GEOMETRY = "Open Geometry";
 	public static final String ACTIONCMD_VIEW_SURFACES = "View Surfaces";
-	
+	public static final String ACTIONCMD_EDIT_OCCURRED_GEOMETRY = "Edit Occurred Geometry";
+	public static final String ACTIONCMD_CREATE_GEOMETRY = "Create Geometry";
+
 	public static final String ACTIONCMD_ADD_EVENT = "Add Event";
 	
 	public static final String VCELL_SUPPORT_ACCOUNT_ID = "VCellSupport";

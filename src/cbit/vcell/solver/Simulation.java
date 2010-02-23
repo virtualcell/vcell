@@ -3,6 +3,8 @@ package cbit.vcell.solver;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
 import org.vcell.util.CommentStringTokenizer;
@@ -24,7 +26,7 @@ import cbit.vcell.math.VCML;
  * Creation date: (8/16/2000 11:08:33 PM)
  * @author: John Wagner
  */
-public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable {
+public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable,PropertyChangeListener {
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_ODE_TIMEPOINTS = 100000;
 	public static final int MAX_LIMIT_PDE_TIMEPOINTS = 100000;
@@ -101,6 +103,7 @@ public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDe
 	}
 	fieldMathOverrides = new MathOverrides(this);
 	fieldSolverTaskDescription = new SolverTaskDescription(this);
+	refreshDependencies();
 }
 
 
@@ -131,6 +134,7 @@ public Simulation(SimulationVersion simulationVersion, MathDescription mathDescr
 	//  Must set the MathDescription before constructing these...
 	fieldMathOverrides = new MathOverrides(this, mathOverridesTokenizer);
 	fieldSolverTaskDescription = new SolverTaskDescription(this, solverTaskDescriptionTokenizer);
+	refreshDependencies();
 }
 
 
@@ -194,6 +198,7 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 	fieldMathOverrides = new MathOverrides (this, simulation.getMathOverrides());
 	fieldSolverTaskDescription = new SolverTaskDescription(this, simulation.getSolverTaskDescription());
 	dataProcessingInstructions = simulation.dataProcessingInstructions;
+	refreshDependencies();
 }
 
 
@@ -615,6 +620,10 @@ public void refreshDependencies() {
 	}
 	getSolverTaskDescription().refreshDependencies();
 	getMathOverrides().refreshDependencies();
+	
+	getMathDescription().removePropertyChangeListener(this);
+	getMathDescription().addPropertyChangeListener(this);
+
 }
 
 /**
@@ -666,18 +675,26 @@ public void setMathDescription(MathDescription mathDescription) throws java.bean
 	fireVetoableChange("mathDescription", oldValue, mathDescription);
 	fieldMathDescription = mathDescription;
 
-	//
-	// refresh MeshSpecification
-	//
-	if (mathDescription.getGeometry().getDimension()>0){
-		if (getMeshSpecification()!=null){
-			getMeshSpecification().setGeometry(mathDescription.getGeometry());
-		}else{
-			setMeshSpecification(new MeshSpecification(mathDescription.getGeometry()));
-		}
-	}else{
-		setMeshSpecification(null);
+	if(oldValue != null){
+		oldValue.removePropertyChangeListener(this);
 	}
+	if(fieldMathDescription != null){
+		fieldMathDescription.removePropertyChangeListener(this);
+		fieldMathDescription.addPropertyChangeListener(this);
+	}
+	refreshMeshSpec();
+//	//
+//	// refresh MeshSpecification
+//	//
+//	if (mathDescription.getGeometry().getDimension()>0){
+//		if (getMeshSpecification()!=null){
+//			getMeshSpecification().setGeometry(mathDescription.getGeometry());
+//		}else{
+//			setMeshSpecification(new MeshSpecification(mathDescription.getGeometry()));
+//		}
+//	}else{
+//		setMeshSpecification(null);
+//	}
 	//
 	// refresh MathOverrides
 	//
@@ -853,4 +870,32 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		firePropertyChange("dataProcessingInstructions", oldValue, dataProcessingInstructions);
 }
 
+
+	public void propertyChange(PropertyChangeEvent evt) {
+		// TODO Auto-generated method stub
+		if(evt.getSource() == getMathDescription() && evt.getPropertyName().equals("geometry")){
+			try{
+				refreshMeshSpec();
+			}catch(PropertyVetoException e){
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(),e);
+			}
+		}
+		
+	}
+
+	private void refreshMeshSpec() throws PropertyVetoException{
+		//
+		// refresh MeshSpecification
+		//
+		if (getMathDescription().getGeometry().getDimension()>0){
+			if (getMeshSpecification()!=null){
+				getMeshSpecification().setGeometry(getMathDescription().getGeometry());
+			}else{
+				setMeshSpecification(new MeshSpecification(getMathDescription().getGeometry()));
+			}
+		}else{
+			setMeshSpecification(null);
+		}
+	}
 }

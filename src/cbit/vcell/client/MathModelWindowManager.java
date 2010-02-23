@@ -1,7 +1,9 @@
 package cbit.vcell.client;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.beans.PropertyVetoException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -9,12 +11,15 @@ import java.util.Vector;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
@@ -26,8 +31,13 @@ import cbit.vcell.client.desktop.mathmodel.VCMLEditorPanel;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
@@ -99,17 +109,51 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 public void actionPerformed(java.awt.event.ActionEvent e) {
 	
 	String actionCommand = e.getActionCommand();
-	Object source = e.getSource();
-	if(source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_GEOMETRY)){
-		//KeyValue geometryKey = ((cbit.vcell.client.desktop.geometry.GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry().getVersion().getVersionKey();
-		openGeometryDocumentWindow(((GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry());
+	final Object source = e.getSource();
+
+	if(source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
+			AsynchClientTask editSelectTask = new AsynchClientTask("Edit/Apply Geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					Geometry newGeom = (Geometry)hashTable.get("doc");
+					if(newGeom != null){
+						GeometryViewer localGeometryViewer = new GeometryViewer();
+						localGeometryViewer.setGeometry(newGeom);
+						int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
+						if(result == JOptionPane.OK_OPTION){
+							showSurfaceViewerFrame(false);
+						}else{
+							throw UserCancelException.CANCEL_GENERIC;
+						}
+					}else{
+						throw new Exception("No Geometry found in edit task");
+					}
+				}
+			};
+			AsynchClientTask geomRegionsTask = new AsynchClientTask("Update Geometric regions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						Geometry newGeom = (Geometry)hashTable.get("doc");
+						ClientRequestManager.continueAfterMathModelGeomChangeWarning(MathModelWindowManager.this, newGeom);
+						newGeom.precomputeAll();					}
+			};
+			AsynchClientTask applyGeomTask = new AsynchClientTask("Apply Geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+				@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						Geometry newGeom = (Geometry)hashTable.get("doc");
+						((MathModel)getVCDocument()).getMathDescription().setGeometry(newGeom);
+						vcmlEditor.updateWarningText(((MathModel)getVCDocument()).getMathDescription());
+					}
+			};
+
+		createGeometry((GeometrySummaryViewer)source,new AsynchClientTask[] {editSelectTask,geomRegionsTask,applyGeomTask});
 	}
 
 	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
-		getRequestManager().changeGeometry(this, null);
+		showSurfaceViewerFrame(false);
+		getRequestManager().changeGeometry(this,vcmlEditor);
 	}
 	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_VIEW_SURFACES)) {
-		showSurfaceViewerFrame();
 		if(getMathModel() != null && getMathModel().getMathDescription() != null &&
 			getMathModel().getMathDescription().getGeometry() != null &&
 			getMathModel().getMathDescription().getGeometry().getGeometrySurfaceDescription() != null &&
@@ -119,11 +163,12 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 					Geometry geom = getMathModel().getMathDescription().getGeometry();
 					surfaceViewer.setGeometry(geom);
 					setDefaultTitle(surfaceViewerFrame);
-					surfaceViewer.updateSurfaces();
+					surfaceViewer.updateSurfaces();					
 				} catch(Exception e2){
 					PopupGenerator.showErrorDialog(this, "Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage());
 				}
 		}
+		showSurfaceViewerFrame(true);
 	}	
 }
 
@@ -351,17 +396,7 @@ private void initializeInternalFrames() {
 	// Initialize Geometry Viewer internal frame
 	geoViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
 	
-	//disable changeGeometry and openGeometry button in geometry summary viewer if it is a stochastic app.
-	if(getMathModel().getMathDescription().isStoch())
-	{
-		geoViewer.setChangeGeometryEnabled(false);
-		geoViewer.setOpenGeometryEnabled(false);
-	}
-	else
-	{
-		geoViewer.setChangeGeometryEnabled(true);
-		geoViewer.setOpenGeometryEnabled(true);
-	}
+	geoViewer.setStochastic(getMathModel().getMathDescription().isStoch());
 	geometryViewerEditorFrame = createDefaultFrame(geoViewer);
 	geometryViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
 		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
@@ -407,7 +442,19 @@ public boolean isRecyclable() {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 
+	System.out.println(evt.getSource().getClass().getName()+" '"+evt.getPropertyName()+"'");
+	
+	if(evt.getSource() instanceof GeometrySpec && evt.getPropertyName().equals("sampledImage") && evt.getNewValue() != null){
+		updateGeometryRegions(false);
+	}
+	if(evt.getSource() instanceof SubVolume && evt.getPropertyName().equals("name")){
+		if(getMathModel() != null && getMathModel().getMathDescription() != null){
+			updateGeometryRegions(false);
+		}
+	}
+
 	if(evt.getSource() instanceof MathDescription && evt.getPropertyName().equals("geometry")){
+		resetGeometryListeners((Geometry)evt.getOldValue(),(Geometry)evt.getNewValue());
 		surfaceViewer.setGeometry(null);
 		if(surfaceViewerFrame != null){
 			close(surfaceViewerFrame,getJDesktopPane());
@@ -417,11 +464,70 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setDefaultTitle(geometryViewerEditorFrame);
 	}
 	
+	if (evt.getSource() == getMathModel() && evt.getPropertyName().equals("mathDescription")) {
+		resetMathDescriptionListeners((MathDescription)evt.getOldValue(),(MathDescription)evt.getNewValue());
+	}
+	
 	if (evt.getSource() == getMathModel() && evt.getPropertyName().equals("simulations")) {
 		checkValidSimulationDataViewerFrames();
 	}
 }
 
+private void updateGeometryRegions(final boolean bChange){
+	AsynchClientTask closeSurfaceViewer = new AsynchClientTask("Close surface viewer", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				showSurfaceViewerFrame(false);
+			}
+		};
+
+	AsynchClientTask geomRegionsTask = new AsynchClientTask("Update Geometric regions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				Geometry newGeom = ((MathModel)getVCDocument()).getMathDescription().getGeometry();
+				newGeom.getGeometrySurfaceDescription().updateAll();
+			}
+	};
+	
+	AsynchClientTask updateWarningTask = new AsynchClientTask("Update Math warnings", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				vcmlEditor.updateWarningText(((MathModel)getVCDocument()).getMathDescription());
+			}
+	};
+	
+		ClientTaskDispatcher.dispatch(getComponent(),
+				new Hashtable<String, Object>(),
+				new AsynchClientTask[] {closeSurfaceViewer,geomRegionsTask,updateWarningTask}, false);
+}
+
+private void resetGeometryListeners(Geometry oldGeometry, Geometry newGeometry){
+	if(oldGeometry != null){
+		oldGeometry.removePropertyChangeListener(this);
+		if(oldGeometry.getGeometrySpec() != null){
+			oldGeometry.getGeometrySpec().removePropertyChangeListener(this);
+			SubVolume subVolumes[] = oldGeometry.getGeometrySpec().getSubVolumes();
+			for (int i = 0;subVolumes!=null && i < subVolumes.length; i++){
+				subVolumes[i].removePropertyChangeListener(this);
+			}
+		}
+	}
+
+	if(newGeometry != null ){
+		newGeometry.removePropertyChangeListener(this);
+		newGeometry.addPropertyChangeListener(this);
+		if(newGeometry.getGeometrySpec() != null){
+			newGeometry.getGeometrySpec().removePropertyChangeListener(this);
+			newGeometry.getGeometrySpec().addPropertyChangeListener(this);
+			SubVolume subVolumes[] = newGeometry.getGeometrySpec().getSubVolumes();
+			for (int i = 0;subVolumes!=null && i < subVolumes.length; i++){
+				subVolumes[i].removePropertyChangeListener(this);
+				subVolumes[i].addPropertyChangeListener(this);
+			}
+		}
+	}
+
+}
 
 /**
  * Insert the method's description here.
@@ -446,6 +552,8 @@ public void resetDocument(org.vcell.util.document.VCDocument newDocument) {
 	while (en.hasMoreElements()) {
 		close(en.nextElement(), getJDesktopPane());
 	}
+	setDefaultTitle(geometryViewerEditorFrame);
+	setDefaultTitle(surfaceViewerFrame);
 	getRequestManager().updateStatusNow();
 }
 
@@ -465,21 +573,37 @@ private void setJDesktopPane(JDesktopPaneEnhanced newJDesktopPane) {
  * @param newMathModel cbit.vcell.mathmodel.MathModel
  */
 private void setMathModel(cbit.vcell.mathmodel.MathModel newMathModel) {
+	
+	resetGeometryListeners((getMathModel() != null?(getMathModel().getMathDescription() != null?getMathModel().getMathDescription().getGeometry():null):null),
+			(newMathModel != null?(newMathModel.getMathDescription() != null?newMathModel.getMathDescription().getGeometry():null):null));
+	
+	resetMathDescriptionListeners(
+		(getMathModel() != null?getMathModel().getMathDescription():null),
+		(newMathModel != null?newMathModel.getMathDescription():null));
+	
 	if (getMathModel() != null) {
 		getMathModel().removePropertyChangeListener(this);
-		if(getMathModel().getMathDescription() != null){
-			getMathModel().getMathDescription().removePropertyChangeListener(this);
-		}
+//		if(getMathModel().getMathDescription() != null){
+//			getMathModel().getMathDescription().removePropertyChangeListener(this);
+//		}
 	}
 	mathModel = newMathModel;
 	if (getMathModel() != null) {
 		getMathModel().addPropertyChangeListener(this);
-		if(getMathModel().getMathDescription() != null){
-			getMathModel().getMathDescription().addPropertyChangeListener(this);
-		}
+//		if(getMathModel().getMathDescription() != null){
+//			getMathModel().getMathDescription().addPropertyChangeListener(this);
+//		}
 	}
 }
 
+private void resetMathDescriptionListeners(MathDescription oldMathDescription,MathDescription newMathDescription){
+	if(oldMathDescription != null){
+		oldMathDescription.removePropertyChangeListener(this);
+	}
+	if(newMathDescription != null){
+		newMathDescription.addPropertyChangeListener(this);
+	}
+}
 
 /**
  * Insert the method's description here.
@@ -544,16 +668,17 @@ private void showGeometryViewer(boolean bGeoButtonSelected) {
 		setDefaultTitle(geometryViewerEditorFrame);
 		if(geoViewer != null)
 		{
-			if(getMathModel().getMathDescription().isStoch())
-			{
-				geoViewer.setChangeGeometryEnabled(false);
-				geoViewer.setOpenGeometryEnabled(false);
-			}
-			else
-			{
-				geoViewer.setChangeGeometryEnabled(true);
-				geoViewer.setOpenGeometryEnabled(true);
-			}
+			geoViewer.setStochastic(getMathModel().getMathDescription().isStoch());
+//			if(getMathModel().getMathDescription().isStoch())
+//			{
+//				geoViewer.setChangeGeometryEnabled(false);
+//				geoViewer.setEditGeometryEnabled(false);
+//			}
+//			else
+//			{
+//				geoViewer.setChangeGeometryEnabled(true);
+//				geoViewer.setEditGeometryEnabled(true);
+//			}
 		}
 		showFrame(geometryViewerEditorFrame);
 	} else {
@@ -585,9 +710,12 @@ private void showSimulationsList(boolean bSimsButtonSelected) {
  * Insert the method's description here.
  * Creation date: (5/5/2004 9:44:15 PM)
  */
-private void showSurfaceViewerFrame() {
-
-	showFrame(surfaceViewerFrame);
+private void showSurfaceViewerFrame(boolean bOpen) {
+	if(!bOpen){
+		close(surfaceViewerFrame, getJDesktopPane());
+	}else{
+		showFrame(surfaceViewerFrame);
+	}
 }
 
 /**

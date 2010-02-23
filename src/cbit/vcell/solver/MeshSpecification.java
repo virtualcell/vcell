@@ -248,7 +248,7 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
  * @param geometry The new value for the property.
  * @see #getGeometry
  */
-public void resetSamplingSize() {
+private void resetSamplingSize() {
 	if (fieldGeometry==null){
 		return;
 	}

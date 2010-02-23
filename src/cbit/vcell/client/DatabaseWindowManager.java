@@ -1073,7 +1073,7 @@ public static File showFileChooserDialog(TopLevelWindowManager requester, final 
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-public Object showImageSelectorDialog() {
+public Object showImageSelectorDialog(TopLevelWindowManager requester) {
 	ImageBrowser imageBrowser = getImageBrowser();
 	JOptionPane imageSelectDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
 	imageBrowser.setPreferredSize(new java.awt.Dimension(200, 400));
@@ -1081,7 +1081,7 @@ public Object showImageSelectorDialog() {
 	imageSelectDialog.setMessage(imageBrowser);
 	JDialog d = imageSelectDialog.createDialog(null, "Select Image:");
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	ZEnforcer.showModalDialogOnTop(d,null);
+	ZEnforcer.showModalDialogOnTop(d,requester.getComponent());
 	return imageSelectDialog.getValue();
 }
 /**
