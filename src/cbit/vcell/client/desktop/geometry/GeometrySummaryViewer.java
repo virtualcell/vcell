@@ -4,6 +4,8 @@ import java.awt.*;
 import javax.swing.*;
 
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.gui.GeometryViewer;
 
 
 /**
@@ -26,30 +28,40 @@ public class GeometrySummaryViewer extends JPanel {
 			return geometry;
 		}
 	}
-	private cbit.vcell.geometry.gui.GeometrySummaryPanel ivjGeometrySummaryPanel1 = null;
+	private GeometryViewer geometryViewer = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private JButton ivjJButton1 = null;
+	private JButton ivjJButtonReplace = null;
     protected transient ActionListener actionListener = null;
 	private JButton ivjJButtonViewSurfaces = null;
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
+	private boolean bStochastic = false;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == GeometrySummaryViewer.this.getJButton1()) 
+			if (e.getSource() == GeometrySummaryViewer.this.getJButtonReplace()) 
 				connEtoC1(e);
 			if (e.getSource() == GeometrySummaryViewer.this.getJButtonViewSurfaces()) 
 				connEtoC2(e);
-			if (e.getSource() == GeometrySummaryViewer.this.getJButtonOpenGeometry()) 
+			if (e.getSource() == GeometrySummaryViewer.this.getJButtonCreateGeometry()) 
 				connEtoC4(e);
+//			if (e.getSource() == GeometrySummaryViewer.this.getBtnEditGeometry()){
+//				GeometrySummaryViewer.this.refireActionPerformed(e);
+//			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == GeometrySummaryViewer.this && (evt.getPropertyName().equals("geometry"))) 
 				connEtoM1(evt);
 			if (evt.getSource() == GeometrySummaryViewer.this && (evt.getPropertyName().equals("geometry"))) 
 				connEtoC3(evt);
+			if(evt.getSource() == (getGeometry()!= null?getGeometry().getGeometrySpec():null) &&
+					evt.getPropertyName().equals("sampledImage")){
+				ActionEvent actionEvent = new ActionEvent(getGeometry(), 0, GuiConstants.ACTIONCMD_EDIT_OCCURRED_GEOMETRY);
+				GeometrySummaryViewer.this.refireActionPerformed(actionEvent);
+			}
 		};
 	};
-	private JButton ivjJButtonOpenGeometry = null;
+	private JButton ivjJButtonCreateGeometry = null;
+	private JButton btnEditGeometry;
 
 public GeometrySummaryViewer() {
 	super();
@@ -110,7 +122,7 @@ private void connEtoC3(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.initSurfaceButton();
+		this.initButtons();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -150,7 +162,7 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getGeometrySummaryPanel1().setGeometry(this.getGeometry());
+		getGeometryViewer().setGeometry(this.getGeometry());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -183,11 +195,11 @@ public cbit.vcell.geometry.Geometry getGeometry() {
  * @return cbit.vcell.geometry.gui.GeometrySummaryPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.geometry.gui.GeometrySummaryPanel getGeometrySummaryPanel1() {
-	if (ivjGeometrySummaryPanel1 == null) {
+private GeometryViewer getGeometryViewer() {
+	if (geometryViewer == null) {
 		try {
-			ivjGeometrySummaryPanel1 = new cbit.vcell.geometry.gui.GeometrySummaryPanel();
-			ivjGeometrySummaryPanel1.setName("GeometrySummaryPanel1");
+			geometryViewer = new GeometryViewer();
+			geometryViewer.setName("GeometryViewer");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -196,7 +208,7 @@ private cbit.vcell.geometry.gui.GeometrySummaryPanel getGeometrySummaryPanel1() 
 			handleException(ivjExc);
 		}
 	}
-	return ivjGeometrySummaryPanel1;
+	return geometryViewer;
 }
 
 
@@ -205,13 +217,13 @@ private cbit.vcell.geometry.gui.GeometrySummaryPanel getGeometrySummaryPanel1() 
  * @return javax.swing.JButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButton1() {
-	if (ivjJButton1 == null) {
+private javax.swing.JButton getJButtonReplace() {
+	if (ivjJButtonReplace == null) {
 		try {
-			ivjJButton1 = new javax.swing.JButton();
-			ivjJButton1.setName("JButton1");
-			ivjJButton1.setText("Change Geometry...");
-			ivjJButton1.setActionCommand(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY);
+			ivjJButtonReplace = new javax.swing.JButton();
+			ivjJButtonReplace.setName("JButton1");
+			ivjJButtonReplace.setText("Replace Geometry...");
+			ivjJButtonReplace.setActionCommand(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -220,7 +232,7 @@ private javax.swing.JButton getJButton1() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJButton1;
+	return ivjJButtonReplace;
 }
 
 
@@ -229,13 +241,13 @@ private javax.swing.JButton getJButton1() {
  * @return javax.swing.JButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonOpenGeometry() {
-	if (ivjJButtonOpenGeometry == null) {
+private javax.swing.JButton getJButtonCreateGeometry() {
+	if (ivjJButtonCreateGeometry == null) {
 		try {
-			ivjJButtonOpenGeometry = new javax.swing.JButton();
-			ivjJButtonOpenGeometry.setName("JButtonOpenGeometry");
-			ivjJButtonOpenGeometry.setText("Open Geometry");
-			ivjJButtonOpenGeometry.setActionCommand(GuiConstants.ACTIONCMD_OPEN_GEOMETRY);
+			ivjJButtonCreateGeometry = new javax.swing.JButton();
+			ivjJButtonCreateGeometry.setName("JButtonCreateGeometry");
+			ivjJButtonCreateGeometry.setText("Create New Geometry...");
+			ivjJButtonCreateGeometry.setActionCommand(GuiConstants.ACTIONCMD_CREATE_GEOMETRY);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -244,7 +256,7 @@ private javax.swing.JButton getJButtonOpenGeometry() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJButtonOpenGeometry;
+	return ivjJButtonCreateGeometry;
 }
 
 /**
@@ -257,7 +269,7 @@ private javax.swing.JButton getJButtonViewSurfaces() {
 		try {
 			ivjJButtonViewSurfaces = new javax.swing.JButton();
 			ivjJButtonViewSurfaces.setName("JButtonViewSurfaces");
-			ivjJButtonViewSurfaces.setText("View Surfaces");
+			ivjJButtonViewSurfaces.setText("View Surfaces...");
 			ivjJButtonViewSurfaces.setActionCommand(GuiConstants.ACTIONCMD_VIEW_SURFACES);
 			// user code begin {1}
 			// user code end
@@ -290,9 +302,10 @@ private void handleException(java.lang.Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
-	getJButton1().addActionListener(ivjEventHandler);
+	getJButtonReplace().addActionListener(ivjEventHandler);
 	getJButtonViewSurfaces().addActionListener(ivjEventHandler);
-	getJButtonOpenGeometry().addActionListener(ivjEventHandler);
+	getJButtonCreateGeometry().addActionListener(ivjEventHandler);
+//	getBtnEditGeometry().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 }
 
@@ -306,35 +319,40 @@ private void initialize() {
 		// user code end
 		setName("GeometrySummaryViewer");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(877, 471);
+		setSize(877, 568);
 
 		java.awt.GridBagConstraints constraintsGeometrySummaryPanel1 = new java.awt.GridBagConstraints();
 		constraintsGeometrySummaryPanel1.gridx = 0; constraintsGeometrySummaryPanel1.gridy = 0;
-		constraintsGeometrySummaryPanel1.gridwidth = 3;
+		constraintsGeometrySummaryPanel1.gridwidth = 4;
 		constraintsGeometrySummaryPanel1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsGeometrySummaryPanel1.weightx = 1.0;
 		constraintsGeometrySummaryPanel1.weighty = 1.0;
-		constraintsGeometrySummaryPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getGeometrySummaryPanel1(), constraintsGeometrySummaryPanel1);
+		constraintsGeometrySummaryPanel1.insets = new Insets(4, 4, 5, 4);
+		add(getGeometryViewer(), constraintsGeometrySummaryPanel1);
+//		GridBagConstraints gbc_btnEditGeometry = new GridBagConstraints();
+//		gbc_btnEditGeometry.insets = new Insets(0, 0, 0, 5);
+//		gbc_btnEditGeometry.gridx = 1;
+//		gbc_btnEditGeometry.gridy = 1;
+//		add(getBtnEditGeometry(), gbc_btnEditGeometry);
 
-		java.awt.GridBagConstraints constraintsJButton1 = new java.awt.GridBagConstraints();
-		constraintsJButton1.gridx = 0; constraintsJButton1.gridy = 1;
-		constraintsJButton1.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJButton1.weightx = 1.0;
-		constraintsJButton1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJButton1(), constraintsJButton1);
+		java.awt.GridBagConstraints gbc_ivjJButtonReplace = new java.awt.GridBagConstraints();
+		gbc_ivjJButtonReplace.gridx = 0; gbc_ivjJButtonReplace.gridy = 1;
+		gbc_ivjJButtonReplace.insets = new Insets(4, 4, 4, 5);
+		add(getJButtonReplace(), gbc_ivjJButtonReplace);
 
 		java.awt.GridBagConstraints constraintsJButtonViewSurfaces = new java.awt.GridBagConstraints();
-		constraintsJButtonViewSurfaces.gridx = 1; constraintsJButtonViewSurfaces.gridy = 1;
-		constraintsJButtonViewSurfaces.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJButtonViewSurfaces.anchor = GridBagConstraints.EAST;
+		constraintsJButtonViewSurfaces.weightx = 1.0;
+		constraintsJButtonViewSurfaces.gridx = 2; constraintsJButtonViewSurfaces.gridy = 1;
+		constraintsJButtonViewSurfaces.insets = new Insets(4, 4, 4, 5);
 		add(getJButtonViewSurfaces(), constraintsJButtonViewSurfaces);
 
-		java.awt.GridBagConstraints constraintsJButtonOpenGeometry = new java.awt.GridBagConstraints();
-		constraintsJButtonOpenGeometry.gridx = 2; constraintsJButtonOpenGeometry.gridy = 1;
-		constraintsJButtonOpenGeometry.anchor = java.awt.GridBagConstraints.WEST;
-		constraintsJButtonOpenGeometry.weightx = 1.0;
-		constraintsJButtonOpenGeometry.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJButtonOpenGeometry(), constraintsJButtonOpenGeometry);
+		java.awt.GridBagConstraints gbc_ivjJButtonCreateGeometry = new java.awt.GridBagConstraints();
+		gbc_ivjJButtonCreateGeometry.gridx = 1; gbc_ivjJButtonCreateGeometry.gridy = 1;
+		gbc_ivjJButtonCreateGeometry.anchor = java.awt.GridBagConstraints.WEST;
+		gbc_ivjJButtonCreateGeometry.weightx = 1.0;
+		gbc_ivjJButtonCreateGeometry.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJButtonCreateGeometry(), gbc_ivjJButtonCreateGeometry);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -346,10 +364,12 @@ private void initialize() {
 /**
  * Comment
  */
-private void initSurfaceButton() {
+private void initButtons() {
 	boolean bSpatial = (getGeometry() != null) && (getGeometry().getDimension() > 0);
 	getJButtonViewSurfaces().setEnabled(bSpatial);
-	getJButtonOpenGeometry().setEnabled(bSpatial);
+//	getBtnEditGeometry().setEnabled(bSpatial && !bStochastic);
+	getJButtonReplace().setEnabled(!bStochastic);
+	getJButtonCreateGeometry().setEnabled(!bStochastic);
 }
 
 
@@ -399,18 +419,37 @@ public synchronized void removeActionListener(ActionListener l) {
  */
 public void setGeometry(cbit.vcell.geometry.Geometry geometry) {
 	cbit.vcell.geometry.Geometry oldValue = fieldGeometry;
+	if(oldValue != null){
+//		oldValue.removePropertyChangeListener(ivjEventHandler);
+		if(oldValue.getGeometrySpec() != null){
+			oldValue.getGeometrySpec().removePropertyChangeListener(ivjEventHandler);
+//			SubVolume subVolumes[] = oldValue.getGeometrySpec().getSubVolumes();
+//			for (int i = 0;subVolumes!=null && i < subVolumes.length; i++){
+//				subVolumes[i].removePropertyChangeListener(ivjEventHandler);
+//			}
+		}
+	}
 	fieldGeometry = geometry;
+	if(fieldGeometry != null ){
+//		fieldGeometry.removePropertyChangeListener(ivjEventHandler);
+//		fieldGeometry.addPropertyChangeListener(ivjEventHandler);
+		if(fieldGeometry.getGeometrySpec() != null){
+			fieldGeometry.getGeometrySpec().removePropertyChangeListener(ivjEventHandler);
+			fieldGeometry.getGeometrySpec().addPropertyChangeListener(ivjEventHandler);
+//			SubVolume subVolumes[] = fieldGeometry.getGeometrySpec().getSubVolumes();
+//			for (int i = 0;subVolumes!=null && i < subVolumes.length; i++){
+//				subVolumes[i].removePropertyChangeListener(ivjEventHandler);
+//				subVolumes[i].addPropertyChangeListener(ivjEventHandler);
+//			}
+		}
+	}
+
 	firePropertyChange("geometry", oldValue, geometry);
 }
 
-public void setChangeGeometryEnabled(boolean enabledOrNot)
-{
-	getJButton1().setEnabled(enabledOrNot);
-}
-
-public void setOpenGeometryEnabled(boolean enabledOrNot)
-{
-	getJButtonOpenGeometry().setEnabled(enabledOrNot);
+public void setStochastic(boolean bStochastic){
+	this.bStochastic = bStochastic;
+	initButtons();
 }
 
 }

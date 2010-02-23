@@ -67,16 +67,17 @@ public ApplicationComponents(SimulationContext simContext, BioModelWindowManager
 	
 	// make the geometry viewer
 	GeometrySummaryViewer geoViewer = new GeometrySummaryViewer();
-	if(simContext.isStoch())
-	{
-		geoViewer.setChangeGeometryEnabled(false);
-		geoViewer.setOpenGeometryEnabled(false);
-	}
-	else
-	{
-		geoViewer.setChangeGeometryEnabled(true);
-		geoViewer.setOpenGeometryEnabled(true);
-	}
+	geoViewer.setStochastic(simContext.isStoch());
+//	if(simContext.isStoch())
+//	{
+//		geoViewer.setChangeGeometryEnabled(false);
+//		geoViewer.setEditGeometryEnabled(false);
+//	}
+//	else
+//	{
+//		geoViewer.setChangeGeometryEnabled(true);
+//		geoViewer.setEditGeometryEnabled(true);
+//	}
 	setGeometrySummaryViewer(geoViewer);
 	getGeometrySummaryViewer().setGeometry(simContext.getGeometry());
 	setGeometrySummaryViewerFrame(DocumentWindowManager.createDefaultFrame(getGeometrySummaryViewer()));

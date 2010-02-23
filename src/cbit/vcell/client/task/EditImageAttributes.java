@@ -1,21 +1,19 @@
 package cbit.vcell.client.task;
 
 import java.awt.Component;
+import java.util.Calendar;
 import java.util.Hashtable;
 
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.Version;
 import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.geometry.gui.ImageAttributePanel;
 
@@ -67,12 +65,14 @@ public class EditImageAttributes extends AsynchClientTask {
 			pp.setMessage("found "+(imageInfos != null?imageInfos.length:0)+" existing image names");
 			String newName = null;
 			boolean bNameIsGood = false;
+			Calendar calendar = Calendar.getInstance();
 			while (!bNameIsGood){
-				newName = PopupGenerator.showInputDialog(guiParent, "type a name for this IMAGE and proceed to view/edit GEOMETRY",image.getName());
-				if (newName == null || newName.length() == 0){
-					bNameIsGood = false;
-					continue;
-				}
+				newName = "image_"+generateDateTimeString(calendar);
+//				newName = PopupGenerator.showInputDialog(guiParent, "type a name for this IMAGE and proceed to view/edit GEOMETRY",image.getName());
+//				if (newName == null || newName.length() == 0){
+//					bNameIsGood = false;
+//					continue;
+//				}
 				if (imageInfos==null){
 					bNameIsGood = true; // if no image information assume image name is good
 				}else{	
@@ -83,11 +83,18 @@ public class EditImageAttributes extends AsynchClientTask {
 							break;
 						}
 					}
-					if (bNameExists){
-						PopupGenerator.showErrorDialog(guiParent, "IMAGE name '"+newName+"' already exists, please enter new name");
-					}else{
+					if(!bNameExists){
 						bNameIsGood = true;
 					}
+//					if (bNameExists){
+//						PopupGenerator.showErrorDialog(guiParent, "IMAGE name '"+newName+"' already exists, please enter new name");
+//					}else{
+//						bNameIsGood = true;
+//					}
+				}
+				if(!bNameIsGood){
+					//wait 1 second so generateImageName is sure to be different
+					Thread.sleep(1000);
 				}
 			}
 			hashTable.put("newName", newName);			
@@ -98,5 +105,23 @@ public class EditImageAttributes extends AsynchClientTask {
 		if (image == null){
 			throw new RuntimeException("failed to create new Geometry, no image");
 		}
+	}
+	public static String generateDateTimeString(Calendar calendar){
+		int year = calendar.get(Calendar.YEAR);
+		int month = calendar.get(Calendar.MONTH)+1;
+		int day = calendar.get(Calendar.DAY_OF_MONTH);
+		int hour = calendar.get(Calendar.HOUR_OF_DAY);
+		int min = calendar.get(Calendar.MINUTE);
+		int sec = calendar.get(Calendar.SECOND);
+		String imageName =
+		year+""+
+		(month < 10?"0"+month:month)+""+
+		(day < 10?"0"+day:day)+
+		"_"+
+		(hour < 10?"0"+hour:hour)+""+
+		(min < 10?"0"+min:min)+""+
+		(sec < 10?"0"+sec:sec);
+
+		return imageName;
 	}
 }

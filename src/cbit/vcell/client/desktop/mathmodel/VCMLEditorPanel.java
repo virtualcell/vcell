@@ -411,7 +411,7 @@ private void setmathModel1(cbit.vcell.mathmodel.MathModel newValue) {
 /**
  * Comment
  */
-private void updateWarningText(cbit.vcell.math.MathDescription argMathDescription) {
+public void updateWarningText(cbit.vcell.math.MathDescription argMathDescription) {
 	if (argMathDescription.isValid()){
 		getMathWarningTextPane().setText("");
 	}else{
