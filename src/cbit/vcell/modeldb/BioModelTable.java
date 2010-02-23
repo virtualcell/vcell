@@ -124,7 +124,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 	
 	BioModelChildSummary bioModelChildSummary = null;
 	if (serialDbChildSummary!=null){
-		bioModelChildSummary = bioModelChildSummary.fromDatabaseSerialization(serialDbChildSummary);
+		bioModelChildSummary = BioModelChildSummary.fromDatabaseSerialization(serialDbChildSummary);
 	}
 	
 	return new org.vcell.util.document.BioModelInfo(version, modelRef, bioModelChildSummary);

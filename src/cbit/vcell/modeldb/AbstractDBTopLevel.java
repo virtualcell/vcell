@@ -1,5 +1,6 @@
 package cbit.vcell.modeldb;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 
 import cbit.sql.ConnectionFactory;
@@ -38,7 +39,8 @@ protected void handle_DataAccessException_SQLException(Throwable t) throws org.v
 	}else if (t instanceof Error){
 		throw (Error)t;
 	}else if (t instanceof RuntimeException){
-		throw (RuntimeException)t;
+		throw new DataAccessException("Unknown Database Access Error : " + t.getMessage());
+		// throw (RuntimeException)t;
 	}else{
 		throw new RuntimeException("Unexpected \""+t.getClass().getName()+"\": "+t.getMessage());
 	}

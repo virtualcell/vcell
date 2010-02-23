@@ -2294,45 +2294,51 @@ private Event getEvent(MathDescription mathdesc, Element eventElement) throws Xm
 	return event;
 }
 
-private BioEvent getBioEvent(SimulationContext simContext, Element bioEventElement) throws XmlParseException  {
+public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsElement) throws XmlParseException  {
+	Iterator<Element> bioEventsIterator = bioEventsElement.getChildren(XMLTags.BioEventTag, vcNamespace).iterator();
+	Vector<BioEvent> bioEventsVector = new Vector<BioEvent>();
+	while (bioEventsIterator.hasNext()) {
+		Element bEventElement = (Element) bioEventsIterator.next();
 
-	String name = unMangle(bioEventElement.getAttributeValue(XMLTags.NameAttrTag));
-	Element element = bioEventElement.getChild(XMLTags.TriggerTag, vcNamespace);
-	Expression triggerExp = unMangleExpression(element.getText());
-	
-	element = bioEventElement.getChild(XMLTags.DelayTag, vcNamespace);
-	BioEvent.Delay delay = null;
-	if (element != null) {
-		boolean useValuesFromTriggerTime = Boolean.valueOf(element.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
-		Expression durationExp = unMangleExpression(element.getText());
-		delay = new BioEvent.Delay(useValuesFromTriggerTime, durationExp);
-	}
-	
-	ArrayList<BioEvent.EventAssignment> eventAssignmentList = new ArrayList<BioEvent.EventAssignment>();
-	Iterator<Element> iter = bioEventElement.getChildren(XMLTags.EventAssignmentTag, vcNamespace).iterator();
-	while (iter.hasNext()) {
-		element = iter.next();
+		String name = unMangle(bEventElement.getAttributeValue(XMLTags.NameAttrTag));
+		Element element = bEventElement.getChild(XMLTags.TriggerTag, vcNamespace);
+		Expression triggerExp = unMangleExpression(element.getText());
+		
+		element = bEventElement.getChild(XMLTags.DelayTag, vcNamespace);
+		BioEvent.Delay delay = null;
+		if (element != null) {
+			boolean useValuesFromTriggerTime = Boolean.valueOf(element.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
+			Expression durationExp = unMangleExpression((element.getText()));
+			delay = new BioEvent.Delay(useValuesFromTriggerTime, durationExp);
+		}
+		
+		ArrayList<BioEvent.EventAssignment> eventAssignmentList = new ArrayList<BioEvent.EventAssignment>();
+		Iterator<Element> iter = bEventElement.getChildren(XMLTags.EventAssignmentTag, vcNamespace).iterator();
+		while (iter.hasNext()) {
+			element = iter.next();
+			try {
+				String varname = element.getAttributeValue(XMLTags.EventAssignmentVariableAttrTag);
+				Expression assignExp = unMangleExpression(element.getText());
+				SymbolTableEntry target = simContext.getEntry(varname);
+				BioEvent.EventAssignment eventAssignment = new BioEvent.EventAssignment(target, assignExp);
+				eventAssignmentList.add(eventAssignment);
+			} catch (ExpressionException e) {
+				e.printStackTrace(System.out);
+				throw new XmlParseException(e.getMessage());
+			}
+		}
+		
+		BioEvent newBioEvent = new BioEvent(name, triggerExp, delay, eventAssignmentList, simContext);
 		try {
-			String varname = element.getAttributeValue(XMLTags.EventAssignmentVariableAttrTag);
-			Expression assignExp = unMangleExpression(element.getText());
-			SymbolTableEntry target = simContext.getEntry(varname);
-			BioEvent.EventAssignment eventAssignment = new BioEvent.EventAssignment(target, assignExp);
-			eventAssignmentList.add(eventAssignment);
+			newBioEvent.bind();
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new XmlParseException(e.getMessage());
 		}
+		bioEventsVector.add(newBioEvent);
 	}
 	
-	BioEvent bioEvent = new BioEvent(name, triggerExp, delay, eventAssignmentList, simContext);
-//	bioEvent.setSimulationContext(simContext);
-	try {
-		bioEvent.bind();
-	} catch (ExpressionBindingException e) {
-		e.printStackTrace(System.out);
-		throw new XmlParseException(e.getMessage());
-	}
-	return bioEvent;
+	return ((BioEvent[])BeanUtils.getArray(bioEventsVector, BioEvent.class));
 }
 
 /**
@@ -3819,19 +3825,15 @@ public SimulationContext getSimulationContext(Element param, BioModel biomodel) 
 		}
 	}	
 
-	// Retrieve (bio)events 
-	iterator = param.getChildren(XMLTags.EventTag, vcNamespace).iterator();
-	while (iterator.hasNext()) {
-		tempelement = (Element)iterator.next();
-		BioEvent bioEvent = getBioEvent(newsimcontext, tempelement);
-		try {
-			newsimcontext.addBioEvent(bioEvent);
-		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error adding event '" + bioEvent.getName() + "' to simulationContext : " + e.getMessage());
-		}
+	// Retrieve (bio)events and add to simContext
+	tempelement = param.getChild(XMLTags.BioEventsTag, vcNamespace);
+	BioEvent[] bioEvents = getBioEvents(newsimcontext, tempelement);
+	try {
+		newsimcontext.setBioEvents(bioEvents);
+	} catch (PropertyVetoException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Error adding events to simulationContext : " + e.getMessage());
 	}
-
 
 	org.jdom.Element analysisTaskListElement = param.getChild(XMLTags.AnalysisTaskListTag, vcNamespace);
 	if (analysisTaskListElement!=null){

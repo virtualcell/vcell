@@ -2080,11 +2080,13 @@ protected boolean hasEventAssignment(SpeciesContext speciesContext) {
 }
 
 public BioEvent getEvent(String name) {
-	for (BioEvent e : fieldBioEvents) {
-		if (name.equals(e.getName())) {
-			return e;
+	if (fieldBioEvents != null && fieldBioEvents.length > 0) {
+		for (BioEvent e : fieldBioEvents) {
+			if (name.equals(e.getName())) {
+				return e;
+			}
 		}
-	}	
+	}
 	return null;
 }
 

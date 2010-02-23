@@ -410,11 +410,16 @@ public class XMLTags {
 	public static final String ParameterEstimationTaskTag = "ParameterEstimationTask";
 
 	public final static String EventTag = "Event";
+	public final static String BioEventsTag = "BioEvents";
+	public final static String BioEventTag = "BioEvent";
 	public final static String UseValuesFromTriggerTimeAttrTag = "UseValuesFromTriggerTime";
 	public final static String TriggerTag = "Trigger";
 	public final static String DelayTag = "Delay";
 	public final static String EventAssignmentTag = "EventAssignment";
 	public final static String EventAssignmentVariableAttrTag = "Variable";
+	
+	// for database storage of simContext (application) related components
+	public final static String ApplicationComponents = "AppComponents";
 	
 	public final static String MembraneRandomVariableTag = "MembraneRandomVariable";
 	public final static String VolumeRandomVariableTag = "VolumeRandomVariable";

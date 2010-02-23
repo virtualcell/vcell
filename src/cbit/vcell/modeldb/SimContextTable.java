@@ -7,7 +7,9 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
+import org.jdom.Element;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -19,11 +21,17 @@ import org.vcell.util.document.VersionableType;
 import cbit.sql.Field;
 import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContextInfo;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.Model;
+import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.xml.XmlReader;
+import cbit.vcell.xml.Xmlproducer;
 /**
  * This type was created in VisualAge.
  */
@@ -36,7 +44,10 @@ public class SimContextTable extends cbit.vcell.modeldb.VersionTable {
 	public final Field geometryRef 	= new Field("geometryRef",	"integer",	"NOT NULL "+GeometryTable.REF_TYPE);
 	public final Field charSize		= new Field("charSize",		"NUMBER",	"");
 
-	private final Field fields[] = {mathRef,modelRef,geometryRef,charSize};
+	public final Field appComponentsLarge	= new Field("appComponentsLRG",	"CLOB",				"");
+	public final Field appComponentsSmall	= new Field("appComponentsSML",	"VARCHAR2(4000)",	"");
+
+	private final Field fields[] = {mathRef,modelRef,geometryRef,charSize, appComponentsLarge, appComponentsSmall};
 	
 	public static final SimContextTable table = new SimContextTable();
 
@@ -69,10 +80,9 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
-
+	
 	return new SimulationContextInfo(mathRef,geomRef,modelRef,version);
 }
-
 
 /**
  * This method was created in VisualAge.
@@ -147,7 +157,7 @@ public SimulationContext getSimContext(QueryHashtable dbc, Connection con,User u
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(SimulationContext simContext,KeyValue mathDescKey,KeyValue modelKey,KeyValue geomKey,Version version) {
+public String getSQLValueList(SimulationContext simContext,KeyValue mathDescKey,KeyValue modelKey,KeyValue geomKey, String serialAppComp, Version version) {
 			
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
@@ -155,7 +165,108 @@ public String getSQLValueList(SimulationContext simContext,KeyValue mathDescKey,
 	buffer.append(mathDescKey + ",");
 	buffer.append(modelKey+",");
 	buffer.append(geomKey+",");
-	buffer.append(simContext.getCharacteristicSize()+")");
+	buffer.append(simContext.getCharacteristicSize()+",");
+	
+	if (serialAppComp==null){
+		buffer.append("null,null");
+	}else if (DbDriver.varchar2_CLOB_is_Varchar2_OK(serialAppComp)){
+		buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE);
+	}else{
+		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null");
+	}
+
+	buffer.append(")");
 	return buffer.toString();
 }
+
+/**
+ * getXMLStringForDatabase : this returns the XML string for the container element <AppComponents> for application-related protocols 
+ * and other extra specifications. For now, BioEvents falls under this category, so the BioEvents element (list of bioevents)
+ * is obtained from the simContext (via the XMLProducer) and added as content to <AppComponents> element. The <AppComponents>
+ * element is converted to XML string which is the return value of this method. This string is stored in the database in the
+ * SimContextTable. Instead of creating new fields for each possible application component, it is convenient to store them 
+ * all under a blanket XML element <AppComponents>.
+ * @param simContext
+ * @return
+ */
+public static String getXMLStringForDatabase(SimulationContext simContext) {
+	Element appComponentsElement = new Element(XMLTags.ApplicationComponents);
+	
+	// first fill in bioevents from simContext
+	BioEvent[] bioEvents = simContext.getBioEvents();
+	if (bioEvents != null && bioEvents.length > 0) {
+		try {
+			Element bioEventElement = ((new Xmlproducer(false)).getXML(bioEvents));
+			appComponentsElement.addContent(bioEventElement);
+		} catch (XmlParseException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage());
+		}
+	}
+	
+	// fill in other application components when ready (rate rules, etc. etc.?)
+	
+	String appComponentsXMLStr = null; 
+	if (appComponentsElement.getContent() != null) {
+		appComponentsXMLStr = XmlUtil.xmlToString(appComponentsElement);
+	}
+	return appComponentsXMLStr;
+}
+		
+/**
+ * getAppComponentsElement : retireves the <AppComponents> element from the database when requested.
+ * @param con
+ * @param simContextRef
+ * @return
+ * @throws SQLException
+ * @throws DataAccessException
+ */
+private Element getAppComponentsElement(Connection con, KeyValue simContextRef) throws SQLException, DataAccessException {
+	Statement stmt = null;
+	stmt = con.createStatement();
+	ResultSet rset =
+		stmt.executeQuery(
+			"SELECT * FROM "+SimContextTable.table.getTableName() +
+			" WHERE "+
+			SimContextTable.table.id.getUnqualifiedColName()+" = "+simContextRef.toString());
+	
+	if(!rset.next()){
+		return null;
+	}
+	String appComponentsXMLStr = DbDriver.varchar2_CLOB_get(rset, SimContextTable.table.appComponentsSmall, SimContextTable.table.appComponentsLarge);
+	rset.close();
+	if(appComponentsXMLStr == null){
+		return null;
+	}
+	
+	if(stmt != null){stmt.close();}
+	Element appComponentsElement = XmlUtil.stringToXML(appComponentsXMLStr, null).getRootElement();
+	return appComponentsElement;
+}
+
+/**
+ * getBioEvents : retrieves the <BioEvents> element from <AppComponents> from database and via XMLReader, constructs the 
+ * BioEvents list for the simContext. 
+ * @param con
+ * @param simContext
+ * @return
+ * @throws SQLException
+ * @throws DataAccessException
+ */
+public BioEvent[] getBioEvents(Connection con, SimulationContext simContext) throws SQLException, DataAccessException {
+	BioEvent[] bioEvents = null;
+	
+	try {
+		Element appComponentsElement = getAppComponentsElement(con, simContext.getVersion().getVersionKey());
+		if (appComponentsElement != null && appComponentsElement.getContent() != null) {
+			Element bioEventsElement = appComponentsElement.getChild(XMLTags.BioEventsTag);
+			bioEvents = (new XmlReader(false)).getBioEvents(simContext, bioEventsElement);
+		}
+	} catch (XmlParseException e) {
+		e.printStackTrace(System.out);
+		throw new DataAccessException("Error retrieving bioevents : " + e.getMessage());
+	}
+	return bioEvents;
+}
+
 }
