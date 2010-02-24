@@ -6,7 +6,7 @@ package cbit.vcell.geometry.surface;
  */
 public class SurfaceCollection {
 	private Node[] fieldNodes = new Node[0];
-	private java.util.Vector fieldSurfaces = new java.util.Vector();
+	private java.util.Vector<Surface> fieldSurfaces = new java.util.Vector<Surface>();
 
 /**
  * BoundaryCollection constructor comment.
@@ -79,7 +79,7 @@ public int getSurfaceCount() {
  * BoundaryCollection constructor comment.
  */
 public Surface getSurfaces(int i) {
-	return((Surface) fieldSurfaces.get(i));
+	return fieldSurfaces.get(i);
 }
 
 
@@ -112,5 +112,13 @@ public void setNodes(Node[] nodes) {
  */
 public void setSurfaces(int i, Surface surface) {
 	fieldSurfaces.set(i, surface);
+}
+
+public int getTotalPolygonCount() {
+	int numPolygonCount = 0;
+	for (int i = 0; i < getSurfaceCount(); i++){
+		numPolygonCount += getSurfaces(i).getPolygonCount();
+	}
+	return numPolygonCount;
 }
 }

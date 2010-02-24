@@ -1198,11 +1198,12 @@ public Geometry getGeometry() {
  * This method was created in VisualAge.
  * @return int
  * @param compartmentSubDomain cbit.vcell.math.CompartmentSubDomain
+ * @throws MathException 
  */
-public int getHandle(CompartmentSubDomain compartmentSubDomain) throws Exception {
+public int getHandle(CompartmentSubDomain compartmentSubDomain) throws MathException  {
 	SubVolume subVolume = geometry.getGeometrySpec().getSubVolume(compartmentSubDomain.getName());
 	if (subVolume ==null){
-		throw new Exception("couldn't find a subVolume named "+compartmentSubDomain+" in Geometry");
+		throw new MathException("couldn't find a subVolume named "+compartmentSubDomain+" in Geometry");
 	}
 	return subVolume.getHandle();
 }
@@ -1677,7 +1678,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @return boolean
  * @param volVariable cbit.vcell.math.VolVariable
  */
-public boolean hasVelocity(VolVariable volVariable) throws Exception {
+public boolean hasVelocity(VolVariable volVariable) {
 	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
 		SubDomain subDomain = enum1.nextElement();
@@ -1861,6 +1862,7 @@ public boolean isValid() {
 			Enumeration<Equation> equEnum = subDomain.getEquations();
 			while (equEnum.hasMoreElements()){
 				Equation equ = equEnum.nextElement();
+				equ.checkValid(this);
 				equ.bind(this);
 			}
 			FastSystem fastSystem = subDomain.getFastSystem();
@@ -1879,6 +1881,9 @@ public boolean isValid() {
 		}
 	}catch (ExpressionBindingException e){
 		setWarning("error binding identifier: "+e.getMessage());
+		return false;
+	}catch (MathException e){
+		setWarning(e.getMessage());
 		return false;
 	}
 	//
@@ -1913,11 +1918,11 @@ public boolean isValid() {
 			Enumeration<Equation> enum_equ = subDomain.getEquations();
 			while (enum_equ.hasMoreElements()){
 				Equation equ = enum_equ.nextElement();
-				if (!(equ instanceof OdeEquation)){
+				if (equ instanceof OdeEquation){
+					odeCount ++;
+				} else {
 					setWarning("Compartmental Model, unexpected equation of type "+VCML.PdeEquation+", must include only "+VCML.OdeEquation+"'s");
 					return false;
-				}else{
-					odeCount++;
 				}
 			}
 			if (odeCount==0){

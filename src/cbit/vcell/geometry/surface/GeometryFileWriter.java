@@ -1,4 +1,5 @@
 package cbit.vcell.geometry.surface;
+import java.io.IOException;
 import java.io.Writer;
 import cbit.vcell.geometry.RegionImage;
 
@@ -21,8 +22,9 @@ public class GeometryFileWriter {
  * Insert the method's description here.
  * Creation date: (7/19/2004 10:54:30 AM)
  * @param geometrySurfaceDescription cbit.vcell.geometry.surface.GeometrySurfaceDescription
+ * @throws IOException 
  */
-public static int write(Writer writer, Geometry resampledGeometry) throws Exception {
+public static void write(Writer writer, Geometry resampledGeometry) throws IOException {
 	//
 	// "name" name
 	// "dimension" dimension
@@ -163,42 +165,13 @@ public static int write(Writer writer, Geometry resampledGeometry) throws Except
 	}
 		
 	//
-	// write surfaces
-	//
-	//SurfaceCollection surfaceCollection = geoSurfaceDesc.getSurfaceCollection();
-	/*
-	Node nodes[] = surfaceCollection.getNodes();
-	int numNodes = nodes.length;
-	writer.write("nodes "+numNodes+"\n");
-	for (int i = 0; i < nodes.length; i++){
-		writer.write(nodes[i].getGlobalIndex()+" "+nodes[i].getX()+" "+nodes[i].getY()+" "+nodes[i].getZ()+"\n");
-	}
-	*/
-	//
 	// print the "Cells" (polygons) for each surface (each surface has it's own material id).
 	//
-	int numCells = 0;
-	if (surfaceCollection != null) {
-		for (int i = 0; i < surfaceCollection.getSurfaceCount(); i++){
-			numCells += surfaceCollection.getSurfaces(i).getPolygonCount();
-		}
+	if (surfaceCollection == null) {
+		throw new RuntimeException("geometry is not updated");
 	}
-	writer.write("cells "+numCells+"\n");
-	/*
-	int cellID = 0;
-	for (int i = 0; i < surfaceCollection.getSurfaceCount(); i++){
-		Surface surface = surfaceCollection.getSurfaces(i);
-		for (int j = 0; j < surface.getPolygonCount(); j++){
-			Polygon polygon = surface.getPolygons(j);
-			int node0Index = polygon.getNodes(0).getGlobalIndex();
-			int node1Index = polygon.getNodes(1).getGlobalIndex();
-			int node2Index = polygon.getNodes(2).getGlobalIndex();
-			int node3Index = polygon.getNodes(3).getGlobalIndex();
-			writer.write(cellID+" "+i+" "+node0Index+" "+node1Index+" "+node2Index+" "+node3Index+"\n");
-			cellID++;
-		}
-	}
-	*/
+	int numCells = surfaceCollection.getTotalPolygonCount();
+	writer.write("cells " + numCells + "\n");
 	// "celldata"
 	//    insideVolumeIndex outsideVolumeIndex area normalx normaly normalz
 	//
@@ -272,6 +245,5 @@ public static int write(Writer writer, Geometry resampledGeometry) throws Except
 			}
 		}
 	}
-	return numCells;
 }
 }
