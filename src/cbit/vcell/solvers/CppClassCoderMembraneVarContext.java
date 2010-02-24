@@ -202,7 +202,11 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 		}else if (var instanceof ReservedVariable){
 		}else if (var instanceof Constant){
 		}else if (var instanceof Function){
-		}else{
+		}else if (var instanceof RandomVariable){
+			throw new RuntimeException("'" + SolverDescription.FiniteVolume.getDisplayLabel() + "'"
+	  				+ " does not support RandomVariable. Please choose either '" 
+	  				+ SolverDescription.FiniteVolumeStandalone.getDisplayLabel() + "' or '" + SolverDescription.SundialsPDE.getDisplayLabel() + "'");
+		} else {
 			throw new Exception("unknown identifier type '" + var.getClass().getName() + "' for identifier: " + var.getName());
 		}	
 	}		  	

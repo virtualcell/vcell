@@ -47,22 +47,7 @@ public class GaussianDistribution extends Distribution {
 		}
 
 	}
-
-	@Override
-	public double[] getRandomNumbers(int numRandomNumbers) throws ExpressionException {
-		double muVal = mean.evaluateConstant();
-		double sigmaVal = standardDeviation.evaluateConstant();
-
-		double[] randomNumbers = new double[numRandomNumbers];
-
-		Random random = new Random();
-		for (int i = 0; i < numRandomNumbers; i++) {
-			double r = random.nextGaussian();
-			randomNumbers[i] = sigmaVal * r + muVal;
-		}
-		return randomNumbers;
-	}
-
+	
 	@Override
 	public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 		mean.bindExpression(symbolTable);

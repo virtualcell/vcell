@@ -1774,11 +1774,10 @@ private Element getXML(RandomVariable var) {
 
 	randomVariableElement.setAttribute(XMLTags.NameAttrTag, mangle(var.getName()));
 	
-	if (var.getSeed() != null) {
-		Element seedElement = new Element(XMLTags.RandomVariableSeedTag);
-		seedElement.addContent(mangleExpression(var.getSeed()));
-		randomVariableElement.addContent(seedElement);
-	}
+	Element seedElement = new Element(XMLTags.RandomVariableSeedTag);
+	seedElement.addContent(mangleExpression(var.getSeed()));
+	randomVariableElement.addContent(seedElement);
+	
 	Element distElement = null;
 	if (var.getDistribution() instanceof UniformDistribution) {
 		distElement = getXML((UniformDistribution)var.getDistribution());

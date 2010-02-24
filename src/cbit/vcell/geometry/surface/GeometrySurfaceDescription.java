@@ -1,28 +1,39 @@
 package cbit.vcell.geometry.surface;
+import java.beans.PropertyVetoException;
+
 import org.vcell.util.Compare;
+import org.vcell.util.ISize;
+import org.vcell.util.Matchable;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
+import cbit.image.ImageException;
 import cbit.vcell.client.server.VCellThreadChecker;
-import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (5/26/2004 9:58:01 AM)
  * @author: Jim Schaff
  */
-public class GeometrySurfaceDescription implements org.vcell.util.Matchable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
+public class GeometrySurfaceDescription implements Matchable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private org.vcell.util.ISize fieldVolumeSampleSize = null;
+	private ISize fieldVolumeSampleSize = null;
 	private java.lang.Double fieldFilterCutoffFrequency = null;
-	private transient cbit.vcell.geometry.RegionImage fieldRegionImage = null;
+	private transient RegionImage fieldRegionImage = null;
 	private transient SurfaceCollection fieldSurfaceCollection = null;
-	private cbit.vcell.geometry.Geometry fieldGeometry = null;
-	private cbit.vcell.geometry.surface.GeometricRegion[] fieldGeometricRegions = null;
+	private Geometry fieldGeometry = null;
+	private GeometricRegion[] fieldGeometricRegions = null;
 
 /**
  * GeometrySurfaceDescription constructor comment.
  */
-public GeometrySurfaceDescription(cbit.vcell.geometry.Geometry geometry) {
+public GeometrySurfaceDescription(Geometry geometry) {
 	super();
 	addPropertyChangeListener(this);
 	addVetoableChangeListener(this);
@@ -40,7 +51,7 @@ public GeometrySurfaceDescription(cbit.vcell.geometry.Geometry geometry) {
 	//
 	// set default volumeSampling
 	//
-	org.vcell.util.ISize sampleSize = geometry.getGeometrySpec().getDefaultSampledImageSize();
+	ISize sampleSize = geometry.getGeometrySpec().getDefaultSampledImageSize();
 	//if (geometry.getGeometrySpec().getImage()!=null){
 		//VCImage image = geometry.getGeometrySpec().getImage();
 		//sampleSize = new cbit.util.ISize(image.getNumX(),image.getNumY(),image.getNumZ());
@@ -106,34 +117,25 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
 
-
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
-}
-
-
 /**
  * Checks for internal representation of objects, not keys from database
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (obj == this){
 		return true;
 	}
 
 	if (obj instanceof GeometrySurfaceDescription){
 		GeometrySurfaceDescription geometrySurfaceDescription = (GeometrySurfaceDescription)obj;
-		if (!org.vcell.util.Compare.isEqual(getFilterCutoffFrequency(),geometrySurfaceDescription.getFilterCutoffFrequency())){
+		if (!Compare.isEqual(getFilterCutoffFrequency(),geometrySurfaceDescription.getFilterCutoffFrequency())){
 			return false;
 		}
-		if (!org.vcell.util.Compare.isEqual(getVolumeSampleSize(),geometrySurfaceDescription.getVolumeSampleSize())){
+		if (!Compare.isEqual(getVolumeSampleSize(),geometrySurfaceDescription.getVolumeSampleSize())){
 			return false;
 		}
-		if (!org.vcell.util.Compare.isEqualOrNull(getGeometricRegions(),geometrySurfaceDescription.getGeometricRegions())){
+		if (!Compare.isEqualOrNull(getGeometricRegions(),geometrySurfaceDescription.getGeometricRegions())){
 			return false;
 		}
 		
@@ -147,48 +149,8 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(evt);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, int oldValue, int newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
 
@@ -196,14 +158,6 @@ public void fireVetoableChange(java.lang.String propertyName, int oldValue, int 
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
 public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
@@ -223,7 +177,7 @@ public java.lang.Double getFilterCutoffFrequency() {
  * @return The geometricRegions property value.
  * @see #setGeometricRegions
  */
-public cbit.vcell.geometry.surface.GeometricRegion[] getGeometricRegions() {
+public GeometricRegion[] getGeometricRegions() {
 	return fieldGeometricRegions;
 }
 
@@ -244,7 +198,7 @@ public GeometricRegion getGeometricRegions(int index) {
  * @return The geometry property value.
  * @see #setGeometry
  */
-public cbit.vcell.geometry.Geometry getGeometry() {
+public Geometry getGeometry() {
 	return fieldGeometry;
 }
 
@@ -265,7 +219,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return The regionImage property value.
  * @see #setRegionImage
  */
-public cbit.vcell.geometry.RegionImage getRegionImage() {
+public RegionImage getRegionImage() {
 	return fieldRegionImage;
 }
 
@@ -316,8 +270,8 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource()==this && evt.getPropertyName().equals("volumeSampleSize")){
-		org.vcell.util.ISize oldValue = (org.vcell.util.ISize)evt.getOldValue();
-		org.vcell.util.ISize newValue = (org.vcell.util.ISize)evt.getNewValue();
+		ISize oldValue = (ISize)evt.getOldValue();
+		ISize newValue = (ISize)evt.getNewValue();
 		if (!oldValue.compareEqual(newValue)){
 			try {
 				fieldRegionImage = null; // nobody listens to this, updateAll() will propagate changes
@@ -354,8 +308,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 	}
 	if (evt.getSource() instanceof AnalyticSubVolume && evt.getPropertyName().equals("expression")) {
-		cbit.vcell.parser.Expression oldExpression = (cbit.vcell.parser.Expression)evt.getOldValue();
-		cbit.vcell.parser.Expression newExpression = (cbit.vcell.parser.Expression)evt.getNewValue();
+		Expression oldExpression = (Expression)evt.getOldValue();
+		Expression newExpression = (Expression)evt.getNewValue();
 		if (!Compare.isEqual(oldExpression,newExpression)) {
 			try {
 				fieldRegionImage = null; // nobody listens to this, updateAll() will propagate changes
@@ -464,14 +418,6 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
 
 
 /**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
-}
-
-
-/**
  * Sets the filterCutoffFrequency property (java.lang.Double) value.
  * @param filterCutoffFrequency The new value for the property.
  * @exception java.beans.PropertyVetoException The exception description.
@@ -494,11 +440,11 @@ public void setFilterCutoffFrequency(java.lang.Double filterCutoffFrequency) thr
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getGeometricRegions
  */
-public void setGeometricRegions(cbit.vcell.geometry.surface.GeometricRegion[] geometricRegions) throws java.beans.PropertyVetoException {
+public void setGeometricRegions(GeometricRegion[] geometricRegions) throws java.beans.PropertyVetoException {
 	if (fieldGeometricRegions == geometricRegions) {
 		return;
 	}
-	cbit.vcell.geometry.surface.GeometricRegion[] oldValue = fieldGeometricRegions;
+	GeometricRegion[] oldValue = fieldGeometricRegions;
 	fireVetoableChange("geometricRegions", oldValue, geometricRegions);
 	fieldGeometricRegions = geometricRegions;
 	firePropertyChange("geometricRegions", oldValue, geometricRegions);
@@ -544,20 +490,20 @@ private void setSurfaceCollection(SurfaceCollection surfaceCollection) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getVolumeSampleSize
  */
-public void setVolumeSampleSize(org.vcell.util.ISize volumeSampleSize) throws java.beans.PropertyVetoException {
+public void setVolumeSampleSize(ISize volumeSampleSize) throws java.beans.PropertyVetoException {
 	if (fieldVolumeSampleSize == volumeSampleSize) {
 		return;
 	}
 	
-	org.vcell.util.ISize oldValue = fieldVolumeSampleSize;
+	ISize oldValue = fieldVolumeSampleSize;
 	fireVetoableChange("volumeSampleSize", oldValue, volumeSampleSize);
 	
 	switch (fieldGeometry.getDimension()) {
 		case 1:
-			fieldVolumeSampleSize = new org.vcell.util.ISize(volumeSampleSize.getX(), 1, 1);
+			fieldVolumeSampleSize = new ISize(volumeSampleSize.getX(), 1, 1);
 			break;
 		case 2:
-			fieldVolumeSampleSize = new org.vcell.util.ISize(volumeSampleSize.getX(), volumeSampleSize.getY(), 1);
+			fieldVolumeSampleSize = new ISize(volumeSampleSize.getX(), volumeSampleSize.getY(), 1);
 			break;
 		case 3:
 			fieldVolumeSampleSize = volumeSampleSize;
@@ -571,7 +517,7 @@ public void setVolumeSampleSize(org.vcell.util.ISize volumeSampleSize) throws ja
  * Insert the method's description here.
  * Creation date: (5/26/2004 10:19:59 AM)
  */
-public void updateAll() throws GeometryException, cbit.image.ImageException, cbit.vcell.parser.ExpressionException {
+public void updateAll() throws GeometryException, ImageException, ExpressionException {
 	//
 	// updates if necessary: regionImage, surfaceCollection and resolvedLocations[]
 	//
@@ -642,4 +588,5 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		}
 	}
 }
+
 }

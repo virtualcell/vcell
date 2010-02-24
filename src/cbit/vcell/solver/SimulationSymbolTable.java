@@ -385,8 +385,10 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	 * This method was created by a SmartGuide.
 	 * @return boolean
 	 * @param volVariable cbit.vcell.math.VolVariable
+	 * @throws ExpressionException 
+	 * @throws MathException 
 	 */
-	public boolean hasTimeVaryingDiffusionOrAdvection(Variable variable) throws Exception {
+	public boolean hasTimeVaryingDiffusionOrAdvection(Variable variable) throws MathException, ExpressionException {
 		Enumeration<SubDomain> enum1 = simulation.getMathDescription().getSubDomains();
 		while (enum1.hasMoreElements()){
 			SubDomain subDomain = enum1.nextElement();
@@ -441,7 +443,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	 * @return boolean
 	 * @param function cbit.vcell.math.Function
 	 */
-	public static boolean isFunctionSaved(cbit.vcell.math.Function function) {
+	public static boolean isFunctionSaved(Function function) {
 		String name = function.getName();
 		if (!name.startsWith("SurfToVol_") && 
 			!name.startsWith("VolFract_") && 

@@ -1,44 +1,75 @@
 package cbit.vcell.solvers;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import cbit.vcell.parser.Discontinuity;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTable;
-import java.util.Enumeration;
-import java.io.File;
-import java.io.PrintWriter;
-
+import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
 
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-
-import cbit.vcell.solver.DataProcessingInstructions;
-import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverFileWriter;
-import cbit.vcell.solver.UniformOutputTimeSpec;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometryFileWriter;
 import cbit.vcell.mapping.FastSystemAnalyzer;
-import cbit.vcell.math.*;
+import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Distribution;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.FilamentVariable;
+import cbit.vcell.math.GaussianDistribution;
+import cbit.vcell.math.JumpCondition;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRandomVariable;
+import cbit.vcell.math.MembraneRegionEquation;
+import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.PseudoConstant;
+import cbit.vcell.math.RandomVariable;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.UniformDistribution;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRandomVariable;
+import cbit.vcell.math.VolumeRegionEquation;
+import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.parser.Discontinuity;
+import cbit.vcell.parser.DivideByZeroException;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.simdata.DataSet;
+import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.DataProcessingInstructions;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverFileWriter;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 
 /**
  * Insert the type's description here.
@@ -46,6 +77,8 @@ import cbit.vcell.math.*;
  * @author: Fei Gao
  */
 public class FiniteVolumeFileWriter extends SolverFileWriter {
+	private static final String VCG_FILE_EXTENSION = ".vcg";
+	private static final String RANDOM_VARIABLE_FILE_EXTENSION = ".rv";
 	private File userDirectory = null;
 	private boolean bInlineVCG = false;
 	private Geometry resampledGeometry = null;
@@ -82,14 +115,15 @@ public FiniteVolumeFileWriter(PrintWriter pw, SimulationJob simJob, Geometry geo
 	userDirectory = dir;
 }
 
-private Expression subsituteExpression(Expression exp) throws Exception {
+private Expression subsituteExpression(Expression exp) throws ExpressionException  {
 	return subsituteExpression(exp, simulationJob.getSimulationSymbolTable());
 }
 /**
  * Insert the method's description here.
  * Creation date: (5/9/2005 2:52:48 PM)
+ * @throws ExpressionException 
  */
-private Expression subsituteExpression(Expression exp, SymbolTable symbolTable) throws Exception {
+private Expression subsituteExpression(Expression exp, SymbolTable symbolTable) throws ExpressionException {
 	Expression exp2 = MathUtilities.substituteFunctions(exp, symbolTable).flatten();
 	FieldFunctionArguments[] fieldFunctionArguments = FieldUtilities.getFieldFunctionArguments(exp2);
 	if (fieldFunctionArguments != null && fieldFunctionArguments.length > 0) {
@@ -108,13 +142,17 @@ private Expression subsituteExpression(Expression exp, SymbolTable symbolTable) 
 /**
  * Insert the method's description here.
  * Creation date: (5/9/2005 2:52:48 PM)
+ * @throws MathException 
+ * @throws ExpressionException 
+ * @throws DataAccessException 
+ * @throws IOException 
  */
-public void write(String[] parameterNames) throws Exception {	
+public void write(String[] parameterNames) throws ExpressionException, MathException, DataAccessException, IOException {	
 	writeJMSParamters();	
 	writeSimulationParamters();	
 	writeModelDescription();	
 	writeMeshFile();	
-	writeVariables();	
+	writeVariables();
 	writeParameters(parameterNames);	
 	writeFieldData();	
 	writeDataProcessor();
@@ -133,8 +171,13 @@ StoreEnabled false
 
 SampleImageFile mask 0.0 \\\\cfs01.vcell.uchc.edu\\raid\\Vcell\\users\\schaff\\SimID_32742646_0_imageFieldDataName1_mask_0_0_Volume.fdat
 DATA_PROCESSOR_END
+ * @throws MathException 
+ * @throws IOException 
+ * @throws DataAccessException 
+ * @throws ExpressionException 
+ * @throws DivideByZeroException 
 */
-private void writeDataProcessor() throws Exception {
+private void writeDataProcessor() throws DataAccessException, IOException, MathException, DivideByZeroException, ExpressionException {
 	Simulation simulation = simulationJob.getSimulation();
 	DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
 	if (dpi == null) {
@@ -176,7 +219,7 @@ private void writeDataProcessor() throws Exception {
  * Insert the method's description here.
  * Creation date: (5/9/2005 2:52:48 PM)
  */
-private void writeCompartment_boundaryConditions(CompartmentSubDomain csd) throws Exception {
+private void writeCompartment_boundaryConditions(CompartmentSubDomain csd) {
 	printWriter.print("BOUNDARY_CONDITIONS ");
 	writeFeature_boundaryConditions(csd);
 	printWriter.println();
@@ -212,8 +255,10 @@ JACOBIAN_BEGIN
 JACOBIAN_END
 
 FAST_SYSTEM_END
+ * @throws ExpressionException 
+ * @throws MathException 
 */
-private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) throws Exception {
+private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) throws ExpressionException, MathException {
 	FastSystem fastSystem = volSubDomain.getFastSystem();
 	if (fastSystem == null) {
 		return;
@@ -304,8 +349,9 @@ private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) thro
 /**
  * Insert the method's description here.
  * Creation date: (5/9/2005 2:52:48 PM)
+ * @throws ExpressionException 
  */
-private void writeCompartment_VarContext(CompartmentSubDomain volSubDomain) throws Exception {
+private void writeCompartment_VarContext(CompartmentSubDomain volSubDomain) throws ExpressionException {
 	Simulation simulation = simulationJob.getSimulation();
 	//
 	// get list of volVariables participating in PDEs (anywhere).
@@ -355,8 +401,9 @@ BOUNDARY_XP 5.0;
 BOUNDARY_YM 5.0;
 BOUNDARY_YP 5.0;
 EQUATION_END
+ * @throws ExpressionException 
  */
-private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDomain, Equation equation) throws Exception {	
+private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDomain, Equation equation) throws ExpressionException {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
 	Expression rateExpression = subsituteExpression(equation.getRateExpression());
@@ -431,8 +478,10 @@ BOUNDARY_YP 5.0;
 EQUATION_END
 
 COMPARTMENT_END
+ * @throws ExpressionException 
+ * @throws MathException 
 */
-private void writeCompartments() throws Exception {
+private void writeCompartments() throws ExpressionException, MathException {
 	Simulation simulation = simulationJob.getSimulation();
 	MathDescription mathDesc = simulation.getMathDescription();
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
@@ -458,7 +507,7 @@ private void writeCompartments() throws Exception {
  * Insert the method's description here.
  * Creation date: (5/9/2005 2:52:48 PM)
  */
-private void writeFeature_boundaryConditions(CompartmentSubDomain csd) throws Exception {
+private void writeFeature_boundaryConditions(CompartmentSubDomain csd) {
 	BoundaryConditionType[] bctypes = new BoundaryConditionType[] {
 			csd.getBoundaryConditionXm(),
 			csd.getBoundaryConditionXp(),
@@ -476,7 +525,7 @@ private void writeFeature_boundaryConditions(CompartmentSubDomain csd) throws Ex
  * Insert the method's description here.
  * Creation date: (5/9/2005 2:52:48 PM)
  */
-private void writeMembrane_boundaryConditions(MembraneSubDomain msd) throws Exception {
+private void writeMembrane_boundaryConditions(MembraneSubDomain msd) {
 	printWriter.print("BOUNDARY_CONDITIONS ");
 	BoundaryConditionType[] bctypes = new BoundaryConditionType[] {
 			msd.getInsideCompartment().getBoundaryConditionXm(),
@@ -511,8 +560,9 @@ JUMP_CONDITION_BEGIN r
 INFLUX 0.0;
 OUTFLUX 0.0;
 JUMP_CONDITION_END
+ * @throws ExpressionException 
 */
-private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Exception {
+private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws ExpressionException {
 	Enumeration<JumpCondition> enum1 = msd.getJumpConditions();
 	while (enum1.hasMoreElements()) {
 		JumpCondition jc = enum1.nextElement();
@@ -528,8 +578,9 @@ private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Exceptio
 /**
  * Insert the method's description here.
  * Creation date: (5/9/2005 2:52:48 PM)
+ * @throws ExpressionException 
  */
-private void writeMembrane_VarContext(MembraneSubDomain memSubDomain) throws Exception {	
+private void writeMembrane_VarContext(MembraneSubDomain memSubDomain) throws ExpressionException {	
 	//
 	// add MembraneVarContext coders
 	//
@@ -541,7 +592,7 @@ private void writeMembrane_VarContext(MembraneSubDomain memSubDomain) throws Exc
 		} else{
 			writeMembrane_VarContext_Equation(memSubDomain, equation);
 		}
-	}	
+	}
 
 }
 
@@ -556,8 +607,9 @@ BOUNDARY_XP 5.0;
 BOUNDARY_YM 5.0;
 BOUNDARY_YP 5.0;
 EQUATION_END
+ * @throws ExpressionException 
  */
-private void writeMembraneRegion_VarContext_Equation(MembraneSubDomain memSubDomain, MembraneRegionEquation equation) throws Exception {	
+private void writeMembraneRegion_VarContext_Equation(MembraneSubDomain memSubDomain, MembraneRegionEquation equation) throws ExpressionException {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
 	printWriter.println("RATE " + subsituteExpression(((MembraneRegionEquation)equation).getMembraneRateExpression()).infix() + ";");
@@ -569,7 +621,7 @@ private void writeMembraneRegion_VarContext_Equation(MembraneSubDomain memSubDom
 }
 
 
-private void writeBoundaryValues(BoundaryConditionType[] bctypes, PdeEquation pde) throws Exception {
+private void writeBoundaryValues(BoundaryConditionType[] bctypes, PdeEquation pde) throws ExpressionException {
 	int dimension = resampledGeometry.getDimension();
 	
 	String[] bctitles = new String[]{"BOUNDARY_XM", "BOUNDARY_XP", "BOUNDARY_YM", "BOUNDARY_YP", "BOUNDARY_ZM", "BOUNDARY_ZP"};
@@ -621,8 +673,9 @@ OUTFLUX 0.0;
 JUMP_CONDITION_END
 
 MEMBRANE_END
+ * @throws ExpressionException 
  */
-private void writeMembranes() throws Exception {
+private void writeMembranes() throws ExpressionException {
 	Simulation simulation = simulationJob.getSimulation();
 	MathDescription mathDesc = simulation.getMathDescription();
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
@@ -650,8 +703,9 @@ MODEL_BEGIN
 FEATURE nucleus 1 200 value value value value 
 FEATURE cytosol 0 101 value value value value 
 MODEL_END
+ * @throws MathException 
 */
-private void writeModelDescription() throws Exception {
+private void writeModelDescription() throws MathException {
 	Simulation simulation = simulationJob.getSimulation();
 	
 	printWriter.println("# Model description: FEATURE name handle priority boundary_conditions");
@@ -660,7 +714,7 @@ private void writeModelDescription() throws Exception {
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {
 		SubDomain sd = enum1.nextElement();
-		if (sd instanceof cbit.vcell.math.CompartmentSubDomain) {
+		if (sd instanceof CompartmentSubDomain) {
 			CompartmentSubDomain csd = (CompartmentSubDomain)sd;
 			printWriter.print("FEATURE " + csd.getName() + " " + mathDesc.getHandle(csd) + " " + csd.getPriority() + " ");
 			writeFeature_boundaryConditions(csd);
@@ -789,22 +843,69 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 MESH_BEGIN
 VCG_FILE \\\\SAN2\\raid\\Vcell\\users\\fgao\\SimID_22489731_0_.vcg
 MESH_END
+ * @throws IOException 
 */
-private void writeMeshFile() {
+private void writeMeshFile() throws IOException {
 	printWriter.println("# Mesh file");
 	printWriter.println("MESH_BEGIN");
 	if (bInlineVCG) {
-		try {
-			GeometryFileWriter.write(printWriter, resampledGeometry);
-		} catch (Exception e) {			 
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
-		}
+		GeometryFileWriter.write(printWriter, resampledGeometry);
 	} else {
-		printWriter.println("VCG_FILE " + new File(userDirectory, simulationJob.getSimulationJobID() + ".vcg").getAbsolutePath());
+		printWriter.println("VCG_FILE " + new File(userDirectory, simulationJob.getSimulationJobID() + VCG_FILE_EXTENSION).getAbsolutePath());
 	}	
 	printWriter.println("MESH_END");
 	printWriter.println();
+}
+
+private double[] generateRandomNumbers(RandomVariable rv, int numRandomNumbers) throws ExpressionException {
+	Expression seedExpr = subsituteExpression(rv.getSeed());
+	if (!seedExpr.isNumeric()) {
+		throw new ExpressionException("Seed for RandomVariable '" + rv.getName() + " is not Constant!");
+	}
+	int seed = (int)rv.getSeed().evaluateConstant();
+	Distribution distribution = rv.getDistribution();
+	
+	double[] randomNumbers = new double[numRandomNumbers];
+	Random random = new Random(seed);
+	
+	if (distribution instanceof UniformDistribution) {
+		UniformDistribution ud = (UniformDistribution)distribution;
+		Expression minFlattened = subsituteExpression(ud.getMinimum());
+		Expression maxFlattened = subsituteExpression(ud.getMaximum());
+		
+		if (!minFlattened.isNumeric()) {		
+			throw new ExpressionException("For RandomVariable '" + rv.getName() + "', minimum for UniformDistribution is not Constant!");
+		}
+		if (!maxFlattened.isNumeric()) {		
+			throw new ExpressionException("For RandomVariable '" + rv.getName() + "', maximum for UniformDistribution is not Constant!");
+		}
+
+		double minVal = minFlattened.evaluateConstant();
+		double maxVal = maxFlattened.evaluateConstant();		
+		for (int i = 0; i < numRandomNumbers; i++) {
+			double r = random.nextDouble();
+			randomNumbers[i] = (maxVal - minVal) * r + minVal;
+		}
+	} else if (distribution instanceof GaussianDistribution) {
+		GaussianDistribution gd = (GaussianDistribution)distribution;
+		Expression meanFlattened = subsituteExpression(gd.getMean());
+		Expression sdFlattened = subsituteExpression(gd.getStandardDeviation());
+		
+		if (!meanFlattened.isNumeric()) {		
+			throw new ExpressionException("For RandomVariable '" + rv.getName() + "', mean for GaussianDistribution is not Constant!");
+		}
+		if (!sdFlattened.isNumeric()) {		
+			throw new ExpressionException("For RandomVariable '" + rv.getName() + "', standard deviation for GaussianDistribution is not Constant!");
+		}
+		
+		double muVal = meanFlattened.evaluateConstant();
+		double sigmaVal = sdFlattened.evaluateConstant();
+		for (int i = 0; i < numRandomNumbers; i++) {
+			double r = random.nextGaussian();
+			randomNumbers[i] = sigmaVal * r + muVal;
+		}		
+	}
+	return randomNumbers;
 }
 
 /**
@@ -815,8 +916,11 @@ VOLUME_PDE rf uM false false
 VOLUME_PDE r uM false false
 VOLUME_ODE rfB uM
 VARIABLE_END
+ * @throws MathException 
+ * @throws ExpressionException 
+ * @throws IOException 
  */
-private void writeVariables() throws Exception {
+private void writeVariables() throws MathException, ExpressionException, IOException {
 	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
 	
 	String units;
@@ -825,8 +929,11 @@ private void writeVariables() throws Exception {
 	printWriter.println("VARIABLE_BEGIN");
 	MathDescription mathDesc = simSymbolTable.getSimulation().getMathDescription();
 	Variable[] vars = simSymbolTable.getVariables();
+	ArrayList<RandomVariable> rvList = new ArrayList<RandomVariable>();
 	for (int i = 0; i < vars.length; i ++) {
-		if (vars[i] instanceof VolVariable) {
+		if (vars[i] instanceof VolumeRandomVariable || vars[i] instanceof MembraneRandomVariable) {
+			rvList.add((RandomVariable)vars[i]);		
+		} else if (vars[i] instanceof VolVariable) {
 			Vector<SubDomain> listOfSubDomains = new Vector<SubDomain>();
 			int totalNumCompartments = 0;
 			StringBuffer compartmentNames = new StringBuffer();
@@ -887,8 +994,36 @@ private void writeVariables() throws Exception {
 			printWriter.println("MEMBRANE_REGION " + vars[i].getName() + " " + units);
 		} else if (vars[i] instanceof FilamentVariable) {
 			units = "molecules/um";
-			throw new Exception("Filament application not supported yet");
+			throw new RuntimeException("Filament application not supported yet");
 		}
+	}
+	
+	int numRandomVariables = rvList.size();
+	if (numRandomVariables > 0) {
+		ISize samplingSize = simulationJob.getSimulation().getMeshSpecification().getSamplingSize();
+		String[] varNameArr = new String[numRandomVariables];
+		VariableType[] varTypeArr = new VariableType[numRandomVariables];
+		double[][] dataArr = new double[numRandomVariables][];
+		for (int i = 0; i < numRandomVariables; i ++) {
+			RandomVariable rv = rvList.get(i);
+			varNameArr[i] = rv.getName();
+			int numRandomNumbers = 0;
+			if (rv instanceof VolumeRandomVariable) {
+				printWriter.print("VOLUME_RANDOM");
+				varTypeArr[i] = VariableType.VOLUME;
+				numRandomNumbers = samplingSize.getXYZ();
+			} else if (rv instanceof MembraneRandomVariable) {
+				printWriter.print("MEMBRANE_RANDOM");
+				varTypeArr[i] = VariableType.MEMBRANE;
+				numRandomNumbers = resampledGeometry.getGeometrySurfaceDescription().getSurfaceCollection().getTotalPolygonCount();
+			} else {
+				throw new RuntimeException("Unknown RandomVariable type");
+			}
+			printWriter.println(" " + varNameArr[i]);
+			dataArr[i] = generateRandomNumbers(rv, numRandomNumbers);
+		}
+		File rvFile = new File(userDirectory, simulationJob.getSimulationJobID() + RANDOM_VARIABLE_FILE_EXTENSION);
+		DataSet.writeNew(rvFile, varNameArr, varTypeArr, samplingSize, dataArr);
 	}
 	printWriter.println("VARIABLE_END");
 	printWriter.println();
@@ -900,9 +1035,8 @@ private void writeVariables() throws Exception {
  * U0
  * U1
  * PARAMETER_END
- * @throws Exception
  */
-private void writeParameters(String[] parameterNames) throws Exception {
+private void writeParameters(String[] parameterNames) {
 	if (parameterNames != null) {
 		printWriter.println("# Parameters");
 		printWriter.println("PARAMETER_BEGIN " + parameterNames.length);
@@ -919,9 +1053,12 @@ private void writeParameters(String[] parameterNames) throws Exception {
  * #id, name, varname, time filename
  * 0 _VCell_FieldData_0 FRAP_binding_ALPHA rfB 0.1 \\\\SAN2\\raid\\Vcell\\users\\fgao\\SimID_22489731_0_FRAP_binding_ALPHA_rfB_0_1.fdat
  * FIELD_DATA_END
+ * @throws FileNotFoundException 
+ * @throws ExpressionException 
+ * @throws DataAccessException 
 */
 
-private void writeFieldData() throws Exception {
+private void writeFieldData() throws FileNotFoundException, ExpressionException, DataAccessException {
 	FieldDataIdentifierSpec[] fieldDataIDSpecs = simulationJob.getFieldDataIdentifierSpecs();
 	if (fieldDataIDSpecs == null || fieldDataIDSpecs.length == 0) {
 		return;
@@ -939,11 +1076,11 @@ private void writeFieldData() throws Exception {
 	if (var != null) {
 		FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
 		if (ffas == null || ffas.length == 0) {
-			throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+			throw new DataAccessException("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
 		} else {				
 			Expression newexp = new Expression(ffas[0].infix());
 			if (!var.getExpression().compareEqual(newexp)) {
-				throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+				throw new DataAccessException("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
 			}
 			psfFieldFunc = ffas[0];
 		}
@@ -1003,8 +1140,9 @@ BOUNDARY_XP 5.0;
 BOUNDARY_YM 5.0;
 BOUNDARY_YP 5.0;
 EQUATION_END
+ * @throws ExpressionException 
  */
-private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, Equation equation) throws Exception {	
+private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, Equation equation) throws ExpressionException {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
 	Expression rateExpression = subsituteExpression(equation.getRateExpression());
@@ -1054,8 +1192,9 @@ BOUNDARY_XP 5.0;
 BOUNDARY_YM 5.0;
 BOUNDARY_YP 5.0;
 EQUATION_END
+ * @throws ExpressionException 
  */
-private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain volSubDomain, VolumeRegionEquation equation) throws Exception {	
+private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain volSubDomain, VolumeRegionEquation equation) throws ExpressionException {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
 	printWriter.println("RATE " + subsituteExpression(equation.getVolumeRateExpression()).infix() + ";");

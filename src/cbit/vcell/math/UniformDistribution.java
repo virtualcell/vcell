@@ -48,21 +48,6 @@ public class UniformDistribution extends Distribution {
 	}
 
 	@Override
-	public double[] getRandomNumbers(int numRandomNumbers)
-			throws ExpressionException {
-		double lowVal = minimum.evaluateConstant();
-		double highVal = maximum.evaluateConstant();
-
-		double[] randomNumbers = new double[numRandomNumbers];
-		Random random = new Random();
-		for (int i = 0; i < numRandomNumbers; i++) {
-			double r = random.nextDouble();
-			randomNumbers[i] = (highVal - lowVal) * r + lowVal;
-		}
-		return randomNumbers;
-	}
-
-	@Override
 	public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 		minimum.bindExpression(symbolTable);
 		maximum.bindExpression(symbolTable);

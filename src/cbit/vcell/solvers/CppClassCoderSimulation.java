@@ -6,6 +6,8 @@ package cbit.vcell.solvers;
 import java.util.*;
 import java.io.*;
 
+import javax.management.RuntimeErrorException;
+
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.SimDataConstants;
@@ -70,6 +72,11 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	for (int i=0;i<variables.length;i++){
 	  	Variable var = (Variable)variables[i];
 	  	String units;
+	  	if (var instanceof RandomVariable){
+	  		throw new RuntimeException("'" + SolverDescription.FiniteVolume.getDisplayLabel() + "'"
+  				+ " does not support RandomVariable. Please choose either '" 
+  				+ SolverDescription.FiniteVolumeStandalone.getDisplayLabel() + "' or '" + SolverDescription.SundialsPDE.getDisplayLabel() + "'");
+	  	}
 	  	if (var instanceof VolVariable){
 	  		units = "uM";
 	  		VolVariable volVar = (VolVariable)var;

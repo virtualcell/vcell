@@ -363,7 +363,7 @@ protected void initialize() throws SolverException {
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 	
 	try{
-		bCORBA = Boolean.getBoolean(org.vcell.util.PropertyLoader.corbaEnabled);
+		bCORBA = Boolean.getBoolean(PropertyLoader.corbaEnabled);
 	}catch (Throwable t){}
 
 	if (bCORBA) {
@@ -399,8 +399,7 @@ protected void initStep1() throws SolverException {
 	
 	try {
 		PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+".vcg")));
-		int numMembraneElements =
-			GeometryFileWriter.write(pw, getResampledGeometry());
+		GeometryFileWriter.write(pw, getResampledGeometry());
 		pw.close();
 		
 		FieldDataIdentifierSpec[] argFieldDataIDSpecs = simulationJob.getFieldDataIdentifierSpecs();
@@ -410,6 +409,7 @@ protected void initStep1() throws SolverException {
 				argFieldDataIDSpecs[i].getFieldFuncArgs().getTime().bindExpression(simulationJob.getSimulationSymbolTable());
 			}
 			
+			int numMembraneElements = getResampledGeometry().getGeometrySurfaceDescription().getSurfaceCollection().getTotalPolygonCount();
 			CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(getResampledGeometry().getOrigin(), 
 					getResampledGeometry().getExtent(),
 					simulationJob.getSimulation().getMeshSpecification().getSamplingSize(),

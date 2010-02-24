@@ -29,7 +29,9 @@ public abstract class RandomVariable extends Variable {
 		String token = tokens.nextToken();
 		if (!token.equalsIgnoreCase(VCML.BeginBlock)){
 			throw new MathFormatException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-		}			
+		}
+		seed = new Expression(0.0);
+		distribution = new UniformDistribution(new Expression(0.0), new Expression(1.0));
 		while (tokens.hasMoreTokens()){
 			token = tokens.nextToken();
 			if (token.equalsIgnoreCase(VCML.EndBlock)){
