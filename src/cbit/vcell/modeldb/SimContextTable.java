@@ -258,9 +258,11 @@ public BioEvent[] getBioEvents(Connection con, SimulationContext simContext) thr
 	
 	try {
 		Element appComponentsElement = getAppComponentsElement(con, simContext.getVersion().getVersionKey());
-		if (appComponentsElement != null && appComponentsElement.getContent() != null) {
+		if (appComponentsElement != null) {
 			Element bioEventsElement = appComponentsElement.getChild(XMLTags.BioEventsTag);
-			bioEvents = (new XmlReader(false)).getBioEvents(simContext, bioEventsElement);
+			if (bioEventsElement != null) {
+				bioEvents = (new XmlReader(false)).getBioEvents(simContext, bioEventsElement);
+			}
 		}
 	} catch (XmlParseException e) {
 		e.printStackTrace(System.out);

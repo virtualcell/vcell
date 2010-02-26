@@ -80,7 +80,6 @@ public class EventPanel extends JPanel {
 		private JLabel eventAssignExprLabel = null;
 		private JLabel eventAssgnVarNameLabel = null;
 		private TextFieldAutoCompletion eventAssgnExpressionTextField = null;
-		// private TextFieldAutoCompletion eventAssgnVarNameTextField = null;
 		private JComboBox eventAssignvarNameComboBox = null;
 		private DefaultComboBoxModel varNameComboBoxModel = null;
 		private JPanel eventAssignmentPanel = null;
@@ -141,7 +140,6 @@ public class EventPanel extends JPanel {
 				if (e.isTemporary()) {
 					return;
 				}
-				System.out.println("!!!!!!!!!!focusLost is called - " + e.getSource());
 				if (e.getSource() == getTriggerTextField()) {
 					setNewTrigger();
 				}
@@ -218,9 +216,6 @@ public class EventPanel extends JPanel {
 				try {
 					triggerTextfield = new TextFieldAutoCompletion();
 					triggerTextfield.setName("TriggerTextField");
-//					triggerTextfield.setPreferredSize(new java.awt.Dimension(200, 30));
-//					triggerTextfield.setMaximumSize(new java.awt.Dimension(200, 30));
-//					triggerTextfield.setMinimumSize(new java.awt.Dimension(200, 30));
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -260,9 +255,6 @@ public class EventPanel extends JPanel {
 				try {
 					delayTextField = new TextFieldAutoCompletion();
 					delayTextField.setName("DelayTextField");
-//					delayTextField.setPreferredSize(new java.awt.Dimension(200, 30));
-//					delayTextField.setMaximumSize(new java.awt.Dimension(200, 30));
-//					delayTextField.setMinimumSize(new java.awt.Dimension(200, 30));
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -428,22 +420,6 @@ public class EventPanel extends JPanel {
 			return eventAssgnVarNameLabel;
 		}
 
-//		private TextFieldAutoCompletion getEventAssignVarNameTextField() {
-//			if (eventAssgnVarNameTextField == null) {
-//				try {
-//					eventAssgnVarNameTextField = new TextFieldAutoCompletion();
-//					eventAssgnVarNameTextField.setName("EventAssignVarNameTextField");
-//					eventAssgnVarNameTextField.setSize(new java.awt.Dimension(600, 30));
-//					eventAssgnVarNameTextField.setPreferredSize(new java.awt.Dimension(600, 30));
-//					eventAssgnVarNameTextField.setMaximumSize(new java.awt.Dimension(600, 30));
-//					eventAssgnVarNameTextField.setMinimumSize(new java.awt.Dimension(600, 30));			
-//				} catch (java.lang.Throwable e) {
-//					e.printStackTrace(System.out);
-//				}
-//			}
-//			return eventAssgnVarNameTextField;
-//		}
-		
 		private JComboBox getEventAssignVarNameComboBox() {
 			if (eventAssignvarNameComboBox == null) {
 				try {
@@ -460,22 +436,6 @@ public class EventPanel extends JPanel {
 			if (varNameComboBoxModel == null) {
 				try {
 					varNameComboBoxModel = new javax.swing.DefaultComboBoxModel();
-					// fill comboboxmodel with possible variables from simContext (symboltable entries) list
-					Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
-					fieldSimContext.getEntries(entryMap);
-					Set<String> varNamesSet = entryMap.keySet();
-					Iterator<String> varNames = varNamesSet.iterator();
-					// add symbols from simContext, without ReservedSymbols
-					while (varNames.hasNext()) {
-						String varName = varNames.next();
-						if (!(ReservedSymbol.fromString(varName) instanceof ReservedSymbol)) {
-							getVarNameComboBoxModel().addElement(varName);
-						}
-					}
-					// add global parameters to comboBox
-					for (ModelParameter mp : fieldSimContext.getModel().getModelParameters()) {
-						getVarNameComboBoxModel().addElement(mp.getName());
-					}
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -609,8 +569,8 @@ public class EventPanel extends JPanel {
 				add(panel, BorderLayout.CENTER);
 				initConnections();
 				getEventTargetsScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-				getEventTargetsScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-				getEventTargetsScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getEventTargetsScrollPaneTable(), false));
+				// getEventTargetsScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+				getEventTargetsScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getEventTargetsScrollPaneTable(), true));
 				
 				getEventAssignmentsTableModel().addTableModelListener(
 						new javax.swing.event.TableModelListener(){
@@ -630,6 +590,20 @@ public class EventPanel extends JPanel {
 		}
 
 		private void addEventAssignment() {
+			// fill comboboxmodel with possible variables from simContext (symboltable entries) list
+			getVarNameComboBoxModel().removeAllElements();
+			Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+			fieldSimContext.getEntries(entryMap);
+			Set<String> varNamesSet = entryMap.keySet();
+			Iterator<String> varNames = varNamesSet.iterator();
+			// add symbols from simContext, without ReservedSymbols
+			while (varNames.hasNext()) {
+				String varName = varNames.next();
+				if (!(ReservedSymbol.fromString(varName) instanceof ReservedSymbol)) {
+					getVarNameComboBoxModel().addElement(varName);
+				}
+			}
+
 			JPanel eventAssignmentPanel = getEventAssignmentPanel();
 			getEventAssignVarNameComboBox().setModel(getVarNameComboBoxModel());
 			getEventAssignExpressionTextField().setText("0.0");
@@ -645,21 +619,18 @@ public class EventPanel extends JPanel {
 			int ok = JOptionPane.showOptionDialog(this, eventAssignmentPanel, "Add Event Assignment" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
 			if (ok == javax.swing.JOptionPane.OK_OPTION) {
 				String varName = (String)getEventAssignVarNameComboBox().getSelectedItem();
-				SymbolTableEntry ste = null;
-				Expression eventAssgnExp = null;
+				EventAssignment newEventAssignment = null;
 				try {
-					ste = fieldSimContext.getEntry(varName);
-					eventAssgnExp = new Expression(getEventAssignExpressionTextField().getText());
+					SymbolTableEntry ste = fieldSimContext.getEntry(varName);
+					Expression eventAssgnExp = new Expression(getEventAssignExpressionTextField().getText());
+					newEventAssignment = fieldBioEvent.new EventAssignment(ste, eventAssgnExp);
+					fieldBioEvent.addEventAssignment(newEventAssignment);
 				} catch (ExpressionException e) {
 					e.printStackTrace(System.out);
-				}
-				
-				EventAssignment newEventAssignment = new EventAssignment(ste, eventAssgnExp);
-				try {
-					fieldBioEvent.addEventAssignment(newEventAssignment);
 				} catch (PropertyVetoException e1) {
 					e1.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(this, "Event Assignment '" + newEventAssignment.getTarget().getName() + "' cannot be added." + e1.getMessage());
+					String targetName = (newEventAssignment!=null)?(newEventAssignment.getTarget().getName()):("null");
+					DialogUtils.showErrorDialog(this, "Event Assignment '" + targetName + "' cannot be added." + e1.getMessage());
 				}
 			}
 
@@ -833,7 +804,7 @@ public class EventPanel extends JPanel {
 				if (text != null && text.trim().length() > 0) {
 					Expression durationExpression = new Expression(text);
 					durationExpression.bindExpression(fieldSimContext);
-					delay = new Delay(getUseValuesAtTriggerTimeCheckBox().isSelected(), durationExpression);
+					delay = fieldBioEvent.new Delay(getUseValuesAtTriggerTimeCheckBox().isSelected(), durationExpression);
 				}
 				fieldBioEvent.setDelay(delay);
 			} catch (ExpressionException e1) {
