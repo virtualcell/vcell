@@ -109,6 +109,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
@@ -3260,8 +3261,12 @@ public org.jdom.Element getXML(SolverTaskDescription param) {
 	//Add solver name
 	solvertask.setAttribute(XMLTags.SolverNameTag, param.getSolverDescription().getDatabaseName());
 	
-	if (param.isStopAtSpatiallyUniform()) {
-		solvertask.setAttribute(XMLTags.StopAtSpatiallyUniform, String.valueOf(param.isStopAtSpatiallyUniform()));
+	// Stop At Spatially Uniform
+	ErrorTolerance stopAtSpatiallyUniformErrorTolerance = param.getStopAtSpatiallyUniformErrorTolerance();
+	if (stopAtSpatiallyUniformErrorTolerance != null) {
+		Element element = new Element(XMLTags.StopAtSpatiallyUniform);
+		element.addContent(getXML(stopAtSpatiallyUniformErrorTolerance));
+		solvertask.addContent(element);
 	}
 	
 	return solvertask;

@@ -30,15 +30,14 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	public static final String PROPERTY_TIME_BOUNDS = "timeBounds";
 	public static final String PROPERTY_TIME_STEP = "timeStep";
 	public static final String PROPERTY_STOCH_SIM_OPTIONS = "StochSimOptions";
-	public static final String PROPERTY_STOP_AT_SPATIALLY_UNIFORM = "StopAtSpatiallyUniform";
-	
+	public static final String PROPERTY_STOP_AT_SPATIALLY_UNIFORM_ERROR_TOLERANCE = "stopAtSpatiallyUniformErrorTolerance";
 	
 	//  Or TASK_NONE for use as a default?
 	public static final int TASK_UNSTEADY = 0;
 	public static final int TASK_STEADY   = 1;
 	//
 	private int fieldTaskType = TASK_UNSTEADY;
-	private cbit.vcell.math.Constant fieldSensitivityParameter = null;
+	private Constant fieldSensitivityParameter = null;
 	private Simulation fieldSimulation = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -49,7 +48,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private boolean fieldUseSymbolicJacobian = false;
 	private OutputTimeSpec fieldOutputTimeSpec = new DefaultOutputTimeSpec();
 	private StochSimOptions fieldStochOpt = null; //added Dec 5th, 2006
-	private boolean bStopAtSpatiallyUniform = false;
+	private ErrorTolerance stopAtSpatiallyUniformErrorTolerance = null;
 
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
@@ -113,7 +112,9 @@ public SolverTaskDescription(Simulation simulation, SolverTaskDescription solver
 	fieldSensitivityParameter = solverTaskDescription.getSensitivityParameter();
 	fieldSolverDescription = solverTaskDescription.getSolverDescription();
 	fieldUseSymbolicJacobian = solverTaskDescription.getUseSymbolicJacobian();
-	bStopAtSpatiallyUniform = solverTaskDescription.bStopAtSpatiallyUniform;
+	if (solverTaskDescription.stopAtSpatiallyUniformErrorTolerance != null) {
+		stopAtSpatiallyUniformErrorTolerance = new ErrorTolerance(solverTaskDescription.stopAtSpatiallyUniformErrorTolerance);
+	}
 	if (simulation.getMathDescription().isStoch() && (solverTaskDescription.getStochOpt() != null)) 
 	{
 		setStochOpt(solverTaskDescription.getStochOpt());
@@ -176,19 +177,39 @@ public boolean compareEqual(Matchable object) {
 	}
 	if (object != null && object instanceof SolverTaskDescription) {
 		SolverTaskDescription solverTaskDescription = (SolverTaskDescription) object;
-		if (getTaskType() != solverTaskDescription.getTaskType()) return (false);
+		if (getTaskType() != solverTaskDescription.getTaskType()) {
+			return (false);
+		}
 		//
-		if (!getTimeBounds().compareEqual(solverTaskDescription.getTimeBounds())) return (false);
-		if (!getTimeStep().compareEqual(solverTaskDescription.getTimeStep())) return (false);
-		if (!getErrorTolerance().compareEqual(solverTaskDescription.getErrorTolerance())) return (false);
-		if  (!Compare.isEqualOrNull(getStochOpt(),solverTaskDescription.getStochOpt())) return false;
-		if (getUseSymbolicJacobian() != solverTaskDescription.getUseSymbolicJacobian()) return (false);
+		if (!getTimeBounds().compareEqual(solverTaskDescription.getTimeBounds())) {
+			return (false);
+		}
+		if (!getTimeStep().compareEqual(solverTaskDescription.getTimeStep())) {
+			return (false);
+		}
+		if (!getErrorTolerance().compareEqual(solverTaskDescription.getErrorTolerance())) {
+			return (false);
+		}
+		if  (!Compare.isEqualOrNull(getStochOpt(),solverTaskDescription.getStochOpt())) {
+			return false;
+		}
+		if (getUseSymbolicJacobian() != solverTaskDescription.getUseSymbolicJacobian()) {
+			return (false);
+		}
 		//
-		if (!getOutputTimeSpec().compareEqual(solverTaskDescription.getOutputTimeSpec())) return (false);
-		if (!Compare.isEqualOrNull(getSensitivityParameter(),solverTaskDescription.getSensitivityParameter())) return (false);
-		if (!Compare.isEqual(getSolverDescription(),solverTaskDescription.getSolverDescription())) return (false);
-		if (getTaskType() != solverTaskDescription.getTaskType()) return (false);
-		if (bStopAtSpatiallyUniform != solverTaskDescription.bStopAtSpatiallyUniform) {
+		if (!getOutputTimeSpec().compareEqual(solverTaskDescription.getOutputTimeSpec())) {
+			return (false);
+		}
+		if (!Compare.isEqualOrNull(getSensitivityParameter(),solverTaskDescription.getSensitivityParameter())) {
+			return (false);
+		}
+		if (!Compare.isEqual(getSolverDescription(),solverTaskDescription.getSolverDescription())) {
+			return (false);
+		}
+		if (getTaskType() != solverTaskDescription.getTaskType()) {
+			return (false);
+		}
+		if (!Compare.isEqualOrNull(stopAtSpatiallyUniformErrorTolerance, solverTaskDescription.stopAtSpatiallyUniformErrorTolerance)) {
 			return false;
 		}
 		return true;
@@ -286,7 +307,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return The sensitivityParameter property value.
  * @see #setSensitivityParameter
  */
-public cbit.vcell.math.Constant getSensitivityParameter() {
+public Constant getSensitivityParameter() {
 	return fieldSensitivityParameter;
 }
 
@@ -420,7 +441,10 @@ public String getVCML() {
 	//          MSRTolerance 0.01
 	//          SDETolerance 1e-4
 	//   	}
-	//		StopAtSpatiallyUniform true
+	//		StopAtSpatiallyUniform {
+	//			AbsoluteErrorTolerance	1e-8 
+	//			RelativeErrorTolerance 1e-4
+	//		}
 	//		KeepEvery 1
 	//		KeepAtMost	1000
 	//		SensitivityParameter {
@@ -462,8 +486,8 @@ public String getVCML() {
 		buffer.append(VCML.EndBlock+"\n");
 	}
 
-	if (bStopAtSpatiallyUniform) {
-		buffer.append(VCML.StopAtSpatiallyUniform + " " + bStopAtSpatiallyUniform + "\n");
+	if (stopAtSpatiallyUniformErrorTolerance != null) {
+		buffer.append(VCML.StopAtSpatiallyUniform + " " + stopAtSpatiallyUniformErrorTolerance.getVCML() + "\n");
 	}
 	
 	buffer.append(VCML.EndBlock+"\n");
@@ -600,8 +624,10 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 	//          MSRTolerance 0.01
 	//          SDETolerance 1e-4
 	//   	}
-
-	//		StopAtSpatiallyUniform true
+	//		StopAtSpatiallyUniform {
+	//			AbsoluteErrorTolerance	1e-8 
+	//			RelativeErrorTolerance 1e-4
+	//		}
 	//		KeepEvery 1
 	//		KeepAtMost	1000
 	//      OR
@@ -616,8 +642,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 	//		OR
 	//  	OutputOptions {
 	//			OutputTimes 0.1,0.3,0.4,... (comma separated list, no spaces or linefeeds between numbers in list)
-	//   	}
-	
+	//   	}	
 	//
 	//		SensitivityParameter {
 	//			Constant k1 39.0;
@@ -742,7 +767,8 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 			}
 			if (token.equalsIgnoreCase(VCML.StopAtSpatiallyUniform)) {
 				token = tokens.nextToken();
-				bStopAtSpatiallyUniform = Boolean.valueOf(token).booleanValue();
+				stopAtSpatiallyUniformErrorTolerance = ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance();
+				stopAtSpatiallyUniformErrorTolerance.readVCML(tokens);
 				continue;
 			}
 			throw new DataAccessException("unexpected identifier " + token);
@@ -938,13 +964,20 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	}
 }
 
-public boolean isStopAtSpatiallyUniform() {
-	return bStopAtSpatiallyUniform;
+public final ErrorTolerance getStopAtSpatiallyUniformErrorTolerance() {
+	return stopAtSpatiallyUniformErrorTolerance;
 }
 
-public void setStopAtSpatiallyUniform(boolean stopAtSpatiallyUniform) {
-	boolean oldValue = bStopAtSpatiallyUniform;
-	bStopAtSpatiallyUniform = stopAtSpatiallyUniform;
-	firePropertyChange(PROPERTY_STOP_AT_SPATIALLY_UNIFORM, oldValue, bStopAtSpatiallyUniform);
+/**
+ * Sets the errorTolerance property (cbit.vcell.solver.ErrorTolerance) value.
+ * @param errorTolerance The new value for the property.
+ * @exception java.beans.PropertyVetoException The exception description.
+ * @see #getErrorTolerance
+ */
+public void setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance errorTolerance) {
+	ErrorTolerance oldValue = stopAtSpatiallyUniformErrorTolerance;
+	stopAtSpatiallyUniformErrorTolerance = errorTolerance;
+	firePropertyChange(PROPERTY_STOP_AT_SPATIALLY_UNIFORM_ERROR_TOLERANCE, oldValue, errorTolerance);
 }
+
 }

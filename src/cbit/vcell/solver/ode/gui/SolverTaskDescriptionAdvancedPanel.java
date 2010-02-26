@@ -74,10 +74,6 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 			}
 			if (evt.getSource() == getTimeBoundsPanel() && (evt.getPropertyName().equals("timeBounds"))) 
 				connPtoP2SetSource();
-			
-			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_STOP_AT_SPATIALLY_UNIFORM))) { 
-				BeanUtils.enableComponents(getErrorTolerancePanel(), getSolverTaskDescription().isStopAtSpatiallyUniform());
-			}			
 		}
 		
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -399,7 +395,7 @@ private void enableVariableTimeStepOptions() {
 	if (solverDescription.isSemiImplicitPdeSolver()) {
 		getErrorTolerancePanel().setupForSemiImplicitSolver();
 	} else {
-		BeanUtils.enableComponents(getErrorTolerancePanel(), solverDescription.hasErrorTolerance() || getSolverTaskDescription().isStopAtSpatiallyUniform());
+		BeanUtils.enableComponents(getErrorTolerancePanel(), solverDescription.hasErrorTolerance());
 	}
 	//Hybrid solvers should show default time step
 	if (solverDescription.compareEqual(SolverDescription.HybridEuler)||
