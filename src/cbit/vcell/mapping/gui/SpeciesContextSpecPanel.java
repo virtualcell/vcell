@@ -4,8 +4,17 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
+import java.awt.AWTException;
+import java.awt.Robot;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.SwingUtilities;
 
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -58,7 +67,7 @@ private void connEtoM1() {
 		// user code end
 		getScrollPaneTable().setModel(getSpeciesContextSpecParameterTableModel1());
 		getScrollPaneTable().createDefaultColumnsFromModel();
-		getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), true));
+		getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), false));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
