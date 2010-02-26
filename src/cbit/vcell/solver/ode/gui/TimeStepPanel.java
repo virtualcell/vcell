@@ -1,5 +1,9 @@
 package cbit.vcell.solver.ode.gui;
 
+import org.vcell.util.gui.DialogUtils;
+
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeStep;
 
 /*©
@@ -11,9 +15,8 @@ import cbit.vcell.solver.TimeStep;
  * Creation date: (11/2/2000 4:46:05 PM)
  * @author: 
  */
-public class TimeStepPanel extends javax.swing.JPanel implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {
-	private cbit.vcell.solver.TimeStep fieldTimeStep = null;
-	private boolean ivjConnPtoP1Aligning = false;
+public class TimeStepPanel extends javax.swing.JPanel {
+	private SolverTaskDescription solverTaskDescription = null;
 	private javax.swing.JLabel ivjDefaultTimeStepLabel = null;
 	private javax.swing.JTextField ivjDefaultTimeStepTextField = null;
 	private javax.swing.JLabel ivjMaximumTimeStepLabel = null;
@@ -21,308 +24,63 @@ public class TimeStepPanel extends javax.swing.JPanel implements java.awt.event.
 	private javax.swing.JLabel ivjMinimumTimeStepLabel = null;
 	private javax.swing.JTextField ivjMinimumTimeStepTextField = null;
 	private javax.swing.JLabel ivjTimeStepLabel = null;
-	private TimeStep ivjTornOffTimeStep = null;
-	private TimeStep ivjTimeStepFactory = null;
+	
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+
+	class IvjEventHandler implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {
+		public void propertyChange(java.beans.PropertyChangeEvent evt) {
+			if (evt.getSource() == TimeStepPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) { 
+				refresh();
+			}
+			if (evt.getSource() == solverTaskDescription) {
+				if (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_TIME_STEP)
+					|| evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_SOLVER_DESCRIPTION)) {			
+					refresh();
+				}
+			}			
+		}
+		
+		public void focusGained(java.awt.event.FocusEvent e) {
+		}
+
+		/**
+		 * Method to handle events for the FocusListener interface.
+		 * @param e java.awt.event.FocusEvent
+		 */
+		public void focusLost(java.awt.event.FocusEvent e) {
+			if (e.isTemporary()) {
+				return;
+			}
+			if (e.getSource() == getDefaultTimeStepTextField() ||				
+				e.getSource() == getMinimumTimeStepTextField() || 
+				e.getSource() == getMaximumTimeStepTextField()) {
+				setNewTimeStep();
+			}
+		}
+	}	
 /**
  * TimeStepPanel constructor comment.
  */
 public TimeStepPanel() {
 	super();
+	addPropertyChangeListener(ivjEventHandler);
 	initialize();
 }
-/**
- * TimeStepPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public TimeStepPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-/**
- * TimeStepPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public TimeStepPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-/**
- * TimeStepPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public TimeStepPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-/**
- * connEtoM1:  (MinimumTimeStepTextField.focus.focusLost(java.awt.event.FocusEvent) --> TornOffTimeStep.this)
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(java.awt.event.FocusEvent arg1) {
-	TimeStep localValue = null;
+
+public void setNewTimeStep() {
 	try {
-		// user code begin {1}
-		// user code end
-		setTornOffTimeStep(localValue = readTimeStep());
-		// user code begin {2}
-		// user code end
+		double defaultTimeStep = !getDefaultTimeStepTextField().isEnabled() ? 0 : new Double(getDefaultTimeStepTextField().getText()).doubleValue();
+		double minTimeStep = !getMinimumTimeStepTextField().isEnabled() ? defaultTimeStep : new Double(getMinimumTimeStepTextField().getText()).doubleValue();
+		double maxTimeStep = !getMaximumTimeStepTextField().isEnabled() ? defaultTimeStep : new Double(getMaximumTimeStepTextField().getText()).doubleValue();
+		TimeStep newTimeStep = new TimeStep(minTimeStep, defaultTimeStep, maxTimeStep);
+		solverTaskDescription.setTimeStep(newTimeStep);
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
 		// user code end
 		handleException(ivjExc);
 	}
-	setTimeStepFactory(localValue);
-}
-/**
- * connEtoM2:  (DefaultTimeStepTextField.focus.focusLost(java.awt.event.FocusEvent) --> TornOffTimeStep.this)
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(java.awt.event.FocusEvent arg1) {
-	TimeStep localValue = null;
-	try {
-		// user code begin {1}
-		// user code end
-		setTornOffTimeStep(localValue = readTimeStep());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-	setTimeStepFactory(localValue);
 }
 
-private TimeStep readTimeStep() {
-	double defaultTimeStep = !getDefaultTimeStepTextField().isEnabled() ? 0 : new Double(getDefaultTimeStepTextField().getText()).doubleValue();
-	double minTimeStep = !getMinimumTimeStepTextField().isEnabled() ? defaultTimeStep : new Double(getMinimumTimeStepTextField().getText()).doubleValue();
-	double maxTimeStep = !getMaximumTimeStepTextField().isEnabled() ? defaultTimeStep : new Double(getMaximumTimeStepTextField().getText()).doubleValue();
-	return new TimeStep(minTimeStep, defaultTimeStep, maxTimeStep);
-}
-
-/**
- * connEtoM3:  (MaximumTimeStepTextField.focus.focusLost(java.awt.event.FocusEvent) --> TornOffTimeStep.this)
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(java.awt.event.FocusEvent arg1) {
-	TimeStep localValue = null;
-	try {
-		// user code begin {1}
-		// user code end
-		setTornOffTimeStep(localValue = readTimeStep());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-	setTimeStepFactory(localValue);
-}
-/**
- * connEtoM4:  (TornOffTimeStep.this --> MinimumTimeStepTextField.text)
- * @param value cbit.vcell.solver.TimeStep
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM4(TimeStep value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getTornOffTimeStep() != null) && getMinimumTimeStepTextField().isEnabled()) {
-			getMinimumTimeStepTextField().setText(String.valueOf(getTornOffTimeStep().getMinimumTimeStep()));
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoM5:  (TornOffTimeStep.this --> DefaultTimeStepTextField.text)
- * @param value cbit.vcell.solver.TimeStep
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM5(TimeStep value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getTornOffTimeStep() != null) && getDefaultTimeStepTextField().isEnabled()) {
-			getDefaultTimeStepTextField().setText(String.valueOf(getTornOffTimeStep().getDefaultTimeStep()));
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoM6:  (TornOffTimeStep.this --> MaximumTimeStepTextField.text)
- * @param value cbit.vcell.solver.TimeStep
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(TimeStep value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getTornOffTimeStep() != null) && getMaximumTimeStepTextField().isEnabled()) {
-			getMaximumTimeStepTextField().setText(String.valueOf(getTornOffTimeStep().getMaximumTimeStep()));
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connPtoP1SetSource:  (TimeStepPanel.timeStep <--> TornOffTimeStep.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			if ((getTornOffTimeStep() != null)) {
-				this.setTimeStep(getTornOffTimeStep());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connPtoP1SetTarget:  (TimeStepPanel.timeStep <--> TornOffTimeStep.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			setTornOffTimeStep(this.getTimeStep());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * Disable minmum, maximum and default time steps.
- * Creation date: (10/4/2006 5:10:02 PM)
- */
-public void disableTimeStep() 
-{
-	getMinimumTimeStepLabel().setEnabled(false);
-	//getMinimumTimeStepTextField().setText("");
-	getMinimumTimeStepTextField().setEnabled(false);
-	getDefaultTimeStepLabel().setEnabled(false);
-	//getDefaultTimeStepTextField().setText("");
-	getDefaultTimeStepTextField().setEnabled(false);
-	getMaximumTimeStepLabel().setEnabled(false);
-	//getMaximumTimeStepTextField().setText("");
-	getMaximumTimeStepTextField().setEnabled(false);
-
-}
-
-/**
- * Disable minmum, maximum time steps,If only default time step is needed.
- * Creation date: (7/13/2007)
- */
-public void disableMinAndMaxTimeStep() 
-{
-	getMinimumTimeStepLabel().setEnabled(false);
-	getMinimumTimeStepTextField().setText("");
-	getMinimumTimeStepTextField().setEnabled(false);
-	getMaximumTimeStepLabel().setEnabled(false);
-	getMaximumTimeStepTextField().setText("");
-	getMaximumTimeStepTextField().setEnabled(false);
-}
-
-public void disableMinTimeStep() 
-{
-	getMinimumTimeStepLabel().setEnabled(false);
-	getMinimumTimeStepTextField().setText("");
-	getMinimumTimeStepTextField().setEnabled(false);
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (10/23/2005 11:51:27 AM)
- * @param variableTimeStep boolean
- */
-public void enableComponents(boolean variableTimeStep) {
-	if (variableTimeStep) {
-		getMinimumTimeStepLabel().setEnabled(true);
-		getMinimumTimeStepTextField().setEnabled(true);
-		getMinimumTimeStepTextField().setText(getTimeStep().getMinimumTimeStep()+"");
-		getDefaultTimeStepLabel().setEnabled(false);
-		getDefaultTimeStepTextField().setText("");
-		getDefaultTimeStepTextField().setEnabled(false);
-		getMaximumTimeStepLabel().setEnabled(true);
-		getMaximumTimeStepTextField().setEnabled(true);
-		getMaximumTimeStepTextField().setText(getTimeStep().getMaximumTimeStep()+"");
-	} else {
-		getMinimumTimeStepLabel().setEnabled(false);
-		getMinimumTimeStepTextField().setText("");
-		getMinimumTimeStepTextField().setEnabled(false);
-		getDefaultTimeStepLabel().setEnabled(true);
-		getDefaultTimeStepTextField().setEnabled(true);
-		getDefaultTimeStepTextField().setText(getTimeStep().getDefaultTimeStep()+"");
-		getMaximumTimeStepLabel().setEnabled(false);
-		getMaximumTimeStepTextField().setText("");
-		getMaximumTimeStepTextField().setEnabled(false);
-	}
-}
-/**
- * Method to handle events for the FocusListener interface.
- * @param e java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void focusGained(java.awt.event.FocusEvent e) {
-	// user code begin {1}
-	// user code end
-	// user code begin {2}
-	// user code end
-}
-/**
- * Method to handle events for the FocusListener interface.
- * @param e java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void focusLost(java.awt.event.FocusEvent e) {
-	// user code begin {1}
-	// user code end
-	if (e.getSource() == getMinimumTimeStepTextField()) 
-		connEtoM1(e);
-	if (e.getSource() == getDefaultTimeStepTextField()) 
-		connEtoM2(e);
-	if (e.getSource() == getMaximumTimeStepTextField()) 
-		connEtoM3(e);
-	// user code begin {2}
-	// user code end
-}
 /**
  * Return the DefaultTimeStepLabel property value.
  * @return javax.swing.JLabel
@@ -446,24 +204,7 @@ private javax.swing.JTextField getMinimumTimeStepTextField() {
 	}
 	return ivjMinimumTimeStepTextField;
 }
-/**
- * Gets the timeStep property (cbit.vcell.solver.TimeStep) value.
- * @return The timeStep property value.
- * @see #setTimeStep
- */
-public TimeStep getTimeStep() {
-	return fieldTimeStep;
-}
-/**
- * Return the TimeStepFactory property value.
- * @return cbit.vcell.solver.TimeStep
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private TimeStep getTimeStepFactory() {
-	// user code begin {1}
-	// user code end
-	return ivjTimeStepFactory;
-}
+
 /**
  * Return the TimeStepLabel property value.
  * @return javax.swing.JLabel
@@ -486,16 +227,7 @@ private javax.swing.JLabel getTimeStepLabel() {
 	}
 	return ivjTimeStepLabel;
 }
-/**
- * Return the TornOffTimeStep property value.
- * @return cbit.vcell.solver.TimeStep
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private TimeStep getTornOffTimeStep() {
-	// user code begin {1}
-	// user code end
-	return ivjTornOffTimeStep;
-}
+
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -505,21 +237,17 @@ private void handleException(java.lang.Throwable exception) {
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	 System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 	 exception.printStackTrace(System.out);
-	org.vcell.util.gui.DialogUtils.showWarningDialog(this, "Possible error in TimeStep value : " + exception.getMessage(), new String[] {"Ok"}, "Ok");
+	 DialogUtils.showWarningDialog(this, "Possible error in TimeStep value : " + exception.getMessage(), new String[] {"Ok"}, "Ok");
 }
 /**
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
-	this.addPropertyChangeListener(this);
-	getMinimumTimeStepTextField().addFocusListener(this);
-	getDefaultTimeStepTextField().addFocusListener(this);
-	getMaximumTimeStepTextField().addFocusListener(this);
-	connPtoP1SetTarget();
+private void initConnections() {
+	getMinimumTimeStepTextField().addFocusListener(ivjEventHandler);
+	getDefaultTimeStepTextField().addFocusListener(ivjEventHandler);
+	getMaximumTimeStepTextField().addFocusListener(ivjEventHandler);
 }
 /**
  * Initialize the class.
@@ -575,12 +303,9 @@ private void initialize() {
 		constraintsMaximumTimeStepTextField.weightx = 1.0;
 		constraintsMaximumTimeStepTextField.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getMaximumTimeStepTextField(), constraintsMaximumTimeStepTextField);
-		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 /**
  * main entrypoint - starts the part when it is run as an application
@@ -598,7 +323,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -607,94 +331,89 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
-/**
- * Method to handle events for the PropertyChangeListener interface.
- * @param evt java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	// user code begin {1}
-	// user code end
-	if (evt.getSource() == this && (evt.getPropertyName().equals("timeStep"))) 
-		connPtoP1SetTarget();
-	// user code begin {2}
-	// user code end
-}
-/**
- * Enables or disables this component, depending on the value of the
- * parameter <code>b</code>. An enabled component can respond to user
- * input and generate events. Components are enabled initially by default.
- * @param     b   If <code>true</code>, this component and all its children
- *            are enabled; otherwise they are disabled.
- */
-public void setEnabled(boolean b) {
-	super.setEnabled(b);
-	getTimeStepLabel().setEnabled(b);
-	getMinimumTimeStepLabel().setEnabled(b);
-	getMinimumTimeStepTextField().setEnabled(b);
-	getDefaultTimeStepLabel().setEnabled(b);
-	getDefaultTimeStepTextField().setEnabled(b);
-	getMaximumTimeStepLabel().setEnabled(b);
-	getMaximumTimeStepTextField().setEnabled(b);
-}
+
 /**
  * Sets the timeStep property (cbit.vcell.solver.TimeStep) value.
  * @param timeStep The new value for the property.
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getTimeStep
  */
-public void setTimeStep(TimeStep timeStep) throws java.beans.PropertyVetoException {
-	TimeStep oldValue = fieldTimeStep;
-	fireVetoableChange("timeStep", oldValue, timeStep);
-	fieldTimeStep = timeStep;
-	firePropertyChange("timeStep", oldValue, timeStep);
+public void setSolverTaskDescription(SolverTaskDescription newValue) throws java.beans.PropertyVetoException {
+	SolverTaskDescription oldValue = solverTaskDescription;
+	/* Stop listening for events from the current object */
+	if (oldValue != null) {
+		oldValue.removePropertyChangeListener(ivjEventHandler);
+	}
+	solverTaskDescription = newValue;
+
+	/* Listen for events from the new object */
+	if (newValue != null) {
+		newValue.addPropertyChangeListener(ivjEventHandler);
+	}		
+	solverTaskDescription = newValue;
+	firePropertyChange("solverTaskDescription", oldValue, newValue);
+	
+	initConnections();
 }
-/**
- * Set the TimeStepFactory to a new value.
- * @param newValue cbit.vcell.solver.TimeStep
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTimeStepFactory(TimeStep newValue) {
-	if (ivjTimeStepFactory != newValue) {
-		try {
-			TimeStep oldValue = getTimeStepFactory();
-			ivjTimeStepFactory = newValue;
-			firePropertyChange("timeStep", oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+
+private void enableMaxTimeStep(boolean bEnabled) 
+{
+	getMaximumTimeStepLabel().setEnabled(bEnabled);
+	getMaximumTimeStepTextField().setEnabled(bEnabled);
+	if (!bEnabled) {
+		getMaximumTimeStepTextField().setText("");
+	}
+}
+
+private void enableMinTimeStep(boolean bEnabled) 
+{
+	getMinimumTimeStepLabel().setEnabled(bEnabled);
+	getMinimumTimeStepTextField().setEnabled(bEnabled);
+	if (!bEnabled) {
+		getMinimumTimeStepTextField().setText("");
+	}
+}
+
+private void enableDefaultTimeStep(boolean bEnabled) 
+{
+	getDefaultTimeStepLabel().setEnabled(bEnabled);
+	getDefaultTimeStepTextField().setEnabled(bEnabled);
+	if (!bEnabled) {
+		getDefaultTimeStepTextField().setText("");
+	}
+}
+
+private void refresh() {
+	if (solverTaskDescription == null) {
+		return;
+	}
+	
+	SolverDescription solverDescription = solverTaskDescription.getSolverDescription(); 
+	if (solverDescription.compareEqual(SolverDescription.StochGibson)) { // stochastic time
+		enableDefaultTimeStep(false);
+		enableMinTimeStep(false);
+		enableMaxTimeStep(false);
+	 } else {
+		setEnabled(true);
+		TimeStep ts = solverTaskDescription.getTimeStep();
+		getDefaultTimeStepTextField().setText(ts.getDefaultTimeStep()+"");
+		getMinimumTimeStepTextField().setText(ts.getMinimumTimeStep()+"");
+		getMaximumTimeStepTextField().setText(ts.getMaximumTimeStep()+"");	
+		
+		if (solverDescription.hasVariableTimestep() &&  !solverDescription.isStochasticNonSpatialSolver()) {
+			enableDefaultTimeStep(false);
+			enableMinTimeStep(true);
+			enableMaxTimeStep(true);
+		} else {
+			enableDefaultTimeStep(true);
+			enableMinTimeStep(false);
+			enableMaxTimeStep(false);
 		}
-	};
-	// user code begin {3}
-	// user code end
-}
-/**
- * Set the TornOffTimeStep to a new value.
- * @param newValue cbit.vcell.solver.TimeStep
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTornOffTimeStep(TimeStep newValue) {
-	if (ivjTornOffTimeStep != newValue) {
-		try {
-			TimeStep oldValue = getTornOffTimeStep();
-			ivjTornOffTimeStep = newValue;
-			connPtoP1SetSource();
-			connEtoM4(ivjTornOffTimeStep);
-			connEtoM5(ivjTornOffTimeStep);
-			connEtoM6(ivjTornOffTimeStep);
-			firePropertyChange("timeStep", oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+		
+		if (solverDescription.isSundialsSolver()) {
+			enableMinTimeStep(false);
 		}
-	};
-	// user code begin {3}
-	// user code end
+	 }
 }
+
 }

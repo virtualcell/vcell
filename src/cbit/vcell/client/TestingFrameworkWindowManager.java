@@ -118,6 +118,7 @@ import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -1315,8 +1316,9 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						int interpolationOrder = 1;
 						SolverTaskDescription solverTaskDescription = refSim.getSolverTaskDescription();
 						if (solverTaskDescription.getOutputTimeSpec().isDefault() && ((DefaultOutputTimeSpec)solverTaskDescription.getOutputTimeSpec()).getKeepEvery() == 1) {
-							if (!solverTaskDescription.getSolverDescription().resolvesDiscontinuties() || !refSim.getMathDescription().hasDiscontinuities()) {
-								interpolationOrder = solverTaskDescription.getSolverDescription().getTimeOrder();
+							SolverDescription solverDescription = solverTaskDescription.getSolverDescription();
+							if ((!solverDescription.supports(SolverDescription.DiscontinutiesFeatureSet)) || !refSim.getMathDescription().hasDiscontinuities()) {
+								interpolationOrder = solverDescription.getTimeOrder();
 							}
 						}
 						simCompSummary_regr = MathTestingUtilities.compareUnEqualResultSets(numericalResultSet, referenceResultSet,varsToTest,testCriteria.getMaxAbsError(),testCriteria.getMaxRelError(), interpolationOrder);

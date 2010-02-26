@@ -153,7 +153,7 @@ private SolverController createNewSolverController(User user, SimulationJob simu
 					double cpuLoadBest = Math.max(1.0-processStatus[bestServerIndex].getFractionFreeCPU(), processStatus[bestServerIndex].getNumJobsRunning()/(double)processStatus[bestServerIndex].getNumProcessors());
 					long memoryBytes = 0;
 					long memoryBytesBest = 0;
-					if (simulation.getSolverTaskDescription().getSolverDescription().isInterpretedSolver()){
+					if (simulation.getSolverTaskDescription().getSolverDescription().isJavaSolver()){
 						//
 						// runs within JVM (just care about memory ... don't want to kill servers)
 						//

@@ -470,10 +470,6 @@ protected void initialize() throws SolverException {
 		// create a fast system if necessary
 		fieldFastAlgebraicSystem = null;
 		if (getSubDomain().getFastSystem() != null) {
-			SolverDescription solverDescription = sim.getSolverTaskDescription().getSolverDescription();
-			if (!solverDescription.solvesFastSystem()) {
-				throw new SolverException(solverDescription.getDisplayLabel() + " doesn't support models containing fast system (algebraic constraints). Please change the solver.");
-			}
 			fieldFastAlgebraicSystem = new FastAlgebraicSystem(new FastSystemAnalyzer(getSubDomain().getFastSystem(), simSymbolTable));
 		}
 		//refreshIdentifiers();

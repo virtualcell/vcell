@@ -6,6 +6,8 @@ package cbit.vcell.solver;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -20,6 +22,8 @@ import org.vcell.util.document.Versionable;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
+import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.SolverDescription.SolverFeature;
 /**
  * Specifies the problem to be solved by a solver.
  * It is subclassed for each type of problem/solver.
@@ -396,7 +400,7 @@ public boolean isSpatial() {
  * Creation date: (5/25/01 11:25:24 AM)
  * @return boolean
  */
-public boolean getIsValid() {
+public boolean checkValid() {
 	setWarning(null);
 
 	//
@@ -409,15 +413,71 @@ public boolean getIsValid() {
 			return false;
 		}
 	}
-	if (fieldMathDescription!=null && fieldMathDescription.isValid()){
-		return true;
-	}else{
+	if (fieldMathDescription==null || !fieldMathDescription.isValid()){
 		setWarning(fieldMathDescription.getWarning());
 		return false;
 	}
+	
+	Set<SolverFeature> supportedFeatures = getSolverTaskDescription().getSolverDescription().getSupportedFeatures();
+	Set<SolverFeature> missingFeatures = getRequiredFeatures();
+	missingFeatures.removeAll(supportedFeatures);
+	
+	if (!missingFeatures.isEmpty()) {
+		String text = "Selected solver '" + getSolverTaskDescription().getSolverDescription().getDisplayLabel() + "' does not support " +
+		"the following required features: \n";
+		for (SolverFeature sf : missingFeatures) {
+			text += sf.getName() + "\n";
+		}
+		SolverDescription[] goodSolvers = SolverDescription.getSolverDescriptions(getRequiredFeatures().toArray(new SolverFeature[0]));
+		if (goodSolvers != null && goodSolvers.length > 0) {
+			text += "\nPlease choose one of the solvers : \n";
+			for (SolverDescription sd : goodSolvers) {
+				text += sd.getDisplayLabel() + "\n";
+			}
+
+		}
+		setWarning(text);	
+		return false;
+	}
+	return true;
+	
 }
 
-
+public Set<SolverFeature> getRequiredFeatures() {
+	Set<SolverFeature> requiredFeatures = new HashSet<SolverFeature>();
+	if (isSpatial()) {
+		requiredFeatures.add(SolverFeature.Feature_Spatial);
+	} else {
+		requiredFeatures.add(SolverFeature.Feature_NonSpatial);
+	}
+	if (getMathDescription().isStoch()) {
+		requiredFeatures.add(SolverFeature.Feature_Stochastic);
+	} else {
+		requiredFeatures.add(SolverFeature.Feature_Deterministic);
+	}
+	if (getMathDescription().hasFastSystems()) {
+		requiredFeatures.add(SolverFeature.Feature_FastSystem);
+	}
+	if (getMathDescription().hasPeriodicBoundaryCondition()) {
+		requiredFeatures.add(SolverFeature.Feature_PeriodicBoundaryCondition);
+	}
+	if (getMathDescription().hasEvents()) {
+		requiredFeatures.add(SolverFeature.Feature_Events);
+	}
+	if (getMathDescription().hasRandomVariables()) {
+		requiredFeatures.add(SolverFeature.Feature_RandomVariables);
+	}
+	if (getSolverTaskDescription().getStopAtSpatiallyUniformErrorTolerance() != null) {
+		requiredFeatures.add(SolverFeature.Feature_StopAtSpatiallyUniform);
+	}
+	if (getDataProcessingInstructions() != null) {
+		requiredFeatures.add(SolverFeature.Feature_DataProcessingInstructions);
+	}
+	if (getMathDescription().getVariable(SimDataConstants.PSF_FUNCTION_NAME) != null) {
+		requiredFeatures.add(SolverFeature.Feature_PSF);
+	}
+	return requiredFeatures;
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/24/00 1:36:01 PM)
@@ -683,18 +743,7 @@ public void setMathDescription(MathDescription mathDescription) throws java.bean
 		fieldMathDescription.addPropertyChangeListener(this);
 	}
 	refreshMeshSpec();
-//	//
-//	// refresh MeshSpecification
-//	//
-//	if (mathDescription.getGeometry().getDimension()>0){
-//		if (getMeshSpecification()!=null){
-//			getMeshSpecification().setGeometry(mathDescription.getGeometry());
-//		}else{
-//			setMeshSpecification(new MeshSpecification(mathDescription.getGeometry()));
-//		}
-//	}else{
-//		setMeshSpecification(null);
-//	}
+
 	//
 	// refresh MathOverrides
 	//
@@ -738,7 +787,6 @@ public void setMathOverrides(MathOverrides mathOverrides) {
 public void setMeshSpecification(MeshSpecification meshSpecification) throws java.beans.PropertyVetoException {
 	MeshSpecification oldValue = fieldMeshSpecification;
 	fireVetoableChange("meshSpecification", oldValue, meshSpecification);
-//System.out.println("calling Simulation.setMeshSpecification(), <<< must be called AFTER setMathDescription() >>>");
 	fieldMeshSpecification = meshSpecification;
 	firePropertyChange("meshSpecification", oldValue, meshSpecification);
 }

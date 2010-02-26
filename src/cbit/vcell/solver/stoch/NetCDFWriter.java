@@ -71,19 +71,7 @@ public class NetCDFWriter {
 	 */
 	public boolean initialize() throws Exception
 	{
-		Simulation simulation = simJob.getSimulation();
-		if (!simulation.getIsValid()) 
-		{
-			throw new MathException("Invalid simulation : "+simulation.getWarning());
-		}
-		if (simulation.isSpatial()) 
-		{
-			throw new MathException("Stochastic simulation for spacial problems is under development.");		
-		}
-		if (simulation.getMathDescription().hasFastSystems()) 
-		{
-			throw new MathException("Math description contains algebraic constraints, cannot create file.");
-		}
+		Simulation simulation = simJob.getSimulation();	
 		//check variables
 		if(!simulation.getMathDescription().getVariables().hasMoreElements())
 		{

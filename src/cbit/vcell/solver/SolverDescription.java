@@ -5,6 +5,13 @@
 
 package cbit.vcell.solver;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.vcell.util.Matchable;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/23/01 3:34:06 PM)
@@ -13,7 +20,50 @@ package cbit.vcell.solver;
  */
 public class SolverDescription implements java.io.Serializable, org.vcell.util.Matchable {
 	private int type;
-
+	
+	public enum SolverFeature {
+		Feature_NonSpatial("NonSpatial"),
+		Feature_Spatial("Spatial"),
+		Feature_Deterministic("Deterministic"),
+		Feature_Stochastic("Stochastic"),
+		Feature_FastSystem("Fast System (algebraic constraints)"),
+		Feature_PeriodicBoundaryCondition("Periodic Boundary Condition"),
+		Feature_StopAtTimeDiscontinuities("Stop at Discontinuities (explicit function of time)"),
+		Feature_StopAtGeneralDiscontinuities("Stop at Discontinuities (general)"),
+		Feature_Events("Events"),
+		Feature_RandomVariables("Random Variables"),
+		Feature_StopAtSpatiallyUniform("Stop at Spatially Uniform"),
+		Feature_DataProcessingInstructions("Data Processing Instructions"),
+		Feature_PSF("Point Spread Function"),
+		Feature_JVMRequired("JVM Required");
+		
+		private String name;
+		private SolverFeature(String name) {
+			this.name = name;
+		}
+		public final String getName() {
+			return name;
+		}
+	}
+	public static SolverFeature[] OdeFeatureSet = new SolverFeature[] {
+		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic
+	};
+	public static SolverFeature[] OdeFastSystemFeatureSet = new SolverFeature[] {
+		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem
+	};
+	public static SolverFeature[] PdeFeatureSet = new SolverFeature[] {
+		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic
+	};
+	public static SolverFeature[] PdeFastSystemFeatureSet = new SolverFeature[] {
+		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem
+	};
+	public static SolverFeature[] StochasticNonSpatialFeatureSet = new SolverFeature[] {
+		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic
+	};
+	public static SolverFeature[] DiscontinutiesFeatureSet = new SolverFeature[] {
+		SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities
+	};
+	
 	private static final int NUM_SOLVERS = 15;
 	private static final int TYPE_FORWARD_EULER = 0;
 	private static final int TYPE_RUNGE_KUTTA2 = 1;
@@ -30,6 +80,40 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	private static final int TYPE_FINITE_VOLUME_STANDALONE = 12;
 	private static final int TYPE_COMBINED_IDA_CVODE = 13;
 	private static final int TYPE_SUNDIALS_PDE = 14;
+	
+	public static final SolverDescription ForwardEuler			= new SolverDescription(TYPE_FORWARD_EULER);
+	public static final SolverDescription RungeKutta2			= new SolverDescription(TYPE_RUNGE_KUTTA2);
+	public static final SolverDescription RungeKutta4			= new SolverDescription(TYPE_RUNGE_KUTTA4);
+	public static final SolverDescription RungeKuttaFehlberg	= new SolverDescription(TYPE_RUNGE_KUTTA_FEHLBERG);
+	public static final SolverDescription AdamsMoulton			= new SolverDescription(TYPE_ADAMS_MOULTON);
+	public static final SolverDescription IDA					= new SolverDescription(TYPE_IDA);
+	public static final SolverDescription FiniteVolume			= new SolverDescription(TYPE_FINITE_VOLUME);
+	public static final SolverDescription StochGibson			= new SolverDescription(TYPE_STOCH_GIBSON);
+	public static final SolverDescription HybridEuler			= new SolverDescription(TYPE_HYBRID_EM);
+	public static final SolverDescription HybridMilstein		= new SolverDescription(TYPE_HYBRID_MIL);
+	public static final SolverDescription HybridMilAdaptive     = new SolverDescription(TYPE_HYBRID_MIL_Adaptive);
+	public static final SolverDescription CVODE					= new SolverDescription(TYPE_CVODE);
+	public static final SolverDescription FiniteVolumeStandalone = new SolverDescription(TYPE_FINITE_VOLUME_STANDALONE);
+	public static final SolverDescription CombinedSundials		= new SolverDescription(TYPE_COMBINED_IDA_CVODE);
+	public static final SolverDescription SundialsPDE			= new SolverDescription(TYPE_SUNDIALS_PDE);
+
+	private static SolverDescription[] AllSolverDescriptions = new SolverDescription[] {
+		ForwardEuler,
+		RungeKutta2,
+		RungeKutta4,
+		RungeKuttaFehlberg,
+		AdamsMoulton,
+		IDA,
+		FiniteVolume,
+		StochGibson,
+		HybridEuler,
+		HybridMilstein,
+		HybridMilAdaptive,
+		CVODE,
+		FiniteVolumeStandalone,
+		CombinedSundials,
+		SundialsPDE
+	};
 	
 	private static final String ALTERNATE_CVODE_Description = "LSODA (Variable Order, Variable Time Step)"; // backward compatibility
 	
@@ -474,74 +558,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	     + "</ul>"
 	     +"</html>",
 	};
-	private static final boolean[] SOLVES_FASTSYSTEM = {
-		true,   // TYPE_FORWARD_EULER
-		false,	// TYPE_RUNGE_KUTTA2
-		false,	// TYPE_RUNGE_KUTTA4
-		false,	// TYPE_RUNGE_KUTTA_FEHLBERG
-		false,	// TYPE_ADAMS_MOULTON
-		true,	// TYPE_IDA
-		true,	// TYPE_FINITE_VOLUME
-		false,	// TYPE_STOCH_GIBSON
-		false,	// TYPE_Hybrid_Euler
-		false,	// TYPE_Hybrid_Milstein
-		false,	// TYPE_HYBRID_MIL_Adaptive
-		false,	// TYPE_CVODE
-		true,	// TYPE_FINITE_VOLUME_STANDALONE
-		true,	// TYPE_COMBINED_IDA_CVODE
-		false,	// TYPE_SUNDIALS_PDE
-	};
-	private static final boolean[] IS_ODE = {
-		true,   // TYPE_FORWARD_EULER
-		true,	// TYPE_RUNGE_KUTTA2
-		true,	// TYPE_RUNGE_KUTTA4
-		true,	// TYPE_RUNGE_KUTTA_FEHLBERG
-		true,	// TYPE_ADAMS_MOULTON
-		true,	// TYPE_IDA
-		false,	// TYPE_FINITE_VOLUME
-		false,	// TYPE_STOCH_GIBSON
-		false,	// TYPE_Hybrid_Euler
-		false,	// TYPE_Hybrid_Milstein
-		false,	// TYPE_HYBRID_MIL_Adaptive
-		true,	// TYPE_CVODE
-		false,	// TYPE_FINITE_VOLUME_STANDALONE
-		true,	// TYPE_COMBINED_IDA_CVODE
-		false,	// TYPE_SUNDIALS_PDE
-	};
-	private static final boolean[] IS_STOCH = {
-		false,  // TYPE_FORWARD_EULER
-		false,	// TYPE_RUNGE_KUTTA2
-		false,	// TYPE_RUNGE_KUTTA4
-		false,	// TYPE_RUNGE_KUTTA_FEHLBERG
-		false,	// TYPE_ADAMS_MOULTON
-		false,	// TYPE_IDA
-		false,	// TYPE_FINITE_VOLUME
-		true,	// TYPE_STOCH_GIBSON
-		true,	// TYPE_Hybrid_Euler
-		true,	// TYPE_Hybrid_Milstein
-		true,	// TYPE_HYBRID_MIL_Adaptive
-		false,	// TYPE_CVODE
-		false,	// TYPE_FINITE_VOLUME_STANDALONE
-		false,	// TYPE_COMBINED_IDA_CVODE
-		false,	// TYPE_SUNDIALS_PDE
-	};
-	private static final boolean[] IS_INTERPRETED = {
-		true,   // TYPE_FORWARD_EULER
-		true,	// TYPE_RUNGE_KUTTA2
-		true,	// TYPE_RUNGE_KUTTA4
-		true,	// TYPE_RUNGE_KUTTA_FEHLBERG
-		true,	// TYPE_ADAMS_MOULTON
-		false,	// TYPE_IDA
-		false,	// TYPE_FINITE_VOLUME
-		false, 	// TYPE_STOCH_GIBSON
-		false, 	// TYPE_Hybrid_Euler
-		false, 	// TYPE_Hybrid_Milstein
-		false,  // TYPE_HYBRID_MIL_Adaptive
-		false,	// TYPE_CVODE
-		false,	// TYPE_FINITE_VOLUME_STANDALONE
-		false,	// TYPE_COMBINED_IDA_CVODE
-		false,	// TYPE_SUNDIALS_PDE
-	};
+	
 	// for all sundials solvers, the time order is variable from 1 to 5, we choose an intermediate order of 3
 	// as a compromise for accuracy during stiff and non stiff time stepping 
 	private static final int[] timeOrder = {		
@@ -561,70 +578,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		3,	// TYPE_COMBINED_IDA_CVODE
 		3,	// TYPE_SUNDIALS_PDE
 	};
-	private static final boolean[] resolves_discontinuties = {
-		false,   // TYPE_FORWARD_EULER
-		false,	// TYPE_RUNGE_KUTTA2
-		false,	// TYPE_RUNGE_KUTTA4
-		false,	// TYPE_RUNGE_KUTTA_FEHLBERG
-		false,	// TYPE_ADAMS_MOULTON
-		true,	// TYPE_IDA
-		false,	// TYPE_FINITE_VOLUME
-		false, 	// TYPE_STOCH_GIBSON
-		false, 	// TYPE_Hybrid_Euler
-		false, 	// TYPE_Hybrid_Milstein
-		false,  // TYPE_HYBRID_MIL_Adaptive
-		true,	// TYPE_CVODE
-		false,	// TYPE_FINITE_VOLUME_STANDALONE
-		true,	// TYPE_COMBINED_IDA_CVODE
-		true,	// TYPE_SUNDIALS_PDE
-	};		
-			
-	public static final SolverDescription ForwardEuler			= new SolverDescription(TYPE_FORWARD_EULER);
-	public static final SolverDescription RungeKutta2			= new SolverDescription(TYPE_RUNGE_KUTTA2);
-	public static final SolverDescription RungeKutta4			= new SolverDescription(TYPE_RUNGE_KUTTA4);
-	public static final SolverDescription RungeKuttaFehlberg	= new SolverDescription(TYPE_RUNGE_KUTTA_FEHLBERG);
-	public static final SolverDescription AdamsMoulton			= new SolverDescription(TYPE_ADAMS_MOULTON);
-	public static final SolverDescription IDA					= new SolverDescription(TYPE_IDA);
-	public static final SolverDescription FiniteVolume			= new SolverDescription(TYPE_FINITE_VOLUME);
-	public static final SolverDescription StochGibson			= new SolverDescription(TYPE_STOCH_GIBSON);
-	public static final SolverDescription HybridEuler			= new SolverDescription(TYPE_HYBRID_EM);
-	public static final SolverDescription HybridMilstein		= new SolverDescription(TYPE_HYBRID_MIL);
-	public static final SolverDescription HybridMilAdaptive     = new SolverDescription(TYPE_HYBRID_MIL_Adaptive);
-	public static final SolverDescription CVODE					= new SolverDescription(TYPE_CVODE);
-	public static final SolverDescription FiniteVolumeStandalone = new SolverDescription(TYPE_FINITE_VOLUME_STANDALONE);
-	public static final SolverDescription CombinedSundials		= new SolverDescription(TYPE_COMBINED_IDA_CVODE);
-	public static final SolverDescription SundialsPDE			= new SolverDescription(TYPE_SUNDIALS_PDE);
 
-	private static SolverDescription[] fieldODESolverDescriptions = new SolverDescription[] {
-		ForwardEuler,
-		RungeKutta2,
-		RungeKutta4,
-		AdamsMoulton,
-		RungeKuttaFehlberg,
-		IDA,
-		CVODE,
-		CombinedSundials,
-	};
-	private static SolverDescription[] fieldODEWithFastSolverDescriptions = new SolverDescription[] {
-		ForwardEuler,
-		IDA,
-		CombinedSundials,
-	};	
-	private static SolverDescription[] fieldPDEWithFastSolverDescriptions = new SolverDescription[] {
-		FiniteVolume,
-		FiniteVolumeStandalone
-	};
-	private static SolverDescription[] fieldPDESolverDescriptions = new SolverDescription[] {
-		FiniteVolume,
-		FiniteVolumeStandalone,
-		SundialsPDE,
-	};
-	private static SolverDescription[] fieldStochSolverDescriptions = new SolverDescription[] {
-		StochGibson,
-		HybridEuler,
-		HybridMilstein,
-		HybridMilAdaptive 
-	};	
 /**
  * SolverDescription constructor comment.
  */
@@ -639,7 +593,7 @@ private SolverDescription(int argSolverType) {
  * @return boolean
  * @param obj cbit.util.Matchable
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	return equals(obj);
 }
 
@@ -660,7 +614,7 @@ public static SolverDescription getDefaultODESolverDescription() {
  * @see #setSolver
  */
 public static SolverDescription getDefaultPDESolverDescription() {
-	return FiniteVolume;
+	return FiniteVolumeStandalone;
 }
 
 
@@ -708,7 +662,6 @@ public boolean equals(Object object) {
 	}
 	return false;
 }
-
 
 /**
  * Insert the method's description here.
@@ -806,41 +759,18 @@ public boolean hasErrorTolerance() {
  * Creation date: (4/23/01 4:49:19 PM)
  * @return boolean
  */
-public boolean isInterpretedSolver() {
-	return IS_INTERPRETED[type];
+public boolean isJavaSolver() {
+	Set<SolverFeature> set = getSupportedFeatures();
+	return set.contains(SolverFeature.Feature_JVMRequired);
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (4/23/01 4:49:19 PM)
- * @return boolean
- */
-public boolean isODESolver() {
-	return IS_ODE[type];
-}
-
-public boolean solvesFastSystem() {
-	return SOLVES_FASTSYSTEM[type];
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (4/23/01 4:49:19 PM)
- * @return boolean
- */
-public boolean isPDESolver() {
-	return !(IS_ODE[type] || IS_STOCH[type]);
-}
-
 
 /**
  * Check whether the solver is stochastic solver or not.
  * Creation date: (7/18/2006 5:08:30 PM)
  * @return boolean
  */
-public boolean isSTOCHSolver() {
-	return IS_STOCH[type];
+public boolean isStochasticNonSpatialSolver() {
+	return getSupportedFeatures().containsAll(Arrays.asList(StochasticNonSpatialFeatureSet));
 }
 
 
@@ -874,19 +804,6 @@ public boolean supports(OutputTimeSpec outputTimeSpec) {
 	}
 }
 
-public boolean supportsUniformExplicitOutput() {
-	switch (type) {
-	case TYPE_IDA: 
-	case TYPE_CVODE:
-	case TYPE_COMBINED_IDA_CVODE: {
-		return true;
-	}
-	default: {
-		return false;
-	}
-}	
-}
-
 public boolean isSundialsSolver() {
 	return type == TYPE_CVODE || type == TYPE_IDA || type == TYPE_COMBINED_IDA_CVODE || type == TYPE_SUNDIALS_PDE;
 }
@@ -903,22 +820,22 @@ public String getFullDescription() {
  * getODESolverDescriptions method comment.
  */
 public static SolverDescription[] getODESolverDescriptions() {
-	return (fieldODESolverDescriptions);
+	return getSolverDescriptions(OdeFeatureSet);
 }
 
 public static SolverDescription[] getODEWithFastSystemSolverDescriptions() {
-	return (fieldODEWithFastSolverDescriptions);
+	return getSolverDescriptions(OdeFastSystemFeatureSet);
 }
 
 public static SolverDescription[] getPDEWithFastSystemSolverDescriptions() {
-	return (fieldPDEWithFastSolverDescriptions);
+	return getSolverDescriptions(PdeFastSystemFeatureSet);
 }
 
 /**
  * getPDESolverDescriptions method comment.
  */
 public static SolverDescription[] getPDESolverDescriptions() {
-	return (fieldPDESolverDescriptions);
+	return getSolverDescriptions(PdeFeatureSet);
 }
 
 
@@ -927,17 +844,37 @@ public static SolverDescription[] getPDESolverDescriptions() {
  * Creation date: (9/27/2006 9:37:49 AM)
  * @return java.lang.String[]
  */
-public static SolverDescription[] getStochSolverDescriptions() {
-	return fieldStochSolverDescriptions;
+public static SolverDescription[] getStochasticNonSpatialSolverDescriptions() {
+	return getSolverDescriptions(StochasticNonSpatialFeatureSet);
+}
+
+public static SolverDescription[] getSolverDescriptions(SolverFeature[] desiredSolverFeatures){
+	ArrayList<SolverDescription> solvers = new ArrayList<SolverDescription>();
+	for (SolverDescription sd : AllSolverDescriptions){
+		Set<SolverFeature> features = sd.getSupportedFeatures();
+		boolean bContainsAll = true;
+		for (SolverFeature feature : desiredSolverFeatures) {
+			if (!features.contains(feature)){
+				bContainsAll = false;
+				break;
+			}
+		}
+		if (bContainsAll) {
+			solvers.add(sd);
+		}
+	}
+	return solvers.toArray(new SolverDescription[0]);
 }
 
 public int getTimeOrder() {
 	return timeOrder[type];
 }
 
-public boolean resolvesDiscontinuties() {
-	return resolves_discontinuties[type];
+public boolean supports(SolverFeature[] features) {
+	Set<SolverFeature> set = getSupportedFeatures();
+	return set.containsAll(Arrays.asList(features));
 }
+
 /**
  * Insert the method's description here.
  * Creation date: (4/23/01 3:52:28 PM)
@@ -945,6 +882,85 @@ public boolean resolvesDiscontinuties() {
  */
 public String toString() {
 	return "SolverDescription@" + Integer.toHexString(hashCode()) + "(" + getDisplayLabel() + ")";
+}
+
+public Set<SolverFeature> getSupportedFeatures() {
+	Set<SolverFeature> featureSet = new HashSet<SolverFeature>();
+	
+	switch (type) {
+	case TYPE_FORWARD_EULER:
+		featureSet.add(SolverFeature.Feature_NonSpatial);
+		featureSet.add(SolverFeature.Feature_Deterministic);
+		featureSet.add(SolverFeature.Feature_FastSystem);
+		featureSet.add(SolverFeature.Feature_JVMRequired);
+		break;
+		
+	case TYPE_RUNGE_KUTTA2:
+	case TYPE_RUNGE_KUTTA4:
+	case TYPE_RUNGE_KUTTA_FEHLBERG:
+	case TYPE_ADAMS_MOULTON:
+		featureSet.add(SolverFeature.Feature_NonSpatial);
+		featureSet.add(SolverFeature.Feature_Deterministic);
+		featureSet.add(SolverFeature.Feature_JVMRequired);
+		break;
+	
+	case TYPE_CVODE:
+		featureSet.add(SolverFeature.Feature_NonSpatial);
+		featureSet.add(SolverFeature.Feature_Deterministic);
+		featureSet.add(SolverFeature.Feature_StopAtTimeDiscontinuities);
+		featureSet.add(SolverFeature.Feature_StopAtGeneralDiscontinuities);
+		featureSet.add(SolverFeature.Feature_Events);
+		break;
+		
+	case TYPE_IDA:
+	case TYPE_COMBINED_IDA_CVODE:
+		featureSet.add(SolverFeature.Feature_NonSpatial);
+		featureSet.add(SolverFeature.Feature_Deterministic);
+		featureSet.add(SolverFeature.Feature_FastSystem);
+		featureSet.add(SolverFeature.Feature_StopAtTimeDiscontinuities);
+		featureSet.add(SolverFeature.Feature_StopAtGeneralDiscontinuities);
+		featureSet.add(SolverFeature.Feature_Events);
+		break;
+
+	case TYPE_STOCH_GIBSON:
+	case TYPE_HYBRID_EM:
+	case TYPE_HYBRID_MIL:
+	case TYPE_HYBRID_MIL_Adaptive:
+		featureSet.add(SolverFeature.Feature_NonSpatial);
+		featureSet.add(SolverFeature.Feature_Stochastic);
+		break;
+		
+	case TYPE_FINITE_VOLUME:
+		featureSet.add(SolverFeature.Feature_Spatial);
+		featureSet.add(SolverFeature.Feature_Deterministic);
+		featureSet.add(SolverFeature.Feature_FastSystem);
+		featureSet.add(SolverFeature.Feature_StopAtSpatiallyUniform);
+		featureSet.add(SolverFeature.Feature_PeriodicBoundaryCondition);
+		break;
+		
+	case TYPE_FINITE_VOLUME_STANDALONE:
+		featureSet.add(SolverFeature.Feature_Spatial);
+		featureSet.add(SolverFeature.Feature_Deterministic);
+		featureSet.add(SolverFeature.Feature_FastSystem);
+		featureSet.add(SolverFeature.Feature_RandomVariables);
+		featureSet.add(SolverFeature.Feature_StopAtSpatiallyUniform);
+		featureSet.add(SolverFeature.Feature_DataProcessingInstructions);
+		featureSet.add(SolverFeature.Feature_PSF);
+		featureSet.add(SolverFeature.Feature_PeriodicBoundaryCondition);
+		break;
+		
+	case TYPE_SUNDIALS_PDE:
+		featureSet.add(SolverFeature.Feature_Spatial);
+		featureSet.add(SolverFeature.Feature_Deterministic);
+		featureSet.add(SolverFeature.Feature_StopAtTimeDiscontinuities);
+		featureSet.add(SolverFeature.Feature_RandomVariables);
+		featureSet.add(SolverFeature.Feature_StopAtSpatiallyUniform);
+		featureSet.add(SolverFeature.Feature_DataProcessingInstructions);
+		featureSet.add(SolverFeature.Feature_PSF);
+		break;
+	}
+	
+	return featureSet;
 }
 
 //public static void main(String[] args) {

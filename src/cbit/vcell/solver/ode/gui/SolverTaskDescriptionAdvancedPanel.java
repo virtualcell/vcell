@@ -35,7 +35,6 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private javax.swing.JButton ivjQuestionButton = null;
 	private javax.swing.DefaultComboBoxModel fieldSolverComboBoxModel = null;
 	private boolean ivjConnPtoP2Aligning = false;
-	private boolean ivjConnPtoP3Aligning = false;
 	private boolean ivjConnPtoP4Aligning = false;
 	private boolean ivjConnPtoP7Aligning = false;
 	private Object ivjSolverComboBoxModel = null;
@@ -56,14 +55,6 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 			if (evt.getSource() == SolverTaskDescriptionAdvancedPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) { 
 				connPtoP1SetTarget();
 			}
-			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_TIME_STEP))) 
-				connPtoP3SetTarget();
-			if (evt.getSource() == getTimeStepPanel() && (evt.getPropertyName().equals("timeStep"))) 
-				connPtoP3SetSource();
-			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_ERROR_TOLERANCE))) 
-				connPtoP4SetTarget();
-			if (evt.getSource() == getErrorTolerancePanel() && (evt.getPropertyName().equals("errorTolerance"))) 
-				connPtoP4SetSource();
 			if (evt.getSource() == getSolverComboBox() && (evt.getPropertyName().equals("model"))) 
 				connPtoP7SetSource();
 			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_SOLVER_DESCRIPTION))) {
@@ -86,19 +77,6 @@ public SolverTaskDescriptionAdvancedPanel() {
 	super();
 	initialize();
 }
-
-/**
- * connEtoC1:  (TornOffSolverTaskDescription.this --> SolverTaskDescriptionAdvancedPanel.enableTimeStep()V)
- * @param value cbit.vcell.solver.SolverTaskDescription
- */
-private void connEtoC1(SolverTaskDescription value) {
-	try {
-		this.enableVariableTimeStepOptions();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC6:  (TornOffSolverTaskDescription.this --> SolverTaskDescriptionAdvancedPanel.updateSolverNameDisplay(Ljava.lang.String;)V)
@@ -215,87 +193,6 @@ private void connPtoP2SetTarget() {
 	}
 }
 
-
-/**
- * connPtoP3SetSource:  (TornOffSolverTaskDescription.timeStep <--> TimeStepPanel.timeStep)
- */
-private void connPtoP3SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			ivjConnPtoP3Aligning = true;
-			if ((getTornOffSolverTaskDescription() != null)) {
-				getTornOffSolverTaskDescription().setTimeStep(getTimeStepPanel().getTimeStep());
-			}
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP3SetTarget:  (TornOffSolverTaskDescription.timeStep <--> TimeStepPanel.timeStep)
- */
-private void connPtoP3SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			ivjConnPtoP3Aligning = true;
-			if ((getTornOffSolverTaskDescription() != null)) {
-				getTimeStepPanel().setTimeStep(getTornOffSolverTaskDescription().getTimeStep());
-			}
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP4SetSource:  (TornOffSolverTaskDescription.errorTolerance <--> ErrorTolerancePanel.errorTolerance)
- */
-private void connPtoP4SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP4Aligning == false) {
-			ivjConnPtoP4Aligning = true;
-			if ((getTornOffSolverTaskDescription() != null)) {
-				getTornOffSolverTaskDescription().setErrorTolerance(getErrorTolerancePanel().getErrorTolerance());
-			}
-			ivjConnPtoP4Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP4Aligning = false;
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP4SetTarget:  (TornOffSolverTaskDescription.errorTolerance <--> ErrorTolerancePanel.errorTolerance)
- */
-private void connPtoP4SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP4Aligning == false) {
-			ivjConnPtoP4Aligning = true;
-			if ((getTornOffSolverTaskDescription() != null)) {
-				getErrorTolerancePanel().setErrorTolerance(getTornOffSolverTaskDescription().getErrorTolerance());
-			}
-			ivjConnPtoP4Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP4Aligning = false;
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connPtoP7SetSource:  (SolverComboBox.model <--> model1.this)
  */
@@ -360,7 +257,7 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 				solverDescriptions = SolverDescription.getPDESolverDescriptions();
 			}
 		} else if (getSolverTaskDescription().getSimulation().getMathDescription().isStoch()) {
-			solverDescriptions = SolverDescription.getStochSolverDescriptions();
+			solverDescriptions = SolverDescription.getStochasticNonSpatialSolverDescriptions();
 		} else {
 			if (getSolverTaskDescription().getSimulation().getMathDescription().hasFastSystems()) { // ODE with FastSystem
 				solverDescriptions = SolverDescription.getODEWithFastSystemSolverDescriptions();
@@ -377,44 +274,6 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 		fieldSolverComboBoxModel.setSelectedItem(currentSolverDescription.getDisplayLabel());
 	}
 	return (fieldSolverComboBoxModel);
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (4/9/2004 9:24:43 PM)
- */
-private void enableVariableTimeStepOptions() {
-
-	if (getSolverTaskDescription() == null || getSolverTaskDescription().getSolverDescription() == null) {
-		return;
-	}
-	boolean bHasVariableTS = false;
-	SolverDescription solverDescription = getSolverTaskDescription().getSolverDescription(); 
-	bHasVariableTS = solverDescription.hasVariableTimestep();
-	
-	if (solverDescription.isSemiImplicitPdeSolver()) {
-		getErrorTolerancePanel().setupForSemiImplicitSolver();
-	} else {
-		BeanUtils.enableComponents(getErrorTolerancePanel(), solverDescription.hasErrorTolerance());
-	}
-	//Hybrid solvers should show default time step
-	if (solverDescription.compareEqual(SolverDescription.HybridEuler)||
-		solverDescription.compareEqual(SolverDescription.HybridMilstein)||
-		solverDescription.compareEqual(SolverDescription.HybridMilAdaptive))
-	{
-		getTimeStepPanel().enableComponents(false); //force using default time step only
-	}
-	else
-	{
-		getTimeStepPanel().enableComponents(bHasVariableTS);
-	}
-	if (solverDescription.compareEqual(SolverDescription.StochGibson))
-	{
-		getTimeStepPanel().disableMinAndMaxTimeStep();// gibson doesn't min and max time step
-	}
-	if (solverDescription.isSundialsSolver()) {
-		getTimeStepPanel().disableMinTimeStep();
-	}
 }
 
 /**
@@ -666,8 +525,6 @@ private void initConnections() throws java.lang.Exception {
 	getQuestionButton().addActionListener(ivjEventHandler);
 	getTimeBoundsPanel().addPropertyChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
-	connPtoP3SetTarget();
-	connPtoP4SetTarget();
 	connPtoP7SetTarget();
 	connPtoP2SetTarget();
 }
@@ -832,10 +689,9 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			}
 			connPtoP1SetSource();
 			connEtoM13(ivjTornOffSolverTaskDescription);
-			connPtoP3SetTarget();
-			connPtoP4SetTarget();
 			connEtoC6(ivjTornOffSolverTaskDescription);
-			connEtoC1(ivjTornOffSolverTaskDescription);
+			getTimeStepPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
+			getErrorTolerancePanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getStochSimOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getOutputOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			connPtoP2SetTarget();
@@ -899,9 +755,6 @@ private void onPropertyChange_solverDescription() {
 		}
 		SolverDescription solverDescription = getSolverTaskDescription().getSolverDescription();
 		updateSolverNameDisplay(solverDescription);
-		enableVariableTimeStepOptions();
-		
-		enableVariableTimeStepOptions();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}	

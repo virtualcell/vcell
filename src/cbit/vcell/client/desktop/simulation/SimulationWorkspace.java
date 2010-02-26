@@ -246,11 +246,11 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 					+ "Either adjust the parameters or choose the \"Output Interval\" option.";				
 			}
 		}
-	} else if(simulation.getMathDescription().isStoch() && !(solverDescription.isSTOCHSolver())) {
+	} else if(simulation.getMathDescription().isStoch() && !(solverDescription.isStochasticNonSpatialSolver())) {
 		//to gurantee stochastic model uses stochastic methods and deterministic model uses ODE/PDE methods.
 		errorMessage = "Stochastic simulation(s) must use stochastic solver(s).\n" +
 		            solverDescription.getDisplayLabel()+" is not a stochastic solver!";
-	} else if(!simulation.getMathDescription().isStoch() && (solverDescription.isSTOCHSolver())) {
+	} else if(!simulation.getMathDescription().isStoch() && (solverDescription.isStochasticNonSpatialSolver())) {
 		errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" + 
 					solverDescription.getDisplayLabel()+" is not a ODE/PDE solver!";		
 	} else {		

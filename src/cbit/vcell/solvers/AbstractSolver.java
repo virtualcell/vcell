@@ -57,8 +57,8 @@ public AbstractSolver(SimulationJob simulationJob, File directory, SessionLog se
 		}
 	}		 
 		this.saveDirectory = directory;
-	if (!simulationJob.getSimulation().getIsValid()) {
-		throw new SolverException("Simulation is not valid: "+simulationJob.getSimulation().getWarning());
+	if (!simulationJob.getSimulation().checkValid()) {
+		throw new SolverException(simulationJob.getSimulation().getWarning());
 	}
 }
 

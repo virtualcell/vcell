@@ -37,7 +37,7 @@ public abstract class HTCSolver extends AbstractSolver {
 public HTCSolver(SimulationTask simTask, File directory, SessionLog sessionLog) throws SolverException {
 	super(simTask.getSimulationJob(), directory, sessionLog);
 	simulationTask = simTask;
-	if (!simulationJob.getSimulation().getSolverTaskDescription().getSolverDescription().isInterpretedSolver()) {
+	if (!simulationJob.getSimulation().getSolverTaskDescription().getSolverDescription().isJavaSolver()) {
 		realSolver = (AbstractSolver)SolverFactory.createSolver(sessionLog, directory, simTask.getSimulationJob());
 		realSolver.addSolverListener(new SolverListener() {
 			public final void solverAborted(SolverEvent event) {		
@@ -78,7 +78,7 @@ public HTCSolver(SimulationTask simTask, File directory, SessionLog sessionLog) 
  *  This method takes the place of the old runUnsteady()...
  */
 protected void initialize() throws SolverException {
-	if (simulationJob.getSimulation().getSolverTaskDescription().getSolverDescription().isInterpretedSolver()) {
+	if (simulationJob.getSimulation().getSolverTaskDescription().getSolverDescription().isJavaSolver()) {
 		writeJavaInputFile();
 	} else {
 		realSolver.initialize(); 
