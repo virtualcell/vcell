@@ -192,20 +192,24 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		}
 		
 		if (nodeId == ROOT_NODE || nodeId == EVENTS_NODE) {
-			folderNodes[EVENTS_NODE].removeAllChildren();
-			if (getSimulationContext().getBioEvents() != null) {
-			    BioEvent[] bioEvents = getSimulationContext().getBioEvents().clone();
-			    if(bioEvents.length != 0) {
-			    	Arrays.sort(bioEvents, new Comparator<BioEvent>() {
-						public int compare(BioEvent o1, BioEvent o2) {
-							return o1.getName().compareToIgnoreCase(o2.getName());
-						}
-					});
-			    	for (BioEvent bevnt : bioEvents) {
-			    		BioModelNode node = new BioModelNode(bevnt, false);
-			    		folderNodes[EVENTS_NODE].add(node);
-			    	}
-			    }
+			if ((simulationContext.getGeometry().getDimension() > 0) || (SPPRTreeModel.this.simulationContext.isStoch())) {
+				((SPPRTreeFolderNode)folderNodes[EVENTS_NODE].getUserObject()).setSupported(false);
+			} else {
+				folderNodes[EVENTS_NODE].removeAllChildren();
+				if (getSimulationContext().getBioEvents() != null) {
+				    BioEvent[] bioEvents = getSimulationContext().getBioEvents().clone();
+				    if(bioEvents.length != 0) {
+				    	Arrays.sort(bioEvents, new Comparator<BioEvent>() {
+							public int compare(BioEvent o1, BioEvent o2) {
+								return o1.getName().compareToIgnoreCase(o2.getName());
+							}
+						});
+				    	for (BioEvent bevnt : bioEvents) {
+				    		BioModelNode node = new BioModelNode(bevnt, false);
+				    		folderNodes[EVENTS_NODE].add(node);
+				    	}
+				    }
+				}
 			}
 		}
 
@@ -305,7 +309,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 			if (evt.getPropertyName().equals("geometry")) {
 				if (((Geometry)evt.getNewValue()).getDimension() > 0) {
 					((SPPRTreeFolderNode)folderNodes[EVENTS_NODE].getUserObject()).setSupported(false);
-				}
+				} 
 			}
 			if (evt.getPropertyName().equals("bioevents")) {
 				populateTree(EVENTS_NODE);

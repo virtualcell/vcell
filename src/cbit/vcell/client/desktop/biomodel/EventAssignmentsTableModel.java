@@ -135,7 +135,7 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 						if (eventAssignment.getAssignmentExpression() == null) {
 							return null; 
 						} else {
-							return new ScopedExpression(eventAssignment.getAssignmentExpression(),fieldSimContext.getNameScope(), true);
+							return new ScopedExpression(eventAssignment.getAssignmentExpression(), fieldBioEvent.getNameScope(), true);
 						}
 					}
 					case COLUMN_EVENTASSIGN_UNITS: {
@@ -217,7 +217,6 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 						throw new RuntimeException("unexpected value type ScopedExpression");
 					}else if (aValue instanceof String) {
 						Expression exp = new Expression((String)aValue);
-						exp.bindExpression(fieldSimContext);
 						eventAssignment.setAssignmentExpression(exp);
 					}
 					// both the 'fire's are being used so that the scopedExpressionRenderer renders the exprs properly, esp with num/dem exprs.

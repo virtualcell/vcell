@@ -14,20 +14,51 @@ import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.model.BioNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
 public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
-	public static class EventAssignment implements Matchable, Serializable {
+	
+	public class BioEventNameScope extends BioNameScope {
+		private final NameScope children[] = new NameScope[0]; // always empty
+		public BioEventNameScope(){
+			super();
+		}
+		public NameScope[] getChildren() {
+			//
+			// no children to return
+			//
+			return children;
+		}
+		public String getName() {
+			return BioEvent.this.getName();
+		}
+		public NameScope getParent() {
+			if (BioEvent.this.simulationContext != null){
+				return BioEvent.this.simulationContext.getNameScope();
+			}else{
+				return null;
+			}
+		}
+		public ScopedSymbolTable getScopedSymbolTable() {
+			return BioEvent.this.parameterContext;
+		}
+	}
+	
+	public class EventAssignment implements Matchable, Serializable {
 		private SymbolTableEntry target = null;
 		private Expression assignmentExpression = null;
-		public EventAssignment(SymbolTableEntry argTarget, Expression assignment) {
+		public EventAssignment(SymbolTableEntry argTarget, Expression assignment) throws ExpressionBindingException {
 			super();
 			this.target = argTarget;
 			this.assignmentExpression = assignment;
+			assignmentExpression.bindExpression(BioEvent.this.parameterContext);
 		}
 
 		public boolean compareEqual(Matchable obj) {
@@ -54,21 +85,25 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		public final Expression getAssignmentExpression() {
 			return assignmentExpression;
 		}
-		public void setAssignmentExpression(Expression expr) {
-			this.assignmentExpression = expr; 
+		public void setAssignmentExpression(Expression expr) throws ExpressionBindingException {
+			Expression exp = new Expression(expr);
+			exp.bindExpression(BioEvent.this.parameterContext);
+			this.assignmentExpression = exp; 
 		}
-		public void bind(SimulationContext simContext) throws ExpressionBindingException {
+		public void rebind() throws ExpressionBindingException {
 			// target = mathDescription.getVariable(target.getName());
-			assignmentExpression.bindExpression(simContext);
+			assignmentExpression.bindExpression(BioEvent.this.parameterContext);
 		}	
 	}
-	public static class Delay implements Matchable, Serializable {
+	
+	public class Delay implements Matchable, Serializable {
 		private boolean bUseValuesFromTriggerTime;
 		private Expression durationExpression = null;
 		
-		public Delay(boolean bUseValuesFromTriggerTime, Expression durationExpression) {
+		public Delay(boolean bUseValuesFromTriggerTime, Expression durationExpression) throws ExpressionBindingException {
 			this.bUseValuesFromTriggerTime = bUseValuesFromTriggerTime;
 			this.durationExpression = durationExpression;
+			durationExpression.bindExpression(BioEvent.this.parameterContext);
 		}
 		
 		public Delay(Delay argDelay) {
@@ -100,10 +135,13 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		public final Expression getDurationExpression() {
 			return durationExpression;
 		}
-		public void bind(SimulationContext simContext) throws ExpressionBindingException {
-			durationExpression.bindExpression(simContext);
-		}		
+		public void rebind() throws ExpressionBindingException {
+			durationExpression.bindExpression(BioEvent.this.parameterContext);
+		}
 	}
+	
+	private BioEventNameScope nameScope = new BioEventNameScope();
+	private ParameterContext parameterContext = new ParameterContext(nameScope);
 	private String name;
 	private Expression triggerExpression = null;
 	private Delay delay = null;
@@ -158,7 +196,10 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		return simulationContext;
 	}
 
-
+	public ScopedSymbolTable getScopedSymbolTable(){
+		return parameterContext;
+	}
+	
 //	public void setSimulationContext(SimulationContext simulationContext) {
 //		this.simulationContext = simulationContext;
 //	}
@@ -281,10 +322,10 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	public void bind() throws ExpressionBindingException {
 		triggerExpression.bindExpression(getSimulationContext());
 		if (delay != null) {
-			delay.bind(getSimulationContext());
+			delay.rebind();
 		}
 		for (EventAssignment eventAssignment : eventAssignmentList) {
-			eventAssignment.bind(getSimulationContext());
+			eventAssignment.rebind();
 		}
 	}
 	
@@ -292,6 +333,10 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		return name;
 	}
 
+	public NameScope getNameScope() {
+		return nameScope;
+	}
+	
 	public void vetoableChange(PropertyChangeEvent evt)	throws PropertyVetoException {
 	}
 

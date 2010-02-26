@@ -38,6 +38,7 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.ModelParameter;
@@ -78,15 +79,19 @@ public class SPPRPanel extends JPanel {
 					if(currentTreeSelection == null){
 						return;
 					}
-					Object selectedObject = currentTreeSelection.getUserObject();;
-					Point mousePoint = e.getPoint();
-					if (selectedObject instanceof SPPRTreeFolderNode) {
-						SPPRTreeFolderNode stfn = (SPPRTreeFolderNode)selectedObject;
-						if (stfn.getName().equals("Events")) {
-							getAddEventPopupMenu().show(getSpprTree(), mousePoint.x, mousePoint.y);
+					// de-activate pop-up menu if simulationContext is spatial or stochastic
+					MathDescription md = SPPRPanel.this.fieldSimulationContext.getMathDescription();
+					if (md != null && !(md.isSpatial() || md.isStoch())) {
+						Object selectedObject = currentTreeSelection.getUserObject();;
+						Point mousePoint = e.getPoint();
+						if (selectedObject instanceof SPPRTreeFolderNode) {
+							SPPRTreeFolderNode stfn = (SPPRTreeFolderNode)selectedObject;
+							if (stfn.getName().equals("Events")) {
+								getAddEventPopupMenu().show(getSpprTree(), mousePoint.x, mousePoint.y);
+							}
+						} else if (selectedObject instanceof BioEvent) {
+							getDeleteEventPopupMenu().show(getSpprTree(), mousePoint.x, mousePoint.y);
 						}
-					} else if (selectedObject instanceof BioEvent) {
-						getDeleteEventPopupMenu().show(getSpprTree(), mousePoint.x, mousePoint.y);
 					}
 				}					
 			} 

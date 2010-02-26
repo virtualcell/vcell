@@ -2306,10 +2306,16 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 		
 		element = bEventElement.getChild(XMLTags.DelayTag, vcNamespace);
 		BioEvent.Delay delay = null;
+		BioEvent newBioEvent = new BioEvent(name, triggerExp, delay, null, simContext);
 		if (element != null) {
 			boolean useValuesFromTriggerTime = Boolean.valueOf(element.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
 			Expression durationExp = unMangleExpression((element.getText()));
-			delay = new BioEvent.Delay(useValuesFromTriggerTime, durationExp);
+			try {
+				delay = newBioEvent.new Delay(useValuesFromTriggerTime, durationExp);
+			} catch (ExpressionBindingException e) {
+				e.printStackTrace(System.out);
+				throw new XmlParseException(e.getMessage());
+			}
 		}
 		
 		ArrayList<BioEvent.EventAssignment> eventAssignmentList = new ArrayList<BioEvent.EventAssignment>();
@@ -2320,15 +2326,19 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 				String varname = element.getAttributeValue(XMLTags.EventAssignmentVariableAttrTag);
 				Expression assignExp = unMangleExpression(element.getText());
 				SymbolTableEntry target = simContext.getEntry(varname);
-				BioEvent.EventAssignment eventAssignment = new BioEvent.EventAssignment(target, assignExp);
+				BioEvent.EventAssignment eventAssignment = newBioEvent.new EventAssignment(target, assignExp);
 				eventAssignmentList.add(eventAssignment);
 			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new XmlParseException(e.getMessage());
 			}
 		}
-		
-		BioEvent newBioEvent = new BioEvent(name, triggerExp, delay, eventAssignmentList, simContext);
+		try {
+			newBioEvent.setEventAssignmentsList(eventAssignmentList);
+		} catch (PropertyVetoException e1) {
+			e1.printStackTrace(System.out);
+			throw new XmlParseException(e1.getMessage());
+		}
 		try {
 			newBioEvent.bind();
 		} catch (ExpressionBindingException e) {
