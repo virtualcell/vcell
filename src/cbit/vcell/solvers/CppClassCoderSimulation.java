@@ -292,9 +292,11 @@ protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 	}
 	out.println("\tSimTool::getInstance()->setKeepEvery("+ keepEvery +");");
 	
-	if (simulation.getSolverTaskDescription().isStopAtSpatiallyUniform()) {
+	ErrorTolerance stopAtSpatiallyUniformErrorTolerance = simulation.getSolverTaskDescription().getStopAtSpatiallyUniformErrorTolerance();
+	if (stopAtSpatiallyUniformErrorTolerance != null) {
 		out.println("\tSimTool::getInstance()->setCheckSpatiallyUniform();");
-		out.println("\tSimTool::getInstance()->setSpatiallyUniformAbsErrorTolerance(" + taskDesc.getErrorTolerance().getAbsoluteErrorTolerance() + ");");
+		out.println("\tSimTool::getInstance()->setSpatiallyUniformAbsErrorTolerance(" 
+				+ stopAtSpatiallyUniformErrorTolerance.getAbsoluteErrorTolerance() + "," + stopAtSpatiallyUniformErrorTolerance.getRelativeErrorTolerance() + ");");
 	}
 	//out.println("\tSimTool::getInstance()->setStoreEnable(TRUE);");
 	//out.println("\tSimTool::getInstance()->setFileCompress(FALSE);");

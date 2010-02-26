@@ -1,25 +1,15 @@
 package cbit.vcell.solver.ode.gui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.beans.PropertyVetoException;
 
 import javax.swing.BorderFactory;
 import javax.swing.InputVerifier;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
@@ -32,9 +22,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SolverDescription;
@@ -59,11 +47,10 @@ public class OutputOptionsPanel extends JPanel {
 	
 	private javax.swing.ButtonGroup ivjbuttonGroup1 = null;
 	
-	private JPanel stopSpatiallyUniformPanel = null;
-	private JCheckBox stopSpatiallyUniformCheckBox = null;
-	private JCheckBox dataProcessorCheckBox = null;
-	private JButton editDataProcessorButton = null;
 	private javax.swing.JLabel ivjPointsLabel = null;
+	
+	private StopAtSpatiallyUniformPanel stopAtSpatiallyUniformPanel = null;
+	private DataProcessingInstructionPanel dataProcessingInstructionPanel = null;
 	
 	private SolverTaskDescription solverTaskDescription = null;
 	
@@ -71,50 +58,27 @@ public class OutputOptionsPanel extends JPanel {
 
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == OutputOptionsPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) { 
+			if (evt.getSource() == OutputOptionsPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) {
+				stopAtSpatiallyUniformPanel.setSolverTaskDescription(solverTaskDescription);
+				dataProcessingInstructionPanel.setSolverTaskDescription(solverTaskDescription);
 				refresh();
 			}
-			if (evt.getSource() == getSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_SOLVER_DESCRIPTION))) {
+			if (evt.getSource() == solverTaskDescription && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_SOLVER_DESCRIPTION))) {
 				refresh();
 			}
-			if (evt.getSource() == getSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_TIME_BOUNDS))) {  
+			if (evt.getSource() == solverTaskDescription && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_TIME_BOUNDS))) {  
 				onPropertyChange_TimeBounds();			
 			}
-			if (evt.getSource() == getSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_OUTPUT_TIME_SPEC))) {
+			if (evt.getSource() == solverTaskDescription && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_OUTPUT_TIME_SPEC))) {
 				refresh();
 			}
-			if (evt.getSource() == getSolverTaskDescription() && evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_STOCH_SIM_OPTIONS)) {
+			if (evt.getSource() == solverTaskDescription && evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_STOCH_SIM_OPTIONS)) {
 				refresh();
 			}
 		}
 		
 		public void actionPerformed(java.awt.event.ActionEvent e) {			
-			if (e.getSource() == stopSpatiallyUniformCheckBox) {
-				getSolverTaskDescription().setStopAtSpatiallyUniform(stopSpatiallyUniformCheckBox.isSelected());
-				if (stopSpatiallyUniformCheckBox.isSelected()) {
-					try {
-						getSolverTaskDescription().setErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
-					} catch (PropertyVetoException e1) {
-						e1.printStackTrace();
-					}
-				}
-			} else if (e.getSource() == dataProcessorCheckBox) {
-				if (dataProcessorCheckBox.isSelected()) {
-					editDataProcessor(false);
-					if (getSolverTaskDescription().getSimulation().getDataProcessingInstructions() == null) {
-						editDataProcessorButton.setEnabled(false);
-						dataProcessorCheckBox.setSelected(false);
-					} else {
-						editDataProcessorButton.setEnabled(true);
-					}
-				} else {
-					editDataProcessorButton.setEnabled(false);
-					getSolverTaskDescription().getSimulation().setDataProcessingInstructions(null);
-				}
-			} else if (e.getSource() == editDataProcessorButton) {
-				editDataProcessor(true);
-				editDataProcessorButton.setEnabled(true);
-			} else if (e.getSource() == getDefaultOutputRadioButton() ||
+			if (e.getSource() == getDefaultOutputRadioButton() ||
 					e.getSource() == getUniformOutputRadioButton() ||
 					e.getSource() == getExplicitOutputRadioButton()) { 
 					actionOutputOptionButtonState(e);
@@ -429,29 +393,31 @@ public class OutputOptionsPanel extends JPanel {
 			add(getExplicitOutputPanel(), constraintsExplicitOutputPanel);
 			
 			// 3
-			stopSpatiallyUniformPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));		
-			stopSpatiallyUniformCheckBox = new JCheckBox("Stop at Spatially Uniform");
-			stopSpatiallyUniformPanel.add(stopSpatiallyUniformCheckBox);
+			stopAtSpatiallyUniformPanel = new StopAtSpatiallyUniformPanel();		
 			java.awt.GridBagConstraints gridbag1 = new java.awt.GridBagConstraints();
 			gridbag1.gridx = 0; gridbag1.gridy = 3;
 			gridbag1.fill = GridBagConstraints.HORIZONTAL;
 			gridbag1.gridwidth = 4;
 			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
-			add(stopSpatiallyUniformPanel, gridbag1);
+			add(new JSeparator(), gridbag1);
 	
 			// 4
-			JPanel panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));		
-			dataProcessorCheckBox = new JCheckBox("Data Processing Script");
-			panel1.add(dataProcessorCheckBox);
-			editDataProcessorButton = new JButton("Edit...");
-			panel1.add(editDataProcessorButton);
-			
+			stopAtSpatiallyUniformPanel = new StopAtSpatiallyUniformPanel();		
 			gridbag1 = new java.awt.GridBagConstraints();
 			gridbag1.gridx = 0; gridbag1.gridy = 4;
 			gridbag1.fill = GridBagConstraints.HORIZONTAL;
 			gridbag1.gridwidth = 4;
-			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
-			add(panel1, gridbag1);
+			gridbag1.insets = new java.awt.Insets(0, 0, 5, 0);
+			add(stopAtSpatiallyUniformPanel, gridbag1);
+	
+			// 5
+			dataProcessingInstructionPanel = new DataProcessingInstructionPanel();
+			gridbag1 = new java.awt.GridBagConstraints();
+			gridbag1.gridx = 0; gridbag1.gridy = 5;
+			gridbag1.fill = GridBagConstraints.HORIZONTAL;
+			gridbag1.gridwidth = 4;
+			gridbag1.insets = new java.awt.Insets(0, 0, 0, 10);
+			add(dataProcessingInstructionPanel, gridbag1);			
 			
 			getbuttonGroup1().add(getDefaultOutputRadioButton());
 			getbuttonGroup1().add(getUniformOutputRadioButton());
@@ -537,70 +503,6 @@ public class OutputOptionsPanel extends JPanel {
 	}
 	
 	/**
-	 * Method to handle events for the ActionListener interface.
-	 * @param e java.awt.event.ActionEvent
-	 */
-	private void editDataProcessor(boolean bEdit) {
-		DataProcessingInstructions dpi = getSolverTaskDescription().getSimulation().getDataProcessingInstructions();
-		
-		JPanel mainPanel = new JPanel(new BorderLayout());
-		
-		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		JLabel nameLabel = new JLabel("Name");			
-		panel.add(nameLabel);
-		JTextField nameField = new JTextField();
-		if (dpi != null) {
-			nameField.setText(dpi.getScriptName());
-		} else {
-			nameField.setText("VFRAP");
-		}
-		nameField.setColumns(20);
-		panel.add(nameField);
-		mainPanel.add(panel, BorderLayout.NORTH);
-		
-		panel = new JPanel(new GridBagLayout());			
-		JLabel label = new JLabel("Text");
-		GridBagConstraints cbc = new GridBagConstraints();
-		cbc.gridx = 0;
-		cbc.gridy = 0;
-		cbc.insets = new Insets(4,4,4,8);
-		panel.add(label, cbc);
-		
-		JScrollPane sp = new JScrollPane();
-		sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		JTextArea textArea = new JTextArea();
-		if (dpi != null) {
-			textArea.setText(dpi.getScriptInput());
-		}
-		textArea.setColumns(20);
-		textArea.setRows(10);
-		sp.setViewportView(textArea);			
-		
-		cbc = new GridBagConstraints();
-		cbc.gridx = 1;
-		cbc.gridy = 0;
-		cbc.weightx = 1;
-		cbc.weighty = 1;
-		cbc.fill = GridBagConstraints.BOTH;
-		panel.add(sp, cbc);			
-		mainPanel.add(panel, BorderLayout.CENTER);
-		
-		mainPanel.setMinimumSize(new Dimension(300,200));
-		mainPanel.setSize(new Dimension(300,200));
-		mainPanel.setPreferredSize(new Dimension(300,200));
-		
-		int ok = DialogUtils.showComponentOKCancelDialog(this, mainPanel, "Add Data Processor");
-		if (ok == JOptionPane.OK_OPTION && nameField.getText().length() > 0 && textArea.getText().length() > 0) {
-			getSolverTaskDescription().getSimulation().setDataProcessingInstructions(new DataProcessingInstructions(nameField.getText(), textArea.getText()));
-		} else {
-			if (!bEdit) {
-				getSolverTaskDescription().getSimulation().setDataProcessingInstructions(null);
-			}
-		}
-	}
-	
-	/**
 	 * Called whenever the part throws an exception.
 	 * @param exception java.lang.Throwable
 	 */
@@ -623,9 +525,6 @@ public class OutputOptionsPanel extends JPanel {
 		getKeepEveryTextField().addFocusListener(ivjEventHandler);
 		getKeepAtMostTextField().addFocusListener(ivjEventHandler);
 		getOutputTimesTextField().addFocusListener(ivjEventHandler);
-		stopSpatiallyUniformCheckBox.addActionListener(ivjEventHandler);
-		dataProcessorCheckBox.addActionListener(ivjEventHandler);
-		editDataProcessorButton.addActionListener(ivjEventHandler);
 				
 		getOutputTimeStepTextField().setInputVerifier(new InputVerifier() {
 			
@@ -638,8 +537,8 @@ public class OutputOptionsPanel extends JPanel {
 			public boolean shouldYieldFocus(JComponent input) {
 				boolean bValid = true;
 				double outputTime = Double.parseDouble(getOutputTimeStepTextField().getText());
-				if (getSolverTaskDescription().getSolverDescription().isSemiImplicitPdeSolver()) {
-					double timeStep = getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
+				if (solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver()) {
+					double timeStep = solverTaskDescription.getTimeStep().getDefaultTimeStep();
 					
 					String suggestedInterval = outputTime + "";
 					if (outputTime < timeStep) {
@@ -696,8 +595,8 @@ public class OutputOptionsPanel extends JPanel {
 	private boolean checkExplicitOutputTimes(ExplicitOutputTimeSpec ots) {
 		boolean bValid = true;
 		
-		double startingTime = getSolverTaskDescription().getTimeBounds().getStartingTime();
-		double endingTime = getSolverTaskDescription().getTimeBounds().getEndingTime();
+		double startingTime = solverTaskDescription.getTimeBounds().getStartingTime();
+		double endingTime = solverTaskDescription.getTimeBounds().getEndingTime();
 		double[] times = ((ExplicitOutputTimeSpec)ots).getOutputTimes();
 		
 		if (times[0] < startingTime || times[times.length - 1] > endingTime) {
@@ -708,7 +607,7 @@ public class OutputOptionsPanel extends JPanel {
 					new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
 			if (ret.equals(UserMessage.OPTION_YES)) {
 				try {
-					getSolverTaskDescription().setTimeBounds(new TimeBounds(startingTime, times[times.length - 1]));
+					solverTaskDescription.setTimeBounds(new TimeBounds(startingTime, times[times.length - 1]));
 					bValid = true;
 				} catch (PropertyVetoException e) {
 					e.printStackTrace(System.out);
@@ -736,8 +635,8 @@ public class OutputOptionsPanel extends JPanel {
 			OutputTimeSpec ots = null;
 			if(getDefaultOutputRadioButton().isSelected()){
 				int keepEvery = Integer.parseInt(getKeepEveryTextField().getText());
-				if (getSolverTaskDescription().getSolverDescription().isSemiImplicitPdeSolver() ||
-						getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson)) {
+				if (solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver() ||
+						solverTaskDescription.getSolverDescription().equals(SolverDescription.StochGibson)) {
 					ots = new DefaultOutputTimeSpec(keepEvery);
 				} else {
 					int keepAtMost = Integer.parseInt(getKeepAtMostTextField().getText());
@@ -751,7 +650,7 @@ public class OutputOptionsPanel extends JPanel {
 			}	
 
 			try  {
-				getSolverTaskDescription().setOutputTimeSpec(ots);
+				solverTaskDescription.setOutputTimeSpec(ots);
 			} catch (java.beans.PropertyVetoException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException(e.getMessage());
@@ -766,7 +665,7 @@ public class OutputOptionsPanel extends JPanel {
 	 */
 	public void onPropertyChange_TimeBounds() {
 		try {
-			OutputTimeSpec ots = getSolverTaskDescription().getOutputTimeSpec();
+			OutputTimeSpec ots = solverTaskDescription.getOutputTimeSpec();
 			if (ots.isExplicit()) {
 				checkExplicitOutputTimes((ExplicitOutputTimeSpec)ots);
 			}
@@ -777,27 +676,27 @@ public class OutputOptionsPanel extends JPanel {
 	
 	private void actionOutputOptionButtonState(java.awt.event.ActionEvent actionEvent) {
 		try {
-			if (getSolverTaskDescription()==null){
+			if (solverTaskDescription == null){
 				return;
 			}
 	
-			OutputTimeSpec outputTimeSpec = getSolverTaskDescription().getOutputTimeSpec();
+			OutputTimeSpec outputTimeSpec = solverTaskDescription.getOutputTimeSpec();
 			if(actionEvent.getSource() == getDefaultOutputRadioButton() && !outputTimeSpec.isDefault()){
-				getSolverTaskDescription().setOutputTimeSpec(new DefaultOutputTimeSpec());
+				solverTaskDescription.setOutputTimeSpec(new DefaultOutputTimeSpec());
 			} else if(actionEvent.getSource() == getUniformOutputRadioButton() && !outputTimeSpec.isUniform()){
 				double outputTime = 0.0;
-				if (getSolverTaskDescription().getSolverDescription().isSemiImplicitPdeSolver()) {
-					String floatStr = "" + (float)(((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery() * getSolverTaskDescription().getTimeStep().getDefaultTimeStep());
+				if (solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver()) {
+					String floatStr = "" + (float)(((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery() * solverTaskDescription.getTimeStep().getDefaultTimeStep());
 					outputTime = Double.parseDouble(floatStr);
 				} else {
-					TimeBounds timeBounds = getSolverTaskDescription().getTimeBounds();
+					TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
 					Range outputTimeRange = NumberUtils.getDecimalRange(timeBounds.getStartingTime(), timeBounds.getEndingTime()/100, true, true);
 					outputTime = outputTimeRange.getMax();
 				}
-				getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
+				solverTaskDescription.setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 			} else if(actionEvent.getSource() == getExplicitOutputRadioButton() && !outputTimeSpec.isExplicit()){
-				TimeBounds timeBounds = getSolverTaskDescription().getTimeBounds();
-				getSolverTaskDescription().setOutputTimeSpec(new ExplicitOutputTimeSpec(new double[]{timeBounds.getStartingTime(), timeBounds.getEndingTime()}));
+				TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
+				solverTaskDescription.setOutputTimeSpec(new ExplicitOutputTimeSpec(new double[]{timeBounds.getStartingTime(), timeBounds.getEndingTime()}));
 			}
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -808,7 +707,7 @@ public class OutputOptionsPanel extends JPanel {
 	 * Comment
 	 */
 	private void refresh() {
-		if (getSolverTaskDescription() == null) {
+		if (solverTaskDescription == null) {
 			return;
 		}
 		// enables the panel where the output interval is set if the solver is IDA
@@ -821,7 +720,6 @@ public class OutputOptionsPanel extends JPanel {
 		BeanUtils.enableComponents(getUniformOutputPanel(), false);
 		BeanUtils.enableComponents(getExplicitOutputPanel(), false);
 
-		SolverTaskDescription solverTaskDescription = getSolverTaskDescription();
 		if (solverTaskDescription==null || solverTaskDescription.getSolverDescription()==null){
 			// if solver is not IDA, if the output Time step radio button had been set, 
 			// change the setting to the 'keep every' radio button and flush the contents of the output timestep text field. 
@@ -830,23 +728,6 @@ public class OutputOptionsPanel extends JPanel {
 		}
 		
 		SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
-		if (solverDesc.equals(SolverDescription.FiniteVolumeStandalone)) {
-			stopSpatiallyUniformPanel.setVisible(true);
-			stopSpatiallyUniformCheckBox.setSelected(solverTaskDescription.isStopAtSpatiallyUniform());
-			dataProcessorCheckBox.setVisible(true);
-			editDataProcessorButton.setVisible(true);
-			DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();
-			if (dpi != null) {
-				dataProcessorCheckBox.setSelected(true);
-				editDataProcessorButton.setEnabled(true);
-			} else {
-				editDataProcessorButton.setEnabled(false);
-			}
-		} else {
-			dataProcessorCheckBox.setVisible(false);
-			editDataProcessorButton.setVisible(false);
-			stopSpatiallyUniformPanel.setVisible(false);
-		}
 		
 		//Amended June 2009, no output option for stochastic gibson multiple trials
 		if(solverTaskDescription.getStochOpt()!= null && solverTaskDescription.getStochOpt().getNumOfTrials()>1
@@ -854,7 +735,7 @@ public class OutputOptionsPanel extends JPanel {
 		{
 			return;
 		}
-		OutputTimeSpec ots = getSolverTaskDescription().getOutputTimeSpec();
+		OutputTimeSpec ots = solverTaskDescription.getOutputTimeSpec();
 		
 		if (ots.isDefault()) {
 			// if solver is not IDA, if the output Time step radio button had been set, 
@@ -862,7 +743,7 @@ public class OutputOptionsPanel extends JPanel {
 			// Also, disable its radiobutton and fields.
 			getDefaultOutputRadioButton().setSelected(true);
 			getKeepEveryTextField().setText(((DefaultOutputTimeSpec)ots).getKeepEvery() + "");
-			if (getSolverTaskDescription().getSolverDescription().isSemiImplicitPdeSolver()) {
+			if (solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver()) {
 				getKeepAtMostTextField().setText("");
 			} else {
 				getKeepAtMostTextField().setText(((DefaultOutputTimeSpec)ots).getKeepAtMost() + "");
@@ -915,9 +796,6 @@ public class OutputOptionsPanel extends JPanel {
 		}
 	}	
 
-	public final SolverTaskDescription getSolverTaskDescription() {
-		return solverTaskDescription;
-	}
 	public final void setSolverTaskDescription(SolverTaskDescription newValue) {
 		SolverTaskDescription oldValue = solverTaskDescription;
 		/* Stop listening for events from the current object */

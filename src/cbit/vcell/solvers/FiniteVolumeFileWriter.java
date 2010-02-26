@@ -61,6 +61,7 @@ import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -831,8 +832,10 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 		}
 		printWriter.println("KEEP_EVERY " +  keepEvery);
     }
-    if (solverTaskDesc.isStopAtSpatiallyUniform()) {
-    	printWriter.println("CHECK_SPATIALLY_UNIFORM " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance() + " " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
+    ErrorTolerance stopAtSpatiallyUniformErrorTolerance = solverTaskDesc.getStopAtSpatiallyUniformErrorTolerance();
+	if (stopAtSpatiallyUniformErrorTolerance != null) {
+    	printWriter.println("CHECK_SPATIALLY_UNIFORM " + stopAtSpatiallyUniformErrorTolerance.getAbsoluteErrorTolerance() 
+    			+ " " + stopAtSpatiallyUniformErrorTolerance.getRelativeErrorTolerance());
     }
 	printWriter.println("SIMULATION_PARAM_END");	
 	printWriter.println();

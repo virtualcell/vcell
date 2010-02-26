@@ -3994,12 +3994,7 @@ public SolverTaskDescription getSolverTaskDescription(Element param, Simulation 
 	
 	if (sensparamElement!=null) {
 		sensitivityparam = getConstant(sensparamElement);
-	}
-	
-	if (param.getAttributeValue(XMLTags.StopAtSpatiallyUniform) != null) {
-		boolean bStopAtSteadyState = Boolean.valueOf(param.getAttributeValue(XMLTags.StopAtSpatiallyUniform));
-		solverTaskDesc.setStopAtSpatiallyUniform(bStopAtSteadyState);
-	}
+	}	
 
 	//set Attributes
 	try {
@@ -4047,7 +4042,16 @@ public SolverTaskDescription getSolverTaskDescription(Element param, Simulation 
 			solverTaskDesc.setOutputTimeSpec(getOutputTimeSpec(param.getChild(XMLTags.OutputOptionsTag, vcNamespace)));
 		}
 		//set SensitivityParameter
-		solverTaskDesc.setSensitivityParameter(sensitivityparam);		
+		solverTaskDesc.setSensitivityParameter(sensitivityparam);
+		
+		// set StopAtSpatiallyUniform
+		Element stopSpatiallyElement = param.getChild(XMLTags.StopAtSpatiallyUniform, vcNamespace);
+		if (stopSpatiallyElement != null) {
+			Element errTolElement = stopSpatiallyElement.getChild(XMLTags.ErrorToleranceTag, vcNamespace);
+			if (errTolElement != null) {
+				solverTaskDesc.setStopAtSpatiallyUniformErrorTolerance(getErrorTolerance(errTolElement));
+			}
+		}
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException(e.getMessage());
