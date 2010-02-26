@@ -371,7 +371,7 @@ private void displayTask() {
 		if (solverDescription.equals(SolverDescription.StochGibson)) {
 			getJLabel12().setEnabled(false);
 			getJLabelTimestep().setText("");
-		} else if (solverDescription.isSTOCHSolver()) {
+		} else if (solverDescription.isStochasticNonSpatialSolver()) {
 			getJLabel12().setEnabled(true);
 			getJLabel12().setText("timestep");		
 			getJLabelTimestep().setText(timeStep.getDefaultTimeStep()+ "");
@@ -403,7 +403,7 @@ private void displayTask() {
 		getJLabelAbsTolValue().setText("");
 	}
 	try {
-		if (getSimulation().isSpatial() || solverDescription.isSTOCHSolver()) {
+		if (getSimulation().isSpatial() || solverDescription.isStochasticNonSpatialSolver()) {
 			getJLabelSensitivity().setVisible(false);
 			getJLabel10().setVisible(false);
 		} else {
@@ -424,7 +424,7 @@ private void displayTask() {
 		exc.printStackTrace(System.out);
 		getJLabelSolver().setText("");
 	}
-	if (solverDescription.isSTOCHSolver()) {
+	if (solverDescription.isStochasticNonSpatialSolver()) {
 		getJLabelRelTol().setVisible(false);
 		getJLabelAbsTol().setVisible(false);
 		getJLabelRelTolValue().setText("");

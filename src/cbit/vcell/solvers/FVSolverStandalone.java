@@ -47,17 +47,7 @@ public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog 
  * This method was created by a SmartGuide.
  */
 protected void initialize() throws SolverException {
-	Simulation sim = simulationJob.getSimulation();
 	try {
-		if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
-			MathDescription mathDescription = sim.getMathDescription();
-			if (mathDescription.hasFastSystems()) {
-				throw new SolverException(SolverDescription.SundialsPDE.getDisplayLabel() + " does not support models containing fast system. Please change the solver.");
-			}
-			if (mathDescription.hasPeriodicBoundaryCondition()) {
-				throw new SolverException(SolverDescription.SundialsPDE.getDisplayLabel() + " does not support models containing Periodic Boundary Condition. Please change the solver.");
-			}
-		}
 		initStep1();	
 	
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INIT));

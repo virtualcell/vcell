@@ -1,5 +1,8 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.math.MathDescriptionTest;
+import cbit.vcell.solver.Simulation;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -26,13 +29,12 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
+		
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
-		cbit.vcell.solver.Simulation simulation = new cbit.vcell.solver.Simulation(
-			cbit.vcell.math.MathDescriptionTest.getOdeExampleWagner());
-		aTimeStepPanel.setTimeStep(simulation.getSolverTaskDescription().getTimeStep());
+		Simulation simulation = new Simulation(MathDescriptionTest.getOdeExampleWagner());
+		aTimeStepPanel.setSolverTaskDescription(simulation.getSolverTaskDescription());
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");
 		exception.printStackTrace(System.out);

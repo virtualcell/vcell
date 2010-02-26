@@ -21,6 +21,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.SolverDescription.SolverFeature;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -220,7 +221,7 @@ private void refresh() {
 	}
 	SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
 	
-	if (solverDesc.equals(SolverDescription.FiniteVolumeStandalone) || solverDesc.equals(SolverDescription.SundialsPDE)) {
+	if (solverDesc.supports(new SolverFeature[]{SolverFeature.Feature_DataProcessingInstructions})) {
 		dataProcessorCheckBox.setVisible(true);
 		editDataProcessorButton.setVisible(true);
 		DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();

@@ -22,7 +22,7 @@ import cbit.vcell.solver.stoch.StochSimOptions;
  * Creation date: (8/19/2000 8:59:15 PM)
  * @author: John Wagner
  */
-public class SolverTaskDescription implements Matchable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener, java.io.Serializable {
+public class SolverTaskDescription implements Matchable, java.beans.PropertyChangeListener, java.io.Serializable {
 	public static final String PROPERTY_ERROR_TOLERANCE = "errorTolerance";
 	public static final String PROPERTY_USE_SYMBOLIC_JACOBIAN = "useSymbolicJacobian";
 	public static final String PROPERTY_OUTPUT_TIME_SPEC = "outputTimeSpec";
@@ -56,7 +56,6 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
  */
 public SolverTaskDescription(Simulation simulation, CommentStringTokenizer tokenizer) throws DataAccessException {
 	super();
-	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	try {
 		if (simulation.isSpatial()) 
@@ -94,7 +93,6 @@ public SolverTaskDescription(CommentStringTokenizer tokenizer) throws DataAccess
  */
 public SolverTaskDescription(Simulation simulation, SolverTaskDescription solverTaskDescription) {
 	super();
-	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 
 	setSimulation(simulation);
@@ -136,7 +134,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  */
 public SolverTaskDescription(Simulation simulation) {
 	super();
-	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	try {
 		if (simulation.isSpatial()) 
@@ -267,7 +264,7 @@ public long getExpectedNumTimePoints() {
 			// keepAtMost will limit the number of points for ODEs.
 			// for PDEs, keepAtMost is ignored.
 			//
-			if (getSolverDescription().isODESolver()) {
+			if (getSolverDescription().supports(SolverDescription.OdeFeatureSet)) {
 				numTimepoints = Math.min(numTimepoints, keepAtMost); 
 			}
 		}
@@ -514,32 +511,6 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
 
-
-/**
- * Gets the solver property (java.lang.String) value.
- * @return The solver property value.
- * @see #setSolver
- */
-private boolean isAllowableSolverDescription(SolverDescription argSolverDescription) {
-	if (argSolverDescription == null){
-		return false;
-	}
-	if (getSimulation()==null){
-		return true;
-	}
-
-	if (getSimulation().isSpatial()==true && argSolverDescription.isPDESolver()){
-		return true;
-	}else if (getSimulation().isSpatial()==false && argSolverDescription.isODESolver()){
-		return true;
-	}else if (getSimulation().isSpatial()==false && argSolverDescription.isSTOCHSolver()){
-		return true;
-	}else{
-		return false;
-	}
-}
-
-
 /**
  * This method gets called when a bound property is changed.
  * @param evt A PropertyChangeEvent object describing the event source 
@@ -563,7 +534,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			} else if (!solverDescription.supports(getOutputTimeSpec())){
 				setOutputTimeSpec(solverDescription.createOutputTimeSpec(this));
 			}
-			if (solverDescription.isSTOCHSolver()) {
+			if (solverDescription.isStochasticNonSpatialSolver()) {
 				if (solverDescription.equals(SolverDescription.StochGibson)) {
 					if (fieldStochOpt == null) {					
 						setStochOpt(new StochSimOptions());
@@ -789,10 +760,8 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
  * Creation date: (9/8/2005 11:15:57 AM)
  */
 public void refreshDependencies() {
-	removeVetoableChangeListener(this);
 	removePropertyChangeListener(this);
 	addPropertyChangeListener(this);
-	addVetoableChangeListener(this);
 }
 
 /**
@@ -956,12 +925,6 @@ public void setUseSymbolicJacobian(boolean useSymbolicJacobian) {
  *   and the property that has changed.
  */
 public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	if (evt.getSource() == this && evt.getPropertyName().equals(PROPERTY_SOLVER_DESCRIPTION)) {
-		SolverDescription newSolverDescription = (SolverDescription)evt.getNewValue();
-		if (!isAllowableSolverDescription(newSolverDescription)){
-			throw new java.beans.PropertyVetoException("solverDescription '"+newSolverDescription.getDisplayLabel()+"' is not appropriate",evt);
-		}
-	}
 }
 
 public final ErrorTolerance getStopAtSpatiallyUniformErrorTolerance() {

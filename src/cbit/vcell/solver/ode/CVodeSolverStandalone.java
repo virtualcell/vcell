@@ -33,9 +33,6 @@ public CVodeSolverStandalone(SimulationJob simulationJob, java.io.File directory
  */
 protected void initialize() throws SolverException {
 	MathDescription mathDescription = getSimulationJob().getSimulation().getMathDescription();
-	if (mathDescription.hasFastSystems()) {
-		throw new SolverException("CVode solver does not support models containing fast system (algebraic constraints). Please change the solver.");		
-	}	
 	
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	super.initialize();

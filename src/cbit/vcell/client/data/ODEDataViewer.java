@@ -323,7 +323,7 @@ public void iniHistogramDisplay()
 {
 	// protecting for null simulation - needed esp for mergedData (where there is no simulation per se).
 	if (getSimulation() != null) {
-		getPlotPane1().setStepViewVisible(getSimulation().getSolverTaskDescription().getSolverDescription().isSTOCHSolver(), getOdeSolverResultSet().isMultiTrialData());	
+		getPlotPane1().setStepViewVisible(getSimulation().getSolverTaskDescription().getSolverDescription().isStochasticNonSpatialSolver(), getOdeSolverResultSet().isMultiTrialData());	
 	} else {
 		// if simulation is null (usually is for merged data), just disable the step view in the plot panel
 		getPlotPane1().setStepViewVisible(false, getOdeSolverResultSet().isMultiTrialData());

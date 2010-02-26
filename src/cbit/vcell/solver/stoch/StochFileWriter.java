@@ -103,20 +103,6 @@ private boolean hasCommonElement(String[] oriArray, String[] comArray)
 public void initialize() throws Exception
 {
 	Simulation simulation = simulationJob.getSimulation();
-	
-	if (!simulation.getIsValid()) 
-	{
-		throw new MathException("Invalid simulation : "+simulation.getWarning());
-	}
-	if (simulation.isSpatial()) 
-	{
-		throw new MathException("Stochastic simulation for spacial problems is under development.");		
-	}
-	if (simulation.getMathDescription().hasFastSystems()) 
-	{
-		
-		throw new MathException("Math description contains algebraic constraints, cannot create file.");
-	}
 	//check variables
 	if(!simulation.getMathDescription().getVariables().hasMoreElements())
 	{

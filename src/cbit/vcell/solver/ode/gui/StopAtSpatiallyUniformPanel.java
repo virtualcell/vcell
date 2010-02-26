@@ -6,7 +6,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 
 import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.SolverDescription.SolverFeature;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -114,7 +116,7 @@ private void initialize() {
 		setSize(160, 120);
 
 		// 0
-		JLabel label = new javax.swing.JLabel("Error Tolerances");
+		JLabel label = new javax.swing.JLabel("Error Tolerance");
 		label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
@@ -190,7 +192,7 @@ private void refresh() {
 		return;
 	}
 	
-	if (!solverTaskDescription.getSolverDescription().isPDESolver()) {
+	if (!solverTaskDescription.getSolverDescription().supports(new SolverFeature[]{SolverFeature.Feature_StopAtSpatiallyUniform})) {
 		setVisible(false);
 		return;
 	}

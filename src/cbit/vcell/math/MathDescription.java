@@ -3024,4 +3024,12 @@ public boolean hasEvents() {
 	return eventList.size() > 0;
 }
 
+public boolean hasRandomVariables() {
+	for (Variable var : variableList) {
+		if (var instanceof RandomVariable) {
+			return true;
+		}
+	}
+	return false;
+}
 }
