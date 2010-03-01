@@ -226,18 +226,18 @@ public class DatabaseWindowPanel extends JPanel {
 			searchButton = new JButton("Search " + Search_Doc_Type[tabIndex] + "s Now");
 			cancelButton = new JButton("Cancel");
 			 
-			JPanel namePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
+			JPanel namePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
 			namePanel.add(nameLabel);
 			namePanel.add(nameSearchTextField);
 			namePanel.add(advancedButton);
 			
-			JPanel datePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
+			JPanel datePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 			datePanel.add(dateLabel);
 			datePanel.add(startDatePanel);
 			datePanel.add(andLabel);
 			datePanel.add(endDatePanel);
 			
-			JPanel buttonPanel = new JPanel();
+			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 1));
 			buttonPanel.add(searchButton);
 			buttonPanel.add(cancelButton);
 			
