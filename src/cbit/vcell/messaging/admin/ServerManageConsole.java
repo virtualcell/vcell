@@ -2456,10 +2456,12 @@ private void query() {
 		conditions.append("(" + status + ")");
 	}
 
+	java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy", java.util.Locale.US);
+	
 	if (getQuerySubmitDateCheck().isSelected()) {
 		bOtherConditions = true;
-		String d1 = getQuerySubmitFromDate().getDate();
-		String d2 = getQuerySubmitToDate().getDate();
+		String d1 = df.format(getQuerySubmitFromDate().getDate());
+		String d2 = df.format(getQuerySubmitToDate().getDate());
 		if (conditions.length() > 0) {
 			conditions.append(" AND ");
 		}
@@ -2469,8 +2471,8 @@ private void query() {
 	
 	if (getQueryStartDateCheck().isSelected()) {
 		bOtherConditions = true;
-		String d1 = getQueryStartFromDate().getDate();
-		String d2 = getQueryStartToDate().getDate();
+		String d1 = df.format(getQueryStartFromDate().getDate());
+		String d2 = df.format(getQueryStartToDate().getDate());
 		if (conditions.length() > 0) {
 			conditions.append(" AND ");
 		}
@@ -2480,8 +2482,8 @@ private void query() {
 		
 	if (getQueryEndDateCheck().isSelected()) {
 		bOtherConditions = true;
-		String d1 = getQueryEndFromDate().getDate();
-		String d2 = getQueryEndToDate().getDate();
+		String d1 = df.format(getQueryEndFromDate().getDate());
+		String d2 = df.format(getQueryEndToDate().getDate());
 		if (conditions.length() > 0) {
 			conditions.append(" AND ");
 		}

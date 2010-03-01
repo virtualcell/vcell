@@ -211,19 +211,16 @@ void createRecyclableWindows() {
 	if (! getWindowsHash().containsKey(DATABASE_WINDOW_ID)) {
 		// make the window
 		DatabaseWindow databaseWindow = new DatabaseWindow();
-		DatabaseWindowPanel databaseWindowPanel = new DatabaseWindowPanel();
-		databaseWindow.setWorkArea(databaseWindowPanel);
 		databaseWindow.setSize(1000, 900);
 		BeanUtils.centerOnScreen(databaseWindow);
 		// make the manager
-		DatabaseWindowManager windowManager = new DatabaseWindowManager(databaseWindowPanel, getRequestManager());
+		DatabaseWindowManager windowManager = new DatabaseWindowManager(databaseWindow.getDatabaseWindowPanel(), getRequestManager());
 		// keep track of things
 		getWindowsHash().put(DATABASE_WINDOW_ID, databaseWindow);
 		getManagersHash().put(DATABASE_WINDOW_ID, windowManager);
 		// get window ready
 		setCanonicalTitle(DATABASE_WINDOW_ID);
 		databaseWindow.setDatabaseWindowManager(windowManager);
-		databaseWindowPanel.setDatabaseWindowManager(windowManager);
 		blockWindow(DATABASE_WINDOW_ID);
 		// listen for event when user clicks window close button
 		databaseWindow.addWindowListener(windowListener);

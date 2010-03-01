@@ -3,20 +3,28 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.Vector;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+
+import cbit.vcell.client.desktop.DatabaseWindowPanel.SearchCriterion;
+import cbit.vcell.clientdb.DatabaseEvent;
+import cbit.vcell.clientdb.DatabaseListener;
+import cbit.vcell.clientdb.DocumentManager;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
  * @author: Jim Schaff
  */
-public class MathModelDbTreeModel extends javax.swing.tree.DefaultTreeModel implements cbit.vcell.clientdb.DatabaseListener {
+public class MathModelDbTreeModel extends javax.swing.tree.DefaultTreeModel implements DatabaseListener {
 	private boolean fieldLatestOnly = false;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private DocumentManager fieldDocumentManager = null;
+	private ArrayList<SearchCriterion> searchCriterionList = null;
 
 /**
  * BioModelDbTreeModel constructor comment.
@@ -33,15 +41,6 @@ public MathModelDbTreeModel() {
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
-
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
 
 /**
  * Insert the method's description here.
@@ -85,7 +84,19 @@ private BioModelNode createBaseTree() throws DataAccessException {
 	return rootRootNode;
 }
 
-
+private boolean meetSearchCriteria(MathModelInfo mathModelInfo) {
+	if (searchCriterionList == null) {
+		return true;		
+	}
+	boolean bPass = true;
+	for (SearchCriterion sc : searchCriterionList) {
+		if (!sc.meetCriterion(mathModelInfo)) {
+			bPass = false;
+			break;
+		}		
+	}
+	return bPass;
+}
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 1:06:51 PM)
@@ -101,6 +112,9 @@ private BioModelNode createOwnerSubTree(User owner) throws DataAccessException {
 	for (int i=0;i<mathModelInfos.length;i++){
 		MathModelInfo mathModelInfo = mathModelInfos[i];
 		if (mathModelInfo.getVersion().getOwner().equals(owner)){
+			if (!meetSearchCriteria(mathModelInfo)) {
+				continue;
+			}
 			BioModelNode bioModelNode = new BioModelNode(mathModelInfo.getVersion().getName(),true);
 			rootNode.add(bioModelNode);
 			//
@@ -110,8 +124,11 @@ private BioModelNode createOwnerSubTree(User owner) throws DataAccessException {
 			mathModelBranchList.addElement(mathModelInfo);
 			for (i=i+1;i<mathModelInfos.length;i++){
 				if (mathModelInfos[i].getVersion().getBranchID().equals(mathModelInfo.getVersion().getBranchID())){
+					if (!meetSearchCriteria(mathModelInfos[i])) {
+						continue;
+					}
 					mathModelBranchList.add(0,mathModelInfos[i]);
-				}else{
+				} else {
 					i--;
 					break;
 				}
@@ -183,7 +200,7 @@ private BioModelNode createVersionSubTree(MathModelInfo mmInfo) throws DataAcces
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
+public void databaseDelete(DatabaseEvent databaseEvent) {
 	if (databaseEvent.getOldVersionInfo() instanceof MathModelInfo){
 		MathModelInfo removedMathModelInfo = (MathModelInfo)databaseEvent.getOldVersionInfo();
 		BioModelNode removedNode = ((BioModelNode)getRoot()).findNodeByUserObject(removedMathModelInfo);
@@ -199,7 +216,7 @@ public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
+public void databaseInsert(DatabaseEvent databaseEvent) {
 	if (databaseEvent.getNewVersionInfo() instanceof MathModelInfo){
 		try {
 			MathModelInfo insertedMathModelInfo = (MathModelInfo)databaseEvent.getNewVersionInfo();
@@ -256,7 +273,7 @@ public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
+public void databaseRefresh(DatabaseEvent event) {
 
 	//Our parent will tell us what to do
 }
@@ -266,7 +283,7 @@ public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseUpdate(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
+public void databaseUpdate(DatabaseEvent databaseEvent) {
 	//
 	// the ClientDocumentManager usually throws an UPDATE when changing public/private status
 	//
@@ -281,31 +298,7 @@ public void databaseUpdate(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
@@ -315,7 +308,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -365,6 +358,10 @@ public void refreshTree() {
 	}
 }
 
+public void refreshTree(ArrayList<SearchCriterion> newFilterList) {
+	searchCriterionList = newFilterList;
+	refreshTree();
+}
 
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
@@ -375,20 +372,12 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 
 
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(DocumentManager documentManager) {
+	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 
 	if (oldValue != null){

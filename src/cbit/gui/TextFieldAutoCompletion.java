@@ -54,7 +54,7 @@ public class TextFieldAutoCompletion extends JTextField {
 	private JPopupMenu autoCompJPopupMenu = null;
 	private JList autoCompJList = null;
 	private DefaultListModel listModel = null;
-	private ArrayList<String> autoCompWordList = null;
+	private Set<String> autoCompWordList = null;
 	private static final String COMMIT_ACTION = "commit";
 	private static final String GOUPLIST_ACTION = "gouplist";
 	private static final String GODOWNLIST_ACTION = "godownlist";
@@ -136,6 +136,7 @@ public class TextFieldAutoCompletion extends JTextField {
 		public void keyTyped(KeyEvent e) {
 		}
 	}
+	
 	public TextFieldAutoCompletion() {
 		super();
 		initialize();
@@ -146,7 +147,7 @@ public class TextFieldAutoCompletion extends JTextField {
 		addKeyListener(eventHandler);
 		addMouseListener(eventHandler);
 		
-		autoCompWordList = new ArrayList<String>();		
+		autoCompWordList = new HashSet<String>();		
 		listModel = new DefaultListModel();
 		autoCompJList = new JList(listModel);
 		autoCompJList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -407,64 +408,7 @@ public class TextFieldAutoCompletion extends JTextField {
 				}
 			}
         
-	        ArrayList<String> tempList = new ArrayList<String>();
-			if (symbolTable != null) {
-				tempList.clear();
-				
-				Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
-				symbolTable.getEntries(entryMap);
-				Set<Entry<String, SymbolTableEntry>> entrySet = entryMap.entrySet();
-				Iterator<Entry<String, SymbolTableEntry>> iter = entrySet.iterator();
-				while (iter.hasNext()) {
-					Entry<String, SymbolTableEntry> entry = iter.next();
-					if (autoCompleteSymbolFilter == null || autoCompleteSymbolFilter.accept(entry.getValue())) {
-						if (currentWord.prefix.length() == 0 
-								|| entry.getKey().toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
-							tempList.add(entry.getKey());
-						}
-					}
-				}
-
-			} else {
-				for (String w : autoCompWordList) {
-					if (currentWord.prefix.length() == 0 
-							|| w.toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
-						tempList.add(w);
-					}
-				}
-			}
-			Collections.sort(tempList, new Comparator<String>() {
-				public int compare(String o1, String o2) {
-					ReservedSymbol r1 = ReservedSymbol.fromString(o1);
-					ReservedSymbol r2 = ReservedSymbol.fromString(o2);
-					if (r1 == null && r2 != null) {
-						return -1;
-					} else if (r1 != null && r2 == null) {
-						return 1;
-					} else if (r1 != null && r2 != null) {
-						ReservedVariable v1 = ReservedVariable.fromString(o1);
-						ReservedVariable v2 = ReservedVariable.fromString(o2);
-						if (v1 == null && v2 != null) {
-							return 1;
-						} else if (v1 != null && v2 == null) {
-							return -1;
-						}
-					}
-					return o1.compareToIgnoreCase(o2);
-				}
-			});	
-			
-			// add functions
-			ArrayList<String> tempFuncList = new ArrayList<String>();
-			for (String w : functList) {
-				if (autoCompleteSymbolFilter == null || autoCompleteSymbolFilter.acceptFunction(w)) {
-					if (currentWord.prefix.length() == 0 
-							|| w.toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
-						tempFuncList.add(w + "()");
-					}
-				}
-			}		
-			tempList.addAll(tempFuncList);
+	        ArrayList<String> tempList = createAutoCompletionList(currentWord);
 			
 			listModel.removeAllElements();
 			for (String w : tempList) {
@@ -501,6 +445,70 @@ public class TextFieldAutoCompletion extends JTextField {
 				}
 			});
 		}
+	}
+
+	private ArrayList<String> createAutoCompletionList(CurrentWord currentWord) {
+		ArrayList<String> tempList = new ArrayList<String>();
+		if (symbolTable != null) {
+			tempList.clear();
+			
+			Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+			symbolTable.getEntries(entryMap);
+			Set<Entry<String, SymbolTableEntry>> entrySet = entryMap.entrySet();
+			Iterator<Entry<String, SymbolTableEntry>> iter = entrySet.iterator();
+			while (iter.hasNext()) {
+				Entry<String, SymbolTableEntry> entry = iter.next();
+				if (autoCompleteSymbolFilter == null || autoCompleteSymbolFilter.accept(entry.getValue())) {
+					if (currentWord.prefix.length() == 0 
+							|| entry.getKey().toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
+						tempList.add(entry.getKey());
+					}
+				}
+			}
+
+		} else {
+			for (String w : autoCompWordList) {
+				if (currentWord.prefix.length() == 0 
+						|| w.toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
+					tempList.add(w);
+				}
+			}
+		}
+		Collections.sort(tempList, new Comparator<String>() {
+			public int compare(String o1, String o2) {
+				ReservedSymbol r1 = ReservedSymbol.fromString(o1);
+				ReservedSymbol r2 = ReservedSymbol.fromString(o2);
+				if (r1 == null && r2 != null) {
+					return -1;
+				} else if (r1 != null && r2 == null) {
+					return 1;
+				} else if (r1 != null && r2 != null) {
+					ReservedVariable v1 = ReservedVariable.fromString(o1);
+					ReservedVariable v2 = ReservedVariable.fromString(o2);
+					if (v1 == null && v2 != null) {
+						return 1;
+					} else if (v1 != null && v2 == null) {
+						return -1;
+					}
+				}
+				return o1.compareToIgnoreCase(o2);
+			}
+		});	
+		
+		if (symbolTable != null) {
+			// add functions
+			ArrayList<String> tempFuncList = new ArrayList<String>();
+			for (String w : functList) {
+				if (autoCompleteSymbolFilter == null || autoCompleteSymbolFilter.acceptFunction(w)) {
+					if (currentWord.prefix.length() == 0 
+							|| w.toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
+						tempFuncList.add(w + "()");
+					}
+				}
+			}		
+			tempList.addAll(tempFuncList);
+		}
+		return tempList;
 	}
 	
 	// test main

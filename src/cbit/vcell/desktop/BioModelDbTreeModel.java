@@ -4,20 +4,27 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.Vector;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
+
+import cbit.vcell.client.desktop.DatabaseWindowPanel.SearchCriterion;
+import cbit.vcell.clientdb.DatabaseListener;
+import cbit.vcell.clientdb.DocumentManager;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
  * @author: Jim Schaff
  */
-public class BioModelDbTreeModel extends javax.swing.tree.DefaultTreeModel implements cbit.vcell.clientdb.DatabaseListener {
+public class BioModelDbTreeModel extends javax.swing.tree.DefaultTreeModel implements DatabaseListener {
 	private boolean fieldLatestOnly = false;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private DocumentManager fieldDocumentManager = null;
+	private ArrayList<SearchCriterion> searchCriterionList = null;
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -32,12 +39,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-/**
  * Insert the method's description here.
  * Creation date: (11/28/00 1:06:51 PM)
  * @return cbit.vcell.desktop.BioModelNode
@@ -50,7 +51,8 @@ private BioModelNode createBaseTree() throws DataAccessException {
 	// get list of users (owners)
 	//
 	Vector<User> ownerList = new Vector<User>();
-	ownerList.addElement(getDocumentManager().getUser());
+	User loginUser = getDocumentManager().getUser();
+	ownerList.addElement(loginUser);
 	for (int i=0;i<bioModelInfos.length;i++){
 		BioModelInfo bioModelInfo = bioModelInfos[i];
 		if (!ownerList.contains(bioModelInfo.getVersion().getOwner())){
@@ -64,12 +66,12 @@ private BioModelNode createBaseTree() throws DataAccessException {
 	for (int ownerIndex=0;ownerIndex<ownerList.size();ownerIndex++){
 		User owner = (User)ownerList.elementAt(ownerIndex);
 		BioModelNode ownerNode = createOwnerSubTree(owner);
-		if(owner.equals(getDocumentManager().getUser()) || ownerNode.getChildCount() > 0){
+		if(owner.equals(loginUser) || ownerNode.getChildCount() > 0){
 			treeMap.put(owner.getName().toLowerCase(),ownerNode);
 		}
 	}
 	//
-	rootRootNode.add((BioModelNode)treeMap.remove(getDocumentManager().getUser().getName().toLowerCase()));
+	rootRootNode.add((BioModelNode)treeMap.remove(loginUser.getName().toLowerCase()));
 
 	BioModelNode otherUsersNode = new BioModelNode("Shared Models",true);
 	rootRootNode.add(otherUsersNode);
@@ -78,6 +80,20 @@ private BioModelNode createBaseTree() throws DataAccessException {
 		otherUsersNode.add((BioModelNode)bmnArr[i]);
 	}
 	return rootRootNode;
+}
+
+private boolean meetSearchCriteria(BioModelInfo bioModelInfo) {
+	if (searchCriterionList == null) {
+		return true;		
+	}
+	boolean bPass = true;
+	for (SearchCriterion sc : searchCriterionList) {
+		if (!sc.meetCriterion(bioModelInfo)) {
+			bPass = false;
+			break;
+		}		
+	}
+	return bPass;
 }
 /**
  * Insert the method's description here.
@@ -91,18 +107,27 @@ private BioModelNode createOwnerSubTree(User owner) throws DataAccessException {
 	// for each user
 	//
 	BioModelNode rootNode = new BioModelNode(owner,true);
-	for (int i=0;i<bioModelInfos.length;i++){
+	for (int i = 0; i < bioModelInfos.length; i ++){
 		BioModelInfo bioModelInfo = bioModelInfos[i];
+		
 		if (bioModelInfo.getVersion().getOwner().equals(owner)){
-			BioModelNode bioModelNode = new BioModelNode(bioModelInfo.getVersion().getName(),true);
+			String modelName = bioModelInfo.getVersion().getName();
+			if (!meetSearchCriteria(bioModelInfo)) {
+				continue;
+			}
+			
+			BioModelNode bioModelNode = new BioModelNode(modelName,true);
 			rootNode.add(bioModelNode);
 			//
 			// get list of bioModels with the same branch
 			//
 			Vector<BioModelInfo> bioModelBranchList = new Vector<BioModelInfo>();
 			bioModelBranchList.addElement(bioModelInfo);
-			for (i=i+1;i<bioModelInfos.length;i++){
+			for (i = i + 1; i < bioModelInfos.length; i ++){
 				if (bioModelInfos[i].getVersion().getBranchID().equals(bioModelInfo.getVersion().getBranchID())){
+					if (!meetSearchCriteria(bioModelInfos[i])) {
+						continue;
+					}
 					bioModelBranchList.add(0,bioModelInfos[i]);
 				}else{
 					i--;
@@ -233,25 +258,7 @@ public void databaseUpdate(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 /**
@@ -259,7 +266,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 /**
@@ -312,10 +319,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
-/**
- * Insert the method's description here.
- * Creation date: (2/14/01 3:50:24 PM)
- */
+
 public void refreshTree() {
 	if (getDocumentManager()!=null && getDocumentManager().getUser() != null){
 		try {
@@ -328,24 +332,26 @@ public void refreshTree() {
 	}
 }
 /**
+ * Insert the method's description here.
+ * Creation date: (2/14/01 3:50:24 PM)
+ */
+public void refreshTree(ArrayList<SearchCriterion> newFilterList) {
+	searchCriterionList = newFilterList;
+	refreshTree();
+}
+/**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-/**
  * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(DocumentManager documentManager) {
+	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 
 	if (oldValue != null){
