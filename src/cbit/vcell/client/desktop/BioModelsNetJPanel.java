@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop;
 
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Font;
@@ -9,30 +8,54 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Vector;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 
+import org.jdom.Element;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.PopupGenerator;
+import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
+import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
+import cbit.vcell.xml.XMLInfo;
+
+import javax.swing.border.TitledBorder;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
+import javax.swing.JTextField;
+import java.awt.Dimension;
 
 public class BioModelsNetJPanel extends JPanel {
 	private DocumentWindow documentWindow;
-	private JButton openCuratedModelButton;
 	private static final String BIOMODELS_DATABASE_URL = "http://www.ebi.ac.uk/biomodels/";
+	private JTextField modelNameTextField;
+	private JTextField publicationTextField;
+	private JTextField modelEntryIDTextField;
 	
 	public BioModelsNetJPanel() {
 		super();
+		setPreferredSize(new Dimension(475, 300));
 		final GridBagLayout gridBagLayout = new GridBagLayout();
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
+		gridBagLayout.columnWeights = new double[]{1.0};
 		gridBagLayout.rowHeights = new int[] {7,0,7,0,0,7,7};
 		setLayout(gridBagLayout);
 
@@ -40,6 +63,7 @@ public class BioModelsNetJPanel extends JPanel {
 		biomodelsnetLabel.setFont(new Font("", Font.BOLD, 20));
 		biomodelsnetLabel.setText("BioModels DataBase");
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
+		gridBagConstraints_4.insets = new Insets(0, 0, 5, 0);
 		gridBagConstraints_4.gridx = 0;
 		gridBagConstraints_4.gridy = 0;
 		add(biomodelsnetLabel, gridBagConstraints_4);
@@ -48,6 +72,7 @@ public class BioModelsNetJPanel extends JPanel {
 		helpingToDefineLabel_1.setFont(new Font("", Font.BOLD, 14));
 		helpingToDefineLabel_1.setText("A data resource that allows researchers to ");
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
+		gridBagConstraints_2.insets = new Insets(0, 0, 5, 0);
 		gridBagConstraints_2.gridx = 0;
 		gridBagConstraints_2.gridy = 1;
 		add(helpingToDefineLabel_1, gridBagConstraints_2);
@@ -56,6 +81,7 @@ public class BioModelsNetJPanel extends JPanel {
 		helpingToDefineLabel.setFont(new Font("", Font.BOLD, 14));
 		helpingToDefineLabel.setText("store, search and retrieve published mathematical models");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
+		gridBagConstraints_1.insets = new Insets(0, 0, 5, 0);
 		gridBagConstraints_1.gridx = 0;
 		gridBagConstraints_1.gridy = 2;
 		add(helpingToDefineLabel, gridBagConstraints_1);
@@ -64,6 +90,7 @@ public class BioModelsNetJPanel extends JPanel {
 		modelsOfBiologicalLabel.setFont(new Font("", Font.BOLD, 14));
 		modelsOfBiologicalLabel.setText("of biological interest.");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
+		gridBagConstraints_3.insets = new Insets(0, 0, 5, 0);
 		gridBagConstraints_3.gridy = 3;
 		gridBagConstraints_3.gridx = 0;
 		add(modelsOfBiologicalLabel, gridBagConstraints_3);
@@ -77,66 +104,87 @@ public class BioModelsNetJPanel extends JPanel {
 		httpbiomodelsnetLabel.setFont(new Font("", Font.BOLD, 14));
 		httpbiomodelsnetLabel.setText(BIOMODELS_DATABASE_URL);
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints.insets = new Insets(4, 4, 5, 4);
 		gridBagConstraints.gridy = 4;
 		gridBagConstraints.gridx = 0;
 		add(httpbiomodelsnetLabel, gridBagConstraints);
-
-		openCuratedModelButton = new JButton();
-		openCuratedModelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				if(documentWindow != null){
-					try {
-						BioModelInfo[] bioModelInfoArr =
-							documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager().getBioModelInfos();
-						Vector<BioModelInfo> bioModelsNetBMInfoV = new Vector<BioModelInfo>();
-						for (int i = 0; i < bioModelInfoArr.length; i++) {
-							if(bioModelInfoArr[i].getVersion().getOwner().getName().equals("BioModelsNet")){
-								bioModelsNetBMInfoV.add(bioModelInfoArr[i]);
-							}
-						}
-						if(bioModelsNetBMInfoV.size() > 0){
-							BioModelInfo[] versionArr = new BioModelInfo[bioModelsNetBMInfoV.size()];
-							bioModelsNetBMInfoV.copyInto(versionArr);
-							final DefaultListCellRenderer dlcr = new DefaultListCellRenderer();
-							BioModelInfo selectedBMInfo = (BioModelInfo)DialogUtils.showListDialog(BioModelsNetJPanel.this,
-									versionArr,
-									"Select BioModels Database curated BioModel to Open",
-									new ListCellRenderer(){
-										public Component getListCellRendererComponent(
-												JList list, Object value,
-												int index, boolean isSelected,
-												boolean cellHasFocus) {
-											return dlcr.getListCellRendererComponent(
-													list,
-													((BioModelInfo)value).getVersion().getName(),
-													index, isSelected, cellHasFocus);
-										}}
-							);
-							if(selectedBMInfo != null){
-								disposeParentDialog();
-								documentWindow.getTopLevelWindowManager().getRequestManager().openDocument(
-									selectedBMInfo,documentWindow.getTopLevelWindowManager(), true);
-							}
-						}else{
-							throw new Exception("Error: No BioModels Database curated models found.");
-						}
-					} catch (Exception e1) {
-						e1.printStackTrace();
-						PopupGenerator.showErrorDialog(BioModelsNetJPanel.this, "Error opening BioModel.\n"+e1.getMessage());
-					}
-				}else{
-					PopupGenerator.showErrorDialog(BioModelsNetJPanel.this, "Error: needs DocumentWindow.");
-				}
-			}
-		});
-		openCuratedModelButton.setFont(new Font("", Font.BOLD, 14));
-		openCuratedModelButton.setText("Open Curated Model in VCell...");
-		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
-		gridBagConstraints_5.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_5.gridy = 5;
-		gridBagConstraints_5.gridx = 0;
-		add(openCuratedModelButton, gridBagConstraints_5);
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 2), "Search/Import  (Matches user provided text to any part of BioModels information)", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.insets = new Insets(4, 4, 4, 4);
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.gridx = 0;
+		gbc_panel.gridy = 5;
+		add(panel, gbc_panel);
+		GridBagLayout gbl_panel = new GridBagLayout();
+		gbl_panel.columnWidths = new int[]{0, 0, 0};
+		gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0};
+		gbl_panel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		panel.setLayout(gbl_panel);
+		
+		JLabel lblModelEntryId = new JLabel("Model Entry ID");
+		GridBagConstraints gbc_lblModelEntryId = new GridBagConstraints();
+		gbc_lblModelEntryId.anchor = GridBagConstraints.EAST;
+		gbc_lblModelEntryId.insets = new Insets(0, 0, 5, 5);
+		gbc_lblModelEntryId.gridx = 0;
+		gbc_lblModelEntryId.gridy = 0;
+		panel.add(lblModelEntryId, gbc_lblModelEntryId);
+		
+		modelEntryIDTextField = new JTextField();
+		GridBagConstraints gbc_modelEntryIDTextField = new GridBagConstraints();
+		gbc_modelEntryIDTextField.insets = new Insets(0, 0, 5, 0);
+		gbc_modelEntryIDTextField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_modelEntryIDTextField.gridx = 1;
+		gbc_modelEntryIDTextField.gridy = 0;
+		panel.add(modelEntryIDTextField, gbc_modelEntryIDTextField);
+		modelEntryIDTextField.setColumns(10);
+		
+		JLabel lblName = new JLabel("Model Name");
+		GridBagConstraints gbc_lblName = new GridBagConstraints();
+		gbc_lblName.insets = new Insets(0, 0, 5, 5);
+		gbc_lblName.anchor = GridBagConstraints.EAST;
+		gbc_lblName.gridx = 0;
+		gbc_lblName.gridy = 1;
+		panel.add(lblName, gbc_lblName);
+		
+		modelNameTextField = new JTextField();
+		GridBagConstraints gbc_modelNameTextField = new GridBagConstraints();
+		gbc_modelNameTextField.insets = new Insets(0, 0, 5, 0);
+		gbc_modelNameTextField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_modelNameTextField.gridx = 1;
+		gbc_modelNameTextField.gridy = 1;
+		panel.add(modelNameTextField, gbc_modelNameTextField);
+		modelNameTextField.setColumns(10);
+		
+		JLabel lblPublication = new JLabel("Publication Info");
+		GridBagConstraints gbc_lblPublication = new GridBagConstraints();
+		gbc_lblPublication.anchor = GridBagConstraints.EAST;
+		gbc_lblPublication.insets = new Insets(0, 0, 5, 5);
+		gbc_lblPublication.gridx = 0;
+		gbc_lblPublication.gridy = 2;
+		panel.add(lblPublication, gbc_lblPublication);
+		
+		publicationTextField = new JTextField();
+		GridBagConstraints gbc_publicationTextField = new GridBagConstraints();
+		gbc_publicationTextField.insets = new Insets(0, 0, 5, 0);
+		gbc_publicationTextField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_publicationTextField.gridx = 1;
+		gbc_publicationTextField.gridy = 2;
+		panel.add(publicationTextField, gbc_publicationTextField);
+		publicationTextField.setColumns(10);
+		
+		JButton btnSearch = new JButton("Search...");
+		btnSearch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				searchImport();
+		}});
+		GridBagConstraints gbc_btnSearch = new GridBagConstraints();
+		gbc_btnSearch.gridwidth = 2;
+		gbc_btnSearch.gridx = 0;
+		gbc_btnSearch.gridy = 3;
+		panel.add(btnSearch, gbc_btnSearch);
 	}
 
 	public void setDocumentWindow(DocumentWindow documentWindow) {
@@ -151,4 +199,167 @@ public class BioModelsNetJPanel extends JPanel {
 		}
 
 	}
+	
+	private Hashtable<String, String> readVCellCompatibleBioModels_ID_Name_Hash() throws Exception{
+		Hashtable<String, String> vcellCompatibleBioModelsHash = new Hashtable<String, String>();
+
+		final String BIOMODELSNET_INFO_FILENAME = "/bioModelsNetInfo.xml";
+		InputStream tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME);
+		if (tableInputStream==null){
+			throw new FileNotFoundException(BIOMODELSNET_INFO_FILENAME+" not found");
+		}
+		//Process the Info files
+		org.jdom.input.SAXBuilder saxparser = new org.jdom.input.SAXBuilder(false);
+		org.jdom.Document doctable = null;
+		try {
+			doctable = saxparser.build(tableInputStream);
+		} catch (org.jdom.JDOMException e) {
+			e.printStackTrace();
+			throw new java.io.IOException("An error occurred when trying to parse the rules file ");
+		}
+		Iterator<Element> ruleiterator = doctable.getRootElement().getChildren().iterator();
+		while (ruleiterator.hasNext()) {
+			Element temp = (Element) ruleiterator.next();
+			//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
+			boolean bSupported = new Boolean(temp.getAttributeValue("Supported")).booleanValue();
+			if(bSupported){
+				String id = temp.getAttributeValue("ID");
+				String name = temp.getAttributeValue("Name");
+				vcellCompatibleBioModelsHash.put(id, name);
+			}
+		}
+
+		return vcellCompatibleBioModelsHash;
+	}
+	
+	private void searchImport(){
+		
+		AsynchClientTask searchTask = new AsynchClientTask("Search BioModels",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				
+				Hashtable<String, String> vcellCompatibleBioModels_ID_Name_Hash = readVCellCompatibleBioModels_ID_Name_Hash();
+				
+				ClientTaskStatusSupport clientTaskStatusSupport = getClientTaskStatusSupport();
+				clientTaskStatusSupport.setProgress(0);
+				clientTaskStatusSupport.setMessage("Initializing BioModels Search...");
+				BioModelsWebServicesServiceLocator bioModelsWebServicesServiceLocator =
+					new BioModelsWebServicesServiceLocator();
+				BioModelsWebServices bioModelsWebServices =
+					bioModelsWebServicesServiceLocator.getBioModelsWebServices();
+				
+				clientTaskStatusSupport.setProgress(10);
+				clientTaskStatusSupport.setMessage("Executing BioModels Search...");
+				TreeSet<String> modelIDsMergedSearch = new TreeSet<String>();
+				boolean bHasModelEntryID = modelEntryIDTextField.getText() != null && modelEntryIDTextField.getText().length() > 0;
+				if(bHasModelEntryID){
+					String[] modelIDsAll = bioModelsWebServices.getAllModelsId();
+					for (int i = 0; i < modelIDsAll.length; i++) {
+						if(modelIDsAll[i].toUpperCase().indexOf(modelEntryIDTextField.getText().toUpperCase()) != -1){
+							modelIDsMergedSearch.add(modelIDsAll[i]);
+						}
+					}
+				}
+				boolean bHasModelName = modelNameTextField.getText() != null && modelNameTextField.getText().length() > 0;
+				if(bHasModelName){
+					TreeSet<String> modelIDsByNameSet = new TreeSet<String>();
+					String[] modelIDsByName = bioModelsWebServices.getModelsIdByName(modelNameTextField.getText());
+					for (int i = 0; i < modelIDsByName.length; i++) {
+						modelIDsByNameSet.add(modelIDsByName[i]);
+					}
+					if(bHasModelEntryID){
+						modelIDsMergedSearch.retainAll(modelIDsByNameSet);//intersection
+					}else{
+						modelIDsMergedSearch = modelIDsByNameSet;
+					}
+				}
+				boolean bHasModelPublication = publicationTextField.getText() != null && publicationTextField.getText().length() > 0;
+				if(bHasModelPublication){
+					TreeSet<String> modelIDsByPublicationSet = new TreeSet<String>();
+					String[] modelIDsbyPublication = bioModelsWebServices.getModelsIdByPublication(publicationTextField.getText());
+					for (int i = 0; i < modelIDsbyPublication.length; i++) {
+						modelIDsByPublicationSet.add(modelIDsbyPublication[i]);
+					}
+					if(bHasModelEntryID || bHasModelName){
+						modelIDsMergedSearch.retainAll(modelIDsByPublicationSet);//intersection
+					}else{
+						modelIDsMergedSearch = modelIDsByPublicationSet;
+					}
+
+				}
+				if(!(bHasModelEntryID || bHasModelName || bHasModelPublication)){//Get all models
+//					modelIDsMergedSearch.addAll(Arrays.asList(bioModelsWebServices.getAllModelsId()));
+					modelIDsMergedSearch.addAll(Arrays.asList(vcellCompatibleBioModels_ID_Name_Hash.keySet().toArray(new String[0])));
+				}
+				final int COLLECTION_PROGRESS = 20;
+				clientTaskStatusSupport.setProgress(COLLECTION_PROGRESS);
+				if(modelIDsMergedSearch.size() > 0){
+					//Intersect with supported BioModel IDs
+					modelIDsMergedSearch.retainAll(Arrays.asList(vcellCompatibleBioModels_ID_Name_Hash.keySet().toArray(new String[0])));
+
+					String[] modelIDMergedSearchArr = modelIDsMergedSearch.toArray(new String[0]);
+					TreeMap<String, String> model_ID_Name_Map = new TreeMap<String, String>();
+					String nameNotfound = "NameNotFound_0";
+					for (int i = 0; i < modelIDMergedSearchArr.length; i++) {
+						clientTaskStatusSupport.setProgress(COLLECTION_PROGRESS+((100-COLLECTION_PROGRESS)*(i+1)/modelIDMergedSearchArr.length));
+						
+						if(clientTaskStatusSupport.isInterrupted()){
+//							DialogUtils.showWarningDialog(BioModelsNetJPanel.this, "Search Cancelled");
+							throw UserCancelException.CANCEL_GENERIC;
+						}
+						try{
+							clientTaskStatusSupport.setMessage("Retrieving "+modelIDMergedSearchArr[i]+" "+(i+1)+" of "+modelIDMergedSearchArr.length);
+							String modelName = bioModelsWebServices.getModelNameById(modelIDMergedSearchArr[i]);
+							//Assume model names are unique
+							model_ID_Name_Map.put(modelName, modelIDMergedSearchArr[i]);
+						}catch(Exception e){
+							// For some reason Web Service API sometimes throws java.util.NoSuchElementException
+							// if id exists but name can't be found.
+							e.printStackTrace();
+							model_ID_Name_Map.put(nameNotfound, modelIDMergedSearchArr[i]);
+							nameNotfound = TokenMangler.getNextEnumeratedToken(nameNotfound);
+						}
+
+					}
+					//Make name,id rowdata for tablelist to allow user selection
+					String[] sortedModelNames = model_ID_Name_Map.keySet().toArray(new String[0]);
+					final String[][] rowData = new String[sortedModelNames.length][2];
+					for (int i = 0; i < sortedModelNames.length; i++) {
+						rowData[i][0] = sortedModelNames[i];
+						rowData[i][1] = model_ID_Name_Map.get(sortedModelNames[i]);
+					}
+					//Allow user to select model for opening
+					int[] result = DialogUtils.showComponentOKCancelTableList(
+							BioModelsNetJPanel.this, "BioModels Model Names",
+							new String[] {"Model Names","BioModels Entry ID"}, rowData, ListSelectionModel.SINGLE_SELECTION);
+					
+					if(result != null){
+						//Close Dialog showing "this" panel so ProgressPopup not obscured during openDocument
+						SwingUtilities.invokeAndWait(new Runnable() {public void run() {disposeParentDialog();}});
+						
+						//Download and open (in new window) SBML document selected by user
+						String bioModelSBML = bioModelsWebServices.getModelSBMLById(rowData[result[0]][1]);
+						final XMLInfo xmlInfo = new XMLInfo(bioModelSBML);
+						new Thread(new Runnable() {
+							public void run() {
+								documentWindow.getTopLevelWindowManager().getRequestManager().openDocument(
+										xmlInfo,documentWindow.getTopLevelWindowManager(), true);
+							}
+						}).start();
+					}
+				}else{
+					DialogUtils.showWarningDialog(BioModelsNetJPanel.this,
+							"No BioModels found matching current search criteria.");
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+
+			}
+		};
+		
+
+		ClientTaskDispatcher.dispatch(
+				BioModelsNetJPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] { searchTask},
+				true,true,null,true);
+	}
+
 }

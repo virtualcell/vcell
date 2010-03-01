@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This document contains the rules when processing and merging VCell XML Files-->
+<!-- edited with XML Spy v4.0 U beta 3.1 build Aug 27 2001 (http://www.xmlspy.com) by Daniel Lucio (Physiology/CBIT) -->
+<BioModelInfos>
+	<BioModelInfo ID="BIOMD0000000054" Name="Ataullahkhanov1996_Adenylate" Supported="true"/>
+	<BioModelInfo ID="BIOMD0000000200" Name="Bray1995_chemotaxis_receptorlinkedcomplex" Supported="true"/>
+	<BioModelInfo ID="BIOMD0000000076" Name="Cronwright2002_Glycerol_Synthesis" Supported="true"/>
+	<BioModelInfo ID="BIOMD0000000185" Name="Locke2008_Circadian_Clock" Supported="true"/>
+	<BioModelInfo ID="BIOMD0000000150" Name="Morris2002_CellCycle_CDK2Cyclin" Supported="true"/>
+	<BioModelInfo ID="BIOMD0000000215" Name="Schulz2009_Th1_differentiation" Supported="true"/>
+	<BioModelInfo ID="BIOMD0000000181" Name="Sriram2007_CellCycle" Supported="true"/>
+	<BioModelInfo ID="BIOMD0000000179" Name="TaeHwanKim2007_Cellular_Memory_Asymmetric_Model" Supported="true"/>
+	<BioModelInfo ID="BIOMD0000000180" Name="TaeHwanKim2007_Cellular_Memory_Symmetric_Model" Supported="true"/>
+	<BioModelInfo ID="BIOMD0000000160" Name="Xie2007_CircClock" Supported="true"/>
+</BioModelInfos>

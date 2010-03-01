@@ -95,7 +95,7 @@ public class VCMetaData {
 				Resource subject = arg0.getSubject();
 				String nameSpace = subject.getNameSpace();
 				if (nameSpace!=null && !nameSpace.toString().equals("#") && !nameSpace.equals(resource.getNameSpace())){
-					System.out.println("resouce mismatch: "+subject+" :: "+resource+":   namespace S: "+nameSpace+" differs from R: "+resource.getNameSpace());
+//					System.out.println("resouce mismatch: "+subject+" :: "+resource+":   namespace S: "+nameSpace+" differs from R: "+resource.getNameSpace());
 					return false;
 				}
 				String resourceString = resource.toString();
