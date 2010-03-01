@@ -3,10 +3,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -21,7 +17,6 @@ import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -56,10 +51,10 @@ import cbit.vcell.messaging.admin.DatePanel;
  * @author: Ion Moraru
  */
 public class DatabaseWindowPanel extends JPanel {
-	public interface SearchCriterion {
+	public static interface SearchCriterion {
 		boolean meetCriterion(VCDocumentInfo docInfo);
 	}	
-	class SearchByName implements SearchCriterion {
+	static class SearchByName implements SearchCriterion {
 		private String namePattern = null;
 		
 		public SearchByName(String np) {
@@ -77,7 +72,7 @@ public class DatabaseWindowPanel extends JPanel {
 		}
 	}
 	
-	class SearchByDate implements SearchCriterion {
+	static class SearchByDate implements SearchCriterion {
 		private Date startDate = null;
 		private Date endDate = null;
 		
@@ -88,8 +83,9 @@ public class DatabaseWindowPanel extends JPanel {
 
 		public boolean meetCriterion(VCDocumentInfo docInfo) {
 			
-			Date versionDate = docInfo.getVersion().getDate();
-			if (versionDate.compareTo(startDate) >= 0 && versionDate.compareTo(endDate) <= 0) {
+			Date versionDate = docInfo.getVersion().getDate();	
+			Date newEndDate = new Date(endDate.getTime() + 24*3600*1000);	// add one day to end date
+			if (versionDate.compareTo(startDate) >= 0 && versionDate.compareTo(newEndDate) <= 0) {
 				return true;
 			}
 			return false;
@@ -204,13 +200,13 @@ public class DatabaseWindowPanel extends JPanel {
 		}
 		
 		private void initialize() {			
-			Dimension d = new Dimension(120, 25);
+			Dimension d = new Dimension(140, 25);
 			
 			JLabel nameLabel = new JLabel("Name Containing Text : ");
 			nameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			nameLabel.setPreferredSize(d);
 			nameSearchTextField = new TextFieldAutoCompletion();
-			nameSearchTextField.setColumns(50);
+			nameSearchTextField.setColumns(45);
 			advancedButton = new JLabel("<html><u>Advanced &gt;&gt;</u></html>");
 			advancedButton.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
 			advancedButton.setForeground(Color.blue);
@@ -230,12 +226,12 @@ public class DatabaseWindowPanel extends JPanel {
 			searchButton = new JButton("Search " + Search_Doc_Type[tabIndex] + "s Now");
 			cancelButton = new JButton("Cancel");
 			 
-			JPanel namePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			JPanel namePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
 			namePanel.add(nameLabel);
 			namePanel.add(nameSearchTextField);
 			namePanel.add(advancedButton);
 			
-			JPanel datePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			JPanel datePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
 			datePanel.add(dateLabel);
 			datePanel.add(startDatePanel);
 			datePanel.add(andLabel);
