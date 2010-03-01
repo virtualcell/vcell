@@ -7,7 +7,9 @@ package cbit.vcell.desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Vector;
+
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -24,12 +26,21 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
+
+import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.desktop.DatabaseWindowPanel.SearchCriterion;
+import cbit.vcell.clientdb.DatabaseEvent;
+import cbit.vcell.clientdb.DatabaseListener;
+import cbit.vcell.clientdb.DocumentManager;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)
@@ -37,17 +48,15 @@ import org.vcell.util.document.VersionInfo;
  */
 public class MathModelDbTreePanel extends JPanel {
 	private JTree ivjJTree1 = null;
-//	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
 	private boolean ivjConnPtoP2Aligning = false;
-	private cbit.vcell.clientdb.DocumentManager ivjDocumentManager = null;
+	private DocumentManager ivjDocumentManager = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private JScrollPane ivjJScrollPane1 = null;
 	private boolean ivjConnPtoP4Aligning = false;
 	private TreeSelectionModel ivjselectionModel1 = null;
-	private org.vcell.util.document.VersionInfo fieldSelectedVersionInfo = null;
-//	private VariableHeightLayoutCache ivjLocalSelectionModelVariableHeightLayoutCache = null;
+	private VersionInfo fieldSelectedVersionInfo = null;
 	private boolean ivjConnPtoP5Aligning = false;
-	private org.vcell.util.document.VersionInfo ivjselectedVersionInfo1 = null;
+	private VersionInfo ivjselectedVersionInfo1 = null;
 	private JMenuItem ivjJMenuItemDelete = null;
 	private JMenuItem ivjJMenuItemOpen = null;
 	protected transient ActionListener aActionListener = null;
@@ -76,7 +85,7 @@ public class MathModelDbTreePanel extends JPanel {
 	private JMenuItem ivjJMenuItemArchive = null;
 	private JMenuItem ivjJMenuItemPublish = null;
 
-class IvjEventHandler implements cbit.vcell.clientdb.DatabaseListener, java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
+class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == MathModelDbTreePanel.this.getJMenuItemDelete()) 
 				connEtoC7(e);
@@ -99,16 +108,16 @@ class IvjEventHandler implements cbit.vcell.clientdb.DatabaseListener, java.awt.
 			if (e.getSource() == MathModelDbTreePanel.this.getJMenuItemPublish()) 
 				connEtoC23(e);
 		};
-		public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
+		public void databaseDelete(DatabaseEvent event) {
 			if (event.getSource() == MathModelDbTreePanel.this.getDocumentManager()) 
 				connEtoC14(event);
 		};
-		public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent event) {};
-		public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
+		public void databaseInsert(DatabaseEvent event) {};
+		public void databaseRefresh(DatabaseEvent event) {
 			if (event.getSource() == MathModelDbTreePanel.this.getDocumentManager()) 
 				connEtoC13(event);
 		};
-		public void databaseUpdate(cbit.vcell.clientdb.DatabaseEvent event) {
+		public void databaseUpdate(DatabaseEvent event) {
 			if (event.getSource() == MathModelDbTreePanel.this.getDocumentManager()) 
 				connEtoC3(event);
 		};
@@ -156,49 +165,21 @@ public MathModelDbTreePanel() {
 }
 
 /**
- * BioModelTreePanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public MathModelDbTreePanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-
-
-/**
- * BioModelTreePanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public MathModelDbTreePanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * BioModelTreePanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public MathModelDbTreePanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
-
-/**
  * Comment
  */
 private void actionsOnClick(MouseEvent mouseEvent) {
 	if (mouseEvent.getClickCount() == 2 && getSelectedVersionInfo() instanceof MathModelInfo) {
-		fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, cbit.vcell.client.DatabaseWindowManager.BM_MM_GM_DOUBLE_CLICK_ACTION));
+		fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, DatabaseWindowManager.BM_MM_GM_DOUBLE_CLICK_ACTION));
 		return;
 	}	
 	if (SwingUtilities.isRightMouseButton(mouseEvent) && getSelectedVersionInfo() instanceof MathModelInfo && (! getPopupMenuDisabled())) {
-		org.vcell.util.document.Version version = getSelectedVersionInfo().getVersion();
+		Version version = getSelectedVersionInfo().getVersion();
 		boolean isOwner = version.getOwner().compareEqual(getDocumentManager().getUser());
 		configureArhivePublishMenuState(version,isOwner);
-		getJMenuItemPermission().setEnabled(isOwner && !version.getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published));
+		getJMenuItemPermission().setEnabled(isOwner && !version.getFlag().compareEqual(VersionFlag.Published));
 		getJMenuItemDelete().setEnabled(isOwner &&
-			!version.getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived) &&
-			!version.getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published));
+			!version.getFlag().compareEqual(VersionFlag.Archived) &&
+			!version.getFlag().compareEqual(VersionFlag.Published));
 		getMathModelPopupMenu().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 	}
 }
@@ -213,7 +194,7 @@ public void addActionListener(ActionListener newListener) {
 /**
  * Comment
  */
-private void anotherEditionMenuItemEnable(org.vcell.util.document.VersionInfo vInfo) throws DataAccessException {
+private void anotherEditionMenuItemEnable(VersionInfo vInfo) throws DataAccessException {
 
 	boolean bAnotherEditionMenuItem = false;
 	if (vInfo!=null){
@@ -238,7 +219,7 @@ private void anotherEditionMenuItemEnable(org.vcell.util.document.VersionInfo vI
  * Insert the method's description here.
  * Creation date: (5/23/2006 8:15:47 AM)
  */
-private void configureArhivePublishMenuState(org.vcell.util.document.Version version,boolean isOwner) {
+private void configureArhivePublishMenuState(Version version,boolean isOwner) {
 	
 	getJMenuItemArchive().setEnabled(
 		isOwner
@@ -341,7 +322,7 @@ private void connEtoC12() {
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC13(cbit.vcell.clientdb.DatabaseEvent arg1) {
+private void connEtoC13(DatabaseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -361,7 +342,7 @@ private void connEtoC13(cbit.vcell.clientdb.DatabaseEvent arg1) {
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC14(cbit.vcell.clientdb.DatabaseEvent arg1) {
+private void connEtoC14(DatabaseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -457,7 +438,7 @@ private void connEtoC18(java.awt.event.ActionEvent arg1) {
  * @param value cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC19(org.vcell.util.document.VersionInfo value) {
+private void connEtoC19(VersionInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -477,7 +458,7 @@ private void connEtoC19(org.vcell.util.document.VersionInfo value) {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoC2(DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -497,7 +478,7 @@ private void connEtoC2(cbit.vcell.clientdb.DocumentManager value) {
  * @param value cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC20(org.vcell.util.document.VersionInfo value) {
+private void connEtoC20(VersionInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -517,7 +498,7 @@ private void connEtoC20(org.vcell.util.document.VersionInfo value) {
  * @param value cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC21(org.vcell.util.document.VersionInfo value) {
+private void connEtoC21(VersionInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -577,7 +558,7 @@ private void connEtoC23(java.awt.event.ActionEvent arg1) {
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(cbit.vcell.clientdb.DatabaseEvent arg1) {
+private void connEtoC3(DatabaseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -714,11 +695,11 @@ private void connEtoC9(java.awt.event.ActionEvent arg1) {
  * @param value cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(org.vcell.util.document.VersionInfo value) {
+private void connEtoM1(VersionInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
-		getMathModelMetaDataPanel().setMathModelInfo((org.vcell.util.document.MathModelInfo)getselectedVersionInfo1());
+		getMathModelMetaDataPanel().setMathModelInfo((MathModelInfo)getselectedVersionInfo1());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -773,7 +754,7 @@ private void connEtoM5(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoM7(DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -986,7 +967,7 @@ private void connPtoP5SetTarget() {
 /**
  * Comment
  */
-private void documentManager_DatabaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
+private void documentManager_DatabaseDelete(DatabaseEvent event) {
 	if (event.getOldVersionInfo() instanceof MathModelInfo && getSelectedVersionInfo() instanceof MathModelInfo) {
 		MathModelInfo selectedMMInfo = (MathModelInfo)getSelectedVersionInfo();
 		MathModelInfo eventMMInfo = (MathModelInfo)event.getOldVersionInfo();
@@ -1001,7 +982,7 @@ private void documentManager_DatabaseDelete(cbit.vcell.clientdb.DatabaseEvent ev
 /**
  * Comment
  */
-private void documentManager_DatabaseUpdate(cbit.vcell.clientdb.DatabaseEvent event) {
+private void documentManager_DatabaseUpdate(DatabaseEvent event) {
 	if (event.getNewVersionInfo() instanceof MathModelInfo && getSelectedVersionInfo() instanceof MathModelInfo) {
 		MathModelInfo selectedMMInfo = (MathModelInfo)getSelectedVersionInfo();
 		MathModelInfo eventMMInfo = (MathModelInfo)event.getNewVersionInfo();
@@ -1025,7 +1006,7 @@ private void enableToolTips(JTree tree) {
  * 
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-private void expandTreeToOwner() throws org.vcell.util.DataAccessException {
+private void expandTreeToOwner() throws DataAccessException {
 	//
 	// expand tree up to and including the "Owner" subtree's first children
 	//
@@ -1056,7 +1037,7 @@ protected void fireActionPerformed(ActionEvent e) {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public DocumentManager getDocumentManager() {
 	// user code begin {1}
 	// user code end
 	return ivjDocumentManager;
@@ -1635,15 +1616,6 @@ private javax.swing.JTree getJTree1() {
 }
 
 /**
- * Method generated to support the promotion of the latestVersionOnly attribute.
- * @return boolean
- */
-public boolean getLatestVersionOnly() {
-	return getMathModelDbTreeModel().getLatestOnly();
-}
-
-
-/**
  * Return the LocalSelectionModelVariableHeightLayoutCache property value.
  * @return javax.swing.tree.VariableHeightLayoutCache
  */
@@ -1665,7 +1637,7 @@ private javax.swing.tree.VariableHeightLayoutCache getLocalSelectionModelVariabl
 /**
  * Comment
  */
-public javax.swing.tree.TreeCellRenderer getMathModelCellRenderer() {
+private javax.swing.tree.TreeCellRenderer getMathModelCellRenderer() {
 	User sessionUser = (getDocumentManager()!=null)?(getDocumentManager().getUser()):(null);
 	return new MathModelCellRenderer(sessionUser);
 }
@@ -1679,7 +1651,7 @@ public javax.swing.tree.TreeCellRenderer getMathModelCellRenderer() {
 private MathModelDbTreeModel getMathModelDbTreeModel() {
 	if (ivjMathModelDbTreeModel == null) {
 		try {
-			ivjMathModelDbTreeModel = new cbit.vcell.desktop.MathModelDbTreeModel();
+			ivjMathModelDbTreeModel = new MathModelDbTreeModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1700,7 +1672,7 @@ private MathModelDbTreeModel getMathModelDbTreeModel() {
 private MathModelMetaDataPanel getMathModelMetaDataPanel() {
 	if (ivjMathModelMetaDataPanel == null) {
 		try {
-			ivjMathModelMetaDataPanel = new cbit.vcell.desktop.MathModelMetaDataPanel();
+			ivjMathModelMetaDataPanel = new MathModelMetaDataPanel();
 			ivjMathModelMetaDataPanel.setName("MathModelMetaDataPanel");
 			// user code begin {1}
 			// user code end
@@ -1800,27 +1772,8 @@ private MathModelInfo[] getMathModelVersionDates(MathModelInfo thisMathModelInfo
  * @return The popupMenuDisabled property value.
  * @see #setPopupMenuDisabled
  */
-public boolean getPopupMenuDisabled() {
+private boolean getPopupMenuDisabled() {
 	return fieldPopupMenuDisabled;
-}
-
-
-/**
- * Comment
- */
-public org.vcell.util.document.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
-	if (selectedBioModelNode.getUserObject() instanceof BioModelInfo){
-		return (BioModelInfo)selectedBioModelNode.getUserObject();
-	}
-	return null;
-}
-
-
-/**
- * Comment
- */
-public Object getSelectedObject(BioModelNode selectedBioModelNode) {
-	return selectedBioModelNode.getUserObject();
 }
 
 
@@ -1829,7 +1782,7 @@ public Object getSelectedObject(BioModelNode selectedBioModelNode) {
  * @return The selectedVersionInfo property value.
  * @see #setSelectedVersionInfo
  */
-public org.vcell.util.document.VersionInfo getSelectedVersionInfo() {
+public VersionInfo getSelectedVersionInfo() {
 	return fieldSelectedVersionInfo;
 }
 
@@ -1839,7 +1792,7 @@ public org.vcell.util.document.VersionInfo getSelectedVersionInfo() {
  * @return cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.document.VersionInfo getselectedVersionInfo1() {
+private VersionInfo getselectedVersionInfo1() {
 	// user code begin {1}
 	// user code end
 	return ivjselectedVersionInfo1;
@@ -1935,7 +1888,7 @@ private void initialize() {
 /**
  * Comment
  */
-private void latestEditionMenuItemEnable(org.vcell.util.document.VersionInfo vInfo) throws DataAccessException {
+private void latestEditionMenuItemEnable(VersionInfo vInfo) throws DataAccessException {
 
 	boolean bLatestEditionMenuItem = false;
 
@@ -1989,7 +1942,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -2003,7 +1955,7 @@ public static void main(java.lang.String[] args) {
 /**
  * Comment
  */
-private void previousEditionMenuItemEnable(org.vcell.util.document.VersionInfo vInfo) throws DataAccessException {
+private void previousEditionMenuItemEnable(VersionInfo vInfo) throws DataAccessException {
 
 	boolean bPreviousEditionMenuItem = false;
 	if (vInfo!=null){
@@ -2052,12 +2004,16 @@ private void refireActionPerformed(ActionEvent e) {
 }
 
 
+public void refresh(ArrayList<SearchCriterion> newFilterList) throws DataAccessException{
+	getMathModelDbTreeModel().refreshTree(newFilterList);
+	expandTreeToOwner();
+}
+
 /**
  * 
  * @exception org.vcell.util.DataAccessException The exception description.
  */
 private void refresh() throws DataAccessException{
-	//getMathModelDbTreeModel().reload();
 	getMathModelDbTreeModel().refreshTree();
 	expandTreeToOwner();
 }
@@ -2068,26 +2024,15 @@ public void removeActionListener(ActionListener newListener) {
 	return;
 }
 
-
-/**
- * This method places the divider location programatically. Accepts values from 0 to 1.
- * Creation date: (7/17/2002 4:26:44 PM)
- * @param position double
- */
-public void setDividerPosition(double position) {
-	ivjJSplitPane1.setDividerLocation(position);
-}
-
-
 /**
  * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager newValue) {
+public void setDocumentManager(DocumentManager newValue) {
 	if (ivjDocumentManager != newValue) {
 		try {
-			cbit.vcell.clientdb.DocumentManager oldValue = getDocumentManager();
+			DocumentManager oldValue = getDocumentManager();
 			/* Stop listening for events from the current object */
 			if (ivjDocumentManager != null) {
 				ivjDocumentManager.removeDatabaseListener(ivjEventHandler);
@@ -2151,8 +2096,8 @@ public void setPopupMenuDisabled(boolean popupMenuDisabled) {
  * @param selectedVersionInfo The new value for the property.
  * @see #getSelectedVersionInfo
  */
-private void setSelectedVersionInfo(org.vcell.util.document.VersionInfo selectedVersionInfo) {
-	org.vcell.util.document.VersionInfo oldValue = fieldSelectedVersionInfo;
+private void setSelectedVersionInfo(VersionInfo selectedVersionInfo) {
+	VersionInfo oldValue = fieldSelectedVersionInfo;
 	fieldSelectedVersionInfo = selectedVersionInfo;
 	firePropertyChange("selectedVersionInfo", oldValue, selectedVersionInfo);
 }
@@ -2163,10 +2108,10 @@ private void setSelectedVersionInfo(org.vcell.util.document.VersionInfo selected
  * @param newValue cbit.sql.VersionInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setselectedVersionInfo1(org.vcell.util.document.VersionInfo newValue) {
+private void setselectedVersionInfo1(VersionInfo newValue) {
 	if (ivjselectedVersionInfo1 != newValue) {
 		try {
-			org.vcell.util.document.VersionInfo oldValue = getselectedVersionInfo1();
+			VersionInfo oldValue = getselectedVersionInfo1();
 			ivjselectedVersionInfo1 = newValue;
 			connEtoC19(ivjselectedVersionInfo1);
 			connEtoC20(ivjselectedVersionInfo1);
@@ -2220,7 +2165,7 @@ private void setselectionModel1(javax.swing.tree.TreeSelectionModel newValue) {
  * Comment
  */
 private void splitPaneResizeWeight() {
-	org.vcell.util.BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
+	BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
 }
 
 

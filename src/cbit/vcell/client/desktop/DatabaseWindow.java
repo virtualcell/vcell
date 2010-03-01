@@ -16,9 +16,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
+import javax.swing.UIManager;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.document.VersionInfo;
 
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.TopLevelWindowManager;
@@ -62,7 +62,7 @@ public class DatabaseWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjACLMenuItem = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private DatabaseWindowManager ivjdatabaseWindowManager1 = null;
-	private DatabaseWindowPanel ivjdatabaseWindowPanel1 = null;
+	private DatabaseWindowPanel ivjdatabaseWindowPanel = null;
 	private JMenuItem menuItemReconnect = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
@@ -95,7 +95,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == DatabaseWindow.this && (evt.getPropertyName().equals("databaseWindowManager"))) 
 				connPtoP1SetTarget();
-			if (evt.getSource() == DatabaseWindow.this.getdatabaseWindowPanel1() && (evt.getPropertyName().equals("selectedDocumentInfo"))) 
+			if (evt.getSource() == DatabaseWindow.this.getDatabaseWindowPanel() && (evt.getPropertyName().equals("selectedDocumentInfo"))) 
 				connEtoC12(evt);
 		};
 	};
@@ -363,7 +363,7 @@ private void connEtoM1(DatabaseWindowManager value) {
 		// user code begin {1}
 		// user code end
 		if ((getdatabaseWindowManager1() != null)) {
-			setdatabaseWindowPanel1(getdatabaseWindowManager1().getDatabaseWindowPanel());
+			getDatabaseWindowPanel().setDatabaseWindowManager(getdatabaseWindowManager1());
 		}
 		// user code begin {2}
 		// user code end
@@ -535,19 +535,6 @@ private DatabaseWindowManager getdatabaseWindowManager1() {
 	return ivjdatabaseWindowManager1;
 }
 
-
-/**
- * Return the databaseWindowPanel1 property value.
- * @return cbit.vcell.client.desktop.DatabaseWindowPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private DatabaseWindowPanel getdatabaseWindowPanel1() {
-	// user code begin {1}
-	// user code end
-	return ivjdatabaseWindowPanel1;
-}
-
-
 /**
  * Return the JCheckBoxMenuItem1 property value.
  * @return javax.swing.JCheckBoxMenuItem
@@ -581,7 +568,8 @@ private javax.swing.JPanel getJFrameContentPane() {
 			ivjJFrameContentPane = new javax.swing.JPanel();
 			ivjJFrameContentPane.setName("JFrameContentPane");
 			ivjJFrameContentPane.setLayout(new java.awt.BorderLayout());
-			getJFrameContentPane().add(getStatusBarPane(), "South");
+			ivjJFrameContentPane.add(getStatusBarPane(), BorderLayout.SOUTH);
+			ivjJFrameContentPane.add(getDatabaseWindowPanel(), BorderLayout.CENTER);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -591,6 +579,13 @@ private javax.swing.JPanel getJFrameContentPane() {
 		}
 	}
 	return ivjJFrameContentPane;
+}
+
+public DatabaseWindowPanel getDatabaseWindowPanel() {
+	if (ivjdatabaseWindowPanel == null) {
+		ivjdatabaseWindowPanel = new DatabaseWindowPanel();
+	}
+	return ivjdatabaseWindowPanel;
 }
 
 /**
@@ -1118,9 +1113,9 @@ private javax.swing.JPanel getStatusBarPane() {
 			ivjStatusBarPane = new javax.swing.JPanel();
 			ivjStatusBarPane.setName("StatusBarPane");
 			ivjStatusBarPane.setLayout(new java.awt.BorderLayout());
-			getStatusBarPane().add(getStatusMsgConnection(), "Center");
-			getStatusBarPane().add(getJPanelMemStatus(), "East");
-			getStatusBarPane().add(getJProgressBarConnection(), "West");
+			ivjStatusBarPane.add(getStatusMsgConnection(), "Center");
+			ivjStatusBarPane.add(getJPanelMemStatus(), "East");
+			ivjStatusBarPane.add(getJProgressBarConnection(), "West");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1237,7 +1232,7 @@ private void initialize() {
 		setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 		setSize(666, 695);
 		setJMenuBar(getDatabaseWindowJMenuBar());
-		setContentPane(getJFrameContentPane());
+		add(getJFrameContentPane());
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -1252,6 +1247,8 @@ private void initialize() {
  */
 public static void main(java.lang.String[] args) {
 	try {
+		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		
 		DatabaseWindow aDatabaseWindow;
 		aDatabaseWindow = new DatabaseWindow();
 		aDatabaseWindow.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -1259,7 +1256,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		aDatabaseWindow.setVisible(true);
 		java.awt.Insets insets = aDatabaseWindow.getInsets();
 		aDatabaseWindow.setSize(aDatabaseWindow.getWidth() + insets.left + insets.right, aDatabaseWindow.getHeight() + insets.top + insets.bottom);
 		aDatabaseWindow.setVisible(true);
@@ -1322,47 +1318,6 @@ private void setdatabaseWindowManager1(DatabaseWindowManager newValue) {
 	// user code begin {3}
 	// user code end
 }
-
-/**
- * Set the databaseWindowPanel1 to a new value.
- * @param newValue cbit.vcell.client.desktop.DatabaseWindowPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setdatabaseWindowPanel1(DatabaseWindowPanel newValue) {
-	if (ivjdatabaseWindowPanel1 != newValue) {
-		try {
-			/* Stop listening for events from the current object */
-			if (ivjdatabaseWindowPanel1 != null) {
-				ivjdatabaseWindowPanel1.removePropertyChangeListener(ivjEventHandler);
-			}
-			ivjdatabaseWindowPanel1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjdatabaseWindowPanel1 != null) {
-				ivjdatabaseWindowPanel1.addPropertyChangeListener(ivjEventHandler);
-			}
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/24/2004 11:39:07 AM)
- * @param c java.awt.Component
- */
-public void setWorkArea(Component c) {
-	getContentPane().add(c, BorderLayout.CENTER);
-}
-
 
 /**
  * Comment
