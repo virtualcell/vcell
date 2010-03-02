@@ -135,7 +135,7 @@ public class EventsSummaryTableModel extends ManageTableModel implements Propert
 						if (event.getTriggerExpression() == null) {
 							return null; 
 						} else {
-							return new ScopedExpression(event.getTriggerExpression(),fieldSimContext.getNameScope(), true);
+							return new ScopedExpression(event.getTriggerExpression(), event.getNameScope(), true);
 						}
 					}
 					case COLUMN_EVENT_DELAY_EXPR: {
@@ -143,7 +143,7 @@ public class EventsSummaryTableModel extends ManageTableModel implements Propert
 						if (delay == null) {
 							return "None"; 
 						} else {
-							return new ScopedExpression(delay.getDurationExpression(),fieldSimContext.getNameScope(), true);
+							return new ScopedExpression(delay.getDurationExpression(), event.getNameScope(), true);
 						}
 					}
 					case COLUMN_EVENT_ASSIGN_VARS_LIST: {
