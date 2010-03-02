@@ -1,5 +1,6 @@
 package cbit.vcell.opt;
 
+import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -100,7 +101,7 @@ public boolean compareEqual(Matchable obj)
 	if (obj != null && obj instanceof Parameter) 
 	{
 		Parameter param = (Parameter) obj;
-		if (name != param.getName())
+		if (Compare.isEqual(name, param.getName()))
 		{
 			return false;
 		}
