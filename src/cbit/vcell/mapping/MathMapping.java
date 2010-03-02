@@ -1814,8 +1814,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < speciesContextSpecs.length; i++){
 		SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
-		Expression initExpr = new Expression(initParm.getExpression());
 		if (initParm!=null){
+			Expression initExpr = new Expression(initParm.getExpression());
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
 			String[] symbols = initExpr.getSymbols();
 			// Check if 'initExpr' has other speciesContexts in its expression, need to replace it with 'spContext_init'

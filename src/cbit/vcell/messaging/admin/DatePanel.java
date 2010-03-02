@@ -10,13 +10,13 @@ import java.util.Date;
  */
 public class DatePanel extends javax.swing.JPanel {
 	private static final Dimension COMBO_BOX_SIZE = new java.awt.Dimension(50, 20);
+	private static final Dimension YEAR_COMBO_BOX_SIZE = new java.awt.Dimension(65, 20);
 	private javax.swing.JLabel ivjJLabel1 = null;
 	private javax.swing.JLabel ivjJLabel2 = null;
 	private javax.swing.JComboBox ivjDayCombo = null;
 	private javax.swing.JComboBox ivjMonthCombo = null;
 	private javax.swing.JComboBox ivjYearCombo = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private java.awt.FlowLayout ivjDatePanelFlowLayout = null;
 	java.util.Calendar currcal = null;
 
 class IvjEventHandler implements java.awt.event.ItemListener {
@@ -106,8 +106,9 @@ private void connEtoC3() {
  */
 public void datePanel_Initialize() {
 	currcal = new java.util.GregorianCalendar();
-	for (int i = 0; i <= 10; i ++) {
-		getYearCombo().addItem((i + currcal.get(java.util.Calendar.YEAR)) + "");
+	int currYear = currcal.get(java.util.Calendar.YEAR);
+	for (int i = -10; i <= 0; i ++) {
+		getYearCombo().addItem((i + currYear) + "");
 	}
 	for (int i = 1; i <= 12; i ++) {
 		getMonthCombo().addItem(i + "");
@@ -250,9 +251,9 @@ private javax.swing.JComboBox getYearCombo() {
 			ivjYearCombo = new javax.swing.JComboBox();
 			ivjYearCombo.setName("YearCombo");
 			ivjYearCombo.setToolTipText("Year");
-			ivjYearCombo.setMaximumSize(COMBO_BOX_SIZE);
-			ivjYearCombo.setPreferredSize(COMBO_BOX_SIZE);
-			ivjYearCombo.setMinimumSize(COMBO_BOX_SIZE);
+			ivjYearCombo.setMaximumSize(YEAR_COMBO_BOX_SIZE);
+			ivjYearCombo.setPreferredSize(YEAR_COMBO_BOX_SIZE);
+			ivjYearCombo.setMinimumSize(YEAR_COMBO_BOX_SIZE);
 			ivjYearCombo.setEditable(true);
 			// user code begin {1}
 			// user code end
