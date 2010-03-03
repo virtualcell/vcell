@@ -1,36 +1,47 @@
-package cbit.vcell.desktop;
-import cbit.image.VCImageInfo;
-import cbit.vcell.mathmodel.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.Font;
-import java.math.BigDecimal;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.math.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.model.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.geometry.GeometryInfo;
-/**
- * Insert the type's description here.
- * Creation date: (7/27/2000 6:30:41 PM)
- * @author: 
- */
-import javax.swing.*;
 
+package cbit.vcell.desktop;
+
+import java.awt.Font;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JTree;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
+import cbit.image.VCImageInfo;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SolverResultSetInfo;
  
 public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer {
+	static class VCDocumentInfoNode {
+		private VCDocumentInfo vcDocInfo = null;
+	
+		public VCDocumentInfoNode(VCDocumentInfo vcDocInfo) {
+			super();
+			this.vcDocInfo = vcDocInfo;
+		}
+	
+		public final VCDocumentInfo getVCDocumentInfo() {
+			return vcDocInfo;
+		}		
+	}
+
 	protected javax.swing.Icon fieldMathModelIcon = null;
 	protected javax.swing.Icon fieldBioModelIcon = null;
 	protected javax.swing.Icon fieldBioModelErrorIcon = null;
@@ -118,8 +129,9 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		//
 		// Check if node is a SolverResultSetInfo
 		//
-		if (node.getUserObject() instanceof SolverResultSetInfo) {
-			setComponentProperties(component, (SolverResultSetInfo)node.getUserObject());
+		Object userObject = node.getUserObject();
+		if (userObject instanceof SolverResultSetInfo) {
+			setComponentProperties(component, (SolverResultSetInfo)userObject);
 			if (leaf){
 				setIcon(fieldFolderClosedIcon);
 			}
@@ -158,11 +170,11 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				//component.setToolTipText("Application contains invalid simulation results");
 			//}
 			
-		}else if (node.getUserObject() instanceof SimulationInfo) {
+		}else if (userObject instanceof SimulationInfo) {
 			//
 			// Check if node is a SimulationInfo
 			//
-			setComponentProperties(component, (SimulationInfo)node.getUserObject());
+			setComponentProperties(component, (SimulationInfo)userObject);
 			int maxErrorLevel = getMaxErrorLevel(node);
 			if (maxErrorLevel==BioModelNode.ERROR_POSSIBLE){
 				setIcon(fieldSimulationWarningIcon);
@@ -172,16 +184,16 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				component.setToolTipText("Simulation contains invalid results");
 			}
 			
-		}else if (node.getUserObject() instanceof String && node.getChildCount()==0){
+		}else if (userObject instanceof String && node.getChildCount()==0){
 			component.setToolTipText(null);
-			component.setText((String)node.getUserObject());
+			component.setText((String)userObject);
 			
-		}else if (node.getUserObject() instanceof BioModelInfo) {
+		}else if (userObject instanceof BioModelInfo) {
 			//
 			// Check if node is a BioModelInfo
 			//
-			setComponentProperties(component,(BioModelInfo)node.getUserObject());
-			bLoaded = isLoaded((BioModelInfo)node.getUserObject());
+			setComponentProperties(component,(BioModelInfo)userObject);
+			bLoaded = isLoaded((BioModelInfo)userObject);
 			int maxErrorLevel = getMaxErrorLevel(node);
 			if (maxErrorLevel==BioModelNode.ERROR_POSSIBLE){
 				setIcon(fieldBioModelWarningIcon);
@@ -191,12 +203,12 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				component.setToolTipText("BioModel version: Has invalid simulation results");
 			}
 			
-		}else if (node.getUserObject() instanceof String && node.getChildCount()>0 && ((BioModelNode)node.getChildAt(0)).getUserObject() instanceof BioModelInfo){
+		}else if (userObject instanceof String && node.getChildCount()>0 && ((BioModelNode)node.getChildAt(0)).getUserObject() instanceof BioModelInfo){
 			//
 			// Check if node is a BioModelName (String), with children (at least one version of biomodel), and if the child is a
 			// BioModelInfo node
 			//
-			String label = (String)node.getUserObject();
+			String label = (String)userObject;
 			component.setToolTipText("BioModel");
 			component.setText(label);
 			//
@@ -234,32 +246,32 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				}
 			}
 			
-		} else if (node.getUserObject() instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof BioModelInfo){
+		} else if (userObject instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof BioModelInfo){
 			//
 			// Check if node is a User, with at least one child which is a string (BioModel name)
 			// and if the child's child is a BioModelInfo node
 			//
-			String label = ((User)node.getUserObject()).getName();
+			String label = ((User)userObject).getName();
 			component.setToolTipText("User Name");
 			component.setText(label);
 			
-			if (isLoaded((User)node.getUserObject())) {
+			if (isLoaded((User)userObject)) {
 				bLoaded = true;
 			}
 			
-		} else if (node.getUserObject() instanceof MathModelInfo) {
+		} else if (userObject instanceof MathModelInfo) {
 			//
 			// Check if node is a MathModelInfo node
 			//
-			setComponentProperties(component,(MathModelInfo)node.getUserObject());
-			bLoaded = isLoaded((MathModelInfo)node.getUserObject());
+			setComponentProperties(component,(MathModelInfo)userObject);
+			bLoaded = isLoaded((MathModelInfo)userObject);
 			
-		}else if (node.getUserObject() instanceof String && node.getChildCount()>0 && ((BioModelNode)node.getChildAt(0)).getUserObject() instanceof MathModelInfo){
+		}else if (userObject instanceof String && node.getChildCount()>0 && ((BioModelNode)node.getChildAt(0)).getUserObject() instanceof MathModelInfo){
 			//
 			// Check if node is a MathModel name (String), with children (at least one version of mathmodel), and 
 			// if the child is a MathModelInfo node
 			//
-			String label = (String)node.getUserObject();
+			String label = (String)userObject;
 			component.setToolTipText("Mathematical Model");
 			component.setText(label);
 			//
@@ -272,32 +284,32 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				}
 			}
 			
-		} else if (node.getUserObject() instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof MathModelInfo){
+		} else if (userObject instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof MathModelInfo){
 			//
 			// Check if node is a User, with at least one child which is a string (Mathmodel name)
 			// and if the child's child is a MathModelInfo node
 			//
-			String label = ((User)node.getUserObject()).getName();
+			String label = ((User)userObject).getName();
 			component.setToolTipText("User Name");
 			component.setText(label);
 			
-			if (isLoaded((User)node.getUserObject())) {
+			if (isLoaded((User)userObject)) {
 				bLoaded = true;
 			}
 			
-		} else if (node.getUserObject() instanceof cbit.vcell.geometry.GeometryInfo) {
+		} else if (userObject instanceof cbit.vcell.geometry.GeometryInfo) {
 			//
 			// Check if node is a GeometryInfo
 			//
-			setComponentProperties(component,(GeometryInfo)node.getUserObject());
-			bLoaded = isLoaded((GeometryInfo)node.getUserObject());
+			setComponentProperties(component,(GeometryInfo)userObject);
+			bLoaded = isLoaded((GeometryInfo)userObject);
 			
-		}else if (node.getUserObject() instanceof String && node.getChildCount()>0 && ((BioModelNode)node.getChildAt(0)).getUserObject() instanceof GeometryInfo){
+		}else if (userObject instanceof String && node.getChildCount()>0 && ((BioModelNode)node.getChildAt(0)).getUserObject() instanceof GeometryInfo){
 			//
 			// Check if node is a Geometry name (String), with children (at least one version of Geometry), and 
 			// if the child is a GeometryInfo node
 			//
-			String label = (String)node.getUserObject();
+			String label = (String)userObject;
 			component.setToolTipText("Geometry");
 			component.setText(label);
 			//
@@ -310,59 +322,59 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				}
 			}
 			
-		} else if (node.getUserObject() instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof GeometryInfo){
+		} else if (userObject instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof GeometryInfo){
 			//
 			// Check if node is a User, with at least one child which is a string (Geometry name)
 			// and if the child's child is a GeometryInfo node
 			//
-			String label = ((User)node.getUserObject()).getName();
+			String label = ((User)userObject).getName();
 			component.setToolTipText("User Name");
 			component.setText(label);
 			
-			if (isLoaded((User)node.getUserObject())) {
+			if (isLoaded((User)userObject)) {
 				bLoaded = true;
 			}
 			
-		} else if (node.getUserObject() instanceof String && node.getChildCount()>0){
+		} else if (userObject instanceof String && node.getChildCount()>0){
 			component.setToolTipText(null);
-			component.setText((String)node.getUserObject());
+			component.setText((String)userObject);
 			
 		//}else if (node.getUserObject() instanceof MathInfo) {
 			//setComponentProperties(component,(MathInfo)node.getUserObject());
 			
-		}else if (node.getUserObject() instanceof VCImageInfo) {
-			setComponentProperties(component,(VCImageInfo)node.getUserObject());
+		}else if (userObject instanceof VCImageInfo) {
+			setComponentProperties(component,(VCImageInfo)userObject);
 			
-		}else if (node.getUserObject() instanceof Extent) {
-			setComponentProperties(component,(Extent)node.getUserObject());
+		}else if (userObject instanceof Extent) {
+			setComponentProperties(component,(Extent)userObject);
 						
-		}else if (node.getUserObject() instanceof Annotation) {
-			setComponentProperties(component,(Annotation)node.getUserObject());
+		}else if (userObject instanceof Annotation) {
+			setComponentProperties(component,(Annotation)userObject);
 						
-		}else if (node.getUserObject() instanceof MathModel) {
-			setComponentProperties(component,(MathModel)node.getUserObject());
+		}else if (userObject instanceof MathModel) {
+			setComponentProperties(component,(MathModel)userObject);
 			
-		}else if (node.getUserObject() instanceof BioModel) {
-			setComponentProperties(component,(BioModel)node.getUserObject());
+		}else if (userObject instanceof BioModel) {
+			setComponentProperties(component,(BioModel)userObject);
 			
-		} else if (node.getUserObject() instanceof SimulationContext) {
-			setComponentProperties(component, (SimulationContext)node.getUserObject());
-			bLoaded = isLoaded((SimulationContext)node.getUserObject());
+		} else if (userObject instanceof SimulationContext) {
+			setComponentProperties(component, (SimulationContext)userObject);
+			bLoaded = isLoaded((SimulationContext)userObject);
 			
-		} else if (node.getUserObject() instanceof Simulation) {
-			setComponentProperties(component, (Simulation)node.getUserObject());
+		} else if (userObject instanceof Simulation) {
+			setComponentProperties(component, (Simulation)userObject);
 			
-		} else if (node.getUserObject() instanceof MathDescription) {
-			setComponentProperties(component, (MathDescription)node.getUserObject());
+		} else if (userObject instanceof MathDescription) {
+			setComponentProperties(component, (MathDescription)userObject);
 			
-		} else if (node.getUserObject() instanceof Geometry) {
-			setComponentProperties(component, (Geometry)node.getUserObject());
+		} else if (userObject instanceof Geometry) {
+			setComponentProperties(component, (Geometry)userObject);
 			
-		}else if (node.getUserObject() instanceof User) {
-			setComponentProperties(component,(User)node.getUserObject());
+		}else if (userObject instanceof User) {
+			setComponentProperties(component,(User)userObject);
 
-		} else{
-			setComponentProperties(component,node.getUserObject());
+		} else {
+			setComponentProperties(component,userObject);
 			
 		}
 		

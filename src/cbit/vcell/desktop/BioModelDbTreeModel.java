@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import javax.swing.tree.MutableTreeNode;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
@@ -15,6 +17,7 @@ import org.vcell.util.document.User;
 import cbit.vcell.client.desktop.DatabaseWindowPanel.SearchCriterion;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
@@ -71,13 +74,15 @@ private BioModelNode createBaseTree() throws DataAccessException {
 		}
 	}
 	//
+	// create final tree
+	//
 	rootRootNode.add((BioModelNode)treeMap.remove(loginUser.getName().toLowerCase()));
-
-	BioModelNode otherUsersNode = new BioModelNode("Shared Models",true);
+	BioModelNode otherUsersNode = new BioModelNode("Shared BioModels",true);
 	rootRootNode.add(otherUsersNode);
-	Object[] bmnArr = treeMap.values().toArray();
-	for(int i = 0; i < bmnArr.length;i+= 1){
-		otherUsersNode.add((BioModelNode)bmnArr[i]);
+	for (BioModelNode userNode : treeMap.values()) {
+		for (int c = 0; c < userNode.getChildCount(); c ++) {
+			otherUsersNode.add((MutableTreeNode) userNode.getChildAt(c));
+		}
 	}
 	return rootRootNode;
 }
@@ -111,12 +116,11 @@ private BioModelNode createOwnerSubTree(User owner) throws DataAccessException {
 		BioModelInfo bioModelInfo = bioModelInfos[i];
 		
 		if (bioModelInfo.getVersion().getOwner().equals(owner)){
-			String modelName = bioModelInfo.getVersion().getName();
 			if (!meetSearchCriteria(bioModelInfo)) {
 				continue;
 			}
 			
-			BioModelNode bioModelNode = new BioModelNode(modelName,true);
+			BioModelNode bioModelNode = new BioModelNode(new VCDocumentInfoNode(bioModelInfo),true);
 			rootNode.add(bioModelNode);
 			//
 			// get list of bioModels with the same branch
