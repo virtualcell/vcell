@@ -965,15 +965,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		ROI bleachROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 		ROI bgROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
 		String msg = "";
-		if(cellROI.isAllPixelsZero())
+		if(cellROI.getNonzeroPixelsCount()<1)
 		{
 			msg = msg + "Cell ROI,";
 		}
-		if(bleachROI.isAllPixelsZero())
+		if(bleachROI.getNonzeroPixelsCount()<1)
 		{
 			msg = msg + "Bleached ROI,";
 		}
-		if(bgROI.isAllPixelsZero())
+		if(bgROI.getNonzeroPixelsCount()<1)
 		{
 			msg = msg + "Background ROI,";
 		}

@@ -263,7 +263,7 @@ public class DefineROI_SummaryPanel extends JPanel
 			ROI cellROI = fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 			ROI bleachedROI = fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 			ROI backgroundROI = fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
-			if(cellROI.isAllPixelsZero())
+			if(cellROI.getNonzeroPixelsCount()<1)
 			{
 				cellROIUndefined.setSelected(true);
 				cellROIDefined.setSelected(false);
@@ -273,7 +273,7 @@ public class DefineROI_SummaryPanel extends JPanel
 				cellROIUndefined.setSelected(false);
 				cellROIDefined.setSelected(true);
 			}
-			if(bleachedROI.isAllPixelsZero())
+			if(bleachedROI.getNonzeroPixelsCount()<1)
 			{
 				bleachROIUndefined.setSelected(true);
 				bleachROIDefined.setSelected(false);
@@ -283,7 +283,7 @@ public class DefineROI_SummaryPanel extends JPanel
 				bleachROIUndefined.setSelected(false);
 				bleachROIDefined.setSelected(true);
 			}
-			if(backgroundROI.isAllPixelsZero())
+			if(backgroundROI.getNonzeroPixelsCount()<1)
 			{
 				bgROIUndefined.setSelected(true);
 				bgROIDefined.setSelected(false);

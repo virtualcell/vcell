@@ -689,7 +689,7 @@ public class FRAPStudy implements Matchable{
 		//if we need to check steady state, do the following two lines
 		if(bCheckSteadyState)
 		{
-			simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
+			simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
 			simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 		}
 		
@@ -870,7 +870,7 @@ public class FRAPStudy implements Matchable{
 		ROI[] rois = getFrapData().getRois();
 		for(int i=0; i<rois.length; i++)
 		{
-			if(rois[i].isAllPixelsZero())
+			if(rois[i].getNonzeroPixelsCount()<1)
 			{
 				selectedROIsForErrCalculation[i] = false;
 			}

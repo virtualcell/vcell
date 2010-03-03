@@ -509,7 +509,7 @@ public class FRAPEstimationPanel extends JPanel {
 		double[] frapDataTimeStamps = null;
 		bleachEstimationComboBox.setEnabled(false);
 		if(frapData != null){
-			if(frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).isAllPixelsZero()){
+			if(frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getNonzeroPixelsCount()<1){
 				displayFit(null,null);
 				throw new Exception(
 					OverlayEditorPanelJAI.INITIAL_BLEACH_AREA_TEXT+" ROI not defined.\n"+

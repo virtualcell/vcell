@@ -22,6 +22,7 @@ import javax.media.ControllerListener;
 import javax.media.Manager;
 import javax.media.Player;
 import javax.media.RealizeCompleteEvent;
+import javax.sound.midi.ControllerEventListener;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -172,7 +173,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 	}
 
 	/** Called by JMF when the Player has something to tell us about. */
-	public synchronized void controllerUpdate(ControllerEvent event) {
+	public synchronized void controllerUpdate(ControllerEventListener event) {
 		if (event instanceof RealizeCompleteEvent) {
 			if ((visualComponent = thePlayer.getVisualComponent()) != null)
 				add(BorderLayout.CENTER, visualComponent);
@@ -241,5 +242,10 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 		dialog.setSize(500,500);
 		showMovieInDialog(dialog, "file:///C:/VirtualMicroscopy/test.mov",
 				"C:/VirtualMicroscopy/test.mov");
+	}
+
+	public void controllerUpdate(ControllerEvent arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 }
