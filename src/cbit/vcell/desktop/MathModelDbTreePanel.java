@@ -41,6 +41,7 @@ import cbit.vcell.client.desktop.DatabaseWindowPanel.SearchCriterion;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)
@@ -2183,7 +2184,7 @@ private void treeSelection() {
 	Object object = bioModelNode.getUserObject();
 	if (object instanceof VersionInfo){
 		setSelectedVersionInfo((VersionInfo)object);
-	}else if (object instanceof String && bioModelNode.getChildCount()>0 && ((BioModelNode)bioModelNode.getChildAt(0)).getUserObject() instanceof MathModelInfo){
+	}else if (object instanceof VCDocumentInfoNode && bioModelNode.getChildCount()>0 && ((BioModelNode)bioModelNode.getChildAt(0)).getUserObject() instanceof MathModelInfo){
 		MathModelInfo mathModelInfo = (MathModelInfo)((BioModelNode)bioModelNode.getChildAt(0)).getUserObject();
 		setSelectedVersionInfo(mathModelInfo);
 	}else{

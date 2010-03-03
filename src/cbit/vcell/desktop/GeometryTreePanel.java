@@ -33,6 +33,7 @@ import cbit.vcell.client.desktop.DatabaseWindowPanel.SearchCriterion;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.GeometryInfo;
 /**
  * Insert the type's description here.
@@ -1754,7 +1755,7 @@ private void treeSelection() {
 		
 		if (object instanceof VersionInfo){
 			setSelectedVersionInfo((VersionInfo)object);
-		}else if (object instanceof String && bioModelNode.getChildCount()>0 && ((BioModelNode)bioModelNode.getChildAt(0)).getUserObject() instanceof GeometryInfo){
+		}else if (object instanceof VCDocumentInfoNode && bioModelNode.getChildCount()>0 && ((BioModelNode)bioModelNode.getChildAt(0)).getUserObject() instanceof GeometryInfo){
 			GeometryInfo geometryInfo = (GeometryInfo)((BioModelNode)bioModelNode.getChildAt(0)).getUserObject();
 			setSelectedVersionInfo(geometryInfo);
 		}else{
