@@ -82,8 +82,8 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	private BatchRunDisplayPanel displayPanel = null;
 	
 	public static final boolean SAVE_COMPRESSED = true;
-	
-	public static final int iniDividerLocation = VirtualFrapMainFrame.iniFrameLocY + (VirtualFrapMainFrame.appHeight)/2;
+	//divider location actually is relatively based on the top-left point(as 0,0) of the app window(not the screen window)
+	public static final int iniDividerLocation = (VirtualFrapMainFrame.appHeight*2)/3;
 
 	private BatchRunMenuHandler menuHandler = new BatchRunMenuHandler();
 	
@@ -235,120 +235,24 @@ public class VirtualFrapBatchRunFrame extends JFrame
 			   				typeWizard.showModalDialog(new Dimension(550,420));
 			   				if(typeWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
 			   				{
-								System.out.println("choose model done.");
-								//to run batch files
-								ArrayList<AsynchClientTask> batchRunTaskList = new ArrayList<AsynchClientTask>();
-								for(int i=0; i<batchRunWorkspace.getFrapStudyList().size(); i++)
-								{
-									final int finalIdx = i;
-									AsynchClientTask message1Task = new AsynchClientTask("Preparing for parameters estimation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
-									{
-										public void run(Hashtable<String, Object> hashTable) throws Exception
-										{
-											appendJobStatus("Running "+((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx)).getXmlFilename(), false);
-										}
-										
-									};
-									
-									AsynchClientTask saveTask = new AsynchClientTask("Preparing for parameters estimation ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
-									{
-										public void run(Hashtable<String, Object> hashTable) throws Exception
-										{
-											FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
-//											
-											//reference data is null, it is not stored, we have to run ref simulation then
-											//check external data info
-											if(!FRAPStudyPanel.areExternalDataOK(localWorkspace,fStudy.getFrapDataExternalDataInfo(), fStudy.getRoiExternalDataInfo()))
-											{
-												//if external files are missing/currupt or ROIs are changed, create keys and save them
-												fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME));
-												fStudy.setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.ROI_EXTDATA_NAME));
-												fStudy.saveROIsAsExternalData(localWorkspace, fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
-												fStudy.saveImageDatasetAsExternalData(localWorkspace, fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
-											}
-										}
-									
-									};
-									
-									AsynchClientTask message2Task = new AsynchClientTask("Running reference simulation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
-									{
-										public void run(Hashtable<String, Object> hashTable) throws Exception
-										{
-											MessagePanel msgPanel = appendJobStatus("Running reference simulation ...", true);
-											hashTable.put("runRefStatus", msgPanel);
-										}
-										
-									};
-									
-									AsynchClientTask runRefSimTask = new AsynchClientTask("Running reference simulation ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
-									{
-										public void run(Hashtable<String, Object> hashTable) throws Exception
-										{
-											FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
-											MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
-											//run ref sim
-											fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, localWorkspace, msgPanel));
-											msgPanel.setProgressCompleted();
-										}
-									
-									};
-									
-									AsynchClientTask message3Task = new AsynchClientTask("Running reference simulation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
-									{
-										public void run(Hashtable<String, Object> hashTable) throws Exception
-										{
-											MessagePanel msgPanel = appendJobStatus("Running optimization ...", true);
-											hashTable.put("optimizationStatus", msgPanel);
-										}
-										
-									};
-									
-									AsynchClientTask runOptTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
-									{
-										public void run(Hashtable<String, Object> hashTable) throws Exception
-										{
-											FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
-											
-											ArrayList<Integer> models = fStudy.getSelectedModels();
-											for(int i = 0; i<models.size(); i++)
-											{
-												if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
-												{
-													if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() == null)
-													{
-														fStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF);
-														Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
-														Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
-														fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(bestParameters);
-													}
-													
-													
-												}
-												else if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
-												{
-													if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() == null)
-													{
-														fStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF);
-														Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
-														Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
-														fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
-													}
-												}
-											}
-											MessagePanel msgPanel = (MessagePanel)hashTable.get("optimizationStatus");
-											msgPanel.setProgressCompleted();
-										}
-									
-									};
-									batchRunTaskList.add(message1Task);
-									batchRunTaskList.add(saveTask);
-									batchRunTaskList.add(message2Task);
-									batchRunTaskList.add(runRefSimTask);
-									batchRunTaskList.add(runOptTask);
-								}
-								AsynchClientTask[] tasks = batchRunTaskList.toArray(new AsynchClientTask[batchRunTaskList.size()]);
+			   					//create and run the batch files
+			   					ArrayList<AsynchClientTask> batchRunTaskList = getBatchRunTasks();
+								//generate results
+			   					
+			   					
+			   					AsynchClientTask displayTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+			   					{
+			   						public void run(Hashtable<String, Object> hashTable) throws Exception
+			   						{
+			   							getBatchRunDetailsPanel().updateResultsInfo(true);
+			   						}
+			   					};
+			   					
+//			   					batchRunTaskList.add(arg0);
+			   					batchRunTaskList.add(displayTask);
+								//run tasks
+			   					AsynchClientTask[] tasks = batchRunTaskList.toArray(new AsynchClientTask[batchRunTaskList.size()]);
 								ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), tasks, true, false, false, null, true);
-								
 							}
 			   			}
 //			  	   		MessagePanel msgPanel = new MessagePanel("Start running c:\\VirtualMicroscopy\\test2.vfrap", false);
@@ -384,9 +288,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	    
 	    //set window size
 	    setSize(VirtualFrapMainFrame.appWidth, VirtualFrapMainFrame.appHeight);
-	    setLocation(
-	    	(Toolkit.getDefaultToolkit().getScreenSize().width-getSize().width)/2,
-	    	(Toolkit.getDefaultToolkit().getScreenSize().height-getSize().height)/2);
+	    setLocation(VirtualFrapMainFrame.iniFrameLocX, VirtualFrapMainFrame.iniFrameLocY);
 	    updateStatus("Virtual Frap batch run interface.");
 		
 	    //to handle the close button of the frame
@@ -576,5 +478,147 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		  MessagePanel msgPanel = new MessagePanel(msg, bProgress);
 		  getBatchRunDisplayPanel().getJobStatusPanel().appendMessage(msgPanel);
 		  return msgPanel;
+	  }
+	  
+	  private ArrayList<AsynchClientTask> getBatchRunTasks()
+	  {
+		  //to run batch files
+			ArrayList<AsynchClientTask> batchRunTaskList = new ArrayList<AsynchClientTask>();
+			for(int i=0; i<batchRunWorkspace.getFrapStudyList().size(); i++)
+			{
+				final int finalIdx = i;
+				AsynchClientTask message1Task = new AsynchClientTask("Preparing for parameter estimation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+				{
+					public void run(Hashtable<String, Object> hashTable) throws Exception
+					{
+						appendJobStatus("Running "+((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx)).getXmlFilename(), false);
+					}
+				};
+				
+				AsynchClientTask saveTask = new AsynchClientTask("Preparing for parameter estimation ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+				{
+					public void run(Hashtable<String, Object> hashTable) throws Exception
+					{
+						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
+//						
+						//reference data is null, it is not stored, we have to run ref simulation then
+						//check external data info
+						if(!FRAPStudyPanel.areExternalDataOK(localWorkspace,fStudy.getFrapDataExternalDataInfo(), fStudy.getRoiExternalDataInfo()))
+						{
+							//if external files are missing/currupt or ROIs are changed, create keys and save them
+							fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME));
+							fStudy.setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.ROI_EXTDATA_NAME));
+							fStudy.saveROIsAsExternalData(localWorkspace, fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+							fStudy.saveImageDatasetAsExternalData(localWorkspace, fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
+						}
+					}
+				};
+				
+				AsynchClientTask message2Task = new AsynchClientTask("Running reference simulation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+				{
+					public void run(Hashtable<String, Object> hashTable) throws Exception
+					{
+						MessagePanel msgPanel = appendJobStatus("Running reference simulation ...", true);
+						hashTable.put("runRefStatus", msgPanel);
+					}
+				};
+				
+				AsynchClientTask runRefSimTask = new AsynchClientTask("Running reference simulation ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+				{
+					public void run(Hashtable<String, Object> hashTable) throws Exception
+					{
+						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
+						MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
+						//run ref sim
+						fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, localWorkspace, msgPanel));
+					}
+				};
+				
+				AsynchClientTask message3Task = new AsynchClientTask("Running reference simulation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+				{
+					public void run(Hashtable<String, Object> hashTable) throws Exception
+					{
+						MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
+						msgPanel.setProgress(100);
+						msgPanel.setProgressCompleted();
+						
+						MessagePanel msgPanel1 = appendJobStatus("Running optimization ...", true);
+						hashTable.put("optimizationStatus", msgPanel1);
+					}
+				};
+				
+				AsynchClientTask runOptTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+				{
+					public void run(Hashtable<String, Object> hashTable) throws Exception
+					{
+						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
+						
+						ArrayList<Integer> models = fStudy.getSelectedModels();
+						if(models.size() == 1)
+						{
+							for(int i = 0; i<models.size(); i++)
+							{
+								int model = ((Integer)models.get(i)).intValue();
+								if(model == batchRunWorkspace.getSelectedModel())
+								{
+									if(model == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+									{
+										if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() == null)
+										{
+											fStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF);
+											Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
+											//set model parameters and data
+											Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
+											double[][] fitData = fStudy.getFrapOptData().getFitData(bestParameters);
+											fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(bestParameters);
+											fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setData(fitData);
+										}
+										
+										
+									}
+									else if(model == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+									{
+										if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() == null)
+										{
+											fStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF);
+											Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
+											//set model parameters and data
+											Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
+											double[][] fitData = fStudy.getFrapOptData().getFitData(bestParameters);
+											fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
+											fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setData(fitData);
+										}
+									}
+								}
+								else{
+									throw new Exception("Selected model for batch run is not the same as selected model in FRAP doc " + fStudy.getXmlFilename());
+								}
+							}
+						}
+						else{
+							throw new Exception("Selected model size exceed 1");
+						}
+					}
+				};
+				
+				AsynchClientTask message4Task = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+				{
+					public void run(Hashtable<String, Object> hashTable) throws Exception
+					{
+						MessagePanel msgPanel = (MessagePanel)hashTable.get("optimizationStatus");
+						msgPanel.setProgressCompleted();
+					}
+				};
+				
+				batchRunTaskList.add(message1Task);
+				batchRunTaskList.add(saveTask);
+				batchRunTaskList.add(message2Task);
+				batchRunTaskList.add(runRefSimTask);
+				batchRunTaskList.add(message3Task);
+				batchRunTaskList.add(runOptTask);
+				batchRunTaskList.add(message4Task);
+			}
+			
+			return batchRunTaskList;
 	  }
 }

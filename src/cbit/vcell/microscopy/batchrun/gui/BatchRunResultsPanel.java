@@ -9,11 +9,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
 
+import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.estparamwizard.MSEPanel;
 
 public class BatchRunResultsPanel extends JPanel
 {
 	public final static String MODEL_TYPE_PREFIX = "Selected Model Type : ";
+	private FRAPBatchRunWorkspace batchRunWorkspace = null;
 	private BatchRunResultsParameterPanel batchRunParamPanel = null;
 	private BatchRunMSEPanel batchRunMSEPanel = null;
 	private JScrollPane scrollPane = null;
@@ -83,6 +85,13 @@ public class BatchRunResultsPanel extends JPanel
 		}
 		return batchRunMSEPanel;
 	}
+	
+	 public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)
+    {
+    	this.batchRunWorkspace = batchRunWorkspace;
+    	getBatchRunResultsParameterPanel().setBatchRunWorkspace(batchRunWorkspace);
+    	getBatchRunMSEPanel().setBatchRunWorkspace(batchRunWorkspace);
+    }
 	
 	public static void main(java.lang.String[] args) {
 		try {

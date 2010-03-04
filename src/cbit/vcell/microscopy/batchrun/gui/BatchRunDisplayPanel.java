@@ -163,9 +163,10 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 			getBatchRunWorkspace().removePropertyChangeListener(this);
 		}
 		this.batchRunWorkspace = batchRunWorkspace;
-		getFRAPDataPanel().setFRAPWorkspace(batchRunWorkspace.getWorkingSingleWorkspace());
 		//add new property change listener
 		getBatchRunWorkspace().addPropertyChangeListener(this);
+		getFRAPDataPanel().setFRAPWorkspace(batchRunWorkspace.getWorkingSingleWorkspace());
+		getBatchRunResultsPanel().setBatchRunWorkspace(batchRunWorkspace);
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) 

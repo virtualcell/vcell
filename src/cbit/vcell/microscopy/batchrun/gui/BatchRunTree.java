@@ -30,7 +30,6 @@ public class BatchRunTree extends JTree {
     public BatchRunTree() 
     {
 		//set up tree
-		FRAP_BATCHRUN_RESULT_NODE.add(new DefaultMutableTreeNode(new String("Completed on Jan 25 2010, 10:15am")));
 	    FRAP_BATCHRUN_NODE.add(FRAP_BATCHRUN_DOC_NODE);
 	    FRAP_BATCHRUN_NODE.add(FRAP_BATCHRUN_RESULT_NODE);
 	    treeModel = new DefaultTreeModel(FRAP_BATCHRUN_NODE);
@@ -42,28 +41,38 @@ public class BatchRunTree extends JTree {
  
     }
 
-    /** Remove all nodes except the root node. */
-    public void clear() {
+    // Remove all nodes except the root node. 
+    public void clearAll() {
     	FRAP_BATCHRUN_DOC_NODE.removeAllChildren();
     	FRAP_BATCHRUN_RESULT_NODE.removeAllChildren();
-        treeModel.reload();
+        treeModel.nodeStructureChanged(FRAP_BATCHRUN_NODE);
     }
-
+    //clear loaded vfrap documents
+    public void clearResults()
+    {
+    	FRAP_BATCHRUN_RESULT_NODE.removeAllChildren();
+    	treeModel.nodeStructureChanged(FRAP_BATCHRUN_RESULT_NODE);
+    }
+    //clear results if any
+    public void clearDocs()
+    {
+    	FRAP_BATCHRUN_DOC_NODE.removeAllChildren();
+    	treeModel.nodeStructureChanged(FRAP_BATCHRUN_DOC_NODE);
+    }
+    
     /** Remove the currently selected node. */
-    public void removeCurrentNode() {
+    public DefaultMutableTreeNode removeCurrentNode() {
         TreePath currentSelection = getSelectionPath();
         if (currentSelection != null) {
             DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode)(currentSelection.getLastPathComponent());
-            MutableTreeNode parent = (MutableTreeNode)(currentNode.getParent());
+            DefaultMutableTreeNode parent = (DefaultMutableTreeNode)(currentNode.getParent());
             if (parent != null && parent != FRAP_BATCHRUN_NODE) 
             {
                 treeModel.removeNodeFromParent(currentNode);
-                return;
             }
+            return parent;
         } 
-
-        // Either there was no selection, or the root was selected.
-        toolkit.beep();
+        return null;
     }
 
     /** Add child to the currently selected node. */

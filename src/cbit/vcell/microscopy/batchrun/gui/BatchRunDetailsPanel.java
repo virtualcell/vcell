@@ -278,18 +278,23 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
         }
         else if(source == deleteButton)
         {
-        	//remove tree node
-        	frapBatchRunViewTree.removeCurrentNode();
+        	//remove tree node(doc node removable only)
+        	DefaultMutableTreeNode parent = frapBatchRunViewTree.removeCurrentNode();
         	//remove the data & displayed image
+        	if(parent.equals(BatchRunTree.FRAP_BATCHRUN_DOC_NODE))
+        	{
+	        	getBatchRunWorkspace().removeFrapStudy(getBatchRunWorkspace().getWorkingFrapStudy());
+        	}
         	getBatchRunWorkspace().clearWorkingSingleWorkspace();
-			//clear tree selection
+        	//clear tree selection
 			frapBatchRunViewTree.clearSelection();
         }
         else if(source == delAllButton)
         {
         	//clear tree selection
-        	frapBatchRunViewTree.clear();
+        	frapBatchRunViewTree.clearAll();
         	//remove the data & displayed image
+        	getBatchRunWorkspace().removeAllFrapStudies();
         	getBatchRunWorkspace().clearWorkingSingleWorkspace();
         }
 	}
@@ -421,6 +426,21 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 		treeHandler.setBatchRunWorkspace(getBatchRunWorkspace());
 	}
 
+	public void updateResultsInfo(boolean bNew)
+	{
+		clearResultsInfo();
+		DefaultMutableTreeNode newNode = frapBatchRunViewTree.addBatchRunResultNode("Results Available");
+		if(bNew)
+		{
+			frapBatchRunViewTree.setSelectionPath(new TreePath(newNode.getPath()));
+		}
+	}
+	
+	public void clearResultsInfo()
+	{
+		frapBatchRunViewTree.clearResults();
+	}
+	
 }//end of class BatchRunDetailsFrame
 
 

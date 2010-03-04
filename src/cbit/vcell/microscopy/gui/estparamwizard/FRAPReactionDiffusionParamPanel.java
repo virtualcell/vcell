@@ -296,10 +296,10 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		}
 		if(params.length ==5)
 		{
-			double fastRate = params[frapOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX].getInitialGuess();
-			double fastMobileFrac = params[frapOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX].getInitialGuess();
-			double slowRate = params[frapOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX].getInitialGuess();
-			double slowMobileFrac = params[frapOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX].getInitialGuess();
+			double fastRate = params[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess();
+			double fastMobileFrac = params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
+			double slowRate = params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess();
+			double slowMobileFrac = params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
 			String msg = "";
 			if(slowRate > fastRate)
 			{

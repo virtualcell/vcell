@@ -8,16 +8,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
+import cbit.vcell.microscopy.gui.estparamwizard.AnalysisTableRenderer;
 import cbit.vcell.microscopy.gui.estparamwizard.HyperLinkLabel;
 import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
 
@@ -25,16 +29,13 @@ public class BatchRunResultsParamTablePanel extends JPanel
 {
 	private /*StyleTable*/JTable table;
     private BatchRunResultsParameterPanel parent;
-
     private JLabel lessLable;
-
     private HyperLinkLabel hypDetail;
-
     private JScrollPane scrTable;
-
-    float[] prefColumnWidth = new float[]{0.25f, 0.5f, 0.5f, 0.15f};
-
-//    TableColumn[] columns = new TableColumn[AnalysisTableModel.NUM_COLUMNS];
+    private BatchRunResultsParamTableModel resultsTableModel = null;
+    private FRAPBatchRunWorkspace batchRunWorkspace = null;
+    float[] prefColumnWidth = new float[]{0.25f, 0.5f, 0.5f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f};
+    TableColumn[] columns = new TableColumn[BatchRunResultsParamTableModel.NUM_COLUMNS];
 
 
     public BatchRunResultsParamTablePanel(BatchRunResultsParameterPanel arg_parent) 
@@ -45,7 +46,7 @@ public class BatchRunResultsParamTablePanel extends JPanel
         setLayout(gridBagLayout);
         setBorder(new EmptyBorder(5, 0, 10, 0));
 
-        JLabel lblConfHeading = new JLabel("Models");
+        JLabel lblConfHeading = new JLabel("Documents");
         lblConfHeading.setFont(new Font("Tahoma", Font.BOLD, 11));
         hypDetail = new HyperLinkLabel("Less Detail", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
@@ -79,7 +80,7 @@ public class BatchRunResultsParamTablePanel extends JPanel
         gc3.fill = GridBagConstraints.BOTH;
         add(lessLable, gc3);
         //create table model
-//        anaTableModel = new AnalysisTableModel();
+        resultsTableModel = new BatchRunResultsParamTableModel();
         //by default, expend this table
         setDetail(true);
    }
@@ -125,40 +126,37 @@ public class BatchRunResultsParamTablePanel extends JPanel
             gc.gridwidth = 2;
             gc.weightx = 1.0;
             gc.fill = GridBagConstraints.HORIZONTAL;
+            if(batchRunWorkspace != null)
+            {
+            	lessLable.setText(batchRunWorkspace.getFrapStudyList().size() + " Documents");
+            }
             add(lessLable, gc);
         }
         parent.repaint();
     }
 
     private void setupTable() {
-//        table = new StyleTable();
-//        table.setAutoCreateColumnsFromModel(false);
-//        table.setModel(anaTableModel);
-//
-//        DefaultCellEditor  anaEditor = new DefaultCellEditor(new JTextField());
-//        TableCellRenderer anaRenderer = new  AnalysisTableRenderer(8); //double precision 8 digits
-//        for (int i = 0; i < anaTableModel.getColumnCount(); i++) {
-//            int w = (int) (prefColumnWidth[i]);
-//            columns[i] = new TableColumn(i, w, anaRenderer, anaEditor);
-//            table.addColumn(columns[i]);
-//            if (i > 4) table.removeColumn(columns[i]);
-//        }
-//
-//        scrTable = new JScrollPane(table);
-    	String col[] = {"Batch Files","Primary Diff. Rate", "Primary Mob. Frac.", "Secondary Diff. Rate",
-    			        "Secondary Mob. Frac.", "Bleach Moni. Rate", "Reaction On Rate",
-    			        "Reaction Off Rate", "Immobile Fraction", "Details Link"};
-    	String data[][] = {{"batch file1","5.3","0.95","0","0","5.8e-4","0","0","0.05","Details"},
-    				 	   {"batch file2","5.2","0.94","0","0","6.2e-4","0","0","0.06","Details"},
-    				 	   {"batch file3","5.4","0.96","0","0","6.0e-4","0","0","0.04","Details"},
-    				 	   {"Average","5.3","0.95","0","0","5.8e-4","0","0","0.05","Details"}};
-    	table = new JTable(data,col);
+        table = new StyleTable();
+        table.setAutoCreateColumnsFromModel(false);
+        table.setModel(resultsTableModel);
+
+        DefaultCellEditor  resultsEditor = new DefaultCellEditor(new JTextField());
+        TableCellRenderer resultsRanderer = new  AnalysisTableRenderer(8); //double precision 8 digits
+        for (int i = 0; i < resultsTableModel.getColumnCount(); i++) {
+            int w = (int) (prefColumnWidth[i]);
+            columns[i] = new TableColumn(i, w, resultsRanderer, resultsEditor);
+            table.addColumn(columns[i]);
+        }
+
+        scrTable = new JScrollPane(table);
+        scrTable.setAutoscrolls(true);
+
     }
 
     public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)
 	{
-//		anaTableModel.setFrapWorkspace(frapWorkspace);
-//		lessLable.setText(frapWorkspace.getFrapStudy().getSelectedModels().size() + " Models");
+    	this.batchRunWorkspace = batchRunWorkspace;
+		resultsTableModel.setBatchRunWorkspace(batchRunWorkspace);
 	}
 }
 
