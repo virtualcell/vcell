@@ -2700,10 +2700,11 @@ private void resolve2(){
 			tempModel = new Model("temp");
 			ReactionStep reactStep = getReactionStep();
 			tempStructure = reactStep.getStructure();
-			Structure structure = reactStep.getStructure();
 			if((!tempStructure.getClass().equals(getStructure().getClass()))){
-				throw new Exception("Structure types must match when pasting reactions");
+				throw new RuntimeException("<html>A reaction from a <font color=red>" + tempStructure.getClass().getSimpleName() + "</font> cannot be added to a <font color=red>" 
+						+ getStructure().getClass().getSimpleName() + "</font>. Structure types must match.</html>");
 			}
+			Structure structure = reactStep.getStructure();
 			ArrayList<Structure> structHash = new ArrayList<Structure>();
 			if(structure instanceof Membrane){
 				structHash.add(((Membrane)structure).getInsideFeature());
