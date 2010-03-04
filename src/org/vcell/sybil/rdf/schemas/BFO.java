@@ -150,8 +150,7 @@ public class BFO {
 				schema.createList().with(ConnectedTemporalRegion).with(ScatteredTemporalRegion), 
 				OntUtil.EQUIV);
 		
-		OntUtil.makeDisjointSubClasses(RealizableEntity, 
-				SetUtil.chain(Disposition).plus(Function).plus(Role));
+		OntUtil.makeDisjointSubClasses(RealizableEntity, SetUtil.newSet(Disposition, Function, Role));
 		
 	}
 	

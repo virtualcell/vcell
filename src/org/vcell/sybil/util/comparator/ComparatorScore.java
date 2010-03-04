@@ -1,4 +1,4 @@
-package org.vcell.sybil.util.compare;
+package org.vcell.sybil.util.comparator;
 
 /*   ComparatorScore  --- by Oliver Ruebenacker, UCHC --- February 2009
  *   A comparator based on assigning a score to each node

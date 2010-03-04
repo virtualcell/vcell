@@ -4,7 +4,7 @@ package org.vcell.sybil.rdf.compare;
  *   A comparator for RDF nodes by type and preferring a default name space
  */
 
-import org.vcell.sybil.util.compare.ComparatorScore;
+import org.vcell.sybil.util.comparator.ComparatorScore;
 
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;

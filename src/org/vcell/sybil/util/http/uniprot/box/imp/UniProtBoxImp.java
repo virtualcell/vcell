@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.vcell.sybil.util.collect.RelationHashMap;
-import org.vcell.sybil.util.collect.RelationMap;
+import org.vcell.sybil.util.collections.RelationHashMap;
+import org.vcell.sybil.util.collections.RelationMap;
 import org.vcell.sybil.util.http.uniprot.box.UniProtBox;
 
 public class UniProtBoxImp implements UniProtBox {
