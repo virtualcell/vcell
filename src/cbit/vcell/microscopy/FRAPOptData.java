@@ -41,38 +41,20 @@ import cbit.vcell.solvers.CartesianMesh;
 
 
 public class FRAPOptData {
-	public static String[] ONEDIFFRATE_PARAMETER_NAMES = new String[]{"diffRate",
-														  "mobileFrac",
-														  "bleachWhileMonitoringRate"};
-	public static final int ONEDIFFRATE_DIFFUSION_RATE_INDEX = 0;
-	public static final int ONEDIFFRATE_MOBILE_FRACTION_INDEX = 1;
-	public static final int ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX = 2;
-	
-	public static String[] TWODIFFRATES_PARAMETER_NAMES = new String[]{"fastDiffRate",
-		  															   "fastMobileFrac",
-		  															   "bleachWhileMonitoringRate",
-		  															   "slowDiffRate",
-		  															   "slowMobileFrac"};
-	public static final int TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX = 0;
-	public static final int TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX = 1;
-	public static final int TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX = 2;
-	public static final int TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX = 3;
-	public static final int TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX = 4;
-		
 	public static final int NUM_PARAMS_FOR_ONE_DIFFUSION_RATE = 3;//diffusion rate, mobile fraction, bleach while monitoring rate
 	public static final int NUM_PARAMS_FOR_TWO_DIFFUSION_RATE = 5;//fast diff rate, fast mobile fraction, slow diff rate, slow mobile fraction, bleach while monitoring rate
 	
 	/*----------------reference data by diffusion rate=1, mobileFrac=1 and bwmRate = 0-------------------*/
 	public static final Parameter REF_DIFFUSION_RATE_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX], 0, 200, 1.0, 1.0);
+		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 0, 200, 1.0, 1.0);
 	public static final Parameter REF_MOBILE_FRACTION_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
+		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION], 0, 1, 1.0, 1.0);
 	public static final Parameter REF_BLEACH_WHILE_MONITOR_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX], 0, 1, 1.0,  0);
+		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 0, 1, 1.0,  0);
 	public static final Parameter REF_SECOND_DIFFUSION_RATE_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX], 0, 40, 1.0, 1.0);
+		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE], 0, 40, 1.0, 1.0);
 	public static final Parameter REF_SECOND_MOBILE_FRACTION_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
+		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION], 0, 1, 1.0, 1.0);
 	
 	public static final int REF_BWM_LOG_VAL_MIN = -5;
 	public static final int REF_BWM_LOG_VAL_MAX = 0;
@@ -252,10 +234,10 @@ public class FRAPOptData {
 		getExpFrapStudy().setStoredRefData(FRAPOptimization.doubleArrayToSimpleRefData(dimensionReducedRefData, getRefDataTimePoints(), 0, selectedROIs));
 
 		//remove reference simulation files
-		FRAPStudy.removeSimulationFiles(referenceSimKeyValue, getLocalWorkspace()); 
+//		FRAPStudy.removeSimulationFiles(referenceSimKeyValue, getLocalWorkspace()); 
 		//remove experimental and roi external files
-		FRAPStudy.removeExternalFiles(getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(), 
-				                      getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), getLocalWorkspace());
+//		FRAPStudy.removeExternalFiles(getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(), 
+//				                      getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), getLocalWorkspace());
 	}
 	
 	private double[] timeShiftForBaseDiffRate(double[] timePoints)
@@ -337,7 +319,7 @@ public class FRAPOptData {
 			sim.getSolverTaskDescription().setTimeStep(getRefTimeStep());
 			sim.getSolverTaskDescription().setOutputTimeSpec(getRefTimeSpec());
 			
-			DataProcessingInstructions dpi = getExpFrapStudy().getDataProcessInstructions(getLocalWorkspace());//coding...
+			DataProcessingInstructions dpi = getExpFrapStudy().getDataProcessInstructions(getLocalWorkspace());
 			sim.setDataProcessingInstructions(dpi);
 			System.out.println("run FRAP Reference Simulation...");
 
@@ -619,14 +601,84 @@ public class FRAPOptData {
 		double[] outParaVals = new double[inParams.length];
 		
 		FRAPOptimization.estimate(this, inParams, outParaNames, outParaVals, errorOfInterest);
-		for(int i = 0; i < outParams.length; i++)
+		for(int i = 0; i < outParaNames.length; i++)
 		{
-			outParams[i] = new Parameter(outParaNames[i], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 1.0, outParaVals[i]);
+			if(outParaNames[i].equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE]))
+			{
+				double primaryDiffRate = outParaVals[i];
+				if(primaryDiffRate > REF_DIFFUSION_RATE_PARAM.getUpperBound())
+				{
+					primaryDiffRate = REF_DIFFUSION_RATE_PARAM.getUpperBound(); 
+				}
+				if(primaryDiffRate < REF_DIFFUSION_RATE_PARAM.getLowerBound())
+				{
+					primaryDiffRate = REF_DIFFUSION_RATE_PARAM.getLowerBound();
+				}
+	
+				outParams[i] = new Parameter(outParaNames[i], REF_DIFFUSION_RATE_PARAM.getLowerBound(), REF_DIFFUSION_RATE_PARAM.getUpperBound(), 1.0, primaryDiffRate);
+			}
+			else if(outParaNames[i].equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION]))
+			{
+				double primaryFraction = outParaVals[i];
+				if(primaryFraction > REF_MOBILE_FRACTION_PARAM.getUpperBound())
+				{
+					primaryFraction = REF_MOBILE_FRACTION_PARAM.getUpperBound(); 
+				}
+				if(primaryFraction < REF_MOBILE_FRACTION_PARAM.getLowerBound())
+				{
+					primaryFraction = REF_MOBILE_FRACTION_PARAM.getLowerBound();
+				}
+	
+				outParams[i] = new Parameter(outParaNames[i], REF_MOBILE_FRACTION_PARAM.getLowerBound(), REF_MOBILE_FRACTION_PARAM.getUpperBound(), 1.0, primaryFraction);
+			}
+			else if(outParaNames[i].equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
+			{
+				double bwmRate = outParaVals[i];
+				if(bwmRate > REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound())
+				{
+					bwmRate = REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(); 
+				}
+				if(bwmRate < REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound())
+				{
+					bwmRate = REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound();
+				}
+	
+				outParams[i] = new Parameter(outParaNames[i], REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(), REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(), 1.0, bwmRate);
+			}
+			else if(outParaNames[i].equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE]))
+			{
+				double secDiffRate = outParaVals[i];
+				if(secDiffRate > REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound())
+				{
+					secDiffRate = REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(); 
+				}
+				if(secDiffRate < REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound())
+				{
+					secDiffRate = REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound();
+				}
+	
+				outParams[i] = new Parameter(outParaNames[i], REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(), REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(), 1.0, secDiffRate);
+			}
+			else if(outParaNames[i].equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION]))
+			{
+				double secFraction = outParaVals[i];
+				if(secFraction > REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound())
+				{
+					secFraction = REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(); 
+				}
+				if(secFraction < REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound())
+				{
+					secFraction = REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound();
+				}
+	
+				outParams[i] = new Parameter(outParaNames[i], REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(), REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(), 1.0, secFraction);
+			}
 		}
-		for(int i = 0; i < outParams.length; i++)
-		{
-			System.out.println("Estimate result for "+outParams[i].getName()+ " is: "+outParams[i].getInitialGuess());
-		}
+		//for debug purpose
+//		for(int i = 0; i < outParams.length; i++)
+//		{
+//			System.out.println("Estimate result for "+outParams[i].getName()+ " is: "+outParams[i].getInitialGuess());
+//		}
 		return outParams;
 	}
 	

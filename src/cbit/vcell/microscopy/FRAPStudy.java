@@ -704,7 +704,7 @@ public class FRAPStudy implements Matchable{
 		//if we need to check steady state, do the following two lines
 		if(bCheckSteadyState)
 		{
-			simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
+			simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
 			simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 		}
 		
@@ -775,7 +775,7 @@ public class FRAPStudy implements Matchable{
 			//if we need to check steady state, do the following two lines
 			if(bCheckSteadyState)
 			{
-				simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniform(true);
+				simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
 				simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 			}
 			
@@ -1541,7 +1541,7 @@ public class FRAPStudy implements Matchable{
 		}
 		return true;
 	}
-	
+	//the summary is for errors of different models under ROIs
 	public void createAnalysisMSESummaryData()
 	{
 		double[][] sumData = new double[FRAPModel.NUM_MODEL_TYPES][getFrapData().getROILength()-2+1];
@@ -1556,14 +1556,14 @@ public class FRAPStudy implements Matchable{
 			
 			if(getFrapModel(i) != null && getFrapModel(i).getData() != null)
 			{
-				sumData[i]=calculateMSEForEachModel(expData, getFrapModel(i).getData());
+				sumData[i]=calculateMSE_OneParamSet(expData, getFrapModel(i).getData());
 			}
 		}
 		setAnalysisMSESummaryData(sumData);
 	}
 	
 	//called by createAnalysisMSESummaryData, calculate MSE for one frap model
-	private double[] calculateMSEForEachModel(double[][] expData, double[][] simData)
+	private double[] calculateMSE_OneParamSet(double[][] expData, double[][] simData)
 	{
 		double[] result = new double[getFrapData().getROILength()-2+1];//len: all ROIS except cellROI and bkgroundROI, plus a sum of error field
 		//fill all elements with 1e8 first

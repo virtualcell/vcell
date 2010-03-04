@@ -4,13 +4,19 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.vcell.util.Compare;
 
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.DescriptiveStatistics;
+import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.batchrun.gui.BatchRunResultsParamTableModel;
 
 public class FRAPBatchRunWorkspace extends FRAPWorkspace
 {
@@ -22,8 +28,12 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	private PropertyChangeSupport propertyChangeSupport;
 	private FRAPSingleWorkspace workingSingleWorkspace = null;
 	private Object displaySelection = null;
-	private FRAPModel selectedModel = null;
+	private int selectedModel;
 	private boolean[] selectedROIsForErrCalculation = null;
+	//first dimension: number of frap studys, second dimension: bleahed + 8 Rings + sum of MSE, any element that is not applicable should fill with 1e8.
+	private double[][] analysisMSESummaryData = null;
+	//first dimension: number of frap studys, second dimention: maximum parameter sizes (5 so far), any element that is not applicable should fill with 1e8.
+	private double[][] statisticsData = null;
 	
 	public FRAPBatchRunWorkspace() 
 	{
@@ -87,6 +97,16 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		frapStudyList.add(newFrapStudy);
 	}
 	
+	public void removeFrapStudy(FRAPStudy frapStudy)
+	{
+		frapStudyList.remove(frapStudy);
+	}
+	
+	public void removeAllFrapStudies()
+	{
+		frapStudyList.clear();
+	}
+	
 	public FRAPStudy getWorkingFrapStudy() //the working FRAPStudy
 	{
 		return getWorkingSingleWorkspace().getWorkingFrapStudy();
@@ -117,11 +137,11 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		}
 	}
 	
-	public FRAPModel getSelectedModel() {
+	public int getSelectedModel() {
 		return selectedModel;
 	}
 
-	public void setSelectedModel(FRAPModel selectedModel) {
+	public void setSelectedModel(int selectedModel) {
 		this.selectedModel = selectedModel;
 	}
 	
@@ -131,7 +151,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		{
 			if(modelBooleans[i])
 			{
-				setSelectedModel(new FRAPModel(FRAPModel.MODEL_TYPE_ARRAY[i], null, null, null));
+				setSelectedModel(i);
 				break;
 			}
 		}
@@ -155,5 +175,93 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	public boolean[] getSelectedROIsForErrorCalculation()
 	{
 		return selectedROIsForErrCalculation;
+	}
+
+	public void refreshMSESummaryData()
+	{
+		int studySize = getFrapStudyList().size();
+		analysisMSESummaryData = new double[studySize][FRAPData.VFRAP_ROI_ENUM.values().length-2+1];
+		for(int i=0; i<studySize; i++)
+		{
+			FRAPStudy fStudy = getFrapStudyList().get(i);
+			fStudy.createAnalysisMSESummaryData();
+			analysisMSESummaryData[i] = fStudy.getAnalysisMSESummaryData()[getSelectedModel()];
+		}
+	}
+	
+	public double[][] getAnalysisMSESummaryData() 
+	{
+		if(analysisMSESummaryData == null)
+		{
+			refreshMSESummaryData();
+		}
+		return analysisMSESummaryData;
+	}
+	
+	public void refreshStatisticsData()
+	{
+		int studySize = getFrapStudyList().size();
+		//get parameters array (column-name and column-details should be excluded)
+		//parameterVals[0] primaryDiffRates, parameterVals[1] primaryMobiles,parameterVals[2]secDiffRates
+		//parameterVals[3] secMobiles,parameterVals[4] bwmRates,parameterVals[5]immobiles
+		double[][] parameterVals = new double[BatchRunResultsParamTableModel.NUM_COLUMNS-2][studySize];
+		
+		for(int i=0; i<studySize; i++)
+		{
+			FRAPStudy fStudy = getFrapStudyList().get(i);
+			if(selectedModel == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+			{
+				FRAPModel fModel = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT];
+				parameterVals[0][i] = fModel.getModelParameters()[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess();
+				parameterVals[1][i] = fModel.getModelParameters()[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
+				parameterVals[4][i] = fModel.getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess();
+				parameterVals[5][i] = Math.max(0, (1 - parameterVals[1][i]));
+			}
+			else if (selectedModel == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+			{
+				FRAPModel fModel = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS];
+				parameterVals[0][i] = fModel.getModelParameters()[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess();
+				parameterVals[1][i] = fModel.getModelParameters()[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
+				parameterVals[2][i] = fModel.getModelParameters()[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess();
+				parameterVals[3][i] = fModel.getModelParameters()[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
+				parameterVals[4][i] = fModel.getModelParameters()[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess();
+				parameterVals[5][i] = Math.max(0, (1 - parameterVals[1][i] - parameterVals[3][i]));
+			}
+		}
+		//stores statistics for each parameters . (column-name and column-details should be excluded)
+		statisticsData = new double[BatchRunResultsParamTableModel.NUM_STATISTICS][BatchRunResultsParamTableModel.NUM_COLUMNS-2];
+		
+		for(int i=0; i<BatchRunResultsParamTableModel.NUM_STATISTICS; i++)
+		{
+			//fill all elements with 1e8 first
+			Arrays.fill(statisticsData[i], FRAPOptimization.largeNumber);
+		}
+		
+		for(int i=0; i<BatchRunResultsParamTableModel.NUM_COLUMNS-2; i++)
+		{
+			//statistics for primary diffusion rate
+			DescriptiveStatistics stat = DescriptiveStatistics.CreateBasicStatistics(parameterVals[i]);
+			statisticsData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][i] = stat.getMean();
+			statisticsData[BatchRunResultsParamTableModel.ROW_IDX_STD][i] = stat.getStandardDeviation();
+			statisticsData[BatchRunResultsParamTableModel.ROW_IDX_MEDIAN][i] = stat.getMedian();
+			statisticsData[BatchRunResultsParamTableModel.ROW_IDX_MIN][i] = stat.getMin();
+			statisticsData[BatchRunResultsParamTableModel.ROW_IDX_MAX][i] = stat.getMax();
+		}
+	}
+	
+	public double[][] getStatisticsData()
+	{
+		if(statisticsData == null)
+		{
+			refreshStatisticsData();
+		}
+		return statisticsData;
+	}
+	
+	public AsynchClientTask refreshBatchRunResults()
+	{
+		AsynchClientTask task = null;
+		
+		return task;
 	}
 }

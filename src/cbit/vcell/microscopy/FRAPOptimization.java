@@ -384,77 +384,81 @@ public class FRAPOptimization {
 	private static Parameter[] generateInParamSet(Parameter[] inputParams, double newValues[])
 	{
 		Parameter[] result = new Parameter[inputParams.length];
-		Parameter fastRate = inputParams[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX];
-		Parameter slowRate = inputParams[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX];
-		Parameter fastMobileFrac = inputParams[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX];
-		Parameter slowMobileFrac = inputParams[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX];
-		Parameter bwmRate = inputParams[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX];
-		if(newValues[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX] < fastRate.getLowerBound())
+		Parameter fastRate = inputParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+		Parameter fastMobileFrac = inputParams[FRAPModel.INDEX_PRIMARY_FRACTION];
+		Parameter bwmRate = inputParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
+		Parameter slowRate = inputParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE];
+		Parameter slowMobileFrac = inputParams[FRAPModel.INDEX_SECONDARY_FRACTION];
+		
+		if(newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] < fastRate.getLowerBound())
 		{
-			newValues[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX] = fastRate.getLowerBound();
+			newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = fastRate.getLowerBound();
 		}
-		if(newValues[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX] > fastRate.getUpperBound())
+		if(newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] > fastRate.getUpperBound())
 		{
-			newValues[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX] = fastRate.getUpperBound();
+			newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = fastRate.getUpperBound();
 		}
-		if(newValues[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX] < slowRate.getLowerBound())
+		if(newValues[FRAPModel.INDEX_PRIMARY_FRACTION] < fastMobileFrac.getLowerBound())
 		{
-			newValues[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX] = slowRate.getLowerBound();
+			newValues[FRAPModel.INDEX_PRIMARY_FRACTION] = fastMobileFrac.getLowerBound();
 		}
-		if(newValues[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX] > slowRate.getUpperBound())
+		if(newValues[FRAPModel.INDEX_PRIMARY_FRACTION] > fastMobileFrac.getUpperBound())
 		{
-			newValues[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX] = slowRate.getUpperBound();
+			newValues[FRAPModel.INDEX_PRIMARY_FRACTION] = fastMobileFrac.getUpperBound();
 		}
-		if(newValues[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX] < fastMobileFrac.getLowerBound())
+		if(newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE] < bwmRate.getLowerBound())
 		{
-			newValues[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX] = fastMobileFrac.getLowerBound();
-		}
-		if(newValues[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX] > fastMobileFrac.getUpperBound())
-		{
-			newValues[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX] = fastMobileFrac.getUpperBound();
-		}
-		if(newValues[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX] < slowMobileFrac.getLowerBound())
-		{
-			newValues[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX] = slowMobileFrac.getLowerBound();
-		}
-		if(newValues[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX] > slowMobileFrac.getUpperBound())
-		{
-			newValues[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX] = slowMobileFrac.getUpperBound();
-		}
-		if(newValues[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX] < bwmRate.getLowerBound())
-		{
-			newValues[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX] = bwmRate.getLowerBound();
+			newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = bwmRate.getLowerBound();
 		}	
-		if(newValues[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX] > bwmRate.getUpperBound())
+		if(newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE] > bwmRate.getUpperBound())
 		{
-			newValues[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX] = bwmRate.getUpperBound();
+			newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = bwmRate.getUpperBound();
+		}
+		if(newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] < slowRate.getLowerBound())
+		{
+			newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = slowRate.getLowerBound();
+		}
+		if(newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] > slowRate.getUpperBound())
+		{
+			newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = slowRate.getUpperBound();
+		}
+		if(newValues[FRAPModel.INDEX_SECONDARY_FRACTION] < slowMobileFrac.getLowerBound())
+		{
+			newValues[FRAPModel.INDEX_SECONDARY_FRACTION] = slowMobileFrac.getLowerBound();
+		}
+		if(newValues[FRAPModel.INDEX_SECONDARY_FRACTION] > slowMobileFrac.getUpperBound())
+		{
+			newValues[FRAPModel.INDEX_SECONDARY_FRACTION] = slowMobileFrac.getUpperBound();
 		}
 		
-		result[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX] = new Parameter(fastRate.getName(), 
-				                                                                    fastRate.getLowerBound(), 
-				                                                                    fastRate.getUpperBound(),
-				                                                                    fastRate.getScale(),
-				                                                                    newValues[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX]);
-		result[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX] = new Parameter(slowRate.getName(), 
-																					slowRate.getLowerBound(), 
-																					slowRate.getUpperBound(),
-																					slowRate.getScale(),
-																					newValues[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX]);
-		result[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX] = new Parameter(fastMobileFrac.getName(), 
-																					fastMobileFrac.getLowerBound(), 
-																					fastMobileFrac.getUpperBound(),
-																					fastMobileFrac.getScale(),
-																					newValues[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX]);
-		result[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX] = new Parameter(slowMobileFrac.getName(), 
-																					slowMobileFrac.getLowerBound(), 
-																					slowMobileFrac.getUpperBound(),
-																					slowMobileFrac.getScale(),
-																					newValues[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX]);
-       result[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX] = new Parameter(bwmRate.getName(),
-    		   																	   bwmRate.getLowerBound(),
-    		   																	   bwmRate.getUpperBound(),
-    		   																	   bwmRate.getScale(),
-    		   																	   newValues[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX]);
+		
+		result[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(fastRate.getName(), 
+                                                    fastRate.getLowerBound(), 
+                                                    fastRate.getUpperBound(),
+                                                    fastRate.getScale(),
+                                                    newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE]);
+		
+		result[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(fastMobileFrac.getName(), 
+													fastMobileFrac.getLowerBound(), 
+													fastMobileFrac.getUpperBound(),
+													fastMobileFrac.getScale(),
+													newValues[FRAPModel.INDEX_PRIMARY_FRACTION]);
+		result[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(bwmRate.getName(),
+												    bwmRate.getLowerBound(),
+												    bwmRate.getUpperBound(),
+												    bwmRate.getScale(),
+												    newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE]);
+		result[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = new Parameter(slowRate.getName(), 
+													slowRate.getLowerBound(), 
+													slowRate.getUpperBound(),
+													slowRate.getScale(),
+													newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE]);
+		result[FRAPModel.INDEX_SECONDARY_FRACTION] = new Parameter(slowMobileFrac.getName(), 
+													slowMobileFrac.getLowerBound(), 
+													slowMobileFrac.getUpperBound(),
+													slowMobileFrac.getScale(),
+													newValues[FRAPModel.INDEX_SECONDARY_FRACTION]);
+       
  		return result;
 	}
 	//for exp data mainly, can be used for sim and opt data as well

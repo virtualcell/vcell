@@ -69,7 +69,7 @@ public class JobStatusPanel extends JPanel implements ActionListener
 
     public JScrollPane getStatusPane()
     {
-    	if(statusPanel ==  null)
+    	if(statusPane ==  null)
     	{
     		statusPanel=new JPanel();
     		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.Y_AXIS));
@@ -83,6 +83,11 @@ public class JobStatusPanel extends JPanel implements ActionListener
     {
     	msgPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         statusPanel.add(msgPanel);
+        SwingUtilities.invokeLater(new Runnable() {
+        	public void run() {
+        		statusPane.getVerticalScrollBar().setValue(statusPane.getVerticalScrollBar().getMaximum());
+        	}
+        });
         statusPanel.updateUI();
     }
 

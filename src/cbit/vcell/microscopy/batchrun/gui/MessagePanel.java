@@ -59,13 +59,8 @@ public class MessagePanel extends JPanel implements ClientTaskStatusSupport
 	
 	public void setProgressCompleted()
 	{
-		SwingUtilities.invokeLater(new Runnable() {
-			
-			public void run() {
-				MessagePanel.this.remove(progress);
-				MessagePanel.this.add(new JLabel("  Done."));
-			}
-		});
+		progress.setValue(100);
+		progress.setString("Completed");
 		
 	}
 

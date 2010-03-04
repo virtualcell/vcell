@@ -8,32 +8,32 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
+import cbit.vcell.microscopy.gui.estparamwizard.AnalysisTableRenderer;
 import cbit.vcell.microscopy.gui.estparamwizard.HyperLinkLabel;
+import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
 
 public class BatchRunMSETablePanel extends JPanel
 {
 	private /*StyleTable*/JTable table;
-
     private BatchRunMSEPanel parent;
-
     private JLabel lessLable;
-
     private HyperLinkLabel hypDetail;
-
     private JScrollPane scrTable;
-    
-//    MSETableModel mseTableModel;
-
+    private BatchRunMSETableModel mseTableModel = null;
+    private FRAPBatchRunWorkspace batchRunWorkspace = null;
     float[] prefColumnWidth = new float[]{0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f};
-
-//    TableColumn[] columns = new TableColumn[MSETableModel.NUM_COLUMNS];
+    TableColumn[] columns = new TableColumn[BatchRunMSETableModel.NUM_COLUMNS];
 
     public BatchRunMSETablePanel(BatchRunMSEPanel arg_parent) 
     {
@@ -44,12 +44,12 @@ public class BatchRunMSETablePanel extends JPanel
 //        setBackground(Color.white);
         setBorder(new EmptyBorder(5, 0, 10, 0));
 
-        JLabel headingLabel = new JLabel("Models under Selected ROIs");
+        JLabel headingLabel = new JLabel("Documents under Selected ROIs");
         headingLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
-        hypDetail = new HyperLinkLabel("Detail", new HyperLinkListener(), 0);
+        hypDetail = new HyperLinkLabel("Less Detail", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
 //
-        lessLable = new JLabel("3 Models");
+        lessLable = new JLabel("Documents");
         lessLable.setOpaque(true);
         lessLable.setBackground(new Color(166, 166, 255));
         lessLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
@@ -78,7 +78,9 @@ public class BatchRunMSETablePanel extends JPanel
         gc3.fill = GridBagConstraints.BOTH;
         add(lessLable, gc3);
         //create table model
-//        mseTableModel = new MSETableModel();
+        mseTableModel = new BatchRunMSETableModel();
+        //by default, expend this table
+        setDetail(true);
    }
 
     private class HyperLinkListener implements ActionListener {
@@ -121,42 +123,39 @@ public class BatchRunMSETablePanel extends JPanel
             gc.gridwidth = 2;
             gc.weightx = 1.0;
             gc.fill = GridBagConstraints.HORIZONTAL;
+            if(batchRunWorkspace != null)
+            {
+            	lessLable.setText(batchRunWorkspace.getFrapStudyList().size() + " Documents");
+            }
             add(lessLable, gc);
         }
         parent.repaint();
     }
 
     private void setupTable() {
-//        table = new StyleTable();
-//        table.setAutoCreateColumnsFromModel(false);
-//        table.setModel(mseTableModel);
-//
-//        DefaultCellEditor  mseEditor = new DefaultCellEditor(new JTextField());
-//        TableCellRenderer mseRenderer = new  AnalysisTableRenderer(8);//double precision 8 digits
-//        for (int i = 0; i < mseTableModel.getColumnCount(); i++) {
-//
-//            int w = (int) (prefColumnWidth[i]);
-//            columns[i] = new TableColumn(i, w, mseRenderer, mseEditor);
-//
-//            table.addColumn(columns[i]);
-//
-//        }
-//        table.getTableHeader().addMouseListener(new TableMouseListener());
+        table = new StyleTable();
+        table.setAutoCreateColumnsFromModel(false);
+        table.setModel(mseTableModel);
 
-//        scrTable = new JScrollPane(table);
-//        scrTable.setAutoscrolls(true);
-    	String col[] = {"Batch Files","Bleached", "Ring1", "Ring2",
-		        "Ring3", "Ring4", "Ring5",
-		        "Ring6", "Ring7", "Ring8", "Sum of Error"};
-		String data[][] = {{"batch file1","0","0","0","0","5.8e-4","0","0","0","0","5.8e-4"},
-					 	   {"batch file2","0","0","0","0","6.2e-4","0","0","0","0","6.2e-4"},
-					 	   {"batch file3","0","0","0","0","6.0e-4","0","0","0","0","6.0e-4"}};
-		table = new JTable(data,col);
+        DefaultCellEditor  mseEditor = new DefaultCellEditor(new JTextField());
+        TableCellRenderer mseRenderer = new  AnalysisTableRenderer(8);//double precision 8 digits
+        for (int i = 0; i < mseTableModel.getColumnCount(); i++) {
+
+            int w = (int) (prefColumnWidth[i]);
+            columns[i] = new TableColumn(i, w, mseRenderer, mseEditor);
+
+            table.addColumn(columns[i]);
+
+        }
+
+        scrTable = new JScrollPane(table);
+        scrTable.setAutoscrolls(true);
+
     }
 
-    public void setFrapWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)
+    public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)
 	{
-//		mseTableModel.setFrapWorkspace(frapWorkspace);
-//		lessLable.setText(frapWorkspace.getFrapStudy().getSelectedModels().size() + " Models");
+    	this.batchRunWorkspace = batchRunWorkspace;
+		mseTableModel.setBatchRunWorkspace(batchRunWorkspace);
 	}
 }

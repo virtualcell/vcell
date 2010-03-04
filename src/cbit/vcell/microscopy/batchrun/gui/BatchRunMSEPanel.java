@@ -18,15 +18,15 @@ public class BatchRunMSEPanel extends BoxPanel
 	        contentPane.add(mseTablePanel);
 	}
 	
-	public FRAPBatchRunWorkspace getFrapWorkspace()
+	public FRAPBatchRunWorkspace getBatchRunWorkspace()
     {
     	return batchRunWorkspace;
     }
     
-    public void setFrapWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)
+    public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)
 	{
 		this.batchRunWorkspace = batchRunWorkspace;
-		mseTablePanel.setFrapWorkspace(batchRunWorkspace);
+		mseTablePanel.setBatchRunWorkspace(batchRunWorkspace);
 	}
 	
 	public static void main(java.lang.String[] args) {

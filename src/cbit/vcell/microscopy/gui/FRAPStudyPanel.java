@@ -1538,7 +1538,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	{
 		//check if frapOpt data is null? if yes, run ref simulation. 
 		//check if parameters of each selected models are there, if not, run analytic solution, get best parameters and store parameters
-		AsynchClientTask saveTask1 = new AsynchClientTask("Preparing for parameters estimation ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		AsynchClientTask saveTask1 = new AsynchClientTask("Preparing for parameter estimation ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
