@@ -3,7 +3,10 @@ package cbit.vcell.mapping.gui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -11,9 +14,16 @@ import javax.swing.table.TableColumn;
 
 import org.vcell.util.BeanUtils;
 
+import cbit.vcell.client.desktop.biomodel.SPPRPanel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.gui.FluxReactionPanel;
+import cbit.vcell.model.gui.ModelParameterPanel;
+import cbit.vcell.model.gui.ModelParameterTableModel;
+import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.model.gui.SimpleReactionPanel;
 
 /*©
@@ -26,34 +36,74 @@ import cbit.vcell.model.gui.SimpleReactionPanel;
  * @author: 
  */
 public class ReactionSpecsPanel extends javax.swing.JPanel {
+	private SPPRPanel spprPanel = null;
 	private JSplitPane outerSplitPane;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private SimpleReactionPanel simpleReactionPanel = null;
+	private FluxReactionPanel fluxReactionPanel = null;
 	private javax.swing.JTable ivjScrollPaneTable = null;
 	private ReactionSpecsTableModel ivjReactionSpecsTableModel = null;
 	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationContext ivjsimulationContext1 = null;
+	private boolean ivjConnPtoP5Aligning = false;
+	private javax.swing.ListSelectionModel ivjselectionModel1 = null;
+	private Model ivjmodel1 = null;
 
-class IvjEventHandler implements java.beans.PropertyChangeListener {
+class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
+// java.awt.event.ActionListener, java.awt.event.MouseListener
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ReactionSpecsPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
 				connPtoP2SetTarget();
 		};
+		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+			if (e.getSource() instanceof DefaultListSelectionModel) {
+//				System.out.println("ReactionSpecsPanel:  valueChanged()");
+				connEtoM3(e);
+			}
+		};
 	};
+	
+	PropertyChangeListener ReactionSpecsPropertyChangeListener =
+		new PropertyChangeListener(){
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (true) {
+//				if (evt.getSource() instanceof Model && evt.getPropertyName().equals(Model.REACTION_STEPS_PROPERTY_NAME)) {
+//					System.out.println(" --- Property Change Event Source: " + evt.getSource());
+//					System.out.println(" --- Property Change Event Name: " + evt.getPropertyName());
+//					ReactionSpecsTableModel modelparamTableModel = (ReactionSpecsTableModel)getScrollPaneTable().getModel();
+//					modelparamTableModel.setData(modelparamTableModel.getUnsortedParameters());		// ???
+//					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(), null, null);
+//					getScrollPaneTable().invalidate();
+//					getJScrollPane1().repaint();
+				}
+			}
+		};
 
 /**
  * ReactionSpecsPanel constructor comment.
  */
 public ReactionSpecsPanel() {
 	super();
+	spprPanel = null;
 	initialize(false);
 }
 
 public ReactionSpecsPanel(boolean expanded) {
 	super();
+	spprPanel = null;
 	initialize(expanded);
+}
+
+public ReactionSpecsPanel(SPPRPanel aPanel) {
+	super();
+	spprPanel = aPanel;
+	initialize(true);
+}
+
+private SPPRPanel getSPPRPanel() {
+	return spprPanel;
 }
 
 /**
@@ -73,6 +123,9 @@ private void initialize(boolean expanded) {
 		constraintsJSplitPane1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getOuterSplitPane(expanded), constraintsJSplitPane1);
 		initConnections();
+		if ((getmodel1() != null)) {
+			getReactionSpecsTableModel().setModel(getmodel1());
+		}
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -123,7 +176,44 @@ private SimpleReactionPanel getSimpleReactionPanel() {
 	BeanUtils.enableComponents(simpleReactionPanel, false);
 	return simpleReactionPanel;
 }
+private FluxReactionPanel getFluxReactionPanel() {
+	if (fluxReactionPanel == null) {
+		try {
+			fluxReactionPanel = new FluxReactionPanel(true);
+			fluxReactionPanel.setName("FluxReactionPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	BeanUtils.enableComponents(fluxReactionPanel, false);
+	return fluxReactionPanel;
+}
 
+/**
+ * Return the model1 property value.
+ */
+private Model getmodel1() {
+	return ivjmodel1;
+}
+/**
+ * Set the model1 to a new value.
+ */
+private void setmodel1(Model newValue) {
+	if (ivjmodel1 != newValue) {
+		try {
+			Model oldValue = getmodel1();
+			ivjmodel1 = newValue;
+//			connPtoP3SetSource();		// ??????
+			getReactionSpecsTableModel().setModel(getmodel1());			// ???? never use getModel to recover it
+			if (getmodel1() != null) {
+				getmodel1().addPropertyChangeListener(ReactionSpecsPropertyChangeListener);
+			}
+			firePropertyChange("model", oldValue, newValue);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	};
+}
 /**
  * connEtoM4:  (simulationContext1.this --> ReactionSpecsTableModel.simulationContext)
  * @param value cbit.vcell.mapping.SimulationContext
@@ -220,6 +310,94 @@ private void connPtoP2SetTarget() {
 	}
 }
 
+/**
+ * connPtoP5SetSource:  (ScrollPaneTable.selectionModel <--> selectionModel1.this)
+ */
+private void connPtoP5SetSource() {
+	/* Set the source from the target */
+	try {
+		if (ivjConnPtoP5Aligning == false) {
+			ivjConnPtoP5Aligning = true;
+			if ((getselectionModel1() != null)) {
+				getScrollPaneTable().setSelectionModel(getselectionModel1());
+			}
+			ivjConnPtoP5Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP5Aligning = false;
+		handleException(ivjExc);
+	}
+}
+/**
+ * connPtoP5SetTarget:  (ScrollPaneTable.selectionModel <--> selectionModel1.this)
+ */
+private void connPtoP5SetTarget() {
+	/* Set the target from the source */
+	try {
+		if (ivjConnPtoP5Aligning == false) {
+			ivjConnPtoP5Aligning = true;
+			setselectionModel1(getScrollPaneTable().getSelectionModel());
+			ivjConnPtoP5Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP5Aligning = false;
+		handleException(ivjExc);
+	}
+}
+/**
+ */
+private void connEtoM3(javax.swing.event.ListSelectionEvent arg1) {
+	try {
+		int row = getselectionModel1().getLeadSelectionIndex();
+		if((row >= 0) && (getSPPRPanel() != null)) {
+			getSPPRPanel().setScrollPaneTreeCurrentRow(getReactionSpecsTableModel().getValueAt(row, 0));
+//			getSPPRPanel().setScrollPaneTreeCurrentRow(getReactionSpecsTableModel().getValueAt(row));
+		}
+
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+}
+/**
+ * Return the selectionModel1 property value.
+ */
+private javax.swing.ListSelectionModel getselectionModel1() {
+	return ivjselectionModel1;
+}
+/**
+ * Set the selectionModel1 to a new value.
+ * @param newValue javax.swing.ListSelectionModel
+ */
+private void setselectionModel1(javax.swing.ListSelectionModel newValue) {
+	if (ivjselectionModel1 != newValue) {
+		try {
+			/* Stop listening for events from the current object */
+			if (ivjselectionModel1 != null) {
+				ivjselectionModel1.removeListSelectionListener(ivjEventHandler);
+			}
+			ivjselectionModel1 = newValue;
+
+			/* Listen for events from the new object */
+			if (ivjselectionModel1 != null) {
+				ivjselectionModel1.addListSelectionListener(ivjEventHandler);
+			}
+			connPtoP5SetSource();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	};
+}
+
+
+
+private void notifyRelatedPanels(javax.swing.event.ListSelectionEvent arg1) {
+	try {
+		System.out.println("Reaction Spec selection changed");
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+}
+
 /*
  * Return the ReactionSpecsTableModel property value.
  * @return cbit.vcell.mapping.gui.ReactionSpecsTableModel
@@ -228,7 +406,8 @@ private void connPtoP2SetTarget() {
 private ReactionSpecsTableModel getReactionSpecsTableModel() {
 	if (ivjReactionSpecsTableModel == null) {
 		try {
-			ivjReactionSpecsTableModel = new cbit.vcell.mapping.gui.ReactionSpecsTableModel();
+//			ivjReactionSpecsTableModel = new cbit.vcell.mapping.gui.ReactionSpecsTableModel();
+			ivjReactionSpecsTableModel = new cbit.vcell.mapping.gui.ReactionSpecsTableModel(getScrollPaneTable(), false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -319,6 +498,7 @@ private void initConnections() throws java.lang.Exception {
 			return this;
 		}
 	});
+	connPtoP5SetTarget();
 }
 
 public void setScrollPaneTableCurrentRow(ReactionStep selection) {
@@ -334,15 +514,27 @@ public void setScrollPaneTableCurrentRow(ReactionStep selection) {
 			break;
 		}
 	}
-	
+	if((selection instanceof SimpleReaction) && (outerSplitPane.getBottomComponent() != getSimpleReactionPanel())) {
+//		System.out.println("Simple reaction panel");
+		outerSplitPane.setBottomComponent(getSimpleReactionPanel());
+		outerSplitPane.setDividerLocation(300);
+	} else if((selection instanceof FluxReaction) && (outerSplitPane.getBottomComponent() != getFluxReactionPanel())) {
+//		System.out.println("Flux reaction panel");
+		outerSplitPane.setBottomComponent(getFluxReactionPanel());
+		outerSplitPane.setDividerLocation(300);
+	}
     ReactionStep[] reactionSteps = getSimulationContext().getModel().getReactionSteps();
     for (int i = 0; i < reactionSteps.length; i++) {
     	if(selection.equals(reactionSteps[i])) {
-    		System.out.println(selection);
     		if(reactionSteps[i] instanceof SimpleReaction ) {
+//        		System.out.println("Simple reaction: " + selection.getName());
     			getSimpleReactionPanel().setSimpleReaction((SimpleReaction)reactionSteps[i]);
     			break;
-    		}
+    		} else if(reactionSteps[i] instanceof FluxReaction) {
+//        		System.out.println("Flux reaction: " + selection.getName());
+    			getFluxReactionPanel().setFluxReaction1((FluxReaction)reactionSteps[i]);
+    			break;
+     		}
     	}
     }
 }

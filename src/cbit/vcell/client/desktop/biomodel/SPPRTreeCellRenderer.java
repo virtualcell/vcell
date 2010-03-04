@@ -16,7 +16,9 @@ import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.ModelParameter;
  
@@ -26,6 +28,7 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	private Icon gParamIcon;
 	private Icon aParamIcon;
 	private Icon reactionsIcon;
+	private Icon fluxIcon;
 	private Icon eventIcon;
 	
 	
@@ -41,10 +44,11 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	    gParamIcon = new ImageIcon(getClass().getResource("/images/gparamItem.gif"));
 	    aParamIcon = new ImageIcon(getClass().getResource("/images/aparamItem.gif"));
 	    reactionsIcon = new ImageIcon(getClass().getResource("/images/reactionsItem.gif"));
+	    fluxIcon = new ImageIcon(getClass().getResource("/images/fluxItem.gif"));
 	    eventIcon = new ImageIcon(getClass().getResource("/images/eventItem.gif"));
     	
 	    if((speciesIcon == null) || (gParamIcon == null) || (aParamIcon == null) || 
-	       (reactionsIcon == null) || (eventIcon == null)) {
+	       (reactionsIcon == null) || (fluxIcon == null) || (eventIcon == null)) {
             System.err.println("At least one icon is missing.");
 	    }
     }
@@ -83,10 +87,14 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
         	icon = gParamIcon;
         	labelText = ((ModelParameter)userObj).getName();
         	toolTipPrefix = "Global Parameter : ";
-        } else if (userObj instanceof ReactionStep) {			// --- reaction
+        } else if (userObj instanceof SimpleReaction) {			// --- simple reaction
         	icon = reactionsIcon;
         	labelText = ((ReactionStep)userObj).getName();
-        	toolTipPrefix = "Reaction : ";
+        	toolTipPrefix = "Simple Reaction : ";
+        } else if (userObj instanceof FluxReaction) {			// --- flux reaction
+        	icon = fluxIcon;
+        	labelText = ((ReactionStep)userObj).getName();
+        	toolTipPrefix = "Flux Reaction : ";
         } else if (userObj instanceof BioEvent) {			// --- reaction
         	BioEvent bioEvent = (BioEvent)userObj;
         	SimulationContext simulationContext = bioEvent.getSimulationContext();

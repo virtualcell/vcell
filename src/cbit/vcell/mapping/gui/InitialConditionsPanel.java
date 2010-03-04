@@ -22,6 +22,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -33,6 +34,7 @@ import org.vcell.util.gui.sorttable.JSortTable;
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.SPPRPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
@@ -58,6 +60,7 @@ public class InitialConditionsPanel extends javax.swing.JPanel {
 	private boolean ivjConnPtoP3Aligning = false;
 	private SimulationContext ivjsimulationContext1 = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
+	private SPPRPanel spprPanel = null;
 	private JPanel scrollPanel = null; // added in July, 2008. Used to accommodate the radio buttons and the ivjJScrollPane1. 
 	private JRadioButton conRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
 	private JRadioButton amtRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
@@ -119,7 +122,18 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 public InitialConditionsPanel() {
 	super();
+	spprPanel = null;
 	initialize();
+}
+
+public InitialConditionsPanel(SPPRPanel aPanel) {
+	super();
+	spprPanel = aPanel;
+	initialize();
+}
+
+private SPPRPanel getSPPRPanel() {
+	return spprPanel;
 }
 
 /**
@@ -244,22 +258,19 @@ private void connEtoM2(SimulationContext value) {
  * connEtoM3:  (selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> SpeciesContextSpecPanel.setSpeciesContextSpec(Lcbit.vcell.mapping.SpeciesContextSpec;)V)
  * @param arg1 javax.swing.event.ListSelectionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM3(javax.swing.event.ListSelectionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		int row = getselectionModel1().getMinSelectionIndex();
 		if (row < 0) {
 			getSpeciesContextSpecPanel().setSpeciesContextSpec(null);
 		} else {
 			getSpeciesContextSpecPanel().setSpeciesContextSpec(getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row));
+//			System.out.println("Initial condition selection changed");
+			if(getSPPRPanel() != null) {
+				getSPPRPanel().setScrollPaneTreeCurrentRow(getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row).getSpeciesContext());
+			}
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
