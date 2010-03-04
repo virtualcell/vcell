@@ -246,7 +246,7 @@ public void databaseInsert(DatabaseEvent databaseEvent) {
 				// Have to create parent node, for all versions of this geometry, 
 				// and stick it in the correct order in the tree.
 				//
-				parentNode = new BioModelNode(insertedGeometryInfo.getVersion().getName(),true);
+				parentNode = new BioModelNode(new VCDocumentInfoNode(insertedGeometryInfo),true);
 				parentNode.insert(newVersionNode,0);
 				//
 				// if owner node exists, add BioModel parent and fire events to notify of the insertion

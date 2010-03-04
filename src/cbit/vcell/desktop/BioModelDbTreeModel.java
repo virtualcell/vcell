@@ -212,7 +212,7 @@ public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
 				// Have to create parent node, for all versions of this biomodel, 
 				// and stick it in the correct order in the tree.
 				//
-				parentNode = new BioModelNode(insertedBioModelInfo.getVersion().getName(),true);
+				parentNode = new BioModelNode(new VCDocumentInfoNode(insertedBioModelInfo),true);
 				parentNode.insert(newVersionNode,0);
 				//
 				// if owner node exists, add BioModel parent and fire events to notify of the insertion
