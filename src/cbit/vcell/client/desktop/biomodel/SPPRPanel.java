@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -26,6 +27,7 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -36,9 +38,11 @@ import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 import cbit.vcell.math.MathDescription;
+
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.ModelParameter;
@@ -281,13 +285,48 @@ public class SPPRPanel extends JPanel {
 			outerSplitPane.setRightComponent(emptyPanel);
 		}
 	}
+	
+	public void setScrollPaneTreeCurrentRow(Object selection) {
+		if (selection == null) {
+			return;
+		}
+		BioModelNode node = (BioModelNode)spprTree.getLastSelectedPathComponent();
+		Object leaf = null;
+		if (node != null) {
+			leaf = node.getUserObject();
+	    }
+		if(selection instanceof SpeciesContext) {
+			selectNode(leaf, selection, SPPRTreeModel.INITIAL_CONDITIONS_NODE);
+		} else if(selection instanceof ModelParameter) {
+			selectNode(leaf, selection, SPPRTreeModel.GLOBAL_PARAMETER_NODE);
+		} else if(selection instanceof ReactionStep) {
+			selectNode(leaf, selection, SPPRTreeModel.REACTIONS_NODE);
+		} else {
+			System.out.println(selection.getClass() + " table selection changed");
+		}
+	}
+	private void selectNode(Object oldSelection, Object newSelection, int whatNode) {
+		if(!((SPPRTreeFolderNode) getSpprTreeModel().folderNodes[whatNode].getUserObject()).isExpanded()) {
+			return;		// folder of interest is collapsed, nothing to do
+		}
+		if(oldSelection.equals(newSelection)) {	// already selected
+		} else {
+			BioModelNode folderRoot = getSpprTreeModel().folderNodes[whatNode];
+			BioModelNode foundNode = folderRoot.findNodeByUserObject(newSelection);
+			if(foundNode == null) {
+				return;
+			}
+			TreePath treePath = new TreePath(foundNode.getPath());
+			spprTree.setSelectionPath(treePath);
+		}
+	}
 		
 //------------- Right Panel	-----------------------
 	
 	private InitialConditionsPanel getInitialConditionsPanel() {
 		if (initialConditionsPanel == null) {
 			try {
-				initialConditionsPanel = new InitialConditionsPanel();
+				initialConditionsPanel = new InitialConditionsPanel(this);
 				initialConditionsPanel.setName("InitialConditionsPanel");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -298,7 +337,7 @@ public class SPPRPanel extends JPanel {
 	private ModelParameterPanel getModelParameterPanel() {
 		if (modelParameterPanel == null) {
 			try {
-				modelParameterPanel = new ModelParameterPanel(true);
+				modelParameterPanel = new ModelParameterPanel(this);
 				modelParameterPanel.setName("ModelParameterPanel");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -309,7 +348,7 @@ public class SPPRPanel extends JPanel {
 	private ReactionSpecsPanel getReactionSpecsPanel() {
 		if (reactionSpecsPanel == null) {
 			try {
-				reactionSpecsPanel = new ReactionSpecsPanel(true);
+				reactionSpecsPanel = new ReactionSpecsPanel(this);
 				reactionSpecsPanel.setName("ReactionSpecsPanel");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);

@@ -4,9 +4,15 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import javax.swing.JTable;
+import javax.swing.table.AbstractTableModel;
+
+import org.vcell.util.gui.sorttable.ManageTableModel;
+
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 /**
@@ -14,7 +20,9 @@ import cbit.vcell.model.SimpleReaction;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ReactionSpecsTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
+public class ReactionSpecsTableModel extends AbstractTableModel implements java.beans.PropertyChangeListener {
+//public class ReactionSpecsTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
+//	public class ReactionSpecsTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
 	public static final int NUM_COLUMNS = 4;
 	public static final int COLUMN_NAME = 0;
 	public static final int COLUMN_TYPE = 1;
@@ -22,6 +30,9 @@ public class ReactionSpecsTableModel extends javax.swing.table.AbstractTableMode
 	public static final int COLUMN_FAST = 3;
 	private String LABELS[] = { "Name", "Type", "Enabled", "Fast" };
 	
+	private Model fieldModel = null;
+	private JTable ownerTable = null;
+	private boolean filterFlag;
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
@@ -30,6 +41,12 @@ public class ReactionSpecsTableModel extends javax.swing.table.AbstractTableMode
  */
 public ReactionSpecsTableModel() {
 	super();
+}
+public ReactionSpecsTableModel(JTable table, boolean flag) {
+	super();
+	ownerTable = table;
+	filterFlag = flag;
+	addPropertyChangeListener(this);
 }
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -201,6 +218,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
+public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
+	getPropertyChange().removePropertyChangeListener(propertyName, listener);
+}
 /**
  * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
  * @param simulationContext The new value for the property.
@@ -237,6 +257,16 @@ public void setSimulationContext(SimulationContext simulationContext) {
 	}
 	firePropertyChange("simulationContext", oldValue, simulationContext);
 	fireTableDataChanged();
+}
+/**
+ * Sets the model property (cbit.vcell.model.Model) value.
+ * @param model The new value for the property.
+ * @see #getModel
+ */
+public void setModel(Model model) {
+	Model oldValue = fieldModel;
+	fieldModel = model;
+	firePropertyChange("model", oldValue, model);
 }
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (rowIndex<0 || rowIndex>=getRowCount()){
@@ -296,4 +326,5 @@ private void updateListenersReactionContext(cbit.vcell.mapping.ReactionContext r
 	}
 
 }
+
 }
