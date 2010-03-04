@@ -5,12 +5,8 @@ package org.vcell.sybil.util.state;
  */
 
 import java.awt.Component;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
 
-import javax.swing.SwingUtilities;
-
-import org.vcell.sybil.util.exception.CatchUtil;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 

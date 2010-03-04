@@ -1,6 +1,6 @@
 package org.vcell.sybil.util.lists;
 
-/*   ListOfNone  --- by Oliver Ruebenacker, UCHC --- April 2008
+/*   ListOfNone  --- by Oliver Ruebenacker, UCHC --- April 2008 to November 2009
  *   An empty list, in case we need one
  */
 
@@ -57,7 +57,7 @@ public class ListOfNone<E> implements List<E> {
 	public E set(int index, E element) { throw new UnsupportedOperationException(); }
 	
 	public boolean equals(Object o) {
-		if(o instanceof List) { 
+		if(o instanceof List<?>) { 
 			List<?> l = (List<?>) o;
 			return l.size() == 0;
 		}

@@ -1,11 +1,10 @@
 package org.vcell.sybil.rdf.schemas;
 
-/*   BioPAX2  --- by Oliver Ruebenacker, UCHC --- April to May 2008
+/*   BioPAX2  --- by Oliver Ruebenacker, UCHC --- April 2008 to March 2010
  *   Resources of the BioPAX Level 2 schema
  */
 
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.sybil.rdf.NameSpace;
@@ -194,20 +193,6 @@ public class BioPAX2 {
 	public static final ObjectProperty TISSUE = schema.createObjectProperty(ns + "TISSUE");
 	public static final ObjectProperty XREF = schema.createObjectProperty(ns + "XREF");
 
-	public static Set<OntClass> interactionClasses = SetUtil.chain(BioPAX2.interaction)
-	.plus(BioPAX2.conversion).plus(BioPAX2.biochemicalReaction).plus(BioPAX2.transport)
-	.plus(BioPAX2.transportWithBiochemicalReaction).plus(BioPAX2.complexAssembly).plus(BioPAX2.control)
-	.plus(BioPAX2.catalysis).plus(BioPAX2.modulation);
-
-	public static Set<OntClass> partClasses = SetUtil.chain(BioPAX2.physicalEntityParticipant)
-	.plus(BioPAX2.sequenceParticipant);
-	
-	public static Set<OntClass> physicalEntityClasses = SetUtil.chain(BioPAX2.physicalEntity)
-	.plus(BioPAX2.complex).plus(BioPAX2.rna).plus(BioPAX2.dna).plus(BioPAX2.protein)
-	.plus(BioPAX2.smallMolecule);
-	
-
-	
 	static {
 		biochemicalReaction.addSubClass(transportWithBiochemicalReaction);
 		control.addSubClass(catalysis);
@@ -587,25 +572,19 @@ public class BioPAX2 {
 				schema.createHasValueRestriction(null, CONTROL_TYPE, 
 						schema.createTypedLiteral("ACTIVATION")));
 		
-		OntUtil.makeAllDisjoint(SetUtil.chain(complex).plus(dna).plus(protein).plus(rna)
-				.plus(smallMolecule));
-		OntUtil.makeAllDisjoint(SetUtil.chain(conversion).plus(control));
-		OntUtil.makeAllDisjoint(SetUtil.chain(complexAssembly).plus(transport));
-		OntUtil.makeAllDisjoint(SetUtil.chain(biochemicalReaction).plus(complexAssembly));
-		OntUtil.makeAllDisjoint(SetUtil.chain(chemicalStructure).plus(confidence).plus(deltaGprimeO)
-				.plus(evidence).plus(experimentalForm).plus(externalReferenceUtilityClass)
-				.plus(kPrime).plus(pathwayStep).plus(physicalEntityParticipant)
-				.plus(sequenceFeature).plus(sequenceLocation));
-		OntUtil.makeAllDisjoint(SetUtil.chain(interaction).plus(pathway).plus(physicalEntity));
-		OntUtil.makeAllDisjoint(SetUtil.chain(publicationXref).plus(relationshipXref)
-				.plus(unificationXref));
-		OntUtil.makeAllDisjoint(SetUtil.chain(sequenceFeature).plus(sequenceInterval)
-				.plus(sequenceSite));
-		OntUtil.makeAllDisjoint(SetUtil.chain(modulation).plus(catalysis));
-		OntUtil.makeAllDisjoint(SetUtil.chain(openControlledVocabulary).plus(dataSource)
-				.plus(xref).plus(bioSource));
-		OntUtil.makeAllDisjoint(SetUtil.chain(entity).plus(utilityClass));
-		// OntUtil.makeAllDisjoint(SetUtil.chain().plus());
+		OntUtil.makeAllDisjoint(SetUtil.newSet(complex, dna, protein, rna, smallMolecule));
+		OntUtil.makeAllDisjoint(SetUtil.newSet(conversion, control));
+		OntUtil.makeAllDisjoint(SetUtil.newSet(complexAssembly, transport));
+		OntUtil.makeAllDisjoint(SetUtil.newSet(biochemicalReaction, complexAssembly));
+		OntUtil.makeAllDisjoint(SetUtil.newSet(chemicalStructure, confidence, deltaGprimeO, evidence, 
+				experimentalForm, externalReferenceUtilityClass, kPrime, pathwayStep, 
+				physicalEntityParticipant, sequenceFeature, sequenceLocation));
+		OntUtil.makeAllDisjoint(SetUtil.newSet(interaction, pathway, physicalEntity));
+		OntUtil.makeAllDisjoint(SetUtil.newSet(publicationXref, relationshipXref, unificationXref));
+		OntUtil.makeAllDisjoint(SetUtil.newSet(sequenceFeature, sequenceInterval, sequenceSite));
+		OntUtil.makeAllDisjoint(SetUtil.newSet(modulation, catalysis));
+		OntUtil.makeAllDisjoint(SetUtil.newSet(openControlledVocabulary, dataSource, xref, bioSource));
+		OntUtil.makeAllDisjoint(SetUtil.newSet(entity, utilityClass));
 
 	}
 	

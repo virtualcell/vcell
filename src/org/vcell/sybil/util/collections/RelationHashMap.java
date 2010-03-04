@@ -1,4 +1,4 @@
-package org.vcell.sybil.util.collect;
+package org.vcell.sybil.util.collections;
 
 /*   Relation  --- by Oliver Ruebenacker, UCHC --- January 2009
  *   A relation (set of pairs)

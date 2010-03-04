@@ -4,7 +4,7 @@ package org.vcell.sybil.rdf.compare;
  *   A comparator for RDF nodes by type (URI node, anon node, literal)
  */
 
-import org.vcell.sybil.util.compare.ComparatorScore;
+import org.vcell.sybil.util.comparator.ComparatorScore;
 
 import com.hp.hpl.jena.rdf.model.RDFNode;
 
