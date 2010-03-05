@@ -2731,12 +2731,16 @@ private void resolve2(){
 			Model tempTempModel = (Model)BeanUtils.cloneSerializable(getModel());
 			SpeciesContext[] temptempSCArr = tempTempModel.getSpeciesContexts(tempTempModel.getStructure(getStructure().getName()));
 			for (int i = 0; i < temptempSCArr.length; i++) {
+				Species useThisSpecies = null;
 				if(tempModel.getSpecies(temptempSCArr[i].getSpecies().getCommonName()) == null){
 					tempModel.addSpecies(temptempSCArr[i].getSpecies());
+					useThisSpecies = temptempSCArr[i].getSpecies();
+				}else{
+					useThisSpecies = tempModel.getSpecies(temptempSCArr[i].getSpecies().getCommonName());
 				}
-				if(tempModel.getSpeciesContext(temptempSCArr[i].getName()) == null){
+				if(tempModel.getSpeciesContext(useThisSpecies,tempStructure) == null){
 					SpeciesContext newSpeciesContext =
-						new SpeciesContext(temptempSCArr[i].getSpecies(),tempStructure);
+						new SpeciesContext(useThisSpecies,tempStructure);
 					tempModel.addSpeciesContext(newSpeciesContext);
 				}
 			}
