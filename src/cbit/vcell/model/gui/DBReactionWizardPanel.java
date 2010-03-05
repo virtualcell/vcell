@@ -1168,8 +1168,8 @@ private void done(Model tempModel,Structure tempStructure) {
 				reaction.setKinetics(kinetics);
 				
 				reaction.refreshDependencies();
-				BioCartoonTool.pasteReactionSteps(
-						new ReactionStep[] {reaction},getModel(), getStructure(), false,false,this);
+//				BioCartoonTool.pasteReactionSteps(
+//						new ReactionStep[] {reaction},getModel(), getStructure(), false,false,this);
 
 			}else{//Must be user reaction with kinetics
 				reaction = getReactionStep();
