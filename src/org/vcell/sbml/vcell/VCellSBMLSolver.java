@@ -15,6 +15,7 @@ import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.SolverException;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 import org.vcell.util.Executable;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 
@@ -167,7 +168,8 @@ public class VCellSBMLSolver implements SBMLSolver {
 
 			// use the cvodeStandalone solver
 			File cvodeOutputFile = new File(outDir,filePrefix+SimDataConstants.IDA_DATA_EXTENSION);
-			Executable executable = new Executable(new String[]{"SundialsSolverStandalone", cvodeFile.getAbsolutePath(), cvodeOutputFile.getAbsolutePath()});
+			String sundialsSolverExecutable = PropertyLoader.getRequiredProperty(PropertyLoader.sundialsSolverExecutableProperty);
+			Executable executable = new Executable(new String[]{sundialsSolverExecutable, cvodeFile.getAbsolutePath(), cvodeOutputFile.getAbsolutePath()});
 			executable.start();
 	
 		// get the result 

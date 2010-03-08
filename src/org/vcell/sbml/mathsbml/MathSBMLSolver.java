@@ -1,6 +1,7 @@
 package org.vcell.sbml.mathsbml;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -9,6 +10,7 @@ import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.SolverException;
+import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.opt.solvers.OptSolverCallbacks.EvaluationHolder;
 
@@ -27,10 +29,8 @@ import com.wolfram.jlink.MathLinkFactory;
 public class MathSBMLSolver implements SBMLSolver {
 	
 	private KernelLink ml = null;
-	private File mathKernelExecutable = null;
 	
-	public MathSBMLSolver(File argMathKernelExecutable){
-		this.mathKernelExecutable = argMathKernelExecutable;
+	public MathSBMLSolver(){
 	}
 
 	public static void main(String[] args) {
@@ -43,7 +43,7 @@ public class MathSBMLSolver implements SBMLSolver {
 			File sbmlFile = new File(args[1]);
 			String sbmlText = SBMLUtils.readStringFromFile(sbmlFile.getAbsolutePath());
 	
-			MathSBMLSolver mathSBMLSolver = new MathSBMLSolver(new File("c:\\program files\\wolfram research\\mathematica\\7.0\\mathkernel.exe"));
+			MathSBMLSolver mathSBMLSolver = new MathSBMLSolver();
 			
 			SimSpec simSpec = SimSpec.fromSBML(sbmlText);
 			String prefixName = sbmlFile.getName();
@@ -65,6 +65,7 @@ public String getResultsFileColumnDelimiter(){
 public void close() throws SolverException {
 	try {
 		if (ml!=null){
+			ml.terminateKernel();
 			ml.close();
 			ml = null;
 		}
@@ -77,6 +78,17 @@ public void close() throws SolverException {
 public void open() throws SolverException {
 	if (ml!=null){
 		return;
+	}
+	
+	String mathKernelExecutableFilename = PropertyLoader.getRequiredProperty(PropertyLoader.mathematicaKernelExecutable);
+	File mathKernelExecutable = new File(mathKernelExecutableFilename);
+	try {
+		if (!mathKernelExecutable.exists()){
+			throw new FileNotFoundException("mathematica kernel '"+mathKernelExecutable.getAbsolutePath()+"' not found");
+		}
+	}catch (IOException e){
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Could not find mathematica kernel: "+e.getMessage());
 	}
 	
 	try {
@@ -93,6 +105,13 @@ public void open() throws SolverException {
 		String retcode;
 		
 		System.out.println("starting MathSBML commands");
+		String mathSBMLDirectory = PropertyLoader.getRequiredProperty(PropertyLoader.mathSBMLDirectory);
+		command = "AppendTo[$Path, ToFileName[\""+mathSBMLDirectory.replace('\\', '/')+"\"]]";
+		retcode = ml.evaluateToOutputForm(command,0);
+		System.out.println("> "+command);
+		System.out.println(">>> "+retcode);
+		System.out.println("XXXX "+ml.errorMessage());
+		
 		command = "<< mathSBML.m";
 		retcode = ml.evaluateToOutputForm(command,0);
 		System.out.println("> "+command);
@@ -111,7 +130,7 @@ public File solve(String filePrefix, File outDir, String sbmlText, SimSpec testS
 	File sbmlFile = new File(outDir,filePrefix+".sbml");
 	SBMLUtils.writeStringToFile(sbmlText, sbmlFile.getAbsolutePath(), true);
 	
-	File csvFile = new File(outDir,filePrefix+".csv");
+	File csvFile = new File(outDir,filePrefix+".mathsbml.csv");
 	if (csvFile.exists()){
 		csvFile.delete();
 	}
@@ -136,21 +155,24 @@ public File solve(String filePrefix, File outDir, String sbmlText, SimSpec testS
 		System.out.println("> "+command);
 		System.out.println(">>> "+retcode);
 		System.out.println("XXXX "+ml.errorMessage());
+		ml.waitForAnswer();
 		//command = "m = SBMLRead[\"" + sbmlFile.getName() + "\", context -> None, return->{SBMLUnitDefinitions->False,SBMLUnitAssociations->False,SBMLModelName->False,SBMLReactions->False,SBMLParameters->False,SBMLAlgebraicRules->False,SBMLODES->False,SBMLIC->False,SBMLCompartments->False,SBMLBoundaryConditions->False,SBMLConstants->False,SBMLAssignmentRules->False,SBMLNumericalSolution->"+endTime+"}]";
 		command = "m = SBMLRead[\"" + sbmlFile.getName() + "\", context -> "+CONTEXT+"]";
 		retcode = ml.evaluateToOutputForm(command,0);
 		System.out.println("> "+command);
-		//System.out.println(">>> "+retcode);
+		System.out.println(">>> "+retcode);
 		System.out.println("XXXX "+ml.errorMessage());
+		ml.waitForAnswer();
 		command = "n = SBMLNDSolve[m, " + testSpec.getEndTime() + ", MaxSteps -> Infinity]";
 		retcode = ml.evaluateToOutputForm(command,0);
 		System.out.println("> "+command);
-		//System.out.println(">>> "+retcode);
+		System.out.println(">>> "+retcode);
 		System.out.println("XXXX "+ml.errorMessage());
+		ml.waitForAnswer();
 		command = "dataTable[" + varStringList + ", {t, 0, "+endTime+", "+interval+"}, n, file->\"" + csvFile.getName() + "\", format->\"CSV\"]";
 		retcode = ml.evaluateToOutputForm(command,0);
 		System.out.println("> "+command);
-		//System.out.println(">>> "+retcode);
+		System.out.println(">>> "+retcode);
 		System.out.println("XXXX "+ml.errorMessage());
 		ml.waitForAnswer();
 	} catch (MathLinkException e) {
