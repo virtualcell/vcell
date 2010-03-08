@@ -1,4 +1,4 @@
-package cbit.vcell.geometry.surface;
+package cbit.vcell.solvers;
 import java.io.IOException;
 import java.io.Writer;
 import cbit.vcell.geometry.RegionImage;
@@ -11,6 +11,14 @@ import java.io.ByteArrayOutputStream;
 import org.vcell.util.ISize;
 
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.geometry.surface.Node;
+import cbit.vcell.geometry.surface.Quadrilateral;
+import cbit.vcell.geometry.surface.Surface;
+import cbit.vcell.geometry.surface.SurfaceCollection;
+import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
+import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 /**
  * Insert the type's description here.
  * Creation date: (7/19/2004 10:52:10 AM)

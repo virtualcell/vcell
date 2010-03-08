@@ -19,7 +19,6 @@ import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.surface.GeometryFileWriter;
 import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -217,17 +216,6 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 }
 
 /**
- * Insert the method's description here.
- * Creation date: (5/9/2005 2:52:48 PM)
- */
-private void writeCompartment_boundaryConditions(CompartmentSubDomain csd) {
-	printWriter.print("BOUNDARY_CONDITIONS ");
-	writeFeature_boundaryConditions(csd);
-	printWriter.println();
-}
-
-
-/**
 # fast system dimension num_dependents
 FAST_SYSTEM_BEGIN 2 2
 INDEPENDENT_VARIALBES rf r 
@@ -259,8 +247,8 @@ FAST_SYSTEM_END
  * @throws ExpressionException 
  * @throws MathException 
 */
-private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) throws ExpressionException, MathException {
-	FastSystem fastSystem = volSubDomain.getFastSystem();
+private void writeFastSystem(SubDomain subDomain) throws MathException, ExpressionException  {
+	FastSystem fastSystem = subDomain.getFastSystem();
 	if (fastSystem == null) {
 		return;
 	}
@@ -493,9 +481,8 @@ private void writeCompartments() throws ExpressionException, MathException {
 			printWriter.println("COMPARTMENT_BEGIN " + csd.getName());
 			printWriter.println();
 			
-			writeCompartment_boundaryConditions(csd);			
 			writeCompartment_VarContext(csd);			
-			writeCompartment_FastSystem(csd);			
+			writeFastSystem(csd);
 			printWriter.println("COMPARTMENT_END");
 			printWriter.println();
 		}
@@ -527,17 +514,15 @@ private void writeFeature_boundaryConditions(CompartmentSubDomain csd) {
  * Creation date: (5/9/2005 2:52:48 PM)
  */
 private void writeMembrane_boundaryConditions(MembraneSubDomain msd) {
-	printWriter.print("BOUNDARY_CONDITIONS ");
 	BoundaryConditionType[] bctypes = new BoundaryConditionType[] {
-			msd.getInsideCompartment().getBoundaryConditionXm(),
-			msd.getInsideCompartment().getBoundaryConditionXp(),
-			msd.getInsideCompartment().getBoundaryConditionYm(),
-			msd.getInsideCompartment().getBoundaryConditionYp(),
-			msd.getInsideCompartment().getBoundaryConditionZm(),
-			msd.getInsideCompartment().getBoundaryConditionZp()
+			msd.getBoundaryConditionXm(),
+			msd.getBoundaryConditionXp(),
+			msd.getBoundaryConditionYm(),
+			msd.getBoundaryConditionYp(),
+			msd.getBoundaryConditionZm(),
+			msd.getBoundaryConditionZp()
 	};
 	writeBoundaryConditions(bctypes);
-	printWriter.println();
 	printWriter.println();
 }
 
@@ -555,21 +540,63 @@ private void writeBoundaryConditions(BoundaryConditionType[] bctypes) {
 	}
 }
 
-
+private String replaceInsideOutside(MembraneSubDomain msd, Expression exp) {
+	String flux = exp.infix();
+	flux = flux.replaceAll("_INSIDE", "_" + msd.getInsideCompartment().getName() + "_membrane");
+	flux = flux.replaceAll("_OUTSIDE", "_" + msd.getOutsideCompartment().getName() + "_membrane");
+	return flux;
+	
+}
 /**
 JUMP_CONDITION_BEGIN r
 INFLUX 0.0;
 OUTFLUX 0.0;
 JUMP_CONDITION_END
- * @throws ExpressionException 
+ * @throws ExpressionException
 */
 private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws ExpressionException {
+	// convert membraneRate in volume region equation into jump condition. 
+	CompartmentSubDomain insideCompartment = msd.getInsideCompartment();
+	Enumeration<Equation> enum_equ = insideCompartment.getEquations();
+	while (enum_equ.hasMoreElements()) {
+		Equation equation = enum_equ.nextElement();
+		if (equation instanceof VolumeRegionEquation){
+			printWriter.println("JUMP_CONDITION_BEGIN " + equation.getVariable().getName());
+			Expression flux = subsituteExpression(((VolumeRegionEquation) equation).getMembraneRateExpression());
+			String infix = replaceInsideOutside(msd, flux);
+			printWriter.println("FLUX " + insideCompartment.getName() + " " + infix + ";");
+			printWriter.println("JUMP_CONDITION_END");
+			printWriter.println();
+		}
+	}
+	CompartmentSubDomain outsideCompartment = msd.getOutsideCompartment();
+	enum_equ = outsideCompartment.getEquations();
+	while (enum_equ.hasMoreElements()) {
+		Equation equation = enum_equ.nextElement();
+		if (equation instanceof VolumeRegionEquation){
+			printWriter.println("JUMP_CONDITION_BEGIN " + equation.getVariable().getName());
+			Expression flux = subsituteExpression(((VolumeRegionEquation) equation).getMembraneRateExpression());
+			String infix = replaceInsideOutside(msd, flux);
+			printWriter.println("FLUX " + outsideCompartment.getName() + " " + infix + ";");
+			printWriter.println("JUMP_CONDITION_END");
+			printWriter.println();
+		}
+	}
+
 	Enumeration<JumpCondition> enum1 = msd.getJumpConditions();
 	while (enum1.hasMoreElements()) {
 		JumpCondition jc = enum1.nextElement();
 		printWriter.println("JUMP_CONDITION_BEGIN " + jc.getVariable().getName());
-		printWriter.println("INFLUX " + subsituteExpression(jc.getInFluxExpression()).infix() + ";");
-		printWriter.println("OUTFLUX " + subsituteExpression(jc.getOutFluxExpression()).infix() + ";");
+		// influx
+		Expression flux = subsituteExpression(jc.getInFluxExpression());
+		String infix = replaceInsideOutside(msd, flux);
+		printWriter.println("FLUX " + msd.getInsideCompartment().getName() + " " + infix + ";");
+		
+		// outflux
+		flux = subsituteExpression(jc.getOutFluxExpression());
+		infix = replaceInsideOutside(msd, flux);
+		printWriter.println("FLUX " + msd.getOutsideCompartment().getName() + " " + infix + ";");
+		
 		printWriter.println("JUMP_CONDITION_END");
 		printWriter.println();
 	}		
@@ -613,10 +640,12 @@ EQUATION_END
 private void writeMembraneRegion_VarContext_Equation(MembraneSubDomain memSubDomain, MembraneRegionEquation equation) throws ExpressionException {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
-	printWriter.println("RATE " + subsituteExpression(((MembraneRegionEquation)equation).getMembraneRateExpression()).infix() + ";");
+	
+	Expression rateExp = subsituteExpression(((MembraneRegionEquation)equation).getMembraneRateExpression());
+	String rateStr = replaceInsideOutside(memSubDomain, rateExp);
+	printWriter.println("RATE " + rateStr + ";");
+	
 	printWriter.println("UNIFORMRATE " + subsituteExpression(((MembraneRegionEquation)equation).getUniformRateExpression()).infix() + ";");
-	printWriter.println("INFLUX 0.0;");
-	printWriter.println("OUTFLUX 0.0;");
 	printWriter.println("EQUATION_END");
 	printWriter.println();
 }
@@ -675,8 +704,9 @@ JUMP_CONDITION_END
 
 MEMBRANE_END
  * @throws ExpressionException 
+ * @throws MathException 
  */
-private void writeMembranes() throws ExpressionException {
+private void writeMembranes() throws ExpressionException, MathException {
 	Simulation simulation = simulationJob.getSimulation();
 	MathDescription mathDesc = simulation.getMathDescription();
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
@@ -685,10 +715,11 @@ private void writeMembranes() throws ExpressionException {
 		if (sd instanceof MembraneSubDomain) {
 			MembraneSubDomain msd = (MembraneSubDomain)sd;
 			printWriter.println("MEMBRANE_BEGIN " + msd.getName() + " " + msd.getInsideCompartment().getName() + " " + msd.getOutsideCompartment().getName());
-			printWriter.println();			
-			writeMembrane_boundaryConditions(msd);			
+			printWriter.println();
+			
 			writeMembrane_VarContext(msd);			
-			writeMembrane_jumpConditions(msd);				
+			writeMembrane_jumpConditions(msd);
+			writeFastSystem(msd);
 			printWriter.println("MEMBRANE_END");
 			printWriter.println();
 		}
@@ -701,15 +732,18 @@ private void writeMembranes() throws ExpressionException {
 /**
 # Model description: FEATURE name handle priority boundary_conditions
 MODEL_BEGIN
-FEATURE nucleus 1 200 value value value value 
-FEATURE cytosol 0 101 value value value value 
+FEATURE Nucleus 0 value value value value 
+FEATURE Cytosol 1 flux flux value value 
+FEATURE ExtraCellular 2 flux flux value value 
+MEMBRANE Nucleus_Cytosol_membrane Nucleus Cytosol value value value value 
+MEMBRANE Cytosol_ExtraCellular_membrane Cytosol ExtraCellular flux flux value value 
 MODEL_END
  * @throws MathException 
 */
 private void writeModelDescription() throws MathException {
 	Simulation simulation = simulationJob.getSimulation();
 	
-	printWriter.println("# Model description: FEATURE name handle priority boundary_conditions");
+	printWriter.println("# Model description: FEATURE name handle boundary_conditions");
 	printWriter.println("MODEL_BEGIN");
 	MathDescription mathDesc = simulation.getMathDescription();
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
@@ -717,8 +751,12 @@ private void writeModelDescription() throws MathException {
 		SubDomain sd = enum1.nextElement();
 		if (sd instanceof CompartmentSubDomain) {
 			CompartmentSubDomain csd = (CompartmentSubDomain)sd;
-			printWriter.print("FEATURE " + csd.getName() + " " + mathDesc.getHandle(csd) + " " + csd.getPriority() + " ");
+			printWriter.print("FEATURE " + csd.getName() + " " + mathDesc.getHandle(csd) + " ");
 			writeFeature_boundaryConditions(csd);
+		} else if (sd instanceof MembraneSubDomain) {
+			MembraneSubDomain msd = (MembraneSubDomain)sd;
+			printWriter.print("MEMBRANE " + msd.getName() + " " + msd.getInsideCompartment().getName() + " " + msd.getOutsideCompartment().getName() + " ");
+			writeMembrane_boundaryConditions(msd);
 		}
 	}
 	printWriter.println("MODEL_END");
@@ -928,7 +966,7 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 	
 	String units;
 	
-	printWriter.println("# Variables : type name unit time_dependent_flag advection_flag solve_whole_mesh_flag solve_regions");
+	printWriter.println("# Variables : type name time_dependent_flag advection_flag solve_whole_mesh_flag solve_regions");
 	printWriter.println("VARIABLE_BEGIN");
 	MathDescription mathDesc = simSymbolTable.getSimulation().getMathDescription();
 	Variable[] vars = simSymbolTable.getVariables();
@@ -962,12 +1000,12 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 			if (mathDesc.isPDE(volVar)) {
 				boolean hasTimeVaryingDiffusionOrAdvection = simSymbolTable.hasTimeVaryingDiffusionOrAdvection(volVar);
 				if (mathDesc.isPdeSteady(volVar)) {
-					printWriter.print("VOLUME_PDE_STEADY " + volVar.getName() + " " + units + " " +	hasTimeVaryingDiffusionOrAdvection + " " + mathDesc.hasVelocity(volVar));
+					printWriter.print("VOLUME_PDE_STEADY " + volVar.getName() + " " + hasTimeVaryingDiffusionOrAdvection + " " + mathDesc.hasVelocity(volVar));
 				} else {
-					printWriter.print("VOLUME_PDE " + volVar.getName() + " " + units + " " + hasTimeVaryingDiffusionOrAdvection + " " + mathDesc.hasVelocity(volVar));
+					printWriter.print("VOLUME_PDE " + volVar.getName() + " " + hasTimeVaryingDiffusionOrAdvection + " " + mathDesc.hasVelocity(volVar));
 				}
 			} else {
-				printWriter.print("VOLUME_ODE " + volVar.getName() + " " + units);
+				printWriter.print("VOLUME_ODE " + volVar.getName());
 			}
 
 			if (totalNumCompartments == listOfSubDomains.size()) {
@@ -982,21 +1020,17 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 			}
 			printWriter.println();
 		} else if (vars[i] instanceof VolumeRegionVariable) {
-			units = "uM";
-			printWriter.println("VOLUME_REGION " + vars[i].getName() + " " + units);
+			printWriter.println("VOLUME_REGION " + vars[i].getName());
 		} else if (vars[i] instanceof MemVariable) {
-			units = "molecules/squm";
 			MemVariable memVar = (MemVariable)vars[i];
 			if (mathDesc.isPDE(memVar)) {
-				printWriter.println("MEMBRANE_PDE " + memVar.getName() + " " + units + " " + simSymbolTable.hasTimeVaryingDiffusionOrAdvection(memVar));
+				printWriter.println("MEMBRANE_PDE " + memVar.getName() + " " + simSymbolTable.hasTimeVaryingDiffusionOrAdvection(memVar));
 			} else {
-				printWriter.println("MEMBRANE_ODE " + memVar.getName() + " " + units);
+				printWriter.println("MEMBRANE_ODE " + memVar.getName());
 			}
 		} else if (vars[i] instanceof MembraneRegionVariable) {
-			units = "molecules/um^2";
-			printWriter.println("MEMBRANE_REGION " + vars[i].getName() + " " + units);
+			printWriter.println("MEMBRANE_REGION " + vars[i].getName());
 		} else if (vars[i] instanceof FilamentVariable) {
-			units = "molecules/um";
 			throw new RuntimeException("Filament application not supported yet");
 		}
 	}
@@ -1149,7 +1183,7 @@ private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, E
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
 	Expression rateExpression = subsituteExpression(equation.getRateExpression());
-	printWriter.println("RATE " + rateExpression.infix() + ";");
+	printWriter.println("RATE " + replaceInsideOutside(memSubDomain, rateExpression) + ";");
 	if (equation instanceof PdeEquation) {
 		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression()).infix() + ";");
 		
@@ -1202,8 +1236,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
 	printWriter.println("RATE " + subsituteExpression(equation.getVolumeRateExpression()).infix() + ";");
 	printWriter.println("UNIFORMRATE " + subsituteExpression(equation.getUniformRateExpression()).infix() + ";");
-	printWriter.println("INFLUX " + subsituteExpression(equation.getMembraneRateExpression()).infix() + ";");
-	printWriter.println("OUTFLUX 0.0;");
+//	printWriter.println("FLUX " + subsituteExpression(equation.getMembraneRateExpression()).infix() + ";");
 	printWriter.println("EQUATION_END");
 	printWriter.println();
 }
