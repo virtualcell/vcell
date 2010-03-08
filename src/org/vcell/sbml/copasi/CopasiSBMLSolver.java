@@ -20,6 +20,7 @@ import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.SolverException;
+import org.vcell.util.PropertyLoader;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXParseException;
 
@@ -142,10 +143,11 @@ public class CopasiSBMLSolver implements SBMLSolver {
 			copasiReportFile.delete();  // don't want to create it, just want the availlable name (it should still be availlable when I need it).
 		}
 
+		String copasiExecutable = PropertyLoader.getRequiredProperty(PropertyLoader.COPASIExecutable);
 		ProcessBuilder processBuilderImport = new ProcessBuilder(new String[] {
 				"cmd", 
 				"/c", 
-				"CopasiSE.exe", 
+				copasiExecutable, 
 				"--importSBML", 
 				sbmlFile.getAbsolutePath(), 
 				"--save", 
@@ -273,7 +275,7 @@ public class CopasiSBMLSolver implements SBMLSolver {
 		ProcessBuilder processBuilderCopasiSim = new ProcessBuilder(new String[] {
 				"cmd",
 				"/c",
-				"CopasiSE.exe", 
+				copasiExecutable, 
 				modifiedCopasiFile.getAbsolutePath()
 		});
 		processBuilderCopasiSim.redirectErrorStream(true);

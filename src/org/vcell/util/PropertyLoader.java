@@ -151,6 +151,11 @@ public class PropertyLoader {
 	
 	public static final String javaSimulationExecutable = "vcell.javaSimulation.executable";
 	
+	public final static String mathSBMLDirectory = "vcell.mathSBML.directory";
+	public final static String COPASIExecutable = "vcell.COPASI.executable";
+	public final static String mathematicaKernelExecutable = "vcell.mathematica.kernel.executable";
+
+	
 	private static final String SYSTEM_SERVER_PROPERTY_NAMES[] = {
 		vcellServerIDProperty,
 		tempDirProperty,
@@ -278,7 +283,12 @@ public class PropertyLoader {
 		vcellSMTPEmailAddress,
 		
 		javaSimulationExecutable,
+		
+		mathSBMLDirectory,
+		COPASIExecutable,
+		mathematicaKernelExecutable,
 	};
+
 
 /**
  * PropertyLoader constructor comment.

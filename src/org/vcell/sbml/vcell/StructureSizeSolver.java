@@ -205,35 +205,6 @@ public void updateRelativeStructureSizes(SimulationContext simContext) throws Ex
 	
 	StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings();
 	try {
-		/*
-		     for (int i = 0; i < structureMappings.length; i++){
-			if (structureMappings[i] instanceof MembraneMapping){
-				MembraneMapping membraneMapping = (MembraneMapping)structureMappings[i];
-				Expression membraneSizeExp = membraneMapping.getSizeParameter().getExpression();
-				Expression insideFeatureSizeExp = simContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getInsideFeature()).getSizeParameter().getExpression();
-				// set surface/volume ratio
-				membraneMapping.getSurfaceToVolumeParameter().setExpression(new Expression(membraneSizeExp.evaluateConstant()/insideFeatureSizeExp.evaluateConstant()));
-
-				//
-				// sum up entire volume of parent feature and all sibling features (including self)
-				// volume fraction will be size of enclosed volume divided by total size of surrounding volume.
-				//
-				
-				Expression outsideFeatureSizeExp = simContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getOutsideFeature()).getSizeParameter().getExpression();
-				double sumOfParentAndSiblingVolumes = outsideFeatureSizeExp.evaluateConstant();
-
-				for (int j=0;j<structureMappings.length;j++){
-					if (structureMappings[j] instanceof MembraneMapping){
-						MembraneMapping mm = (MembraneMapping)structureMappings[j];
-						if (mm.getMembrane().getOutsideFeature() == membraneMapping.getMembrane().getOutsideFeature()){
-							Expression childVolumeExp = simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getInsideFeature()).getSizeParameter().getExpression();
-							sumOfParentAndSiblingVolumes += childVolumeExp.evaluateConstant();
-						}
-					}
-				}
-				// set volume fraction
-				membraneMapping.getVolumeFractionParameter().setExpression(new Expression(insideFeatureSizeExp.evaluateConstant()/sumOfParentAndSiblingVolumes));
-			}*/
 			// This is rewritten in Feb 2008. Siblings and children are correctly taken into account when calculating the volume fractions.
 			for(int i =0; i< structureMappings.length; i++)
 			{

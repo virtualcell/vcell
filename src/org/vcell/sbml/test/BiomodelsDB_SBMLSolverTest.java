@@ -125,7 +125,7 @@ public class BiomodelsDB_SBMLSolverTest {
 							//
 							ODESolverResultSet mathSBMLResults = null;
 							try {
-								MathSBMLSolver mathSBMLSolver = new MathSBMLSolver(new File("C:\\Program Files\\Wolfram Research\\Mathematica\\7.0\\mathkernel.exe"));
+								MathSBMLSolver mathSBMLSolver = new MathSBMLSolver();
 								String columnDelimiter = mathSBMLSolver.getResultsFileColumnDelimiter();
 								File resultFile = mathSBMLSolver.solve(filePrefix, outDir, sbmlText, simSpec);
 								mathSBMLResults = readResultFile(resultFile, columnDelimiter); 
