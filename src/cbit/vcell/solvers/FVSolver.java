@@ -21,7 +21,6 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.surface.GeometryFileWriter;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Variable;
