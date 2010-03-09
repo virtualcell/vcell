@@ -62,11 +62,11 @@ public class XMLMetaDataReader extends XMLMetaData {
 				throw new XmlParseException(e.getMessage());
 			}
 		}
-		Element nonRDFAnnotationListElement = metadataElement.getChild(XMLMetaData.NONRDF_ANNOTATION_LIST_TAG);
+		Element nonRDFAnnotationListElement = metadataElement.getChild(XMLMetaData.NONRDF_ANNOTATION_LIST_TAG, VCMetaData.nsVCML);
 		if (nonRDFAnnotationListElement!=null){
-			List<Element> nonRDFAnnotationElements = nonRDFAnnotationListElement.getChildren(XMLMetaData.NONRDF_ANNOTATION_TAG);
+			List<Element> nonRDFAnnotationElements = nonRDFAnnotationListElement.getChildren(XMLMetaData.NONRDF_ANNOTATION_TAG, VCMetaData.nsVCML);
 			for (Element nonRDFAnnotationElement : nonRDFAnnotationElements){
-				String vcidString = nonRDFAnnotationElement.getAttributeValue(XMLMetaData.VCID_ATTR_TAG, VCMetaData.nsVCML);
+				String vcidString = nonRDFAnnotationElement.getAttributeValue(XMLMetaData.VCID_ATTR_TAG);
 				VCID vcid = null;
 				try {
 					vcid = VCID.fromString(vcidString);
@@ -77,16 +77,16 @@ public class XMLMetaDataReader extends XMLMetaData {
 				Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
 				
 				// populate the annotation
-				Element freeTextAnnotationElement = nonRDFAnnotationElement.getChild(XMLMetaData.FREETEXT_TAG);
+				Element freeTextAnnotationElement = nonRDFAnnotationElement.getChild(XMLMetaData.FREETEXT_TAG, VCMetaData.nsVCML);
 				if (freeTextAnnotationElement!=null){
 					String freeText = freeTextAnnotationElement.getText();
 					metaData.setFreeTextAnnotation(identifiable, freeText);
 				}
-				Element xhtmlNotesElement = nonRDFAnnotationElement.getChild(XMLMetaData.NOTES_TAG);
+				Element xhtmlNotesElement = nonRDFAnnotationElement.getChild(XMLMetaData.NOTES_TAG, VCMetaData.nsVCML);
 				if (xhtmlNotesElement!=null){
 					metaData.setXhtmlNotes(identifiable, xhtmlNotesElement);
 				}
-				Element annotationListElement = nonRDFAnnotationElement.getChild(XMLMetaData.ANNOTATION_LIST_TAG);
+				Element annotationListElement = nonRDFAnnotationElement.getChild(XMLMetaData.ANNOTATION_LIST_TAG, VCMetaData.nsVCML);
 				if (annotationListElement!=null){
 					List<?> annotationContents = annotationListElement.getContent();
 					List<Element> annotationElements = new ArrayList<Element>();
