@@ -127,7 +127,6 @@ public class DatabaseWindowPanel extends JPanel {
 			public void actionPerformed(java.awt.event.ActionEvent e) {	
 				if (e.getSource() == cancelButton) {
 					getSearchToolBarButton().setSelected(false);
-					search(false);
 				} else if (e.getSource() == searchButton || e.getSource() == nameSearchTextField) {		
 					String name = nameSearchTextField.getText();
 					if (name != null && name.trim().length() >= 0) {
