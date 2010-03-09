@@ -8,13 +8,12 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import javax.swing.tree.MutableTreeNode;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 
 import cbit.vcell.client.desktop.DatabaseWindowPanel.SearchCriterion;
+import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
@@ -170,7 +169,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bmInfo) throws DataAccess
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
+public void databaseDelete(DatabaseEvent databaseEvent) {
 	if (databaseEvent.getOldVersionInfo() instanceof BioModelInfo){
 		BioModelInfo removedBioModelInfo = (BioModelInfo)databaseEvent.getOldVersionInfo();
 		BioModelNode removedNode = ((BioModelNode)getRoot()).findNodeByUserObject(removedBioModelInfo);
@@ -184,7 +183,7 @@ public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
+public void databaseInsert(DatabaseEvent databaseEvent) {
 	if (databaseEvent.getNewVersionInfo() instanceof BioModelInfo){
 		try {
 			BioModelInfo insertedBioModelInfo = (BioModelInfo)databaseEvent.getNewVersionInfo();
@@ -241,7 +240,7 @@ public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
+public void databaseRefresh(DatabaseEvent event) {
 
 	//Our parent will tell us what to do
 }
@@ -249,7 +248,7 @@ public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseUpdate(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
+public void databaseUpdate(DatabaseEvent databaseEvent) {
 	//
 	// the ClientDocumentManager usually throws an UPDATE when changing public/private status
 	//
