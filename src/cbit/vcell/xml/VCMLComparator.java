@@ -1,6 +1,8 @@
 package cbit.vcell.xml;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.xml.XMLMetaData;
 import cbit.util.xml.XmlUtil;
 
 import org.jdom.Attribute;
@@ -119,6 +121,9 @@ public class VCMLComparator {
 		//for stochastic model , added 19th Sept, 2006
 		map.put(XMLTags.ActionTag, XMLTags.VarNameAttrTag);
 		map.put(XMLTags.ProbabilityRateTag, "TEXT");
+		
+		map.put(XMLMetaData.NONRDF_ANNOTATION_TAG, XMLMetaData.VCID_ATTR_TAG);
+		map.put(XMLMetaData.FREETEXT_TAG, "TEXT");
 		ps = System.out;
 	}
 	
