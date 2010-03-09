@@ -310,10 +310,13 @@ public void chopImages(int startTimeIndex, int endTimeIndex)
 {
 	UShortImage[] origImages = getImageDataset().getAllImages();
 	double[] origTimeSteps = getImageDataset().getImageTimeStamps();
-	
-	UShortImage[] newImages = new UShortImage[endTimeIndex - startTimeIndex + 1];
+	int numOfZ = getImageDataset().getSizeZ();
+	int numOfC = getImageDataset().getSizeC();
+	int tolImgLen = (endTimeIndex - startTimeIndex + 1)*numOfZ*numOfC;
+	UShortImage[] newImages = new UShortImage[tolImgLen];
 	double[] newTimeSteps = new double[endTimeIndex - startTimeIndex + 1];
-	System.arraycopy(origImages, startTimeIndex, newImages, 0, (endTimeIndex - startTimeIndex + 1));
+	
+	System.arraycopy(origImages, startTimeIndex*numOfZ*numOfC, newImages, 0, tolImgLen);
 	System.arraycopy(origTimeSteps, startTimeIndex, newTimeSteps, 0, (endTimeIndex - startTimeIndex + 1));
 	//shift time to start from 0, it's not necessary 
 //	double firstTimePoint = newTimeSteps[0];
@@ -322,7 +325,7 @@ public void chopImages(int startTimeIndex, int endTimeIndex)
 //		newTimeSteps[i] = newTimeSteps[i] - firstTimePoint;
 //	}
 	
-	int numOfZ = getImageDataset().getSizeZ();
+	
 	ImageDataset imgDataset = new ImageDataset(newImages, newTimeSteps, numOfZ);
 	setImageDataset(imgDataset);
 }
