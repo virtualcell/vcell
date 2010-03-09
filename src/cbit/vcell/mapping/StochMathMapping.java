@@ -328,14 +328,17 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		{
 			throw new MappingException("Can not find reaction rate constant in reaction: "+ reactionStep.getName());
 		}
-		else if(probStr.length() == 0)
-	    {
-		 	probExp = new Expression(rateConstant);   
+		else
+		{
+			if(probStr == null || probStr.length() == 0) 
+		    {
+			 	probExp = new Expression(rateConstant);   
+			}
+			else//(rateConstant.length() > 0) && (probStr.length() > 0)
+		    {
+				probExp = new Expression(rateConstant+"*"+probStr);
+		    }
 		}
-	    else if((rateConstant.length() > 0) && (probStr.length() > 0))
-	    {
-			probExp = new Expression(rateConstant+"*"+probStr);
-	    }
 		//simplify the factor
 		Expression factorExpr = new Expression(factorStr);
 		RationalExp factorRatExp = RationalExpUtils.getRationalExp(factorExpr);
@@ -369,6 +372,8 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 	{
 		//use local variable instead of using getter all the time.
 		SimulationContext simContext = getSimulationContext();
+		//local structure mapping list
+		StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
 		//We have to check if all the reactions are able to tranform to stochastic jump processes before generating the math.
 		String stochChkMsg =simContext.getBioModel().isValidForStochApp();
 		if(!(stochChkMsg.equals("")))
@@ -501,7 +506,32 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			expr = getIdentifierSubstitutions(expr,modelParameters[j].getUnitDefinition(), null);
 			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), expr));
 		}
-
+		
+		//added July 2009, ElectricalStimulusParameter electric mapping tab
+		ElectricalStimulus[] elecStimulus = simContext.getElectricalStimuli();
+		if (elecStimulus.length > 0) {
+			throw new MappingException("Modles with electrophysiology are not supported for stochastic applications.");			
+		}
+		
+		//
+		// add constant mem voltage
+		//
+		
+		for (int j = 0; j < structureMappings.length; j++){
+			if (structureMappings[j] instanceof MembraneMapping){
+				MembraneMapping memMapping = (MembraneMapping)structureMappings[j];
+				Parameter initialVoltageParm = memMapping.getInitialVoltageParameter();
+				try{
+					Expression exp = initialVoltageParm.getExpression();
+					exp.evaluateConstant();
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(memMapping.getMembrane().getMembraneVoltage(),memMapping),
+							getIdentifierSubstitutions(memMapping.getInitialVoltageParameter().getExpression(),memMapping.getInitialVoltageParameter().getUnitDefinition(),memMapping)));
+				}catch(ExpressionException e){
+					e.printStackTrace(System.out);
+					throw new MappingException("Membrane initial voltage: "+initialVoltageParm.getName()+" cannot be evaluated as constant.");
+				}
+			}
+		}
 		//
 		// kinetic constants that evaluate to constants
 		//
@@ -565,7 +595,6 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 
 		//geometic mapping
 		//the parameter "Size" is already put into mathsymbolmapping in refreshSpeciesContextMapping()
-		StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
 		for (int i=0;i<structureMappings.length;i++){
 			StructureMapping sm = structureMappings[i];
 			StructureMapping.StructureMappingParameter parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
