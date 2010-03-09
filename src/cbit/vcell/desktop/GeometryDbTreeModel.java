@@ -85,7 +85,8 @@ private BioModelNode createBaseTree() throws DataAccessException {
 	BioModelNode otherUsersNode = new BioModelNode("Shared Geometries",true);
 	rootRootNode.add(otherUsersNode);
 	for (BioModelNode userNode : treeMap.values()) {
-		for (int c = 0; c < userNode.getChildCount(); c ++) {
+		for (int c = 0; c < userNode.getChildCount();) {
+			// when added to otherUserNode, this childNode was removed from userNode
 			otherUsersNode.add((MutableTreeNode) userNode.getChildAt(c));
 		}
 	}
