@@ -358,7 +358,7 @@ public void compareAnotherModel() {
 	} 
 
 	if (otherDocumentInfo == null){
-		PopupGenerator.showErrorDialog(this, "Error Comparing documents : Second document is null ");
+		//PopupGenerator.showErrorDialog(this, "Error Comparing documents : Second document is null ");
 		return;
 	}
 	// Check if both document types are of the same kind. If not, throw an error. 

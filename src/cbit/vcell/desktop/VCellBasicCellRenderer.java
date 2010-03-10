@@ -39,6 +39,19 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 	
 		public final VCDocumentInfo getVCDocumentInfo() {
 			return vcDocInfo;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof VCDocumentInfoNode) {
+				return vcDocInfo.getVersion().getName().equals(((VCDocumentInfoNode)obj).vcDocInfo.getVersion().getName());
+			}
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return vcDocInfo.hashCode();
 		}		
 	}
 
