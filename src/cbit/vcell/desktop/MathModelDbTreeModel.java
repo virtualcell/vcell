@@ -231,7 +231,7 @@ public void databaseInsert(DatabaseEvent databaseEvent) {
 			//
 			// get parent of updated version
 			//
-			//   model1                           (String)
+			//   model1                           (VCDocumentInfoNode)
 			//      Fri Sept 2, 2001 12:00:00     (MathModelInfo)
 			//      Fri Sept 1, 2001 10:00:00     (MathModelInfo)
 			//
@@ -244,7 +244,7 @@ public void databaseInsert(DatabaseEvent databaseEvent) {
 			BioModelNode ownerRoot = ((BioModelNode)getRoot()).findNodeByUserObject(owner);
 			BioModelNode parentNode = null;
 			if (ownerRoot!=null){
-				parentNode = ownerRoot.findNodeByUserObject(insertedMathModelInfo.getVersion().getName());
+				parentNode = ownerRoot.findNodeByUserObject(new VCDocumentInfoNode(insertedMathModelInfo));
 			}
 			if (parentNode==null){
 				//
