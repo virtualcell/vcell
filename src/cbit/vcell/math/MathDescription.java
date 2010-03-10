@@ -305,6 +305,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 	final String FAILURE_DIV_BY_ZERO =			 	" MathsDifferent:FailedDivideByZero ";
 	final String FAILURE_UNKNOWN = 					" MathsDifferent:FailedUnknown ";
 	final String UNKNOWN_DIFFERENCE_IN_MATH =		" MathsDifferent:Unknown ";
+	final String DIFFERENT_BOUNDARY_CONDITION_TYPE = " MathsDifferent:DifferentBoundaryConditionType ";
 	try {
 		MathDescription oldMathDesc = this;
 	    if (oldMathDesc.compareEqual(newMathDesc)){
@@ -338,6 +339,37 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 				return false;
 			}
 			for (int i = 0; i < subDomainsOld.length; i++){
+				// compare boundary type
+				if (getGeometry().getDimension() > 0) {
+					if (subDomainsOld[i] instanceof CompartmentSubDomain && subDomainsNew[i] instanceof CompartmentSubDomain) {
+						CompartmentSubDomain csdOld = (CompartmentSubDomain)subDomainsOld[i];
+						CompartmentSubDomain csdNew = (CompartmentSubDomain)subDomainsNew[i];
+						if (!Compare.isEqualOrNull(csdOld.getBoundaryConditionXm(), csdNew.getBoundaryConditionXm())
+								|| !Compare.isEqualOrNull(csdOld.getBoundaryConditionXp(), csdNew.getBoundaryConditionXp())
+								|| !Compare.isEqualOrNull(csdOld.getBoundaryConditionYm(), csdNew.getBoundaryConditionYm())
+								|| !Compare.isEqualOrNull(csdOld.getBoundaryConditionYp(), csdNew.getBoundaryConditionYp())
+								|| !Compare.isEqualOrNull(csdOld.getBoundaryConditionZm(), csdNew.getBoundaryConditionZm())
+								|| !Compare.isEqualOrNull(csdOld.getBoundaryConditionZp(), csdNew.getBoundaryConditionZp())
+							) {
+							reasonForDecision.append(DIFFERENT_BOUNDARY_CONDITION_TYPE);
+							return false;
+						}					
+					} else if (subDomainsOld[i] instanceof MembraneSubDomain && subDomainsNew[i] instanceof MembraneSubDomain) {
+						MembraneSubDomain msdOld = (MembraneSubDomain)subDomainsOld[i];
+						MembraneSubDomain msdNew = (MembraneSubDomain)subDomainsNew[i];
+						if (!Compare.isEqualOrNull(msdOld.getBoundaryConditionXm(), msdNew.getBoundaryConditionXm())
+								|| !Compare.isEqualOrNull(msdOld.getBoundaryConditionXp(), msdNew.getBoundaryConditionXp())
+								|| !Compare.isEqualOrNull(msdOld.getBoundaryConditionYm(), msdNew.getBoundaryConditionYm())
+								|| !Compare.isEqualOrNull(msdOld.getBoundaryConditionYp(), msdNew.getBoundaryConditionYp())
+								|| !Compare.isEqualOrNull(msdOld.getBoundaryConditionZm(), msdNew.getBoundaryConditionZm())
+								|| !Compare.isEqualOrNull(msdOld.getBoundaryConditionZp(), msdNew.getBoundaryConditionZp())
+							) {
+							reasonForDecision.append(DIFFERENT_BOUNDARY_CONDITION_TYPE);
+							return false;
+						}					
+					}
+				}
+				
 				for (int j = 0; j < oldVars.length; j++){
 					//
 					// test equation for this subdomain and variable
