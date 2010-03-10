@@ -964,8 +964,6 @@ VARIABLE_END
 private void writeVariables() throws MathException, ExpressionException, IOException {
 	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
 	
-	String units;
-	
 	printWriter.println("# Variables : type name time_dependent_flag advection_flag solve_whole_mesh_flag solve_regions");
 	printWriter.println("VARIABLE_BEGIN");
 	MathDescription mathDesc = simSymbolTable.getSimulation().getMathDescription();
@@ -995,7 +993,6 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 		 		}
 		  	}
 			
-			units = "uM";
 			VolVariable volVar = (VolVariable)vars[i];
 			if (mathDesc.isPDE(volVar)) {
 				boolean hasTimeVaryingDiffusionOrAdvection = simSymbolTable.hasTimeVaryingDiffusionOrAdvection(volVar);

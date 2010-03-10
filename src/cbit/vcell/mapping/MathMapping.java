@@ -25,6 +25,7 @@ import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.mapping.potential.MembraneElectricalDevice;
 import cbit.vcell.mapping.potential.PotentialMapping;
 import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
+import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
@@ -2217,6 +2218,13 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		CompartmentSubDomain innerCompartment = mathDesc.getCompartmentSubDomain(innerSubVolume.getName());
 
 		MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment);
+		memSubDomain.setBoundaryConditionXm(new BoundaryConditionType(innerCompartment.getBoundaryConditionXm()));
+		memSubDomain.setBoundaryConditionXp(new BoundaryConditionType(innerCompartment.getBoundaryConditionXp()));
+		memSubDomain.setBoundaryConditionYm(new BoundaryConditionType(innerCompartment.getBoundaryConditionYm()));
+		memSubDomain.setBoundaryConditionYp(new BoundaryConditionType(innerCompartment.getBoundaryConditionYp()));
+		memSubDomain.setBoundaryConditionZm(new BoundaryConditionType(innerCompartment.getBoundaryConditionZm()));
+		memSubDomain.setBoundaryConditionZp(new BoundaryConditionType(innerCompartment.getBoundaryConditionZp()));
+		
 		mathDesc.addSubDomain(memSubDomain);
 
 		//
