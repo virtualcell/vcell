@@ -333,38 +333,57 @@ public boolean hasDiscontinuities(MathDescription mathDesc) throws ExpressionExc
 	return false;	
 }
 
-public void checkValid(MathDescription mathDesc) throws MathException {
-	Vector<Expression> allExpressions = getExpressions(mathDesc);
-	if (getVariable() instanceof VolVariable) {
-		for (Expression exp : allExpressions) {
-			String[] symbols = exp.getSymbols();
-			if (symbols == null) {
-				continue;
-			}
-			for (String symbol : symbols) {
-				Variable variable = mathDesc.getVariable(symbol);
-				if (variable instanceof MemVariable
-						|| variable instanceof MembraneRandomVariable
-						|| variable instanceof MembraneRegionVariable) {
-					throw new MathException("Equation for volume variable '" + getVariable().getName() + "' references membrane variable '" + variable.getName() + "'.");
-				}
-			}
-		}
-	} else if (getVariable() instanceof MemVariable) {
-		for (Expression exp : allExpressions) {
-			String[] symbols = exp.getSymbols();
-			if (symbols == null) {
-				continue;
-			}
-			for (String symbol : symbols) {
-				Variable variable = mathDesc.getVariable(symbol);
-				if (variable instanceof VolVariable
-						|| variable instanceof VolumeRandomVariable
-						|| variable instanceof VolumeRegionVariable) {
-					throw new MathException("Equation for membrane variable '" + getVariable().getName() + "' references volume variable '" + variable.getName() + "'.");
-				}
-			}
-		}
+public abstract void checkValid(MathDescription mathDesc) throws MathException;
+
+protected void checkValid_Volume(MathDescription mathDesc, Expression exp) throws MathException {
+	if (exp == null) {
+		return;
 	}
+	String[] symbols = exp.getSymbols();
+	if (symbols == null) {
+		return;
+	}
+	for (String symbol : symbols) {
+		Variable variable = mathDesc.getVariable(symbol);
+		if ((variable instanceof MemVariable
+				|| variable instanceof MembraneRandomVariable
+				|| variable instanceof MembraneRegionVariable)) {
+			String varType = "membrane";
+			if (variable instanceof MembraneRandomVariable) {
+				varType = "membrane random";
+			} else if (variable instanceof MembraneRegionVariable) {
+				varType = "membrane region";
+			}
+			throw new MathException("Equation for volume variable '" + getVariable().getName() + "' references " + varType
+					+ " variable '" + symbol + "'.");
+		}
+	}	
+} 
+
+protected void checkValid_Membrane(MathDescription mathDesc, Expression exp) throws MathException {
+	if (exp == null) {
+		return;
+	}
+	String[] symbols = exp.getSymbols();
+	if (symbols == null) {
+		return;
+	}
+	for (String symbol : symbols) {
+		Variable variable = mathDesc.getVariable(symbol);
+		if (variable instanceof VolVariable
+				|| variable instanceof VolumeRandomVariable
+				|| variable instanceof VolumeRegionVariable) {
+			String varType = "volume";
+			if (variable instanceof MembraneRandomVariable) {
+				varType = "volume random";
+			} else if (variable instanceof MembraneRegionVariable) {
+				varType = "volume region";
+			}
+			throw new MathException("Equation for membrane variable '" + getVariable().getName() + "' references " +
+					varType + " variable '" + variable.getName() + "'. Please use " +
+				    symbol + "_INSIDE or " + symbol + "_OUTSIDE to denote " + varType + " variable " + symbol  + "'s solution at the membrane");
+		}
+	}	
 }
+
 }

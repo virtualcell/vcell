@@ -232,4 +232,15 @@ public void setMembraneRateExpression(cbit.vcell.parser.Expression newMembraneRa
 public void setUniformRateExpression(cbit.vcell.parser.Expression newUniformRateExpression) {
 	uniformRateExpression = newUniformRateExpression;
 }
+
+
+@Override
+public void checkValid(MathDescription mathDesc) throws MathException {
+	checkValid_Membrane(mathDesc, getUniformRateExpression());
+	checkValid_Membrane(mathDesc, getMembraneRateExpression());
+	
+	checkValid_Membrane(mathDesc, getRateExpression());
+	checkValid_Membrane(mathDesc, getInitialExpression());
+	checkValid_Membrane(mathDesc, getExactSolution());
+}
 }

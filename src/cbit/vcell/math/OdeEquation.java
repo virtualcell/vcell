@@ -171,4 +171,18 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 	}	
 		
 }
+
+
+@Override
+public void checkValid(MathDescription mathDesc) throws MathException {
+	if (getVariable() instanceof VolVariable) {
+		checkValid_Volume(mathDesc, getInitialExpression());
+		checkValid_Volume(mathDesc, getRateExpression());
+		checkValid_Volume(mathDesc, getExactSolution());
+	} else {
+		checkValid_Membrane(mathDesc, getInitialExpression());
+		checkValid_Membrane(mathDesc, getRateExpression());
+		checkValid_Membrane(mathDesc, getExactSolution());	
+	}
+}
 }
