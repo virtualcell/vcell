@@ -190,4 +190,10 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 public void setFilamentRateExpression(cbit.vcell.parser.Expression newFilamentRateExpression) {
 	filamentRateExpression = newFilamentRateExpression;
 }
+
+
+@Override
+public void checkValid(MathDescription mathDesc) throws MathException {
+	// TODO Auto-generated method stub	
+}
 }

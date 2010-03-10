@@ -195,4 +195,38 @@ public void setInFlux(Expression exp) {
 public void setOutFlux(Expression exp) {
 	this.outFluxExp = exp;
 }
+
+
+@Override
+public void checkValid(MathDescription mathDesc) throws MathException {
+	checkValid_JumpCondition(mathDesc, inFluxExp);
+	checkValid_JumpCondition(mathDesc, outFluxExp);
+}
+
+private void checkValid_JumpCondition(MathDescription mathDesc, Expression exp) throws MathException {
+	if (exp == null) {
+		return;
+	}
+	String[] symbols = exp.getSymbols();
+	if (symbols == null) {
+		return;
+	}
+	for (String symbol : symbols) {
+		Variable variable = mathDesc.getVariable(symbol);
+		String varName = getVariable().getName();
+		if (variable instanceof VolVariable				
+				|| variable instanceof VolumeRegionVariable) {			
+			String varType = "volume";
+			if (variable instanceof VolumeRegionVariable) {
+				varType = "volume region";
+			}
+			throw new MathException("Membrane jump condition for Volume Variable '" + getVariable().getName() + "' references " + varType + 
+					" variable '" + symbol + "'. Please use " +
+					symbol + "_INSIDE or " + symbol + "_OUTSIDE to denote " + varType + " variable " + symbol + "'s solution at the membrane");
+		} else if (variable instanceof VolumeRandomVariable) {
+			throw new MathException("Membrane jump condition for Volume Variable '" + getVariable().getName() + "' references volume random " +
+					"variable '" + symbol + "'. ");
+		}
+	}
+}
 }

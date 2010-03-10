@@ -268,4 +268,41 @@ public void setUniformRateExpression(Expression newUniformRateExpression) {
 public void setVolumeRateExpression(Expression newVolumeRateExpression) {
 	volumeRateExpression = newVolumeRateExpression;
 }
+
+
+@Override
+public void checkValid(MathDescription mathDesc) throws MathException {	
+	checkValid_Volume(mathDesc,getVolumeRateExpression());
+	checkValid_Volume(mathDesc,getUniformRateExpression());
+	
+	checkValid_Volume(mathDesc,getRateExpression());
+	checkValid_Volume(mathDesc,getInitialExpression());
+	checkValid_Volume(mathDesc,getExactSolution());
+	
+	// membrane rate can have membrane variable in it
+	if (membraneRateExpression == null) {
+		return;
+	}
+	
+	String[] symbols = membraneRateExpression.getSymbols();
+	if (symbols == null) {
+		return;
+	}
+	for (String symbol : symbols) {
+		Variable variable = mathDesc.getVariable(symbol);
+		if (variable instanceof VolVariable				
+				|| variable instanceof VolumeRegionVariable) {			
+			String varType = "volume";
+			if (variable instanceof VolumeRegionVariable) {
+				varType = "volume region";
+			}
+			throw new MathException("Membrane rate for Volume Region Variable '" + getVariable().getName() + "' references " + varType + 
+					" variable '" + symbol + "'. Please use " +
+					symbol + "_INSIDE or " + symbol + "_OUTSIDE to denote " + varType + " variable " + symbol + "'s solution at the membrane");
+		} else if (variable instanceof VolumeRandomVariable) {
+			throw new MathException("Membrane rate for Volume Region Variable '" + getVariable().getName() + "' references volume random " +
+					"variable '" + symbol + "'. ");
+		}
+	}
+}
 }
