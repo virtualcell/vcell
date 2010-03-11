@@ -20,9 +20,9 @@ public class PCIDRequest extends PathwayCommonsRequest {
 	
 	protected String id;
 	
-	public PCIDRequest(String idNew)  { 
+	public PCIDRequest(String id)  { 
 		super(PCRParameter.CmdVersion.getRecordByCPID); 
-		id = idNew;
+		this.id = id;
 		paras().add(new PCRParameter.Q(id));
 		paras().add(PCRParameter.Output.biopax);
 	}
@@ -40,5 +40,6 @@ public class PCIDRequest extends PathwayCommonsRequest {
 	}
 
 	public String description() { return "cpath id search for " + id; }
+	@Override public String shortTitle() { return "ID " + id; }
 	
 }

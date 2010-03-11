@@ -12,7 +12,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class USTAssumptionFactory 
 extends ThingFactory<SBBox.MutableUSTAssumption> {
 
-	public USTAssumptionFactory(SBBox box) { super(box, SYBREAMO.SubstanceClassUnited); }
+	public USTAssumptionFactory(SBBox box) { super(box, SYBREAMO.UnmodifiableSubstancesClass); }
 	public SBBox.MutableUSTAssumption newThing(Resource node) { 
 		return new USTAssumptionImp(box, node); 
 	}

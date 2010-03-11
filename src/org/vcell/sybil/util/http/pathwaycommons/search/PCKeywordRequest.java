@@ -1,6 +1,6 @@
 package org.vcell.sybil.util.http.pathwaycommons.search;
 
-/*   PathwayCommonsSearch  --- by Oliver Ruebenacker, UCHC --- March to November 2009
+/*   PathwayCommonsSearch  --- by Oliver Ruebenacker, UCHC --- March 2009 to January 2010
  *   Launch a web request using command search from Pathway Commons
  */
 
@@ -49,6 +49,7 @@ public class PCKeywordRequest extends PathwayCommonsRequest {
 	}
 
 	public String keyword() { return keyword; }
-	public String description() { return "keyword search for " + keyword; }
+	public String description() { return "Keyword search for \"" + keyword + "\""; }
+	@Override public String shortTitle() { return "Keyword \"" + keyword + "\""; }
 	
 }

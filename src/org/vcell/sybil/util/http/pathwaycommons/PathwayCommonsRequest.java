@@ -35,6 +35,7 @@ public abstract class PathwayCommonsRequest {
 	public URL url() throws MalformedURLException { return url(defaultBaseURL); }
 
 	public abstract PathwayCommonsResponse response();
+	public abstract String shortTitle();
 	public abstract String description();
 		
 }

@@ -4,17 +4,37 @@ package org.vcell.sybil.util.http.pathwaycommons.search;
  *   Response from a web request using command search from Pathway Commons
  */
 
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.vcell.sybil.util.http.pathwaycommons.PathwayCommonsRequest;
 import org.vcell.sybil.util.http.pathwaycommons.PathwayCommonsResponse;
+import org.vcell.sybil.util.xml.DOMUtil;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 public class PCErrorResponse extends PathwayCommonsResponse {
 
 	protected Error error;
+		
+	public PCErrorResponse(PathwayCommonsRequest request, Document document) { 
+		this(request, errorElement(document));
+	}
 	
 	public PCErrorResponse(PathwayCommonsRequest request, Element errorElement) { 
 		super(request);
 		if(errorElement != null) { error = new Error(errorElement); }
+	}
+	
+	public static Element errorElement(String text) 
+	throws SAXException, IOException, ParserConfigurationException {
+		return errorElement(DOMUtil.parse(text));
+	}
+	
+	public static Element errorElement(Document document) {
+		return DOMUtil.firstChildElement(document, "error");
 	}
 	
 	public Error error() { return error; }

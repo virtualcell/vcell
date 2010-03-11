@@ -43,8 +43,8 @@ public class SYBREAMO {
 	}
 	
 	public static final OntClass Assumption = schema.createClass(ns + "Assumption");
-	public static final OntClass SubstanceUnited = schema.createClass(ns + "SubstanceUnited");
-	public static final OntClass SubstanceClassUnited = schema.createClass(ns + "SubstanceClassUnited");
+	public static final OntClass SubstanceUnmodifiable = schema.createClass(ns + "SubstanceUnited");
+	public static final OntClass UnmodifiableSubstancesClass = schema.createClass(ns + "SubstanceClassUnited");
 	
 	public static final ObjectProperty appliesTo = schema.createObjectProperty(ns + "appliesTo");
 	public static final ObjectProperty appliesToClass = schema.createObjectProperty(ns + "appliesToClass");
@@ -52,8 +52,8 @@ public class SYBREAMO {
 		schema.createObjectProperty(ns + "appliesToSubstance");
 	
 	static {
-		Assumption.addSubClass(SubstanceUnited);
-		Assumption.addSubClass(SubstanceClassUnited);
+		Assumption.addSubClass(SubstanceUnmodifiable);
+		Assumption.addSubClass(UnmodifiableSubstancesClass);
 
 		appliesTo.addSubProperty(appliesToClass);
 		appliesTo.addSubProperty(appliesToSubstance);
@@ -61,13 +61,13 @@ public class SYBREAMO {
 		
 		appliesTo.setDomain(Assumption);
 		appliesTo.setRange(OWL.Thing);
-		appliesToClass.setDomain(SubstanceClassUnited);
+		appliesToClass.setDomain(UnmodifiableSubstancesClass);
 		appliesToClass.setRange(OWL.Class);
-		appliesToSubstance.setDomain(SubstanceUnited);
+		appliesToSubstance.setDomain(SubstanceUnmodifiable);
 		appliesToSubstance.setRange(SBPAX.Substance);
 
-		schema.createCardinalityRestriction(null, appliesToSubstance, 1).addSubClass(SubstanceUnited);
-		schema.createCardinalityRestriction(null, appliesToClass, 1).addSubClass(SubstanceClassUnited);
+		schema.createCardinalityRestriction(null, appliesToSubstance, 1).addSubClass(SubstanceUnmodifiable);
+		schema.createCardinalityRestriction(null, appliesToClass, 1).addSubClass(UnmodifiableSubstancesClass);
 	}
 	
 }
