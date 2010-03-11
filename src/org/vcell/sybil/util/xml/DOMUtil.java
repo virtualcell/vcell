@@ -4,6 +4,7 @@ package org.vcell.sybil.util.xml;
  *   Useful static methods for dealing with XML DOM documents
  */
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,13 +29,23 @@ public class DOMUtil {
 
 	protected static DocumentBuilder builder;
 
-	public static Document parse(InputStream is) 
-	throws ParserConfigurationException, SAXException, IOException {
+	protected static void initBuilder() throws ParserConfigurationException {
 		if(builder == null) {
 			DocumentBuilderFactory factory = new DocumentBuilderFactoryImpl();
 			builder = factory.newDocumentBuilder();
 		}
+	}
+
+	public static Document parse(InputStream is) 
+	throws ParserConfigurationException, SAXException, IOException {
+		initBuilder();
 		return builder.parse(is);
+	}
+
+	public static Document parse(String text) 
+	throws SAXException, IOException, ParserConfigurationException {
+		initBuilder();
+		return builder.parse(new ByteArrayInputStream(text.getBytes()));
 	}
 	
 	public static void serialize(Document document, OutputStream out) throws IOException {

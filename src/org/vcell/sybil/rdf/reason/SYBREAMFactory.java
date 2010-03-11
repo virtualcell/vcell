@@ -28,7 +28,7 @@ public class SYBREAMFactory {
 	}
 	
 	public static GenericRuleReasoner defaultSYBREAM() {
-		if(defaultSYBREAM == null) { defaultSYBREAM = defaultGenericRuleReasoner(SYBREAMRules.RULES); }
+		if(defaultSYBREAM == null) { defaultSYBREAM = defaultGenericRuleReasoner(SYBREAMRules.rules); }
 		return defaultSYBREAM;
 	}
 	
