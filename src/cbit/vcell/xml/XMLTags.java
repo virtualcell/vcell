@@ -150,6 +150,7 @@ public class XMLTags {
 	public final static String StopAtSpatiallyUniform = "StopAtSpatiallyUniform";
 	public final static String DataProcessingInstructionsTag = "DataProcessingInstructions";
 	public final static String DataProcessingScriptNameAttrTag = "DataProcessingScriptName";
+	public final static String RunParameterScanSerially = "RunParameterScanSerially";
     //End-Simulation
 
     // Begin electrical properties

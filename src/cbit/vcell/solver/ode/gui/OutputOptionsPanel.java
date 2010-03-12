@@ -1,11 +1,15 @@
 package cbit.vcell.solver.ode.gui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyVetoException;
 
 import javax.swing.BorderFactory;
 import javax.swing.InputVerifier;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,6 +33,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.SolverDescription.SolverFeature;
 
 public class OutputOptionsPanel extends JPanel {
 	private javax.swing.JTextField ivjOutputTimesTextField = null;
@@ -51,12 +56,13 @@ public class OutputOptionsPanel extends JPanel {
 	
 	private StopAtSpatiallyUniformPanel stopAtSpatiallyUniformPanel = null;
 	private DataProcessingInstructionPanel dataProcessingInstructionPanel = null;
+	private JCheckBox serialParameterScanCheckBox = null;
 	
 	private SolverTaskDescription solverTaskDescription = null;
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
-	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener {
+	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, ItemListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == OutputOptionsPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) {
 				stopAtSpatiallyUniformPanel.setSolverTaskDescription(solverTaskDescription);
@@ -101,6 +107,12 @@ public class OutputOptionsPanel extends JPanel {
 				e.getSource() == getKeepAtMostTextField()|| 
 				e.getSource() == getOutputTimesTextField()) {
 				setNewOutputOption();
+			}
+		}
+
+		public void itemStateChanged(ItemEvent e) {			
+			if (e.getSource() == serialParameterScanCheckBox) {
+				solverTaskDescription.setSerialParameterScan(serialParameterScanCheckBox.isSelected());
 			}
 		}
 	}
@@ -342,19 +354,21 @@ public class OutputOptionsPanel extends JPanel {
 	private void initialize() {
 		try {
 			setLayout(new java.awt.GridBagLayout());
-			TitledBorder tb=new TitledBorder(new EtchedBorder(),"Output Options", TitledBorder.DEFAULT_JUSTIFICATION,
+			TitledBorder tb = new TitledBorder(new EtchedBorder(),"Output Options", TitledBorder.DEFAULT_JUSTIFICATION,
 					TitledBorder.DEFAULT_POSITION, getFont());
 	     	setBorder(tb);
 	
 	     	// 0
 			java.awt.GridBagConstraints constraintsDefaultOutputRadioButton = new java.awt.GridBagConstraints();
-			constraintsDefaultOutputRadioButton.gridx = 0; constraintsDefaultOutputRadioButton.gridy = 0;
+			constraintsDefaultOutputRadioButton.gridx = 0; 
+			constraintsDefaultOutputRadioButton.gridy = 0;
 			constraintsDefaultOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			constraintsDefaultOutputRadioButton.anchor = GridBagConstraints.LINE_START;
 			add(getDefaultOutputRadioButton(), constraintsDefaultOutputRadioButton);
 	
 			java.awt.GridBagConstraints constraintsDefaultOutputPanel = new java.awt.GridBagConstraints();
-			constraintsDefaultOutputPanel.gridx = 1; constraintsDefaultOutputPanel.gridy = 0;
+			constraintsDefaultOutputPanel.gridx = 1; 
+			constraintsDefaultOutputPanel.gridy = 0;
 			constraintsDefaultOutputPanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsDefaultOutputPanel.weightx = 1.0;
 			constraintsDefaultOutputPanel.weighty = 1.0;
@@ -363,13 +377,15 @@ public class OutputOptionsPanel extends JPanel {
 	
 			// 1
 			java.awt.GridBagConstraints constraintsUniformOutputRadioButton = new java.awt.GridBagConstraints();
-			constraintsUniformOutputRadioButton.gridx = 0; constraintsUniformOutputRadioButton.gridy = 1;
+			constraintsUniformOutputRadioButton.gridx = 0; 
+			constraintsUniformOutputRadioButton.gridy = 1;
 			constraintsUniformOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			constraintsUniformOutputRadioButton.anchor = GridBagConstraints.LINE_START;
 			add(getUniformOutputRadioButton(), constraintsUniformOutputRadioButton);
 	
 			java.awt.GridBagConstraints constraintsUniformOutputPanel = new java.awt.GridBagConstraints();
-			constraintsUniformOutputPanel.gridx = 1; constraintsUniformOutputPanel.gridy = 1;
+			constraintsUniformOutputPanel.gridx = 1; 
+			constraintsUniformOutputPanel.gridy = 1;
 			constraintsUniformOutputPanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsUniformOutputPanel.weightx = 1.0;
 			constraintsUniformOutputPanel.weighty = 1.0;
@@ -384,7 +400,8 @@ public class OutputOptionsPanel extends JPanel {
 			add(getExplicitOutputRadioButton(), constraintsExplicitOutputRadioButton);
 	
 			java.awt.GridBagConstraints constraintsExplicitOutputPanel = new java.awt.GridBagConstraints();
-			constraintsExplicitOutputPanel.gridx = 1; constraintsExplicitOutputPanel.gridy = 2;
+			constraintsExplicitOutputPanel.gridx = 1; 
+			constraintsExplicitOutputPanel.gridy = 2;
 			constraintsExplicitOutputPanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsExplicitOutputPanel.anchor = GridBagConstraints.PAGE_START;
 			constraintsExplicitOutputPanel.weightx = 1.0;
@@ -392,28 +409,41 @@ public class OutputOptionsPanel extends JPanel {
 			constraintsExplicitOutputPanel.insets = new java.awt.Insets(0, 4, 4, 4);
 			add(getExplicitOutputPanel(), constraintsExplicitOutputPanel);
 			
-			// 3
-			stopAtSpatiallyUniformPanel = new StopAtSpatiallyUniformPanel();		
+			// 3		
 			java.awt.GridBagConstraints gridbag1 = new java.awt.GridBagConstraints();
-			gridbag1.gridx = 0; gridbag1.gridy = 3;
+			gridbag1.gridx = 0; 
+			gridbag1.gridy = 3;
 			gridbag1.fill = GridBagConstraints.HORIZONTAL;
 			gridbag1.gridwidth = 4;
 			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
-			add(new JSeparator(), gridbag1);
+			JSeparator separator = new JSeparator();
+			add(separator, gridbag1);
 	
 			// 4
+			serialParameterScanCheckBox = new JCheckBox("Run Parameter Scan Serially");
+			gridbag1 = new java.awt.GridBagConstraints();
+			gridbag1.gridx = 0; 
+			gridbag1.gridy = 4;
+			gridbag1.fill = GridBagConstraints.HORIZONTAL;
+			gridbag1.gridwidth = 4;
+			gridbag1.insets = new java.awt.Insets(0, 0, 5, 0);
+			add(serialParameterScanCheckBox, gridbag1);
+					
+			// 5
 			stopAtSpatiallyUniformPanel = new StopAtSpatiallyUniformPanel();		
 			gridbag1 = new java.awt.GridBagConstraints();
-			gridbag1.gridx = 0; gridbag1.gridy = 4;
+			gridbag1.gridx = 0; 
+			gridbag1.gridy = 5;
 			gridbag1.fill = GridBagConstraints.HORIZONTAL;
 			gridbag1.gridwidth = 4;
 			gridbag1.insets = new java.awt.Insets(0, 0, 5, 0);
 			add(stopAtSpatiallyUniformPanel, gridbag1);
-	
-			// 5
+			
+			// 7
 			dataProcessingInstructionPanel = new DataProcessingInstructionPanel();
 			gridbag1 = new java.awt.GridBagConstraints();
-			gridbag1.gridx = 0; gridbag1.gridy = 5;
+			gridbag1.gridx = 0; 
+			gridbag1.gridy = 6;
 			gridbag1.fill = GridBagConstraints.HORIZONTAL;
 			gridbag1.gridwidth = 4;
 			gridbag1.insets = new java.awt.Insets(0, 0, 0, 10);
@@ -525,6 +555,7 @@ public class OutputOptionsPanel extends JPanel {
 		getKeepEveryTextField().addFocusListener(ivjEventHandler);
 		getKeepAtMostTextField().addFocusListener(ivjEventHandler);
 		getOutputTimesTextField().addFocusListener(ivjEventHandler);
+		serialParameterScanCheckBox.addItemListener(ivjEventHandler);
 				
 		getOutputTimeStepTextField().setInputVerifier(new InputVerifier() {
 			
@@ -794,6 +825,16 @@ public class OutputOptionsPanel extends JPanel {
 			getKeepAtMostTextField().setText("");
 			getKeepAtMostTextField().setEnabled(false);
 		}
+		
+		if (solverDesc.getSupportedFeatures().contains(SolverFeature.Feature_SerialParameterScans)) {
+			serialParameterScanCheckBox.setVisible(true);
+			boolean bSerialParameterScan = solverTaskDescription.isSerialParameterScan();
+			if (bSerialParameterScan) {
+				serialParameterScanCheckBox.setSelected(bSerialParameterScan);
+			}
+		} else {
+			serialParameterScanCheckBox.setVisible(false);
+		}
 	}	
 
 	public final void setSolverTaskDescription(SolverTaskDescription newValue) {
@@ -812,7 +853,5 @@ public class OutputOptionsPanel extends JPanel {
 		firePropertyChange("solverTaskDescription", oldValue, newValue);
 		
 		initConnections();
-	}
-	
-	
+	}	
 }

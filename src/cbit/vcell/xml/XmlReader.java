@@ -4052,6 +4052,11 @@ public SolverTaskDescription getSolverTaskDescription(Element param, Simulation 
 				solverTaskDesc.setStopAtSpatiallyUniformErrorTolerance(getErrorTolerance(errTolElement));
 			}
 		}
+		
+		String runParameterScanSeriallyAttributeValue = param.getAttributeValue(XMLTags.RunParameterScanSerially);
+		if (runParameterScanSeriallyAttributeValue != null) {
+			solverTaskDesc.setSerialParameterScan(new Boolean(runParameterScanSeriallyAttributeValue).booleanValue());
+		}
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException(e.getMessage());

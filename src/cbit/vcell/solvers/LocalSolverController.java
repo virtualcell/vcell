@@ -1,27 +1,34 @@
 package cbit.vcell.solvers;
-import cbit.vcell.modeldb.ResultSetCrawler;
-import cbit.vcell.simdata.*;
-import java.io.*;
-import cbit.vcell.solver.*;
-import java.util.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.server.LocalVCellConnection;
-import cbit.rmi.event.*;
-import javax.swing.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+
+import javax.swing.event.EventListenerList;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+
+import cbit.rmi.event.WorkerEvent;
+import cbit.rmi.event.WorkerEventListener;
+import cbit.rmi.event.WorkerEventSender;
+import cbit.vcell.modeldb.ResultSetCrawler;
+import cbit.vcell.server.LocalVCellConnection;
+import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SolverEvent;
+import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverListener;
+import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 /**
  * This type was created in VisualAge.
  */
 public class LocalSolverController extends java.rmi.server.UnicastRemoteObject implements SolverController, SolverListener, WorkerEventSender {
 	private SolverControllerImpl solverControllerImpl = null;
 	private EventListenerList listenerList = new EventListenerList();
-	private org.vcell.util.SessionLog log = null;
+	private SessionLog log = null;
 	private LocalVCellConnection vcConn = null;
 	private SimulationData.DataMoverThread dataMover = null;
 
@@ -30,6 +37,7 @@ public class LocalSolverController extends java.rmi.server.UnicastRemoteObject i
 	private long timeOfLastDataMessage = 0;
 	// how often do we send optional events (data, progress) to be dispatched to the client
 	private int messagingInterval = 5; // seconds
+	private int serialParameterScanJobIndex = -1;
 
 /**
  * LocalMathController constructor comment.
@@ -62,7 +70,7 @@ public LocalSolverController(LocalVCellConnection vcellConnection, SessionLog se
 /**
  * addWorkerEventListener method comment.
  */
-public void addWorkerEventListener(cbit.rmi.event.WorkerEventListener listener) {
+public void addWorkerEventListener(WorkerEventListener listener) {
 	listenerList.add(WorkerEventListener.class, listener);
 }
 
@@ -83,7 +91,6 @@ public void dataMoved(double timepoint, Double progress, SimulationMessage simul
 		// don't log progress and data events; data events at larger interval, since more expensive on client side
 		if (System.currentTimeMillis() - timeOfLastDataMessage > 4000 * getMessagingInterval()) {
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_DATA, this, getSimulationJob(), vcConn.getHost(), progress, new Double(timepoint), simulationMessage));
-			//fireJobDataEvent(new JobDataEvent(this,new MessageSource(this,getSimulationIdentifier()),getSimulation().getSimulationInfo(),timepoint));
 		}
 	}catch (Throwable e){
 		log.exception(e);
@@ -208,7 +215,13 @@ public void solverAborted(SolverEvent event) {
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}
-		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_FAILURE, this, getSimulationJob(), vcConn.getHost(), event.getSimulationMessage()));
+		SimulationJob simJob = getSimulationJob();
+		if (serialParameterScanJobIndex >= 0) {
+			SimulationJob newSimJob = new SimulationJob(simJob.getSimulation(), serialParameterScanJobIndex, simJob.getFieldDataIdentifierSpecs());
+			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_FAILURE, this, newSimJob, vcConn.getHost(), event.getSimulationMessage()));
+		} else {
+			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_FAILURE, this, getSimulationJob(), vcConn.getHost(), event.getSimulationMessage()));
+		}
 	}catch (Throwable e){
 		log.exception(e);
 	}
@@ -225,9 +238,13 @@ public void solverFinished(SolverEvent event) {
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}
-		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_COMPLETED, this, getSimulationJob(), vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));
-		//fireJobProgressEvent(new JobProgressEvent(this,new MessageSource(this,getSimulationIdentifier()),sim.getSimulationInfo(),event.getProgress(),event.getTimePoint()));
-		//fireJobCompletedEvent(new JobCompletedEvent(this,new MessageSource(this,getSimulationIdentifier()),sim.getSimulationInfo(),false,event.getProgress(),event.getTimePoint()));
+		SimulationJob simJob = getSimulationJob();
+		if (serialParameterScanJobIndex >= 0) {
+			SimulationJob newSimJob = new SimulationJob(simJob.getSimulation(), serialParameterScanJobIndex, simJob.getFieldDataIdentifierSpecs());
+			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_COMPLETED, this, newSimJob, vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));
+		} else {
+			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_COMPLETED, this, simJob, vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));	
+		}		
 	}catch (Throwable e){
 		log.exception(e);
 	}
@@ -254,8 +271,17 @@ public void solverProgress(SolverEvent event) {
 	try {
 		// don't log progress and data events
 		if (System.currentTimeMillis() - timeOfLastProgressMessage > 1000 * getMessagingInterval()) {
-			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_PROGRESS, this, getSimulationJob(), vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));
-			//fireJobProgressEvent(new JobProgressEvent(this,new MessageSource(this,getSimulationIdentifier()),getSimulation().getSimulationInfo(),event.getProgress(),event.getTimePoint()));
+			SimulationJob simJob = getSimulationJob();
+			if (serialParameterScanJobIndex >= 0) {
+				SimulationJob newSimJob = new SimulationJob(simJob.getSimulation(), serialParameterScanJobIndex, simJob.getFieldDataIdentifierSpecs());
+				fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_PROGRESS, this, newSimJob, vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));
+				if (event.getProgress() >= 1) {
+					fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_COMPLETED, this, newSimJob, vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint()), SimulationMessage.MESSAGE_JOB_COMPLETED));
+					serialParameterScanJobIndex ++;
+				}
+			} else {
+				fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_PROGRESS, this, getSimulationJob(), vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));
+			}
 		}
 	}catch (Throwable e){
 		log.exception(e);
@@ -270,8 +296,13 @@ public void solverProgress(SolverEvent event) {
 public void solverStarting(SolverEvent event) {
 	try {
 		log.print("LocalMathController Caught solverStarting("+event.getSource().toString()+")");
-		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_STARTING, this, getSimulationJob(), vcConn.getHost(), event.getSimulationMessage()));
-		//fireJobStartingEvent(new JobStartingEvent(this, new MessageSource(this, getSimulationIdentifier()), getSimulation().getSimulationInfo(), event.getMessage()));
+		SimulationJob simJob = getSimulationJob();
+		if (serialParameterScanJobIndex >= 0) {
+			SimulationJob newSimJob = new SimulationJob(simJob.getSimulation(), serialParameterScanJobIndex, simJob.getFieldDataIdentifierSpecs());
+			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_STARTING, this, newSimJob, vcConn.getHost(), event.getSimulationMessage()));
+		} else {
+			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_STARTING, this, simJob, vcConn.getHost(), event.getSimulationMessage()));
+		}
 	}catch (Throwable e){
 		log.exception(e);
 	}
@@ -289,7 +320,6 @@ public void solverStopped(SolverEvent event) {
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}
-		//fireJobCompletedEvent(new JobCompletedEvent(this,new MessageSource(this,getSimulationIdentifier()),getSimulation().getSimulationInfo(),true,event.getProgress(),event.getTimePoint()));
 	}catch (Throwable e){
 		log.exception(e);
 	}
@@ -310,13 +340,15 @@ public void startSimulationJob() throws SimExecutionException, DataAccessExcepti
 			dm.setName("DataMover("+dataMover.getSimulationDataIdentifier()+")");
 			dm.start();
 		}
+		if (getSimulationJob().getSimulation().isSerialParameterScan()) {
+			serialParameterScanJobIndex = 0;
+		}
 		solverControllerImpl.startSimulationJob();
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}	
 }
-
 
 /**
  * stopSimulation method comment.

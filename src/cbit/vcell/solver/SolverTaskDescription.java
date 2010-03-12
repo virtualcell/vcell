@@ -49,6 +49,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private OutputTimeSpec fieldOutputTimeSpec = new DefaultOutputTimeSpec();
 	private StochSimOptions fieldStochOpt = null; //added Dec 5th, 2006
 	private ErrorTolerance stopAtSpatiallyUniformErrorTolerance = null;
+	private boolean bSerialParameterScan = false;
 
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
@@ -113,6 +114,7 @@ public SolverTaskDescription(Simulation simulation, SolverTaskDescription solver
 	if (solverTaskDescription.stopAtSpatiallyUniformErrorTolerance != null) {
 		stopAtSpatiallyUniformErrorTolerance = new ErrorTolerance(solverTaskDescription.stopAtSpatiallyUniformErrorTolerance);
 	}
+	bSerialParameterScan = solverTaskDescription.bSerialParameterScan;
 	if (simulation.getMathDescription().isStoch() && (solverTaskDescription.getStochOpt() != null)) 
 	{
 		setStochOpt(solverTaskDescription.getStochOpt());
@@ -193,7 +195,6 @@ public boolean compareEqual(Matchable object) {
 		if (getUseSymbolicJacobian() != solverTaskDescription.getUseSymbolicJacobian()) {
 			return (false);
 		}
-		//
 		if (!getOutputTimeSpec().compareEqual(solverTaskDescription.getOutputTimeSpec())) {
 			return (false);
 		}
@@ -207,6 +208,9 @@ public boolean compareEqual(Matchable object) {
 			return (false);
 		}
 		if (!Compare.isEqualOrNull(stopAtSpatiallyUniformErrorTolerance, solverTaskDescription.stopAtSpatiallyUniformErrorTolerance)) {
+			return false;
+		}
+		if (bSerialParameterScan != solverTaskDescription.bSerialParameterScan) {
 			return false;
 		}
 		return true;
@@ -442,6 +446,7 @@ public String getVCML() {
 	//			AbsoluteErrorTolerance	1e-8 
 	//			RelativeErrorTolerance 1e-4
 	//		}
+	//      RunParameterScanSerially false
 	//		KeepEvery 1
 	//		KeepAtMost	1000
 	//		SensitivityParameter {
@@ -487,6 +492,8 @@ public String getVCML() {
 		buffer.append(VCML.StopAtSpatiallyUniform + " " + stopAtSpatiallyUniformErrorTolerance.getVCML() + "\n");
 	}
 	
+	buffer.append(VCML.RunParameterScanSerially + " " + bSerialParameterScan + "\n");
+	
 	buffer.append(VCML.EndBlock+"\n");
 		
 	return buffer.toString();
@@ -522,8 +529,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			SolverDescription solverDescription = getSolverDescription();
 			if (solverDescription.equals(SolverDescription.SundialsPDE) || solverDescription.isSemiImplicitPdeSolver()) {
 				TimeBounds timeBounds = getTimeBounds();
-				double outputTime = timeBounds.getEndingTime()/10;
-				setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
+				if (getOutputTimeSpec() == null || !(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
+					double outputTime = timeBounds.getEndingTime()/10;
+					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
+				}
 				
 				if (solverDescription.equals(SolverDescription.SundialsPDE)) {
 					setErrorTolerance(ErrorTolerance.getDefaultSundialsErrorTolerance());
@@ -618,6 +627,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 	//		SensitivityParameter {
 	//			Constant k1 39.0;
 	//		}
+	//      RunParameterScanSerially false
 	//   }
 	//
 	//	
@@ -740,6 +750,11 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				token = tokens.nextToken();
 				stopAtSpatiallyUniformErrorTolerance = ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance();
 				stopAtSpatiallyUniformErrorTolerance.readVCML(tokens);
+				continue;
+			}
+			if (token.equalsIgnoreCase(VCML.RunParameterScanSerially)) {
+				token = tokens.nextToken();
+				setSerialParameterScan((new Boolean(token)).booleanValue());
 				continue;
 			}
 			throw new DataAccessException("unexpected identifier " + token);
@@ -941,6 +956,15 @@ public void setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance errorToleranc
 	ErrorTolerance oldValue = stopAtSpatiallyUniformErrorTolerance;
 	stopAtSpatiallyUniformErrorTolerance = errorTolerance;
 	firePropertyChange(PROPERTY_STOP_AT_SPATIALLY_UNIFORM_ERROR_TOLERANCE, oldValue, errorTolerance);
+}
+
+public final boolean isSerialParameterScan() {
+	return bSerialParameterScan;
+}
+
+
+public final void setSerialParameterScan(boolean arg_bSerialParameterScan) {
+	this.bSerialParameterScan = arg_bSerialParameterScan;
 }
 
 }
