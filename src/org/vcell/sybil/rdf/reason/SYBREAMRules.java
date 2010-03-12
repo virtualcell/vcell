@@ -45,7 +45,7 @@ public class SYBREAMRules {
 		ruleBioPAX2Catalyst = rs.createRule();
 	}
 		
-	static public Rule ruleŬnmodifiableSubstanceClass;
+	static public Rule ruleUnmodifiableSubstanceClass;
 	
 	static {
 		RuleSpec rs = new RuleSpec("Unmodifiable Substance Class");
@@ -60,7 +60,7 @@ public class SYBREAMRules {
 		rs.body().add(new MakeTemp(), usAssumptionVar);
 		rs.head().add(usAssumptionVar, RDF.type, SYBREAMO.SubstanceUnmodifiable);
 		rs.head().add(usAssumptionVar, SYBREAMO.appliesToSubstance, substanceVar);
-		ruleŬnmodifiableSubstanceClass = rs.createRule();
+		ruleUnmodifiableSubstanceClass = rs.createRule();
 	}
 		
 	static public Rule ruleUnmodifiableSubstance;
@@ -133,7 +133,7 @@ public class SYBREAMRules {
 		rules.add(RDFSCoreRules.ruleRDFS6);
 		rules.add(RDFSCoreRules.ruleRDFS9);
 		rules.add(ruleBioPAX2Catalyst);
-		rules.add(ruleŬnmodifiableSubstanceClass);
+		rules.add(ruleUnmodifiableSubstanceClass);
 		rules.add(ruleUnmodifiableSubstance);
 		rules.add(ruleStoichiometry);
 		rules.add(ruleLocation);
