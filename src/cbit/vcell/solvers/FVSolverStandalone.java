@@ -2,16 +2,16 @@ package cbit.vcell.solvers;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.Vector;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
-import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.Solver;
-import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 
@@ -48,7 +48,47 @@ public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog 
  */
 protected void initialize() throws SolverException {
 	try {
-		initStep1();	
+		Simulation sim = simulationJob.getSimulation();
+		if (sim.isSerialParameterScan()) {
+			//write functions file for all the simulations in the scan
+			for (int scan = 0; scan < sim.getScanCount(); scan ++) {
+				SimulationJob simJob = new SimulationJob(sim, scan, simulationJob.getFieldDataIdentifierSpecs());
+				// ** Dumping the functions of a simulation into a '.functions' file.
+				String basename = new File(getSaveDirectory(), simJob.getSimulationJobID()).getPath();
+				String functionFileName = basename + FUNCTIONFILE_EXTENSION;
+				
+				Vector<AnnotatedFunction> funcList = simJob.getSimulationSymbolTable().createAnnotatedFunctionsList();				
+				//Try to save existing user defined functions	
+				try{
+					File existingFunctionFile = new File(functionFileName);
+					if (existingFunctionFile.exists()){
+						Vector<AnnotatedFunction> oldFuncList = FunctionFileGenerator.readFunctionsFile(existingFunctionFile);
+						for(AnnotatedFunction func : oldFuncList){
+							if(func.isUserDefined()){
+								funcList.add(func);
+							}
+						}
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+					//ignore
+				}
+				
+				//Try to save existing user defined functions
+				FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, funcList);
+
+				try {
+					functionFileGenerator.generateFunctionFile();
+				}catch (Exception e){
+					e.printStackTrace(System.out);
+					throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage());
+				}
+			}
+			
+		} else {
+			writeFunctionsFile();
+		}
+		writeVCGAndResampleFieldData();
 	
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INIT));
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);

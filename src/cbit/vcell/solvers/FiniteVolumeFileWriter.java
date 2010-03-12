@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
@@ -22,6 +23,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.Distribution;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.FastSystem;
@@ -36,6 +38,7 @@ import cbit.vcell.math.MembraneRandomVariable;
 import cbit.vcell.math.MembraneRegionEquation;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.PseudoConstant;
 import cbit.vcell.math.RandomVariable;
@@ -61,6 +64,7 @@ import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -147,17 +151,50 @@ private Expression subsituteExpression(Expression exp, SymbolTable symbolTable) 
  * @throws DataAccessException 
  * @throws IOException 
  */
-public void write(String[] parameterNames) throws ExpressionException, MathException, DataAccessException, IOException {	
+public void write(String[] parameterNames) throws Exception {
+	Variable originalVars[] = null;
+	Simulation simulation = simulationJob.getSimulation();
+	MathDescription mathDesc = simulation.getMathDescription();
+	if (simulationJob.getSimulation().isSerialParameterScan()) {
+		originalVars = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
+		Variable allVars[] = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
+		MathOverrides mathOverrides = simulation.getMathOverrides();	
+		
+		String[] scanParameters = mathOverrides.getOverridenConstantNames();
+		for (int i = 0; i < scanParameters.length; i++){
+			String scanParameter = scanParameters[i];
+			Variable mathVariable = mathDesc.getVariable(scanParameter);
+			//
+			// replace constant values with "Parameter"
+			//
+			if (mathVariable instanceof Constant){
+				Constant origConstant = (Constant)mathVariable;
+				for (int j = 0; j < allVars.length; j++){
+					if (allVars[j].equals(origConstant)){
+						allVars[j] = new ParameterVariable(origConstant.getName());
+						break;
+					}
+				}
+			}
+		}		
+		mathDesc.setAllVariables(allVars);
+	}
+	
 	writeJMSParamters();	
 	writeSimulationParamters();	
 	writeModelDescription();	
 	writeMeshFile();	
 	writeVariables();
-	writeParameters(parameterNames);	
+	writeParameters(parameterNames);
+	writeSerialParameterScans();	
 	writeFieldData();	
 	writeDataProcessor();
 	writeCompartments();	
 	writeMembranes();
+	
+	if (originalVars != null) {
+		mathDesc.setAllVariables(originalVars);
+	}
 }
 
 /**
@@ -201,7 +238,7 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 	File fdatFile = new File(userDirectory, filename);
 	
 	
-	cbit.vcell.simdata.DataSet.writeNew(fdatFile,
+	DataSet.writeNew(fdatFile,
 			new String[] {fdis.getFieldFuncArgs().getVariableName()},
 			new VariableType[]{simDataBlock.getVariableType()},
 			new ISize(origMesh.getSizeX(),origMesh.getSizeY(),origMesh.getSizeZ()),
@@ -821,7 +858,7 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 				+ " " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance() + " " + solverTaskDesc.getTimeStep().getMaximumTimeStep());
 		Vector<Discontinuity> discontinuities = new Vector<Discontinuity>();
 		TreeSet<Double> discontinuityTimes = new TreeSet<Double>();
-		cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
+		MathDescription mathDesc = simulation.getMathDescription();
 		Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 		while (enum1.hasMoreElements()) {		
 			SubDomain sd = enum1.nextElement();
@@ -1080,6 +1117,38 @@ private void writeParameters(String[] parameterNames) {
 		printWriter.println("PARAMETER_END");
 		printWriter.println();
 	}
+}
+
+private void writeSerialParameterScans() throws ExpressionException,  DivideByZeroException {
+	Simulation simulation = simulationJob.getSimulation();
+	if (!simulation.isSerialParameterScan()) {
+		return;
+	}
+
+	int scanCount = simulation.getScanCount();
+	printWriter.println("# Serial Scan Parameters");			
+	String[] scanParameters = simulation.getMathOverrides().getOverridenConstantNames();
+	printWriter.println("SERIAL_SCAN_PARAMETER_BEGIN " + scanParameters.length);
+	for (int i = 0; i < scanParameters.length; i++){
+		String scanParameter = scanParameters[i];
+		printWriter.println(scanParameter);
+	}
+	printWriter.println("SERIAL_SCAN_PARAMETER_END");
+	printWriter.println();
+	
+	printWriter.println("# Parameter Scan Values");
+	printWriter.println("SERIAL_SCAN_PARAMETER_VALUE_BEGIN " + scanCount);
+	for (int i = 0; i < scanCount; i ++) {
+		for (int j = 0; j < scanParameters.length; j ++){
+			String scanParameter = scanParameters[j];
+			Expression exp = simulation.getMathOverrides().getActualExpression(scanParameter, i);
+			double value = exp.evaluateConstant();
+			printWriter.print(value + " ");
+		}
+		printWriter.println();
+	}
+	printWriter.println("SERIAL_SCAN_PARAMETER_VALUE_END");
+	printWriter.println();
 }
 /**
  * # Field Data

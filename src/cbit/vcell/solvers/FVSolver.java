@@ -347,7 +347,8 @@ public static String getDescription() {
  * This method was created by a SmartGuide.
  */
 protected void initialize() throws SolverException {
-	initStep1();
+	writeFunctionsFile();
+	writeVCGAndResampleFieldData();	
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INIT));
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
@@ -390,10 +391,8 @@ public Geometry getResampledGeometry() throws SolverException {
 	}
 	return resampledGeometry;
 }
-
-protected void initStep1() throws SolverException {
-	writeFunctionsFile();
 		
+protected void writeVCGAndResampleFieldData() throws SolverException {
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_PROC_GEOM);
 	
 	try {
@@ -416,9 +415,8 @@ protected void initStep1() throws SolverException {
 			resampleFieldData(argFieldDataIDSpecs, getSaveDirectory(),//getSaveDirectory(),
 					simpleMesh, simResampleInfoProvider, numMembraneElements, HESM_OVERWRITE_AND_CONTINUE, simulationJob);
 		}
-
-	} catch (Exception ex) {
-		throw new SolverException(ex.getMessage());
+	} catch(Exception e){
+		throw new SolverException(e.getMessage());
 	}
 }
 

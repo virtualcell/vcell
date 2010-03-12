@@ -18,6 +18,7 @@ import cbit.rmi.event.RemoteMessageHandler;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.SimulationJobStatusListener;
 import cbit.rmi.event.SimulationJobStatusSender;
+import cbit.rmi.event.WorkerEvent;
 import cbit.rmi.event.WorkerEventListener;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -47,7 +48,7 @@ import cbit.vcell.solvers.SolverProxy;
 public class SimulationControllerImpl implements SimulationJobStatusSender, WorkerEventListener {
 	private java.util.Hashtable<String, SolverProxy> solverProxyHash = new java.util.Hashtable<String, SolverProxy>();
 	private SessionLog adminSessionLog = null;
-	private cbit.vcell.server.LocalVCellServer fieldLocalVCellServer = null;
+	private LocalVCellServer fieldLocalVCellServer = null;
 	private AdminDatabaseServer adminDbServer = null;
 	private EventListenerList listenerList = new javax.swing.event.EventListenerList();
 
@@ -66,7 +67,7 @@ public SimulationControllerImpl(SessionLog argAdminSessionLog, AdminDatabaseServ
 /**
  * addSimulationStatusEventListener method comment.
  */
-public void addSimulationJobStatusListener(cbit.rmi.event.SimulationJobStatusListener listener) {
+public void addSimulationJobStatusListener(SimulationJobStatusListener listener) {
 	listenerList.add(SimulationJobStatusListener.class, listener);
 }
 
@@ -352,7 +353,7 @@ private void handleException(VCSimulationIdentifier vcSimulationIdentifier, int 
  * @param progress java.lang.Double
  * @param timePoint java.lang.Double
  */
-public void onWorkerEvent(cbit.rmi.event.WorkerEvent workerEvent) {	
+public void onWorkerEvent(WorkerEvent workerEvent) {	
 	try {
 		VCSimulationIdentifier vcSimulationIdentifier = workerEvent.getVCSimulationDataIdentifier().getVcSimID();
 		int jobIndex = workerEvent.getJobIndex();
@@ -403,7 +404,7 @@ public void onWorkerEvent(cbit.rmi.event.WorkerEvent workerEvent) {
 /**
  * removeSimulationStatusEventListener method comment.
  */
-public void removeSimulationJobStatusListener(cbit.rmi.event.SimulationJobStatusListener listener) {
+public void removeSimulationJobStatusListener(SimulationJobStatusListener listener) {
 	listenerList.remove(SimulationJobStatusListener.class, listener);
 }
 
@@ -441,12 +442,14 @@ public void startSimulation(User user, Simulation simulation, SessionLog userSes
 		}
 	} 
 	
-	for (int i = 0; i < simulation.getScanCount(); i++){
+	boolean serialParameterScan = simulation.isSerialParameterScan();
+	int scanCount = simulation.getScanCount();
+	for (int i = 0; i < scanCount; i++){
 		SimulationJob simJob = new SimulationJob(simulation, i, fieldDataIDs);
 		VCSimulationIdentifier vcSimID = simJob.getVCDataIdentifier().getVcSimID();
 		try {
+
 			SolverProxy solverProxy = getSolverProxy(user,simJob,userSessionLog);
-				
 			SimulationJobStatus oldJobStatus = adminDbServer.getSimulationJobStatus(simulation.getKey(),i);	
 			SimulationJobStatus newJobStatus = updateDispatchedJobStatus(oldJobStatus, vcSimID, i);
 			
@@ -455,8 +458,9 @@ public void startSimulation(User user, Simulation simulation, SessionLog userSes
 				fireSimulationJobStatusEvent(event);
 			}
 
-			solverProxy.startSimulationJob(); // can only start after updating the database is done
-
+			if (!serialParameterScan || i == 0 ) {
+				solverProxy.startSimulationJob(); // can only start after updating the database is done
+			}
 		} catch (Exception ex) {
 			handleException(vcSimID,i,ex);
 		}	

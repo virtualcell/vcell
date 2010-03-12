@@ -35,7 +35,8 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		Feature_StopAtSpatiallyUniform("Stop at Spatially Uniform"),
 		Feature_DataProcessingInstructions("Data Processing Instructions"),
 		Feature_PSF("Point Spread Function"),
-		Feature_JVMRequired("JVM Required");
+		Feature_JVMRequired("JVM Required"),
+		Feature_SerialParameterScans("Serial Parameter Scan");
 		
 		private String name;
 		private SolverFeature(String name) {
@@ -947,6 +948,7 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_DataProcessingInstructions);
 		featureSet.add(SolverFeature.Feature_PSF);
 		featureSet.add(SolverFeature.Feature_PeriodicBoundaryCondition);
+		featureSet.add(SolverFeature.Feature_SerialParameterScans);
 		break;
 		
 	case TYPE_SUNDIALS_PDE:
@@ -957,6 +959,7 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_StopAtSpatiallyUniform);
 		featureSet.add(SolverFeature.Feature_DataProcessingInstructions);
 		featureSet.add(SolverFeature.Feature_PSF);
+		featureSet.add(SolverFeature.Feature_SerialParameterScans);
 		break;
 	}
 	
