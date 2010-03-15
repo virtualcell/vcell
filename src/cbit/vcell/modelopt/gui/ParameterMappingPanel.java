@@ -1,6 +1,7 @@
 package cbit.vcell.modelopt.gui;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
@@ -484,9 +485,14 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 				}
 
 			SimulationContext sc = getParameterEstimationTask().getModelOptimizationSpec().getSimulationContext();
-			MathMapping mm = new cbit.vcell.mapping.MathMapping(sc);
-			MathSymbolMapping msm = mm.getMathSymbolMapping();
-			
+			MathSymbolMapping msm = null;
+			try {
+				MathMapping mm = new cbit.vcell.mapping.MathMapping(sc);
+				msm = mm.getMathSymbolMapping();
+			}catch (Exception e){
+				e.printStackTrace(System.out);
+				DialogUtils.showWarningDialog(this, "current math not valid, some paste operations will be limited\n\nreason: "+e.getMessage());
+			}
 			boolean bInitialGuess = (getScrollPaneTable().getSelectedColumn() == ParameterMappingTableModel.COLUMN_CURRENTVALUE);
 			cbit.vcell.modelopt.ParameterMappingSpec[] parameterMappingSpecs = new cbit.vcell.modelopt.ParameterMappingSpec[rows.length];
 			java.util.Vector<SymbolTableEntry> primarySymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
@@ -557,8 +563,15 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 
 			SimulationContext sc = getParameterEstimationTask().getModelOptimizationSpec().getSimulationContext();
-			MathMapping mm = new MathMapping(sc);
-			MathSymbolMapping msm = mm.getMathSymbolMapping();
+			MathSymbolMapping msm = null;
+			Exception mathMappingException = null;
+			try {
+				MathMapping mm = new MathMapping(sc);
+				msm = mm.getMathSymbolMapping();
+			}catch (Exception e){
+				mathMappingException = e;
+				e.printStackTrace(System.out);
+			}
 			//if(msm == null){
 				//try{
 					//getParameterEstimationTask().refreshMappings();
@@ -607,6 +620,9 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 									pastedMathVariable = (Variable)rvs.getAlternateSymbolTableEntries()[j];
 								}
 								if(pastedMathVariable != null){
+									if (msm == null){
+										throw mathMappingException;
+									}
 									Variable localMathVariable = msm.findVariableByName(pastedMathVariable.getName());
 									if(localMathVariable != null){
 										SymbolTableEntry[] localBiologicalSymbolArr =  msm.getBiologicalSymbol(localMathVariable);

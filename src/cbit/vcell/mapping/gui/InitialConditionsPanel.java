@@ -938,7 +938,13 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 					rows = getScrollPaneTable().getSelectedRows();
 				}
 
-			MathSymbolMapping msm = (new MathMapping(getSimulationContext())).getMathSymbolMapping();
+			MathSymbolMapping msm = null;
+			try {
+				msm = (new MathMapping(getSimulationContext())).getMathSymbolMapping();
+			}catch (Exception e){
+				e.printStackTrace(System.out);
+				DialogUtils.showWarningDialog(this, "current math not valid, some paste operations will be limited\n\nreason: "+e.getMessage());
+			}
 			StringBuffer sb = new StringBuffer();
 			sb.append("initial Conditions Parameters for (BioModel)"+getSimulationContext().getBioModel().getName()+" (App)"+getSimulationContext().getName()+"\n");
 			java.util.Vector<SymbolTableEntry> primarySymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
@@ -948,7 +954,11 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(rows[i]);
 				if(scs.isConstant()){
 					primarySymbolTableEntriesV.add(scs.getInitialConditionParameter());//need to change
-					alternateSymbolTableEntriesV.add(msm.getVariable(scs.getSpeciesContext()));
+					if (msm!=null){
+						alternateSymbolTableEntriesV.add(msm.getVariable(scs.getSpeciesContext()));
+					}else{
+						alternateSymbolTableEntriesV.add(null);
+					}
 					resolvedValuesV.add(new Expression(scs.getInitialConditionParameter().getExpression()));
 					sb.append(scs.getSpeciesContext().getName()+"\t"+scs.getInitialConditionParameter().getName()+"\t"+scs.getInitialConditionParameter().getExpression().infix()+"\n");
 				}else{
@@ -959,7 +969,11 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 							sb.append(scs.getSpeciesContext().getName()+"\t"+scsp.getName()+"\t"+(scspExpression != null?scspExpression.infix():"")+"\n");
 							if(scspExpression != null){// "Default" boundary conditions can't be copied
 								primarySymbolTableEntriesV.add(scsp);
-								alternateSymbolTableEntriesV.add(msm.getVariable(scsp));
+								if (msm != null){
+									alternateSymbolTableEntriesV.add(msm.getVariable(scsp));
+								}else{
+									alternateSymbolTableEntriesV.add(null);
+								}
 								resolvedValuesV.add(new Expression(scspExpression));
 							}
 						}
@@ -1000,10 +1014,16 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 			if(actionEvent.getSource() == getJMenuItemPaste() || actionEvent.getSource() == getJMenuItemPasteAll()){
 				Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 				
-				MathMapping mm = null;
 				MathSymbolMapping msm = null;
-				mm = new MathMapping(getSimulationContext());
-				msm = mm.getMathSymbolMapping();
+				Exception mathMappingException = null;
+				try {
+					MathMapping mm = null;
+					mm = new MathMapping(getSimulationContext());
+					msm = mm.getMathSymbolMapping();
+				}catch (Exception e){
+					mathMappingException = e;
+					e.printStackTrace(System.out);
+				}
 				
 				int[] rows = null;
 				if(actionEvent.getSource() == getJMenuItemPasteAll()){
@@ -1043,6 +1063,9 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 										pastedMathVariable = (Variable)rvs.getAlternateSymbolTableEntries()[j];
 									}
 									if(pastedMathVariable != null){
+										if (msm == null){
+											throw mathMappingException;
+										}
 										Variable localMathVariable = msm.findVariableByName(pastedMathVariable.getName());
 										if(localMathVariable == null){
 											localMathVariable = msm.findVariableByName(pastedMathVariable.getName()+"_init");
@@ -1093,7 +1116,7 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 						}
 					}catch(Throwable e){
 						if(errors == null){errors = new StringBuffer();}
-						errors.append(scs.getSpeciesContext().getName()+" ("+e.getClass().getName()+") "+e.getMessage()+"\n");
+						errors.append(scs.getSpeciesContext().getName()+" ("+e.getClass().getName()+") "+e.getMessage()+"\n\n");
 					}
 				}
 				if(errors != null){
