@@ -9,7 +9,6 @@ import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.vcell.sybil.rdf.JenaIOUtil.Style;
 
 import cbit.util.xml.XmlUtil;
 
@@ -23,7 +22,7 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 
 public class OntSpecUtil {
 
-	public static void writeToFile(Model schema, String fileName, Style style) {
+	public static void writeToFile(Model schema, String fileName, RDFFormat style) {
 		System.out.println("Writing SBPAX to " + fileName);
 		try { 
 			java.io.StringWriter strWriter = new StringWriter();
@@ -37,10 +36,10 @@ public class OntSpecUtil {
 	
 	public static void writeToFiles(Model schema) {
 		String baseFileName = "sbpax";
-		writeToFile(schema, baseFileName + ".owl", JenaIOUtil.RDF_XML_ABBREV);
-		writeToFile(schema, baseFileName + ".owl2", JenaIOUtil.RDF_XML);
-		writeToFile(schema, baseFileName + ".rdf", JenaIOUtil.N_TRIPLE);
-		writeToFile(schema, baseFileName + ".n3", JenaIOUtil.N3);
+		writeToFile(schema, baseFileName + ".owl", RDFFormat.RDF_XML_ABBREV);
+		writeToFile(schema, baseFileName + ".owl2", RDFFormat.RDF_XML);
+		writeToFile(schema, baseFileName + ".rdf", RDFFormat.N_TRIPLE);
+		writeToFile(schema, baseFileName + ".n3", RDFFormat.N3);
 	}
 
 	public static boolean isMissingComment(RDFNode node) {

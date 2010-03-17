@@ -6,6 +6,7 @@ package org.vcell.sybil.rdf;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -25,22 +26,11 @@ public class JenaIOUtil {
 		return model;
 	}
 	
-	public static class Style {
-		protected final String name;
-		public Style(String nameNew) { name = nameNew; }
-		public String toString() { return name; }
-	}
-	
-	public static final Style RDF_XML = new Style("RDF/XML");
-	public static final Style RDF_XML_ABBREV = new Style("RDF/XML-ABBREV");
-	public static final Style N_TRIPLE = new Style("N-TRIPLE");
-	public static final Style N3 = new Style("N3");
-
-	public static void writeModel(Model model, StringWriter writer, Style style) {
+	public static void writeModel(Model model, Writer writer, RDFFormat style) {
 		model.write(writer, style.toString());
 	}
 
-	public static String textFromModel(Model model, Style style) {
+	public static String textFromModel(Model model, RDFFormat style) {
 //		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		StringWriter strWriter = new StringWriter();
 		model.write(strWriter, style.toString());
