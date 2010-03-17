@@ -35,8 +35,8 @@ public class XMLMetaDataReader extends XMLMetaData {
 			for (Iterator<Element> iterator = entryElements.iterator(); iterator.hasNext();) {
 				Element entryElement = iterator.next();
 				try {
-					String uri = entryElement.getAttributeValue(XMLMetaData.URI_ATTR_TAG, VCMetaData.nsVCML);
-					String vcidString = entryElement.getAttributeValue(XMLMetaData.VCID_ATTR_TAG, VCMetaData.nsVCML);
+					String uri = entryElement.getAttributeValue(XMLMetaData.URI_ATTR_TAG);
+					String vcidString = entryElement.getAttributeValue(XMLMetaData.VCID_ATTR_TAG);
 					// make new entry based on URI
 					OpenEntry openEntry = metaData.getRegistry().forURI(uri);
 					// create VCID
