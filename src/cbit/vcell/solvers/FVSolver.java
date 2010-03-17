@@ -4,13 +4,11 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.Arrays;
 import java.util.Vector;
-import java.util.Map.Entry;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.PropertyLoader;
@@ -27,10 +25,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
@@ -137,7 +132,7 @@ private void autoCode(boolean bNoCompile) throws SolverException {
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_COMPILELINK);
 	try {		
 		String compileCommand = Compile+" "+CodeFilename+" "+compileFlags+" "+objOutputSpecifier+ObjFilename;
-System.out.println(compileCommand);
+		System.out.println(compileCommand);
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.solverRunning_CompileCommand("% "+compileCommand)));
 		
 		Runtime runtime = Runtime.getRuntime();
@@ -200,7 +195,7 @@ System.out.println(compileCommand);
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_LINKING));
 	try {		
 		String linkCommand = Link+" "+exeOutputSpecifier+ExeFilename+" "+ObjFilename+" "+libs;
-System.out.println(linkCommand);
+		System.out.println(linkCommand);
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.solverRunning_LinkCommand("% "+linkCommand)));
 		
 		Runtime runtime = Runtime.getRuntime();
@@ -399,21 +394,51 @@ protected void writeVCGAndResampleFieldData() throws SolverException {
 		PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+".vcg")));
 		GeometryFileWriter.write(pw, getResampledGeometry());
 		pw.close();
-		
+				
 		FieldDataIdentifierSpec[] argFieldDataIDSpecs = simulationJob.getFieldDataIdentifierSpecs();
 		if(argFieldDataIDSpecs != null && argFieldDataIDSpecs.length > 0){
 			fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_RESAMPLE_FD);
+			
+			FieldFunctionArguments psfFieldFunc = null;
+			Variable var = simulationJob.getSimulationSymbolTable().getVariable(SimDataConstants.PSF_FUNCTION_NAME);
+			if (var != null) {
+				FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
+				if (ffas == null || ffas.length == 0) {
+					throw new DataAccessException("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+				} else {				
+					Expression newexp;
+					try {
+						newexp = new Expression(ffas[0].infix());
+						if (!var.getExpression().compareEqual(newexp)) {
+							throw new DataAccessException("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+						}
+						psfFieldFunc = ffas[0];
+					} catch (ExpressionException e) {
+						e.printStackTrace();
+						throw new DataAccessException(e.getMessage());
+					}
+				}
+			}			
+			
+			boolean bResample[] = new boolean[argFieldDataIDSpecs.length];
+			Arrays.fill(bResample, true);
 			for (int i = 0; i < argFieldDataIDSpecs.length; i++) {
 				argFieldDataIDSpecs[i].getFieldFuncArgs().getTime().bindExpression(simulationJob.getSimulationSymbolTable());
+				if (argFieldDataIDSpecs[i].getFieldFuncArgs().equals(psfFieldFunc)) {
+					bResample[i] = false;
+				}
 			}
 			
 			int numMembraneElements = getResampledGeometry().getGeometrySurfaceDescription().getSurfaceCollection().getTotalPolygonCount();
 			CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(getResampledGeometry().getOrigin(), 
 					getResampledGeometry().getExtent(),
 					simulationJob.getSimulation().getMeshSpecification().getSamplingSize(),
-					getResampledGeometry().getGeometrySurfaceDescription().getRegionImage());			
-			resampleFieldData(argFieldDataIDSpecs, getSaveDirectory(),//getSaveDirectory(),
-					simpleMesh, simResampleInfoProvider, numMembraneElements, HESM_OVERWRITE_AND_CONTINUE, simulationJob);
+					getResampledGeometry().getGeometrySurfaceDescription().getRegionImage());
+			String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);			
+			DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(), null, getSaveDirectory().getParentFile(),
+					secondarySimDataDir == null ? null : new File(secondarySimDataDir));
+			dsci.writeFieldFunctionData(argFieldDataIDSpecs, bResample, simpleMesh, simResampleInfoProvider, 
+					numMembraneElements, HESM_OVERWRITE_AND_CONTINUE);
 		}
 	} catch(Exception e){
 		throw new SolverException(e.getMessage());
@@ -439,159 +464,4 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 		}
 	}
 }
-
-public static void resampleFieldData(
-		FieldDataIdentifierSpec[] argFieldDataIDSpecs,
-		File userDirectory,
-		CartesianMesh newMesh,
-		SimResampleInfoProvider simResampleInfoProvider,
-		int simResampleMembraneDataLength,
-		int handleExistingResampleMode)throws SolverException {
-	resampleFieldData(argFieldDataIDSpecs, userDirectory, newMesh, simResampleInfoProvider, simResampleMembraneDataLength, handleExistingResampleMode, null);
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (9/21/2006 1:28:12 PM)
- */
-public static void resampleFieldData(
-		FieldDataIdentifierSpec[] argFieldDataIDSpecs,
-		File userDirectory,
-		CartesianMesh newMesh,
-		SimResampleInfoProvider simResampleInfoProvider,
-		int simResampleMembraneDataLength,
-		int handleExistingResampleMode,
-		SimulationJob simulationJob)throws SolverException {
-	
-	if(	handleExistingResampleMode != HESM_KEEP_AND_CONTINUE &&
-		handleExistingResampleMode != HESM_OVERWRITE_AND_CONTINUE &&
-		handleExistingResampleMode != HESM_THROW_EXCEPTION
-	){
-		throw new IllegalArgumentException("Unknown mode "+handleExistingResampleMode);
-	}
-	
-	if(argFieldDataIDSpecs == null || argFieldDataIDSpecs.length == 0){
-		return;
-	}
-	
-	FieldFunctionArguments psfFieldFunc = null;
-	
-	if (simulationJob != null) {
-		Variable var = simulationJob.getSimulationSymbolTable().getVariable(SimDataConstants.PSF_FUNCTION_NAME);
-		if (var != null) {
-			FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
-			if (ffas == null || ffas.length == 0) {
-				throw new SolverException("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
-			} else {				
-				Expression newexp;
-				try {
-					newexp = new Expression(ffas[0].infix());				
-					if (!var.getExpression().compareEqual(newexp)) {
-						throw new SolverException("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
-					}
-					psfFieldFunc = ffas[0];
-				} catch (ExpressionException e) {					
-					e.printStackTrace();
-					throw new SolverException(e.getMessage());
-				}
-			}			
-		}
-	}
-	
-	HashMap<FieldDataIdentifierSpec, File> uniqueFieldDataIDSpecAndFileH =
-		new HashMap<FieldDataIdentifierSpec, File>();
-	for (int i = 0; i < argFieldDataIDSpecs.length; i ++) {
-		if(!uniqueFieldDataIDSpecAndFileH.containsKey(argFieldDataIDSpecs[i])){
-			File newResampledFieldDataFile =
-				new File(
-					userDirectory,
-					SimulationData.createCanonicalResampleFileName(
-							simResampleInfoProvider,
-							argFieldDataIDSpecs[i].getFieldFuncArgs())
-				);
-			if(handleExistingResampleMode == HESM_THROW_EXCEPTION && newResampledFieldDataFile.exists()){
-				throw new RuntimeException("Resample Error: mode not allow overwrite or ignore of existing file\n"+newResampledFieldDataFile.getAbsolutePath());
-			}
-			uniqueFieldDataIDSpecAndFileH.put(argFieldDataIDSpecs[i],newResampledFieldDataFile);
-		}
-	}
-	try {
-		Set<Entry<FieldDataIdentifierSpec, File>> resampleSet =
-			uniqueFieldDataIDSpecAndFileH.entrySet();
-		Iterator<Entry<FieldDataIdentifierSpec, File>> resampleSetIter =
-			resampleSet.iterator();
-		while(resampleSetIter.hasNext()){
-			Entry<FieldDataIdentifierSpec, File> resampleEntry =
-				resampleSetIter.next();
-			if(handleExistingResampleMode == HESM_KEEP_AND_CONTINUE && resampleEntry.getValue().exists()){
-				continue;
-			}
-			DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),null);
-			CartesianMesh origMesh = dsci.getMesh(resampleEntry.getKey().getExternalDataIdentifier());
-			SimDataBlock simDataBlock = dsci.getSimDataBlock(resampleEntry.getKey().getExternalDataIdentifier(),resampleEntry.getKey().getFieldFuncArgs().getVariableName(), resampleEntry.getKey().getFieldFuncArgs().getTime().evaluateConstant());
-			VariableType varType = resampleEntry.getKey().getFieldFuncArgs().getVariableType();
-			VariableType dataVarType = simDataBlock.getVariableType();
-			if (!varType.equals(VariableType.UNKNOWN) && !varType.equals(dataVarType)) {
-				throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
-			}
-			double[] origData = simDataBlock.getData();
-			double[] newData = null;
-			CartesianMesh resampleMesh = newMesh;
-			if (psfFieldFunc != null && psfFieldFunc.equals(resampleEntry.getKey().getFieldFuncArgs())) {				
-				if (resampleMesh.getGeometryDimension() != origMesh.getGeometryDimension()) {
-					throw new Exception("Point Spread Function field data " + psfFieldFunc.getFieldName() + " (" + origMesh.getGeometryDimension() 
-							+ "D) should have same dimension as simulation mesh (" + resampleMesh.getGeometryDimension() + "D).");
-				}
-				newData = origData;
-				resampleMesh = origMesh;
-			} else {
-				if(CartesianMesh.isSpatialDomainSame(origMesh, resampleMesh)){
-					newData = origData;
-					if(simDataBlock.getVariableType().equals(VariableType.MEMBRANE)){
-						if(origData.length != simResampleMembraneDataLength){
-							throw new Exception(
-								"FieldData variable \""+resampleEntry.getKey().getFieldFuncArgs().getVariableName()+
-								"\" ("+simDataBlock.getVariableType().getTypeName()+") "+
-								"resampling failed: Membrane Data lengths must be equal"
-							);
-						}
-					}else if(!simDataBlock.getVariableType().equals(VariableType.VOLUME)){
-						throw new Exception(
-								"FieldData variable \""+resampleEntry.getKey().getFieldFuncArgs().getVariableName()+
-								"\" ("+simDataBlock.getVariableType().getTypeName()+") "+
-								"resampling failed: Only Volume and Membrane variable types are supported"
-							);
-					}
-				}else{
-					if(!simDataBlock.getVariableType().compareEqual(VariableType.VOLUME)){
-						throw new Exception("FieldData variable \""+resampleEntry.getKey().getFieldFuncArgs().getVariableName()+
-								"\" ("+simDataBlock.getVariableType().getTypeName()+") "+
-								"resampling failed: Only VOLUME FieldData variable type allowed when\n"+
-								"FieldData spatial domain does not match Simulation spatial domain.\n"+
-								"Check dimension, xsize, ysize, zsize, origin and extent are equal."
-						);
-					}
-					if(origMesh.getSizeY() == 1 && origMesh.getSizeZ() == 1){
-						newData = cbit.vcell.solver.test.MathTestingUtilities.resample1DSpatialSimple(origData, origMesh, resampleMesh);						
-					}else if(origMesh.getSizeZ() == 1){
-						newData = cbit.vcell.solver.test.MathTestingUtilities.resample2DSpatialSimple(origData, origMesh, resampleMesh);						
-					}else{
-						newData = cbit.vcell.solver.test.MathTestingUtilities.resample3DSpatialSimple(origData, origMesh, resampleMesh);						
-					}
-				}
-			}
-			cbit.vcell.simdata.DataSet.writeNew(
-					resampleEntry.getValue(),
-					new String[] {resampleEntry.getKey().getFieldFuncArgs().getVariableName()},
-					new VariableType[]{simDataBlock.getVariableType()},
-					new ISize(resampleMesh.getSizeX(),resampleMesh.getSizeY(),resampleMesh.getSizeZ()),
-					new double[][]{newData});
-		}
-	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-		throw new SolverException(ex.getMessage());
-	}
-}
-
-
 }
