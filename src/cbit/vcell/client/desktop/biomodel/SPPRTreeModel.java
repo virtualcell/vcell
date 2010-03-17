@@ -7,7 +7,6 @@ import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import cbit.vcell.desktop.BioModelNode;
@@ -424,6 +423,9 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 			folder = folderNodes[EVENTS_NODE];
 		}		
 		BioModelNode leaf = folder.findNodeByUserObject(newValue);
+		if (leaf == null) {
+			return;
+		}
 		spprTree.setSelectionPath(new TreePath(leaf.getPath()));
 	}
 }

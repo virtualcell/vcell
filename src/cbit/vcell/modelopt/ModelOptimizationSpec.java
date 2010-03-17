@@ -1,4 +1,7 @@
 package cbit.vcell.modelopt;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -268,7 +271,7 @@ private Parameter[] getModelParameters() {
 	//
 	ModelParameter[] globalParams = model.getModelParameters();
 	for (int i = 0; i < globalParams.length; i++) {
-		if (globalParams[i] != null && globalParams[i].getExpression().isNumeric()){
+		if (globalParams[i] != null && globalParams[i].getExpression()!= null && globalParams[i].getExpression().isNumeric()){
 			modelParameterList.add(globalParams[i]);
 		}
 	}
@@ -306,7 +309,7 @@ private Parameter[] getModelParameters() {
 	SpeciesContextSpec[] speciesContextSpecs = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < speciesContextSpecs.length; i++){
 		SpeciesContextSpec.SpeciesContextSpecParameter initParam = speciesContextSpecs[i].getInitialConditionParameter();
-		if (initParam != null && initParam.getExpression().isNumeric()){
+		if (initParam != null && initParam.getExpression() != null && initParam.getExpression().isNumeric()){
 			modelParameterList.add(initParam);
 		}
 	}
@@ -323,9 +326,18 @@ private Parameter[] getModelParameters() {
 				!((MembraneMapping)structureMappings[i]).getCalculateVoltage()){
 				continue;
 			}
-			modelParameterList.add(parameters[j]);
+			if (parameters[j].getExpression() != null && parameters[j].getExpression().isNumeric()) {
+				modelParameterList.add(parameters[j]);
+			}
 		}
 	}
+	
+	Parameter[] modelParameters = (Parameter[])BeanUtils.getArray(modelParameterList,Parameter.class);
+	return modelParameters;
+}
+
+
+public void removeUncoupledParameters() {
 	try {
 		MathMapping mathMapping = new MathMapping(getSimulationContext());
 		MathDescription mathDesc = mathMapping.getMathDescription();
@@ -356,8 +368,10 @@ private Parameter[] getModelParameters() {
 		//
 		// remove parameters not mapped to a surviving tree (not coupled to any state variables
 		//
-		for (int i = 0; i < modelParameterList.size(); i++){
-			Parameter parameter = modelParameterList.elementAt(i);
+		ArrayList<ParameterMappingSpec> paramMappingSpecsList = new ArrayList<ParameterMappingSpec>(); 
+		paramMappingSpecsList.addAll(Arrays.asList(fieldParameterMappingSpecs));
+		for (int i = 0; i < paramMappingSpecsList.size(); i++){			
+			Parameter parameter = paramMappingSpecsList.get(i).getModelParameter();
 			String mathName = mathMapping.getMathSymbol(parameter,null);
 			boolean bFoundInTree = false;
 			for (int j = 0; j < spanningTrees.length; j++){
@@ -367,17 +381,17 @@ private Parameter[] getModelParameters() {
 				}
 			}
 			if (!bFoundInTree){
-				modelParameterList.removeElementAt(i);
+				paramMappingSpecsList.remove(i);
 				i--;
 			}
 		}
+		ParameterMappingSpec[] parameterMappingSpecs = new ParameterMappingSpec[paramMappingSpecsList.size()];
+		paramMappingSpecsList.toArray(parameterMappingSpecs);
+		setParameterMappingSpecs(parameterMappingSpecs);
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
-	
-	Parameter[] modelParameters = (Parameter[])BeanUtils.getArray(modelParameterList,Parameter.class);
-	return modelParameters;
 }
 
 
@@ -519,7 +533,7 @@ private void initializeParameterMappingSpecs() throws ExpressionException {
  * Creation date: (12/19/2005 3:20:34 PM)
  */
 public void refreshDependencies() {
-	System.out.println("ModelOptimizationSpec.refreshDependencies() not yet implemented");
+	removeUncoupledParameters();
 }
 
 
