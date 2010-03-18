@@ -38,31 +38,27 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoun
 
 public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException {
 	this.log = sessionLog;
-	if (oracleDataSource==null){
-		oracleDataSource = new OracleDataSource();
-		// set DataSource properties
-		oracleDataSource.setURL(argConnectURL);
-		oracleDataSource.setUser(argUserid);
-		oracleDataSource.setPassword(argPassword);
-		oracleDataSource.setConnectionCachingEnabled(true);		
-		// set cache properties    
-		java.util.Properties prop = new java.util.Properties();    
-		prop.setProperty("MinLimit", "1");    
-		prop.setProperty("MaxLimit", "20");
+	oracleDataSource = new OracleDataSource();
+	// set DataSource properties
+	oracleDataSource.setURL(argConnectURL);
+	oracleDataSource.setUser(argUserid);
+	oracleDataSource.setPassword(argPassword);
+	oracleDataSource.setConnectionCachingEnabled(true);
+	// set cache properties    
+	java.util.Properties prop = new java.util.Properties();
+	prop.setProperty("MinLimit", "1");
+	prop.setProperty("MaxLimit", "20");
 //		prop.setProperty("InitialLimit", "3"); // create 3 connections at startup
-		prop.setProperty("InactivityTimeout", "1800");    //  seconds
-		prop.setProperty("AbandonedConnectionTimeout", "900");  //  seconds
-		prop.setProperty("ValidateConnection", "true");
-		oracleDataSource.setConnectionCacheProperties (prop);
-		
-		// when vcell runs in local model, every time reconnnect, it will create a new 
-		// OraclePoolingConnectionFactory which causes same cache error. So add current time 
-		// to cache name.
-		connectionCacheName = "ImplicitCache01" + System.currentTimeMillis();
-		oracleDataSource.setConnectionCacheName(connectionCacheName); // this cache's name
-
-	}
+	prop.setProperty("InactivityTimeout", "1800");    //  seconds
+	prop.setProperty("AbandonedConnectionTimeout", "900");  //  seconds
+	prop.setProperty("ValidateConnection", "true");
+	oracleDataSource.setConnectionCacheProperties (prop);
 	
+	// when vcell runs in local model, every time reconnnect, it will create a new 
+	// OraclePoolingConnectionFactory which causes same cache error. So add current time 
+	// to cache name.
+	connectionCacheName = "ImplicitCache01" + System.currentTimeMillis();
+	oracleDataSource.setConnectionCacheName(connectionCacheName); // this cache's name	
 }
 
 public synchronized void closeAll() throws java.sql.SQLException {
