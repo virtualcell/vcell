@@ -48,23 +48,23 @@ public class MutableEdge implements ProcessEdge {
 		if(edge.substance() != null) { setSubstance(edge.substance()); }
 		if(edge.location() != null) { setLocation(edge.location()); }
 		if(edge.stoichiometry() != null) { setStoichiometry(edge.stoichiometry()); }
-		setSC(edge.sc());
+		setSC(edge.stoichiometricCoeff());
 	}
 
 	public void setProcess(Process process) { 
-		this.process = tray.box().factories().proc().create(process.resource()); 
+		this.process = tray.box().factories().process().create(process.resource()); 
 	}
 	
 	public void setParticipant(Participant participant) { 
-		this.participant = tray.box().factories().part().create(participant.resource()); 
+		this.participant = tray.box().factories().participant().create(participant.resource()); 
 	}
 	
 	public void setSpecies(Species species) { 
-		this.species = tray.box().factories().spec().create(species.resource()); 
+		this.species = tray.box().factories().species().create(species.resource()); 
 	}
 	
 	public void setEntity(Substance entity) { 
-		this.entity = tray.box().factories().subs().create(entity);
+		this.entity = tray.box().factories().substance().create(entity);
 	}
 	
 	public void setEntityType(RDFType entityType) { 
@@ -72,15 +72,15 @@ public class MutableEdge implements ProcessEdge {
 	}
 	
 	public void setSubstance(Substance substance) { 
-		this.substance = tray.box().factories().subs().create(substance); 
+		this.substance = tray.box().factories().substance().create(substance); 
 	}
 	
 	public void setLocation(Location location) { 
-		this.location = tray.box().factories().loca().create(location.resource()); 
+		this.location = tray.box().factories().location().create(location.resource()); 
 	}
 	
 	public void setStoichiometry(Stoichiometry stoichiometry) { 
-		this.stoichiometry = tray.box().factories().stoi().create(stoichiometry.resource()); 
+		this.stoichiometry = tray.box().factories().stoichiometry().create(stoichiometry.resource()); 
 	}
 	
 	public void setSC(float sc) { this.sc = sc; }
@@ -93,7 +93,7 @@ public class MutableEdge implements ProcessEdge {
 	public MutableSubstance substance() { return substance; }
 	public MutableLocation location() { return location; }
 	public MutableStoichiometry stoichiometry() { return stoichiometry; }
-	public float sc() { return sc; }
+	public float stoichiometricCoeff() { return sc; }
 	
 	public Resource resource(SBBox.NamedThing view) { return view != null ? view.resource() : null; }
 	

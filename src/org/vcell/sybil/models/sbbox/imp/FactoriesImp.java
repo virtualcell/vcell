@@ -63,19 +63,19 @@ public class FactoriesImp implements Factories {
 	public SBBox box() { return box; }
 
 	public TypeFactory type() { return typeFac; }
-	public LocationFactory loca() { return locaFac; }
-	public SubstanceFactory subs() { return subsFac; }
+	public LocationFactory location() { return locaFac; }
+	public SubstanceFactory substance() { return subsFac; }
 	public UnitFactory unit() { return unitFac; }
-	public StoichiometryFactory stoi() { return stoiFac; }
-	public SpeciesFactory spec() { return specFac; }
-	public ParticipantFactory part() { return partFac; }
-	public ParticipantLeftFactory partLeft() { return partLeftFac; }
-	public ParticipantRightFactory partRight() { return partRightFac; }
-	public ParticipantCatalystFactory partCat() { return partCatFac; }
-	public InteractionFactory inte() { return inteFac; }
-	public ProcessFactory proc() { return procFac; }
-	public ProcessModelFactory procMod() { return procModFac; }
-	public SystemModelFactory systMod() { return systModFac; }
-	public USTAssumptionFactory ustSump() { return USTSumpFac; }
+	public StoichiometryFactory stoichiometry() { return stoiFac; }
+	public SpeciesFactory species() { return specFac; }
+	public ParticipantFactory participant() { return partFac; }
+	public ParticipantLeftFactory participantLeft() { return partLeftFac; }
+	public ParticipantRightFactory participantRight() { return partRightFac; }
+	public ParticipantCatalystFactory participantCatalyst() { return partCatFac; }
+	public InteractionFactory interaction() { return inteFac; }
+	public ProcessFactory process() { return procFac; }
+	public ProcessModelFactory processModel() { return procModFac; }
+	public SystemModelFactory systemModel() { return systModFac; }
+	public USTAssumptionFactory ustAssumption() { return USTSumpFac; }
 	
 }
