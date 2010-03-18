@@ -298,8 +298,8 @@ public void substitute(Node origNode, Node newNode) throws ExpressionException {
 	  if (children == null) {
 		  return;
 	  }
-	  for (Node node : children) {
-		  node.getDiscontinuities(v);
+	  for (Node child : children) {
+		  child.getDiscontinuities(v);
 	  }
   }
   
