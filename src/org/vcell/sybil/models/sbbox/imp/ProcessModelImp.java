@@ -24,7 +24,7 @@ public class ProcessModelImp extends SBWrapper implements SBBox.MutableProcessMo
 			if(procNode instanceof Resource) { proc = (Resource) procNode; }
 		}
 		SBBox.MutableProcess process = null;
-		if(proc != null) { process = box().factories().proc().open(proc); }
+		if(proc != null) { process = box().factories().process().open(proc); }
 		return process; 
 	}
 

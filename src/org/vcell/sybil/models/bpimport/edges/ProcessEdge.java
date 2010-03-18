@@ -16,6 +16,6 @@ public interface ProcessEdge {
 	public SBBox.Substance substance();
 	public SBBox.Location location();
 	public SBBox.Stoichiometry stoichiometry();
-	public float sc();
+	public float stoichiometricCoeff();
 
 }

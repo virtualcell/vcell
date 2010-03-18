@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.sbml.libsbml.SBMLDocument;
 import org.vcell.sybil.models.bpimport.edges.MutableEdge;
-//import org.vcell.sybil.models.bpimport.table.ProcessTableModel;
+import org.vcell.sybil.models.bpimport.table.ProcessTableModel;
 import org.vcell.sybil.models.io.Exporter;
 import org.vcell.sybil.models.io.Exporter.ExporterSBML;
 import org.vcell.sybil.models.io.Exporter.ExporterSBPAX;
@@ -31,26 +31,26 @@ public class SBWorkView extends SBBasicView {
 	
 	protected MutableSystemModel systemModel;
 	
-	//protected ProcessTableModel tableModel;
+	protected ProcessTableModel tableModel;
 	protected SBMLDocument sbmlDoc;
 	protected BioModel bioModel;
 	
 	public SBWorkView(SBBox box, BioModel bioModel) { 
 		super(box);
 		this.bioModel = bioModel;
-		ustAssumption = box.factories().ustSump().createWithDefaultLabel();
+		ustAssumption = box.factories().ustAssumption().createWithDefaultLabel();
 	}
 	
 	public MutableUSTAssumption ustAssumption() { return ustAssumption; }
-	public Set<RDFType> unmodTypes() { return unmodTypes; }
+	public Set<RDFType> unmodifiableTypes() { return unmodTypes; }
 	
 	public Set<MutableEdge> edges() { return edges; }
 	
 	public void setSystemModel(MutableSystemModel systemModel) { this.systemModel = systemModel; }
 	public MutableSystemModel systemModel() { return systemModel; }
 	
-	//public void setTableModel(ProcessTableModel tableModel) { this.tableModel = tableModel; }
-	//public ProcessTableModel tableModel() { return tableModel; }
+	public void setTableModel(ProcessTableModel tableModel) { this.tableModel = tableModel; }
+	public ProcessTableModel tableModel() { return tableModel; }
 
 	public void setSBMLDoc(SBMLDocument sbmlDoc) { this.sbmlDoc = sbmlDoc; }
 

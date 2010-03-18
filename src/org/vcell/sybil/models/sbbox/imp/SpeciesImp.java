@@ -23,7 +23,7 @@ public class SpeciesImp extends SBWrapper implements SBBox.MutableSpecies {
 		while(stmtIter.hasNext() && substance == null) { 
 			RDFNode dimNode = stmtIter.nextStatement().getObject(); 
 			if(dimNode instanceof Resource) {
-				substance = box().factories().subs().open((Resource)dimNode);
+				substance = box().factories().substance().open((Resource)dimNode);
 			}
 		}
 		return substance; 
@@ -36,7 +36,7 @@ public class SpeciesImp extends SBWrapper implements SBBox.MutableSpecies {
 		while(stmtIter.hasNext() && location == null) { 
 			RDFNode locNode = stmtIter.nextStatement().getObject(); 
 			if(locNode instanceof Resource) { 
-				location = box().factories().loca().open((Resource) locNode);
+				location = box().factories().location().open((Resource) locNode);
 			}
 		}
 		return location; 
