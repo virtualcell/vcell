@@ -471,9 +471,10 @@ public SimpleNode getRootFindingExpression() throws ExpressionException {
 	
 	return addNode;
 }
+
 @Override
 public void getDiscontinuities(Vector<Discontinuity> v)	throws ExpressionException {
-	Discontinuity od = new Discontinuity(new Expression(infixString(SimpleNode.LANGUAGE_DEFAULT)), new Expression(((ASTRelationalNode)this).getRootFindingExpression()));			  
+	Discontinuity od = new Discontinuity(new Expression((SimpleNode)copyTree()), new Expression(getRootFindingExpression()));			  
 	v.add(od);
 	super.getDiscontinuities(v);
 }
