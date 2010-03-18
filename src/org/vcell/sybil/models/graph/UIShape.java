@@ -31,7 +31,7 @@ public interface UIShape<S extends UIShape<S>> {
 	public Set<S> dependents();
 	public Set<S> dependencies();
 	
-	public SmartIter<S> directDescendants();
+	public SmartIter<S> visibleChildren();
 
 	public SmartIter<S> descendants();
 
