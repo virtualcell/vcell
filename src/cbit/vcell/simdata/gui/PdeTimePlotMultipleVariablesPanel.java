@@ -50,7 +50,9 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	private class EventHandler implements ListSelectionListener {
 
 		public void valueChanged(ListSelectionEvent e) {
-			showTimePlot();			
+			if (!e.getValueIsAdjusting()) {
+				showTimePlot();
+			}
 		}
 		
 	}
