@@ -345,18 +345,14 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	Parameter parameter = getParameter(rowIndex);
+	Parameter parameter = (Parameter)getData().get(rowIndex);
 	if (columnIndex == COLUMN_NAME){
 		return parameter.isNameEditable();
-	}else if (columnIndex == COLUMN_DESCRIPTION){
-		return false;
-	}else if (columnIndex == COLUMN_UNIT){
-		return false;
-	}else if (columnIndex == COLUMN_VALUE){
-		return parameter.isExpressionEditable();
-	}else{
-		return false;
 	}
+	if (columnIndex == COLUMN_VALUE){
+		return parameter.isExpressionEditable();
+	}
+	return false;
 }
 
 
@@ -530,7 +526,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
 		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
-	Parameter parameter = getParameter(rowIndex);
+	Parameter parameter = (Parameter)getData().get(rowIndex);
 //	try {
 		switch (columnIndex){
 			case COLUMN_NAME:{
