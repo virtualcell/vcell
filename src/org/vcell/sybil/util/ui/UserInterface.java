@@ -13,12 +13,14 @@ public abstract class UserInterface {
 	public void setTitle(String newName) { frameSpace().setTitle(newName); }
 	public String title() { return frameSpace().title(); }
 	
+	abstract public void stopSyBiL();
+	
 	abstract public UITabbedSpace createTabbedSpace();
 	abstract public UIScrollSpace createScrollSpace(UIComponent comp);
 	abstract public UIImportSpace createImportSpace();
 	abstract public UITextSpace createTextSpace();
 	abstract public UIFileChooserSpace createFileChooserSpace();
-	abstract public UIPortSpace createPortSpace();
+	//abstract public UIPortSpace createPortSpace();
 	abstract public UIInfoDialogSpace createInfoDialogSpace();
 	abstract public UIInfoDialogSpace createSystemMonitorDialogSpace();
 }
