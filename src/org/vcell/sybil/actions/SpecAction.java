@@ -1,8 +1,11 @@
 package org.vcell.sybil.actions;
 
-/*   SpecAction  --- by Oliver Ruebenacker, UCHC --- May 2007 to January 2009
+/*   SpecAction  --- by Oliver Ruebenacker, UCHC --- May 2007 to January 2010
  *   Actions created based on ActionSpecs
  */
+
+import java.awt.Component;
+import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -22,4 +25,6 @@ public abstract class SpecAction extends AbstractAction {
 	
 	public ActionSpecs getSpecs() { return specs; }
 
+	public Component requester(ActionEvent event) { return RequesterProvider.requester(event); }
+	
 }
