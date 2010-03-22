@@ -1,6 +1,7 @@
 package cbit.vcell.geometry.gui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -15,14 +16,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.awt.image.WritableRaster;
 import java.io.File;
+import java.util.BitSet;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -32,11 +38,13 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
+import javax.swing.ListCellRenderer;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
@@ -48,25 +56,288 @@ import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.ZEnforcer;
 
 import loci.formats.AWTImageTools;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
+import cbit.image.VCPixelClass;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.gui.ROIAssistPanel;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */
 public class OverlayEditorPanelJAI extends JPanel{
 
-	
+	public static java.awt.Color[] CONTRAST_COLORS = new java.awt.Color[] {
+		
+		new Color(0xFF000000),//background
+		
+		new Color(0xFFFF0000),
+		new Color(0xFF00FF00),
+		new Color(0xFF0000FF),
+		new Color(0xFFFFFF00),
+		new Color(0xFFFF00FF),
+		new Color(0xFF00FFFF),
+		
+		new Color(0xFFFF8080),
+		new Color(0xFF80FF80),
+		new Color(0xFF8080FF),
+		new Color(0xFFFFFF80),
+		new Color(0xFFFF80FF),
+		new Color(0xFF80FFFF),
+		
+		new Color(0xFFFF4040),
+		new Color(0xFF40FF40),
+		new Color(0xFF4040FF),
+		new Color(0xFFFFFF40),
+		new Color(0xFFFF40FF),
+		new Color(0xFF40FFFF),
+
+		new Color(0xFF0C352A),
+		new Color(0xFFFDC2EB),
+		new Color(0xFF630350),
+		new Color(0xFFC9FA50),
+		new Color(0xFF014305),
+		new Color(0xFFC3E4C8),
+		new Color(0xFF3D260C),
+		new Color(0xFFD5F82B),
+		new Color(0xFF4900C9),
+		new Color(0xFFE0D3BE),
+		new Color(0xFF0A3668),
+		new Color(0xFF84FADE),
+		new Color(0xFF1B15FB),
+		new Color(0xFFCEFB00),
+		new Color(0xFF67068E),
+		new Color(0xFFF6E20A),
+		new Color(0xFF3D2A4D),
+		new Color(0xFF9EFB63),
+		new Color(0xFF76162A),
+		new Color(0xFF8AFA93),
+		new Color(0xFF0536C5),
+		new Color(0xFFE6D06F),
+		new Color(0xFF9A0D10),
+		new Color(0xFFF4D22E),
+		new Color(0xFF113994),
+		new Color(0xFFBCD4A9),
+		new Color(0xFF3B21A9),
+		new Color(0xFFDEB5D7),
+		new Color(0xFF5E2F03),
+		new Color(0xFF49FDF1),
+		new Color(0xFF741173),
+		new Color(0xFFE8BF90),
+		new Color(0xFF1A5B02),
+		new Color(0xFF64FBB0),
+		new Color(0xFF960485),
+		new Color(0xFFA2E484),
+		new Color(0xFF443188),
+		new Color(0xFF6BE7FB),
+		new Color(0xFF185557),
+		new Color(0xFF89E0C8),
+		new Color(0xFF543F37),
+		new Color(0xFFA9E845),
+		new Color(0xFF4028EF),
+		new Color(0xFF98CFEF),
+		new Color(0xFFAC0C64),
+		new Color(0xFF98F52E),
+		new Color(0xFF6A14E6),
+		new Color(0xFFBAE711),
+		new Color(0xFF822651),
+		new Color(0xFF8DFF0D),
+		new Color(0xFF3734D1),
+		new Color(0xFFF6BA58),
+		new Color(0xFFB5132B),
+		new Color(0xFFD7C847),
+		new Color(0xFF415220),
+		new Color(0xFFDAD112),
+		new Color(0xFF841B91),
+		new Color(0xFFBCD25C),
+		new Color(0xFFA200D7),
+		new Color(0xFFD2B1B4),
+		new Color(0xFFCC1303),
+		new Color(0xFFA8B6FD),
+		new Color(0xFF5E3C60),
+		new Color(0xFF2CFFB4),
+		new Color(0xFF016292),
+		new Color(0xFFB1B8C5),
+		new Color(0xFFAB05B0),
+		new Color(0xFFC0A7EF),
+		new Color(0xFF8F14BC),
+		new Color(0xFFEA93E8),
+		new Color(0xFF952F32),
+		new Color(0xFF59F955),
+		new Color(0xFF6C2AC0),
+		new Color(0xFFF9B510),
+		new Color(0xFFF40715),
+		new Color(0xFF49F29A),
+		new Color(0xFF1B6F3C),
+		new Color(0xFF48EAC5),
+		new Color(0xFF555E01),
+		new Color(0xFFBDC62F),
+		new Color(0xFF2B6070),
+		new Color(0xFFB1BB8D),
+		new Color(0xFF5B3CA7),
+		new Color(0xFF11F6FA),
+		new Color(0xFF81441F),
+		new Color(0xFF74DC79),
+		new Color(0xFF2D50C1),
+		new Color(0xFF7EC3DA),
+		new Color(0xFF0463D2),
+		new Color(0xFFE8AB37),
+		new Color(0xFFCA0C8F),
+		new Color(0xFF68EA3C),
+		new Color(0xFF2057E5),
+		new Color(0xFF8ED34C),
+		new Color(0xFF8C1EEF),
+		new Color(0xFF8CC688),
+		new Color(0xFFB20DF0),
+		new Color(0xFFA3CF1E),
+		new Color(0xFF0A8156),
+		new Color(0xFF1DECD7),
+		new Color(0xFFE90977),
+		new Color(0xFFDD93A0),
+		new Color(0xFFAE2399),
+		new Color(0xFF59F116),
+		new Color(0xFF16891D),
+		new Color(0xFF38D4FD),
+		new Color(0xFFC91E6E),
+		new Color(0xFF69CAAB),
+		new Color(0xFF415C99),
+		new Color(0xFFF09360),
+		new Color(0xFFBC15C4),
+		new Color(0xFF00FFA2),
+		new Color(0xFFE61A40),
+		new Color(0xFFFB808F),
+		new Color(0xFFCA3021),
+		new Color(0xFF38F044),
+		new Color(0xFF3C50FC),
+		new Color(0xFFFE8E33),
+		new Color(0xFFE206CD),
+		new Color(0xFFD4AD00),
+		new Color(0xFF963A8E),
+		new Color(0xFF38E471),
+		new Color(0xFFFC01B8),
+		new Color(0xFFC5A15A),
+		new Color(0xFF2F6FA8),
+		new Color(0xFFFE6FB0),
+		new Color(0xFF726721),
+		new Color(0xFF0FF672),
+		new Color(0xFFB64235),
+		new Color(0xFF51D183),
+		new Color(0xFFA05804),
+		new Color(0xFF45C7D6),
+		new Color(0xFF9E485C),
+		new Color(0xFFE29A13),
+		new Color(0xFF407D44),
+		new Color(0xFF8AA8B4),
+		new Color(0xFF905741),
+		new Color(0xFF15E997),
+		new Color(0xFF815186),
+		new Color(0xFF9DB345),
+		new Color(0xFF1AA200),
+		new Color(0xFFABB806),
+		new Color(0xFF6948FD),
+		new Color(0xFF889EE4),
+		new Color(0xFF893DDE),
+		new Color(0xFFAD8FD3),
+		new Color(0xFF676D4E),
+		new Color(0xFF7ACB14),
+		new Color(0xFFB02EDC),
+		new Color(0xFFE16DD6),
+		new Color(0xFFD3394E),
+		new Color(0xFF85AE74),
+		new Color(0xFFED380F),
+		new Color(0xFF55AEF6),
+		new Color(0xFF5F8017),
+		new Color(0xFF1BF41B),
+		new Color(0xFF7554C0),
+		new Color(0xFF00FA34),
+		new Color(0xFFDF23A8),
+		new Color(0xFFCD818A),
+		new Color(0xFFFE179C),
+		new Color(0xFFC171FE),
+		new Color(0xFF15A041),
+		new Color(0xFF0DCFE8),
+		new Color(0xFFF011EB),
+		new Color(0xFF44D433),
+		new Color(0xFF0886F2),
+		new Color(0xFF57C356),
+		new Color(0xFF0598A4),
+		new Color(0xFF46BA9D),
+		new Color(0xFF527C6E),
+		new Color(0xFFB39D1B),
+		new Color(0xFF616E8B),
+		new Color(0xFFE76E80),
+		new Color(0xFF6163DC),
+		new Color(0xFF65A3BE),
+		new Color(0xFF06A47D),
+		new Color(0xFF8EAD1D),
+		new Color(0xFF3F8585),
+		new Color(0xFF11CDB9),
+		new Color(0xFFC13EAA),
+		new Color(0xFFE754F4),
+		new Color(0xFF2E80E0),
+		new Color(0xFF728DF0),
+		new Color(0xFFB84E74),
+		new Color(0xFFFF6255),
+		new Color(0xFF5874B2),
+		new Color(0xFFF25A98),
+		new Color(0xFFBB5E1A),
+		new Color(0xFF9C869A),
+		new Color(0xFF00B550),
+		new Color(0xFFAD8371),
+		new Color(0xFF8F7B03),
+		new Color(0xFFB073BA),
+		new Color(0xFFBA36FE),
+		new Color(0xFF11B6FF),
+		new Color(0xFFDE3B85),
+		new Color(0xFF7790AC),
+		new Color(0xFFF23769),
+		new Color(0xFF16D351),
+		new Color(0xFF06BF23),
+		new Color(0xFFEC711B),
+		new Color(0xFF38A330),
+		new Color(0xFF8C76F2),
+		new Color(0xFF259C8F),
+		new Color(0xFF04E60C),
+		new Color(0xFF3989BA),
+		new Color(0xFF649A93),
+		new Color(0xFF966A6C),
+		new Color(0xFF0AC98F),
+		new Color(0xFFA05AAE),
+		new Color(0xFF6FA92E),
+		new Color(0xFF5473F8),
+		new Color(0xFF3ACA10),
+		new Color(0xFF459A5A),
+		new Color(0xFFC759E2),
+		new Color(0xFFD934E9),
+		new Color(0xFF21B5AC),
+		new Color(0xFF78910B),
+		new Color(0xFFBF8109),
+		new Color(0xFFA77336),
+		new Color(0xFF00BBCB),
+		new Color(0xFFB86652),
+		new Color(0xFFD551B7),
+		new Color(0xFFFE4D1E),
+		new Color(0xFF1CA9D9),
+		new Color(0xFF5E9841),
+		new Color(0xFFA161E8),
+		new Color(0xFF886FA3),
+		new Color(0xFFD36167),
+		new Color(0xFFE45545),
+		new Color(0xFFEC41CB),
+		new Color(0xFFF45B01),
+		new Color(0xFFCF6B2F),
+		new Color(0xFF47B400),
+		new Color(0xFFC15E96),
+		new Color(0xFF23B564)
+};
+
 	private static final long serialVersionUID = 1L;
 	private static final double SHORT_TO_BYTE_FACTOR = 256;
 	
@@ -78,6 +349,12 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public static final String FRAP_DATA_TIMEPLOTROI_PROPERTY = "FRAP_DATA_TIMEPLOTROI_PROPERTY";
 	public static final String FRAP_DATA_CURRENTROI_PROPERTY = "FRAP_DATA_CURRENTROI_PROPERTY";
 	public static final String FRAP_DATA_UNDOROI_PROPERTY = "FRAP_DATA_UNDOROI_PROPERTY";
+	public static final String FRAP_DATA_DELETEROI_PROPERTY = "FRAP_DATA_DELETEROI_PROPERTY";
+	public static final String FRAP_DATA_ADDNEWROI_PROPERTY = "FRAP_DATA_ADDNEWROI_PROPERTY";
+	public static final String FRAP_DATA_SHOWROIASSIST_PROPERTY = "FRAP_DATA_SHOWROIASSIST_PROPERTY";
+	public static final String FRAP_DATA_CLEARROI_PROPERTY = "FRAP_DATA_CLEARROI_PROPERTY";
+	public static final String FRAP_DATA_CHECKROI_PROPERTY = "FRAP_DATA_CHECKROI_PROPERTY";
+	public static final String FRAP_DATA_BLEND_PROPERTY = "FRAP_DATA_BLEND_PROPERTY";
 	//used for new frap
 	public static final int DISPLAY_WITH_ROIS = 0;
 	public static final int DEFINE_CROP = 1;
@@ -123,6 +400,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private JLabel viewTLabel;
 	private JLabel viewZLabel;
 	private JLabel editRoiLabel;
+	private JButton checkRegionsButton;
+	private JComboBox blendComboBox;
+	private JLabel lblBlend;
 	
 	private JButton addROIButton;
 	private JButton delROIButton;
@@ -131,6 +411,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 	UndoableEditSupport undoableEditSupport;
 	ROI undoableROI;
 		
+	private BufferedImage[] allROICompositeImageArr;
+	
 	private Hashtable<String, Cursor> cursorsForROIsHash = null;
 	
 	public interface CustomROIImport {
@@ -146,26 +428,55 @@ public class OverlayEditorPanelJAI extends JPanel{
 	ActionListener ROI_COMBOBOX_ACTIONLISTENER =
 		new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				delROIButton.setEnabled(((ComboboxROIName)roiComboBox.getSelectedItem()).isEditable());				
-				String selectedName = ((ComboboxROIName)roiComboBox.getSelectedItem()).getROIName();
-				if (!selectedName.equals(roiName)) {					
-					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,((ComboboxROIName)roiComboBox.getSelectedItem()).getROIName());
-					roiName = selectedName;
+				ComboboxROIName selectedItem = ((ComboboxROIName)roiComboBox.getSelectedItem());
+				if(selectedItem != null){
+					delROIButton.setEnabled(selectedItem.isDeleteable());
+					checkRegionsButton.setEnabled(true);
+					String selectedName = selectedItem.getROIName();
+					if (!selectedName.equals(roiName)) {					
+						firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,selectedItem.getROIName());
+						roiName = selectedName;
+					}
+				}else{
+					delROIButton.setEnabled(false);
+					checkRegionsButton.setEnabled(false);
+					roiName = null;
+					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,null);
 				}
 			}
 		};
-	private class ComboboxROIName {
+	public static class ComboboxROIName {
 		private String roiName;
-		private boolean bEdit;
-		public ComboboxROIName(String roiName,boolean bEdit){
+		private boolean bNameEdit;
+//		private boolean bPaintable;
+//		private boolean bErasable;
+		private boolean bDeleteable;
+		private Color highlightColor;
+		public ComboboxROIName(String roiName,boolean bNameEdit,boolean bDeleteable,/*boolean bPaintable,boolean bErasable,*/Color highlightColor){
 			this.roiName = roiName;
-			this.bEdit = bEdit;
+			this.bNameEdit = bNameEdit;
+//			this.bPaintable = bPaintable;
+//			this.bErasable = bErasable;
+			this.bDeleteable = bDeleteable;
+			this.highlightColor = highlightColor;
 		}
 		public String getROIName(){
 			return roiName;
 		}
-		public boolean isEditable(){
-			return bEdit;
+		public boolean isNameEditable(){
+			return bNameEdit;
+		}
+//		public boolean isPaintable(){
+//			return bPaintable;
+//		}
+//		public boolean isErasable(){
+//			return bErasable;
+//		}
+		public Color getHighlightColor(){
+			return highlightColor;
+		}
+		public boolean isDeleteable(){
+			return bDeleteable;
 		}
 		public String toString(){
 			return getROIName();
@@ -185,6 +496,18 @@ public class OverlayEditorPanelJAI extends JPanel{
 			}
 		};
 
+		private ActionListener addROIActionListener  = new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				ComboboxROIName[] comboboxROINameArr = new ComboboxROIName[0];
+				if(roiComboBox.getItemCount() > 0){
+					comboboxROINameArr = new ComboboxROIName[roiComboBox.getItemCount()];
+					for (int i = 0; i < comboboxROINameArr.length; i++) {
+						comboboxROINameArr[i] =(ComboboxROIName)roiComboBox.getModel().getElementAt(i);
+					}
+				}
+				firePropertyChange(FRAP_DATA_ADDNEWROI_PROPERTY, comboboxROINameArr, null);
+			}
+		};
 	/**
 	 * This is the default constructor
 	 */
@@ -197,26 +520,16 @@ public class OverlayEditorPanelJAI extends JPanel{
 		this.undoableEditSupport = undoableEditSupport;
 	}
 	
-	private boolean isAutoCroppable(){
-		try {
-			Rectangle cropRectangle = null;
-			if(imageDataset != null){
-				cropRectangle = imageDataset.getNonzeroBoundingRectangle();
-			}
-			else
-			{
-				return false;
-			}
+	public static boolean isAutoCroppable(Rectangle cropRectangle,ImageDataset checkThisImageDataset){
+		if(cropRectangle == null || checkThisImageDataset == null){
+			throw new IllegalArgumentException("Crop Rectangle and Imagedataset cannot be null.");
+		}
 			if(cropRectangle != null &&
 				cropRectangle.x == 0 && cropRectangle.y == 0 &&
-				cropRectangle.width == imageDataset.getISize().getX() &&
-				cropRectangle.height == imageDataset.getISize().getY()){
+				cropRectangle.width == checkThisImageDataset.getISize().getX() &&
+				cropRectangle.height == checkThisImageDataset.getISize().getY()){
 				return false;
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
 		return true;
 	}
 	private void waitCursor(boolean bOn){
@@ -325,19 +638,20 @@ public class OverlayEditorPanelJAI extends JPanel{
 		autoCropButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				try {
-					waitCursor(true);
-					if(isAutoCroppable()){
-						Rectangle cropRect = null;
-						if(imageDataset != null){
-							cropRect = imageDataset.getNonzeroBoundingRectangle();
+					if(imageDataset != null){
+						waitCursor(true);
+						Rectangle cropRect = imageDataset.getNonzeroBoundingRectangle();
+						if(cropRect == null || !isAutoCroppable(cropRect, imageDataset)){
+							DialogUtils.showWarningDialog(OverlayEditorPanelJAI.this, "No zero valued outer border found.  Use manual crop tool instead.");
+							return;
 						}
 						imagePane.setCrop(
-								new Point(
-									(int)(cropRect.x*imagePane.getZoom()),
-									(int)(cropRect.y*imagePane.getZoom())),
-								new Point(
-									(int)((cropRect.x+cropRect.width)*imagePane.getZoom()),
-									(int)((cropRect.y+cropRect.height)*imagePane.getZoom())));
+							new Point(
+								(int)(cropRect.x*imagePane.getZoom()),
+								(int)(cropRect.y*imagePane.getZoom())),
+							new Point(
+								(int)((cropRect.x+cropRect.width)*imagePane.getZoom()),
+								(int)((cropRect.y+cropRect.height)*imagePane.getZoom())));
 						waitCursor(false);
 						if(!cropConfirm(cropRect)){
 							imagePane.setCrop(null, null);
@@ -347,8 +661,31 @@ public class OverlayEditorPanelJAI extends JPanel{
 						imagePane.setCrop(null, null);
 						firePropertyChange(FRAP_DATA_CROP_PROPERTY, null,cropRect);						
 					}else{
-						DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this, "AutoCrop: No zero values around outer edges.");
+						DialogUtils.showErrorDialog(OverlayEditorPanelJAI.this, "No imageDataset to perform auto-crop on.");
 					}
+//					if(isAutoCroppable()){
+//						Rectangle cropRect = null;
+//						if(imageDataset != null){
+//							cropRect = imageDataset.getNonzeroBoundingRectangle();
+//						}
+//						imagePane.setCrop(
+//								new Point(
+//									(int)(cropRect.x*imagePane.getZoom()),
+//									(int)(cropRect.y*imagePane.getZoom())),
+//								new Point(
+//									(int)((cropRect.x+cropRect.width)*imagePane.getZoom()),
+//									(int)((cropRect.y+cropRect.height)*imagePane.getZoom())));
+//						waitCursor(false);
+//						if(!cropConfirm(cropRect)){
+//							imagePane.setCrop(null, null);
+//							return;
+//						}
+//						waitCursor(true);
+//						imagePane.setCrop(null, null);
+//						firePropertyChange(FRAP_DATA_CROP_PROPERTY, null,cropRect);						
+//					}else{
+//						DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this, "AutoCrop: No zero values around outer edges.");
+//					}
 				} catch (Exception e1) {
 					e1.printStackTrace();
 					DialogUtils.showErrorDialog(OverlayEditorPanelJAI.this, "Error AutoCrop:\n"+e1.getMessage());
@@ -365,8 +702,13 @@ public class OverlayEditorPanelJAI extends JPanel{
 //		topJPanel.add(autoCropButton, gridBagConstraints_1);
 
 		importROIMaskButton = new JButton(new ImageIcon(getClass().getResource("/images/importROI.gif")));
+		importROIMaskButton.setVisible(false);
 		importROIMaskButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
+				if(customROIImport == null){
+					DialogUtils.showErrorDialog(OverlayEditorPanelJAI.this, "No import method is available.");
+					return;
+				}
 				File inputFile = null;
 				IFormatReader iFormatReader = null;
 				try {
@@ -421,6 +763,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 		clearROIbutton = new JButton(new ImageIcon(getClass().getResource("/images/clearROI.gif")));
 		clearROIbutton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
+				if(roiComboBox.getItemCount() == 0){
+					giveROIRequiredWarning("clear ROI");
+					return;
+				}
+				firePropertyChange(FRAP_DATA_CLEARROI_PROPERTY, ((ComboboxROIName)roiComboBox.getSelectedItem()), null);
 				clearROI();
 			}
 		});
@@ -470,7 +817,12 @@ public class OverlayEditorPanelJAI extends JPanel{
 		roiAssistButton = new JButton(new ImageIcon(getClass().getResource("/images/assistantROI.gif")));
 		roiAssistButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				showAssistDialog();
+				if(roiComboBox.getItemCount() == 0){
+					giveROIRequiredWarning("ROI Assistant");
+					return;
+				}
+				ComboboxROIName comboboxroiname = (ComboboxROIName)roiComboBox.getSelectedItem();
+				firePropertyChange(FRAP_DATA_SHOWROIASSIST_PROPERTY, null,comboboxroiname);
 			}
 		});
 //		roiAssistButton.setText(ROI_ASSIST_TEXT);
@@ -547,7 +899,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 
 		final JPanel editROIButtonPanel = new JPanel();
 		final GridBagLayout gridBagLayout_3 = new GridBagLayout();
-		gridBagLayout_3.columnWidths = new int[] {0,7,7};
+		gridBagLayout_3.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
+		gridBagLayout_3.columnWidths = new int[] {0,7,7, 0, 0, 0};
 		editROIButtonPanel.setLayout(gridBagLayout_3);
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.weightx = 0;
@@ -561,44 +914,38 @@ public class OverlayEditorPanelJAI extends JPanel{
 		this.add(getJScrollPane2(), gridBagConstraints12);
 
 		roiComboBox = new JComboBox();
+		roiComboBox.setRenderer(new ListCellRenderer() {
+			private DefaultListCellRenderer listCellRender = new DefaultListCellRenderer();
+			public Component getListCellRendererComponent(JList list, Object value,
+					int index, boolean isSelected, boolean cellHasFocus) {
+				ComboboxROIName comboboxROIName = (ComboboxROIName)value;
+				if(comboboxROIName == null){//return blank
+					return listCellRender.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus);
+				}
+				if(comboboxROIName.getHighlightColor() == null){//return text only
+					return listCellRender.getListCellRendererComponent(list, comboboxROIName.getROIName(), index, isSelected, cellHasFocus);
+				}
+				//return text with small color box
+				Icon icon = new ColorIcon(20,20,comboboxROIName.getHighlightColor());
+				JLabel jlable = (JLabel)listCellRender.getListCellRendererComponent(list, icon, index, isSelected, cellHasFocus);
+				jlable.setText(comboboxROIName.getROIName());
+				return jlable;
+			}
+		});
 		roiComboBox.addActionListener(ROI_COMBOBOX_ACTIONLISTENER);
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_1.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_1.insets = new Insets(4, 4, 4, 5);
 		gridBagConstraints_1.weightx = 1;
 		gridBagConstraints_1.gridy = 0;
 		gridBagConstraints_1.gridx = 0;
 		editROIButtonPanel.add(roiComboBox, gridBagConstraints_1);
 
 		addROIButton = new JButton();
-		addROIButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				try{
-					String newROIName = PopupGenerator.showInputDialog0(OverlayEditorPanelJAI.this, "New ROI Name", "");
-					if(newROIName == null || newROIName.length() == 0){
-						PopupGenerator.showErrorDialog(OverlayEditorPanelJAI.this, "No ROI Name entered, try again.");
-					}else{
-						boolean bNameOK = true;
-						for (int i = 0; i < roiComboBox.getItemCount(); i++) {
-							if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(newROIName)){
-								bNameOK = false;
-								break;
-							}
-						}
-						if(bNameOK){
-							addROIName(newROIName, true, newROIName);
-						}else{
-							PopupGenerator.showErrorDialog(OverlayEditorPanelJAI.this, "ROI Name "+newROIName+" already used, try again.");
-						}
-					}
-				}catch(UtilCancelException cancelExc){
-					//do Nothing
-				}
-			}
-		});
-		addROIButton.setText("Add ROI");
+		addROIButton.addActionListener(addROIActionListener);
+		addROIButton.setText("Add ROI...");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-		gridBagConstraints_3.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_3.insets = new Insets(4, 4, 4, 5);
 		gridBagConstraints_3.gridy = 0;
 		gridBagConstraints_3.gridx = 1;
 		editROIButtonPanel.add(addROIButton, gridBagConstraints_3);
@@ -606,15 +953,60 @@ public class OverlayEditorPanelJAI extends JPanel{
 		delROIButton = new JButton();
 		delROIButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				roiComboBox.removeItemAt(roiComboBox.getSelectedIndex());
+				firePropertyChange(FRAP_DATA_DELETEROI_PROPERTY, ((ComboboxROIName)roiComboBox.getSelectedItem()), null);
+//				roiComboBox.removeItemAt(roiComboBox.getSelectedIndex());
+//				if(roiComboBox.getItemCount() == 0){
+//					roiComboBox.setEnabled(false);
+//				}
 			}
 		});
-		delROIButton.setText("Delete ROI");
+		delROIButton.setText("Delete ROI...");
+		delROIButton.setEnabled(false);
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-		gridBagConstraints_4.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_4.insets = new Insets(4, 4, 4, 5);
 		gridBagConstraints_4.gridy = 0;
 		gridBagConstraints_4.gridx = 2;
 		editROIButtonPanel.add(delROIButton, gridBagConstraints_4);
+		
+		checkRegionsButton = new JButton("Check...");
+		checkRegionsButton.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				firePropertyChange(FRAP_DATA_CHECKROI_PROPERTY, ((ComboboxROIName)roiComboBox.getSelectedItem()), null);
+			}
+		});
+		checkRegionsButton.setEnabled(false);
+		GridBagConstraints gbc_checkRegionsButton = new GridBagConstraints();
+		gbc_checkRegionsButton.insets = new Insets(4, 4, 4, 5);
+		gbc_checkRegionsButton.gridx = 3;
+		gbc_checkRegionsButton.gridy = 0;
+		editROIButtonPanel.add(checkRegionsButton, gbc_checkRegionsButton);
+		
+		lblBlend = new JLabel("blend");
+		GridBagConstraints gbc_lblBlend = new GridBagConstraints();
+		gbc_lblBlend.insets = new Insets(4, 8, 4, 2);
+		gbc_lblBlend.anchor = GridBagConstraints.EAST;
+		gbc_lblBlend.gridx = 4;
+		gbc_lblBlend.gridy = 0;
+		editROIButtonPanel.add(lblBlend, gbc_lblBlend);
+		
+		blendComboBox = new JComboBox();
+		for (int i = 0; i <= 100; i+= 10) {
+			blendComboBox.insertItemAt(new Integer(i), i/10);
+		}
+		blendComboBox.setSelectedItem(new Integer(50));
+		blendComboBox.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				firePropertyChange(FRAP_DATA_BLEND_PROPERTY,null,  (Integer)blendComboBox.getSelectedItem());
+			}
+		});
+		GridBagConstraints gbc_blendComboBox = new GridBagConstraints();
+		gbc_blendComboBox.insets = new Insets(4, 4, 4, 4);
+		gbc_blendComboBox.fill = GridBagConstraints.HORIZONTAL;
+		gbc_blendComboBox.gridx = 5;
+		gbc_blendComboBox.gridy = 0;
+		editROIButtonPanel.add(blendComboBox, gbc_blendComboBox);
 		
 		roiDrawButtonGroup.add(paintButton);
 		roiDrawButtonGroup.add(eraseButton);
@@ -625,31 +1017,28 @@ public class OverlayEditorPanelJAI extends JPanel{
 		BeanUtils.enableComponents(editROIPanel, false);
 	}
 	
-	public void showAssistDialog()
+	public ROI showAssistDialog(ROI originalROI,BitSet maskBitSet,final boolean bInvertThreshold/*,final boolean bInvertMask,final boolean bNeedsValidation*/)
 	{
-		//only check when doing roiAssist for bleached, this is actually used by VFRAP. (VCell has Cell ROI only)
-		if(getRoiSouceData().getCurrentlyDisplayedROI().getROIName().equals(ROISourceData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&
-				getRoiSouceData().getRoi(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)
-		{
-			DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this,"Cell ROI must be defined before using ROI Assist Tool to create Bleached ROI.");
-			return;
-		}
 		JDialog roiDialog = new JDialog((JFrame)BeanUtils.findTypeParentOfComponent(OverlayEditorPanelJAI.this, JFrame.class));
 		roiDialog.setTitle("Create Region of Interest (ROI) using intensity thresholding");
 		roiDialog.setModal(true);
 		ROIAssistPanel roiAssistPanel = new ROIAssistPanel();
-		ROI originalROI = null;
-		try{
-			originalROI = new ROI(roi);
-		}catch(Exception ex){
-			ex.printStackTrace();
-			//can't happen
-		}
-		roiAssistPanel.init(roiDialog, originalROI, getRoiSouceData(),OverlayEditorPanelJAI.this);
+//		ROI originalROI = null;
+//		try{
+//			if(roi != null){
+//				originalROI = new ROI(roi);
+//			}
+//		}catch(Exception ex){
+//			ex.printStackTrace();
+//			//can't happen
+//		}
+		roiAssistPanel.init(roiDialog, originalROI, getRoiSouceData(),OverlayEditorPanelJAI.this,maskBitSet,bInvertThreshold/*,bInvertMask,bNeedsValidation*/);
 		roiDialog.setContentPane(roiAssistPanel);
 		roiDialog.pack();
-		roiDialog.setSize(400,200);
+//		roiDialog.setSize(400,200);
 		ZEnforcer.showModalDialogOnTop(roiDialog, OverlayEditorPanelJAI.this);
+		
+		return roiAssistPanel.getFinalResultROI();
 	}
 	
 	public void adjustComponentsForVFRAP(int choice)
@@ -676,6 +1065,10 @@ public class OverlayEditorPanelJAI extends JPanel{
 			editRoiLabel.setEnabled(true);
 			addROIButton.setVisible(false);
 			delROIButton.setVisible(false);
+			checkRegionsButton.setVisible(false);
+			lblBlend.setVisible(false);
+			blendComboBox.setVisible(false);
+			
 		}
 		else if(choice == DEFINE_CROP)
 		{
@@ -687,7 +1080,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			contrastButtonMinus.setEnabled(false);
 			cropButton.setEnabled(true);
 			cropButton.setSelected(true);//paint button will not be selected
-			autoCropButton.setEnabled(isAutoCroppable());
+			autoCropButton.setEnabled(true);
 			paintButton.setSelected(false);
 			paintButton.setEnabled(false);
 			paintButton.setFocusPainted(false);
@@ -706,6 +1099,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 //			viewZLabel.setVisible(false);
 			addROIButton.setVisible(false);
 			delROIButton.setVisible(false);
+			checkRegionsButton.setVisible(false);
+			lblBlend.setVisible(false);
+			blendComboBox.setVisible(false);
 		}
 		else if(choice == DEFINE_CELLROI || choice == DEFINE_BLEACHEDROI || choice == DEFINE_BACKGROUNDROI)
 		{
@@ -732,6 +1128,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 //			viewZLabel.setVisible(false);
 			addROIButton.setVisible(false);
 			delROIButton.setVisible(false);
+			checkRegionsButton.setVisible(false);
+			lblBlend.setVisible(false);
+			blendComboBox.setVisible(false);
 		}
 	}
 	
@@ -761,6 +1160,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 //		viewZLabel.setVisible(true);
 		addROIButton.setVisible(true);
 		delROIButton.setVisible(true);
+		checkRegionsButton.setVisible(true);
+		lblBlend.setVisible(true);
+		blendComboBox.setVisible(true);
 		
 		roiDrawButtonGroup.add(paintButton);
 		roiDrawButtonGroup.add(eraseButton);
@@ -781,33 +1183,48 @@ public class OverlayEditorPanelJAI extends JPanel{
 	}
 	
 	private void refreshROI(){
-		if (roi!=null && imageDataset != null){
+		if (roi!=null/* && imageDataset != null*/){
 //			BufferedImage highlightImage = createHighlightImageFromROI();
 //			short[] highlightImageWritebackBuffer = roi.getRoiImages()[getRoiImageIndex()].getPixels();
+//			getImagePane().setAllROICompositeImage((allROICompositeImageArr==null?null:allROICompositeImageArr[getRoiImageIndex()]));
 			getImagePane().setHighlightImageAndWritebackBuffer(
-				createHighlightImageFromROI(),
+				createHighlightImageFromROI(getROI()),
 				roi.getRoiImages()[getRoiImageIndex()].getPixels());
 		}else{
+//			getImagePane().setAllROICompositeImage(null);
 			getImagePane().setHighlightImageAndWritebackBuffer(null,null);
 		}
+		
+		getImagePane().setAllROICompositeImage((allROICompositeImageArr==null?null:allROICompositeImageArr[getRoiImageIndex()]));
 	}
 
+	public Hashtable<String, Color> getAllCompositeROINamesAndColors(){
+		Hashtable<String, Color> roiNameColor = new Hashtable<String, Color>();
+		for (int i = 0; i < roiComboBox.getItemCount(); i++) {
+			roiNameColor.put(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName(), ((ComboboxROIName)roiComboBox.getItemAt(i)).getHighlightColor());
+		}
+		return roiNameColor;
+	}
 	public ROI getROI(){
 		return roi;
 	}
 	
+	public void setModeRemoveROIWhenPainting(boolean bMode){
+		imagePane.setModeRemoveROIWhenPainting(bMode);
+	}
+	public void setBlendPercent(int blendPercent){
+		imagePane.setBlendPercent(blendPercent);
+	}
 	/**
 	 * Method setROI.
 	 * @param argROI ROI
 	 */
-	public void setROI(ROI argROI)
-	{
-		if (argROI != null /*&& roi != argROI*/ /*&& (this.isShowing() || roi == null)*/)
-		{
+	public void setROI(ROI argROI){
+		if (argROI != null /*&& roi != argROI*/ /*&& (this.isShowing() || roi == null)*/){
 			roi = argROI;
 			roiName = roi.getROIName();
 			
-			refreshROI();
+//			refreshROI();
 			if(roi != null){
 				for (int i = 0; i < roiComboBox.getItemCount(); i++) {
 					if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(roi.getROIName())){
@@ -817,7 +1234,14 @@ public class OverlayEditorPanelJAI extends JPanel{
 				}
 			}
 			updateROICursor();
+		}else{
+//			if(roiComboBox.getItemCount() != 0){
+//				throw new Exception("ROI cannot be null when ROI combobox is not empty");
+//			}
+			roi = null;
+			roiName =  null;
 		}
+		refreshROI();
 	}
 	
 	public void setTimeIndex(int timeIndex){
@@ -860,13 +1284,15 @@ public class OverlayEditorPanelJAI extends JPanel{
 //			byteData[2][i] = byteData[0][i];
 		}
 //		return AWTImageTools.makeImage(byteData, width, height,false);
-		Image tempImage = AWTImageTools.makeImage(byteData, width, height,false);
+//		Image tempImage = AWTImageTools.makeImage(byteData, width, height,false);
 		int[] cmap = new int[256];
 		//colormap (grayscale)
 		for(int i=0;i<256;i+= 1){
 			int iv = (int)(0x000000FF&i);
 			cmap[i] = 0xFF000000 | iv<<16 | iv<<8 | i;
-			
+//			if(i<16){
+//				cmap[i] = 0xFFFF0000;
+//			}
 		}
 		IndexColorModel indexColorModel =
 			new java.awt.image.IndexColorModel(
@@ -875,7 +1301,17 @@ public class OverlayEditorPanelJAI extends JPanel{
 				-1/*NO transparent single pixel*/,
 				java.awt.image.DataBuffer.TYPE_BYTE);
 
-		return AWTImageTools.makeBuffered(tempImage, indexColorModel);
+		WritableRaster raster = indexColorModel.createCompatibleWritableRaster(image.getNumX(), image.getNumY());
+		for (int i = 0; i < byteData[0].length; i++) {
+			((DataBufferByte)raster.getDataBuffer()).getData()[i] = byteData[0][i];
+		}
+	    BufferedImage result = new BufferedImage(indexColorModel,raster, false, null);
+//	    Graphics2D g = result.createGraphics();
+//	    g.drawImage(result, 0, 0, null);
+//	    g.dispose();
+
+	    return result;
+//		return AWTImageTools.makeBuffered(tempImage, indexColorModel);
 	}
 	
 	public void displaySpecialData(short[] specialData,int width, int height) throws Exception{
@@ -891,8 +1327,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 	 * Method createHighlightImageFromROI.
 	 * @return BufferedImage
 	 */
-	private BufferedImage createHighlightImageFromROI(){
-		UShortImage roiImage = roi.getRoiImages()[getRoiImageIndex()];
+	private BufferedImage createHighlightImageFromROI(ROI highlightImageROI){
+		UShortImage roiImage = highlightImageROI.getRoiImages()[getRoiImageIndex()];
 		int width = roiImage.getNumX();
 		int height = roiImage.getNumY();
 		byte[][] highlightData = new byte[1][width*height];
@@ -910,7 +1346,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 //			int iv = (int)(0x000000FF&i);
 //			cmap[i] = 0xFF000000 | iv<<16 | iv<<8 | i;
 			if(i != 0){
-				cmap[i] = 0xFFFFFF00;
+				cmap[i] = 0xFF000000 | highlightColor.getRGB();//0xFFFFFF00;
 			}else{
 				cmap[1] = 0xFF000000;
 			}
@@ -932,11 +1368,17 @@ public class OverlayEditorPanelJAI extends JPanel{
 		roiTimePlotButton.setVisible(bROITimePlotVisible);
 	}
 
-	public void addROIName(String roiName,boolean isEditable,String selectROIName){
+//	public void addROIName(String roiName,boolean isEditable,String selectROIName){
+//		addROIName0(roiName,isEditable,selectROIName,true);
+//	}
+	public void addROIName(String roiName,
+			boolean isNameEditable,String selectROIName,boolean bDeleteable,/*boolean bPaintable,boolean bErasable,*/
+			Color highlightColor){
 //		roiComboBox.removeAllItems();
 		try{
 			roiComboBox.removeActionListener(ROI_COMBOBOX_ACTIONLISTENER);
-			roiComboBox.addItem(new ComboboxROIName(roiName,isEditable));
+			roiComboBox.setEnabled(true);
+			roiComboBox.addItem(new ComboboxROIName(roiName,isNameEditable,bDeleteable,/*bPaintable,bErasable,*/highlightColor));
 			for (int i = 0; i < roiComboBox.getItemCount(); i++) {
 				if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(selectROIName)){
 					roiComboBox.setSelectedIndex(i);
@@ -952,6 +1394,22 @@ public class OverlayEditorPanelJAI extends JPanel{
 			roiComboBox.addActionListener(ROI_COMBOBOX_ACTIONLISTENER);
 			ROI_COMBOBOX_ACTIONLISTENER.actionPerformed(new ActionEvent(roiComboBox,0,roiComboBox.getSelectedItem().toString()));
 		}
+	}
+	public void deleteROIName(ComboboxROIName delComboboxROIName){
+		if(delComboboxROIName != null){
+			roiComboBox.removeItem(delComboboxROIName);			
+		}else{
+			roiComboBox.removeAllItems();
+		}
+		if(roiComboBox.getItemCount() == 0){
+			roiComboBox.setEnabled(false);
+		}
+
+	}
+	public void setAllROICompositeImage(BufferedImage[] allROICompositeImageArr){
+		this.allROICompositeImageArr = allROICompositeImageArr;
+		imagePane.setAllROICompositeImage(allROICompositeImageArr[getZ()]);
+//		getImagePane().setAllROICompositeImage(allROICompositeImage);
 	}
 	/** Sets the viewer to display the given images. * @param argImageDataset ImageDataset
 	 */
@@ -970,6 +1428,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 			}
 			if(!bAllowAddROI){
 				addROIButton.setEnabled(false);
+				delROIButton.setEnabled(false);
+			}else{
+				delROIButton.setEnabled(roiComboBox.getItemCount() != 0);
+				checkRegionsButton.setEnabled(roiComboBox.getItemCount() != 0);
+				roiComboBox.setEnabled(roiComboBox.getItemCount() != 0);
 			}
 			
 			timeSlider.setVisible(imageDataset.getSizeT() > 1);
@@ -1003,7 +1466,14 @@ public class OverlayEditorPanelJAI extends JPanel{
 			
 			minmaxPixelValues = calcMinMaxPixelValueRange(imageDataset);
 			underlyingImage = createUnderlyingImage(imageDataset.getImage((zSlider.getValue()-1),0,(timeSlider.getValue()-1)));
-			autoCropButton.setEnabled(isAutoCroppable());
+//			autoCropButton.setEnabled(isAutoCroppable());
+//			if(getROI() != null &&
+//				(getROI().getISize().getX() != underlyingImage.getWidth() ||
+//				getROI().getISize().getY() != underlyingImage.getHeight() ||
+//				getROI().getISize().getZ() != imageDataset.getSizeZ())){
+//				
+//				getImagePane().setHighlightImageAndWritebackBuffer(null, null);
+//			}
 		}else{
 			minmaxPixelValues = null;
 			this.originalScaleFactor = DEFAULT_SCALE_FACTOR;
@@ -1021,8 +1491,22 @@ public class OverlayEditorPanelJAI extends JPanel{
 			BeanUtils.enableComponents(topJPanel, false);
 			BeanUtils.enableComponents(editROIPanel, false);
 			underlyingImage = null;
-			setROI(null);
+//			setROI(null);
 		}
+
+		if((getROI() != null && imageDataset != null) &&
+				(getROI().getISize().getX() != imageDataset.getISize().getX() ||
+				getROI().getISize().getY() != imageDataset.getISize().getY() ||
+				getROI().getISize().getZ() != imageDataset.getSizeZ())){
+				
+				roiComboBox.removeAllItems();
+				try {
+					setROI(null);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 
 		updateLabel(-1, -1);
 		getImagePane().setUnderlyingImage(underlyingImage,bNew,minmaxPixelValues);
@@ -1056,6 +1540,17 @@ public class OverlayEditorPanelJAI extends JPanel{
 //			}
 //		}
 //		return new Range(min,max);
+	}
+	
+	public Color getROIColor(String roiName){
+		Color roiColor = null;
+		for (int i = 0; i < roiComboBox.getItemCount(); i++) {
+			ComboboxROIName comboboxROIName = (ComboboxROIName)roiComboBox.getItemAt(i);
+			if(comboboxROIName.getROIName().equals(roiName)){
+				return comboboxROIName.getHighlightColor();
+			}
+		}
+		return roiColor;
 	}
 	/** Gets the currently displayed image. * @return BufferedImage
 	 */
@@ -1116,6 +1611,18 @@ public class OverlayEditorPanelJAI extends JPanel{
 		}
 		
 	}
+	
+	private ISize getISizeDataset(){
+		ISize isizeDataset = null;
+		if(imageDataset != null){
+			return imageDataset.getISize();
+		}else if(roi != null){
+			return roi.getISize();
+		}else if(allROICompositeImageArr != null){
+			isizeDataset = new ISize(allROICompositeImageArr[0].getWidth(), allROICompositeImageArr[0].getHeight(), allROICompositeImageArr.length);
+		}
+		return isizeDataset;
+	}
 	/**
 	 * Method getImagePane.
 	 * @return OverlayImageDisplayJAI
@@ -1133,6 +1640,10 @@ public class OverlayEditorPanelJAI extends JPanel{
 					lastHighlightPoint = e.getPoint();
 					saveUndoableROI();
 					if(paintButton.isSelected() || eraseButton.isSelected()){
+						if(roiComboBox.getItemCount() == 0){
+							giveROIRequiredWarning("paint or erase");
+							return;
+						}
 						drawHighlight(e.getX(), e.getY(), 10, eraseButton.isSelected());
 					}
 				}
@@ -1149,57 +1660,70 @@ public class OverlayEditorPanelJAI extends JPanel{
 					}
 					
 					if(cropButton.isSelected()){
-						Rectangle cropRect =
-							(imagePane.getHighlightImage() == null
-							?null
-							:(imagePane.getCrop() == null
-								?null
-								:(Rectangle)imagePane.getCrop().clone()));
-						if(cropRect == null){
+						ISize iSize = getISizeDataset();
+						if(iSize == null || imagePane.getCrop() == null){
 							imagePane.setCrop(null, null);
 							return;
 						}
+						//Copy crop from mousedragged rectangle
+						Rectangle cropRect =(Rectangle)imagePane.getCrop().clone();
+						//Check crop within bounds of dataset
 						cropRect.x = (int)(cropRect.x/imagePane.getZoom());
 						cropRect.y = (int)(cropRect.y/imagePane.getZoom());
 						cropRect.width = (int)(cropRect.width/imagePane.getZoom());
 						cropRect.height = (int)(cropRect.height/imagePane.getZoom());
 						if(cropRect.x < 0){cropRect.x = 0;}
 						if(cropRect.y < 0){cropRect.y = 0;}
-						if(cropRect.x >= imagePane.getHighlightImage().getWidth() ||
-							cropRect.y >= imagePane.getHighlightImage().getHeight()){
+						if(cropRect.x >= iSize.getX() ||
+							cropRect.y >= iSize.getY()){
 							imagePane.setCrop(null, null);
 							return;
 						}
-						if(cropRect.x+cropRect.width >= imagePane.getHighlightImage().getWidth()){
-							cropRect.width = imagePane.getHighlightImage().getWidth()-cropRect.x;
+						if(cropRect.x+cropRect.width >= iSize.getX()){
+							cropRect.width = iSize.getX()-cropRect.x;
 						}
-						if(cropRect.y+cropRect.height >= imagePane.getHighlightImage().getHeight()){
-							cropRect.height = imagePane.getHighlightImage().getHeight()-cropRect.y;
+						if(cropRect.y+cropRect.height >= iSize.getY()){
+							cropRect.height = iSize.getY()-cropRect.y;
 						}
 						if(cropRect.width <= 0){
 							cropRect.width = 1;
 						}if(cropRect.height <= 0){
 							cropRect.height = 1;
 						}
+
 						if(!cropConfirm(cropRect)){
 							return;
 						}
+						//turn off crop rectangle
 						imagePane.setCrop(null, null);
+						//tell manager about crop
 						firePropertyChange(FRAP_DATA_CROP_PROPERTY, null, cropRect);
 					}
 				}
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					if(fillButton.isSelected()){
+						if(roiComboBox.getItemCount() == 0){
+							giveROIRequiredWarning("fill");
+							return;
+						}
 						fireUndoableEditROI(EDITTYPE_FILL);
 						try{
 							waitCursor(true);
-							ROI.fillAtPoint(
-								(int)(e.getPoint().getX()/imagePane.getZoom()),
-								(int)(e.getPoint().getY()/imagePane.getZoom()),
-								imagePane.getHighlightImage(),
-								highlightColor.getRGB());
-//								VirtualFrapLoader.mf.setSaveStatus(true);
+							if(imagePane.getHighlightImage() != null){
+								ROI.fillAtPoint(
+										(int)(e.getPoint().getX()/imagePane.getZoom()),
+										(int)(e.getPoint().getY()/imagePane.getZoom()),
+										imagePane.getHighlightImage(),
+										highlightColor.getRGB());								
+							}
+							if(imagePane.getAllROICompositeImage() != null){
+								ROI.fillAtPoint(
+										(int)(e.getPoint().getX()/imagePane.getZoom()),
+										(int)(e.getPoint().getY()/imagePane.getZoom()),
+										imagePane.getAllROICompositeImage(),
+										((ComboboxROIName)roiComboBox.getSelectedItem()).getHighlightColor().getRGB());								
+							}
 						}finally{
 							imagePane.refreshImage();
 							waitCursor(false);
@@ -1228,6 +1752,10 @@ public class OverlayEditorPanelJAI extends JPanel{
 		return imagePane;
 	}
 	
+	private void giveROIRequiredWarning(String toolDescription){
+		DialogUtils.showWarningDialog(this, "You must add at least 1 ROI before trying to use the '"+toolDescription+"' tool.");
+		addROIActionListener.actionPerformed(null);
+	}
 	private boolean cropConfirm(Rectangle cropRect){
 		JLabel cropConfirmJlabel =
 			new JLabel("Crop FRAP data to new bounds?: ("+cropRect.x+","+cropRect.y+") to ("+
@@ -1251,8 +1779,17 @@ public class OverlayEditorPanelJAI extends JPanel{
 	 * @param radius int
 	 * @param erase boolean
 	 */
-	private void drawHighlight(int x, int y, int radius, boolean erase){
-		imagePane.drawHighlight(x, y, radius, erase, highlightColor, lastHighlightPoint);
+	private void drawHighlight(int x, int y, int radius, boolean bErase){
+		if(roiComboBox.getSelectedItem() == null){
+			return;
+		}
+//		if(bErase && !((ComboboxROIName)roiComboBox.getSelectedItem()).isErasable()){
+//			return;
+//		}else if(!bErase && !((ComboboxROIName)roiComboBox.getSelectedItem()).isPaintable()){
+//			return;
+//		}
+		imagePane.drawHighlight(x, y, radius, bErase, highlightColor,
+				((ComboboxROIName)roiComboBox.getSelectedItem()).getHighlightColor(), lastHighlightPoint);
 		repaint();
 	}
 
@@ -1716,33 +2253,31 @@ public class OverlayEditorPanelJAI extends JPanel{
 	
 	public ROISourceData getRoiSouceData()
 	{
-		//if roiSourceData is not set when the panel is created, we create an instance here.
-		//VCell uses the instance created here and VFRAP uses instance which is set when the panel is created.
-		if(roiSourceData == null)
-		{
+		if(roiSourceData == null){
 			roiSourceData = new ROISourceData(){
-				public void addReplaceRoi(ROI originalROI) {
-					roi.setRoiName(originalROI.getROIName());
-					roi.setROIImages(originalROI.getRoiImages());
-					refreshROI();
-					if(roi != null){
-						for (int i = 0; i < roiComboBox.getItemCount(); i++) {
-							if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(roi.getROIName())){
-								roiComboBox.setSelectedIndex(i);
-								break;
-							}
-						}
-					}
-					updateROICursor();
+				private ROI latestROI = null;
+				public void addReplaceRoi(ROI newROI) {
+					latestROI = newROI;
+					imagePane.setHighlightImageAndWritebackBuffer(createHighlightImageFromROI(newROI),
+							newROI.getRoiImages()[getRoiImageIndex()].getPixels());
+//					roi.setRoiName(originalROI.getROIName());
+//					roi.setROIImages(originalROI.getRoiImages());
+//					refreshROI();
+//					if(roi != null){
+//						for (int i = 0; i < roiComboBox.getItemCount(); i++) {
+//							if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(roi.getROIName())){
+//								roiComboBox.setSelectedIndex(i);
+//								break;
+//							}
+//						}
+//					}
+//					updateROICursor();
 				}
-				public ROI getCurrentlyDisplayedROI() {
-					return OverlayEditorPanelJAI.this.getROI();
+				public ROI getCurrentlyDisplayedROI(){
+					return latestROI;
 				}
 				public ImageDataset getImageDataset() {
 					return OverlayEditorPanelJAI.this.imageDataset;
-				}
-				public ROI getRoi(String name) {
-					return OverlayEditorPanelJAI.this.getROI();
 				}
 			};
 		}
@@ -1753,5 +2288,4 @@ public class OverlayEditorPanelJAI extends JPanel{
 	{
 		this.roiSourceData = roiSourceData;
 	}
-
 }

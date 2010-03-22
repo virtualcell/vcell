@@ -855,7 +855,7 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 	//startTime = System.currentTimeMillis();
 	
 	//Taubin smoothing
-	if (surfaceCollection != null && filterCutoffFrequency<NO_SMOOTHING){
+	if (surfaceCollection != null && filterCutoffFrequency<RegionImage.NO_SMOOTHING){
 		TaubinSmoothing taubinSmoothing = new TaubinSmoothingWrong();
 		TaubinSmoothingSpecification taubinSpec = TaubinSmoothingSpecification.getInstance(filterCutoffFrequency);
 		taubinSmoothing.smooth(surfaceCollection,taubinSpec);
@@ -863,8 +863,8 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 	//System.out.println("----------smooth surface time "+((System.currentTimeMillis()-startTime)/1000.0));
 	//startTime = System.currentTimeMillis();
 
-	System.out.println("Total Num Regions = "+regionsV.size());
-	System.out.println("Total Size = "+totalSize);
+//	System.out.println("Total Num Regions = "+regionsV.size());
+//	System.out.println("Total Size = "+totalSize);
 }
 
 private void generateSurfaceCollection(int numRegions,

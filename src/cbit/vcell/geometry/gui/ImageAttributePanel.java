@@ -1,10 +1,13 @@
 package cbit.vcell.geometry.gui;
 
+import java.awt.Graphics;
+
+import javax.swing.ImageIcon;
+
 import org.vcell.util.Extent;
 
 import cbit.image.VCPixelClass;
 import cbit.image.VCImage;
-import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.PopupGenerator;
 /**
  * Insert the type's description here.
@@ -79,28 +82,6 @@ class IvjEventHandler implements java.awt.event.ActionListener {
 public ImageAttributePanel() {
 	super();
 	initialize();
-}
-/**
- * CreateImagePanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public ImageAttributePanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-/**
- * CreateImagePanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public ImageAttributePanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-/**
- * CreateImagePanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public ImageAttributePanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
 }
 /**
  * connEtoC1:  (RegionPrevJButton.action.actionPerformed(java.awt.event.ActionEvent) --> ImageAttributePanel.regionPrevJButton_ActionPerformed()V)
@@ -224,11 +205,8 @@ private void createRegionImageIcon() throws Exception{
 		//Highlight the current region
 		if(getImage() != null && getCurrentPixelClassIndex() != null){
 			int index = getImage().getPixelClasses(getCurrentPixelClassIndex().intValue()).getPixel();
-			if(index > ClientRequestManager.MAX_PIXEL_VAL_IMAGEATTRPANEL){throw new Exception("PixelClass indexes must be less than 255");}//need to save last(255) for (grid,blanck,etc...)
 			cmap[index] = java.awt.Color.red.getRGB();
 		}
-		//Set grid color
-		cmap[cmap.length-1] = 0xFFFFFFFF; //white
 
 		//Make ColorModel, re-use colormap
 		java.awt.image.IndexColorModel icm =
@@ -237,18 +215,6 @@ private void createRegionImageIcon() throws Exception{
 		
 		//Initialize image data
 		if(pixelWR == null){
-			//cbit.vcell.geometry.GeometrySpec gs = new cbit.vcell.geometry.GeometrySpec((cbit.sql.Version)null,getImage());
-			//cbit.image.VCImage sampledImage = gs.getSampledImage();
-			//if(sampledImage.getNumX() != getImage().getNumX() ||
-				//sampledImage.getNumY() != getImage().getNumY() ||
-				//sampledImage.getNumZ() != getImage().getNumZ()){
-					//cbit.vcell.client.PopupGenerator.showInfoDialog(
-						//"Image was too large ("+getImage().getNumX()+","+getImage().getNumY()+","+getImage().getNumZ()+") and has been down-sampled.\n"+
-						//"The new size will be "+sampledImage.getNumX()+","+sampledImage.getNumY()+","+sampledImage.getNumZ()+")\n"+
-						//"Features may have been distorted or removed.  If displayed image is not acceptable"+
-						//"To prevent sampling, image length should be less than "+cbit.vcell.geometry.GeometrySpec.GS_3D_MAX
-						//);
-			//}
 			cbit.image.VCImage sampledImage = getImage();
 			double side = Math.sqrt(sampledImage.getNumX()*sampledImage.getNumY()*sampledImage.getNumZ());
 			xSide = (int)Math.round(side/(double)sampledImage.getNumX());
@@ -265,7 +231,6 @@ private void createRegionImageIcon() throws Exception{
 			byte[] sib = sampledImage.getPixels();
 
 			//write the image to buffer
-			int rowStride = xSide*sampledImage.getNumX()*sampledImage.getNumY();
 			int ystride = sampledImage.getNumX();
 			int zstride = sampledImage.getNumX()*sampledImage.getNumY();
 			for(int row=0;row < ySide;row+= 1){
@@ -296,7 +261,6 @@ private void createRegionImageIcon() throws Exception{
 			}
 			if((displayScale == 1) && (pixelWR.getWidth() > DISPLAY_DIM_MAX || pixelWR.getHeight() > DISPLAY_DIM_MAX)){
 				displayScale = Math.max((pixelWR.getWidth()/DISPLAY_DIM_MAX),(pixelWR.getHeight()/DISPLAY_DIM_MAX));
-				//displayScale = Math.min(((double)DISPLAY_DIM_MAX/(double)pixelWR.getWidth()),((double)DISPLAY_DIM_MAX/(double)pixelWR.getHeight()));
 				if(displayScale == 0){displayScale = 1;}
 				displayScale = 1.0/displayScale;
 			}
@@ -313,41 +277,12 @@ private void createRegionImageIcon() throws Exception{
 		}
 
 		//Create display image, re-use image data and colormap
-		// draw labels and grid
 		if(pixelWR != null){
 			java.awt.image.BufferedImage bi = null;
 			if(!getFullSizeJCheckBox().isEnabled() || getFullSizeJCheckBox().isSelected()){
 				bi = new java.awt.image.BufferedImage(icm,pixelWR,false,null);
 			}else{
 				bi = new java.awt.image.BufferedImage(icm,smallPixelWR,false,null);
-			}
-
-			if(xSide > 0 || ySide > 0){
-				int gridXBlockLen = (bi.getWidth()/xSide);
-				int gridYBlockLen = (bi.getHeight()/ySide);
-				
-				java.awt.Graphics g = bi.getGraphics();
-				g.setColor(java.awt.Color.white);
-				// horiz lines
-				for(int row=0;row < ySide;row+= 1){
-					if(row > 0){
-						g.drawLine(0,row*gridYBlockLen,bi.getWidth(),row*gridYBlockLen);
-					}
-				}
-				// vert lines
-				for(int col=0;col<xSide;col+= 1){
-					if(col > 0){
-						g.drawLine(col*gridXBlockLen,0,col*gridXBlockLen,bi.getHeight());
-					}
-				}
-				// z markers
-				if(xSide > 1 || ySide > 1){
-					for(int row=0;row < xSide;row+= 1){
-						for(int col=0;col<ySide;col+= 1){
-							g.drawString(""+(1+row+(col*xSide)),row*gridXBlockLen+3,col*gridYBlockLen+12);
-						}
-					}
-				}
 			}
 			
 			javax.swing.ImageIcon rii = new javax.swing.ImageIcon(bi);
@@ -361,6 +296,53 @@ private void createRegionImageIcon() throws Exception{
 	}catch(Throwable e){
 		throw new Exception("CreateRegionImageIcon error\n"+(e.getMessage()!=null?e.getMessage():e.getClass().getName()));
 	}
+}
+
+private void drawAnnotations(Graphics g){
+	int width = ((ImageIcon)getPixelClassImageLabel().getIcon()).getIconWidth();
+	int height = ((ImageIcon)getPixelClassImageLabel().getIcon()).getIconHeight();
+	int startX = g.getClipBounds().x;
+	int startY = g.getClipBounds().y;
+	//Adjust for cases where IconImage is larger or smaller than panel display
+	if(width < g.getClipBounds().width){
+		startX+= (g.getClipBounds().width-width)/2;
+	}else{
+		startX=0; 
+	}
+	if(height < g.getClipBounds().height){
+		startY+= (g.getClipBounds().height-height)/2;
+	}else{
+		startY = 0;
+	}
+	//Draw lines separating z-sections.
+	//Draw z-section label n corner
+	if(xSide > 0 || ySide > 0){
+		int gridXBlockLen = (width/xSide);
+		int gridYBlockLen = (height/ySide);
+		
+		g.setColor(java.awt.Color.green);
+		// horiz lines
+		for(int row=0;row < ySide;row+= 1){
+			if(row > 0){
+				g.drawLine(startX,startY+row*gridYBlockLen,startX+width,startY+row*gridYBlockLen);
+			}
+		}
+		// vert lines
+		for(int col=0;col<xSide;col+= 1){
+			if(col > 0){
+				g.drawLine(startX+col*gridXBlockLen,startY,startX+col*gridXBlockLen,startY+height);
+			}
+		}
+		// z markers
+		if(xSide > 1 || ySide > 1){
+			for(int row=0;row < xSide;row+= 1){
+				for(int col=0;col<ySide;col+= 1){
+					g.drawString(""+(1+row+(col*xSide)),startX+row*gridXBlockLen+3,startY+col*gridYBlockLen+12);
+				}
+			}
+		}
+	}
+
 }
 /**
  * Comment
@@ -433,7 +415,7 @@ private javax.swing.JButton getCancelJButton() {
 		try {
 			ivjCancelJButton = new javax.swing.JButton();
 			ivjCancelJButton.setName("CancelJButton");
-			ivjCancelJButton.setText("Cancel");
+			ivjCancelJButton.setText("Back...");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -742,7 +724,18 @@ private javax.swing.JLabel getMicronJLabel() {
 private javax.swing.JLabel getPixelClassImageLabel() {
 	if (ivjPixelClassImageLabel == null) {
 		try {
-			ivjPixelClassImageLabel = new javax.swing.JLabel();
+			ivjPixelClassImageLabel = new javax.swing.JLabel(){
+
+				@Override
+				protected void paintComponent(Graphics g) {
+					// TODO Auto-generated method stub
+					super.paintComponent(g);
+					drawAnnotations(g);
+//					g.setColor(Color.green);
+//					g.drawLine(g.getClipBounds().x, g.getClipBounds().y, 100, 100);
+				}
+				
+			};
 			ivjPixelClassImageLabel.setName("PixelClassImageLabel");
 			ivjPixelClassImageLabel.setText("No Image");
 			ivjPixelClassImageLabel.setBounds(0, 0, 377, 254);
