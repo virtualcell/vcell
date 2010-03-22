@@ -20,7 +20,7 @@ import javax.swing.JToolBar;
 import org.vcell.sybil.gui.PopupManager;
 import org.vcell.sybil.gui.graphinfo.SelectedResourcesPane;
 import org.vcell.sybil.gui.graphinfo.SelectedStatementsPane;
-//import org.vcell.sybil.gui.util.Sizer;
+import org.vcell.sybil.gui.util.Sizer;
 import org.vcell.sybil.models.graph.GraphModelSelectionInfo;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.actions.ActionMap;
@@ -109,13 +109,13 @@ public class GraphEditorPanel extends JPanel {
 	
 	protected JSplitPane createInnerSplitPane(JComponent panel1, JComponent panel2) {
 		JSplitPane pane =  new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel1, panel2);
-		//pane.setDividerLocation((int)(0.6*Sizer.initialSize().getWidth()));
+		pane.setDividerLocation((int)(0.6*Sizer.initialSize().getWidth()));
 		return pane;
 	}
 	
 	protected JSplitPane createOuterSplitPane(JComponent panel1, JComponent panel2) {
 		JSplitPane pane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panel1, panel2);
-		//pane.setDividerLocation((int)(0.6*Sizer.initialSize().getHeight()));
+		pane.setDividerLocation((int)(0.6*Sizer.initialSize().getHeight()));
 		return pane;
 	}
 	

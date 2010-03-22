@@ -133,8 +133,9 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjEdit_Annotation_JMenuItem = null;
 	private JMenuItem ivjTestingFrameworkMenuItem = null;
 	private JMenuItem ivjJMenuItemOnlineHelp = null;
-	private JMenu ivjBNGMenu = null;
+	private JMenu pluginMenu = null;
 	private JMenuItem ivjRunBNGMenuItem = null;
+	private JMenuItem ivjSybilMenuItem = null;
 	//Added Oct. 17th, 2007. To put a tool menu in 
 	private JMenu toolMenu = null;
 	private JMenuItem transMAMenuItem = null;
@@ -214,6 +215,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC25(e);
 			if (e.getSource() == DocumentWindow.this.getRunBNGMenuItem()) 
 				connEtoC26(e);
+			if (e.getSource() == DocumentWindow.this.getSybilMenuItem()) 
+				startSybil();
 			if (e.getSource() == DocumentWindow.this.getTransMAMenuItem()) 
 				showTransMADialog();
 			if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData()) 
@@ -1090,22 +1093,25 @@ private javax.swing.JMenu getAnalyticMenu() {
  * @return javax.swing.JMenu
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenu getBNGMenu() {
-	if (ivjBNGMenu == null) {
+private JMenu getPluginMenu() {
+	if (pluginMenu == null) {
 		try {
-			ivjBNGMenu = new javax.swing.JMenu();
-			ivjBNGMenu.setName("BNGMenu");
-			ivjBNGMenu.setText("BioNetGen");
-			ivjBNGMenu.add(getRunBNGMenuItem());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+			pluginMenu = new javax.swing.JMenu();
+			pluginMenu.setName("Plugins");
+			pluginMenu.setText("Plugins");
+			pluginMenu.add(getRunBNGMenuItem());
+			pluginMenu.add(getSybilMenuItem());
+		} catch (Throwable throwable) {
+			handleException(throwable);
 		}
 	}
-	return ivjBNGMenu;
+	return pluginMenu;
+}
+
+private void startSybil(){
+	if (getWindowManager() instanceof BioModelWindowManager){
+		((BioModelWindowManager)getWindowManager()).showSybilWindow();
+	}
 }
 
 /**
@@ -1367,7 +1373,7 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar.add(getViewMenu());
 			ivjDocumentWindowJMenuBar.add(getServerMenu());
 			ivjDocumentWindowJMenuBar.add(getWindowMenu());
-			ivjDocumentWindowJMenuBar.add(getBNGMenu());
+			ivjDocumentWindowJMenuBar.add(getPluginMenu());
 			ivjDocumentWindowJMenuBar.add(getToolMenu());
 			ivjDocumentWindowJMenuBar.add(getResourcesMenu());
 			ivjDocumentWindowJMenuBar.add(getHelpMenu());
@@ -2390,6 +2396,23 @@ private javax.swing.JMenuItem getRunBNGMenuItem() {
 	return ivjRunBNGMenuItem;
 }
 
+/**
+ * Return the RunBNGMenuItem property value.
+ * @return javax.swing.JMenuItem
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JMenuItem getSybilMenuItem() {
+	if (ivjSybilMenuItem == null) {
+		try {
+			ivjSybilMenuItem = new javax.swing.JMenuItem();
+			ivjSybilMenuItem.setName("RUNSybilMenuItem");
+			ivjSybilMenuItem.setText("Systems Biology Linker (SyBiL)");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjSybilMenuItem;
+}
 
 /**
  * Return the Save_AsMenuItem property value.
@@ -2990,6 +3013,7 @@ private void initConnections() throws java.lang.Exception {
 	getTestingFrameworkMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemOnlineHelp().addActionListener(ivjEventHandler);
 	getRunBNGMenuItem().addActionListener(ivjEventHandler);
+	getSybilMenuItem().addActionListener(ivjEventHandler);
 	getTransMAMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemFieldData().addActionListener(ivjEventHandler);
 	//added application menu to main menubar

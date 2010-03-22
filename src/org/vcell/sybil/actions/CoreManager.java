@@ -52,7 +52,7 @@ public class CoreManager {
 	protected UITabbedSpace tabSpaceAdvanced;
 	protected UITabbedSpace tabSpaceSchemas;
 	protected GraphManager graphManager;
-	//protected UIPortSpace portSpace;
+	protected UIPortSpace portSpace;
 	protected EvaluatorUpdater evaluatorUpdater;
  	
     public CoreManager(BioModel bioModel) {
@@ -72,9 +72,9 @@ public class CoreManager {
 		tabSpaceAdvanced = ui().createTabbedSpace();
 		tabSpace.addTab("Import", importSpace);
 		tabSpace.addTab("Data", tabSpaceData);
-		//portSpace = ui().createPortSpace();
-		//fileManager.evaluator().listeners().add(new PortSpaceUpdater(portSpace));
-		//tabSpace.addTab("BioPAX to SBML Conversion", portSpace);
+		portSpace = ui().createPortSpace();
+		fileManager.evaluator().listeners().add(new PortSpaceUpdater(portSpace));
+		tabSpace.addTab("BioPAX to SBML Conversion", portSpace);
 		tabSpace.addTab("Advanced", tabSpaceAdvanced);
 		tabSpaceAdvanced.addTab("Schemas", tabSpaceSchemas);
 		tabSpaceData.addTab("Graph", graphManager.graphSpace());
@@ -103,7 +103,7 @@ public class CoreManager {
 	public FileManager fileManager() { return fileManager; }
 
 	public GraphModel.Listener graph() { return graphManager.graphSpace().graph(); }
-	//public UIPortSpace portSpace() { return portSpace; }	
+	public UIPortSpace portSpace() { return portSpace; }	
 	public UIFrameSpace frameSpace() { return ui().frameSpace(); }
 	public UIGraphSpace graphSpace() { return graphManager.graphSpace(); }
 	public UIImportSpace importSpace() { return importSpace; }	

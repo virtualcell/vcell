@@ -10,7 +10,7 @@ import java.awt.Window;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 
-//import org.vcell.sybil.gui.util.Sizer;
+import org.vcell.sybil.gui.util.Sizer;
 import org.vcell.sybil.util.ui.UIFrameSpace;
 
 public class GUIJFrameSpace extends GUIFrameSpace
@@ -27,7 +27,7 @@ implements UIFrameSpace, DialogParentProvider {
 	public JFrame frame() { return (JFrame) super.frame(); }
 	
 	public void prepare() { 
-		//frame().setSize(Sizer.initialSize());
+		frame().setSize(Sizer.initialSize());
 		//frame().pack();
 	}
 	public JFrame topFrame() { return frame(); }
