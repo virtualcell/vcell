@@ -276,26 +276,6 @@ private void connEtoM3(javax.swing.event.ListSelectionEvent arg1) {
 }
 
 /**
- * connEtoM6:  (simulationContext1.this --> SpeciesContextSpecPanel.simulationContext)
- * @param value cbit.vcell.mapping.SimulationContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(SimulationContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getSpeciesContextSpecPanel().setSimulationContext(getsimulationContext1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connPtoP3SetSource:  (InitialConditionsPanel.simulationContext <--> simulationContext1.this)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -1279,7 +1259,6 @@ private void setsimulationContext1(SimulationContext newValue) {
 			ivjsimulationContext1 = newValue;
 			connPtoP3SetSource();
 			connEtoM2(ivjsimulationContext1);
-			connEtoM6(ivjsimulationContext1);
 			firePropertyChange("simulationContext", oldValue, newValue);
 			// user code begin {1}
 			// user code end

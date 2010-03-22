@@ -11,10 +11,15 @@ import org.vcell.util.gui.sorttable.ManageTableModel;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -86,15 +91,12 @@ public class SpeciesContextSpecParameterTableModel extends ManageTableModel impl
 			return 1;
 		}
 	}
-	private static final int NUM_COLUMNS = 4;
 	private static final int COLUMN_DESCRIPTION = 0;
 	private static final int COLUMN_NAME = 1;
 	public static final int COLUMN_VALUE = 2;
 	private final int COLUMN_UNIT = 3;
-	private String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
-	protected transient java.beans.PropertyChangeSupport propertyChange;
+	private final String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
 	private SpeciesContextSpec fieldSpeciesContextSpec = null;
-	private SimulationContext fieldSimulationContext = null;
 	
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	private JTable ownerTable = null;
@@ -106,20 +108,6 @@ public SpeciesContextSpecParameterTableModel(JTable table) {
 	super();
 	ownerTable = table;
 	addPropertyChangeListener(this);
-}
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
 /**
@@ -153,7 +141,7 @@ public Class<?> getColumnClass(int column) {
  * getColumnCount method comment.
  */
 public int getColumnCount() {
-	return NUM_COLUMNS;
+	return LABELS.length;
 }
 
 
@@ -164,55 +152,7 @@ public int getColumnCount() {
  * @param column int
  */
 public String getColumnName(int column) {
-	if (column<0 || column>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
 	return LABELS[column];
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/23/2003 1:24:52 PM)
- * @return cbit.vcell.model.Parameter
- * @param row int
- */
-private Parameter getParameter(int row) {
-
-	if (getSpeciesContextSpec()==null){
-		return null;
-	}
-	int count = getSpeciesContextSpec().getParameters().length;
-	if (row<0 || row>=count){
-		throw new RuntimeException("SpeciesContextSpecParameterTableModel.getParameter("+row+") out of range ["+0+","+(count-1)+"]");
-	}
-	
-	int geomDimension = fieldSimulationContext.getGeometry().getDimension();
-	if (geomDimension == 0) {
-		return getSpeciesContextSpec().getParameter(row);
-	} else if (geomDimension == 1)  {
-		if (row < 4) {
-			return getSpeciesContextSpec().getParameter(row);	
-		} else {
-			// skip Yp, Ym, Zp, Zm, initCount in the SpeciesContextSpecParameter list
-			return getSpeciesContextSpec().getParameter(row+5);
-		}
-	} else if (geomDimension == 2) {
-		if (row < 6) {
-			return getSpeciesContextSpec().getParameter(row);	
-		} else {
-			// skip Zp, Zm, initCount in the SpeciesContextSpecParameter list
-			return getSpeciesContextSpec().getParameter(row+3);
-		}
-	} else if (geomDimension == 3) {
-		if (row < 8) {
-			return getSpeciesContextSpec().getParameter(row);	
-		} else {
-			// skip initCount in the SpeciesContextSpecParameter list
-			return getSpeciesContextSpec().getParameter(row+1);
-		}
-	}
-	return null;
 }
 
 
@@ -226,39 +166,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	return propertyChange;
 }
 
-
-/**
- * getRowCount method comment.
- */
-public int getRowCount() {
-	if (getSpeciesContextSpec()==null){
-		return 0;
-	}else{
-		return getSpeciesContextSpec().getNumDisplayableParameters();
-	}
-}
-
-
-/**
- * Gets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
- * @return The simulationContext property value.
- * @see #setSimulationContext
- */
-public SimulationContext getSimulationContext() {
-	return fieldSimulationContext;
-}
-
-
-/**
- * Gets the speciesContextSpec property (cbit.vcell.mapping.SpeciesContextSpec) value.
- * @return The speciesContextSpec property value.
- * @see #setSpeciesContextSpec
- */
-public SpeciesContextSpec getSpeciesContextSpec() {
-	return fieldSpeciesContextSpec;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (9/23/2003 1:24:52 PM)
@@ -266,16 +173,80 @@ public SpeciesContextSpec getSpeciesContextSpec() {
  * @param row int
  */
 private List<Parameter> getUnsortedParameters() {
-
-	if (getSpeciesContextSpec()==null){
+	if (fieldSpeciesContextSpec==null){
 		return null;
 	}
-	int count = getRowCount();
-	ArrayList<Parameter> list = new ArrayList<Parameter>();
-	for (int i = 0; i < count; i++){
-		list.add(getParameter(i));
+	ArrayList<Parameter> paramList = new ArrayList<Parameter>();
+	paramList.add(fieldSpeciesContextSpec.getInitialConditionParameter());
+	
+	SimulationContext simulationContext = fieldSpeciesContextSpec.getSimulationContext();
+	if (simulationContext==null){
+		return paramList;
 	}
-	return list;
+	if (fieldSpeciesContextSpec.isConstant()){
+		return paramList;
+	}
+
+	SpeciesContext speciesContext = fieldSpeciesContextSpec.getSpeciesContext();
+	if (speciesContext.getStructure() instanceof Membrane){
+		MembraneMapping membraneMapping = (MembraneMapping)simulationContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
+		boolean bResolved = membraneMapping.getResolved(simulationContext);
+		if (simulationContext.getGeometry()!=null && bResolved){
+			int dimension = simulationContext.getGeometry().getDimension();
+			if (dimension > 1) {
+				// diffusion
+				paramList.add(fieldSpeciesContextSpec.getDiffusionParameter());
+				
+				// boundary condition
+				paramList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
+				paramList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
+				paramList.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
+				paramList.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
+				
+				if (dimension > 2) {
+					paramList.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
+					paramList.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
+				}
+			}
+		}		
+	} else if (speciesContext.getStructure() instanceof Feature){
+		FeatureMapping featureMapping = (FeatureMapping)simulationContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
+		boolean bResolved = featureMapping.getResolved();
+		if (simulationContext.getGeometry()!=null && bResolved){
+			int dimension = simulationContext.getGeometry().getDimension();
+			if (dimension > 0) {
+				paramList.add(fieldSpeciesContextSpec.getDiffusionParameter());
+				
+				// boundary condition
+				paramList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
+				paramList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
+			 
+				if (dimension > 1) {
+					paramList.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
+					paramList.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
+				
+				
+					if (dimension > 2) {
+						paramList.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
+						paramList.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
+					}
+				}
+				
+				// velocity
+				paramList.add(fieldSpeciesContextSpec.getVelocityXParameter());
+				if (dimension > 1) {
+					paramList.add(fieldSpeciesContextSpec.getVelocityYParameter());
+				
+					if (dimension > 2) {
+						paramList.add(fieldSpeciesContextSpec.getVelocityZParameter());
+					}
+				}
+			}
+		}
+	} else {
+		throw new RuntimeException("unsupported Structure type '"+speciesContext.getStructure().getClass().getName()+"'");
+	}
+	return paramList;
 }
 
 
@@ -284,15 +255,6 @@ private List<Parameter> getUnsortedParameters() {
  */
 public Object getValueAt(int row, int col) {
 	try {
-		if (col<0 || col>=NUM_COLUMNS){
-			throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-		}
-		if (row<0 || row>=getRowCount()){
-			throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-		}
-		if (getData().size() <= row){
-			setData(getUnsortedParameters());
-		}
 		Parameter parameter = (Parameter)getData().get(row);
 		switch (col){
 			case COLUMN_NAME:{
@@ -327,15 +289,6 @@ public Object getValueAt(int row, int col) {
 	}
 }
 
-
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:27:46 AM)
@@ -344,18 +297,13 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	Parameter parameter = getParameter(rowIndex);
+	Parameter parameter = (Parameter)getData().get(rowIndex);
 	if (columnIndex == COLUMN_NAME){
 		return parameter.isNameEditable();
-	}else if (columnIndex == COLUMN_DESCRIPTION){
-		return false;
-	}else if (columnIndex == COLUMN_UNIT){
-		return false;
 	}else if (columnIndex == COLUMN_VALUE){
 		return parameter.isExpressionEditable();
-	}else{
-		return false;
 	}
+	return false;
 }
 
 
@@ -384,39 +332,20 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	//      SpeciesContextSpec.parameters
 	//        Parameter.*
 	//
-	try {
-		if (evt.getSource() == this && evt.getPropertyName().equals("simulationContext")){
-			SimulationContext oldSimContext = (SimulationContext)evt.getOldValue();
-			if (oldSimContext!=null){
-				oldSimContext.getGeometryContext().removePropertyChangeListener(this);
-				StructureMapping[] oldStructureMappings = oldSimContext.getGeometryContext().getStructureMappings();
-				for (int i = 0; oldStructureMappings!=null && oldStructureMappings!=null && i < oldStructureMappings.length; i++){
-					oldStructureMappings[i].removePropertyChangeListener(this);
-				}
-			}
-			SimulationContext newSimContext = (SimulationContext)evt.getNewValue();
-			if (newSimContext!=null){
-				newSimContext.getGeometryContext().addPropertyChangeListener(this);
-				StructureMapping[] newStructureMappings = newSimContext.getGeometryContext().getStructureMappings();
-				for (int i = 0; newStructureMappings!=null && i < newStructureMappings.length; i++){
-					newStructureMappings[i].addPropertyChangeListener(this);
-				}
-			}
-			setData(getUnsortedParameters());
-			fireTableDataChanged();
-		}
-		
+	try {		
 		//
 		// if geometry changes (could affect spatially resolved boundaries).
 		//
-		if (fieldSimulationContext!=null && evt.getSource() == fieldSimulationContext.getGeometryContext() && evt.getPropertyName().equals("geometry")){
+		if (fieldSpeciesContextSpec != null && evt.getSource() == fieldSpeciesContextSpec.getSimulationContext().getGeometryContext() 
+				&& evt.getPropertyName().equals("geometry")){
 			setData(getUnsortedParameters());
 			fireTableDataChanged();
 		}
 		//
 		// if structureMappings array changes (could affect spatially resolved boundaries).
 		//
-		if (fieldSimulationContext!=null && evt.getSource() == fieldSimulationContext.getGeometryContext() && evt.getPropertyName().equals("structureMappings")){
+		if (fieldSpeciesContextSpec != null && evt.getSource() == fieldSpeciesContextSpec.getSimulationContext().getGeometryContext() 
+				&& evt.getPropertyName().equals("structureMappings")){
 			StructureMapping[] oldStructureMappings = (StructureMapping[])evt.getOldValue();
 			for (int i = 0; oldStructureMappings!=null && i < oldStructureMappings.length; i++){
 				oldStructureMappings[i].removePropertyChangeListener(this);
@@ -441,18 +370,43 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (oldValue!=null){
 				oldValue.removePropertyChangeListener(this);
 				Parameter oldParameters[] = oldValue.getParameters();
-				for (int i = 0;oldParameters!=null && i<oldParameters.length; i++){
-					oldParameters[i].removePropertyChangeListener(this);
+				if (oldParameters!=null) {
+					for (int i = 0; i<oldParameters.length; i++){
+						oldParameters[i].removePropertyChangeListener(this);
+					}
+				}
+				SimulationContext oldSimContext = oldValue.getSimulationContext();
+				if (oldSimContext!=null){
+					oldSimContext.getGeometryContext().removePropertyChangeListener(this);
+					StructureMapping[] oldStructureMappings = oldSimContext.getGeometryContext().getStructureMappings();
+					if (oldStructureMappings!=null) {
+						for (int i = 0; i < oldStructureMappings.length; i++){
+							oldStructureMappings[i].removePropertyChangeListener(this);
+						}
+					}
 				}
 			}
 			SpeciesContextSpec newValue = (SpeciesContextSpec)evt.getNewValue();
 			if (newValue!=null){
 				newValue.addPropertyChangeListener(this);
 				Parameter newParameters[] = newValue.getParameters();
-				for (int i = 0;newParameters!=null && i<newParameters.length; i++){
-					newParameters[i].addPropertyChangeListener(this);
+				if (newParameters != null) {
+					for (int i = 0; i < newParameters.length; i ++){
+						newParameters[i].addPropertyChangeListener(this);
+					}
+				}
+				SimulationContext newSimContext = newValue.getSimulationContext();
+				if (newSimContext!=null){
+					newSimContext.getGeometryContext().addPropertyChangeListener(this);
+					StructureMapping[] newStructureMappings = newSimContext.getGeometryContext().getStructureMappings();
+					if (newStructureMappings != null) {
+						for (int i = 0; i < newStructureMappings.length; i++){
+							newStructureMappings[i].addPropertyChangeListener(this);
+						}
+					}
 				}
 			}
+			
 			setData(getUnsortedParameters());
 			fireTableDataChanged();
 		}
@@ -460,12 +414,16 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			// if parameters changed must update listeners
 			if (evt.getPropertyName().equals("parameters")) {
 				Parameter oldParameters[] = (Parameter[])evt.getOldValue();
-				for (int i = 0;oldParameters!=null && i<oldParameters.length; i++){
-					oldParameters[i].removePropertyChangeListener(this);
+				if (oldParameters!=null) {
+					for (int i = 0;i<oldParameters.length; i++){
+						oldParameters[i].removePropertyChangeListener(this);
+					}
 				}
 				Parameter newParameters[] = (Parameter[])evt.getNewValue();
-				for (int i = 0;newParameters!=null && i<newParameters.length; i++){
-					newParameters[i].addPropertyChangeListener(this);
+				if (newParameters!=null) {
+					for (int i = 0;i<newParameters.length; i++){
+						newParameters[i].addPropertyChangeListener(this);
+					}
 				}
 			}
 			// for any change to the SpeciesContextSpec, want to update all.
@@ -481,30 +439,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 }
 
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
-}
-
-
-/**
- * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
- * @param simulationContext The new value for the property.
- * @see #getSimulationContext
- */
-public void setSimulationContext(SimulationContext simulationContext) {
-	SimulationContext oldValue = fieldSimulationContext;
-	fieldSimulationContext = simulationContext;
-	if (simulationContext != null) {
-		autoCompleteSymbolFilter = simulationContext.getAutoCompleteSymbolFilter();
-	}
-	firePropertyChange("simulationContext", oldValue, simulationContext);
-}
-
-
 /**
  * Sets the speciesContextSpec property (cbit.vcell.mapping.SpeciesContextSpec) value.
  * @param speciesContextSpec The new value for the property.
@@ -518,84 +452,57 @@ public void setSpeciesContextSpec(SpeciesContextSpec speciesContextSpec) {
 
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	Parameter parameter = getParameter(rowIndex);
-//	try {
-		switch (columnIndex){
-			case COLUMN_NAME:{
-				try {
-					if (aValue instanceof String){
-						String newName = (String)aValue;
-						if (!parameter.getName().equals(newName)){
-							if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
-								SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
-								scsParm.setName(newName);
-								//fireTableRowsUpdated(rowIndex,rowIndex);
-							}
-						}
-					}
-				}catch (java.beans.PropertyVetoException e){
-					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(ownerTable, "error changing parameter name\n"+e.getMessage());
-				}
-				break;
-			}
-			case COLUMN_VALUE:{
-				try {
-					if (aValue instanceof ScopedExpression){
-//						Expression exp = ((ScopedExpression)aValue).getExpression();
-//						if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
-//							SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
-//							if (!(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityX || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityY || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityZ )) {
-//								scsParm.setExpression(exp);
-//							} else {
-//								// scsParam is a velocity parameter
-//								if (!exp.compareEqual(new Expression(0.0))) {
-//									scsParm.setExpression(exp);
-//								} else {
-//									scsParm.setExpression(null);
-//								}
-//							}
-//							//fireTableRowsUpdated(rowIndex,rowIndex);
-//						}
-						throw new RuntimeException("unexpected value type ScopedExpression");
-					}else if (aValue instanceof String) {
-						String newExpressionString = (String)aValue;
+	Parameter parameter = (Parameter)getData().get(rowIndex);
+	switch (columnIndex){
+		case COLUMN_NAME:{
+			try {
+				if (aValue instanceof String){
+					String newName = (String)aValue;
+					if (!parameter.getName().equals(newName)){
 						if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 							SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
-							if (!(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityX || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityY || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityZ )) {
-								scsParm.setExpression(new Expression(newExpressionString));
-							} else {
-								// scsParam is a velocity parameter
-								if (!newExpressionString.equals("0.0")) {
-									scsParm.setExpression(new Expression(newExpressionString));
-								} else {
-									scsParm.setExpression(null);
-								}
-							}
-							//fireTableRowsUpdated(rowIndex,rowIndex);
+							scsParm.setName(newName);
 						}
 					}
-				}catch (java.beans.PropertyVetoException e){
-					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
-				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}
-				break;
+			}catch (java.beans.PropertyVetoException e){
+				e.printStackTrace(System.out);
+				PopupGenerator.showErrorDialog(ownerTable, "error changing parameter name\n"+e.getMessage());
 			}
+			break;
 		}
-//	}catch (java.beans.PropertyVetoException e){
-//		e.printStackTrace(System.out);
-//	}
+		case COLUMN_VALUE:{
+			try {
+				if (aValue instanceof String) {
+					String newExpressionString = (String)aValue;
+					if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
+						SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
+						if (!(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityX || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityY || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityZ )) {
+							scsParm.setExpression(new Expression(newExpressionString));
+						} else {
+							// scsParam is a velocity parameter
+							if (!newExpressionString.equals("0.0")) {
+								scsParm.setExpression(new Expression(newExpressionString));
+							} else {
+								scsParm.setExpression(null);
+							}
+						}
+					}
+				}
+			}catch (java.beans.PropertyVetoException e){
+				e.printStackTrace(System.out);
+				PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
+			}catch (ExpressionException e){
+				e.printStackTrace(System.out);
+				PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
+			}
+			break;
+		}
+	}
 }
 
 
-  public void sortColumn(int col, boolean ascending)
-  {
+  public void sortColumn(int col, boolean ascending) {
     Collections.sort(rows, new ParameterColumnComparator(col, ascending));
   }
 }
