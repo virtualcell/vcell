@@ -20,7 +20,7 @@ public abstract class UserInterface {
 	abstract public UIImportSpace createImportSpace();
 	abstract public UITextSpace createTextSpace();
 	abstract public UIFileChooserSpace createFileChooserSpace();
-	//abstract public UIPortSpace createPortSpace();
+	abstract public UIPortSpace createPortSpace();
 	abstract public UIInfoDialogSpace createInfoDialogSpace();
 	abstract public UIInfoDialogSpace createSystemMonitorDialogSpace();
 }

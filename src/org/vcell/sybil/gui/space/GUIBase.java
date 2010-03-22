@@ -23,6 +23,7 @@ import org.vcell.sybil.gui.dialog.SyBiLInfoDialog;
 import org.vcell.sybil.gui.graph.Graph;
 import org.vcell.sybil.gui.graph.GraphEditorPanel;
 import org.vcell.sybil.gui.graph.Shape;
+import org.vcell.sybil.gui.port.PortPanel;
 import org.vcell.sybil.util.ui.UIComponent;
 import org.vcell.sybil.util.ui.UserInterface;
 import org.vcell.sybil.util.ui.UserInterfaceGraph;
@@ -69,9 +70,9 @@ public class GUIBase extends UserInterface implements UserInterfaceGraph<Shape, 
 				new JFileChooser());
 	}
 
-//	public GUIPortSpace<PortPanel> createPortSpace() {
-//		return new GUIPortSpace<PortPanel>(new PortPanel(coreManager.fileManager()));
-//	}
+	public GUIPortSpace<PortPanel> createPortSpace() {
+		return new GUIPortSpace<PortPanel>(new PortPanel(coreManager.fileManager()));
+	}
 
 	public GUIInfoDialogSpace<SyBiLInfoDialog> createInfoDialogSpace() {
 		Component topFrame = frameSpace().getDialogParentProvider().getDialogParent();

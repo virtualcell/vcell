@@ -3,8 +3,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -15,22 +13,20 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.JDialog;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.UserCancelException;
+import org.vcell.sybil.gui.space.DialogParentProvider;
+import org.vcell.sybil.gui.space.GUIJInternalFrameSpace;
+import org.vcell.sybil.init.SybilApplication;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
-import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
@@ -48,7 +44,6 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathUtilities;
 import cbit.vcell.opt.solvers.LocalOptimizationService;
 import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
@@ -71,7 +66,10 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
 
 	private LocalOptimizationService localOptService = null;
 	
+	private SybilApplication sybilApplication = null;
+	
 	private JInternalFrame mIRIAMAnnotationEditorFrame = null;
+	private JInternalFrame sybilFrame = null;
 	private PropertyChangeListener miriamPropertyChangeListener =
 		new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -829,6 +827,16 @@ private void closeMIRIAMWindow(){
 	}
 }
 
+//private void closeSybilWindow(){
+//	try{
+//		if(sybilFrame != null && getJDesktopPane() != null){
+//			close(sybilFrame,getJDesktopPane());
+//		}
+//	}catch(Exception e){
+//		//ignore
+//	}
+//}
+
 protected void refreshMIRIAMDependencies(BioModel oldBioModel,BioModel newBioModel){
 	try {
 		if (oldBioModel != null) {
@@ -952,6 +960,36 @@ public void showMIRIAMWindow() {
 
 //	showDataViewerPlotsFrame(mIRIAMAnnotationEditorFrame);
 	showFrame(mIRIAMAnnotationEditorFrame);
+}
+
+
+public void showSybilWindow() {
+
+	boolean firstTime = (sybilFrame==null);
+	if(sybilFrame == null){
+		sybilFrame = new JInternalFrame();
+		sybilFrame.setTitle("Sybil Application Window");
+		sybilFrame.setSize(800,600);
+		sybilFrame.setClosable(true);
+		sybilFrame.setResizable(true);
+		DialogParentProvider dialogParentProvider = new DialogParentProvider(){
+			public Component getDialogParent() {
+				return ((JPanel)BioModelWindowManager.this.getComponent()).getTopLevelAncestor();
+			}
+		};
+		BioModel bioModel = getBioModel();
+		sybilApplication = 
+			new SybilApplication(new GUIJInternalFrameSpace(dialogParentProvider, sybilFrame), bioModel);
+	}
+
+//	if(!sybilFrame.isShowing()){
+//		sybilApplication.setBioModel(getBioModel());
+//	}
+//
+	showFrame(sybilFrame);
+	if (firstTime){
+		sybilApplication.runVCell();
+	}
 }
 
 public void BioModelEditor_ApplicationMenu_ActionPerformed(ActionEvent e)
