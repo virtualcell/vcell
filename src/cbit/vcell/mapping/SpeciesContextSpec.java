@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Vector;
 
+import net.sourceforge.interval.ia_math.RealInterval;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -12,7 +14,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
-import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
@@ -720,71 +721,6 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws Expres
 public NameScope getNameScope() {
 	return nameScope;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/22/2005 11:56:39 AM)
- */
-public int getNumDisplayableParameters() {
-	if (simulationContext==null){
-		return 1;
-	}
-	if (isConstant()){
-		return 1;
-	}
-
-	if (speciesContext.getStructure() instanceof Membrane){
-		MembraneMapping membraneMapping = (MembraneMapping)simulationContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
-		boolean bResolved = membraneMapping.getResolved(simulationContext);
-		if (simulationContext.getGeometry()!=null && bResolved){
-			switch (simulationContext.getGeometry().getDimension()){
-				case 0:
-				case 1:{
-					return 1;
-				}
-				case 2:{
-					return 6;   // IC,Diff,Xm,Xp,Ym,Yp
-				}
-				case 3:{
-					return 8;   // IC,Diff,Xm,Xp,Ym,Yp,Zm,Zp
-				}
-				default:{
-					throw new RuntimeException("unexpected Geometry dimension"); // could never happen
-				}
-			}
-		}else{
-			return 1;          // don't have geometry info or not resolved, only Initial Conditions to be displayed.
-		}
-	}else if (speciesContext.getStructure() instanceof Feature){
-		FeatureMapping featureMapping = (FeatureMapping)simulationContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
-		boolean bResolved = featureMapping.getResolved();
-		if (simulationContext.getGeometry()!=null && bResolved){
-			switch (simulationContext.getGeometry().getDimension()){
-				case 0:{
-					return 1;  // just IC.
-				}
-				case 1:{
-					return 5;  // IC,Diff,Xm,Xp, VelX
-				}
-				case 2:{
-					return 8;  // IC,Diff,Xm,Xp,Ym,Yp, VelX, VelY
-				}
-				case 3:{
-					return 11;  // IC,Diff,Xm,Xp,Ym,Yp,Zm,Zp, VelX, VelY, VelZ
-				}
-				default:{
-					throw new RuntimeException("unexpected Geometry dimension"); // could never happen
-				}
-			}
-		}else{
-			return 1;       // don't have geometry info or not resolved, only Initial Conditions to be displayed.
-		}
-	}else{
-		throw new RuntimeException("unsupported Structure type '"+speciesContext.getStructure().getClass().getName()+"'");
-	}	
-}
-
 
 /**
  * Insert the method's description here.

@@ -39,7 +39,6 @@ public static void main(java.lang.String[] args) {
 		geometry.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume("subVolume0",new Expression(1.0)));
 		SimulationContext simContext = new SimulationContext(model,geometry);
 		simContext.getGeometryContext().assignFeature((Feature)model.getStructure("feature1"),geometry.getGeometrySpec().getSubVolume("subVolume0"));
-		aSpeciesContextSpecPanel.setSimulationContext(simContext);
 		aSpeciesContextSpecPanel.setSpeciesContextSpec(simContext.getReactionContext().getSpeciesContextSpec(sc));
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of java.awt.Panel");
