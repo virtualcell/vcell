@@ -12,13 +12,17 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -35,8 +39,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.apache.lucene.document.DateTools;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
@@ -48,6 +54,7 @@ import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
+import javax.swing.JCheckBox;
 
 public class ROIAssistPanel extends JPanel {
 	
@@ -106,14 +113,25 @@ public class ROIAssistPanel extends JPanel {
 	private static final String ENHANCE_MEDIAN_5x5 = "Median 5x5";
 	
 	private Window disposableWindow;
-	private ROISourceData frapData;
+	private ROISourceData dataToThreshold;
 	private short[] roiTimeAverageDataShort;
-	private short[] lastROISourceDataShort;
+	private short[] enhancedDataToThresholdShort;
 	private OverlayEditorPanelJAI overlayEditorPanelJAI;
-	private RegionInfo[] lastRegionInfos;
+//	private RegionInfo[] lastRegionInfos;
 	private int[] thresholdSliderIntensityLookup;
+	private JPanel thresholdForRoiJPanel;
 	
 	private ROI originalROI;
+	
+//	short[] maskArr;
+	private BitSet maskBitSet;
+	private boolean bInvertThreshold;
+//	private boolean bInvertMask;
+//	private boolean bNeedsValidation;
+	private ROI finalResultROI;
+	private JLabel lblAdjustRoiThreshold;
+	private JCheckBox chckbxInvert;
+	
 	
 	public ROIAssistPanel() {
 		super();
@@ -134,7 +152,7 @@ public class ROIAssistPanel extends JPanel {
 
 		final JLabel spatialEnahnceLabel = new JLabel();
 		spatialEnahnceLabel.setFont(new Font("", Font.BOLD, 12));
-		spatialEnahnceLabel.setText("Spatial Enhance Threshold");
+		spatialEnahnceLabel.setText("Smooth Threshold Source");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.insets = new Insets(10, 4, 0, 4);
 		gridBagConstraints_3.weightx = 1;
@@ -190,14 +208,37 @@ public class ROIAssistPanel extends JPanel {
 		gridBagConstraints_5.gridy = 4;
 		add(thresholdSlider, gridBagConstraints_5);
 
-		final JLabel thresholdForRoiLabel = new JLabel();
-		thresholdForRoiLabel.setFont(new Font("", Font.BOLD, 12));
-		thresholdForRoiLabel.setText("Threshold Adjust ROI");
+		thresholdForRoiJPanel = new JPanel();
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.gridwidth = 2;
 		gridBagConstraints_7.gridy = 3;
 		gridBagConstraints_7.gridx = 0;
-		add(thresholdForRoiLabel, gridBagConstraints_7);
+		add(thresholdForRoiJPanel, gridBagConstraints_7);
+		
+		lblAdjustRoiThreshold = new JLabel("Adjust ROI Threshold");
+		lblAdjustRoiThreshold.setFont(new Font("Dialog", Font.BOLD, 14));
+		thresholdForRoiJPanel.add(lblAdjustRoiThreshold);
+		
+		chckbxInvert = new JCheckBox("Invert");
+		chckbxInvert.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				ROIAssistPanel.this.bInvertThreshold = chckbxInvert.isSelected();
+				thresholdSlider.setValue(thresholdSlider.getMaximum()-thresholdSlider.getValue());
+//				new Thread(new Runnable() {
+//					
+//					public void run() {
+//						try{
+//							createROISourceData(false);
+//						}catch(Exception e2){
+//							e2.printStackTrace();
+//							DialogUtils.showErrorDialog(ROIAssistPanel.this, "Error setting invert\n"+e2.getMessage());
+//						}}
+//				}).start();				
+			}
+		});
+		chckbxInvert.setFont(new Font("Dialog", Font.BOLD, 12));
+		thresholdForRoiJPanel.add(chckbxInvert);
 
 		final JLabel lowerLabel = new JLabel();
 		lowerLabel.setFont(new Font("", Font.BOLD, 14));
@@ -222,7 +263,7 @@ public class ROIAssistPanel extends JPanel {
 		final JPanel okCancelJPanel = new JPanel();
 		okCancelJPanel.setLayout(new GridLayout(1, 0));
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
-		gridBagConstraints_6.insets = new Insets(20, 2, 2, 2);
+		gridBagConstraints_6.insets = new Insets(10, 4, 4, 4);
 		gridBagConstraints_6.gridwidth = 2;
 		gridBagConstraints_6.gridy = 6;
 		gridBagConstraints_6.gridx = 0;
@@ -232,6 +273,7 @@ public class ROIAssistPanel extends JPanel {
 		applyROIButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				try{
+					finalResultROI = dataToThreshold.getCurrentlyDisplayedROI();
 					overlayEditorPanelJAI.displaySpecialData(null, 0, 0);
 				}catch(Exception e2){
 					e2.printStackTrace();
@@ -250,11 +292,12 @@ public class ROIAssistPanel extends JPanel {
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				try{
+					finalResultROI = null;
 					overlayEditorPanelJAI.displaySpecialData(null, 0, 0);
 				}catch(Exception e2){
 					e2.printStackTrace();
 				}
-				frapData.addReplaceRoi(originalROI);
+				dataToThreshold.addReplaceRoi(originalROI);
 				if(disposableWindow != null){
 					disposableWindow.dispose();
 				}else{
@@ -269,12 +312,12 @@ public class ROIAssistPanel extends JPanel {
 		resolveROIButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				try{
-					final RegionInfo keepRegionInfo = pickKeepRegionInfoFromCurrentROI();
-					if(keepRegionInfo != null){
+					final RegionInfo[] keepRegionInfos = pickKeepRegionInfoFromCurrentROI();
+					if(keepRegionInfos != null){
 						waitCursor(true);
 						new Thread(new Runnable(){public void run(){
 							try{
-								resolveCurrentROI(keepRegionInfo);
+								resolveCurrentROI(keepRegionInfos);
 							}catch(final Exception e2){
 								waitCursor(false);
 								SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
@@ -290,7 +333,7 @@ public class ROIAssistPanel extends JPanel {
 				}
 			}
 		});
-		resolveROIButton.setText("Resolve...");
+		resolveROIButton.setText("Keep ROI Regions...");
 		okCancelJPanel.add(resolveROIButton);
 
 		fillVoidsButton = new JButton();
@@ -299,27 +342,31 @@ public class ROIAssistPanel extends JPanel {
 				waitCursor(true);
 				new Thread(new Runnable(){public void run(){
 					try{
-						short[] filledVoidsPixels = frapData.getCurrentlyDisplayedROI().getPixelsXYZ();
-						fillVoids(filledVoidsPixels, false);
+						short[] filledVoidsPixels = dataToThreshold.getCurrentlyDisplayedROI().getPixelsXYZ();
+						boolean bVoidsExisted = fillVoids(filledVoidsPixels, false);
+						if(!bVoidsExisted){
+							DialogUtils.showInfoDialog(ROIAssistPanel.this, "No internal voids were found, no changes were made.");
+							return;
+						}
 						UShortImage ushortImage =
 							new UShortImage(filledVoidsPixels,
-									frapData.getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
-									frapData.getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
-									frapData.getCurrentlyDisplayedROI().getISize().getX(),
-									frapData.getCurrentlyDisplayedROI().getISize().getY(),
-									frapData.getCurrentlyDisplayedROI().getISize().getZ());
-						final ROI newCellROI = new ROI(ushortImage,frapData.getCurrentlyDisplayedROI().getROIName());
+									originalROI.getRoiImages()[0].getOrigin(),
+									originalROI.getRoiImages()[0].getExtent(),
+									originalROI.getISize().getX(),
+									originalROI.getISize().getY(),
+									originalROI.getISize().getZ());
+						final ROI newCellROI = new ROI(ushortImage,originalROI.getROIName());
 						SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
-							frapData.addReplaceRoi(newCellROI);
-							applyROIButton.setEnabled(true);
-							resolveROIButton.setEnabled(false);
-							fillVoidsButton.setEnabled(false);
+							dataToThreshold.addReplaceRoi(newCellROI);
+//							applyROIButton.setEnabled(true);
+//							resolveROIButton.setEnabled(false);
+//							fillVoidsButton.setEnabled(false);
 						}});
 					}catch(final Exception e2){
 						waitCursor(false);
 						SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
 							DialogUtils.showErrorDialog(ROIAssistPanel.this, "Error filling voids in ROI"+
-								frapData.getCurrentlyDisplayedROI().getROIName()+"\n"+e2.getMessage());
+								originalROI.getROIName()+"\n"+e2.getMessage());
 						}});
 					}finally{
 						waitCursor(false);
@@ -332,12 +379,12 @@ public class ROIAssistPanel extends JPanel {
 	}
 	
 	private void createScaledTimeAverageData() throws Exception{
-		int numTimes = frapData.getImageDataset().getSizeT();
-		long[] timeSum = new long[frapData.getImageDataset().getISize().getXYZ()];
+		int numTimes = dataToThreshold.getImageDataset().getSizeT();
+		long[] timeSum = new long[dataToThreshold.getImageDataset().getISize().getXYZ()];
 		for (int t = 0; t < numTimes; t++) {
 			int pixelIndex = 0;
-			for (int z = 0; z < frapData.getImageDataset().getSizeZ(); z++) {
-				UShortImage timePointDataImage = frapData.getImageDataset().getImage(z, 0, t);
+			for (int z = 0; z < dataToThreshold.getImageDataset().getSizeZ(); z++) {
+				UShortImage timePointDataImage = dataToThreshold.getImageDataset().getImage(z, 0, t);
 				for (int y = 0; y < timePointDataImage.getNumY(); y++) {
 					for (int x = 0; x < timePointDataImage.getNumX(); x++) {
 						timeSum[pixelIndex]+= timePointDataImage.getPixel(x,y,0)&0x0000FFFF;
@@ -363,7 +410,8 @@ public class ROIAssistPanel extends JPanel {
 		return collectedPixels;
 	}
 	private void createROISourceData(boolean bNew) throws Exception{
-		final ROI oldROI = frapData.getRoi(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
+//		final ROI oldROI = dataToThreshold.getRoi(ROISourceData.VFRAP_ROI_ENUM0.ROI_CELL.name());
+		final ISize dataToThresholdSize = dataToThreshold.getImageDataset().getISize();
 		short[] roiSourceData = null;//new short[oldROI.getISize().getXYZ()];
 		if(roiSourceComboBox.getSelectedIndex() == 0){//timeAverage
 			if(roiTimeAverageDataShort == null){
@@ -371,43 +419,10 @@ public class ROIAssistPanel extends JPanel {
 			}
 			roiSourceData = roiTimeAverageDataShort.clone();
 		}else{
-			final int timeIndex = roiSourceComboBox.getSelectedIndex()-1;
-//			SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
-//				overlayEditorPanelJAI.setTimeIndex(timeIndex+1);//time starts at 1, quirk of overlayeditor (look into)
-//			}});
-			
-			roiSourceData = collectAllZAtOneTimepointIntoOneArray(frapData.getImageDataset(), timeIndex);
-			
-////			short[] unScaledShorts = new short[roiSourceData.length];
-////			int min = 0x000FFFF&frapData.getImageDataset().getImage(0, 0,timeIndex).getPixel(0, 0, 0);
-////			int max = min;
-//			int pixelIndex = 0;
-//			for (int z = 0; z < frapData.getImageDataset().getSizeZ(); z++) {
-//				UShortImage timePointDataImage = frapData.getImageDataset().getImage(z, 0,timeIndex);
-//				for (int y = 0; y < timePointDataImage.getNumY(); y++) {
-//					for (int x = 0; x < timePointDataImage.getNumX(); x++) {
-//						roiSourceData[pixelIndex] = timePointDataImage.getPixel(x,y,0);
-////						unScaledShorts[pixelIndex] = timePointDataImage.getPixel(x,y,0);
-////						min = Math.min(min,unScaledShorts[pixelIndex]&0x0000FFFF);
-////						max = Math.max(max,unScaledShorts[pixelIndex]&0x0000FFFF);
-//						pixelIndex++;
-//					}
-//				}
-//			}
-			
-			
-//			double scale = 255.0/(max-min);
-//			double offset = (255.0*min)/(min-max);
-//			for (int i = 0; i < unScaledShorts.length; i++) {
-//				System.out.println((unScaledShorts[i]&0x0000FFFF)+"  "+
-//						(((int)((unScaledShorts[i]&0x0000FFFF)/(255.0/max))&0x000000FF))+"  "+
-//						(int)((unScaledShorts[i]&0x0000FFFF)*scale+offset));
-//				roiSourceData[i]|= (int)((unScaledShorts[i]&0x0000FFFF)*scale+offset);
-//			}
-			
+			final int timeIndex = roiSourceComboBox.getSelectedIndex()-1;			
+			roiSourceData = collectAllZAtOneTimepointIntoOneArray(dataToThreshold.getImageDataset(), timeIndex);			
 		}
 		scaleDataInPlace(roiSourceData);
-		
 		
 		if(spatialEnhanceComboBox.getSelectedIndex() > 0){
 			short[] enhacedBytes = new short[roiSourceData.length];
@@ -421,18 +436,18 @@ public class ROIAssistPanel extends JPanel {
 			int accum = 0;
 			int convSize = (radius*2+1)*(radius*2+1);
 			int[] convPixels = new int[convSize];
-			for (int z = 0; z < oldROI.getISize().getZ(); z++) {
-				int zOffset = z*oldROI.getISize().getX()*oldROI.getISize().getY();
-				for (int y = 0; y < oldROI.getISize().getY(); y++) {
-					int yoffset = y*oldROI.getISize().getX();
-					for (int x = 0; x < oldROI.getISize().getX(); x++) {
+			for (int z = 0; z < dataToThresholdSize.getZ(); z++) {
+				int zOffset = z*dataToThresholdSize.getX()*dataToThresholdSize.getY();
+				for (int y = 0; y < dataToThresholdSize.getY(); y++) {
+					int yoffset = y*dataToThresholdSize.getX();
+					for (int x = 0; x < dataToThresholdSize.getX(); x++) {
 						accum = 0;
 						for (int xbox = -radius; xbox <= radius; xbox++) {
 							for (int ybox = -radius; ybox <= radius; ybox++) {
-								if(x+xbox >= 0 && x+xbox < oldROI.getISize().getX() &&
-									y+ybox >= 0 && y+ybox < oldROI.getISize().getY()){
+								if(x+xbox >= 0 && x+xbox < dataToThresholdSize.getX() &&
+									y+ybox >= 0 && y+ybox < dataToThresholdSize.getY()){
 									convPixels[accum]= 0x0000FFFF&
-										roiSourceData[zOffset+yoffset+x+xbox+(ybox*oldROI.getISize().getX())];
+										roiSourceData[zOffset+yoffset+x+xbox+(ybox*dataToThresholdSize.getX())];
 								}else{
 									convPixels[accum]= 0x0000FFFF&roiSourceData[zOffset+yoffset+x];
 								}
@@ -459,11 +474,11 @@ public class ROIAssistPanel extends JPanel {
 			roiSourceData = enhacedBytes;
 		}
 		
-		final short[] finalROISourceData = new short[oldROI.getISize().getX()*oldROI.getISize().getY()];
+		final short[] finalROISourceData = new short[dataToThresholdSize.getX()*dataToThresholdSize.getY()];
 		System.arraycopy(roiSourceData, finalROISourceData.length*overlayEditorPanelJAI.getZ(), finalROISourceData, 0, finalROISourceData.length);
 		SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
 			try{
-			overlayEditorPanelJAI.displaySpecialData(finalROISourceData, oldROI.getISize().getX(), oldROI.getISize().getY());
+			overlayEditorPanelJAI.displaySpecialData(finalROISourceData, dataToThresholdSize.getX(), dataToThresholdSize.getY());
 			}catch(Exception e){
 				throw new RuntimeException("Error displaying TimeAverage data.  "+e.getMessage());
 			}
@@ -472,8 +487,8 @@ public class ROIAssistPanel extends JPanel {
 
 		Integer oldThreshold = (bNew?null:thresholdSliderIntensityLookup[thresholdSlider.getValue()]);
 		
-		lastROISourceDataShort = roiSourceData;
-		TreeMap<Integer, Integer> condensedBins= getCondensedBins(lastROISourceDataShort, originalROI.getROIName());
+		enhancedDataToThresholdShort = roiSourceData;
+		TreeMap<Integer, Integer> condensedBins= getCondensedBins(enhancedDataToThresholdShort/* originalROI.getROIName()*/);
 		 Integer[] intensityIntegers = condensedBins.keySet().toArray(new Integer[0]);
 		 thresholdSliderIntensityLookup = new int[intensityIntegers.length];
 		 for (int i = 0; i < intensityIntegers.length; i++) {
@@ -489,7 +504,7 @@ public class ROIAssistPanel extends JPanel {
 		if(bNew){
 			newThresholdIndex = getHistogramIntensityAtHalfPixelCount(condensedBins);
 			newThresholdIndex =
-				(originalROI.getROIName().equals(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name())
+				(!bInvertThreshold
 					?thresholdSliderIntensityLookup.length-newThresholdIndex-1
 					:newThresholdIndex);
 
@@ -514,26 +529,37 @@ public class ROIAssistPanel extends JPanel {
 		
 	}
 	public void init(Window disposableWindow,ROI originalROI,
-			ROISourceData frapData,OverlayEditorPanelJAI overlayEditorPanelJAI){
+			ROISourceData dataToThreshold,OverlayEditorPanelJAI overlayEditorPanelJAI,
+			BitSet maskBitSet,boolean bInvertThreshold/*,boolean bInvertMask,boolean bNeedsValidation*/){
 		
-		resolveROIButton.setEnabled(false);
-		applyROIButton.setEnabled(false);
-		fillVoidsButton.setEnabled(false);
+//		resolveROIButton.setEnabled(false);
+//		applyROIButton.setEnabled(false);
+//		fillVoidsButton.setEnabled(false);
 		
 		this.originalROI = originalROI;
 		
 		this.disposableWindow = disposableWindow;
-		this.frapData = frapData;
+		this.dataToThreshold = dataToThreshold;
 		this.overlayEditorPanelJAI = overlayEditorPanelJAI;
+		
+//		this.maskArr = maskArr;
+		this.maskBitSet = maskBitSet;
+		chckbxInvert.setSelected(bInvertThreshold);
+		this.bInvertThreshold = bInvertThreshold;
+//		this.bInvertMask = bInvertMask;
+//		this.bNeedsValidation = bNeedsValidation;
 		
 		roiSourceComboBox.removeActionListener(createROISourceDataActionListener);
 		roiSourceComboBox.removeAllItems();
 		roiSourceComboBox.insertItemAt("Time Average", 0);
-		for (int i = 0; i < frapData.getImageDataset().getImageTimeStamps().length; i++) {
-			roiSourceComboBox.insertItemAt(frapData.getImageDataset().getImageTimeStamps()[i], i+1);
+		for (int i = 0; i < dataToThreshold.getImageDataset().getImageTimeStamps().length; i++) {
+			roiSourceComboBox.insertItemAt(dataToThreshold.getImageDataset().getImageTimeStamps()[i], i+1);
 		}
 		int currentTime = overlayEditorPanelJAI.getT();
 		roiSourceComboBox.setSelectedIndex(currentTime+1);
+		if(roiSourceComboBox.getItemCount() == 2){
+			roiSourceComboBox.setEnabled(false);
+		}
 //		roiSourceComboBox.setSelectedIndex(0);
 		roiSourceComboBox.addActionListener(createROISourceDataActionListener);
 		
@@ -549,139 +575,12 @@ public class ROIAssistPanel extends JPanel {
 				}});
 			}
 		}}).start();
-		
-//		try{
-//			thresholdSlider.removeChangeListener(processTimepointChangeListener);
-//			createROISourceData();
-//////			int numTimes = frapData.getImageDataset().getSizeT();
-//////			long[] timeSum = new long[frapData.getImageDataset().getISize().getXYZ()];
-//////			for (int t = 0; t < numTimes; t++) {
-//////				int pixelIndex = 0;
-//////				for (int z = 0; z < frapData.getImageDataset().getSizeZ(); z++) {
-//////					UShortImage timePointDataImage = frapData.getImageDataset().getImage(z, 0, t);
-//////					for (int y = 0; y < timePointDataImage.getNumY(); y++) {
-//////						for (int x = 0; x < timePointDataImage.getNumX(); x++) {
-//////							timeSum[pixelIndex]+= timePointDataImage.getPixel(x,y,0)&0x0000FFFF;
-//////							pixelIndex++;  
-//////						}
-//////					}
-//////				}
-//////			}
-//////			roiTimeAverageDataShort = new short[timeSum.length];
-//////			for (int i = 0; i < timeSum.length; i++) {
-//////				roiTimeAverageDataShort[i]|= ((int)(timeSum[i]/numTimes))&0x0000FFFF;
-//////			}
-//////			scaleDataInPlace(roiTimeAverageDataShort);
-////			
-////			
-////			
-//////			int currentTime = overlayEditorPanelJAI.getT();
-//////			roiSourceComboBox.removeActionListener(processROIActionListener);
-//////			roiSourceComboBox.setSelectedIndex(currentTime+1);
-//////			roiSourceComboBox.addActionListener(processROIActionListener);
-////
-////			short[] timePointPixels = collectAllZAtOneTimepointIntoOneArray(frapData.getImageDataset(),currentTime);
-////			
-//////			short[] timePointPixels = new short[frapData.getImageDataset().getISize().getXYZ()];
-//////			int pixelIndex = 0;
-//////			for (int z = 0; z < frapData.getImageDataset().getSizeZ(); z++) {
-//////				short[] slicePixels = frapData.getImageDataset().getImage(z, 0, currentTime).getPixels();
-//////				System.arraycopy(slicePixels, 0, timePointPixels, pixelIndex, slicePixels.length);
-//////				pixelIndex+= slicePixels.length;
-//////				
-////////				UShortImage timePointDataImage = frapData.getImageDataset().getImage(z, 0, currentTime);
-////////				for (int y = 0; y < timePointDataImage.getNumY(); y++) {
-////////					for (int x = 0; x < timePointDataImage.getNumX(); x++) {
-////////						timePointPixels[pixelIndex]+= timePointDataImage.getPixel(x,y,0)&0x0000FFFF;
-////////						pixelIndex++; 
-////////					}
-////////				}
-//////			}
-////			
-////			scaleDataInPlace(timePointPixels);
-////			
-////			HashMap<Integer, Integer> condensedBins = getCondensedBins(timePointPixels, originalROI.getROIType());
-////			int sliderVal = getHistogramIntensityAtHalfPixelCount(condensedBins);
-////		
-//////			int sliderVal = getHistogramIndexAtHalfPixelCount(timePointPixels, originalROI.getROIType());
-////			thresholdSlider.setValue((originalROI.getROIType().equals(RoiType.ROI_CELL)?MAX_SCALE-sliderVal:sliderVal));
-////			
-//////			short[] cellMaskArr = frapData.getRoi(RoiType.ROI_CELL).getPixelsXYZ();
-//////			int[] bins = new int[MAX_SCALE+1];
-//////			int binTotal = 0;
-////////			int threshold = (originalROI.getROIType().equals(RoiType.ROI_CELL)?MAX_SCALE:0);
-//////			for (int i = 0; i < roiTimeAverageDataShort.length; i++) {
-//////				boolean bSet = isSet(originalROI.getROIType(), roiTimeAverageDataShort[i], MAX_SCALE, cellMaskArr[i] != 0);
-//////				if(bSet){
-//////					System.out.println();
-//////				}
-//////				bins[(int)(roiTimeAverageDataShort[i]&0x0000FFFF)]+= (bSet?1:0);
-//////				binTotal+= (bSet?1:0);
-//////			}
-//////			int sliderVal = 0;
-//////			int accum = binTotal;
-////////			int lastNonZeroBinIndex = -1;
-//////			for (int i = 0; i < bins.length; i++) {
-//////				if(bins[i] != 0){
-//////					accum-= bins[i];
-//////					if(accum < binTotal/2){
-//////						sliderVal = i+1;
-//////						if(sliderVal> MAX_SCALE){
-//////							sliderVal = MAX_SCALE;
-//////						}
-//////						thresholdSlider.setValue((originalROI.getROIType().equals(RoiType.ROI_CELL)?MAX_SCALE-sliderVal:sliderVal));
-//////						break;
-//////					}
-////////					lastNonZeroBinIndex = i;
-//////				}
-//////			}
-////			
-//////			int min = (int)(timeAvg[0]/numTimes);
-//////			int max = min;
-//////			for (int i = 0; i < timeAvg.length; i++) {
-//////				min = (int)Math.min(min,timeAvg[i]/numTimes);
-//////				max = (int)Math.max(max, timeAvg[i]/numTimes);
-//////			}
-//////			roiTimeAverageData = new byte[timeAvg.length];
-//////			int[] bins = new int[max+1];
-//////			for (int i = 0; i < timeAvg.length; i++) {
-//////				roiTimeAverageData[i] = (byte)((int)(((timeAvg[i]/numTimes)/(255.0/max)))&0x000000FF);
-//////				bins[(int)(roiTimeAverageData[i]&0x000000FF)]++;
-//////			}
-//////			//calculate half the pixels
-//////			int accum = 0;
-//////			for (int i = 0; i < bins.length; i++) {
-//////				accum+= bins[i];
-//////				if(accum > roiTimeAverageData.length/2){
-//////					int sliderVal = (i==255?255:i+1);
-//////					thresholdSlider.setValue((originalROI.getROIType().equals(RoiType.ROI_CELL)?255-sliderVal:sliderVal));
-//////					break;
-//////				}
-//////			}
-////			
-////			
-//////			for (int i = 0; i < bins.length; i++) {
-//////				if(bins[i] != 0){
-//////					System.out.print(i+" ");
-//////					for (int j = 0; j < bins[i]; j++) {
-//////						if(j%1 == 0){
-//////							System.out.print("*");
-//////						}
-//////					}
-//////					System.out.println();
-//////				}
-//////			}
-//////			System.out.println("Total pixels ="+frapData.getImageDataset().getISize()+" t="+frapData.getImageDataset().getSizeT());
-//		}catch(Exception e){
-//			e.printStackTrace();
-//			DialogUtils.showErrorDialog("Auto ROI error:"+e.getMessage());
-//		}
-
 	}
 	
-	private TreeMap<Integer, Integer> getCondensedBins(short[] binThis,String roiName){
-		boolean bMaskWithCell = !roiName.equals(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
-		short[] cellMaskArr = (bMaskWithCell?frapData.getRoi(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name()).getPixelsXYZ():null);
+	private TreeMap<Integer, Integer> getCondensedBins(short[] binThis/*String roiName,*/){
+//		boolean bMaskWithCell = !roiName.equals(ROISourceData.VFRAP_ROI_ENUM0.ROI_CELL.name());
+//		short[] cellMaskArr = (bMaskWithCell?dataToThreshold.getRoi(ROISourceData.VFRAP_ROI_ENUM0.ROI_CELL.name()).getPixelsXYZ():null);
+//		short[] maskArr = (bMask?originalROI.getPixelsXYZ():null);
 		int[] bins = new int[MAX_SCALE+1];
 		int[] tempLookup = new int[bins.length];
 		for (int i = 0; i < bins.length; i++) {
@@ -693,7 +592,7 @@ public class ROIAssistPanel extends JPanel {
 //			if(index == 65535){
 //				System.out.println();
 //			}
-			boolean bSet = isSet(roiName, binThis[i], MAX_SCALE, tempLookup,(bMaskWithCell?cellMaskArr[i] != 0:true));
+			boolean bSet = isSet(/*roiName, */binThis[i], MAX_SCALE, tempLookup,(maskBitSet!= null?maskBitSet.get(i):true)/*(maskArr != null?maskArr[i] != 0:true)*/);
 //			if(index  == 65535){
 //				System.out.println(("x="+i%originalROI.getISize().getX())+" y="+(i/originalROI.getISize().getX())+" bset="+bSet+" mask="+(bMaskWithCell?cellMaskArr[i] != 0:true));
 //			}
@@ -708,6 +607,10 @@ public class ROIAssistPanel extends JPanel {
 			}
 		}
 		return condensedBinsMap;
+	}
+	
+	public ROI getFinalResultROI(){
+		return finalResultROI;
 	}
 	private int getHistogramIntensityAtHalfPixelCount(TreeMap<Integer, Integer> condensedBins){
 		int binTotal = 0;
@@ -789,7 +692,7 @@ public class ROIAssistPanel extends JPanel {
 		new Thread(new Runnable(){public void run(){
 		try{			
 			
-//			ROI oldROI = frapData.getRoi(ROI.RoiType.ROI_CELL);
+//			ROI oldROI = dataToThreshold.getRoi(ROI.RoiType.ROI_CELL);
 //			short[] roiSourceData = null;//new short[oldROI.getISize().getXYZ()];
 //			if(roiSourceComboBox.getSelectedIndex() == 0){//timeAverage
 //				if(roiTimeAverageDataShort == null){
@@ -802,14 +705,14 @@ public class ROIAssistPanel extends JPanel {
 //					overlayEditorPanelJAI.setTimeIndex(timeIndex+1);//time starts at 1, quirk of overlayeditor (look into)
 //				}});
 //				
-//				roiSourceData = collectAllZAtOneTimepointIntoOneArray(frapData.getImageDataset(), timeIndex);
+//				roiSourceData = collectAllZAtOneTimepointIntoOneArray(dataToThreshold.getImageDataset(), timeIndex);
 //				
 //////				short[] unScaledShorts = new short[roiSourceData.length];
-//////				int min = 0x000FFFF&frapData.getImageDataset().getImage(0, 0,timeIndex).getPixel(0, 0, 0);
+//////				int min = 0x000FFFF&dataToThreshold.getImageDataset().getImage(0, 0,timeIndex).getPixel(0, 0, 0);
 //////				int max = min;
 ////				int pixelIndex = 0;
-////				for (int z = 0; z < frapData.getImageDataset().getSizeZ(); z++) {
-////					UShortImage timePointDataImage = frapData.getImageDataset().getImage(z, 0,timeIndex);
+////				for (int z = 0; z < dataToThreshold.getImageDataset().getSizeZ(); z++) {
+////					UShortImage timePointDataImage = dataToThreshold.getImageDataset().getImage(z, 0,timeIndex);
 ////					for (int y = 0; y < timePointDataImage.getNumY(); y++) {
 ////						for (int x = 0; x < timePointDataImage.getNumX(); x++) {
 ////							roiSourceData[pixelIndex] = timePointDataImage.getPixel(x,y,0);
@@ -885,30 +788,36 @@ public class ROIAssistPanel extends JPanel {
 //			}
 			
 			
-			boolean bIgnoreMask = false;
-			boolean bInvert = !frapData.getCurrentlyDisplayedROI().getROIName().equals(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
+//			boolean bIgnoreMask = false;
+//			boolean bInvert = !originalROI.getROIName().equals(ROISourceData.VFRAP_ROI_ENUM0.ROI_CELL.name());
 //			if(bInvert){
-//				bIgnoreMask = frapData.getRoi(RoiType.ROI_CELL).isAllPixelsZero();;
+//				bIgnoreMask = dataToThreshold.getRoi(RoiType.ROI_CELL).isAllPixelsZero();;
 //			}
-			boolean bBackground = frapData.getCurrentlyDisplayedROI().getROIName().equals(ROISourceData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
-			short[] cellMask = null;
-			if(bInvert){
-				cellMask = frapData.getRoi(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name()).getPixelsXYZ();
-			}
-			short[] shortPixels = new short[lastROISourceDataShort.length];
+//			boolean bBackground = originalROI.getROIName().equals(ROISourceData.VFRAP_ROI_ENUM0.ROI_BACKGROUND.name());
+//			short[] cellMask = null;
+//			if(bMask){
+//				cellMask = originalROI/*dataToThreshold.getRoi(ROISourceData.VFRAP_ROI_ENUM0.ROI_CELL.name())*/.getPixelsXYZ();
+//			}
+			
+//			System.out.println("ROIAssistPanel.processROI threshold "+thresholdSlider.getValue());
+//			thresholdForRoiLabel.setText("Threshold Adjust ROI ("+thresholdSlider.getValue()+")");
+			
+			short[] shortPixels = new short[enhancedDataToThresholdShort.length];
 //			System.out.println(
 //					thresholdSlider.getValue()+" "+
 //					thresholdSliderIntensityLookup[thresholdSlider.getValue()]);
 			
-			for (int i = 0; i < lastROISourceDataShort.length; i++) {
-//				if(lastROISourceDataShort[i] == 0xFFFF){
+			for (int i = 0; i < enhancedDataToThresholdShort.length; i++) {
+//				if(enhancedDataToThresholdShort[i] == 0xFFFF){
 //					System.out.println();
 //				}
 				shortPixels[i] =(short)
-					(isSet(frapData.getCurrentlyDisplayedROI().getROIName(), lastROISourceDataShort[i],
-					thresholdSlider.getValue(),thresholdSliderIntensityLookup,
-					(cellMask == null?true:cellMask[i] != 0))
-						?0xFFFF:0);
+					(isSet(/*originalROI.getROIName(),*/
+					enhancedDataToThresholdShort[i],
+					thresholdSlider.getValue(),
+					thresholdSliderIntensityLookup,
+					(maskBitSet!= null?maskBitSet.get(i):true)/*(maskArr == null?true:maskArr[i] != 0)*/)
+				?0xFFFF:0);
 //				if(i == 12035){
 //					System.out.println("ROIAssistPanel.processROI cellmask at "+i+" = "+(cellMask == null?null:cellMask[i] != 0));
 //					System.out.println("ROIAssistPanel.processROI val at "+i+" = "+(0x0000FFFF&shortPixels[i]));
@@ -943,16 +852,16 @@ public class ROIAssistPanel extends JPanel {
 			UShortImage ushortImage =
 				new UShortImage(shortPixels,originalROI.getRoiImages()[0].getOrigin(),originalROI.getRoiImages()[0].getExtent(),
 						originalROI.getISize().getX(),originalROI.getISize().getY(),originalROI.getISize().getZ());
-			ROI newCellROI = new ROI(ushortImage,frapData.getCurrentlyDisplayedROI().getROIName());
-			final ROI forceValidROI = forceROIValid(newCellROI);
+			final ROI newCellROI = new ROI(ushortImage,originalROI.getROIName());
+//			final ROI forceValidROI = forceROIValid(newCellROI);
 			SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
-				frapData.addReplaceRoi(forceValidROI);
+				dataToThreshold.addReplaceRoi(newCellROI/*forceValidROI*/);
 //				repaint();
 			}});
 
 		}catch(final Exception e2){
 //			pp.stop();
-			lastROISourceDataShort = null;
+			enhancedDataToThresholdShort = null;
 			e2.printStackTrace();
 			SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
 				DialogUtils.showErrorDialog(ROIAssistPanel.this, "Error setting new ROI. "+e2.getMessage());
@@ -965,27 +874,28 @@ public class ROIAssistPanel extends JPanel {
 	
 	}
 
-	private boolean isSet(String roiName,short roiSourceDataUnsignedShort,int thresholdIndex,int[] thresholdLookupArr,boolean cellMask){
+	private boolean isSet(short roiSourceDataUnsignedShort,int thresholdIndex,int[] thresholdLookupArr,boolean maskArrState){
 //		if((roiSourceDataUnsignedShort&0x0000FFFF) == 65535){
 //			System.out.println();
 //		}
-		if(!roiName.equals(ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name())){
+		if(bInvertThreshold/*!roiName.equals(ROISourceData.VFRAP_ROI_ENUM0.ROI_CELL.name())*/){
 			if(((int)(roiSourceDataUnsignedShort&0x0000FFFF)) >/*=*/ thresholdLookupArr[thresholdIndex]){
 				return false;//shortPixels[i] = 0;
 			}else{
-				if(roiName.equals(ROISourceData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())){
-					return (cellMask?false:true);//shortPixels[i]|= (cellMask[i] == 0?0xFFFF:0);//0xFFFF;
-				}else if(cellMask){
-					return true;//shortPixels[i]|= 0xFFFF;
-				}else{
-					return false;//shortPixels[i] = 0;
-				}
+				return maskArrState;
+//				if(bInvertMask/*roiName.equals(ROISourceData.VFRAP_ROI_ENUM0.ROI_BACKGROUND.name())*/){
+//					return (maskArrState?false:true);//shortPixels[i]|= (cellMask[i] == 0?0xFFFF:0);//0xFFFF;
+//				}else if(maskArrState){
+//					return true;//shortPixels[i]|= 0xFFFF;
+//				}else{
+//					return false;//shortPixels[i] = 0;
+//				}
 			}
 		}else{
 			if(((int)(roiSourceDataUnsignedShort&0x0000FFFF)) < thresholdLookupArr[thresholdLookupArr.length-1-thresholdIndex]){
 				return false;//shortPixels[i] = 0;
 			}else{
-				return true;//shortPixels[i]|= 0xFFFF;
+				return maskArrState;//true;//shortPixels[i]|= 0xFFFF;
 			}
 		}
 
@@ -994,14 +904,14 @@ public class ROIAssistPanel extends JPanel {
 	
 	public void paint(Graphics g){
 		super.paint(g);
-//		if(lastROISourceDataShort == null){
+//		if(enhancedDataToThresholdShort == null){
 //			return;
 //		}
 //		int[] histogram = new int[MAX_SCALE+1];
-//		int min = lastROISourceDataShort[0]&0x0000FFFF;
+//		int min = enhancedDataToThresholdShort[0]&0x0000FFFF;
 //		int max = min;
-//		for (int i = 0; i < lastROISourceDataShort.length; i++) {
-//			int index = lastROISourceDataShort[i]&0x0000FFFF;
+//		for (int i = 0; i < enhancedDataToThresholdShort.length; i++) {
+//			int index = enhancedDataToThresholdShort[i]&0x0000FFFF;
 //			histogram[index]++;
 //			min = Math.min(min,histogram[index]);
 //			max = Math.max(max, histogram[index]);
@@ -1051,134 +961,134 @@ public class ROIAssistPanel extends JPanel {
 //		graphics.dispose();
 //	}
 
-	private ROI forceROIValid(ROI validateROI) throws Exception{
-		if(validateROI.getROIName().equals(ROISourceData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())){
-			lastRegionInfos = null;
-			SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
-				applyROIButton.setEnabled(true);
-				resolveROIButton.setEnabled(false);
-				fillVoidsButton.setEnabled(false);
-			}});
-			return validateROI;
-		}
-//		ROI validateROI = frapData.getCurrentlyDisplayedROI();
-		if(validateROI.getNonzeroPixelsCount() < 1){
-			return validateROI;
-		}
-		//
-		//Remove pixels touching only at corners
-		//
-		short[] validatePixels = validateROI.getPixelsXYZ();
-//		int XYSIZE = validateROI.getISize().getX()*validateROI.getISize().getY();
-////		boolean bChanged;
-////		do{
-////			bChanged = false;
-//			for (int z = 0; z < validateROI.getISize().getZ(); z++) {
-//				int zOffset = z*XYSIZE;
-//				for (int y = 0; y < validateROI.getISize().getY(); y++) {
-//					int yoffset = y*validateROI.getISize().getX();
-//					int zyOffset = zOffset+yoffset;
-//					for (int x = 0; x < validateROI.getISize().getX(); x++) {
-//						boolean bFoundNeighbor = false;
-//						if(validatePixels[zyOffset+x] == 0){
-//							bFoundNeighbor = true;
-//							continue;
-//						}
-//						if((x-1) >= 0){
-//							bFoundNeighbor = validatePixels[zyOffset+x-1] != 0;							
-//						}
-//						if(!bFoundNeighbor && (x+1) < validateROI.getISize().getX()){
-//							bFoundNeighbor = validatePixels[zyOffset+x+1] != 0;
-//						}
-//						if(!bFoundNeighbor && (y-1) >= 0){
-//							bFoundNeighbor = validatePixels[zyOffset+x-validateROI.getISize().getX()] != 0;
-//						}
-//						if(!bFoundNeighbor && (y+1) < validateROI.getISize().getY()){
-//							bFoundNeighbor = validatePixels[zyOffset+x+validateROI.getISize().getX()] != 0;
-//						}
-//						if(!bFoundNeighbor && (z-1) >= 0){
-//							bFoundNeighbor = validatePixels[zyOffset+x-XYSIZE] != 0;
-//						}
-//						if(!bFoundNeighbor && (z+1) < validateROI.getISize().getZ()){
-//							bFoundNeighbor = validatePixels[zyOffset+x+XYSIZE] != 0;
-//						}
-//						if(!bFoundNeighbor){
-//							validatePixels[zyOffset+x] = 0;
-////							bChanged = true;
-//						}
-//					}
-//				}
-//			}
-////		}while(bChanged);
-			
-		//
-		//Remove noise objects
-		//
-		lastRegionInfos = calculateRegionInfos(validatePixels);
-		Vector<RegionInfo> roiRegionInfoV = new Vector<RegionInfo>();
-		for (int i = 0; i < lastRegionInfos.length; i++) {
-			if(lastRegionInfos[i].getPixelValue() == 1){
-				roiRegionInfoV.add(lastRegionInfos[i]);
-			}
-//			System.out.println(lastRegionInfos[i]);
-		}
-
-//		if(validateROI.getROIType().equals(RoiType.ROI_CELL) || validateROI.getROIType().equals(RoiType.ROI_BLEACHED)){
-			if(roiRegionInfoV.size()> 1){
-				SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-					applyROIButton.setEnabled(false);
-					resolveROIButton.setEnabled(true);
-					fillVoidsButton.setEnabled(false);
-				}});
-			}else{
-				final boolean hasInternalVoids = fillVoids(validatePixels,true);
-				SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
-					lastRegionInfos = null;
-					applyROIButton.setEnabled(!hasInternalVoids);
-					resolveROIButton.setEnabled(false);
-					fillVoidsButton.setEnabled(hasInternalVoids);
-				}});
-			}
-
-//		}
-//		else{//background
+//	private ROI forceROIValid(ROI validateROI) throws Exception{
+//		if(!bNeedsValidation/*validateROI.getROIName().equals(ROISourceData.VFRAP_ROI_ENUM0.ROI_BACKGROUND.name())*/){
 //			lastRegionInfos = null;
-//			applyROIButton.setEnabled(true);
-//			resolveROIButton.setEnabled(false);
+//			SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
+//				applyROIButton.setEnabled(true);
+//				resolveROIButton.setEnabled(false);
+//				fillVoidsButton.setEnabled(false);
+//			}});
+//			return validateROI;
 //		}
-		
-		UShortImage ushortImage =
-			new UShortImage(validatePixels,validateROI.getRoiImages()[0].getOrigin(),validateROI.getRoiImages()[0].getExtent(),
-					validateROI.getISize().getX(),validateROI.getISize().getY(),validateROI.getISize().getZ());
-		ROI newROI = new ROI(ushortImage,validateROI.getROIName());
-				
-		if(newROI.compareEqual(validateROI)){
-			return validateROI;
-		}
-		return newROI;
-
-	}
+////		ROI validateROI = originalROI;
+//		if(validateROI.getNonzeroPixelsCount() < 1){
+//			return validateROI;
+//		}
+//		//
+//		//Remove pixels touching only at corners
+//		//
+//		short[] validatePixels = validateROI.getPixelsXYZ();
+////		int XYSIZE = validateROI.getISize().getX()*validateROI.getISize().getY();
+//////		boolean bChanged;
+//////		do{
+//////			bChanged = false;
+////			for (int z = 0; z < validateROI.getISize().getZ(); z++) {
+////				int zOffset = z*XYSIZE;
+////				for (int y = 0; y < validateROI.getISize().getY(); y++) {
+////					int yoffset = y*validateROI.getISize().getX();
+////					int zyOffset = zOffset+yoffset;
+////					for (int x = 0; x < validateROI.getISize().getX(); x++) {
+////						boolean bFoundNeighbor = false;
+////						if(validatePixels[zyOffset+x] == 0){
+////							bFoundNeighbor = true;
+////							continue;
+////						}
+////						if((x-1) >= 0){
+////							bFoundNeighbor = validatePixels[zyOffset+x-1] != 0;							
+////						}
+////						if(!bFoundNeighbor && (x+1) < validateROI.getISize().getX()){
+////							bFoundNeighbor = validatePixels[zyOffset+x+1] != 0;
+////						}
+////						if(!bFoundNeighbor && (y-1) >= 0){
+////							bFoundNeighbor = validatePixels[zyOffset+x-validateROI.getISize().getX()] != 0;
+////						}
+////						if(!bFoundNeighbor && (y+1) < validateROI.getISize().getY()){
+////							bFoundNeighbor = validatePixels[zyOffset+x+validateROI.getISize().getX()] != 0;
+////						}
+////						if(!bFoundNeighbor && (z-1) >= 0){
+////							bFoundNeighbor = validatePixels[zyOffset+x-XYSIZE] != 0;
+////						}
+////						if(!bFoundNeighbor && (z+1) < validateROI.getISize().getZ()){
+////							bFoundNeighbor = validatePixels[zyOffset+x+XYSIZE] != 0;
+////						}
+////						if(!bFoundNeighbor){
+////							validatePixels[zyOffset+x] = 0;
+//////							bChanged = true;
+////						}
+////					}
+////				}
+////			}
+//////		}while(bChanged);
+//			
+//		//
+//		//Remove noise objects
+//		//
+//		lastRegionInfos = calculateRegionInfos(validatePixels);
+//		Vector<RegionInfo> roiRegionInfoV = new Vector<RegionInfo>();
+//		for (int i = 0; i < lastRegionInfos.length; i++) {
+//			if(lastRegionInfos[i].getPixelValue() == 1){
+//				roiRegionInfoV.add(lastRegionInfos[i]);
+//			}
+////			System.out.println(lastRegionInfos[i]);
+//		}
+//
+////		if(validateROI.getROIType().equals(RoiType.ROI_CELL) || validateROI.getROIType().equals(RoiType.ROI_BLEACHED)){
+//			if(roiRegionInfoV.size()> 1){
+//				SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+//					applyROIButton.setEnabled(false);
+//					resolveROIButton.setEnabled(true);
+//					fillVoidsButton.setEnabled(false);
+//				}});
+//			}else{
+//				final boolean hasInternalVoids = fillVoids(validatePixels,true);
+//				SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
+//					lastRegionInfos = null;
+//					applyROIButton.setEnabled(!hasInternalVoids);
+//					resolveROIButton.setEnabled(false);
+//					fillVoidsButton.setEnabled(hasInternalVoids);
+//				}});
+//			}
+//
+////		}
+////		else{//background
+////			lastRegionInfos = null;
+////			applyROIButton.setEnabled(true);
+////			resolveROIButton.setEnabled(false);
+////		}
+//		
+//		UShortImage ushortImage =
+//			new UShortImage(validatePixels,validateROI.getRoiImages()[0].getOrigin(),validateROI.getRoiImages()[0].getExtent(),
+//					validateROI.getISize().getX(),validateROI.getISize().getY(),validateROI.getISize().getZ());
+//		ROI newROI = new ROI(ushortImage,validateROI.getROIName());
+//				
+//		if(newROI.compareEqual(validateROI)){
+//			return validateROI;
+//		}
+//		return newROI;
+//
+//	}
 	
 	private boolean fillVoids(short[] fillvoidPixels,boolean bCheckOnly) throws Exception{
 		boolean bHadAnyInternalVoids = false;
 		int XYSIZE =
-			frapData.getCurrentlyDisplayedROI().getISize().getX()*frapData.getCurrentlyDisplayedROI().getISize().getY();
-		boolean bUseZ = frapData.getCurrentlyDisplayedROI().getISize().getZ()>1;
+			originalROI.getISize().getX()*originalROI.getISize().getY();
+		boolean bUseZ = originalROI.getISize().getZ()>1;
 		RegionInfo[] newRegionInfos = calculateRegionInfos(fillvoidPixels);
 		for (int i = 0; i < newRegionInfos.length; i++) {
 			if(newRegionInfos[i].getPixelValue() == 0){
 				boolean bInternalVoid = true;
-				for (int z = 0; z < frapData.getCurrentlyDisplayedROI().getISize().getZ(); z++) {
+				for (int z = 0; z < originalROI.getISize().getZ(); z++) {
 					int zOffset = z*XYSIZE;
-					for (int y = 0; y < frapData.getCurrentlyDisplayedROI().getISize().getY(); y++) {
-						int yoffset = y*frapData.getCurrentlyDisplayedROI().getISize().getX();
+					for (int y = 0; y < originalROI.getISize().getY(); y++) {
+						int yoffset = y*originalROI.getISize().getX();
 						int zyOffset = zOffset+yoffset;
-						for (int x = 0; x < frapData.getCurrentlyDisplayedROI().getISize().getX(); x++) {
+						for (int x = 0; x < originalROI.getISize().getX(); x++) {
 							if(newRegionInfos[i].isIndexInRegion(zyOffset+x)){
 								if(x==0 || y==0 | (bUseZ && z==0) |
-									x==(frapData.getCurrentlyDisplayedROI().getISize().getX()-1) ||
-									y==(frapData.getCurrentlyDisplayedROI().getISize().getY()-1) ||
-									(bUseZ && z==(frapData.getCurrentlyDisplayedROI().getISize().getZ()-1))){
+									x==(originalROI.getISize().getX()-1) ||
+									y==(originalROI.getISize().getY()-1) ||
+									(bUseZ && z==(originalROI.getISize().getZ()-1))){
 									bInternalVoid = false;
 									break;
 								}
@@ -1195,7 +1105,7 @@ public class ROIAssistPanel extends JPanel {
 					}
 					for (int j = 0; j < fillvoidPixels.length; j++) {
 						if(newRegionInfos[i].isIndexInRegion(j)){
-//							System.out.println(j%frapData.getCurrentlyDisplayedROI().getISize().getX()+","+j/frapData.getCurrentlyDisplayedROI().getISize().getX());
+//							System.out.println(j%originalROI.getISize().getX()+","+j/originalROI.getISize().getX());
 							fillvoidPixels[j]|= 0xFFFF;
 						}
 					}
@@ -1216,22 +1126,35 @@ public class ROIAssistPanel extends JPanel {
 		return roiRegionImage.getRegionInfos();
 	}
 	
-	private RegionInfo pickKeepRegionInfoFromCurrentROI() throws Exception{
-		if(lastRegionInfos == null){
-			throw new Exception("No regionInfo to resolve");
-		}
-
-		final Vector<RegionInfo> roiRegionInfoV2 = new Vector<RegionInfo>();
-		for (int i = 0; i < lastRegionInfos.length; i++) {
-			if(lastRegionInfos[i].getPixelValue() == 1){
-				roiRegionInfoV2.add(lastRegionInfos[i]);
+	
+	private RegionInfo[] pickKeepRegionInfoFromCurrentROI() throws Exception{
+//		if(lastRegionInfos == null){
+//			throw new Exception("No regionInfo to resolve");
+//		}
+//
+//		final Vector<RegionInfo> roiRegionInfoV2 = new Vector<RegionInfo>();
+//		for (int i = 0; i < lastRegionInfos.length; i++) {
+//			if(lastRegionInfos[i].getPixelValue() == 1){
+//				roiRegionInfoV2.add(lastRegionInfos[i]);
+//			}
+//		}
+		
+		RegionInfo[] thresholdRegionInfos = calculateRegionInfos(dataToThreshold.getCurrentlyDisplayedROI().getPixelsXYZ());
+		Vector<RegionInfo> roiRegionInfoV = new Vector<RegionInfo>();
+		for (int i = 0; i < thresholdRegionInfos.length; i++) {
+			if(thresholdRegionInfos[i].getPixelValue() == 1){
+				roiRegionInfoV.add(thresholdRegionInfos[i]);
 			}
-		}
-		if(roiRegionInfoV2.size() <= 1){
-			throw new Exception("No regionInfo to resolve");
+//			System.out.println(lastRegionInfos[i]);
 		}
 
-		final RegionInfo[] regionInfoArr = roiRegionInfoV2.toArray(new RegionInfo[0]);
+		if(roiRegionInfoV.size() == 0){
+			DialogUtils.showInfoDialog(this, "There are no Regions Of Interest to resolve.");
+			return null;
+		}
+
+		//Present list to pick from
+		final RegionInfo[] regionInfoArr = roiRegionInfoV.toArray(new RegionInfo[0]);
 		Arrays.sort(regionInfoArr,
 				new Comparator<RegionInfo>(){
 					public int compare(RegionInfo o1, RegionInfo o2) {
@@ -1243,30 +1166,81 @@ public class ROIAssistPanel extends JPanel {
 			rowData[i][0] = regionInfoArr[i].getNumPixels()+" pixels";
 		}
 		
-		ROI beforeROI = new ROI(frapData.getCurrentlyDisplayedROI());
+		final ROI beforeROI = new ROI(dataToThreshold.getCurrentlyDisplayedROI());
 		int[] resultArr = null;
+		
+		ListSelectionListener listSelectionListener = new ListSelectionListener(){
+			public void valueChanged(ListSelectionEvent e) {
+				if(!e.getValueIsAdjusting()){
+					try{
+						DefaultListSelectionModel defaultListSelectionModel = (DefaultListSelectionModel)e.getSource();
+						Vector<Integer> pickedIndexes = new Vector<Integer>();
+						if(!defaultListSelectionModel.isSelectionEmpty()){
+							for (int i = defaultListSelectionModel.getMinSelectionIndex(); i <= defaultListSelectionModel.getMaxSelectionIndex(); i++) {
+								if(defaultListSelectionModel.isSelectedIndex(i)){
+									pickedIndexes.add(i);
+								}
+							}
+						}
+//						System.out.println("list index="+index);
+//						RegionInfo keepRegion = regionInfoArr[index];
+						short[] pickedPixels = new short[beforeROI.getISize().getXYZ()];//beforeROI.getPixelsXYZ();
+						for (int i = 0; i < pickedPixels.length; i++) {
+							for (int j = 0; j < pickedIndexes.size(); j++) {
+								if(regionInfoArr[pickedIndexes.elementAt(j)].isIndexInRegion(i)){
+									pickedPixels[i] = 1;
+								}								
+							}
+						}
+						ROI newCellROI = null;
+						if(pickedIndexes.size() == 0){
+							newCellROI = beforeROI;
+						}else{
+							UShortImage ushortImage =
+								new UShortImage(pickedPixels,
+									originalROI.getRoiImages()[0].getOrigin(),
+									originalROI.getRoiImages()[0].getExtent(),
+									originalROI.getISize().getX(),
+									originalROI.getISize().getY(),
+									originalROI.getISize().getZ());
+							newCellROI = new ROI(ushortImage,originalROI.getROIName());
+						}
+						dataToThreshold.addReplaceRoi(newCellROI);
+					}catch(Exception e2){
+						e2.printStackTrace();
+						throw new RuntimeException("Error selecting resolved ROI",e2);
+					}
+
+				}
+			}
+		};
+
 //		SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
 			try{
-				resultArr = /*DialogUtils.*/showComponentOKCancelTableList(this, "Select ROI to Keep",
-					new String[] {"ROI Size (pixel count)"}, rowData, ListSelectionModel.SINGLE_SELECTION,
-					regionInfoArr,beforeROI.getPixelsXYZ());
+				resultArr = DialogUtils.showComponentOKCancelTableList(this, "Select 1 or more pixel regions to keep in ROI",
+					new String[] {"ROI Size (pixel count)"}, rowData,ListSelectionModel.MULTIPLE_INTERVAL_SELECTION,
+					listSelectionListener);
 			}catch(UserCancelException e){
 				resultArr = null;
 			}
 //		}});
 		if(resultArr != null && resultArr.length > 0){
-			return (resultArr == null?null:regionInfoArr[resultArr[0]]);
+			RegionInfo[] pickedRegions = new RegionInfo[resultArr.length];
+			for (int i = 0; i < resultArr.length; i++) {
+				pickedRegions[i] = regionInfoArr[resultArr[i]];
+			}
+			return pickedRegions;//(resultArr == null?null:regionInfoArr[resultArr]);
 		}else{
-//			SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
-				frapData.addReplaceRoi(beforeROI);
-				applyROIButton.setEnabled(false);
-				resolveROIButton.setEnabled(true);
-				fillVoidsButton.setEnabled(false);
-//			}});
+////			SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
+				dataToThreshold.addReplaceRoi(beforeROI);
+//				applyROIButton.setEnabled(false);
+//				resolveROIButton.setEnabled(true);
+//				fillVoidsButton.setEnabled(false);
+////			}});
 		}
 		return null;
 	}
-	private void resolveCurrentROI(RegionInfo keepRegion) throws Exception{
+	private void resolveCurrentROI(RegionInfo[] keepRegions) throws Exception{
 //		if(lastRegionInfos == null){
 //			throw new Exception("No regionInfo to resolve");
 //		}
@@ -1293,7 +1267,7 @@ public class ROIAssistPanel extends JPanel {
 //					rowData[i][0] = regionInfoArr[i].getNumPixels()+" pixels";
 //				}
 //				
-//				final ROI beforeROI = new ROI(frapData.getCurrentlyDisplayedROI());
+//				final ROI beforeROI = new ROI(originalROI);
 //				final int[][] resultArr = new int[1][];
 //				SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
 //					try{
@@ -1309,102 +1283,105 @@ public class ROIAssistPanel extends JPanel {
 //				if(resultArr[0] != null && resultArr[0].length > 0){
 //					overlayEditorPanelJAI.waitCursor(true);
 //					RegionInfo keepRegion = regionInfoArr[resultArr[0][0]];
-					short[] removePixels = frapData.getCurrentlyDisplayedROI().getPixelsXYZ();
-					for (int i = 0; i < removePixels.length; i++) {
-						if(!keepRegion.isIndexInRegion(i)){
-							removePixels[i] = 0;
+					short[] keepPixels = new short[dataToThreshold.getCurrentlyDisplayedROI().getISize().getXYZ()];//dataToThreshold.getCurrentlyDisplayedROI().getPixelsXYZ();
+					for (int i = 0; i < keepPixels.length; i++) {
+						for (int j = 0; j < keepRegions.length; j++) {
+							if(keepRegions[j].isIndexInRegion(i)){
+								keepPixels[i] = 1;
+							}							
 						}
 					}
-					final boolean hasInternalVoids = fillVoids(removePixels,true);
+//					final boolean hasInternalVoids = fillVoids(removePixels,true);
 
 					UShortImage ushortImage =
-						new UShortImage(removePixels,
-								frapData.getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
-								frapData.getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
-								frapData.getCurrentlyDisplayedROI().getISize().getX(),
-								frapData.getCurrentlyDisplayedROI().getISize().getY(),
-								frapData.getCurrentlyDisplayedROI().getISize().getZ());
-					final ROI newCellROI = new ROI(ushortImage,frapData.getCurrentlyDisplayedROI().getROIName());
-//					lastROISourceDataShort = removePixels;
-					SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
-						frapData.addReplaceRoi(newCellROI);
-						applyROIButton.setEnabled(!hasInternalVoids);
-						resolveROIButton.setEnabled(false);
-						fillVoidsButton.setEnabled(hasInternalVoids);
-					}});
-//				}
-//				else{
+						new UShortImage(keepPixels,
+								originalROI.getRoiImages()[0].getOrigin(),
+								originalROI.getRoiImages()[0].getExtent(),
+								originalROI.getISize().getX(),
+								originalROI.getISize().getY(),
+								originalROI.getISize().getZ());
+					final ROI newCellROI = new ROI(ushortImage,originalROI.getROIName());
+					dataToThreshold.addReplaceRoi(newCellROI);
+////					enhancedDataToThresholdShort = removePixels;
 //					SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
-//						frapData.addReplaceRoi(beforeROI);
-//						applyROIButton.setEnabled(false);
-//						resolveROIButton.setEnabled(true);
-//						fillVoidsButton.setEnabled(false);
+//						dataToThreshold.addReplaceRoi(newCellROI);
+//						applyROIButton.setEnabled(!hasInternalVoids);
+//						resolveROIButton.setEnabled(false);
+//						fillVoidsButton.setEnabled(hasInternalVoids);
 //					}});
+////				}
+////				else{
+////					SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
+////						dataToThreshold.addReplaceRoi(beforeROI);
+////						applyROIButton.setEnabled(false);
+////						resolveROIButton.setEnabled(true);
+////						fillVoidsButton.setEnabled(false);
+////					}});
+////
+////				}
+////			}catch(UserCancelException e){
+////				//ignore
+////			}
+	}
+		
+//	public int[] showComponentOKCancelTableList(final Component requester,String title,
+//			String[] columnNames,Object[][] rowData,int listSelectionModel_SelectMode,
+//			final RegionInfo[] regionInfoArr,final short[] multiObjectROIPixels)
+//				throws UserCancelException{
+//		
+//		DefaultTableModel tableModel = new DefaultTableModel(){
+//		    public boolean isCellEditable(int row, int column) {
+//		        return false;
+//		    }
+//		};
+//		tableModel.setDataVector(rowData, columnNames);
+//		final JTable table = new JTable(tableModel);
+//		table.setSelectionMode(listSelectionModel_SelectMode);
+//		JScrollPane scrollPane = new JScrollPane(table);
+//		table.setPreferredScrollableViewportSize(new Dimension(500, 250));
 //
+//		table.getSelectionModel().addListSelectionListener(
+//				new ListSelectionListener(){
+//					public void valueChanged(ListSelectionEvent e) {
+//						if(!e.getValueIsAdjusting()){
+//							try{
+//								int index = table.getSelectedRow();
+////								System.out.println("list index="+index);
+//								RegionInfo keepRegion = regionInfoArr[index];
+//								short[] removePixels = multiObjectROIPixels.clone();
+//								for (int i = 0; i < removePixels.length; i++) {
+//									if(!keepRegion.isIndexInRegion(i)){
+//										removePixels[i] = 0;
+//									}
+//								}
+//								UShortImage ushortImage =
+//									new UShortImage(removePixels,
+//											originalROI.getRoiImages()[0].getOrigin(),
+//											originalROI.getRoiImages()[0].getExtent(),
+//											originalROI.getISize().getX(),
+//											originalROI.getISize().getY(),
+//											originalROI.getISize().getZ());
+//								final ROI newCellROI = new ROI(ushortImage,originalROI.getROIName());
+//								dataToThreshold.addReplaceRoi(newCellROI);
+//							}catch(Exception e2){
+//								e2.printStackTrace();
+//								throw new RuntimeException("Error selecting resolved ROI",e2);
+//							}
+//
+//						}
+//					}
 //				}
-//			}catch(UserCancelException e){
-//				//ignore
-//			}
-	}
-		
-	public int[] showComponentOKCancelTableList(final Component requester,String title,
-			String[] columnNames,Object[][] rowData,int listSelectionModel_SelectMode,
-			final RegionInfo[] regionInfoArr,final short[] multiObjectROIPixels)
-				throws UserCancelException{
-		
-		DefaultTableModel tableModel = new DefaultTableModel(){
-		    public boolean isCellEditable(int row, int column) {
-		        return false;
-		    }
-		};
-		tableModel.setDataVector(rowData, columnNames);
-		final JTable table = new JTable(tableModel);
-		table.setSelectionMode(listSelectionModel_SelectMode);
-		JScrollPane scrollPane = new JScrollPane(table);
-		table.setPreferredScrollableViewportSize(new Dimension(500, 250));
-
-		table.getSelectionModel().addListSelectionListener(
-				new ListSelectionListener(){
-					public void valueChanged(ListSelectionEvent e) {
-						if(!e.getValueIsAdjusting()){
-							try{
-								int index = table.getSelectedRow();
-//								System.out.println("list index="+index);
-								RegionInfo keepRegion = regionInfoArr[index];
-								short[] removePixels = multiObjectROIPixels.clone();
-								for (int i = 0; i < removePixels.length; i++) {
-									if(!keepRegion.isIndexInRegion(i)){
-										removePixels[i] = 0;
-									}
-								}
-								UShortImage ushortImage =
-									new UShortImage(removePixels,
-											originalROI.getRoiImages()[0].getOrigin(),
-											originalROI.getRoiImages()[0].getExtent(),
-											originalROI.getISize().getX(),
-											originalROI.getISize().getY(),
-											originalROI.getISize().getZ());
-								final ROI newCellROI = new ROI(ushortImage,frapData.getCurrentlyDisplayedROI().getROIName());
-								frapData.addReplaceRoi(newCellROI);
-							}catch(Exception e2){
-								e2.printStackTrace();
-								throw new RuntimeException("Error selecting resolved ROI",e2);
-							}
-
-						}
-					}
-				}
-		);
-		
-		ScopedExpressionTableCellRenderer.formatTableCellSizes(table, null, null);
-		
-		int result = DialogUtils.showComponentOKCancelDialog(requester, scrollPane, title);
-		if(result != JOptionPane.OK_OPTION){
-			throw UserCancelException.CANCEL_GENERIC;
-		}
-
-		return table.getSelectedRows();
-	}
+//		);
+//		
+//		ScopedExpressionTableCellRenderer.formatTableCellSizes(table, null, null);
+//		
+//		int result = DialogUtils.showComponentOKCancelDialog(requester, scrollPane, title);
+//		if(result != JOptionPane.OK_OPTION){
+//			throw UserCancelException.CANCEL_GENERIC;
+//		}
+//
+//		return table.getSelectedRows();
+//	}
 	
 	private void waitCursor(final boolean bOn){
 		if(SwingUtilities.isEventDispatchThread()){

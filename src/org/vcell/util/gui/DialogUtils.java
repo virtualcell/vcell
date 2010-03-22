@@ -106,7 +106,7 @@ public class DialogUtils {
 			}
 		}
 		private void printStack(Throwable throwable){
-			if(!(throwable instanceof UserCancelException)){
+			if(!(throwable instanceof UserCancelException || throwable instanceof UtilCancelException)){
 				throwable.printStackTrace(System.out);
 			}
 		}
@@ -433,6 +433,12 @@ private static int showComponentOKCancelDialog(final Component requester,final C
 public static int[] showComponentOKCancelTableList(final Component requester,final String title,
 		final String[] columnNames,final Object[][] rowData,final Integer listSelectionModel_SelectMode)
 			throws UserCancelException{
+	return showComponentOKCancelTableList(requester, title, columnNames, rowData, listSelectionModel_SelectMode, null);
+}
+public static int[] showComponentOKCancelTableList(final Component requester,final String title,
+		final String[] columnNames,final Object[][] rowData,final Integer listSelectionModel_SelectMode,
+		final ListSelectionListener listSelectionListener)
+			throws UserCancelException{
 	
 	return (int[])
 	new SwingDispatcherSync (){
@@ -478,6 +484,9 @@ public static int[] showComponentOKCancelTableList(final Component requester,fin
 
 					}
 				};
+			}
+			if(listSelectionListener != null){
+				table.getSelectionModel().addListSelectionListener(listSelectionListener);
 			}
 			int result = showComponentOKCancelDialog(requester, scrollPane, title,tableListOKEnabler);
 			if(result != JOptionPane.OK_OPTION){
