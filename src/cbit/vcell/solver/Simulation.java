@@ -428,6 +428,12 @@ public Set<SolverFeature> getRequiredFeatures() {
 	if (getMathDescription().getVariable(SimDataConstants.PSF_FUNCTION_NAME) != null) {
 		requiredFeatures.add(SolverFeature.Feature_PSF);
 	}
+	if (isSerialParameterScan()) {
+		requiredFeatures.add(SolverFeature.Feature_SerialParameterScans);
+	}
+	if (getMathDescription().hasVolumeRegionEquations()) {
+		requiredFeatures.add(SolverFeature.Feature_VolumeRegionEquation);
+	}
 	return requiredFeatures;
 }
 /**

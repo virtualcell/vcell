@@ -700,7 +700,7 @@ public boolean isDummy(SimulationSymbolTable simSymbolTable, CompartmentSubDomai
 
 
 @Override
-public void checkValid(MathDescription mathDesc) throws MathException {
+public void checkValid(MathDescription mathDesc) throws MathException, ExpressionException {
 	if (getVariable() instanceof VolVariable) {
 		checkValid_Volume(mathDesc, getBoundaryXm());
 		checkValid_Volume(mathDesc, getBoundaryXp());

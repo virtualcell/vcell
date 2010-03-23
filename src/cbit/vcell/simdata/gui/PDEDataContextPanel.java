@@ -3,16 +3,27 @@ package cbit.vcell.simdata.gui;
 import java.util.Vector;
 
 import org.vcell.util.Coordinate;
+import org.vcell.util.NumberUtils;
 
-import cbit.vcell.simdata.*;
-import cbit.image.*;
+import cbit.image.DisplayAdapterService;
+import cbit.image.DisplayAdapterServicePanel;
+import cbit.image.ImagePlaneManager;
+import cbit.image.ImagePlaneManagerPanel;
 import cbit.vcell.client.data.PDEDataViewer;
-import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.ControlPointCurve;
+import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.CurveSelectionCurve;
+import cbit.vcell.geometry.CurveSelectionInfo;
+import cbit.vcell.geometry.PolyLine;
+import cbit.vcell.geometry.SampledCurve;
+import cbit.vcell.geometry.SinglePoint;
+import cbit.vcell.geometry.Spline;
+import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveRenderer;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
+import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.VariableType.VariableDomain;
+import cbit.vcell.solvers.CartesianMesh;
 
 /**
  * Insert the type's description here.
@@ -28,7 +39,7 @@ public class PDEDataContextPanel extends javax.swing.JPanel implements CurveValu
 	private java.util.Hashtable<SampledCurve, Vector<Double>> contoursAndValues = null;
 	private MeshDisplayAdapter meshDisplayAdapter = null;
 	private ImagePlaneManagerPanel ivjImagePlaneManagerPanel = null;
-	private cbit.vcell.simdata.PDEDataContext fieldPdeDataContext = null;
+	private PDEDataContext fieldPdeDataContext = null;
 	private SpatialSelection fieldSpatialSelection = null;
 	private int fieldSlice = 0;
 	private int fieldNormalAxis = 0;
@@ -88,7 +99,7 @@ public PDEDataContextPanel() {
  * Creation date: (10/26/00 4:49:39 PM)
  */
 private void colorMembraneCurvesPrivate(java.util.Hashtable<SampledCurve, int[]> curvesAndMembraneIndexes,MeshDisplayAdapter meshDisplayAdapter) {
-	cbit.image.DisplayAdapterService das = getdisplayAdapterService1();
+	DisplayAdapterService das = getdisplayAdapterService1();
 	if (curvesAndMembraneIndexes != null) {
 		java.util.Enumeration<SampledCurve> keysEnum = curvesAndMembraneIndexes.keys();
 		while (keysEnum.hasMoreElements()) {
@@ -153,7 +164,7 @@ private void connEtoC10(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(cbit.image.DisplayAdapterService value) {
+private void connEtoC2(DisplayAdapterService value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -261,7 +272,7 @@ private void connEtoM1() {
  * @param value cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.simdata.PDEDataContext value) {
+private void connEtoM2(PDEDataContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -528,8 +539,7 @@ private void createSpatialSample(java.beans.PropertyChangeEvent propertyChangeEv
  * Creation date: (7/6/2003 8:40:06 PM)
  * @param curve cbit.vcell.geometry.Curve
  */
-public void curveAdded(cbit.vcell.geometry.Curve curve) {
-	
+public void curveAdded(Curve curve) {	
 	fireDataSamplers();	
 }
 /**
@@ -537,8 +547,7 @@ public void curveAdded(cbit.vcell.geometry.Curve curve) {
  * Creation date: (7/6/2003 7:42:59 PM)
  * @param curve cbit.vcell.geometry.Curve
  */
-public void curveRemoved(cbit.vcell.geometry.Curve curve) {
-
+public void curveRemoved(Curve curve) {
 	fireDataSamplers();	
 }
 
@@ -560,7 +569,7 @@ private SpatialSelection[] fetchSpatialSelections0(Curve curveOfInterest,boolean
 		getImagePlaneManagerPanel() != null &&
 		getImagePlaneManagerPanel().getCurveRenderer() != null){
 		//
-		cbit.vcell.solvers.CartesianMesh cm = getPdeDataContext().getCartesianMesh();
+		CartesianMesh cm = getPdeDataContext().getCartesianMesh();
 		Curve[] curves = getImagePlaneManagerPanel().getCurveRenderer().getAllCurves();
 		//
 		if(curves != null && curves.length > 0){
@@ -693,6 +702,15 @@ public SpatialSelection[] fetchSpatialSelectionsAll(VariableType vt) {
 	return null;
 }
 
+public SpatialSelection[] fetchSpatialSelections(VariableType vt, boolean bIgnoreSelection,boolean bFetchOnlyVisible) {
+	if(	getImagePlaneManagerPanel() != null &&
+		getImagePlaneManagerPanel().getCurveRenderer() != null){
+		CurveSelectionInfo selection = getImagePlaneManagerPanel().getCurveRenderer().getSelection();
+		return fetchSpatialSelections0((bIgnoreSelection || selection == null ? null : selection.getCurve()), bFetchOnlyVisible, vt);		
+	}
+	return null;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (7/6/2003 7:42:59 PM)
@@ -703,7 +721,7 @@ private void fireDataSamplers() {
 	//fire "dataSamplers" if there are any
 	boolean bTimeDataSamplerVisible = false;
 	boolean bSpatialDataSamplerVisible = false;
-	cbit.vcell.geometry.gui.CurveRenderer cr = getImagePlaneManagerPanel().getCurveRenderer();
+	CurveRenderer cr = getImagePlaneManagerPanel().getCurveRenderer();
 	if(cr != null){
 		Curve[] curves = getImagePlaneManagerPanel().getCurveRenderer().getAllCurves();
 		if(curves != null && curves.length > 0){
@@ -739,13 +757,13 @@ public Curve[] getAllUserCurves() {
  * @return java.lang.String
  * @param csi cbit.vcell.geometry.CurveSelectionInfo
  */
-public String getCurveValue(cbit.vcell.geometry.CurveSelectionInfo csi) {
+public String getCurveValue(CurveSelectionInfo csi) {
 	String infoS = null;
-	if (csi.getType() == cbit.vcell.geometry.CurveSelectionInfo.TYPE_SEGMENT) {
+	if (csi.getType() == CurveSelectionInfo.TYPE_SEGMENT) {
 		if (membranesAndIndexes != null) {
 			java.util.Enumeration<SampledCurve> keysEnum = membranesAndIndexes.keys();
 			while (keysEnum.hasMoreElements()) {
-				cbit.vcell.geometry.Curve curve = (cbit.vcell.geometry.Curve) keysEnum.nextElement();
+				Curve curve = (Curve) keysEnum.nextElement();
 				if(csi.getCurve() == curve){
 					int[] membraneIndexes = (int[]) membranesAndIndexes.get(curve);
 					if(meshDisplayAdapter != null){
@@ -756,9 +774,9 @@ public String getCurveValue(cbit.vcell.geometry.CurveSelectionInfo csi) {
 									getPdeDataContext().getDataIdentifier().getVariableType());
 						if(membraneValues != null){
 							Coordinate segmentWC = getPdeDataContext().getCartesianMesh().getCoordinateFromMembraneIndex(membraneIndexes[csi.getSegment()]);
-							String xCoordString = org.vcell.util.NumberUtils.formatNumber(segmentWC.getX());
-							String yCoordString = org.vcell.util.NumberUtils.formatNumber(segmentWC.getY());
-							String zCoordString = org.vcell.util.NumberUtils.formatNumber(segmentWC.getZ());
+							String xCoordString = NumberUtils.formatNumber(segmentWC.getX());
+							String yCoordString = NumberUtils.formatNumber(segmentWC.getY());
+							String zCoordString = NumberUtils.formatNumber(segmentWC.getZ());
 							infoS = "("+xCoordString+","+yCoordString+","+zCoordString+")  ["+
 										membraneIndexes[csi.getSegment()]+"]  Value = " +
 										membraneValues[csi.getSegment()];
@@ -785,7 +803,7 @@ public String getCurveValue(cbit.vcell.geometry.CurveSelectionInfo csi) {
  * @return cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public cbit.image.DisplayAdapterService getdisplayAdapterService1() {
+public DisplayAdapterService getdisplayAdapterService1() {
 	// user code begin {1}
 	// user code end
 	return ivjdisplayAdapterService1;
@@ -795,7 +813,7 @@ public cbit.image.DisplayAdapterService getdisplayAdapterService1() {
  * @return cbit.image.DisplayAdapterServicePanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.DisplayAdapterServicePanel getdisplayAdapterServicePanel1() {
+private DisplayAdapterServicePanel getdisplayAdapterServicePanel1() {
 	// user code begin {1}
 	// user code end
 	return ivjdisplayAdapterServicePanel1;
@@ -805,7 +823,7 @@ private cbit.image.DisplayAdapterServicePanel getdisplayAdapterServicePanel1() {
  * @return cbit.image.ImagePlaneManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.ImagePlaneManager getimagePlaneManager1() {
+private ImagePlaneManager getimagePlaneManager1() {
 	// user code begin {1}
 	// user code end
 	return ivjimagePlaneManager1;
@@ -815,10 +833,10 @@ private cbit.image.ImagePlaneManager getimagePlaneManager1() {
  * @return cbit.image.ImagePlaneManagerPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.ImagePlaneManagerPanel getImagePlaneManagerPanel() {
+private ImagePlaneManagerPanel getImagePlaneManagerPanel() {
 	if (ivjImagePlaneManagerPanel == null) {
 		try {
-			ivjImagePlaneManagerPanel = new cbit.image.ImagePlaneManagerPanel();
+			ivjImagePlaneManagerPanel = new ImagePlaneManagerPanel();
 			ivjImagePlaneManagerPanel.setName("ImagePlaneManagerPanel");
 			ivjImagePlaneManagerPanel.setMode(1);
 			// user code begin {1}
@@ -835,31 +853,31 @@ private cbit.image.ImagePlaneManagerPanel getImagePlaneManagerPanel() {
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:10:48 PM)
  */
-public cbit.vcell.geometry.CurveSelectionInfo getInitalCurveSelection(int tool, org.vcell.util.Coordinate wc) {
+public CurveSelectionInfo getInitalCurveSelection(int tool, Coordinate wc) {
 	//
 	CurveSelectionInfo newCurveSelection = null;
-	if(	getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
-		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION)){
+	VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
+	if(	variableType.equals(VariableType.MEMBRANE) || variableType.equals(VariableType.MEMBRANE_REGION)){
 		//
-			CurveSelectionInfo[] closeCSI = getImagePlaneManagerPanel().getCurveRenderer().getCloseCurveSelectionInfos(wc);
-			if(closeCSI != null){
-				for(int i =0;i < closeCSI.length;i+= 1){
-					if(membranesAndIndexes != null && membranesAndIndexes.containsKey(closeCSI[i].getCurve())){
-						if (tool == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_LINE) {
-							newCurveSelection = new CurveSelectionInfo(new CurveSelectionCurve((SampledCurve)(closeCSI[i].getCurve())));
-						}else if(tool == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_POINT) {
-							newCurveSelection = new CurveSelectionInfo(new CurveSelectionCurve((SampledCurve)(closeCSI[i].getCurve())));
-							double dist = closeCSI[i].getCurve().getDistanceTo(wc);
-							int segmentIndex = closeCSI[i].getCurve().pickSegment(wc, dist*1.1);
-							Coordinate[] coordArr = closeCSI[i].getCurve().getSampledCurve().getControlPointsForSegment(segmentIndex);
-							Coordinate middleCoord = new Coordinate((coordArr[0].getX()+coordArr[1].getX())/2,(coordArr[0].getY()+coordArr[1].getY())/2,(coordArr[0].getZ()+coordArr[1].getZ())/2);
-							newCurveSelection = new CurveSelectionInfo(new SinglePoint(middleCoord));
-						}
-						break;
+		CurveSelectionInfo[] closeCSI = getImagePlaneManagerPanel().getCurveRenderer().getCloseCurveSelectionInfos(wc);
+		if(closeCSI != null){
+			for(int i =0;i < closeCSI.length;i+= 1){
+				if(membranesAndIndexes != null && membranesAndIndexes.containsKey(closeCSI[i].getCurve())){
+					if (tool == CurveEditorTool.TOOL_LINE) {
+						newCurveSelection = new CurveSelectionInfo(new CurveSelectionCurve((SampledCurve)(closeCSI[i].getCurve())));
+					}else if(tool == CurveEditorTool.TOOL_POINT) {
+						newCurveSelection = new CurveSelectionInfo(new CurveSelectionCurve((SampledCurve)(closeCSI[i].getCurve())));
+						double dist = closeCSI[i].getCurve().getDistanceTo(wc);
+						int segmentIndex = closeCSI[i].getCurve().pickSegment(wc, dist*1.1);
+						Coordinate[] coordArr = closeCSI[i].getCurve().getSampledCurve().getControlPointsForSegment(segmentIndex);
+						Coordinate middleCoord = new Coordinate((coordArr[0].getX()+coordArr[1].getX())/2,(coordArr[0].getY()+coordArr[1].getY())/2,(coordArr[0].getZ()+coordArr[1].getZ())/2);
+						newCurveSelection = new CurveSelectionInfo(new SinglePoint(middleCoord));
 					}
+					break;
 				}
-				
 			}
+			
+		}
 	}
 	if(newCurveSelection != null){
 		if(membraneSamplerCurves == null){
@@ -885,7 +903,7 @@ public int getViewZoom(){
  * @return The pdeDataContext property value.
  * @see #setPdeDataContext
  */
-public cbit.vcell.simdata.PDEDataContext getPdeDataContext() {
+public PDEDataContext getPdeDataContext() {
 	return fieldPdeDataContext;
 }
 /**
@@ -893,7 +911,7 @@ public cbit.vcell.simdata.PDEDataContext getPdeDataContext() {
  * @return cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.simdata.PDEDataContext getpdeDataContext1() {
+private PDEDataContext getpdeDataContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjpdeDataContext1;
@@ -960,12 +978,12 @@ private void initConnections() throws java.lang.Exception {
 private void initDisplayAdapterService(DisplayAdapterService das) {
 	das.setValueDomain(null);
 	das.addColorModelForValues(
-		cbit.image.DisplayAdapterService.createGrayColorModel(), 
-		cbit.image.DisplayAdapterService.createGraySpecialColors(),
+		DisplayAdapterService.createGrayColorModel(), 
+		DisplayAdapterService.createGraySpecialColors(),
 		"Gray");
 	das.addColorModelForValues(
-		cbit.image.DisplayAdapterService.createBlueRedColorModel(),
-		cbit.image.DisplayAdapterService.createBlueRedSpecialColors(),
+		DisplayAdapterService.createBlueRedColorModel(),
+		DisplayAdapterService.createBlueRedSpecialColors(),
 		"BlueRed");
 	das.setActiveColorModelID("BlueRed");
 }
@@ -1003,23 +1021,22 @@ private void initMeshDisplayAdapter() {
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:10:48 PM)
  */
-public boolean isAddControlPointOK(int tool, org.vcell.util.Coordinate wc,Curve addedToThisCurve) {
+public boolean isAddControlPointOK(int tool, Coordinate wc,Curve addedToThisCurve) {
 	//
-	cbit.vcell.geometry.gui.CurveRenderer curveR = getImagePlaneManagerPanel().getCurveRenderer();
-	if(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
-	getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION)){
+	CurveRenderer curveR = getImagePlaneManagerPanel().getCurveRenderer();
+	VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
+	if(variableType.equals(VariableType.VOLUME) || variableType.equals(VariableType.VOLUME_REGION)){
 		return true;
 	}
 
-	if(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
-	getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION)){
+	if(variableType.equals(VariableType.MEMBRANE) || variableType.equals(VariableType.MEMBRANE_REGION)){
 		CurveSelectionInfo[] closeCSI = curveR.getCloseCurveSelectionInfos(wc);
 		if(closeCSI != null && closeCSI.length > 0){
 			for(int i=0;i<closeCSI.length;i+= 1){
-				if(tool == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_POINT && addedToThisCurve instanceof SinglePoint &&
+				if(tool == CurveEditorTool.TOOL_POINT && addedToThisCurve instanceof SinglePoint &&
 					membranesAndIndexes != null && membranesAndIndexes.containsKey(closeCSI[i].getCurve())){
 					return true;
-				}else if(tool == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_LINE &&
+				}else if(tool == CurveEditorTool.TOOL_LINE &&
 							addedToThisCurve instanceof CurveSelectionCurve){
 					Curve sourceCurve = ((CurveSelectionCurve)(addedToThisCurve)).getSourceCurveSelectionInfo().getCurve();
 					if(sourceCurve == closeCSI[i].getCurve()){
@@ -1047,7 +1064,7 @@ private boolean isValidDataSampler(Curve curve) {
 	VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();
 	boolean isCurveVisible = true;
 	//
-	if (vt.equals(cbit.vcell.simdata.VariableType.VOLUME) || vt.equals(cbit.vcell.simdata.VariableType.VOLUME_REGION)) {
+	if (vt.equals(VariableType.VOLUME) || vt.equals(VariableType.VOLUME_REGION)) {
 			//
 			if(membraneSamplerCurves != null && membraneSamplerCurves.contains(curve)){isCurveVisible = false;}
 			else{
@@ -1065,10 +1082,13 @@ private boolean isValidDataSampler(Curve curve) {
 				}
 			}
 			//
-	} else if (vt.equals(cbit.vcell.simdata.VariableType.MEMBRANE) || vt.equals(cbit.vcell.simdata.VariableType.MEMBRANE_REGION)) {
+	} else if (vt.equals(VariableType.MEMBRANE) || vt.equals(VariableType.MEMBRANE_REGION)) {
 			//
-			if(membraneSamplerCurves != null && membraneSamplerCurves.contains(curve)){isCurveVisible = (fetchSpatialSelections(curve,false) != null);}
-			else{isCurveVisible = false;}
+			if(membraneSamplerCurves != null && membraneSamplerCurves.contains(curve)) {
+				isCurveVisible = (fetchSpatialSelections(curve,false) != null);
+			} else {
+				isCurveVisible = false;
+			}
 			//
 	}
 	//
@@ -1090,7 +1110,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1149,10 +1168,10 @@ private ControlPointCurve projectCurveOntoSlice(ControlPointCurve curve) {
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:10:48 PM)
  */
-public boolean providesInitalCurve(int tool, org.vcell.util.Coordinate wc) {
+public boolean providesInitalCurve(int tool, Coordinate wc) {
 	
-	if(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
-		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION)){
+	VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
+	if(variableType.equals(VariableType.MEMBRANE) || variableType.equals(VariableType.MEMBRANE_REGION)){
 			return true;
 	}else{
 		return false;
@@ -1175,10 +1194,10 @@ private void refreshColorCurves() {
  * @param newValue cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void setdisplayAdapterService1(cbit.image.DisplayAdapterService newValue) {
+public void setdisplayAdapterService1(DisplayAdapterService newValue) {
 	if (ivjdisplayAdapterService1 != newValue) {
 		try {
-			cbit.image.DisplayAdapterService oldValue = getdisplayAdapterService1();
+			DisplayAdapterService oldValue = getdisplayAdapterService1();
 			ivjdisplayAdapterService1 = newValue;
 			connEtoC2(ivjdisplayAdapterService1);
 			firePropertyChange("displayAdapterService1", oldValue, newValue);
@@ -1198,7 +1217,7 @@ public void setdisplayAdapterService1(cbit.image.DisplayAdapterService newValue)
  * @param newValue cbit.image.DisplayAdapterServicePanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setdisplayAdapterServicePanel1(cbit.image.DisplayAdapterServicePanel newValue) {
+private void setdisplayAdapterServicePanel1(DisplayAdapterServicePanel newValue) {
 	if (ivjdisplayAdapterServicePanel1 != newValue) {
 		try {
 			ivjdisplayAdapterServicePanel1 = newValue;
@@ -1219,7 +1238,7 @@ private void setdisplayAdapterServicePanel1(cbit.image.DisplayAdapterServicePane
  * @param newValue cbit.image.ImagePlaneManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setimagePlaneManager1(cbit.image.ImagePlaneManager newValue) {
+private void setimagePlaneManager1(ImagePlaneManager newValue) {
 	if (ivjimagePlaneManager1 != newValue) {
 		try {
 			/* Stop listening for events from the current object */
@@ -1260,8 +1279,8 @@ public void setNormalAxis(int normalAxis) {
  * @param pdeDataContext The new value for the property.
  * @see #getPdeDataContext
  */
-public void setPdeDataContext(cbit.vcell.simdata.PDEDataContext pdeDataContext) {
-	cbit.vcell.simdata.PDEDataContext oldValue = fieldPdeDataContext;
+public void setPdeDataContext(PDEDataContext pdeDataContext) {
+	PDEDataContext oldValue = fieldPdeDataContext;
 	fieldPdeDataContext = pdeDataContext;
 	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
 	if(ivjImagePlaneManagerPanel != null && ivjImagePlaneManagerPanel.getCurveRenderer() != null && getPdeDataContext() != null){
@@ -1273,10 +1292,10 @@ public void setPdeDataContext(cbit.vcell.simdata.PDEDataContext pdeDataContext) 
  * @param newValue cbit.vcell.simdata.PDEDataContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setpdeDataContext1(cbit.vcell.simdata.PDEDataContext newValue) {
+private void setpdeDataContext1(PDEDataContext newValue) {
 	if (ivjpdeDataContext1 != newValue) {
 		try {
-			cbit.vcell.simdata.PDEDataContext oldValue = getpdeDataContext1();
+			PDEDataContext oldValue = getpdeDataContext1();
 			/* Stop listening for events from the current object */
 			if (ivjpdeDataContext1 != null) {
 				ivjpdeDataContext1.removePropertyChangeListener(ivjEventHandler);
@@ -1333,21 +1352,23 @@ private void updateContours() {
 		return;
 	}
 	//Remove previous curves
+	CurveRenderer curveRenderer = getImagePlaneManagerPanel().getCurveRenderer();
 	if (contoursAndValues != null) {
 		java.util.Enumeration<SampledCurve> keysEnum = contoursAndValues.keys();
 		while (keysEnum.hasMoreElements()) {
-			cbit.vcell.geometry.Curve curve = (cbit.vcell.geometry.Curve) keysEnum.nextElement();
-			getImagePlaneManagerPanel().getCurveRenderer().removeCurve(curve);
+			Curve curve = keysEnum.nextElement();
+			curveRenderer.removeCurve(curve);
 		}
 	}
 	//
 	contoursAndValues = null;
 	boolean hasValues = false;
 	if(meshDisplayAdapter != null){
-		if (getPdeDataContext().getDataIdentifier().getVariableType().equals(cbit.vcell.simdata.VariableType.VOLUME)) {
+		VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
+		if (variableType.equals(VariableType.VOLUME)) {
 			//Get curves with no values for overlay on volume Data
 			contoursAndValues = meshDisplayAdapter.getCurvesFromContours(null);
-		} else if (getPdeDataContext().getDataIdentifier().getVariableType().equals(cbit.vcell.simdata.VariableType.CONTOUR)) {
+		} else if (variableType.equals(VariableType.CONTOUR)) {
 			//get curves with values
 			contoursAndValues = meshDisplayAdapter.getCurvesFromContours(getPdeDataContext().getDataValues());
 			hasValues = true;
@@ -1357,16 +1378,16 @@ private void updateContours() {
 	if (contoursAndValues != null) {
 		java.util.Enumeration<SampledCurve> keysEnum = contoursAndValues.keys();
 		while (keysEnum.hasMoreElements()) {
-			cbit.vcell.geometry.Curve curve = (cbit.vcell.geometry.Curve) keysEnum.nextElement();
+			Curve curve = (Curve) keysEnum.nextElement();
 			//
-			getImagePlaneManagerPanel().getCurveRenderer().addCurve(curve);
+			curveRenderer.addCurve(curve);
 			//
-			getImagePlaneManagerPanel().getCurveRenderer().renderPropertyEditable(curve, false);
-			getImagePlaneManagerPanel().getCurveRenderer().renderPropertySelectable(curve, hasValues);
+			curveRenderer.renderPropertyEditable(curve, false);
+			curveRenderer.renderPropertySelectable(curve, hasValues);
 			if (hasValues) {
-				getImagePlaneManagerPanel().getCurveRenderer().renderPropertySubSelectionType(curve, cbit.vcell.geometry.gui.CurveRenderer.SUBSELECTION_SEGMENT);
+				curveRenderer.renderPropertySubSelectionType(curve, CurveRenderer.SUBSELECTION_SEGMENT);
 			} else {
-				getImagePlaneManagerPanel().getCurveRenderer().renderPropertyLineWidthMultiplier(curve, 3);
+				curveRenderer.renderPropertyLineWidthMultiplier(curve, 3);
 			}
 		}
 	}
@@ -1385,11 +1406,12 @@ private void updateMembraneCurves() {
 	int normalAxis = getImagePlaneManagerPanel().getImagePlaneManager().getNormalAxis();
 	int slice = getImagePlaneManagerPanel().getImagePlaneManager().getSlice();
 	//Remove previous curves
+	CurveRenderer curveRenderer = getImagePlaneManagerPanel().getCurveRenderer();	
 	if (membranesAndIndexes != null) {
 		java.util.Enumeration<SampledCurve> keysEnum = membranesAndIndexes.keys();
 		while (keysEnum.hasMoreElements()) {
-			cbit.vcell.geometry.Curve curve = (cbit.vcell.geometry.Curve) keysEnum.nextElement();
-			getImagePlaneManagerPanel().getCurveRenderer().removeCurve(curve);
+			Curve curve = keysEnum.nextElement();
+			curveRenderer.removeCurve(curve);
 		}
 	}
 	//
@@ -1397,21 +1419,21 @@ private void updateMembraneCurves() {
 	boolean hasValues = false;
 	if(meshDisplayAdapter != null){
 		//Get new curves for slice and normalAxis
-		if (getPdeDataContext().getDataIdentifier().getVariableType().equals(cbit.vcell.simdata.VariableType.VOLUME) ||
-			getPdeDataContext().getDataIdentifier().getVariableType().equals(cbit.vcell.simdata.VariableType.VOLUME_REGION)) {
+		VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
+		if (variableType.equals(VariableType.VOLUME) || variableType.equals(VariableType.VOLUME_REGION)) {
 			//Turn off showing Membrane values over mouse
 			//getImagePlaneManagerPanel().setCurveValueProvider(null);
 			//
 			//GET CURVES WITH NO VALUES FOR OVERLAY ON VOLUME DATA
 			membranesAndIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(normalAxis, slice);
-		} else if (getPdeDataContext().getDataIdentifier().getVariableType().equals(cbit.vcell.simdata.VariableType.MEMBRANE)) {
+		} else if (variableType.equals(VariableType.MEMBRANE)) {
 			//Turn on showing Membrane values over mouse
 			//getImagePlaneManagerPanel().setCurveValueProvider(this);
 			//
 			//GET CURVES WITH VALUES
 			membranesAndIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(normalAxis, slice);
 			hasValues = true;
-		} else if (getPdeDataContext().getDataIdentifier().getVariableType().equals(cbit.vcell.simdata.VariableType.MEMBRANE_REGION)) {
+		} else if (variableType.equals(VariableType.MEMBRANE_REGION)) {
 			//Turn on showing Membrane values over mouse
 			//getImagePlaneManagerPanel().setCurveValueProvider(this);
 			//
@@ -1438,13 +1460,15 @@ private void updateMembraneCurves() {
 	if (membranesAndIndexes != null) {
 		java.util.Enumeration<SampledCurve> keysEnum = membranesAndIndexes.keys();
 		while (keysEnum.hasMoreElements()) {
-			cbit.vcell.geometry.Curve curve = (cbit.vcell.geometry.Curve) keysEnum.nextElement();
+			Curve curve = keysEnum.nextElement();
 			//
-			getImagePlaneManagerPanel().getCurveRenderer().addCurve(curve);
+			curveRenderer.addCurve(curve);
 			//
-			getImagePlaneManagerPanel().getCurveRenderer().renderPropertyEditable(curve, false);
-			getImagePlaneManagerPanel().getCurveRenderer().renderPropertySelectable(curve, false);
-			if(!hasValues){getImagePlaneManagerPanel().getCurveRenderer().renderPropertyLineWidthMultiplier(curve,3);}
+			curveRenderer.renderPropertyEditable(curve, false);
+			curveRenderer.renderPropertySelectable(curve, false);
+			if(!hasValues){
+				curveRenderer.renderPropertyLineWidthMultiplier(curve,3);
+			}
 			//getImagePlaneManagerPanel().getCurveRenderer().renderPropertySelectable(curve, hasValues);
 			//if (hasValues) {
 				//getImagePlaneManagerPanel().getCurveRenderer().renderPropertySubSelectionType(curve, cbit.vcell.geometry.gui.CurveRenderer.SUBSELECTION_SEGMENT);
@@ -1457,25 +1481,23 @@ private void updateMembraneCurves() {
 	refreshColorCurves();
 	//
 	//Set visibility of curve samplers
-	cbit.vcell.geometry.gui.CurveRenderer cr = getImagePlaneManagerPanel().getCurveRenderer();
-	if(cr != null){
-		Curve[] curves = getImagePlaneManagerPanel().getCurveRenderer().getAllCurves();
-		if(curves != null && curves.length > 0){
-			for(int i=0;i<curves.length;i+= 1){
-				if(membranesAndIndexes == null || !membranesAndIndexes.containsKey(curves[i])){
-					boolean isCurveValidDataSampler = isValidDataSampler(curves[i]);
-					cr.renderPropertyVisible(curves[i],isCurveValidDataSampler);
-					cr.renderPropertyEditable(curves[i],(membraneSamplerCurves != null && membraneSamplerCurves.contains(curves[i])?false:true));
-				}
+	Curve[] curves = curveRenderer.getAllCurves();
+	if(curves != null && curves.length > 0){
+		for(int i=0;i<curves.length;i+= 1){
+			if(membranesAndIndexes == null || !membranesAndIndexes.containsKey(curves[i])){
+				boolean isCurveValidDataSampler = isValidDataSampler(curves[i]);
+				curveRenderer.renderPropertyVisible(curves[i],isCurveValidDataSampler);
+				curveRenderer.renderPropertyEditable(curves[i],(membraneSamplerCurves != null && membraneSamplerCurves.contains(curves[i])?false:true));
 			}
 		}
 	}
+	
 	//See if we should keep selection
-	if(getImagePlaneManagerPanel().getCurveRenderer().getSelection() != null){
-		CurveSelectionInfo csi = getImagePlaneManagerPanel().getCurveRenderer().getSelection();
-		getImagePlaneManagerPanel().getCurveRenderer().selectNothing();
+	if(curveRenderer.getSelection() != null){
+		CurveSelectionInfo csi = curveRenderer.getSelection();
+		curveRenderer.selectNothing();
 		if(isValidDataSampler(csi.getCurve())){
-			getImagePlaneManagerPanel().getCurveRenderer().setSelection(csi);
+			curveRenderer.setSelection(csi);
 		}
 	}
 	//
@@ -1491,10 +1513,8 @@ public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider)
 }
 
 public void setDescription(Curve curve){
-	boolean isVolume = 
-		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
-		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION);
-	
+	VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
+	boolean isVolume = variableType.getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME);
 	curve.setDescription(
 			(isVolume?CurveValueProvider.DESCRIPTION_VOLUME:CurveValueProvider.DESCRIPTION_MEMBRANE)+
 			(curve instanceof SinglePoint

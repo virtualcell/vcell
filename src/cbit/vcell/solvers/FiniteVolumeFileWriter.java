@@ -592,34 +592,6 @@ JUMP_CONDITION_END
  * @throws ExpressionException
 */
 private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws ExpressionException {
-	// convert membraneRate in volume region equation into jump condition. 
-	CompartmentSubDomain insideCompartment = msd.getInsideCompartment();
-	Enumeration<Equation> enum_equ = insideCompartment.getEquations();
-	while (enum_equ.hasMoreElements()) {
-		Equation equation = enum_equ.nextElement();
-		if (equation instanceof VolumeRegionEquation){
-			printWriter.println("JUMP_CONDITION_BEGIN " + equation.getVariable().getName());
-			Expression flux = subsituteExpression(((VolumeRegionEquation) equation).getMembraneRateExpression());
-			String infix = replaceInsideOutside(msd, flux);
-			printWriter.println("FLUX " + insideCompartment.getName() + " " + infix + ";");
-			printWriter.println("JUMP_CONDITION_END");
-			printWriter.println();
-		}
-	}
-	CompartmentSubDomain outsideCompartment = msd.getOutsideCompartment();
-	enum_equ = outsideCompartment.getEquations();
-	while (enum_equ.hasMoreElements()) {
-		Equation equation = enum_equ.nextElement();
-		if (equation instanceof VolumeRegionEquation){
-			printWriter.println("JUMP_CONDITION_BEGIN " + equation.getVariable().getName());
-			Expression flux = subsituteExpression(((VolumeRegionEquation) equation).getMembraneRateExpression());
-			String infix = replaceInsideOutside(msd, flux);
-			printWriter.println("FLUX " + outsideCompartment.getName() + " " + infix + ";");
-			printWriter.println("JUMP_CONDITION_END");
-			printWriter.println();
-		}
-	}
-
 	Enumeration<JumpCondition> enum1 = msd.getJumpConditions();
 	while (enum1.hasMoreElements()) {
 		JumpCondition jc = enum1.nextElement();

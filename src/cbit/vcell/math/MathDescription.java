@@ -947,10 +947,7 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 	//
 	if (!mathDesc.isValid()){
 		System.out.println("Math is invalid, warning = '"+mathDesc.getWarning()+"'");
-	}else{
-		System.out.println("Math is valid, warning = '"+mathDesc.getWarning()+"'");
 	}
-	
 	
 	return mathDesc;
 }
@@ -1911,7 +1908,7 @@ public boolean isValid() {
 				}
 			}
 		}
-	}catch (ExpressionBindingException e){
+	}catch (ExpressionException e){
 		setWarning("error binding identifier: "+e.getMessage());
 		return false;
 	}catch (MathException e){
@@ -2737,7 +2734,7 @@ public void setAllVariables(Variable vars[]) throws MathException, ExpressionBin
 		}
 		variableList.addElement(var);
 		variableHashTable.put(var.getName(), var);
-		if (var instanceof VolVariable){
+		if (var instanceof VolVariable || var instanceof VolumeRegionVariable){
 			//
 			// for Volume Variables, also create an InsideVariable and an OutsideVariable for use in JumpConditions
 			//
@@ -3064,4 +3061,21 @@ public boolean hasRandomVariables() {
 	}
 	return false;
 }
+
+public boolean hasVolumeRegionEquations() {
+	Enumeration<SubDomain> enum1 = getSubDomains();
+	while (enum1.hasMoreElements()){
+		SubDomain subDomain = enum1.nextElement();
+		if (subDomain instanceof CompartmentSubDomain){
+			Enumeration<Equation> equations = subDomain.getEquations();
+			while (equations.hasMoreElements()) {
+				if (equations.nextElement() instanceof VolumeRegionEquation){
+					return true;
+				}
+			}
+		}
+	}
+	return false;		
+}
+
 }

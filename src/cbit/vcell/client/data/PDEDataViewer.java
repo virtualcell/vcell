@@ -114,6 +114,7 @@ import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.VariableType.VariableDomain;
 import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
@@ -2218,7 +2219,7 @@ private void showKymograph() {
 			}
 			
 			kymographPanel.initDataManager(getDataViewerManager().getUser(), ((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
-				getPdeDataContext().getVariableName(), getPdeDataContext().getTimePoints()[0], 1,
+				getPdeDataContext().getDataIdentifier(), getPdeDataContext().getTimePoints()[0], 1,
 				getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
 				indices,crossingMembraneIndices,accumDistances,true,getPdeDataContext().getTimePoint(),
 				symbolTable);
@@ -2317,9 +2318,21 @@ private void showSpatialPlot() {
  * Comment
  */
 private void showTimePlot() {
-	//Collect all sample curves created by user
+	VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();
+
+	//Collect all sample curves created by user	
 	SpatialSelection[] spatialSelectionArr = getPDEDataContextPanel1().fetchSpatialSelections(true,true);
+	SpatialSelection[] spatialSelectionArr2 = null;
+	if (varType.getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME)) {
+		spatialSelectionArr2 = getPDEDataContextPanel1().fetchSpatialSelections(
+				varType.equals(VariableType.VOLUME) ? VariableType.VOLUME_REGION : VariableType.VOLUME, true, true);
+	} else {
+		spatialSelectionArr2 = getPDEDataContextPanel1().fetchSpatialSelections(
+				varType.equals(VariableType.MEMBRANE) ? VariableType.MEMBRANE_REGION : VariableType.MEMBRANE, true, true);
+	}
+	
 	final Vector<SpatialSelection> singlePointSSOnly = new Vector<SpatialSelection>();
+	final Vector<SpatialSelection> singlePointSSOnly2 = new Vector<SpatialSelection>();
 	if (spatialSelectionArr != null && spatialSelectionArr.length > 0) {
 		for (int i = 0; i < spatialSelectionArr.length; i++){
 			if(spatialSelectionArr[i].isPoint() ||
@@ -2327,10 +2340,14 @@ private void showTimePlot() {
 					((SpatialSelectionMembrane)spatialSelectionArr[i]).getSelectionSource() instanceof SinglePoint)){
 				singlePointSSOnly.add(spatialSelectionArr[i]);
 			}
+			if(spatialSelectionArr2[i].isPoint() ||
+				(spatialSelectionArr2[i] instanceof SpatialSelectionMembrane &&
+					((SpatialSelectionMembrane)spatialSelectionArr2[i]).getSelectionSource() instanceof SinglePoint)){
+				singlePointSSOnly2.add(spatialSelectionArr2[i]);
+			}
 		}
 	}
-	final String varName = getPdeDataContext().getVariableName();
-	VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();	
+	final String varName = getPdeDataContext().getVariableName();	
 	if(singlePointSSOnly.size() == 0){
 		PopupGenerator.showErrorDialog(this, "No Time sampling points match DataType="+varType);
 		return;
@@ -2368,7 +2385,8 @@ private void showTimePlot() {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
-				PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(PDEDataViewer.this, getSimulation(), singlePointSSOnly, tsJobResultsNoStats);
+				PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(PDEDataViewer.this, 
+						getSimulation(), singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
 				final JInternalFrame frame = new JInternalFrame("Time Plot", true, true, true, true);
 				frame.add(pdeTimePlotPanel);
 				frame.setSize(900, 550);

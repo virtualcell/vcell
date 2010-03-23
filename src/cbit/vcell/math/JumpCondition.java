@@ -30,6 +30,9 @@ public JumpCondition(VolVariable volVar) {
 	super(volVar, null, null);
 }
 
+public JumpCondition(VolumeRegionVariable volRegionVar) {
+	super(volRegionVar, null, null);
+}
 
 /**
  * Insert the method's description here.
@@ -198,33 +201,33 @@ public void setOutFlux(Expression exp) {
 
 
 @Override
-public void checkValid(MathDescription mathDesc) throws MathException {
+public void checkValid(MathDescription mathDesc) throws MathException, ExpressionException {
 	checkValid_JumpCondition(mathDesc, inFluxExp);
 	checkValid_JumpCondition(mathDesc, outFluxExp);
 }
 
-private void checkValid_JumpCondition(MathDescription mathDesc, Expression exp) throws MathException {
+private void checkValid_JumpCondition(MathDescription mathDesc, Expression exp) throws MathException, ExpressionException {
 	if (exp == null) {
 		return;
 	}
-	String[] symbols = exp.getSymbols();
+	Expression newExp = MathUtilities.substituteFunctions(exp, mathDesc);
+	String[] symbols = newExp.getSymbols();
 	if (symbols == null) {
 		return;
 	}
 	for (String symbol : symbols) {
 		Variable variable = mathDesc.getVariable(symbol);
-		String varName = getVariable().getName();
 		if (variable instanceof VolVariable				
 				|| variable instanceof VolumeRegionVariable) {			
 			String varType = "volume";
 			if (variable instanceof VolumeRegionVariable) {
 				varType = "volume region";
 			}
-			throw new MathException("Membrane jump condition for Volume Variable '" + getVariable().getName() + "' references " + varType + 
+			throw new MathException("Membrane jump condition for Variable '" + getVariable().getName() + "' references " + varType + 
 					" variable '" + symbol + "'. Please use " +
 					symbol + "_INSIDE or " + symbol + "_OUTSIDE to denote " + varType + " variable " + symbol + "'s solution at the membrane");
 		} else if (variable instanceof VolumeRandomVariable) {
-			throw new MathException("Membrane jump condition for Volume Variable '" + getVariable().getName() + "' references volume random " +
+			throw new MathException("Membrane jump condition for Variable '" + getVariable().getName() + "' references volume random " +
 					"variable '" + symbol + "'. ");
 		}
 	}

@@ -222,18 +222,20 @@ private void initialize() throws DataAccessException {
 		}
 		panel.add(tablePanel, BorderLayout.CENTER);
 				
-		JPanel buttonPanel = new JPanel(new FlowLayout());
-		JButton button = new JButton("Time Plot with Multiple Parameter Value Sets");
-		buttonPanel.add(button);
-		panel.add(buttonPanel, BorderLayout.SOUTH);
-		
-		button.addActionListener(new ActionListener() {
+		if (isODEData) {
+			JPanel buttonPanel = new JPanel(new FlowLayout());
+			JButton button = new JButton("Time Plot with Multiple Parameter Value Sets");
+			buttonPanel.add(button);
+			panel.add(buttonPanel, BorderLayout.SOUTH);
 			
-			public void actionPerformed(ActionEvent e) {
-				mainViewer.showTimePlotMultipleScans(dataManager);
-			}
-		});
-
+			button.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					mainViewer.showTimePlotMultipleScans(dataManager);
+				}
+			});
+		}
+		
 		setParamChoicesPanel(panel);
 	}
 

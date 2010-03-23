@@ -2,6 +2,10 @@ package cbit.vcell.client.desktop.mathmodel;
 
 import javax.swing.JMenu;
 
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.gui.MathDescEditor;
+import cbit.vcell.mathmodel.MathModel;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/20/2004 3:35:42 PM)
@@ -10,9 +14,9 @@ import javax.swing.JMenu;
 public class VCMLEditorPanel extends javax.swing.JPanel {
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.vcell.math.gui.MathDescEditor ivjmathDescEditor = null;
-	private cbit.vcell.mathmodel.MathModel fieldMathModel = new cbit.vcell.mathmodel.MathModel(null);
-	private cbit.vcell.mathmodel.MathModel ivjmathModel1 = null;
+	private MathDescEditor ivjmathDescEditor = null;
+	private MathModel fieldMathModel = new MathModel(null);
+	private MathModel ivjmathModel1 = null;
 	private javax.swing.JTextPane ivjMathWarningTextPane = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
@@ -37,39 +41,11 @@ public VCMLEditorPanel() {
 }
 
 /**
- * VCMLEditorPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public VCMLEditorPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-
-
-/**
- * VCMLEditorPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public VCMLEditorPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * VCMLEditorPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public VCMLEditorPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
-
-/**
  * connEtoC1:  (mathModel1.this --> VCMLEditorPanel.updateWarningText(Lcbit.vcell.math.MathDescription;)V)
  * @param value cbit.vcell.mathmodel.MathModel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(cbit.vcell.mathmodel.MathModel value) {
+private void connEtoC1(MathModel value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -111,7 +87,7 @@ private void connEtoC2(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.mathmodel.MathModel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.mathmodel.MathModel value) {
+private void connEtoM1(MathModel value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -223,10 +199,10 @@ private void connPtoP1SetTarget() {
  * @return cbit.vcell.math.gui.MathDescEditor
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.math.gui.MathDescEditor getmathDescEditor() {
+private MathDescEditor getmathDescEditor() {
 	if (ivjmathDescEditor == null) {
 		try {
-			ivjmathDescEditor = new cbit.vcell.math.gui.MathDescEditor();
+			ivjmathDescEditor = new MathDescEditor();
 			ivjmathDescEditor.setName("mathDescEditor");
 			// user code begin {1}
 			// user code end
@@ -245,7 +221,7 @@ private cbit.vcell.math.gui.MathDescEditor getmathDescEditor() {
  * @return The mathModel property value.
  * @see #setMathModel
  */
-public cbit.vcell.mathmodel.MathModel getMathModel() {
+public MathModel getMathModel() {
 	return fieldMathModel;
 }
 
@@ -255,7 +231,7 @@ public cbit.vcell.mathmodel.MathModel getMathModel() {
  * @return cbit.vcell.mathmodel.MathModel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mathmodel.MathModel getmathModel1() {
+private MathModel getmathModel1() {
 	// user code begin {1}
 	// user code end
 	return ivjmathModel1;
@@ -350,7 +326,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -366,8 +341,8 @@ public static void main(java.lang.String[] args) {
  * @param mathModel The new value for the property.
  * @see #getMathModel
  */
-public void setMathModel(cbit.vcell.mathmodel.MathModel mathModel) {
-	cbit.vcell.mathmodel.MathModel oldValue = fieldMathModel;
+public void setMathModel(MathModel mathModel) {
+	MathModel oldValue = fieldMathModel;
 	fieldMathModel = mathModel;
 	firePropertyChange("mathModel", oldValue, mathModel);
 }
@@ -378,10 +353,10 @@ public void setMathModel(cbit.vcell.mathmodel.MathModel mathModel) {
  * @param newValue cbit.vcell.mathmodel.MathModel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setmathModel1(cbit.vcell.mathmodel.MathModel newValue) {
+private void setmathModel1(MathModel newValue) {
 	if (ivjmathModel1 != newValue) {
 		try {
-			cbit.vcell.mathmodel.MathModel oldValue = getmathModel1();
+			MathModel oldValue = getmathModel1();
 			/* Stop listening for events from the current object */
 			if (ivjmathModel1 != null) {
 				ivjmathModel1.removePropertyChangeListener(ivjEventHandler);
@@ -411,13 +386,12 @@ private void setmathModel1(cbit.vcell.mathmodel.MathModel newValue) {
 /**
  * Comment
  */
-public void updateWarningText(cbit.vcell.math.MathDescription argMathDescription) {
+public void updateWarningText(MathDescription argMathDescription) {
 	if (argMathDescription.isValid()){
 		getMathWarningTextPane().setText("");
 	}else{
 		getMathWarningTextPane().setText(argMathDescription.getWarning());
 	}
-	return;
 }
 
 public boolean hasUnappliedChanges() {

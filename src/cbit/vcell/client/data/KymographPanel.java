@@ -1864,7 +1864,7 @@ private void initConnections() throws java.lang.Exception {
 public void initDataManager(
 	User argUserRequestingData,
 	DataManager argDataManager,
-	final String variableName,double initTime,int step,double endTime,
+	final DataIdentifier variable,double initTime,int step,double endTime,
 	int[] indices,int[] argCrossingMembraneIndices,
 	double[] accumDistances,
 	boolean waitOnInitialLoad,
@@ -1891,7 +1891,7 @@ public void initDataManager(
 	
 	AsynchClientTask task1  = new AsynchClientTask("Retrieving list of variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			DataIdentifier[] sortedDataIDs = VariableType.collectSimilarDataTypes(variableName,dataManager.getDataIdentifiers());
+			DataIdentifier[] sortedDataIDs = VariableType.collectSimilarDataTypes(variable, dataManager.getDataIdentifiers());
 			hashTable.put("sortedDataIDs", sortedDataIDs);
 		}
 	};
@@ -1908,7 +1908,7 @@ public void initDataManager(
 			}
 			getVarNamesJComboBox().addActionListener(ivjEventHandler);
 		
-			getVarNamesJComboBox().setSelectedItem(variableName);
+			getVarNamesJComboBox().setSelectedItem(variable.getName());
 		}
 	};
 	AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2};

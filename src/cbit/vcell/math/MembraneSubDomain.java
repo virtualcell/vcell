@@ -57,7 +57,7 @@ public void addEquation(Equation equation) throws MathException {
  * @param equation cbit.vcell.math.Equation
  */
 public void addJumpCondition(JumpCondition jumpCondition) throws MathException {
-	if (getJumpCondition((VolVariable)jumpCondition.getVariable()) != null){
+	if (getJumpCondition(jumpCondition.getVariable()) != null){
 		throw new MathException("jumpCondition for variable "+jumpCondition.getVariable()+" already exists");
 	}
 	jumpConditionList.addElement(jumpCondition);	
@@ -200,7 +200,7 @@ public CompartmentSubDomain getInsideCompartment() {
  * @param volVar cbit.vcell.math.VolVariable
  * @exception java.lang.Exception The exception description.
  */
-public JumpCondition getJumpCondition(VolVariable volVar) {
+public JumpCondition getJumpCondition(Variable volVar) {
 	Enumeration<JumpCondition> enum1 = jumpConditionList.elements();
 	while (enum1.hasMoreElements()){
 		JumpCondition jump = enum1.nextElement();
@@ -361,10 +361,14 @@ public void read(MathDescription mathDesc, CommentStringTokenizer tokens) throws
 			if (var == null){
 				throw new MathFormatException("variable "+token+" not defined");
 			}	
-			if (!(var instanceof VolVariable)){
-				throw new MathException("variable "+token+" not a VolumeVariable");
-			}	
-			JumpCondition jump = new JumpCondition((VolVariable)var);
+			JumpCondition jump = null;
+			if (var instanceof VolVariable) {
+				jump = new JumpCondition((VolVariable)var);
+			} else if (var instanceof VolumeRegionVariable) {
+				jump = new JumpCondition((VolumeRegionVariable)var);
+			} else {
+				throw new MathException("variable "+token+" is neither a VolumeVariable nor a VolumeRegionVariable");
+			}
 			jump.read(tokens);
 			addJumpCondition(jump);
 			continue;

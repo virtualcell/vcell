@@ -14,6 +14,7 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolumeRegionVariable;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
 import cbit.util.graph.Edge;
@@ -81,7 +82,7 @@ public void addVariable(Variable var) throws MappingException {
 		if (!(var instanceof InsideVariable) && !(var instanceof OutsideVariable)) {
 			variableList.add(var);
 		}
-		if (var instanceof cbit.vcell.math.VolVariable){
+		if (var instanceof cbit.vcell.math.VolVariable || var instanceof VolumeRegionVariable){
 			//
 			// for Volume Variables, also create an InsideVariable and an OutsideVariable for use in JumpConditions
 			//

@@ -20,7 +20,6 @@ import cbit.vcell.solver.SimulationSymbolTable;
 public class VolumeRegionEquation extends Equation {
 	private Expression uniformRateExpression = new Expression(0.0);
 	private Expression volumeRateExpression = new Expression(0.0);
-	private Expression membraneRateExpression = new Expression(0.0);
 
 /**
  * OdeEquation constructor comment.
@@ -53,9 +52,6 @@ public boolean compareEqual(Matchable object) {
 	if (!Compare.isEqualOrNull(volumeRateExpression,equ.volumeRateExpression)){
 		return false;
 	}
-	if (!Compare.isEqualOrNull(membraneRateExpression,equ.membraneRateExpression)){
-		return false;
-	}
 	if (!Compare.isEqualOrNull(uniformRateExpression,equ.uniformRateExpression)){
 		return false;
 	}
@@ -72,7 +68,6 @@ void flatten(SimulationSymbolTable simSymbolTable, boolean bRoundCoefficients) t
 	super.flatten0(simSymbolTable,bRoundCoefficients);
 	
 	volumeRateExpression = getFlattenedExpression(simSymbolTable,volumeRateExpression,bRoundCoefficients);
-	membraneRateExpression = getFlattenedExpression(simSymbolTable,membraneRateExpression,bRoundCoefficients);
 	uniformRateExpression = getFlattenedExpression(simSymbolTable,uniformRateExpression,bRoundCoefficients);
 }
 
@@ -84,7 +79,6 @@ void flatten(SimulationSymbolTable simSymbolTable, boolean bRoundCoefficients) t
 protected Vector<Expression> getExpressions(MathDescription mathDesc){
 	Vector<Expression> list = new Vector<Expression>();
 	list.addElement(getVolumeRateExpression());
-	list.addElement(getMembraneRateExpression());
 	list.addElement(getUniformRateExpression());
 	
 	if (getRateExpression()!=null)		list.addElement(getRateExpression());
@@ -92,17 +86,6 @@ protected Vector<Expression> getExpressions(MathDescription mathDesc){
 	if (getExactSolution()!=null)		list.addElement(getExactSolution());
 	return list;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (7/9/01 2:05:09 PM)
- * @return cbit.vcell.parser.Expression
- */
-public Expression getMembraneRateExpression() {
-	return membraneRateExpression;
-}
-
 
 /**
  * This method was created by a SmartGuide.
@@ -113,12 +96,6 @@ public Enumeration<Expression> getTotalExpressions() throws ExpressionException 
 	Expression lvalueExp = new Expression("VolumeRate_"+getVariable().getName());
 	Expression rvalueExp = new Expression(getVolumeRateExpression());
 	Expression totalExp = Expression.assign(lvalueExp,rvalueExp);
-	totalExp.bindExpression(null);
-	totalExp.flatten();
-	vector.addElement(totalExp);
-	lvalueExp = new Expression("MembraneRate_"+getVariable().getName());
-	rvalueExp = new Expression(getMembraneRateExpression());
-	totalExp = Expression.assign(lvalueExp,rvalueExp);
 	totalExp.bindExpression(null);
 	totalExp.flatten();
 	vector.addElement(totalExp);
@@ -157,11 +134,6 @@ public String getVCML() {
 		buffer.append("\t\t"+VCML.VolumeRate+" "+getVolumeRateExpression().infix()+";\n");
 	}else{
 		buffer.append("\t\t"+VCML.VolumeRate+" "+"0.0;\n");
-	}
-	if (getMembraneRateExpression() != null){
-		buffer.append("\t\t"+VCML.MembraneRate+" "+getMembraneRateExpression().infix()+";\n");
-	}else{
-		buffer.append("\t\t"+VCML.MembraneRate+" "+"0.0;\n");
 	}
 	if (initialExp != null){
 		buffer.append("\t\t"+VCML.Initial+"\t "+initialExp.infix()+";\n");
@@ -224,11 +196,6 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 			setUniformRateExpression(exp);
 			continue;
 		}
-		if (token.equalsIgnoreCase(VCML.MembraneRate)){
-			Expression exp = new Expression(tokens);
-			setMembraneRateExpression(exp);
-			continue;
-		}
 		if (token.equalsIgnoreCase(VCML.Exact)){
 			exactExp = new Expression(tokens);
 			solutionType = EXACT_SOLUTION;
@@ -238,17 +205,6 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 	}	
 		
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (7/9/01 2:05:09 PM)
- * @param newMembraneRateExpression cbit.vcell.parser.Expression
- */
-public void setMembraneRateExpression(Expression newMembraneRateExpression) {
-	membraneRateExpression = newMembraneRateExpression;
-}
-
 
 /**
  * Insert the method's description here.
@@ -271,7 +227,7 @@ public void setVolumeRateExpression(Expression newVolumeRateExpression) {
 
 
 @Override
-public void checkValid(MathDescription mathDesc) throws MathException {	
+public void checkValid(MathDescription mathDesc) throws MathException, ExpressionException {	
 	checkValid_Volume(mathDesc,getVolumeRateExpression());
 	checkValid_Volume(mathDesc,getUniformRateExpression());
 	
@@ -279,29 +235,27 @@ public void checkValid(MathDescription mathDesc) throws MathException {
 	checkValid_Volume(mathDesc,getInitialExpression());
 	checkValid_Volume(mathDesc,getExactSolution());
 	
-	// membrane rate can have membrane variable in it
-	if (membraneRateExpression == null) {
-		return;
+	//
+	// get Parent Subdomain
+	//
+	SubDomain parentSubDomain = null;
+	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
+	while (enum1.hasMoreElements()){
+		SubDomain subDomain = enum1.nextElement();
+		if (subDomain.getEquation(getVariable()) == this){
+			parentSubDomain = subDomain;
+			break;
+		}
 	}
-	
-	String[] symbols = membraneRateExpression.getSymbols();
-	if (symbols == null) {
-		return;
-	}
-	for (String symbol : symbols) {
-		Variable variable = mathDesc.getVariable(symbol);
-		if (variable instanceof VolVariable				
-				|| variable instanceof VolumeRegionVariable) {			
-			String varType = "volume";
-			if (variable instanceof VolumeRegionVariable) {
-				varType = "volume region";
+
+	// jump condition can have membrane variable in it
+	MembraneSubDomain membranes[] = mathDesc.getMembraneSubDomains((CompartmentSubDomain)parentSubDomain);
+	if (membranes!=null) {
+		for (int i = 0; i < membranes.length; i++){
+			JumpCondition jump = membranes[i].getJumpCondition(getVariable());
+			if (jump != null) {
+				jump.checkValid(mathDesc);
 			}
-			throw new MathException("Membrane rate for Volume Region Variable '" + getVariable().getName() + "' references " + varType + 
-					" variable '" + symbol + "'. Please use " +
-					symbol + "_INSIDE or " + symbol + "_OUTSIDE to denote " + varType + " variable " + symbol + "'s solution at the membrane");
-		} else if (variable instanceof VolumeRandomVariable) {
-			throw new MathException("Membrane rate for Volume Region Variable '" + getVariable().getName() + "' references volume random " +
-					"variable '" + symbol + "'. ");
 		}
 	}
 }
