@@ -333,13 +333,14 @@ public boolean hasDiscontinuities(MathDescription mathDesc) throws ExpressionExc
 	return false;	
 }
 
-public abstract void checkValid(MathDescription mathDesc) throws MathException;
+public abstract void checkValid(MathDescription mathDesc) throws MathException, ExpressionException;
 
-protected void checkValid_Volume(MathDescription mathDesc, Expression exp) throws MathException {
+protected void checkValid_Volume(MathDescription mathDesc, Expression exp) throws MathException, ExpressionException {
 	if (exp == null) {
 		return;
 	}
-	String[] symbols = exp.getSymbols();
+	Expression newExp = MathUtilities.substituteFunctions(exp, mathDesc);
+	String[] symbols = newExp.getSymbols();
 	if (symbols == null) {
 		return;
 	}
@@ -360,11 +361,12 @@ protected void checkValid_Volume(MathDescription mathDesc, Expression exp) throw
 	}	
 } 
 
-protected void checkValid_Membrane(MathDescription mathDesc, Expression exp) throws MathException {
+protected void checkValid_Membrane(MathDescription mathDesc, Expression exp) throws MathException, ExpressionException {
 	if (exp == null) {
 		return;
 	}
-	String[] symbols = exp.getSymbols();
+	Expression newExp = MathUtilities.substituteFunctions(exp, mathDesc);
+	String[] symbols = newExp.getSymbols();
 	if (symbols == null) {
 		return;
 	}

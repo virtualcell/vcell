@@ -1,27 +1,9 @@
 package cbit.vcell.publish;
-import java.awt.*;
-import cbit.image.VCImage;
-import cbit.vcell.graph.ReactionCartoon;
-import cbit.vcell.graph.StructureCartoon;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.mapping.gui.StructureMappingCartoon;
-import cbit.vcell.math.*;
-import cbit.vcell.model.*;
-import cbit.vcell.model.gui.ReactionCanvasDisplaySpec;
-import cbit.vcell.mapping.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.xml.XMLTags;
-import cbit.vcell.units.VCUnitDefinition;
-
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
@@ -29,36 +11,107 @@ import java.awt.image.WritableRaster;
 import java.awt.print.PageFormat;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
-import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import com.lowagie.text.Cell;
-import com.lowagie.text.Table;
-import com.lowagie.text.Chunk;
-import com.lowagie.text.Font;
-import com.lowagie.text.pdf.BaseFont;
-import com.lowagie.text.Chapter;
-import com.lowagie.text.Section;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Phrase;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.DocWriter;
-import com.lowagie.text.Element;
-import com.lowagie.text.Jpeg;
-import com.lowagie.text.Watermark;
-
-import com.sun.imageio.plugins.jpeg.JPEGImageWriter;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+
+import cbit.gui.graph.GraphLayout;
+import cbit.gui.graph.LayoutException;
+import cbit.image.VCImage;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.graph.ReactionCartoon;
+import cbit.vcell.graph.StructureCartoon;
+import cbit.vcell.mapping.CurrentClampStimulus;
+import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.Electrode;
+import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ReactionContext;
+import cbit.vcell.mapping.ReactionSpec;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.gui.StructureMappingCartoon;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FastInvariant;
+import cbit.vcell.math.FastRate;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.FilamentRegionEquation;
+import cbit.vcell.math.FilamentSubDomain;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.JumpCondition;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MembraneRegionEquation;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.VCML;
+import cbit.vcell.math.VolumeRegionEquation;
+import cbit.vcell.math.gui.ExpressionCanvas;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.Catalyst;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.MassActionKinetics;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.Structure;
+import cbit.vcell.model.gui.ReactionCanvas;
+import cbit.vcell.model.gui.ReactionCanvasDisplaySpec;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.ExplicitOutputTimeSpec;
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.MeshSpecification;
+import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XMLTags;
+
+import com.lowagie.text.Cell;
+import com.lowagie.text.Chapter;
+import com.lowagie.text.Chunk;
+import com.lowagie.text.DocWriter;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.Jpeg;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.Section;
+import com.lowagie.text.Table;
+import com.lowagie.text.Watermark;
+import com.lowagie.text.pdf.BaseFont;
+import com.sun.imageio.plugins.jpeg.JPEGImageWriter;
 
 /**
 This is the root class that handles publishing of models in the Virtual Cell. It supports the publishing of BioModels, MathModels, 
@@ -365,9 +418,9 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		while (true) {
 			try {
-				new cbit.gui.graph.GraphLayout().layout(rcartoon, g, new Dimension(width,height));
+				new GraphLayout().layout(rcartoon, g, new Dimension(width,height));
 				break;
-			} catch (cbit.gui.graph.LayoutException e) {
+			} catch (LayoutException e) {
 				System.out.println("Layout error: " + e.getMessage());
 				rcartoon.setZoomPercent(rcartoon.getZoomPercent()*90/100);
 			}
@@ -404,7 +457,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		// Getting rid of species so that the image created will not have a problem being added to the document
 		// when there are more than 15 species in the model.
 		Model sparseModel = new Model(model.getName());
-		Structure[] oldStructures = (Structure[])org.vcell.util.BeanUtils.cloneSerializable(model.getStructures());
+		Structure[] oldStructures = (Structure[])BeanUtils.cloneSerializable(model.getStructures());
 		sparseModel.setStructures(oldStructures);
 		 
 		StructureCartoon scartoon = new StructureCartoon();
@@ -429,9 +482,9 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		while (true) {
 			try {
-				new cbit.gui.graph.GraphLayout().layout(scartoon, g, new Dimension(width,height));
+				new GraphLayout().layout(scartoon, g, new Dimension(width,height));
 				break;
-			} catch (cbit.gui.graph.LayoutException e) {
+			} catch (LayoutException e) {
 				System.out.println("Layout error: " + e.getMessage());
 				scartoon.setZoomPercent(scartoon.getZoomPercent()*90/100);
 			}
@@ -540,7 +593,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 				int xSide = 0;
 				int ySide = 0;
 				if(pixelWR == null){
-					cbit.image.VCImage sampledImage = geomImage;
+					VCImage sampledImage = geomImage;
 					double side = Math.sqrt(x*y*z);
 					xSide = (int)Math.round(side/(double)x);
 					if(xSide == 0){xSide = 1;}
@@ -693,9 +746,9 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 				g = (Graphics2D)bufferedImage.getGraphics();
 				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-				new cbit.gui.graph.GraphLayout().layout(rcartoon, g, new Dimension(width,height));
+				new GraphLayout().layout(rcartoon, g, new Dimension(width,height));
 				break;
-			} catch (cbit.gui.graph.LayoutException e) {
+			} catch (LayoutException e) {
 				System.out.println("Layout error in " + struct.getName() + ": " + e.getMessage());
 				//rcartoon.setZoomPercent(rcartoon.getZoomPercent()*90/100);
 				width = width + SIZE_INC*5;
@@ -754,9 +807,9 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 				g = (Graphics2D)bufferedImage.getGraphics();
 				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-				new cbit.gui.graph.GraphLayout().layout(scartoon, g, new Dimension(width,height));
+				new GraphLayout().layout(scartoon, g, new Dimension(width,height));
 				break;
-			} catch (cbit.gui.graph.LayoutException e) {
+			} catch (LayoutException e) {
 				System.out.println("Layout error: " + e.getMessage());
 				width = width + SIZE_INC*5;
 				height = height + SIZE_INC*5;
@@ -790,9 +843,9 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
 		while (true) {
 			try {
-				new cbit.gui.graph.GraphLayout().layout(structMapCartoon, g, new Dimension(width,height));
+				new GraphLayout().layout(structMapCartoon, g, new Dimension(width,height));
 				break;
-			} catch (cbit.gui.graph.LayoutException e) {
+			} catch (LayoutException e) {
 				System.out.println("Layout error: " + e.getMessage());
 				structMapCartoon.setZoomPercent(structMapCartoon.getZoomPercent()*90/100);
 			}
@@ -1276,15 +1329,15 @@ protected void writeHorizontalLine() throws DocumentException {
 			Expression exp = constant.getExpression();
 			try {
 				expArray = new Expression[] { Expression.assign(new Expression(constant.getName()), exp.flatten()) };
-			} catch(cbit.vcell.parser.ExpressionException ee) {
+			} catch(ExpressionException ee) {
 				System.err.println("Unable to process constant " + constant.getName() + " for publishing");
 				ee.printStackTrace();
 				continue;
 			}
 			try {
-				Dimension dim = cbit.vcell.math.gui.ExpressionCanvas.getExpressionImageSize(expArray, (Graphics2D)dummy.getGraphics());
+				Dimension dim = ExpressionCanvas.getExpressionImageSize(expArray, (Graphics2D)dummy.getGraphics());
 				BufferedImage bufferedImage = new BufferedImage((int)dim.getWidth()*scale, (int)dim.getHeight()*scale, BufferedImage.TYPE_3BYTE_BGR);
-				cbit.vcell.math.gui.ExpressionCanvas.getExpressionAsImage(expArray, bufferedImage, scale);		           
+				ExpressionCanvas.getExpressionAsImage(expArray, bufferedImage, scale);		           
 				com.lowagie.text.Image expImage = com.lowagie.text.Image.getInstance(bufferedImage, null);
 				expImage.setAlignment(com.lowagie.text.Image.ALIGN_LEFT);
 				if (mathDescSubSection == null) {
@@ -1308,15 +1361,15 @@ protected void writeHorizontalLine() throws DocumentException {
 			Expression exp = function.getExpression();
 			try {
 				expArray = new Expression[] { Expression.assign(new Expression(function.getName()), exp.flatten()) };
-			} catch(cbit.vcell.parser.ExpressionException ee) {
+			} catch(ExpressionException ee) {
 				System.err.println("Unable to process function " + function.getName() + " for publishing");
 				ee.printStackTrace();
 				continue;
 			}
 			try {    
-				Dimension dim = cbit.vcell.math.gui.ExpressionCanvas.getExpressionImageSize(expArray, (Graphics2D)dummy.getGraphics());
+				Dimension dim = ExpressionCanvas.getExpressionImageSize(expArray, (Graphics2D)dummy.getGraphics());
 				BufferedImage bufferedImage = new BufferedImage((int)dim.getWidth()*scale, (int)dim.getHeight()*scale, BufferedImage.TYPE_3BYTE_BGR);
-				cbit.vcell.math.gui.ExpressionCanvas.getExpressionAsImage(expArray, bufferedImage, scale);     
+				ExpressionCanvas.getExpressionAsImage(expArray, bufferedImage, scale);     
 				com.lowagie.text.Image expImage = com.lowagie.text.Image.getInstance(bufferedImage, null);
 				expImage.setAlignment(com.lowagie.text.Image.ALIGN_LEFT);
 				if (mathDescSubSection == null) {
@@ -1855,10 +1908,10 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 			String speciesName = speciesContSpecs[i].getSpeciesContext().getSpecies().getCommonName();
 			String structName = speciesContSpecs[i].getSpeciesContext().getStructure().getName();
 			String diff = speciesContSpecs[i].getDiffusionParameter().getExpression().infix();
-			cbit.vcell.units.VCUnitDefinition diffUnit = speciesContSpecs[i].getDiffusionParameter().getUnitDefinition();
+			VCUnitDefinition diffUnit = speciesContSpecs[i].getDiffusionParameter().getUnitDefinition();
 			SpeciesContextSpecParameter initParam = speciesContSpecs[i].getInitialConditionParameter();
 			String initConc = initParam == null? "" :initParam.getExpression().infix();
-			cbit.vcell.units.VCUnitDefinition initConcUnit = initParam == null? null : initParam.getUnitDefinition();
+			VCUnitDefinition initConcUnit = initParam == null? null : initParam.getUnitDefinition();
 			speciesSpecTable.addCell(createCell(speciesName, getFont()));
 			speciesSpecTable.addCell(createCell(structName, getFont()));
 			speciesSpecTable.addCell(createCell(initConc + (initConcUnit == null ? "": "   " + initConcUnit.getSymbol()), getFont()));
@@ -1977,7 +2030,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 					Cell arrowImageCell = getReactionArrowImageCell(bReversible);
 					
 					// Get reactants and products strings
-					cbit.vcell.model.gui.ReactionCanvas rc = new cbit.vcell.model.gui.ReactionCanvas();
+					ReactionCanvas rc = new ReactionCanvas();
 					rc.setReactionStep(rs);
 					ReactionCanvasDisplaySpec rcdSpec = rc.getReactionCanvasDisplaySpec();
 					String reactants = rcdSpec.getLeftText();
@@ -2305,7 +2358,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 				structMapTable.endHeaders();
 			}
 			String structName = structMap[i].getStructure().getName();
-			cbit.vcell.geometry.SubVolume subVol = ((FeatureMapping)structMap[i]).getSubVolume();
+			SubVolume subVol = ((FeatureMapping)structMap[i]).getSubVolume();
 			String subDomain = "";
 			if (subVol != null) {
 				subDomain = subVol.getName();
@@ -2374,7 +2427,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 						Expression exp = new Expression(enum_equ.nextElement());	
 						expList.add(exp.flatten());
 					}
-				} catch (cbit.vcell.parser.ExpressionException ee) {
+				} catch (ExpressionException ee) {
 					System.err.println("Unable to process the equation for subdomain: " + subDomain.getName());
 					ee.printStackTrace();
 					continue;
@@ -2382,16 +2435,16 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 			}
 			expArray = (Expression [])expList.toArray(new Expression[expList.size()]);
 			Section tempSection = null;
-			if (subDomain instanceof cbit.vcell.math.CompartmentSubDomain) {
+			if (subDomain instanceof CompartmentSubDomain) {
 				tempSection = volDomains.addSection(subDomain.getName(), volDomains.depth() + 1);
-			} else if (subDomain instanceof cbit.vcell.math.MembraneSubDomain) {
+			} else if (subDomain instanceof MembraneSubDomain) {
 				tempSection = memDomains.addSection(subDomain.getName(), memDomains.depth() + 1);
 			}
 			try { 
-				Dimension dim = cbit.vcell.math.gui.ExpressionCanvas.getExpressionImageSize(expArray, (Graphics2D)dummy.getGraphics());
+				Dimension dim = ExpressionCanvas.getExpressionImageSize(expArray, (Graphics2D)dummy.getGraphics());
 				System.out.println("Image dim: " + dim.width + " " + dim.height);
 				BufferedImage bufferedImage = new BufferedImage((int)dim.getWidth()*scale, (int)dim.getHeight()*scale, BufferedImage.TYPE_3BYTE_BGR);
-				cbit.vcell.math.gui.ExpressionCanvas.getExpressionAsImage(expArray, bufferedImage, scale);
+				ExpressionCanvas.getExpressionAsImage(expArray, bufferedImage, scale);
 				//Table imageTable = null;;            
 				com.lowagie.text.Image expImage = com.lowagie.text.Image.getInstance(bufferedImage, null);
 				expImage.setAlignment(com.lowagie.text.Image.LEFT);
@@ -2486,12 +2539,13 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 			exp = eq.getVolumeRateExpression().infix();
 		}
 		eqTable.addCell(createCell(exp, getFont()));
-		exp = "0.0";
-		eqTable.addCell(createCell(VCML.MembraneRate, getFont()));
-		if (eq.getMembraneRateExpression() != null) {
-			exp = eq.getMembraneRateExpression().infix();
-		}
-		eqTable.addCell(createCell(exp, getFont()));
+		
+//		exp = "0.0";
+//		eqTable.addCell(createCell(VCML.MembraneRate, getFont()));
+//		if (eq.getMembraneRateExpression() != null) {
+//			exp = eq.getMembraneRateExpression().infix();
+//		}
+//		eqTable.addCell(createCell(exp, getFont()));
 		
 		if (eq.getInitialExpression() != null) {
 			eqTable.addCell(createCell(VCML.Initial, getFont()));

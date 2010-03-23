@@ -173,7 +173,8 @@ public void initialize() throws Exception {
 			for (int i = 0; i < vars.length; i ++) {
 				Equation equation = volSubDomain.getEquation(vars[i]);
 				if (equation != null && equation instanceof VolumeRegionEquation) {
-					addCppClassCoder(new CppClassCoderVolumeRegionVarContext(this,equation,volSubDomain,simulationJob,"VolumeRegionVarContext"));
+					throw new RuntimeException("VolumeRegionEquation not supported");
+//					addCppClassCoder(new CppClassCoderVolumeRegionVarContext(this,equation,volSubDomain,simulationJob,"VolumeRegionVarContext"));
 				} else {					
 					if (equation == null && (vars[i] instanceof VolVariable) && simulation.getMathDescription().isPDE((VolVariable)vars[i])) {
 						boolean bSteady = simulation.getMathDescription().isPdeSteady((VolVariable)vars[i]); 

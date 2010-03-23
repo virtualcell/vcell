@@ -2255,19 +2255,6 @@ public org.jdom.Element getXML(VolumeRegionEquation param) {
 	tempElem.setText(tempString);
 	memregeq.addContent(tempElem);
 	
-	//
-	//add MembraneRate
-	if (param.getMembraneRateExpression() != null){
-		tempString = mangleExpression(param.getMembraneRateExpression());
-//		buffer.append("\t\t"+VCML.MembraneRate+" "+getMembraneRateExpression().infix()+";\n");
-	}else{
-		tempString = "0.0";
-//		buffer.append("\t\t"+VCML.MembraneRate+" "+"0.0;\n");
-	}
-	tempElem = new org.jdom.Element(XMLTags.MembraneRateTag);
-	tempElem.setText(tempString);
-	memregeq.addContent(tempElem);
-	//
 	//add Initial
 	if (param.getInitialExpression() != null){
 		tempElem = new org.jdom.Element( XMLTags.InitialTag );

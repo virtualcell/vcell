@@ -1,12 +1,14 @@
 package cbit.vcell.simdata.gui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -41,6 +43,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	private TSJobResultsNoStats tsJobResultsNoStats = null;
 	private PlotPane plotPane = null;
 	private Vector<SpatialSelection> pointVector = null;
+	private Vector<SpatialSelection> pointVector2 = null;
 	private JList variableJList = new JList();
 	private EventHandler eventHandler = new EventHandler();
 	private Simulation simulation = null;
@@ -56,11 +59,12 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		}
 		
 	}
-	public PdeTimePlotMultipleVariablesPanel(PDEDataViewer pdv, Simulation sim, Vector<SpatialSelection> pv, TSJobResultsNoStats tsjr) {
+	public PdeTimePlotMultipleVariablesPanel(PDEDataViewer pdv, Simulation sim, Vector<SpatialSelection> pv, Vector<SpatialSelection> pv2, TSJobResultsNoStats tsjr) {
 		pdeDataViewer = pdv;
 		simulation = sim;
 		pdeDataContext = pdeDataViewer.getPdeDataContext();
 		pointVector = pv;
+		pointVector2 = pv2;
 		tsJobResultsNoStats = tsjr;
 		
 		initialize();
@@ -69,43 +73,52 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	public void showTimePlot() {
 		VariableType varType = pdeDataContext.getDataIdentifier().getVariableType();
 		Object[] selectedValues = variableJList.getSelectedValues();
-		final String[] selectedVarNames = new String[selectedValues.length];
-		System.arraycopy(selectedValues, 0, selectedVarNames, 0, selectedValues.length);
-		if (selectedVarNames.length > 1) {
-			DataIdentifier[] dataIdentifiers = pdeDataContext.getDataIdentifiers();		
-			for (String name : selectedVarNames) {
-				for (DataIdentifier dataIdentifier : dataIdentifiers) {
-					if (dataIdentifier.getName().equals(name)) {
-						if (!dataIdentifier.getVariableType().equals(varType)) {
-							PopupGenerator.showErrorDialog(this, "Please choose VOLUME variables or MEMBRANE variables only");
-							variableJList.clearSelection();
-							variableJList.setSelectedValue(pdeDataContext.getVariableName(), true);
-							return;
-						}
-					}
+		DataIdentifier[] selectedDataIdentifiers = new DataIdentifier[selectedValues.length];
+		System.arraycopy(selectedValues, 0, selectedDataIdentifiers, 0, selectedValues.length);
+		if (selectedDataIdentifiers.length > 1) {
+			for (DataIdentifier selectedDataIdentifier : selectedDataIdentifiers) {
+				if (!selectedDataIdentifier.getVariableType().getVariableDomain().equals(varType.getVariableDomain())) {
+					PopupGenerator.showErrorDialog(this, "Please choose VOLUME variables or MEMBRANE variables only");
+					variableJList.clearSelection();
+					variableJList.setSelectedValue(pdeDataContext.getVariableName(), true);
+					return;
 				}
 			}
 		}		
 		
 		try {		
-			final int numSelectedVariables = selectedVarNames.length;
+			final int numSelectedVariables = selectedDataIdentifiers.length;
 			final int numSelectedSpatialPoints = pointVector.size();
 			int[][] indices = new int[numSelectedVariables][numSelectedSpatialPoints];
 			//
 			for (int i = 0; i < numSelectedSpatialPoints; i++){
 				for (int v = 0; v < numSelectedVariables; v ++) {
-					if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
-						SpatialSelectionVolume ssv = (SpatialSelectionVolume)pointVector.get(i);
-						indices[v][i] = ssv.getIndex(0);
-					}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
-						SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)pointVector.get(i);
-						indices[v][i] = ssm.getIndex(0);
+					if (selectedDataIdentifiers[v].getVariableType().equals(varType)) {
+						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+							SpatialSelectionVolume ssv = (SpatialSelectionVolume)pointVector.get(i);
+							indices[v][i] = ssv.getIndex(0);
+						}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
+							SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)pointVector.get(i);
+							indices[v][i] = ssm.getIndex(0);
+						}
+					} else {
+						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+							SpatialSelectionVolume ssv = (SpatialSelectionVolume)pointVector2.get(i);
+							indices[v][i] = ssv.getIndex(0);
+						}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
+							SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)pointVector2.get(i);
+							indices[v][i] = ssm.getIndex(0);
+						}
 					}
 				}
 			}
 
+			final String[] selectedVarNames = new String[numSelectedVariables];
+			for (int i = 0; i < selectedVarNames.length; i++) {
+				selectedVarNames[i] = selectedDataIdentifiers[i].getName();
+			}
 			final double[] timePoints = pdeDataContext.getTimePoints();
-			TimeSeriesJobSpec tsjs = new TimeSeriesJobSpec(	selectedVarNames,
+			TimeSeriesJobSpec tsjs = new TimeSeriesJobSpec(selectedVarNames,
 					indices, null, timePoints[0], 1, timePoints[timePoints.length-1],
 					VCDataJobID.createVCDataJobID(pdeDataViewer.getDataViewerManager().getUser(), true));
 
@@ -188,15 +201,18 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 				new String[] {"Time Plot", ReservedSymbol.TIME.getName(), ""});				
 		plotPane.setPlot2D(plot2D);
 		
-		DefaultListModel dlm = new DefaultListModel();
-		DataIdentifier[] dis = pdeDataContext.getDataIdentifiers();
-		for (DataIdentifier di : dis) {
-			if (di.getVariableType().equals(varType)) {
-				dlm.addElement(di.getName());
+		DataIdentifier[] dis = VariableType.collectSimilarDataTypes(pdeDataContext.getDataIdentifier(), pdeDataContext.getDataIdentifiers());
+		variableJList.setListData(dis);
+		variableJList.setSelectedValue(pdeDataContext.getDataIdentifier(), true);
+		variableJList.setCellRenderer(new DefaultListCellRenderer() {
+			
+			public Component getListCellRendererComponent(JList list, Object value,
+					int index, boolean isSelected, boolean cellHasFocus) {
+				JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); 
+				label.setText(((DataIdentifier)value).getName());
+				return this;
 			}
-		}
-		variableJList.setModel(dlm);
-		variableJList.setSelectedValue(varName, true);
+		});
 		
 		setLayout(new GridBagLayout());		
 		
@@ -250,7 +266,6 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		add(sp, gbc);
 		
 		variableJList.addListSelectionListener(eventHandler);
-		
 	}
 	
 

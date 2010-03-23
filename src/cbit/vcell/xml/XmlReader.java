@@ -1730,11 +1730,19 @@ public JumpCondition getJumpCondition(Element param, MathDescription mathDesc) t
 	//get VolVariable ref
 	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	
-	VolVariable volVar = (VolVariable)mathDesc.getVariable(varname);
-	if ( volVar == null ) {
-		throw new XmlParseException("The reference to the VolVariable " + varname + ", could not be resolved in the dictionnary!");
+	Variable var = mathDesc.getVariable(varname);
+	if ( var == null ) {
+		throw new XmlParseException("The reference to the Variable " + varname + ", could not be resolved!");
 	}
-	JumpCondition jumpCondition = new JumpCondition(volVar);
+	
+	JumpCondition jumpCondition = null;
+	if (var instanceof VolVariable) {
+		jumpCondition = new JumpCondition((VolVariable)var);
+	} else if (var instanceof VolumeRegionVariable) {
+		jumpCondition = new JumpCondition((VolumeRegionVariable)var);
+	} else {
+		throw new XmlParseException("unexpected variable type for jump condition");
+	}
 
 	//process InFlux
 	String temp = param.getChildText(XMLTags.InFluxTag, vcNamespace);
@@ -4746,11 +4754,6 @@ public VolumeRegionEquation getVolumeRegionEquation(Element param, MathDescripti
 	temp = param.getChildText(XMLTags.VolumeRateTag, vcNamespace);
 	exp = unMangleExpression( temp );
 	volRegEq.setVolumeRateExpression(exp);
-
-	//set the Membrane Rate
-	temp = param.getChildText(XMLTags.MembraneRateTag, vcNamespace);
-	exp = unMangleExpression( temp );
-	volRegEq.setMembraneRateExpression(exp);
 	
 	//get ExactSolution (if any)
 /*	temp = param.getChildText(XMLTags.ExactTag);

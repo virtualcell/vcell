@@ -174,7 +174,7 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 
 
 @Override
-public void checkValid(MathDescription mathDesc) throws MathException {
+public void checkValid(MathDescription mathDesc) throws MathException, ExpressionException {
 	if (getVariable() instanceof VolVariable) {
 		checkValid_Volume(mathDesc, getInitialExpression());
 		checkValid_Volume(mathDesc, getRateExpression());

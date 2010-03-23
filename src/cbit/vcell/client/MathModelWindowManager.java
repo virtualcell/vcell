@@ -441,9 +441,6 @@ public boolean isRecyclable() {
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-
-	System.out.println(evt.getSource().getClass().getName()+" '"+evt.getPropertyName()+"'");
-	
 	if(evt.getSource() instanceof GeometrySpec && evt.getPropertyName().equals("sampledImage") && evt.getNewValue() != null){
 		updateGeometryRegions(false);
 	}

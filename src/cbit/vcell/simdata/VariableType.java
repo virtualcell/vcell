@@ -1,5 +1,9 @@
 package cbit.vcell.simdata;
 
+import org.vcell.util.Matchable;
+
+import cbit.vcell.solvers.CartesianMesh;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -12,6 +16,7 @@ package cbit.vcell.simdata;
 public class VariableType implements java.io.Serializable, org.vcell.util.Matchable {
 
 	private int type = -1;
+	private VariableDomain variableDomain;
 
 	private static final int MIN_PDE_TYPE = 1;
 	private static final int MAX_PDE_TYPE = 6;
@@ -37,66 +42,68 @@ public class VariableType implements java.io.Serializable, org.vcell.util.Matcha
 	public static final VariableType MEMBRANE_REGION = new VariableType(MEMBRANE_REGION_TYPE);
 	public static final VariableType CONTOUR_REGION = new VariableType(CONTOUR_REGION_TYPE);
 	public static final VariableType NONSPATIAL = new VariableType(NONSPATIAL_TYPE);
+	
+	public enum VariableDomain {
+		VARIABLEDOMAIN_UNKNOWN,
+		VARIABLEDOMAIN_VOLUME,
+		VARIABLEDOMAIN_MEMBRANE,
+		VARIABLEDOMAIN_CONTOUR,
+		VARIABLEDOMAIN_NONSPATIAL,
+	}
 /**
  * PDEVariableType constructor comment.
  */
 private VariableType(int varType) {
 	super();
 	this.type = varType;
+	switch (type) {
+	case UNKNOWN_TYPE:
+		variableDomain = VariableDomain.VARIABLEDOMAIN_UNKNOWN;
+		break;
+	case VOLUME_TYPE:
+	case VOLUME_REGION_TYPE:
+		variableDomain = VariableDomain.VARIABLEDOMAIN_VOLUME;
+		break;
+	case MEMBRANE_TYPE:
+	case MEMBRANE_REGION_TYPE:
+		variableDomain = VariableDomain.VARIABLEDOMAIN_MEMBRANE;
+		break;
+	case CONTOUR_TYPE:
+	case CONTOUR_REGION_TYPE:
+		variableDomain = VariableDomain.VARIABLEDOMAIN_CONTOUR;
+		break;
+	case NONSPATIAL_TYPE:
+		variableDomain = VariableDomain.VARIABLEDOMAIN_NONSPATIAL;
+		break;
+	default:
+		throw new RuntimeException("Unknown variable type " + type);
+	}
 }
 /**
  * Insert the method's description here.
  * Creation date: (4/28/2005 11:44:25 AM)
  */
-public static cbit.vcell.simdata.DataIdentifier[] collectSimilarDataTypes(String variableName,cbit.vcell.simdata.DataIdentifier[] dataIDs){
-	
-	cbit.vcell.simdata.VariableType vt = null;
-	for(int i=0;i<dataIDs.length;i+= 1){
-		if(dataIDs[i].getName().equals(variableName)){
-			vt = dataIDs[i].getVariableType();
-			break;
-		}
-	}
-	if(vt == null){
-		throw new IllegalArgumentException("couldn't find variable "+variableName+" in dataIdentifiers list");
-	}
+public static DataIdentifier[] collectSimilarDataTypes(DataIdentifier variable, DataIdentifier[] dataIDs){
 
 	//Sort variable names, ignore case
-	java.util.TreeSet treeSet = new java.util.TreeSet(
-		new java.util.Comparator(){
-			public int compare(Object o1, Object o2){
-				int ignoreCaseB = ((cbit.vcell.simdata.DataIdentifier)o1).getName().compareToIgnoreCase(((cbit.vcell.simdata.DataIdentifier)o2).getName());
+	java.util.TreeSet<DataIdentifier> treeSet = new java.util.TreeSet<DataIdentifier>(
+		new java.util.Comparator<DataIdentifier>(){
+			public int compare(DataIdentifier o1, DataIdentifier o2){
+				int ignoreCaseB = o1.getName().compareToIgnoreCase(o2.getName());
 				if(ignoreCaseB == 0){
-					return ((cbit.vcell.simdata.DataIdentifier)o1).getName().compareTo(((cbit.vcell.simdata.DataIdentifier)o2).getName());
+					return o1.getName().compareTo(o2.getName());
 				}
 				return ignoreCaseB;
 			}
 		}
 	);
-	for(int i=0;i<dataIDs.length;i+= 1){
-		if( 
-			(
-				(vt.equals(cbit.vcell.simdata.VariableType.VOLUME) ||
-				vt.equals(cbit.vcell.simdata.VariableType.VOLUME_REGION))
-				&&
-				(dataIDs[i].getVariableType().equals(cbit.vcell.simdata.VariableType.VOLUME) ||
-				dataIDs[i].getVariableType().equals(cbit.vcell.simdata.VariableType.VOLUME_REGION))
-			)
-			||
-			(
-				(vt.equals(cbit.vcell.simdata.VariableType.MEMBRANE) ||
-				vt.equals(cbit.vcell.simdata.VariableType.MEMBRANE_REGION))
-				&&
-				(dataIDs[i].getVariableType().equals(cbit.vcell.simdata.VariableType.MEMBRANE) ||
-				dataIDs[i].getVariableType().equals(cbit.vcell.simdata.VariableType.MEMBRANE_REGION))
-			)
-			){
-				
+	for(int i = 0; i <dataIDs.length; i += 1){
+		if (variable.getVariableType().getVariableDomain().equals(dataIDs[i].getVariableType().getVariableDomain())) {
 			treeSet.add(dataIDs[i]);
 		}
 	}
 
-	cbit.vcell.simdata.DataIdentifier[] results = new cbit.vcell.simdata.DataIdentifier[treeSet.size()];
+	DataIdentifier[] results = new DataIdentifier[treeSet.size()];
 	treeSet.toArray(results);
 	return results;
 }
@@ -106,7 +113,7 @@ public static cbit.vcell.simdata.DataIdentifier[] collectSimilarDataTypes(String
  * @return boolean
  * @param obj cbit.util.Matchable
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	return equals(obj);
 }
 /**
@@ -200,7 +207,7 @@ public static final VariableType getVariableTypeFromVariableTypeName(String type
  * @param mesh cbit.vcell.solvers.CartesianMesh
  * @param dataLength int
  */
-public static final VariableType getVariableTypeFromLength(cbit.vcell.solvers.CartesianMesh mesh, int dataLength) {
+public static final VariableType getVariableTypeFromLength(CartesianMesh mesh, int dataLength) {
 	VariableType result = null;
 	if (mesh.getDataLength(VOLUME) == dataLength) {
 		result = VOLUME;
@@ -251,4 +258,8 @@ public boolean isExpansionOf(VariableType varType) {
 public String toString() {
 	return getTypeName()+"_VariableType";
 }
+public final VariableDomain getVariableDomain() {
+	return variableDomain;
+}
+
 }

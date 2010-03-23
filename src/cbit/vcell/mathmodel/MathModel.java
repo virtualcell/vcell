@@ -8,6 +8,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.MathModelChildSummary;
@@ -17,6 +18,7 @@ import org.vcell.util.document.Version;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
+import cbit.vcell.model.VCMODL;
 import cbit.vcell.model.gui.VCellNames;
 import cbit.vcell.solver.Simulation;
 /**
@@ -25,13 +27,13 @@ import cbit.vcell.solver.Simulation;
  * @author: 
  */
 public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener {
-	private org.vcell.util.document.Version fieldVersion = null;
+	private Version fieldVersion = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private MathDescription fieldMathDescription = new MathDescription("unnamed");
 	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext(this);
-	private cbit.vcell.solver.Simulation[] fieldSimulations = new Simulation[0];
+	private Simulation[] fieldSimulations = new Simulation[0];
 	private java.lang.String fieldDescription = new String();
 
 /**
@@ -103,14 +105,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 
 
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (1/19/01 3:31:00 PM)
  * @param simulationContext cbit.vcell.mapping.SimulationContext
@@ -138,14 +132,6 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
 
 
 /**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (4/24/2003 3:40:07 PM)
  */
@@ -160,21 +146,21 @@ public void clearVersion(){
  * @return boolean
  * @param obj cbit.util.Matchable
  */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
+public boolean compareEqual(Matchable obj) {
 	if (!(obj instanceof MathModel)){
 		return false;
 	}
 	MathModel mathModel = (MathModel)obj;
-	if (!org.vcell.util.Compare.isEqualOrNull(getName(),mathModel.getName())){
+	if (!Compare.isEqualOrNull(getName(),mathModel.getName())){
 		return false;
 	}
-	if (!org.vcell.util.Compare.isEqualOrNull(getDescription(),mathModel.getDescription())){
+	if (!Compare.isEqualOrNull(getDescription(),mathModel.getDescription())){
 		return false;
 	}
 	if (!getMathDescription().compareEqual(mathModel.getMathDescription())){
 		return false;
 	}
-	if (!org.vcell.util.Compare.isEqualOrNull(getSimulations(),mathModel.getSimulations())){
+	if (!Compare.isEqualOrNull(getSimulations(),mathModel.getSimulations())){
 		return false;
 	}
 	if (!outputFunctionContext.compareEqual(mathModel.outputFunctionContext)){
@@ -273,48 +259,8 @@ public MathModelChildSummary createMathModelChildSummary() {
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(evt);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, int oldValue, int newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
 
@@ -327,19 +273,11 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
 
 
 /**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (3/18/2004 1:54:51 PM)
  * @param newVersion cbit.sql.Version
  */
-public void forceNewVersionAnnotation(org.vcell.util.document.Version newVersion) throws PropertyVetoException {
+public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoException {
 	if (getVersion().getVersionKey().equals(newVersion.getVersionKey())) {
 		setVersion(newVersion);
 	} else {
@@ -417,7 +355,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return The simulations property value.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation[] getSimulations() {
+public Simulation[] getSimulations() {
 	return fieldSimulations;
 }
 
@@ -428,7 +366,7 @@ public cbit.vcell.solver.Simulation[] getSimulations() {
  * @param index The index value into the property array.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation getSimulations(int index) {
+public Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
 
@@ -440,7 +378,7 @@ public cbit.vcell.solver.Simulation getSimulations(int index) {
 public java.lang.String getVCML() throws Exception {
 	StringBuffer buffer = new StringBuffer();
 	String name = (getName()!=null)?getName():"unnamedMathModel";
-	buffer.append(cbit.vcell.model.VCMODL.MathModel+" "+name+" {\n");
+	buffer.append(VCMODL.MathModel+" "+name+" {\n");
 
 	//
 	// write MathDescription
@@ -465,7 +403,7 @@ public java.lang.String getVCML() throws Exception {
  * Gets the version property (cbit.sql.Version) value.
  * @return The version property value.
  */
-public org.vcell.util.document.Version getVersion() {
+public Version getVersion() {
 	return fieldVersion;
 }
 
@@ -590,14 +528,6 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 
 
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (1/19/01 3:31:00 PM)
  * @param simulationContext cbit.vcell.mapping.SimulationContext
@@ -616,14 +546,6 @@ public void removeSimulation(Simulation simulation) throws java.beans.PropertyVe
  */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
-}
-
-
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
 }
 
 
@@ -673,8 +595,8 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public void setSimulations(cbit.vcell.solver.Simulation[] simulations) throws java.beans.PropertyVetoException {
-	cbit.vcell.solver.Simulation[] oldValue = fieldSimulations;
+public void setSimulations(Simulation[] simulations) throws java.beans.PropertyVetoException {
+	Simulation[] oldValue = fieldSimulations;
 	fireVetoableChange("simulations", oldValue, simulations);
 	fieldSimulations = simulations;
 	firePropertyChange("simulations", oldValue, simulations);
@@ -686,7 +608,7 @@ public void setSimulations(cbit.vcell.solver.Simulation[] simulations) throws ja
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(org.vcell.util.document.Version version) throws PropertyVetoException {
+private void setVersion(Version version) throws PropertyVetoException {
 	this.fieldVersion = version;
 	if (version != null){
 		setName(version.getName());
