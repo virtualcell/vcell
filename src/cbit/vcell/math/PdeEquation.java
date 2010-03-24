@@ -252,10 +252,12 @@ protected Vector<Expression> getExpressions(MathDescription mathDesc) {
 			MembraneSubDomain membranes[] = mathDesc.getMembraneSubDomains((CompartmentSubDomain)parentSubDomain);
 			for (int i = 0; membranes!=null && i < membranes.length; i++){
 				JumpCondition jump = membranes[i].getJumpCondition((VolVariable)getVariable());
-				if (membranes[i].getInsideCompartment()==parentSubDomain){
-					list.addElement(jump.getInFluxExpression());
-				}else{
-					list.addElement(jump.getOutFluxExpression());
+				if (jump != null) {
+					if (membranes[i].getInsideCompartment()==parentSubDomain){
+						list.addElement(jump.getInFluxExpression());
+					}else{
+						list.addElement(jump.getOutFluxExpression());
+					}
 				}
 			}
 		}catch (Exception e){
@@ -736,7 +738,9 @@ public void checkValid(MathDescription mathDesc) throws MathException, Expressio
 		MembraneSubDomain membranes[] = mathDesc.getMembraneSubDomains((CompartmentSubDomain)parentSubDomain);
 		for (int i = 0; membranes!=null && i < membranes.length; i++){
 			JumpCondition jump = membranes[i].getJumpCondition((VolVariable)getVariable());
-			jump.checkValid(mathDesc);
+			if (jump != null) {
+				jump.checkValid(mathDesc);
+			}
 		}
 	} else if (getVariable() instanceof MemVariable) {
 		checkValid_Membrane(mathDesc, getBoundaryXm());

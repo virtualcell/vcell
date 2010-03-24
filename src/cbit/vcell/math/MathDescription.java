@@ -2190,12 +2190,14 @@ public boolean isValid() {
 		for (int i=0;i<variableList.size();i++){
 			Variable var = variableList.elementAt(i);
 			if (var instanceof VolVariable){
+				VolVariable volVar = (VolVariable)var;
+				
 				int pdeRefCount = 0;
 				int odeRefCount = 0;
 				int steadyPdeCount = 0;
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = subDomainList.elementAt(j);
-					Equation equ = subDomain.getEquation(var);
+					Equation equ = subDomain.getEquation(volVar);
 					if (equ instanceof PdeEquation){
 						if (((PdeEquation)equ).isSteady()) {
 							steadyPdeCount ++;
@@ -2210,9 +2212,9 @@ public boolean isValid() {
 							if (subDomain2 instanceof MembraneSubDomain){
 								MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain2;
 								if (membraneSubDomain.getInsideCompartment() == subDomain || membraneSubDomain.getOutsideCompartment() == subDomain){
-									if (membraneSubDomain.getJumpCondition((VolVariable)var)==null){
-										setWarning("Spatial Model, PDE for '"+var.getName()+"' in '"+subDomain.getName()+"' "+
-											       "doesn't have a jump condition on membrane '"+membraneSubDomain.getName());
+									if (membraneSubDomain.getJumpCondition(volVar)==null){
+										setWarning("Spatial Model, PDE for '"+volVar.getName()+"' in '"+subDomain.getName()+"' "+
+											       "does not have a jump condition on membrane '"+membraneSubDomain.getName() + "'");
 										return false;
 									}
 								}
@@ -2227,12 +2229,12 @@ public boolean isValid() {
 					//
 					if (subDomain instanceof MembraneSubDomain){
 						MembraneSubDomain memSubDomain = (MembraneSubDomain)subDomain;
-						JumpCondition jumpCondition = memSubDomain.getJumpCondition((VolVariable)var);
+						JumpCondition jumpCondition = memSubDomain.getJumpCondition(volVar);
 						if (jumpCondition != null){
-							boolean bInsidePresent = (memSubDomain.getInsideCompartment().getEquation(var) instanceof PdeEquation);
-							boolean bOutsidePresent = (memSubDomain.getOutsideCompartment().getEquation(var) instanceof PdeEquation);
+							boolean bInsidePresent = (memSubDomain.getInsideCompartment().getEquation(volVar) instanceof PdeEquation);
+							boolean bOutsidePresent = (memSubDomain.getOutsideCompartment().getEquation(volVar) instanceof PdeEquation);
 							if (!bInsidePresent && !bOutsidePresent){
-								setWarning("Spatial Model, Jump condition for '"+var.getName()+"' on membrane '"+memSubDomain.getName()+"' "+
+								setWarning("Spatial Model, Jump condition for '"+volVar.getName()+"' on membrane '"+memSubDomain.getName()+"' "+
 									       "has no matching PDE in either '"+memSubDomain.getInsideCompartment().getName()+"' or "+
 									       "'"+memSubDomain.getOutsideCompartment().getName()+"'");
 								return false;
@@ -2241,12 +2243,12 @@ public boolean isValid() {
 							// if either side is missing, then flux term should be identically zero.
 							//
 							if (!bInsidePresent && !jumpCondition.getInFluxExpression().isZero()){
-								setWarning("Spatial Model, Jump condition for '"+var.getName()+"' on membrane '"+memSubDomain.getName()+"' "+
+								setWarning("Spatial Model, Jump condition for '"+volVar.getName()+"' on membrane '"+memSubDomain.getName()+"' "+
 									       "has a non-zero inward flux but no PDE in compartment '"+memSubDomain.getInsideCompartment().getName()+"'");
 								return false;
 							}
 							if (!bOutsidePresent && !jumpCondition.getOutFluxExpression().isZero()){
-								setWarning("Spatial Model, Jump condition for '"+var.getName()+"' on membrane '"+memSubDomain.getName()+"' "+
+								setWarning("Spatial Model, Jump condition for '"+volVar.getName()+"' on membrane '"+memSubDomain.getName()+"' "+
 									       "has a non-zero outward flux but no PDE in compartment '"+memSubDomain.getOutsideCompartment().getName()+"'");
 								return false;
 							}
@@ -2255,15 +2257,15 @@ public boolean isValid() {
 					}
 				}
 				if (odeRefCount>0 && pdeRefCount>0){
-					setWarning("Spatial Model, cannot mix "+VCML.OdeEquation+"'s and "+VCML.PdeEquation+"'s for variable "+var.getName());
+					setWarning("Spatial Model, cannot mix "+VCML.OdeEquation+"'s and "+VCML.PdeEquation+"'s for variable "+volVar.getName());
 					return false;
 				}
 				if (steadyPdeCount>0 && pdeRefCount>0){
-					setWarning("Spatial Model, cannot mix " + VCML.Steady + " and " + VCML.Unsteady + " " + VCML.PdeEquation + "'s for variable " + var.getName());
+					setWarning("Spatial Model, cannot mix " + VCML.Steady + " and " + VCML.Unsteady + " " + VCML.PdeEquation + "'s for variable " + volVar.getName());
 					return false;
 				}
 				if (odeRefCount==0 && pdeRefCount==0 && steadyPdeCount == 0){
-					setWarning("Spatial Model, there are neither "+VCML.PdeEquation+"'s, nor "+VCML.OdeEquation+"'s for variable "+var.getName());
+					setWarning("Spatial Model, there are neither "+VCML.PdeEquation+"'s, nor "+VCML.OdeEquation+"'s for variable "+volVar.getName());
 					return false;
 				}
 			}
@@ -2320,18 +2322,36 @@ public boolean isValid() {
 			// Check that there is a region equation (VolumeRegionEquation) for a given VolumeRegionVariable on each CompartmentSubDomain.
 			//
 			else if (var instanceof VolumeRegionVariable){
+				VolumeRegionVariable volRegionVar = (VolumeRegionVariable)var;
 				int count = 0;
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = subDomainList.elementAt(j);
 					if (subDomain instanceof CompartmentSubDomain){
-						Equation equ = subDomain.getEquation(var);
+						Equation equ = subDomain.getEquation(volRegionVar);
 						if (equ instanceof VolumeRegionEquation){
 							count ++;
+					
+							//
+							// for each VolumeRegionEquation, make sure that a jump condition all membranes that border this compartment
+							//
+							for (int k = 0; k < subDomainList.size(); k++){
+								SubDomain subDomain2 = subDomainList.elementAt(k);
+								if (subDomain2 instanceof MembraneSubDomain){
+									MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain2;
+									if (membraneSubDomain.getInsideCompartment() == subDomain || membraneSubDomain.getOutsideCompartment() == subDomain){
+										if (membraneSubDomain.getJumpCondition(volRegionVar)==null){
+											setWarning("Spatial Model, VolumeRegionEquation for '"+volRegionVar.getName()+"' in '"+subDomain.getName()+"' "+
+												       "does not have a jump condition on membrane '"+membraneSubDomain.getName() + "'");
+											return false;
+										}
+									}
+								}
+							}
 						}
 					}
 				}
 				if (count == 0) {
-					setWarning("There should be at least one "+VCML.VolumeRegionEquation+" defined for variable "+var.getName());
+					setWarning("There should be at least one "+VCML.VolumeRegionEquation+" defined for variable "+volRegionVar.getName());
 					return false;
 				}
 			}
