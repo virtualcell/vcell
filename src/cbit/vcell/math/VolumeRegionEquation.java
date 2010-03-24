@@ -84,6 +84,36 @@ protected Vector<Expression> getExpressions(MathDescription mathDesc){
 	if (getRateExpression()!=null)		list.addElement(getRateExpression());
 	if (getInitialExpression()!=null)	list.addElement(getInitialExpression());
 	if (getExactSolution()!=null)		list.addElement(getExactSolution());
+	
+	//
+	// get Parent Subdomain
+	//
+	SubDomain parentSubDomain = null;
+	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
+	while (enum1.hasMoreElements()){
+		SubDomain subDomain = enum1.nextElement();
+		if (subDomain.getEquation(getVariable()) == this){
+			parentSubDomain = subDomain;
+			break;
+		}
+	}
+	
+	try {
+		MembraneSubDomain membranes[] = mathDesc.getMembraneSubDomains((CompartmentSubDomain)parentSubDomain);
+		for (int i = 0; membranes!=null && i < membranes.length; i++){
+			JumpCondition jump = membranes[i].getJumpCondition(getVariable());
+			if (jump != null) {
+				if (membranes[i].getInsideCompartment()==parentSubDomain){
+					list.addElement(jump.getInFluxExpression());
+				}else{
+					list.addElement(jump.getOutFluxExpression());
+				}
+			}
+		}
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+	}
+	
 	return list;
 }
 
