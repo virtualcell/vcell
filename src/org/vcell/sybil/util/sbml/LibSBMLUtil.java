@@ -1,6 +1,6 @@
 package org.vcell.sybil.util.sbml;
 
-/*   LibSBMLUtil  --- by Oliver Ruebenacker, UCHC --- July to September 2008
+/*   LibSBMLUtil  --- by Oliver Ruebenacker, UCHC --- July 2008 to March 2010
  *   Convenience methods for using libSBML
  */
 
@@ -9,13 +9,11 @@ import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLNamespaces;
 import org.sbml.libsbml.libsbml;
 
+import cbit.vcell.resource.ResourceUtil;
+
 public class LibSBMLUtil {
 
-	public static boolean LOADED = false;
-	private static class ClassLoaderProvider {}	
-	private static ClassLoaderProvider classLoaderProvider = new ClassLoaderProvider();
-	
-	
+	public static boolean libSBMLIsloaded = false;
 	public static class LibSBMLException extends Exception {
 
 		private static final long serialVersionUID = 2633037652156426049L;
@@ -27,25 +25,14 @@ public class LibSBMLUtil {
 	}
 	
 	public static void loadLibSBML() throws LibSBMLException {
-		try { System.loadLibrary("expat"); }
-		catch (Throwable throwable) {
-			System.out.println("Could not load expat - but maybe we can do without");
-			// throwable.printStackTrace();
-		}
-	    try {
-			System.loadLibrary("sbml");
-			System.loadLibrary("sbmlj");
-			Class.forName("org.sbml.libsbml.libsbml", true, 
-					classLoaderProvider.getClass().getClassLoader());
-		} catch (Throwable throwable) {
-			LOADED = false;
-			throw new LibSBMLException(throwable);
-		}		
-		LOADED = true;
+		try {
+			ResourceUtil.loadlibSbmlLibray();
+			libSBMLIsloaded = true;			
+		} catch(Throwable throwable) { throw new LibSBMLException(throwable); }
 	}
 	
 	public static void loadIfNeeded() throws LibSBMLException {
-		if(!LOADED) { loadLibSBML(); }
+		if(!libSBMLIsloaded) { loadLibSBML(); }
 	}
 	
 	public static String shortDescription() throws LibSBMLException {
