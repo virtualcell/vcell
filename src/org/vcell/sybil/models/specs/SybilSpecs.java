@@ -21,7 +21,8 @@ public class SybilSpecs {
 	public static final Product product = new SybilProduct();
 	public static final SoftwareVersion version118 = new SoftwareVersion(product, 1, 0, Edition.Alpha, 118, "Ginger Snaps");		
 	public static final SoftwareVersion version119 = new SoftwareVersion(product, 1, 0, Edition.Alpha, 119, "Shortbread");		
-	public static final SoftwareVersion version = version119;	
+	public static final SoftwareVersion version120 = new SoftwareVersion(product, 1, 0, Edition.Beta, 1, "Sacher Cake");		
+	public static final SoftwareVersion version = version120;	
 	public static final String shortText = SybilProduct.shortName + " " + version;
 	public static final String longText = "This is " + product + ", " + version.text();
 	
