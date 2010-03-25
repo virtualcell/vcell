@@ -1,42 +1,33 @@
 package cbit.vcell.microscopy.gui;
 
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.util.Hashtable;
+import java.util.BitSet;
 
-import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.ImageException;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.PlotPane;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
+import cbit.vcell.geometry.gui.ROISourceData;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
-import cbit.vcell.microscopy.MicroscopyXmlReader;
-import cbit.vcell.simdata.DataSetControllerImpl;
 
 //comments added in Jan, 2008. This panel is with the first tab that users can see when VFrap is just started.
 //This panel displays the images base on time serials or Z serials. In addtion, Users can mark ROIs and manipulate
@@ -52,6 +43,33 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	//However the frap data panel in define ROI wizard is editable
 	private boolean isEditable = true;
 		
+	public void showROIAssistDialog(){
+		FRAPData frapData = frapWorkspace.getWorkingFrapStudy().getFrapData();
+		ROI currentROI = frapData.getCurrentlyDisplayedROI();
+		
+		if(currentROI.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&
+				frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1){
+			DialogUtils.showInfoDialog(this,"Cell ROI must be defined before using ROI Assist Tool to create Bleached ROI.");
+			return;
+		}
+
+		BitSet maskBitSet = null;
+		boolean bIsCurrent_CellROI = currentROI.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
+		boolean bIsCurrent_BackgroundROI = currentROI.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
+		if(!bIsCurrent_CellROI){
+			short[] maskArr = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getPixelsXYZ();
+			maskBitSet = new BitSet();
+			for (int i = 0; i < maskArr.length; i++) {
+				if(maskArr[i] != 0){
+					maskBitSet.set(i);
+				}
+			}
+			if(bIsCurrent_BackgroundROI){
+				maskBitSet.flip(0,maskArr.length);
+			}
+		}
+		overlayEditorPanel.showAssistDialog(currentROI,maskBitSet, !bIsCurrent_CellROI/*, bIsCurrent_BackgroundROI, !bIsCurrent_BackgroundROI*/);
+	}
 	//implementation of propertychange as a propertyChangeListener
 	public void propertyChange(PropertyChangeEvent e) {
 		if (e.getSource() instanceof  ImageLoadingProgress && e.getPropertyName().equals("ImageLoadingProgress"))
@@ -129,9 +147,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 					}
 				}
 			}
-		}
-		else if (e.getPropertyName().equals(FRAPSingleWorkspace.FRAPDATA_VERIFY_INFO_PROPERTY))
-		{
+		}else if (e.getPropertyName().equals(FRAPSingleWorkspace.FRAPDATA_VERIFY_INFO_PROPERTY)){
 			FRAPData fData = (FRAPData)e.getNewValue();
 			overlayEditorPanel.setImages(
 					(fData==null?null:fData.getImageDataset()),true,
@@ -139,7 +155,36 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 					(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
 			overlayEditorPanel.setRoiSouceData(fData);
 			fData.setCurrentlyDisplayedROI(fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()));
+			
+		}else if(e.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_TIMEPLOTROI_PROPERTY)){
+			try {
+				plotROI();
+			} catch (Exception e2) {
+				DialogUtils.showErrorDialog(FRAPDataPanel.this, "Error Time Plot ROI:\n"+e2.getMessage());
+			}
+		}else if(e.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
+			try {
+				String roiName = (String)e.getNewValue();
+//				saveROI();
+				if(roiName != null)
+				{
+					getFrapWorkspace().getWorkingFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(roiName), false);
+				}
+			} catch (Exception e2) {
+				DialogUtils.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e2.getMessage());
+			}						
+		}else if(e.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDOROI_PROPERTY)){
+			try {
+				ROI undoableROI = (ROI)e.getNewValue();
+				getFrapWorkspace().getWorkingFrapStudy().getFrapData().addReplaceRoi(undoableROI);
+//				getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
+			} catch (Exception e2) {
+				PopupGenerator.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e2.getMessage());
+			}						
+		}else if(e.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_SHOWROIASSIST_PROPERTY)){
+			showROIAssistDialog();
 		}
+
 	}
 	//There are two FRAPDataPanel instances, one is in MainFrame and antoher is in DefineROIWizard
 	//The crop function is called in DefineROIWizard, the image change will only be reflected in the
@@ -195,40 +240,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		gridBagConstraints1.gridy = 0;
 		this.setSize(653, 492);
 		this.setLayout(new GridBagLayout());
-		this.add(getOverlayEditorPanelJAI(),gridBagConstraints1);
-		getOverlayEditorPanelJAI().addPropertyChangeListener(
-			new PropertyChangeListener(){
-				public void propertyChange(PropertyChangeEvent evt) {
-					if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_TIMEPLOTROI_PROPERTY)){
-						try {
-							plotROI();
-						} catch (Exception e) {
-							DialogUtils.showErrorDialog(FRAPDataPanel.this, "Error Time Plot ROI:\n"+e.getMessage());
-						}
-					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
-						try {
-							String roiName = (String)evt.getNewValue();
-//							saveROI();
-							if(roiName != null)
-							{
-								getFrapWorkspace().getWorkingFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(roiName), false);
-							}
-						} catch (Exception e) {
-							DialogUtils.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());
-						}						
-					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDOROI_PROPERTY)){
-						try {
-							ROI undoableROI = (ROI)evt.getNewValue();
-							getFrapWorkspace().getWorkingFrapStudy().getFrapData().addReplaceRoi(undoableROI);
-//							getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
-						} catch (Exception e) {
-							PopupGenerator.showErrorDialog(FRAPDataPanel.this, "Error Setting Current ROI:\n"+e.getMessage());
-						}						
-					}
-				}
-			}
-		);
-		
+		this.add(getOverlayEditorPanelJAI(),gridBagConstraints1);		
 	}
 	
 //	public void setCurrentROI(String roiName)
@@ -245,9 +257,9 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 			overlayEditorPanel = new OverlayEditorPanelJAI();
 			overlayEditorPanel.setROITimePlotVisible(true);
 			overlayEditorPanel.setAllowAddROI(false);
-			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
-			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
-			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
+			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),false,null);
+			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),false,null);
+			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),false,null);
 			overlayEditorPanel.addPropertyChangeListener(this);
 		}
 		return overlayEditorPanel;
