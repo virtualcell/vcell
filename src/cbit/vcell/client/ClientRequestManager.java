@@ -67,11 +67,14 @@ import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.AsynchGuiUpdater;
+import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
+
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 import com.ctc.wstx.io.MergedReader;
 
@@ -108,6 +111,7 @@ import cbit.vcell.client.task.CheckBeforeDelete;
 import cbit.vcell.client.task.CheckUnchanged;
 import cbit.vcell.client.task.ChooseFile;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.client.task.DeleteOldDocument;
 import cbit.vcell.client.task.DocumentToExport;
 import cbit.vcell.client.task.DocumentValid;
@@ -127,6 +131,7 @@ import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.geometry.ROIMultiPaintManager;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
@@ -1071,7 +1076,8 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 					};
 					taskArray = new AsynchClientTask[] {task1, task2, createGeometry};
 					break;
-				} else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE) {
+				} else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE ||
+						documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH) {
 					// Get image from file --- INCOMPLETE
 					AsynchClientTask selectImageFileTask = new AsynchClientTask("select image file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 						@Override
@@ -1100,7 +1106,11 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 //								for (int i = 0; i < dataToSegment.length; i++) {
 //									uniquePixelBS.set((int)(dataToSegment[i]&0x0000FFFF));
 //								}
-								BitSet uniquePixelBS = getUniquePixelValuesFromUnsignedShorts(dataToSegment);
+								BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
+								for (int i = 0; i < dataToSegment.length; i++) {
+									uniquePixelBS.set((int)(dataToSegment[i]&0x0000FFFF));
+								}
+
 								//ask user if want to manual segment
 								if (askAboutSegmentation(guiParent, uniquePixelBS.cardinality()).equals(SEGMENT_KEEP_IMPORTED)) {
 //									//auto segment
@@ -1159,6 +1169,53 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 					final AsynchClientTask taskSegment = new AsynchClientTask("Segment image", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							if(getClientTaskStatusSupport() instanceof AsynchProgressPopup){
+								((AsynchProgressPopup)getClientTaskStatusSupport()).stop();
+							}
+							Container guiParent =(Container)hashTable.get("guiParent");
+
+							if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
+								hashTable.put("bManualSegment", true);
+								if(hashTable.get("dataToSegment") == null){
+									try{
+										do{
+											String result = "256,256,1";
+											result = DialogUtils.showInputDialog0(guiParent,
+													"Enter number of pixels for x,y,z to start", result);
+											String tempResult = result;
+											try{
+												if(result == null || result.length() == 0){
+													result = "";
+													throw new Exception("No size values entered.");
+												}
+												int xsize = Integer.parseInt(tempResult.substring(0, tempResult.indexOf(",")));
+												tempResult = tempResult.substring(tempResult.indexOf(",")+1, tempResult.length());
+												int ysize = Integer.parseInt(tempResult.substring(0, tempResult.indexOf(",")));
+												tempResult = tempResult.substring(tempResult.indexOf(",")+1, tempResult.length());
+												int zsize = Integer.parseInt(tempResult);
+												int totalSize = xsize*ysize*zsize;
+												final int SCRATCH_SIZE_LIMIT = 512*512*20;
+												if(totalSize <=0 || totalSize > (SCRATCH_SIZE_LIMIT)){
+													throw new Exception("Total pixels (x*y*z) cannot be <=0 or >"+SCRATCH_SIZE_LIMIT+".");
+												}
+												short[] scratchData = new short[totalSize];
+												FieldDataFileOperationSpec newfdfos = 
+													new FieldDataFileOperationSpec();
+												newfdfos.origin = new Origin(0, 0, 0);
+												newfdfos.extent = new Extent(1, 1, 1);
+												newfdfos.isize = new ISize(xsize, ysize, zsize);
+												hashTable.put("dataToSegment", scratchData);
+												hashTable.put("fdfos", newfdfos);
+												break;
+											}catch(Exception e){
+												DialogUtils.showErrorDialog(guiParent, "Error entering starting sizes\n"+e.getMessage());
+											}
+										}while(true);
+									}catch(UtilCancelException e2){
+										throw UserCancelException.CANCEL_GENERIC;
+									}
+								}
+							}
 							if(!((Boolean)hashTable.get("bManualSegment")).booleanValue()){
 								return;
 							}
@@ -1166,14 +1223,16 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 							VCImage previouslyEditedVCImage = (VCImage)hashTable.remove("vcImage");//can be null
 							Rectangle previousCropRectangle = (Rectangle)hashTable.remove("previousCrop");//can be null
 
-							Component guiParent =(Component)hashTable.get("guiParent");
 							FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec)hashTable.get("fdfos");
 							
 							//manual segment
 							Hashtable<VCImage, Rectangle> segmentedAndCropped =
-								ClientRequestManager.segmentRawImage(
-										guiParent,fdfos.origin,fdfos.extent, fdfos.isize,
+								new ROIMultiPaintManager().showROIEditor(guiParent,
+										fdfos.origin,fdfos.extent, fdfos.isize,
 										dataToSegment,previouslyEditedVCImage,previousCropRectangle);
+//								ClientRequestManager.segmentRawImage(
+//										guiParent,fdfos.origin,fdfos.extent, fdfos.isize,
+//										dataToSegment,previouslyEditedVCImage,previousCropRectangle);
 							hashTable.put("vcImage", segmentedAndCropped.keySet().toArray(new VCImage[0])[0]);
 							hashTable.put("previousCrop", segmentedAndCropped.values().toArray(new Rectangle[0])[0]);
 						}
@@ -1206,8 +1265,11 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 							}
 						}
 					};
-					
-					taskArray = new AsynchClientTask[] {selectImageFileTask,parseImageFileTask, taskSegment,new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask};
+					if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
+						taskArray = new AsynchClientTask[] {taskSegment,new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask};
+					}else{
+						taskArray = new AsynchClientTask[] {selectImageFileTask,parseImageFileTask, taskSegment,new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask};
+					}
 					break;
 				} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 					AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -1265,7 +1327,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 								throw new Exception("mesh not found");
 							}
 
-							Component parent = (Component)hashTable.get("parent");
+							Container parent = (Container)hashTable.get("parent");
 							VCImage vcImage = (VCImage)hashTable.get("vcImage");
 							if (vcImage != null) {	
 								if (askAboutSegmentation(parent, vcImage.getPixelClasses().length).equals(SEGMENT_KEEP_IMPORTED)) {
@@ -1275,9 +1337,13 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 								PopupGenerator.showInfoDialog(parent, "The image contains more than "+MAX_NUMBER_OF_COLORS_IMPORTED_FILE+" colors. User will define regions manually.");
 							}
 							short[] dataToSegment = (short[])hashTable.get("dataToSegment");
-							hashTable.put("vcImage", ClientRequestManager.segmentRawImage(parent,mesh.getOrigin(),mesh.getExtent(),
-									new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ()),dataToSegment,
-									null,null).keySet().toArray(new VCImage[0])[0]);
+							Hashtable<VCImage, Rectangle> segmentedAndCropped =
+								new ROIMultiPaintManager().showROIEditor(parent,
+										mesh.getOrigin(),mesh.getExtent(),
+										new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ()),
+										dataToSegment,null,null);
+
+							hashTable.put("vcImage", segmentedAndCropped.keySet().toArray(new VCImage[0])[0]);
 						}
 					};
 					
@@ -1312,61 +1378,10 @@ private String askAboutSegmentation(Component parent,int numPixelClasses) throws
 
 }
 
-public static int[] calculateEdgeIndexes(int xSize,int ySize,int zSize){
-	if((xSize!=1 && xSize<3) || (ySize!=1 && ySize<3) ||(zSize!=1 && zSize<3)){
-		throw new IllegalArgumentException("Sizes CANNOT be negative or 0 or 2");
-	}
-	int XYSIZE = xSize*ySize;
-	int numEdgeIndexes = xSize*ySize*zSize - ((xSize==1?1:xSize-2)*(ySize==1?1:ySize-2)*(zSize == 1?1:zSize-2));
-	if(numEdgeIndexes == 0){
-		return new int[0];
-	}
-	int[] edgeIndexes = new int[numEdgeIndexes];
-	int index = 0;
-	for (int z = 0; z < zSize; z++) {
-		boolean bZEdge = (z==0) || (z==(zSize-1));
-		bZEdge = bZEdge && zSize!=1;
-		for (int y = 0; y < ySize; y++) {
-			boolean bYEdge = (y==0) || (y==ySize-1);
-			bYEdge = bYEdge && ySize!=1;
-			int xIncr = (bYEdge||bZEdge?1:xSize-1);
-			for (int x = 0; x < xSize; x+= xIncr) {
-				int edgeIndex = x+(y*xSize)+(z*XYSIZE);
-				edgeIndexes[index] = edgeIndex;
-				index++;
-			}
-		}
-	}
-	if(index != numEdgeIndexes){
-		throw new RuntimeException("final count not match calulated");
-	}
-	return edgeIndexes;
-}
 
-public static BitSet getUniquePixelValuesFromUnsignedShorts(short[] dataToSegment){
-	BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
-	for (int i = 0; i < dataToSegment.length; i++) {
-		uniquePixelBS.set((int)(dataToSegment[i]&0x0000FFFF));
-	}
-	return uniquePixelBS;
-}
-public static VCImage createVCImageFromBufferedImages(Extent extent,BufferedImage[] bufferedImages) throws Exception{
-	//collect z-sections into 1 array for VCImage
-	ISize isize = new ISize(bufferedImages[0].getWidth(), bufferedImages[0].getHeight(), bufferedImages.length);
-	int sizeXY = isize.getX()*isize.getY();
-	byte[] segmentedData = new byte[isize.getXYZ()];
-	int index = 0;
-	for (int i = 0; i < bufferedImages.length; i++) {
-		System.arraycopy(
-				((DataBufferByte)bufferedImages[i].getRaster().getDataBuffer()).getData(),0,
-				segmentedData, index,
-				sizeXY);
-		index+= sizeXY;
-	}
-	
-	return new VCImageUncompressed(null,segmentedData, extent,isize.getX(),isize.getY(),isize.getZ());
 
-}
+
+
 public static VCImage createVCImageFromUnsignedShorts(short[] dataToSegment,Extent extent,ISize isize,BitSet uniquePixelBS) throws Exception{
 	//auto segment
 
@@ -1409,694 +1424,6 @@ public static VCImage createVCImageFromUnsignedShorts(short[] dataToSegment,Exte
 	return autoSegmentVCImage;
 
 }
-public static Hashtable<VCImage, Rectangle> segmentRawImage(Component guiParent,
-		final Origin origin,final Extent extent,final ISize isize,final short[] dataToSegment,VCImage previouslyEditedVCImage,Rectangle previouslyCropRectangle) throws Exception{
-	
-	if((previouslyCropRectangle == null && previouslyEditedVCImage != null) ||
-			(previouslyCropRectangle != null && previouslyEditedVCImage == null)){
-		throw new IllegalArgumentException("Previous VCImage and Crop must both be null or both be not null.");
-	}
-	final OverlayEditorPanelJAI overlayEditorPanelJAI = new OverlayEditorPanelJAI();
-	overlayEditorPanelJAI.setModeRemoveROIWhenPainting(true);
-	overlayEditorPanelJAI.setUndoableEditSupport(new UndoableEditSupport());
-	overlayEditorPanelJAI.setROITimePlotVisible(false);
-	UShortImage[] zImageSet = new UShortImage[isize.getZ()];
-	Extent newExtent = new Extent(extent.getX(),extent.getY(),extent.getZ()/isize.getZ());
-	if(previouslyCropRectangle != null){
-		new Extent(previouslyCropRectangle.width*(extent.getX()/isize.getX()),
-				previouslyCropRectangle.height*(extent.getY()/isize.getY()),
-				extent.getZ()/isize.getZ());
-	}
-	for (int i = 0; i < zImageSet.length; i++) {
-		Origin newOrigin = new Origin(origin.getX(),origin.getY(),origin.getZ()+i*newExtent.getZ());
-		short[] shortData = new short[isize.getX()*isize.getY()];
-		System.arraycopy(dataToSegment, shortData.length*i, shortData, 0, shortData.length);
-		zImageSet[i] = new UShortImage(shortData,newOrigin,newExtent,isize.getX(),isize.getY(),1);
-	}
-	    
-	final ImageDataset[] imageDatasetHolder = new ImageDataset[] { new ImageDataset(zImageSet, new double[] { 0.0 }, isize.getZ())};
-	overlayEditorPanelJAI.setImages(imageDatasetHolder[0], true, OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
-	overlayEditorPanelJAI.setROITimePlotVisible(false);
-
-	//------------------------Create ROI composite image array
-		int[] cmap = new int[256];
-		for(int i=0;i<256;i+= 1){
-			cmap[i] = OverlayEditorPanelJAI.CONTRAST_COLORS[i].getRGB();
-			if(i==0){
-				cmap[i] = new Color(0, 0, 0, 0).getRGB();
-			}
-		}
-		final IndexColorModel indexColorModel =
-			new java.awt.image.IndexColorModel(
-				8, cmap.length,cmap,0,
-				false /*false means NOT USE alpha*/   ,
-				-1/*NO transparent single pixel*/,
-				java.awt.image.DataBuffer.TYPE_BYTE);
-		final BufferedImage[] roiComposite = new BufferedImage[imageDatasetHolder[0].getISize().getZ()];
-		for (int i = 0; i < roiComposite.length; i++) {
-			roiComposite[i] = 
-				new BufferedImage(imageDatasetHolder[0].getISize().getX(), imageDatasetHolder[0].getISize().getY(),
-						BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
-		}
-		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite);
-	//------------------------
-	
-	final Rectangle mergedCropRectangle = new Rectangle();
-//	if(previouslyCropRectangle != null){
-//		mergedCropRectangle.setBounds(previouslyCropRectangle);
-//	}else{
-//		mergedCropRectangle.setBounds(0, 0, isize.getX(), isize.getY());
-//	}
-	final String RESERVED_NAME_BACKGROUND = "background";
-	final PropertyChangeListener[] roiPropertyChangeListenerHolder = new PropertyChangeListener[1];
-	roiPropertyChangeListenerHolder[0] =
-			new PropertyChangeListener(){
-				public void propertyChange(PropertyChangeEvent evt) {
-					if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY)){
-						try{
-							Rectangle cropRectangle = (Rectangle)evt.getNewValue();
-							//crop underlying image
-							imageDatasetHolder[0] = imageDatasetHolder[0].crop(cropRectangle);
-							//Crop ROI zsections
-							for (int i = 0; i < roiComposite.length; i++) {
-								Image croppedROI = 
-									Toolkit.getDefaultToolkit().createImage(
-										new FilteredImageSource(roiComposite[i].getSource(),
-											new CropImageFilter(cropRectangle.x, cropRectangle.y, cropRectangle.width, cropRectangle.height))
-									);
-								roiComposite[i] =
-									new BufferedImage(cropRectangle.width, cropRectangle.height,
-											BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
-								roiComposite[i].getGraphics().drawImage(croppedROI, 0, 0, null);
-							}
-							//Update display with cropped images
-							overlayEditorPanelJAI.setAllROICompositeImage(roiComposite);
-							overlayEditorPanelJAI.setImages(imageDatasetHolder[0], true,
-									OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
-							mergedCropRectangle.setBounds(
-									mergedCropRectangle.x+cropRectangle.x,
-									mergedCropRectangle.y+cropRectangle.y,
-									cropRectangle.width,cropRectangle.height);
-						}catch(Exception e){
-							DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Crop failed:\n"+e.getMessage());
-						}
-					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
-						
-					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DELETEROI_PROPERTY)){
-						final String deleteCurrentROI = "Delete only current ROI";
-						final String deleteAllROI = "Delete all ROIs";
-						final String cancel = "Cancel";
-						String result =
-							DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Choose delete option.",
-									new String[] {deleteCurrentROI,deleteAllROI,cancel}, deleteCurrentROI);
-						
-						if(result.equals(deleteCurrentROI)){
-							PropertyChangeEvent propertyChangeEvent =
-								new PropertyChangeEvent(this,
-										OverlayEditorPanelJAI.FRAP_DATA_CLEARROI_PROPERTY, evt.getOldValue(), evt.getNewValue());
-							roiPropertyChangeListenerHolder[0].propertyChange(propertyChangeEvent);
-							
-							overlayEditorPanelJAI.deleteROIName((OverlayEditorPanelJAI.ComboboxROIName)evt.getOldValue());
-
-						}else if(result.equals(deleteAllROI)){
-							for (int i = 0; i < roiComposite.length; i++) {
-								Arrays.fill(((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData(), (byte)0);
-							}
-							overlayEditorPanelJAI.deleteROIName(null);
-							overlayEditorPanelJAI.setROI(null);//force update
-						}
-					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_ADDNEWROI_PROPERTY)){
-						try{
-							String newROIName = null;
-							OverlayEditorPanelJAI.ComboboxROIName[] comboboxROINameArr =
-								(OverlayEditorPanelJAI.ComboboxROIName[])evt.getOldValue();
-							boolean bNameOK;
-							do{
-								bNameOK = true;
-								if(newROIName == null){
-									newROIName = PopupGenerator.showInputDialog0((Component)evt.getSource(), "New ROI Name", "");
-								}
-								if(newROIName == null || newROIName.length() == 0){
-									bNameOK = false;
-									PopupGenerator.showErrorDialog((Component)evt.getSource(), "No ROI Name entered, try again.");
-								}else{
-									if(newROIName.equals(RESERVED_NAME_BACKGROUND)){
-										DialogUtils.showWarningDialog(overlayEditorPanelJAI,
-												"Cannot use the name '"+RESERVED_NAME_BACKGROUND+"'.  That name is reserved by the system to refer to unassigned pixels");
-										newROIName = null;
-										continue;
-									}
-									for (int i = 0; i < comboboxROINameArr.length; i++) {
-										if(comboboxROINameArr[i].getROIName().equals(newROIName)){
-											bNameOK = false;
-											break;
-									}
-								}
-								if(bNameOK){
-//										JColorChooser jColorChooser = new JColorChooser();
-//										DialogUtils.showComponentOKCancelDialog(JOptionPane.getRootFrame(), jColorChooser, "Select ROI Color");
-									Color newROIColor = Color.black;
-									for (int i = 1; i < OverlayEditorPanelJAI.CONTRAST_COLORS.length; i++) {
-										boolean bColorUsed = false;
-										for (int j = 0; j < comboboxROINameArr.length; j++) {
-											Color nextColor = comboboxROINameArr[j].getHighlightColor();
-											if(nextColor.equals(OverlayEditorPanelJAI.CONTRAST_COLORS[i])){
-												bColorUsed = true;
-												break;
-											}
-										}
-										if(!bColorUsed){
-											newROIColor = OverlayEditorPanelJAI.CONTRAST_COLORS[i];
-											break;
-										}
-									}
-
-									overlayEditorPanelJAI.addROIName(newROIName, true, newROIName,true,/*true,true,*/newROIColor);
-								}else{
-									PopupGenerator.showErrorDialog((Component)evt.getSource(), "ROI Name "+newROIName+" already used, try again.");
-									newROIName = null;
-								}
-									
-								}
-							}while(!bNameOK);
-						}catch(UtilCancelException cancelExc){
-							//do Nothing
-						}
-
-					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_SHOWROIASSIST_PROPERTY)){
-						if(imageDatasetHolder[0] == null){
-							DialogUtils.showErrorDialog(JOptionPane.getRootFrame(), "No ImageData available for ROIAssistant.");
-							return;
-						}
-						try {
-							OverlayEditorPanelJAI.ComboboxROIName comboboxROIName = (OverlayEditorPanelJAI.ComboboxROIName)evt.getNewValue();
-							Color roiColor = comboboxROIName.getHighlightColor();
-							int roiColorIndex = -1;
-							for (int i = 0; i < OverlayEditorPanelJAI.CONTRAST_COLORS.length; i++) {
-								if(OverlayEditorPanelJAI.CONTRAST_COLORS[i].equals(roiColor)){
-									roiColorIndex = i;
-									break;
-								}
-							}
-
-							//Create empty ROI
-							UShortImage[] roiZ = new UShortImage[imageDatasetHolder[0].getSizeZ()];
-							for (int i = 0; i < roiZ.length; i++) {
-								short[] pixels = new short[imageDatasetHolder[0].getISize().getX()*imageDatasetHolder[0].getISize().getY()];
-								Origin origin = imageDatasetHolder[0].getImage(i, 0, 0).getOrigin();
-								Extent extent = imageDatasetHolder[0].getImage(i, 0, 0).getExtent();
-								roiZ[i] = new UShortImage(pixels,origin,extent,
-										imageDatasetHolder[0].getISize().getX(),imageDatasetHolder[0].getISize().getY(),1);
-							}
-							ROI originalROI = new ROI(roiZ,"Assist ROI");
-							ROI finalROI = overlayEditorPanelJAI.showAssistDialog(originalROI,null, false/*, false, false*/);
-							
-							if(finalROI != null){
-								boolean bOverWrite = true;
-								roiZ = finalROI.getRoiImages();
-								//Check for existing ROI
-								final String OVERWRITE_ALL = "Overwrite any existing ROIs";
-								final String KEEP_EXISTING = "Keep existing ROIs when overlapping";
-								final String CANCEL_ROI_UPDATE = "Cancel";
-								for (int i = 0; i < roiZ.length; i++) {
-									boolean bDone = false;
-									short[] pixels = roiZ[i].getPixels();
-									byte[] compositePixels = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-									for (int j = 0; j < compositePixels.length; j++) {
-										if(compositePixels[j] != 0 && pixels[j] != 0/* && compositePixels[j] != (byte)roiColorIndex*/){
-											bDone = true;
-											String result = DialogUtils.showWarningDialog((Component)evt.getSource(),
-													"Some areas of the new ROI overlap with existing ROIs.",
-													new String[] {OVERWRITE_ALL,KEEP_EXISTING,CANCEL_ROI_UPDATE},OVERWRITE_ALL);
-											if(result.equals(KEEP_EXISTING)){
-												bOverWrite = false;
-											}else if(result.equals(CANCEL_ROI_UPDATE)){
-												overlayEditorPanelJAI.setROI(null);//Clear highlight ROI leftover from ROIAssistPanel
-												return;
-											}
-											break;
-										}
-									}
-									if(bDone){
-										break;
-									}
-								}
-								//Update composite ROI
-								for (int i = 0; i < roiZ.length; i++) {
-									short[] pixels = roiZ[i].getPixels();
-									byte[] compositePixels = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-									for (int j = 0; j < pixels.length; j++) {
-										if(pixels[j] != 0){
-											compositePixels[j] =
-												(bOverWrite?
-												(byte)roiColorIndex:
-													(compositePixels[j] == 0?(byte)roiColorIndex:compositePixels[j]));
-										}
-									}
-								}
-							}
-							overlayEditorPanelJAI.setROI(null);//Clear highlight ROI leftover from ROIAssistPanel
-
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							DialogUtils.showErrorDialog((Component)evt.getSource(), "Error in ROI Assistant:\n"+e.getMessage());
-						}
-					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CLEARROI_PROPERTY)){
-						boolean clearIsFromDelete = evt.getSource().equals(this);
-						int roiCount = overlayEditorPanelJAI.getAllCompositeROINamesAndColors().size();
-						if(!clearIsFromDelete && roiCount > 1){
-							final String clearAll = "Clear all ROIs";
-							final String clearCurrentOnly = "Clear only current ROI";
-							final String cancel = "Cancel";
-							String result = DialogUtils.showWarningDialog(
-									JOptionPane.getRootFrame(),
-									"Clear only current ROI or clear all ROIs?",
-									new String[] {clearCurrentOnly,clearAll,cancel},
-									clearCurrentOnly);
-							if(result == null){return;}
-							if(result.equals(clearAll)){
-								for (int i = 0; i < roiComposite.length; i++) {
-									byte[] roiData = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-									Arrays.fill(roiData, (byte)0);
-								}
-								overlayEditorPanelJAI.setROI(null);
-							}else if (result.equals(cancel)){
-								return;
-							}
-						}
-						//Clear current ROI
-//						OverlayEditorPanelJAI.ComboboxROIName comboboxROIName =
-//							(OverlayEditorPanelJAI.ComboboxROIName)evt.getOldValue();
-						Color roiColor = ((OverlayEditorPanelJAI.ComboboxROIName)evt.getOldValue()).getHighlightColor();
-						int roiColorIndex = -1;
-						for (int i = 0; i < OverlayEditorPanelJAI.CONTRAST_COLORS.length; i++) {
-							if(OverlayEditorPanelJAI.CONTRAST_COLORS[i].equals(roiColor)){
-								roiColorIndex = i;
-								break;
-							}
-						}
-						for (int i = 0; i < roiComposite.length; i++) {
-							byte[] roiData = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-							for (int j = 0; j < roiData.length; j++) {
-								if((roiData[j]&0x000000FF) == roiColorIndex){
-									roiData[j] = 0;
-								}
-							}
-						}
-						overlayEditorPanelJAI.setROI(null);
-					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_BLEND_PROPERTY)){
-						overlayEditorPanelJAI.setBlendPercent((Integer)evt.getNewValue());
-					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY)){
-
-						overlayEditorPanelJAI.setROI(null);
-						//Check for disconnected regions------------------------------------------------------
-						try {
-							VCImage checkImage = createVCImageFromBufferedImages(imageDatasetHolder[0].getExtent(), roiComposite);
-							RegionImage regionImage =
-								new RegionImage(checkImage, 0 /*0 means generate no surfacecollection*/,
-										checkImage.getExtent(),imageDatasetHolder[0].getAllImages()[0].getOrigin(), RegionImage.NO_SMOOTHING);
-							RegionImage.RegionInfo[] allRegionInfos = regionImage.getRegionInfos();
-//						if(allRegionInfos.length != vcPixelClassesFromROINames.length){
-								//find multiple regions with same pixel value
-								Vector<Integer> existingPixelValueV = new Vector<Integer>();
-								TreeSet<Integer> duplicatePixelValueV = new TreeSet<Integer>();
-								StringBuffer sb =new StringBuffer();
-								for (int i = 0; i < allRegionInfos.length; i++) {
-									if(!existingPixelValueV.contains(allRegionInfos[i].getPixelValue())){
-										existingPixelValueV.add(allRegionInfos[i].getPixelValue());
-									}else{
-										duplicatePixelValueV.add(allRegionInfos[i].getPixelValue());
-									}
-								}
-								//sort by pixel value (color) and region size for later display
-								Arrays.sort(allRegionInfos,new Comparator<RegionImage.RegionInfo>() {
-									public int compare(RegionImage.RegionInfo o1, RegionImage.RegionInfo o2) {
-										if(o1.getPixelValue() == o2.getPixelValue()){
-											return -(o1.getNumPixels() - o2.getNumPixels());
-										}
-										return o1.getPixelValue() - o2.getPixelValue();
-									}
-								});
-								//construct warning list
-								Vector<String> colROIName = new Vector<String>();
-								final Vector<RegionImage.RegionInfo> colRegionInfo = new Vector<RegionImage.RegionInfo>();
-								Hashtable<String, Color> allROINamesAndColors = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-								for (int i = 0; i < allRegionInfos.length; i++) {
-									if(!duplicatePixelValueV.contains(allRegionInfos[i].getPixelValue())){
-										continue;
-									}
-									if(allRegionInfos[i].getPixelValue() == 0){
-										sb.append("name= '"+RESERVED_NAME_BACKGROUND+"' region size= "+allRegionInfos[i].getNumPixels()+"\n");
-										colROIName.add(RESERVED_NAME_BACKGROUND);
-										colRegionInfo.add(allRegionInfos[i]);
-									}else{
-										Enumeration<String> roiNameEnum2 = allROINamesAndColors.keys();
-										while(roiNameEnum2.hasMoreElements()){
-											String roiName = roiNameEnum2.nextElement();
-											Color roiColor = allROINamesAndColors.get(roiName);
-											if(OverlayEditorPanelJAI.CONTRAST_COLORS[allRegionInfos[i].getPixelValue()].equals(roiColor)){
-												sb.append("name= '"+roiName+"' region size= "+allRegionInfos[i].getNumPixels()+"\n");
-												colROIName.add(roiName);
-												colRegionInfo.add(allRegionInfos[i]);
-												break;
-											}
-										}
-									}
-								}
-								//Show list
-								String[][] rowData = new String[colROIName.size()][2];
-								for (int i = 0; i < rowData.length; i++) {
-									rowData[i][0] = colROIName.elementAt(i);
-									rowData[i][1] = colRegionInfo.elementAt(i).getNumPixels()+"";
-								}
-								
-								
-								final Vector<RegionImage.RegionInfo> selectedRegionsV = new Vector<RegionImage.RegionInfo>();
-								DialogUtils.showComponentOKCancelTableList(
-									overlayEditorPanelJAI,
-									"Select region to highlight in ROI Editor",
-									new String[] {"ROI Name","ROI size (pixels)"},
-									rowData,
-									ListSelectionModel.MULTIPLE_INTERVAL_SELECTION,
-									new ListSelectionListener() {
-										public void valueChanged(ListSelectionEvent e) {
-											if(!e.getValueIsAdjusting()){
-												DefaultListSelectionModel defaultListSelectionModel = (DefaultListSelectionModel)e.getSource();										
-												for (int i = defaultListSelectionModel.getMinSelectionIndex(); i <= defaultListSelectionModel.getMaxSelectionIndex(); i++) {
-													if(defaultListSelectionModel.isSelectedIndex(i)){
-														selectedRegionsV.add(colRegionInfo.elementAt(i));
-													}
-												}
-											}
-										}
-									}
-								);
-								
-								
-								//Highlight selected regions
-								UShortImage[] ushortRegionHighlightArr = new UShortImage[roiComposite.length];
-								for (int i = 0; i < ushortRegionHighlightArr.length; i++) {
-									ushortRegionHighlightArr[i] =
-										new UShortImage(
-												new short[imageDatasetHolder[0].getISize().getX()*imageDatasetHolder[0].getISize().getY()],
-												new Origin(0, 0, 0),new Extent(1,1,1),
-												imageDatasetHolder[0].getISize().getX(),
-												imageDatasetHolder[0].getISize().getY(),
-												1);
-								}
-								final ROI newCellROI = new ROI(ushortRegionHighlightArr,"highlightRegion");
-
-									
-									for (int z = 0; z < roiComposite.length; z++) {
-										int index = 0;
-										for (int y = 0; y < roiComposite[0].getHeight(); y++) {
-											for (int x = 0; x < roiComposite[0].getWidth(); x++) {
-												for (int i = 0; i < selectedRegionsV.size(); i++) {
-													if(selectedRegionsV.elementAt(i).isIndexInRegion(index)){
-//														System.out.println(selectedRegionsV.elementAt(i).getPixelValue()+"   "+x+" "+y+" "+z);
-														newCellROI.getRoiImages()[z].getPixels()[index] = 1;
-														break;
-													}
-												}
-												index++;
-											}
-										}
-									}
-
-								overlayEditorPanelJAI.getRoiSouceData().addReplaceRoi(newCellROI);
-								
-								DialogUtils.showInfoDialog(overlayEditorPanelJAI,
-										"Note: Use the 'blend' value selector (found near the 'Check...' button)"+
-										" to increase the displayed intensity of the chosen ROI regions."+
-										" Lower values highlight the chosen ROI regions more.");
-								
-						}catch (UserCancelException e) {
-							//ignore
-						}catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Error checking ROIs\n"+e.getMessage());
-						}
-						//---------------------------------------------------------------------------------------------------
-
-					}
-				}
-			};
-
-	overlayEditorPanelJAI.addPropertyChangeListener(roiPropertyChangeListenerHolder[0]);
-	
-	//Crop with mergedCropRectangle
-	if(previouslyCropRectangle != null){
-		roiPropertyChangeListenerHolder[0].propertyChange(
-			new PropertyChangeEvent(overlayEditorPanelJAI, OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY, null, previouslyCropRectangle));
-	}else{
-		mergedCropRectangle.setBounds(0, 0, isize.getX(), isize.getY());
-	}
-	
-	//Sanity check crop
-	if(mergedCropRectangle.width != roiComposite[0].getWidth() ||
-			mergedCropRectangle.height != roiComposite[0].getHeight()){
-		throw new Exception("initial cropping failed");
-	}
-
-	//initialize the new roicomposite with previouslyEditedVCImage
-	int index = 0;
-	if(previouslyEditedVCImage != null){
-		//sanity check sizes
-		int totalSize = roiComposite[0].getWidth()*roiComposite[0].getHeight()*roiComposite.length;
-		if(previouslyEditedVCImage.getPixels().length != totalSize){
-			throw new Exception("Initial ROI composite size does not match previouslyEditedVCImage");
-		}
-		//copy previous to current roicomposite
-		for (int i = 0; i < roiComposite.length; i++) {
-			byte[] pixdata = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-			System.arraycopy(previouslyEditedVCImage.getPixels(), index, pixdata, 0, pixdata.length);
-			index+= pixdata.length;
-		}
-		VCPixelClass[] previousPixelClasses = previouslyEditedVCImage.getPixelClasses();
-		String firstROI = null;
-		for (int i = 0; i < previousPixelClasses.length; i++) {
-			if(previousPixelClasses[i].getPixel() == 0){//don't add background
-//				if(!previousPixelClasses[i].getPixelClassName().equals(RESERVED_NAME_BACKGROUND)){
-//					DialogUtils.showWarningDialog(overlayEditorPanelJAI,
-//						"ROI name "+previousPixelClasses[i].getPixelClassName()+" assumed to be background and will not be initialized.");
-//				}
-				continue;
-			}
-			String nextName = previousPixelClasses[i].getPixelClassName();
-			if(nextName.equals(RESERVED_NAME_BACKGROUND)){
-				//Change reserved background name that didn't have a value of 0
-				nextName = "ROI"+(new Random().nextInt());
-			}
-			if(firstROI == null){
-				firstROI = nextName;
-			}
-			overlayEditorPanelJAI.addROIName(
-					previousPixelClasses[i].getPixelClassName(), true, firstROI,
-					true, OverlayEditorPanelJAI.CONTRAST_COLORS[0x000000FF&previousPixelClasses[i].getPixel()]);
-		}
-	}
-	
-	do{
-		int retCode = DialogUtils.showComponentOKCancelDialog(guiParent, overlayEditorPanelJAI, "segment image for geometry");
-		if (retCode == JOptionPane.OK_OPTION){
-			VCImage initImage = createVCImageFromBufferedImages(imageDatasetHolder[0].getExtent(), roiComposite);
-			
-			//Check for unassigned "background" pixels
-			boolean bHasUnassignedBackground = false;
-			for (int i = 0; i < roiComposite.length; i++) {
-				byte[] pixData = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-				for (int j = 0; j < pixData.length; j++) {
-					if(pixData[j] == 0){
-						bHasUnassignedBackground = true;
-						break;
-					}
-				}
-				if(bHasUnassignedBackground){
-					break;
-				}
-			}
-			//Create PixelClasses
-			Hashtable<String, Color> roiNamesAndColorsHash = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-			VCPixelClass[] vcPixelClassesFromROINames = null;
-			boolean bForceAssignBackground = false;
-			if(bHasUnassignedBackground){
-				final String assignToBackground = "Assign as default 'background'";
-//				final String assignToNeighbors = "Merge gaps with neighboring ROI";
-				final String cancelAssign = "Cancel, back to segmentation...";
-				String result = DialogUtils.showWarningDialog(
-						JOptionPane.getRootFrame(),
-						"Warning: some areas of image segmentation have not been assigned to an ROI."+
-						"  This can happen when small unintended gaps are left between adjacent ROIs"+
-						" or areas around the edges were intentionally left as background.  Choose an action:\n"+
-						"1.  Leave as is, unassigned areas should be treated as 'background'.\n"+
-//						"2.  Merge unassigned gaps with a neighboring ROI.\n"+
-						"2.  Go back to segmentation tool. (note: look for areas with no color)",
-						new String[] {assignToBackground,/*assignToNeighbors,*/cancelAssign}, assignToBackground);
-				if(result.equals(assignToBackground)){
-					bForceAssignBackground = true;
-				}
-//				else if(result.equals(assignToNeighbors)){
-//					RegionImage regionImage =
-//						new RegionImage(initImage, 0 /*0 means generate no surfacecollection*/,
-//								initImage.getExtent(),imageDatasetHolder[0].getAllImages()[0].getOrigin(), RegionImage.NO_SMOOTHING);
-//					//Remove regions that are not background or that are adjacent to the edge of the dataset
-//					RegionImage.RegionInfo[] allRegionInfos = regionImage.getRegionInfos();
-//					int[] edgePixelIndexes =
-//						ClientRequestManager.calculateEdgeIndexes(initImage.getNumX(),initImage.getNumY(),initImage.getNumZ());
-//					for (int i = 0; i < allRegionInfos.length; i++) {
-//						//exclude non-background
-//						if(allRegionInfos[i].getPixelValue() == 0){
-//							//exclude edge adjacent
-//							for (int j = 0; j < edgePixelIndexes.length; j++) {
-//								if(allRegionInfos[i] != null && allRegionInfos[i].isIndexInRegion(edgePixelIndexes[j])){
-//									allRegionInfos[i] = null;
-//									bForceAssignBackground = true;
-//								}
-//							}
-//						}else{
-//							allRegionInfos[i] = null;
-//						}
-//					}
-//					//Fill with first non-zero neighbor we find
-//					for (int i = 0; i < allRegionInfos.length; i++) {
-//						if(allRegionInfos[i] != null){
-//							Byte lastNonZeroValue = null;
-//							for (int j = 0; j < initImage.getPixels().length; j++) {
-//								if(allRegionInfos[i].isIndexInRegion(j)){
-//									initImage.getPixels()[j] = lastNonZeroValue;
-////									int z= j/(XYSIZE);
-////									int y = (j-(z*XYSIZE))/initImage.getNumX();
-////									int x = j-(z*XYSIZE)-y*initImage.getNumX();
-//								}else if(lastNonZeroValue == null){
-//									lastNonZeroValue = initImage.getPixels()[j];
-//								}
-//							}
-//						}
-//					}
-//				}
-				else{
-					continue;
-				}
-				if(bForceAssignBackground){
-					vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColorsHash.size()+1];
-					vcPixelClassesFromROINames[0] = new VCPixelClass(null, RESERVED_NAME_BACKGROUND, 0);					
-				}
-			}else{
-				vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColorsHash.size()];
-			}
-			
-			
-			//find pixel indexes corresponding to colors for ROIs
-			index = (bForceAssignBackground?1:0);
-			Enumeration<String> roiNameEnum = roiNamesAndColorsHash.keys();
-			while(roiNameEnum.hasMoreElements()){
-				String roiNameString = roiNameEnum.nextElement();
-				Color roiColor = roiNamesAndColorsHash.get(roiNameString);
-				int colorIndex = -1;
-				for (int i = 0; i < cmap.length; i++) {
-					if(cmap[i] == roiColor.getRGB()){
-						colorIndex = i;
-						break;
-					}
-				}
-				if(colorIndex == -1){
-					throw new Exception("Couldn't find colormap index for ROI "+roiNameString+" with color "+Hex.toString(roiColor.getRGB()));
-				}
-				vcPixelClassesFromROINames[index] =
-					new VCPixelClass(null, roiNameString, colorIndex);
-				index++;
-			}
-	
-			//Sanity check VCImage vcPixelClassesFromROINames and new vcPixelClassesFromVCImage found same pixel values
-			VCPixelClass[] vcPixelClassesFromVCImage = initImage.getPixelClasses();
-			for (int i = 0; i < vcPixelClassesFromVCImage.length; i++) {
-				boolean bFound = false;
-				for (int j = 0; j < vcPixelClassesFromROINames.length; j++) {
-					if(vcPixelClassesFromROINames[j].getPixel() == vcPixelClassesFromVCImage[i].getPixel()){
-						bFound = true;
-						break;
-					}
-				}
-				if(!bFound){
-					throw new Exception("Error processing ROI Image.  Pixels found having no matching ROI.");
-				}
-			}
-			Vector<String> missingROINames = new Vector<String>();
-			StringBuffer missingROISB = new StringBuffer();
-			for (int i = 0; i < vcPixelClassesFromROINames.length; i++) {
-				boolean bFound = false;
-				for (int j = 0; j < vcPixelClassesFromVCImage.length; j++) {
-					if(vcPixelClassesFromROINames[i].getPixel() == vcPixelClassesFromVCImage[j].getPixel()){
-						bFound = true;
-						break;
-					}
-				}
-				if(!bFound){
-					missingROISB.append((missingROINames.size()>0?",":"")+"'"+vcPixelClassesFromROINames[i].getPixelClassName()+"'");
-					missingROINames.add(vcPixelClassesFromROINames[i].getPixelClassName());
-				}
-			}
-			if(missingROINames.size() > 0){
-				final String removeROI = "Remove ROI"+(missingROINames.size()>1?"s":"")+" and continue";
-				final String backtoSegment = "Return to segmentation";
-				String result = DialogUtils.showWarningDialog(
-						JOptionPane.getRootFrame(), 
-						"ROI"+(missingROINames.size()>1?"s":"")+" named "+missingROISB.toString()+" have no pixels defined",
-						new String[] {removeROI,backtoSegment}, removeROI);
-				if(result.equals(removeROI)){
-					Vector<VCPixelClass> vcPixelClassV = new Vector<VCPixelClass>();
-					vcPixelClassV.addAll(Arrays.asList(vcPixelClassesFromROINames));
-					Hashtable<String, Color> allROINameAndColors = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-					roiNameEnum = allROINameAndColors.keys();
-					while(roiNameEnum.hasMoreElements()){
-						String roiName = roiNameEnum.nextElement();
-						for (int i = 0; i < missingROINames.size(); i++) {
-							if(missingROINames.elementAt(i).equals(roiName)){
-								Color deleteThisColor = allROINameAndColors.get(roiName);
-								PropertyChangeEvent propertyChangeEvent = 
-									new PropertyChangeEvent(roiPropertyChangeListenerHolder[0],
-											OverlayEditorPanelJAI.FRAP_DATA_CLEARROI_PROPERTY,deleteThisColor,null);
-								roiPropertyChangeListenerHolder[0].propertyChange(propertyChangeEvent);
-								for (int j = 0; j < vcPixelClassV.size(); j++) {
-									if(vcPixelClassV.elementAt(j).getPixelClassName().equals(roiName)){
-										vcPixelClassV.remove(j);
-										break;
-									}
-								}
-								break;
-							}
-						}
-					}
-					vcPixelClassesFromROINames = vcPixelClassV.toArray(new VCPixelClass[0]);
-				}else{
-					//return to editing segmentation
-					continue;
-				}
-			}
-	
-			
-//			//Check for disconnected regions------------------------------------------------------
-//			PropertyChangeEvent propertyChangeEvent =
-//				new PropertyChangeEvent(overlayEditorPanelJAI,
-//						OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY, null,null);
-//			roiPropertyChangeListenerHolder[0].propertyChange(propertyChangeEvent);
-//			//---------------------------------------------------------------------------------------------------
-			
-			initImage.setPixelClasses(vcPixelClassesFromROINames);
-			
-			Hashtable<VCImage, Rectangle> results = new Hashtable<VCImage, Rectangle>();
-			results.put(initImage, mergedCropRectangle);
-			//Crop rectangle included in case we need to return to this method and re-initialize the crop
-			return results;
-		} else{
-			throw UserCancelException.CANCEL_GENERIC;
-		}
-	}while(true);
-
-}
-
 /**
  * Insert the method's description here.
  * Creation date: (6/22/2004 10:50:34 PM)

@@ -309,7 +309,7 @@ private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bE
 	  	if(componentsArr[i] instanceof Container){
 		  	for(int j=0;j<((Container)componentsArr[i]).getComponentCount();j+= 1){
 			  	if(((Container)componentsArr[i]).getComponent(j) instanceof JButton &&
-				  	((JButton)((Container)componentsArr[i]).getComponent(j)).getText().equalsIgnoreCase("OK")){
+				  	!((JButton)((Container)componentsArr[i]).getComponent(j)).getText().equalsIgnoreCase("Cancel")){
 				  	if(bEnabled){
 					  	((Container)componentsArr[i]).getComponent(j).setEnabled(true);
 				  	}else{
@@ -433,14 +433,19 @@ private static int showComponentOKCancelDialog(final Component requester,final C
 public static int[] showComponentOKCancelTableList(final Component requester,final String title,
 		final String[] columnNames,final Object[][] rowData,final Integer listSelectionModel_SelectMode)
 			throws UserCancelException{
-	return showComponentOKCancelTableList(requester, title, columnNames, rowData, listSelectionModel_SelectMode, null);
+	return showComponentOptionsTableList(requester, title, columnNames, rowData, listSelectionModel_SelectMode, null,null,null).selectedTableRows;
 }
-public static int[] showComponentOKCancelTableList(final Component requester,final String title,
+public static class  TableListResult{
+	public String selectedOption;
+	public int[] selectedTableRows;
+}
+public static TableListResult showComponentOptionsTableList(final Component requester,final String title,
 		final String[] columnNames,final Object[][] rowData,final Integer listSelectionModel_SelectMode,
-		final ListSelectionListener listSelectionListener)
+		final ListSelectionListener listSelectionListener,
+		final String[] options,final String initOption)
 			throws UserCancelException{
 	
-	return (int[])
+	return (TableListResult)
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
 			DefaultTableModel tableModel = new DefaultTableModel(){
@@ -488,11 +493,17 @@ public static int[] showComponentOKCancelTableList(final Component requester,fin
 			if(listSelectionListener != null){
 				table.getSelectionModel().addListSelectionListener(listSelectionListener);
 			}
-			int result = showComponentOKCancelDialog(requester, scrollPane, title,tableListOKEnabler);
-			if(result != JOptionPane.OK_OPTION){
-				throw UserCancelException.CANCEL_GENERIC;
+			TableListResult tableListResult = new TableListResult();
+			if(options == null){
+				if(showComponentOKCancelDialog(requester, scrollPane, title,tableListOKEnabler) != JOptionPane.OK_OPTION){
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+				tableListResult.selectedTableRows = table.getSelectedRows();
+			}else{
+				tableListResult.selectedOption = showOptionsDialog(requester, scrollPane, JOptionPane.QUESTION_MESSAGE, options, initOption,tableListOKEnabler);
+				tableListResult.selectedTableRows = table.getSelectedRows();
 			}
-			return table.getSelectedRows();
+			return tableListResult;
 		}
 	}.dispatchWrapRuntime();
 }
@@ -514,6 +525,28 @@ private static String showDialog(final Component requester, final SimpleUserMess
 	final JDialog dialog = pane.createDialog(requester, "");
 	dialog.setResizable(true);
 	dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+	try {
+		ZEnforcer.showModalDialogOnTop(dialog,requester);
+		Object selectedValue = pane.getValue();
+		if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
+			return SimpleUserMessage.OPTION_CANCEL;
+		} else {
+			return selectedValue.toString();
+		}
+	}finally {
+		dialog.dispose();
+	}
+}
+
+private static String showOptionsDialog(final Component requester,Component showComponent,final int JOptionPaneMessageType,String[] options,String initOption,OKEnabler okEnabler) {
+
+	JOptionPane pane = new JOptionPane(showComponent, JOptionPaneMessageType, 0, null, options, initOption);
+	final JDialog dialog = pane.createDialog(requester, "");
+	dialog.setResizable(true);
+	dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+	if (okEnabler != null) {
+		okEnabler.setJOptionPane(pane);
+	}
 	try {
 		ZEnforcer.showModalDialogOnTop(dialog,requester);
 		Object selectedValue = pane.getValue();

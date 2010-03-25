@@ -991,8 +991,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 		editROIButtonPanel.add(lblBlend, gbc_lblBlend);
 		
 		blendComboBox = new JComboBox();
-		for (int i = 0; i <= 100; i+= 10) {
-			blendComboBox.insertItemAt(new Integer(i), i/10);
+		for (int i = 0; i <= 100; i+= 5) {
+			blendComboBox.insertItemAt(new Integer(i), i/5);
 		}
 		blendComboBox.setSelectedItem(new Integer(50));
 		blendComboBox.addActionListener(new ActionListener() {
@@ -1225,11 +1225,13 @@ public class OverlayEditorPanelJAI extends JPanel{
 			roiName = roi.getROIName();
 			
 //			refreshROI();
-			if(roi != null){
-				for (int i = 0; i < roiComboBox.getItemCount(); i++) {
-					if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(roi.getROIName())){
-						roiComboBox.setSelectedIndex(i);
-						break;
+			if(!imagePane.getModeRemoveROIWhenPainting()){
+				if(roi != null){
+					for (int i = 0; i < roiComboBox.getItemCount(); i++) {
+						if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(roi.getROIName())){
+							roiComboBox.setSelectedIndex(i);
+							break;
+						}
 					}
 				}
 			}
@@ -2255,11 +2257,13 @@ public class OverlayEditorPanelJAI extends JPanel{
 	{
 		if(roiSourceData == null){
 			roiSourceData = new ROISourceData(){
-				private ROI latestROI = null;
 				public void addReplaceRoi(ROI newROI) {
-					latestROI = newROI;
-					imagePane.setHighlightImageAndWritebackBuffer(createHighlightImageFromROI(newROI),
-							newROI.getRoiImages()[getRoiImageIndex()].getPixels());
+					roi = newROI;
+					refreshROI();
+//					imagePane.setHighlightImageAndWritebackBuffer(createHighlightImageFromROI(newROI),
+//							newROI.getRoiImages()[getRoiImageIndex()].getPixels());
+					
+					
 //					roi.setRoiName(originalROI.getROIName());
 //					roi.setROIImages(originalROI.getRoiImages());
 //					refreshROI();
@@ -2274,7 +2278,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 //					updateROICursor();
 				}
 				public ROI getCurrentlyDisplayedROI(){
-					return latestROI;
+					return roi;
 				}
 				public ImageDataset getImageDataset() {
 					return OverlayEditorPanelJAI.this.imageDataset;
