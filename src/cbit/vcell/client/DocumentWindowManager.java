@@ -984,6 +984,7 @@ GeometrySelectionInfo selectGeometry() throws Exception,UserCancelException{
 	final int COPY_FROM_BIOMODEL = 5;
 	final int COPY_FROM_MATHMODEL = 6;
 	final int COPY_FROM_GEOMETRY = 7;
+	final int FROM_SCRATCH = 8;
 	int[] geomType = null;
 
 	geomType = DialogUtils.showComponentOKCancelTableList(
@@ -992,10 +993,10 @@ GeometrySelectionInfo selectGeometry() throws Exception,UserCancelException{
 			new String[] {"Geometry Type"}, 
 			new String[][] {{"Analytic Equations (1D)"},{"Analytic Equations (2D)"},{"Analytic Equations (3D)"},
 				{"Image based (legacy from database)"},{"Image based (import from file)"},
-				{"Copy from BioModel application"},{"Copy from MathModel"},{"Copy from saved Geometry"}}, ListSelectionModel.SINGLE_SELECTION);
+				{"Copy from BioModel application"},{"Copy from MathModel"},{"Copy from saved Geometry"},
+				{"From scratch"}}, ListSelectionModel.SINGLE_SELECTION);
 
 	VCDocument.DocumentCreationInfo documentCreationInfo = null;
-//	Geometry copiedGeom = null;
 	VCDocumentInfo vcDocumentInfo = null;
 	if(geomType[0] == ANALYTIC_1D){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_1D);
@@ -1009,13 +1010,12 @@ GeometrySelectionInfo selectGeometry() throws Exception,UserCancelException{
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
 	}else if(geomType[0] == COPY_FROM_BIOMODEL){
 		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.BIOMODEL_DOC);
-//		copiedGeom = ((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(vcDocumentInfo,true);
 	}else if(geomType[0] == COPY_FROM_MATHMODEL){
 		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.MATHMODEL_DOC);
-//		copiedGeom = ((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(vcDocumentInfo,true);
 	}else if(geomType[0] == COPY_FROM_GEOMETRY){
 		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.GEOMETRY_DOC);
-//		copiedGeom = ((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(vcDocumentInfo,true);
+	}else if(geomType[0] == FROM_SCRATCH){
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_SCRATCH);
 	}else{
 		throw new IllegalArgumentException("Error selecting geometry, Unknown Geometry type "+geomType[0]);
 	}

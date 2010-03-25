@@ -21,6 +21,7 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 		public static final int GEOM_OPTION_DBIMAGE = 4;
 		public static final int GEOM_OPTION_FILE = 5;
 		public static final int GEOM_OPTION_FIELDDATA = 6;
+		public static final int GEOM_OPTION_FROM_SCRATCH = 7;
 	public static final int XML_DOC = 3;
 
 	//Document Creation Info

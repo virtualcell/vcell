@@ -52,6 +52,10 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	public void setModeRemoveROIWhenPainting(boolean bMode){
 		bRemoveROIWhenDrawing = bMode;
 	}
+	public boolean getModeRemoveROIWhenPainting(){
+		return bRemoveROIWhenDrawing;
+	}
+
 	public void setBlendPercent(int blendPercent){
 		if(blendPercent < 0 || blendPercent > 100){
 			throw new IllegalArgumentException("blendPercent must be between 0 and 100");
