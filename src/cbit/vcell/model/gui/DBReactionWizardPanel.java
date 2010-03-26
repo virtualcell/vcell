@@ -1,21 +1,24 @@
 package cbit.vcell.model.gui;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.Box;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
 import org.vcell.util.gui.ZEnforcer;
@@ -26,16 +29,13 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
-import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.DictionaryQueryResults;
 import cbit.vcell.dictionary.ReactionDescription;
-import cbit.vcell.dictionary.SpeciesDescription;
 import cbit.vcell.graph.BioCartoonTool;
+import cbit.vcell.graph.BioCartoonTool.UserResolvedRxElements;
 import cbit.vcell.model.Catalyst;
-import cbit.vcell.model.Feature;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.HMM_IRRKinetics;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
@@ -44,13 +44,11 @@ import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionStepInfo;
-import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.ReactionQuerySpec;
-import cbit.vcell.parser.Expression;
 
 /**
  * Insert the type's description here.
@@ -88,6 +86,8 @@ public class DBReactionWizardPanel extends javax.swing.JPanel implements java.aw
 	//
 	//
 	private Hashtable<String, Vector<String>> mapRXStringtoRXIDs = new Hashtable<String, Vector<String>>();
+	private Hashtable<String, Vector<String>> mapRXStringtoBMIDs = new Hashtable<String, Vector<String>>();
+	private Hashtable<String, Vector<String>> mapRXStringtoStructRefIDs = new Hashtable<String, Vector<String>>();
 	//
 	private ReactionDescription resolvedReaction = null;
 	private javax.swing.JButton ivjBackJButton = null;
@@ -120,7 +120,7 @@ public class DBReactionWizardPanel extends javax.swing.JPanel implements java.aw
 	private javax.swing.JRadioButton ivjSearchDictionaryJRadioButton = null;
 	private javax.swing.JRadioButton ivjSearchUserJRadioButton = null;
 	private javax.swing.ButtonGroup ivjSearchTypeButtonGroup = null;
-	private ReactionStep fieldReactionStep = null;
+	private ReactionStep fieldReactionStep0 = null;
 	private javax.swing.JButton ivjJButton1 = null;
 	private ReactionDescription fieldReactionDescription = null;
 	private boolean ivjConnPtoP5Aligning = false;
@@ -315,18 +315,35 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 				return;
 			}
 		}else if(getParameterJPanel().isVisible()){
-			if(lastReactStepSelection == null || !lastReactStepSelection.equals(getReactionStep())){
-				lastReactStepSelection = getReactionStep();
+			if(lastReactStepSelection == null || !lastReactStepSelection.equals(getReactionStep0())){
+				lastReactStepSelection = getReactionStep0();
 				String rxType = null;
-				if(getReactionStep() instanceof FluxReaction){
+				if(getReactionStep0() instanceof FluxReaction){
 					rxType = DatabaseConstants.REACTTYPE_FLUX;
 				}else{
 					rxType = DatabaseConstants.REACTTYPE_SIMPLE;
 				}
+				
+				String bmid = null;
+				String structRef = null;
+				{
+					Iterator<String> iter = mapRXStringtoRXIDs.keySet().iterator();
+					while(iter.hasNext()){
+						String rxS = iter.next();
+						Vector<String> rxidV = mapRXStringtoRXIDs.get(rxS);
+						if(rxidV.firstElement().equals(lastReactStepSelection.getKey().toString())){
+							Vector<String> bmidV = mapRXStringtoBMIDs.get(rxS);
+							bmid = bmidV.firstElement();
+							Vector<String> structRefV = mapRXStringtoStructRefIDs.get(rxS);
+							structRef = structRefV.firstElement();
+							break;
+						}
+					}
+				}
 				ReactionDescription dbfr = new ReactionDescription(
-						getReactionStep().getName(),rxType,getReactionStep().getKey());
+						getReactionStep0().getName(),rxType,getReactionStep0().getKey(),new KeyValue(bmid),new KeyValue(structRef));
 				//
-				ReactionParticipant[] rpArr = getReactionStep().getReactionParticipants();
+				ReactionParticipant[] rpArr = getReactionStep0().getReactionParticipants();
 				for(int i=0;i < rpArr.length;i+= 1){
 					DBNonFormalUnboundSpecies dbnfu = new DBNonFormalUnboundSpecies(rpArr[i].getSpecies().getCommonName());
 					char role;
@@ -344,7 +361,7 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 					dbfr.addReactionElement(dbnfu,rpArr[i].getSpeciesContext().getName(),rpArr[i].getStoichiometry(),role);
 				}
 				if(dbfr.isFluxReaction()){//make sure flux is in right direction
-					Structure outsideStruct = ((Membrane)getReactionStep().getStructure()).getOutsideFeature();
+					Structure outsideStruct = ((Membrane)getReactionStep0().getStructure()).getOutsideFeature();
 					String defaultOutsideSCName = dbfr.getOrigSpeciesContextName(dbfr.getFluxIndexOutside());
 					for(int i=0;i < rpArr.length;i+= 1){
 						if(rpArr[i].getSpeciesContext().getName().equals(defaultOutsideSCName)){
@@ -361,8 +378,7 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 		//
 		((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).next(getCardLayoutJPanel());
 	}else if(actionEvent.getSource().equals(getFinishJButton())){
-		//done();
-		resolve2();
+		applySelectedReactionElements();
 	}
 	//
 	configureBFN();	
@@ -407,7 +423,7 @@ private void configureBFN() {
 	}else if(getSearchResultsJPanel().isShowing() && getSearchDictionaryJRadioButton().isSelected()){
 		bNextEnabled = !getReactionsJList().isSelectionEmpty();
 	}else if(getParameterJPanel().isShowing()){
-		bNextEnabled = getReactionStep() != null;
+		bNextEnabled = getReactionStep0() != null;
 	}else if(getResolverJPanel().isShowing()){
 		bFinishEnabled = true;
 	}
@@ -1009,262 +1025,6 @@ private void dBReactionWizardPanel_Initialize() {
 	
 }
 
-
-/**
- * Comment
- */
-private void done(Model tempModel,Structure tempStructure) {
-	
-	Vector<SpeciesContext> newlyAddedSpeciesContexts = new Vector<SpeciesContext>();
-	Vector<Species> newlyAddedSpecies = new Vector<Species>();
-	Vector<Object[]> speciesWithChangedBindings = new Vector<Object[]>();
-	final int SPECIES_INDEX = 0;
-	final int ORIG_DBS_INDEX = 1;
-	final int CHANGED_DBS_INDEX = 2;
-	//
-	boolean bClose = false;
-	//
-	try{
-		if(getReactionDescription() != null){
-			ReactionDescription dbfr = getReactionDescription();
-			String uniqueName = (dbfr.isFluxReaction()?"Flux":"Reaction");
-			while(true){
-				boolean bUnique = true;
-				ReactionStep[] rsArr = tempModel.getReactionSteps();
-				for(int i=0;i<rsArr.length;i+= 1){
-					if(rsArr[i].getName().equals(uniqueName)){
-						bUnique = false;
-						break;
-					}
-				}
-				if(bUnique){
-					break;
-				}
-				uniqueName = TokenMangler.getNextEnumeratedToken(uniqueName);
-			}
-			//Create RX components and determine which must be newly added to model
-			Vector<SpeciesContext> speciesContextV = new Vector<SpeciesContext>();
-			Vector<Character> scrxTypeV = new Vector<Character>();
-			Vector<Integer> scStoichV = new Vector<Integer>();
-			Species newFluxSpecies = null;
-			for(int i = 0;i < dbfr.elementCount();i+= 1){
-				Species currentSpecies = dbfr.getResolved(i).getSpecies();
-				Structure currentStructure = dbfr.getResolved(i).getStructure();
-				if(dbfr.isFlux(i) && newFluxSpecies != null){
-					currentSpecies = newFluxSpecies;
-				}else if(!tempModel.contains(currentSpecies)){
-					//No mapping from user so we must add new Species
-					newlyAddedSpecies.add(currentSpecies);
-					//Make sure species name doesn't conflict
-					while(tempModel.getSpecies(currentSpecies.getCommonName()) != null){
-						currentSpecies.setCommonName(TokenMangler.getNextEnumeratedToken(currentSpecies.getCommonName()));
-					}
-					if(dbfr.isFlux(i)){
-						newFluxSpecies = currentSpecies;
-					}
-				}else {
-					SpeciesDescription speciesDescription = dbfr.getReactionElement(i);
-					if(speciesDescription instanceof DBFormalSpecies){
-						DBSpecies reDBSpecies =	getDocumentManager().getBoundSpecies((DBFormalSpecies)speciesDescription);
-						if(currentSpecies.getDBSpecies() != null){
-							if(!currentSpecies.getDBSpecies().compareEqual(reDBSpecies)){
-								String message = "Error Mapping RXParticipant:\n\n"+
-								"Existing Species '"+currentSpecies.getCommonName()+
-								"' has binding \n'"+
-								currentSpecies.getDBSpecies().getFormalSpeciesInfo().getFormalID()+" : "+
-								currentSpecies.getDBSpecies().getFormalSpeciesInfo().getPreferredName()+
-								"'\n but mapped ReactionElement has binding\n'"+
-								reDBSpecies.getFormalSpeciesInfo().getFormalID()+" : "+
-								reDBSpecies.getFormalSpeciesInfo().getPreferredName()+"'";
-
-								PopupGenerator.showInfoDialog(this, message);
-								//bClose = false;
-								return;
-							}
-						}else{
-							Object[] sbc = new Object[3];
-							sbc[SPECIES_INDEX] = currentSpecies;
-							sbc[ORIG_DBS_INDEX] = currentSpecies.getDBSpecies();
-							sbc[CHANGED_DBS_INDEX] = reDBSpecies;
-							speciesWithChangedBindings.add(sbc);
-						}
-					}
-				}
-				SpeciesContext currentSpeciesContext = null;
-				if(tempModel.contains(currentStructure) && tempModel.contains(currentSpecies)){
-					currentSpeciesContext = tempModel.getSpeciesContext(currentSpecies,currentStructure);
-				}
-				if(currentSpeciesContext == null){
-					currentSpeciesContext = dbfr.getResolved(i);//new SpeciesContext(currentSpecies,currentStructure);
-					newlyAddedSpeciesContexts.add(currentSpeciesContext);
-				}
-				speciesContextV.add(currentSpeciesContext);
-				scrxTypeV.add(new Character(dbfr.getType(i)));
-				scStoichV.add(new Integer(dbfr.getStoich(i)));
-			}
-			////Add new species to Model
-			//for(int i=0;i<newlyAddedSpecies.size();i+= 1){
-				//tempModel.addSpecies((Species)newlyAddedSpecies.get(i));
-			//}
-			////Add new SpeciesContexts to Model
-			//for(int i=0;i<newlyAddedSpeciesContexts.size();i+= 1){
-				//tempModel.addSpeciesContext((SpeciesContext)newlyAddedSpeciesContexts.get(i));
-			//}
-			////Add RX Species Bindings to Model Species if necessary
-			//for(int i = 0;i < speciesWithChangedBindings.size();i+= 1){
-				//Object[] sbc = (Object[])speciesWithChangedBindings.get(i);
-				//Species changedSpecies = (Species)sbc[SPECIES_INDEX];
-				//cbit.vcell.dictionary.DBSpecies changedDBSpecies = (cbit.vcell.dictionary.DBSpecies)sbc[CHANGED_DBS_INDEX];
-				//changedSpecies.setDBSpecies(changedDBSpecies);
-			//}
-			//
-			//
-			ReactionStep reaction = null;
-			if(getReactionStep() == null){//Must have been from the EnzymeReaction dictionary, has no Kinetics
-				//Create Default Kinetics for Dictionary Reaction
-				reaction = new SimpleReaction(tempStructure,uniqueName);
-				
-				tempModel.addReactionStep(reaction);
-				for(int i=0;i<newlyAddedSpecies.size();i+= 1){
-					tempModel.addSpecies(newlyAddedSpecies.get(i));
-				}
-				//Add new SpeciesContexts to Model
-				for(int i=0;i<newlyAddedSpeciesContexts.size();i+= 1){
-					tempModel.addSpeciesContext(newlyAddedSpeciesContexts.get(i));
-				}
-				//Add RX Species Bindings to Model Species if necessary
-				for(int i = 0;i < speciesWithChangedBindings.size();i+= 1){
-					Object[] sbc = (Object[])speciesWithChangedBindings.get(i);
-					Species changedSpecies = (Species)sbc[SPECIES_INDEX];
-					DBSpecies changedDBSpecies = (DBSpecies)sbc[CHANGED_DBS_INDEX];
-					changedSpecies.setDBSpecies(changedDBSpecies);
-				}
-
-				//Add Components to Reaction
-				for(int i=0;i<speciesContextV.size();i+= 1){
-					SpeciesContext sc = speciesContextV.get(i);
-					char rxType = scrxTypeV.get(i);
-					int rxStoich = scStoichV.get(i);
-					//
-					if(rxType == ReactionDescription.RX_ELEMENT_CATALYST){
-						reaction.addCatalyst(sc);
-					}else if(rxType == ReactionDescription.RX_ELEMENT_FLUX){
-						((FluxReaction)reaction).setFluxCarrier(sc.getSpecies(),tempModel);
-					}else if(rxType == ReactionDescription.RX_ELEMENT_PRODUCT){
-						((SimpleReaction)reaction).addProduct(sc,rxStoich);
-					}else if(rxType == ReactionDescription.RX_ELEMENT_REACTANT){
-						((SimpleReaction)reaction).addReactant(sc,rxStoich);
-					}else{
-						throw new Exception("Unknown ReactionElementType="+dbfr.getType(i)+", should be (C)atalyst,(F)lux,(R)eactant,(P)roduct");
-					}
-				}
-				//
-				Kinetics kinetics = new HMM_IRRKinetics(reaction);
-				Expression kmExpression = new Expression("1.0");
-				Expression vmaxExpression = new Expression("1.0");
-				kinetics.setParameterValue(((HMM_IRRKinetics)kinetics).getKmParameter(),kmExpression);
-				kinetics.setParameterValue(((HMM_IRRKinetics)kinetics).getVmaxParameter(),vmaxExpression);
-				//reaction = new SimpleReaction(tempStructure,uniqueName);
-				reaction.setKinetics(kinetics);
-				
-				reaction.refreshDependencies();
-//				BioCartoonTool.pasteReactionSteps(
-//						new ReactionStep[] {reaction},getModel(), getStructure(), false,false,this);
-
-			}else{//Must be user reaction with kinetics
-				reaction = getReactionStep();
-				
-				for(int i=0;i<newlyAddedSpecies.size();i+= 1){
-					tempModel.addSpecies(newlyAddedSpecies.get(i));
-				}
-				//Add new SpeciesContexts to Model
-				for(int i=0;i<newlyAddedSpeciesContexts.size();i+= 1){
-					tempModel.addSpeciesContext(newlyAddedSpeciesContexts.get(i));
-				}
-				//Add RX Species Bindings to Model Species if necessary
-				for(int i = 0;i < speciesWithChangedBindings.size();i+= 1){
-					Object[] sbc = (Object[])speciesWithChangedBindings.get(i);
-					Species changedSpecies = (Species)sbc[SPECIES_INDEX];
-					DBSpecies changedDBSpecies = (DBSpecies)sbc[CHANGED_DBS_INDEX];
-					changedSpecies.setDBSpecies(changedDBSpecies);
-				}
-
-				reaction.refreshDependencies();
-				reaction.setName(uniqueName);
-				reaction.setStructure(tempStructure);
-				reaction.refreshDependencies();
-//				//
-//				//Make sure Kinetics parameters don't conflict
-				Kinetics kinetics = reaction.getKinetics();
-//				Kinetics.KineticsParameter[] kpArr = kinetics.getKineticsParameters();
-//				for(int i=0;i < kpArr.length;i+= 1){
-//					String kpName = kpArr[i].getName();
-////					Kinetics.KineticsParameter kp = null;
-//					while(tempModel.getKineticsParameter(kpName) != null){
-//						String newKPName = org.vcell.util.TokenMangler.getNextEnumeratedToken(kpName);
-//						kinetics.renameParameter(kpName,newKPName);
-//						kpName = newKPName;
-//					}
-//				}
-				//change old rxParticpant contextNames to new contextNames
-				ReactionParticipant[] rpArr = reaction.getReactionParticipants();
-				for(int i=0;i< rpArr.length;i+= 1){
-					for(int j=0;j< dbfr.elementCount();j+= 1){
-						if(dbfr.getOrigSpeciesContextName(j).equals(rpArr[i].getSpeciesContext().getName())){
-							rpArr[i].setSpeciesContext(dbfr.getResolved(j));
-						}
-					}
-				}
-				////
-				////Remove current if not in membrane -or- Add current if in membrane
-				////
-				//if(kinetics instanceof HMM_IRRKinetics){
-					//((HMM_IRRKinetics)kinetics).resolveCurrentWithStructure(tempStructure);
-				//}
-				kinetics.resolveCurrentWithStructure(tempStructure);
-				
-				reaction.refreshDependencies();
-
-			}
-//			reaction.refreshDependencies();
-//			//
-//			//Now Add everything to the Model
-//			//
-//			//Add new species to Model
-//			for(int i=0;i<newlyAddedSpecies.size();i+= 1){
-//				tempModel.addSpecies(newlyAddedSpecies.get(i));
-//			}
-//			//Add new SpeciesContexts to Model
-//			for(int i=0;i<newlyAddedSpeciesContexts.size();i+= 1){
-//				tempModel.addSpeciesContext(newlyAddedSpeciesContexts.get(i));
-//			}
-//			//Add RX Species Bindings to Model Species if necessary
-//			for(int i = 0;i < speciesWithChangedBindings.size();i+= 1){
-//				Object[] sbc = (Object[])speciesWithChangedBindings.get(i);
-//				Species changedSpecies = (Species)sbc[SPECIES_INDEX];
-//				DBSpecies changedDBSpecies = (DBSpecies)sbc[CHANGED_DBS_INDEX];
-//				changedSpecies.setDBSpecies(changedDBSpecies);
-//			}
-//			//Add Reaction
-//			tempModel.addReactionStep(reaction);
-			BioCartoonTool.pasteReactionSteps(
-					new ReactionStep[] {reaction},getModel(), getStructure(), false,false,this);
-		}
-		
-
-		bClose = true;
-		
-	}catch(Exception e){
-		e.printStackTrace();
-		PopupGenerator.showErrorDialog(this,"Error adding reaction: \n"+
-				e.getClass().getName()+"\n"+e.getMessage());
-	}finally{
-		if(bClose){closeParent();}
-	}
-	
-}
-
-
 /**
  * Comment
  */
@@ -1549,7 +1309,7 @@ private javax.swing.JButton getJButton1() {
 		try {
 			ivjJButton1 = new javax.swing.JButton();
 			ivjJButton1.setName("JButton1");
-			ivjJButton1.setText("Cancel");
+			ivjJButton1.setText("Close");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2113,8 +1873,8 @@ private javax.swing.JList getReactionsJList() {
  * @return The reactionStep property value.
  * @see #setReactionStep
  */
-public ReactionStep getReactionStep() {
-	return fieldReactionStep;
+private ReactionStep getReactionStep0() {
+	return fieldReactionStep0;
 }
 
 
@@ -2687,140 +2447,90 @@ private void reactionListSelectionChanged() {
 /**
  * Comment
  */
-private void resolve2(){
+private void applySelectedReactionElements(){
 
-	try {
-		Model tempModel = null;
-		Structure tempStructure = null;
-		if(getReactionStep() == null){
-			tempModel = (Model)BeanUtils.cloneSerializable(getModel());
-			tempStructure = tempModel.getStructure(getStructure().getName());
-
-		}else{
-			tempModel = new Model("temp");
-			ReactionStep reactStep = getReactionStep();
-			tempStructure = reactStep.getStructure();
-			if((!tempStructure.getClass().equals(getStructure().getClass()))){
-				throw new RuntimeException("<html>A reaction from a <font color=red>" + tempStructure.getClass().getSimpleName() + "</font> cannot be added to a <font color=red>" 
-						+ getStructure().getClass().getSimpleName() + "</font>. Structure types must match.</html>");
-			}
-			Structure structure = reactStep.getStructure();
-			ArrayList<Structure> structHash = new ArrayList<Structure>();
-			if(structure instanceof Membrane){
-				structHash.add(((Membrane)structure).getInsideFeature());
-			}
-			while(structure != null){
-				structHash.add(structure);
-				structure = structure.getParentStructure();
-			}
-			Structure[] structArr = structHash.toArray(new Structure[0]);
-			tempModel.setStructures(structArr);
-			ReactionParticipant[] reactionParticipantArr = reactStep.getReactionParticipants();
-			for (int i = 0; i < reactionParticipantArr.length; i++) {
-				if(!tempModel.contains(reactionParticipantArr[i].getSpeciesContext().getSpecies())){
-					tempModel.addSpecies(reactionParticipantArr[i].getSpeciesContext().getSpecies());
-				}
-				if(!tempModel.contains(reactionParticipantArr[i].getSpeciesContext())){
-					tempModel.addSpeciesContext(reactionParticipantArr[i].getSpeciesContext());
-				}
-			}
-			tempModel.addReactionStep(reactStep);
-			reactStep.rebindAllToModel(tempModel);
-			tempModel.refreshDependencies();
-			tempStructure.setName(getStructure().getName());
-			Model tempTempModel = (Model)BeanUtils.cloneSerializable(getModel());
-			SpeciesContext[] temptempSCArr = tempTempModel.getSpeciesContexts(tempTempModel.getStructure(getStructure().getName()));
-			for (int i = 0; i < temptempSCArr.length; i++) {
-				Species useThisSpecies = null;
-				if(tempModel.getSpecies(temptempSCArr[i].getSpecies().getCommonName()) == null){
-					tempModel.addSpecies(temptempSCArr[i].getSpecies());
-					useThisSpecies = temptempSCArr[i].getSpecies();
-				}else{
-					useThisSpecies = tempModel.getSpecies(temptempSCArr[i].getSpecies().getCommonName());
-				}
-				if(tempModel.getSpeciesContext(useThisSpecies,tempStructure) == null){
-					SpeciesContext newSpeciesContext =
-						new SpeciesContext(useThisSpecies,tempStructure);
-					tempModel.addSpeciesContext(newSpeciesContext);
-				}
-			}
-		}
+	
+	AsynchClientTask getRXSourceModelTask = new AsynchClientTask("Get RX source model",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		
-		tempModel.refreshDependencies();
-
-		setReactionDescription(null);
-		
-		for(int i=0;i<resolvedReaction.elementCount();i+= 1){
-			Species species = speciesOrder[speciesAssignmentJCB[i].getSelectedIndex()];
-			SpeciesContext speciesContext = null;
-			
-			if(tempStructure instanceof Feature){
-				//structure = getStructure();
-			}else if(resolvedReaction.isFluxReaction() && i == 0){
-				tempStructure = ((Membrane)tempStructure/*getStructure()*/).getOutsideFeature();
-			}else if(resolvedReaction.isFluxReaction() && i == 1){
-				tempStructure = ((Membrane)tempStructure/*getStructure()*/).getInsideFeature();
-			}else if(structureAssignmentJCB[i].getSelectedIndex() == 0){
-				//structure = getStructure();
-			}else if(structureAssignmentJCB[i].getSelectedIndex() == 1){
-				tempStructure = ((Membrane)tempStructure/*getStructure()*/).getOutsideFeature();
-			}else if(structureAssignmentJCB[i].getSelectedIndex() == 2){
-				tempStructure = ((Membrane)tempStructure/*getStructure()*/).getInsideFeature();
-			}
-
-			if(species != null){
-				speciesContext = tempModel.getSpeciesContext(tempModel.getSpecies(species.getCommonName()),tempStructure);
-			}else if(resolvedReaction.isFluxReaction() && i == resolvedReaction.getFluxIndexInside()){
-				//get the same species(flux carrier) for "Inside" as we generated for "Outside"
-				//Note: ReactionDescription always has Outside flux at index 0 and Inside flux at index 1
-				species = resolvedReaction.getResolved(resolvedReaction.getFluxIndexOutside()).getSpecies();
-			}else{
-				DBSpecies dbSpecies = null;
-				SpeciesDescription dbsd = resolvedReaction.getReactionElement(i);
-				if(dbsd instanceof DBFormalSpecies){//get DBSpecies (Dictionary Reactions)
-					try{
-						dbSpecies = getDocumentManager().getBoundSpecies((DBFormalSpecies)dbsd);
-					}catch(DataAccessException e){
-						//Do Nothing, this SC won't be bound in database, user can do it later
-					}
-				}else{//get DBSpecies (user Reactions)
-					String origSCName = resolvedReaction.getOrigSpeciesContextName(resolvedReaction.getDBSDIndex(dbsd));
-					ReactionParticipant[] rPart = getReactionStep().getReactionParticipants();
-					for(int j=0;j<rPart.length;j+= 1){
-						if(rPart[j].getSpeciesContext().getName().equals(origSCName)){
-							dbSpecies = rPart[j].getSpecies().getDBSpecies();
-						}
-					}
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			//Get the complete original model the user selected reaction is from
+			Model fromModel = getDocumentManager().getBioModel(resolvedReaction.getVCellBioModelID()).getModel();
+			//find the user selected ReactionStep in the original model
+			ReactionStep fromRXStep = null;
+			String rxref = mapRXStringtoRXIDs.get(resolvedReaction.toString()).firstElement();
+			ReactionStep[] rxArr = fromModel.getReactionSteps();
+			for (int i = 0; i < rxArr.length; i++) {
+				if(rxArr[i].getKey().toString().equals(rxref)){
+					fromRXStep = rxArr[i];
+					break;
 				}
-				species =
-					new Species(TokenMangler.fixTokenStrict(dbsd.getPreferredName()),
-						null,
-						dbSpecies);
 			}
-
-			if(speciesContext == null){
-				speciesContext = new SpeciesContext(species,tempStructure);
+			//Create user assignment preferences
+			BioCartoonTool.UserResolvedRxElements userResolvedRxElements =
+				new BioCartoonTool.UserResolvedRxElements();
+			userResolvedRxElements.fromSpeciesContextArr = new SpeciesContext[resolvedReaction.elementCount()];
+			userResolvedRxElements.toSpeciesArr = new Species[resolvedReaction.elementCount()];
+			userResolvedRxElements.toStructureArr = new Structure[resolvedReaction.elementCount()];
+			StringBuffer warningsSB = new StringBuffer();
+			for (int i = 0; i < resolvedReaction.elementCount(); i++) {
+				System.out.println(resolvedReaction.getOrigSpeciesContextName(i));
+				userResolvedRxElements.fromSpeciesContextArr[i] =
+					fromModel.getSpeciesContext(resolvedReaction.getOrigSpeciesContextName(i));
+				userResolvedRxElements.toSpeciesArr[i] =
+					(speciesAssignmentJCB[i].getSelectedItem() instanceof Species?
+							(Species)speciesAssignmentJCB[i].getSelectedItem():
+								null);
+				userResolvedRxElements.toStructureArr[i] =
+					(Structure)structureAssignmentJCB[i].getSelectedItem();
+				if(userResolvedRxElements.toSpeciesArr[i] != null){
+					SpeciesContext fromSpeciesContext = userResolvedRxElements.fromSpeciesContextArr[i];
+					Species toSpecies = userResolvedRxElements.toSpeciesArr[i];
+					if(!Compare.isEqualOrNull(toSpecies.getDBSpecies(),fromSpeciesContext.getSpecies().getDBSpecies())){
+						warningsSB.append(
+							(warningsSB.length()>0?"\n":"")+							
+							"'"+fromSpeciesContext.getSpecies().getCommonName()+"' formal("+
+							(fromSpeciesContext.getSpecies().getDBSpecies() != null?fromSpeciesContext.getSpecies().getDBSpecies().getPreferredName():"null")+")"+
+							"\nwill be re-assigned to\n"+
+							"'"+toSpecies.getCommonName()+"' formal("+
+							(toSpecies.getDBSpecies() != null?toSpecies.getDBSpecies().getPreferredName():"null")+")"
+						);
+					}				
+				}
 			}
-
-			try{
-				resolvedReaction.resolve(i,speciesContext);
-			}catch(IllegalArgumentException e){
-				PopupGenerator.showErrorDialog(this, "Error Resolving RX Elements --\n"+e.getMessage());
-				return;
+			if(warningsSB.length() > 0){
+				final String proceed = "Add reaction anyway";
+				final String cancel = "Cancel";
+				String result = DialogUtils.showWarningDialog(DBReactionWizardPanel.this,
+						"A user choice selected under 'Assign to Model species' will force re-assignment of "+
+						"the formal reference for one of the species in the reaction.\n"+warningsSB,
+						new String[] {proceed,cancel}, cancel);
+				if(result.equals(cancel)){
+					throw UserCancelException.CANCEL_GENERIC;
+				}
 			}
-			
-			//System.out.println("\n"+
-				//resolvedReaction.getReactionElement(i).getPreferredName()+
-				//" resolved to "+speciesContext.toString()+"\n");
+			hashTable.put("fromRXStep", fromRXStep);
+			hashTable.put("userResolvedRxElements", userResolvedRxElements);
 		}
-
-		setReactionDescription(resolvedReaction);
-
-		done(tempModel,tempStructure);
-	} catch (Exception e) {
-		e.printStackTrace();
-		PopupGenerator.showErrorDialog(this,e.getMessage());
-	}
+	};
+	AsynchClientTask pasteReactionTask = new AsynchClientTask("Paste reaction",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			// TODO Auto-generated method stub
+			Model pasteToModel = DBReactionWizardPanel.this.getModel();
+			Structure pasteToStructure = DBReactionWizardPanel.this.getStructure();
+			BioCartoonTool.pasteReactionSteps(
+					new ReactionStep[] {(ReactionStep)hashTable.get("fromRXStep")},
+					pasteToModel, pasteToStructure, false,DBReactionWizardPanel.this,
+					(UserResolvedRxElements)hashTable.get("userResolvedRxElements"));
+			closeParent();
+		}
+	};
+	
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(),
+			new AsynchClientTask[] {getRXSourceModelTask,pasteReactionTask},
+			false,false,null,true);
 }
 
 
@@ -2921,8 +2631,12 @@ private void searchUserReactions(final ReactionQuerySpec reactionQuerySpec){
 							String rxString = dbrd[i].toString();
 							if(!mapRXStringtoRXIDs.containsKey(rxString)){
 								mapRXStringtoRXIDs.put(rxString,new Vector<String>());
+								mapRXStringtoBMIDs.put(rxString,new Vector<String>());
+								mapRXStringtoStructRefIDs.put(rxString,new Vector<String>());
 							}
 							(mapRXStringtoRXIDs.get(rxString)).add(dbrd[i].getVCellRXID().toString());
+							(mapRXStringtoBMIDs.get(rxString)).add(dbrd[i].getVCellBioModelID().toString());
+							(mapRXStringtoStructRefIDs.get(rxString)).add(dbrd[i].getVCellStructRef().toString());
 						}
 						dbrdS = (String[])mapRXStringtoRXIDs.keySet().toArray(new String[0]);
 					}
@@ -3114,8 +2828,8 @@ private void setReactionSelectionModel(javax.swing.ListSelectionModel newValue) 
  * @see #getReactionStep
  */
 private void setReactionStep(ReactionStep reactionStep) {
-	ReactionStep oldValue = fieldReactionStep;
-	fieldReactionStep = reactionStep;
+	ReactionStep oldValue = fieldReactionStep0;
+	fieldReactionStep0 = reactionStep;
 	firePropertyChange("reactionStep", oldValue, reactionStep);
 }
 
@@ -3223,6 +2937,18 @@ private void setupRX(ReactionDescription dbfr) {
 
 		speciesAssignmentJCB = new javax.swing.JComboBox[resolvedReaction.elementCount()];
 		
+		DefaultListCellRenderer speciesListCellRenderer = new DefaultListCellRenderer(){
+			@Override
+			public Component getListCellRendererComponent(JList list,
+					Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				// TODO Auto-generated method stub
+				return super.getListCellRendererComponent(list,
+						(value instanceof Species?"Existing "+((Species)value).getCommonName():value),
+						index, isSelected,
+						cellHasFocus);
+			}
+		};
 		javax.swing.JLabel rspjlabel = new javax.swing.JLabel("Assign to Model Species");
 		//rspjlabel.setForeground(java.awt.Color.white);
 		//rspjlabel.setOpaque(true);
@@ -3236,10 +2962,11 @@ private void setupRX(ReactionDescription dbfr) {
 		}
 		for(int i=0;i<resolvedReaction.elementCount();i+= 1){
 			javax.swing.JComboBox jcb = new javax.swing.JComboBox();
+			jcb.setRenderer(speciesListCellRenderer);
 			speciesAssignmentJCB[i] = jcb;
 			jcb.addItem("New Species");
 			for(int j=1;j<speciesOrder.length;j+= 1){
-				jcb.addItem("Existing "+speciesOrder[j].getCommonName());
+				jcb.addItem(/*"Existing "+*/speciesOrder[j]/*.getCommonName()*/);
 			}
 			gbc.gridy = i+1;
 			getRXParticipantsJPanel().add(jcb,gbc);
@@ -3249,6 +2976,19 @@ private void setupRX(ReactionDescription dbfr) {
 		gbc.gridy = 0;
 		structureAssignmentJCB = new javax.swing.JComboBox[resolvedReaction.elementCount()];
 
+		DefaultListCellRenderer structureListCellRenderer = new DefaultListCellRenderer(){
+			@Override
+			public Component getListCellRendererComponent(JList list,
+					Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				// TODO Auto-generated method stub
+				return super.getListCellRendererComponent(list,
+						(value instanceof Structure?((Structure)value).getName():value),
+						index, isSelected,
+						cellHasFocus);
+			}
+		};
+
 		javax.swing.JLabel rstjlabel = new javax.swing.JLabel("Assign to Model Compartment");
 		//rstjlabel.setForeground(java.awt.Color.white);
 		//rstjlabel.setOpaque(true);
@@ -3257,18 +2997,19 @@ private void setupRX(ReactionDescription dbfr) {
 		//getRXParticipantsJPanel().add(new javax.swing.JLabel("Resolve to Model Compartment"),gbc);
 		for(int i=0;i<resolvedReaction.elementCount();i+= 1){
 			javax.swing.JComboBox jcb = new javax.swing.JComboBox();
+			jcb.setRenderer(structureListCellRenderer);
 			structureAssignmentJCB[i] = jcb;
 			if(resolvedReaction.isFluxReaction() && resolvedReaction.isFlux(i) && resolvedReaction.getFluxIndexOutside() == i){
-				jcb.addItem(((Membrane)getStructure()).getOutsideFeature().getName());
+				jcb.addItem(((Membrane)getStructure()).getOutsideFeature()/*.getName()*/);
 				jcb.setEnabled(false);
 			}else if(resolvedReaction.isFluxReaction() && resolvedReaction.isFlux(i) && resolvedReaction.getFluxIndexInside() == i){
-				jcb.addItem(((Membrane)getStructure()).getInsideFeature().getName());
+				jcb.addItem(((Membrane)getStructure()).getInsideFeature()/*.getName()*/);
 				jcb.setEnabled(false);
 			}else{
-				jcb.addItem(getStructure().getName());
+				jcb.addItem(getStructure()/*.getName()*/);
 				if(getStructure() instanceof Membrane){
-					jcb.addItem(((Membrane)getStructure()).getOutsideFeature().getName());
-					jcb.addItem(((Membrane)getStructure()).getInsideFeature().getName());
+					jcb.addItem(((Membrane)getStructure()).getOutsideFeature()/*.getName()*/);
+					jcb.addItem(((Membrane)getStructure()).getInsideFeature()/*.getName()*/);
 				}else{
 					jcb.setEnabled(false);
 				}
@@ -3276,7 +3017,7 @@ private void setupRX(ReactionDescription dbfr) {
 			gbc.gridy = i+1;
 			getRXParticipantsJPanel().add(jcb,gbc);
 		}
-		//
+
 		for(int i=0;i<resolvedReaction.elementCount();i+= 1){
 			speciesAssignmentJCB[i].addActionListener(this);
 			structureAssignmentJCB[i].addActionListener(this);

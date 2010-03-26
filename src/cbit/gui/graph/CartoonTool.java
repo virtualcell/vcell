@@ -35,7 +35,7 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 	public static final String DELETE_MENU_ACTION = "Delete";
 	public static final String PROPERTIES_MENU_ACTION = "Properties";
 	public static final String REACTIONS_MENU_ACTION = "Reactions...";
-	public static final String ADD_ENZYME_REACTION_MENU_ACTION = "Add Searchable Reaction...";
+	public static final String ADD_ENZYME_REACTION_MENU_ACTION = "Search Reactions...";
 	public static final String ADD_FEATURE_MENU_ACTION = "Add Feature...";
 	public static final String ADD_SPECIES_MENU_ACTION = "Add Species...";
 	public static final String ADD_GLOBAL_PARAM_MENU_ACTION = "Add Global Parameter...";

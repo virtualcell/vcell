@@ -374,6 +374,8 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user) {
 	}
 	//
 	String sql = null;
+	Field specialBMField = new Field("id bmid","integer","");
+	specialBMField.setTableName(BioModelTable.table.getTableName());
 	Field[] f =
 	{
 		ReactStepTable.table.name,			//1
@@ -381,8 +383,9 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user) {
 		ReactStepTable.table.reactType,		//3
 		ReactPartTable.table.role,			//4
 		ReactPartTable.table.stoich,		//5
-		SpeciesTable.table.commonName		//6
-		//SpeciesTable.table.dbSpeciesRef		//7
+		SpeciesTable.table.commonName,		//6
+		specialBMField,				//7
+		ReactStepTable.table.structRef	//8
 	};
 	Table[] t =
 	{
@@ -559,7 +562,9 @@ public ReactionDescription[] getUserReactionList(java.sql.ResultSet rset)throws 
 		if(dbfr == null){
 			String rxType = rset.getString(ReactStepTable.table.reactType.toString());
 			String rxName = rset.getString(ReactStepTable.table.name.toString());
-			dbfr = new ReactionDescription(rxName,rxType,new KeyValue(rxid));
+			java.math.BigDecimal currBioModelID = rset.getBigDecimal("bmid");
+			java.math.BigDecimal currStructID = rset.getBigDecimal(ReactStepTable.table.structRef.toString());
+			dbfr = new ReactionDescription(rxName,rxType,new KeyValue(rxid),new KeyValue(currBioModelID),new KeyValue(currStructID));
 			resultV.add(dbfr);
 		}
 		String name = rset.getString(SpeciesTable.table.commonName.toString());

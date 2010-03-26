@@ -145,8 +145,7 @@ protected void menuAction(Shape shape, String menuAction) {
 			IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
 			if(species != null){
 				boolean bPasteNew = menuAction.equals(PASTE_NEW_MENU_ACTION);
-				boolean bUseDBSpecies = !bPasteNew;
-				pasteSpecies(getGraphPane(), species,getStructureCartoon().getModel(),((StructureShape)shape).getStructure(),bPasteNew, bUseDBSpecies,speciesHash);
+				pasteSpecies(getGraphPane(), species,getStructureCartoon().getModel(),((StructureShape)shape).getStructure(),bPasteNew,speciesHash,null);
 			}
 		}
 	}else if (menuAction.equals(PROPERTIES_MENU_ACTION)){

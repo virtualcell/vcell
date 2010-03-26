@@ -1,4 +1,6 @@
 package cbit.vcell.dictionary;
+import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.model.SpeciesContext;
 /**
  * Insert the type's description here.
@@ -11,6 +13,8 @@ public class ReactionDescription implements java.io.Serializable, org.vcell.util
 	//cbit.vcell.modeldb.ReactStepTable.id
 	//will be null for Dictionary reactions
 	private org.vcell.util.document.KeyValue vcellRXID = null;
+	private KeyValue bioModelID = null;
+	private KeyValue structRef = null;
 	//
 	private java.util.Vector reactionElements = new java.util.Vector();// SpeciesDescritpion
 	private java.util.Vector reSpeciesContextNames = null;// String (Original SpeciesContext Names from Database)
@@ -32,11 +36,11 @@ public class ReactionDescription implements java.io.Serializable, org.vcell.util
 	}
 
 public ReactionDescription(String argReactionName){
-	this(argReactionName,UNKNOWN_REACTIONTYPE,null);
+	this(argReactionName,UNKNOWN_REACTIONTYPE,null,null,null);
 }
 
 
-public ReactionDescription(String argReactionName,String argReactionType,org.vcell.util.document.KeyValue argVCellRXID){
+public ReactionDescription(String argReactionName,String argReactionType,org.vcell.util.document.KeyValue argVCellRXID,KeyValue argBioModelID,KeyValue structRef){
 	
 	if(argReactionName == null){
 		throw new IllegalArgumentException("ReactionName cannot be null");
@@ -49,6 +53,8 @@ public ReactionDescription(String argReactionName,String argReactionType,org.vce
 	this.reactionName = argReactionName;
 	this.vcellRXID = argVCellRXID;
 	this.reactionType = argReactionType;
+	this.bioModelID = argBioModelID;
+	this.structRef = structRef;
 }
 
 
@@ -341,6 +347,12 @@ public org.vcell.util.document.KeyValue getVCellRXID(){
 	return vcellRXID;
 }
 
+public org.vcell.util.document.KeyValue getVCellBioModelID(){
+	return bioModelID;
+}
+public org.vcell.util.document.KeyValue getVCellStructRef(){
+	return structRef;
+}
 
 /**
  * Insert the method's description here.
