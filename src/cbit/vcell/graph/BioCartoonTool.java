@@ -1,16 +1,21 @@
 package cbit.vcell.graph;
 import java.awt.Component;
 import java.beans.PropertyVetoException;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
 import java.util.Vector;
 
+import javax.management.RuntimeErrorException;
+import javax.swing.DefaultListModel;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.ListModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.ZEnforcer;
@@ -19,6 +24,7 @@ import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.Shape;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Flux;
@@ -109,100 +115,203 @@ public static boolean printIssues(Vector<Issue> issueVector, Component guiReques
  * @param guiRequestComponent : the parent component for the warning dialog that pops up the issues, if any, encountered in the pasting process
  * @throws Exception
  */
-public static final void pasteReactionSteps(ReactionStep[] reactionStepsArrOrig,Model pasteModel, Structure struct, boolean bNew,boolean bUseDBSpecies, Component guiRequestComponent) throws Exception {
+public static final void pasteReactionSteps(ReactionStep[] reactionStepsArrOrig,
+		Model pasteModel, Structure struct,
+		boolean bNew,/*boolean bUseDBSpecies,*/ Component guiRequestComponent,
+		UserResolvedRxElements userResolvedRxElements) throws Exception {
 	Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
-	Vector<Issue> issueList = pasteReactionSteps0(guiRequestComponent, reactionStepsArrOrig, clonedModel, clonedModel.getStructure(struct.getName()), bNew,bUseDBSpecies);
+
+	Vector<Issue> issueList =
+		pasteReactionSteps0(guiRequestComponent, reactionStepsArrOrig,
+				clonedModel, clonedModel.getStructure(struct.getName()), bNew,/*bUseDBSpecies,*/
+				UserResolvedRxElements.createCompatibleUserResolvedRxElements(userResolvedRxElements, clonedModel));
 	if (issueList.size() != 0) {
 		if (!printIssues(issueList, guiRequestComponent)) {
 			return;
 		}
 	}
 	issueList.clear();
-	issueList = pasteReactionSteps0(guiRequestComponent, reactionStepsArrOrig, pasteModel, struct, bNew,bUseDBSpecies);
+	issueList = pasteReactionSteps0(guiRequestComponent, reactionStepsArrOrig,
+			pasteModel, struct, bNew,/*bUseDBSpecies,*/
+			userResolvedRxElements);
 }
 
 
+public static class UserResolvedRxElements {
+	public SpeciesContext[] fromSpeciesContextArr;
+	public Species[] toSpeciesArr;//some elements can be null if user chose 'new' for them
+	public Structure[] toStructureArr;
+
+	public static UserResolvedRxElements createCompatibleUserResolvedRxElements(
+			UserResolvedRxElements origResolvedRxP,Model compatibleModel){
+		
+		if(origResolvedRxP == null){
+			return null;
+		}
+		UserResolvedRxElements compatibleResolvedRxP = new UserResolvedRxElements();
+		compatibleResolvedRxP.fromSpeciesContextArr = origResolvedRxP.fromSpeciesContextArr;
+		//Find species
+		compatibleResolvedRxP.toSpeciesArr = new Species[origResolvedRxP.toSpeciesArr.length];
+		for (int i = 0; i < compatibleResolvedRxP.toSpeciesArr.length; i++) {
+			if(origResolvedRxP.toSpeciesArr[i] != null){
+				compatibleResolvedRxP.toSpeciesArr[i] =
+					compatibleModel.getSpecies(origResolvedRxP.toSpeciesArr[i].getCommonName());				
+			}
+		}
+		//Find Structures
+		compatibleResolvedRxP.toStructureArr = new Structure[origResolvedRxP.toStructureArr.length];
+		for (int i = 0; i < compatibleResolvedRxP.toStructureArr.length; i++) {
+			if(origResolvedRxP.toStructureArr[i] != null){
+				compatibleResolvedRxP.toStructureArr[i] =
+					compatibleModel.getStructure(origResolvedRxP.toStructureArr[i].getName());				
+			}
+		}
+		//Check
+		for (int i = 0; i < origResolvedRxP.fromSpeciesContextArr.length; i++) {
+			if(!Compare.isEqualOrNull(origResolvedRxP.toSpeciesArr[i], compatibleResolvedRxP.toSpeciesArr[i])){
+				throw new RuntimeException("Create compatible couldn't find matching Species in compatible model");
+			}
+			if(!Compare.isEqualOrNull(origResolvedRxP.toStructureArr[i], compatibleResolvedRxP.toStructureArr[i])){
+				throw new RuntimeException("Create compatible couldn't find matching Structure in compatible model");
+			}
+		}
+		return compatibleResolvedRxP;
+	}
+	public static HashMap<Structure, Species> getPreferredReactionElement(
+			UserResolvedRxElements userResolvedRxElements,
+			ReactionParticipant fromReactionParticipant){
+		
+		if(userResolvedRxElements == null){
+			return null;
+		}
+		return userResolvedRxElements.getPreferredReactionElement(
+				fromReactionParticipant.getSpecies(), fromReactionParticipant.getStructure());
+	}
+	public static HashMap<Structure, Species> getPreferredReactionElement(
+			UserResolvedRxElements userResolvedRxElements,
+			SpeciesContext fromSpeciesContext){
+		
+		if(userResolvedRxElements == null){
+			return null;
+		}
+		return userResolvedRxElements.getPreferredReactionElement(
+				fromSpeciesContext.getSpecies(), fromSpeciesContext.getStructure());
+	}
+
+	private HashMap<Structure, Species> getPreferredReactionElement(Species fromSpecies, Structure fromStructure){
+		for (int i = 0; i < toSpeciesArr.length; i++) {
+			if(fromSpeciesContextArr[i].getStructure().equals(fromStructure)){
+				if(fromSpeciesContextArr[i].getSpecies().equals(fromSpecies)){
+					HashMap<Structure, Species> result = new HashMap<Structure, Species>();
+					 result.put(toStructureArr[i], toSpeciesArr[i]);
+					 return result;
+				}				
+			}
+		}
+		throw new RuntimeException("Couldn't find 'from' ReactionParticipant Species="+fromSpecies+" Structure="+fromStructure);
+	}
+}
 /**
  * pasteReactionSteps0 : does the actual pasting. First called with a cloned model, to track issues. If user still wants to proceed, the paste
  * is performed on the original model.
  * 
  * Insert the method's description here.
  * Creation date: (5/10/2003 3:55:25 PM)
- * @param model cbit.vcell.model.Model
- * @param struct cbit.vcell.model.Structure
+ * @param pasteToModel cbit.vcell.model.Model
+ * @param pasteToStructure cbit.vcell.model.Structure
  * @param bNew boolean
  */
-private static final Vector<Issue> pasteReactionSteps0(Component parent, ReactionStep[] reactionStepsArr,Model model, Structure struct, boolean bNew,boolean bUseDBSpecies) throws Exception {
+private static final Vector<Issue> pasteReactionSteps0(Component parent,
+		ReactionStep[] copyFromRxSteps,Model pasteToModel, Structure pasteToStructure,
+		boolean bNew,/*boolean bUseDBSpecies,*/
+		UserResolvedRxElements userResolvedRxElements) throws Exception {
 
-	if(reactionStepsArr == null || reactionStepsArr.length == 0 || model == null || struct == null){
+	if(copyFromRxSteps == null || copyFromRxSteps.length == 0 || pasteToModel == null || pasteToStructure == null){
 		throw new IllegalArgumentException("CartoonTool.pasteReactionSteps Error "+
-			(reactionStepsArr == null || reactionStepsArr.length == 0?"reactionStepsArr empty ":"")+
-			(model == null?"model is null ":"")+
-			(struct == null?"struct is null ":"")
+			(copyFromRxSteps == null || copyFromRxSteps.length == 0?"reactionStepsArr empty ":"")+
+			(pasteToModel == null?"model is null ":"")+
+			(pasteToStructure == null?"struct is null ":"")
 			);
 	}
 
-	if(!model.contains(struct)){
-		throw new IllegalArgumentException("CartoonTool.pasteReactionSteps model "+model.getName()+" does not contain structure "+struct.getName());
+	if(!pasteToModel.contains(pasteToStructure)){
+		throw new IllegalArgumentException("CartoonTool.pasteReactionSteps model "+pasteToModel.getName()+" does not contain structure "+pasteToStructure.getName());
 	}
 
+	//Check PasteToModel has preferred targets if set
+	if(userResolvedRxElements != null){
+		for (int i = 0; i < userResolvedRxElements.toSpeciesArr.length; i++) {
+			if(userResolvedRxElements.toSpeciesArr[i] != null){
+				if(!pasteToModel.contains(userResolvedRxElements.toSpeciesArr[i])){
+					throw new RuntimeException("PasteToModel does not contain preferred Species "+userResolvedRxElements.toSpeciesArr[i]);
+				}
+			}
+			if(userResolvedRxElements.toStructureArr[i] != null){
+				if(!pasteToModel.contains(userResolvedRxElements.toStructureArr[i])){
+					throw new RuntimeException("PasteToModel does not contain preferred Structure "+userResolvedRxElements.toStructureArr[i]);
+				}
+			}
+		}
+	}
 	int counter = 0;
-	Structure currentStruct = struct;
-	String copiedStructName = reactionStepsArr[counter].getStructure().getName();
+	Structure currentStruct = pasteToStructure;
+	String copiedStructName = copyFromRxSteps[counter].getStructure().getName();
 	Vector<Issue> issueVector = new Vector<Issue>();
 	do{
 		// create a new reaction, instead of cloning the old one; set struc
-		ReactionStep oldReactionStep = reactionStepsArr[counter]; 
-		String newName = oldReactionStep.getName();
-		while(model.getReactionStep(newName) != null){
+		ReactionStep copyFromReactionStep = copyFromRxSteps[counter]; 
+		String newName = copyFromReactionStep.getName();
+		while(pasteToModel.getReactionStep(newName) != null){
 			newName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newName);
 		}
 		ReactionStep newReactionStep = null;
 		
-		if (oldReactionStep instanceof SimpleReaction) {
+		if (copyFromReactionStep instanceof SimpleReaction) {
 			newReactionStep = new SimpleReaction(currentStruct, newName);
-		} else if (oldReactionStep instanceof FluxReaction && currentStruct instanceof Membrane) {
+		} else if (copyFromReactionStep instanceof FluxReaction && currentStruct instanceof Membrane) {
 			newReactionStep = new FluxReaction((Membrane)currentStruct, null, newName);
 		}
 		
-		model.addReactionStep(newReactionStep);
-		Structure newRxnStruct = newReactionStep.getStructure();
-		Structure oldRxnStruct = oldReactionStep.getStructure();
+		pasteToModel.addReactionStep(newReactionStep);
+		Structure toRxnStruct = newReactionStep.getStructure();
+		Structure fromRxnStruct = copyFromReactionStep.getStructure();
 		
-		if(!newRxnStruct.getClass().equals(struct.getClass())){
-			throw new Exception("Copied RectionStep structure type="+newReactionStep.getStructure().getClass().getName()+
-								"\ndoes not equal target structure type="+struct.getClass().getName());
+		if(!fromRxnStruct.getClass().equals(pasteToStructure.getClass())){
+			throw new Exception("Copied RectionStep structure type="+fromRxnStruct.getClass().getName()+
+								"\ndoes not equal target structure type="+pasteToStructure.getClass().getName());
 		}
 
 		// add appropriate reactionParticipants to newReactionStep.
 		IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
 		IdentityHashMap<SpeciesContext, SpeciesContext> speciesContextHash = new IdentityHashMap<SpeciesContext, SpeciesContext>();
-		ReactionParticipant[] rpArr = oldReactionStep.getReactionParticipants();
+		ReactionParticipant[] copyFromRxParticipantArr = copyFromReactionStep.getReactionParticipants();
 		Species fluxCarrierSp = null;
-		for(int i=0;i<rpArr.length;i+= 1){
-			Structure pasteStruct = currentStruct;
-			if(newRxnStruct instanceof Membrane){
-				Membrane oldMembr = (Membrane)oldRxnStruct;
-				if(rpArr[i].getStructure().getName().equals(oldMembr.getOutsideFeature().getName())){
-					pasteStruct = ((Membrane)currentStruct).getOutsideFeature();
-				}else if(rpArr[i].getStructure().getName().equals(oldMembr.getInsideFeature().getName())){
-					pasteStruct = ((Membrane)currentStruct).getInsideFeature();
+		for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
+			Structure pasteToStruct = currentStruct;
+			if(toRxnStruct instanceof Membrane){
+				Membrane oldMembr = (Membrane)fromRxnStruct;
+				if(copyFromRxParticipantArr[i].getStructure().getName().equals(oldMembr.getOutsideFeature().getName())){
+					pasteToStruct = ((Membrane)currentStruct).getOutsideFeature();
+				}else if(copyFromRxParticipantArr[i].getStructure().getName().equals(oldMembr.getInsideFeature().getName())){
+					pasteToStruct = ((Membrane)currentStruct).getInsideFeature();
 				}
 			}
 			// this adds the speciesContexts and species (if any) to the model)
-			SpeciesContext newSc = pasteSpecies(parent, rpArr[i].getSpecies(),model,pasteStruct,bNew, bUseDBSpecies,speciesHash);
+			SpeciesContext newSc =
+				pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
+						UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
 			// record the old-new speciesContexts (reactionparticipants) in the IdHashMap, this is useful, esp for 'Paste new', while replacing proxyparams. 
-			SpeciesContext oldSc = rpArr[i].getSpeciesContext();
+			SpeciesContext oldSc = copyFromRxParticipantArr[i].getSpeciesContext();
 			if (speciesContextHash.get(oldSc) == null) {
 				speciesContextHash.put(oldSc, newSc);
 			}
-			if (rpArr[i] instanceof Reactant) {
-				newReactionStep.addReactionParticipant(new Reactant(null, (SimpleReaction)newReactionStep, newSc, rpArr[i].getStoichiometry()));
-			} else if (rpArr[i] instanceof Product) {
-				newReactionStep.addReactionParticipant(new Product(null, (SimpleReaction)newReactionStep, newSc, rpArr[i].getStoichiometry()));
-			} else if (rpArr[i] instanceof Catalyst) {
+			if (copyFromRxParticipantArr[i] instanceof Reactant) {
+				newReactionStep.addReactionParticipant(new Reactant(null, (SimpleReaction)newReactionStep, newSc, copyFromRxParticipantArr[i].getStoichiometry()));
+			} else if (copyFromRxParticipantArr[i] instanceof Product) {
+				newReactionStep.addReactionParticipant(new Product(null, (SimpleReaction)newReactionStep, newSc, copyFromRxParticipantArr[i].getStoichiometry()));
+			} else if (copyFromRxParticipantArr[i] instanceof Catalyst) {
 				newReactionStep.addCatalyst(newSc);
-			} else if (rpArr[i] instanceof Flux) {
+			} else if (copyFromRxParticipantArr[i] instanceof Flux) {
 				fluxCarrierSp = newSc.getSpecies(); 
 			}
 		}
@@ -210,7 +319,7 @@ private static final Vector<Issue> pasteReactionSteps0(Component parent, Reactio
 		// If 'newReactionStep' is a fluxRxn, set its fluxCarrier
 		if (newReactionStep instanceof FluxReaction) {
 			if (fluxCarrierSp != null) {
-				((FluxReaction)newReactionStep).setFluxCarrier(fluxCarrierSp, model);
+				((FluxReaction)newReactionStep).setFluxCarrier(fluxCarrierSp, pasteToModel);
 			} else {
 				throw new RuntimeException("Could not set FluxCarrier species for the flux reaction to be pasted");
 			}
@@ -219,7 +328,7 @@ private static final Vector<Issue> pasteReactionSteps0(Component parent, Reactio
 		// For each kinetic parameter expression for new kinetics, replace the proxyParams from old kinetics with proxyParams in new kinetics
 		// i.e., if the proxyParams are speciesContexts, replace with corresponding speciesContext in newReactionStep;
 		// if the proxyParams are structureSizes or MembraneVoltages, replace with corresponding structure quantity in newReactionStep
-		Kinetics oldKinetics = oldReactionStep.getKinetics();
+		Kinetics oldKinetics = copyFromReactionStep.getKinetics();
 		KineticsParameter[] oldKps = oldKinetics.getKineticsParameters(); 
 		KineticsProxyParameter[] oldKprps = oldKinetics.getProxyParameters();
 		Hashtable<String, Expression> paramExprHash = new Hashtable<String, Expression>();
@@ -236,21 +345,23 @@ private static final Vector<Issue> pasteReactionSteps0(Component parent, Reactio
 						if (newSC == null) {
 							// the speciesContext (ste) was not a rxnParticipant. If paste-model is different from copy/cut-model, 
 							// check if oldSc is present in paste-model; if not, add it.
-							if (!model.equals(oldReactionStep.getModel())) {
-								if (model.getSpeciesContext(oldSC.getName()) == null) {
+							if (!pasteToModel.equals(copyFromReactionStep.getModel())) {
+								if (pasteToModel.getSpeciesContext(oldSC.getName()) == null) {
 									// if paste-model has oldSc struct, paste it there, 
-									Structure newSCStruct = model.getStructure(oldSC.getStructure().getName()); 
+									Structure newSCStruct = pasteToModel.getStructure(oldSC.getStructure().getName()); 
 									if (newSCStruct != null) {
-										newSC = pasteSpecies(parent, oldSC.getSpecies(), model, newSCStruct, bNew, bUseDBSpecies,speciesHash);
+										newSC = pasteSpecies(parent, oldSC.getSpecies(), pasteToModel, newSCStruct, bNew, /*bUseDBSpecies,*/speciesHash,
+													UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements, oldSC));
 										speciesContextHash.put(oldSC, newSC);
 									} else {
 										// oldStruct wasn't found in paste-model, paste it in newRxnStruct and add warning to issues list
-										newSC = pasteSpecies(parent, oldSC.getSpecies(), model, newRxnStruct, bNew, bUseDBSpecies,speciesHash);
+										newSC = pasteSpecies(parent, oldSC.getSpecies(), pasteToModel, toRxnStruct, bNew, /*bUseDBSpecies,*/speciesHash,
+												UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements, oldSC));
 										speciesContextHash.put(oldSC, newSC);
 										Issue issue = new Issue(oldSC, "Species Context",
 												"SpeciesContext '" + oldSC.getSpecies().getCommonName() + "' was not found in compartment '" +
 												oldSC.getStructure().getName() + "' in the model; the species was added to the compartment '" +
-												newRxnStruct.getName() + "' where the reaction was pasted.",
+												toRxnStruct.getName() + "' where the reaction was pasted.",
 												Issue.SEVERITY_WARNING);
 										issueVector.add(issue);
 									}
@@ -283,35 +394,35 @@ private static final Vector<Issue> pasteReactionSteps0(Component parent, Reactio
 					} else if (ste instanceof StructureSize) {
 						Structure str = ((StructureSize)ste).getStructure();
 						// if the structure size used is same as the structure in which the reaction is present, change the structSize to appropriate new struct  
-						if (str.compareEqual(oldRxnStruct)) {
-							newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(newRxnStruct.getStructureSize().getName()));
+						if (str.compareEqual(fromRxnStruct)) {
+							newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(toRxnStruct.getStructureSize().getName()));
 						} else {
-							if (oldRxnStruct instanceof Membrane) {
-								if (str.equals(((Membrane)oldRxnStruct).getOutsideFeature())) {
-									newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(((Membrane)newRxnStruct).getOutsideFeature().getStructureSize().getName()));
-								} else if (str.equals(((Membrane)oldRxnStruct).getInsideFeature())) {
-									newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(((Membrane)newRxnStruct).getInsideFeature().getStructureSize().getName()));
+							if (fromRxnStruct instanceof Membrane) {
+								if (str.equals(((Membrane)fromRxnStruct).getOutsideFeature())) {
+									newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(((Membrane)toRxnStruct).getOutsideFeature().getStructureSize().getName()));
+								} else if (str.equals(((Membrane)fromRxnStruct).getInsideFeature())) {
+									newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(((Membrane)toRxnStruct).getInsideFeature().getStructureSize().getName()));
 								}
 							}
 						}
 					} else if (ste instanceof MembraneVoltage) {
 						Membrane membr = ((MembraneVoltage)ste).getMembrane();
 						// if the MembraneVoltage used is same as that of the membrane in which the reaction is present, change the MemVoltage 
-						if ((oldRxnStruct instanceof Membrane) && (membr.compareEqual((Membrane)oldRxnStruct))) {
-							newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(((Membrane)newRxnStruct).getMembraneVoltage().getName()));
+						if ((fromRxnStruct instanceof Membrane) && (membr.compareEqual((Membrane)fromRxnStruct))) {
+							newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(((Membrane)toRxnStruct).getMembraneVoltage().getName()));
 						} 
 					} else if (ste instanceof ModelParameter) {
 						// see if model has this global parameter (if rxn is being pasted into another model, it won't)
-						if (!model.equals(oldReactionStep.getModel())) {
+						if (!pasteToModel.equals(copyFromReactionStep.getModel())) {
 							ModelParameter oldMp = (ModelParameter)ste;
-							ModelParameter mp = model.getModelParameter(oldMp.getName());
+							ModelParameter mp = pasteToModel.getModelParameter(oldMp.getName());
 							boolean bNonNumeric = false;
 							String newMpName = oldMp.getName();
 							if (mp != null) {
 								// new model has a model parameter with same name - are they the same param?
 								if (!mp.getExpression().equals(oldMp.getExpression())) {
 									// no, they are not the same param, so mangle the 'ste' name and add as global in the other model
-									while (model.getModelParameter(newMpName) != null) {
+									while (pasteToModel.getModelParameter(newMpName) != null) {
 										newMpName = TokenMangler.getNextEnumeratedToken(newMpName);
 									}
 									// if expression if numeric, add it as such. If not, set it to 0.0 and add it as global
@@ -320,10 +431,10 @@ private static final Vector<Issue> pasteReactionSteps0(Component parent, Reactio
 										exp = new Expression(0.0);
 										bNonNumeric = true;
 									}
-									ModelParameter newMp = model.new ModelParameter(newMpName, exp, Model.ROLE_UserDefined, oldMp.getUnitDefinition());
-									String annotation = "Copied from model : " + oldReactionStep.getModel().getNameScope();
+									ModelParameter newMp = pasteToModel.new ModelParameter(newMpName, exp, Model.ROLE_UserDefined, oldMp.getUnitDefinition());
+									String annotation = "Copied from model : " + copyFromReactionStep.getModel().getNameScope();
 									newMp.setModelParameterAnnotation(annotation);
-									model.addModelParameter(newMp);
+									pasteToModel.addModelParameter(newMp);
 									// if global param name had to be changed, make sure newExpr is updated as well.
 									if (!newMpName.equals(oldMp.getName())) {
 										newExpression.substituteInPlace(new Expression(oldMp.getName()), new Expression(newMpName));
@@ -337,10 +448,10 @@ private static final Vector<Issue> pasteReactionSteps0(Component parent, Reactio
 									exp = new Expression(0.0);
 									bNonNumeric = true;
 								}
-								ModelParameter newMp = model.new ModelParameter(newMpName, exp, Model.ROLE_UserDefined, oldMp.getUnitDefinition());
-								String annotation = "Copied from model : " + oldReactionStep.getModel().getNameScope();
+								ModelParameter newMp = pasteToModel.new ModelParameter(newMpName, exp, Model.ROLE_UserDefined, oldMp.getUnitDefinition());
+								String annotation = "Copied from model : " + copyFromReactionStep.getModel().getNameScope();
 								newMp.setModelParameterAnnotation(annotation);
-								model.addModelParameter(newMp);	
+								pasteToModel.addModelParameter(newMp);	
 							}
 							// if a non-numeric parameter was encountered in the old model, it was added as a numeric (0.0), warn user of change.
 							if (bNonNumeric) {
@@ -377,64 +488,75 @@ private static final Vector<Issue> pasteReactionSteps0(Component parent, Reactio
 		newReactionStep.setKinetics(newkinetics);
 		
 		counter+= 1;
-		if(counter == reactionStepsArr.length){
+		if(counter == copyFromRxSteps.length){
 			break;
 		}
 		
-		if(!copiedStructName.equals(oldRxnStruct.getName())){
+		if(!copiedStructName.equals(fromRxnStruct.getName())){
 			if(currentStruct instanceof Feature){
 				currentStruct = ((Feature)currentStruct).getMembrane();
 			}else if (currentStruct instanceof Membrane){
 				currentStruct = ((Membrane)currentStruct).getInsideFeature();
 			}
 		}
-		copiedStructName = oldRxnStruct.getName();
+		copiedStructName = fromRxnStruct.getName();
 	}while(true);
 	return issueVector;
 }
 
-private static Species getNewSpecies(IdentityHashMap<Species, Species> speciesHash, Species oldSpecies, Model newModel, boolean bNew, boolean bUseDBSpecies,Structure newStruct) {
-	Species newSpecies = speciesHash.get(oldSpecies);
+private static Species getNewSpecies(
+		IdentityHashMap<Species, Species> speciesHash,
+		Species copyFromSpecies,
+		Model pasteToModel,
+		boolean bNew,/* boolean bUseDBSpecies,*/
+		Structure pasteToStruct,
+		HashMap<Structure, Species> userPreferredToTarget) {
+	
+	Species newSpecies = speciesHash.get(copyFromSpecies);
 	if (newSpecies != null) {
 		return newSpecies;
 	} 
 
-	
+	Species preferredToSpecies = 
+		(userPreferredToTarget != null?userPreferredToTarget.values().iterator().next():null);
 	try {
-		if(bNew){
-			String newName = oldSpecies.getCommonName();
-			while(newModel.getSpecies(newName) != null){
+		if(bNew || (userPreferredToTarget != null && preferredToSpecies == null)){
+			String newName = copyFromSpecies.getCommonName();
+			while(pasteToModel.getSpecies(newName) != null){
 				newName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newName);
 			}
-			newSpecies = new Species(newName,oldSpecies.getAnnotation(),oldSpecies.getDBSpecies());
-			newModel.addSpecies(newSpecies);
-			speciesHash.put(oldSpecies, newSpecies);
+			newSpecies = new Species(newName,copyFromSpecies.getAnnotation(),copyFromSpecies.getDBSpecies());
+			pasteToModel.addSpecies(newSpecies);
+			speciesHash.put(copyFromSpecies, newSpecies);
 		} else {
 			//Find a matching existing species if possible
-			if(!newModel.contains(oldSpecies)){// Doesn't have Species (==)
+			if(preferredToSpecies != null){
+				return preferredToSpecies;
+			}
+			if(!pasteToModel.contains(copyFromSpecies)){// Doesn't have Species (==)
 				//see if we have a species with DBSpecies that matches
-				Species[] speciesFromDBSpeciesArr = (oldSpecies.getDBSpecies() != null ? newModel.getSpecies(oldSpecies.getDBSpecies()) : null);
-				if(bUseDBSpecies && speciesFromDBSpeciesArr != null && speciesFromDBSpeciesArr.length > 0){//DBSpecies match
+				Species[] speciesFromDBSpeciesArr = (copyFromSpecies.getDBSpecies() != null ? pasteToModel.getSpecies(copyFromSpecies.getDBSpecies()) : null);
+				if(/*bUseDBSpecies && */speciesFromDBSpeciesArr != null && speciesFromDBSpeciesArr.length > 0){//DBSpecies match
 					//Choose the species in struct if exists
 					newSpecies = speciesFromDBSpeciesArr[0];
 					for(int i=0;i<speciesFromDBSpeciesArr.length;i+= 1){
-						if(newModel.getSpeciesContext(speciesFromDBSpeciesArr[i], newStruct) != null){
+						if(pasteToModel.getSpeciesContext(speciesFromDBSpeciesArr[i], pasteToStruct) != null){
 							newSpecies = speciesFromDBSpeciesArr[i];
 							break;
 						}
 					}
 				}else{// No DBSpecies match
 					//See if there is a species with same name
-					newSpecies = newModel.getSpecies(oldSpecies.getCommonName());
+					newSpecies = pasteToModel.getSpecies(copyFromSpecies.getCommonName());
 					if( newSpecies == null){//No name matches
-						String newName = oldSpecies.getCommonName();
-						newSpecies = new Species(newName,oldSpecies.getAnnotation(),oldSpecies.getDBSpecies());
-						newModel.addSpecies(newSpecies);
-						speciesHash.put(oldSpecies, newSpecies);
+						String newName = copyFromSpecies.getCommonName();
+						newSpecies = new Species(newName,copyFromSpecies.getAnnotation(),copyFromSpecies.getDBSpecies());
+						pasteToModel.addSpecies(newSpecies);
+						speciesHash.put(copyFromSpecies, newSpecies);
 					}
 				}
 			}else{// Has species (==)
-				newSpecies = oldSpecies;
+				newSpecies = copyFromSpecies;
 			}
 		}
 	}  catch (PropertyVetoException e) {
@@ -448,31 +570,39 @@ private static Species getNewSpecies(IdentityHashMap<Species, Species> speciesHa
 /**
  * Insert the method's description here.
  * Creation date: (5/10/2003 3:55:25 PM)
- * @param newModel cbit.vcell.model.Model
- * @param newStruct cbit.vcell.model.Structure
+ * @param pasteToModel cbit.vcell.model.Model
+ * @param pasteToStruct cbit.vcell.model.Structure
  * @param bNew boolean
  */
-protected static final SpeciesContext pasteSpecies(Component parent, Species oldSpecies,Model newModel, Structure newStruct, boolean bNew,boolean bUseDBSpecies, 
-		IdentityHashMap<Species, Species> speciesHash) {
+protected static final SpeciesContext pasteSpecies(
+		Component parent,
+		Species copyFromSpecies,
+		Model pasteToModel,
+		Structure pasteToStruct0,
+		boolean bNew,/*boolean bUseDBSpecies, */
+		IdentityHashMap<Species, Species> speciesHash,
+		HashMap<Structure, Species> userPreferredToTarget) {
 
-	if(!newModel.contains(newStruct)){
-		throw new IllegalArgumentException("CartoonTool.pasteSpecies model "+newModel.getName()+" does not contain structure "+newStruct.getName());
+	Structure preferredToStructure = (userPreferredToTarget != null?userPreferredToTarget.keySet().iterator().next():pasteToStruct0);
+
+	if(!pasteToModel.contains(preferredToStructure)){
+		throw new IllegalArgumentException("CartoonTool.pasteSpecies model "+pasteToModel.getName()+" does not contain structure "+preferredToStructure.getName());
 	}
 	
 	Species newSpecies = null;
-	if(oldSpecies != null){
+	if(copyFromSpecies != null){
 		try {
-			newSpecies = getNewSpecies(speciesHash, oldSpecies, newModel, bNew, bUseDBSpecies,newStruct);
+			newSpecies = getNewSpecies(speciesHash, copyFromSpecies, pasteToModel, bNew,preferredToStructure,userPreferredToTarget);
 			//see if we have SpeciesContext
-			SpeciesContext speciesContext = newModel.getSpeciesContext(newSpecies,newStruct);
+			SpeciesContext speciesContext = pasteToModel.getSpeciesContext(newSpecies,preferredToStructure);
 			if(speciesContext == null){ //Has Species but not SpeciesContext
-				newModel.addSpeciesContext(newSpecies,newStruct);
+				pasteToModel.addSpeciesContext(newSpecies,preferredToStructure);
 			}
 		}catch(Exception e){
 			cbit.vcell.client.PopupGenerator.showErrorDialog(parent, e.getMessage());
 		}
 	}
-	return newModel.getSpeciesContext(newSpecies,newStruct);
+	return pasteToModel.getSpeciesContext(newSpecies,preferredToStructure);
 }
 
 
