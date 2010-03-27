@@ -2009,6 +2009,9 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 				} else { // unknown XML format
 					throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 				}
+				if(xmlInfo.getDefaultName() != null){
+					doc.setName(xmlInfo.getDefaultName());
+				}
 			}
 			requester.prepareDocumentToLoad(doc, inNewWindow);
 			hashTable.put("doc", doc);
