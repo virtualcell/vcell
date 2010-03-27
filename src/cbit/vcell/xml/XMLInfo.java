@@ -14,6 +14,7 @@ import cbit.vcell.client.data.NewClientPDEDataContext;
  * @author: Anuradha Lakshminarayana
  */
 public class XMLInfo extends XMLSource implements org.vcell.util.document.VCDocumentInfo{
+	private String defaultName;
 /**
  * XMLInfo constructor comment.
  */
@@ -23,6 +24,11 @@ public XMLInfo(String newXMLString) {
 
 public XMLInfo(File newXMLfile) {
 	super(newXMLfile);
+}
+
+public XMLInfo(String newXMLString,String defaultName) {
+	super(newXMLString);
+	this.defaultName = defaultName;
 }
 
 /**
@@ -36,5 +42,8 @@ public Version getVersion() {
 
 public VersionableType getVersionType() {	
 	return null;
+}
+public String getDefaultName(){
+	return defaultName;
 }
 }

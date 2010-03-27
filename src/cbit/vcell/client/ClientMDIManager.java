@@ -10,6 +10,7 @@ import cbit.vcell.client.desktop.*;
 import javax.swing.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.Version;
 import org.vcell.util.gui.GlassPane;
 
 import java.util.*;
@@ -126,9 +127,11 @@ public int closeWindow(String windowID) {
  * @return java.lang.String
  * @param version cbit.sql.Version
  */
-public static String createCanonicalTitle(int docType,org.vcell.util.document.Version version) {
+public static String createCanonicalTitle(VCDocument vcDocument) {
 	
-	String docName = (version != null?version.getName():"NoName");
+	Version version = vcDocument.getVersion();
+	int docType = vcDocument.getDocumentType();
+	String docName = (version != null?version.getName():(vcDocument.getName()==null?"NoName":vcDocument.getName()+" (NoVersion)"));
 	java.util.Date docDate = (version != null?version.getDate():null);
 	org.vcell.util.document.VersionFlag versionFlag = (version != null?version.getFlag():null);
 	return
@@ -473,7 +476,7 @@ public void setCanonicalTitle(java.lang.String windowID) {
 	if (manager instanceof DocumentWindowManager) {
 		windowTitle =
 			createCanonicalTitle(
-				((DocumentWindowManager)manager).getVCDocument().getDocumentType(),((DocumentWindowManager)manager).getVCDocument().getVersion());
+				((DocumentWindowManager)manager).getVCDocument());
 	} else if (manager instanceof DatabaseWindowManager) {
 		windowTitle = "Database Manager";
 	} else if (manager instanceof TestingFrameworkWindowManager) {

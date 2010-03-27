@@ -27,6 +27,7 @@ import org.jdom.Element;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
@@ -110,7 +111,7 @@ public class BioModelsNetJPanel extends JPanel {
 		add(httpbiomodelsnetLabel, gridBagConstraints);
 		
 		JPanel panel = new JPanel();
-		panel.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 2), "Search/Import  (Matches user provided text to any part of BioModels information)", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panel.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 2), "Search/Import VCell Compatible Models (empty field matches any)", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.insets = new Insets(4, 4, 4, 4);
 		gbc_panel.fill = GridBagConstraints.BOTH;
@@ -175,7 +176,7 @@ public class BioModelsNetJPanel extends JPanel {
 		panel.add(publicationTextField, gbc_publicationTextField);
 		publicationTextField.setColumns(10);
 		
-		JButton btnSearch = new JButton("Search...");
+		JButton btnSearch = new JButton("Search VCell Compatible...");
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				searchImport();
@@ -241,19 +242,21 @@ public class BioModelsNetJPanel extends JPanel {
 				Hashtable<String, String> vcellCompatibleBioModels_ID_Name_Hash = readVCellCompatibleBioModels_ID_Name_Hash();
 				
 				ClientTaskStatusSupport clientTaskStatusSupport = getClientTaskStatusSupport();
-				clientTaskStatusSupport.setProgress(0);
+//				clientTaskStatusSupport.setProgress(0);
 				clientTaskStatusSupport.setMessage("Initializing BioModels Search...");
 				BioModelsWebServicesServiceLocator bioModelsWebServicesServiceLocator =
 					new BioModelsWebServicesServiceLocator();
 				BioModelsWebServices bioModelsWebServices =
 					bioModelsWebServicesServiceLocator.getBioModelsWebServices();
 				
-				clientTaskStatusSupport.setProgress(10);
+//				clientTaskStatusSupport.setProgress(10);
 				clientTaskStatusSupport.setMessage("Executing BioModels Search...");
 				TreeSet<String> modelIDsMergedSearch = new TreeSet<String>();
 				boolean bHasModelEntryID = modelEntryIDTextField.getText() != null && modelEntryIDTextField.getText().length() > 0;
 				if(bHasModelEntryID){
-					String[] modelIDsAll = bioModelsWebServices.getAllModelsId();
+					clientTaskStatusSupport.setMessage("Executing BioModels Search (Model ID matches)...");
+//					String[] modelIDsAll = bioModelsWebServices.getAllModelsId();
+					String[] modelIDsAll = vcellCompatibleBioModels_ID_Name_Hash.keySet().toArray(new String[0]);
 					for (int i = 0; i < modelIDsAll.length; i++) {
 						if(modelIDsAll[i].toUpperCase().indexOf(modelEntryIDTextField.getText().toUpperCase()) != -1){
 							modelIDsMergedSearch.add(modelIDsAll[i]);
@@ -262,11 +265,18 @@ public class BioModelsNetJPanel extends JPanel {
 				}
 				boolean bHasModelName = modelNameTextField.getText() != null && modelNameTextField.getText().length() > 0;
 				if(bHasModelName){
+					clientTaskStatusSupport.setMessage("Executing BioModels Search (Model Name matches)...");
 					TreeSet<String> modelIDsByNameSet = new TreeSet<String>();
-					String[] modelIDsByName = bioModelsWebServices.getModelsIdByName(modelNameTextField.getText());
-					for (int i = 0; i < modelIDsByName.length; i++) {
-						modelIDsByNameSet.add(modelIDsByName[i]);
+//					String[] modelIDsByName = bioModelsWebServices.getModelsIdByName(modelNameTextField.getText());
+					String[] modelIDsAll = vcellCompatibleBioModels_ID_Name_Hash.keySet().toArray(new String[0]);
+					for (int i = 0; i < modelIDsAll.length; i++) {
+						if(vcellCompatibleBioModels_ID_Name_Hash.get(modelIDsAll[i]).toUpperCase().indexOf(modelNameTextField.getText().toUpperCase()) != -1){
+							modelIDsByNameSet.add(modelIDsAll[i]);
+						}
 					}
+//					for (int i = 0; i < modelIDsByName.length; i++) {
+//						modelIDsByNameSet.add(modelIDsByName[i]);
+//					}
 					if(bHasModelEntryID){
 						modelIDsMergedSearch.retainAll(modelIDsByNameSet);//intersection
 					}else{
@@ -275,6 +285,7 @@ public class BioModelsNetJPanel extends JPanel {
 				}
 				boolean bHasModelPublication = publicationTextField.getText() != null && publicationTextField.getText().length() > 0;
 				if(bHasModelPublication){
+					clientTaskStatusSupport.setMessage("Executing BioModels Search (Publication matches)...");
 					TreeSet<String> modelIDsByPublicationSet = new TreeSet<String>();
 					String[] modelIDsbyPublication = bioModelsWebServices.getModelsIdByPublication(publicationTextField.getText());
 					for (int i = 0; i < modelIDsbyPublication.length; i++) {
@@ -291,25 +302,27 @@ public class BioModelsNetJPanel extends JPanel {
 //					modelIDsMergedSearch.addAll(Arrays.asList(bioModelsWebServices.getAllModelsId()));
 					modelIDsMergedSearch.addAll(Arrays.asList(vcellCompatibleBioModels_ID_Name_Hash.keySet().toArray(new String[0])));
 				}
-				final int COLLECTION_PROGRESS = 20;
-				clientTaskStatusSupport.setProgress(COLLECTION_PROGRESS);
+//				final int COLLECTION_PROGRESS = 20;
+//				clientTaskStatusSupport.setProgress(COLLECTION_PROGRESS);
 				if(modelIDsMergedSearch.size() > 0){
 					//Intersect with supported BioModel IDs
 					modelIDsMergedSearch.retainAll(Arrays.asList(vcellCompatibleBioModels_ID_Name_Hash.keySet().toArray(new String[0])));
+					clientTaskStatusSupport.setMessage("Found "+modelIDsMergedSearch.size()+" VCell compatible BioModels");
 
 					String[] modelIDMergedSearchArr = modelIDsMergedSearch.toArray(new String[0]);
 					TreeMap<String, String> model_ID_Name_Map = new TreeMap<String, String>();
 					String nameNotfound = "NameNotFound_0";
 					for (int i = 0; i < modelIDMergedSearchArr.length; i++) {
-						clientTaskStatusSupport.setProgress(COLLECTION_PROGRESS+((100-COLLECTION_PROGRESS)*(i+1)/modelIDMergedSearchArr.length));
+//						clientTaskStatusSupport.setProgress(COLLECTION_PROGRESS+((100-COLLECTION_PROGRESS)*(i+1)/modelIDMergedSearchArr.length));
 						
 						if(clientTaskStatusSupport.isInterrupted()){
 //							DialogUtils.showWarningDialog(BioModelsNetJPanel.this, "Search Cancelled");
 							throw UserCancelException.CANCEL_GENERIC;
 						}
 						try{
-							clientTaskStatusSupport.setMessage("Retrieving "+modelIDMergedSearchArr[i]+" "+(i+1)+" of "+modelIDMergedSearchArr.length);
-							String modelName = bioModelsWebServices.getModelNameById(modelIDMergedSearchArr[i]);
+//							clientTaskStatusSupport.setMessage("Retrieving "+modelIDMergedSearchArr[i]+" "+(i+1)+" of "+modelIDMergedSearchArr.length);
+//							String modelName = bioModelsWebServices.getModelNameById(modelIDMergedSearchArr[i]);
+							String modelName = vcellCompatibleBioModels_ID_Name_Hash.get(modelIDMergedSearchArr[i]);
 							//Assume model names are unique
 							model_ID_Name_Map.put(modelName, modelIDMergedSearchArr[i]);
 						}catch(Exception e){
@@ -329,17 +342,22 @@ public class BioModelsNetJPanel extends JPanel {
 						rowData[i][1] = model_ID_Name_Map.get(sortedModelNames[i]);
 					}
 					//Allow user to select model for opening
-					int[] result = DialogUtils.showComponentOKCancelTableList(
-							BioModelsNetJPanel.this, "BioModels Model Names",
-							new String[] {"Model Names","BioModels Entry ID"}, rowData, ListSelectionModel.SINGLE_SELECTION);
+					final String importNow = "Import";
+					final String cancel = "Cancel";
+					DialogUtils.TableListResult result = DialogUtils.showComponentOptionsTableList(
+							BioModelsNetJPanel.this, "Select BioModels to import",
+							new String[] {"Model Names","BioModels Entry ID"}, rowData,
+							ListSelectionModel.SINGLE_SELECTION,null,
+							new String[] {importNow,cancel},importNow);
 					
-					if(result != null){
+					if(result.selectedOption != null && result.selectedOption.equals(importNow)){
 						//Close Dialog showing "this" panel so ProgressPopup not obscured during openDocument
 						SwingUtilities.invokeAndWait(new Runnable() {public void run() {disposeParentDialog();}});
+						closeClientTaskStatusSupport(clientTaskStatusSupport);
 						
 						//Download and open (in new window) SBML document selected by user
-						String bioModelSBML = bioModelsWebServices.getModelSBMLById(rowData[result[0]][1]);
-						final XMLInfo xmlInfo = new XMLInfo(bioModelSBML);
+						String bioModelSBML = bioModelsWebServices.getModelSBMLById(rowData[result.selectedTableRows[0]][1]);
+						final XMLInfo xmlInfo = new XMLInfo(bioModelSBML,sortedModelNames[result.selectedTableRows[0]]);
 						new Thread(new Runnable() {
 							public void run() {
 								documentWindow.getTopLevelWindowManager().getRequestManager().openDocument(
@@ -348,6 +366,7 @@ public class BioModelsNetJPanel extends JPanel {
 						}).start();
 					}
 				}else{
+					closeClientTaskStatusSupport(clientTaskStatusSupport);
 					DialogUtils.showWarningDialog(BioModelsNetJPanel.this,
 							"No BioModels found matching current search criteria.");
 					throw UserCancelException.CANCEL_GENERIC;
@@ -362,4 +381,9 @@ public class BioModelsNetJPanel extends JPanel {
 				true,true,null,true);
 	}
 
+	private void closeClientTaskStatusSupport(ClientTaskStatusSupport clientTaskStatusSupport){
+		if(clientTaskStatusSupport instanceof AsynchProgressPopup){
+			((AsynchProgressPopup)clientTaskStatusSupport).stop();
+		}
+	}
 }
