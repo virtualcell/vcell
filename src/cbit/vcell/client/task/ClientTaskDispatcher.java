@@ -27,6 +27,7 @@ public class ClientTaskDispatcher {
 	public static final String TASK_ABORTED_BY_USER = "cancel";
 	public static final String TASKS_TO_BE_SKIPPED = "conditionalSkip";
 	private static boolean bInProgress = false;
+	public static final String TASK_REWIND = "task_rewind";
 
 /**
  * don't show popup.
@@ -106,6 +107,20 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 					pp.setMessage(currentTask.getTaskName());
 				}
 				boolean shouldRun = true;
+				if(hash.containsKey(TASK_REWIND)){
+					String rewindTaskName = (String)hash.remove(TASK_REWIND);
+					int rewindTaskIndex = -1;
+					for (int j = 0; j < taskList.size(); j++) {
+						if(taskList.get(j).getTaskName().equals(rewindTaskName)){
+							rewindTaskIndex = j;
+							break;
+						}
+					}
+					if(rewindTaskIndex != -1){
+						i=rewindTaskIndex-1;
+						continue;
+					}
+				}
 				if (hash.containsKey(TASK_ABORTED_BY_ERROR) && currentTask.skipIfAbort()) {
 					shouldRun = false;
 				}
