@@ -132,6 +132,7 @@ public class BiomodelsDB_TestSuite {
 						SimSpec simSpec = SimSpec.fromSBML(modelSBML);
 						String[] varsToTest = simSpec.getVarsList();
 						
+						printWriter.println("ModelId: " + modelID);
 						try {
 							//
 							// get COPASI solution (time and species concentrations)
@@ -180,7 +181,14 @@ public class BiomodelsDB_TestSuite {
 										doc.setLevelAndVersion(2,3,false);
 										if (bConversionWorked){
 											mathsbmlFilePrefix = filePrefix+"_L2V3";
-											new SBMLWriter().writeSBML(doc, mathsbmlFilePrefix+".sbml");
+											long newVersion = doc.getVersion();
+											SBMLWriter sbmlWriter = new SBMLWriter();
+											sbmlText = sbmlWriter.writeToString(doc);
+											try {
+												XmlUtil.writeXMLStringToFile(sbmlText, mathsbmlFilePrefix+".sbml", true);
+											} catch (IOException e1) {
+												e1.printStackTrace(System.out);
+											} 
 										}else{
 											throw new RuntimeException("couldn't convert SBML from L"+level+"V"+version+" to L2V3");
 										}

@@ -20,7 +20,9 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -629,6 +631,7 @@ public KineticsParameter addUserDefinedKineticsParameter(String parameterName, E
  * @param bConvertToGlobal : <true> => convert model to local parameter; <false> => convert local to model parameter
  */
 public void convertParameterType(Parameter param, boolean bConvertToGlobal) throws PropertyVetoException, ExpressionBindingException {
+	Expression expression = param.getExpression();
 	if (!bConvertToGlobal) {
 		// need to convert model parameter (the proxyparam/global) to local (kinetics) parameter 
 		if (!(param instanceof KineticsProxyParameter)) {
@@ -637,9 +640,11 @@ public void convertParameterType(Parameter param, boolean bConvertToGlobal) thro
 			// first remove proxy param, 
 			removeProxyParameter((KineticsProxyParameter)param);
 			// then add it as kinetic param
-			Expression newExpr = new Expression(param.getExpression());
-			newExpr.bindExpression(getReactionStep());
-			addKineticsParameter(new KineticsParameter(param.getName(), newExpr, Kinetics.ROLE_UserDefined, param.getUnitDefinition()));
+			if (expression != null) {
+				Expression newExpr = new Expression(expression);
+				newExpr.bindExpression(getReactionStep());
+				addKineticsParameter(new KineticsParameter(param.getName(), newExpr, Kinetics.ROLE_UserDefined, param.getUnitDefinition()));
+			} 
 		}
 	} else {
 		// need to convert local (the kinetics parameter) to model (proxy) parameter
@@ -655,7 +660,7 @@ public void convertParameterType(Parameter param, boolean bConvertToGlobal) thro
 			ModelParameter mp = getReactionStep().getModel().getModelParameter(param.getName());
 			if (mp == null) {
 				Model model = getReactionStep().getModel();
-				Expression newExpr = new Expression(param.getExpression());
+				Expression newExpr = new Expression(expression);
 				newExpr.bindExpression(model);
 				model.addModelParameter(model.new ModelParameter(param.getName(), newExpr, Model.ROLE_UserDefined, param.getUnitDefinition()));
 			}

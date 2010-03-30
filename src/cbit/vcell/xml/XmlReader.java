@@ -2320,6 +2320,7 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 			Expression durationExp = unMangleExpression((element.getText()));
 			try {
 				delay = newBioEvent.new Delay(useValuesFromTriggerTime, durationExp);
+				newBioEvent.setDelay(delay);
 			} catch (ExpressionBindingException e) {
 				e.printStackTrace(System.out);
 				throw new XmlParseException(e.getMessage());

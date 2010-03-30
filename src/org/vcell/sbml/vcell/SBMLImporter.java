@@ -14,6 +14,8 @@ package org.vcell.sbml.vcell;
  */
 
 import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.TreeMap;
@@ -24,10 +26,13 @@ import org.sbml.libsbml.ASTNode;
 import org.sbml.libsbml.AlgebraicRule;
 import org.sbml.libsbml.AssignmentRule;
 import org.sbml.libsbml.Compartment;
+import org.sbml.libsbml.Event;
 import org.sbml.libsbml.FunctionDefinition;
 import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.KineticLaw;
 import org.sbml.libsbml.ListOf;
+import org.sbml.libsbml.ListOfEvents;
+import org.sbml.libsbml.ListOfRules;
 import org.sbml.libsbml.ModifierSpeciesReference;
 import org.sbml.libsbml.Parameter;
 import org.sbml.libsbml.RateRule;
@@ -35,6 +40,7 @@ import org.sbml.libsbml.Reaction;
 import org.sbml.libsbml.Rule;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLReader;
+import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.Unit;
 import org.sbml.libsbml.UnitDefinition;
@@ -46,13 +52,17 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.BioEvent.Delay;
+import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.GeneralKinetics;
@@ -75,6 +85,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.LambdaFunction;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLTags;
@@ -233,6 +244,12 @@ protected void addCompartments(VCMetaData metaData) {
 							newCompartment.setOutside(newMembrane.getOutsideFeature().getName());
 							compartment.setOutside(newCompartment.getId());
 						} else {
+							Compartment newCompartment = sbmlModel.createCompartment();
+							newCompartment.setId(newMembrane.getName());
+							newCompartment.setSpatialDimensions(2);
+							// deal with unit conversion, since default unit for membrane (area) in SBML is m2 and in VCell is always um2.
+							newCompartment.setOutside(newMembrane.getOutsideFeature().getName());
+							compartment.setOutside(newCompartment.getId());
 							logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment "+compartment.getId()+" size is not set.");
 						}
 						newMembrane.setParentStructure(outsideStructure);
@@ -303,17 +320,104 @@ protected void addCompartments(VCMetaData metaData) {
 	}
 }
 
-
-/**
- * Warn user that we do not handle events now. Give a choice between bringing in the model without the events or cancelling the operation.
- *
- *
- **/
-
 protected void addEvents() {
 	if (sbmlModel.getNumEvents() > 0) {
-		throw new RuntimeException("VCell doesn't support Events at this time");
-	}
+		ListOfEvents listofEvents = sbmlModel.getListOfEvents();
+
+		Model vcModel = simContext.getModel();
+		SpeciesContext[] vcSpContexts = vcModel.getSpeciesContexts();
+		Vector<String> spConcFactorInModelParamsList = new Vector<String>();
+
+		for (int i = 0; i < sbmlModel.getNumEvents(); i++){
+			try {
+				Event event = listofEvents.get(i);
+				
+				// trigger - adjust for species context and time conversion factors if necessary
+				Expression triggerExpr = null;
+				if (event.isSetTrigger()) {
+					triggerExpr = getExpressionFromFormula(event.getTrigger().getMath());
+					triggerExpr = adjustExpression(spConcFactorInModelParamsList, triggerExpr, vcModel, vcSpContexts);
+				}
+				
+				// create bioevent
+				String eventName = event.getId();
+				if (eventName == null || eventName.length() == 0) {
+					eventName = event.getName();
+				}
+				
+				//delay 
+				Expression durationExpr = null;
+				BioEvent vcEvent = new BioEvent(eventName, triggerExpr, null, null, simContext);
+				if (event.isSetDelay()) {
+					durationExpr = getExpressionFromFormula(event.getDelay().getMath());
+					durationExpr = adjustExpression(spConcFactorInModelParamsList, durationExpr, vcModel, vcSpContexts);
+					boolean bUseValsFromTriggerTime = true;
+					/* TODO : This code is used when libSBML-4.1.0-b2 is used. On 3-29-10, version was switched back to 
+					 * libSBML-4.0.1-b2, which does not support boolean 'bUseValueFromTriggerTime'. This code shall be reinstated
+					 * when libSBML version is upgraded.
+					 * 
+					if (event.isSetUseValuesFromTriggerTime()) {
+						bUseValsFromTriggerTime = event.isSetUseValuesFromTriggerTime();
+					} else {
+						if (durationExpr != null && !durationExpr.isZero()) {
+							bUseValsFromTriggerTime = false;
+						}
+					}
+  					*/
+					if (durationExpr != null && !durationExpr.isZero()) {
+						bUseValsFromTriggerTime = false;
+					}
+					Delay vcDelay = vcEvent.new Delay(bUseValsFromTriggerTime, durationExpr);
+					vcEvent.setDelay(vcDelay);
+				}
+				
+				// event assignments
+				ArrayList<EventAssignment> vcEvntAssgnList = new ArrayList<EventAssignment>();
+				for (int j = 0; j < event.getNumEventAssignments(); j++) {
+					org.sbml.libsbml.EventAssignment sbmlEvntAssgn = event.getEventAssignment(j);
+					String varName = sbmlEvntAssgn.getVariable();
+					SymbolTableEntry varSTE = simContext.getEntry(varName);
+					if (varSTE != null) {
+						Expression evntAssgnExpr = getExpressionFromFormula(sbmlEvntAssgn.getMath());
+						evntAssgnExpr = adjustExpression(spConcFactorInModelParamsList, evntAssgnExpr, vcModel, vcSpContexts);
+						if (varSTE instanceof SpeciesContext) {
+							// if event assignment var is a species, the whole expression needs to be multiplied by the sp_Conc_factor
+					    	org.sbml.libsbml.Species sp = sbmlModel.getSpecies(varName);
+							String CONCFACTOR_PARAMETER = sp.getId() + "_ConversionFactor";
+							ModelParameter concParam = vcModel.getModelParameter(CONCFACTOR_PARAMETER);
+
+							if (concParam == null) {
+								// If no matching param for concentration factor was found in sbml model, create CONCFACTOR_PARAM as a global param
+								// and add it to Vcell model
+								SBVCConcentrationUnits sbvcSubstUnits = speciesUnitsHash.get(sp.getId());
+								VCUnitDefinition vcUnit = sbvcSubstUnits.getVCConcentrationUnits();
+								VCUnitDefinition sbUnit = sbvcSubstUnits.getSBConcentrationUnits();
+								SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcFactor", sbUnit, vcUnit);
+
+								concParam = vcModel.new ModelParameter(CONCFACTOR_PARAMETER, concScaleFactor.getExpression().flatten(), Model.ROLE_UserDefined, concScaleFactor.getUnitDefinition());
+								String annotation = "Conversion from SBML concentration units to VC concentration units";
+								concParam.setModelParameterAnnotation(annotation);
+								vcModel.addModelParameter(concParam);	
+							}
+							// now multiply event assignment expression by the conc factor
+							evntAssgnExpr = Expression.mult(evntAssgnExpr, new Expression(concParam.getName()));
+						}
+						EventAssignment vcEvntAssgn = vcEvent.new EventAssignment(varSTE, evntAssgnExpr);
+						vcEvntAssgnList.add(vcEvntAssgn);
+					} else {
+						logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "No symbolTableEntry for '"+varName + "'; Cannot add event assignment.");
+					}
+				}
+				
+				vcEvent.setEventAssignmentsList(vcEvntAssgnList);
+				vcEvent.bind();
+				simContext.addBioEvent(vcEvent);
+			} catch (Exception e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException(e.getMessage());
+			}	// end - try/catch
+		}	// end - for(sbmlEvents)
+	}	// end - if numEvents > 0)
 }
 
 protected void addCompartmentTypes() {
@@ -343,6 +447,10 @@ protected void addInitialAssignments() {
 		System.out.println("No Initial Assignments specified");
 		return;
 	}
+	Model vcModel = simContext.getModel();
+	SpeciesContext[] vcSpContexts = vcModel.getSpeciesContexts();
+	Vector<String> spConcFactorInModelParamsList = new Vector<String>();
+
 	for (int i = 0; i < sbmlModel.getNumInitialAssignments(); i++){
 		try {
 			InitialAssignment initAssgn = (InitialAssignment)listofInitialAssgns.get(i);
@@ -360,6 +468,8 @@ protected void addInitialAssignments() {
 					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "species '"+initAssgnSymbol+"' initial assignment expression cannot contain 'x', 'y', 'z'.");
 				}
 			}
+			
+			initAssignMathExpr = adjustExpression(spConcFactorInModelParamsList, initAssignMathExpr, vcModel, vcSpContexts);
 			// set the init assgn expr on VCell species init condn or global parameter expression
 			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(simContext.getModel().getSpeciesContext(initAssgnSymbol));
 			ModelParameter mp = simContext.getModel().getModelParameter(initAssgnSymbol);
@@ -392,30 +502,34 @@ protected void addFunctionDefinitions() {
 	try {
 		for (int i = 0; i < sbmlModel.getNumFunctionDefinitions(); i++) {
 			FunctionDefinition fnDefn = (FunctionDefinition)listofFunctionDefinitions.get(i);
-			String functionName = fnDefn.getId();
+			String functionName = new String(fnDefn.getId());
 			ASTNode math = null;
 			Vector<String> argsVector = new Vector<String>();
 			String[] functionArgs = null;
+			
 			if (fnDefn.isSetMath()) {
 				math = fnDefn.getMath();
+				// Function body. 
+				if (math.getNumChildren() == 0) {
+					System.out.println("(no function body defined)");
+					continue;
+				}
 				// Add function arguments into vector, print args 
 				// Note that lambda function always shoud have at least 2 children
-				for (int j = 0; j < math.getNumChildren() - 1; ++j) {
-					argsVector.addElement(math.getChild((long)j).getName());
+				for (long j = 0; j < math.getNumChildren() - 1; ++j) {
+					argsVector.addElement(new String(math.getChild(j).getName()));
 				}
-			}
-			functionArgs = (String[])BeanUtils.getArray(argsVector, String.class);
-			// Function body. 
-			if (math.getNumChildren() == 0) {
-				System.out.println("(no function body defined)");
-			} else {
+			
+				functionArgs = argsVector.toArray(new String[0]);
+				
 				math = math.getChild(math.getNumChildren() - 1);
 				// formula = libsbml.formulaToString(math);
+				
+				Expression fnExpr = getExpressionFromFormula(math);
+				lambdaFunctions[i] = new LambdaFunction(functionName, fnExpr, functionArgs);
 			}
-			Expression fnExpr = getExpressionFromFormula(math);
-			lambdaFunctions[i] = new LambdaFunction(functionName, fnExpr, functionArgs);
 		}
-	} catch (ExpressionException e) {
+	} catch (Exception e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Error adding Lambda function" + e.getMessage());
 	}
@@ -465,103 +579,12 @@ protected void addParameters() throws PropertyVetoException {
 				valueExpr = new Expression(value);
 			}
 		}
-		
-		// ************* TIME CONV_FACTOR if 'time' is present in global parameter expression
-		// If time 't' is present in the global expression, it is in VC units (secs), convert it back to SBML units
-		// hence, we take the inverse of the time factor (getSBMLTimeUnitsFactor() converts from SBML to VC units)
-		String t = ReservedSymbol.TIME.getName();
-		double timeFactorVal = 1.0/getSBMLTimeUnitsFactor(); 
-		if ((timeFactorVal != 1) && (valueExpr.hasSymbol(t))) {
-			String TIME_CONVFACTOR = t + "_ConvFactor";
-			if (!valueExpr.hasSymbol(TIME_CONVFACTOR)) {
-				// If no matching param for time conversion factor was found in sbml model, 
-				// add TIME_CONVFACTOR as a global param in VCell before setting this global.
-				ModelParameter timeConvParam = vcModel.getModelParameter(TIME_CONVFACTOR);
-				if (timeConvParam == null) {
-					timeConvParam = vcModel.new ModelParameter(TIME_CONVFACTOR, new Expression(timeFactorVal), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_DIMENSIONLESS);
-					String annotation = "Conversion from SBML time units to VC time units";
-					timeConvParam.setModelParameterAnnotation(annotation);
-					vcModel.addModelParameter(timeConvParam);	
-				}
-				// now replace 't' with 't*TIME_CONVFACTOR' in the parameter expression.
-				try {
-					valueExpr.substituteInPlace(new Expression(t), new Expression(t +"*" + TIME_CONVFACTOR));
-				} catch (ExpressionException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException(e.getMessage());
-				}
-			}
+
+		if (valueExpr != null) {
+			// valueExpr will be changed
+			valueExpr = adjustExpression(spConcFactorInModelParamsList, valueExpr, vcModel, vcSpContexts);
 		}
-		
-		// ************** SPECIES CONC_FACTOR if species are present in global parameter expression ******************
-		// if global parameter is an expression with model species, we need a conversion factor for the species units (SBML - VC units),
-		// similar to the conversion that is done in reactions.
-		if (valueExpr.getSymbols() != null) {
-			for (int j = 0; j < vcSpContexts.length; j++) {
-				// Check if valueExpr has the species, if so, add the species conc factor, else, do nothing.
-				if (valueExpr.hasSymbol(vcSpContexts[j].getName())) {
-			    	org.sbml.libsbml.Species sp = sbmlModel.getSpecies(vcSpContexts[j].getName());
-					String CONCFACTOR_PARAMETER = sp.getId() + "_ConcFactor";
-					if (!spConcFactorInModelParamsList.contains(vcSpContexts[j].getName())) {
-						SBVCConcentrationUnits sbvcSubstUnits = speciesUnitsHash.get(sp.getId());
-						VCUnitDefinition vcUnit = sbvcSubstUnits.getVCConcentrationUnits();
-						VCUnitDefinition sbUnit = sbvcSubstUnits.getSBConcentrationUnits();
-										
-						// the expr from SBML is in terms of SBML units; VC interprets concs in uM, but we have to translate them back to SBML units 
-						//   within the expr; we convert concs into SBML (using 'sp_conc_factor'), so that the SBML expression is consistent;  
-						try {
-							SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcFactor", vcUnit, sbUnit);
-							if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)) ) {
-								// if VC unit IS compatible with SBML unit and factor is 1 and unit conversion is 1
-								// No conversion is required, and we don't need to include a concentration scale factor for the species.
-							} else {
-								// Substitute any occurrence of speciesName in global param expression with 'speciesName*concScaleFactor'
-								// check if CONC_FACTOR is already defined in VCell model.
-								ModelParameter concParam = vcModel.getModelParameter(CONCFACTOR_PARAMETER);
-								if (concParam != null) {
-									// if it already exists in list of global params, see if its expression/val matches the current param.
-									Expression concParamValueExpr = concParam.getExpression();
-									// If CONCFACTOR_PARAM exists in VC globals, check its expression with concScaleFactor. 
-									// If they are not equal, multiply CONCFACTOR_PARAM expression with concScaleFactor expr,
-									// since the new concFactor is in addition to existing CONCFACTOR value; no need to add another CONCFACTOR param.
-									if (concParamValueExpr != null && concScaleFactor.getExpression() != null) {
-										concParamValueExpr = Expression.mult(concParamValueExpr, concScaleFactor.getExpression());
-										concParam.setExpression(concParamValueExpr);
-										// if the expressions are being multiplied, the units should be too, as long as both are not TBD.
-										if ((concParam.getUnitDefinition() != VCUnitDefinition.UNIT_TBD) && (concScaleFactor.getUnitDefinition() != VCUnitDefinition.UNIT_TBD)) {
-											concParam.setUnitDefinition(concParam.getUnitDefinition().multiplyBy(concScaleFactor.getUnitDefinition()));
-										}
-									} 
-									// ?? no need to do anything if the 2 expressions are the same ??
-								} else {
-									// If no matching param for concentration factor was found in sbml model, 
-									// add CONCFACTOR_PARAM as a global param in VCell before setting this global.
-									ModelParameter concScaleParam = vcModel.new ModelParameter(CONCFACTOR_PARAMETER, concScaleFactor.getExpression().flatten(), Model.ROLE_UserDefined, concScaleFactor.getUnitDefinition());
-									String annotation = "Conversion from VC concentration units to SBML concentration units";
-									concScaleParam.setModelParameterAnnotation(annotation);
-									vcModel.addModelParameter(concScaleParam);	
-								}
-							}
-						} catch (ExpressionException e) {
-							e.printStackTrace(System.out);
-							throw new RuntimeException(e.getMessage());
-						}	// end try - catch
-						// add this speciesContext name to vector 'spConcFactorInModelParamsList' so that its val isn't modified if used in another param expr.
-						spConcFactorInModelParamsList.add(vcSpContexts[j].getName());
-					} // end 'spConcFactorInModelParamsList' !contain spContext
-					// any occurance of "sp" in param valeExpr should be replaced by "sp*CONCFACTOR_PARAM", if not already present.
-					if ((vcModel.getModelParameter(CONCFACTOR_PARAMETER) != null) && !valueExpr.hasSymbol(CONCFACTOR_PARAMETER)) {
-						try {
-							valueExpr.substituteInPlace(new Expression(sp.getId()), new Expression(sp.getId()+"*"+CONCFACTOR_PARAMETER));
-						} catch (ExpressionException e) {
-							e.printStackTrace(System.out);
-							throw new RuntimeException(e.getMessage());
-						}
-					}
-				}	// end if (valExp contains spContext)
-			}	// end for j - spContexts
-		}	// end valExpr.Symbols != null
-		
+			
 		// Finally, create and add model parameter to VC model if it already doesn't exist.
 		if (vcModel.getModelParameter(paramName) == null) {
 			VCUnitDefinition glParamUnitDefn = vcUnitsHash.get(sbmlGlobalParam.getUnits());
@@ -583,6 +606,120 @@ protected void addParameters() throws PropertyVetoException {
 			}
 		}
 	}	// end for - sbmlModel.parameters
+}
+
+/**
+ * @param spConcFactorInModelParamsList
+ * @param valueExpr
+ * @param vcModel
+ * @param vcSpContexts
+ * @throws PropertyVetoException
+ */
+private Expression adjustExpression(Vector<String> spConcFactorInModelParamsList, Expression valueExpr, Model model, SpeciesContext[] spContexts) throws PropertyVetoException {
+	Expression adjustedExpr = new Expression(valueExpr);
+	// ************* TIME CONV_FACTOR if 'time' is present in global parameter expression
+	// If time 't' is present in the global expression, it is in VC units (secs), convert it back to SBML units
+	// hence, we take the inverse of the time factor (getSBMLTimeUnitsFactor() converts from SBML to VC units)
+	adjustedExpr = adjustTimeConvFactor(model, adjustedExpr);
+	
+	// ************** SPECIES CONC_FACTOR if species are present in global parameter expression ******************
+	// if global parameter is an expression with model species, we need a conversion factor for the species units (SBML - VC units),
+	// similar to the conversion that is done in reactions.
+	if (adjustedExpr.getSymbols() != null) {
+		for (int j = 0; j < spContexts.length; j++) {
+			// Check if valueExpr has the species, if so, add the species conc factor, else, do nothing.
+			if (adjustedExpr.hasSymbol(spContexts[j].getName())) {
+		    	org.sbml.libsbml.Species sp = sbmlModel.getSpecies(spContexts[j].getName());
+				String CONCFACTOR_PARAMETER = sp.getId() + "_ConcFactor";
+				if (!spConcFactorInModelParamsList.contains(spContexts[j].getName())) {
+					SBVCConcentrationUnits sbvcSubstUnits = speciesUnitsHash.get(sp.getId());
+					VCUnitDefinition vcUnit = sbvcSubstUnits.getVCConcentrationUnits();
+					VCUnitDefinition sbUnit = sbvcSubstUnits.getSBConcentrationUnits();
+									
+					// the expr from SBML is in terms of SBML units; VC interprets concs in uM, but we have to translate them back to SBML units 
+					//   within the expr; we convert concs into SBML (using 'sp_conc_factor'), so that the SBML expression is consistent;  
+					try {
+						SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcFactor", vcUnit, sbUnit);
+						if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)) ) {
+							// if VC unit IS compatible with SBML unit and factor is 1 and unit conversion is 1
+							// No conversion is required, and we don't need to include a concentration scale factor for the species.
+						} else {
+							// Substitute any occurrence of speciesName in global param expression with 'speciesName*concScaleFactor'
+							// check if CONC_FACTOR is already defined in VCell model.
+							ModelParameter concParam = model.getModelParameter(CONCFACTOR_PARAMETER);
+							if (concParam != null) {
+								// if it already exists in list of global params, see if its expression/val matches the current param.
+//								Expression concParamValueExpr = concParam.getExpression();
+//								// If CONCFACTOR_PARAM exists in VC globals, check its expression with concScaleFactor. 
+//								// If they are not equal, multiply CONCFACTOR_PARAM expression with concScaleFactor expr,
+//								// since the new concFactor is in addition to existing CONCFACTOR value; no need to add another CONCFACTOR param.
+//								if (concParamValueExpr != null && concScaleFactor.getExpression() != null) {
+//									concParamValueExpr = Expression.mult(concParamValueExpr, concScaleFactor.getExpression());
+//									concParam.setExpression(concParamValueExpr);
+//									// if the expressions are being multiplied, the units should be too, as long as both are not TBD.
+//									if ((concParam.getUnitDefinition() != VCUnitDefinition.UNIT_TBD) && (concScaleFactor.getUnitDefinition() != VCUnitDefinition.UNIT_TBD)) {
+//										concParam.setUnitDefinition(concParam.getUnitDefinition().multiplyBy(concScaleFactor.getUnitDefinition()));
+//									}
+//								} 
+								// ?? no need to do anything if the 2 expressions are the same ??
+							} else {
+								// If no matching param for concentration factor was found in sbml model, 
+								// add CONCFACTOR_PARAM as a global param in VCell before setting this global.
+								ModelParameter concScaleParam = model.new ModelParameter(CONCFACTOR_PARAMETER, concScaleFactor.getExpression().flatten(), Model.ROLE_UserDefined, concScaleFactor.getUnitDefinition());
+								String annotation = "Conversion from VC concentration units to SBML concentration units";
+								concScaleParam.setModelParameterAnnotation(annotation);
+								model.addModelParameter(concScaleParam);	
+							}
+						}
+					} catch (ExpressionException e) {
+						e.printStackTrace(System.out);
+						throw new RuntimeException(e.getMessage());
+					}	// end try - catch
+					// add this speciesContext name to vector 'spConcFactorInModelParamsList' so that its val isn't modified if used in another param expr.
+					spConcFactorInModelParamsList.add(spContexts[j].getName());
+				} // end 'spConcFactorInModelParamsList' !contain spContext
+				// any occurance of "sp" in param valeExpr should be replaced by "sp*CONCFACTOR_PARAM", if not already present.
+				if ((model.getModelParameter(CONCFACTOR_PARAMETER) != null) && !adjustedExpr.hasSymbol(CONCFACTOR_PARAMETER)) {
+					try {
+						adjustedExpr.substituteInPlace(new Expression(sp.getId()), new Expression(sp.getId()+"*"+CONCFACTOR_PARAMETER));
+					} catch (ExpressionException e) {
+						e.printStackTrace(System.out);
+						throw new RuntimeException(e.getMessage());
+					}
+				}
+			}	// end if (valExp contains spContext)
+		}	// end for j - spContexts
+	}	// end valExpr.Symbols != null
+	return adjustedExpr;
+}
+
+
+private Expression adjustTimeConvFactor(Model model, Expression expr) throws PropertyVetoException {
+	Expression adjustedExpr = new Expression(expr);
+	String t = ReservedSymbol.TIME.getName();
+	double timeFactorVal = 1.0/getSBMLTimeUnitsFactor(); 
+	if ((timeFactorVal != 1) && (adjustedExpr.hasSymbol(t))) {
+		String TIME_CONVFACTOR = t + "_ConvFactor";
+		if (!adjustedExpr.hasSymbol(TIME_CONVFACTOR)) {
+			// If no matching param for time conversion factor was found in sbml model, 
+			// add TIME_CONVFACTOR as a global param in VCell before setting this global.
+			ModelParameter timeConvParam = model.getModelParameter(TIME_CONVFACTOR);
+			if (timeConvParam == null) {
+				timeConvParam = model.new ModelParameter(TIME_CONVFACTOR, new Expression(timeFactorVal), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_DIMENSIONLESS);
+				String annotation = "Conversion from SBML time units to VC time units";
+				timeConvParam.setModelParameterAnnotation(annotation);
+				model.addModelParameter(timeConvParam);	
+			}
+			// now replace 't' with 't*TIME_CONVFACTOR' in the parameter expression.
+			try {
+				adjustedExpr.substituteInPlace(new Expression(t), new Expression(t +"*" + TIME_CONVFACTOR));
+			} catch (ExpressionException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+	}
+	return adjustedExpr;
 }
 
 /**
@@ -1143,6 +1280,19 @@ protected void addReactions(VCMetaData metaData) {
 						kinetics.setParameterValue(kineticsParameter, new Expression(param.getValue()));
 						VCUnitDefinition paramUnit = getSBMLUnit(param.getUnits(),null);
 						kineticsParameter.setUnitDefinition(paramUnit);
+					} else {
+						// check if it is a proxy parameter (specifically, speciesContext or model parameter (structureSize too)).
+						KineticsProxyParameter kpp = kinetics.getProxyParameter(paramName);
+						// if there is a proxy param with same name as sbml kinetic local param, if proxy param
+						// is a model global parameter, change proxy param to local, set its value 
+						// and units to local param values
+						if (kpp != null && kpp.getTarget() instanceof ModelParameter) {
+							kinetics.convertParameterType(kpp, false);
+							kineticsParameter = kinetics.getKineticsParameter(paramName);
+							kinetics.setParameterValue(kineticsParameter, new Expression(param.getValue()));
+							VCUnitDefinition paramUnit = getSBMLUnit(param.getUnits(),null);
+							kineticsParameter.setUnitDefinition(paramUnit);
+						}
 					}
 				}
 			} else {
@@ -1734,9 +1884,7 @@ public BioModel getBioModel() {
 		modelName = "newModel";
 	} 
 	BioModel bioModel = new BioModel(null);
-	if (bioModel != null) {
-		sbmlAnnotationUtil = new SBMLAnnotationUtil(bioModel.getVCMetaData(), bioModel, SBMLUtils.SBML_NS_2);
-	}
+	sbmlAnnotationUtil = new SBMLAnnotationUtil(bioModel.getVCMetaData(), bioModel, SBMLUtils.SBML_NS_2);
 	Model vcModel = new Model(modelName);
 
 	Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
@@ -2051,10 +2199,7 @@ private void checkForUnsupportedVCellFeatures() throws Exception {
 			}
 		}
 	}
-	// Check if events are present.
-	if (sbmlModel.getNumEvents() > 0) {
-		logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "VCell doesn't support Events at this time");
-	}
+
 	// Check if species are specified by assignemnt rules; and if they refer to other species ...
 	if (sbmlModel.getNumRules() > 0) {
 		for (int i = 0; i < sbmlModel.getNumRules(); i++){
@@ -2091,6 +2236,8 @@ private void checkForUnsupportedVCellFeatures() throws Exception {
  *
  */
 public void translateSBMLModel(VCMetaData metaData) {
+	// Add Function Definitions (Lambda functions).
+	addFunctionDefinitions();
 	// Check for SBML features not supported in VCell; stop import process if present.
 	try {
 		checkForUnsupportedVCellFeatures();
@@ -2100,8 +2247,6 @@ public void translateSBMLModel(VCMetaData metaData) {
 	}
 	
 	// Create Virtual Cell Model with species, compartment, etc. and read in the 'values' from the SBML model
-	// Add Function Definitions (Lambda functions).
-	addFunctionDefinitions();
 	// Add Unit definitions
 	addUnitDefinitions();
 	// Add compartmentTypes (not handled in VCell)

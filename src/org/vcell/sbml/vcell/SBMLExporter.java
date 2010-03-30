@@ -214,7 +214,7 @@ protected void addCompartments() {
 			if (sizeExpr != null) {
 				ASTNode ruleFormulaNode = getFormulaFromExpression(sizeExpr);
 				AssignmentRule assignRule = sbmlModel.createAssignmentRule();
-				assignRule.setId(vcStructures[i].getName());
+				assignRule.setVariable(vcStructures[i].getName());
 				assignRule.setMath(ruleFormulaNode);
 				// If compartmentSize is specified by an assignment rule, the 'constant' field should be set to 'false' (default - true).
 				sbmlCompartment.setConstant(false);
@@ -335,7 +335,7 @@ protected void addParameters() throws ExpressionException {
 
 			ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
 			AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-			sbmlParamAssignmentRule.setId(vcGlobalParams[i].getName());
+			sbmlParamAssignmentRule.setVariable(vcGlobalParams[i].getName());
 			sbmlParamAssignmentRule.setMath(paramFormulaNode);
 		}
 		VCUnitDefinition vcParamUnit = vcGlobalParams[i].getUnitDefinition();
@@ -549,7 +549,7 @@ protected void addReactions() {
 					}
 					ASTNode paramFormulaNode = getFormulaFromExpression(kinParamExprs[j]);
 					AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-					sbmlParamAssignmentRule.setId(paramName);
+					sbmlParamAssignmentRule.setVariable(paramName);
 					sbmlParamAssignmentRule.setMath(paramFormulaNode);
 					org.sbml.libsbml.Parameter sbmlKinParam = sbmlModel.createParameter();
 					sbmlKinParam.setId(paramName);
@@ -713,7 +713,7 @@ protected void addSpecies() {
 //						if (getBoundaryCondition(vcSpeciesContexts[i])) {
 							ASTNode assgnRuleMathNode = getFormulaFromExpression(initConcExpr);
 							AssignmentRule assgnRule = sbmlModel.createAssignmentRule();
-							assgnRule.setId(vcSpeciesContexts[i].getName());
+							assgnRule.setVariable(vcSpeciesContexts[i].getName());
 							assgnRule.setMath(assgnRuleMathNode);
 //						} else {
 //							throw new RuntimeException("Failed to export : Unable to add species " + vcSpeciesContexts[i].getName() + " to SBML model since its initial expression \'" + initConcExpr.infix() + "\'  is a function of x, y, z or contains another species in its expression.");
