@@ -423,6 +423,8 @@ private static int showComponentOKCancelDialog(final Component requester,final C
 			return ((Integer)inputDialog.getValue()).intValue();
 		}else if(inputDialog.getValue() == null){
 			return JOptionPane.CLOSED_OPTION;
+		}else if(inputDialog.getValue().equals(JOptionPane.UNINITIALIZED_VALUE)){
+			return JOptionPane.CLOSED_OPTION;
 		}
 		throw new RuntimeException("Unexpected return value="+inputDialog.getValue().toString());
 	}finally {

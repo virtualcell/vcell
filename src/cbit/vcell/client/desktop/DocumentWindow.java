@@ -37,6 +37,7 @@ import org.vcell.util.gui.ZEnforcer;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
@@ -3119,7 +3120,7 @@ private void newDocument(java.awt.event.ActionEvent actionEvent) {
 		return;
 	}
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
-	hash.put("guiParent", (Component)this);
+	hash.put(ClientRequestManager.GUI_PARENT, (Component)this);
 	hash.put("requestManager", getWindowManager().getRequestManager());
 	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 }

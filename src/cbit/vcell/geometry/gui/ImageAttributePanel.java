@@ -3,12 +3,26 @@ package cbit.vcell.geometry.gui;
 import java.awt.Graphics;
 
 import javax.swing.ImageIcon;
+import javax.swing.JTextField;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 
 import org.vcell.util.Extent;
 
 import cbit.image.VCPixelClass;
 import cbit.image.VCImage;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.task.EditImageAttributes;
+
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
+
+import javax.swing.JLabel;
+import javax.swing.JButton;
 /**
  * Insert the type's description here.
  * Creation date: (6/10/2002 3:26:22 PM)
@@ -59,7 +73,7 @@ public class ImageAttributePanel extends javax.swing.JPanel {
 	private javax.swing.JButton ivjImportJButton = null;
 	private javax.swing.JPanel ivjJPanel3 = null;
 	private javax.swing.JDialog fieldDialogParent = new javax.swing.JDialog();
-	private java.lang.Object fieldStatus = new Object();
+	private String fieldStatus;
 	private javax.swing.JLabel ivjJLabel3 = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener {
@@ -298,52 +312,75 @@ private void createRegionImageIcon() throws Exception{
 	}
 }
 
-private void drawAnnotations(Graphics g){
+private Point2D.Double getStart(Graphics g){
 	int width = ((ImageIcon)getPixelClassImageLabel().getIcon()).getIconWidth();
 	int height = ((ImageIcon)getPixelClassImageLabel().getIcon()).getIconHeight();
-	int startX = g.getClipBounds().x;
-	int startY = g.getClipBounds().y;
+	double startX = g.getClipBounds().x;
+	double startY = g.getClipBounds().y;
 	//Adjust for cases where IconImage is larger or smaller than panel display
 	if(width < g.getClipBounds().width){
-		startX+= (g.getClipBounds().width-width)/2;
+		startX+= (g.getClipBounds().width-width)/(double)2;
 	}else{
 		startX=0; 
 	}
 	if(height < g.getClipBounds().height){
-		startY+= (g.getClipBounds().height-height)/2;
+		startY+= (g.getClipBounds().height-height)/(double)2;
 	}else{
 		startY = 0;
 	}
+	return new Point2D.Double(startX,startY);
+}
+private void drawAnnotations(Graphics g){
+	int width = ((ImageIcon)getPixelClassImageLabel().getIcon()).getIconWidth();
+	int height = ((ImageIcon)getPixelClassImageLabel().getIcon()).getIconHeight();
+	Point2D.Double p2d = getStart(g);
+	double startX = p2d.x;
+	double startY = p2d.y;
+	
 	//Draw lines separating z-sections.
 	//Draw z-section label n corner
 	if(xSide > 0 || ySide > 0){
-		int gridXBlockLen = (width/xSide);
-		int gridYBlockLen = (height/ySide);
+		double gridXBlockLen = (width/(double)xSide);
+		double gridYBlockLen = (height/(double)ySide);
 		
 		g.setColor(java.awt.Color.green);
 		// horiz lines
 		for(int row=0;row < ySide;row+= 1){
 			if(row > 0){
-				g.drawLine(startX,startY+row*gridYBlockLen,startX+width,startY+row*gridYBlockLen);
+				g.drawLine((int)startX,(int)(startY+row*gridYBlockLen),(int)(startX+width),(int)(startY+row*gridYBlockLen));
 			}
 		}
 		// vert lines
-		for(int col=0;col<xSide;col+= 1){
-			if(col > 0){
-				g.drawLine(startX+col*gridXBlockLen,startY,startX+col*gridXBlockLen,startY+height);
+		for(int row=0;row < ySide;row+= 1){
+			for(int col=0;col < xSide;col+= 1){
+				if(col > 0){
+					int zIndex = col+(row*xSide);
+					if(zIndex <= getImage().getNumZ()){
+						g.drawLine(
+							(int)(startX+col*gridXBlockLen),
+							(int)(startY+row*gridYBlockLen),
+							(int)(startX+col*gridXBlockLen),
+							(int)(startY+row*gridYBlockLen+gridYBlockLen));
+					}
+				}
 			}
 		}
+
 		// z markers
 		if(xSide > 1 || ySide > 1){
 			for(int row=0;row < xSide;row+= 1){
 				for(int col=0;col<ySide;col+= 1){
-					g.drawString(""+(1+row+(col*xSide)),startX+row*gridXBlockLen+3,startY+col*gridYBlockLen+12);
+					int zIndex = row+(col*xSide);
+					if(zIndex < getImage().getNumZ()){
+						g.drawString(""+(1+zIndex),(int)(startX+row*gridXBlockLen+3),(int)(startY+col*gridYBlockLen+12));
+					}
 				}
 			}
 		}
 	}
 
 }
+
 /**
  * Comment
  */
@@ -351,17 +388,19 @@ private void done(java.awt.event.ActionEvent actionEvent) {
 
 	if(actionEvent.getSource() == getImportJButton()){
 		try{
-			synchronize();
-			setStatus("Import");
+			synchronize(getImage(),this);
+			setStatus(EditImageAttributes.STATUS_IMPORT);
 			getDialogParent().dispose();
 		}catch(Exception e){
 			PopupGenerator.showErrorDialog(this, 
 				"Error setting IMAGE values:\n"+(e.getMessage() != null?e.getMessage():e.getClass().getName()));
 		}
 	}else if(actionEvent.getSource() == getCancelJButton()){
-		setStatus("Cancel");
-		getDialogParent().dispose();
+		setStatus(EditImageAttributes.STATUS_MANUAL_SEGMENT);
+	}else if(actionEvent.getSource() == getBtnCancel()){
+		setStatus(EditImageAttributes.STATUS_CANCEL);
 	}
+	getDialogParent().dispose();
 }
 /**
  * Return the AnnotationJLabel property value.
@@ -373,7 +412,7 @@ private javax.swing.JLabel getAnnotationJLabel() {
 		try {
 			ivjAnnotationJLabel = new javax.swing.JLabel();
 			ivjAnnotationJLabel.setName("AnnotationJLabel");
-			ivjAnnotationJLabel.setText("Image Annotation");
+			ivjAnnotationJLabel.setText("Annotation");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -415,7 +454,7 @@ private javax.swing.JButton getCancelJButton() {
 		try {
 			ivjCancelJButton = new javax.swing.JButton();
 			ivjCancelJButton.setName("CancelJButton");
-			ivjCancelJButton.setText("Back...");
+			ivjCancelJButton.setText("Manual Segment......");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -657,13 +696,17 @@ private javax.swing.JPanel getJPanel3() {
 
 			java.awt.GridBagConstraints constraintsImportJButton = new java.awt.GridBagConstraints();
 			constraintsImportJButton.gridx = 0; constraintsImportJButton.gridy = 0;
-			constraintsImportJButton.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsImportJButton.insets = new Insets(4, 4, 4, 5);
 			getJPanel3().add(getImportJButton(), constraintsImportJButton);
 
 			java.awt.GridBagConstraints constraintsCancelJButton = new java.awt.GridBagConstraints();
 			constraintsCancelJButton.gridx = 1; constraintsCancelJButton.gridy = 0;
-			constraintsCancelJButton.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsCancelJButton.insets = new Insets(4, 4, 4, 5);
 			getJPanel3().add(getCancelJButton(), constraintsCancelJButton);
+			GridBagConstraints gbc_btnCancel = new GridBagConstraints();
+			gbc_btnCancel.gridx = 2;
+			gbc_btnCancel.gridy = 0;
+			ivjJPanel3.add(getBtnCancel(), gbc_btnCancel);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -705,7 +748,7 @@ private javax.swing.JLabel getMicronJLabel() {
 		try {
 			ivjMicronJLabel = new javax.swing.JLabel();
 			ivjMicronJLabel.setName("MicronJLabel");
-			ivjMicronJLabel.setText("Size (microns):");
+			ivjMicronJLabel.setText("Total Size (microns):");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -731,8 +774,6 @@ private javax.swing.JLabel getPixelClassImageLabel() {
 					// TODO Auto-generated method stub
 					super.paintComponent(g);
 					drawAnnotations(g);
-//					g.setColor(Color.green);
-//					g.drawLine(g.getClipBounds().x, g.getClipBounds().y, 100, 100);
 				}
 				
 			};
@@ -760,7 +801,7 @@ private javax.swing.JLabel getPixelSizeJLabel() {
 		try {
 			ivjPixelSizeJLabel = new javax.swing.JLabel();
 			ivjPixelSizeJLabel.setName("PixelSizeJLabel");
-			ivjPixelSizeJLabel.setText("Pixel Size:");
+			ivjPixelSizeJLabel.setText("Pixel Count:");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -844,7 +885,7 @@ private javax.swing.JLabel getRegionCountJLabel() {
 		try {
 			ivjRegionCountJLabel = new javax.swing.JLabel();
 			ivjRegionCountJLabel.setName("RegionCountJLabel");
-			ivjRegionCountJLabel.setText("PixelClass 1 of X");
+			ivjRegionCountJLabel.setText("Region 1 of X");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -865,7 +906,7 @@ private javax.swing.JLabel getRegionJLabel() {
 		try {
 			ivjRegionJLabel = new javax.swing.JLabel();
 			ivjRegionJLabel.setName("RegionJLabel");
-			ivjRegionJLabel.setText("Image PixelClasses");
+			ivjRegionJLabel.setText("Defined Regions");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1028,7 +1069,7 @@ private javax.swing.JButton getRegionPrevJButton() {
  * @return The status property value.
  * @see #setStatus
  */
-public java.lang.Object getStatus() {
+public String getStatus() {
 	return fieldStatus;
 }
 /**
@@ -1052,6 +1093,90 @@ private javax.swing.JLabel getXMicronJLabel() {
 	}
 	return ivjXMicronJLabel;
 }
+
+private UndoableEditListener uel = 
+	new UndoableEditListener() {
+		private boolean bBusy = false;
+		public synchronized void undoableEditHappened(UndoableEditEvent e) {
+			if(bBusy || getImage() == null){
+				return;
+			}
+			bBusy = true;
+			try{
+			if(e.getSource() == getXMicronJTextField().getDocument()){
+				double perPixelMicron = -1;
+				try{
+					perPixelMicron = Double.parseDouble(getXMicronJTextField().getText());
+					perPixelMicron/=getImage().getNumX();
+				}catch(Exception exc){
+					getXPerPixelJextField().setText("");
+					return;
+				}
+				getXPerPixelJextField().setText(perPixelMicron+"");
+			}else if(e.getSource() == getYMicronJTextField().getDocument()){
+				double perPixelMicron = -1;
+				try{
+					perPixelMicron = Double.parseDouble(getYMicronJTextField().getText());
+					perPixelMicron/=getImage().getNumY();
+				}catch(Exception exc){
+					getYPerPixelTextField().setText("");
+					return;
+				}
+				getYPerPixelTextField().setText(perPixelMicron+"");
+			}else if(e.getSource() == getZMicronJTextField().getDocument()){
+				double perPixelMicron = -1;
+				try{
+					perPixelMicron = Double.parseDouble(getZMicronJTextField().getText());
+					perPixelMicron/=getImage().getNumZ();
+				}catch(Exception exc){
+					getZPerPixelJextField().setText("");
+					return;
+				}
+				getZPerPixelJextField().setText(perPixelMicron+"");
+			}else if(e.getSource() == getZPerPixelJextField().getDocument()){
+				double perPixelMicron = -1;
+				try{
+					perPixelMicron = Double.parseDouble(getZPerPixelJextField().getText());
+					perPixelMicron*= getImage().getNumZ();
+				}catch(Exception exc){
+					getZMicronJTextField().setText("");
+					return;
+				}
+				getZMicronJTextField().setText(perPixelMicron+"");
+			}else if(e.getSource() == getYPerPixelTextField().getDocument()){
+				double perPixelMicron = -1;
+				try{
+					perPixelMicron = Double.parseDouble(getYPerPixelTextField().getText());
+					perPixelMicron*= getImage().getNumY();
+				}catch(Exception exc){
+					getYMicronJTextField().setText("");
+					return;
+				}
+				getYMicronJTextField().setText(perPixelMicron+"");
+			}else if(e.getSource() == getXPerPixelJextField().getDocument()){
+				double perPixelMicron = -1;
+				try{
+					perPixelMicron = Double.parseDouble(getXPerPixelJextField().getText());
+					perPixelMicron*= getImage().getNumX();
+				}catch(Exception exc){
+					getXMicronJTextField().setText("");
+					return;
+				}
+				getXMicronJTextField().setText(perPixelMicron+"");
+			}
+			}catch(Exception exc){
+				exc.printStackTrace();
+			}finally{
+				bBusy  = false;
+			}
+
+		}
+	};
+private JTextField xPerPixelJextField;
+private JTextField yPerPixelTextField;
+private JTextField zPerPixelJextField;
+private JLabel ivjPerPixelMicronJLabel;
+private JButton btnCancel;
 /**
  * Return the XMicronJTextField property value.
  * @return javax.swing.JTextField
@@ -1061,6 +1186,7 @@ private javax.swing.JTextField getXMicronJTextField() {
 	if (ivjXMicronJTextField == null) {
 		try {
 			ivjXMicronJTextField = new javax.swing.JTextField();
+			ivjXMicronJTextField.getDocument().addUndoableEditListener(uel);
 			ivjXMicronJTextField.setName("XMicronJTextField");
 			ivjXMicronJTextField.setToolTipText("Microns for whole X axis");
 			ivjXMicronJTextField.setText("1.0");
@@ -1104,6 +1230,7 @@ private javax.swing.JTextField getYMicronJTextField() {
 	if (ivjYMicronJTextField == null) {
 		try {
 			ivjYMicronJTextField = new javax.swing.JTextField();
+			ivjYMicronJTextField.getDocument().addUndoableEditListener(uel);
 			ivjYMicronJTextField.setName("YMicronJTextField");
 			ivjYMicronJTextField.setToolTipText("Microns for Whole Y axis");
 			ivjYMicronJTextField.setText("1.0");
@@ -1147,6 +1274,7 @@ private javax.swing.JTextField getZMicronJTextField() {
 	if (ivjZMicronJTextField == null) {
 		try {
 			ivjZMicronJTextField = new javax.swing.JTextField();
+			ivjZMicronJTextField.getDocument().addUndoableEditListener(uel);
 			ivjZMicronJTextField.setName("ZMicronJTextField");
 			ivjZMicronJTextField.setToolTipText("Microns for Whole Z axis");
 			ivjZMicronJTextField.setText("1.0");
@@ -1198,122 +1326,147 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("AttributePanel");
-		setLayout(new java.awt.GridBagLayout());
+		GridBagLayout gridBagLayout = new GridBagLayout();
+		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
+		setLayout(gridBagLayout);
 		setSize(411, 522);
 
 		java.awt.GridBagConstraints constraintsPixelSizeJLabel = new java.awt.GridBagConstraints();
 		constraintsPixelSizeJLabel.gridx = 0; constraintsPixelSizeJLabel.gridy = 0;
 		constraintsPixelSizeJLabel.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsPixelSizeJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsPixelSizeJLabel.insets = new Insets(4, 4, 4, 4);
 		add(getPixelSizeJLabel(), constraintsPixelSizeJLabel);
 
 		java.awt.GridBagConstraints constraintsMicronJLabel = new java.awt.GridBagConstraints();
 		constraintsMicronJLabel.gridx = 0; constraintsMicronJLabel.gridy = 1;
 		constraintsMicronJLabel.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsMicronJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsMicronJLabel.insets = new Insets(4, 4, 4, 4);
 		add(getMicronJLabel(), constraintsMicronJLabel);
+		GridBagConstraints gbc_ivjPerPixelMicronJLabel = new GridBagConstraints();
+		gbc_ivjPerPixelMicronJLabel.insets = new Insets(4, 4, 4, 4);
+		gbc_ivjPerPixelMicronJLabel.gridx = 0;
+		gbc_ivjPerPixelMicronJLabel.gridy = 2;
+		add(getIvjPerPixelMicronJLabel(), gbc_ivjPerPixelMicronJLabel);
+		GridBagConstraints gbc_xPerPixelJextField = new GridBagConstraints();
+		gbc_xPerPixelJextField.insets = new Insets(4, 4, 5, 5);
+		gbc_xPerPixelJextField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_xPerPixelJextField.gridx = 2;
+		gbc_xPerPixelJextField.gridy = 2;
+		add(getXPerPixelJextField(), gbc_xPerPixelJextField);
+		GridBagConstraints gbc_yPerPixelTextField = new GridBagConstraints();
+		gbc_yPerPixelTextField.insets = new Insets(4, 4, 5, 5);
+		gbc_yPerPixelTextField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_yPerPixelTextField.gridx = 4;
+		gbc_yPerPixelTextField.gridy = 2;
+		add(getYPerPixelTextField(), gbc_yPerPixelTextField);
+		GridBagConstraints gbc_zPerPixelJextField = new GridBagConstraints();
+		gbc_zPerPixelJextField.insets = new Insets(4, 4, 5, 4);
+		gbc_zPerPixelJextField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_zPerPixelJextField.gridx = 6;
+		gbc_zPerPixelJextField.gridy = 2;
+		add(getZPerPixelJextField(), gbc_zPerPixelJextField);
 
 		java.awt.GridBagConstraints constraintsAnnotationJTextArea = new java.awt.GridBagConstraints();
-		constraintsAnnotationJTextArea.gridx = 0; constraintsAnnotationJTextArea.gridy = 3;
+		constraintsAnnotationJTextArea.gridx = 0; constraintsAnnotationJTextArea.gridy = 4;
 		constraintsAnnotationJTextArea.gridwidth = 7;
 		constraintsAnnotationJTextArea.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsAnnotationJTextArea.weightx = 1.0;
-		constraintsAnnotationJTextArea.insets = new java.awt.Insets(0, 4, 4, 4);
+		constraintsAnnotationJTextArea.insets = new Insets(0, 4, 5, 4);
 		add(getAnnotationJTextArea(), constraintsAnnotationJTextArea);
 
 		java.awt.GridBagConstraints constraintsAnnotationJLabel = new java.awt.GridBagConstraints();
-		constraintsAnnotationJLabel.gridx = 0; constraintsAnnotationJLabel.gridy = 2;
+		constraintsAnnotationJLabel.gridx = 0; constraintsAnnotationJLabel.gridy = 3;
 		constraintsAnnotationJLabel.gridwidth = 7;
-		constraintsAnnotationJLabel.insets = new java.awt.Insets(4, 4, 0, 4);
+		constraintsAnnotationJLabel.insets = new Insets(4, 4, 5, 4);
 		add(getAnnotationJLabel(), constraintsAnnotationJLabel);
 
 		java.awt.GridBagConstraints constraintsXMicronJTextField = new java.awt.GridBagConstraints();
 		constraintsXMicronJTextField.gridx = 2; constraintsXMicronJTextField.gridy = 1;
 		constraintsXMicronJTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsXMicronJTextField.weightx = 1.0;
-		constraintsXMicronJTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsXMicronJTextField.insets = new Insets(4, 4, 5, 5);
 		add(getXMicronJTextField(), constraintsXMicronJTextField);
 
 		java.awt.GridBagConstraints constraintsXMicronJLabel = new java.awt.GridBagConstraints();
 		constraintsXMicronJLabel.gridx = 1; constraintsXMicronJLabel.gridy = 1;
-		constraintsXMicronJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsXMicronJLabel.insets = new Insets(4, 4, 5, 5);
 		add(getXMicronJLabel(), constraintsXMicronJLabel);
 
 		java.awt.GridBagConstraints constraintsYMicronJLabel = new java.awt.GridBagConstraints();
 		constraintsYMicronJLabel.gridx = 3; constraintsYMicronJLabel.gridy = 1;
-		constraintsYMicronJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsYMicronJLabel.insets = new Insets(4, 4, 5, 5);
 		add(getYMicronJLabel(), constraintsYMicronJLabel);
 
 		java.awt.GridBagConstraints constraintsYMicronJTextField = new java.awt.GridBagConstraints();
 		constraintsYMicronJTextField.gridx = 4; constraintsYMicronJTextField.gridy = 1;
 		constraintsYMicronJTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsYMicronJTextField.weightx = 1.0;
-		constraintsYMicronJTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsYMicronJTextField.insets = new Insets(4, 4, 5, 5);
 		add(getYMicronJTextField(), constraintsYMicronJTextField);
 
 		java.awt.GridBagConstraints constraintsZMicronJLabel = new java.awt.GridBagConstraints();
 		constraintsZMicronJLabel.gridx = 5; constraintsZMicronJLabel.gridy = 1;
-		constraintsZMicronJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsZMicronJLabel.insets = new Insets(4, 4, 5, 5);
 		add(getZMicronJLabel(), constraintsZMicronJLabel);
 
 		java.awt.GridBagConstraints constraintsZMicronJTextField = new java.awt.GridBagConstraints();
 		constraintsZMicronJTextField.gridx = 6; constraintsZMicronJTextField.gridy = 1;
 		constraintsZMicronJTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsZMicronJTextField.weightx = 1.0;
-		constraintsZMicronJTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsZMicronJTextField.insets = new Insets(4, 4, 5, 4);
 		add(getZMicronJTextField(), constraintsZMicronJTextField);
 
 		java.awt.GridBagConstraints constraintsRegionJLabel = new java.awt.GridBagConstraints();
-		constraintsRegionJLabel.gridx = 0; constraintsRegionJLabel.gridy = 4;
+		constraintsRegionJLabel.gridx = 0; constraintsRegionJLabel.gridy = 5;
 		constraintsRegionJLabel.gridwidth = 7;
 		constraintsRegionJLabel.weightx = 1.0;
-		constraintsRegionJLabel.insets = new java.awt.Insets(4, 4, 0, 4);
+		constraintsRegionJLabel.insets = new Insets(4, 4, 5, 4);
 		add(getRegionJLabel(), constraintsRegionJLabel);
 
 		java.awt.GridBagConstraints constraintsRegionJPanel = new java.awt.GridBagConstraints();
-		constraintsRegionJPanel.gridx = 0; constraintsRegionJPanel.gridy = 5;
+		constraintsRegionJPanel.gridx = 0; constraintsRegionJPanel.gridy = 6;
 		constraintsRegionJPanel.gridwidth = 7;
 		constraintsRegionJPanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsRegionJPanel.weightx = 1.0;
 		constraintsRegionJPanel.weighty = 1.0;
-		constraintsRegionJPanel.insets = new java.awt.Insets(0, 4, 4, 4);
+		constraintsRegionJPanel.insets = new Insets(0, 4, 5, 4);
 		add(getRegionJPanel(), constraintsRegionJPanel);
 
 		java.awt.GridBagConstraints constraintsJLabel = new java.awt.GridBagConstraints();
 		constraintsJLabel.gridx = 1; constraintsJLabel.gridy = 0;
-		constraintsJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabel.insets = new Insets(4, 4, 5, 5);
 		add(getJLabel(), constraintsJLabel);
 
 		java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 		constraintsJLabel1.gridx = 3; constraintsJLabel1.gridy = 0;
-		constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabel1.insets = new Insets(4, 4, 5, 5);
 		add(getJLabel1(), constraintsJLabel1);
 
 		java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
 		constraintsJLabel2.gridx = 5; constraintsJLabel2.gridy = 0;
-		constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabel2.insets = new Insets(4, 4, 5, 5);
 		add(getJLabel2(), constraintsJLabel2);
 
 		java.awt.GridBagConstraints constraintsPixelSizeXJLabel = new java.awt.GridBagConstraints();
 		constraintsPixelSizeXJLabel.gridx = 2; constraintsPixelSizeXJLabel.gridy = 0;
 		constraintsPixelSizeXJLabel.anchor = java.awt.GridBagConstraints.WEST;
-		constraintsPixelSizeXJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsPixelSizeXJLabel.insets = new Insets(4, 4, 5, 5);
 		add(getPixelSizeXJLabel(), constraintsPixelSizeXJLabel);
 
 		java.awt.GridBagConstraints constraintsPixelSizeYJLabel = new java.awt.GridBagConstraints();
 		constraintsPixelSizeYJLabel.gridx = 4; constraintsPixelSizeYJLabel.gridy = 0;
 		constraintsPixelSizeYJLabel.anchor = java.awt.GridBagConstraints.WEST;
-		constraintsPixelSizeYJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsPixelSizeYJLabel.insets = new Insets(4, 4, 5, 5);
 		add(getPixelSizeYJLabel(), constraintsPixelSizeYJLabel);
 
 		java.awt.GridBagConstraints constraintsPixelSizeZJLabel = new java.awt.GridBagConstraints();
 		constraintsPixelSizeZJLabel.gridx = 6; constraintsPixelSizeZJLabel.gridy = 0;
 		constraintsPixelSizeZJLabel.anchor = java.awt.GridBagConstraints.WEST;
-		constraintsPixelSizeZJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsPixelSizeZJLabel.insets = new Insets(4, 4, 5, 4);
 		add(getPixelSizeZJLabel(), constraintsPixelSizeZJLabel);
 
 		java.awt.GridBagConstraints constraintsJPanel3 = new java.awt.GridBagConstraints();
-		constraintsJPanel3.gridx = 0; constraintsJPanel3.gridy = 6;
+		constraintsJPanel3.gridx = 0; constraintsJPanel3.gridy = 7;
 		constraintsJPanel3.gridwidth = 7;
 		constraintsJPanel3.weightx = 1.0;
 		constraintsJPanel3.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -1448,15 +1601,21 @@ public void setImage(VCImage vcImage) throws Exception{
 	fieldImage = vcImage;
 	//
 	if(vcImage != null){
-		getImportJButton().setEnabled(true);
-
+		getImportJButton().setEnabled(true);		
 		getPixelSizeXJLabel().setText((getImage() != null?getImage().getNumX()+"":null));
 		getPixelSizeYJLabel().setText((getImage() != null?getImage().getNumY()+"":null));
 		getPixelSizeZJLabel().setText((getImage() != null?getImage().getNumZ()+"":null));
 
 		getXMicronJTextField().setText((getImage() != null?getImage().getExtent().getX()+"":null));
-		getYMicronJTextField().setText((getImage() != null?getImage().getExtent().getY()+"":null));
-		getZMicronJTextField().setText((getImage() != null?getImage().getExtent().getZ()+"":null));
+		String yExtent = (getImage() != null?(getImage().getNumY() > 1?getImage().getExtent().getY()+"":"1.0"):null);
+		getYMicronJTextField().setText(yExtent);
+		String zExtent = (getImage() != null?(getImage().getNumZ() > 1?getImage().getExtent().getZ()+"":"1.0"):null);
+		getZMicronJTextField().setText(zExtent);
+
+		getYMicronJTextField().setEnabled(vcImage.getNumY() > 1);
+		getZMicronJTextField().setEnabled(vcImage.getNumZ() > 1);
+		getYPerPixelTextField().setEnabled(vcImage.getNumY() > 1);
+		getZPerPixelJextField().setEnabled(vcImage.getNumZ() > 1);
 
 		getAnnotationJTextArea().setText((getImage() != null?getImage().getDescription():null));
 
@@ -1489,48 +1648,51 @@ public void setImage(VCImage vcImage) throws Exception{
  * @param status The new value for the property.
  * @see #getStatus
  */
-private void setStatus(java.lang.Object status) {
-	Object oldValue = fieldStatus;
+private void setStatus(String status) {
+	String oldValue = fieldStatus;
 	fieldStatus = status;
 	firePropertyChange("status", oldValue, status);
 }
 /**
  * Comment
  */
-private void synchronize() throws Exception{
+public static void synchronize(VCImage syncVCImage,ImageAttributePanel imgAttrPanel) throws Exception{
 
-	if(getImage() != null){
+	if(syncVCImage != null){
 		
 		//Set Description
 		try{
-			String newAnnot = getAnnotationJTextArea().getText();
+			String newAnnot = imgAttrPanel.getAnnotationJTextArea().getText();
 			if(newAnnot != null && newAnnot.length() == 0){newAnnot = null;}
-			if(!org.vcell.util.Compare.isEqualOrNull(newAnnot,getImage().getDescription())){
-				getImage().setDescription(newAnnot);
+			if(!org.vcell.util.Compare.isEqualOrNull(newAnnot,syncVCImage.getDescription())){
+				syncVCImage.setDescription(newAnnot);
 			}
 		}catch(Throwable e){
+			e.printStackTrace();
 			throw new Exception("Error setting Annotation\n"+(e.getMessage() != null?e.getMessage():e.getClass().getName()));
 		}
 		
 		//Set Extent
 		try{
-			double newX = Double.valueOf(getXMicronJTextField().getText()).doubleValue();
-			double newY = Double.valueOf(getYMicronJTextField().getText()).doubleValue();
-			double newZ = Double.valueOf(getZMicronJTextField().getText()).doubleValue();
+			double newX = Double.valueOf(imgAttrPanel.getXMicronJTextField().getText()).doubleValue();
+			double newY = Double.valueOf(imgAttrPanel.getYMicronJTextField().getText()).doubleValue();
+			double newZ = Double.valueOf(imgAttrPanel.getZMicronJTextField().getText()).doubleValue();
 			Extent newExtent = new Extent(newX,newY,newZ);
-			if(!newExtent.compareEqual(getImage().getExtent())){getImage().setExtent(newExtent);}
+			if(!newExtent.compareEqual(syncVCImage.getExtent())){syncVCImage.setExtent(newExtent);}
 		}catch(Throwable e){
+			e.printStackTrace();
 			throw new Exception("Error setting extent\n"+(e.getMessage() != null?e.getMessage():e.getClass().getName()));
 		}
 		
 		//Set VCPixelClass
 		try{
-			saveRegionName();
+			imgAttrPanel.saveRegionName();
 			//int currentPCIndex = getCurrentPixelClassIndex().intValue();
 			//vcPixelClassArr[currentPCIndex] =
 				//new VCPixelClass(vcPixelClassArr[currentPCIndex].getKey(),getRegionNameJTextField().getText(),vcPixelClassArr[currentPCIndex].getPixel());
-			getImage().setPixelClasses(vcPixelClassArr);
+			syncVCImage.setPixelClasses(imgAttrPanel.vcPixelClassArr);
 		}catch(Throwable e){
+			e.printStackTrace();
 			throw new Exception("Error setting PixelClass names\n"+(e.getMessage() != null?e.getMessage():e.getClass().getName()));
 		}
 }
@@ -1543,7 +1705,50 @@ private void synchronize() throws Exception{
  */
 private void updateRegionCountLabel(int currentRegionIndex) {
 
-	getRegionCountJLabel().setText((vcPixelClassArr != null?"(PixelClass "+(currentRegionIndex+1)+" of "+vcPixelClassArr.length+")":null));
+	getRegionCountJLabel().setText((vcPixelClassArr != null?"(Region "+(currentRegionIndex+1)+" of "+vcPixelClassArr.length+")":null));
 }
 
+	private JTextField getXPerPixelJextField() {
+		if (xPerPixelJextField == null) {
+			xPerPixelJextField = new JTextField();
+			xPerPixelJextField.getDocument().addUndoableEditListener(uel);
+			xPerPixelJextField.setColumns(10);
+		}
+		return xPerPixelJextField;
+	}
+	private JTextField getYPerPixelTextField() {
+		if (yPerPixelTextField == null) {
+			yPerPixelTextField = new JTextField();
+			yPerPixelTextField.getDocument().addUndoableEditListener(uel);
+			yPerPixelTextField.setColumns(10);
+		}
+		return yPerPixelTextField;
+	}
+	private JTextField getZPerPixelJextField() {
+		if (zPerPixelJextField == null) {
+			zPerPixelJextField = new JTextField();
+			zPerPixelJextField.getDocument().addUndoableEditListener(uel);
+			zPerPixelJextField.setColumns(10);
+		}
+		return zPerPixelJextField;
+	}
+	private JLabel getIvjPerPixelMicronJLabel() {
+		if (ivjPerPixelMicronJLabel == null) {
+			ivjPerPixelMicronJLabel = new JLabel();
+			ivjPerPixelMicronJLabel.setText("Pixel Size (microns):");
+			ivjPerPixelMicronJLabel.setName("MicronJLabel");
+		}
+		return ivjPerPixelMicronJLabel;
+	}
+	private JButton getBtnCancel() {
+		if (btnCancel == null) {
+			btnCancel = new JButton("Cancel");
+			btnCancel.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					done(e);
+				}
+			});
+		}
+		return btnCancel;
+	}
 }

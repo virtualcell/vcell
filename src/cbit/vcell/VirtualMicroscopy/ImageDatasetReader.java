@@ -26,6 +26,24 @@ import cbit.image.ImageException;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class ImageDatasetReader {
+	
+	public static double[] getTimesOnly(String fileName) throws Exception{
+		return getTimes(getImageReader(fileName));
+	}
+	private static ImageReader getImageReader(String imageID) throws FormatException,IOException{
+		ImageReader imageReader = new ImageReader();
+		// create OME-XML metadata store of the latest schema version
+		MetadataStore store = MetadataTools.createOMEXMLMetadata();
+		// or if you want a specific schema version, you can use:
+		//MetadataStore store = MetadataTools.createOMEXMLMetadata(null, "2007-06");
+		MetadataRetrieve meta = (MetadataRetrieve) store;
+		store.createRoot();
+		imageReader.setMetadataStore(store);
+		FormatReader.debug = true;
+		imageReader.setId(imageID);
+		return imageReader;
+
+	}
 // This function has been amended in Jan 2008 to calculate progress when loading zip, or single image file. Class ImageLoadingProgress has been
 // added for counting the actual progress even when there are a couple of files inside a zip file.
 	public static ImageDataset readImageDataset(String imageID, ClientTaskStatusSupport status) throws FormatException, IOException, ImageException {
@@ -67,16 +85,18 @@ public class ImageDatasetReader {
 		}
 
 
-		ImageReader imageReader = new ImageReader();
-		// create OME-XML metadata store of the latest schema version
-		MetadataStore store = MetadataTools.createOMEXMLMetadata();
-		// or if you want a specific schema version, you can use:
-		//MetadataStore store = MetadataTools.createOMEXMLMetadata(null, "2007-06");
-		MetadataRetrieve meta = (MetadataRetrieve) store;
-		store.createRoot();
-		imageReader.setMetadataStore(store);
-		FormatReader.debug = true;
-		imageReader.setId(imageID);
+		ImageReader imageReader = ImageDatasetReader.getImageReader(imageID);
+		MetadataRetrieve meta = (MetadataRetrieve)imageReader.getMetadataStore();
+//		ImageReader imageReader = new ImageReader();
+//		// create OME-XML metadata store of the latest schema version
+//		MetadataStore store = MetadataTools.createOMEXMLMetadata();
+//		// or if you want a specific schema version, you can use:
+//		//MetadataStore store = MetadataTools.createOMEXMLMetadata(null, "2007-06");
+//		MetadataRetrieve meta = (MetadataRetrieve) store;
+//		store.createRoot();
+//		imageReader.setMetadataStore(store);
+//		FormatReader.debug = true;
+//		imageReader.setId(imageID);
 		IFormatReader formatReader = imageReader.getReader(imageID);
 		formatReader.setId(imageID);
 		int seriesCount = formatReader.getSeriesCount();
@@ -226,7 +246,7 @@ public class ImageDatasetReader {
 	}
 	
 	
-	public static double[] getTimes(ImageReader imageReader){
+	private static double[] getTimes(ImageReader imageReader){
 		MetadataRetrieve meta = (MetadataRetrieve)imageReader.getMetadataStore();
 		Float[] timeFArr = new Float[imageReader.getSizeT()/*getImageCount()*/];
 		//Read raw times

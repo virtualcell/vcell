@@ -346,6 +346,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public static final String ROI_ASSIST_TEXT = "ROI Assist";
 	//properties
 	public static final String FRAP_DATA_CROP_PROPERTY = "FRAP_DATA_CROP_PROPERTY";
+	public static final String FRAP_DATA_AUTOCROP_PROPERTY = "FRAP_DATA_AUTOCROP_PROPERTY";
 	public static final String FRAP_DATA_TIMEPLOTROI_PROPERTY = "FRAP_DATA_TIMEPLOTROI_PROPERTY";
 	public static final String FRAP_DATA_CURRENTROI_PROPERTY = "FRAP_DATA_CURRENTROI_PROPERTY";
 	public static final String FRAP_DATA_UNDOROI_PROPERTY = "FRAP_DATA_UNDOROI_PROPERTY";
@@ -355,6 +356,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public static final String FRAP_DATA_CLEARROI_PROPERTY = "FRAP_DATA_CLEARROI_PROPERTY";
 	public static final String FRAP_DATA_CHECKROI_PROPERTY = "FRAP_DATA_CHECKROI_PROPERTY";
 	public static final String FRAP_DATA_BLEND_PROPERTY = "FRAP_DATA_BLEND_PROPERTY";
+	public static final String FRAP_DATA_CROPTOOLACTIVE_PROPERTY = "FRAP_DATA_CROPTOOLACTIVE_PROPERTY";
 	//used for new frap
 	public static final int DISPLAY_WITH_ROIS = 0;
 	public static final int DEFINE_CROP = 1;
@@ -520,18 +522,18 @@ public class OverlayEditorPanelJAI extends JPanel{
 		this.undoableEditSupport = undoableEditSupport;
 	}
 	
-	public static boolean isAutoCroppable(Rectangle cropRectangle,ImageDataset checkThisImageDataset){
-		if(cropRectangle == null || checkThisImageDataset == null){
-			throw new IllegalArgumentException("Crop Rectangle and Imagedataset cannot be null.");
-		}
-			if(cropRectangle != null &&
-				cropRectangle.x == 0 && cropRectangle.y == 0 &&
-				cropRectangle.width == checkThisImageDataset.getISize().getX() &&
-				cropRectangle.height == checkThisImageDataset.getISize().getY()){
-				return false;
-			}
-		return true;
-	}
+//	public static boolean isAutoCroppable(Rectangle cropRectangle,ImageDataset checkThisImageDataset){
+//		if(cropRectangle == null || checkThisImageDataset == null){
+//			throw new IllegalArgumentException("Crop Rectangle and Imagedataset cannot be null.");
+//		}
+//			if(cropRectangle != null &&
+//				cropRectangle.x == 0 && cropRectangle.y == 0 &&
+//				cropRectangle.width == checkThisImageDataset.getISize().getX() &&
+//				cropRectangle.height == checkThisImageDataset.getISize().getY()){
+//				return false;
+//			}
+//		return true;
+//	}
 	private void waitCursor(boolean bOn){
 		Container topLevelContainer = (JDesktopPane)BeanUtils.findTypeParentOfComponent(this, JDesktopPane.class);
 		if(topLevelContainer == null){
@@ -637,61 +639,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		autoCropButton = new JButton(new ImageIcon(getClass().getResource("/images/autoCrop.gif")));
 		autoCropButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				try {
-					if(imageDataset != null){
-						waitCursor(true);
-						Rectangle cropRect = imageDataset.getNonzeroBoundingRectangle();
-						if(cropRect == null || !isAutoCroppable(cropRect, imageDataset)){
-							DialogUtils.showWarningDialog(OverlayEditorPanelJAI.this, "No zero valued outer border found.  Use manual crop tool instead.");
-							return;
-						}
-						imagePane.setCrop(
-							new Point(
-								(int)(cropRect.x*imagePane.getZoom()),
-								(int)(cropRect.y*imagePane.getZoom())),
-							new Point(
-								(int)((cropRect.x+cropRect.width)*imagePane.getZoom()),
-								(int)((cropRect.y+cropRect.height)*imagePane.getZoom())));
-						waitCursor(false);
-						if(!cropConfirm(cropRect)){
-							imagePane.setCrop(null, null);
-							return;
-						}
-						waitCursor(true);
-						imagePane.setCrop(null, null);
-						firePropertyChange(FRAP_DATA_CROP_PROPERTY, null,cropRect);						
-					}else{
-						DialogUtils.showErrorDialog(OverlayEditorPanelJAI.this, "No imageDataset to perform auto-crop on.");
-					}
-//					if(isAutoCroppable()){
-//						Rectangle cropRect = null;
-//						if(imageDataset != null){
-//							cropRect = imageDataset.getNonzeroBoundingRectangle();
-//						}
-//						imagePane.setCrop(
-//								new Point(
-//									(int)(cropRect.x*imagePane.getZoom()),
-//									(int)(cropRect.y*imagePane.getZoom())),
-//								new Point(
-//									(int)((cropRect.x+cropRect.width)*imagePane.getZoom()),
-//									(int)((cropRect.y+cropRect.height)*imagePane.getZoom())));
-//						waitCursor(false);
-//						if(!cropConfirm(cropRect)){
-//							imagePane.setCrop(null, null);
-//							return;
-//						}
-//						waitCursor(true);
-//						imagePane.setCrop(null, null);
-//						firePropertyChange(FRAP_DATA_CROP_PROPERTY, null,cropRect);						
-//					}else{
-//						DialogUtils.showInfoDialog(OverlayEditorPanelJAI.this, "AutoCrop: No zero values around outer edges.");
-//					}
-				} catch (Exception e1) {
-					e1.printStackTrace();
-					DialogUtils.showErrorDialog(OverlayEditorPanelJAI.this, "Error AutoCrop:\n"+e1.getMessage());
-				}finally{
-					waitCursor(false);				
-				}
+				firePropertyChange(FRAP_DATA_AUTOCROP_PROPERTY, null,null);
 			}
 		});
 //		autoCropButton.setText("Auto Crop DataSet");
@@ -1213,7 +1161,14 @@ public class OverlayEditorPanelJAI extends JPanel{
 		imagePane.setModeRemoveROIWhenPainting(bMode);
 	}
 	public void setBlendPercent(int blendPercent){
+		Integer newBlendPercent = new Integer(blendPercent);
+		if(!newBlendPercent.equals(blendComboBox.getSelectedItem())){
+			blendComboBox.setSelectedItem(newBlendPercent);
+		}
 		imagePane.setBlendPercent(blendPercent);
+	}
+	public int getBlendPercent(){
+		return (Integer)blendComboBox.getSelectedItem();
 	}
 	/**
 	 * Method setROI.
@@ -1410,7 +1365,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	}
 	public void setAllROICompositeImage(BufferedImage[] allROICompositeImageArr){
 		this.allROICompositeImageArr = allROICompositeImageArr;
-		imagePane.setAllROICompositeImage(allROICompositeImageArr[getZ()]);
+		imagePane.setAllROICompositeImage((allROICompositeImageArr==null?null:allROICompositeImageArr[getZ()]));
 //		getImagePane().setAllROICompositeImage(allROICompositeImage);
 	}
 	/** Sets the viewer to display the given images. * @param argImageDataset ImageDataset
@@ -1693,11 +1648,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 							cropRect.height = 1;
 						}
 
-						if(!cropConfirm(cropRect)){
-							return;
-						}
-						//turn off crop rectangle
-						imagePane.setCrop(null, null);
+//						if(!cropDrawAndConfirm(cropRect)){
+//							return;
+//						}
+//						//turn off crop rectangle
+//						imagePane.setCrop(null, null);
 						//tell manager about crop
 						firePropertyChange(FRAP_DATA_CROP_PROPERTY, null, cropRect);
 					}
@@ -1758,21 +1713,33 @@ public class OverlayEditorPanelJAI extends JPanel{
 		DialogUtils.showWarningDialog(this, "You must add at least 1 ROI before trying to use the '"+toolDescription+"' tool.");
 		addROIActionListener.actionPerformed(null);
 	}
-	private boolean cropConfirm(Rectangle cropRect){
-		JLabel cropConfirmJlabel =
-			new JLabel("Crop FRAP data to new bounds?: ("+cropRect.x+","+cropRect.y+") to ("+
-					(cropRect.x+cropRect.width-1)+","+(cropRect.y+cropRect.height-1)+")");
-		cropConfirmJlabel.setPreferredSize(new Dimension(300,40));
-		cropConfirmJlabel.setMinimumSize(new Dimension(300,40));
-		if(DialogUtils.showComponentOKCancelDialog(
-			OverlayEditorPanelJAI.this,
-			cropConfirmJlabel,
-			"Confirm Crop FRAP Data to new boundaries.") != JOptionPane.OK_OPTION){
+	public boolean cropDrawAndConfirm(Rectangle cropRect){
+		try{
+			imagePane.setCrop(
+				new Point(
+					(int)(cropRect.x*imagePane.getZoom()),
+					(int)(cropRect.y*imagePane.getZoom())),
+				new Point(
+					(int)((cropRect.x+cropRect.width)*imagePane.getZoom()),
+					(int)((cropRect.y+cropRect.height)*imagePane.getZoom())));
+			
+			JLabel cropConfirmJlabel =
+				new JLabel("Crop data to new bounds?: ("+cropRect.x+","+cropRect.y+") to ("+
+						(cropRect.x+cropRect.width-1)+","+(cropRect.y+cropRect.height-1)+")");
+			cropConfirmJlabel.setPreferredSize(new Dimension(300,40));
+			cropConfirmJlabel.setMinimumSize(new Dimension(300,40));
+			boolean result = true;
+			if(DialogUtils.showComponentOKCancelDialog(
+				OverlayEditorPanelJAI.this,
+				cropConfirmJlabel,
+				"Confirm Crop Data to new boundaries.") != JOptionPane.OK_OPTION){
+				result  = false;
+			}
+			return result;
+		}finally{
 			imagePane.setCrop(null, null);
-			return false;
+
 		}
-//		VirtualFrapLoader.mf.setSaveStatus(true);
-		return true;
 	}
 	/**
 	 * Method drawHighlight.
@@ -2042,6 +2009,13 @@ public class OverlayEditorPanelJAI extends JPanel{
 			leftJPanel.add(contrastButtonMinus, gridBagConstraints_6);
 
 			cropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/crop.gif")));
+			cropButton.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					firePropertyChange(FRAP_DATA_CROPTOOLACTIVE_PROPERTY, new Integer(getZ()),null);
+				}
+			});
 			cropButton.setPreferredSize(new Dimension(32, 32));
 			cropButton.setMinimumSize(new Dimension(32, 32));
 			cropButton.setMaximumSize(new Dimension(32, 32));

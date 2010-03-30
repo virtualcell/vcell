@@ -552,8 +552,12 @@ public class ROIAssistPanel extends JPanel {
 		roiSourceComboBox.removeActionListener(createROISourceDataActionListener);
 		roiSourceComboBox.removeAllItems();
 		roiSourceComboBox.insertItemAt("Time Average", 0);
-		for (int i = 0; i < dataToThreshold.getImageDataset().getImageTimeStamps().length; i++) {
-			roiSourceComboBox.insertItemAt(dataToThreshold.getImageDataset().getImageTimeStamps()[i], i+1);
+		double[] imageTimeStamps = dataToThreshold.getImageDataset().getImageTimeStamps();
+		if(imageTimeStamps == null){
+			imageTimeStamps  = new double[1];
+		}
+		for (int i = 0; i < imageTimeStamps.length; i++) {
+			roiSourceComboBox.insertItemAt(imageTimeStamps[i], i+1);
 		}
 		int currentTime = overlayEditorPanelJAI.getT();
 		roiSourceComboBox.setSelectedIndex(currentTime+1);
