@@ -72,12 +72,23 @@ public void failed(Connection con, Object lock) throws SQLException {
 	release(con, lock);
 	// Get singleton ConnectionCacheManager instance
 	OracleConnectionCacheManager occm = OracleConnectionCacheManager.getConnectionCacheManagerInstance();
-	// Refresh invalid connections in cache
-	occm.refreshCache(connectionCacheName, OracleConnectionCacheManager.REFRESH_INVALID_CONNECTIONS);
+	// Refresh all connections in cache
+	occm.refreshCache(connectionCacheName, OracleConnectionCacheManager.REFRESH_ALL_CONNECTIONS);
 }
 
 public Connection getConnection(Object lock) throws SQLException {
-	Connection conn = oracleDataSource.getConnection();
+	Connection conn = null;
+	try {
+		conn = oracleDataSource.getConnection();
+	} catch (SQLException ex) {
+		// might be invalid or stale connection
+		ex.printStackTrace(System.out);
+		// refresh cache
+		OracleConnectionCacheManager occm = OracleConnectionCacheManager.getConnectionCacheManagerInstance();
+		occm.refreshCache(connectionCacheName, OracleConnectionCacheManager.REFRESH_ALL_CONNECTIONS);
+		// get connection again.
+		conn = oracleDataSource.getConnection();
+	}
 	if (conn == null) {
 		throw new SQLException("max connection limit has reached. no connections are available.");
 	}
