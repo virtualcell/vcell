@@ -2059,43 +2059,45 @@ public boolean isValid() {
 		for (int i = 0; i < subDomainList.size(); i++){
 			SubDomain subDomain = (SubDomain)subDomainList.elementAt(i);
 			if (subDomain instanceof CompartmentSubDomain) {
-				BoundaryConditionType bctM = ((CompartmentSubDomain)subDomain).getBoundaryConditionXm();
-				BoundaryConditionType bctP = ((CompartmentSubDomain)subDomain).getBoundaryConditionXp();
+				CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)subDomain;
+				BoundaryConditionType bctM = compartmentSubDomain.getBoundaryConditionXm();
+				BoundaryConditionType bctP = compartmentSubDomain.getBoundaryConditionXp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
 					setWarning("Xm and Xp must both have periodic boundary condition");
 					return false;
 				}
-				bctM = ((CompartmentSubDomain)subDomain).getBoundaryConditionYm();
-				bctP = ((CompartmentSubDomain)subDomain).getBoundaryConditionYp();
+				bctM = compartmentSubDomain.getBoundaryConditionYm();
+				bctP = compartmentSubDomain.getBoundaryConditionYp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
 					setWarning("Ym and Yp must both have periodic boundary condition");
 					return false;
 				}
-				bctM = ((CompartmentSubDomain)subDomain).getBoundaryConditionZm();
-				bctP = ((CompartmentSubDomain)subDomain).getBoundaryConditionZp();
+				bctM = compartmentSubDomain.getBoundaryConditionZm();
+				bctP = compartmentSubDomain.getBoundaryConditionZp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
 					setWarning("Zm and Zp must both have periodic boundary condition");
 					return false;
 				}				
 			}else if (subDomain instanceof MembraneSubDomain){
-				BoundaryConditionType bctM = ((MembraneSubDomain)subDomain).getBoundaryConditionXm();
-				BoundaryConditionType bctP = ((MembraneSubDomain)subDomain).getBoundaryConditionXp();
-				if (bctM.isPERIODIC() || bctP.isPERIODIC()) {
-					setWarning("Periodic boundary condition is not supported for membrane");
+				MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain;
+				BoundaryConditionType bctM = membraneSubDomain.getBoundaryConditionXm();
+				BoundaryConditionType bctP = membraneSubDomain.getBoundaryConditionXp();
+				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
+					setWarning("Xm and Xp must both have periodic boundary condition");
 					return false;
 				}
-				bctM = ((MembraneSubDomain)subDomain).getBoundaryConditionYm();
-				bctP = ((MembraneSubDomain)subDomain).getBoundaryConditionYp();
-				if (bctM.isPERIODIC() || bctP.isPERIODIC()) {
-					setWarning("Periodic boundary condition is not supported for membrane");
+				bctM = membraneSubDomain.getBoundaryConditionYm();
+				bctP = membraneSubDomain.getBoundaryConditionYp();
+				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
+					setWarning("Ym and Yp must both have periodic boundary condition");
 					return false;
 				}
-				bctM = ((MembraneSubDomain)subDomain).getBoundaryConditionZm();
-				bctP = ((MembraneSubDomain)subDomain).getBoundaryConditionZp();
-				if (bctM.isPERIODIC() || bctP.isPERIODIC()) {
-					setWarning("Periodic boundary condition is not supported for membrane");
+				bctM = membraneSubDomain.getBoundaryConditionZm();
+				bctP = membraneSubDomain.getBoundaryConditionZp();
+				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
+					setWarning("Zm and Zp must both have periodic boundary condition");
 					return false;
-				}				
+				}
 			}		
 		}
 		
