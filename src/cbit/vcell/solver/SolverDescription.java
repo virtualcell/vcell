@@ -937,7 +937,6 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_Deterministic);
 		featureSet.add(SolverFeature.Feature_FastSystem);
 		featureSet.add(SolverFeature.Feature_StopAtSpatiallyUniform);
-		featureSet.add(SolverFeature.Feature_PeriodicBoundaryCondition);
 		break;
 		
 	case TYPE_FINITE_VOLUME_STANDALONE:
