@@ -14,10 +14,15 @@ import org.vcell.util.gui.ZEnforcer;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
+import cbit.image.VCImageUncompressed;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.geometry.gui.ImageAttributePanel;
 
 public class EditImageAttributes extends AsynchClientTask {
+
+	public static final String STATUS_IMPORT = "import";
+	public static final String STATUS_MANUAL_SEGMENT = "Manual Segment";
+	public static final String STATUS_CANCEL = "cancel";
 
 	public EditImageAttributes() {
 		super("Editting image attributes", AsynchClientTask.TASKTYPE_SWING_BLOCKING);
@@ -45,16 +50,17 @@ public class EditImageAttributes extends AsynchClientTask {
 		}
 		
 		JDialog d = new JDialog(JOptionPane.getFrameForComponent(guiParent));
+		d.setTitle("Review regions and set initial geometry attributes");
 		d.setModal(true);
 		d.getContentPane().add(imageAttributePanel);
 		imageAttributePanel.setDialogParent(d);
-		d.setSize(400,600);
+		d.setSize(600,600);
 		d.setLocation(300,200);
 		ZEnforcer.showModalDialogOnTop(d, guiParent);
 
 		Object choice = imageAttributePanel.getStatus();
 		
-		if (choice != null && choice.equals("Import")) {
+		if (choice != null && choice.equals(STATUS_IMPORT)) {
 			VCImageInfo imageInfos[] = null;
 			pp.setMessage("Getting existing Image names");
 			try {
@@ -99,9 +105,14 @@ public class EditImageAttributes extends AsynchClientTask {
 			}
 			hashTable.put("newName", newName);			
 			
-		}else{
+		}else if( choice != null && choice.equals(STATUS_MANUAL_SEGMENT)){
+//			VCImage syncVCImage = new VCImageUncompressed(image);
+//			imageAttributePanel.synchronize(syncVCImage, imageAttributePanel);
+//			hashTable.put("syncAttributesVCImage", syncVCImage);
 			throw UserCancelException.CANCEL_EDIT_IMG_ATTR;
-		}			
+		}else{
+			throw UserCancelException.CANCEL_GENERIC;
+		}
 		if (image == null){
 			throw new RuntimeException("failed to create new Geometry, no image");
 		}

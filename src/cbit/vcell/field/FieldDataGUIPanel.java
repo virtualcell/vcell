@@ -1032,7 +1032,7 @@ private AsynchClientTask[] fdFromFile() {
 				}
 				initFDName = imageFile.getName();
 				try {
-					fdos = ClientRequestManager.createFDOSFromImageFile(imageFile,true);
+					fdos = ClientRequestManager.createFDOSFromImageFile(imageFile,true,null);
 				} catch (DataFormatException ex) {
 					throw new Exception("Cannot read image " + imageFile.getAbsolutePath()+"\n"+ex.getMessage());
 				}
@@ -1157,7 +1157,7 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 			AsynchClientTask[] taskArray = fieldDataWindowManager.newDocument(docCreateInfo);
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 			hash.put("requestManager", fieldDataWindowManager.getRequestManager());
-			hash.put("parent", this);
+			hash.put(ClientRequestManager.GUI_PARENT, this);
 			ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -48,7 +48,7 @@ public class ImageDataset implements Matchable{
 				throw new RuntimeException("ImageDataset sub-images not same dimension");
 			}
 		}
-		int numTimes = (argTimeStamps!=null)?(argTimeStamps.length):(1);
+		int numTimes = (argTimeStamps!=null && argTimeStamps.length>0)?(argTimeStamps.length):(1);
 		int expectedNumberOfImages = argNumZ * numTimes;
 		if (expectedNumberOfImages != argImages.length) {
 			throw new RuntimeException("incorrect number of images ("+argImages.length+") doesn't match numZ ("+tempNumZ+") * numTimes ("+numTimes+")");
@@ -207,6 +207,20 @@ public Rectangle getNonzeroBoundingRectangle() throws ImageException {
 	Rectangle wholeBoundingRect = null;
 	for (int i = 0; i < images.length; i++) {
 		Rectangle boundingRect = images[i].getNonzeroBoundingBox();
+		if(boundingRect != null){
+			if(wholeBoundingRect == null){
+				wholeBoundingRect = boundingRect;
+			}else{
+				wholeBoundingRect.union(boundingRect);
+			}
+		}
+	}
+	return wholeBoundingRect;
+}
+public Rectangle getNonzeroBoundingRectangle(int channel,int time) throws ImageException {
+	Rectangle wholeBoundingRect = null;
+	for (int z = 0; z < getSizeZ(); z++) {
+		Rectangle boundingRect = images[getIndexFromZCT(z,channel,time)].getNonzeroBoundingBox();
 		if(boundingRect != null){
 			if(wholeBoundingRect == null){
 				wholeBoundingRect = boundingRect;
