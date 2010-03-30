@@ -2067,11 +2067,7 @@ protected boolean hasEventAssignment(SpeciesContext speciesContext) {
 			ArrayList<EventAssignment> eventAssgnments = event.getEventAssignments();
 			for (EventAssignment eventAssign : eventAssgnments) {
 				if (eventAssign.getTarget() == speciesContext) {
-					if (!speciesContextSpec.isConstant()) {
-						return true;
-					} else {
-						throw new RuntimeException("Cannot have event for a species that is clamped.");
-					}
+					return true;
 				}
 			}
 		}

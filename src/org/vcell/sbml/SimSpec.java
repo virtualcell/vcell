@@ -15,6 +15,16 @@ public class SimSpec {
 	private String[] varsList = null;
 	private double endTime = 0.0;
 	private int numTimeSteps = 0;
+	private double absTolerance = 1e-10;
+	public double getAbsTolerance() {
+		return absTolerance;
+	}
+
+	public double getRelTolerance() {
+		return relTolerance;
+	}
+
+	private double relTolerance = 1e-12;
 	
 	public SimSpec(String[] argVarsList, double argEndTime, int argSteps) {
 		if (argVarsList == null) {
@@ -24,6 +34,18 @@ public class SimSpec {
 		this.endTime = argEndTime;
 		this.numTimeSteps = argSteps;
 	}
+
+	public SimSpec(String[] argVarsList, double argEndTime, int argSteps, double absTol, double relTol) {
+		if (argVarsList == null) {
+			throw new IllegalArgumentException("No variables in list");
+		}
+		this.varsList = argVarsList;
+		this.endTime = argEndTime;
+		this.numTimeSteps = argSteps;
+		this.absTolerance = absTol;
+		this.relTolerance = relTol;
+	}
+	
 	public String getMathematicaVarsListString(String mathematicaContextPrefix) {
 		// Write out the variables from file as {v1,v2,...,vn} - one string as required by dataTable in Mathematica.
 		String varsListStr = "{";

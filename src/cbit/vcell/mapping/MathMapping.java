@@ -2596,7 +2596,7 @@ private void refreshVariables() throws MappingException {
 //System.out.println("MathMapping.refreshVariables()");
 
 	//
-	// non-constant dependant variables require a function
+	// non-constant dependent variables require a function
 	//
 	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
@@ -2608,6 +2608,15 @@ private void refreshVariables() throws MappingException {
 		}
 	}
 
+	enum1 = getSpeciesContextMappings();
+	while (enum1.hasMoreElements()){
+		SpeciesContextMapping scm = enum1.nextElement();
+		SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
+		if (getSimulationContext().hasEventAssignment(scs.getSpeciesContext())){
+			scm.setDependencyExpression(null);
+		}
+	}
+
 	//
 	// non-constant independent variables require either a membrane or volume variable
 	//
@@ -2615,7 +2624,7 @@ private void refreshVariables() throws MappingException {
 	while (enum1.hasMoreElements()){
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
-		if (scm.getDependencyExpression() == null && !scs.isConstant()){
+		if (scm.getDependencyExpression() == null && (!scs.isConstant() || getSimulationContext().hasEventAssignment(scs.getSpeciesContext()))){
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
 			Structure struct = scm.getSpeciesContext().getStructure();
 			if (struct instanceof Feature){

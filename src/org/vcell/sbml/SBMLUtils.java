@@ -348,7 +348,7 @@ public static SBMLUnitParameter getConcUnitFactor(String name, VCUnitDefinition 
 		// if SBML substance unit is 'item'; VC substance unit is 'moles'
 		fromUnit = fromUnit.divideBy(ReservedSymbol.KMOLE.getUnitDefinition());
 		Expression factorExpr = new Expression(fromUnit.convertTo(1.0, toUnit));
-		factorExpr = Expression.mult(factorExpr, Expression.invert(ReservedSymbol.KMOLE.getExpression()));
+		factorExpr = Expression.div(factorExpr, ReservedSymbol.KMOLE.getExpression());
 		sbmlUnitsParam = new SBMLUnitParameter(name, factorExpr, toUnit.divideBy(fromUnit));
 	} else if (fromUnit.multiplyBy(ReservedSymbol.KMOLE.getUnitDefinition()).isCompatible(toUnit)) {
 		// if VC substance unit is 'item'; SBML substance unit is 'moles' 
