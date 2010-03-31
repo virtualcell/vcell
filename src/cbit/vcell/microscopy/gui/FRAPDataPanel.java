@@ -18,6 +18,7 @@ import cbit.image.ImageException;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.PlotPane;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.PopupGenerator;
@@ -70,6 +71,28 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		}
 		overlayEditorPanel.showAssistDialog(currentROI,maskBitSet, !bIsCurrent_CellROI/*, bIsCurrent_BackgroundROI, !bIsCurrent_BackgroundROI*/);
 	}
+	private void cropFromUser(Rectangle cropRectangle){
+		try {
+			if(overlayEditorPanel.cropDrawAndConfirm(cropRectangle)){
+				crop(cropRectangle);
+			}
+		} catch (Exception ex) {
+			PopupGenerator.showErrorDialog(this, "Error Cropping:\n"+ex.getMessage());
+		}
+	}
+	public static boolean isAutoCroppable(Rectangle cropRectangle,ImageDataset checkThisImageDataset){
+		if(cropRectangle == null || checkThisImageDataset == null){
+			throw new IllegalArgumentException("Crop Rectangle and Imagedataset cannot be null.");
+		}
+			if(cropRectangle != null &&
+				cropRectangle.x == 0 && cropRectangle.y == 0 &&
+				cropRectangle.width == checkThisImageDataset.getISize().getX() &&
+				cropRectangle.height == checkThisImageDataset.getISize().getY()){
+				return false;
+			}
+		return true;
+	}
+
 	//implementation of propertychange as a propertyChangeListener
 	public void propertyChange(PropertyChangeEvent e) {
 		if (e.getSource() instanceof  ImageLoadingProgress && e.getPropertyName().equals("ImageLoadingProgress"))
@@ -78,13 +101,27 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 			VirtualFrapMainFrame.updateProgress(prog);
 		}
 		else if(e.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY)){
-			try {
-				crop((Rectangle) e.getNewValue());
-			} catch (Exception ex) {
-				PopupGenerator.showErrorDialog(this, "Error Cropping:\n"+ex.getMessage());
+			cropFromUser((Rectangle) e.getNewValue());
+		}else if(e.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOCROP_PROPERTY)){
+			try{
+				if(getFrapWorkspace() == null || getFrapWorkspace().getWorkingFrapStudy() == null ||
+						getFrapWorkspace().getWorkingFrapStudy().getFrapData() == null ||
+						getFrapWorkspace().getWorkingFrapStudy().getFrapData().getImageDataset() == null){
+					throw new Exception("No FrapData found to auto-crop");
+				}
+				ImageDataset imgDataSet = getFrapWorkspace().getWorkingFrapStudy().getFrapData().getImageDataset();
+				Rectangle cropRectangle = null;
+				cropRectangle = imgDataSet.getNonzeroBoundingRectangle();
+				if(cropRectangle == null || !FRAPDataPanel.isAutoCroppable(cropRectangle, imgDataSet)){
+					DialogUtils.showWarningDialog(this, "No zero valued outer border found.  Use manual crop tool instead.");
+				}else{
+					cropFromUser(cropRectangle);
+				}
+			}catch(Exception exc){
+				exc.printStackTrace();
+				DialogUtils.showErrorDialog(this, "Error auto-crop:\n"+exc.getMessage());
 			}
-		}
-		else if (e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITH_SAVE)){
+		}else if (e.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITH_SAVE)){
 			//Save user changes from viewer to ROI
 			//To save only when the image is editable in this panel
 			if(isEditable)
