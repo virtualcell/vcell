@@ -19,6 +19,10 @@ import cbit.image.VCImage;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.IdentifiableProvider;
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
+import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
@@ -327,6 +331,21 @@ public static String exportCellML(VCDocument vcDoc, String appName) throws XmlPa
 		return xmlString;
 	}
 
+	public static String vcMetaDataToXML(VCMetaData vcMetaData, IdentifiableProvider identifiableProvider) throws XmlParseException {
+
+		String xmlString = null;
+		Element vcMetaDataElement = XMLMetaDataWriter.getElement(vcMetaData, identifiableProvider);
+		vcMetaDataElement = XmlUtil.setDefaultNamespace(vcMetaDataElement, Namespace.getNamespace(XMLTags.VCML_NS));		
+		xmlString = XmlUtil.xmlToString(vcMetaDataElement);
+		
+		return xmlString;
+	}
+
+	public static VCMetaData xmlToVCMetaData(VCMetaData populateThisVCMetaData,BioModel bioModel,String vcMetaDataXML) throws XmlParseException{
+		Document vcMetaDataDoc = XmlUtil.stringToXML(vcMetaDataXML,null);
+		XMLMetaDataReader.readFromElement(populateThisVCMetaData, bioModel, vcMetaDataDoc.getRootElement());
+		return populateThisVCMetaData;
+	}
 /**
 Allows the translation process to interact with the user via TranslationMessager
 */

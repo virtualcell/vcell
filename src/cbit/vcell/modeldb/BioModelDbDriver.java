@@ -161,18 +161,18 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 	// get SimulationContext Keys for bioModelKey
 	//
 	KeyValue simContextKeys[] = getSimContextEntriesFromBioModel(con, bioModelKey);
-	
-	KeyValue metadataKey = getMetadataKeyBioModel(con, bioModelKey);
 
 	//
 	// get BioModelMetaData object for bioModelKey
 	//
 	String sql;
-	Field[] f = {new StarField(bioModelTable),userTable.userid};
-	Table[] t = {bioModelTable,userTable};
+	Field[] f = {new StarField(bioModelTable),userTable.userid,new StarField(VCMetaDataTable.table)};
+	Table[] t = {bioModelTable,userTable,VCMetaDataTable.table};
 	String condition =	bioModelTable.id.getQualifiedColName() + " = " + bioModelKey + 
 					" AND " + 
-						userTable.id.getQualifiedColName() + " = " + bioModelTable.ownerRef.getQualifiedColName();
+						userTable.id.getQualifiedColName() + " = " + bioModelTable.ownerRef.getQualifiedColName()+
+					" AND "+
+						VCMetaDataTable.table.bioModelRef.getQualifiedColName() + "(+) = " + bioModelKey;
 	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null,true);
 
 	Statement stmt = con.createStatement();
@@ -183,7 +183,7 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 		//showMetaData(rset);
 
 		if (rset.next()) {
-			bioModelMetaData = bioModelTable.getBioModelMetaData(rset,con,log,simContextKeys,simKeys,metadataKey);
+			bioModelMetaData = bioModelTable.getBioModelMetaData(rset,con,log,simContextKeys,simKeys);
 		} else {
 			throw new ObjectNotFoundException("BioModel id=" + bioModelKey + " not found for user '" + user + "'");
 		}
@@ -455,8 +455,12 @@ private void insertBioModelMetaData(Connection con,User user ,BioModelMetaData b
 		KeyValue scKey = (KeyValue)scEnum.nextElement();
 		insertSimContextEntryLinkSQL(con, getNewKey(con), bioModelKey, scKey);
 	}
-	
+	//
+	//Insert VCMetaData
+	//
 //	MIRIAMTable.table.insertMIRIAM(con, bioModel, newVersion.getVersionKey());
+	VCMetaDataTable.insertVCMetaData(con,bioModel.getVCMetaDataXML(),bioModelKey,getNewKey(con));
+	
 }
 
 
@@ -558,9 +562,4 @@ public KeyValue updateVersionable(InsertHashtable hash, Connection con, User use
 	return newVersion.getVersionKey();
 }
 
-
-public KeyValue getMetadataKeyBioModel(Connection con, KeyValue bioModelKey) {
-	System.err.println("BioModelDbDriver::getMetadataKeyBioModel() needs to be implemented");
-	return null;
-}
 }

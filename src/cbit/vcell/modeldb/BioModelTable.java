@@ -69,10 +69,13 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, SessionLog log, BioM
 	// get SimulationContext Keys for bioModelKey
 	//
 	KeyValue simContextKeys[] = bioModelDbDriver.getSimContextEntriesFromBioModel(con, bioModelKey);
-
-	KeyValue metadataKey = bioModelDbDriver.getMetadataKeyBioModel(con, bioModelKey);
 	
-	BioModelMetaData bioModelMetaData = new BioModelMetaData(version,modelRef,simContextKeys,simKeys,metadataKey);
+	//
+	//Get VCMetaData XML
+	//
+	String vcMetaDataXML = VCMetaDataTable.getVCMetaDataXML(rset);
+	
+	BioModelMetaData bioModelMetaData = new BioModelMetaData(version,modelRef,simContextKeys,simKeys,vcMetaDataXML);
 	//
 	// setMathDescription is done in calling parent
 	//
@@ -86,7 +89,7 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, SessionLog log, BioM
  * @param user cbit.vcell.server.User
  * @param rset java.sql.ResultSet
  */
-public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,SessionLog log, KeyValue simContextKeys[], KeyValue simulationKeys[], KeyValue metadataKey) 
+public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,SessionLog log, KeyValue simContextKeys[], KeyValue simulationKeys[]) 
 										throws SQLException,DataAccessException {
 
 	//
@@ -97,8 +100,8 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,Sessi
 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
 
-	
-	BioModelMetaData bioModelMetaData = new BioModelMetaData(version,modelRef,simContextKeys,simulationKeys,metadataKey);
+	String vcMetaDataXML = VCMetaDataTable.getVCMetaDataXML(rset);
+	BioModelMetaData bioModelMetaData = new BioModelMetaData(version,modelRef,simContextKeys,simulationKeys,vcMetaDataXML);
 	//
 	// setMathDescription is done in calling parent
 	//
