@@ -4,6 +4,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.jdom.Element;
+import org.jdom.Namespace;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -19,9 +21,11 @@ import org.vcell.util.document.VersionableType;
 import cbit.image.VCImage;
 import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
@@ -34,6 +38,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 /**
@@ -759,6 +764,7 @@ long start = System.currentTimeMillis();
 	//   Model->BioModel
 	//   Simulation->BioModel
 	//   SimContext->BioModel 
+	//   VCMetaData->BioModel
 	//
 	Simulation simArray[] = bioModel.getSimulations();
 	SimulationContext scArray[] = bioModel.getSimulationContexts();
@@ -1291,6 +1297,32 @@ roundtripTimer += l2 - l1;
 		}
 	}
 
+	boolean bMustSaveVCMetaData = false;
+	if (origBioModel!=null){
+		//
+		// for the VCMetaData in the document:
+		//   save VCMetaData if necessary (only once) and store saved instance in hashtable.
+		//
+		// The persisted VCMetaData doesn't have any foreign keys 
+		// (when annotating a simulation ... we don't point to the simulation, 
+		// we use the text-based VCID that is stored in URIBindingList in the XML serialization 
+		//
+		// Therefore, there are no additional dependencies that we have to update during the 
+		// incremental save and force propagation to save the VCMetaData.
+		//
+		VCMetaData memoryVCMetaData = bioModel.getVCMetaData();
+		VCMetaData databaseVCMetaData = origBioModel.getVCMetaData();
+		//
+		// compare with original VCMetaData to see if "update" is required.
+		//
+		// always get the "original" simulation so that SimulationParentReference can be maintained.
+		//
+		if (databaseVCMetaData==null || !databaseVCMetaData.compareEquals(memoryVCMetaData)){
+			bMustSaveVCMetaData = true;
+			bSomethingChanged = true;
+		}
+	}
+	
 	if (bSomethingChanged || origBioModel==null || !bioModel.compareEqual(origBioModel)){
 		//
 		// create new BioModelMetaData and save to server
@@ -1308,16 +1340,13 @@ roundtripTimer += l2 - l1;
 		// @TODO Write script to populate VC_METADATA from VC_MIRIAM
 		// @TODO save VCMetaData from this BioModel into VC_METADATA .. stick in memoryToDatabaseHash
 		//
-		VCMetaData savedVCMetaData = (VCMetaData)memoryToDatabaseHash.get(bioModel.getVCMetaData());
-		KeyValue metadataKey = null;
-		if (savedVCMetaData!=null){
-			metadataKey = savedVCMetaData.getKey();
-		}
 		BioModelMetaData bioModelMetaData = null;
+		String vcMetaDataXML = XmlHelper.vcMetaDataToXML(bioModel.getVCMetaData(), bioModel);
 		if (oldVersion==null){
-			bioModelMetaData = new BioModelMetaData(modelKey, scKeys, simKeys, metadataKey, bioModel.getName(), bioModel.getDescription());
+			bioModelMetaData =
+				new BioModelMetaData(modelKey, scKeys, simKeys,vcMetaDataXML, bioModel.getName(), bioModel.getDescription());
 		}else{
-			bioModelMetaData = new BioModelMetaData(oldVersion, modelKey, scKeys, simKeys, metadataKey);
+			bioModelMetaData = new BioModelMetaData(oldVersion, modelKey, scKeys, simKeys,vcMetaDataXML);
 			if (!bioModel.getDescription().equals(oldVersion.getAnnot())) {
 				try {
 					bioModelMetaData.setDescription(bioModel.getDescription());
@@ -1347,7 +1376,6 @@ roundtripTimer += l2 - l1;
 		//
 		//bioModelXML = getBioModelXML(user,updatedBioModelMetaData.getVersion().getVersionKey());
 		BioModel updatedBioModel = new BioModel(updatedBioModelMetaData.getVersion());
-		updatedBioModel.setVCMetaData(bioModel.getVCMetaData());
 		//updatedBioModel.setMIRIAMAnnotation(updatedBioModelMetaData.getMIRIAMAnnotation());
 		updatedBioModel.setModel((Model)memoryToDatabaseHash.get(bioModel.getModel()));
 		for (int i = 0; i < bioModel.getNumSimulationContexts(); i++){
@@ -1356,6 +1384,8 @@ roundtripTimer += l2 - l1;
 		for (int i = 0; i < bioModel.getNumSimulations(); i++){
 			updatedBioModel.addSimulation((Simulation)memoryToDatabaseHash.get(bioModel.getSimulations(i)));
 		}
+		updatedBioModel.setVCMetaData(XmlHelper.xmlToVCMetaData(updatedBioModel.getVCMetaData(), updatedBioModel, vcMetaDataXML));
+
 		bioModelXML = cbit.vcell.xml.XmlHelper.bioModelToXML(updatedBioModel);
 		dbServer.insertVersionableChildSummary(user,VersionableType.BioModelMetaData,updatedBioModel.getVersion().getVersionKey(),
 				updatedBioModel.createBioModelChildSummary().toDatabaseSerialization());

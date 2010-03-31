@@ -6,6 +6,8 @@ import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
+
+import cbit.vcell.biomodel.meta.VCMetaData;
 /**
  * Insert the type's description here.
  * Creation date: (11/13/00 3:26:20 PM)
@@ -25,7 +27,7 @@ public class BioModelMetaData implements Versionable, java.io.Serializable{
 	private KeyValue modelKey = null;
 	private Vector<KeyValue> simulationContextKeyList = new Vector<KeyValue>();
 	private Vector<KeyValue> simulationKeyList = new Vector<KeyValue>();
-	private KeyValue metadataKey = null;
+	private String vcMetaDataXML = null;
 	
 	private java.lang.String fieldName = new String("NoName");
 	private java.lang.String fieldDescription = new String();
@@ -33,7 +35,7 @@ public class BioModelMetaData implements Versionable, java.io.Serializable{
 /**
  * BioModelMetaData constructor comment.
  */
-public BioModelMetaData(KeyValue argModelKey, KeyValue simContextKeys[], KeyValue simulationKeys[], KeyValue metadataKey, String argName, String argDescription) {
+public BioModelMetaData(KeyValue argModelKey, KeyValue simContextKeys[], KeyValue simulationKeys[], String vcMetaDataXML, String argName, String argDescription) {
 	this.version = null;
 	this.fieldName = argName;
 	this.fieldDescription = argDescription;
@@ -48,14 +50,14 @@ public BioModelMetaData(KeyValue argModelKey, KeyValue simContextKeys[], KeyValu
 			this.simulationKeyList.addElement(simulationKeys[i]);
 		}
 	}
-	this.metadataKey = metadataKey;
+	this.vcMetaDataXML = vcMetaDataXML;
 }
 
 
 /**
  * BioModelMetaData constructor comment.
  */
-public BioModelMetaData(Version argVersion, KeyValue argModelKey, KeyValue simContextKeys[], KeyValue simulationKeys[], KeyValue metadataKey) {
+public BioModelMetaData(Version argVersion, KeyValue argModelKey, KeyValue simContextKeys[], KeyValue simulationKeys[], String vcMetaDataXML) {
 	this.version = argVersion;
 	if (version!=null){
 		this.fieldName = version.getName();
@@ -72,7 +74,7 @@ public BioModelMetaData(Version argVersion, KeyValue argModelKey, KeyValue simCo
 			this.simulationKeyList.addElement(simulationKeys[i]);
 		}
 	}
-	this.metadataKey = metadataKey;
+	this.vcMetaDataXML = vcMetaDataXML;
 }
 
 /**
@@ -113,7 +115,7 @@ public boolean compareEqual(org.vcell.util.Matchable matchable) {
 	if (!org.vcell.util.Compare.isEqual(modelKey,obj.modelKey)){
 		return false;
 	}
-	if(!Compare.isEqualOrNull(metadataKey, obj.metadataKey)){
+	if(!Compare.isEqualOrNull(vcMetaDataXML, obj.vcMetaDataXML)){
 		return false;
 	}
 	return true;
@@ -232,7 +234,7 @@ public String toString() {
 }
 
 
-public KeyValue getMetadataKey() {
-	return metadataKey;
+public String getVCMetaDataXML() {
+	return vcMetaDataXML;
 }
 }
