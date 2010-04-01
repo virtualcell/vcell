@@ -826,7 +826,7 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 	for (int i = 0; i < regionsV.size(); i++) {
 		regionInfos[i] =
 			new RegionInfo(
-					regionImagePixelV.elementAt(regionsV.elementAt(i).elementAt(0)&0x000000FF),
+					regionImagePixelV.elementAt(regionsV.elementAt(i).elementAt(0))&0x000000FF,
 					regionsSizeV.elementAt(i),
 					i,
 					null//regionBitMaskBS[i]
