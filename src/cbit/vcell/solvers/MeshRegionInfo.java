@@ -128,14 +128,14 @@ public BitSet getVolumeROIFromVolumeRegionID(int volumeRegionID){
     if (isUnsignedShortDataType()) {
     	// unsigned short
     	for (int i = 0; i < numVolumeElements; i++) {
-    		if(((int)((0x000000ff & fieldVolumeElementMapVolumeRegion[2 * i]) | ((0x000000ff & fieldVolumeElementMapVolumeRegion[2 * i + 1]) << 8))) == volumeRegionID){
+    		if(((int)((0x000000ff & getVolumeElementMapVolumeRegion()[2 * i]) | ((0x000000ff & getVolumeElementMapVolumeRegion()[2 * i + 1]) << 8))) == volumeRegionID){
     			roiVolumeRegionID.set(i);
     		}
     	}
     } else {
     	// byte
     	for (int i = 0; i < numVolumeElements; i++) {
-    		if((int)(0x000000ff & fieldVolumeElementMapVolumeRegion[i]) == volumeRegionID){
+    		if((int)(0x000000ff & getVolumeElementMapVolumeRegion()[i]) == volumeRegionID){
     			roiVolumeRegionID.set(i);
     		}
     	}
@@ -249,13 +249,7 @@ public String getVCMLVolumeRegionMapSubvolume() {
 
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/4/2001 5:50:56 PM)
- * @param cvemvr byte[]
- */
-public int getVolumeElementMapVolumeRegion(int index) {
+private byte[] getVolumeElementMapVolumeRegion() {
     if (fieldVolumeElementMapVolumeRegion == null) {
         if (fieldCompressedVolumeElementMapVolumeRegion != null) {
             try{
@@ -267,18 +261,26 @@ public int getVolumeElementMapVolumeRegion(int index) {
 	        throw new RuntimeException("MeshRegionInfo no compressed volume element map volume region data");
         }
     }
+    return fieldVolumeElementMapVolumeRegion;
+}
+/**
+ * Insert the method's description here.
+ * Creation date: (7/4/2001 5:50:56 PM)
+ * @param cvemvr byte[]
+ */
+public int getVolumeElementMapVolumeRegion(int index) {
+    
     if (isUnsignedShortDataType()) {
     	// unsigned short
-    	return (int)((0x000000ff & fieldVolumeElementMapVolumeRegion[2 * index]) | ((0x000000ff & fieldVolumeElementMapVolumeRegion[2 * index + 1]) << 8));
+    	return (int)((0x000000ff & getVolumeElementMapVolumeRegion()[2 * index]) | ((0x000000ff & getVolumeElementMapVolumeRegion()[2 * index + 1]) << 8));
     } else {
     	// byte
-    	return (int)(0x000000ff & fieldVolumeElementMapVolumeRegion[index]);
+    	return (int)(0x000000ff & getVolumeElementMapVolumeRegion()[index]);
     }
 }
 
 public int getUncompressedVolumeElementMapVolumeRegionLength() {
-	getVolumeElementMapVolumeRegion(0);
-	return fieldVolumeElementMapVolumeRegion.length;
+	return getVolumeElementMapVolumeRegion().length;
 }
 
 /**
@@ -291,7 +293,7 @@ java.util.Vector<VolumeRegionMapSubvolume> getVolumeRegionMapSubvolume() {
 }
 
 private boolean isUnsignedShortDataType(){
-	return fieldVolumeElementMapVolumeRegion.length == 2 * numVolumeElements;
+	return getVolumeElementMapVolumeRegion().length == 2 * numVolumeElements;
 }
 /**
  * Insert the method's description here.
@@ -301,7 +303,7 @@ private boolean isUnsignedShortDataType(){
 public void mapMembraneElementsToMembraneRegions(int[] membraneElementMapMembraneRegion) {
 	//MembraneElement is implicit in index of membraneElementMapMembraneRegion array
 	fieldMembraneElementMapMembraneRegion = membraneElementMapMembraneRegion;
-	}
+}
 
 
 /**
@@ -316,7 +318,7 @@ public void mapMembraneRegionToVolumeRegion(int membraneRegionID, int volumeRegi
 	MembraneRegionMapVolumeRegion mrmvr = new MembraneRegionMapVolumeRegion(membraneRegionID,volumeRegionInsideID,volumeRegionOutsideID,membraneRegionSurface);
 	//membraneRegionMapVolumeRegion.put(membraneRegionIDIint,mrmvr);
 	membraneRegionMapVolumeRegion.add(mrmvr);
-	}
+}
 
 
 /**
@@ -331,7 +333,7 @@ public void mapVolumeRegionToSubvolume(int volumeRegionID, int subvolumeID, doub
 	VolumeRegionMapSubvolume vrms = new VolumeRegionMapSubvolume(volumeRegionID,subvolumeID,volumeRegionVolume);
 	//volumeRegionMapSubvolume.put(volumeRegionIDIint,vrms);
 	volumeRegionMapSubvolume.add(vrms);
-	}
+}
 
 
 /**
@@ -341,7 +343,6 @@ public void mapVolumeRegionToSubvolume(int volumeRegionID, int subvolumeID, doub
  */
 public void setCompressedVolumeElementMapVolumeRegion(byte[] cvemvr, int nve) throws java.io.IOException{
     fieldCompressedVolumeElementMapVolumeRegion = cvemvr;
-    fieldVolumeElementMapVolumeRegion = uncompress(cvemvr);
     numVolumeElements = nve;
 }
 
