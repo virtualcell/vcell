@@ -9,6 +9,7 @@ import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 
 import cbit.image.ImageException;
+import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 
 /**
  * Insert the type's description here.
@@ -146,7 +147,22 @@ public UShortImage[] getAllImages() {
 	return images;
 }
 
-
+public ImageStatistics getImageStatistics() {
+	ImageStatistics allImageStatistics = new ImageStatistics();
+	for (int i = 0; i < getAllImages().length; i++) {
+		ImageStatistics imageStatistics  = getAllImages()[i].getImageStatistics();
+		if(i==0){
+			allImageStatistics.maxValue = imageStatistics.maxValue;
+			allImageStatistics.minValue = imageStatistics.minValue;
+			allImageStatistics.meanValue = imageStatistics.meanValue/getAllImages().length;
+		}else{
+			allImageStatistics.maxValue = Math.max(allImageStatistics.maxValue, imageStatistics.maxValue);
+			allImageStatistics.minValue = Math.min(allImageStatistics.minValue, imageStatistics.minValue);
+			allImageStatistics.meanValue+= imageStatistics.meanValue/getAllImages().length;
+		}
+	}
+	return allImageStatistics;
+}
 /**
  * Insert the method's description here.
  * Creation date: (1/24/2007 4:33:01 PM)
@@ -211,7 +227,7 @@ public Rectangle getNonzeroBoundingRectangle() throws ImageException {
 			if(wholeBoundingRect == null){
 				wholeBoundingRect = boundingRect;
 			}else{
-				wholeBoundingRect.union(boundingRect);
+				wholeBoundingRect = wholeBoundingRect.union(boundingRect);
 			}
 		}
 	}
@@ -225,7 +241,7 @@ public Rectangle getNonzeroBoundingRectangle(int channel,int time) throws ImageE
 			if(wholeBoundingRect == null){
 				wholeBoundingRect = boundingRect;
 			}else{
-				wholeBoundingRect.union(boundingRect);
+				wholeBoundingRect = wholeBoundingRect.union(boundingRect);
 			}
 		}
 	}
