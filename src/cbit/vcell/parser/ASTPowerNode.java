@@ -74,7 +74,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	//
 	ASTMultNode multNode2 = new ASTMultNode();
 	ASTFuncNode logNode = new ASTFuncNode();
-	logNode.setFunction(ASTFuncNode.LOG);
+	logNode.setFunctionFromName(ASTFuncNode.getFunctionNames()[ASTFuncNode.LOG]);
 	logNode.jjtAddChild(jjtGetChild(0).copyTree());
 	multNode2.jjtAddChild(copyTree());
 	multNode2.jjtAddChild(logNode);

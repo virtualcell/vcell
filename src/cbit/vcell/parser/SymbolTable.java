@@ -9,5 +9,6 @@ import java.util.Map;
 public interface SymbolTable {
 
 public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException; 
-	public void getEntries(Map<String, SymbolTableEntry> entryMap);
+public void getEntries(Map<String, SymbolTableEntry> entryMap);
+
 }

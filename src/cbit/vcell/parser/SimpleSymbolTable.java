@@ -1,5 +1,6 @@
 package cbit.vcell.parser;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import cbit.vcell.units.VCUnitDefinition;
@@ -32,10 +33,75 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 public class SimpleSymbolTable implements ScopedSymbolTable {
 	
-	private SimpleSymbolTableEntry steArray[] = null;
+	private SymbolTableEntry steArray[] = null;
 	private NameScope nameScope = null;
 	
-	private class SimpleSymbolTableEntry implements SymbolTableEntry {
+	public static class SimpleSymbolTableFunctionEntry implements SymbolTableFunctionEntry {
+		private String funcName = null; 
+		private String[] argNames = null;
+		private FunctionArgType[] argTypes = null;
+		private Expression expression = null;
+		private NameScope nameScope = null;
+		private VCUnitDefinition vcUnitDefinition = null;
+		
+		public SimpleSymbolTableFunctionEntry(String funcName, String[] argNames, FunctionArgType[] argTypes, Expression expression, VCUnitDefinition vcUnitDefinition, NameScope argNameScope){
+			this.funcName = funcName;
+			this.argNames = argNames;
+			this.argTypes = argTypes;
+			this.expression = expression;
+			this.nameScope = argNameScope;
+			this.vcUnitDefinition = vcUnitDefinition;
+			if (argNames.length!=argTypes.length){
+				throw new IllegalArgumentException("length of function argument name and type arrays must be the same");
+			}
+		}
+		
+		public String[] getArgNames() {
+			return argNames;
+		}
+
+		public FunctionArgType[] getArgTypes() {
+			return argTypes;
+		}
+
+		public int getNumArguments() {
+			return argTypes.length;
+		}
+
+		public double getConstantValue() throws ExpressionException {
+			throw new ExpressionException("can't evaluate to constant");
+		}
+
+		public Expression getExpression() throws ExpressionException {
+			return expression;
+		}
+
+		public int getIndex() {
+			return -1;
+		}
+
+		public String getName() {
+			return ASTFuncNode.getFormalDefinition(funcName, argTypes);
+		}
+
+		public NameScope getNameScope() {
+			return nameScope;
+		}
+
+		public VCUnitDefinition getUnitDefinition() {
+			return vcUnitDefinition;
+		}
+
+		public boolean isConstant() throws ExpressionException {
+			return false;
+		}
+
+		public String getFunctionName() {
+			return funcName;
+		}		
+	}
+	
+	public static class SimpleSymbolTableEntry implements SymbolTableEntry {
 		private String name = null;
 		private int index = -1;
 		private NameScope nameScope = null;
@@ -75,17 +141,27 @@ public class SimpleSymbolTable implements ScopedSymbolTable {
 		}
 	};
 	
+public SimpleSymbolTable(String symbols[], SymbolTableFunctionEntry[] functionDefinitions, NameScope nameScope){
+	this.nameScope = nameScope;
+	ArrayList<SymbolTableEntry> stes = new ArrayList<SymbolTableEntry>();
+	for (int i=0;i<symbols.length;i++){
+		stes.add(new SimpleSymbolTableEntry(symbols[i],i,nameScope));
+	}
+	if (functionDefinitions!=null){
+		for (int i=0;i<functionDefinitions.length;i++){
+			stes.add(functionDefinitions[i]);
+		}
+	}
+	steArray = stes.toArray(new SymbolTableEntry[0]);
+}
+
 public SimpleSymbolTable(String symbols[]){
 	this(symbols,null);
 }
 
 
 public SimpleSymbolTable(String symbols[], NameScope argNameScope){
-	this.nameScope = argNameScope;
-	steArray = new SimpleSymbolTableEntry[symbols.length];
-	for (int i=0;i<symbols.length;i++){
-		steArray[i] = new SimpleSymbolTableEntry(symbols[i],i,nameScope);
-	}
+	this(symbols, null, argNameScope);
 }
 
 

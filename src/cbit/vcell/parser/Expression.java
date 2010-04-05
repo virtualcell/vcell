@@ -652,25 +652,25 @@ parseCount++;
  * @exception java.lang.Exception The exception description.
  */
 public static Expression power(Expression expression1, Expression expression2) throws ExpressionException {
-	return function(ASTFuncNode.POW, expression1, expression2);
+	return function(ASTFuncNode.getFunctionNames()[ASTFuncNode.POW], expression1, expression2);
 }
 
 public static Expression power(Expression expression1, double exponent) throws ExpressionException {
-	return function(ASTFuncNode.POW, expression1, new Expression(exponent));
+	return function(ASTFuncNode.getFunctionNames()[ASTFuncNode.POW], expression1, new Expression(exponent));
 }
 
 public static Expression log(Expression expression1) throws ExpressionException {
-	return function(ASTFuncNode.LOG, expression1);
+	return function(ASTFuncNode.getFunctionNames()[ASTFuncNode.LOG], expression1);
 }
 
 public static Expression exp(Expression expression1) throws ExpressionException {
-	return function(ASTFuncNode.EXP, expression1);
+	return function(ASTFuncNode.getFunctionNames()[ASTFuncNode.EXP], expression1);
 }
 
-private static Expression function(int funcType, Expression... expressions) {
+public static Expression function(String functionName, Expression... expressions) {
 	Expression exp = new Expression();
 	ASTFuncNode funcNode = new ASTFuncNode();
-	funcNode.setFunction(funcType);
+	funcNode.setFunctionFromName(functionName);
 
 	for (Expression expression1 : expressions) {
 		Node termNode = expression1.rootNode.copyTree();

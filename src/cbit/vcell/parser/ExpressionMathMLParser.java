@@ -196,11 +196,11 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 			vcellOperationNode = new ASTMultNode();
 			if (children.size()==2){ 	// This is the case where base is 10. 
 				ASTFuncNode vcellOpNode1 = new ASTFuncNode();						// LN(A)
-				vcellOpNode1.setFunction(ASTFuncNode.LOG);
+				vcellOpNode1.setFunctionFromName(ASTFuncNode.getFunctionNames()[ASTFuncNode.LOG]);
 				vcellOpNode1.jjtAddChild(getRootNode((Element)children.get(1)));
 				
 				ASTFuncNode vcellOpNode2 = new ASTFuncNode();						// LN(10)
-				vcellOpNode2.setFunction(ASTFuncNode.LOG);
+				vcellOpNode2.setFunctionFromName(ASTFuncNode.getFunctionNames()[ASTFuncNode.LOG]);
 				ASTFloatNode floatNode = new ASTFloatNode(10.0);
 				vcellOpNode2.jjtAddChild(floatNode);
 				ASTInvertTermNode invVcellOpNode = new ASTInvertTermNode();			//  1 / LN(10)
@@ -210,11 +210,11 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 				vcellOperationNode.jjtAddChild(invVcellOpNode);
 			}else{						// This is the case where the base is other than 10 or e
 				ASTFuncNode vcellOpNode1 = new ASTFuncNode();						// LN(Arg)
-				vcellOpNode1.setFunction(ASTFuncNode.LOG);
+				vcellOpNode1.setFunctionFromName(ASTFuncNode.getFunctionNames()[ASTFuncNode.LOG]);
 				vcellOpNode1.jjtAddChild(getRootNode((Element)children.get(2)));
 				
 				ASTFuncNode vcellOpNode2 = new ASTFuncNode();						// LN(Base)
-				vcellOpNode2.setFunction(ASTFuncNode.LOG);
+				vcellOpNode2.setFunctionFromName(ASTFuncNode.getFunctionNames()[ASTFuncNode.LOG]);
 				Element logBaseMathMLNode = (Element)children.get(1);
 				vcellOpNode2.jjtAddChild(getRootNode((Element)logBaseMathMLNode.getChildren().get(0)));
 				ASTInvertTermNode invVcellOpNode = new ASTInvertTermNode();			//  1 / LN(Base)
@@ -237,7 +237,7 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 			//
 			String powFunctionName = ASTFuncNode.getVCellFunctionNameFromMathMLFuncName(MathMLTags.POWER);
 			vcellOperationNode = new ASTFuncNode();
-			((ASTFuncNode)vcellOperationNode).setName(powFunctionName);
+			((ASTFuncNode)vcellOperationNode).setFunctionFromName(powFunctionName);
 			if (children.size()==2){
 				vcellOperationNode.jjtAddChild(getRootNode((Element)children.get(1)));
 				ASTFloatNode floatNode = new ASTFloatNode(0.5);
@@ -298,7 +298,7 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 			String cellFunctionNameFromMathMLFuncName = ASTFuncNode.getVCellFunctionNameFromMathMLFuncName(operation.getName());
 			if (cellFunctionNameFromMathMLFuncName != null){
 				vcellOperationNode = new ASTFuncNode();
-				((ASTFuncNode)vcellOperationNode).setName(cellFunctionNameFromMathMLFuncName);
+				((ASTFuncNode)vcellOperationNode).setFunctionFromName(cellFunctionNameFromMathMLFuncName);
 			} else{
 				throw new ExpressionException("cannot translate "+operation.getName()+" from MathML");
 			}

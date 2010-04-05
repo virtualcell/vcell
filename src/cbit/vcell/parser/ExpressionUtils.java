@@ -131,7 +131,7 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 			ASTFuncNode fn = new ASTFuncNode();
 			double ftype = random.nextDouble();
 			int index = (int)Math.min(functionIDs.length-1,Math.floor(functionIDs.length*ftype));
-			fn.setFunction(functionIDs[index]);
+			fn.setFunctionFromName(ASTFuncNode.getFunctionNames()[functionIDs[index]]);
 			return fn;
 		}
 		case IDNode: {

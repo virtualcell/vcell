@@ -42,7 +42,7 @@ public class ExpressionParser/*@bgen(jjtree)*/implements ExpressionParserTreeCon
       return;
     }
     try {
-      ASTExpression n = parser.Expression();
+      SimpleNode n = parser.Expression();
       n.dump("");
       System.out.println("Java Parser Version 0.2:  Java program parsed successfully.");
     } catch (Exception e) {
@@ -72,6 +72,12 @@ SKIP :
 /*
  * Tokens to consider in BNF follow.
  */
+
+
+TOKEN : /* Relational Operators */
+{
+  <QUOTE: "'">
+}
 
 TOKEN : /* Relational Operators */
 {
@@ -151,6 +157,14 @@ ASTExpression Expression() :
 {/*@bgen(jjtree) Expression */
    try {
 /*@egen*/
+   StringLiteral() ";"/*@bgen(jjtree)*/
+   {
+     jjtree.closeNodeScope(jjtn000, true);
+     jjtc000 = false;
+   }
+/*@egen*/
+   { return jjtn000; }
+|
    LogicalORExpression() ";"/*@bgen(jjtree)*/
    {
      jjtree.closeNodeScope(jjtn000, true);
@@ -551,7 +565,7 @@ void Function()           :
     jjtc000 = false;
   }
 /*@egen*/
-  { jjtn000.setFunctionFromParserToken(t.image); }/*@bgen(jjtree)*/
+  { jjtn000.setFunctionFromName(t.image); }/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);
@@ -584,7 +598,7 @@ void Arguments()       :
 void ArgumentList()      :
 {}
 {
-  LogicalORExpression() ( "," LogicalORExpression() )*
+  (StringLiteral() | LogicalORExpression()) ( "," (StringLiteral() | LogicalORExpression()) )*
 }
 
 void Float()           :
@@ -627,6 +641,32 @@ void Name()         :
   }
 /*@egen*/
   { jjtn000.name = t_name.image; }/*@bgen(jjtree)*/
+  } finally {
+    if (jjtc000) {
+      jjtree.closeNodeScope(jjtn000, true);
+    }
+  }
+/*@egen*/
+}
+
+void StringLiteral()              :
+{/*@bgen(jjtree) LiteralNode */
+  ASTLiteralNode jjtn000 = new ASTLiteralNode(JJTLITERALNODE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/ Token t_quote=null; 
+Token t_name=null; }
+{/*@bgen(jjtree) LiteralNode */
+  try {
+/*@egen*/
+  t_quote = <QUOTE> t_name = <IDENTIFIER> <QUOTE>/*@bgen(jjtree)*/
+  {
+    jjtree.closeNodeScope(jjtn000, true);
+    jjtc000 = false;
+  }
+/*@egen*/
+  { jjtn000.name = t_quote.image + t_name.image + t_quote.image; 
+  }/*@bgen(jjtree)*/
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);

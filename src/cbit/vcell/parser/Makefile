@@ -8,7 +8,9 @@ JJDOC		= java -classpath ..\..\..\..\javacc4.0.jar jjdoc
 all::	ExpressionParser.class Parser.html
 
 Parser.jj:	Parser.jjt
+	del Parser.jj
 	$(JJTREE) Parser.jjt
+	
 
 ExpressionParser.class:	Parser.jj
 	$(JAVACC) Parser.jj

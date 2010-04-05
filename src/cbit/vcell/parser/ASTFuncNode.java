@@ -8,7 +8,9 @@ import net.sourceforge.interval.ia_math.IAFunctionDomainException;
 import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
+import cbit.vcell.modelopt.MathSystemHash.Symbol;
 import cbit.vcell.parser.Expression.FunctionFilter;
+import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 
 public class ASTFuncNode extends SimpleNode {
 	
@@ -17,8 +19,11 @@ public class ASTFuncNode extends SimpleNode {
 	private static final int USE_ADJACENT_PLUS = 1;
 	private static final int USE_ADJACENT = 2;
  	
- 	private int funcType = -1;
+	private String funcName = null;
+ 	private int funcType = USERDEFINED;
+ 	private transient SymbolTableFunctionEntry symbolTableFunctionEntry = null;
 
+ 	public final static int USERDEFINED = -1;
 	public final static int EXP = 0;
 	public final static int SQRT = 1;
 	public final static int ABS = 2;
@@ -163,6 +168,23 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 	}else if (getFunction() == GRAD){
 		jjtGetChild(jjtGetNumChildren()-1).bind(symbolTable);
 		return;
+	}else if (getFunction() == USERDEFINED){
+		if (symbolTable == null){
+			symbolTableFunctionEntry = null;
+			return;
+		}
+		String formalDefinition = getFormalDefinition();
+		SymbolTableEntry symbolTableEntry = symbolTable.getEntry(formalDefinition);
+		if (symbolTableEntry==null){
+			throw new ExpressionBindingException("function definition '" + formalDefinition + "' is not found. " 
+					+ "Check that you have provided the correct name and argument types (e.g. vcRegionVolume('cytosol')).");
+		}else{
+			if (symbolTableEntry instanceof SymbolTableFunctionEntry){
+				symbolTableFunctionEntry = (SymbolTableFunctionEntry)symbolTableEntry;
+			}else{
+				throw new ExpressionBindingException("function definition '" + formalDefinition + "' not bound to a function");
+			}
+		}
 	}
 	super.bind(symbolTable);
 }    
@@ -176,6 +198,8 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 public Node copyTree() {
 	ASTFuncNode node = new ASTFuncNode();
 	node.funcType = funcType;
+	node.funcName = funcName;
+	node.symbolTableFunctionEntry = symbolTableFunctionEntry;
 	for (int i=0;i<jjtGetNumChildren();i++){
 		node.jjtAddChild(jjtGetChild(i).copyTree());
 	}
@@ -191,12 +215,61 @@ public Node copyTree() {
 public Node copyTreeBinary() {
 	ASTFuncNode node = new ASTFuncNode();
 	node.funcType = funcType;
+	node.funcName = funcName;
+	node.symbolTableFunctionEntry = symbolTableFunctionEntry;
 	for (int i=0;i<jjtGetNumChildren();i++){
 		node.jjtAddChild(jjtGetChild(i).copyTreeBinary());
 	}
 	return node;	
 }
 
+public static String getFormalDefinition(String funcName, FunctionArgType[] argTypes){
+	StringBuffer buffer = new StringBuffer(funcName);
+	buffer.append("(");
+	for (int i=0;i<argTypes.length;i++){
+		if (i>0){
+			buffer.append(",");
+		}
+		buffer.append(argTypes[i].name());
+	}
+	buffer.append(")");
+	return buffer.toString();
+}
+
+public String getFormalDefinition(){
+	FunctionArgType[] argTypes = new FunctionArgType[jjtGetNumChildren()];
+	for (int i = 0; i < argTypes.length; i++) {
+		if (jjtGetChild(i) instanceof ASTLiteralNode){
+			argTypes[i] = FunctionArgType.LITERAL;
+		}else{
+			argTypes[i] = FunctionArgType.NUMERIC;
+		}
+	}
+	return getFormalDefinition(funcName, argTypes);
+}
+
+private SimpleNode getSubstitutedFunction() throws ExpressionException {
+	if (symbolTableFunctionEntry==null){
+		throw new ExpressionException("function "+getFormalDefinition()+" is unbound");
+	}
+	if (symbolTableFunctionEntry.getExpression()==null){
+		throw new ExpressionException("function "+getFormalDefinition()+" doesn't support substitution");
+	}
+	Expression substitutedExp = new Expression(symbolTableFunctionEntry.getExpression());
+	String[] argumentNames = symbolTableFunctionEntry.getArgNames();
+	for (int i=0; i<symbolTableFunctionEntry.getNumArguments(); i++){
+		ASTIdNode formalArg = new ASTIdNode();
+		formalArg.name = argumentNames[i];
+		if (symbolTableFunctionEntry.getArgTypes()[i]==FunctionArgType.LITERAL){
+			throw new ExpressionException("cannot substitute, function "+symbolTableFunctionEntry.getName()+" has formal arguments of type "+FunctionArgType.LITERAL.name());
+		}
+		if (jjtGetChild(i) instanceof ASTLiteralNode){
+			throw new ExpressionException("cannot substitute, invocation of function "+symbolTableFunctionEntry.getName()+" has arguments of type "+FunctionArgType.LITERAL.name());
+		}
+		substitutedExp.getRootNode().substitute(formalArg, jjtGetChild(i).copyTree());
+	}
+	return substitutedExp.getRootNode();
+}
 
 /**
  * This method was created by a SmartGuide.
@@ -206,6 +279,10 @@ public Node copyTreeBinary() {
  */
 public Node differentiate(String independentVariable) throws ExpressionException {
 	switch (funcType){
+	case USERDEFINED: {
+		SimpleNode substitutedFunction = getSubstitutedFunction();
+		return substitutedFunction.differentiate(independentVariable);
+	}
 	case EXP: {
 		// 
 		// case of D(exp(u)) = exp(u) D(u)
@@ -282,7 +359,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		//
 		ASTMultNode multNode1 = new ASTMultNode();
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.funcType = POW;
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		ASTAddNode addNode = new ASTAddNode();
 		addNode.jjtAddChild(jjtGetChild(1).copyTree());
 		addNode.jjtAddChild(new ASTFloatNode(-1.0));
@@ -297,7 +374,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		//
 		ASTMultNode multNode2 = new ASTMultNode();
 		ASTFuncNode logNode = new ASTFuncNode();
-		logNode.funcType = LOG;
+		logNode.setFunctionFromName(getFunctionNames()[LOG]);
 		logNode.jjtAddChild(jjtGetChild(0).copyTree());
 		multNode2.jjtAddChild(copyTree());
 		multNode2.jjtAddChild(logNode);
@@ -338,7 +415,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		// form   cos(a) 
 		//
 		ASTFuncNode cosNode = new ASTFuncNode();
-		cosNode.funcType = COS;
+		cosNode.setFunctionFromName(getFunctionNames()[COS]);
 		cosNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		multNode.jjtAddChild(cosNode);
@@ -357,7 +434,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		// form   sin(a) 
 		//
 		ASTFuncNode sinNode = new ASTFuncNode();
-		sinNode.funcType = SIN;
+		sinNode.setFunctionFromName(getFunctionNames()[SIN]);
 		sinNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		multNode.jjtAddChild(sinNode);
@@ -378,14 +455,14 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		// form   cos(a) 
 		//
 		ASTFuncNode cosNode = new ASTFuncNode();
-		cosNode.funcType = COS;
+		cosNode.setFunctionFromName(getFunctionNames()[COS]);
 		cosNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		//
 		// form   pow(cos(a),2) 
 		//
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.funcType = POW;
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(cosNode);
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 			
@@ -411,7 +488,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		// form sqrt(1.0 - pow(u,2))
 		//
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 		ASTMinusTermNode minusNode = new ASTMinusTermNode();
@@ -420,7 +497,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		addNode.jjtAddChild(new ASTFloatNode(1.0));
 		addNode.jjtAddChild(minusNode);
 		ASTFuncNode sqrtNode = new ASTFuncNode();
-		sqrtNode.setFunctionFromParserToken("sqrt");
+		sqrtNode.setFunctionFromName(getFunctionNames()[SQRT]);
 		sqrtNode.jjtAddChild(addNode);
 
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
@@ -441,7 +518,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		// form sqrt(1.0 - pow(u,2))
 		//
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 		ASTMinusTermNode minusNode = new ASTMinusTermNode();
@@ -450,7 +527,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		addNode.jjtAddChild(new ASTFloatNode(1.0));
 		addNode.jjtAddChild(minusNode);
 		ASTFuncNode sqrtNode = new ASTFuncNode();
-		sqrtNode.setFunctionFromParserToken("sqrt");
+		sqrtNode.setFunctionFromName(getFunctionNames()[SQRT]);
 		sqrtNode.jjtAddChild(addNode);
 
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
@@ -472,7 +549,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		// form 1.0 + u^2
 		//
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 		ASTAddNode addNode = new ASTAddNode();
@@ -506,7 +583,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		// form 1.0 + pow((u/v),2)
 		//
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(multUV.copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 		ASTAddNode addNode = new ASTAddNode();
@@ -614,12 +691,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 		// form   csc(a) 
 		ASTFuncNode cscNode = new ASTFuncNode();
-		cscNode.funcType = CSC;
+		cscNode.setFunctionFromName(getFunctionNames()[CSC]);
 		cscNode.jjtAddChild(jjtGetChild(0).copyTree());
 		
 		// form   cot(a) 
 		ASTFuncNode cotNode = new ASTFuncNode();
-		cotNode.funcType = COT;
+		cotNode.setFunctionFromName(getFunctionNames()[COT]);
 		cotNode.jjtAddChild(jjtGetChild(0).copyTree());	
 			
 		multNode.jjtAddChild(cscNode);
@@ -640,12 +717,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 		// form   csc(a) 
 		ASTFuncNode cscNode = new ASTFuncNode();
-		cscNode.funcType = CSC;
+		cscNode.setFunctionFromName(getFunctionNames()[CSC]);
 		cscNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		// form   pow(csc(a),2) 
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.funcType = POW;
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(cscNode);
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 
@@ -665,12 +742,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form   sec(a) 
 		ASTFuncNode secNode = new ASTFuncNode();
-		secNode.funcType = SEC;
+		secNode.setFunctionFromName(getFunctionNames()[SEC]);
 		secNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		// form   tan(a) 
 		ASTFuncNode tanNode = new ASTFuncNode();
-		tanNode.funcType = TAN;
+		tanNode.setFunctionFromName(getFunctionNames()[TAN]);
 		tanNode.jjtAddChild(jjtGetChild(0).copyTree());	
 			
 		ASTMultNode multNode = new ASTMultNode();
@@ -688,7 +765,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form sqrt(pow(u,2) - 1.0)
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 
@@ -697,7 +774,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		addNode.jjtAddChild(new ASTFloatNode(-1.0));
 		
 		ASTFuncNode sqrtNode = new ASTFuncNode();
-		sqrtNode.setFunctionFromParserToken("sqrt");
+		sqrtNode.setFunctionFromName(getFunctionNames()[SQRT]);
 		sqrtNode.jjtAddChild(addNode);
 
 		//  form 1 / (u*sqrt(pow(u,2) - 1))
@@ -724,7 +801,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form (1.0 + pow(u,2))
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 		
@@ -750,7 +827,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form sqrt(pow(u,2) - 1.0)
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 
@@ -759,7 +836,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		addNode.jjtAddChild(new ASTFloatNode(-1.0));
 		
 		ASTFuncNode sqrtNode = new ASTFuncNode();
-		sqrtNode.setFunctionFromParserToken("sqrt");
+		sqrtNode.setFunctionFromName(getFunctionNames()[SQRT]);
 		sqrtNode.jjtAddChild(addNode);
 
 		//  form 1 / (u*sqrt(pow(u,2) - 1))
@@ -785,7 +862,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form   cosh(a) 
 		ASTFuncNode coshNode = new ASTFuncNode();
-		coshNode.funcType = COSH;
+		coshNode.setFunctionFromName(getFunctionNames()[COSH]);
 		coshNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		ASTMultNode multNode = new ASTMultNode();
@@ -802,7 +879,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 		// form   sinh(a) 
 		ASTFuncNode sinhNode = new ASTFuncNode();
-		sinhNode.funcType = SINH;
+		sinhNode.setFunctionFromName(getFunctionNames()[SINH]);
 		sinhNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		ASTMultNode multNode = new ASTMultNode();
@@ -819,12 +896,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form   sech(a) 
 		ASTFuncNode sechNode = new ASTFuncNode();
-		sechNode.funcType = SECH;
+		sechNode.setFunctionFromName(getFunctionNames()[SECH]);
 		sechNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		// form   pow(sech(a),2) 
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.funcType = POW;
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(sechNode);
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 			
@@ -843,12 +920,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 		// form   csch(a) 
 		ASTFuncNode cschNode = new ASTFuncNode();
-		cschNode.funcType = COSH;
+		cschNode.setFunctionFromName(getFunctionNames()[COSH]);
 		cschNode.jjtAddChild(jjtGetChild(0).copyTree());	
 
 		// form   coth(a) 
 		ASTFuncNode cothNode = new ASTFuncNode();
-		cothNode.funcType = COTH;
+		cothNode.setFunctionFromName(getFunctionNames()[COTH]);
 		cothNode.jjtAddChild(jjtGetChild(0).copyTree());	
 
 		ASTMultNode multNode = new ASTMultNode();
@@ -867,12 +944,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 		// form   csch(a) 
 		ASTFuncNode cschNode = new ASTFuncNode();
-		cschNode.funcType = CSCH;
+		cschNode.setFunctionFromName(getFunctionNames()[CSCH]);
 		cschNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		// form   pow(csch(a),2) 
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.funcType = POW;
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(cschNode);
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 			
@@ -893,12 +970,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form   sech(u) 
 		ASTFuncNode sechNode = new ASTFuncNode();
-		sechNode.funcType = SECH;
+		sechNode.setFunctionFromName(getFunctionNames()[SECH]);
 		sechNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		// form   tanh(u) 
 		ASTFuncNode tanhNode = new ASTFuncNode();
-		tanhNode.funcType = TANH;
+		tanhNode.setFunctionFromName(getFunctionNames()[TANH]);
 		tanhNode.jjtAddChild(jjtGetChild(0).copyTree());	
 			
 		// form   - D(u) * sech(u) * tanh(u)
@@ -918,7 +995,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form sqrt(1.0 + pow(u,2))
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 		
@@ -927,7 +1004,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		addNode.jjtAddChild(powNode);
 		
 		ASTFuncNode sqrtNode = new ASTFuncNode();
-		sqrtNode.setFunctionFromParserToken("sqrt");
+		sqrtNode.setFunctionFromName(getFunctionNames()[SQRT]);
 		sqrtNode.jjtAddChild(addNode);
 
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
@@ -946,7 +1023,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form sqrt(pow(u,2) - 1.0)
 		ASTFuncNode powNode = new ASTFuncNode();	// u^2
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 
@@ -954,7 +1031,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		addNode.jjtAddChild(powNode);
 		addNode.jjtAddChild(new ASTFloatNode(-1.0));
 		ASTFuncNode sqrtNode = new ASTFuncNode(); 	// sqrt(u^2 - 1)
-		sqrtNode.setFunctionFromParserToken("sqrt");
+		sqrtNode.setFunctionFromName(getFunctionNames()[SQRT]);
 		sqrtNode.jjtAddChild(addNode);
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();	// 1/(sqrt(u^2 - 1))
 		invertNode.jjtAddChild(sqrtNode);
@@ -973,7 +1050,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form 1.0 - u^2
 		ASTFuncNode powNode = new ASTFuncNode();			// u^2
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 		ASTMinusTermNode minusNode = new ASTMinusTermNode();// -u^2
@@ -998,19 +1075,19 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form sqrt(1.0 + pow(u,2))
 		ASTFuncNode powNode = new ASTFuncNode();			// u^2
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));				
 		ASTAddNode addNode = new ASTAddNode();				// 1+u^2
 		addNode.jjtAddChild(new ASTFloatNode(1.0));
 		addNode.jjtAddChild(powNode);
 		ASTFuncNode sqrtNode = new ASTFuncNode();			// sqrt(1+u^2)
-		sqrtNode.setFunctionFromParserToken("sqrt");
+		sqrtNode.setFunctionFromName(getFunctionNames()[SQRT]);
 		sqrtNode.jjtAddChild(addNode);
 
 		// form 1 / (|u| * sqrt(1.0 + pow(u,2)))
 		ASTFuncNode absNode = new ASTFuncNode();			//  |u|
-		absNode.setFunctionFromParserToken("abs");
+		absNode.setFunctionFromName(getFunctionNames()[ABS]);
 		absNode.jjtAddChild(jjtGetChild(0).copyTree());
 		ASTMultNode multNode = new ASTMultNode();			// |u| * sqrt(1+u^2)
 		multNode.jjtAddChild(absNode);
@@ -1032,7 +1109,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form 1.0 - u^2
 		ASTFuncNode powNode = new ASTFuncNode();			// u^2
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 		ASTMinusTermNode minusNode = new ASTMinusTermNode();// -u^2
@@ -1057,7 +1134,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form sqrt(1.0 - u^2)
 		ASTFuncNode powNode = new ASTFuncNode();			// u^2
-		powNode.setFunctionFromParserToken("pow");
+		powNode.setFunctionFromName(getFunctionNames()[POW]);
 		powNode.jjtAddChild(jjtGetChild(0).copyTree());
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 		ASTMinusTermNode minusNode = new ASTMinusTermNode();// -u^2
@@ -1066,7 +1143,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		addNode.jjtAddChild(new ASTFloatNode(1.0));
 		addNode.jjtAddChild(minusNode);
 		ASTFuncNode sqrtNode = new ASTFuncNode();			// sqrt(1-u^2)
-		sqrtNode.setFunctionFromParserToken("sqrt");
+		sqrtNode.setFunctionFromName(getFunctionNames()[SQRT]);
 		sqrtNode.jjtAddChild(addNode);
 
 		// form  1 / (u * sqrt(1-u^2))		
@@ -1124,7 +1201,10 @@ public boolean equals(Node node) throws ExpressionException {
 	ASTFuncNode funcNode = (ASTFuncNode)node;
 	if (funcNode.funcType != funcType){
 		return false;
-	}	
+	}
+	if (!funcNode.funcName.equals(funcName)){
+		return false;
+	}
 
 	return true;
 }
@@ -1135,6 +1215,11 @@ public double evaluateConstant() throws ExpressionException {
 	double result = 0.0;
 	
 	switch (funcType){
+	case USERDEFINED: {
+		SimpleNode substitutedFunction = getSubstitutedFunction();
+		result = substitutedFunction.evaluateConstant();
+		break;
+	}
 	case EXP: {
 		if (jjtGetNumChildren()!=1) throw new Error("exp() expects 1 argument");
 		result = Math.exp(jjtGetChild(0).evaluateConstant());
@@ -1467,6 +1552,10 @@ public double evaluateConstant() throws ExpressionException {
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 
 	switch (funcType){
+	case USERDEFINED: {
+		throw new ExpressionException("function "+funcName+" doesn't support interval evaluation");
+		//break;
+	}
 	case EXP: {
 		if (jjtGetNumChildren()!=1) throw new Error("exp() expects 1 argument");
 		setInterval(IAMath.exp(jjtGetChild(0).evaluateInterval(intervals)),intervals);
@@ -1746,6 +1835,11 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	double result;
 	
 	switch (funcType){
+	case USERDEFINED: {
+		SimpleNode substitutedFunction = getSubstitutedFunction();
+		result = substitutedFunction.evaluateVector(values);
+		break;
+	}
 	case EXP: {
 		if (jjtGetNumChildren()!=1) throw new Error("exp() expects 1 argument");
 		result = Math.exp(jjtGetChild(0).evaluateVector(values));
@@ -2110,6 +2204,7 @@ public Node flatten() throws ExpressionException {
 	}
 	ASTFuncNode funcNode = new ASTFuncNode();
 	funcNode.funcType = funcType;
+	funcNode.funcName = funcName;
 	java.util.Vector<Node> tempChildren = new java.util.Vector<Node>();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
@@ -2117,6 +2212,9 @@ public Node flatten() throws ExpressionException {
 	}
 
 	switch (funcType){
+	case USERDEFINED: {
+		break;
+	}
 	case EXP: {
 		if (tempChildren.size()!=1) throw new ExpressionException("exp() expects 1 argument");
 		break;
@@ -2147,6 +2245,7 @@ public Node flatten() throws ExpressionException {
 				newMultNode.jjtAddChild(exponentChild);
 				ASTFuncNode newExponentNode = new ASTFuncNode();
 				newExponentNode.funcType = funcType;
+				newExponentNode.funcName = funcName;
 				newExponentNode.jjtAddChild(mantissaChild.jjtGetChild(0));
 				newExponentNode.jjtAddChild(newMultNode);
 				return newExponentNode.flatten();
@@ -2168,7 +2267,7 @@ public Node flatten() throws ExpressionException {
 				Node childPowExponent = child.jjtGetChild(1);
 				if (childPowExponent instanceof ASTFloatNode && ((ASTFloatNode)childPowExponent).value.doubleValue() == 2.0){
 					ASTFuncNode newAbsNode = new ASTFuncNode();
-					newAbsNode.setFunction(ABS);
+					newAbsNode.setFunctionFromName(getFunctionNames()[ABS]);
 					newAbsNode.jjtAddChild(childPowMantissa);
 					return newAbsNode.flatten();
 				}
@@ -2178,7 +2277,7 @@ public Node flatten() throws ExpressionException {
 			Node childPowExponent = child.jjtGetChild(1);
 			if (childPowExponent instanceof ASTFloatNode && ((ASTFloatNode)childPowExponent).value.doubleValue() == 2.0){
 				ASTFuncNode newAbsNode = new ASTFuncNode();
-				newAbsNode.setFunction(ABS);
+				newAbsNode.setFunctionFromName(getFunctionNames()[ABS]);
 				newAbsNode.jjtAddChild(childPowMantissa);
 				return newAbsNode.flatten();
 			}
@@ -2442,6 +2541,9 @@ private static int[] getGradCase(double[] args,int axisCode,int numInternalArgs)
  * @return java.lang.String
  */
 String getMathMLName() {
+	if (funcType == USERDEFINED){
+		return funcName;
+	}
 	return functionNamesMathML[funcType];
 }
 
@@ -2452,7 +2554,7 @@ String getMathMLName() {
  * @return java.lang.String
  */
 String getName() {
-	return functionNamesVCML[funcType];
+	return funcName;
 }
 
 
@@ -2557,6 +2659,9 @@ public String infixString(int lang) {
  */
 public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException{
 	switch (funcType){
+	case USERDEFINED: {
+		throw new RuntimeException("cannot narrow user defined functions : "+funcName);
+	}
 	case EXP: {
 		if (jjtGetNumChildren()!=1) throw new Error("exp() expects 1 argument");
 		return IANarrow.narrow_exp(jjtGetChild(0).getInterval(intervals),getInterval(intervals))
@@ -2777,51 +2882,20 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 
 /**
  * Insert the method's description here.
- * Creation date: (12/20/2002 2:18:13 PM)
- * @param function int
- */
-void setFunction(int function) {
-	funcType = function;
-	if(getFunction() == GRAD){
-		if(jjtGetNumChildren() == 2 && jjtGetChild(1) instanceof SimpleNode){
-			if(((SimpleNode)jjtGetChild(1)).hasGradient()){
-				throw new RuntimeException("Gradient Function nesting not implemented");
-			}
-		}
-	}
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (12/20/2002 2:10:31 PM)
  * @param parserFunction int
  */
-void setFunctionFromParserToken(String parserToken) {
+void setFunctionFromName(String parserToken) {
+	funcType = USERDEFINED;
+	funcName = parserToken;
 	for (int i = 0; i < functionNamesVCML.length; i++){
 		String definedToken = functionNamesVCML[i];
 		if (definedToken.equals(parserToken)) {
-			setFunction(i);
-			return;
-		}
-	}
-	throw new RuntimeException("unsupported function type '"+parserToken+"'");
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/8/2002 4:00:52 PM)
- * @param name java.lang.String
- */
-void setName(String name) {
-	for (int i = 0; i < functionNamesVCML.length; i++){
-		if (functionNamesVCML[i].equals(name)){
 			funcType = i;
-			return;
+			funcName = definedToken;
+			break;
 		}
 	}
-	throw new RuntimeException("unknown function "+name);
 }
 
 public static String[] getFunctionNames() {
@@ -2839,5 +2913,10 @@ public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingExce
 		return;
 	}
 	super.renameBoundSymbols(nameScope);
+}
+
+
+public SymbolTableFunctionEntry getSymbolTableFunctionEntry() {
+	return symbolTableFunctionEntry;
 }
 }
