@@ -72,7 +72,7 @@ public final boolean isInside (Point p ) {
  * @return boolean
  * @param p java.awt.Point
  */
-final boolean isOnBorder(Point p) {
+public final boolean isOnBorder(Point p) {
 	double radius = getRadius(p);
 	if (radius >= 0.9 && radius <= 1.1){
 		return true;

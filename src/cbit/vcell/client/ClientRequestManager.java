@@ -677,7 +677,7 @@ VCDocument createDefaultDocument(int docType) {
 			}
 		}
 	} catch (Exception e) {
-		// ignore, does not happen on defaults
+		e.printStackTrace(System.out);
 	}
 	return defaultDocument;
 }

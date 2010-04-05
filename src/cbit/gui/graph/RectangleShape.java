@@ -112,7 +112,7 @@ protected final boolean isInside (Point p ) {
  * @return boolean
  * @param p java.awt.Point
  */
-final boolean isOnBorder(Point p) {
+public final boolean isOnBorder(Point p) {
 
 	int tolerance = 3;
 	//

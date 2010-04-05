@@ -14,7 +14,7 @@ import javax.swing.*;
  */
 public class NodeShape extends cbit.gui.graph.ElipseShape {
 	int radius = 8;
-	private Color darkerBackground = null;
+	protected Color darkerBackground = null;
 	protected int fieldDegree = 0;
 	protected cbit.util.graph.Node fieldNode = null;
 /**
@@ -46,6 +46,7 @@ public Object getModelObject() {
 public cbit.util.graph.Node getNode() {
 	return fieldNode;
 }
+
 /**
  * This method was created by a SmartGuide.
  * @return int

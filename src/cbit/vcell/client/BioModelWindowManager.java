@@ -631,11 +631,13 @@ public void showApplicationFrame(final SimulationContext simContext, final int t
 				Simulation[] simulations = simContext.getSimulations();
 				if (simulations != null) {
 					// preload simulation status
-					VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
+					ArrayList<VCSimulationIdentifier> simIDs = new ArrayList<VCSimulationIdentifier>();
 					for (int i = 0; i < simulations.length; i++){
-						simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+						if (simulations[i].getSimulationInfo()!=null){
+							simIDs.add(simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier());
+						}
 					}
-					getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
+					getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs.toArray(new VCSimulationIdentifier[simIDs.size()]));
 				}
 			}
 		}

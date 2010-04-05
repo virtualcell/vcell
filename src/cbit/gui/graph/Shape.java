@@ -375,7 +375,7 @@ protected abstract boolean isInside (Point p );
  * @return boolean
  * @param p java.awt.Point
  */
-abstract boolean isOnBorder(Point p);
+public abstract boolean isOnBorder(Point p);
 
 
 /**

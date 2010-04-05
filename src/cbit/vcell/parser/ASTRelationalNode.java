@@ -273,6 +273,10 @@ public String getMathMLElementTag() {
 public String getOperation() {
 	return opString;
 }
+
+public int getOperationType() {
+	return operation;
+}
 /**
  * This method was created by a SmartGuide.
  * @param op java.lang.String
