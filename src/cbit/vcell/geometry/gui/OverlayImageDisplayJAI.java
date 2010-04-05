@@ -360,7 +360,13 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 		return
 		(contrastFactor == 0?"none":(contrastFactor < 0?"dark"+contrastFactor:"bright+"+contrastFactor));
 	}
-	
+	public int getDisplayContrastFactor(){
+		return contrastFactor;
+	}
+	public void setDisplayContrastFactor(int contrastFactor){
+		this.contrastFactor = contrastFactor;
+		refreshImage();
+	}
 	public void setCrop(Point cropBegin,Point cropEnd){
 		if(cropBegin == null || cropEnd == null){
 			cropRect = null;

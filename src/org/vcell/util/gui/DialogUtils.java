@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
@@ -15,6 +16,9 @@ import edu.stanford.ejalbert.BrowserLauncherRunner;
 import edu.stanford.ejalbert.exceptionhandler.BrowserLauncherErrorHandler;
 
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 /**
@@ -435,7 +439,7 @@ private static int showComponentOKCancelDialog(final Component requester,final C
 public static int[] showComponentOKCancelTableList(final Component requester,final String title,
 		final String[] columnNames,final Object[][] rowData,final Integer listSelectionModel_SelectMode)
 			throws UserCancelException{
-	return showComponentOptionsTableList(requester, title, columnNames, rowData, listSelectionModel_SelectMode, null,null,null).selectedTableRows;
+	return showComponentOptionsTableList(requester, title, columnNames, rowData, listSelectionModel_SelectMode, null,null,null,null).selectedTableRows;
 }
 public static class  TableListResult{
 	public String selectedOption;
@@ -444,19 +448,67 @@ public static class  TableListResult{
 public static TableListResult showComponentOptionsTableList(final Component requester,final String title,
 		final String[] columnNames,final Object[][] rowData,final Integer listSelectionModel_SelectMode,
 		final ListSelectionListener listSelectionListener,
-		final String[] options,final String initOption)
+		final String[] options,final String initOption,final Comparator<Object> rowSortComparator)
 			throws UserCancelException{
 	
 	return (TableListResult)
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
+			final Integer[] sortedRowReference = new Integer[rowData.length];
+			for (int i = 0; i < sortedRowReference.length; i++) {
+				sortedRowReference[i] = i;
+			}
 			DefaultTableModel tableModel = new DefaultTableModel(){
 			    public boolean isCellEditable(int row, int column) {
 			        return false;
 			    }
+
+				@Override
+				public Object getValueAt(int row, int column) {
+					// TODO Auto-generated method stub
+					return rowData[sortedRowReference[row]][column];
+				}
 			};
 			tableModel.setDataVector(rowData, columnNames);
 			final JTable table = new JTable(tableModel);
+			final JTableHeader jTableHeader = table.getTableHeader();
+			jTableHeader.setReorderingAllowed(false);
+			final int UNSORTED = 0;
+			final int ASCEND = 1;
+			final int DESCEND = 2;
+			final int[] colSortFlag = new int[columnNames.length];
+			Arrays.fill(colSortFlag, UNSORTED);
+			if(rowSortComparator != null){
+				jTableHeader.addMouseListener(
+					new MouseAdapter() {
+						@Override
+						public void mouseClicked(MouseEvent e) {
+							super.mouseClicked(e);
+							final int col = jTableHeader.getColumnModel().getColumnIndexAtX(e.getX());
+							colSortFlag[col]+= 1;
+							if(colSortFlag[col] > DESCEND){
+								colSortFlag[col] = ASCEND;
+							}
+							Arrays.sort(sortedRowReference, 
+								new Comparator<Integer>() {
+									public int compare(Integer o1,Integer o2) {
+										if(colSortFlag[col] == ASCEND){
+											return rowSortComparator.compare(rowData[o1][col], rowData[o2][col]);
+										}
+										return rowSortComparator.compare(rowData[o2][col],rowData[o1][col]);
+									}
+								}
+							);
+							for (int i = 0; i < jTableHeader.getColumnModel().getColumnCount(); i++) {
+								jTableHeader.getColumnModel().getColumn(i).setHeaderValue(
+									columnNames[i]+(col == i?" "+(colSortFlag[col]==ASCEND?"asc":"desc"):""));								
+							}
+							jTableHeader.repaint();
+							table.repaint();
+						}
+					}
+				);
+			}
 			if(listSelectionModel_SelectMode != null){
 				table.setSelectionMode(listSelectionModel_SelectMode);
 			}else{
@@ -502,8 +554,13 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 				}
 				tableListResult.selectedTableRows = table.getSelectedRows();
 			}else{
-				tableListResult.selectedOption = showOptionsDialog(requester, scrollPane, JOptionPane.QUESTION_MESSAGE, options, initOption,tableListOKEnabler);
+				tableListResult.selectedOption = showOptionsDialog(requester, scrollPane, JOptionPane.QUESTION_MESSAGE, options, initOption,tableListOKEnabler,title);
 				tableListResult.selectedTableRows = table.getSelectedRows();
+			}
+			if(rowSortComparator != null && tableListResult != null){
+				for (int i = 0; i < tableListResult.selectedTableRows.length; i++) {
+					tableListResult.selectedTableRows[i] = sortedRowReference[tableListResult.selectedTableRows[i]];
+				}
 			}
 			return tableListResult;
 		}
@@ -540,10 +597,13 @@ private static String showDialog(final Component requester, final SimpleUserMess
 	}
 }
 
-private static String showOptionsDialog(final Component requester,Component showComponent,final int JOptionPaneMessageType,String[] options,String initOption,OKEnabler okEnabler) {
+private static String showOptionsDialog(final Component requester,Component showComponent,final int JOptionPaneMessageType,String[] options,String initOption,OKEnabler okEnabler,String dialogTitle) {
 
 	JOptionPane pane = new JOptionPane(showComponent, JOptionPaneMessageType, 0, null, options, initOption);
 	final JDialog dialog = pane.createDialog(requester, "");
+	if(dialogTitle != null){
+		dialog.setTitle(dialogTitle);
+	}
 	dialog.setResizable(true);
 	dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 	if (okEnabler != null) {

@@ -409,6 +409,10 @@ public class ROIAssistPanel extends JPanel {
 		}
 		return collectedPixels;
 	}
+	public void showFillAndKeepRegionButtons(boolean bShow){
+		resolveROIButton.setVisible(bShow);
+		fillVoidsButton.setVisible(bShow);
+	}
 	private void createROISourceData(boolean bNew) throws Exception{
 //		final ROI oldROI = dataToThreshold.getRoi(ROISourceData.VFRAP_ROI_ENUM0.ROI_CELL.name());
 		final ISize dataToThresholdSize = dataToThreshold.getImageDataset().getISize();
@@ -1223,7 +1227,7 @@ public class ROIAssistPanel extends JPanel {
 			try{
 				resultArr = DialogUtils.showComponentOptionsTableList(this, "Select 1 or more pixel regions to keep in ROI",
 					new String[] {"ROI Size (pixel count)"}, rowData,ListSelectionModel.MULTIPLE_INTERVAL_SELECTION,
-					listSelectionListener,null,null).selectedTableRows;
+					listSelectionListener,null,null,null).selectedTableRows;
 			}catch(UserCancelException e){
 				resultArr = null;
 			}

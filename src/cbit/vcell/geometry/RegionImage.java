@@ -3,6 +3,7 @@ import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Tree;
 import cbit.util.graph.Node;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.geometry.surface.OrigSurface;
 import cbit.vcell.geometry.surface.Polygon;
 import cbit.vcell.geometry.surface.Quadrilateral;
@@ -333,6 +334,8 @@ public class RegionImage implements Serializable {
 	};
 
 public RegionImage(VCImage vcImage,int dimension,Extent extent,Origin origin,double filterCutoffFrequency) throws cbit.image.ImageException {
+	this(vcImage,dimension,extent,origin,filterCutoffFrequency,null);}
+public RegionImage(VCImage vcImage,int dimension,Extent extent,Origin origin,double filterCutoffFrequency,ClientTaskStatusSupport clientTaskStatusSupport) throws cbit.image.ImageException {
 	this.numX = vcImage.getNumX();
 	this.numY = vcImage.getNumY();
 	this.numZ = vcImage.getNumZ();
@@ -340,7 +343,7 @@ public RegionImage(VCImage vcImage,int dimension,Extent extent,Origin origin,dou
 	this.filterCutoffFrequency = filterCutoffFrequency;
 	
 //	long startTime = System.currentTimeMillis();
-	calculateRegions_New(vcImage,dimension,extent,origin);
+	calculateRegions_New(vcImage,dimension,extent,origin,clientTaskStatusSupport);
 //	RegionInfo[] tempRI = regionInfos;
 //	regionInfos = null;
 //	System.out.println("Total time for new regions calc="+((double)(System.currentTimeMillis()-startTime)/1000.0));
@@ -582,7 +585,7 @@ private void createLink(Vector<Integer>[] regionLinkArr,int currentRegion,int[] 
 //Calculate regions using single pass algorithm.  Creates information
 //used to generate surfaces as well
 //
-private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, Origin origin) throws cbit.image.ImageException {
+private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, Origin origin,ClientTaskStatusSupport clientTaskStatusSupport) throws cbit.image.ImageException {
 
 	long startTime = System.currentTimeMillis();
 	//Find linked pixel values in x,y,z and surface elements locations
@@ -603,6 +606,11 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 	int masterIndex = 0;
 	int nextAvailableRegion = FIRST_REGION;
 	for (int zIndex = 0; zIndex < vcImage.getNumZ(); zIndex++) {
+		if(clientTaskStatusSupport != null){
+			if(clientTaskStatusSupport.isInterrupted()){
+				return;
+			}
+		}
 		int zForwardIndex = ((zIndex+1)< vcImage.getNumZ()?masterIndex+(vcImage.getNumX()*vcImage.getNumY()):-1);
 		for (int yIndex = 0; yIndex < vcImage.getNumY(); yIndex++) {
 			int yForwardIndex = ((yIndex+1)< vcImage.getNumY()?masterIndex+vcImage.getNumX():-1);
@@ -713,6 +721,9 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 		}
 	}
 	for (int i = 1; i < nextAvailableRegion/*regionSizeArr.length*/; i++) {// 0 not used
+		if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
+			return;
+		}
 //		System.out.print("region="+i+" size="+regionSizeArr[i]);
 		Vector<Integer> intV = regionLinkArr[i];
 		for (int j = 0; intV!= null && j < intV.size();j++) {
@@ -753,6 +764,9 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 	Vector<Integer> regionsSizeV = new Vector<Integer>();
 	BitSet checkFlagBS = new BitSet(collector.length);
 	for (int i = 1; i < collector.length; i++) {// 0 not used
+		if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
+			return;
+		}
 		if(checkFlagBS.get(i)){
 			continue;
 		}

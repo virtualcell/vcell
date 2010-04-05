@@ -69,6 +69,11 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.geometry.gui.ROIAssistPanel;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.border.LineBorder;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */
@@ -356,7 +361,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public static final String FRAP_DATA_CLEARROI_PROPERTY = "FRAP_DATA_CLEARROI_PROPERTY";
 	public static final String FRAP_DATA_CHECKROI_PROPERTY = "FRAP_DATA_CHECKROI_PROPERTY";
 	public static final String FRAP_DATA_BLEND_PROPERTY = "FRAP_DATA_BLEND_PROPERTY";
-	public static final String FRAP_DATA_CROPTOOLACTIVE_PROPERTY = "FRAP_DATA_CROPTOOLACTIVE_PROPERTY";
 	//used for new frap
 	public static final int DISPLAY_WITH_ROIS = 0;
 	public static final int DEFINE_CROP = 1;
@@ -397,14 +401,14 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private ButtonGroup roiDrawButtonGroup = new ButtonGroup();
 	private Point lastHighlightPoint = null;
 	private JLabel textLabel = null;
-	private JPanel topJPanel = null;
+//	private JPanel topJPanel = null;
 	private JPanel editROIPanel = null;
 	private JLabel viewTLabel;
 	private JLabel viewZLabel;
 	private JLabel editRoiLabel;
 	private JButton checkRegionsButton;
-	private JComboBox blendComboBox;
-	private JLabel lblBlend;
+	private JSlider blendPercentSlider;
+	private JPanel blendPercentPanel;
 	
 	private JButton addROIButton;
 	private JButton delROIButton;
@@ -625,18 +629,19 @@ public class OverlayEditorPanelJAI extends JPanel{
 		editROIPanel.add(textLabel, gridBagConstraints_2);
 		textLabel.setText("No FRAP DataSet loaded.");
 
-		topJPanel = new JPanel();
-		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(0, 1, 0, 0);
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.gridx = 1;
-		editROIPanel.add(topJPanel, gridBagConstraints);
-		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] {0,7,7,0,7};
-		topJPanel.setLayout(gridBagLayout);
+//		topJPanel = new JPanel();
+//		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.insets = new Insets(0, 1, 0, 0);
+//		gridBagConstraints.anchor = GridBagConstraints.WEST;
+//		gridBagConstraints.gridy = 1;
+//		gridBagConstraints.gridx = 1;
+//		editROIPanel.add(topJPanel, gridBagConstraints);
+//		final GridBagLayout gridBagLayout = new GridBagLayout();
+//		gridBagLayout.columnWidths = new int[] {0,7,7,0,7};
+//		topJPanel.setLayout(gridBagLayout);
 
 		autoCropButton = new JButton(new ImageIcon(getClass().getResource("/images/autoCrop.gif")));
+		autoCropButton.setName("roiAutoCropBtn");
 		autoCropButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				firePropertyChange(FRAP_DATA_AUTOCROP_PROPERTY, null,null);
@@ -650,6 +655,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 //		topJPanel.add(autoCropButton, gridBagConstraints_1);
 
 		importROIMaskButton = new JButton(new ImageIcon(getClass().getResource("/images/importROI.gif")));
+		importROIMaskButton.setName("roiImportMaskBtn");
 		importROIMaskButton.setVisible(false);
 		importROIMaskButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -701,14 +707,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 			}
 		});
 		
-//		importROIMaskButton.setText("Import ROI Mask...");
-//		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
-//		gridBagConstraints_5.insets = new Insets(2, 2, 2, 2);
-//		gridBagConstraints_5.gridy = 0;
-//		gridBagConstraints_5.gridx = 1;
-//		topJPanel.add(importROIMaskButton, gridBagConstraints_5);
-
 		clearROIbutton = new JButton(new ImageIcon(getClass().getResource("/images/clearROI.gif")));
+		clearROIbutton.setName("clearROIBtn");
 		clearROIbutton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				if(roiComboBox.getItemCount() == 0){
@@ -716,17 +716,14 @@ public class OverlayEditorPanelJAI extends JPanel{
 					return;
 				}
 				firePropertyChange(FRAP_DATA_CLEARROI_PROPERTY, ((ComboboxROIName)roiComboBox.getSelectedItem()), null);
-				clearROI();
+				if(!imagePane.getModeRemoveROIWhenPainting()){
+					clearROI();
+				}
 			}
 		});
-//		clearROIbutton.setText("Clear ROI");
-//		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-//		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
-//		gridBagConstraints_4.gridy = 0;
-//		gridBagConstraints_4.gridx = 2;
-//		topJPanel.add(clearROIbutton, gridBagConstraints_4);
 
 		roiTimePlotButton = new JButton(new ImageIcon(getClass().getResource("/images/plotROI.gif")));
+		roiTimePlotButton.setName("roiTimePlotBtn");
 		roiTimePlotButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				if(getImagePane() == null || getImagePane().getHighlightImage() == null){
@@ -763,6 +760,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 //		BeanUtils.enableComponents(topJPanel, false);
 
 		roiAssistButton = new JButton(new ImageIcon(getClass().getResource("/images/assistantROI.gif")));
+		roiAssistButton.setName("roiAssistBtn");
 		roiAssistButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				if(roiComboBox.getItemCount() == 0){
@@ -785,7 +783,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		final GridBagConstraints gridBagConstraints_17 = new GridBagConstraints();
 		gridBagConstraints_17.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_17.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_17.gridy = 2;
+		gridBagConstraints_17.gridy = 1;
 		gridBagConstraints_17.gridx = 0;
 		editROIPanel.add(viewZLabel, gridBagConstraints_17);
 
@@ -797,7 +795,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_18.insets = new Insets(0, 2, 0, 0);
 		gridBagConstraints_18.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_18.weightx = 0;
-		gridBagConstraints_18.gridy = 2;
+		gridBagConstraints_18.gridy = 1;
 		gridBagConstraints_18.gridx = 1;
 		editROIPanel.add(panel_1, gridBagConstraints_18);
 		final GridBagConstraints gridBagConstraints_19 = new GridBagConstraints();
@@ -813,7 +811,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
 		gridBagConstraints_13.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_13.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_13.gridy = 3;
+		gridBagConstraints_13.gridy = 2;
 		gridBagConstraints_13.gridx = 0;
 		editROIPanel.add(viewTLabel, gridBagConstraints_13);
 
@@ -832,7 +830,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_14.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_14.insets = new Insets(0, 2, 0, 0);
 		gridBagConstraints_14.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_14.gridy = 3;
+		gridBagConstraints_14.gridy = 2;
 		gridBagConstraints_14.gridx = 1;
 		editROIPanel.add(panel, gridBagConstraints_14);
 
@@ -841,27 +839,29 @@ public class OverlayEditorPanelJAI extends JPanel{
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_7.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_7.gridy = 4;
+		gridBagConstraints_7.gridy = 3;
 		gridBagConstraints_7.gridx = 0;
 		editROIPanel.add(editRoiLabel, gridBagConstraints_7);
 
 		final JPanel editROIButtonPanel = new JPanel();
 		final GridBagLayout gridBagLayout_3 = new GridBagLayout();
-		gridBagLayout_3.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
-		gridBagLayout_3.columnWidths = new int[] {0,7,7, 0, 0, 0};
+		gridBagLayout_3.rowWeights = new double[]{0.0, 1.0};
+		gridBagLayout_3.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0};
+		gridBagLayout_3.columnWidths = new int[] {0,7,7, 0};
 		editROIButtonPanel.setLayout(gridBagLayout_3);
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.weightx = 0;
 		gridBagConstraints_8.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_8.insets = new Insets(0, 2, 0, 0);
 		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_8.gridy = 4;
+		gridBagConstraints_8.gridy = 3;
 		gridBagConstraints_8.gridx = 1;
 		editROIPanel.add(editROIButtonPanel, gridBagConstraints_8);
 		this.add(getLeftJPanel(), gridBagConstraints2);
 		this.add(getJScrollPane2(), gridBagConstraints12);
 
 		roiComboBox = new JComboBox();
+		roiComboBox.setName("activeROIComboBox");
 		roiComboBox.setRenderer(new ListCellRenderer() {
 			private DefaultListCellRenderer listCellRender = new DefaultListCellRenderer();
 			public Component getListCellRendererComponent(JList list, Object value,
@@ -883,22 +883,24 @@ public class OverlayEditorPanelJAI extends JPanel{
 		roiComboBox.addActionListener(ROI_COMBOBOX_ACTIONLISTENER);
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_1.insets = new Insets(4, 4, 4, 5);
+		gridBagConstraints_1.insets = new Insets(4, 4, 5, 5);
 		gridBagConstraints_1.weightx = 1;
 		gridBagConstraints_1.gridy = 0;
 		gridBagConstraints_1.gridx = 0;
 		editROIButtonPanel.add(roiComboBox, gridBagConstraints_1);
 
 		addROIButton = new JButton();
+		addROIButton.setName("roiAddBtn");
 		addROIButton.addActionListener(addROIActionListener);
 		addROIButton.setText("Add ROI...");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-		gridBagConstraints_3.insets = new Insets(4, 4, 4, 5);
+		gridBagConstraints_3.insets = new Insets(4, 4, 5, 5);
 		gridBagConstraints_3.gridy = 0;
 		gridBagConstraints_3.gridx = 1;
 		editROIButtonPanel.add(addROIButton, gridBagConstraints_3);
 
 		delROIButton = new JButton();
+		delROIButton.setName("roiDeleteBtn");
 		delROIButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				firePropertyChange(FRAP_DATA_DELETEROI_PROPERTY, ((ComboboxROIName)roiComboBox.getSelectedItem()), null);
@@ -911,12 +913,13 @@ public class OverlayEditorPanelJAI extends JPanel{
 		delROIButton.setText("Delete ROI...");
 		delROIButton.setEnabled(false);
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-		gridBagConstraints_4.insets = new Insets(4, 4, 4, 5);
+		gridBagConstraints_4.insets = new Insets(4, 4, 5, 5);
 		gridBagConstraints_4.gridy = 0;
 		gridBagConstraints_4.gridx = 2;
 		editROIButtonPanel.add(delROIButton, gridBagConstraints_4);
 		
 		checkRegionsButton = new JButton("Check...");
+		checkRegionsButton.setName("roiCheckBtn");
 		checkRegionsButton.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -925,36 +928,57 @@ public class OverlayEditorPanelJAI extends JPanel{
 		});
 		checkRegionsButton.setEnabled(false);
 		GridBagConstraints gbc_checkRegionsButton = new GridBagConstraints();
-		gbc_checkRegionsButton.insets = new Insets(4, 4, 4, 5);
+		gbc_checkRegionsButton.insets = new Insets(4, 4, 5, 5);
 		gbc_checkRegionsButton.gridx = 3;
 		gbc_checkRegionsButton.gridy = 0;
 		editROIButtonPanel.add(checkRegionsButton, gbc_checkRegionsButton);
 		
-		lblBlend = new JLabel("blend");
-		GridBagConstraints gbc_lblBlend = new GridBagConstraints();
-		gbc_lblBlend.insets = new Insets(4, 8, 4, 2);
-		gbc_lblBlend.anchor = GridBagConstraints.EAST;
-		gbc_lblBlend.gridx = 4;
-		gbc_lblBlend.gridy = 0;
-		editROIButtonPanel.add(lblBlend, gbc_lblBlend);
+		blendPercentPanel = new JPanel();
+		blendPercentPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		GridBagConstraints gbc_panel_2 = new GridBagConstraints();
+		gbc_panel_2.gridwidth = 4;
+		gbc_panel_2.insets = new Insets(0, 0, 0, 5);
+		gbc_panel_2.fill = GridBagConstraints.BOTH;
+		gbc_panel_2.gridx = 0;
+		gbc_panel_2.gridy = 1;
+		editROIButtonPanel.add(blendPercentPanel, gbc_panel_2);
+		GridBagLayout gbl_panel_2 = new GridBagLayout();
+//		gbl_panel_2.columnWidths = new int[]{59, 46, 200};
+//		gbl_panel_2.rowHeights = new int[]{24, 0};
+//		gbl_panel_2.columnWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+//		gbl_panel_2.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		blendPercentPanel.setLayout(gbl_panel_2);
 		
-		blendComboBox = new JComboBox();
-		for (int i = 0; i <= 100; i+= 5) {
-			blendComboBox.insertItemAt(new Integer(i), i/5);
-		}
-		blendComboBox.setSelectedItem(new Integer(50));
-		blendComboBox.addActionListener(new ActionListener() {
-			
-			public void actionPerformed(ActionEvent e) {
-				firePropertyChange(FRAP_DATA_BLEND_PROPERTY,null,  (Integer)blendComboBox.getSelectedItem());
+		JLabel lblUnderlay = new JLabel("ROI");
+		GridBagConstraints gbc_lblUnderlay = new GridBagConstraints();
+		gbc_lblUnderlay.insets = new Insets(0, 1, 0, 0);
+		gbc_lblUnderlay.anchor = GridBagConstraints.WEST;
+		gbc_lblUnderlay.gridx = 0;
+		gbc_lblUnderlay.gridy = 0;
+		blendPercentPanel.add(lblUnderlay, gbc_lblUnderlay);
+		
+		blendPercentSlider = new JSlider();
+		blendPercentSlider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if(!blendPercentSlider.getValueIsAdjusting()){
+					setBlendPercent(blendPercentSlider.getValue());
+				}
 			}
 		});
-		GridBagConstraints gbc_blendComboBox = new GridBagConstraints();
-		gbc_blendComboBox.insets = new Insets(4, 4, 4, 4);
-		gbc_blendComboBox.fill = GridBagConstraints.HORIZONTAL;
-		gbc_blendComboBox.gridx = 5;
-		gbc_blendComboBox.gridy = 0;
-		editROIButtonPanel.add(blendComboBox, gbc_blendComboBox);
+		GridBagConstraints gbc_slider = new GridBagConstraints();
+		gbc_slider.fill = GridBagConstraints.HORIZONTAL;
+		gbc_slider.weightx = 1.0;
+		gbc_slider.gridx = 1;
+		gbc_slider.gridy = 0;
+		blendPercentPanel.add(blendPercentSlider, gbc_slider);
+		
+		JLabel lblRoi = new JLabel("Underlay");
+		GridBagConstraints gbc_lblRoi = new GridBagConstraints();
+		gbc_lblRoi.insets = new Insets(0, 0, 0, 1);
+		gbc_lblRoi.anchor = GridBagConstraints.EAST;
+		gbc_lblRoi.gridx = 2;
+		gbc_lblRoi.gridy = 0;
+		blendPercentPanel.add(lblRoi, gbc_lblRoi);
 		
 		roiDrawButtonGroup.add(paintButton);
 		roiDrawButtonGroup.add(eraseButton);
@@ -965,21 +989,12 @@ public class OverlayEditorPanelJAI extends JPanel{
 		BeanUtils.enableComponents(editROIPanel, false);
 	}
 	
-	public ROI showAssistDialog(ROI originalROI,BitSet maskBitSet,final boolean bInvertThreshold/*,final boolean bInvertMask,final boolean bNeedsValidation*/)
-	{
+	public ROI showAssistDialog(ROI originalROI,BitSet maskBitSet,final boolean bInvertThreshold,boolean bShowFillAnddKeep){
 		JDialog roiDialog = new JDialog((JFrame)BeanUtils.findTypeParentOfComponent(OverlayEditorPanelJAI.this, JFrame.class));
 		roiDialog.setTitle("Create Region of Interest (ROI) using intensity thresholding");
 		roiDialog.setModal(true);
 		ROIAssistPanel roiAssistPanel = new ROIAssistPanel();
-//		ROI originalROI = null;
-//		try{
-//			if(roi != null){
-//				originalROI = new ROI(roi);
-//			}
-//		}catch(Exception ex){
-//			ex.printStackTrace();
-//			//can't happen
-//		}
+		roiAssistPanel.showFillAndKeepRegionButtons(bShowFillAnddKeep);
 		roiAssistPanel.init(roiDialog, originalROI, getRoiSouceData(),OverlayEditorPanelJAI.this,maskBitSet,bInvertThreshold/*,bInvertMask,bNeedsValidation*/);
 		roiDialog.setContentPane(roiAssistPanel);
 		roiDialog.pack();
@@ -1014,8 +1029,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			addROIButton.setVisible(false);
 			delROIButton.setVisible(false);
 			checkRegionsButton.setVisible(false);
-			lblBlend.setVisible(false);
-			blendComboBox.setVisible(false);
+			blendPercentPanel.setVisible(false);
 			
 		}
 		else if(choice == DEFINE_CROP)
@@ -1048,8 +1062,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			addROIButton.setVisible(false);
 			delROIButton.setVisible(false);
 			checkRegionsButton.setVisible(false);
-			lblBlend.setVisible(false);
-			blendComboBox.setVisible(false);
+			blendPercentPanel.setVisible(false);
 		}
 		else if(choice == DEFINE_CELLROI || choice == DEFINE_BLEACHEDROI || choice == DEFINE_BACKGROUNDROI)
 		{
@@ -1077,8 +1090,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			addROIButton.setVisible(false);
 			delROIButton.setVisible(false);
 			checkRegionsButton.setVisible(false);
-			lblBlend.setVisible(false);
-			blendComboBox.setVisible(false);
+			blendPercentPanel.setVisible(false);
 		}
 	}
 	
@@ -1109,8 +1121,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		addROIButton.setVisible(true);
 		delROIButton.setVisible(true);
 		checkRegionsButton.setVisible(true);
-		lblBlend.setVisible(true);
-		blendComboBox.setVisible(true);
+		blendPercentPanel.setVisible(true);
 		
 		roiDrawButtonGroup.add(paintButton);
 		roiDrawButtonGroup.add(eraseButton);
@@ -1162,13 +1173,14 @@ public class OverlayEditorPanelJAI extends JPanel{
 	}
 	public void setBlendPercent(int blendPercent){
 		Integer newBlendPercent = new Integer(blendPercent);
-		if(!newBlendPercent.equals(blendComboBox.getSelectedItem())){
-			blendComboBox.setSelectedItem(newBlendPercent);
+		if(!newBlendPercent.equals(blendPercentSlider.getValue())){
+			blendPercentSlider.setValue(blendPercent);
 		}
+
 		imagePane.setBlendPercent(blendPercent);
 	}
 	public int getBlendPercent(){
-		return (Integer)blendComboBox.getSelectedItem();
+		return blendPercentSlider.getValue();
 	}
 	/**
 	 * Method setROI.
@@ -1380,7 +1392,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			if(!timeSlider.isEnabled()) //if the component is already enabled, don't do anything
 			{
 				BeanUtils.enableComponents(leftJPanel, true);
-				BeanUtils.enableComponents(topJPanel, true);
+//				BeanUtils.enableComponents(topJPanel, true);
 				BeanUtils.enableComponents(editROIPanel, true);
 			}
 			if(!bAllowAddROI){
@@ -1445,7 +1457,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			zSlider.setLabelTable(null);
 			zSlider.setEnabled(false);
 			BeanUtils.enableComponents(leftJPanel, false);
-			BeanUtils.enableComponents(topJPanel, false);
+//			BeanUtils.enableComponents(topJPanel, false);
 			BeanUtils.enableComponents(editROIPanel, false);
 			underlyingImage = null;
 //			setROI(null);
@@ -1472,6 +1484,13 @@ public class OverlayEditorPanelJAI extends JPanel{
 		}
 	}
 
+	public int getDisplayContrastFactor(){
+		return imagePane.getDisplayContrastFactor();
+	}
+	public void setDisplayContrastFactor(int displayContrastFactor){
+		imagePane.setDisplayContrastFactor(displayContrastFactor);
+	}
+	
 	private Range calcMinMaxPixelValueRange(ImageDataset argImageDataset){
 		UShortImage[] allImages = argImageDataset.getAllImages();
 		double min = 0;
@@ -1974,6 +1993,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			leftJPanel.add(getZoomOutButton(), gridBagConstraints3);
 
 			contrastButtonPlus = new JButton(new ImageIcon(getClass().getResource("/images/contrastUp.gif")));
+			contrastButtonPlus.setName("contrastPlusBtn");
 			contrastButtonPlus.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
 					imagePane.increaseContrast();
@@ -1991,6 +2011,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			leftJPanel.add(contrastButtonPlus, gridBagConstraints_4);
 
 			contrastButtonMinus = new JButton(new ImageIcon(getClass().getResource("/images/contrastDown.gif")));
+			contrastButtonMinus.setName("contrastMinusBtn");
 			contrastButtonMinus.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
 					imagePane.decreaseContrast();
@@ -2009,13 +2030,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			leftJPanel.add(contrastButtonMinus, gridBagConstraints_6);
 
 			cropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/crop.gif")));
-			cropButton.addActionListener(new ActionListener() {
-				
-				public void actionPerformed(ActionEvent e) {
-					// TODO Auto-generated method stub
-					firePropertyChange(FRAP_DATA_CROPTOOLACTIVE_PROPERTY, new Integer(getZ()),null);
-				}
-			});
+			cropButton.setName("roiCropBtn");
 			cropButton.setPreferredSize(new Dimension(32, 32));
 			cropButton.setMinimumSize(new Dimension(32, 32));
 			cropButton.setMaximumSize(new Dimension(32, 32));
@@ -2039,6 +2054,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			leftJPanel.add(autoCropButton, gridBagConstraints_7);
 			
 			paintButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/paint.gif")));
+			paintButton.setName("roiPaintBtn");
 			paintButton.setSelected(true);
 			paintButton.setPreferredSize(new Dimension(32, 32));
 			paintButton.setMinimumSize(new Dimension(32, 32));
@@ -2054,6 +2070,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			leftJPanel.add(paintButton, gridBagConstraints_1);
 
 			eraseButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/eraser.gif")));
+			eraseButton.setName("roiEraseBtn");
 			eraseButton.setPreferredSize(new Dimension(32, 32));
 			eraseButton.setMinimumSize(new Dimension(32, 32));
 			eraseButton.setMaximumSize(new Dimension(32, 32));
@@ -2068,6 +2085,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			leftJPanel.add(eraseButton, gridBagConstraints_2);
 
 			fillButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/fill.gif")));
+			fillButton.setName("roiFillBtn");
 			fillButton.setPreferredSize(new Dimension(32, 32));
 			fillButton.setMinimumSize(new Dimension(32, 32));
 			fillButton.setMaximumSize(new Dimension(32, 32));
@@ -2146,6 +2164,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private JButton getZoomInButton() {
 		if (zoomInButton == null) {
 			zoomInButton = new JButton();
+			zoomInButton.setName("zoomInBtn");
 			zoomInButton.setMargin(new Insets(2, 2, 2, 2));
 			zoomInButton.setMinimumSize(new Dimension(32, 32));
 			zoomInButton.setMaximumSize(new Dimension(32, 32));
@@ -2171,6 +2190,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private JButton getZoomOutButton() {
 		if (zoomOutButton == null) {
 			zoomOutButton = new JButton();
+			zoomOutButton.setName("zoomOutBtn");
 			zoomOutButton.setPreferredSize(new Dimension(32, 32));
 			zoomOutButton.setMinimumSize(new Dimension(32, 32));
 			zoomOutButton.setMaximumSize(new Dimension(32, 32));
