@@ -15,7 +15,11 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.image.VCImageUncompressed;
+import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.geometry.ROIMultiPaintManager;
 import cbit.vcell.geometry.gui.ImageAttributePanel;
 
 public class EditImageAttributes extends AsynchClientTask {
@@ -24,16 +28,16 @@ public class EditImageAttributes extends AsynchClientTask {
 	public static final String STATUS_MANUAL_SEGMENT = "Manual Segment";
 	public static final String STATUS_CANCEL = "cancel";
 
+	public static final String EDIT_IMG_ATTR_TASK_NAME = "Editting image attributes";
 	public EditImageAttributes() {
-		super("Editting image attributes", AsynchClientTask.TASKTYPE_SWING_BLOCKING);
+		super(EDIT_IMG_ATTR_TASK_NAME, AsynchClientTask.TASKTYPE_SWING_BLOCKING);
 	}
 	
 	@Override
 	public void run(Hashtable<String, Object> hashTable) throws Exception {
-		ClientTaskStatusSupport pp = getClientTaskStatusSupport();
-		
-		Component guiParent = (Component)hashTable.get("guiParent");
-		VCImage image = (VCImage)hashTable.get("vcImage");
+		getClientTaskStatusSupport().setMessage("Showing Image attribute Editor");
+		Component guiParent = (Component)hashTable.get(ClientRequestManager.GUI_PARENT);
+		VCImage image = (VCImage)hashTable.get(ROIMultiPaintManager.CROPPED_ROI);
 		RequestManager theRequestManager = (RequestManager)hashTable.get("requestManager");
 		
 		if (image == null) {
@@ -62,13 +66,13 @@ public class EditImageAttributes extends AsynchClientTask {
 		
 		if (choice != null && choice.equals(STATUS_IMPORT)) {
 			VCImageInfo imageInfos[] = null;
-			pp.setMessage("Getting existing Image names");
+			getClientTaskStatusSupport().setMessage("Getting existing Image names");
 			try {
 				imageInfos = theRequestManager.getDocumentManager().getImageInfos();
 			}catch (DataAccessException e){
 				e.printStackTrace(System.out);
 			}
-			pp.setMessage("found "+(imageInfos != null?imageInfos.length:0)+" existing image names");
+			getClientTaskStatusSupport().setMessage("found "+(imageInfos != null?imageInfos.length:0)+" existing image names");
 			String newName = null;
 			boolean bNameIsGood = false;
 			Calendar calendar = Calendar.getInstance();

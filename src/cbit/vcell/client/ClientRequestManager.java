@@ -879,6 +879,7 @@ public Geometry getGeometryFromDocumentSelection(VCDocumentInfo vcDocumentInfo,b
 	return geom;
 }
 public static final String GUI_PARENT = "guiParent";
+public static final String PARSE_IMAGE_TASK_NAME  ="read and parse image file";
 /**
  * Insert the method's description here.
  * Creation date: (5/10/2004 3:48:16 PM)
@@ -1087,9 +1088,10 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							File imageFile = DatabaseWindowManager.showFileChooserDialog(requester, FileFilters.FILE_FILTER_FIELDIMAGES, getUserPreferences());
 							hashTable.put("imageFile", imageFile);
+							hashTable.put(ROIMultiPaintManager.IMPORT_SOURCE_NAME, "File: "+imageFile.getName());
 						}
 					};
-					AsynchClientTask parseImageTask = new AsynchClientTask("read and parse image file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					AsynchClientTask parseImageTask = new AsynchClientTask(PARSE_IMAGE_TASK_NAME, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							Component guiParent =(Component)hashTable.get(ClientRequestManager.GUI_PARENT);
@@ -1099,7 +1101,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 									File imageFile = (File)hashTable.get("imageFile");
 									int userPreferredTime = 0;
 									try{
-										getClientTaskStatusSupport().setMessage("Reading time points from file.");
+										getClientTaskStatusSupport().setMessage("Checking file for time information.");
 										double[] allTimes = ImageDatasetReader.getTimesOnly(imageFile.getAbsolutePath());
 										if(allTimes.length > 1){
 											String[][] rowData = new String[allTimes.length][1];
@@ -1107,7 +1109,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 												rowData[i][0] = allTimes[i]+"";
 											}
 											userPreferredTime = DialogUtils.showComponentOKCancelTableList(
-													guiParent, "Multiple times found, select 1 for import",
+													guiParent, "File contains data in multiple timepoints, select 1 timepoint for import",
 													new String[] {"times"}, rowData, new Integer(ListSelectionModel.SINGLE_SELECTION))[0];
 										}
 									}catch(UserCancelException uce){
@@ -1117,9 +1119,13 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 										//ignore, try to load without checking for times and use the first time if successful
 									}
 									fdfos = ClientRequestManager.createFDOSFromImageFile(imageFile,false,userPreferredTime);
+									
 								}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 									getClientTaskStatusSupport().setMessage("Reading data from VCell server.");
 									VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo;
+									hashTable.put(ROIMultiPaintManager.IMPORT_SOURCE_NAME,
+											"FieldData: "+docInfo.getExternalDataID().getName()+" varName="+
+											docInfo.getVarName()+" timeIndex="+docInfo.getTimeIndex());
 									PDEDataContext pdeDataContext =	getMdiManager().getFieldDataWindowManager().getPDEDataContext(docInfo.getExternalDataID());
 									pdeDataContext.setVariableAndTime(docInfo.getVarName(), pdeDataContext.getTimePoints()[docInfo.getTimeIndex()]);
 									CartesianMesh mesh = pdeDataContext.getCartesianMesh();
@@ -1142,40 +1148,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 									fdfos.isize = meshISize;
 									fdfos.shortSpecData = new short[][][] {{dataToSegment}};
 
-								}
-								getClientTaskStatusSupport().setMessage("Preparing to segment.");
-								hashTable.put("fdfos", fdfos);
-								short[] dataToSegment = fdfos.shortSpecData[0][0];//[time 0][channel 0]
-
-								BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
-								for (int i = 0; i < dataToSegment.length; i++) {
-									uniquePixelBS.set((int)(dataToSegment[i]&0x0000FFFF));
-								}
-
-								//ask user if want to manual segment
-								if (askAboutSegmentation(guiParent, uniquePixelBS.cardinality()).equals(SEGMENT_KEEP_IMPORTED)) {
-									hashTable.put("vcImage", createVCImageFromUnsignedShorts(dataToSegment, fdfos.extent, fdfos.isize, uniquePixelBS));
-									hashTable.put("bManualSegment", new Boolean(false));
-									ROIMultiPaintManager.Crop3D unCropped3D = new ROIMultiPaintManager.Crop3D();
-									unCropped3D.setBounds(0,0,0, fdfos.isize.getX(),fdfos.isize.getY(),fdfos.isize.getZ());
-									hashTable.put("previousCrop3D", unCropped3D);
-								}else{
-									hashTable.put("bManualSegment", new Boolean(true));
-								}
-							} catch (DataFormatException ex) {
-								throw new Exception("Cannot read image file.\n"+ex.getMessage());
-							}
-						}
-					};
-
-					final AsynchClientTask taskSegment = new AsynchClientTask(TASK_SEGMENT_NAME, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							Container guiParent =(Container)hashTable.get("guiParent");
-
-							if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
-								hashTable.put("bManualSegment", true);
-								if(hashTable.get("fdfos") == null){
+								}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
 									try{
 										do{
 											String result = "256,256,1";
@@ -1198,13 +1171,11 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 													throw new Exception("Total pixels (x*y*z) cannot be <=0 or >"+SCRATCH_SIZE_LIMIT+".");
 												}
 												short[] scratchData = new short[totalSize];
-												FieldDataFileOperationSpec newfdfos = 
-													new FieldDataFileOperationSpec();
-												newfdfos.origin = new Origin(0, 0, 0);
-												newfdfos.extent = new Extent(1, 1, 1);
-												newfdfos.isize = new ISize(xsize, ysize, zsize);
-												newfdfos.shortSpecData = new short[][][] {{scratchData}};
-												hashTable.put("fdfos", newfdfos);
+												fdfos = new FieldDataFileOperationSpec();
+												fdfos.origin = new Origin(0, 0, 0);
+												fdfos.extent = new Extent(1, 1, 1);
+												fdfos.isize = new ISize(xsize, ysize, zsize);
+												fdfos.shortSpecData = new short[][][] {{scratchData}};
 												break;
 											}catch(Exception e){
 												DialogUtils.showErrorDialog(guiParent, "Error entering starting sizes\n"+e.getMessage());
@@ -1214,29 +1185,30 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 										throw UserCancelException.CANCEL_GENERIC;
 									}
 								}
-							}
-							if(!((Boolean)hashTable.get("bManualSegment")).booleanValue()){
-								return;
-							}
-							VCImage previouslyEditedVCImage = (VCImage)hashTable.remove("vcImage");//can be null
-							ROIMultiPaintManager.Crop3D previousCrop3D = (ROIMultiPaintManager.Crop3D)hashTable.remove("previousCrop3D");//can be null
+								getClientTaskStatusSupport().setMessage("Counting distinct pixel values.");
+								hashTable.put(ROIMultiPaintManager.IMPORTED_DATA_CONTAINER, fdfos);
+								short[] dataToSegment = fdfos.shortSpecData[0][0];//[time 0][channel 0]
 
-							FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec)hashTable.get("fdfos");
-							
-							ROIMultiPaintManager.fixBorderProblemInPlace(fdfos, previouslyEditedVCImage,previousCrop3D);
-							
-							//manual segment
-							Hashtable<VCImage, ROIMultiPaintManager.Crop3D> segmentedAndCropped = null;
-							ROIMultiPaintManager roiMultiPaintManager = new ROIMultiPaintManager();
-							segmentedAndCropped =
-								roiMultiPaintManager.showROIEditor(guiParent,
-									/*fdfos.origin,fdfos.extent,*/ fdfos.isize,fdfos.shortSpecData[0][0],
-									previouslyEditedVCImage,previousCrop3D);
-							
-							VCImage segmentedVCImage = segmentedAndCropped.keySet().toArray(new VCImage[0])[0];
-							updateExtent(segmentedVCImage, fdfos.extent, fdfos.isize);
-							hashTable.put("vcImage", segmentedVCImage);
-							hashTable.put("previousCrop3D", segmentedAndCropped.values().toArray(new ROIMultiPaintManager.Crop3D[0])[0]);
+								BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
+								for (int i = 0; i < dataToSegment.length; i++) {
+									uniquePixelBS.set((int)(dataToSegment[i]&0x0000FFFF));
+								}
+
+								//ask user if want to manual segment
+								if (documentCreationInfo.getOption() != VCDocument.GEOM_OPTION_FROM_SCRATCH &&
+										askAboutSegmentation(guiParent, uniquePixelBS.cardinality()).equals(SEGMENT_KEEP_IMPORTED)) {
+									hashTable.put(ROIMultiPaintManager.CROPPED_ROI,
+											createVCImageFromUnsignedShorts(dataToSegment, fdfos.extent, fdfos.isize, uniquePixelBS));
+									ROIMultiPaintManager.Crop3D unCropped3D = new ROIMultiPaintManager.Crop3D();
+									unCropped3D.setBounds(0,0,0, fdfos.isize.getX(),fdfos.isize.getY(),fdfos.isize.getZ());
+									hashTable.put(ROIMultiPaintManager.CROP_3D, unCropped3D);
+									hashTable.put(ClientTaskDispatcher.TASK_REWIND, EditImageAttributes.EDIT_IMG_ATTR_TASK_NAME);
+								}else{
+									hashTable.put(ClientTaskDispatcher.TASK_REWIND,ROIMultiPaintManager.INIT_ROI_DATA_TASK_NAME);
+								}
+							} catch (DataFormatException ex) {
+								throw new Exception("Cannot read image file.\n"+ex.getMessage());
+							}
 						}
 					};
 
@@ -1246,107 +1218,28 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 							Exception e = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_USER);
 							if(e != null && e == UserCancelException.CANCEL_EDIT_IMG_ATTR){
 									hashTable.remove(ClientTaskDispatcher.TASK_ABORTED_BY_USER);
-									hashTable.put("bManualSegment", new Boolean(true));
-									hashTable.put(ClientTaskDispatcher.TASK_REWIND, TASK_SEGMENT_NAME);
+									hashTable.put(ClientTaskDispatcher.TASK_REWIND, ROIMultiPaintManager.INIT_ROI_DATA_TASK_NAME);
 							}
 						}
 					};
+					ROIMultiPaintManager roiMultiPaintManager = new ROIMultiPaintManager();
+					Vector<AsynchClientTask> tasksV = new Vector<AsynchClientTask>();
 					if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
-						taskArray = new AsynchClientTask[] {taskSegment,new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask};
+						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask}));
+						tasksV.addAll(Arrays.asList(roiMultiPaintManager.getROIEditTasks()));
+						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask}));
 					}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
-						taskArray = new AsynchClientTask[] {selectImageFileTask,parseImageTask, taskSegment,new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask};
+						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask}));
+						tasksV.addAll(Arrays.asList(roiMultiPaintManager.getROIEditTasks()));
+						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask}));
 					}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
-						taskArray = new AsynchClientTask[] {parseImageTask, taskSegment,new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask};
+						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask}));
+						tasksV.addAll(Arrays.asList(roiMultiPaintManager.getROIEditTasks()));
+						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask}));
 					}
+					taskArray = tasksV.toArray(new AsynchClientTask[0]);
 					break;
-				}/* else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
-					AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo;
-							PDEDataContext pdeDataContext =	getMdiManager().getFieldDataWindowManager().getPDEDataContext(docInfo.getExternalDataID());
-							pdeDataContext.setVariableAndTime(docInfo.getVarName(), pdeDataContext.getTimePoints()[docInfo.getTimeIndex()]);
-							double[] data = pdeDataContext.getDataValues();
-							CartesianMesh mesh = pdeDataContext.getCartesianMesh();
-							hashTable.put("mesh", mesh);
-//							byte[] segmentedData = new byte[data.length];
-//							Vector<Double> distinctValues = new Vector<Double>();
-//							int index = -1;
-//							boolean bTooManyColors = false;
-//							for (int i = 0; i < data.length; i++) {
-//								if((index = distinctValues.indexOf(data[i])) == -1){
-//									index = distinctValues.size();
-//									distinctValues.add(data[i]);
-//									if(distinctValues.size() > MAX_NUMBER_OF_COLORS_IMPORTED_FILE){
-//										bTooManyColors = true;
-//										break;
-//									}
-//								}
-//								segmentedData[i] = (byte)index;
-//							}
-							
-//							if (!bTooManyColors) {
-//								VCImage initImage = new VCImageUncompressed(null,segmentedData, mesh.getExtent(), mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
-//								hashTable.put("vcImage", initImage);
-//							}else{
-								double minValue = Double.POSITIVE_INFINITY;
-								double maxValue = Double.NEGATIVE_INFINITY;
-								for (int i = 0; i < data.length; i++) {
-									minValue = Math.min(minValue,data[i]);
-									maxValue = Math.max(maxValue,data[i]);
-								}
-								short[] dataToSegment = new short[data.length];
-								double scaleShort = Math.pow(2, Short.SIZE)-1;
-								for (int i = 0; i < data.length; i++) {
-									dataToSegment[i]|= (int)((data[i]-minValue)/(maxValue-minValue)*scaleShort);
-								}
-								hashTable.put("dataToSegment", dataToSegment);
-								
-								BitSet uniquePixelBS = calcUniqueValues(dataToSegment);
-								if(uniquePixelBS.cardinality() <= MAX_NUMBER_OF_COLORS_IMPORTED_FILE){
-									VCImage initImage = createVCImageFromUnsignedShorts(dataToSegment, mesh.getExtent(),
-											new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ()), uniquePixelBS);
-									hashTable.put("vcImage", initImage);
-								}
-//							}
-						}
-					};
-					
-					AsynchClientTask segmentTask = new AsynchClientTask(TASK_SEGMENT_NAME, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							CartesianMesh mesh = (CartesianMesh)hashTable.get("mesh");
-							if (mesh==null){
-								throw new Exception("mesh not found");
-							}
-
-							Container parent = (Container)hashTable.get("parent");
-							VCImage vcImage = (VCImage)hashTable.get("vcImage");
-							if (vcImage != null) {	
-								if (askAboutSegmentation(parent, vcImage.getPixelClasses().length).equals(SEGMENT_KEEP_IMPORTED)) {
-									return;
-								}
-							} else {
-								PopupGenerator.showInfoDialog(parent, "The image contains more than "+MAX_NUMBER_OF_COLORS_IMPORTED_FILE+" colors. User will define regions manually.");
-							}
-							short[] dataToSegment = (short[])hashTable.get("dataToSegment");
-							ISize meshISize = new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
-							Hashtable<VCImage, ROIMultiPaintManager.Crop3D> segmentedAndCropped =
-								new ROIMultiPaintManager().showROIEditor(parent,
-										mesh.getOrigin(),mesh.getExtent(),
-										meshISize,
-										dataToSegment,null,null);
-							VCImage segmentedVCImage = segmentedAndCropped.keySet().toArray(new VCImage[0])[0];
-							updateExtent(segmentedVCImage, mesh.getExtent(),meshISize);
-							hashTable.put("vcImage", segmentedVCImage);
-						}
-					};
-					
-					taskArray = new AsynchClientTask[] {task1, segmentTask, new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask};
-					break;
-				}*/ else{
+				}else{
 					throw new RuntimeException("Unknown Geometry Document creation option value="+documentCreationInfo.getOption());
 				}
 			}
@@ -1358,38 +1251,9 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 	return taskArray;
 }
 
-final String TASK_SEGMENT_NAME = "Segment image";
-//final AsynchClientTask backToSegmentTask = new AsynchClientTask("return to segmentation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,true,false) {
-//	@Override
-//	public void run(final Hashtable<String, Object> hashTable) throws Exception {
-//		Exception e = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_USER);
-//		if(e != null && e == UserCancelException.CANCEL_EDIT_IMG_ATTR){
-//			final String backToSegment = "Show segmentation tool";
-//			final String quit = "Quit geometry import";
-//			String result = DialogUtils.showWarningDialog((Component)hashTable.get("guiParent"),										
-//					"Do you want to show the segmentation tool or just quit?",
-//					new String[] {backToSegment,quit}, quit);
-//			if(result != null && result.equals(backToSegment)){
-//				hashTable.remove(ClientTaskDispatcher.TASK_ABORTED_BY_USER);
-//				hashTable.put("bManualSegment", new Boolean(true));
-//				hashTable.put(ClientTaskDispatcher.TASK_REWIND, TASK_SEGMENT_NAME);
-//			}
-//		}
-//	}
-//};
-
-private void updateExtent(VCImage updateThisVCImage,Extent origExtent,ISize origIsISize){
-	updateThisVCImage.setExtent(
-		new Extent(
-			updateThisVCImage.getNumX()*origExtent.getX()/origIsISize.getX(),
-			updateThisVCImage.getNumY()*origExtent.getY()/origIsISize.getY(),
-			updateThisVCImage.getNumZ()*origExtent.getZ()/origIsISize.getZ())
-	);
-}
-
 private static final int MAX_NUMBER_OF_COLORS_IMPORTED_FILE = 256;
 private final String SEGMENT_USER_WILL_EDIT = "User will edit segmentation";
-private final String SEGMENT_KEEP_IMPORTED = "Keep imported segmentation";
+public static final String SEGMENT_KEEP_IMPORTED = "Keep imported segmentation";
 private final String SEGMENT_CANCEL = "Cancel";
 
 private String askAboutSegmentation(Component parent,int numPixelClasses) throws UserCancelException{

@@ -120,6 +120,8 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 						i=rewindTaskIndex-1;
 						continue;
 					}
+					recordException(new Exception("Rewind task named '"+rewindTaskName+"' not found"), hash);
+					break;
 				}
 				if (hash.containsKey(TASK_ABORTED_BY_ERROR) && currentTask.skipIfAbort()) {
 					shouldRun = false;

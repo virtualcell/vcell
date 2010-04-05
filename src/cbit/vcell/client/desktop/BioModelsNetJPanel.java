@@ -345,10 +345,10 @@ public class BioModelsNetJPanel extends JPanel {
 					final String importNow = "Import";
 					final String cancel = "Cancel";
 					DialogUtils.TableListResult result = DialogUtils.showComponentOptionsTableList(
-							BioModelsNetJPanel.this, "Select BioModels to import",
+							BioModelsNetJPanel.this, "Select a BioModel to import",
 							new String[] {"Model Names","BioModels Entry ID"}, rowData,
 							ListSelectionModel.SINGLE_SELECTION,null,
-							new String[] {importNow,cancel},importNow);
+							new String[] {importNow,cancel},importNow,null);
 					
 					if(result.selectedOption != null && result.selectedOption.equals(importNow)){
 						//Close Dialog showing "this" panel so ProgressPopup not obscured during openDocument
