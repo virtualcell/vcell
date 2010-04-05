@@ -4,28 +4,29 @@ package cbit.vcell.parser;
 public interface ExpressionParserConstants {
 
   int EOF = 0;
-  int RELATIONAL_OPERATOR = 5;
-  int LT = 6;
-  int GT = 7;
-  int LE = 8;
-  int GE = 9;
-  int EQ = 10;
-  int NE = 11;
-  int AND = 12;
-  int OR = 13;
-  int NOT = 14;
-  int POWER = 15;
-  int ADD = 16;
-  int SUB = 17;
-  int MULT = 18;
-  int DIV = 19;
-  int FLOATING_POINT_LITERAL = 20;
-  int EXPONENT = 21;
-  int INTEGER_LITERAL = 22;
-  int IDENTIFIER = 23;
-  int ID = 24;
-  int LETTER = 25;
-  int DIGIT = 26;
+  int QUOTE = 5;
+  int RELATIONAL_OPERATOR = 6;
+  int LT = 7;
+  int GT = 8;
+  int LE = 9;
+  int GE = 10;
+  int EQ = 11;
+  int NE = 12;
+  int AND = 13;
+  int OR = 14;
+  int NOT = 15;
+  int POWER = 16;
+  int ADD = 17;
+  int SUB = 18;
+  int MULT = 19;
+  int DIV = 20;
+  int FLOATING_POINT_LITERAL = 21;
+  int EXPONENT = 22;
+  int INTEGER_LITERAL = 23;
+  int IDENTIFIER = 24;
+  int ID = 25;
+  int LETTER = 26;
+  int DIGIT = 27;
 
   int DEFAULT = 0;
 
@@ -35,6 +36,7 @@ public interface ExpressionParserConstants {
     "\"\\t\"",
     "\"\\n\"",
     "\"\\r\"",
+    "\"\\\'\"",
     "<RELATIONAL_OPERATOR>",
     "\"<\"",
     "\">\"",

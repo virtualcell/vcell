@@ -54,7 +54,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 	ASTInvertTermNode invertNode = new ASTInvertTermNode(id);
 	ASTFuncNode powNode = new ASTFuncNode();
-	powNode.setFunction(ASTFuncNode.POW);
+	powNode.setFunctionFromName(ASTFuncNode.getFunctionNames()[ASTFuncNode.POW]);
 	powNode.jjtAddChild(jjtGetChild(0).copyTree());
 	powNode.jjtAddChild(new ASTFloatNode(2.0));
 	invertNode.jjtAddChild(powNode);

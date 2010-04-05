@@ -18,6 +18,7 @@ public interface ExpressionParserTreeConstants
   public int JJTFUNCNODE = 11;
   public int JJTFLOATNODE = 12;
   public int JJTIDNODE = 13;
+  public int JJTLITERALNODE = 14;
 
 
   public String[] jjtNodeName = {
@@ -35,5 +36,6 @@ public interface ExpressionParserTreeConstants
     "FuncNode",
     "FloatNode",
     "IdNode",
+    "LiteralNode",
   };
 }

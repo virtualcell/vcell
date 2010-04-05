@@ -376,7 +376,16 @@ public class VCUnitEvaluator {
 			} else if (functionName.equalsIgnoreCase("abs") || functionName.equalsIgnoreCase("min") ||
 					   functionName.equalsIgnoreCase("max")) {
 				return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap);
-			} else {                                          //if (functionName.equalsIgnoreCase("exp")) {
+			} else if (((ASTFuncNode)node).getFunction()==ASTFuncNode.USERDEFINED){
+				ASTFuncNode funcNode = (ASTFuncNode)node;
+				SymbolTableFunctionEntry stfe = funcNode.getSymbolTableFunctionEntry();
+				if (stfe!=null){
+					if (stfe.getUnitDefinition()!=null){
+						return stfe.getUnitDefinition();
+					}
+				}
+				return VCUnitDefinition.UNIT_TBD;
+			}else{
 				return VCUnitDefinition.UNIT_DIMENSIONLESS;
 			}
 		} else if (node instanceof ASTPowerNode) {

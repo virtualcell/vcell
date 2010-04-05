@@ -39,7 +39,7 @@ public class ExpressionParser {
       return;
     }
     try {
-      ASTExpression n = parser.Expression();
+      SimpleNode n = parser.Expression();
       n.dump("");
       System.out.println("Java Parser Version 0.2:  Java program parsed successfully.");
     } catch (Exception e) {
@@ -70,11 +70,10 @@ SKIP :
  * Tokens to consider in BNF follow.
  */
 
-TOKEN : /* FUNCTION */
+TOKEN :
 {
-  <FUNCTION: <IDENTIFIER> >
+  <QUOTE: "'">
 }
-
 
 TOKEN : /* Relational Operators */
 {
@@ -148,6 +147,9 @@ TOKEN : /* IDENTIFIERS */
 ASTExpression Expression() :
 {}
 {
+   StringLiteral() ";"
+   { return jjtThis; }
+|
    LogicalORExpression() ";"
    { return jjtThis; }
 }
@@ -239,7 +241,7 @@ void UnaryExpression() #void :
 void PrimaryExpression() #void :
 {}
 {
-  LOOKAHEAD(<FUNCTION> "(")
+  LOOKAHEAD(<IDENTIFIER> "(")
   Function()
 | 
   LOOKAHEAD(Name())
@@ -253,8 +255,8 @@ void PrimaryExpression() #void :
 void Function() #FuncNode :
 { Token t; }
 {
-  (t = <FUNCTION> Arguments())
-  { jjtThis.setFunctionFromParserToken(t.image); }
+  (t = <IDENTIFIER> Arguments())
+  { jjtThis.setFunctionFromName(t.image); }
 }
 
 
@@ -267,7 +269,7 @@ void Arguments() #void :
 void ArgumentList() #void:
 {}
 {
-  LogicalORExpression() ( "," LogicalORExpression() )*
+  (StringLiteral() | LogicalORExpression()) ( "," (StringLiteral() | LogicalORExpression()) )*
 }
 
 void Float() #FloatNode:
@@ -282,5 +284,14 @@ void Name() #IdNode :
 {
   t_name = <IDENTIFIER>
   { jjtThis.name = t_name.image; }
+}
+
+void StringLiteral() #LiteralNode :
+{ Token t_quote=null; 
+Token t_name=null; }
+{
+  t_quote = <QUOTE> t_name = <IDENTIFIER> <QUOTE>
+  { jjtThis.name = t_quote.image + t_name.image + t_quote.image; 
+  }
 }
 

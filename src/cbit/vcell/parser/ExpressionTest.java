@@ -3,6 +3,9 @@ package cbit.vcell.parser;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
+import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.*;
 
 public class ExpressionTest {
@@ -586,6 +589,32 @@ public static void testEvaluateVector() {
 	}
 }
 
+public static void testUserDefinedFunctions() {
+	try {
+		SimpleSymbolTableFunctionEntry steFunc = new SimpleSymbolTableFunctionEntry("myfunc", new String[] { "arg1", "arg2" }, new FunctionArgType[] { FunctionArgType.NUMERIC, FunctionArgType.NUMERIC }, new Expression("arg1+arg2"), VCUnitDefinition.UNIT_DIMENSIONLESS, null);
+		SimpleSymbolTable symbolTable = new SimpleSymbolTable(new String[] { "a", "b", "c" }, new SymbolTableFunctionEntry[] { steFunc }, null);
+		
+		bindFlattenAndPrint("4*myfunc(4,5)",  symbolTable);
+		bindFlattenAndPrint("4*myfunc(2+3+1/3,5)",  symbolTable);
+		bindFlattenAndPrint("4*myfunc(a+b,5)",  symbolTable);
+		bindFlattenAndPrint("4*myfunc('a',b)",  symbolTable);
+		bindFlattenAndPrint("4*myfunc('a',b)",  symbolTable);
+		bindFlattenAndPrint("4*myfunc(myfunc(1,2),b)",  symbolTable);
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+	}
+}
+
+private static void bindFlattenAndPrint(String expStr, SymbolTable symbolTable) throws ExpressionException{
+	try {
+		Expression exp = new Expression(expStr);
+		exp.bindExpression(symbolTable);
+		System.out.println(exp.infix()+" ==> "+exp.flatten().infix());
+	}catch (Exception e){
+		System.out.println("failed expression: \""+expStr+"\",  reason: "+e.getMessage());
+	}
+	System.out.println();
+}
 
 /**
  * Insert the method's description here.
