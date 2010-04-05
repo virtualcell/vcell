@@ -16,6 +16,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.model.VCMODL;
@@ -667,5 +668,17 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 
 	public OutputFunctionContext getOutputFunctionContext() {
 		return outputFunctionContext;
+	}
+
+	public Geometry getGeometry() {
+		return getMathDescription().getGeometry();
+	}
+
+	public void addGeometryPropertyChangeListener(PropertyChangeListener listener) {
+		getMathDescription().addPropertyChangeListener(listener);
+	}
+
+	public void removeGeometryPropertyChangeListener(PropertyChangeListener listener) {
+		getMathDescription().removePropertyChangeListener(listener);
 	}
 }

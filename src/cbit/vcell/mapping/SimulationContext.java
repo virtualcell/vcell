@@ -2096,4 +2096,12 @@ public String getFreeEventName() {
 		count++;
 	}
 }
+
+public void addGeometryPropertyChangeListener(PropertyChangeListener listener) {
+	getGeometryContext().addPropertyChangeListener(listener);
+}
+
+public void removeGeometryPropertyChangeListener(PropertyChangeListener listener) {
+	getGeometryContext().removePropertyChangeListener(listener);
+}
 }
