@@ -1908,8 +1908,11 @@ public boolean isValid() {
 				}
 			}
 		}
-	}catch (ExpressionException e){
+	}catch (ExpressionBindingException e){
 		setWarning("error binding identifier: "+e.getMessage());
+		return false;
+	}catch (ExpressionException e){
+		setWarning(e.getMessage());
 		return false;
 	}catch (MathException e){
 		setWarning(e.getMessage());

@@ -12,6 +12,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.util.Enumeration;
 
 import javax.swing.JViewport;
 
@@ -29,13 +30,14 @@ import edu.rpi.graphdrawing.Node;
  * 
  */
 public class SimpleGraphCartoonTool extends CartoonTool {
-	private SimpleGraphModel graphModel = null;
+	private GraphModel graphModel = null;
 
 	public static final String ANNEALER = "Annealer";
 	public static final String CIRCULARIZER = "Circularizer";
 	public static final String CYCLEIZER = "Cycleizer";
 	public static final String FORCEDIRECT = "ForceDirect";
 	public static final String LEVELLER = "Leveller";
+	public static final String TRANSPOSE = "Transpose";
 	public static final String RANDOMIZER = "Randomizer";
 	public static final String RELAXER = "Relaxer";
 	public static final String STABILIZER = "Stabilizer";
@@ -80,16 +82,23 @@ public GraphModel getGraphModel() {
 	return graphModel;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/9/2002 10:25:37 AM)
- * @return cbit.vcell.graph.GraphModel
- */
-public SimpleGraphModel getSimpleGraphModel() {
-	return graphModel;
+public void transposeLayout(){
+	//
+	// calculate offset and scaling so that resulting graph fits on canvas
+	//
+	Enumeration<Shape> enumShapes = getGraphModel().getShapes();
+	while (enumShapes.hasMoreElements()){
+		Shape shape = enumShapes.nextElement();
+		if (shape instanceof ElipseShape){
+			Point location = shape.getLocation();
+			int oldX = location.x;
+			int oldY = location.y;
+			location.y = oldX;
+			location.x = oldY;
+		}
+	}
+	getGraphPane().repaint();
 }
-
 
 /**
  * This method was created in VisualAge.
@@ -101,12 +110,15 @@ public void layout(String layoutName) throws Exception {
 	//
 	// add nodes
 	//
-	java.util.Enumeration<Shape> shapeEnum = getGraphModel().getShapes();
+	boolean bHasSelections = getGraphModel().getSelectedShape()!=null;
+	Enumeration<Shape> shapeEnum = getGraphModel().getShapes();
 	while (shapeEnum.hasMoreElements()){
 		Shape shape = shapeEnum.nextElement();
 		edu.rpi.graphdrawing.Node newNode = null;
-		if (shape instanceof NodeShape){
-			newNode = bb.addNode(shape.getLabel());
+		if (shape instanceof ElipseShape){
+			if (!bHasSelections || shape.isSelected()){
+				newNode = bb.addNode(shape.getLabel());
+			}
 		}
 		//
 		// initialize node location to current absolute position
@@ -120,15 +132,17 @@ public void layout(String layoutName) throws Exception {
 	//
 	// add edges
 	//
-	shapeEnum = getSimpleGraphModel().getShapes();
+	shapeEnum = getGraphModel().getShapes();
 	while (shapeEnum.hasMoreElements()){
 		Shape shape = (Shape)shapeEnum.nextElement();
 		edu.rpi.graphdrawing.Edge newEdge = null;
-		if (shape instanceof GraphEdgeShape){
-			GraphEdgeShape eShape = (GraphEdgeShape)shape;
-			NodeShape node1Shape = eShape.getNode1Shape();
-			NodeShape node2Shape = eShape.getNode2Shape();
-			newEdge = bb.addEdge(node1Shape.getLabel(),node2Shape.getLabel());
+		if (shape instanceof EdgeShape){
+			EdgeShape eShape = (EdgeShape)shape;
+			ElipseShape node1Shape = eShape.startShape;
+			ElipseShape node2Shape = eShape.endShape;
+			if (!bHasSelections || (node1Shape.isSelected() && node2Shape.isSelected())){
+				newEdge = bb.addEdge(node1Shape.getLabel(),node2Shape.getLabel());
+			}
 		}
 	}
 
@@ -214,7 +228,7 @@ public void layoutGlg() {
 	//
 	//Add nodes (Vertex) to the graph
 	//
-	java.util.Enumeration<Shape> shapeEnum = getSimpleGraphModel().getShapes();
+	java.util.Enumeration<Shape> shapeEnum = getGraphModel().getShapes();
 	com.genlogic.GraphLayout.GlgGraphNode graphNode;
 	java.util.HashMap<Shape, GlgGraphNode> nodeMap = new java.util.HashMap<Shape, GlgGraphNode>(); 
 	
@@ -222,7 +236,7 @@ public void layoutGlg() {
 		Shape shape = shapeEnum.nextElement();
 
 		//add to the graph			
-		if (shape instanceof NodeShape) {
+		if (shape instanceof ElipseShape) {
 			graphNode = graph.AddNode(null, 0, null);
 		} else {
 			continue;
@@ -234,14 +248,14 @@ public void layoutGlg() {
 	//
 	//Add edges
 	//
-	shapeEnum = getSimpleGraphModel().getShapes();
+	shapeEnum = getGraphModel().getShapes();
 	
 	while (shapeEnum.hasMoreElements()) {
 		Shape shape = shapeEnum.nextElement();
 		
-		if (shape instanceof GraphEdgeShape) {
-			GraphEdgeShape eShape = (GraphEdgeShape)shape;
-			graph.AddEdge(nodeMap.get(eShape.getNode1Shape()), nodeMap.get(eShape.getNode2Shape()),null, 0 ,null);
+		if (shape instanceof EdgeShape) {
+			EdgeShape eShape = (EdgeShape)shape;
+			graph.AddEdge(nodeMap.get(eShape.startShape), nodeMap.get(eShape.endShape),null, 0 ,null);
 		}
 	}
 
@@ -273,7 +287,7 @@ public void layoutGlg() {
 	//
 	//Update positions
 	//
-	shapeEnum = getSimpleGraphModel().getShapes();
+	shapeEnum = getGraphModel().getShapes();
 	Point place;
 	com.genlogic.GraphLayout.GlgPoint glgPoint;
 	while (shapeEnum.hasMoreElements()) {
@@ -331,7 +345,7 @@ public void mouseClicked(java.awt.event.MouseEvent event) {
 		switch (mode) {
 			case SELECT_MODE: {
 				if (event.getClickCount()==2){
-					Shape selectedShape = getSimpleGraphModel().getSelectedShape();
+					Shape selectedShape = getGraphModel().getSelectedShape();
 					if (selectedShape != null){
 						menuAction(selectedShape,PROPERTIES_MENU_ACTION);
 					}
@@ -370,7 +384,7 @@ public void mouseDragged(java.awt.event.MouseEvent event) {
 			case SELECT_MODE: {
 				java.awt.Point worldPoint = screenToWorld(event.getX(),event.getY());
 				if (bMoving){
-					Shape selectedShapes[] = getSimpleGraphModel().getAllSelectedShapes();
+					Shape selectedShapes[] = getGraphModel().getAllSelectedShapes();
 					//
 					// constrain to stay within the corresponding parent for the "movingShape" as well as all other selected (hence moving) shapes.
 					//
@@ -418,7 +432,7 @@ public void mouseDragged(java.awt.event.MouseEvent event) {
 					//getGraphPane().repaint();
 					Graphics2D g = (Graphics2D)getGraphPane().getGraphics();
 					java.awt.geom.AffineTransform oldTransform = g.getTransform();
-					g.scale(0.01*getSimpleGraphModel().getZoomPercent(),0.01*getSimpleGraphModel().getZoomPercent());
+					g.scale(0.01*getGraphModel().getZoomPercent(),0.01*getGraphModel().getZoomPercent());
 					g.setXORMode(Color.white);
 					rectShape.setEnd(endPointWorld);
 					rectShape.paint(g,0,0);
@@ -427,8 +441,8 @@ public void mouseDragged(java.awt.event.MouseEvent event) {
 					rectShape.paint(g,0,0);
 					g.setTransform(oldTransform);
 				}else{
-					Shape shape = (getGraphModel().getSelectedShape() != null?getGraphModel().getSelectedShape():getSimpleGraphModel().pickWorld(worldPoint));
-					if (!bCntrl && !bShift && (shape instanceof NodeShape)){
+					Shape shape = (getGraphModel().getSelectedShape() != null?getGraphModel().getSelectedShape():getGraphModel().pickWorld(worldPoint));
+					if (!bCntrl && !bShift && (shape instanceof ElipseShape)){
 						bMoving=true;
 						movingShape = shape;
 						movingPointWorld = shape.getAbsLocation();
@@ -436,7 +450,7 @@ public void mouseDragged(java.awt.event.MouseEvent event) {
 					}else if (shape instanceof ContainerShape || bShift || bCntrl){
 						bRectStretch = true;
 						endPointWorld = new Point(worldPoint.x+1,worldPoint.y+1);
-				 		rectShape = new RubberBandRectShape(worldPoint,endPointWorld,getSimpleGraphModel());
+				 		rectShape = new RubberBandRectShape(worldPoint,endPointWorld,getGraphModel());
 						rectShape.setEnd(endPointWorld);
 						if(!(shape instanceof ContainerShape)){
 							shape.getParent().addChildShape(rectShape);
@@ -445,7 +459,7 @@ public void mouseDragged(java.awt.event.MouseEvent event) {
 						}
 						Graphics2D g = (Graphics2D)getGraphPane().getGraphics();
 						java.awt.geom.AffineTransform oldTransform = g.getTransform();
-						g.scale(0.01*getSimpleGraphModel().getZoomPercent(),0.01*getSimpleGraphModel().getZoomPercent());
+						g.scale(0.01*getGraphModel().getZoomPercent(),0.01*getGraphModel().getZoomPercent());
 						g.setXORMode(Color.white);
 						rectShape.paint(g,0,0);
 						g.setTransform(oldTransform);
@@ -470,12 +484,12 @@ public void mouseDragged(java.awt.event.MouseEvent event) {
  */
 public void mousePressed(java.awt.event.MouseEvent event) {
 	//
-	if(getSimpleGraphModel() == null){return;}
+	if(getGraphModel() == null){return;}
 	try {
 		//
 		int eventX = event.getX();
 		int eventY = event.getY();
-		java.awt.Point worldPoint = new java.awt.Point((int)(eventX*100.0/getSimpleGraphModel().getZoomPercent()),(int)(eventY*100.0/getSimpleGraphModel().getZoomPercent()));
+		java.awt.Point worldPoint = new java.awt.Point((int)(eventX*100.0/getGraphModel().getZoomPercent()),(int)(eventY*100.0/getGraphModel().getZoomPercent()));
 		//
 		//Always select with MousePress
 		//
@@ -487,7 +501,7 @@ public void mousePressed(java.awt.event.MouseEvent event) {
 		//
 		// if mouse popupMenu event, popup menu
 		if (event.isPopupTrigger() && mode == SELECT_MODE){
-			popupMenu(getSimpleGraphModel().getSelectedShape(),eventX,eventY);
+			popupMenu(getGraphModel().getSelectedShape(),eventX,eventY);
 			return;
 		}
 	}catch (Exception e){
@@ -503,14 +517,14 @@ public void mousePressed(java.awt.event.MouseEvent event) {
  */
 public void mouseReleased(java.awt.event.MouseEvent event) {
 	//
-	if(getSimpleGraphModel() == null){return;}
+	if(getGraphModel() == null){return;}
 	//
 	try {
 		//Pick shape
 		int eventX = event.getX();
 		int eventY = event.getY();
-		java.awt.Point worldPoint = new java.awt.Point((int)(eventX*100.0/getSimpleGraphModel().getZoomPercent()),(int)(eventY*100.0/getSimpleGraphModel().getZoomPercent()));
-		Shape pickedShape = getSimpleGraphModel().pickWorld(worldPoint);
+		java.awt.Point worldPoint = new java.awt.Point((int)(eventX*100.0/getGraphModel().getZoomPercent()),(int)(eventY*100.0/getGraphModel().getZoomPercent()));
+		Shape pickedShape = getGraphModel().pickWorld(worldPoint);
 		//
 		// if mouse popupMenu event, popup menu
 		//
@@ -518,8 +532,8 @@ public void mouseReleased(java.awt.event.MouseEvent event) {
 			//boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
 			//boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
 			//selectEventFromWorld(worldPoint,bShift,bCntrl);
-			if(pickedShape == getSimpleGraphModel().getSelectedShape()){
-				popupMenu(getSimpleGraphModel().getSelectedShape(),event.getX(),event.getY());
+			if(pickedShape == getGraphModel().getSelectedShape()){
+				popupMenu(getGraphModel().getSelectedShape(),event.getX(),event.getY());
 			}
 			//popupMenu(pickedShape,event.getX(),event.getY());
 			return;
@@ -546,7 +560,7 @@ public void mouseReleased(java.awt.event.MouseEvent event) {
 					//
 					// remove temporary rectangle
 					//
-					getSimpleGraphModel().removeShape(rectShape);
+					getGraphModel().removeShape(rectShape);
 					rectShape = null;
 					Rectangle rect = new Rectangle(absLoc.x,absLoc.y,size.width,size.height);
 					boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
@@ -579,39 +593,42 @@ public void mouseReleased(java.awt.event.MouseEvent event) {
  */
 private void selectEventFromWorld(Point worldPoint, boolean bShift, boolean bCntrl) {
 	//
-	if(getSimpleGraphModel() == null){return;}
+	if(getGraphModel() == null){return;}
 	//
 	if (!bShift && !bCntrl){
 		//
-		Shape pickedShape = getSimpleGraphModel().pickWorld(worldPoint);
+		Shape pickedShape = getGraphModel().pickWorld(worldPoint);
 		//
 		if (pickedShape == null || !pickedShape.isSelected()){
-			getSimpleGraphModel().clearSelection();
+			getGraphModel().clearSelection();
 		}
 		if (pickedShape != null && pickedShape.isSelected()){
 			return;
 		}
 		if (pickedShape instanceof ContainerShape){
-			return;
+			if (pickedShape.isSelected()){
+				getGraphModel().clearSelection();
+				return;
+			}
 		}
 		if(pickedShape != null){
-			getSimpleGraphModel().select(pickedShape);
+			getGraphModel().select(pickedShape);
 		}
 
 	}else if (bShift){
-		Shape pickedShape = getSimpleGraphModel().pickWorld(worldPoint);
+		Shape pickedShape = getGraphModel().pickWorld(worldPoint);
 		if (pickedShape==null){
 			return;
 		}
 		if (pickedShape instanceof ContainerShape){
 			return;
 		}
-		if(getSimpleGraphModel().getSelectedShape() instanceof ContainerShape){
-			getSimpleGraphModel().clearSelection();
+		if(getGraphModel().getSelectedShape() instanceof ContainerShape){
+			getGraphModel().clearSelection();
 		}
-		getSimpleGraphModel().select(pickedShape);
+		getGraphModel().select(pickedShape);
 	}else if (bCntrl){
-		Shape pickedShape = getSimpleGraphModel().pickWorld(worldPoint);
+		Shape pickedShape = getGraphModel().pickWorld(worldPoint);
 		if (pickedShape==null){
 			return;
 		}
@@ -619,9 +636,9 @@ private void selectEventFromWorld(Point worldPoint, boolean bShift, boolean bCnt
 			return;
 		}
 		if (pickedShape.isSelected()){
-			getSimpleGraphModel().deselect(pickedShape);
+			getGraphModel().deselect(pickedShape);
 		}else{
-			getSimpleGraphModel().select(pickedShape);
+			getGraphModel().select(pickedShape);
 		}
 	}
 }
@@ -635,34 +652,34 @@ private void selectEventFromWorld(Point worldPoint, boolean bShift, boolean bCnt
  */
 private void selectEventFromWorld(Rectangle rect, boolean bShift, boolean bCntrl) {
 	if (!bShift && !bCntrl){
-		getSimpleGraphModel().clearSelection();
-		Shape shapes[] = getSimpleGraphModel().pickWorld(rect);
+		getGraphModel().clearSelection();
+		Shape shapes[] = getGraphModel().pickWorld(rect);
 		for (int i = 0; i < shapes.length; i++){
 			if (shapes[i] instanceof ElipseShape){
-				getSimpleGraphModel().select(shapes[i]);
+				getGraphModel().select(shapes[i]);
 			}
 		}
 	}else if (bShift){
-		if(getSimpleGraphModel().getSelectedShape() instanceof ContainerShape){
-			getSimpleGraphModel().clearSelection();
+		if(getGraphModel().getSelectedShape() instanceof ContainerShape){
+			getGraphModel().clearSelection();
 		}
-		Shape shapes[] = getSimpleGraphModel().pickWorld(rect);
+		Shape shapes[] = getGraphModel().pickWorld(rect);
 		for (int i = 0; i < shapes.length; i++){
 			if (shapes[i] instanceof ElipseShape){
-				getSimpleGraphModel().select(shapes[i]);
+				getGraphModel().select(shapes[i]);
 			}
 		}
 	}else if (bCntrl){
-		if(getSimpleGraphModel().getSelectedShape() instanceof ContainerShape){
-			getSimpleGraphModel().clearSelection();
+		if(getGraphModel().getSelectedShape() instanceof ContainerShape){
+			getGraphModel().clearSelection();
 		}
-		Shape shapes[] = getSimpleGraphModel().pickWorld(rect);
+		Shape shapes[] = getGraphModel().pickWorld(rect);
 		for (int i = 0; i < shapes.length; i++){
 			if (shapes[i] instanceof ElipseShape){
 				if (shapes[i].isSelected()){
-					getSimpleGraphModel().deselect(shapes[i]);
+					getGraphModel().deselect(shapes[i]);
 				}else{
-					getSimpleGraphModel().select(shapes[i]);
+					getGraphModel().select(shapes[i]);
 				}
 			}
 		}
@@ -675,8 +692,8 @@ private void selectEventFromWorld(Rectangle rect, boolean bShift, boolean bCntrl
  * Creation date: (5/14/2003 10:51:54 AM)
  * @param newReactionCartoon cbit.vcell.graph.ReactionCartoon
  */
-public void setSimpleGraphModel(SimpleGraphModel simpleGraphModel) {
-	this.graphModel = simpleGraphModel;
+public void setGraphModel(GraphModel graphModel) {
+	this.graphModel = graphModel;
 }
 
 
@@ -722,8 +739,8 @@ public void updateMode(int newMode) {
 	bLineStretch = false;
 	edgeShape = null;
 	endPointWorld = null;
-	if(getSimpleGraphModel() != null){
-		getSimpleGraphModel().clearSelection();
+	if(getGraphModel() != null){
+		getGraphModel().clearSelection();
 	}
 
 	this.mode = newMode;

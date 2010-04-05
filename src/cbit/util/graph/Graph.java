@@ -6,8 +6,8 @@ import java.util.*;
  * @author: Jim Schaff
  */
 public class Graph {
-	private ArrayList<Node> nodeList = new ArrayList<Node>();
-	private ArrayList<Edge> edgeList = new ArrayList<Edge>();
+	protected ArrayList<Node> nodeList = new ArrayList<Node>();
+	protected ArrayList<Edge> edgeList = new ArrayList<Edge>();
 	private HashMap<String, Node> nodeNameHash = new HashMap<String, Node>();
 	private HashMap<String, ArrayList<Edge> > adjacentEdgeHash = new HashMap<String, ArrayList<Edge> >();
 	private HashMap<String, Integer> nodeIndexHash = new HashMap<String, Integer>();
@@ -30,6 +30,23 @@ public class Graph {
  */
 public Graph() {
 	super();
+}
+
+/**
+ * Graph constructor comment.
+ */
+public Graph(Graph graph) {
+	super();
+	Iterator<Node> nodeIter = graph.nodeList.iterator();
+	while (nodeIter.hasNext()) {
+		Node node = (Node) nodeIter.next();
+		addNode(node);
+	}
+	Iterator<Edge> edgeIter = graph.edgeList.iterator();
+	while (edgeIter.hasNext()) {
+		Edge edge = (Edge) edgeIter.next();
+		addEdge(edge);
+	}
 }
 
 
@@ -277,6 +294,22 @@ public Node[] getDigraphReachableSet(Node seedNode) {
 	return reachableNodeList.toArray(new Node[reachableNodeList.size()]);
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (2/10/2002 10:51:46 PM)
+ * @return boolean
+ * @param node cbit.vcell.mapping.potential.Node
+ */
+public Edge getEdge(int index1, int index2){
+	Edge[] edges = getAdjacentEdges(nodeList.get(index1));
+	for (int i = 0; (edges!=null) && (i < edges.length); i++) {
+		if (edges[i].getNode1() == nodeList.get(index1) && edges[i].getNode2() == nodeList.get(index2)){
+			return edges[i];
+		}
+	}
+	return null;
+}
+
 
 /**
  * Insert the method's description here.
@@ -454,6 +487,36 @@ public Tree[] getSpanningForest() {
 	Tree spanningTrees[] = new Tree[spanningTreeList.size()];
 	spanningTreeList.toArray(spanningTrees);
 	return spanningTrees;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (2/10/2002 10:49:12 PM)
+ * @param newNode cbit.vcell.mapping.potential.Node
+ */
+public void remove(Edge newEdge) {
+	if (!edgeList.contains(newEdge)){
+		throw new RuntimeException("edge "+newEdge+" not found");
+	}
+	edgeList.remove(newEdge);
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (2/10/2002 10:49:12 PM)
+ * @param newNode cbit.vcell.mapping.potential.Node
+ */
+public void remove(Node node) {
+	if (!nodeList.contains(node)){
+		throw new RuntimeException("node "+node+" not found");
+	}
+	Edge[] adjacentEdges = getAdjacentEdges(node);
+	for (int i = 0; i < adjacentEdges.length; i++) {
+		remove(adjacentEdges[i]);
+	}
+	nodeList.remove(node);
 }
 
 

@@ -21,8 +21,9 @@ public class SimpleContainerShape extends ContainerShape {
  * @param label java.lang.String
  * @param graphModel cbit.vcell.graph.GraphModel
  */
-public SimpleContainerShape(Object object, GraphModel graphModel) {
+public SimpleContainerShape(Object object, GraphModel graphModel, String argLabel) {
 	super(graphModel);
+	setLabel(argLabel);
 	setRandomLayout(false);
 	fieldObject = object;
 	bNoFill = false;
@@ -158,6 +159,5 @@ public void randomize() {
  * This method was created in VisualAge.
  */
 public void refreshLabel() {
-	setLabel("Constraint Graph");
 }
 }

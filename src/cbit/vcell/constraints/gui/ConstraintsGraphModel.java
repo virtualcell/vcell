@@ -85,7 +85,7 @@ public void refreshAll() {
 	
 	ContainerShape containerShape = (ContainerShape)getShapeFromModelObject(getConstraintContainerImpl());
 	if (containerShape==null){
-		containerShape = new SimpleContainerShape(getConstraintContainerImpl(),this);
+		containerShape = new SimpleContainerShape(getConstraintContainerImpl(),this,"constraint network");
 		containerShape.setLabel("constraint network");
 		addShape(containerShape);
 	}

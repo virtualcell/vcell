@@ -5,8 +5,8 @@ package cbit.util.graph;
  * @author: Jim Schaff
  */
 public class Node {
-	private String name = null;
-	private Object data = null;
+	private final String name;
+	private final Object data;
 
 /**
  * Node constructor comment.
@@ -68,7 +68,7 @@ public Object getData() {
  * Creation date: (2/10/2002 11:20:13 PM)
  * @return java.lang.String
  */
-public String getName() {
+public final String getName() {
 	return name;
 }
 
@@ -79,19 +79,8 @@ public String getName() {
  * @return int
  */
 public int hashCode() {
-	return name.hashCode();
+	return name.hashCode() + ((data!=null)?(data.hashCode()):(0));
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/12/2002 11:14:39 AM)
- * @param data java.lang.Object
- */
-public void setData(Object argData) {
-	this.data = argData;
-}
-
 
 /**
  * Insert the method's description here.

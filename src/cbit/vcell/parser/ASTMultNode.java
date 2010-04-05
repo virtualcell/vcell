@@ -401,10 +401,18 @@ public String infixString(int lang){
 	if (bAllBoolean || bNoBoolean || lang != SimpleNode.LANGUAGE_C) { // old way
 		for (int i=0;i<jjtGetNumChildren();i++){
 			if (jjtGetChild(i) instanceof ASTInvertTermNode){
-				buffer.append(" / ");
+				if (lang == SimpleNode.LANGUAGE_MATLAB){
+					buffer.append(" ./ ");
+				}else{
+					buffer.append(" / ");
+				}
 				buffer.append(jjtGetChild(i).infixString(lang));
 			}else{
-				if (i>0) buffer.append(" * ");
+				if (lang == SimpleNode.LANGUAGE_MATLAB){
+					if (i>0) buffer.append(" .* ");
+				}else{
+					if (i>0) buffer.append(" * ");
+				}
 				buffer.append(jjtGetChild(i).infixString(lang));
 			}
 		}		

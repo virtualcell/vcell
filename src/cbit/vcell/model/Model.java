@@ -2007,6 +2007,7 @@ public void setReactionSteps(ReactionStep[] reactionSteps) throws java.beans.Pro
 		oldValue[i].removeVetoableChangeListener(this);
 		oldValue[i].getKinetics().removePropertyChangeListener(this);
 		oldValue[i].getKinetics().removeVetoableChangeListener(this);
+		oldValue[i].setModel(null);
 	}
 	for (int i=0;i<newValue.length;i++){	
 		newValue[i].addPropertyChangeListener(this);
