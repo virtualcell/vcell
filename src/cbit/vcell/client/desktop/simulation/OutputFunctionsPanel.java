@@ -52,6 +52,8 @@ public class OutputFunctionsPanel extends JPanel {
 	private JPanel buttons_n_label_Panel = null;
 	private javax.swing.JLabel outputFnsLabel = null;
 	private JButton addButton = null;
+	private JButton addVolVarButton = null;
+	private JButton addMemVarButton = null;
 	private JButton deleteButton = null;
 	private JScrollPane fnTableScrollPane = null;
 	private JSortTable outputFnsScrollPaneTable = null;
@@ -69,20 +71,18 @@ public class OutputFunctionsPanel extends JPanel {
 	class IvjEventHandler implements ActionListener, MouseListener, PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == OutputFunctionsPanel.this.getAddFnButton()) 
-				addOutputFunction();
+				addOutputFunction(VariableType.NONSPATIAL);
+			if (e.getSource() == OutputFunctionsPanel.this.getAddVolVarFnButton()) 
+				addOutputFunction(VariableType.VOLUME);
+			if (e.getSource() == OutputFunctionsPanel.this.getAddMemVarFnButton()) 
+				addOutputFunction(VariableType.MEMBRANE);
 			if (e.getSource() == OutputFunctionsPanel.this.getDeleteFnButton()) 
 				deleteOutputFunction();
 		}
 
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == OutputFunctionsPanel.this && (evt.getPropertyName().equals("outputFunctionContext"))) {
-				// disable add/delete function buttons
 				if (outputFunctionContext != null && outputFunctionContext.getSimulationOwner() != null) { 
-					MathDescription mathDescription = outputFunctionContext.getSimulationOwner().getMathDescription();
-					if (mathDescription != null && (mathDescription.isSpatial() || mathDescription.isStoch())) {
-						getAddFnButton().setEnabled(false);
-						getDeleteFnButton().setEnabled(false);
-					}
 					getOutputFnsListTableModel1().setOutputFunctionContext(outputFunctionContext);
 				}
 			}
@@ -91,9 +91,11 @@ public class OutputFunctionsPanel extends JPanel {
 				SimulationWorkspace sw_new = (SimulationWorkspace)evt.getNewValue();
 				if (sw_old != null) {
 					sw_old.removePropertyChangeListener(this);
+					sw_old.getSimulationOwner().removeGeometryPropertyChangeListener(this);
 				} 
 				if (sw_new != null) {
 					sw_new.addPropertyChangeListener(this);
+					sw_new.getSimulationOwner().addGeometryPropertyChangeListener(this);
 					if (sw_new.getSimulationOwner() != null) {
 						setOutputFunctionContext(sw_new.getSimulationOwner().getOutputFunctionContext());
 					} else {
@@ -102,6 +104,10 @@ public class OutputFunctionsPanel extends JPanel {
 				} else {
 					setOutputFunctionContext(null);
 				}
+				enableAddbuttons();
+			} 
+			if (getSimulationWorkspace() != null && (evt.getPropertyName().equals("geometry"))) {
+				enableAddbuttons();
 			}
 			if (evt.getSource() == getSimulationWorkspace() && (evt.getPropertyName().equals("simulationOwner"))) {
 				SimulationOwner so_new = (SimulationOwner)evt.getNewValue();
@@ -158,6 +164,34 @@ public class OutputFunctionsPanel extends JPanel {
 		return addButton;
 	}
 
+	private javax.swing.JButton getAddVolVarFnButton() {
+		if (addVolVarButton == null) {
+			try {
+				addVolVarButton = new javax.swing.JButton();
+				addVolVarButton.setName("AddVolVarButton");
+				addVolVarButton.setText("Add Volume Function");
+				addVolVarButton.setEnabled(true);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace(System.out);
+			}
+		}
+		return addVolVarButton;
+	}
+
+	private javax.swing.JButton getAddMemVarFnButton() {
+		if (addMemVarButton == null) {
+			try {
+				addMemVarButton = new javax.swing.JButton();
+				addMemVarButton.setName("AddMemVarFnButton");
+				addMemVarButton.setText("Add Membrane Function");
+				addMemVarButton.setEnabled(true);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace(System.out);
+			}
+		}
+		return addMemVarButton;
+	}
+
 	private javax.swing.JButton getDeleteFnButton() {
 		if (deleteButton == null) {
 			try {
@@ -198,6 +232,10 @@ public class OutputFunctionsPanel extends JPanel {
 				buttons_n_label_Panel.add(getOutputFnsLabel());
 				buttons_n_label_Panel.add(Box.createHorizontalGlue());
 				buttons_n_label_Panel.add(getAddFnButton());
+				buttons_n_label_Panel.add(Box.createRigidArea(new Dimension(5,5)));
+				buttons_n_label_Panel.add(getAddVolVarFnButton());
+				buttons_n_label_Panel.add(Box.createRigidArea(new Dimension(5,5)));
+				buttons_n_label_Panel.add(getAddMemVarFnButton());
 				buttons_n_label_Panel.add(Box.createRigidArea(new Dimension(5,5)));
 				buttons_n_label_Panel.add(getDeleteFnButton());
 			} catch (java.lang.Throwable e) {
@@ -361,6 +399,8 @@ public class OutputFunctionsPanel extends JPanel {
 	
 	private void initConnections() throws java.lang.Exception {
 		getAddFnButton().addActionListener(ivjEventHandler);
+		getAddVolVarFnButton().addActionListener(ivjEventHandler);
+		getAddMemVarFnButton().addActionListener(ivjEventHandler);
 		getDeleteFnButton().addActionListener(ivjEventHandler);
 		getFnScrollPaneTable().addMouseListener(ivjEventHandler);
 		this.addPropertyChangeListener(ivjEventHandler);
@@ -406,7 +446,7 @@ public class OutputFunctionsPanel extends JPanel {
 		}
 	}
 
-	private void addOutputFunction() {
+	private void addOutputFunction(VariableType varType) {
 		ArrayList<AnnotatedFunction> outputFunctionList = outputFunctionContext.getOutputFunctionsList();
 		String defaultName = null;
 		int count = 0;
@@ -459,7 +499,7 @@ public class OutputFunctionsPanel extends JPanel {
 			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
 			}
-			AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, null, VariableType.UNKNOWN, true);
+			AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, null, varType, true);
 			try {
 				outputFunctionContext.addOutputFunction(newFunction);
 			} catch (PropertyVetoException e1) {
@@ -528,6 +568,18 @@ public class OutputFunctionsPanel extends JPanel {
 		SimulationWorkspace oldValue = this.simulationWorkspace; 
 		this.simulationWorkspace = argSimulationWorkspace;
 		firePropertyChange("simulationWorkspace", oldValue, argSimulationWorkspace);
+	}
+
+	private void enableAddbuttons() {
+		if (simulationWorkspace.getSimulationOwner().getGeometry().getDimension() > 0) {
+			getAddMemVarFnButton().setVisible(true);
+			getAddVolVarFnButton().setVisible(true);
+			getAddFnButton().setVisible(false);
+		} else {
+			getAddMemVarFnButton().setVisible(false);
+			getAddVolVarFnButton().setVisible(false);
+			getAddFnButton().setVisible(true);
+		}
 	}
 
 }

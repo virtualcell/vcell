@@ -2,6 +2,7 @@ package cbit.vcell.document;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
@@ -15,6 +16,8 @@ public interface SimulationOwner {
 	Simulation addNewSimulation() throws PropertyVetoException;
 
 	void addPropertyChangeListener(PropertyChangeListener listener);
+	
+	void addGeometryPropertyChangeListener(PropertyChangeListener listener);
 
 	Simulation copySimulation(Simulation simulation) throws PropertyVetoException;
 
@@ -24,8 +27,12 @@ public interface SimulationOwner {
 
 	void removeSimulation(Simulation simulation) throws PropertyVetoException;
 	
+	void removeGeometryPropertyChangeListener(PropertyChangeListener listener);
+
 	OutputFunctionContext getOutputFunctionContext();
 	
 	MathDescription getMathDescription();
+	
+	Geometry getGeometry();
 }
 
