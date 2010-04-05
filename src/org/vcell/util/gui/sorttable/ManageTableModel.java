@@ -17,6 +17,10 @@ public ManageTableModel() {
 	super();
 }
 
+public ManageTableModel(String[] cols) {
+	super();
+	columns = cols;
+}
 
 /**
  * getColumnCount method comment.

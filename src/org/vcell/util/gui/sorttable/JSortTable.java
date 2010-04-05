@@ -10,14 +10,15 @@ package org.vcell.util.gui.sorttable;
 =====================================================================
 */
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
-public class JSortTable extends org.vcell.util.gui.JTableFixed
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
+
+import org.vcell.util.gui.JTableFixed;
+
+public class JSortTable extends JTableFixed
   implements MouseListener
 {
   
@@ -27,42 +28,10 @@ public JSortTable() {
 	super();
 }
 
-
-public JSortTable(Object[][] data, Object[] names) {
-	super(data, names);
-	initSortHeader();		
-}
-
-
-public JSortTable(int rows, int cols) {
-	super(rows, cols);
-	initSortHeader();
-}
-
-
 public JSortTable(SortTableModel model) {
 	super(model);
 	initSortHeader();
 }
-
-
-public JSortTable(SortTableModel model, TableColumnModel colModel) {
-	super(model, colModel);
-	initSortHeader();
-}
-
-
-public JSortTable(SortTableModel model, TableColumnModel colModel, ListSelectionModel selModel) {
-	super(model, colModel, selModel);
-	initSortHeader();
-}
-
-
-public JSortTable(Vector data, Vector names) {
-	super(data, names);
-	initSortHeader();
-}
-
 
 /**
  * Insert the method's description here.

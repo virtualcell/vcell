@@ -35,27 +35,18 @@ public int getIconWidth() {
 	return width;
 }
 public void paintIcon(Component c, Graphics g, int x, int y) {
-	//Color bg = new Color(102, 102, 153);
-	Color bg = c.getBackground();
-	Color light = bg.brighter();
-	Color shade = bg.darker();
+	Color shade = c.getBackground().darker();
 
 	int w = width;
 	int h = height;
 	int m = w / 2;
+	
 	if (direction == DECENDING) {
 		g.setColor(shade);
-		g.drawLine(x, y, x + w, y);
-		g.drawLine(x, y, x + m, y + h);
-		g.setColor(light);
-		g.drawLine(x + w, y, x + m, y + h);
-		
+		g.fillPolygon(new Polygon(new int[] {x, x + w, x + m}, new int[] {y, y, y + h}, 3));		
 	} else if (direction == ASCENDING) {
 		g.setColor(shade);
-		g.drawLine(x + m, y, x, y + h);
-		g.setColor(light);
-		g.drawLine(x, y + h, x + w, y + h);
-		g.drawLine(x + m, y, x + w, y + h);		
+		g.fillPolygon(new Polygon(new int[] {x, x + w, x + m}, new int[] {y + h, y + h, y}, 3));
 	}
 
 }
