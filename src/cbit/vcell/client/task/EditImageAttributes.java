@@ -110,10 +110,11 @@ public class EditImageAttributes extends AsynchClientTask {
 			hashTable.put("newName", newName);			
 			
 		}else if( choice != null && choice.equals(STATUS_MANUAL_SEGMENT)){
+			hashTable.put(ClientTaskDispatcher.TASK_REWIND,ROIMultiPaintManager.INIT_ROI_DATA_TASK_NAME);
+			return;
 //			VCImage syncVCImage = new VCImageUncompressed(image);
 //			imageAttributePanel.synchronize(syncVCImage, imageAttributePanel);
 //			hashTable.put("syncAttributesVCImage", syncVCImage);
-			throw UserCancelException.CANCEL_EDIT_IMG_ATTR;
 		}else{
 			throw UserCancelException.CANCEL_GENERIC;
 		}
