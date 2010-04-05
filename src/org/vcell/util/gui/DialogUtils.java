@@ -1,26 +1,46 @@
 package org.vcell.util.gui;
 
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Window;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Hashtable;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.sorttable.JSortTable;
+import org.vcell.util.gui.sorttable.ManageTableModel;
+
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import edu.stanford.ejalbert.BrowserLauncher;
 import edu.stanford.ejalbert.BrowserLauncherRunner;
 import edu.stanford.ejalbert.exceptionhandler.BrowserLauncherErrorHandler;
-
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 3:16:43 AM)
@@ -458,57 +478,35 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 			for (int i = 0; i < sortedRowReference.length; i++) {
 				sortedRowReference[i] = i;
 			}
-			DefaultTableModel tableModel = new DefaultTableModel(){
-			    public boolean isCellEditable(int row, int column) {
-			        return false;
-			    }
-
+			ManageTableModel tableModel = new ManageTableModel(columnNames) {
 				@Override
+				public boolean isSortable(int col) {
+					if (rowSortComparator != null) {
+						return true;
+					}
+					return false;
+				}
+
 				public Object getValueAt(int row, int column) {
-					// TODO Auto-generated method stub
 					return rowData[sortedRowReference[row]][column];
 				}
-			};
-			tableModel.setDataVector(rowData, columnNames);
-			final JTable table = new JTable(tableModel);
-			final JTableHeader jTableHeader = table.getTableHeader();
-			jTableHeader.setReorderingAllowed(false);
-			final int UNSORTED = 0;
-			final int ASCEND = 1;
-			final int DESCEND = 2;
-			final int[] colSortFlag = new int[columnNames.length];
-			Arrays.fill(colSortFlag, UNSORTED);
-			if(rowSortComparator != null){
-				jTableHeader.addMouseListener(
-					new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							super.mouseClicked(e);
-							final int col = jTableHeader.getColumnModel().getColumnIndexAtX(e.getX());
-							colSortFlag[col]+= 1;
-							if(colSortFlag[col] > DESCEND){
-								colSortFlag[col] = ASCEND;
-							}
-							Arrays.sort(sortedRowReference, 
-								new Comparator<Integer>() {
-									public int compare(Integer o1,Integer o2) {
-										if(colSortFlag[col] == ASCEND){
-											return rowSortComparator.compare(rowData[o1][col], rowData[o2][col]);
-										}
-										return rowSortComparator.compare(rowData[o2][col],rowData[o1][col]);
+
+				@Override
+				public void sortColumn(final int col, final boolean ascending) {
+					Arrays.sort(sortedRowReference, 
+							new Comparator<Integer>() {
+								public int compare(Integer o1,Integer o2) {
+									if(ascending){
+										return rowSortComparator.compare(rowData[o1][col], rowData[o2][col]);
 									}
+									return rowSortComparator.compare(rowData[o2][col],rowData[o1][col]);
 								}
-							);
-							for (int i = 0; i < jTableHeader.getColumnModel().getColumnCount(); i++) {
-								jTableHeader.getColumnModel().getColumn(i).setHeaderValue(
-									columnNames[i]+(col == i?" "+(colSortFlag[col]==ASCEND?"asc":"desc"):""));								
 							}
-							jTableHeader.repaint();
-							table.repaint();
-						}
-					}
-				);
-			}
+						);
+				}
+			};
+			tableModel.setData(Arrays.asList(rowData));
+			final JTable table = new JSortTable(tableModel);
 			if(listSelectionModel_SelectMode != null){
 				table.setSelectionMode(listSelectionModel_SelectMode);
 			}else{

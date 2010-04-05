@@ -11,16 +11,25 @@ package org.vcell.util.gui.sorttable;
 =====================================================================
 */
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import java.awt.Component;
 
-public class SortHeaderRenderer
-  extends DefaultTableCellRenderer
+import javax.swing.Icon;
+import javax.swing.JTable;
+import javax.swing.UIManager;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+
+public class SortHeaderRenderer extends DefaultTableCellRenderer
 {
   public static Icon NONSORTED = new SortArrowIcon(SortArrowIcon.NONE);
-  public static Icon ASCENDING = new SortArrowIcon(SortArrowIcon.ASCENDING);
-  public static Icon DECENDING = new SortArrowIcon(SortArrowIcon.DECENDING);
+  public static Icon ASCENDING = UIManager.getIcon("Table.ascendingSortIcon");
+  public static Icon DECENDING = UIManager.getIcon("Table.descendingSortIcon");
+  static {
+	  if (ASCENDING == null) {
+		  ASCENDING = new SortArrowIcon(SortArrowIcon.ASCENDING);
+		  DECENDING = new SortArrowIcon(SortArrowIcon.DECENDING);
+	  }
+  }
   
 public SortHeaderRenderer() {
   setHorizontalTextPosition(LEFT);
