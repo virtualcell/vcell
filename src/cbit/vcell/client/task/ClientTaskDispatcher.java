@@ -109,6 +109,10 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				boolean shouldRun = true;
 				if(hash.containsKey(TASK_REWIND)){
 					String rewindTaskName = (String)hash.remove(TASK_REWIND);
+					if (hash.containsKey(TASK_ABORTED_BY_ERROR) || hash.containsKey(TASK_ABORTED_BY_USER)) {
+						recordException(new Exception("Found REWIND task '"+rewindTaskName+"'  REWIND tasks NOT ALLOWED when hash contains TASK_ABORT_BY_xxx."), hash);
+						break;
+					}
 					int rewindTaskIndex = -1;
 					for (int j = 0; j < taskList.size(); j++) {
 						if(taskList.get(j).getTaskName().equals(rewindTaskName)){

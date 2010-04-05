@@ -1212,30 +1212,20 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 						}
 					};
 
-					final AsynchClientTask backToSegmentTask = new AsynchClientTask("return to segmentation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,true,false) {
-						@Override
-						public void run(final Hashtable<String, Object> hashTable) throws Exception {
-							Exception e = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_USER);
-							if(e != null && e == UserCancelException.CANCEL_EDIT_IMG_ATTR){
-									hashTable.remove(ClientTaskDispatcher.TASK_ABORTED_BY_USER);
-									hashTable.put(ClientTaskDispatcher.TASK_REWIND, ROIMultiPaintManager.INIT_ROI_DATA_TASK_NAME);
-							}
-						}
-					};
 					ROIMultiPaintManager roiMultiPaintManager = new ROIMultiPaintManager();
 					Vector<AsynchClientTask> tasksV = new Vector<AsynchClientTask>();
 					if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
 						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask}));
 						tasksV.addAll(Arrays.asList(roiMultiPaintManager.getROIEditTasks()));
-						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask}));
+						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry}));
 					}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
 						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask}));
 						tasksV.addAll(Arrays.asList(roiMultiPaintManager.getROIEditTasks()));
-						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask}));
+						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry}));
 					}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask}));
 						tasksV.addAll(Arrays.asList(roiMultiPaintManager.getROIEditTasks()));
-						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry,backToSegmentTask}));
+						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry}));
 					}
 					taskArray = tasksV.toArray(new AsynchClientTask[0]);
 					break;
