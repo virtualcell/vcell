@@ -49,29 +49,6 @@ public Object getModelObject() {
 	return null;
 }
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.Object
- */
-public void layout() {
-
-	screenSize.width = Math.abs(end.x-start.x);
-	screenSize.height = Math.abs(end.y-start.y);
-	screenPos.x = Math.min(end.x,start.x);
-	screenPos.y = Math.min(end.y,start.y);
-	//
-	// this is like a row/column layout  (1 column)
-	//
-	int centerX = screenSize.width/2;
-	int centerY = screenSize.height/2;
-	
-	//
-	// position label
-	//
-	labelPos.x = centerX - labelSize.width/2;
-	labelPos.y = centerY - labelSize.height/2;
-}
-
 
 /**
  * This method was created in VisualAge.
