@@ -45,8 +45,8 @@ public class InfBoxImp implements InferenceBox {
 		rdf = ModelFactory.createUnion(data, infered);
 	}
 	
-	public Model sbpax() { return SBPAX.schema; }
-	public Model schema() { return schema; }
-	public Model data() { return data; }
+	public Model getSbpax() { return SBPAX.schema; }
+	public Model getSchema() { return schema; }
+	public Model getData() { return data; }
 	public Model getRdf() { return rdf; }
 }

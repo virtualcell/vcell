@@ -108,7 +108,7 @@ public abstract class ThingFactory<T extends NamedThing> {
 	public Set<ThingWithType<T>> openThingsWithTypes() {
 		Set<ThingWithType<T>> thingsWithTypes = new HashSet<ThingWithType<T>>();
 		Set<InstanceWithOntclass> instancesWithClass = 
-			TypeCrawler.instancesWithClass(box.getRdf(), ontClass, box.sbpax());
+			TypeCrawler.instancesWithClass(box.getRdf(), ontClass, box.getSbpax());
 		for(TypeCrawler.InstanceWithOntclass instanceWithClass : instancesWithClass) {
 			T thing = open(instanceWithClass.instance());
 			RDFType type = new RDFTypeImp(box, instanceWithClass.ontclass());

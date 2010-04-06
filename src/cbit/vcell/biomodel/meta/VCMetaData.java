@@ -52,14 +52,14 @@ public class VCMetaData {
 		this.keyValue = key;
 	}
 
-	public SBBox box() { return rdfBox; }
+	public SBBox getSBbox() { return rdfBox; }
 	
-	public Model getRdf() { return rdfBox.getRdf(); }
+	public Model getRdfData() { return rdfBox.getData(); }
 	public String getBaseURI() { return baseURI; }
 	public OpenRegistry getRegistry() { return registry; }
 	
 	public boolean compareEquals(VCMetaData vcMetaData) {
-		return getRdf().isIsomorphicWith(vcMetaData.getRdf()) && 
+		return getRdfData().isIsomorphicWith(vcMetaData.getRdfData()) && 
 		registry.compareEquals(vcMetaData.registry);
 	}
 	
@@ -69,10 +69,10 @@ public class VCMetaData {
 	
 	private Property getProperty(URI propertyURI){
 		// Property property = getRdf().getProperty(propertyURI.getPath());
-		Property property = getRdf().getProperty(propertyURI.toString());
+		Property property = getRdfData().getProperty(propertyURI.toString());
 		if (property == null){
 			// property = getRdf().createProperty(propertyURI.getPath());
-			property = getRdf().createProperty(propertyURI.toString());
+			property = getRdfData().createProperty(propertyURI.toString());
 		}
 		// statement
 		return property;
@@ -124,7 +124,7 @@ public class VCMetaData {
 //			}
 //		};
 
-		StmtIterator stmtIter = getRdf().listStatements(selector);
+		StmtIterator stmtIter = getRdfData().listStatements(selector);
 //		StmtIterator stmtIter = getRdf().listStatements(resource,null,(RDFNode)null);
 //		StmtIterator stmtIter = getRdf().listStatements(null,null,(RDFNode)null);
 		List<Statement> statements = new ArrayList<Statement>();
@@ -140,24 +140,24 @@ public class VCMetaData {
 	}
 	
 	public void deleteStatement(Statement statement){
-		getRdf().remove(statement);
+		getRdfData().remove(statement);
 	}
 
 	public void addRDFStatement(Identifiable identifiable, URI propertyURI, URI objectURI) {
 		OpenEntry entry = registry.forObject(identifiable);
 		Resource resource = entry.resource();
 		if (resource==null){
-			resource = getRdf().createResource(nsVCML + "/" + identifiable.getClass().getName()
+			resource = getRdfData().createResource(nsVCML + "/" + identifiable.getClass().getName()
 					+ "/" +(Math.abs((new Random()).nextInt())));
 			entry.setResource(resource);
 		}
 		Property predicate = getProperty(propertyURI);
 		RDFNode object = getProperty(objectURI);
-		Statement statement = getRdf().createStatement(resource, predicate, object);
+		Statement statement = getRdfData().createStatement(resource, predicate, object);
 		System.out.println("VCMetaData.addRDFStatement(): "+statement.toString());
-		System.out.println("RDF contains statement before adding: " + getRdf().contains(statement));
-		getRdf().add(statement);
-		System.out.println("RDF contains statement after adding: " + getRdf().contains(statement));
+		System.out.println("RDF contains statement before adding: " + getRdfData().contains(statement));
+		getRdfData().add(statement);
+		System.out.println("RDF contains statement after adding: " + getRdfData().contains(statement));
 	}
 
 	public NonRDFAnnotation getNonRDFAnnotation(Identifiable identifiable){

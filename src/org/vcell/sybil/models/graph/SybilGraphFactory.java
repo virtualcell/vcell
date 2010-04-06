@@ -20,7 +20,7 @@ public class SybilGraphFactory {
 	public static <S extends UIShape<S>, G extends UIGraph<S, G>> 
 	void createGraph(UIGraph<S, G> graph, SBView view) throws InterruptedException {
 		SBBox box = view.box();
-		Model model = box.data();
+		Model model = box.getData();
 		graph.startNewGraph();
 		StmtIterator stmtIter = model.listStatements();
 		long progress = 0;

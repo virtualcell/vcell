@@ -22,7 +22,7 @@ public class StageInitBuilder {
 		for(RDFType unmodifiableType : view.unmodifiableTypes()) { 
 			view.ustAssumption().addTypeItAppliesTo(unmodifiableType);
 		}
-		Model model = box.data();
+		Model model = box.getData();
 		box.performSYBREAMReasoning();
 		StmtIterator infIter = box.getRdf().listStatements();
 		while(infIter.hasNext()) {

@@ -17,7 +17,7 @@ public class XMLRDFReader extends XMLRDF {
 	
 	public static void addToModelFromElement(VCMetaData metaData, Element element) 
 	throws SAXParseException, JDOMException {
-		JDOM2Model jdom2model = new JDOM2Model(metaData.getRdf());
+		JDOM2Model jdom2model = new JDOM2Model(metaData.getRdfData());
 		jdom2model.addJDOM(element, metaData.getBaseURI());
 	}
 	

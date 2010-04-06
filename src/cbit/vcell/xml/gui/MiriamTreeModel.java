@@ -107,7 +107,7 @@ public class MiriamTreeModel extends DefaultTreeModel {
 				modelComponentNode.add(new IdentifiableNode(identifiable, "None Defined"));
 			}
 			
-			Model rdfModel = vcMetaData.getRdf();
+			Model rdfModel = vcMetaData.getRdfData();
 			for (int i = 0; i < descHeirSize; i++) {
 				Statement statement = identifiableStatements.get(i);
 				Triple triple = statement.asTriple();

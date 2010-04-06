@@ -89,11 +89,11 @@ public class CoreManager {
 	
 	public void postInit() {
 		// TODO how do we know data is inherited?
-		if(fileManager.box().data() == null || fileManager.box().data().size() < 10) { 
+		if(fileManager.box().getData() == null || fileManager.box().getData().size() < 10) { 
 			new FileNewWorker(fileManager).run(RequesterProvider.requester(this)); 
 		}
 		else { 
-			fileManager.box().data().write(System.out, "N3");
+			fileManager.box().getData().write(System.out, "N3");
 			new FileInheritedWorker(fileManager).run(RequesterProvider.requester(this)); 
 		}
 		importSpace.requestFocusForThis();

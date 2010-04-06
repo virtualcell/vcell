@@ -36,7 +36,7 @@ public class FileManager {
 
 	public FileManager(BioModel bioModel) { 
 		this.bioModel = bioModel; 
-		if(bioModel != null) { box = bioModel.getVCMetaData().box(); }
+		if(bioModel != null) { box = bioModel.getVCMetaData().getSBbox(); }
 		else { box = SBBoxFactory.create(); }
 		view = new SBWorkView(box, bioModel);
 		evaluator = new Evaluator(view);
