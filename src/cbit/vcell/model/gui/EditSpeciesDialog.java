@@ -174,7 +174,7 @@ public class EditSpeciesDialog extends JDialog {
 			Iterator<Statement> stmtIter = statements.iterator();
 			while (stmtIter.hasNext()) {
 				Statement stmt = stmtIter.next();
-				com.hp.hpl.jena.rdf.model.Model rdfModel = getModel().getVcMetaData().getRdf();
+				com.hp.hpl.jena.rdf.model.Model rdfModel = getModel().getVcMetaData().getRdfData();
 				RDFNode object = stmt.getObject();
 				if (object.isURIResource()) {
 					pcLinkStrings.add(stmt.asTriple().getObject().getURI());
