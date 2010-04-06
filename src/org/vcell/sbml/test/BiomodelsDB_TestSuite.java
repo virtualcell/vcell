@@ -1,15 +1,27 @@
 package org.vcell.sbml.test;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
+import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.filter.Filter;
 import org.jdom.output.XMLOutputter;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLReader;
@@ -33,6 +45,11 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
 
 public class BiomodelsDB_TestSuite {
 	
+	public static final String BIOMODELINFO_ELEMENT_NAME = "BioModelInfo";
+	public static final String ID_ATTRIBUTE_NAME = "ID";
+	public static final String MODELNAME_ATTRIBUTE_NAME = "Name";
+	public static final String SUPPORTED_ATTRIBUTE_NAME = "Supported";
+
 	private static void write(Element bioModelInfoElement, File file) throws IOException{
 		Document reportDocument = new Document();
 		Element bioModelInfos = new Element("BioModelInfos");
@@ -102,13 +119,13 @@ public class BiomodelsDB_TestSuite {
 					String modelName = service.getModelNameById(modelID);
 					String modelSBML = service.getModelById(modelID);
 					
-					Element bioModelInfo = new Element("BioModelInfo");
-					bioModelInfo.setAttribute("ID", modelID);
-					bioModelInfo.setAttribute("Supported","false");
+					Element bioModelInfo = new Element(BIOMODELINFO_ELEMENT_NAME);
+					bioModelInfo.setAttribute(ID_ATTRIBUTE_NAME, modelID);
+					bioModelInfo.setAttribute(SUPPORTED_ATTRIBUTE_NAME,"false");
 					bioModelInfo.setAttribute("vcell_ran","false");
 					bioModelInfo.setAttribute("COPASI_ran","false");
 					bioModelInfo.setAttribute("mSBML_ran","false");
-					bioModelInfo.setAttribute("Name", modelName);
+					bioModelInfo.setAttribute(MODELNAME_ATTRIBUTE_NAME, modelName);
 					
 					boolean bUseUTF8 = true;
 					File sbmlFile = new File(outDir,modelID+".sbml");
@@ -359,14 +376,14 @@ public class BiomodelsDB_TestSuite {
 							}
 							if ((bCOPASI_VCELL_matched!=null && bCOPASI_VCELL_matched.booleanValue()) ||
 								(bmSBML_VCELL_matched!=null && bmSBML_VCELL_matched.booleanValue())){
-								bioModelInfo.setAttribute("Supported","true");
+								bioModelInfo.setAttribute(SUPPORTED_ATTRIBUTE_NAME,"true");
 							}else{
-								bioModelInfo.setAttribute("Supported","false");
+								bioModelInfo.setAttribute(SUPPORTED_ATTRIBUTE_NAME,"false");
 							}
 						}catch (Exception e){
 							e.printStackTrace(printWriter);
 							combinedErrorBuffer.append(" *UNKNOWN* _"+e.getMessage()+"_ ");
-							bioModelInfo.setAttribute("Supported","false");
+							bioModelInfo.setAttribute(SUPPORTED_ATTRIBUTE_NAME,"false");
 							bioModelInfo.setAttribute("exception",e.getMessage());
 						}
 						printWriter.flush();
@@ -426,6 +443,53 @@ public class BiomodelsDB_TestSuite {
 			}
 		}		
 		return odeResultSet;
+	}
+
+	public static Document writeSupportedModelsReport(File supportInfoDir,File saveSupportedXMLPathname) throws Exception{
+		if(!supportInfoDir.isDirectory()){
+			throw new IllegalArgumentException("File "+supportInfoDir.getAbsolutePath()+" must be a directory.");
+		}
+		File[] xmlReportFiles = supportInfoDir.listFiles(
+			new FileFilter() {
+				public boolean accept(File pathname) {
+					if(pathname.isFile()){
+						if(pathname.getName().endsWith("_report.xml")){
+							return true;
+						}
+					}
+					return false;
+				}
+			}
+		);
+		Document supportedDocument = new Document(new Element("Supported_BioModelsNet"));
+		for (int i = 0; i < xmlReportFiles.length; i++) {
+			byte[] xmlBytes = new byte[(int)xmlReportFiles[i].length()];
+			FileInputStream fis = new FileInputStream(xmlReportFiles[i]);
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			DataInputStream dis = new DataInputStream(bis);
+			dis.readFully(xmlBytes);
+			dis.close();
+			Document document = XmlUtil.stringToXML(new String(xmlBytes), null);
+			Element bioModelElement = document.getRootElement().getChild(BIOMODELINFO_ELEMENT_NAME);
+			Attribute supportedAttribute = bioModelElement.getAttribute(SUPPORTED_ATTRIBUTE_NAME);
+			if(supportedAttribute.getBooleanValue()){
+				Element newBioModelElement = new Element(BIOMODELINFO_ELEMENT_NAME);
+				List<Attribute> attrList = bioModelElement.getAttributes();
+				Iterator<Attribute> iterAttr = attrList.iterator();
+				while(iterAttr.hasNext()){
+					newBioModelElement.setAttribute((Attribute)iterAttr.next().clone());
+				}
+				supportedDocument.getRootElement().addContent(newBioModelElement);
+			}
+		}
+		if(saveSupportedXMLPathname != null){
+			String supportedXML = XmlUtil.xmlToString(supportedDocument, true);
+			FileOutputStream fos = new FileOutputStream(saveSupportedXMLPathname);
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			bos.write(supportedXML.getBytes());
+			bos.close();
+		}
+		return supportedDocument;
 	}
 
 }

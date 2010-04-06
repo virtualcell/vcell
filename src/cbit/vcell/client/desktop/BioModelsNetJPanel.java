@@ -24,6 +24,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 
 import org.jdom.Element;
+import org.vcell.sbml.test.BiomodelsDB_TestSuite;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
@@ -222,10 +223,10 @@ public class BioModelsNetJPanel extends JPanel {
 		while (ruleiterator.hasNext()) {
 			Element temp = (Element) ruleiterator.next();
 			//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
-			boolean bSupported = new Boolean(temp.getAttributeValue("Supported")).booleanValue();
+			boolean bSupported = temp.getAttribute(BiomodelsDB_TestSuite.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
 			if(bSupported){
-				String id = temp.getAttributeValue("ID");
-				String name = temp.getAttributeValue("Name");
+				String id = temp.getAttributeValue(BiomodelsDB_TestSuite.ID_ATTRIBUTE_NAME);
+				String name = temp.getAttributeValue(BiomodelsDB_TestSuite.MODELNAME_ATTRIBUTE_NAME);
 				vcellCompatibleBioModelsHash.put(id, name);
 			}
 		}
