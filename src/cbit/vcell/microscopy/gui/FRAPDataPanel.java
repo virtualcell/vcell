@@ -69,7 +69,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 				maskBitSet.flip(0,maskArr.length);
 			}
 		}
-		overlayEditorPanel.showAssistDialog(currentROI,maskBitSet, !bIsCurrent_CellROI/*, bIsCurrent_BackgroundROI, !bIsCurrent_BackgroundROI*/);
+		overlayEditorPanel.showAssistDialog(currentROI,maskBitSet, !bIsCurrent_CellROI,true);
 	}
 	private void cropFromUser(Rectangle cropRectangle){
 		try {
