@@ -343,8 +343,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //				System.out.println("----------task "+getTaskName());
 				if(overlayEditorPanelJAI == null){
 					overlayEditorPanelJAI = new OverlayEditorPanelJAI();
-					overlayEditorPanelJAI.setMinimumSize(new Dimension(700,500));
-					overlayEditorPanelJAI.setPreferredSize(new Dimension(700,500));
+					overlayEditorPanelJAI.setMinimumSize(new Dimension(700,600));
+					overlayEditorPanelJAI.setPreferredSize(new Dimension(700,600));
 					overlayEditorPanelJAI.setModeRemoveROIWhenPainting(true);
 					overlayEditorPanelJAI.setUndoableEditSupport(new UndoableEditSupport());
 					overlayEditorPanelJAI.setROITimePlotVisible(false);
