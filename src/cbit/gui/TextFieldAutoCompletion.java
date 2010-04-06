@@ -90,8 +90,6 @@ public class TextFieldAutoCompletion extends JTextField {
 				if (e.getClickCount() == 2) {
 					SwingUtilities.invokeLater(new CompletionTask());
 				}
-			} else if (e.getSource() == TextFieldAutoCompletion.this) {
-				showPopupChoices(null);
 			}
 		}
 
@@ -396,18 +394,20 @@ public class TextFieldAutoCompletion extends JTextField {
 			}
 			
 	        CurrentWord currentWord = findCurrentWord(docEvt);
-			if (currentWord == null) {
+			if (currentWord == null && !bForce) {
 				return;
 			} // if the cursor is the at the beginning, don't show list
 		
-			int len = currentWord.prefix.length();
-			if (len > 1) {
-				char lastCh = currentWord.prefix.charAt(len - 1);
-				if (lastCh == ')' || lastCh == '.') {
-					return;
+			if (currentWord != null) {
+				int len = currentWord.prefix.length();
+				if (len > 1) {
+					char lastCh = currentWord.prefix.charAt(len - 1);
+					if (lastCh == ')' || lastCh == '.') {
+						return;
+					}
 				}
 			}
-        
+			
 	        ArrayList<String> tempList = createAutoCompletionList(currentWord);
 			
 			listModel.removeAllElements();
@@ -459,7 +459,7 @@ public class TextFieldAutoCompletion extends JTextField {
 			while (iter.hasNext()) {
 				Entry<String, SymbolTableEntry> entry = iter.next();
 				if (autoCompleteSymbolFilter == null || autoCompleteSymbolFilter.accept(entry.getValue())) {
-					if (currentWord.prefix.length() == 0 
+					if (currentWord == null || currentWord.prefix.length() == 0 
 							|| entry.getKey().toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
 						tempList.add(entry.getKey());
 					}
@@ -468,7 +468,7 @@ public class TextFieldAutoCompletion extends JTextField {
 
 		} else {
 			for (String w : autoCompWordList) {
-				if (currentWord.prefix.length() == 0 
+				if (currentWord == null || currentWord.prefix.length() == 0 
 						|| w.toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
 					tempList.add(w);
 				}
@@ -500,7 +500,7 @@ public class TextFieldAutoCompletion extends JTextField {
 			ArrayList<String> tempFuncList = new ArrayList<String>();
 			for (String w : functList) {
 				if (autoCompleteSymbolFilter == null || autoCompleteSymbolFilter.acceptFunction(w)) {
-					if (currentWord.prefix.length() == 0 
+					if (currentWord == null || currentWord.prefix.length() == 0 
 							|| w.toLowerCase().startsWith(currentWord.prefix.toLowerCase())) {
 						tempFuncList.add(w + "()");
 					}
