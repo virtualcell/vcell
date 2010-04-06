@@ -28,7 +28,7 @@ implements Evaluator.Event.Listener {
 		Evaluator evaluator = event.evaluator();
 		if(evaluator != null) {
 			SBWorkView view = evaluator.view();
-			Model model = view.box().data();
+			Model model = view.box().getData();
 			if(model == null) { graph.startNewGraph(); }
 			else { 
 				try { 

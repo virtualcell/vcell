@@ -22,7 +22,7 @@ public class SybilApplication implements Runnable {
 	public SybilApplication(GUIFrameSpace frameSpaceNew, BioModel bioModel) { 
 		this(bioModel, frameSpaceNew);
 		if(bioModel != null) { 
-			init.coreManager().fileManager().setBox(bioModel.getVCMetaData().box()); 
+			init.coreManager().fileManager().setBox(bioModel.getVCMetaData().getSBbox()); 
 		} 
 	}
 

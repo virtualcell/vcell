@@ -62,7 +62,7 @@ public class SBMLAnnotationUtil {
 		namespaceAssimilator = 
 			new NamespaceAssimilator(metaData.getRegistry().getResources(), metaData.getBaseURI(), 
 					localNamer);
-		rdfSmelted = namespaceAssimilator.smelt(metaData.getRdf());
+		rdfSmelted = namespaceAssimilator.smelt(metaData.getRdfData());
 		SameAsCrystalizer sameAsCrystalizer = new SameAsCrystalizer(nsSBML);
 		rdfSmelted = sameAsCrystalizer.smelt(rdfSmelted);
 		chopper = new RDFChopper(rdfSmelted, metaData.getRegistry().getResources());
@@ -217,7 +217,7 @@ public class SBMLAnnotationUtil {
 					if(namespace.equals(NameSpace.RDF.uri)) {
 						// read in RDF annotation
 						Model rdfNew = JenaIOUtil.modelFromText(annotationBranch.toXMLString());
-						metaData.getRdf().add(rdfNew);
+						metaData.getRdfData().add(rdfNew);
 					} else if(namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD) ||
 							namespace.equals(XMLTags.VCML_NS)) {
 						int numChildren = (int)annotationBranch.getNumChildren();

@@ -60,7 +60,7 @@ public class SBWorkView extends SBBasicView {
 	public ExporterList exporterList() {
 		List<Exporter> exporters = null;
 		Exporter exporter = null;
-		ExporterSBPAX exporterSBPAX = new ExporterSBPAX(box.data());
+		ExporterSBPAX exporterSBPAX = new ExporterSBPAX(box.getData());
 		if(sbmlDoc == null) { 
 			exporters = new ListOfOne<Exporter>(exporterSBPAX); 
 			exporter = exporterSBPAX; 

@@ -73,7 +73,7 @@ public class QueryEdgeSBBox extends EdgeSBTray {
 	protected RDFNode getRDFNode(Binding binding, Var var) {
 		RDFNode rdfNode = null;
 		Node node = binding.get(var);
-		if(node != null) { rdfNode = box().data().asRDFNode(node); }
+		if(node != null) { rdfNode = box().getData().asRDFNode(node); }
 		return rdfNode;
 	}
 

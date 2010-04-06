@@ -103,10 +103,21 @@ public class MIRIAMAnnotationViewer extends JPanel {
 		miriamAnnotationEditor.setBioModel(biomodel);
 		
 		// Pretty Print
-		Model rdfModel = biomodel.getVCMetaData().getRdf();
+		Model rdfModel = biomodel.getVCMetaData().getRdfData();
 		RDFWriter writer = rdfModel.getWriter("N3");
 		StringWriter sw = new StringWriter();
 		writer.write(rdfModel, sw, biomodel.getVCMetaData().getBaseURI());
+		sw.append("\n\n ResourceMappings : \n");
+		Set<Resource> resourceSet = biomodel.getVCMetaData().getRegistry().getResources();
+		for (Resource rsc : resourceSet) {
+			sw.append(rsc.getURI());
+			Object object = biomodel.getVCMetaData().getRegistry().forResource(rsc).object();
+			if (object instanceof Identifiable) {
+				sw.append(" ============= " + biomodel.getVCID((Identifiable)object).toASCIIString());
+			}
+			sw.append("\n");
+		}
+
 //		Element root = XmlUtil.stringToXML(sw.getBuffer().toString(), null);
 		PPtextArea.setText(sw.getBuffer().toString());
 		
@@ -118,7 +129,7 @@ public class MIRIAMAnnotationViewer extends JPanel {
 			strBuffer.append(st.getSubject()+";\t" + st.getPredicate()+";\t" + st.getObject()+"\n");
 		}
 		strBuffer.append("\n\n ResourceMappings : \n");
-		Set<Resource> resourceSet = biomodel.getVCMetaData().getRegistry().getResources();
+		resourceSet = biomodel.getVCMetaData().getRegistry().getResources();
 		for (Resource rsc : resourceSet) {
 			strBuffer.append(rsc.getURI());
 			Object object = biomodel.getVCMetaData().getRegistry().forResource(rsc).object();

@@ -102,7 +102,7 @@ public class GraphModelSelectionInfo implements GraphModel.Listener {
 		for(Resource resource : resources) {
 			//StmtIterator stmtIter = resource.listProperties();
 			StmtIterator stmtIter = 
-				model().box().data().listStatements(resource, null, (RDFNode) null) ;
+				model().box().getData().listStatements(resource, null, (RDFNode) null) ;
 			while(stmtIter.hasNext()) { add(resource, TokenCategory.SUBJECT, stmtIter.nextStatement()); }
 		}
 		for(Statement statement : statements) {

@@ -14,8 +14,8 @@ public interface InferenceBox extends RDFBox {
 	
 	public void performSYBREAMReasoning();
 	
-	public Model sbpax();
-	public Model schema();
-	public Model data();
+	public Model getSbpax();
+	public Model getSchema();
+	public Model getData();
 	public Model getRdf();
 }

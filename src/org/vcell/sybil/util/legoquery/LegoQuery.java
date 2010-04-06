@@ -31,7 +31,7 @@ public abstract class LegoQuery<V extends QueryVars> {
 	public Set<QueryResult<V>> results(SBBox box) {
 		Set<QueryResult<V>> results = new HashSet<QueryResult<V>>();
 		ResultIter<V> resultIter = 
-			resultIter(box, new InferenceDataset(box.getRdf(), box.data(), box.schema()));
+			resultIter(box, new InferenceDataset(box.getRdf(), box.getData(), box.getSchema()));
 		while(resultIter.hasNext()) { results.add(resultIter.next()); }
 		return results;
 	}
