@@ -1,5 +1,6 @@
 package cbit.vcell.mapping.gui;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -13,6 +14,8 @@ import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.ParameterContext.LocalProxyParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -80,12 +83,12 @@ public class ElectricalStimulusParameterTableModel extends ManageTableModel impl
 			return 1;
 		}
 	}
-	private final int NUM_COLUMNS = 4;
-	private final int COLUMN_DESCRIPTION = 0;
-	private final int COLUMN_NAME = 1;
-	private final int COLUMN_VALUE = 2;
-	private final int COLUMN_UNIT = 3;
-	private String LABELS[] = { "description", "Parameter", "Expression", "Units" };
+	final static int NUM_COLUMNS = 4;
+	final static int COLUMN_DESCRIPTION = 0;
+	final static int COLUMN_NAME = 1;
+	final static int COLUMN_VALUE = 2;
+	final static int COLUMN_UNIT = 3;
+	String LABELS[] = { "description", "Parameter", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ElectricalStimulus fieldElectricalStimulus = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
@@ -161,6 +164,7 @@ public String getColumnName(int column) {
 public ElectricalStimulus getElectricalStimulus() {
 	return fieldElectricalStimulus;
 }
+
 /**
  * Insert the method's description here.
  * Creation date: (9/23/2003 1:24:52 PM)
@@ -172,19 +176,12 @@ private Parameter getParameter(int row) {
 	if (getElectricalStimulus()==null){
 		return null;
 	}
-	int count = getElectricalStimulus().getElectricalStimulusParameters().length;
+	Parameter[] parameters = getElectricalStimulus().getParameters();
+	int count = parameters.length;
 	if (row<0 || row>=count){
 		throw new RuntimeException("ElectricalStimulusParameterTableModel.getParameter("+row+") out of range ["+0+","+(count-1)+"]");
 	}
-	if (row==0){
-		if (getElectricalStimulus() instanceof VoltageClampStimulus){
-			return getElectricalStimulus().getElectricalStimulusParameterFromRole(ElectricalStimulus.ROLE_Voltage);
-		}else{
-			return getElectricalStimulus().getElectricalStimulusParameterFromRole(ElectricalStimulus.ROLE_Current);
-		}
-	}else{
-		return getElectricalStimulus().getElectricalStimulusParameters(row+1);
-	}
+	return parameters[row];
 }
 /**
  * Accessor for the propertyChange field.
@@ -202,7 +199,7 @@ public int getRowCount() {
 	if (getElectricalStimulus()==null){
 		return 0;
 	}else{
-		return getElectricalStimulus().getElectricalStimulusParameters().length-1;
+		return getElectricalStimulus().getNumParameters();
 	}
 }
 /**
@@ -250,12 +247,10 @@ public Object getValueAt(int row, int col) {
 				}
 			}
 			case COLUMN_VALUE:{
-				if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
-					if (parameter.getExpression()==null){
-						return null;
-					}else{
-						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
-					}
+				if (parameter.getExpression()==null){
+					return "Variable";
+				}else{
+					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
 				}
 			}
 			default:{
@@ -310,7 +305,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		ElectricalStimulus oldValue = (ElectricalStimulus)evt.getOldValue();
 		if (oldValue!=null){
 			oldValue.removePropertyChangeListener(this);
-			Parameter oldParameters[] = oldValue.getElectricalStimulusParameters();
+			Parameter oldParameters[] = oldValue.getParameters();
 			for (int i = 0; i<oldParameters.length; i++){
 				oldParameters[i].removePropertyChangeListener(this);
 			}
@@ -318,7 +313,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		ElectricalStimulus newValue = (ElectricalStimulus)evt.getNewValue();
 		if (newValue!=null){
 			newValue.addPropertyChangeListener(this);
-			Parameter newParameters[] = newValue.getElectricalStimulusParameters();
+			Parameter newParameters[] = newValue.getParameters();
 			for (int i = 0; i<newParameters.length; i++){
 				newParameters[i].addPropertyChangeListener(this);
 			}
@@ -326,7 +321,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
-	if (evt.getSource() instanceof ElectricalStimulus && evt.getPropertyName().equals("electricalStimulusParameters")) {
+	if (evt.getSource() instanceof ElectricalStimulus && (evt.getPropertyName().equals("localParameters") || evt.getPropertyName().equals("proxyParameters"))) {
 		Parameter oldParameters[] = (Parameter[])evt.getOldValue();
 		for (int i = 0; i<oldParameters.length; i++){
 			oldParameters[i].removePropertyChangeListener(this);
@@ -338,7 +333,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
-	if(evt.getSource() instanceof ElectricalStimulus.ElectricalStimulusParameter
+	if(evt.getSource() instanceof LocalParameter
 		&& evt.getPropertyName().equals("expression")){
 		fireTableDataChanged();
 	}
@@ -382,8 +377,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						throw new RuntimeException("unexpected value type ScopedExpression");
 					}else if (aValue instanceof String) {
 						String newExpressionString = (String)aValue;
-						if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
-							ElectricalStimulus.ElectricalStimulusParameter scsParm = (ElectricalStimulus.ElectricalStimulusParameter)parameter;
+						if (parameter instanceof LocalParameter){
+							LocalParameter scsParm = (LocalParameter)parameter;
 							getElectricalStimulus().setParameterValue(scsParm,new Expression(newExpressionString));
 							//fireTableRowsUpdated(rowIndex,rowIndex);
 						}

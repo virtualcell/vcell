@@ -1,5 +1,10 @@
 package cbit.vcell.mapping;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.parser.*;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (4/8/2002 11:45:12 AM)
@@ -16,19 +21,31 @@ public class VoltageClampStimulus extends ElectricalStimulus {
  */
 public VoltageClampStimulus(Electrode argElectrode, String argName, Expression argVoltExpr, SimulationContext argSimulationContext) {
 	super(argElectrode, argName, argSimulationContext);
+
 	try {
-		getCurrentParameter().setExpression(new Expression(0.0));
-		getCurrentParameter().setDescription("measured current density");
-		getVoltageParameter().setExpression(argVoltExpr);
-		getVoltageParameter().setDescription("applied voltage");
-		argVoltExpr.bindExpression(this);
+		argVoltExpr.bindExpression(parameterContext);
 	}catch (ExpressionBindingException e){
 		e.printStackTrace(System.out);
 		//throw new RuntimeException(e.getMessage());
-	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
+	}
+	LocalParameter[] localParameters = new LocalParameter[1];
+	
+	localParameters[0] = parameterContext.new LocalParameter(
+			DefaultNames[ROLE_Voltage], argVoltExpr, 
+			ROLE_Voltage, VCUnitDefinition.UNIT_mV, 
+			"applied voltage");
+	
+	try {
+		parameterContext.setLocalParameters(localParameters);
+	} catch (PropertyVetoException e) {
+		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
 	}
+}
+
+
+public VoltageClampStimulus(VoltageClampStimulus otherStimulus, SimulationContext argSimulationContext) {
+	super(otherStimulus, argSimulationContext);
 }
 
 
@@ -39,8 +56,6 @@ public VoltageClampStimulus(Electrode argElectrode, String argName, Expression a
  */
 public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof VoltageClampStimulus){
-		VoltageClampStimulus vcs = (VoltageClampStimulus)obj;
-
 		if (!super.compareEqual0(obj)){
 			return false;
 		}
@@ -51,4 +66,10 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 	}
 
 }
+
+public LocalParameter getVoltageParameter() {
+	return parameterContext.getLocalParameterFromRole(ROLE_Voltage);
+}
+
+
 }

@@ -11,11 +11,12 @@ import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.plot.TimeFunctionPanel;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.mapping.CurrentClampStimulus;
+import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
@@ -54,7 +55,8 @@ public class ElectricalStimulusPanel extends javax.swing.JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationContext ivjsimulationContext1 = null;
 	private ElectricalStimulusParameterTableModel ivjelectricalStimulusParameterTableModel = null;
-	private javax.swing.JRadioButton ivjCurrentClampRadioButton = null;
+	private javax.swing.JRadioButton ivjTotalCurrentClampRadioButton = null;
+	private javax.swing.JRadioButton ivjCurrentDensityClampRadioButton = null;
 	private GeometryContext ivjgeometryContext = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private javax.swing.JRadioButton ivjNoClampRadioButton = null;
@@ -70,12 +72,34 @@ public class ElectricalStimulusPanel extends javax.swing.JPanel {
 
 class IvjEventHandler implements java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
-			if (e.getSource() == ElectricalStimulusPanel.this.getNoClampRadioButton()) 
-				connEtoC4(e);
-			if (e.getSource() == ElectricalStimulusPanel.this.getVoltageClampRadioButton()) 
-				connEtoC5(e);
-			if (e.getSource() == ElectricalStimulusPanel.this.getCurrentClampRadioButton()) 
-				connEtoC6(e);
+			if (e.getSource() == ElectricalStimulusPanel.this.getNoClampRadioButton()) {
+				try {
+					ElectricalStimulusPanel.this.newStimulus(e);
+				} catch (java.lang.Throwable ivjExc) {
+					handleException(ivjExc);
+				}
+			}
+			if (e.getSource() == ElectricalStimulusPanel.this.getVoltageClampRadioButton()) {
+				try {
+					ElectricalStimulusPanel.this.newStimulus(e);
+				} catch (java.lang.Throwable ivjExc) {
+					handleException(ivjExc);
+				}
+			}
+			if (e.getSource() == ElectricalStimulusPanel.this.getTotalCurrentClampRadioButton()) {
+				try {
+					ElectricalStimulusPanel.this.newStimulus(e);
+				} catch (java.lang.Throwable ivjExc) {
+					handleException(ivjExc);
+				}
+			}
+			if (e.getSource() == ElectricalStimulusPanel.this.getCurrentDensityClampRadioButton()) {
+				try {
+					ElectricalStimulusPanel.this.newStimulus(e);
+				} catch (java.lang.Throwable ivjExc) {
+					handleException(ivjExc);
+				}
+			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ElectricalStimulusPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
@@ -200,67 +224,6 @@ private void connEtoC3() {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC4:  (NoClampRadioButton.item.itemStateChanged(java.awt.event.ItemEvent) --> ElectricalStimulusPanel.newStimulus(Ljava.awt.event.ItemEvent;)V)
- * @param arg1 java.awt.event.ItemEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(java.awt.event.ItemEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newStimulus(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC5:  (VoltageClampRadioButton.item.itemStateChanged(java.awt.event.ItemEvent) --> ElectricalStimulusPanel.newStimulus(Ljava.awt.event.ItemEvent;)V)
- * @param arg1 java.awt.event.ItemEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.awt.event.ItemEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newStimulus(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC6:  (CurrentClampRadioButton.item.itemStateChanged(java.awt.event.ItemEvent) --> ElectricalStimulusPanel.newStimulus(Ljava.awt.event.ItemEvent;)V)
- * @param arg1 java.awt.event.ItemEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.awt.event.ItemEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newStimulus(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC7:  (simulationContext1.this --> ElectricalStimulusPanel.setPanelsVisible()V)
@@ -423,63 +386,6 @@ private void connEtoM14(java.beans.PropertyChangeEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-/**
- * connEtoM15:  (ElectricalStimulusPanel.initialize() --> buttonGroup.add(Ljavax.swing.AbstractButton;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM15() {
-	try {
-		// user code begin {1}
-		// user code end
-		getbuttonGroup().add(getVoltageClampRadioButton());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM16:  (ElectricalStimulusPanel.initialize() --> buttonGroup.add(Ljavax.swing.AbstractButton;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM16() {
-	try {
-		// user code begin {1}
-		// user code end
-		getbuttonGroup().add(getNoClampRadioButton());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM17:  (ElectricalStimulusPanel.initialize() --> buttonGroup.add(Ljavax.swing.AbstractButton;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM17() {
-	try {
-		// user code begin {1}
-		// user code end
-		getbuttonGroup().add(getCurrentClampRadioButton());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoM18:  (simulationContext1.this --> patchElectrodePanel.model)
@@ -802,12 +708,12 @@ private javax.swing.ButtonGroup getbuttonGroup() {
  * @return javax.swing.JRadioButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getCurrentClampRadioButton() {
-	if (ivjCurrentClampRadioButton == null) {
+private javax.swing.JRadioButton getTotalCurrentClampRadioButton() {
+	if (ivjTotalCurrentClampRadioButton == null) {
 		try {
-			ivjCurrentClampRadioButton = new javax.swing.JRadioButton();
-			ivjCurrentClampRadioButton.setName("CurrentClampRadioButton");
-			ivjCurrentClampRadioButton.setText("Current Clamp");
+			ivjTotalCurrentClampRadioButton = new javax.swing.JRadioButton();
+			ivjTotalCurrentClampRadioButton.setName("TotalCurrentClampRadioButton");
+			ivjTotalCurrentClampRadioButton.setText("Total Current Clamp");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -816,7 +722,30 @@ private javax.swing.JRadioButton getCurrentClampRadioButton() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjCurrentClampRadioButton;
+	return ivjTotalCurrentClampRadioButton;
+}
+
+
+/**
+ * Return the CurrentClampRadioButton property value.
+ * @return javax.swing.JRadioButton
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JRadioButton getCurrentDensityClampRadioButton() {
+	if (ivjCurrentDensityClampRadioButton == null) {
+		try {
+			ivjCurrentDensityClampRadioButton = new javax.swing.JRadioButton();
+			ivjCurrentDensityClampRadioButton.setName("CurrentDensityClampRadioButton");
+			ivjCurrentDensityClampRadioButton.setText("Current Density Clamp");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjCurrentDensityClampRadioButton;
 }
 
 
@@ -946,10 +875,15 @@ private javax.swing.JPanel getJPanel1() {
 			constraintsVoltageClampRadioButton.gridx = 2; constraintsVoltageClampRadioButton.gridy = 1;
 			getJPanel1().add(getVoltageClampRadioButton(), constraintsVoltageClampRadioButton);
 
-			java.awt.GridBagConstraints constraintsCurrentClampRadioButton = new java.awt.GridBagConstraints();
-			constraintsCurrentClampRadioButton.gridx = 3; constraintsCurrentClampRadioButton.gridy = 1;
-			constraintsCurrentClampRadioButton.insets = new java.awt.Insets(0, 0, 0, 2);
-			getJPanel1().add(getCurrentClampRadioButton(), constraintsCurrentClampRadioButton);
+			java.awt.GridBagConstraints constraintsTotalCurrentClampRadioButton = new java.awt.GridBagConstraints();
+			constraintsTotalCurrentClampRadioButton.gridx = 3; constraintsTotalCurrentClampRadioButton.gridy = 1;
+			constraintsTotalCurrentClampRadioButton.insets = new java.awt.Insets(0, 0, 0, 2);
+			getJPanel1().add(getTotalCurrentClampRadioButton(), constraintsTotalCurrentClampRadioButton);
+
+			java.awt.GridBagConstraints constraintsCurrentDensityClampRadioButton = new java.awt.GridBagConstraints();
+			constraintsCurrentDensityClampRadioButton.gridx = 4; constraintsCurrentDensityClampRadioButton.gridy = 1;
+			constraintsCurrentDensityClampRadioButton.insets = new java.awt.Insets(0, 0, 0, 2);
+			getJPanel1().add(getCurrentDensityClampRadioButton(), constraintsCurrentDensityClampRadioButton);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1210,7 +1144,8 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	getNoClampRadioButton().addItemListener(ivjEventHandler);
 	getVoltageClampRadioButton().addItemListener(ivjEventHandler);
-	getCurrentClampRadioButton().addItemListener(ivjEventHandler);
+	getTotalCurrentClampRadioButton().addItemListener(ivjEventHandler);
+	getCurrentDensityClampRadioButton().addItemListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
 }
@@ -1243,9 +1178,10 @@ private void initialize() {
 		add(getJPanel2(), constraintsJPanel2);
 		initConnections();
 		connEtoM7();
-		connEtoM16();
-		connEtoM15();
-		connEtoM17();
+		getbuttonGroup().add(getNoClampRadioButton());
+		getbuttonGroup().add(getVoltageClampRadioButton());
+		getbuttonGroup().add(getTotalCurrentClampRadioButton());
+		getbuttonGroup().add(getCurrentDensityClampRadioButton());
 		connEtoC3();
 		
 		getScrollPaneTable().getSelectionModel().addListSelectionListener(
@@ -1333,13 +1269,24 @@ private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 					}
 				}
 			}
-			if (currElectricalStimulus instanceof CurrentClampStimulus){
-				if (itemEvent.getSource()==getCurrentClampRadioButton()) {
+			if (currElectricalStimulus instanceof TotalCurrentClampStimulus){
+				if (itemEvent.getSource()==getTotalCurrentClampRadioButton()) {
 					return;
 				}else{
 					String response = PopupGenerator.showWarningDialog(this,"warning: the present current clamp settings will be lost", new String[] { UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL }, UserMessage.OPTION_CONTINUE);
 					if (response==null || response.equals(UserMessage.OPTION_CANCEL)){
-						getCurrentClampRadioButton().setSelected(true); // revert back to Current Clamp
+						getTotalCurrentClampRadioButton().setSelected(true); // revert back to Current Clamp
+						return;
+					}
+				}
+			}
+			if (currElectricalStimulus instanceof CurrentDensityClampStimulus){
+				if (itemEvent.getSource()==getCurrentDensityClampRadioButton()) {
+					return;
+				}else{
+					String response = PopupGenerator.showWarningDialog(this,"warning: the present current clamp settings will be lost", new String[] { UserMessage.OPTION_CONTINUE, UserMessage.OPTION_CANCEL }, UserMessage.OPTION_CONTINUE);
+					if (response==null || response.equals(UserMessage.OPTION_CANCEL)){
+						getCurrentDensityClampRadioButton().setSelected(true); // revert back to Current Clamp
 						return;
 					}
 				}
@@ -1367,12 +1314,24 @@ private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 			}
 		}
 		//
-		// selected "Current Clamp Stimulus"
+		// selected "Total Current Clamp Stimulus"
 		//
-		if (itemEvent.getSource()==getCurrentClampRadioButton()){
-			if (simContext.getElectricalStimuli().length==0 || !(simContext.getElectricalStimuli()[0] instanceof CurrentClampStimulus)){
+		if (itemEvent.getSource()==getTotalCurrentClampRadioButton()){
+			if (simContext.getElectricalStimuli().length==0 || !(simContext.getElectricalStimuli()[0] instanceof TotalCurrentClampStimulus)){
 				Electrode probeElectrode = new Electrode(innerFeature,new Coordinate(0,0,0));
-				CurrentClampStimulus ccStimulus = new CurrentClampStimulus(probeElectrode,"ccElectrode",new Expression(0.0),simContext);
+				TotalCurrentClampStimulus ccStimulus = new TotalCurrentClampStimulus(probeElectrode,"ccElectrode",new Expression(0.0),simContext);
+		System.out.println(" Geo's dim = "+simContext.getGeometry().getDimension());
+				simContext.setElectricalStimuli(new ElectricalStimulus[] { ccStimulus });
+				simContext.setGroundElectrode(new Electrode(topFeature,new Coordinate(0,0,0)));
+			}
+		}
+		//
+		// selected "Current Density Clamp Stimulus"
+		//
+		if (itemEvent.getSource()==getCurrentDensityClampRadioButton()){
+			if (simContext.getElectricalStimuli().length==0 || !(simContext.getElectricalStimuli()[0] instanceof CurrentDensityClampStimulus)){
+				Electrode probeElectrode = new Electrode(innerFeature,new Coordinate(0,0,0));
+				CurrentDensityClampStimulus ccStimulus = new CurrentDensityClampStimulus(probeElectrode,"ccElectrode",new Expression(0.0),simContext);
 		System.out.println(" Geo's dim = "+simContext.getGeometry().getDimension());
 				simContext.setElectricalStimuli(new ElectricalStimulus[] { ccStimulus });
 				simContext.setGroundElectrode(new Electrode(topFeature,new Coordinate(0,0,0)));
@@ -1488,8 +1447,10 @@ private void setPanelsVisible() {
 public void setRadioButtons(SimulationContext arg1) {
 	if (arg1==null || arg1.getElectricalStimuli()==null || arg1.getElectricalStimuli().length==0){
 		getNoClampRadioButton().setSelected(true);
-	}else if (arg1.getElectricalStimuli()[0] instanceof CurrentClampStimulus){
-		getCurrentClampRadioButton().setSelected(true);
+	}else if (arg1.getElectricalStimuli()[0] instanceof TotalCurrentClampStimulus){
+		getTotalCurrentClampRadioButton().setSelected(true);
+	}else if (arg1.getElectricalStimuli()[0] instanceof CurrentDensityClampStimulus){
+		getCurrentDensityClampRadioButton().setSelected(true);
 	}else if (arg1.getElectricalStimuli()[0] instanceof VoltageClampStimulus){
 		getVoltageClampRadioButton().setSelected(true);
 	}
@@ -1682,8 +1643,10 @@ private void setsimulationContext1(SimulationContext newValue) {
 		if(row < 0){//no rows exist in table.  Use arbitrary function
 			expr = "t";
 		}else{
-			ScopedExpression scopedExpression = (ScopedExpression)getScrollPaneTable().getModel().getValueAt(row, 2);
-			expr = scopedExpression.infix();			
+			Object value = getScrollPaneTable().getModel().getValueAt(row, 2);
+			if (value instanceof ScopedExpression){
+				expr = ((ScopedExpression)value).infix();
+			}
 		}
 		if(timeFunctionPanel != null){
 			timeFunctionPanel.setTimeFunction(expr);

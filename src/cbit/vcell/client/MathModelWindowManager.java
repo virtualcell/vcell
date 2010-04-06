@@ -482,7 +482,9 @@ private void updateGeometryRegions(final boolean bChange){
 		@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Geometry newGeom = ((MathModel)getVCDocument()).getMathDescription().getGeometry();
-				newGeom.getGeometrySurfaceDescription().updateAll();
+				if (newGeom.getGeometrySurfaceDescription()!=null){
+					newGeom.getGeometrySurfaceDescription().updateAll();
+				}
 			}
 	};
 	

@@ -61,7 +61,7 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.CurrentClampStimulus;
+import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
@@ -72,8 +72,10 @@ import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.BoundaryConditionType;
@@ -750,9 +752,13 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 	if (param.getAttributeValue(XMLTags.TypeAttrTag).equalsIgnoreCase(XMLTags.VoltageClampTag)) {
 		//is a voltage clamp
 		clampStimulus = new VoltageClampStimulus(electrode, "voltClampElectrode", new Expression(0.0), currentSimulationContext);
-	} else {
-		//is a current clamp
-		clampStimulus = new CurrentClampStimulus(electrode, "currClampElectrode", new Expression(0.0), currentSimulationContext);
+	} else if (param.getAttributeValue(XMLTags.TypeAttrTag).equalsIgnoreCase(XMLTags.CurrentDensityClampTag) ||
+				param.getAttributeValue(XMLTags.TypeAttrTag).equalsIgnoreCase(XMLTags.CurrentDensityClampTag_oldName)) {
+		//is a current density clamp
+		clampStimulus = new CurrentDensityClampStimulus(electrode, "currDensityClampElectrode", new Expression(0.0), currentSimulationContext);
+	} else if (param.getAttributeValue(XMLTags.TypeAttrTag).equalsIgnoreCase(XMLTags.TotalCurrentClampTag)) {
+		//is a "total" current clamp
+		clampStimulus = new TotalCurrentClampStimulus(electrode, "totalCurrClampElectrode", new Expression(0.0), currentSimulationContext);
 	}
 	
 	try {
@@ -788,9 +794,30 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 				e.printStackTrace(System.out);
 				throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());
 			}
-			ElectricalStimulus.ElectricalStimulusParameter tempParam = null;
+			LocalParameter tempParam = null;
 			if (!role.equals(XMLTags.ParamRoleUserDefinedTag)) {
-				tempParam = clampStimulus.getElectricalStimulusParameterFromRole(ElectricalStimulus.getParamRoleFromDesc(role));
+				if (role.equals(XMLTags.ParamRoleTotalCurrentTag)){
+					if (clampStimulus instanceof TotalCurrentClampStimulus){
+						tempParam = ((TotalCurrentClampStimulus)clampStimulus).getCurrentParameter();
+					} else {
+						varHash.removeVariable(paramName);
+						continue;
+					}
+				}else if (role.equals(XMLTags.ParamRoleTotalCurrentDensityTag) || role.equals(XMLTags.ParamRoleTotalCurrentDensityOldNameTag)){
+					if (clampStimulus instanceof CurrentDensityClampStimulus){
+						tempParam = ((CurrentDensityClampStimulus)clampStimulus).getCurrentDensityParameter();
+					} else {
+						varHash.removeVariable(paramName);
+						continue;
+					}
+				}else if (role.equals(XMLTags.ParamRolePotentialDifferenceTag)){
+					if (clampStimulus instanceof VoltageClampStimulus){
+						tempParam = ((VoltageClampStimulus)clampStimulus).getVoltageParameter();
+					}else{
+						varHash.removeVariable(paramName);
+						continue;
+					}
+				}
 			}else{
 				continue;
 			}
@@ -801,12 +828,12 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 			// custom name for "special" parameter
 			//
 			if (!tempParam.getName().equals(paramName)) {
-				ElectricalStimulus.ElectricalStimulusParameter multNameParam = (ElectricalStimulus.ElectricalStimulusParameter)clampStimulus.getElectricalStimulusParameter(paramName);
+				LocalParameter multNameParam = clampStimulus.getLocalParameter(paramName);
 				int n = 0;
 				while (multNameParam != null) {
 					String tempName = paramName + "_" + n++;
 					clampStimulus.renameParameter(paramName, tempName);
-					multNameParam = (ElectricalStimulus.ElectricalStimulusParameter)clampStimulus.getParameter(tempName);
+					multNameParam = clampStimulus.getLocalParameter(tempName);
 				}
 				clampStimulus.renameParameter(tempParam.getName(), paramName);
 			}
@@ -846,11 +873,13 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 				if (symbol != null) {
 					unit = VCUnitDefinition.getInstance(symbol);
 				}
-				ElectricalStimulus.ElectricalStimulusParameter tempParam = clampStimulus.getElectricalStimulusParameter(paramFunction.getName());
+				LocalParameter tempParam = clampStimulus.getLocalParameter(paramFunction.getName());
 				if (tempParam == null) {
-					clampStimulus.addUserDefinedKineticsParameter(paramFunction.getName(), paramFunction.getExpression(), unit);
+					clampStimulus.addUserDefinedParameter(paramFunction.getName(), paramFunction.getExpression(), unit);
 				} else {
-					clampStimulus.setParameterValue(tempParam, paramFunction.getExpression());
+					if (tempParam.getExpression()!=null){ // if the expression is null, it should remain null.
+						clampStimulus.setParameterValue(tempParam, paramFunction.getExpression());
+					}
 					tempParam.setUnitDefinition(unit);
 				}
 			}

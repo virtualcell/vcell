@@ -34,7 +34,7 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.graph.ReactionCartoon;
 import cbit.vcell.graph.StructureCartoon;
-import cbit.vcell.mapping.CurrentClampStimulus;
+import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
@@ -45,7 +45,9 @@ import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.gui.StructureMappingCartoon;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -74,6 +76,7 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
@@ -1591,19 +1594,27 @@ protected void writeHorizontalLine() throws DocumentException {
 				electTable.endHeaders();
 			}
 			String stimName = electricalStimuli[j].getName();
-			String currName = electricalStimuli[j].getCurrentParameter().getName();
+			String currName = "";
 			String clampType = "", expStr = "";
 			Expression tempExp = null;
 			VCUnitDefinition tempUnit = null;
-			if (electricalStimuli[j] instanceof CurrentClampStimulus) {
-				CurrentClampStimulus stimulus = (CurrentClampStimulus) electricalStimuli[j];
-				tempExp = stimulus.getCurrentParameter().getExpression();
-				tempUnit = stimulus.getCurrentParameter().getUnitDefinition();
+			if (electricalStimuli[j] instanceof CurrentDensityClampStimulus) {
+				CurrentDensityClampStimulus stimulus = (CurrentDensityClampStimulus) electricalStimuli[j];
+				LocalParameter currentDensityParameter = stimulus.getCurrentDensityParameter();
+				tempExp = currentDensityParameter.getExpression();
+				tempUnit = currentDensityParameter.getUnitDefinition();
+				clampType = "Current Density (deprecated)";
+			} else if (electricalStimuli[j] instanceof TotalCurrentClampStimulus) {
+				TotalCurrentClampStimulus stimulus = (TotalCurrentClampStimulus) electricalStimuli[j];
+				LocalParameter totalCurrentParameter = stimulus.getCurrentParameter();
+				tempExp = totalCurrentParameter.getExpression();
+				tempUnit = totalCurrentParameter.getUnitDefinition();
 				clampType = "Current";
 			} else if (electricalStimuli[j] instanceof VoltageClampStimulus) {
 				VoltageClampStimulus stimulus = (VoltageClampStimulus) electricalStimuli[j];
-				tempExp = stimulus.getVoltageParameter().getExpression();
-				tempUnit = stimulus.getVoltageParameter().getUnitDefinition();
+				Parameter voltageParameter = stimulus.getVoltageParameter();
+				tempExp = voltageParameter.getExpression();
+				tempUnit = voltageParameter.getUnitDefinition();
 				clampType = "Voltage";
 			}
 			if (tempExp != null) {

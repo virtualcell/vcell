@@ -9,15 +9,17 @@ import cbit.vcell.parser.Expression;
 ©*/
 import cbit.sql.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 /**
  * This type was created in VisualAge.
  */
 public class StimulusTable extends cbit.sql.Table {
 
 	final static int UNKNOWN_STIMULUS = 0;
-	final static int CURRENT_CLAMP_STIMULUS = 1;
+	final static int CURRENTDENSITY_CLAMP_STIMULUS = 1;
 	final static int VOLTAGE_CLAMP_STIMULUS = 2;
 	final static int GROUND_ELECTRODE = 3;
+	final static int TOTALCURRENT_CLAMP_STIMULUS = 4;
 	
 	private static final String TABLE_NAME = "vc_stimulus";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
@@ -65,12 +67,18 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 
 	Expression exp = null;
 	int stimulusType = UNKNOWN_STIMULUS;
-	if (stimulus instanceof CurrentClampStimulus){
-		stimulusType = CURRENT_CLAMP_STIMULUS;
-		exp = ((CurrentClampStimulus)stimulus).getCurrentParameter().getExpression();
+	if (stimulus instanceof CurrentDensityClampStimulus){
+		stimulusType = CURRENTDENSITY_CLAMP_STIMULUS;
+		LocalParameter currentDensityParameter = ((CurrentDensityClampStimulus)stimulus).getCurrentDensityParameter();
+		exp = currentDensityParameter.getExpression();
+	}else if (stimulus instanceof TotalCurrentClampStimulus){
+		stimulusType = TOTALCURRENT_CLAMP_STIMULUS;
+		LocalParameter totalCurrentParameter = ((TotalCurrentClampStimulus)stimulus).getCurrentParameter();
+		exp = totalCurrentParameter.getExpression();
 	}else if (stimulus instanceof VoltageClampStimulus){
 		stimulusType = VOLTAGE_CLAMP_STIMULUS;
-		exp = ((VoltageClampStimulus)stimulus).getVoltageParameter().getExpression();
+		LocalParameter voltageParameter = ((VoltageClampStimulus)stimulus).getVoltageParameter();
+		exp = voltageParameter.getExpression();
 	}else{
 		throw new DataAccessException("storage for Stimulus type "+stimulus.getClass().getName()+" not yet supported");
 	}

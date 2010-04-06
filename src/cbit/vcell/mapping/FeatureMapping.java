@@ -228,7 +228,7 @@ public cbit.vcell.geometry.SubVolume getSubVolume() {
  * TotalVolumeCorrection is the term that takes local units to volume normalized micro-Molar
  * @return cbit.vcell.parser.Expression
  */
-Expression getTotalVolumeCorrection(SimulationContext simulationContext) throws ExpressionException {
+Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext) throws ExpressionException {
 	if (getResolved() || getFeature().getMembrane()==null) {
 		return getResidualVolumeFraction(simulationContext);
 	} else {
@@ -243,7 +243,7 @@ Expression getTotalVolumeCorrection(SimulationContext simulationContext) throws 
 		if (bTotalVolumeCorrectionBug && !exp.compareEqual(new Expression(1.0))) { 
 			exp = new Expression(1.0);
 			bTotalVolumeCorrectionBugExercised = true;
-			System.out.println("FeatureMapping.getTotalVolumeCorrection() ... 'TotalVolumeCorrection' bug compatability mode");
+			System.out.println("FeatureMapping.getNormalizedConcentrationCorrection() ... 'TotalVolumeCorrection' bug compatability mode");
 		}
 		while (membrane!=null){
 			MembraneMapping memMapping = (MembraneMapping)simulationContext.getGeometryContext().getStructureMapping(membrane);
@@ -256,6 +256,17 @@ Expression getTotalVolumeCorrection(SimulationContext simulationContext) throws 
 		}
 		return exp;
 	}
+}
+
+
+
+/**
+ * TotalVolumeCorrection is the term that takes local units to volume normalized micro-Molar
+ * @return cbit.vcell.parser.Expression
+ */
+@Override
+public Expression getStructureSizeCorrection(SimulationContext simulationContext) throws ExpressionException {
+	return getNormalizedConcentrationCorrection(simulationContext);
 }
 
 

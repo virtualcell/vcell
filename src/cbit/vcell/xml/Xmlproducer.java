@@ -33,7 +33,7 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.CurrentClampStimulus;
+import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
@@ -42,7 +42,9 @@ import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -878,9 +880,12 @@ public org.jdom.Element getXML(ElectricalStimulus param) {
 	if (param instanceof VoltageClampStimulus) {
 		//process a VoltageClampStimulus object
 		electricalStimulusType = XMLTags.VoltageClampTag;
-	} else if (param instanceof CurrentClampStimulus) {
+	} else if (param instanceof CurrentDensityClampStimulus) {
 		//Process a CurrentClampStimulus
-		electricalStimulusType = XMLTags.CurrentClampTag;
+		electricalStimulusType = XMLTags.CurrentDensityClampTag;
+	}else if (param instanceof TotalCurrentClampStimulus) {
+		//Process a CurrentClampStimulus
+		electricalStimulusType = XMLTags.TotalCurrentClampTag;
 	}
 
 	org.jdom.Element electricalStimulus = new org.jdom.Element(XMLTags.ClampTag);
@@ -893,13 +898,13 @@ public org.jdom.Element getXML(ElectricalStimulus param) {
 	electricalStimulus.setAttribute(XMLTags.TypeAttrTag, electricalStimulusType);
 	
 	//Add Kinetics Parameters
-	ElectricalStimulus.ElectricalStimulusParameter parameters[] = param.getElectricalStimulusParameters();
+	LocalParameter parameters[] = param.getLocalParameters();
 	for (int i=0;i<parameters.length;i++){
-		ElectricalStimulus.ElectricalStimulusParameter parm = parameters[i];
+		LocalParameter parm = parameters[i];
 		org.jdom.Element tempparameter = new org.jdom.Element(XMLTags.ParameterTag);
 		//Get parameter attributes
 		tempparameter.setAttribute(XMLTags.NameAttrTag, mangle(parm.getName()));
-		tempparameter.setAttribute(XMLTags.ParamRoleAttrTag, param.getDefaultParameterDesc(parm.getRole()));
+		tempparameter.setAttribute(XMLTags.ParamRoleAttrTag, ElectricalStimulus.RoleDescs[parm.getRole()]);
 		VCUnitDefinition unit = parm.getUnitDefinition();
 		if (unit != null) {
 			tempparameter.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());

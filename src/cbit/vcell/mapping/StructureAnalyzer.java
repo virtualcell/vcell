@@ -460,7 +460,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = firstSCS.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.mult(new Expression(coeff.toString()),firstSM.getTotalVolumeCorrection(simContext_temp),
+					constantExp = Expression.mult(new Expression(coeff.toString()),firstSM.getNormalizedConcentrationCorrection(simContext_temp),
 																new Expression(scSTE, mathMapping_temp.getNameScope()));
 					bFirst = false;
 				}else{
@@ -472,7 +472,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					StructureMapping sm = simContext_temp.getGeometryContext().getStructureMapping(sc.getStructure());
 					SpeciesContextSpec scs = simContext_temp.getReactionContext().getSpeciesContextSpec(sc);
 					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff.toString()), 
-							sm.getTotalVolumeCorrection(simContext_temp), new Expression(sc, mathMapping_temp.getNameScope()))));
+							sm.getNormalizedConcentrationCorrection(simContext_temp), new Expression(sc, mathMapping_temp.getNameScope()))));
 					//
 					// add term to K expression
 					//
@@ -482,7 +482,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.add(constantExp, Expression.mult(new Expression(coeff.toString()), sm.getTotalVolumeCorrection(simContext_temp),
+					constantExp = Expression.add(constantExp, Expression.mult(new Expression(coeff.toString()), sm.getNormalizedConcentrationCorrection(simContext_temp),
 																				new Expression(scSTE, mathMapping_temp.getNameScope())));
 				}
 			}
@@ -496,7 +496,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 			// store dependency parameter (e.g. xyz = K_xyz_total - wzy)
 			//
 			StructureMapping sm = simContext_temp.getGeometryContext().getStructureMapping(firstSCM.getSpeciesContext().getStructure());
-			exp = Expression.mult(exp,Expression.invert(sm.getTotalVolumeCorrection(simContext_temp)));
+			exp = Expression.mult(exp,Expression.invert(sm.getNormalizedConcentrationCorrection(simContext_temp)));
 			exp = exp.flatten();
 			//exp.bindExpression(mathMapping_temp);
 			//firstSCM.setDependencyExpression(exp);
