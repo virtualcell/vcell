@@ -6,17 +6,19 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DirectColorModel;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
+import java.util.Hashtable;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
-import javax.media.jai.LookupTableJAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.CompositeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
-import javax.media.jai.operator.LookupDescriptor;
-import javax.media.jai.operator.RescaleDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
 
 import org.vcell.util.Range;
@@ -28,8 +30,6 @@ import com.sun.media.jai.widget.DisplayJAI;
 public class OverlayImageDisplayJAI extends DisplayJAI{
 	private BufferedImage underlyingImage = null;
 	private BufferedImage highlightImage = null;
-//	private RenderedImage alphaImageUnderlying = null;
-//	private RenderedImage alphaImageHightlight = null;
 	private short[] highlightImageWritebackBuffer = null;
 	private float zoom = 1.0f;
 	private boolean bRemoveROIWhenDrawing = false;
@@ -45,10 +45,47 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 
 	private Range minmaxPixelValues = null;
 	
+	private int[][][] blendARGB = new int[2][256][256];
+	private Hashtable<Integer, BufferedImage> contrastHash = new Hashtable<Integer, BufferedImage>();
+	
 	public OverlayImageDisplayJAI(){
 		super();
+		createCompositeLookup();
 	}
 	
+	private BufferedImage computeComposite(RenderedImage contrastEnhancedUnderlyingImage){
+		DirectColorModel dcm = new DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF);
+		WritableRaster newOverlayRaster = dcm.createCompatibleWritableRaster(contrastEnhancedUnderlyingImage.getWidth(),contrastEnhancedUnderlyingImage.getHeight());
+		try{
+			int[] newOverlayRasterInts = ((DataBufferInt)newOverlayRaster.getDataBuffer()).getData();
+			byte[] contrastUnderlayBytes = ((DataBufferByte)contrastEnhancedUnderlyingImage.getData().getDataBuffer()).getData();
+			byte[] roiBytes = (allROICompositeImage==null?null:((DataBufferByte)allROICompositeImage.getData().getDataBuffer()).getData());
+			byte[] highlightBytes = (highlightImage==null?null:((DataBufferByte)highlightImage.getData().getDataBuffer()).getData());
+			int index= 0;
+			for (int Y = 0; Y < contrastEnhancedUnderlyingImage.getHeight(); Y++) {
+				for (int X = 0; X < contrastEnhancedUnderlyingImage.getWidth(); X++) {
+//					if(roiBytes[index] != 0){
+//						System.out.println("X "+X+" Y "+Y+
+//								" roi="+(0x000000FF&roiBytes[index])+
+//								" under="+(underlayBytes[index]&0x000000FF)+
+//								" color="+Hex.toString(blendARGB[roiBytes[index]&0x000000FF][underlayBytes[index]&0x000000FF]));
+//					}
+					newOverlayRasterInts[index] =
+						blendARGB
+							[(highlightBytes==null?0:(highlightBytes[index]==0?0:1))]
+							[(roiBytes==null?0:roiBytes[index]&0x000000FF)]
+							[contrastUnderlayBytes[index]&0x000000FF];
+					index++;
+				}
+			}
+	
+		}catch(Exception e){
+			e.printStackTrace();
+			//ignore, try to display what you have
+		}
+	    BufferedImage result = new BufferedImage(dcm,newOverlayRaster, false, null);
+	    return result;
+	}
 	public void setModeRemoveROIWhenPainting(boolean bMode){
 		bRemoveROIWhenDrawing = bMode;
 	}
@@ -56,11 +93,47 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 		return bRemoveROIWhenDrawing;
 	}
 
+	private void createCompositeLookup(){
+		//(a*A) + (1 - a)*(b*B).
+		Color highlightColor = Color.yellow.darker();
+		float a = (100-blendPercent)/100.0f;
+		float b = 1.0f;
+		int index = 0;
+		for (int A = 0; A < 256; A++) {
+			for (int B = 0; B < 256; B++) {
+				//Underlay-ROI composite
+				int red = OverlayEditorPanelJAI.CONTRAST_COLORS[A].getRed();
+				int br= (int)((a*red) + (1 - a)*(b*B));
+				int grn = OverlayEditorPanelJAI.CONTRAST_COLORS[A].getGreen();
+				int bg= (int)((a*grn) + (1 - a)*(b*B));
+				int blu = OverlayEditorPanelJAI.CONTRAST_COLORS[A].getBlue();
+				int bb= (int)((a*blu) + (1 - a)*(b*B));
+				
+				int argb_Under_ROI_composite = 0x00000000 | br<<16 | bg<<8 | bb;
+				blendARGB[0][A][B] = argb_Under_ROI_composite;
+				
+				//Underlay-ROI-highlight composite
+				red = highlightColor.getRed();
+				br= (int)((a*red) + (1 - a)*(b*br));
+				grn = highlightColor.getGreen();
+				bg= (int)((a*grn) + (1 - a)*(b*bg));
+				blu = highlightColor.getBlue();
+				bb= (int)((a*blu) + (1 - a)*(b*bb));
+
+				argb_Under_ROI_composite = 0x00000000 | br<<16 | bg<<8 | bb;
+				blendARGB[1][A][B] = argb_Under_ROI_composite;
+				
+				index++;
+			}
+		}
+	}
+	
 	public void setBlendPercent(int blendPercent){
 		if(blendPercent < 0 || blendPercent > 100){
 			throw new IllegalArgumentException("blendPercent must be between 0 and 100");
 		}
 		this.blendPercent = blendPercent;
+		createCompositeLookup();
 		refreshImage();
 	}
 
@@ -71,6 +144,7 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	public void setUnderlyingImage(BufferedImage argUnderlyingImage,boolean bNew,Range argMinMaxPixelValues){
 		this.minmaxPixelValues = argMinMaxPixelValues;
 		this.underlyingImage = argUnderlyingImage;
+		contrastHash.clear();
 		if(bNew){
 			resetGUI();
 		}
@@ -79,6 +153,7 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	private void resetGUI(){
 		zoom = 1.0f;
 		contrastFactor = 0;
+		contrastHash.clear();
 		cropRect = null;
 	}
 	/**
@@ -95,8 +170,6 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	public void setAllROICompositeImage(BufferedImage allROICompositeImage){
 		this.allROICompositeImage = allROICompositeImage;
 		refreshImage();
-//		this.highlightImageWritebackBuffer = argHighlightImageWritebackBuffer;
-//		refreshImage();
 	}
 
 	/**
@@ -170,20 +243,12 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	        return JAI.create("constant", pb, null);
 	 }
 
-
-//	public static class O {
-//		public static ColorModel createColorModel(SampleModel sampleModel){
-//			IndexColorModel icm = null;
-//			icm = new IndexColorModel(8, 256, new byte[256], new byte[256], new byte[256]);
-//			return icm;
-//		}
-//	}
-
-	public void refreshImage(){
-		
-		PlanarImage sourceOverlay = null;
-		
-		RenderedImage contrastEnhancedUnderlyingImage = null;//underlyingImage;
+	private BufferedImage createContrastEnhancedUnderlyingImage(){
+		if(contrastHash.containsKey(getDisplayContrastFactor())){
+			return contrastHash.get(getDisplayContrastFactor());
+		}
+		contrastHash.clear();
+		BufferedImage contrastEnhancedUnderlyingImage = null;
 		if(underlyingImage != null){
 			contrastEnhancedUnderlyingImage = underlyingImage;
 			if(contrastFactor > 0){
@@ -197,8 +262,14 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 				if((minmaxArr[1][0]-minmaxArr[0][0]) != 0){
 					double offset = (SCALE_MAX*minmaxArr[0][0])/(minmaxArr[0][0]-minmaxArr[1][0]);
 					double scale = (SCALE_MAX)/(minmaxArr[1][0]-minmaxArr[0][0]);
-					contrastEnhancedUnderlyingImage =
-						RescaleDescriptor.create(underlyingImage,new double[]{scale},new double[]{offset},null);
+					contrastEnhancedUnderlyingImage = new BufferedImage(
+							underlyingImage.getWidth(), underlyingImage.getHeight(),
+							underlyingImage.getType());
+					byte[] fromData = ((DataBufferByte)underlyingImage.getRaster().getDataBuffer()).getData();
+					byte[] toData = ((DataBufferByte)contrastEnhancedUnderlyingImage.getRaster().getDataBuffer()).getData();
+					for (int i = 0; i < toData.length; i++) {
+						toData[i] = (byte)((int)((0x000000FF&fromData[i])*scale+offset));
+					}
 				}
 				//enhance with gamma function
 				if(contrastFactor > 1){
@@ -210,64 +281,32 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 						if(val > 255){val = 255;}
 						tableData[i] = (byte)(val&0xFF);
 					}
-					LookupTableJAI table = new LookupTableJAI(tableData);
-					contrastEnhancedUnderlyingImage = LookupDescriptor.create(contrastEnhancedUnderlyingImage, table, null);
+					BufferedImage tempImage = contrastEnhancedUnderlyingImage;
+					contrastEnhancedUnderlyingImage = new BufferedImage(
+							tempImage.getWidth(), tempImage.getHeight(),
+							tempImage.getType());
+					byte[] fromData = ((DataBufferByte)tempImage.getRaster().getDataBuffer()).getData();
+					byte[] toData = ((DataBufferByte)contrastEnhancedUnderlyingImage.getRaster().getDataBuffer()).getData();
+					for (int i = 0; i < toData.length; i++) {
+						toData[i] = tableData[fromData[i]&0x000000FF];
+					}
 				}
 			}
 		}
+		if(contrastEnhancedUnderlyingImage != null){
+			contrastHash.put(getDisplayContrastFactor(),contrastEnhancedUnderlyingImage);
+		}
+		return contrastEnhancedUnderlyingImage;
+	}
+
+	public void refreshImage(){
+		
+		PlanarImage sourceOverlay = null;
+		
+		RenderedImage contrastEnhancedUnderlyingImage = createContrastEnhancedUnderlyingImage();
 
 		if (underlyingImage!=null && (highlightImage!=null || allROICompositeImage != null)){
-			RenderedImage alphaImageUnderlying;
-			RenderedImage alphaImageHightlight;
-			alphaImageUnderlying = makeAlpha(underlyingImage.getWidth(),underlyingImage.getHeight(), (float)blendPercent/(float)100);
-			alphaImageHightlight = makeAlpha(
-					(highlightImage==null?allROICompositeImage:highlightImage).getWidth(),
-					(highlightImage==null?allROICompositeImage:highlightImage).getHeight(),
-					(float)(100-blendPercent)/(float)100);
-			PlanarImage underlyMergeComposite = null;
-			PlanarImage highlightMergeComposite = null;
-			if(allROICompositeImage != null && highlightImage == null){
-
-				sourceOverlay =
-						CompositeDescriptor.create(
-								contrastEnhancedUnderlyingImage, allROICompositeImage,
-							alphaImageUnderlying, alphaImageHightlight,
-							false, CompositeDescriptor.NO_DESTINATION_ALPHA,null);
-	
-//				highlightMergeComposite =
-//						CompositeDescriptor.create(
-//								/*allROICompositeImage*/highlightImage, allROICompositeImage,
-//							alphaImageUnderlying, alphaImageHightlight,
-//							false, CompositeDescriptor.NO_DESTINATION_ALPHA,null);
-			}else if(allROICompositeImage == null && highlightImage != null){
-				underlyMergeComposite = PlanarImage.wrapRenderedImage(contrastEnhancedUnderlyingImage);
-				highlightMergeComposite = PlanarImage.wrapRenderedImage(highlightImage);
-			    sourceOverlay =
-					CompositeDescriptor.create(
-							underlyMergeComposite, highlightMergeComposite,
-						alphaImageUnderlying, alphaImageHightlight,
-						false, CompositeDescriptor.NO_DESTINATION_ALPHA,null);
-			}else if(allROICompositeImage != null && highlightImage != null){
-				underlyMergeComposite =
-					CompositeDescriptor.create(
-							contrastEnhancedUnderlyingImage, allROICompositeImage,
-						/*alphaImageUnderlying, alphaImageHightlight,*/
-							alphaImageHightlight,alphaImageUnderlying,
-						false, CompositeDescriptor.NO_DESTINATION_ALPHA,null);
-
-				highlightMergeComposite =
-						CompositeDescriptor.create(
-								allROICompositeImage,highlightImage, 
-							alphaImageUnderlying, alphaImageHightlight,
-							false, CompositeDescriptor.NO_DESTINATION_ALPHA,null);
-			    sourceOverlay =
-					CompositeDescriptor.create(
-							underlyMergeComposite, highlightMergeComposite,
-						alphaImageUnderlying, alphaImageHightlight,
-						false, CompositeDescriptor.NO_DESTINATION_ALPHA,null);
-
-
-			}
+			sourceOverlay = PlanarImage.wrapRenderedImage(computeComposite(contrastEnhancedUnderlyingImage));
 		}else if(underlyingImage != null){
 			sourceOverlay = PlanarImage.wrapRenderedImage(contrastEnhancedUnderlyingImage);
 		}else if(highlightImage != null && allROICompositeImage == null){
