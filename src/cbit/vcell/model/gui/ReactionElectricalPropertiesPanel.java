@@ -170,7 +170,9 @@ private void connEtoM11(java.awt.event.ItemEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getReactionStep1().setPhysicsOptions(this.getPhysicsOptionFromSelection());
+		if (getReactionStep1()!=null){
+			getReactionStep1().setPhysicsOptions(this.getPhysicsOptionFromSelection());
+		}
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -186,14 +188,10 @@ private void connEtoM11(java.awt.event.ItemEvent arg1) {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM12(java.awt.event.ItemEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
-		getReactionStep1().setPhysicsOptions(this.getPhysicsOptionFromSelection());
-		// user code begin {2}
-		// user code end
+		if (getReactionStep1()!=null){
+			getReactionStep1().setPhysicsOptions(this.getPhysicsOptionFromSelection());
+		}
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		connEtoC5(ivjExc);
 	}
 }

@@ -13,6 +13,8 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.parser.Expression;
@@ -139,15 +141,35 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			durationExpression.bindExpression(BioEvent.this.parameterContext);
 		}
 	}
+	ParameterPolicy parameterPolicy = new ParameterPolicy(){
+
+		public boolean isUserDefined(LocalParameter localParameter) {
+			return (localParameter.getRole() == ROLE_UserDefined);
+		}
+
+		public boolean isExpressionEditable(LocalParameter localParameter) {
+			return true;
+		}
+
+		public boolean isNameEditable(LocalParameter localParameter) {
+			return true;
+		}
+
+		public boolean isUnitEditable(LocalParameter localParameter) {
+			return isUserDefined(localParameter);
+		}
+		
+	};
+	public final static int ROLE_UserDefined = 0;
 	
 	private BioEventNameScope nameScope = new BioEventNameScope();
-	private ParameterContext parameterContext = new ParameterContext(nameScope);
+	private ParameterContext parameterContext = new ParameterContext(nameScope, parameterPolicy);
 	private String name;
 	private Expression triggerExpression = null;
 	private Delay delay = null;
 	private ArrayList<EventAssignment> eventAssignmentList = new ArrayList<EventAssignment>();
 
-	protected transient SimulationContext simulationContext = null;
+	protected SimulationContext simulationContext = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoPropertyChange;
 	

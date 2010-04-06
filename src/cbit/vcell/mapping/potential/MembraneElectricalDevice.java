@@ -1,6 +1,8 @@
 package cbit.vcell.mapping.potential;
 
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 
 /**
@@ -14,23 +16,29 @@ public class MembraneElectricalDevice extends ElectricalDevice {
  * Insert the method's description here.
  * Creation date: (4/7/2004 10:58:47 AM)
  */
-public MembraneElectricalDevice(MembraneMapping argMembraneMapping, cbit.vcell.mapping.MathMapping argMathMapping) {
+public MembraneElectricalDevice(MembraneMapping argMembraneMapping, cbit.vcell.mapping.MathMapping argMathMapping) throws ExpressionException {
 	super("device_"+argMembraneMapping.getMembrane().getName(), argMathMapping);
 	this.membraneMapping = argMembraneMapping;
 
-	ElectricalDevice.ElectricalDeviceParameter parameters[] = new ElectricalDevice.ElectricalDeviceParameter[2];
+	ElectricalDevice.ElectricalDeviceParameter parameters[] = new ElectricalDevice.ElectricalDeviceParameter[3];
 
 	parameters[0] = new ElectricalDeviceParameter(
-							DefaultNames[ROLE_TotalCurrentDensity],
+							DefaultNames[ROLE_TotalCurrent],
 							null, // (need to calculate)
-							ROLE_TotalCurrentDensity,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+							ROLE_TotalCurrent,
+							cbit.vcell.units.VCUnitDefinition.UNIT_pA);
 
     parameters[1] = new ElectricalDeviceParameter(
-						    DefaultNames[ROLE_TransmembraneCurrentDensity],
+						    DefaultNames[ROLE_TransmembraneCurrent],
 							null, // given
-							ROLE_TransmembraneCurrentDensity,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+							ROLE_TransmembraneCurrent,
+							cbit.vcell.units.VCUnitDefinition.UNIT_pA);
+    
+	parameters[2] = new ElectricalDeviceParameter(
+							DefaultNames[ROLE_Capacitance],
+							Expression.mult(new Expression(membraneMapping.getSpecificCapacitanceParameter(),mathMapping.getNameScope()), new Expression(membraneMapping.getSizeParameter(),mathMapping.getNameScope())), // given
+							ROLE_Capacitance,
+							cbit.vcell.units.VCUnitDefinition.UNIT_pF);
 
 	setParameters(parameters);
 }
@@ -47,8 +55,8 @@ public boolean getCalculateVoltage() {
  * Creation date: (4/7/2004 2:57:26 PM)
  * @return java.lang.String
  */
-public SymbolTableEntry getCapacitanceSymbol() {
-	return membraneMapping.getSpecificCapacitanceParameter();
+public SymbolTableEntry getCapacitanceParameter() {
+	return getParameterFromRole(ROLE_Capacitance);
 }
 /**
  * Insert the method's description here.

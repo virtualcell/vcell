@@ -285,18 +285,15 @@ public SimulationContext(SimulationContext simulationContext, boolean arg_isStoc
 	}
 	this.fieldElectricalStimuli = (ElectricalStimulus[])simulationContext.getElectricalStimuli().clone();
 	for (int i = 0; i < fieldElectricalStimuli.length; i++){
-		if (fieldElectricalStimuli[i] instanceof CurrentClampStimulus){
-			CurrentClampStimulus otherStimulus = (CurrentClampStimulus)fieldElectricalStimuli[i];
-			fieldElectricalStimuli[i] = new CurrentClampStimulus(
-												new Electrode(otherStimulus.getElectrode()),
-												otherStimulus.getName(),
-												new Expression(otherStimulus.getCurrentParameter().getExpression()),this);
+		if (fieldElectricalStimuli[i] instanceof TotalCurrentClampStimulus){
+			TotalCurrentClampStimulus otherStimulus = (TotalCurrentClampStimulus)fieldElectricalStimuli[i];
+			fieldElectricalStimuli[i] = new TotalCurrentClampStimulus(otherStimulus,this);
+		}else if (fieldElectricalStimuli[i] instanceof CurrentDensityClampStimulus){
+			CurrentDensityClampStimulus otherStimulus = (CurrentDensityClampStimulus)fieldElectricalStimuli[i];
+			fieldElectricalStimuli[i] = new CurrentDensityClampStimulus(otherStimulus,this);
 		}else if (fieldElectricalStimuli[i] instanceof VoltageClampStimulus){
 			VoltageClampStimulus otherStimulus = (VoltageClampStimulus)fieldElectricalStimuli[i];
-			fieldElectricalStimuli[i] = new VoltageClampStimulus(
-												new Electrode(otherStimulus.getElectrode()),
-												otherStimulus.getName(),
-												new Expression(otherStimulus.getVoltageParameter().getExpression()),this);
+			fieldElectricalStimuli[i] = new VoltageClampStimulus(otherStimulus,this);
 		}else{
 			throw new RuntimeException("");
 		}
@@ -888,7 +885,7 @@ public Parameter[] getAllParameters(){
 	}
 	ElectricalStimulus[] electricalStimulusArr = getElectricalStimuli();
 	for(int i=0;i<electricalStimulusArr.length;i+= 1){
-		allParameters.addAll(Arrays.asList(electricalStimulusArr[i].getElectricalStimulusParameters()));
+		allParameters.addAll(Arrays.asList(electricalStimulusArr[i].getLocalParameters()));
 	}
 	Parameter[] parameterArr = getSimulationContextParameters();
 	allParameters.addAll(Arrays.asList(parameterArr));

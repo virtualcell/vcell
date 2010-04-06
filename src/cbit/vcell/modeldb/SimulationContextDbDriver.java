@@ -26,7 +26,7 @@ import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.CurrentClampStimulus;
+import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
@@ -37,6 +37,7 @@ import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.BoundaryConditionType;
@@ -380,9 +381,15 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 					//
 					Electrode groundElectrode = new Electrode((Feature)theStructure,new org.vcell.util.Coordinate(posX,posY,posZ));
 					simContext.setGroundElectrode(groundElectrode);
-				}else if (stimulusType == StimulusTable.CURRENT_CLAMP_STIMULUS){
+				}else if (stimulusType == StimulusTable.TOTALCURRENT_CLAMP_STIMULUS){
 					Electrode electrode = new Electrode((Feature)theStructure,new org.vcell.util.Coordinate(posX,posY,posZ));
-					CurrentClampStimulus stimulus = new CurrentClampStimulus(electrode,name,exp,simContext);
+					TotalCurrentClampStimulus stimulus = new TotalCurrentClampStimulus(electrode,name,exp,simContext);
+					stimulus.parameterVCMLSet(paramsCST);
+					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])org.vcell.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
+					simContext.setElectricalStimuli(newStimuli);
+				}else if (stimulusType == StimulusTable.CURRENTDENSITY_CLAMP_STIMULUS){
+					Electrode electrode = new Electrode((Feature)theStructure,new org.vcell.util.Coordinate(posX,posY,posZ));
+					CurrentDensityClampStimulus stimulus = new CurrentDensityClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
 					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])org.vcell.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
 					simContext.setElectricalStimuli(newStimuli);

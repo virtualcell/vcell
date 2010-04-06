@@ -17,6 +17,7 @@ import org.vcell.util.TokenMangler;
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
@@ -967,10 +968,10 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 		ElectricalDevice electricalDevice = (ElectricalDevice)edParm.getNameScope().getScopedSymbolTable();
 		if (electricalDevice instanceof MembraneElectricalDevice){
 			String nameWithScope = ((MembraneElectricalDevice)electricalDevice).getMembraneMapping().getMembrane().getNameScope().getName();
-			if (edParm.getRole()==ElectricalDevice.ROLE_TotalCurrentDensity){
+			if (edParm.getRole()==ElectricalDevice.ROLE_TotalCurrent){
 				return "I_"+nameWithScope;
 			}
-			if (edParm.getRole()==ElectricalDevice.ROLE_TransmembraneCurrentDensity){
+			if (edParm.getRole()==ElectricalDevice.ROLE_TransmembraneCurrent){
 				return "F_"+nameWithScope;
 			}
 		//}else if (electricalDevice instanceof CurrentClampElectricalDevice) {
@@ -989,13 +990,12 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 			//}
 		}
 	}
-	if (ste instanceof ElectricalStimulus.ElectricalStimulusParameter){
-		ElectricalStimulus.ElectricalStimulusParameter esParm = (ElectricalStimulus.ElectricalStimulusParameter)ste;
-		ElectricalStimulus electricalStimulus = (ElectricalStimulus)esParm.getNameScope().getScopedSymbolTable();
-		String nameWithScope = electricalStimulus.getNameScope().getName();
-		if (esParm.getRole()==ElectricalStimulus.ROLE_Current){
+	if (ste instanceof LocalParameter && ((LocalParameter)ste).getNameScope() instanceof ElectricalStimulus.ElectricalStimulusNameScope){
+		LocalParameter esParm = (LocalParameter)ste;
+		String nameWithScope = esParm.getNameScope().getName();
+		if (esParm.getRole()==ElectricalStimulus.ROLE_TotalCurrent){
 			return "I_"+nameWithScope;
-		} else if (esParm.getRole()==ElectricalDevice.ROLE_TransmembraneCurrentDensity){
+		} else if (esParm.getRole()==ElectricalStimulus.ROLE_Voltage){
 			return "V_"+nameWithScope;
 		}
 	}
@@ -1667,17 +1667,22 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				Parameter specificCapacitanceParm = memMapping.getParameterFromRole(MembraneMapping.ROLE_SpecificCapacitance);
 				varHash.addVariable(new Constant(getMathSymbol(specificCapacitanceParm,memMapping),getIdentifierSubstitutions(specificCapacitanceParm.getExpression(),specificCapacitanceParm.getUnitDefinition(),memMapping)));
 
-				ElectricalDevice.ElectricalDeviceParameter transmembraneCurrentDensityParm = membraneElectricalDevice.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrentDensity);
-				ElectricalDevice.ElectricalDeviceParameter totalCurrentDensityParm = membraneElectricalDevice.getParameterFromRole(ElectricalDevice.ROLE_TotalCurrentDensity);
+				ElectricalDevice.ElectricalDeviceParameter transmembraneCurrentParm = membraneElectricalDevice.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrent);
+				ElectricalDevice.ElectricalDeviceParameter totalCurrentParm = membraneElectricalDevice.getParameterFromRole(ElectricalDevice.ROLE_TotalCurrent);
+				ElectricalDevice.ElectricalDeviceParameter capacitanceParm = membraneElectricalDevice.getParameterFromRole(ElectricalDevice.ROLE_Capacitance);
 
-				if (totalCurrentDensityParm!=null && /* totalCurrentDensityParm.getExpression()!=null && */ memMapping.getCalculateVoltage()){
-					Expression totalCurrentDensityExp = (totalCurrentDensityParm.getExpression()!=null)?(totalCurrentDensityParm.getExpression()):(new Expression(0.0));
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentDensityParm,membraneElectricalDevice.getMembraneMapping()),
-													getIdentifierSubstitutions(totalCurrentDensityExp,totalCurrentDensityParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
+				if (totalCurrentParm!=null && /* totalCurrentDensityParm.getExpression()!=null && */ memMapping.getCalculateVoltage()){
+					Expression totalCurrentDensityExp = (totalCurrentParm.getExpression()!=null)?(totalCurrentParm.getExpression()):(new Expression(0.0));
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentParm,membraneElectricalDevice.getMembraneMapping()),
+													getIdentifierSubstitutions(totalCurrentDensityExp,totalCurrentParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
 				}
-				if (transmembraneCurrentDensityParm!=null && transmembraneCurrentDensityParm.getExpression()!=null && memMapping.getCalculateVoltage()){
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(transmembraneCurrentDensityParm,membraneElectricalDevice.getMembraneMapping()),
-													getIdentifierSubstitutions(transmembraneCurrentDensityParm.getExpression(),transmembraneCurrentDensityParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
+				if (transmembraneCurrentParm!=null && transmembraneCurrentParm.getExpression()!=null && memMapping.getCalculateVoltage()){
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(transmembraneCurrentParm,membraneElectricalDevice.getMembraneMapping()),
+													getIdentifierSubstitutions(transmembraneCurrentParm.getExpression(),transmembraneCurrentParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
+				}
+				if (capacitanceParm!=null && capacitanceParm.getExpression()!=null && memMapping.getCalculateVoltage()){
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,membraneElectricalDevice.getMembraneMapping()),
+													getIdentifierSubstitutions(capacitanceParm.getExpression(),capacitanceParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
 				}
 				//		
 				//
@@ -1698,12 +1703,12 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}else if (devices[j] instanceof CurrentClampElectricalDevice){
 				CurrentClampElectricalDevice currentClampDevice = (CurrentClampElectricalDevice)devices[j];
 				// total current = current source (no capacitance)
-				Parameter totalCurrentDensityParm = currentClampDevice.getParameterFromRole(CurrentClampElectricalDevice.ROLE_TotalCurrentDensity);
-				Parameter currentDensityParm = currentClampDevice.getParameterFromRole(CurrentClampElectricalDevice.ROLE_TransmembraneCurrentDensity);
+				Parameter totalCurrentParm = currentClampDevice.getParameterFromRole(CurrentClampElectricalDevice.ROLE_TotalCurrent);
+				Parameter currentParm = currentClampDevice.getParameterFromRole(CurrentClampElectricalDevice.ROLE_TransmembraneCurrent);
 				//Parameter dependentVoltage = currentClampDevice.getCurrentClampStimulus().getVoltageParameter();
 				
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentDensityParm,null),getIdentifierSubstitutions(totalCurrentDensityParm.getExpression(),totalCurrentDensityParm.getUnitDefinition(),null)));
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(currentDensityParm,null),getIdentifierSubstitutions(currentDensityParm.getExpression(),currentDensityParm.getUnitDefinition(),null)));
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentParm,null),getIdentifierSubstitutions(totalCurrentParm.getExpression(),totalCurrentParm.getUnitDefinition(),null)));
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(currentParm,null),getIdentifierSubstitutions(currentParm.getExpression(),currentParm.getUnitDefinition(),null)));
 				//varHash.addVariable(newFunctionOrConstant(getMathSymbol(dependentVoltage,null),getIdentifierSubstitutions(currentClampDevice.getDependentVoltageExpression(),dependentVoltage.getUnitDefinition(),null)));
 
 				//
@@ -1711,17 +1716,19 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				//
 				ElectricalDevice.ElectricalDeviceParameter[] parameters = currentClampDevice.getParameters();
 				for (int k = 0; k < parameters.length; k++){
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[k],null),getIdentifierSubstitutions(parameters[k].getExpression(),parameters[k].getUnitDefinition(),null)));
+					if (parameters[k].getExpression()!=null){ // guards against voltage parameters that are "variable".
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[k],null),getIdentifierSubstitutions(parameters[k].getExpression(),parameters[k].getUnitDefinition(),null)));
+					}
 				}
 			}else if (devices[j] instanceof VoltageClampElectricalDevice){
 				VoltageClampElectricalDevice voltageClampDevice = (VoltageClampElectricalDevice)devices[j];
 				// total current = current source (no capacitance)
-				Parameter totalCurrent = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_TotalCurrentDensity);
-				Parameter totalCurrentDensityParm = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_TotalCurrentDensity);
+				Parameter totalCurrent = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_TotalCurrent);
+				Parameter totalCurrentParm = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_TotalCurrent);
 				Parameter voltageParm = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_Voltage);
 				
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrent,null),getIdentifierSubstitutions(totalCurrent.getExpression(),totalCurrent.getUnitDefinition(),null)));
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentDensityParm,null),getIdentifierSubstitutions(totalCurrentDensityParm.getExpression(),totalCurrentDensityParm.getUnitDefinition(),null)));
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentParm,null),getIdentifierSubstitutions(totalCurrentParm.getExpression(),totalCurrentParm.getUnitDefinition(),null)));
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(voltageParm,null),getIdentifierSubstitutions(voltageParm.getExpression(),voltageParm.getUnitDefinition(),null)));
 
 				//
@@ -1932,36 +1939,66 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	for (int i=0;i<structureMappings.length;i++){
 		StructureMapping sm = structureMappings[i];
 		if (sm instanceof MembraneMapping && !(((MembraneMapping)sm).getResolved(simContext))){
+			MembraneMapping mm = (MembraneMapping)sm;
 			Parameter parm = ((MembraneMapping)sm).getVolumeFractionParameter();
-			try {
-				double value = parm.getExpression().evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(parm,sm),new Expression(value)));
-			}catch (ExpressionException e){
-				//varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
-				e.printStackTrace(System.out);
-				throw new MappingException("Volume Fraction of membrane:"+((MembraneMapping)sm).getNameScope().getName()+" cannot be evaluated as constant.");
-			}	
-			parm = ((MembraneMapping)sm).getSurfaceToVolumeParameter();
-			try {
-				double value = parm.getExpression().evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(parm,sm),new Expression(value)));
-			}catch (ExpressionException e){
-				//varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
-				e.printStackTrace(System.out);
-				throw new MappingException("Surface to volume ratio of membrane:"+((MembraneMapping)sm).getNameScope().getName()+" cannot be evaluated as constant.");
+			if (parm.getExpression()==null){
+				throw new MappingException("volume fraction not specified for feature '"+mm.getMembrane().getInsideFeature().getName()+"', please refer to Structure Mapping in Application '"+simContext.getName()+"'");
 			}
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(), VCUnitDefinition.UNIT_DIMENSIONLESS, sm)));
+			parm = mm.getSurfaceToVolumeParameter();
+			if (parm.getExpression()==null){
+				throw new MappingException("surface to volume ratio not specified for membrane '"+mm.getMembrane().getName()+"', please refer to Structure Mapping in Application '"+simContext.getName()+"'");
+			}
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(), VCUnitDefinition.UNIT_per_um, sm)));
 		}
-		if (simContext.getGeometry().getDimension()==0){
-			StructureMappingParameter sizeParm = sm.getSizeParameter();
-			if (sizeParm!=null && sizeParm.getExpression()!=null){
-				try {
-					double value = sizeParm.getExpression().evaluateConstant();
-					varHash.addVariable(new Constant(getMathSymbol(sizeParm,sm),new Expression(value)));
-				}catch (ExpressionException e){
-					//varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
-					e.printStackTrace(System.out);
-					throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.");
+		StructureMappingParameter sizeParm = sm.getSizeParameter();
+		if (sizeParm!=null){
+			if (simContext.getGeometry().getDimension()==0){
+				if (sizeParm.getExpression()!=null){
+					try {
+						double value = sizeParm.getExpression().evaluateConstant();
+						varHash.addVariable(new Constant(getMathSymbol(sizeParm,sm),new Expression(value)));
+					}catch (ExpressionException e){
+						//varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
+						e.printStackTrace(System.out);
+						throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.");
+					}
 				}
+			}else{
+				String compartmentName = null;
+				VCUnitDefinition sizeUnit = null;
+				String sizeFunctionName = null;
+				if (sm instanceof MembraneMapping){
+					MembraneMapping mm = (MembraneMapping)sm;
+					sizeUnit = VCUnitDefinition.UNIT_um2;
+					if (mm.getResolved(simContext)){
+						FeatureMapping fm_inside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getInsideFeature());
+						FeatureMapping fm_outside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getOutsideFeature());
+						compartmentName = fm_inside.getSubVolume().getName()+"_"+fm_outside.getSubVolume().getName();
+						sizeFunctionName = MathDescription.Function_regionArea_current.getFunctionName();
+					}else{
+						FeatureMapping fm_inside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getInsideFeature());
+						FeatureMapping fm_outside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getOutsideFeature());
+						if (fm_inside.getSubVolume()==fm_outside.getSubVolume()){
+							compartmentName = fm_inside.getSubVolume().getName();
+							sizeFunctionName = MathDescription.Function_regionVolume_current.getFunctionName();
+						}else{
+							throw new RuntimeException("unexpected structure mapping for membrane '"+mm.getMembrane().getName()+"'");
+						}
+					}
+				}else if (sm instanceof FeatureMapping){
+					FeatureMapping fm = (FeatureMapping)sm;
+					sizeUnit = VCUnitDefinition.UNIT_um3;
+					compartmentName = fm.getSubVolume().getName();
+					sizeFunctionName = MathDescription.Function_regionVolume_current.getFunctionName();
+				}else{
+					throw new RuntimeException("structure mapping "+sm.getClass().getName()+" not yet supported");
+				}
+				Expression totalVolumeCorrection = sm.getStructureSizeCorrection(simContext);
+				Expression sizeFunctionExpression = Expression.function(sizeFunctionName, new Expression[] {new Expression("'"+compartmentName+"'")} );
+				sizeFunctionExpression.bindExpression(mathDesc);
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm),getIdentifierSubstitutions(Expression.mult(totalVolumeCorrection,sizeFunctionExpression),sizeUnit,sm)));
+
 			}
 		}
 	}

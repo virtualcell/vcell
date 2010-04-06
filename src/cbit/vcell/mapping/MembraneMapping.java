@@ -179,7 +179,18 @@ public StructureMappingParameter getSurfaceToVolumeParameter() {
  * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
-public Expression getTotalVolumeCorrection(SimulationContext simulationContext) throws ExpressionException {
+public Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext) throws ExpressionException {
+	boolean includeKMOLE = true;
+	return getSizeCorrection(simulationContext, includeKMOLE);
+}
+
+@Override
+public Expression getStructureSizeCorrection(SimulationContext simulationContext) throws ExpressionException {
+	boolean includeKMOLE = false;
+	return getSizeCorrection(simulationContext, includeKMOLE);
+}
+
+private Expression getSizeCorrection(SimulationContext simulationContext, boolean includeKMOLE) throws ExpressionException {
 	if (simulationContext==null){
 		throw new RuntimeException("MembraneMapping.getTotalVolumeCorrection(): simulationContext is null");
 	}
@@ -197,7 +208,12 @@ public Expression getTotalVolumeCorrection(SimulationContext simulationContext) 
 		Expression surfaceToVolParameter = new Expression(getSurfaceToVolumeParameter(), nameScope);
 		Expression volFractionParameter = new Expression(getVolumeFractionParameter(), nameScope);
 		Expression kmole = new Expression(ReservedSymbol.KMOLE, nameScope);
-		Expression exp = Expression.mult(surfaceToVolParameter, volFractionParameter, kmole);
+		Expression exp = null;
+		if (includeKMOLE){
+			exp = Expression.mult(surfaceToVolParameter, volFractionParameter, kmole);
+		}else{
+			exp = Expression.mult(surfaceToVolParameter, volFractionParameter);
+		}
 		//
 		// for all parent volumes (that have distributed membranes), multiply each volume fraction
 		//

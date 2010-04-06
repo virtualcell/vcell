@@ -154,7 +154,9 @@ public class XMLTags {
     //End-Simulation
 
     // Begin electrical properties
-    public final static String CurrentClampTag = "Current";
+    public final static String TotalCurrentClampTag = "TotalCurrent";
+    public final static String CurrentDensityClampTag = "CurrentDensity";
+    public final static String CurrentDensityClampTag_oldName = "Current";
     public final static String VoltageClampTag = "Voltage";
     public final static String ElectrodeTag = "Electrode";
     public final static String ClampTag = "Clamp";
@@ -377,6 +379,10 @@ public class XMLTags {
 
     public static final String ParamRoleAttrTag = "Role";
     public static final String ParamRoleUserDefinedTag = "user defined";
+    public static final String ParamRolePotentialDifferenceTag = "potential difference";
+    public static final String ParamRoleTotalCurrentTag = "current";
+    public static final String ParamRoleTotalCurrentDensityOldNameTag = "total current";
+    public static final String ParamRoleTotalCurrentDensityTag = "current density";
 	public static final String ParamRoleReactionRateTag = "reaction rate";
 	public static final String ParamRoleInwardCurrentTag = "inward current density";
 //	public static final String ParamRoleForwardRateTag = "forward rate constant";

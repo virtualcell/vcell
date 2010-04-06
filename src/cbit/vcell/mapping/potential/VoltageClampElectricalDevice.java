@@ -3,6 +3,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 /**
  * Insert the type's description here.
  * Creation date: (4/7/2004 11:00:15 AM)
@@ -22,18 +23,18 @@ public VoltageClampElectricalDevice(cbit.vcell.mapping.VoltageClampStimulus argV
 	ElectricalDevice.ElectricalDeviceParameter parameters[] = new ElectricalDevice.ElectricalDeviceParameter[3];
 	
 	parameters[0] = new ElectricalDeviceParameter(
-							DefaultNames[ROLE_TotalCurrentDensity],
-							new Expression(DefaultNames[ROLE_TransmembraneCurrentDensity]),
-							ROLE_TotalCurrentDensity,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+							DefaultNames[ROLE_TotalCurrent],
+							new Expression(DefaultNames[ROLE_TransmembraneCurrent]),
+							ROLE_TotalCurrent,
+							cbit.vcell.units.VCUnitDefinition.UNIT_pA);
 	
 	parameters[1] = new ElectricalDeviceParameter(
-							DefaultNames[ROLE_TransmembraneCurrentDensity],
+							DefaultNames[ROLE_TransmembraneCurrent],
 							null,
-							ROLE_TransmembraneCurrentDensity,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+							ROLE_TransmembraneCurrent,
+							cbit.vcell.units.VCUnitDefinition.UNIT_pA);
 
-	ElectricalStimulus.ElectricalStimulusParameter voltageParm = voltageClampStimulus.getVoltageParameter();
+	LocalParameter voltageParm = voltageClampStimulus.getVoltageParameter();
 	parameters[2] = new ElectricalDeviceParameter(
 							voltageParm.getName(),
 							new Expression(voltageParm.getExpression()),
@@ -42,7 +43,7 @@ public VoltageClampElectricalDevice(cbit.vcell.mapping.VoltageClampStimulus argV
 	//
 	// add any user-defined parameters
 	//
-	cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameter[] stimulusParameters = voltageClampStimulus.getElectricalStimulusParameters();
+	LocalParameter[] stimulusParameters = voltageClampStimulus.getLocalParameters();
 	for (int i = 0;stimulusParameters!=null && i <stimulusParameters.length; i++){
 		int role = stimulusParameters[i].getRole();
 		if (role==ElectricalStimulus.ROLE_UserDefined){

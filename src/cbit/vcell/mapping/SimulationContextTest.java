@@ -111,7 +111,7 @@ public static SimulationContext getExampleElectrical(int dimension) throws Excep
 	Expression exp = new Expression("0.1*(t>0.01 && t<0.05)");
 	String stimulusName = "Electrode";
 	cbit.vcell.mapping.VoltageClampStimulus voltstimulus = new cbit.vcell.mapping.VoltageClampStimulus(newelectrode, stimulusName, exp, simContext);
-	cbit.vcell.mapping.CurrentClampStimulus currentstimulus = new cbit.vcell.mapping.CurrentClampStimulus(newelectrode, stimulusName, exp, simContext);
+	cbit.vcell.mapping.CurrentDensityClampStimulus currentstimulus = new cbit.vcell.mapping.CurrentDensityClampStimulus(newelectrode, stimulusName, exp, simContext);
 
 	// simContext.setElectricalStimuli(new cbit.vcell.mapping.ElectricalStimulus[] {currentstimulus});
 	simContext.setElectricalStimuli(new cbit.vcell.mapping.ElectricalStimulus[] {voltstimulus});

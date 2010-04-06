@@ -94,6 +94,8 @@ public class VCMODL {
 	public final static String Irreversible					   = "Irreversible";
 	public final static String ElectricalStimulus			   = "ElectricalStimulus";
 	public final static String ES_Role_Voltage			   	   = "Voltage";
-	public final static String ES_Role_Current			  	   = "Current";
+	public final static String ES_Role_Current_deprecated   = "Current";
+	public final static String ES_Role_CurrentDensity	  	   = "CurrentDensity";
+	public final static String ES_Role_TotalCurrent		  	   = "TotalCurrent";
 	public final static String ES_Role_UserDefined			   = "UserDefined";
 }

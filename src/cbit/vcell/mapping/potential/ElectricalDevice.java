@@ -23,16 +23,16 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 	private Expression dependentVoltageExpression = null;
 
 	public static final int ROLE_TotalCurrent					= 0;
-	public static final int ROLE_TotalCurrentDensity			= 1;
-	public static final int ROLE_TransmembraneCurrentDensity	= 2;
-	public static final int ROLE_Voltage						= 3;
+	public static final int ROLE_TransmembraneCurrent			= 1;
+	public static final int ROLE_Voltage						= 2;
+	public static final int ROLE_Capacitance					= 3;
 	public static final int ROLE_UserDefined					= 4;
 	public static final int NUM_ROLES		= 5;
 	public static final String DefaultNames[] = {
-		"LumpedI",
 		"I",
 		"F",
 		"V",
+		"Capacitance",
 		null
 	};
 	private ElectricalDevice.ElectricalDeviceParameter[] fieldParameters = null;
@@ -225,8 +225,8 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
  * Creation date: (2/12/2002 2:15:22 PM)
  * @return java.lang.String
  */
-public final SymbolTableEntry getTotalCurrentDensitySymbol() {
-	return getParameterFromRole(ROLE_TotalCurrentDensity);
+public final SymbolTableEntry getTotalCurrentSymbol() {
+	return getParameterFromRole(ROLE_TotalCurrent);
 }
 
 
@@ -338,7 +338,7 @@ public abstract boolean getResolved();
  * @return java.lang.String
  */
 public final SymbolTableEntry getSourceSymbol() {
-	return getParameterFromRole(ROLE_TransmembraneCurrentDensity);
+	return getParameterFromRole(ROLE_TransmembraneCurrent);
 }
 
 
