@@ -8,7 +8,6 @@ import net.sourceforge.interval.ia_math.IAFunctionDomainException;
 import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.vcell.modelopt.MathSystemHash.Symbol;
 import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 
@@ -2431,7 +2430,7 @@ public Node flatten() throws ExpressionException {
 }
 
 void getFunctionInvocations(java.util.Vector<FunctionInvocation> v, FunctionFilter filter) {
-	if (filter==null || filter.accept(getFunction())){
+	if (filter==null || filter.accept(getName())){
 		FunctionInvocation functionInvocation = new FunctionInvocation(this);
 		if (!v.contains(functionInvocation)){
 			v.add(functionInvocation);

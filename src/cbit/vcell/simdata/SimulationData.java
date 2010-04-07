@@ -64,6 +64,8 @@ public class SimulationData extends VCData {
 	private String odeIdentifier = null;
 
 	private DataMoverThread dataMover = null;
+
+	private HashMap<String, SymbolTableFunctionEntry> functionHashTable = null;
 	
 	public class DataMoverThread implements Runnable {
 		private File serverDirectory = null;
@@ -352,6 +354,7 @@ public AnnotatedFunction simplifyFunction(AnnotatedFunction function) throws Exp
 	try {
 		simpleFunction = (AnnotatedFunction)BeanUtils.cloneSerializable(function);
 		Expression exp = simpleFunction.getExpression();
+		exp = MathFunctionDefinitions.substituteSizeFunctions(exp, function.getFunctionType().getVariableDomain());
 		exp.bindExpression(this);
 		String[] symbols = exp.getSymbols();
 		if (symbols != null) {
@@ -519,7 +522,24 @@ public SymbolTableEntry getEntry(String identifier) {
 		}
 	}
 	
+	entry = getFunctionHashTable().get(identifier);
+	if (entry!=null){
+		return entry;
+	}
+	
 	return null;
+}
+
+private HashMap<String, SymbolTableFunctionEntry> getFunctionHashTable() {
+	if (functionHashTable == null) {
+		functionHashTable = new HashMap<String, SymbolTableFunctionEntry>();
+		functionHashTable.put(MathFunctionDefinitions.Function_regionArea_indexed.getName(),MathFunctionDefinitions.Function_regionArea_indexed);
+		functionHashTable.put(MathFunctionDefinitions.Function_regionArea_current.getName(),MathFunctionDefinitions.Function_regionArea_current);
+		functionHashTable.put(MathFunctionDefinitions.Function_regionVolume_indexed.getName(),MathFunctionDefinitions.Function_regionVolume_indexed);
+		functionHashTable.put(MathFunctionDefinitions.Function_regionVolume_current.getName(),MathFunctionDefinitions.Function_regionVolume_current);
+		functionHashTable.put(MathFunctionDefinitions.Function_field.getName(),MathFunctionDefinitions.Function_field);
+	}
+	return functionHashTable;
 }
 
 
@@ -1319,6 +1339,7 @@ private void readFunctions() throws FileNotFoundException, IOException {
 		try {
 			addFunctionToList(annotatedFunction);
 		} catch (ExpressionException e) {
+			e.printStackTrace(System.out);
 			throw new RuntimeException("Could not add function "+annotatedFunction.getName()+" to annotatedFunctionList");
 		}
 	}

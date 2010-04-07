@@ -38,6 +38,7 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionEquation;
 import cbit.vcell.math.MembraneRegionVariable;
@@ -1975,13 +1976,13 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						FeatureMapping fm_inside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getInsideFeature());
 						FeatureMapping fm_outside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getOutsideFeature());
 						compartmentName = fm_inside.getSubVolume().getName()+"_"+fm_outside.getSubVolume().getName();
-						sizeFunctionName = MathDescription.Function_regionArea_current.getFunctionName();
+						sizeFunctionName = MathFunctionDefinitions.Function_regionArea_current.getFunctionName();
 					}else{
 						FeatureMapping fm_inside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getInsideFeature());
 						FeatureMapping fm_outside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getOutsideFeature());
 						if (fm_inside.getSubVolume()==fm_outside.getSubVolume()){
 							compartmentName = fm_inside.getSubVolume().getName();
-							sizeFunctionName = MathDescription.Function_regionVolume_current.getFunctionName();
+							sizeFunctionName = MathFunctionDefinitions.Function_regionVolume_current.getFunctionName();
 						}else{
 							throw new RuntimeException("unexpected structure mapping for membrane '"+mm.getMembrane().getName()+"'");
 						}
@@ -1990,7 +1991,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					FeatureMapping fm = (FeatureMapping)sm;
 					sizeUnit = VCUnitDefinition.UNIT_um3;
 					compartmentName = fm.getSubVolume().getName();
-					sizeFunctionName = MathDescription.Function_regionVolume_current.getFunctionName();
+					sizeFunctionName = MathFunctionDefinitions.Function_regionVolume_current.getFunctionName();
 				}else{
 					throw new RuntimeException("structure mapping "+sm.getClass().getName()+" not yet supported");
 				}

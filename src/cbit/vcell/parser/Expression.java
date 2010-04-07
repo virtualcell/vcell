@@ -312,7 +312,7 @@ public boolean hasGradient(){
 }
 
 public interface FunctionFilter {
-	boolean accept(int functionId);
+	boolean accept(String functionName);
 }
 
 public FunctionInvocation[] getFunctionInvocations(FunctionFilter filter) {  // null selects all functions.

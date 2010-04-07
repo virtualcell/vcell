@@ -68,7 +68,8 @@ private void initializeParameters() throws ExpressionException {
 			membrane = ((Membrane)feature2.getParentStructure());
 		}
 		if (membrane==null){
-			throw new RuntimeException("unable to determine single membrane to convert current density into current");
+			throw new RuntimeException("current clamp based on current density crosses multiple membranes, unable to " 
+				+ "determine single membrane to convert current density into current in Application '" + mathMapping.getSimulationContext().getName() + "'.");
 		}
 		MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
 		StructureMappingParameter sizeParameter = membraneMapping.getSizeParameter();

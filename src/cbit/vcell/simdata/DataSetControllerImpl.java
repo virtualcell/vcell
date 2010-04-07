@@ -60,20 +60,21 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.Variable;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VariableSymbolTable;
+import cbit.vcell.simdata.VariableType.VariableDomain;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.simdata.gui.SpatialSelectionContour;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.solver.DataProcessingOutput;
-import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -707,9 +708,12 @@ private SimDataBlock evaluateFunction(
 	AnnotatedFunction function, 
 	double time)
 	throws ExpressionException, DataAccessException, IOException, MathException {
-
+ 
 	Expression exp = fieldFunctionSubstitution(vcdID, function);
-		
+
+	exp = MathFunctionDefinitions.substituteSizeFunctions(exp, function.getFunctionType().getVariableDomain());
+	exp.bindExpression(simData);
+	
 	//
 	// get Dependent datasets
 	//
@@ -1682,6 +1686,7 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 	throws ExpressionException, DataAccessException, IOException, MathException{
 	
 	SimResampleInfoProvider simResampleInfoProvider = null;
+	Expression origExpression = new Expression(function.getExpression());
 	
 	if(vcdID instanceof VCSimulationDataIdentifier){
 		simResampleInfoProvider = ((VCSimulationDataIdentifier)vcdID);
@@ -1707,10 +1712,9 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 				}
 		};
 	}else{
-		return function.getExpression();
+		return origExpression;
 	}	
 	
-	Expression origExpression = function.getExpression();
 	FieldFunctionArguments[] fieldfuncArgumentsArr = FieldUtilities.getFieldFunctionArguments(origExpression);
 	if(fieldfuncArgumentsArr == null || fieldfuncArgumentsArr.length == 0){
 		return origExpression;
