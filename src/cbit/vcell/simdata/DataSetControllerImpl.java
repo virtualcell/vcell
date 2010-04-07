@@ -50,6 +50,7 @@ import cbit.plot.PlotData;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.MessageEvent;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.field.FieldDataDBOperationDriver;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -264,11 +265,11 @@ public class DataSetControllerImpl implements SimDataConstants {
 			
 			progressListener = argProgressListener;
 		}
-		public double evaluateTimeFunction(int timeIndex,int dataIndex)
+		public double evaluateTimeFunction(OutputContext outputContext,int timeIndex,int dataIndex)
 								throws ExpressionException,DataAccessException,IOException{
 			if(valuesOverTime == null){
 				valuesOverTime =
-					simData.getSimDataTimeSeries(this.geExpandedSimFileVarNames(),this.getExpandedFunctionIndexes(),wantsTheseTimes,progressListener);
+					simData.getSimDataTimeSeries(outputContext,this.geExpandedSimFileVarNames(),this.getExpandedFunctionIndexes(),wantsTheseTimes,progressListener);
 			}
 			double[] argsD = getArgBlock(valuesOverTime[timeIndex],dataIndex);
 			return functionIndexesArr[dataIndex].evaluateFunction(dataSetTimes[timeIndex],argsD);
@@ -403,53 +404,17 @@ public void addDataJobListener(DataJobListener newListener) {
 
 
 /**
- * This method was created by a SmartGuide.
- * @return double[]
- */
-public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions,boolean[] bReplaceArr) throws DataAccessException, ExpressionException {
-	try {
-		VCData simData = getVCData(vcdID);
-		for (int i=0;i<functions.length;i++){
-			if(functions[i].getName().toUpperCase().endsWith("_INSIDE") || 
-				functions[i].getName().toUpperCase().endsWith("_OUTSIDE")){
-				throw new DataAccessException("Function names cannot end with text '_INSIDE' or '_OUTSIDE'");
-			}
-			boolean isGrad = functions[i].getExpression().hasGradient();
-			if(isGrad && !functions[i].getFunctionType().equals(VariableType.VOLUME)){
-				throw new DataAccessException("Gradient function is not implemented for datatype "+functions[i].getFunctionType().getTypeName());
-			}
-//			if(vcdID instanceof VCSimulationDataIdentifier &&
-//				functions[i].isUserDefined()){
-//				FieldFunctionArguments[] fieldFuncArgumentsArr =
-//					functions[i].getExpression().getFieldFunctionArguments();
-//				//Check that this sim has extDataids for these fieldfuncargs
-//				//This will throw an Exception is there are no matches
-//				if(fieldFuncArgumentsArr != null && fieldFuncArgumentsArr.length>0)
-//					getFieldDataIdentifierSpecs(
-//							fieldFuncArgumentsArr,
-//							(VCSimulationDataIdentifier)vcdID);
-//			}
-			simData.addFunction(functions[i],bReplaceArr[i]);
-		}
-	}catch (IOException e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (3/20/2006 3:37:39 PM)
  */
-private SpatialStatsInfo calcSpatialStatsInfo(TimeSeriesJobSpec timeSeriesJobSpec,VCDataIdentifier vcdID) throws Exception{
+private SpatialStatsInfo calcSpatialStatsInfo(OutputContext outputContext,TimeSeriesJobSpec timeSeriesJobSpec,VCDataIdentifier vcdID) throws Exception{
 
 	SpatialStatsInfo ssi = new SpatialStatsInfo();
 	//Determine weights for indices of each variable if we are going to be calculating spatial statistics
 	ssi.bWeightsValid = true;
     //if(timeSeriesJobSpec.isCalcSpaceStats()){
 	    CartesianMesh myMesh = getMesh(vcdID);
-	    DataIdentifier[] dataIDs = getDataIdentifiers(vcdID);
+	    DataIdentifier[] dataIDs = getDataIdentifiers(outputContext,vcdID);
 	    ssi.spaceWeight = new double[timeSeriesJobSpec.getVariableNames().length][];
 	    ssi.totalSpace = new double[timeSeriesJobSpec.getVariableNames().length];
 	    for(int i=0;i<timeSeriesJobSpec.getVariableNames().length;i+= 1){
@@ -703,13 +668,15 @@ private VolumeIndexNearFar interpolateFindNearFarIndex(CartesianMesh mesh,int me
  * @param time double
  */
 private SimDataBlock evaluateFunction(
+		OutputContext outputContext,
 	final VCDataIdentifier vcdID, 
 	VCData simData, 
 	AnnotatedFunction function, 
 	double time)
 	throws ExpressionException, DataAccessException, IOException, MathException {
  
-	Expression exp = fieldFunctionSubstitution(vcdID, function);
+	Expression exp = fieldFunctionSubstitution(outputContext, vcdID, function);
+		
 
 	exp = MathFunctionDefinitions.substituteSizeFunctions(exp, function.getFunctionType().getVariableDomain());
 	exp.bindExpression(simData);
@@ -735,7 +702,7 @@ private SimDataBlock evaluateFunction(
 			dsi.setIndex(varIndex++);
 			if (dsi.getName().endsWith("_OUTSIDE") || dsi.getName().endsWith("_INSIDE")){
 				String volVarName = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
-				SimDataBlock simDataBlock = getSimDataBlock(vcdID, volVarName, time);
+				SimDataBlock simDataBlock = getSimDataBlock(outputContext,vcdID, volVarName, time);
 				lastModified = simDataBlock.getPDEDataInfo().getTimeStamp();
 				//
 				// if inside/outside volume element dependent, then can only be a membrane type 
@@ -752,7 +719,7 @@ private SimDataBlock evaluateFunction(
 				}
 				dataSetList.addElement(simDataBlock);
 			}else{	
-				SimDataBlock simDataBlock = getSimDataBlock(vcdID, dsi.getName(), time);
+				SimDataBlock simDataBlock = getSimDataBlock(outputContext,vcdID, dsi.getName(), time);
 				if (variableType==null || simDataBlock.getVariableType().isExpansionOf(variableType)) {
 					lastModified = simDataBlock.getPDEDataInfo().getTimeStamp();
 					dataLength = simDataBlock.getData().length;
@@ -1467,7 +1434,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 				throw new Exception("Field Data Op 'INFO' has no data identifier");
 			}
 			fdor.dataIdentifierArr =
-				getDataIdentifiers(sourceSimDataID);
+				getDataIdentifiers(null,sourceSimDataID);
 			CartesianMesh mesh = getMesh(sourceSimDataID);
 			fdor.extent = mesh.getExtent();
 			fdor.origin = mesh.getOrigin();
@@ -1682,7 +1649,7 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 }
 
 
-private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,AnnotatedFunction function)
+private Expression fieldFunctionSubstitution(OutputContext outputContext,final VCDataIdentifier vcdID,AnnotatedFunction function)
 	throws ExpressionException, DataAccessException, IOException, MathException{
 	
 	SimResampleInfoProvider simResampleInfoProvider = null;
@@ -1766,6 +1733,7 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 		boolean[] bResample = new boolean[fieldDataIdentifierSpecArr.length];
 		Arrays.fill(bResample, true);
 		writeFieldFunctionData(
+				outputContext,
 				fieldDataIdentifierSpecArr,
 				bResample,
 				getMesh(simResampleInfoProvider),
@@ -1862,20 +1830,20 @@ private void fireDataJobMessage_private(DataJobEvent event) {
  * This method was created by a SmartGuide.
  * @return java.lang.String[]
  */
-public DataIdentifier[] getDataIdentifiers(VCDataIdentifier vcdID) throws DataAccessException, IOException, FileNotFoundException {
+public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataIdentifier vcdID) throws DataAccessException, IOException, FileNotFoundException {
 	log.print("DataSetControllerImpl.getDataIdentifiers("+vcdID.getID()+")");
 
 	VCData simData = getVCData(vcdID);
 	//filter names with _INSIDE and _OUTSIDE
-	DataIdentifier[] dataIdentifiersIncludingOutsideAndInside = simData.getVarAndFunctionDataIdentifiers();
+	DataIdentifier[] dataIdentifiersIncludingOutsideAndInside = simData.getVarAndFunctionDataIdentifiers(outputContext);
 	Vector<DataIdentifier> v = new Vector<DataIdentifier>();
 	for (int i = 0; i < dataIdentifiersIncludingOutsideAndInside.length; i++){
 		DataIdentifier di = dataIdentifiersIncludingOutsideAndInside[i];
 		if (!di.getName().endsWith("_INSIDE") && !di.getName().endsWith("_OUTSIDE")) {		
 			if (di.getVariableType() == null || di.getVariableType().equals(VariableType.UNKNOWN)) {
 				if (di.isFunction()) {
-					AnnotatedFunction f = getFunction(vcdID,di.getName());
-					VariableType varType = getVariableTypeForFieldFunction(vcdID, f);
+					AnnotatedFunction f = getFunction(outputContext,vcdID,di.getName());
+					VariableType varType = getVariableTypeForFieldFunction(outputContext,vcdID, f);
 					di = new DataIdentifier(di.getName(), varType, di.isFunction());
 				}
 			}		
@@ -1956,10 +1924,10 @@ FieldFunctionArguments[] fieldFuncArgumentsArr,User user,boolean bForceUpdate) t
 	return fieldDataIdentifierSpecs;
 }
 
-public AnnotatedFunction getFunction(VCDataIdentifier vcdID,String variableName) throws DataAccessException{
+public AnnotatedFunction getFunction(OutputContext outputContext,VCDataIdentifier vcdID,String variableName) throws DataAccessException{
 	try {
 		VCData vcData = getVCData(vcdID);
-		AnnotatedFunction annotatedFunction = vcData.getFunction(variableName);
+		AnnotatedFunction annotatedFunction = vcData.getFunction(outputContext,variableName);
 		checkFieldDataExists(annotatedFunction,vcdID.getOwner());
 		return annotatedFunction;
 	}catch (IOException e){
@@ -1971,10 +1939,10 @@ public AnnotatedFunction getFunction(VCDataIdentifier vcdID,String variableName)
  * This method was created by a SmartGuide.
  * @return double[]
  */
-public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws DataAccessException,ExpressionBindingException {
+public AnnotatedFunction[] getFunctions(OutputContext outputContext,VCDataIdentifier vcdID) throws DataAccessException,ExpressionBindingException {
 	try {
 		VCData simData = getVCData(vcdID);
-		return simData.getFunctions();
+		return simData.getFunctions(outputContext);
 	}catch (IOException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -1991,7 +1959,7 @@ private void checkFieldDataExists(AnnotatedFunction annotatedFunction,User user)
 	}
 }
 
-private VariableType getVariableTypeForFieldFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException {
+private VariableType getVariableTypeForFieldFunction(OutputContext outputContext,VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException {
 	VariableType funcType = function.getFunctionType(); 
 	if (funcType == null || funcType.equals(VariableType.UNKNOWN)) {
 		FieldFunctionArguments[] ffas  = FieldUtilities.getFieldFunctionArguments(function.getExpression());
@@ -2000,7 +1968,7 @@ private VariableType getVariableTypeForFieldFunction(VCDataIdentifier vcdID, Ann
 		}
 		// use the type from the first field function
 		FieldDataIdentifierSpec[] fdiss = getFieldDataIdentifierSpecs(ffas, vcdID.getOwner());
-		SimDataBlock dataBlock = getSimDataBlock(fdiss[0].getExternalDataIdentifier(), ffas[0].getVariableName(), 0.0);
+		SimDataBlock dataBlock = getSimDataBlock(outputContext,fdiss[0].getExternalDataIdentifier(), ffas[0].getVariableName(), 0.0);
 		funcType = dataBlock.getVariableType();		
 	}
 	return funcType;
@@ -2008,102 +1976,12 @@ private VariableType getVariableTypeForFieldFunction(VCDataIdentifier vcdID, Ann
 
 /**
  * This method was created by a SmartGuide.
- * @return boolean
- */
-public boolean getIsODEData(VCDataIdentifier vcdID) throws DataAccessException, IOException, FileNotFoundException {
-
-	VCData simData = getVCData(vcdID);
-	return simData.getIsODEData();
-	
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.plot.PlotData
- * @param varName java.lang.String
- * @param begin cbit.vcell.math.CoordinateIndex
- * @param end cbit.vcell.math.CoordinateIndex
- * @deprecated
- */
-public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time, CoordinateIndex begin, CoordinateIndex end) throws DataAccessException, MathException {
-	throw new RuntimeException("Method deprecated. no longer in use.");
-//	try {
-//		double dataTimes[] = getDataSetTimes(vcdID);
-//		if (dataTimes==null || dataTimes.length <= 0) {
-//			return null;
-//		}
-//		try {
-//			if (getIsODEData(vcdID)){
-//				throw new DataAccessException("cannot request a line-scan on a nonspatial result set");
-//			}
-//		}catch (IOException e){
-//			log.exception(e);
-//		}
-//		CartesianMesh mesh = getMesh(vcdID);
-//		int sizeX = mesh.getSizeX();
-//		int sizeY = mesh.getSizeY();
-//
-//		SimDataBlock simDataBlock = getSimDataBlock(vcdID,varName,time);
-//		if (simDataBlock == null){
-//			return null;
-//		}
-//
-//		double data[] = simDataBlock.getData();
-//		if (data == null) {
-//			return null;
-//		}
-//
-//		//
-//		// get length of span (in elements)
-//		//
-//		double lengthScan = Math.sqrt((begin.x - end.x) * (begin.x - end.x) + (begin.y - end.y) * (begin.y - end.y) + (begin.z - end.z) * (begin.z - end.z));
-//		if (lengthScan <= 0) {
-//			return null;
-//		}
-//
-//		//
-//		// get length of span (in microns)
-//		//
-//		Coordinate beginCoord = mesh.getCoordinate(begin);
-//		Coordinate endCoord = mesh.getCoordinate(end);
-//		double lengthScanMicrons = beginCoord.distanceTo(endCoord);
-//		
-//		int sizeScan = Math.min(200, 4 * ((int) lengthScan));
-//		double lineScan[] = new double[sizeScan];
-//		double line[] = new double[sizeScan];
-//		for (int i = 0; i < sizeScan; i++) {
-//			// operate on normalized length (parametric line)
-//			line[i] = ((double) i) / (sizeScan - 1);
-//			double coordX = begin.x + line[i] * (end.x - begin.x);
-//			double coordY = begin.y + line[i] * (end.y - begin.y);
-//			double coordZ = begin.z + line[i] * (end.z - begin.z);
-//			int pointX = (int) (coordX + 0.5);
-//			int pointY = (int) (coordY + 0.5);
-//			int pointZ = (int) (coordZ + 0.5);
-//			lineScan[i] = data[ (pointZ * sizeY + pointY) * sizeX + pointX];
-//			// restore scale to
-//			line[i] *= lengthScanMicrons;
-//		}
-//		return new PlotData(line, lineScan);
-//	} catch (DataAccessException e) {
-//		log.exception(e);
-//		throw e;
-//	} catch (IOException e) {
-//		log.exception(e);
-//		throw new DataAccessException(e.getMessage());
-//	}
-}
-
-
-/**
- * This method was created by a SmartGuide.
  * @return cbit.plot.PlotData
  * @param varName java.lang.String
  * @param begin cbit.vcell.math.CoordinateIndex
  * @param end cbit.vcell.math.CoordinateIndex
  */
-public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time, SpatialSelection spatialSelection) throws DataAccessException, MathException {
+public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID, String varName, double time, SpatialSelection spatialSelection) throws DataAccessException, MathException {
 	try {
 		if (spatialSelection == null){
 			throw new IllegalArgumentException("null spatialSelection");
@@ -2115,24 +1993,17 @@ public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time,
 		if (dataTimes==null || dataTimes.length <= 0) {
 			return null;
 		}
-		try {
-			if (getIsODEData(vcdID)){
-				throw new DataAccessException("cannot request a line-scan on a nonspatial result set");
-			}
-		}catch (IOException e){
-			log.exception(e);
-		}
 		CartesianMesh mesh = getMesh(vcdID);
 		//mesh is transient and is null if we got here by a serialized path (e.g. rmi)
 		spatialSelection.setMesh(mesh);
 		
-		SimDataBlock simDataBlock = getSimDataBlock(vcdID,varName,time);
+		SimDataBlock simDataBlock = getSimDataBlock(outputContext,vcdID,varName,time);
 		if (simDataBlock == null){
 			return null;
 		}
 		DataIdentifier dataIdentifier = null;
 		try {
-			DataIdentifier dataIdentifiers[] = getDataIdentifiers(vcdID);
+			DataIdentifier dataIdentifiers[] = getDataIdentifiers(outputContext,vcdID);
 			for (int i = 0; i < dataIdentifiers.length; i++){
 				if (dataIdentifiers[i].getName().equals(varName)){
 					dataIdentifier = dataIdentifiers[i];
@@ -2161,6 +2032,7 @@ public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time,
 			try {
 				if(ssvHelper.getMembraneIndexesInOut() != null && ssvHelper.getMembraneIndexesInOut().length > 0){
 					adjustMembraneAdjacentVolumeValues(
+							outputContext,
 						new double[][] {ssvHelper.getSampledValues()},false,simDataBlock,
 						ssvHelper.getSampledIndexes(),
 						ssvHelper.getMembraneIndexesInOut(),
@@ -2256,13 +2128,6 @@ public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException,
 		throw new DataAccessException("no simResults for user "+vcdID.getOwner().getName()+" with simID="+vcdID.getID());
 	}
 
-	try {
-		if (getIsODEData(vcdID)){
-			throw new DataAccessException("cannot request a mesh for a nonspatial result set");
-		}
-	}catch (IOException e){
-		log.exception(e);
-	}
 	
 	CartesianMesh mesh = simData.getMesh();
 	
@@ -2306,21 +2171,15 @@ public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessExc
 		if (odeDataBlock != null){
 			return odeDataBlock;
 		}else{
-			if (simData.getIsODEData()) {
-				odeDataBlock = simData.getODEDataBlock();
-				if (odeDataBlock != null){
+			odeDataBlock = simData.getODEDataBlock();
+			if (odeDataBlock != null){
 //					cacheTable.put(odeDataInfo, odeDataBlock);
-					if(cacheTable0 != null){
-						cacheTable0.put(odeDataInfo, odeDataBlock);
-					}
-					return odeDataBlock;
-				}else{
-					String msg = "failure reading ODE data for " + vcdID.getOwner().getName() + "'s " + vcdID.getID();
-					log.alert("DataSetControllerImpl.getODEDataBlock(): "+msg);
-					throw new DataAccessException(msg);
+				if(cacheTable0 != null){
+					cacheTable0.put(odeDataInfo, odeDataBlock);
 				}
-			} else {
-				String msg = "Simulation data is not ODE data for " + vcdID.getOwner().getName() + "'s " + vcdID.getID();
+				return odeDataBlock;
+			}else{
+				String msg = "failure reading ODE data for " + vcdID.getOwner().getName() + "'s " + vcdID.getID();
 				log.alert("DataSetControllerImpl.getODEDataBlock(): "+msg);
 				throw new DataAccessException(msg);
 			}
@@ -2389,17 +2248,9 @@ public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessEx
  * @param varName java.lang.String
  * @param time double
  */
-public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, double time) throws DataAccessException {
+public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdID, String varName, double time) throws DataAccessException {
 	log.print("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")");
 
-	try {
-		if (getIsODEData(vcdID)){
-			throw new DataAccessException("cannot request a SimDataBlock on a nonspatial result set");
-		}
-	}catch (IOException e){
-		log.exception(e);
-	}
-	
 	try {
 		//
 		// check if already cached for non-function variables
@@ -2407,11 +2258,11 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
 		VCData simData = getVCData(vcdID);
 		PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdID.getOwner(),vcdID.getID(),varName,time,simData.getDataBlockTimeStamp(PDE_DATA, time));
 		SimDataBlock simDataBlock = null;
-		AnnotatedFunction function = getFunction(vcdID,varName);
+		AnnotatedFunction function = getFunction(outputContext,vcdID,varName);
 		if (function == null){
 			simDataBlock = (cacheTable0 != null?cacheTable0.get(pdeDataInfo):null);
 			if (simDataBlock == null) {
-				simDataBlock = simData.getSimDataBlock(varName,time);
+				simDataBlock = simData.getSimDataBlock(outputContext,varName,time);
 				if (simDataBlock != null && dataCachingEnabled) {
 //					cacheTable.put(pdeDataInfo,simDataBlock);
 					if(cacheTable0 != null){
@@ -2420,7 +2271,7 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
 				}
 			}				
 		}else{
-			simDataBlock = evaluateFunction(vcdID,simData,function,time);
+			simDataBlock = evaluateFunction(outputContext,vcdID,simData,function,time);
 		}
 		if (simDataBlock != null) {
 			return simDataBlock;
@@ -2511,7 +2362,7 @@ private double[] getSpatialNeighborData(CartesianMesh mesh,int volumeIndex,int n
 	return spatialNeighborData;
 }
 
-private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
+private TimeSeriesJobResults getSpecialTimeSeriesValues(OutputContext outputContext,VCDataIdentifier vcdID,
 		TimeSeriesJobSpec timeSeriesJobSpec,TimeInfo timeInfo) throws Exception{
 	
 	String[] variableNames = timeSeriesJobSpec.getVariableNames();
@@ -2520,8 +2371,6 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 	boolean bIsSpecial = !isAllowOptimizedTimeDataRetrieval();
 	if(!bIsSpecial){
 		VCData simData = getVCData(vcdID);		
-		// refresh functions in case functions are added by other data services.
-		simData.getFunctions();
 
 		//
 		//Gradient and FieldData functions are special.
@@ -2546,7 +2395,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 					break;
 				}
 			}
-			AnnotatedFunction functionFromVarName = getFunction(vcdID,variableNames[i]);
+			AnnotatedFunction functionFromVarName = getFunction(outputContext,vcdID,variableNames[i]);
 			if(functionFromVarName != null){
 				FieldFunctionArguments[] fieldFunctionArgumentsArr = FieldUtilities.getFieldFunctionArguments(functionFromVarName.getExpression());
 				if(functionFromVarName.getExpression().hasGradient() ||
@@ -2602,13 +2451,14 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 							new Double(progressTime),
 							null,null
 						);
-			SimDataBlock simDatablock = getSimDataBlock(vcdID, variableNames[varNameIndex], timeInfo.desiredTimeValues[timeIndex]);
+			SimDataBlock simDatablock = getSimDataBlock(outputContext,vcdID, variableNames[varNameIndex], timeInfo.desiredTimeValues[timeIndex]);
 			double[] data = simDatablock.getData();
 			for(int dataIndex=0;dataIndex<dataIndices.length;dataIndex+= 1){
 				varIndicesTimesArr[varNameIndex][dataIndex+1][timeIndex] = data[dataIndices[dataIndex]];
 			}
 			if(timeSeriesJobSpec.getCrossingMembraneIndices() != null && timeSeriesJobSpec.getCrossingMembraneIndices().length > 0){
 				adjustMembraneAdjacentVolumeValues(
+						outputContext,
 					varIndicesTimesArr[varNameIndex],true,simDatablock,
 					timeSeriesJobSpec.getIndices()[varNameIndex],
 					timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex],
@@ -2622,7 +2472,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 	
 	TimeSeriesJobResults tsjr = null;
 	if(timeSeriesJobSpec.isCalcSpaceStats()){
-		SpatialStatsInfo ssi = calcSpatialStatsInfo(timeSeriesJobSpec, vcdID);
+		SpatialStatsInfo ssi = calcSpatialStatsInfo(outputContext,timeSeriesJobSpec, vcdID);
 		tsjr = calculateStatisticsFromWhole(timeSeriesJobSpec, varIndicesTimesArr, timeInfo.desiredTimeValues, ssi);
 	}else if(timeSeriesJobSpec.isCalcTimeStats()){
 		throw new RuntimeException("Time Stats Not yet implemented for 'special' data");		
@@ -2641,7 +2491,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 
 
 
-private TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputContext, final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 
 	TimeInfo timeInfo =
 		new TimeInfo(vcdID,timeSeriesJobSpec.getStartTime(),timeSeriesJobSpec.getStep(),timeSeriesJobSpec.getEndTime());
@@ -2706,7 +2556,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier 
 		timeSeriesJobSpec.initIndices(getMesh(vcdID).getNumVolumeElements());
 
 		//See if we need special processing
-		TimeSeriesJobResults specialTSJR = getSpecialTimeSeriesValues(vcdID,timeSeriesJobSpec,timeInfo);
+		TimeSeriesJobResults specialTSJR = getSpecialTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec,timeInfo);
 		if(specialTSJR != null){
 			return specialTSJR;
 		}
@@ -2720,7 +2570,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier 
 		long memUsage = 0;
 		boolean bHasFunctionVars = false;//efficient function stats are not yet implemented so check to adjust calculation
 		for(int i=0;i<timeSeriesJobSpec.getVariableNames().length;i+= 1){
-			bHasFunctionVars = bHasFunctionVars || (getFunction(vcdID,timeSeriesJobSpec.getVariableNames()[i]) != null);
+			bHasFunctionVars = bHasFunctionVars || (getFunction(outputContext,vcdID,timeSeriesJobSpec.getVariableNames()[i]) != null);
 		}
 		for(int i=0;i<timeSeriesJobSpec.getIndices().length;i+= 1){
 			memUsage+= (timeSeriesJobSpec.isCalcSpaceStats() && !bHasFunctionVars ? NUM_STATS : timeSeriesJobSpec.getIndices()[i].length);
@@ -2736,7 +2586,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier 
 		Vector<double[][]> valuesV = new Vector<double[][]>();
 		SpatialStatsInfo spatialStatsInfo = null;
 		if(timeSeriesJobSpec.isCalcSpaceStats()){
-			spatialStatsInfo = calcSpatialStatsInfo(timeSeriesJobSpec,vcdID);
+			spatialStatsInfo = calcSpatialStatsInfo(outputContext,timeSeriesJobSpec,vcdID);
 		}
 		for(int k=0;k<timeSeriesJobSpec.getVariableNames().length;k+= 1){
 			double[][] timeSeries = null;
@@ -2762,7 +2612,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier 
 					//ignore
 				}
 			};
-			AnnotatedFunction function = getFunction(vcdID,varName);
+			AnnotatedFunction function = getFunction(outputContext,vcdID,varName);
 			if(function != null){
 				if (vcData instanceof SimulationData) {
 					function = ((SimulationData)vcData).simplifyFunction(function);
@@ -2781,15 +2631,15 @@ private TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier 
 							null,null
 						);
 					for (int j = 0; j < indices.length; j++){
-						timeSeries[j + 1][i] = mfi.evaluateTimeFunction(i,j);
+						timeSeries[j + 1][i] = mfi.evaluateTimeFunction(outputContext,i,j);
 					}
 				}
 			}else{
 				double[][][] valuesOverTime = null;
 				if(timeSeriesJobSpec.isCalcSpaceStats() && !bHasFunctionVars){
-					valuesOverTime = vcData.getSimDataTimeSeries(new String[] {varName},new int[][]{indices},wantsTheseTimes,spatialStatsInfo,progressListener);
+					valuesOverTime = vcData.getSimDataTimeSeries(outputContext,new String[] {varName},new int[][]{indices},wantsTheseTimes,spatialStatsInfo,progressListener);
 				}else{
-					valuesOverTime = vcData.getSimDataTimeSeries(new String[] {varName},new int[][]{indices},wantsTheseTimes,progressListener);
+					valuesOverTime = vcData.getSimDataTimeSeries(outputContext,new String[] {varName},new int[][]{indices},wantsTheseTimes,progressListener);
 				}
 				for (int i=0;i<desiredTimeValues.length;i++){
 					fireDataJobEventIfNecessary(
@@ -2862,6 +2712,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier 
 	            timeSeriesFormatedValuesArr);
 			if(timeSeriesJobSpec.getCrossingMembraneIndices() != null && timeSeriesJobSpec.getCrossingMembraneIndices().length > 0){
 				adjustMembraneAdjacentVolumeValues(
+						outputContext,
 						tsJobResultsNoStats.getTimesAndValuesForVariable(timeSeriesJobSpec.getVariableNames()[0]),
 						true,null,
 						timeSeriesJobSpec.getIndices()[0],
@@ -2885,7 +2736,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(final VCDataIdentifier 
 }
 
 
-public TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 
 	fireDataJobEventIfNecessary(timeSeriesJobSpec.getVcDataJobID(), 
 		MessageEvent.DATA_START, vcdID,	new Double(0), null, null);
@@ -2893,7 +2744,7 @@ public TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier vcdID,fin
 	dataCachingEnabled = false;
 	Exception failException = null;
 	try{
-		TimeSeriesJobResults timeSeriesJobResults = getTimeSeriesValues_private(vcdID,timeSeriesJobSpec);
+		TimeSeriesJobResults timeSeriesJobResults = getTimeSeriesValues_private(outputContext,vcdID,timeSeriesJobSpec);
 		fireDataJobEventIfNecessary(timeSeriesJobSpec.getVcDataJobID(),
 			MessageEvent.DATA_COMPLETE, vcdID, new Double(100), timeSeriesJobResults, null);
 		
@@ -2988,6 +2839,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 }
 
 private void adjustMembraneAdjacentVolumeValues(
+		OutputContext outputContext,
 		double[][] dataToAdjust,boolean bTimeFormat,SimDataBlock fullDataValueSource,
 		int[] volumeDataIndexes,
 		int[] membraneIndexesInOut,
@@ -3012,7 +2864,7 @@ private void adjustMembraneAdjacentVolumeValues(
 	AnnotatedFunction insideFunction = null;
 	AnnotatedFunction outsideFunction = null;
 	VCData vcData = getVCData(vcdID);
-	DataIdentifier[] myDataIdentifers = getDataIdentifiers(vcdID);
+	DataIdentifier[] myDataIdentifers = getDataIdentifiers(outputContext,vcdID);
 	for (int i = 0; i < myDataIdentifers.length; i++) {
 		if(myDataIdentifers[i].getName().equals(varName)){
 			if(myDataIdentifers[i].getVariableType().equals(VariableType.MEMBRANE)){
@@ -3022,7 +2874,7 @@ private void adjustMembraneAdjacentVolumeValues(
 			Expression outsideExp = null;
 			if(myDataIdentifers[i].isFunction()){
 				AnnotatedFunction sourceFunction = null;
-				AnnotatedFunction[] functionsArr = getFunctions(vcdID);
+				AnnotatedFunction[] functionsArr = getFunctions(outputContext,vcdID);
 				for (int j = 0; j < functionsArr.length; j++) {
 					if(functionsArr[j].getName().equals(varName)){
 						// need to subsitute and flatten the expression since we no longer store simplified expression.
@@ -3105,9 +2957,9 @@ private void adjustMembraneAdjacentVolumeValues(
 				}
 				for (int k = 0; k < timeInfo.desiredTimeValues.length; k++) {
 					if(bTimeFormat){
-						dataToAdjust[crossingCondensedOrigLocation[j]+1][k] = (bIsSpecial?specialInsideVal:mfi_inside.evaluateTimeFunction(k,j));
+						dataToAdjust[crossingCondensedOrigLocation[j]+1][k] = (bIsSpecial?specialInsideVal:mfi_inside.evaluateTimeFunction(outputContext,k,j));
 					}else{
-						dataToAdjust[k][crossingCondensedOrigLocation[j]] = (bIsSpecial?specialInsideVal:mfi_inside.evaluateTimeFunction(k,j));
+						dataToAdjust[k][crossingCondensedOrigLocation[j]] = (bIsSpecial?specialInsideVal:mfi_inside.evaluateTimeFunction(outputContext,k,j));
 					}
 				}
 			}else if(vinf_outside.volIndexNear == volumeDataIndexes[crossingCondensedOrigLocation[j]]){
@@ -3117,9 +2969,9 @@ private void adjustMembraneAdjacentVolumeValues(
 				}
 				for (int k = 0; k < timeInfo.desiredTimeValues.length; k++) {
 					if(bTimeFormat){
-						dataToAdjust[crossingCondensedOrigLocation[j]+1][k] = (bIsSpecial?specialOutsideVal:mfi_outside.evaluateTimeFunction(k,j));
+						dataToAdjust[crossingCondensedOrigLocation[j]+1][k] = (bIsSpecial?specialOutsideVal:mfi_outside.evaluateTimeFunction(outputContext,k,j));
 					}else{
-						dataToAdjust[k][crossingCondensedOrigLocation[j]] = (bIsSpecial?specialOutsideVal:mfi_outside.evaluateTimeFunction(k,j));
+						dataToAdjust[k][crossingCondensedOrigLocation[j]] = (bIsSpecial?specialOutsideVal:mfi_outside.evaluateTimeFunction(outputContext,k,j));
 					}
 				}
 			}else{
@@ -3142,30 +2994,6 @@ public void removeDataJobListener(DataJobListener djListener) {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return double[]
- */
-public void removeFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException {
-	try {
-		if(!function.isUserDefined()){
-			throw new Exception("Non User-Defined functions cannot be deleted");
-		}
-		VCData simData = getVCData(vcdID);
-		simData.removeFunction(function);
-//		cacheTable.removeVariable(vcdID,function.getName());
-		if(cacheTable0 != null){
-			cacheTable0.removeVariable(vcdID,function.getName());
-		}
-	}catch (Exception e){
-		log.exception(e);
-		if(e instanceof DataAccessException){
-			throw (DataAccessException)e;
-		}
-		throw new DataAccessException(e.getMessage());
-	}
-}
-
 public void setAllowOptimizedTimeDataRetrieval(boolean bAllowOptimizedTimeDataRetrieval){
 	this.bAllowOptimizedTimeDataRetrieval = bAllowOptimizedTimeDataRetrieval;
 }
@@ -3181,6 +3009,7 @@ public boolean isAllowOptimizedTimeDataRetrieval(){
  * @throws DataAccessException 
  */
 public void writeFieldFunctionData(
+		OutputContext outputContext,
 		FieldDataIdentifierSpec[] argFieldDataIDSpecs,
 		boolean[] bResampleFlags,
 		CartesianMesh newMesh,
@@ -3225,7 +3054,7 @@ public void writeFieldFunctionData(
 			FieldDataIdentifierSpec fieldDataIdSpec = resampleEntry.getKey();
 			boolean bResample = bFieldDataResample.get(fieldDataIdSpec);
 			CartesianMesh origMesh = getMesh(fieldDataIdSpec.getExternalDataIdentifier());
-			SimDataBlock simDataBlock = getSimDataBlock(fieldDataIdSpec.getExternalDataIdentifier(),fieldDataIdSpec.getFieldFuncArgs().getVariableName(), 
+			SimDataBlock simDataBlock = getSimDataBlock(outputContext,fieldDataIdSpec.getExternalDataIdentifier(),fieldDataIdSpec.getFieldFuncArgs().getVariableName(), 
 					fieldDataIdSpec.getFieldFuncArgs().getTime().evaluateConstant());
 			VariableType varType = fieldDataIdSpec.getFieldFuncArgs().getVariableType();
 			VariableType dataVarType = simDataBlock.getVariableType();

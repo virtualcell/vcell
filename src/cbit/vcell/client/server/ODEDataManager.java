@@ -2,10 +2,14 @@ package cbit.vcell.client.server;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.Function;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.util.ColumnDescription;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 5:34:33 AM)
@@ -15,6 +19,42 @@ public class ODEDataManager implements DataManager {
 	private VCDataManager vcDataManager = null;
 	private VCDataIdentifier vcDataIdentifier = null;
 	private ODESolverResultSet odeSolverResultSet = null;
+	private OutputContext outputContext = null;
+
+private OutputContext getOutputContext() {
+		return outputContext;
+	}
+
+
+public void setOutputContext(OutputContext newOutputContext) {
+	if (getOutputContext() != null && odeSolverResultSet != null) {
+		// remove old output functions, if any
+		for (int j = 0; j < getOutputContext().getOutputFunctions().length; j++) {
+			for (int i=0;i<odeSolverResultSet.getColumnDescriptionsCount();i++) {
+				ColumnDescription colDesc = odeSolverResultSet.getColumnDescriptions(i);
+				if (colDesc instanceof FunctionColumnDescription){
+					FunctionColumnDescription funcColDesc = (FunctionColumnDescription)colDesc;
+					if ( getOutputContext().getOutputFunctions()[j].getName().equals(funcColDesc.getName()) ) {
+						try {
+							odeSolverResultSet.removeFunctionColumn(funcColDesc);
+						} catch (ExpressionException e) {
+							e.printStackTrace(System.out);
+							throw new RuntimeException("Cannot remove function column from result set."+e.getMessage());
+						}
+					}
+				}
+			}
+		}
+	}
+	// add new output functions, if any
+	if (newOutputContext != null) {
+		for (int i = 0; i < newOutputContext.getOutputFunctions().length; i++) {
+			addOutputFunction(newOutputContext.getOutputFunctions()[i], odeSolverResultSet);
+		} 
+	}
+	this.outputContext = newOutputContext;
+}
+
 
 /**
  * Insert the method's description here.
@@ -23,22 +63,11 @@ public class ODEDataManager implements DataManager {
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  * @throws DataAccessException 
  */
-public ODEDataManager(VCDataManager vcDataManager, VCDataIdentifier vcDataIdentifier) throws DataAccessException {
+public ODEDataManager(OutputContext outputContext, VCDataManager vcDataManager, VCDataIdentifier vcDataIdentifier) throws DataAccessException {
 	setVcDataManager(vcDataManager);
 	setVcDataIdentifier(vcDataIdentifier);
 	connect();
-}
-
-
-/**
- * adds an array of named <code>Function</code>s to the list of variables that are availlable for this Simulation.
- * 
- * @param functions represent named expressions that are to be bound to dataset and whose names are added to variable list.
- * 
- * @throws org.vcell.util.DataAccessException if Functions cannot be bound to this dataset or SimulationInfo not found.
- */
-public void addFunctions(AnnotatedFunction[] functions,boolean[] bReplaceArr) throws DataAccessException {
-	getVCDataManager().addFunctions(getVCDataIdentifier(), functions,bReplaceArr);
+	setOutputContext(outputContext);
 }
 
 
@@ -52,7 +81,7 @@ public void addFunctions(AnnotatedFunction[] functions,boolean[] bReplaceArr) th
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
 public DataIdentifier[] getDataIdentifiers() throws DataAccessException {
-	return getVCDataManager().getDataIdentifiers(getVCDataIdentifier());
+	return getVCDataManager().getDataIdentifiers(getOutputContext(),getVCDataIdentifier());
 }
 
 
@@ -67,7 +96,6 @@ public double[] getDataSetTimes() throws DataAccessException {
 	return getVCDataManager().getDataSetTimes(getVCDataIdentifier());
 }
 
-
 /**
  * gets list of named Functions defined for the resultSet for this Simulation.
  * 
@@ -77,22 +105,8 @@ public double[] getDataSetTimes() throws DataAccessException {
  * 
  * @see Function
  */
-public AnnotatedFunction[] getFunctions() throws DataAccessException {
-	return getVCDataManager().getFunctions(getVCDataIdentifier());
-}
-
-
-/**
- * tests if resultSet contains ODE data for the specified simulation.
- * 
- * @returns <i>true</i> if results are of type ODE, <i>false</i> otherwise.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * 
- * @see Function
- */
-public boolean getIsODEData() throws DataAccessException {
-	return true;
+public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
+	return getVCDataManager().getFunctions(outputContext, getVCDataIdentifier());
 }
 
 
@@ -128,19 +142,6 @@ public VCDataManager getVCDataManager() {
 
 
 /**
- * removes the specified <i>function</i> from this Simulation.
- * 
- * @param function function to be removed.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * @throws org.vcell.util.PermissionException if not the owner of this dataset.
- */
-public void removeFunction(AnnotatedFunction function) throws DataAccessException {
-	getVCDataManager().removeFunction(function, getVCDataIdentifier());
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (6/11/2004 3:53:33 PM)
  * @param newVcDataIdentifier cbit.vcell.server.VCDataIdentifier
@@ -163,4 +164,28 @@ private void connect() throws DataAccessException {
 	odeSolverResultSet = getVCDataManager().getODEData(getVCDataIdentifier());
 }
 
+private void addOutputFunction(AnnotatedFunction function, ODESolverResultSet odeRS) {
+// Get the new name and expression for the function and create a new
+// functioncolumndescription, check is function is valid. If it is, add it to the list of columns 
+// in the ODEResultSet. Else, pop-up an error dialog indicating that function cannot be added.
+	FunctionColumnDescription fcd = null;
+	String funcName = function.getName();
+	Expression funcExp = function.getExpression();
+	fcd = new FunctionColumnDescription(funcExp, funcName, null, funcName+" : "+funcExp.infix(), true);
+
+	try {
+		odeRS.checkFunctionValidity(fcd);
+	} catch (ExpressionException e) {
+		javax.swing.JOptionPane.showMessageDialog(null, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
+		// Commenting the Stack trace for exception .... annoying to have the exception thrown after dealing with pop-up error message!
+		// e.printStackTrace(System.out);
+		return;
+	}
+	try {
+		odeRS.addFunctionColumn(fcd);
+	} catch (ExpressionException e) {
+		javax.swing.JOptionPane.showMessageDialog(null, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
+		e.printStackTrace(System.out);
+	}
+}
 }

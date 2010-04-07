@@ -15,6 +15,7 @@ import cbit.vcell.geometry.gui.CurveRenderer;
 
 import cbit.vcell.simdata.*;
 import cbit.image.*;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.simdata.gui.*;
 import java.awt.*;
@@ -398,8 +399,8 @@ public void setVariable(String variableName) throws Exception {
  * @param dataSetController cbit.vcell.server.DataSetController
  * @param simulationIdentifier java.lang.String
  */
-public PDEOffscreenRenderer(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws Exception {
-	setServerPDEDataContext(new ServerPDEDataContext(user, dataServerImpl, vcdID));
+public PDEOffscreenRenderer(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws Exception {
+	setServerPDEDataContext(new ServerPDEDataContext(outputContext,user, dataServerImpl, vcdID));
 	getDisplayAdapterService().addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), "Gray");
 	getDisplayAdapterService().addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), "BlueRed");
 }

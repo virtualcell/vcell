@@ -46,6 +46,7 @@ import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.data.DataViewer;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.client.desktop.simulation.SimulationCompareWindow;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
@@ -148,6 +149,7 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
 			regrRefFlag = argRegrRefFlag;
 		}
 	};
+	private OutputContext outputContext = null;
 	private TestingFrameworkWindowPanel testingFrameworkWindowPanel;
 	private EditTestCriteriaPanel editTestCriteriaPanel =
 		new EditTestCriteriaPanel();
@@ -556,9 +558,9 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 		if (sim2.isSpatial() != isSpatial) {
 			throw new RuntimeException("Cannot compare spatial and non-spatial data sets : " + simInfo + "& " + regrSimInfo);
 		}
-		DataManager mergedDataManager = getRequestManager().getDataManager(mergedDataInfo, isSpatial);
-		DataManager data1Manager = getRequestManager().getDataManager(vcSimId1, isSpatial);
-		DataManager data2Manager = getRequestManager().getDataManager(vcSimId2, isSpatial);
+		DataManager mergedDataManager = getRequestManager().getDataManager(null,mergedDataInfo, isSpatial);
+		DataManager data1Manager = getRequestManager().getDataManager(null,vcSimId1, isSpatial);
+		DataManager data2Manager = getRequestManager().getDataManager(null,vcSimId2, isSpatial);
 		
 		Vector<AnnotatedFunction> functionList = new Vector<AnnotatedFunction>();
 		AnnotatedFunction data1Functions[] = data1Manager.getFunctions();
@@ -616,18 +618,17 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 			
 			functionList.add(newFunction);
 		}
+		
 		if (functionList.size()>0){
 			AnnotatedFunction[] newDiffFunctions = (AnnotatedFunction[])BeanUtils.getArray(functionList,AnnotatedFunction.class);
-			boolean[] bReplaceArr = new boolean[newDiffFunctions.length];
-			Arrays.fill(bReplaceArr, false);
-			mergedDataManager.addFunctions(newDiffFunctions,bReplaceArr);
+			outputContext = new OutputContext(newDiffFunctions);
 		}
 
 		
 		// make the viewer
-		MergedDatasetViewerController dynamicMergedDataMgr = getRequestManager().getMergedDatasetViewerController(mergedDataInfo, mergedDataManager.getIsODEData());
-		addDataListener(dynamicMergedDataMgr);
-		DataViewer viewer = dynamicMergedDataMgr.createViewer();
+		MergedDatasetViewerController mergedDatasetViewerCtr = getRequestManager().getMergedDatasetViewerController(outputContext,mergedDataInfo, isSpatial);
+		addDataListener(mergedDatasetViewerCtr);
+		DataViewer viewer = mergedDatasetViewerCtr.createViewer();
 		viewer.setDataViewerManager(this);
 		addExportListener(viewer);
 		
@@ -1134,7 +1135,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 			simReportStatus = TestCriteriaNew.TCRIT_STATUS_NOREFREGR;
 		}else{
 			VCDataIdentifier vcdID = new VCSimulationDataIdentifier(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), 0);
-			DataManager simDataManager = getRequestManager().getDataManager(vcdID, sim.isSpatial());
+			DataManager simDataManager = getRequestManager().getDataManager(null,vcdID, sim.isSpatial());
 			
 			double timeArray[] = null;
 			// can be histogram, so there won't be time array
@@ -1206,7 +1207,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 					} else if (testCase.getType().equals(TestCaseNew.REGRESSION)) {
 						Simulation refSim = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(refSimInfo);
 						VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
-						PDEDataManager refDataManager = (PDEDataManager)getRequestManager().getDataManager(refVcdID, refSim.isSpatial());
+						PDEDataManager refDataManager = (PDEDataManager)getRequestManager().getDataManager(null,refVcdID, refSim.isSpatial());
 						
 						if (refSim.getScanCount() != 1) {
 							throw new RuntimeException("paramater scan is not supported in Math Testing Framework");
@@ -1310,7 +1311,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						String varsToTest[] = getVariableNamesToCompare(simSymbolTable,refSimSymbolTable);
 						
 						VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
-						ODEDataManager refDataManager = (ODEDataManager)getRequestManager().getDataManager(refVcdID, refSim.isSpatial());
+						ODEDataManager refDataManager = (ODEDataManager)getRequestManager().getDataManager(null,refVcdID, refSim.isSpatial());
 						ODESolverResultSet referenceResultSet = refDataManager.getODESolverResultSet();
 						SimulationComparisonSummary simCompSummary_regr = null;							
 						int interpolationOrder = 1;
@@ -2609,8 +2610,8 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
  * Insert the method's description here.
  * Creation date: (11/18/2004 4:44:45 PM)
  */
-public void startExport(ExportSpecs exportSpecs) {
-	getRequestManager().startExport(this, exportSpecs);
+public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) {
+	getRequestManager().startExport(outputContext, this, exportSpecs);
 }
 
 
@@ -2858,10 +2859,10 @@ public void viewResults(TestCriteriaNew testCriteria) {
 	try {
 		Simulation sim = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(testCriteria.getSimInfo());
 		
-		DataViewerController dynamicDataMgr = getRequestManager().getDataViewerController(sim, 0);
-		addDataListener(dynamicDataMgr);
+		DataViewerController dataViewerCtr = getRequestManager().getDataViewerController(outputContext,sim, 0);
+		addDataListener(dataViewerCtr);
 		// make the viewer
-		DataViewer viewer = dynamicDataMgr.createViewer();
+		DataViewer viewer = dataViewerCtr.createViewer();
 		viewer.setDataViewerManager(this);
 		addExportListener(viewer);
 		

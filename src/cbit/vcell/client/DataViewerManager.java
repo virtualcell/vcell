@@ -1,6 +1,7 @@
 package cbit.vcell.client;
 import org.vcell.util.document.User;
 
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportSpecs;
@@ -41,5 +42,6 @@ public abstract void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plot
  * Insert the method's description here.
  * Creation date: (6/1/2004 9:58:46 PM)
  */
-public void startExport(ExportSpecs exportSpecs);
+public void startExport(
+		OutputContext outputContext,ExportSpecs exportSpecs);
 }

@@ -29,6 +29,7 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.PerformanceMonitorListener;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
@@ -958,8 +959,9 @@ public void showTestingFrameworkWindow() {
  * Insert the method's description here.
  * Creation date: (6/1/2004 9:58:46 PM)
  */
-public void startExport(ExportSpecs exportSpecs) {
-	getRequestManager().startExport(this, exportSpecs);
+public void startExport(
+		OutputContext outputContext,ExportSpecs exportSpecs) {
+	getRequestManager().startExport(outputContext,this, exportSpecs);
 }
 
 

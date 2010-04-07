@@ -1,5 +1,7 @@
 package cbit.vcell.export.server;
 import java.util.*;
+
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.quicktime.atoms.*;
 import cbit.vcell.export.quicktime.*;
 import cbit.vcell.simdata.gui.*;
@@ -24,7 +26,7 @@ import cbit.vcell.geometry.*;
  */
 public class QTExporter implements ExportConstants {
 	private ExportServiceImpl exportServiceImpl = null;
-private ExportOutput[] makeSimpleMovies(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID,
+private ExportOutput[] makeSimpleMovies(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID,
 		String[] varNames, int beginTimeIndex, int endTimeIndex, int axis, int sliceNumber,
 		DisplayPreferences[] displayPreferences, int mirroringType, double duration, boolean hideMembraneOutline,
 		int imageScale,int membraneScale,int meshMode)
@@ -39,7 +41,7 @@ private ExportOutput[] makeSimpleMovies(long jobID, User user, DataServerImpl da
 
 	double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
 	double interval = allTimes[endTimeIndex] - allTimes[beginTimeIndex];
-	PDEOffscreenRenderer off = new PDEOffscreenRenderer(user, dataServerImpl, vcdID);
+	PDEOffscreenRenderer off = new PDEOffscreenRenderer(outputContext,user, dataServerImpl, vcdID);
 	off.setNormalAxis(axis);
 	off.setSlice(sliceNumber);
 	off.setHideMembraneOutline(hideMembraneOutline);
@@ -121,11 +123,13 @@ public QTExporter(ExportServiceImpl exportServiceImpl) {
 /**
  * This method was created in VisualAge.
  */
-public ExportOutput[] makeMovieData(JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)
+public ExportOutput[] makeMovieData(
+		OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)
 						throws DataAccessException, RemoteException, DataFormatException, IOException, Exception {
 	ExportOutput[] rawOutput;
 	if (((MovieSpecs)exportSpecs.getFormatSpecificSpecs()).getOverlayMode())
 		rawOutput = makeOverlayMovie(
+				outputContext,
 			jobRequest.getJobID(),
 			user,
 			dataServerImpl,
@@ -145,6 +149,7 @@ public ExportOutput[] makeMovieData(JobRequest jobRequest, User user, DataServer
 			);
 	else
 		rawOutput = makeSimpleMovies(
+				outputContext,
 			jobRequest.getJobID(),
 			user,
 			dataServerImpl,
@@ -181,7 +186,7 @@ public ExportOutput[] makeMovieData(JobRequest jobRequest, User user, DataServer
  * @param slicePlane int
  * @param sliceNumber int
  */
-private ExportOutput[] makeOverlayMovie(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] varNames,
+private ExportOutput[] makeOverlayMovie(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] varNames,
 		int beginTimeIndex, int endTimeIndex, int axis, int sliceNumber, DisplayPreferences[] displayPreferences,
 		int mirroringType, double duration, boolean hideMembraneOutline,
 		int imageScale,int membraneScale,int meshMode)
@@ -196,7 +201,7 @@ private ExportOutput[] makeOverlayMovie(long jobID, User user, DataServerImpl da
 	
 	double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
 	double interval = allTimes[endTimeIndex] - allTimes[beginTimeIndex];
-	PDEOffscreenRenderer off = new PDEOffscreenRenderer(user, dataServerImpl, vcdID);
+	PDEOffscreenRenderer off = new PDEOffscreenRenderer(outputContext,user, dataServerImpl, vcdID);
 	off.setNormalAxis(axis);
 	off.setSlice(sliceNumber);
 	off.setHideMembraneOutline(hideMembraneOutline);

@@ -22,7 +22,7 @@ public class DataManagerTest extends PDEDataManager {
  * @param argSimulationCollectionManager cbit.vcell.desktop.controls.ClientSimulationCollectionManager
  */
 public DataManagerTest(cbit.vcell.math.AnnotatedFunction argFunctions[], double argTimes[], cbit.vcell.solvers.CartesianMesh argMesh, org.vcell.util.document.VCDataIdentifier argVCDataIdentifier) {
-	super(null,null);
+	super(null,null,null);
 	this.functions = argFunctions;
 	this.times = argTimes;
 	this.mesh = argMesh;

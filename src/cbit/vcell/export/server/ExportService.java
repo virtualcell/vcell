@@ -1,4 +1,5 @@
 package cbit.vcell.export.server;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.simdata.DataServerImpl;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -26,5 +27,5 @@ public interface ExportService {
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException;
+ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException;
 }

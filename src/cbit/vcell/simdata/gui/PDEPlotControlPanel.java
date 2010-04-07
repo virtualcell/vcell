@@ -1,6 +1,5 @@
 package cbit.vcell.simdata.gui;
 
-import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -14,9 +13,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.BoundedRangeModel;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -24,12 +21,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
-import javax.swing.WindowConstants;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DefaultListModelCivilized;
-import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -38,7 +33,6 @@ import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.VariableType.VariableDomain;
 /**
  * Insert the type's description here.
@@ -68,7 +62,6 @@ public class PDEPlotControlPanel extends JPanel {
 	private boolean ivjConnPtoP3Aligning = false;
 	private DisplayAdapterService ivjdisplayAdapterService1 = null;
 	private JPanel ivjTimeSliderJPanel = null;
-	private JButton ivjAddFunctionButton = null;
 	private Vector<AnnotatedFunction> functionsList = new Vector<AnnotatedFunction>();  //  @jve:decl-index=0:
 
 	public static interface DataIdentifierFilter{
@@ -78,7 +71,7 @@ public class PDEPlotControlPanel extends JPanel {
 		boolean isAcceptAll(String filterSetName);
 	};
 	
-	DataIdentifierFilter DEFAULT_DATAIDENTIFIER_FILTER = 
+	DataIdentifierFilter DEFAULT_DATAIDENTIFIER_FILTER =
 		new DataIdentifierFilter(){
 			private String ALL = "All Variables";
 			private String VOLUME_FILTER_SET = "Volume Variables";
@@ -139,8 +132,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == PDEPlotControlPanel.this.getJTextField1()) 
 				connEtoC2(e);
-			if (e.getSource() == PDEPlotControlPanel.this.getAddFunctionButton()) 
-				connEtoC7(e);
 		};
 		public void contentsChanged(javax.swing.event.ListDataEvent e) {};
 		public void focusGained(java.awt.event.FocusEvent e) {};
@@ -204,78 +195,6 @@ public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
 		filterComboBox.setSelectedIndex(0);
 	}
 	filterVariableNames();
-}
-
-
-/**
- * Comment
- */
-private void addFunction() {
-
-	AsynchClientTask task1 = new AsynchClientTask("init functin list", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			initFunctionsList();
-		}
-	};
-	
-	final FunctionSpecifierPanel fsp = new FunctionSpecifierPanel();
-	
-	AsynchClientTask task2 = new AsynchClientTask("show dialog", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			fsp.initFunctionInfo(getJList1().getSelectedValue().toString(), 
-					getPdeDataContext().getDataIdentifiers(), functionsList.toArray(new AnnotatedFunction[0]), 
-					getPdeDataContext().getCartesianMesh().getGeometryDimension());
-			final JDialog jd = new JDialog();
-			jd.setTitle("View/Add/Delete/Edit Functions");
-			jd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-			jd.setModal(true);
-			jd.getContentPane().add(fsp);
-			jd.setSize(450,250);
-			
-			fsp.addActionListener(new ActionListener(){
-					public void actionPerformed(ActionEvent e) {
-						jd.dispose();
-					}
-				}
-			);
-			ZEnforcer.showModalDialogOnTop(jd, PDEPlotControlPanel.this);
-		}
-	};
-	
-	AsynchClientTask task3 = new AsynchClientTask("add/delete/replace function", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_CANCEL){
-				return;
-			}
-			if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_ADDNEW){
-				AnnotatedFunction newFunction = fsp.getNewUserCreatedAnnotatedFunction(true);
-				getPdeDataContext().addFunctions(new AnnotatedFunction[] {newFunction}, new boolean[] {false});
-				functionsList.add(newFunction);
-			}else if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_DELETE){
-				getPdeDataContext().removeFunction(fsp.getSelectedAnnotatedFunction());
-				functionsList.removeElement(fsp.getSelectedAnnotatedFunction());
-			}else if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_REPLACE){
-				AnnotatedFunction newFunction = fsp.getNewUserCreatedAnnotatedFunction(true);
-				getPdeDataContext().addFunctions(new AnnotatedFunction[] {newFunction}, new boolean[] {true});
-				functionsList.remove(fsp.getSelectedAnnotatedFunction());
-				functionsList.add(newFunction);
-				getPdeDataContext().externalRefresh();
-			}
-		}
-	};
-	
-	AsynchClientTask task5 = new AsynchClientTask("refresh identifiers", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			getPdeDataContext().refreshIdentifiers();
-		}		
-	};
-	
-	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3, task5});
 }
 
 
@@ -400,25 +319,6 @@ private void connEtoC6(java.awt.event.FocusEvent arg1) {
 	}
 }
 
-
-/**
- * connEtoC7:  (AddFunctionButton.action.actionPerformed(java.awt.event.ActionEvent) --> PDEPlotControlPanel.addFunction(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.addFunction();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
 /**
  * connEtoC8:  (JList1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> PDEPlotControlPanel.variableNameChanged(Ljavax.swing.event.ListSelectionEvent;)V)
@@ -861,31 +761,6 @@ private void displayAdapterService1_CustomScaleRange(org.vcell.util.Range arg1) 
 	}
 }
 
-
-/**
- * Return the AddFunctionButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getAddFunctionButton() {
-	if (ivjAddFunctionButton == null) {
-		try {
-			ivjAddFunctionButton = new javax.swing.JButton();
-			ivjAddFunctionButton.setName("AddFunctionButton");
-			ivjAddFunctionButton.setPreferredSize(new java.awt.Dimension(121, 25));
-			ivjAddFunctionButton.setText("Functions...");
-			ivjAddFunctionButton.setMaximumSize(new java.awt.Dimension(121, 25));
-			ivjAddFunctionButton.setMinimumSize(new java.awt.Dimension(121, 25));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjAddFunctionButton;
-}
 
 /**
  * Return the DefaultListModelCivilized1 property value.
@@ -1334,7 +1209,6 @@ private void initConnections() throws java.lang.Exception {
 	getJSliderTime().addPropertyChangeListener(ivjEventHandler);
 	getJList1().addListSelectionListener(ivjEventHandler);
 	getDefaultListModelCivilized1().addListDataListener(ivjEventHandler);
-	getAddFunctionButton().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP4SetTarget();
@@ -1349,12 +1223,6 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
-		GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
-		gridBagConstraints1.gridx = 0;
-		gridBagConstraints1.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints1.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints1.weightx = 1.0;
-		gridBagConstraints1.gridy = 1;
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
 		gridBagConstraints.gridy = 0;
@@ -1370,7 +1238,6 @@ private void initialize() {
 		setMaximumSize(new java.awt.Dimension(200, 800));
 		setMinimumSize(new java.awt.Dimension(125, 300));
 		this.add(getJSplitPane1(), gridBagConstraints);
-		this.add(getAddFunctionButton(), gridBagConstraints1);
 		initConnections();
 
 	} catch (java.lang.Throwable ivjExc) {

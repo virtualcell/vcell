@@ -32,7 +32,7 @@ public static void main(String[] args) {
 			}
 			for (int i = a.length - 1 ; i >= 0; i --) {
 				try {
-					SimDataBlock sdb = simData1.getSimDataBlock("Ca", a[i]);
+					SimDataBlock sdb = simData1.getSimDataBlock(null,"Ca", a[i]);
 					System.out.println(runs + "---Timepoint@" + a[i]  + "--- Timestamp: " + new java.util.Date(sdb.getPDEDataInfo().getTimeStamp()));
 				} catch (java.io.IOException e) {
 					System.out.println(runs + "---Timepoint@" + a[i]  + "--- ******IOException*******:");

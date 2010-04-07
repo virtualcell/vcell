@@ -88,16 +88,6 @@ public PDEDataContext() {
 
 
 /**
- * adds a named <code>Function</code> to the list of variables that are availlable for this Simulation.
- *
- * @param function named expression that is to be bound to dataset and whose name is added to variable list.
- *
- * @throws org.vcell.util.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
- */
-public abstract void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException;
-
-
-/**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
@@ -268,18 +258,6 @@ public double[] getDataValues() {
  * @see Function
  */
 public abstract cbit.vcell.math.AnnotatedFunction[] getFunctions() throws DataAccessException;
-
-
-/**
- * tests if resultSet contains ODE data for the specified simulation.
- *
- * @returns <i>true</i> if results are of type ODE, <i>false</i> otherwise.
- *
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- *
- * @see Function
- */
-public abstract boolean getIsODEData() throws org.vcell.util.DataAccessException;
 
 
 /**
@@ -556,17 +534,6 @@ public abstract void refreshIdentifiers();
  * Creation date: (10/3/00 5:03:43 PM)
  */
 public abstract void refreshTimes() throws DataAccessException;
-
-
-/**
- * removes the specified <i>function</i> from this Simulation.
- *
- * @param function function to be removed.
- *
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * @throws org.vcell.util.PermissionException if not the owner of this dataset.
- */
-public abstract void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException, org.vcell.util.PermissionException;
 
 
 /**

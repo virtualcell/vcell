@@ -1,4 +1,5 @@
 package cbit.vcell.export.server;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.solver.ode.ODESimData;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -34,13 +35,13 @@ public class SimulationDescription {
 /**
  * SimulationInfo constructor comment. 
  */
-public SimulationDescription(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws DataAccessException, RemoteException {
+public SimulationDescription(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, boolean isODEData) throws DataAccessException, RemoteException {
 	super();
 
 	String dataID = vcdID.getID();
 	this.name = dataID;
 
-	if (dataServerImpl.getIsODEData(user, vcdID)) {
+	if (isODEData) {
 		ODESimData odeSimData = dataServerImpl.getODEData(user, vcdID);
 		//set times and variables
 		try {
@@ -75,7 +76,7 @@ public SimulationDescription(User user, DataServerImpl dataServerImpl, VCDataIde
 		this.dataType = "PDE Simulation";
 		this.times = dataServerImpl.getDataSetTimes(user, vcdID);
 		this.timeNumber = times.length;
-		DataIdentifier dataIdentifiers[] = dataServerImpl.getDataIdentifiers(user, vcdID);
+		DataIdentifier dataIdentifiers[] = dataServerImpl.getDataIdentifiers(outputContext,user, vcdID);
 		this.variables = new String[dataIdentifiers.length];
 		for (int i = 0; i < variables.length; i++){
 			variables[i] = dataIdentifiers[i].getName();

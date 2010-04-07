@@ -1,10 +1,17 @@
 package cbit.vcell.client.server;
 
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+
+import org.apache.axis.utils.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.data.DataViewer;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.desktop.controls.DataEvent;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -73,6 +80,21 @@ public void newData(DataEvent event) {
 public void refreshData() throws DataAccessException {
 	if (simResultsViewer != null) {
 		simResultsViewer.refreshData();
+	}
+}
+
+
+public void propertyChange(PropertyChangeEvent evt) {
+	// update functions
+	if (simResultsViewer != null && evt.getPropertyName().equals("outputFunctions")){
+		try {
+			ArrayList<AnnotatedFunction> outputFunctionsList = (ArrayList<AnnotatedFunction>)evt.getNewValue();
+			dataManager.setOutputContext(new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()])));
+			simResultsViewer.refreshFunctions();
+		} catch (Exception e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(simResultsViewer, "Failed to update viewer after function change: "+e.getMessage());
+		}
 	}
 }
 }

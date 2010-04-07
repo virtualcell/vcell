@@ -16,6 +16,7 @@ import java.io.*;
 import GIFUtils.*;
 import java.util.zip.*;
 import java.net.*;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.*;
 import cbit.rmi.event.*;
 import cbit.vcell.simdata.gui.*;
@@ -163,15 +164,15 @@ protected void fireExportStarted(long jobID, VCDataIdentifier vcdID, String form
 	fireExportEvent(event);
 }
 
-public ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)throws DataAccessException
+public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)throws DataAccessException
 {
-	return makeRemoteFile(user, dataServerImpl, exportSpecs, true);
+	return makeRemoteFile(outputContext,user, dataServerImpl, exportSpecs, true);
 }
 
 /**
  * This method was created in VisualAge.
  */
-public ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, boolean bSaveAsZip)
+public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, boolean bSaveAsZip)
 						throws DataAccessException {
 	// if export completes successfully, we return the generated event for logging
 	if (user == null) {
@@ -241,10 +242,10 @@ public ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, Expo
 		ExportOutput[] exportOutputs = null;
 		switch (exportSpecs.getFormat()) {
 			case FORMAT_CSV:
-				exportOutputs = asciiExporter.makeASCIIData(newExportJob, user, dataServerImpl, exportSpecs);
+				exportOutputs = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			case FORMAT_QUICKTIME:
-				exportOutputs = qtExporter.makeMovieData(newExportJob, user, dataServerImpl, exportSpecs);
+				exportOutputs = qtExporter.makeMovieData(outputContext,newExportJob, user, dataServerImpl, exportSpecs);
 				if(bSaveAsZip)
 				{
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
@@ -254,22 +255,22 @@ public ExportEvent makeRemoteFile(User user, DataServerImpl dataServerImpl, Expo
 					return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 				}
 			case FORMAT_GIF:
-				exportOutputs = imgExporter.makeImageData(newExportJob, user, dataServerImpl, exportSpecs);
+				exportOutputs = imgExporter.makeImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			case FORMAT_ANIMATED_GIF:
-				exportOutputs = imgExporter.makeImageData(newExportJob, user, dataServerImpl, exportSpecs);
+				exportOutputs = imgExporter.makeImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			case FORMAT_NRRD:
-				NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
+				NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob);
 			case FORMAT_UCD:
-				exportOutputs = rrExporter.makeUCDData(newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
+				exportOutputs = rrExporter.makeUCDData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			case FORMAT_VTK_IMAGE:
-				exportOutputs = rrExporter.makeVTKImageData(newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
+				exportOutputs = rrExporter.makeVTKImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			case FORMAT_VTK_UNSTRUCT:
-				exportOutputs = rrExporter.makeVTKUnstructuredData(newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
+				exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			default:
 				throw new DataAccessException("Unknown export format requested");

@@ -260,6 +260,15 @@ public void refreshData() throws DataAccessException {
 	}
 }
 
+public void refreshFunctions() throws DataAccessException {
+	if (isODEData) {
+		updateScanParamChoices();
+	} else {
+		pdeDataViewer.getPdeDataContext().refreshIdentifiers();
+	}
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:36:17 PM)
@@ -325,7 +334,7 @@ private void updateScanParamChoices(){
 		AsynchClientTask task1 = new AsynchClientTask("get ode results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ODEDataManager odeDatamanager = new ODEDataManager(dataManager.getVCDataManager(), vcdid);
+				ODEDataManager odeDatamanager = (ODEDataManager)dataManager;
 				hashTable.put("odeDatamanager", odeDatamanager);
 			}
 		};
@@ -347,7 +356,7 @@ private void updateScanParamChoices(){
 		AsynchClientTask task1 = new AsynchClientTask("get pde results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				PDEDataManager pdeDatamanager = new PDEDataManager(dataManager.getVCDataManager(), vcdid);
+				PDEDataManager pdeDatamanager = (PDEDataManager)dataManager;
 			
 				ClientPDEDataContext currentContext = (ClientPDEDataContext)pdeDataViewer.getPdeDataContext();
 				if (currentContext == null || currentContext.getDataIdentifier() == null) {

@@ -11,6 +11,7 @@ import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.SimResampleInfoProvider;
@@ -230,9 +231,8 @@ public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File se
 		userDirectory = secondaryUserDir;
 		checkLogFile();
 	}
-	getVarAndFunctionDataIdentifiers();
+	getVarAndFunctionDataIdentifiers(null);
 }
-
 private void checkLogFile() throws FileNotFoundException {
 	try {
 		// must exist for constructor to succeed
@@ -263,55 +263,6 @@ public static VCDataIdentifier createScanFriendlyVCDataID(VCDataIdentifier inVCD
 	}
 	return outVCDID;
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:28:51 PM)
- * @param function cbit.vcell.math.Function
- */
-public synchronized void addFunction(AnnotatedFunction function,boolean bReplace) throws DataAccessException {
-
-	try{
-		getFunctionDataIdentifiers();
-		
-		if(bReplace){
-			replaceFunction(function);
-		}else{
-			addFunctionToList(function);
-		}
-	
-		File firstFuncFile = getFirstJobFunctionsFile();
-		File jobFuncFile = getJobFunctionsFile();
-		Vector<AnnotatedFunction> firstJobFunctions = null;
-		
-		if (firstFuncFile.equals(jobFuncFile)) {
-			firstJobFunctions = annotatedFunctionList;
-		} else {
-			firstJobFunctions = FunctionFileGenerator.readFunctionsFile(firstFuncFile);
-			if (bReplace) {
-				for (int i = 0; i < firstJobFunctions.size(); i ++) {
-					AnnotatedFunction f = firstJobFunctions.elementAt(i);
-					if (f.equals(function)) {
-						firstJobFunctions.set(i, function);
-						break;
-					}
-				}
-			} else {
-				firstJobFunctions.add(function);
-			}
-		}
-
-		FunctionFileGenerator ffg = new FunctionFileGenerator(firstFuncFile.getPath(), firstJobFunctions);
-		ffg.generateFunctionFile();
-	
-		// my lastModified and length should be changed because I just rewrote the file.
-		firstJobFunctionFileLength = firstFuncFile.length();
-		firstJobFunctionFileLastModified = firstFuncFile.lastModified();
-	}catch(Exception e){
-		throw new DataAccessException("Error adding function '"+function.getName()+"' "+e.getMessage());
-	}
-}
-
 
 /**
  * Insert the method's description here.
@@ -549,9 +500,9 @@ private HashMap<String, SymbolTableFunctionEntry> getFunctionHashTable() {
  * @return cbit.vcell.math.Function
  * @param name java.lang.String
  */
-public AnnotatedFunction getFunction(String identifier) {
+public AnnotatedFunction getFunction(OutputContext outputContext,String identifier) {
 	try {
-		getFunctionDataIdentifiers();
+		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 	}
@@ -572,22 +523,12 @@ public AnnotatedFunction getFunction(String identifier) {
  * Insert the method's description here.
  * Creation date: (8/2/2004 10:14:40 AM)
  */
-private void getFunctionDataIdentifiers() throws DataAccessException, FileNotFoundException, IOException {
+private void getFunctionDataIdentifiers(OutputContext outputContext) throws DataAccessException, FileNotFoundException, IOException {
 	//
 	// add function names to VarName list that is returned
 	//
 	if (dataSetIdentifierList.size() != 0 && !getIsODEData()){
-		File funcFile = getFirstJobFunctionsFile();
 		
-		long length = funcFile.length();
-		long lastModified = funcFile.lastModified();
-		if (length == firstJobFunctionFileLength && lastModified == firstJobFunctionFileLastModified) {
-			return;
-		}
-		
-		firstJobFunctionFileLength = length;
-		firstJobFunctionFileLastModified = lastModified;
-
 		// remove functions from dataIdentifiers since we are reading functions again
 		for (int i = 0; i < dataSetIdentifierList.size(); i ++) {
 			DataSetIdentifier dsi = dataSetIdentifierList.elementAt(i);
@@ -597,9 +538,11 @@ private void getFunctionDataIdentifiers() throws DataAccessException, FileNotFou
 			}
 		}
 	
-		readFunctions();
+		readFunctions(outputContext);
 	}
 }
+
+
 
 /**
  * Insert the method's description here.
@@ -607,9 +550,9 @@ private void getFunctionDataIdentifiers() throws DataAccessException, FileNotFou
  * @return cbit.vcell.math.Function
  * @param name java.lang.String
  */
-public AnnotatedFunction[] getFunctions() {
+public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 	try {
-		getFunctionDataIdentifiers();
+		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 	}
@@ -1020,11 +963,10 @@ public synchronized VCDataIdentifier getResultsInfoObject() {
  * @param user cbit.vcell.server.User
  * @param simID java.lang.String
  */
-public synchronized SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException, IOException {
+public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, String varName, double time) throws DataAccessException, IOException {
 	refreshLogFile();
-	
 	try {
-		getFunctionDataIdentifiers();
+		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 	}
@@ -1074,6 +1016,7 @@ public synchronized SimDataBlock getSimDataBlock(String varName, double time) th
  * @param simID java.lang.String
  */
 synchronized double[][][] getSimDataTimeSeries0(
+		OutputContext outputContext,
 		String varNames[],
 		int[][] indexes,
 		boolean[] wantsThisTime,
@@ -1082,9 +1025,8 @@ synchronized double[][][] getSimDataTimeSeries0(
 
 	
 	refreshLogFile();
-
 	try {
-		getFunctionDataIdentifiers();
+		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 	}
@@ -1209,7 +1151,7 @@ public synchronized long getSizeInBytes() {
  * This method was created in VisualAge.
  * @return java.lang.String[]
  */
-public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers() throws IOException, DataAccessException {
+public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputContext outputContext) throws IOException, DataAccessException {
 	// Is this zip format?
 	File zipFile1 = new File(userDirectory,vcDataId.getID()+".zip");
 	File zipFile2 = new File(userDirectory,vcDataId.getID()+"00.zip");
@@ -1255,7 +1197,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers() throws I
 		} 
 
 		// always read functions file since functions might change
-		getFunctionDataIdentifiers();
+		getFunctionDataIdentifiers(outputContext);
 	}
 
 	if (getIsODEData() && dataSetIdentifierList.size() == 0){
@@ -1315,20 +1257,27 @@ synchronized int[] getVolumeSize() throws IOException, DataAccessException {
  * Insert the method's description here.
  * Creation date: (1/15/2004 11:48:25 AM)
  */
-private void readFunctions() throws FileNotFoundException, IOException {
+private void readFunctions(OutputContext outputContext) throws FileNotFoundException, IOException {
 
 	File firstJobFunctionsFile = getFirstJobFunctionsFile();
 	File jobFunctionsFile = getJobFunctionsFile();
-	Vector<AnnotatedFunction> annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(jobFunctionsFile);
-	if (!firstJobFunctionsFile.equals(jobFunctionsFile)) {
-		Vector <AnnotatedFunction> f1 = FunctionFileGenerator.readFunctionsFile(firstJobFunctionsFile);
-		for (AnnotatedFunction f : f1) {
-			if (f.isUserDefined()) {
-				annotatedFuncsVector.add(f);
-			}
+	// only dataset functions
+	Vector<AnnotatedFunction> annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(jobFunctionsFile, true);
+	/* not required as long as we are skipping any legacy user-defined functions from the functions file */
+//	if (!firstJobFunctionsFile.equals(jobFunctionsFile)) {
+//		Vector <AnnotatedFunction> f1 = FunctionFileGenerator.readFunctionsFile(firstJobFunctionsFile);
+//		for (AnnotatedFunction f : f1) {
+//			if (f.isUserDefined()) {
+//				annotatedFuncsVector.add(f);
+//			}
+//		}
+//	}
+	// add user-defined functions from output context, if any
+	if (outputContext != null) {
+		for (int i = 0; i < outputContext.getOutputFunctions().length; i++) {
+			annotatedFuncsVector.add(outputContext.getOutputFunctions()[i]);
 		}
 	}
-
 	//
 	// Convert this annotatedfunctionsVector into the field annotatedFunctionsList.
 	//
@@ -1643,170 +1592,6 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
 	firstJobFunctionFileLength = 0;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:28:51 PM)
- * @param function cbit.vcell.math.Function
- */
-public synchronized void removeFunction(AnnotatedFunction function) throws DataAccessException {
-	try {
-		getFunctionDataIdentifiers();
-	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-	}
-
-	//Don't delete if any functions refer to function
-	AnnotatedFunction[] referringFuncArr = getReferringUserFunctions(function.getName());
-	if(referringFuncArr != null && referringFuncArr.length > 0){
-		throw new RuntimeException(
-				"function '"+function.getName() +"'" +
-				" cannot be removed because it is referred to in function "+
-				"'"+referringFuncArr[0].getName()+"'");		
-	}
-	
-	boolean bFoundAndRemoved = false;
-	for (int i=0;i<annotatedFunctionList.size();i++){
-		AnnotatedFunction annotatedFunc = (AnnotatedFunction)annotatedFunctionList.elementAt(i);
-		if (annotatedFunc.getName().equals(function.getName())){
-			annotatedFunctionList.removeElementAt(i);
-			bFoundAndRemoved = true;
-			// We should also update varNames and dataIdentifiers here, since it cannot be done elsewhere.
-
-			// Update dataSetIdentifierList. check if function  exists, remove it.
-			for (int j = 0; j < dataSetIdentifierList.size(); j++) {
-				DataSetIdentifier dsi = (DataSetIdentifier)dataSetIdentifierList.elementAt(j);
-				if (dsi.getName().equals(annotatedFunc.getName())) {
-					dataSetIdentifierList.removeElement(dsi);
-					break;
-				}				
-			}
-			break;
-		}
-	}
-
-	if (bFoundAndRemoved) {		
-		try {	
-			// if function was found in annotatedFuncslist and removed, the function file has to be updated.
-			Vector<AnnotatedFunction> firstJobFunctions = null;
-			File firstFuncFile = getFirstJobFunctionsFile();
-			File jobFuncFile = getJobFunctionsFile();
-			if (firstFuncFile.equals(jobFuncFile)) {
-				firstJobFunctions = annotatedFunctionList;
-			} else {
-				firstJobFunctions = FunctionFileGenerator.readFunctionsFile(firstFuncFile);
-				for (int i = 0; i < firstJobFunctions.size(); i ++) {
-					AnnotatedFunction f = firstJobFunctions.elementAt(i);
-					if (f.equals(function)) {
-						firstJobFunctions.remove(i);
-						break;
-					}
-				}
-			}
-
-			FunctionFileGenerator ffg = new FunctionFileGenerator(firstFuncFile.getPath(), firstJobFunctions);
-			ffg.generateFunctionFile();
-
-			// my lastModified and length should be changed because I just rewrote the file.				
-			firstJobFunctionFileLength = firstFuncFile.length();
-			firstJobFunctionFileLastModified = firstFuncFile.lastModified();			
-		} catch (Exception e) {
-			throw new DataAccessException(
-					"Error generating function file while removing function '"+
-					function.getName()+"'\n"+e.getMessage());
-		}
-		return;
-	}
-
-	//
-	// throw exception if not already in list (with same name)
-	//
-	throw new RuntimeException("Error remove function "+function.getName()+", not found");
-}
-private void replaceFunction(AnnotatedFunction function) throws ExpressionException,DataAccessException{
-	
-	checkSelfReference(function);
-	
-	boolean bFuncNameExists = false;
-	for (int i=0;i<annotatedFunctionList.size();i++){
-		if (annotatedFunctionList.elementAt(i).getName().equals(function.getName())){
-			bFuncNameExists = true;
-			break;
-		}
-	}
-	if(!bFuncNameExists){
-		addFunctionToList(function);
-		return;
-	}
-
-//	function.getExpression().flatten();
-	Vector<String> targetUserDefinedFunctionSymbols = new Vector<String>();
-	String[] newfuncSymbols = function.getExpression().getSymbols();
-	for (int i = 0; newfuncSymbols != null && i < newfuncSymbols.length; i++) {
-		for (int j=0;j<annotatedFunctionList.size();j++){
-			if (annotatedFunctionList.elementAt(j).getName().equals(newfuncSymbols[i])){
-				if(!targetUserDefinedFunctionSymbols.contains(newfuncSymbols[i])){
-					targetUserDefinedFunctionSymbols.add(newfuncSymbols[i]);
-				}
-				break;
-			}
-		}
-	}
-	HashSet<AnnotatedFunction> allReferringFuncs = new HashSet<AnnotatedFunction>();
-	//Check all paths for circular reference
-	if(targetUserDefinedFunctionSymbols.size() > 0){
-		Vector<AnnotatedFunction> annotFuncsReferringToTarget = new Vector<AnnotatedFunction>();
-		AnnotatedFunction targetFunction = function;
-		while(true){
-			AnnotatedFunction[] referringFuncArr = getReferringUserFunctions(targetFunction.getName());
-			if(referringFuncArr != null && referringFuncArr.length > 0){
-				for (int i = 0; i < targetUserDefinedFunctionSymbols.size(); i++) {
-					for (int j = 0; j < referringFuncArr.length; j++) {
-						if(targetUserDefinedFunctionSymbols.elementAt(i).equals(referringFuncArr[j].getName())){
-							throw new DataAccessException("Error: Circular reference for functions '"+
-									function.getName()+"' and '"+referringFuncArr[j].getName()+"'");
-						}
-					}
-				}
-				for (int j = 0; j < referringFuncArr.length; j++) {
-					allReferringFuncs.add(referringFuncArr[j]);
-					if(!annotFuncsReferringToTarget.contains(referringFuncArr[j])){
-						annotFuncsReferringToTarget.add(referringFuncArr[j]);
-					}
-				}				
-			}
-			if(annotFuncsReferringToTarget.size() > 0){
-				targetFunction = annotFuncsReferringToTarget.elementAt(0);
-				annotFuncsReferringToTarget.remove(0);
-			}else{
-				break;
-			}
-		}
-	}
-	//Bind existing symbols to function and fail if something is wrong
-	function.getExpression().bindExpression(this);
-	
-	for (int i=0;i<annotatedFunctionList.size();i++){
-		if (annotatedFunctionList.elementAt(i).getName().equals(function.getName())){
-			annotatedFunctionList.remove(i);
-			break;
-		}
-	}
-	for (int i = 0; i < dataSetIdentifierList.size(); i++) {
-		if (dataSetIdentifierList.elementAt(i).getName().equals(function.getName())){
-			dataSetIdentifierList.remove(i);
-			break;
-		}
-		
-	}
-	addFunctionToListInternal(function);
-	
-	//Bind Function to existing symbols
-	AnnotatedFunction[] allReferringFuncArr = allReferringFuncs.toArray(new AnnotatedFunction[0]);
-	for (int i = 0; i < allReferringFuncArr.length; i++) {
-		allReferringFuncArr[i].getExpression().bindExpression(this);
-	}
-}
 
 /**
  * FieldDataIdentifier constructor comment.

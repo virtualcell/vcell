@@ -5,6 +5,7 @@ import java.rmi.*;
 import org.vcell.util.DataAccessException;
 
 import cbit.vcell.server.*;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.*;
 /**
  * Insert the type's description here.
@@ -59,9 +60,9 @@ public void setClientServerManager(ClientServerManager newClientServerManager) {
  * Creation date: (6/15/2004 2:15:24 AM)
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  */
-public void startExport(ExportSpecs exportSpecs) throws RemoteException {
+public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) throws RemoteException {
 	try {
-		ExportEvent event = getClientServerManager().getDataSetController().makeRemoteFile(exportSpecs);
+		ExportEvent event = getClientServerManager().getDataSetController().makeRemoteFile(outputContext,exportSpecs);
 		// ignore; we'll get two downloads otherwise... getClientServerManager().getAsynchMessageManager().fireExportEvent(event);
 	} catch (DataAccessException exc) {
 		throw new RemoteException(exc.getMessage());

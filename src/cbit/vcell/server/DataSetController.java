@@ -15,6 +15,7 @@ import org.vcell.util.document.VCDataIdentifier;
 import cbit.vcell.solvers.*;
 import cbit.vcell.simdata.*;
 import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.*;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -25,16 +26,6 @@ import cbit.rmi.event.*;
  * 
  */
 public interface DataSetController extends Remote {
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 6:21:10 PM)
- * @param function cbit.vcell.math.Function[]
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction function[],boolean[] bReplaceArr) throws DataAccessException, RemoteException;
-
-
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws RemoteException, DataAccessException;
 
 
@@ -42,7 +33,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public DataIdentifier[] getDataIdentifiers(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException;
+public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataIdentifier vcdataID) throws RemoteException, DataAccessException;
 /**
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
@@ -55,25 +46,7 @@ public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws RemoteExceptio
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
- AnnotatedFunction[] getFunctions(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException; 
-/**
- * Insert the method's description here.
- * Creation date: (1/16/00 11:38:06 PM)
- * @return boolean
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-boolean getIsODEData(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException;
-/**
- * This method was created by a SmartGuide.
- * @return cbit.plot.PlotData
- * @param variable java.lang.String
- * @param time double
- * @param begin cbit.vcell.math.CoordinateIndex
- * @param end cbit.vcell.math.CoordinateIndex
- * @exception java.rmi.RemoteException The exception description.
- */
-public PlotData getLineScan(VCDataIdentifier vcdataID, String variable, double time, CoordinateIndex begin, CoordinateIndex end) throws RemoteException, DataAccessException;
+ AnnotatedFunction[] getFunctions(OutputContext outputContext,VCDataIdentifier vcdataID) throws DataAccessException, RemoteException; 
 /**
  * This method was created by a SmartGuide.
  * @return cbit.plot.PlotData
@@ -82,7 +55,7 @@ public PlotData getLineScan(VCDataIdentifier vcdataID, String variable, double t
  * @param spatialSelection cbit.vcell.simdata.gui.SpatialSelection
  * @exception java.rmi.RemoteException The exception description.
  */
-public PlotData getLineScan(VCDataIdentifier vcdataID, String variable, double time, SpatialSelection spatialSelection) throws RemoteException, DataAccessException;
+public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdataID, String variable, double time, SpatialSelection spatialSelection) throws RemoteException, DataAccessException;
 /**
  * This method was created in VisualAge.
  * @return CartesianMesh
@@ -118,7 +91,7 @@ public boolean getParticleDataExists(VCDataIdentifier vcdataID) throws DataAcces
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.simdata.SimDataBlock getSimDataBlock(VCDataIdentifier vcdataID, String varName, double time) throws RemoteException, DataAccessException;
+public cbit.vcell.simdata.SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdataID, String varName, double time) throws RemoteException, DataAccessException;
 /**
  * This method was created by a SmartGuide.
  * @return double[]
@@ -128,7 +101,7 @@ public cbit.vcell.simdata.SimDataBlock getSimDataBlock(VCDataIdentifier vcdataID
  * @param z int
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdataID, org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException, DataAccessException;
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID, org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException, DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2001 2:53:44 PM)
@@ -137,13 +110,5 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(VCDataId
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException, java.rmi.RemoteException;
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 6:21:10 PM)
- * @param function cbit.vcell.math.Function
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-void removeFunction(VCDataIdentifier vcdataID, AnnotatedFunction function) throws DataAccessException, RemoteException;
+ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException, java.rmi.RemoteException;
 }

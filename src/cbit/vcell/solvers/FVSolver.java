@@ -437,7 +437,7 @@ protected void writeVCGAndResampleFieldData() throws SolverException {
 			String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);			
 			DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(), null, getSaveDirectory().getParentFile(),
 					secondarySimDataDir == null ? null : new File(secondarySimDataDir));
-			dsci.writeFieldFunctionData(argFieldDataIDSpecs, bResample, simpleMesh, simResampleInfoProvider, 
+			dsci.writeFieldFunctionData(null,argFieldDataIDSpecs, bResample, simpleMesh, simResampleInfoProvider, 
 					numMembraneElements, HESM_OVERWRITE_AND_CONTINUE);
 		}
 	} catch(Exception e){

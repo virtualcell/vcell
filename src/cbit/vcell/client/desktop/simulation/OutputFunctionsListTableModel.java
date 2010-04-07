@@ -200,6 +200,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				// both the 'fire's are being used so that the scopedExpressionRenderer renders the exprs properly, esp with num/dem exprs.
 				fireTableDataChanged();
 				fireTableRowsUpdated(rowIndex,rowIndex);
+				outputFunctionContext.firePropertyChange("outputFunctions", null, outputFunctionContext.getOutputFunctionsList());
 			} catch (ExpressionException e){
 				e.printStackTrace(System.out);
 				cbit.vcell.client.PopupGenerator.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());

@@ -92,6 +92,7 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.desktop.mathmodel.VCMLEditorPanel;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
@@ -1632,16 +1633,16 @@ public ConnectionStatus getConnectionStatus(){
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-public DataManager getDataManager(VCDataIdentifier vcDataId, boolean isSpatial) throws DataAccessException {
+public DataManager getDataManager(OutputContext outputContext, VCDataIdentifier vcDataId, boolean isSpatial) throws DataAccessException {
 	//
 	// Create ODE or PDE or Merged Datamanager depending on ODE or PDE or Merged data.
 	//
 	DataManager dataManager = null;
 	VCDataManager vcDataManager = getClientServerManager().getVCDataManager();
 	if (isSpatial) {
-		dataManager = new PDEDataManager(vcDataManager, vcDataId);
+		dataManager = new PDEDataManager(outputContext,vcDataManager, vcDataId);
 	} else {
-		dataManager = new ODEDataManager(vcDataManager, vcDataId);
+		dataManager = new ODEDataManager(outputContext,vcDataManager, vcDataId);
 	}
 //	dataManager.connect();
 	return dataManager;
@@ -1666,9 +1667,10 @@ public DocumentManager getDocumentManager() {
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-public MergedDatasetViewerController getMergedDatasetViewerController(VCDataIdentifier vcdId, boolean expectODEData) throws DataAccessException {
+public MergedDatasetViewerController getMergedDatasetViewerController(OutputContext outputContext,VCDataIdentifier vcdId,boolean expectODEData) throws DataAccessException {
 	if (vcdId instanceof MergedDataInfo) {
-		return new MergedDatasetViewerController(getClientServerManager().getVCDataManager(), vcdId, expectODEData);
+		DataManager dataManager = getDataManager(outputContext,vcdId, !expectODEData);
+		return new MergedDatasetViewerController(dataManager);
 	} else {
 		return null;
 	}
@@ -1681,10 +1683,10 @@ public MergedDatasetViewerController getMergedDatasetViewerController(VCDataIden
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-public DataViewerController getDataViewerController(Simulation simulation, int jobIndex) throws DataAccessException {
+public DataViewerController getDataViewerController(OutputContext outputContext, Simulation simulation, int jobIndex) throws DataAccessException {
 	VCSimulationIdentifier vcSimulationIdentifier = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 	final VCDataIdentifier vcdataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);	
-	DataManager dataManager = getDataManager(vcdataIdentifier, simulation.isSpatial());
+	DataManager dataManager = getDataManager(outputContext,vcdataIdentifier, simulation.isSpatial());
 	return new SimResultsViewerController(dataManager, simulation);
 }
 
@@ -2515,13 +2517,13 @@ public void showTestingFrameworkWindow() {
  * Insert the method's description here.
  * Creation date: (6/15/2004 2:37:01 AM)
  */
-public void startExport(final TopLevelWindowManager windowManager, final ExportSpecs exportSpecs) {
+public void startExport(final OutputContext outputContext,final TopLevelWindowManager windowManager, final ExportSpecs exportSpecs) {
 	// start a thread to get it; not blocking any window/frame
 	AsynchClientTask task1 = new AsynchClientTask("starting exporting", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			getClientServerManager().getJobManager().startExport(exportSpecs);
+			getClientServerManager().getJobManager().startExport(outputContext,exportSpecs);
 		}
 	};
 	ClientTaskDispatcher.dispatch(windowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1 });

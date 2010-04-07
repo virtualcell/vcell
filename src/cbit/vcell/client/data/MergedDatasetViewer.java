@@ -4,6 +4,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.VCDataManager;
@@ -15,8 +16,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  * @author: Ion Moraru
  */
 public class MergedDatasetViewer extends DataViewer {
-	private VCDataManager vcDataManager = null;
-	private VCDataIdentifier vcDataId = null;
+	private DataManager dataManager = null;
 	private DataViewer mainViewer = null;
 	private boolean isODEData;
 	private ODEDataViewer odeDataViewer = null;
@@ -28,11 +28,10 @@ public class MergedDatasetViewer extends DataViewer {
  * @param simulation cbit.vcell.solver.Simulation
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  */
-public MergedDatasetViewer(VCDataManager argVcDataManager, VCDataIdentifier argMergedDataID, boolean argIsODEData) throws DataAccessException {
+public MergedDatasetViewer(DataManager argDataManager) throws DataAccessException {
 	super();
-	setVcDataId(argMergedDataID);
-	setVcDataManager(argVcDataManager);
-	this.isODEData = argIsODEData;
+	setDataManager(argDataManager);
+	this.isODEData = argDataManager instanceof ODEDataManager;
 	initialize();
 }
 
@@ -45,13 +44,13 @@ public MergedDatasetViewer(VCDataManager argVcDataManager, VCDataIdentifier argM
 private DataViewer createDataViewer() {
 	try {
 		if (isODEData) {
-			ODEDataManager odeDataManager = new ODEDataManager(vcDataManager, vcDataId);
+			ODEDataManager odeDataManager = (ODEDataManager)dataManager;
 			odeDataViewer = new ODEDataViewer();
 			odeDataViewer.setOdeSolverResultSet(odeDataManager.getODESolverResultSet());
-			odeDataViewer.setVcDataIdentifier(vcDataId);
+			odeDataViewer.setVcDataIdentifier(dataManager.getVCDataIdentifier());
 			return odeDataViewer;
 		} else {
-			PDEDataManager pdeDataManager = new PDEDataManager(vcDataManager, vcDataId);
+			PDEDataManager pdeDataManager = (PDEDataManager)dataManager;
 			pdeDataViewer = new PDEDataViewer();
 			pdeDataViewer.setPdeDataContext(pdeDataManager.getPDEDataContext());
 			return pdeDataViewer;
@@ -125,7 +124,13 @@ public void refreshData() throws org.vcell.util.DataAccessException {
 		pdeDataViewer.getPdeDataContext().refreshTimes();
 	}
 }
-
+public void refreshFunctions() throws DataAccessException {
+	if (isODEData) {
+		refreshData();
+	} else {
+		pdeDataViewer.getPdeDataContext().refreshIdentifiers();
+	}
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:36:17 PM)
@@ -141,17 +146,7 @@ private void setMainViewer(DataViewer newMainViewer) {
  * Creation date: (10/17/2005 11:36:17 PM)
  * @param newVcDataManager cbit.vcell.client.server.VCDataManager
  */
-private void setVcDataId(VCDataIdentifier newVcDataId) {
-	vcDataId = newVcDataId;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2005 11:36:17 PM)
- * @param newVcDataManager cbit.vcell.client.server.VCDataManager
- */
-private void setVcDataManager(cbit.vcell.client.server.VCDataManager newVcDataManager) {
-	vcDataManager = newVcDataManager;
+private void setDataManager(DataManager newDataManager) {
+	dataManager = newDataManager;
 }
 }

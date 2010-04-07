@@ -32,6 +32,7 @@ import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.UserPreferences;
@@ -211,7 +212,7 @@ public class FieldDataWindowManager
 	
 	public PDEDataContext getPDEDataContext(ExternalDataIdentifier eDI) throws DataAccessException{
 		return 
-			((PDEDataManager)getRequestManager().getDataManager(eDI, true)).getPDEDataContext();
+			((PDEDataManager)getRequestManager().getDataManager(null, eDI, true)).getPDEDataContext();
 	}
 public void viewData(final ExternalDataIdentifier eDI){
 	
@@ -278,7 +279,8 @@ public void viewData(final ExternalDataIdentifier eDI){
 								DocumentWindowManager.showFrame(plotFrames[i], jdp);
 							}
 						}
-						public void startExport(ExportSpecs exportSpecs){
+						public void startExport(
+								OutputContext outputContext,ExportSpecs exportSpecs){
 						}
 						public void simStatusChanged(SimStatusEvent simStatusEvent) {
 						}

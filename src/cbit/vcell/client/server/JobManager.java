@@ -3,6 +3,7 @@ import org.vcell.util.DataAccessException;
 
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.*;
 import cbit.vcell.messaging.db.*;
 import cbit.vcell.server.*;
@@ -31,7 +32,7 @@ SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimulationId
  * Creation date: (6/2/2004 1:42:28 AM)
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  */
-void startExport(ExportSpecs exportSpecs) throws DataAccessException;
+void startExport(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException;
 
 
 /**

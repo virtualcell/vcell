@@ -9,6 +9,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.desktop.mathmodel.VCMLEditorPanel;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
@@ -133,7 +134,7 @@ ConnectionStatus getConnectionStatus();
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-DataManager getDataManager(VCDataIdentifier vcDataID, boolean isSpatial) throws DataAccessException;
+DataManager getDataManager(OutputContext outputContext, VCDataIdentifier vcDataID, boolean isSpatial) throws DataAccessException;
 
 
 /**
@@ -150,7 +151,7 @@ DocumentManager getDocumentManager();
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-MergedDatasetViewerController getMergedDatasetViewerController(VCDataIdentifier vcdId, boolean expectODEData) throws DataAccessException;
+MergedDatasetViewerController getMergedDatasetViewerController(OutputContext outputContext, VCDataIdentifier vcdId, boolean expectODEData) throws DataAccessException;
 
 SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException;
 
@@ -160,7 +161,7 @@ SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException;
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-DataViewerController getDataViewerController(Simulation simulation, int jobIndex) throws DataAccessException;
+DataViewerController getDataViewerController(OutputContext outputContext, Simulation simulation, int jobIndex) throws DataAccessException;
 
 
 /**
@@ -310,7 +311,8 @@ void showTestingFrameworkWindow();
  * Insert the method's description here.
  * Creation date: (6/1/2004 9:58:46 PM)
  */
-public void startExport(TopLevelWindowManager windowManager, ExportSpecs exportSpecs);
+public void startExport(
+		OutputContext outputContext,TopLevelWindowManager windowManager, ExportSpecs exportSpecs);
 
 
 /**

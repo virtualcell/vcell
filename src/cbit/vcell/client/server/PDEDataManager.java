@@ -1,6 +1,5 @@
 package cbit.vcell.client.server;
 
-import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -8,7 +7,7 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
 import cbit.vcell.client.data.NewClientPDEDataContext;
-import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.math.Function;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
@@ -25,6 +24,7 @@ public class PDEDataManager implements DataManager {
 	private VCDataManager vcDataManager = null;
 	private VCDataIdentifier vcDataIdentifier = null;
 	private NewClientPDEDataContext newClientPDEDataContext = null;
+	private OutputContext outputContext = null;
 
 /**
  * Insert the method's description here.
@@ -32,22 +32,11 @@ public class PDEDataManager implements DataManager {
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
  */
-public PDEDataManager(VCDataManager vcDataManager, VCDataIdentifier vcDataIdentifier) {
+public PDEDataManager(OutputContext outputContext, VCDataManager vcDataManager, VCDataIdentifier vcDataIdentifier) {
 	setVcDataManager(vcDataManager);
 	setVcDataIdentifier(vcDataIdentifier);
+	setOutputContext(outputContext);
 	connect();
-}
-
-
-/**
- * adds an array of named <code>Function</code>s to the list of variables that are availlable for this Simulation.
- * 
- * @param functions represent named expressions that are to be bound to dataset and whose names are added to variable list.
- * 
- * @throws org.vcell.util.DataAccessException if Functions cannot be bound to this dataset or SimulationInfo not found.
- */
-public void addFunctions(AnnotatedFunction[] functions,boolean[] bReplaceArr) throws DataAccessException {
-	getVCDataManager().addFunctions(getVcDataIdentifier(), functions,bReplaceArr);
 }
 
 
@@ -61,7 +50,7 @@ public void addFunctions(AnnotatedFunction[] functions,boolean[] bReplaceArr) th
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
 public DataIdentifier[] getDataIdentifiers() throws DataAccessException {
-	return getVCDataManager().getDataIdentifiers(getVcDataIdentifier());
+	return getVCDataManager().getDataIdentifiers(getOutputContext(),getVcDataIdentifier());
 }
 
 
@@ -86,41 +75,8 @@ public double[] getDataSetTimes() throws DataAccessException {
  * 
  * @see Function
  */
-public AnnotatedFunction[] getFunctions() throws DataAccessException {
-	return getVCDataManager().getFunctions(getVcDataIdentifier());
-}
-
-
-/**
- * tests if resultSet contains ODE data for the specified simulation.
- * 
- * @returns <i>true</i> if results are of type ODE, <i>false</i> otherwise.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * 
- * @see Function
- */
-public boolean getIsODEData() throws DataAccessException {
-	return false;
-}
-
-
-/**
- * retrieves a line scan (data sampled along a line in space) for the specified simulation.
- * 
- * @param variable name of variable to be sampled
- * @param time simulation time which is to be sampled.
- * @param begin i,j,k of start of line.
- * @param end i,j,k coordinate of end of line.
- * 
- * @returns annotated array of 'concentration vs. distance' in a plot ready format.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * 
- * @see PlotData
- */
-public PlotData getLineScan(String variable, double time, CoordinateIndex begin, CoordinateIndex end) throws DataAccessException {
-	return getVCDataManager().getLineScan(getVcDataIdentifier(), variable, time, begin, end);
+public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
+	return getVCDataManager().getFunctions(outputContext,getVcDataIdentifier());
 }
 
 
@@ -138,7 +94,7 @@ public PlotData getLineScan(String variable, double time, CoordinateIndex begin,
  * @see PlotData
  */
 public PlotData getLineScan(String variable, double time, SpatialSelection spatialSelection) throws DataAccessException {
-	return getVCDataManager().getLineScan(getVcDataIdentifier(), variable, time, spatialSelection);
+	return getVCDataManager().getLineScan(getOutputContext(),getVcDataIdentifier(), variable, time, spatialSelection);
 }
 
 
@@ -203,7 +159,7 @@ public PDEDataContext getPDEDataContext() {
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
 public SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException {
-	return getVCDataManager().getSimDataBlock(getVcDataIdentifier(), varName, time);
+	return getVCDataManager().getSimDataBlock(getOutputContext(),getVcDataIdentifier(), varName, time);
 }
 
 
@@ -220,7 +176,7 @@ public SimDataBlock getSimDataBlock(String varName, double time) throws DataAcce
  * @see CartesianMesh for transformation between indices and coordinates.
  */
 public TimeSeriesJobResults getTimeSeriesValues(TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
-	return getVCDataManager().getTimeSeriesValues(getVcDataIdentifier(),timeSeriesJobSpec);
+	return getVCDataManager().getTimeSeriesValues(getOutputContext(),getVcDataIdentifier(),timeSeriesJobSpec);
 }
 
 
@@ -254,19 +210,6 @@ public VCDataManager getVCDataManager() {
 
 
 /**
- * removes the specified <i>function</i> from this Simulation.
- * 
- * @param function function to be removed.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * @throws org.vcell.util.PermissionException if not the owner of this dataset.
- */
-public void removeFunction(AnnotatedFunction function) throws DataAccessException {
-	getVCDataManager().removeFunction(function, getVcDataIdentifier());
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (6/11/2004 3:53:21 PM)
  * @param newVcDataIdentifier cbit.vcell.server.VCDataIdentifier
@@ -288,5 +231,15 @@ private void setVcDataManager(VCDataManager newVcDataManager) {
 
 private void connect() {
 	newClientPDEDataContext = new NewClientPDEDataContext(this);	
+}
+
+
+public OutputContext getOutputContext() {
+	return outputContext;
+}
+
+
+public void setOutputContext(OutputContext outputContext) {
+	this.outputContext = outputContext;
 }
 }

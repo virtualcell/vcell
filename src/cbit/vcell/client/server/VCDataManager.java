@@ -9,9 +9,9 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.DataIdentifier;
@@ -38,28 +38,6 @@ public VCDataManager(DataSetControllerProvider dataSetControllerProvider) {
 	this.dataSetControllerProvider = dataSetControllerProvider;
 }
 
-
-/**
- * adds an array of named <code>Function</code>s to the list of variables that are availlable for this Simulation.
- *
- * @param simulationInfo simulation database reference
- * @param functions represent named expressions that are to be bound to dataset and whose names are added to variable list.
- *
- * @throws org.vcell.util.DataAccessException if Functions cannot be bound to this dataset or SimulationInfo not found.
- */
-public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions,boolean[] bReplaceArr) throws DataAccessException {
-	try {
-		getDataSetController().addFunctions(vcdID,functions,bReplaceArr);
-	}catch (RemoteException e){
-		handleRemoteException(e);
-		try {
-			getDataSetController().addFunctions(vcdID,functions,bReplaceArr);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
-			throw new RuntimeException(e2.getMessage());
-		}
-	}
-}
 
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFielOperationSpec) throws DataAccessException {
 	try {
@@ -94,13 +72,13 @@ private DataSetControllerProvider getDataSetControllerProvider() {
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-public DataIdentifier[] getDataIdentifiers(VCDataIdentifier vcdID) throws DataAccessException {
+public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataIdentifier vcdID) throws DataAccessException {
 	try {
-		return getDataSetController().getDataIdentifiers(vcdID);
+		return getDataSetController().getDataIdentifiers(outputContext,vcdID);
 	}catch (RemoteException e){
 		handleRemoteException(e);
 		try {
-			return getDataSetController().getDataIdentifiers(vcdID);
+			return getDataSetController().getDataIdentifiers(outputContext,vcdID);
 		}catch (RemoteException e2){
 			handleRemoteException(e2);
 			throw new RuntimeException(e2.getMessage());
@@ -158,69 +136,13 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
  *
  * @see Function
  */
-public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws DataAccessException {
+public cbit.vcell.math.AnnotatedFunction[] getFunctions(OutputContext outputContext, org.vcell.util.document.VCDataIdentifier vcdID) throws DataAccessException {
 	try {
-		return getDataSetController().getFunctions(vcdID);
+		return getDataSetController().getFunctions(outputContext,vcdID);
 	}catch (RemoteException e){
 		handleRemoteException(e);
 		try {
-			return getDataSetController().getFunctions(vcdID);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
-			throw new RuntimeException(e2.getMessage());
-		}
-	}
-}
-
-
-/**
- * tests if resultSet contains ODE data for the specified simulation.
- *
- * @param simulationInfo simulation database reference
- *
- * @returns <i>true</i> if results are of type ODE, <i>false</i> otherwise.
- *
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- *
- * @see Function
- */
-public boolean getIsODEData(VCDataIdentifier vcdID) throws DataAccessException {
-	try {
-		return getDataSetController().getIsODEData(vcdID);
-	}catch (RemoteException e){
-		handleRemoteException(e);
-		try {
-			return getDataSetController().getIsODEData(vcdID);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
-			throw new RuntimeException(e2.getMessage());
-		}
-	}
-}
-
-
-/**
- * retrieves a line scan (data sampled along a line in space) for the specified simulation.
- *
- * @param simulationInfo simulation database reference
- * @param variable name of variable to be sampled
- * @param time simulation time which is to be sampled.
- * @param begin i,j,k of start of line.
- * @param end i,j,k coordinate of end of line.
- *
- * @returns annotated array of 'concentration vs. distance' in a plot ready format.
- *
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- *
- * @see PlotData
- */
-public PlotData getLineScan(VCDataIdentifier vcdID, String variable, double time, CoordinateIndex begin, CoordinateIndex end) throws DataAccessException {
-	try {
-		return getDataSetController().getLineScan(vcdID,variable,time,begin,end);
-	}catch (RemoteException e){
-		handleRemoteException(e);
-		try {
-			return getDataSetController().getLineScan(vcdID,variable,time,begin,end);
+			return getDataSetController().getFunctions(outputContext,vcdID);
 		}catch (RemoteException e2){
 			handleRemoteException(e2);
 			throw new RuntimeException(e2.getMessage());
@@ -243,13 +165,13 @@ public PlotData getLineScan(VCDataIdentifier vcdID, String variable, double time
  *
  * @see PlotData
  */
-public PlotData getLineScan(VCDataIdentifier vcdID, String variable, double time, SpatialSelection spatialSelection) throws DataAccessException {
+public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID, String variable, double time, SpatialSelection spatialSelection) throws DataAccessException {
 	try {
-		return getDataSetController().getLineScan(vcdID,variable,time,spatialSelection);
+		return getDataSetController().getLineScan(outputContext,vcdID,variable,time,spatialSelection);
 	}catch (RemoteException e){
 		handleRemoteException(e);
 		try {
-			return getDataSetController().getLineScan(vcdID,variable,time,spatialSelection);
+			return getDataSetController().getLineScan(outputContext,vcdID,variable,time,spatialSelection);
 		}catch (RemoteException e2){
 			handleRemoteException(e2);
 			throw new RuntimeException(e2.getMessage());
@@ -385,13 +307,13 @@ public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessEx
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, double time) throws DataAccessException {
+public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdID, String varName, double time) throws DataAccessException {
 	try {
-		return getDataSetController().getSimDataBlock(vcdID,varName,time);
+		return getDataSetController().getSimDataBlock(outputContext,vcdID,varName,time);
 	}catch (RemoteException e){
 		handleRemoteException(e);
 		try {
-			return getDataSetController().getSimDataBlock(vcdID,varName,time);
+			return getDataSetController().getSimDataBlock(outputContext,vcdID,varName,time);
 		}catch (RemoteException e2){
 			handleRemoteException(e2);
 			throw new RuntimeException(e2.getMessage());
@@ -413,13 +335,13 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID, TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdID, TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	try {
-		return getDataSetController().getTimeSeriesValues(vcdID,timeSeriesJobSpec);
+		return getDataSetController().getTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec);
 	}catch (RemoteException e){
 		handleRemoteException(e);
 		try {
-			return getDataSetController().getTimeSeriesValues(vcdID,timeSeriesJobSpec);
+			return getDataSetController().getTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec);
 		}catch (RemoteException e2){
 			handleRemoteException(e2);
 			throw new RuntimeException(e2.getMessage());
@@ -437,28 +359,5 @@ private void handleRemoteException(RemoteException remoteException) {
 	System.out.println("\n\n.... Handling RemoteException ...\n");
 	remoteException.printStackTrace(System.out);
 	System.out.println("\n\n");
-}
-
-
-/**
- * removes the specified <i>function</i> from this Simulation.
- * 
- * @param function function to be removed.
- * 
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * @throws org.vcell.util.PermissionException if not the owner of this dataset.
- */
-public void removeFunction(AnnotatedFunction function, VCDataIdentifier vcDataIdentifier) throws DataAccessException {
-		try {
-		getDataSetController().removeFunction(vcDataIdentifier,function);
-	}catch (RemoteException e){
-		handleRemoteException(e);
-		try {
-			getDataSetController().removeFunction(vcDataIdentifier,function);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
-			throw new RuntimeException(e2.getMessage());
-		}
-	}
 }
 }

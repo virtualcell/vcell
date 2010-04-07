@@ -79,24 +79,11 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private Plot2D fieldPlot2D = null;
 	private java.lang.String[] resultSetColumnNames = null;
 	private DefaultComboBoxModel ivjComboBoxModelX = null;
-	private JButton ivjDeleteFunctionButton = null;
-	private JPanel ivjUserFunctionPanel = null;
 	private JComboBox ivjXAxisComboBox = null;
-	private JButton ivjAddFunctionButton = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private ODESolverResultSet ivjodeSolverResultSet1 = null;
-	private JLabel ivjFunctionExprLabel = null;
-	private JLabel ivjFunctionNameLabel = null;
-	private JPanel ivjFunctionPanel = null;
-	private TextFieldAutoCompletion ivjFunctionExpressionTextField = null;
-	private JTextField ivjFunctionNameTextField = null;
-
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListSelectionListener {
+	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getAddFunctionButton()) 
-				connEtoC5(e);
-			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getDeleteFunctionButton()) 
-				connEtoC8(e);
 			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getLogSensCheckbox()) 
 				connEtoC10(e);
 		};
@@ -108,7 +95,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("odeSolverResultSet")))
 			{
 				connEtoC1(evt);
-				disableOrEnableFunctionButtons();
 			}
 			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("xIndex"))) 
 				connEtoC3(evt);
@@ -137,95 +123,6 @@ public ODESolverPlotSpecificationPanel() {
 	super();
 	initialize();
 }
-
-/**
- * Comment
- */
-private void addFunction(ODESolverResultSet odeRS) throws ExpressionException {
-
-	//
-	// Assign a default name for the new function. Check if any other existing function has the same name.
-	// 
-	String[] existingFunctionsNames = new String[odeRS.getFunctionColumnCount()];
-	for (int i = 0; i < odeRS.getFunctionColumnCount(); i++) {
-		existingFunctionsNames[i] = odeRS.getColumnDescriptions(i+odeRS.getDataColumnCount()).getName();
-	}
-	
-	String defaultName = null;
-	int count = 0;
-	boolean nameUsed = true;
-	while (nameUsed) {
-		boolean matchFound = false;
-		count++;
-		defaultName = "Function" + count;
-		for (int i = 0; existingFunctionsNames != null && i < existingFunctionsNames.length; i++){
-			if (existingFunctionsNames[i].equals(defaultName)) {
-				matchFound = true;
-			}
-		}
-		nameUsed = matchFound;
-	}
-
-	//
-	// Initialize fields
-	//
-
-	javax.swing.JPanel FnPanel = getFunctionPanel();
-	
-	getFunctionNameTextField().setText(defaultName);
-	getFunctionExpressionTextField().setText("0.0");
-	Set<String> autoCompList = new HashSet<String>();
-	for (int i = 0; i < odeRS.getColumnDescriptionsCount(); i++) {
-        ColumnDescription column = odeRS.getColumnDescriptions(i);
-        autoCompList.add(column.getName());
-    }
-	getFunctionExpressionTextField().setAutoCompletionWords(autoCompList);
-	getFunctionExpressionTextField().setAutoCompleteSymbolFilter(new AutoCompleteSymbolFilter() {
-
-		public boolean accept(SymbolTableEntry ste) {
-			return true;
-		}
-
-		public boolean acceptFunction(String funcName) {
-			if (funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]) || funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.GRAD])) {
-				return false;
-			}
-			return true;
-		}
-		
-	});
-
-	//
-	// Show the editor with a default name and default expression for the function
-	// If the OK option is chosen, get the new name and expression for the function and create a new
-	// functioncolumndescription, check is function is valid. If it is, add it to the list of columns 
-	// in the ODEResultSet. Else, pop-up an error dialog indicating that function cannot be added.
-	//
-	FunctionColumnDescription fcd = null;
-	int ok = JOptionPane.showOptionDialog(this, FnPanel, "Add Function" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
-	if (ok == javax.swing.JOptionPane.OK_OPTION) {
-		String funcName = getFunctionNameTextField().getText();
-		Expression funcExp = new Expression(getFunctionExpressionTextField().getText());
-		fcd = new FunctionColumnDescription(funcExp, funcName, null, funcName+" : "+funcExp.infix(), true);
-
-		try {
-			odeRS.checkFunctionValidity(fcd);
-		} catch (ExpressionException e) {
-			javax.swing.JOptionPane.showMessageDialog(this, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
-			// Commenting the Stack trace for exception .... annoying to have the exception thrown after dealing with pop-up error message!
-			// e.printStackTrace(System.out);
-			return;
-		}
-		try {
-			odeRS.addFunctionColumn(fcd);
-		} catch (ExpressionException e) {
-			javax.swing.JOptionPane.showMessageDialog(this, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace(System.out);
-		}
-
-	}
-}
-
 
 /**
  * connEtoC1:  (ODESolverPlotSpecificationPanel.odeSolverResultSet --> ODESolverPlotSpecificationPanel.setPlottableColumns(Lcbit.vcell.solver.ode.ODESolverResultSet;)V)
@@ -384,28 +281,6 @@ private void connEtoC4(java.beans.PropertyChangeEvent arg1) {
 }
 
 /**
- * connEtoC5:  (AddFunctionButton.action.actionPerformed(java.awt.event.ActionEvent) --> ODESolverPlotSpecificationPanel.addFunction(Lcbit.vcell.solver.ode.ODESolverResultSet;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getodeSolverResultSet1() != null)) {
-			this.addFunction(getodeSolverResultSet1());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoC6:  (XAxisComboBox.item.itemStateChanged(java.awt.event.ItemEvent) --> ODESolverPlotSpecificationPanel.setXIndex(I)V)
  * @param arg1 java.awt.event.ItemEvent
  */
@@ -446,25 +321,6 @@ private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 
-
-/**
- * connEtoC8:  (DeleteFunctionButton.action.actionPerformed(java.awt.event.ActionEvent) --> ODESolverPlotSpecificationPanel.deleteFunction(Lcbit.vcell.math.Function;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.deleteFunction(getYAxisChoice().getSelectedIndex());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
 /**
  * connEtoC9:  (odeSolverResultSet1.this --> ODESolverPlotSpecificationPanel.enableLogSensitivity(Lcbit.vcell.solver.ode.ODESolverResultSet;)V)
@@ -574,66 +430,6 @@ private void connPtoP3SetTarget() {
 
 
 /**
- * Comment
- */
-private void deleteFunction(int ySelection) {
-	ODESolverResultSet odeRS = getOdeSolverResultSet();
-
-	//
-	// Check to see if the selected option to be deleted is a state variable or
-	// a function generated by the model. If so, the selection cannot be deleted.
-	//
-	
-	String yChoice = getDefaultListModelY().getElementAt(ySelection).toString();
-
-	for (int i = 0; i < odeRS.getColumnDescriptionsCount(); i++) {
-		ColumnDescription colDesc = odeRS.getColumnDescriptions(i);
-		if (colDesc instanceof ODESolverResultSetColumnDescription){
-			if (yChoice.equals(colDesc.getDisplayName())) {
-				javax.swing.JOptionPane.showMessageDialog(this,"Cannot Delete selected data. "+yChoice+" is a state variable.", "Error Deleting Selection",JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-		} else if (colDesc instanceof FunctionColumnDescription){
-			FunctionColumnDescription funcColDesc = (FunctionColumnDescription)colDesc;
-			if ( (yChoice.equals(funcColDesc.getDisplayName())) && !(funcColDesc.getIsUserDefined()) ) {
-				javax.swing.JOptionPane.showMessageDialog(this,"Cannot Delete selected function. "+funcColDesc.getDisplayName()+" is not a user-defined function.", "Error Deleting Function",JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-		}
-	}
-
-	//
-	// If the function that is to be deleted is a user-defined function, remove the corresponding
-	// functionColumnDescription from the odesolver result set and call updateRestultSet to update
-	// the plot specification panel, etc.
-	//
-
-	// Remove functionColumnDescription from odeRS
-	for (int i=0;i<odeRS.getColumnDescriptionsCount();i++) {
-		ColumnDescription colDesc = odeRS.getColumnDescriptions(i);
-		if (colDesc instanceof FunctionColumnDescription){
-			FunctionColumnDescription funcColDesc = (FunctionColumnDescription)colDesc;
-			if ( yChoice.equals(funcColDesc.getDisplayName()) ) {
-				try {
-					odeRS.removeFunctionColumn(funcColDesc);
-				} catch (ExpressionException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Cannot remove function column from result set."+e.getMessage());
-				}
-			}
-		}
-	}
-
-	// updateResultSet
-	try {
-		updateResultSet(odeRS);
-	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Cannot update result set."+e.getMessage());
-	}
-}
-	
-/**
  * Method to enable the log sensitivity checkbox and slider depending on whether sensitivity analysis is enabled.
  */
 private void enableLogSensitivity() throws ExpressionException {
@@ -645,32 +441,6 @@ private void enableLogSensitivity() throws ExpressionException {
 	}
 }
 
-
-/**
- * Return the AddFuntionButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getAddFunctionButton() {
-	if (ivjAddFunctionButton == null) {
-		try {
-			ivjAddFunctionButton = new javax.swing.JButton();
-			ivjAddFunctionButton.setName("AddFunctionButton");
-			ivjAddFunctionButton.setText("Add Function");
-			ivjAddFunctionButton.setComponentOrientation(java.awt.ComponentOrientation.LEFT_TO_RIGHT);
-			ivjAddFunctionButton.setMaximumSize(new java.awt.Dimension(121, 25));
-			ivjAddFunctionButton.setPreferredSize(new java.awt.Dimension(121, 25));
-			ivjAddFunctionButton.setMinimumSize(new java.awt.Dimension(22, 22));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjAddFunctionButton;
-}
 
 /**
  * Return the ComboBoxModelX property value.
@@ -738,174 +508,6 @@ private javax.swing.DefaultListModel getDefaultListModelY() {
 	return ivjDefaultListModelY;
 }
 
-
-/**
- * Return the DeleteFunctionButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getDeleteFunctionButton() {
-	if (ivjDeleteFunctionButton == null) {
-		try {
-			ivjDeleteFunctionButton = new javax.swing.JButton();
-			ivjDeleteFunctionButton.setName("DeleteFunctionButton");
-			ivjDeleteFunctionButton.setText("Delete Function");
-			ivjDeleteFunctionButton.setMinimumSize(new java.awt.Dimension(22, 22));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjDeleteFunctionButton;
-}
-
-
-/**
- * Return the JTextField2 property value.
- * @return javax.swing.JTextField
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private TextFieldAutoCompletion getFunctionExpressionTextField() {
-	if (ivjFunctionExpressionTextField == null) {
-		try {
-			ivjFunctionExpressionTextField = new TextFieldAutoCompletion();
-			ivjFunctionExpressionTextField.setName("FunctionExpressionTextField");
-			ivjFunctionExpressionTextField.setPreferredSize(new java.awt.Dimension(200, 30));
-			ivjFunctionExpressionTextField.setMaximumSize(new java.awt.Dimension(200, 30));
-			ivjFunctionExpressionTextField.setMinimumSize(new java.awt.Dimension(200, 30));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFunctionExpressionTextField;
-}
-
-/**
- * Return the FunctionExprLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getFunctionExprLabel() {
-	if (ivjFunctionExprLabel == null) {
-		try {
-			ivjFunctionExprLabel = new javax.swing.JLabel();
-			ivjFunctionExprLabel.setName("FunctionExprLabel");
-			ivjFunctionExprLabel.setText("Function Expression");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFunctionExprLabel;
-}
-
-
-/**
- * Return the FunctionNameLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getFunctionNameLabel() {
-	if (ivjFunctionNameLabel == null) {
-		try {
-			ivjFunctionNameLabel = new javax.swing.JLabel();
-			ivjFunctionNameLabel.setName("FunctionNameLabel");
-			ivjFunctionNameLabel.setText("Function Name");
-			ivjFunctionNameLabel.setMinimumSize(new java.awt.Dimension(45, 14));
-			ivjFunctionNameLabel.setMaximumSize(new java.awt.Dimension(45, 14));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFunctionNameLabel;
-}
-
-
-/**
- * Return the JTextField1 property value.
- * @return javax.swing.JTextField
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTextField getFunctionNameTextField() {
-	if (ivjFunctionNameTextField == null) {
-		try {
-			ivjFunctionNameTextField = new javax.swing.JTextField();
-			ivjFunctionNameTextField.setName("FunctionNameTextField");
-			ivjFunctionNameTextField.setSize(new java.awt.Dimension(600, 30));
-			ivjFunctionNameTextField.setPreferredSize(new java.awt.Dimension(600, 30));
-			ivjFunctionNameTextField.setMaximumSize(new java.awt.Dimension(600, 30));
-			ivjFunctionNameTextField.setMinimumSize(new java.awt.Dimension(600, 30));			
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFunctionNameTextField;
-}
-
-/**
- * Return the FunctionPanel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getFunctionPanel() {
-	if (ivjFunctionPanel == null) {
-		try {
-			ivjFunctionPanel = new javax.swing.JPanel();
-			ivjFunctionPanel.setName("FunctionPanel");
-			ivjFunctionPanel.setLayout(new java.awt.GridBagLayout());
-			ivjFunctionPanel.setBounds(401, 308, 407, 85);
-
-			java.awt.GridBagConstraints constraintsFunctionNameLabel = new java.awt.GridBagConstraints();
-			constraintsFunctionNameLabel.gridx = 0; constraintsFunctionNameLabel.gridy = 0;
-			constraintsFunctionNameLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getFunctionPanel().add(getFunctionNameLabel(), constraintsFunctionNameLabel);
-
-			java.awt.GridBagConstraints constraintsFunctionNameTextField = new java.awt.GridBagConstraints();
-			constraintsFunctionNameTextField.gridx = 1; constraintsFunctionNameTextField.gridy = 0;
-			constraintsFunctionNameTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsFunctionNameTextField.weightx = 1.0;
-			constraintsFunctionNameTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getFunctionPanel().add(getFunctionNameTextField(), constraintsFunctionNameTextField);
-
-			java.awt.GridBagConstraints constraintsFunctionExprLabel = new java.awt.GridBagConstraints();
-			constraintsFunctionExprLabel.gridx = 0; constraintsFunctionExprLabel.gridy = 1;
-			constraintsFunctionExprLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getFunctionPanel().add(getFunctionExprLabel(), constraintsFunctionExprLabel);
-
-			java.awt.GridBagConstraints constraintsFunctionExpressionTextField = new java.awt.GridBagConstraints();
-			constraintsFunctionExpressionTextField.gridx = 1; constraintsFunctionExpressionTextField.gridy = 1;
-			constraintsFunctionExpressionTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsFunctionExpressionTextField.weightx = 1.0;
-			constraintsFunctionExpressionTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getFunctionPanel().add(getFunctionExpressionTextField(), constraintsFunctionExpressionTextField);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFunctionPanel;
-}
 
 /**
  * Return the JLabelSensitivityParameter property value.
@@ -1269,34 +871,6 @@ public SymbolTable getSymbolTable() {
 
 
 /**
- * Return the UserFunctionPanel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getUserFunctionPanel() {
-	if (ivjUserFunctionPanel == null) {
-		try {
-			ivjUserFunctionPanel = new javax.swing.JPanel();
-			ivjUserFunctionPanel.setName("UserFunctionPanel");
-			ivjUserFunctionPanel.setLayout(new java.awt.FlowLayout());
-			ivjUserFunctionPanel.setAlignmentY(java.awt.Component.CENTER_ALIGNMENT);
-			ivjUserFunctionPanel.setMaximumSize(new java.awt.Dimension(120, 70));
-			ivjUserFunctionPanel.setPreferredSize(new java.awt.Dimension(115, 68));
-			ivjUserFunctionPanel.setMinimumSize(new java.awt.Dimension(115, 68));
-			getUserFunctionPanel().add(getAddFunctionButton(), getAddFunctionButton().getName());
-			getUserFunctionPanel().add(getDeleteFunctionButton(), getDeleteFunctionButton().getName());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjUserFunctionPanel;
-}
-
-/**
  * Return the XAxisComboBox property value.
  * @return javax.swing.JComboBox
  */
@@ -1428,8 +1002,6 @@ private void initConnections() throws java.lang.Exception {
 	getYAxisChoice().addListSelectionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getXAxisComboBox().addItemListener(ivjEventHandler);
-	getAddFunctionButton().addActionListener(ivjEventHandler);
-	getDeleteFunctionButton().addActionListener(ivjEventHandler);
 	getLogSensCheckbox().addActionListener(ivjEventHandler);
 	getSensitivityParameterSlider().addChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
@@ -1463,7 +1035,7 @@ private void initialize() {
 
 		java.awt.GridBagConstraints constraintsJPanelSensitivity = new java.awt.GridBagConstraints();
 		constraintsJPanelSensitivity.gridx = 0; constraintsJPanelSensitivity.gridy = 5;
-constraintsJPanelSensitivity.gridheight = 2;
+		constraintsJPanelSensitivity.gridheight = 2;
 		constraintsJPanelSensitivity.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanelSensitivity.weightx = 1.0;
 		add(getJPanelSensitivity(), constraintsJPanelSensitivity);
@@ -1483,11 +1055,6 @@ constraintsJPanelSensitivity.gridheight = 2;
 		constraintsXAxisComboBox.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getXAxisComboBox(), constraintsXAxisComboBox);
 
-		java.awt.GridBagConstraints constraintsUserFunctionPanel = new java.awt.GridBagConstraints();
-		constraintsUserFunctionPanel.gridx = 0; constraintsUserFunctionPanel.gridy = 4;
-		constraintsUserFunctionPanel.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsUserFunctionPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getUserFunctionPanel(), constraintsUserFunctionPanel);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -2074,23 +1641,6 @@ private Point2D[] generateHistogram(double[] rawData)
         result[i] = new Point2D.Double(key,valperc);
     }
 	return result;
-}
-
-private void disableOrEnableFunctionButtons() {
-	String[] colnames = getResultSetColumnNames();
-	for(int i=0; i<colnames.length; i++)
-	{
-		//if there is "t" in column names, the result set is not histogram
-		if(colnames[i].equals(ReservedSymbol.TIME.getName()))
-		{
-			getAddFunctionButton().setEnabled(true);
-			getDeleteFunctionButton().setEnabled(true);
-			return;
-		}
-	}
-	//no "t", it's histogram. disable these buttons
-	getAddFunctionButton().setEnabled(false);
-	getDeleteFunctionButton().setEnabled(false);
 }
 
 public String[] getSelectedVariableNames() {
