@@ -10,13 +10,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
+import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_Panel;
 
 import org.vcell.wizard.Wizard;
@@ -51,7 +51,7 @@ public class BackgroundROIDescriptor extends WizardPanelDescriptor {
     	((JPanel)getPanelComponent()).removeAll();
     	((JPanel)getPanelComponent()).add(imgPanel);
     	((BatchRunROIImgPanel)imgPanel).setBatchRunWorkspace(getBatchRunWorkspace());
-    	((BatchRunROIImgPanel)imgPanel).adjustComponents(OverlayEditorPanelJAI.DEFINE_BACKGROUNDROI);
+    	((BatchRunROIImgPanel)imgPanel).adjustComponents(VFrap_OverlayEditorPanelJAI.DEFINE_BACKGROUNDROI);
     	((BatchRunROIImgPanel)imgPanel).refreshUI();
     }
     
@@ -105,7 +105,7 @@ public class BackgroundROIDescriptor extends WizardPanelDescriptor {
 				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 				   ((BatchRunROIImgPanel)imgPanel).getBatchRunWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)
 				{
-					((FRAPDataPanel)((BatchRunROIImgPanel)imgPanel).getCenterPanel()).showROIAssistDialog();
+					((FRAPDataPanel)((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showAssistDialog();
 				}
 			}
 		};

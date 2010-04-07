@@ -81,7 +81,6 @@ import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
@@ -886,7 +885,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			cursorsForROIsHash.put(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name(), FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BACKGROUNDROI]);
 			frapDataPanel.getOverlayEditorPanelJAI().setCursorsForROIs(cursorsForROIsHash);
 			
-			OverlayEditorPanelJAI.CustomROIImport importVFRAPROI = new OverlayEditorPanelJAI.CustomROIImport(){
+			VFrap_OverlayEditorPanelJAI.CustomROIImport importVFRAPROI = new VFrap_OverlayEditorPanelJAI.CustomROIImport(){
 				public boolean importROI(File inputFile) throws Exception{
 					try{
 						if(!VirtualFrapLoader.filter_vfrap.accept(inputFile)){
@@ -925,7 +924,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			};
 			frapDataPanel.getOverlayEditorPanelJAI().setCustomROIImport(importVFRAPROI);
 			//set display mode
-			frapDataPanel.adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITH_ROIS);
+			frapDataPanel.adjustComponents(VFrap_OverlayEditorPanelJAI.DISPLAY_WITH_ROIS);
 		}
 		return frapDataPanel;
 	}

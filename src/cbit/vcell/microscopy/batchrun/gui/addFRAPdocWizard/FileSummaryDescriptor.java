@@ -8,7 +8,6 @@ import java.util.Hashtable;
 
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;

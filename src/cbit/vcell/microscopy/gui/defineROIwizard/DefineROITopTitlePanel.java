@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 
 import cbit.vcell.geometry.gui.AddShapeJPanel;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
+import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 
 public class DefineROITopTitlePanel extends JPanel
 {
@@ -89,28 +89,28 @@ public class DefineROITopTitlePanel extends JPanel
 	
 	public void adjustComponent(int choice)
 	{
-		if(choice == OverlayEditorPanelJAI.DEFINE_CROP)
+		if(choice == VFrap_OverlayEditorPanelJAI.DEFINE_CROP)
 		{
 			cropLabel.setEnabled(true);
 			cellRoiLabel.setEnabled(false);
 			bleachedRoiLabel.setEnabled(false);
 			backgroundLabel.setEnabled(false);
 		}
-		else if(choice == OverlayEditorPanelJAI.DEFINE_CELLROI)
+		else if(choice == VFrap_OverlayEditorPanelJAI.DEFINE_CELLROI)
 		{
 			cropLabel.setEnabled(false);
 			cellRoiLabel.setEnabled(true);
 			bleachedRoiLabel.setEnabled(false);
 			backgroundLabel.setEnabled(false);
 		}
-		else if(choice == OverlayEditorPanelJAI.DEFINE_BLEACHEDROI)
+		else if(choice == VFrap_OverlayEditorPanelJAI.DEFINE_BLEACHEDROI)
 		{
 			cropLabel.setEnabled(false);
 			cellRoiLabel.setEnabled(false);
 			bleachedRoiLabel.setEnabled(true);
 			backgroundLabel.setEnabled(false);
 		}
-		else if(choice == OverlayEditorPanelJAI.DEFINE_BACKGROUNDROI)
+		else if(choice == VFrap_OverlayEditorPanelJAI.DEFINE_BACKGROUNDROI)
 		{
 			cropLabel.setEnabled(false);
 			cellRoiLabel.setEnabled(false);
