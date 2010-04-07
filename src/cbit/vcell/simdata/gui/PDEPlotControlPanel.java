@@ -35,9 +35,11 @@ import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.VariableType.VariableDomain;
 /**
  * Insert the type's description here.
  * Creation date: (1/21/2001 10:29:53 PM)
@@ -76,24 +78,35 @@ public class PDEPlotControlPanel extends JPanel {
 		boolean isAcceptAll(String filterSetName);
 	};
 	
-	DataIdentifierFilter DEFAULT_DATAIDENTIFIER_FILTER =
+	DataIdentifierFilter DEFAULT_DATAIDENTIFIER_FILTER = 
 		new DataIdentifierFilter(){
 			private String ALL = "All Variables";
 			private String VOLUME_FILTER_SET = "Volume Variables";
 			private String MEMBRANE_FILTER_SET = "Membrane Variables";
 			private String USER_DEFINED_FILTER_SET = "User Functions";
-			private String[] FILTER_SET_NAMES = new String[] {ALL,VOLUME_FILTER_SET,MEMBRANE_FILTER_SET,USER_DEFINED_FILTER_SET};
+			private String REGION_SIZE_FILTER_SET = "Region Sizes";
+			private String[] FILTER_SET_NAMES = new String[] {ALL,VOLUME_FILTER_SET,MEMBRANE_FILTER_SET,USER_DEFINED_FILTER_SET, REGION_SIZE_FILTER_SET};
 			public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
+				String varName = dataidentifier.getName();
+				boolean bSizeVar = varName.startsWith(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName()) 
+						|| varName.startsWith(MathFunctionDefinitions.Function_regionArea_current.getFunctionName());
+				if (filterSetName.equals(REGION_SIZE_FILTER_SET)) {
+					return bSizeVar;
+				}
+				if (bSizeVar) {
+					return false;
+				}
+				
 				if(filterSetName.equals(ALL)){
 					return true;
 				}else if(filterSetName.equals(VOLUME_FILTER_SET)){
-					return dataidentifier.getVariableType().equals(VariableType.VOLUME);
+					return dataidentifier.getVariableType().getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME);
 				}else if(filterSetName.equals(MEMBRANE_FILTER_SET)){
-					return dataidentifier.getVariableType().equals(VariableType.MEMBRANE);
+					return dataidentifier.getVariableType().getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 				}else if(filterSetName.equals(USER_DEFINED_FILTER_SET)){
 					if(functionsList != null){
-						for (int i = 0; i < functionsList.size(); i++) {
-							if(functionsList.elementAt(i).isUserDefined() && functionsList.elementAt(i).getName().equals(dataidentifier.getName())){
+						for (AnnotatedFunction f : functionsList) {
+							if(f.isUserDefined() && f.getName().equals(varName)){
 								return true;
 							}
 						}
@@ -113,7 +126,7 @@ public class PDEPlotControlPanel extends JPanel {
 			}
 		};
 	
-	DataIdentifierFilter dataIdentifierFilter;
+	DataIdentifierFilter dataIdentifierFilter = DEFAULT_DATAIDENTIFIER_FILTER;
 	
 	private ActionListener filterChangeActionListener =
 		new ActionListener(){
@@ -172,25 +185,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 public PDEPlotControlPanel() {
 	super();
 	initialize();
-	setDataIdentifierFilter(DEFAULT_DATAIDENTIFIER_FILTER);
-}
-
-public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
-	this.dataIdentifierFilter = dataIdentifierFilter;
-	filterComboBox.removeActionListener(filterChangeActionListener);
-	filterComboBox.removeAllItems();
-	if(dataIdentifierFilter != null){
-		String[] filterSetNames = this.dataIdentifierFilter.getFilterSetNames();
-		for (int i = 0; i < filterSetNames.length; i++) {
-			filterComboBox.addItem(filterSetNames[i]);
-		}
-		filterComboBox.setSelectedItem(dataIdentifierFilter.getDefaultFilterName());
-		filterComboBox.addActionListener(filterChangeActionListener);
-	}else{
-		filterComboBox.addItem("All Variables");
-		filterComboBox.setSelectedIndex(0);
-	}
-	filterVariableNames();
 }
 
 
@@ -255,13 +249,6 @@ private void addFunction() {
 		}
 	};
 	
-	AsynchClientTask task4 = new AsynchClientTask("change cursor to wait cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			BeanUtils.setCursorThroughout(PDEPlotControlPanel.this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		}
-	};
-	
 	AsynchClientTask task5 = new AsynchClientTask("refresh identifiers", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -269,14 +256,7 @@ private void addFunction() {
 		}		
 	};
 	
-	AsynchClientTask task6 = new AsynchClientTask("change cursor back to default cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			BeanUtils.setCursorThroughout(PDEPlotControlPanel.this, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-		}		
-	};
-	
-	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3, task4, task5, task6});
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3, task5});
 }
 
 
@@ -593,58 +573,69 @@ private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
 
 private void filterVariableNames(){
 	if ((getpdeDataContext1() != null)) {
-		Object oldselection = getJList1().getSelectedValue();
-		if(dataIdentifierFilter == null || dataIdentifierFilter.isAcceptAll((String)filterComboBox.getSelectedItem())){
-			getDefaultListModelCivilized1().setContents(getpdeDataContext1().getVariableNames());
-		}else{
-			initFunctionsList();
-			ArrayList<String> displayVarNames = new ArrayList<String>(); 
-			if(getpdeDataContext1().getDataIdentifiers() != null && getpdeDataContext1().getDataIdentifiers().length > 0){
-				TreeSet<DataIdentifier> dataIdentifierTreeSet =
-					new TreeSet<DataIdentifier>(new Comparator<DataIdentifier>(){
-						public int compare(DataIdentifier o1, DataIdentifier o2) {
-							if(o1.getName().compareToIgnoreCase(o2.getName()) == 0){
-								return o1.getName().compareTo(o2.getName());
+		final Object oldselection = getJList1().getSelectedValue();
+		AsynchClientTask task1 = new AsynchClientTask("get functions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if(!dataIdentifierFilter.isAcceptAll((String)filterComboBox.getSelectedItem())){
+					initFunctionsList();
+				}
+			}
+		};
+		
+		AsynchClientTask task2 = new AsynchClientTask("filter variables", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				ArrayList<String> displayVarNames = new ArrayList<String>(); 
+				if(getpdeDataContext1().getDataIdentifiers() != null && getpdeDataContext1().getDataIdentifiers().length > 0){
+					TreeSet<DataIdentifier> dataIdentifierTreeSet =
+						new TreeSet<DataIdentifier>(new Comparator<DataIdentifier>(){
+							public int compare(DataIdentifier o1, DataIdentifier o2) {
+								if(o1.getName().compareToIgnoreCase(o2.getName()) == 0){
+									return o1.getName().compareTo(o2.getName());
+								}
+								return o1.getName().compareToIgnoreCase(o2.getName());
+							}});
+					DataIdentifier[] dataIdentifierArr = getPdeDataContext().getDataIdentifiers();
+					dataIdentifierTreeSet.addAll(Arrays.asList(dataIdentifierArr));
+					DataIdentifier[] sortedDataIdentiferArr = dataIdentifierTreeSet.toArray(new DataIdentifier[0]);
+		
+					for(int i=0; i < sortedDataIdentiferArr.length; i++){
+						if(dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), sortedDataIdentiferArr[i])){
+							displayVarNames.add(sortedDataIdentiferArr[i].getName());
+						}
+					}
+				}
+				if(displayVarNames.size() == 0){
+					Object emptyFilter = filterComboBox.getSelectedItem();
+		//				filterComboBox.setSelectedItem(dataIdentifierFilter.getDefaultFilterName());
+					System.err.println("No Variables matching filter '"+emptyFilter+"' found");
+		//				return;
+				}
+				String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
+				getDefaultListModelCivilized1().setContents((displayNames.length == 0?null:displayNames));
+				
+				if(getJList1().getModel().getSize() > 0){
+					if(oldselection == null){
+						getJList1().setSelectedIndex(0);
+					}else{
+						boolean bFound = false;
+						for (int i = 0; i < getJList1().getModel().getSize(); i++) {
+							if(oldselection.equals(getJList1().getModel().getElementAt(i))){
+								getJList1().setSelectedIndex(i);
+								bFound = true;
+								break;
 							}
-							return o1.getName().compareToIgnoreCase(o2.getName());
-						}});
-				DataIdentifier[] dataIdentifierArr = getPdeDataContext().getDataIdentifiers();
-				dataIdentifierTreeSet.addAll(Arrays.asList(dataIdentifierArr));
-				DataIdentifier[] sortedDataIdentiferArr = dataIdentifierTreeSet.toArray(new DataIdentifier[0]);
-
-				for(int i=0; i < sortedDataIdentiferArr.length; i++){
-					if(dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), sortedDataIdentiferArr[i])){
-						displayVarNames.add(sortedDataIdentiferArr[i].getName());
+						}
+						if(!bFound){
+							getJList1().setSelectedIndex(0);
+						}
 					}
+					
 				}
 			}
-			if(displayVarNames.size() == 0){
-				Object emptyFilter = filterComboBox.getSelectedItem();
-//				filterComboBox.setSelectedItem(dataIdentifierFilter.getDefaultFilterName());
-				System.err.println("No Variables matching filter '"+emptyFilter+"' found");
-//				return;
-			}
-			String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
-			getDefaultListModelCivilized1().setContents((displayNames.length == 0?null:displayNames));
-		}
-		if(getJList1().getModel().getSize() > 0){
-			if(oldselection == null){
-				getJList1().setSelectedIndex(0);
-			}else{
-				boolean bFound = false;
-				for (int i = 0; i < getJList1().getModel().getSize(); i++) {
-					if(oldselection.equals(getJList1().getModel().getElementAt(i))){
-						getJList1().setSelectedIndex(i);
-						bFound = true;
-						break;
-					}
-				}
-				if(!bFound){
-					getJList1().setSelectedIndex(0);
-				}
-			}
-			
-		}
+		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
 	}
 }
 
@@ -1283,7 +1274,7 @@ private javax.swing.JPanel getTimeSliderJPanel() {
 
 			java.awt.GridBagConstraints constraintsJSliderTime = new java.awt.GridBagConstraints();
 			constraintsJSliderTime.gridx = 0; constraintsJSliderTime.gridy = 0;
-constraintsJSliderTime.gridheight = 2;
+			constraintsJSliderTime.gridheight = 2;
 			constraintsJSliderTime.fill = java.awt.GridBagConstraints.VERTICAL;
 			constraintsJSliderTime.weighty = 1.0;
 			constraintsJSliderTime.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -1363,6 +1354,18 @@ private void initialize() {
 		this.add(getJSplitPane1(), gridBagConstraints);
 		this.add(getAddFunctionButton(), gridBagConstraints1);
 		initConnections();
+		
+		filterComboBox.removeActionListener(filterChangeActionListener);
+		filterComboBox.removeAllItems();
+		String[] filterSetNames = dataIdentifierFilter.getFilterSetNames();
+		for (int i = 0; i < filterSetNames.length; i++) {
+			filterComboBox.addItem(filterSetNames[i]);
+		}
+		filterComboBox.setSelectedItem(dataIdentifierFilter.getDefaultFilterName());
+		filterComboBox.addActionListener(filterChangeActionListener);
+		
+		filterVariableNames();
+
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -1515,7 +1518,7 @@ private void setmodel1(javax.swing.BoundedRangeModel newValue) {
  * @see #getPdeDataContext
  */
 public void setPdeDataContext(PDEDataContext pdeDataContext) {
-	cbit.vcell.simdata.PDEDataContext oldValue = fieldPdeDataContext;
+	PDEDataContext oldValue = fieldPdeDataContext;
 	fieldPdeDataContext = pdeDataContext;
 	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
 }
@@ -1567,13 +1570,7 @@ private void setTimeFromSlider(int sliderPosition) {
 		final double timepoint = getpdeDataContext1().getTimePoints()[sliderPosition];
 		
 		if (! getJSliderTime().getValueIsAdjusting()) {
-			Hashtable<String, Object> hash = new Hashtable<String, Object>();
-			AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					setCursorForWindow(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));									
-				}
-			};
-			
+			Hashtable<String, Object> hash = new Hashtable<String, Object>();			
 			AsynchClientTask task2  = new AsynchClientTask("Setting TimePoint", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					getpdeDataContext1().setTimePoint(timepoint);
@@ -1581,33 +1578,29 @@ private void setTimeFromSlider(int sliderPosition) {
 			};
 			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					try {
-						Exception exc = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
-						if (exc == null) {
-							updateTimeTextField(getPdeDataContext().getTimePoint());
-						} else {
-							int index = -1;
-							if(getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null){
-								double[] timePoints = getPdeDataContext().getTimePoints();
-								for(int i=0;i<timePoints.length;i+= 1){
-									if(timePoints[i] == getPdeDataContext().getTimePoint()){
-										index = i;
-										break;
-									}
+					Exception exc = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+					if (exc == null) {
+						updateTimeTextField(getPdeDataContext().getTimePoint());
+					} else {
+						int index = -1;
+						if(getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null){
+							double[] timePoints = getPdeDataContext().getTimePoints();
+							for(int i=0;i<timePoints.length;i+= 1){
+								if(timePoints[i] == getPdeDataContext().getTimePoint()){
+									index = i;
+									break;
 								}
 							}
-							if(index != -1){
-								getJSliderTime().setValue(index);
-							}else{
-								getJTextField1().setText("-Error-");
-							}
 						}
-					} finally {
-						setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+						if(index != -1){
+							getJSliderTime().setValue(index);
+						}else{
+							getJTextField1().setText("-Error-");
+						}
 					}
 				}
 			};
-			AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
+			AsynchClientTask[] taskArray = new AsynchClientTask[]{task2, task3};
 			ClientTaskDispatcher.dispatch(this, hash, taskArray);
 		}else{
 			updateTimeTextField(timepoint);
@@ -1663,7 +1656,6 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 			AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					setCursorForWindow(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					if(getDisplayAdapterService() != null){
 						getDisplayAdapterService().activateMarkedState(newVariableName);
 					}
@@ -1678,26 +1670,22 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 				
 			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					try {	
-						Exception e = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
-						if (e != null) {			
-							int index = -1;
-							if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
-								for(int i=0;i<getJList1().getModel().getSize();i+= 1){
-									if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
-										index = i;
-										break;
-									}
+					Exception e = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+					if (e != null) {
+						int index = -1;
+						if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
+							for(int i=0;i<getJList1().getModel().getSize();i+= 1){
+								if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
+									index = i;
+									break;
 								}
 							}
-							if(index != -1){
-								getJList1().setSelectedIndex(index);
-							}else{
-								getJList1().clearSelection();
-							}
 						}
-					} finally {
-						setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+						if(index != -1){
+							getJList1().setSelectedIndex(index);
+						}else{
+							getJList1().clearSelection();
+						}
 					}
 				}
 			};

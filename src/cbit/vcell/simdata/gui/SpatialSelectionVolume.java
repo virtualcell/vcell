@@ -132,6 +132,13 @@ public int getIndex(double u) {
 
 	return getConvertedIndexFromU(u);
 }
+
+private int getMeshIndexFromU(double u) {
+	Coordinate wc = getSamplingWorldCoordinate(u);
+	CoordinateIndex ci = getCoordinateIndexFromWC(wc);
+	return getMesh().getVolumeIndex(ci);
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (2/26/2001 6:17:10 PM)
@@ -180,7 +187,7 @@ public SSHelper getIndexSamples(double begin,double end) {
 	double delta = (end-begin)/(double)SSV_NUM_SAMPLES;
 	int[] uniquePoints = new int[SSV_NUM_SAMPLES];
 	int uniquePointCount = 0;
-	Vector wcV = new Vector();
+	Vector<Coordinate> wcV = new Vector<Coordinate>();
 	//Vector ciV = new Vector();
 //	double[] cellStepArr = new double[SAMPLE_MULT*10];//big enough
 	double[] cellStepArr = new double[SSV_NUM_SAMPLES];//big enough
@@ -194,13 +201,13 @@ public SSHelper getIndexSamples(double begin,double end) {
 		boolean isLastLoop = index == (SSV_NUM_SAMPLES-1);
 		
 		if(isLastLoop){
-			currISample = getConvertedIndexFromU(end);
+			currISample = getMeshIndexFromU(end);
 			currentU = end;
 		}else{
-			currISample = getConvertedIndexFromU(currentU);
+			currISample = getMeshIndexFromU(currentU);
 		}
 		if((index == 0) || (lastISample != currISample)){
-			uniquePoints[uniquePointCount] = currISample;
+			uniquePoints[uniquePointCount] = getIndex(currentU);
 			double midU = midpoint(cellStepArr,cellStepCounter);
 			if(index == 0){midU = begin;}
 			if(isLastLoop){midU = end;}
