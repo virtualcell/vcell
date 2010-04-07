@@ -21,15 +21,13 @@ import org.vcell.util.gui.ZEnforcer;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
-import cbit.vcell.geometry.gui.ROISourceData;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.geometry.gui.ROIAssistPanel;
+import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -79,8 +77,8 @@ public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 		FRAPData fData = getFrapWorkspace().getWorkingFrapStudy().getFrapData();
 		centerPanel.getOverlayEditorPanelJAI().setImages(
 				(fData==null?null:fData.getImageDataset()),true,
-				(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
-				(fData==null || fData.getOriginalGlobalScaleInfo() == null?OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
+				(fData==null || fData.getOriginalGlobalScaleInfo() == null?VFrap_OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
+				(fData==null || fData.getOriginalGlobalScaleInfo() == null?VFrap_OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
 		centerPanel.getOverlayEditorPanelJAI().setRoiSouceData(fData);
 		centerPanel.getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getWorkingFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 	}

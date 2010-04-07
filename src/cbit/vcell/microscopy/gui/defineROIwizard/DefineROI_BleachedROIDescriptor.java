@@ -8,11 +8,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
+import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
+
 import org.vcell.wizard.WizardPanelDescriptor;
 
 public class DefineROI_BleachedROIDescriptor extends WizardPanelDescriptor {
@@ -42,7 +43,7 @@ public class DefineROI_BleachedROIDescriptor extends WizardPanelDescriptor {
     {
     	((JPanel)getPanelComponent()).removeAll();
     	((JPanel)getPanelComponent()).add(imgPanel);
-    	((DefineROI_Panel)imgPanel).adjustComponents(OverlayEditorPanelJAI.DEFINE_BLEACHEDROI);
+    	((DefineROI_Panel)imgPanel).adjustComponents(VFrap_OverlayEditorPanelJAI.DEFINE_BLEACHEDROI);
     }
     
     public ArrayList<AsynchClientTask> preNextProcess()
@@ -75,7 +76,7 @@ public class DefineROI_BleachedROIDescriptor extends WizardPanelDescriptor {
 				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 					((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).getNonzeroPixelsCount()<1)
 				{
-					((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).showROIAssistDialog();
+					((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showAssistDialog();
 				}
 			}
 		};
@@ -113,7 +114,7 @@ public class DefineROI_BleachedROIDescriptor extends WizardPanelDescriptor {
 				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 				   ((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)
 				{
-					((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).showROIAssistDialog();
+					((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showAssistDialog();
 				}
 			}
 		};

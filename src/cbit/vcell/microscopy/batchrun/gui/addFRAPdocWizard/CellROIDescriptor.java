@@ -12,7 +12,6 @@ import javax.swing.ListSelectionModel;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.VFRAPPreference;
@@ -20,6 +19,7 @@ import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.ROIImagePanel;
+import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_Panel;
@@ -64,7 +64,7 @@ public class CellROIDescriptor extends WizardPanelDescriptor {
     	((JPanel)getPanelComponent()).removeAll();
     	((JPanel)getPanelComponent()).add(imgPanel);
     	((BatchRunROIImgPanel)imgPanel).setBatchRunWorkspace(getBatchRunWorkspace());
-    	((BatchRunROIImgPanel)imgPanel).adjustComponents(OverlayEditorPanelJAI.DEFINE_CELLROI);
+    	((BatchRunROIImgPanel)imgPanel).adjustComponents(VFrap_OverlayEditorPanelJAI.DEFINE_CELLROI);
     	((BatchRunROIImgPanel)imgPanel).refreshUI();
     }
     
@@ -98,7 +98,7 @@ public class CellROIDescriptor extends WizardPanelDescriptor {
 				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 				   ((BatchRunROIImgPanel)imgPanel).getBatchRunWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getNonzeroPixelsCount()<1)
 				{
-					((FRAPDataPanel)((BatchRunROIImgPanel)imgPanel).getCenterPanel()).showROIAssistDialog();
+					((FRAPDataPanel)((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showAssistDialog();
 				}
 			}
 		};

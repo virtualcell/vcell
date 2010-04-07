@@ -18,13 +18,13 @@ import javax.swing.border.EmptyBorder;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
+import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 
@@ -73,7 +73,7 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 		{
 			frapDataPanel = new FRAPDataPanel(false);//the frap data panel in the main frame is not editable
 			//set display mode
-			frapDataPanel.adjustComponents(OverlayEditorPanelJAI.DISPLAY_WITH_ROIS);
+			frapDataPanel.adjustComponents(VFrap_OverlayEditorPanelJAI.DISPLAY_WITH_ROIS);
 			
 			Hashtable<String, Cursor> cursorsForROIsHash = new Hashtable<String, Cursor>();
 			cursorsForROIsHash.put(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(), FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_CELLROI]);
@@ -81,7 +81,7 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 			cursorsForROIsHash.put(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name(), FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BACKGROUNDROI]);
 			frapDataPanel.getOverlayEditorPanelJAI().setCursorsForROIs(cursorsForROIsHash);
 			
-			OverlayEditorPanelJAI.CustomROIImport importVFRAPROI = new OverlayEditorPanelJAI.CustomROIImport(){
+			VFrap_OverlayEditorPanelJAI.CustomROIImport importVFRAPROI = new VFrap_OverlayEditorPanelJAI.CustomROIImport(){
 				public boolean importROI(File inputFile) throws Exception{
 					try{
 						if(!VirtualFrapLoader.filter_vfrap.accept(inputFile)){

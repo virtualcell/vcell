@@ -3,7 +3,6 @@ package cbit.vcell.microscopy.gui;
 import java.awt.Color;
 import java.awt.Dimension;
 
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
@@ -512,7 +511,7 @@ public class FRAPEstimationPanel extends JPanel {
 			if(frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getNonzeroPixelsCount()<1){
 				displayFit(null,null);
 				throw new Exception(
-					OverlayEditorPanelJAI.INITIAL_BLEACH_AREA_TEXT+" ROI not defined.\n"+
+						VFrap_OverlayEditorPanelJAI.INITIAL_BLEACH_AREA_TEXT+" ROI not defined.\n"+
 					"Use ROI tools under '"+FRAPStudyPanel.FRAPSTUDYPANEL_TABNAME_IMAGES+"' tab to define.");
 			}
 			frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
