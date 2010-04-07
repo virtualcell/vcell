@@ -9,6 +9,7 @@ import java.util.Arrays;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathException;
 import cbit.vcell.parser.SymbolTable;
@@ -28,14 +29,6 @@ protected VCData() {
 }
 
 public abstract SymbolTableEntry getEntry(String identifier);
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:28:51 PM)
- * @param function cbit.vcell.math.Function
- */
-public abstract void addFunction(AnnotatedFunction function,boolean bReplace) throws DataAccessException;
-
 
 /**
  * Insert the method's description here.
@@ -61,7 +54,7 @@ public abstract double[] getDataTimes() throws DataAccessException;
  * @return cbit.vcell.math.Function
  * @param name java.lang.String
  */
-public abstract AnnotatedFunction getFunction(String identifier);
+public abstract AnnotatedFunction getFunction(OutputContext outputContext,String identifier);
 
 /**
  * Insert the method's description here.
@@ -69,14 +62,7 @@ public abstract AnnotatedFunction getFunction(String identifier);
  * @return cbit.vcell.math.Function
  * @param name java.lang.String
  */
-public abstract AnnotatedFunction[] getFunctions();
-
-
-/**
- * This method was created in VisualAge.
- * @return boolean
- */
-public abstract boolean getIsODEData() throws DataAccessException;
+public abstract AnnotatedFunction[] getFunctions(OutputContext outputContext);
 
 
 /**
@@ -122,9 +108,10 @@ public abstract VCDataIdentifier getResultsInfoObject();
  * @param user cbit.vcell.server.User
  * @param simID java.lang.String
  */
-public abstract SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException, IOException;
+public abstract SimDataBlock getSimDataBlock(OutputContext outputContext, String varName, double time) throws DataAccessException, IOException;
 
 abstract double[][][] getSimDataTimeSeries0(
+		OutputContext outputContext, 
 		String varNames[],
 		int[][] indexes,
 		boolean[] wantsThisTime,
@@ -143,7 +130,7 @@ public abstract long getSizeInBytes();
  * This method was created in VisualAge.
  * @return java.lang.String[]
  */
-public abstract DataIdentifier[] getVarAndFunctionDataIdentifiers() throws IOException, DataAccessException;
+public abstract DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputContext outputContext) throws IOException, DataAccessException;
 
 
 /**
@@ -154,21 +141,14 @@ abstract int[] getVolumeSize() throws IOException, DataAccessException;
 
 
 /**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:28:51 PM)
- * @param function cbit.vcell.math.Function
- */
-public abstract void removeFunction(AnnotatedFunction function) throws DataAccessException;
-
-/**
  * This method was created in VisualAge.
  * @return cbit.vcell.simdata.DataBlock
  * @param user cbit.vcell.server.User
  * @param simID java.lang.String
  */
-public final double[][][] getSimDataTimeSeries(String varNames[],int[][] indexes,boolean[] wantsThisTime, ProgressListener progressListener) throws DataAccessException,IOException{
+public final double[][][] getSimDataTimeSeries(OutputContext outputContext, String varNames[],int[][] indexes,boolean[] wantsThisTime, ProgressListener progressListener) throws DataAccessException,IOException{
 
-	return getSimDataTimeSeries0(varNames,indexes,wantsThisTime,null,progressListener);
+	return getSimDataTimeSeries0(outputContext, varNames,indexes,wantsThisTime,null,progressListener);
 }
 
 /**
@@ -178,13 +158,14 @@ public final double[][][] getSimDataTimeSeries(String varNames[],int[][] indexes
  * @param simID java.lang.String
  */
 public final double[][][] getSimDataTimeSeries(
+		OutputContext outputContext, 
 		String varNames[],
 		int[][] indexes,
 		boolean[] wantsThisTime,
 		DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo,
 		ProgressListener progressListener) throws DataAccessException,IOException{
 
-	return getSimDataTimeSeries0(varNames,indexes,wantsThisTime,spatialStatsInfo, progressListener);
+	return getSimDataTimeSeries0(outputContext, varNames,indexes,wantsThisTime,spatialStatsInfo, progressListener);
 
 }
 
@@ -214,37 +195,6 @@ double[] calcSpaceStats(double[] rawVals,int varIndex,DataSetControllerImpl.Spat
     if(spatialStatsInfo.bWeightsValid){wmean = wsum/spatialStatsInfo.totalSpace[varIndex];}
 
     return new double[] {min,max,mean,wmean,sum,wsum};
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.DataBlock
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
-public synchronized double[][] getSimDataLineScan(String[] varNames,int[][] indexes,double desiredTime,ProgressListener progressListener) throws DataAccessException,IOException{
-
-	// Setup parameters for SimDataReader
-	double[] dataTimes = getDataTimes();
-	boolean[] wantsThisTime = new boolean[dataTimes.length];
-	Arrays.fill(wantsThisTime,false);
-	for(int i=0;i<dataTimes.length;i+= 1){
-		if(dataTimes[i] == desiredTime){
-			wantsThisTime[i] = true;
-			break;
-		}
-	}
-
-	double[][][] timeResults = getSimDataTimeSeries(varNames,indexes,wantsThisTime,progressListener);
-	double[][] results = new double[varNames.length][];
-	for(int i=0;i<varNames.length;i+= 1){
-		results[i] = new double[indexes[i].length];
-		for( int j=0;j<indexes[i].length;j+= 1){
-			results[i][j] = timeResults[0][i][j];
-		}
-	}
-	return results;
 }
 
 }

@@ -15,6 +15,7 @@ import cbit.vcell.simdata.*;
 import cbit.vcell.server.*;
 import cbit.image.ImagePaneModel;
 import cbit.util.*;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.geometry.*;
 /**
  * Insert the type's description here.
@@ -33,7 +34,8 @@ public IMGExporter(ExportServiceImpl exportServiceImpl) {
 }
 
 
-private ExportOutput[] makeAnimatedGIFs(long jobID, User user, DataServerImpl dataServerImpl,
+private ExportOutput[] makeAnimatedGIFs(
+		OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
 		VCDataIdentifier vcdID, String[] varNames,
 		int beginTimeIndex, int endTimeIndex, int axis, int sliceNumber,
 		DisplayPreferences[] displayPreferences, int mirroringType, double duration, int loopingMode, boolean hideMembraneOutline,
@@ -43,7 +45,7 @@ private ExportOutput[] makeAnimatedGIFs(long jobID, User user, DataServerImpl da
 	String simID = vcdID.getID();
 	double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
 	double interval = allTimes[endTimeIndex] - allTimes[beginTimeIndex];
-	PDEOffscreenRenderer off = new PDEOffscreenRenderer(user, dataServerImpl, vcdID);
+	PDEOffscreenRenderer off = new PDEOffscreenRenderer(outputContext,user, dataServerImpl, vcdID);
 	off.setNormalAxis(axis);
 	off.setSlice(sliceNumber);
 	off.setHideMembraneOutline(hideMembraneOutline);
@@ -110,7 +112,8 @@ private ExportOutput[] makeAnimatedGIFs(long jobID, User user, DataServerImpl da
  * @param slicePlane int
  * @param sliceNumber int
  */
-private ExportOutput[] makeGIFs(long jobID, User user, DataServerImpl dataServerImpl,
+private ExportOutput[] makeGIFs(
+		OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
 		VCDataIdentifier vcdID, String[] varNames,
 		int beginTimeIndex, int endTimeIndex,
 		int axis, int sliceNumber, DisplayPreferences[] displayPreferences,
@@ -120,7 +123,7 @@ private ExportOutput[] makeGIFs(long jobID, User user, DataServerImpl dataServer
 
 	String simID = vcdID.getID();
 	double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
-	PDEOffscreenRenderer off = new PDEOffscreenRenderer(user, dataServerImpl, vcdID);
+	PDEOffscreenRenderer off = new PDEOffscreenRenderer(outputContext,user, dataServerImpl, vcdID);
 	off.setNormalAxis(axis);
 	off.setSlice(sliceNumber);
 	off.setHideMembraneOutline(hideMembraneOutline);
@@ -167,12 +170,14 @@ private ExportOutput[] makeGIFs(long jobID, User user, DataServerImpl dataServer
 /**
  * This method was created in VisualAge.
  */
-public ExportOutput[] makeImageData(JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)
+public ExportOutput[] makeImageData(
+		OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
 	switch (((ImageSpecs)exportSpecs.getFormatSpecificSpecs()).getFormat()) {
 		case GIF:
 			return makeGIFs(
+					outputContext,
 				jobRequest.getJobID(),
 				user,
 				dataServerImpl,
@@ -191,6 +196,7 @@ public ExportOutput[] makeImageData(JobRequest jobRequest, User user, DataServer
 				);
 		case ANIMATED_GIF:
 			return makeAnimatedGIFs(
+					outputContext,
 				jobRequest.getJobID(),
 				user,
 				dataServerImpl,

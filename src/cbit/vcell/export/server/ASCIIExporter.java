@@ -3,6 +3,7 @@ import cbit.vcell.solver.ode.*;
 import cbit.vcell.math.*;
 import cbit.plot.*;
 import cbit.vcell.simdata.gui.*;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.geometry.*;
 import java.rmi.*;
 
@@ -31,14 +32,16 @@ public ASCIIExporter(ExportServiceImpl exportServiceImpl) {
 	this.exportServiceImpl = exportServiceImpl;
 }
 
-
-private ExportOutput[] exportODEData(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs) throws DataAccessException, RemoteException {
+/**
+ * @deprecated
+ */
+private ExportOutput[] exportODEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs) throws DataAccessException, RemoteException {
 	String simID = vcdID.getID();
 	ExportOutput[] output = new ExportOutput[] {new ExportOutput(false, null, null, null, null)};
 	String dataType = ".csv";
 	String dataID = "_";
 	StringBuffer data = new StringBuffer();
-	SimulationDescription simulationDescription = new SimulationDescription(user, dataServerImpl,vcdID);
+	SimulationDescription simulationDescription = new SimulationDescription(outputContext, user, dataServerImpl,vcdID,true);
 	data.append(simulationDescription.getHeader(dataType));
 	data.append(getODEDataValues(jobID, user, dataServerImpl, vcdID, variableSpecs.getVariableNames(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
 	dataID += variableSpecs.getModeID() == 0 ? variableSpecs.getVariableNames()[0] : "ManyVars";
@@ -53,8 +56,9 @@ private ExportOutput[] exportODEData(long jobID, User user, DataServerImpl dataS
  * @return cbit.vcell.export.server.ExportOutput[]
  * @param dsc cbit.vcell.server.DataSetController
  * @param timeSpecs cbit.vcell.export.server.TimeSpecs
+ * @deprecated
  */
-private ExportOutput[] exportParticleData(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs) throws RemoteException, DataAccessException {
+private ExportOutput[] exportParticleData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs) throws RemoteException, DataAccessException {
 
 	String simID = vcdID.getID();
 	String dataType = ".csv";
@@ -87,7 +91,7 @@ private ExportOutput[] exportParticleData(long jobID, User user, DataServerImpl 
 		dataLines = new StringBuffer[numberOfTimes];
 		for (int j=0;j<dataLines.length;j++) dataLines[j] = new StringBuffer();
 	}
-	SimulationDescription simulationDescription = new SimulationDescription(user, dataServerImpl,vcdID);
+	SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false);
 	header.append(simulationDescription.getHeader(dataType));
 	if (switchRowsColumns) {
 		header.append(",Particle #\n");
@@ -144,7 +148,7 @@ private ExportOutput[] exportParticleData(long jobID, User user, DataServerImpl 
 /**
  * This method was created in VisualAge.
  */
-private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs) 
+private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs) 
 						throws RemoteException, DataAccessException {
 							
 	double progress = 0.0;
@@ -154,7 +158,7 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
 	String dataType = ".csv";
 	String dataID = "_";
 	StringBuffer data = new StringBuffer();
-	SimulationDescription simulationDescription = new SimulationDescription(user, dataServerImpl,vcdID);
+	SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false);
 	data.append(simulationDescription.getHeader(dataType));
 	switch (geometrySpecs.getModeID()) {
 		case GEOMETRY_SELECTIONS: {
@@ -178,7 +182,7 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
 					progress = (double)i / required;
 					exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
 					StringBuffer data1 = new StringBuffer(data.toString());
-					data1.append(getPointsTimeSeries(user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getPointIndexes(), timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
+					data1.append(getPointsTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getPointIndexes(), timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
 					output[i] = new ExportOutput(true, dataType, simID, dataID + variableSpecs.getVariableNames()[i], data1.toString().getBytes());
 				}
 			}
@@ -190,7 +194,7 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
 					progress = (double)(done + i + s * variableSpecs.getVariableNames().length) / required;
 					exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
 					StringBuffer data1 = new StringBuffer(data.toString());
-					data1.append(getCurveTimeSeries(user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
+					data1.append(getCurveTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
 					output[s * variableSpecs.getVariableNames().length + i+pointOffset] = new ExportOutput(true, dataType, simID, dataID + variableSpecs.getVariableNames()[i], data1.toString().getBytes());
 				}
 			}
@@ -206,7 +210,7 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
 				for (int i=0;i<data2Length;i++) {
 					progress = (double)(i + j * data2Length) / required;
 					exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
-					String data2 = getSlice(user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + timeSpecs.getBeginTimeIndex(), Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns());
+					String data2 = getSlice(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + timeSpecs.getBeginTimeIndex(), Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns());
 					StringBuffer data1 = new StringBuffer(data.toString());
 					data1.append(data2);
 					StringBuffer inset = new StringBuffer(Integer.toString(i + timeSpecs.getBeginTimeIndex()));
@@ -233,7 +237,7 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
+private String getCurveTimeSeries(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
 	int[] pointIndexes = null;
 	double[] distances = null;
 	int[] crossingMembraneIndexes = null;
@@ -253,7 +257,7 @@ private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDa
 		new org.vcell.util.document.TimeSeriesJobSpec(
 				new String[]{variableName},new int[][]{pointIndexes},new int[][]{crossingMembraneIndexes},allTimes[beginIndex],1,allTimes[endIndex],
 				VCDataJobID.createVCDataJobID(user, false));
-	org.vcell.util.document.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.document.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
+	org.vcell.util.document.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.document.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(outputContext,user, vcdID, timeSeriesJobSpec);
 
 	// variableValues[0] is time array
 	// variableValues[1] is values for 1st spatial point.
@@ -399,13 +403,13 @@ private String getODEDataValues(long jobID, User user, DataServerImpl dataServer
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-private String getPointsTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, int[] pointIndexes, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
+private String getPointsTimeSeries(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, int[] pointIndexes, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
 	
 	org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec =
 		new org.vcell.util.document.TimeSeriesJobSpec(
 				new String[]{variableName},new int[][]{pointIndexes},null,allTimes[beginIndex],1,allTimes[endIndex],
 				VCDataJobID.createVCDataJobID(user, false));
-	org.vcell.util.document.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.document.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
+	org.vcell.util.document.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.document.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(outputContext,user, vcdID, timeSeriesJobSpec);
 
 	// variableValues[0] is time array
 	// variableValues[1] is values for 1st spatial point.
@@ -462,11 +466,11 @@ private String getPointsTimeSeries(User user, DataServerImpl dataServerImpl, VCD
  * @param time double
  * @deprecated - see comments on membrane variable at the end
  */
-private String getSlice(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variable, int timeIndex, String slicePlane, int sliceNumber, boolean switchRowsColumns) throws DataAccessException, RemoteException {
+private String getSlice(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variable, int timeIndex, String slicePlane, int sliceNumber, boolean switchRowsColumns) throws DataAccessException, RemoteException {
 	
 	double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
 	double timepoint = allTimes[timeIndex];
-	SimDataBlock simDataBlock = dataServerImpl.getSimDataBlock(user, vcdID,variable,timepoint);
+	SimDataBlock simDataBlock = dataServerImpl.getSimDataBlock(outputContext,user, vcdID,variable,timepoint);
 	double[] data = simDataBlock.getData();
 	
 	cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
@@ -566,12 +570,13 @@ private String getSlice(User user, DataServerImpl dataServerImpl, VCDataIdentifi
 /**
  * This method was created in VisualAge.
  */
-public ExportOutput[] makeASCIIData(JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs) 
+public ExportOutput[] makeASCIIData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs) 
 						throws RemoteException, DataAccessException {
 							
 	switch (((ASCIISpecs)exportSpecs.getFormatSpecificSpecs()).getDataType()) {
 		case PDE_VARIABLE_DATA:
 			return exportPDEData(
+					outputContext,
 				jobRequest.getJobID(),
 				user,
 				dataServerImpl,
@@ -583,6 +588,7 @@ public ExportOutput[] makeASCIIData(JobRequest jobRequest, User user, DataServer
 			);
 		case ODE_VARIABLE_DATA:
 			return exportODEData(
+					outputContext,
 				jobRequest.getJobID(),
 				user,
 				dataServerImpl,
@@ -593,6 +599,7 @@ public ExportOutput[] makeASCIIData(JobRequest jobRequest, User user, DataServer
 			);
 		case PDE_PARTICLE_DATA:
 			return exportParticleData(
+					outputContext,
 				jobRequest.getJobID(),
 				user,
 				dataServerImpl,

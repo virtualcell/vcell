@@ -3,6 +3,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.solver.SimulationInfo;
 /*©
@@ -19,6 +20,7 @@ public class ServerPDEDataContext extends PDEDataContext {
 	private DataServerImpl dataServerImpl = null;
 	private VCDataIdentifier vcDataID = null;
 	private User user = null;
+	private OutputContext outputContext = null;
 
 /**
  * Insert the method's description here.
@@ -26,25 +28,13 @@ public class ServerPDEDataContext extends PDEDataContext {
  * @param dataSetController cbit.vcell.server.DataSetController
  * @param simulationIdentifier java.lang.String
  */
-public ServerPDEDataContext(User user0, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws Exception { 
+public ServerPDEDataContext(OutputContext outputContext,User user0, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws Exception { 
 	super();
 	user = user0;
 	setDataServerImpl(dataServerImpl);
 	setVCDataIdentifier(vcdID);
+	setOutputContext(outputContext);
 	initialize();
-}
-
-
-/**
- * adds a named <code>Function</code> to the list of variables that are availlable for this Simulation.
- *
- * @param function named expression that is to be bound to dataset and whose name is added to variable list.
- *
- * @throws org.vcell.util.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
- */
-public void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException {
-	getDataServerImpl().addFunctions(user, vcDataID, functionArr,bReplaceArr);
-	firePropertyChange(PROP_CHANGE_FUNC_ADDED, null, functionArr);
 }
 
 
@@ -68,21 +58,7 @@ private DataServerImpl getDataServerImpl() {
  * @see Function
  */
 public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
-	return getDataServerImpl().getFunctions(user, vcDataID);
-}
-
-
-/**
- * tests if resultSet contains ODE data for the specified simulation.
- *
- * @returns <i>true</i> if results are of type ODE, <i>false</i> otherwise.
- *
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- *
- * @see Function
- */
-public boolean getIsODEData() throws org.vcell.util.DataAccessException {
-	return getDataServerImpl().getIsODEData(user, vcDataID);
+	return getDataServerImpl().getFunctions(outputContext,user, vcDataID);
 }
 
 
@@ -100,7 +76,7 @@ public boolean getIsODEData() throws org.vcell.util.DataAccessException {
  * @see PlotData
  */
 public cbit.plot.PlotData getLineScan(java.lang.String variable, double time, cbit.vcell.simdata.gui.SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException {
-	return getDataServerImpl().getLineScan(user, vcDataID, variable, time, spatialSelection);
+	return getDataServerImpl().getLineScan(getOutputContext(),user, vcDataID, variable, time, spatialSelection);
 }
 
 
@@ -124,7 +100,7 @@ protected ParticleDataBlock getParticleDataBlock(double time) throws org.vcell.u
  * @param time double
  */
 protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws org.vcell.util.DataAccessException {
-	return getDataServerImpl().getSimDataBlock(user, vcDataID, varName, time);
+	return getDataServerImpl().getSimDataBlock(getOutputContext(),user, vcDataID, varName, time);
 }
 
 
@@ -141,7 +117,7 @@ protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) th
  * @see CartesianMesh for transformation between indices and coordinates.
  */
 public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
-	return getDataServerImpl().getTimeSeriesValues(user, vcDataID, timeSeriesJobSpec);
+	return getDataServerImpl().getTimeSeriesValues(getOutputContext(),user, vcDataID, timeSeriesJobSpec);
 }
 
 
@@ -162,7 +138,7 @@ public VCDataIdentifier getVCDataIdentifier() {
 private void initialize() {
 	try {
 		setTimePoints(getDataServerImpl().getDataSetTimes(user, getVCDataIdentifier()));
-		setDataIdentifiers(getDataServerImpl().getDataIdentifiers(user, getVCDataIdentifier()));
+		setDataIdentifiers(getDataServerImpl().getDataIdentifiers(getOutputContext(),user, getVCDataIdentifier()));
 		setParticleData(getDataServerImpl().getParticleDataExists(user, getVCDataIdentifier()));
 		setCartesianMesh(getDataServerImpl().getMesh(user, getVCDataIdentifier()));
 		if (getTimePoints() != null && getTimePoints().length >0) {
@@ -183,7 +159,7 @@ private void initialize() {
  * @param exportSpec cbit.vcell.export.server.ExportSpecs
  */
 public void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
-	dataServerImpl.makeRemoteFile(user, exportSpecs);
+	dataServerImpl.makeRemoteFile(getOutputContext(),user, exportSpecs);
 }
 
 
@@ -193,7 +169,7 @@ public void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) thr
  */
 public void refreshIdentifiers() {
 	try {
-		setDataIdentifiers(getDataServerImpl().getDataIdentifiers(user, vcDataID));
+		setDataIdentifiers(getDataServerImpl().getDataIdentifiers(getOutputContext(),user, vcDataID));
 		if ( getVariableName() != null && !org.vcell.util.BeanUtils.arrayContains(getVariableNames(), getVariableName()) )  {
 			// This condition occurs if a function has been removed from the dataset (esp. MergedDataset->compare).
 			if (getDataIdentifiers() != null && getDataIdentifiers().length > 0) {
@@ -224,20 +200,6 @@ public void refreshTimes() {
 
 
 /**
- * removes the specified <i>function</i> from this Simulation.
- *
- * @param function function to be removed.
- *
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * @throws org.vcell.util.PermissionException if not the owner of this dataset.
- */
-public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException, org.vcell.util.PermissionException {
-	getDataServerImpl().removeFunction(user, vcDataID, function);
-	firePropertyChange(PROP_CHANGE_FUNC_REMOVED, function, null);
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (3/2/2001 12:36:13 AM)
  * @param newDataSetController cbit.vcell.server.DataSetController
@@ -254,5 +216,15 @@ private void setDataServerImpl(DataServerImpl newDataServerImpl) {
  */
 private void setVCDataIdentifier(VCDataIdentifier newVcdID) {
 	vcDataID = newVcdID;
+}
+
+
+private OutputContext getOutputContext() {
+	return outputContext;
+}
+
+
+private void setOutputContext(OutputContext outputContext) {
+	this.outputContext = outputContext;
 }
 }

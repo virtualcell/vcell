@@ -6,6 +6,7 @@ import cbit.rmi.event.*;
  * All rights reserved.
 ©*/
 import cbit.vcell.solver.*;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.*;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -46,38 +47,6 @@ public LocalDataSetControllerProxy (SessionLog sessionLog,
 	this.remoteDataSetControllerFactory = argRemoteDataSetControllerFactory;
 	this.sessionLog = sessionLog;
 }
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:11:04 PM)
- * @param function cbit.vcell.math.Function
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
-	sessionLog.print("LocalDataSetControllerProxy.addFunctions(simID="+vcdID.getID()+", functions="+functions+")");
-	try {
-		//
-		// try once with remote reference (if it exists)
-		// if it fails with a RemoteException, invalidate the remote reference and try local
-		//
-		DataSetController rdsc = getRemoteDataSetController();
-		if (rdsc!=null){
-			try {
-				rdsc.addFunctions(vcdID, functions,bReplaceArr);
-				return;
-			}catch (RemoteException e){
-				sessionLog.exception(e);
-				invalidateRemoteDataSetController();
-			}
-		}
-		getLocalDataSetController().addFunctions(vcdID, functions,bReplaceArr);
-	}catch (Throwable e){
-		sessionLog.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-
-
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerProxy.fieldDataFileOperation(...)");
 	try {
@@ -109,7 +78,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
  * This method was created by a SmartGuide.
  * @return java.lang.String[]
  */
-public DataIdentifier[] getDataIdentifiers(VCDataIdentifier vcdID) throws DataAccessException {
+public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataIdentifier vcdID) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerProxy.getDataIdentifiers(simID="+vcdID.getID()+")");
 	try {
 		//
@@ -119,13 +88,13 @@ public DataIdentifier[] getDataIdentifiers(VCDataIdentifier vcdID) throws DataAc
 		DataSetController rdsc = getRemoteDataSetController();
 		if (rdsc!=null){
 			try {
-				return rdsc.getDataIdentifiers(vcdID);
+				return rdsc.getDataIdentifiers(outputContext,vcdID);
 			}catch (RemoteException e){
 				sessionLog.exception(e);
 				invalidateRemoteDataSetController();
 			}
 		}
-		return getLocalDataSetController().getDataIdentifiers(vcdID);
+		return getLocalDataSetController().getDataIdentifiers(outputContext,vcdID);
 	}catch (Throwable e){
 		sessionLog.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -164,7 +133,7 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+public AnnotatedFunction[] getFunctions(OutputContext outputContext,VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	sessionLog.print("LocalDataSetControllerProxy.getFunctions(simID="+vcdID.getID()+")");
 	try {
 		//
@@ -174,68 +143,13 @@ public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws org.vcell
 		DataSetController rdsc = getRemoteDataSetController();
 		if (rdsc!=null){
 			try {
-				return rdsc.getFunctions(vcdID);
+				return rdsc.getFunctions(outputContext,vcdID);
 			}catch (RemoteException e){
 				sessionLog.exception(e);
 				invalidateRemoteDataSetController();
 			}
 		}
-		return getLocalDataSetController().getFunctions(vcdID);
-	}catch (Throwable e){
-		sessionLog.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-/**
- * This method was created by a SmartGuide.
- * @return boolean
- */
-public boolean getIsODEData(VCDataIdentifier vcdID) throws DataAccessException {
-	sessionLog.print("LocalDataSetControllerProxy.getIsODEData(simID="+vcdID.getID()+")");
-	try {
-		//
-		// try once with remote reference (if it exists)
-		// if it fails with a RemoteException, invalidate the remote reference and try local
-		//
-		DataSetController rdsc = getRemoteDataSetController();
-		if (rdsc!=null){
-			try {
-				return rdsc.getIsODEData(vcdID);
-			}catch (RemoteException e){
-				sessionLog.exception(e);
-				invalidateRemoteDataSetController();
-			}
-		}
-		return getLocalDataSetController().getIsODEData(vcdID);
-	}catch (Throwable e){
-		sessionLog.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-/**
- * This method was created by a SmartGuide.
- * @return cbit.plot.PlotData
- * @param varName java.lang.String
- * @param begin cbit.vcell.math.CoordinateIndex
- * @param end cbit.vcell.math.CoordinateIndex
- */
-public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time, CoordinateIndex begin, CoordinateIndex end) throws DataAccessException {
-	sessionLog.print("LocalDataSetControllerProxy.getLineScan(simID="+vcdID.getID()+", "+varName+", "+time+", from="+begin+" to "+end+")");
-	try {
-		//
-		// try once with remote reference (if it exists)
-		// if it fails with a RemoteException, invalidate the remote reference and try local
-		//
-		DataSetController rdsc = getRemoteDataSetController();
-		if (rdsc!=null){
-			try {
-				return rdsc.getLineScan(vcdID, varName, time, begin, end);
-			}catch (RemoteException e){
-				sessionLog.exception(e);
-				invalidateRemoteDataSetController();
-			}
-		}
-		return getLocalDataSetController().getLineScan(vcdID, varName, time, begin, end);
+		return getLocalDataSetController().getFunctions(outputContext,vcdID);
 	}catch (Throwable e){
 		sessionLog.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -247,7 +161,7 @@ public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time,
  * @param varName java.lang.String
  * @param spatialSelection cbit.vcell.simdata.gui.SpatialSelection
  */
-public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time, SpatialSelection spatialSelection) throws DataAccessException {
+public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID, String varName, double time, SpatialSelection spatialSelection) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerProxy.getLineScan(simID="+vcdID.getID()+", "+varName+", "+time+", at "+spatialSelection+")");
 	try {
 		//
@@ -257,13 +171,13 @@ public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time,
 		DataSetController rdsc = getRemoteDataSetController();
 		if (rdsc!=null){
 			try {
-				return rdsc.getLineScan(vcdID, varName, time, spatialSelection);
+				return rdsc.getLineScan(outputContext,vcdID, varName, time, spatialSelection);
 			}catch (RemoteException e){
 				sessionLog.exception(e);
 				invalidateRemoteDataSetController();
 			}
 		}
-		return getLocalDataSetController().getLineScan(vcdID, varName, time, spatialSelection);
+		return getLocalDataSetController().getLineScan(outputContext,vcdID, varName, time, spatialSelection);
 	}catch (Throwable e){
 		sessionLog.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -441,7 +355,7 @@ private DataSetController getRemoteDataSetController() {
  * @param varName java.lang.String
  * @param time double
  */
-public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, double time) throws DataAccessException {
+public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdID, String varName, double time) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerProxy.getSimDataBlock(simID="+vcdID.getID()+", varName="+varName+", time="+time+")");
 	try {
 		//
@@ -451,13 +365,13 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
 		DataSetController rdsc = getRemoteDataSetController();
 		if (rdsc!=null){
 			try {
-				return rdsc.getSimDataBlock(vcdID,varName,time);
+				return rdsc.getSimDataBlock(outputContext,vcdID,varName,time);
 			}catch (RemoteException e){
 				sessionLog.exception(e);
 				invalidateRemoteDataSetController();
 			}
 		}
-		return getLocalDataSetController().getSimDataBlock(vcdID,varName,time);
+		return getLocalDataSetController().getSimDataBlock(outputContext,vcdID,varName,time);
 	}catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw (DataAccessException)e;
@@ -472,7 +386,7 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
  * @param varName java.lang.String
  * @param index int
  */
-public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerProxy.getTimeSeriesValues(simID="+vcdID.getID()+", "+timeSeriesJobSpec+")");
 	try {
 		//
@@ -482,13 +396,13 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(VCDataId
 		DataSetController rdsc = getRemoteDataSetController();
 		if (rdsc!=null){
 			try {
-				return rdsc.getTimeSeriesValues(vcdID,timeSeriesJobSpec);
+				return rdsc.getTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec);
 			}catch (RemoteException e){
 				sessionLog.exception(e);
 				invalidateRemoteDataSetController();
 			}
 		}
-		return getLocalDataSetController().getTimeSeriesValues(vcdID,timeSeriesJobSpec);
+		return getLocalDataSetController().getTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec);
 	}catch (Throwable e){
 		sessionLog.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -506,7 +420,7 @@ private void invalidateRemoteDataSetController() {
  * @param simInfo cbit.vcell.solver.SimulationInfo
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-public ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException {
+public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerProxy.makeRemoteFile(simID="+exportSpecs.getVCDataIdentifier().getID()+","+exportSpecs+")");
 	try {
 		//
@@ -516,47 +430,16 @@ public ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessExce
 		DataSetController rdsc = getRemoteDataSetController();
 		if (rdsc!=null){
 			try {
-				return rdsc.makeRemoteFile(exportSpecs);
+				return rdsc.makeRemoteFile(outputContext,exportSpecs);
 			}catch (RemoteException e){
 				sessionLog.exception(e);
 				invalidateRemoteDataSetController();
 			}
 		}
-		return getLocalDataSetController().makeRemoteFile(exportSpecs);
+		return getLocalDataSetController().makeRemoteFile(outputContext,exportSpecs);
 	}catch (Throwable e){
 		sessionLog.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}
-}
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:11:04 PM)
- * @param function cbit.vcell.math.Function
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void removeFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
-	sessionLog.print("LocalDataSetControllerProxy.removeFunction(simID="+vcdID.getID()+", function="+function+")");
-	try {
-		//
-		// try once with remote reference (if it exists)
-		// if it fails with a RemoteException, invalidate the remote reference and try local
-		//
-		DataSetController rdsc = getRemoteDataSetController();
-		if (rdsc!=null){
-			try {
-				rdsc.removeFunction(vcdID, function);
-				return;
-			}catch (RemoteException e){
-				sessionLog.exception(e);
-				invalidateRemoteDataSetController();
-			}
-		}
-		getLocalDataSetController().removeFunction(vcdID, function);
-	}catch (Throwable e){
-		sessionLog.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-
 }
 }

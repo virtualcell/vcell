@@ -3,6 +3,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.desktop.controls.DataListener;
@@ -33,19 +34,6 @@ protected ClientPDEDataContext(PDEDataManager argDataManager) {
 
 
 /**
- * adds a named <code>Function</code> to the list of variables that are availlable for this Simulation.
- *
- * @param function named expression that is to be bound to dataset and whose name is added to variable list.
- *
- * @throws org.vcell.util.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
- */
-public void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException {
-	dataManager.addFunctions(functionArr,bReplaceArr);
-	firePropertyChange(PROP_CHANGE_FUNC_ADDED, null, functionArr);
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (5/22/2001 3:19:48 PM)
  * @return cbit.vcell.desktop.controls.SimulationManager
@@ -66,20 +54,6 @@ public PDEDataManager getDataManager() {
  */
 public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
 	return dataManager.getFunctions();
-}
-
-
-/**
- * tests if resultSet contains ODE data for the specified simulation.
- *
- * @returns <i>true</i> if results are of type ODE, <i>false</i> otherwise.
- *
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- *
- * @see Function
- */
-public boolean getIsODEData() throws org.vcell.util.DataAccessException {
-	return dataManager.getIsODEData();
 }
 
 
@@ -209,20 +183,6 @@ public void newData(cbit.vcell.desktop.controls.DataEvent event) {
  * Creation date: (10/3/00 5:03:43 PM)
  */
 public abstract void refreshIdentifiers();
-
-
-/**
- * removes the specified <i>function</i> from this Simulation.
- *
- * @param function function to be removed.
- *
- * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
- * @throws org.vcell.util.PermissionException if not the owner of this dataset.
- */
-public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException, org.vcell.util.PermissionException {
-	dataManager.removeFunction(function);
-	firePropertyChange(PROP_CHANGE_FUNC_REMOVED, function, null);
-}
 
 
 /**

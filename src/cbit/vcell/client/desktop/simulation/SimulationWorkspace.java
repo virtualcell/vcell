@@ -19,8 +19,10 @@ import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
@@ -810,7 +812,9 @@ private void setStatusBars(javax.swing.JProgressBar[] newStatusBars) {
  * Comment
  */
 void showSimulationResults(Simulation[] sims) {
-	getClientSimManager().showSimulationResults(sims);
+	ArrayList<AnnotatedFunction> outputFunctionsList = getSimulationOwner().getOutputFunctionContext().getOutputFunctionsList();
+	OutputContext outputContext = new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()]));
+	getClientSimManager().showSimulationResults(outputContext,sims);
 }
 
 

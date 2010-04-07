@@ -44,6 +44,7 @@ import cbit.vcell.export.server.ImageSpecs;
 import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
+import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
@@ -2322,7 +2323,7 @@ private void startExport() {
 		return;
 	}
 	// pass the request down the line; non-blocking call
-	getDataViewerManager().startExport(getExportSpecs());
+	getDataViewerManager().startExport(((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext(),getExportSpecs());
 }
 
 

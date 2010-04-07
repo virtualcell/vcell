@@ -14,6 +14,7 @@ import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.CartesianMesh.UCDInfo;
 import cbit.vcell.server.*;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.nrrd.*;
 import cbit.vcell.geometry.surface.AVS_UCD_Exporter;
 import cbit.vcell.geometry.surface.SurfaceCollection;
@@ -41,7 +42,7 @@ public RasterExporter(ExportServiceImpl exportServiceImpl) {
 /**
  * This method was created in VisualAge.
  */
-private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, String tempDir) 
+private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, String tempDir) 
 						throws RemoteException, DataAccessException, IOException {
 
 	cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
@@ -77,7 +78,7 @@ private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServe
 					try {
 						for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 							for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-								double[] data = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+								double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 								for (int k = 0; k < data.length; k++){
 									out.writeDouble(data[k]);
 								}
@@ -131,7 +132,7 @@ private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServe
 						try {
 							for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 								//for (int j = 0; j < timeSpecs.getAllTimes().length; j++){
-									double[] data = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+									double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 									for (int k = 0; k < data.length; k++){
 										out.writeDouble(data[k]);
 									}
@@ -191,7 +192,7 @@ private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServe
 						try {
 							//for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 								for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-									double[] data = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+									double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 									for (int k = 0; k < data.length; k++){
 										out.writeDouble(data[k]);
 									}
@@ -231,9 +232,10 @@ private NrrdInfo[] exportPDEData(long jobID, User user, DataServerImpl dataServe
 /**
  * This method was created in VisualAge.
  */
-public NrrdInfo[] makeRasterData(JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir) 
+public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir) 
 						throws RemoteException, DataAccessException, IOException {
 	return exportPDEData(
+			outputContext,
 		jobRequest.getJobID(),
 		user,
 		dataServerImpl,
@@ -246,7 +248,7 @@ public NrrdInfo[] makeRasterData(JobRequest jobRequest, User user, DataServerImp
 	);
 }
 
-public ExportOutput[] makeUCDData(JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir)
+public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir)
 						throws Exception{
 	
 	String simID = exportSpecs.getVCDataIdentifier().getID();
@@ -278,7 +280,7 @@ public ExportOutput[] makeUCDData(JobRequest jobRequest, User user, DataServerIm
 			Vector<String> membraneDataNameV = new Vector<String>();
 			Vector<String> membraneDataUnitV = new Vector<String>();
 			for (int k = 0; k < variableSpecs.getVariableNames().length; k++) {
-				SimDataBlock simDataBlock = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[k], timeSpecs.getAllTimes()[j]);
+				SimDataBlock simDataBlock = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[k], timeSpecs.getAllTimes()[j]);
 				if(simDataBlock.getVariableType().equals(VariableType.VOLUME)){
 					volumeDataNameV.add(variableSpecs.getVariableNames()[k]);
 					volumeDataUnitV.add("unknown");
@@ -354,7 +356,7 @@ public ExportOutput[] makeUCDData(JobRequest jobRequest, User user, DataServerIm
 
 }
 
-public ExportOutput[] makeVTKImageData(JobRequest jobRequest, User user, DataServerImpl dataServerImpl,
+public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl,
 		ExportSpecs exportSpecs, String tempDir) throws Exception{
 	
 	String simID = exportSpecs.getVCDataIdentifier().getID();
@@ -397,7 +399,7 @@ public ExportOutput[] makeVTKImageData(JobRequest jobRequest, User user, DataSer
 		sb.append("\n");
 		
 		for (int k = 0; k < variableSpecs.getVariableNames().length; k++) {
-			SimDataBlock simDataBlock = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[k], timeSpecs.getAllTimes()[j]);
+			SimDataBlock simDataBlock = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[k], timeSpecs.getAllTimes()[j]);
 			if(simDataBlock.getVariableType().equals(VariableType.VOLUME)){
 				sb.append("SCALARS "+variableSpecs.getVariableNames()[k]+" double 1"+"\n");
 				sb.append("LOOKUP_TABLE default"+"\n");
@@ -424,7 +426,7 @@ public ExportOutput[] makeVTKImageData(JobRequest jobRequest, User user, DataSer
 
 }
 
-public ExportOutput[] makeVTKUnstructuredData(JobRequest jobRequest, User user,
+public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobRequest jobRequest, User user,
 		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir)throws Exception{
 
 	String simID = exportSpecs.getVCDataIdentifier().getID();
@@ -456,7 +458,7 @@ public ExportOutput[] makeVTKUnstructuredData(JobRequest jobRequest, User user,
 	Vector<String> membraneDataNameV = new Vector<String>();
 	Vector<String> membraneDataUnitV = new Vector<String>();
 	for (int k = 0; k < variableSpecs.getVariableNames().length; k++) {
-	SimDataBlock simDataBlock = dataServerImpl.getSimDataBlock(user, vcdID, variableSpecs.getVariableNames()[k], timeSpecs.getAllTimes()[j]);
+	SimDataBlock simDataBlock = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[k], timeSpecs.getAllTimes()[j]);
 	if(simDataBlock.getVariableType().equals(VariableType.VOLUME)){
 	volumeDataNameV.add(variableSpecs.getVariableNames()[k]);
 	volumeDataUnitV.add("unknown");

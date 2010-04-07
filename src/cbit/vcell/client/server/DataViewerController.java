@@ -1,5 +1,7 @@
 package cbit.vcell.client.server;
 
+import java.beans.PropertyChangeListener;
+
 import cbit.vcell.client.data.*;
 import cbit.vcell.desktop.controls.*;
 import org.vcell.util.DataAccessException;
@@ -9,7 +11,7 @@ import org.vcell.util.DataAccessException;
  * Creation date: (6/11/2004 1:51:53 PM)
  * @author: Ion Moraru
  */
-public interface DataViewerController extends DataListener {
+public interface DataViewerController extends DataListener, PropertyChangeListener {
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 2:33:04 PM)

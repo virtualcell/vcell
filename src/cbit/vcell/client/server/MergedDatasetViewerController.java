@@ -1,11 +1,17 @@
 package cbit.vcell.client.server;
 
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.MergedDatasetViewer;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.desktop.controls.DataEvent;
 /**
  * Insert the type's description here.
@@ -13,19 +19,17 @@ import cbit.vcell.desktop.controls.DataEvent;
  * @author: Anuradha Lakshminarayana
  */
 public class MergedDatasetViewerController implements DataViewerController {
-	private VCDataManager vcDataManager = null;
-	private VCDataIdentifier mergedDataIdentifier = null;
+	private DataManager dataManager = null;
 	private MergedDatasetViewer mergedDatasetViewer = null;
 	private boolean expectODEData;
 
 /**
  * MergedDynamicDataManager constructor comment.
  */
-public MergedDatasetViewerController(VCDataManager argVCDataManager, VCDataIdentifier argMergedDataID, boolean argExpectODEData) {
+public MergedDatasetViewerController(DataManager argDataManager) {
 	super();
-	vcDataManager = argVCDataManager;
-	mergedDataIdentifier = argMergedDataID;
-	expectODEData = argExpectODEData;
+	this.dataManager = argDataManager;
+	this.expectODEData = dataManager instanceof ODEDataManager;
 }
 
 
@@ -35,7 +39,7 @@ public MergedDatasetViewerController(VCDataManager argVCDataManager, VCDataIdent
  * @return javax.swing.JPanel
  */
 public DataViewer createViewer() throws DataAccessException {
-	mergedDatasetViewer = new MergedDatasetViewer(vcDataManager, mergedDataIdentifier, expectODEData);
+	mergedDatasetViewer = new MergedDatasetViewer(dataManager);
 	return mergedDatasetViewer;
 }
 
@@ -54,6 +58,19 @@ public void newData(DataEvent event) {
 	}
 }
 
+public void propertyChange(PropertyChangeEvent evt) {
+	// update functions
+	if (mergedDatasetViewer != null && evt.getPropertyName().equals("outputFunctions")){
+		try {
+			ArrayList<AnnotatedFunction> outputFunctionsList = (ArrayList<AnnotatedFunction>)evt.getNewValue();
+			dataManager.setOutputContext(new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()])));
+			mergedDatasetViewer.refreshFunctions();
+		} catch (Exception e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(mergedDatasetViewer, "Failed to update viewer after function change: "+e.getMessage());
+		}
+	}
+}
 
 /**
  * Insert the method's description here.

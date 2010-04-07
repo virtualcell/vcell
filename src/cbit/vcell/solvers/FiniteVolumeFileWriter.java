@@ -229,7 +229,7 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 	
 	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),null);
 	CartesianMesh origMesh = dsci.getMesh(fdis.getExternalDataIdentifier());
-	SimDataBlock simDataBlock = dsci.getSimDataBlock(fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());
+	SimDataBlock simDataBlock = dsci.getSimDataBlock(null,fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());
 	VariableType varType = fdis.getFieldFuncArgs().getVariableType();
 	VariableType dataVarType = simDataBlock.getVariableType();
 	if (!varType.equals(VariableType.UNKNOWN) && !varType.equals(dataVarType)) {
@@ -1179,7 +1179,7 @@ private void writeFieldData() throws FileNotFoundException, ExpressionException,
 				);
 			uniqueFieldDataIDSpecs.add(fieldDataIDSpecs[i]);
 			VariableType varType = fieldDataIDSpecs[i].getFieldFuncArgs().getVariableType();
-			SimDataBlock simDataBlock = dsci.getSimDataBlock(fieldDataIDSpecs[i].getExternalDataIdentifier(),fieldDataIDSpecs[i].getFieldFuncArgs().getVariableName(), fieldDataIDSpecs[i].getFieldFuncArgs().getTime().evaluateConstant());
+			SimDataBlock simDataBlock = dsci.getSimDataBlock(null,fieldDataIDSpecs[i].getExternalDataIdentifier(),fieldDataIDSpecs[i].getFieldFuncArgs().getVariableName(), fieldDataIDSpecs[i].getFieldFuncArgs().getTime().evaluateConstant());
 			VariableType dataVarType = simDataBlock.getVariableType();			
 			if (varType.equals(VariableType.UNKNOWN)) {
 				varType = dataVarType;

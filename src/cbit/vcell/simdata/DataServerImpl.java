@@ -18,6 +18,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -46,25 +47,6 @@ public DataServerImpl (SessionLog log, DataSetControllerImpl dsControllerImpl, E
 	this.log = log;
 	this.dataSetControllerImpl = dsControllerImpl;
 	exportServiceImpl = esl;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:11:04 PM)
- * @param function cbit.vcell.math.Function
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void addFunctions(User user, VCDataIdentifier vcdID, AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws DataAccessException {
-	log.print("DataServerImpl.addFunction()");
-	checkWriteAccess(user, vcdID);
-	try {
-		dataSetControllerImpl.addFunctions(vcdID, functionArr,bReplaceArr);
-	}catch (Throwable e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
 }
 
 
@@ -123,10 +105,10 @@ public FieldDataFileOperationResults fieldDataFileOperation(User user,FieldDataF
  * This method was created by a SmartGuide.
  * @return java.lang.String[]
  */
-public DataIdentifier[] getDataIdentifiers(User user, VCDataIdentifier vcdID) throws DataAccessException {
+public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, User user, VCDataIdentifier vcdID) throws DataAccessException {
 	checkReadAccess(user, vcdID);
 	try {
-		return dataSetControllerImpl.getDataIdentifiers(vcdID);
+		return dataSetControllerImpl.getDataIdentifiers(outputContext, vcdID);
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -157,48 +139,12 @@ public double[] getDataSetTimes(User user, VCDataIdentifier vcdID) throws DataAc
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public AnnotatedFunction[] getFunctions(User user, VCDataIdentifier vcdID) throws DataAccessException {
+public AnnotatedFunction[] getFunctions(OutputContext outputContext,User user, VCDataIdentifier vcdID) throws DataAccessException {
 	log.print("DataServerImpl.getFunctions()");
 	checkReadAccess(user, vcdID);
 	try {
-		return dataSetControllerImpl.getFunctions(vcdID);
+		return dataSetControllerImpl.getFunctions(outputContext,vcdID);
 	}catch (Throwable e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return boolean
- */
-public boolean getIsODEData(User user, VCDataIdentifier vcdID) throws DataAccessException {
-	checkReadAccess(user, vcdID);
-	try {
-		return dataSetControllerImpl.getIsODEData(vcdID);
-	}catch (Throwable e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.plot.PlotData
- * @param varName java.lang.String
- * @param begin cbit.vcell.math.CoordinateIndex
- * @param end cbit.vcell.math.CoordinateIndex
- */
-public PlotData getLineScan(User user, VCDataIdentifier vcdID, String varName, double time, CoordinateIndex begin, CoordinateIndex end) throws DataAccessException {
-	checkReadAccess(user, vcdID);
-	try {
-		return dataSetControllerImpl.getLineScan(vcdID,varName,time,begin,end);
-	} catch (DataAccessException e) {
-		log.exception(e);
-		throw e;
-	} catch (Throwable e) {
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -213,10 +159,10 @@ public PlotData getLineScan(User user, VCDataIdentifier vcdID, String varName, d
  * @param spatialSelection cbit.vcell.simdata.gui.SpatialSelection
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.plot.PlotData getLineScan(User user, VCDataIdentifier vcdID, java.lang.String varName, double time, SpatialSelection spatialSelection) throws DataAccessException {
+public cbit.plot.PlotData getLineScan(OutputContext outputContext, User user, VCDataIdentifier vcdID, java.lang.String varName, double time, SpatialSelection spatialSelection) throws DataAccessException {
 	checkReadAccess(user, vcdID);
 	try {
-		return dataSetControllerImpl.getLineScan(vcdID,varName,time,spatialSelection);
+		return dataSetControllerImpl.getLineScan(outputContext,vcdID,varName,time,spatialSelection);
 	} catch (DataAccessException e) {
 		log.exception(e);
 		throw e;
@@ -312,10 +258,10 @@ public boolean getParticleDataExists(User user, VCDataIdentifier vcdID) throws D
  * @return cbit.vcell.server.DataSet
  * @param time double
  */
-public SimDataBlock getSimDataBlock(User user, VCDataIdentifier vcdID, String var, double time) throws DataAccessException {
+public SimDataBlock getSimDataBlock(OutputContext outputContext, User user, VCDataIdentifier vcdID, String var, double time) throws DataAccessException {
 	checkReadAccess(user, vcdID);
 	try {
-		return dataSetControllerImpl.getSimDataBlock(vcdID,var,time);
+		return dataSetControllerImpl.getSimDataBlock(outputContext,vcdID,var,time);
 	}catch (DataAccessException e){
 		log.exception(e);
 		throw (DataAccessException)e;
@@ -334,10 +280,10 @@ public SimDataBlock getSimDataBlock(User user, VCDataIdentifier vcdID, String va
  * @param y int
  * @param z int
  */
-public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(User user, VCDataIdentifier vcdID, org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, User user, VCDataIdentifier vcdID, org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	checkReadAccess(user, vcdID);
 	try {
-		return dataSetControllerImpl.getTimeSeriesValues(vcdID,timeSeriesJobSpec);
+		return dataSetControllerImpl.getTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec);
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -351,31 +297,12 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(User use
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-public ExportEvent makeRemoteFile(User user, cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
+public ExportEvent makeRemoteFile(OutputContext outputContext,User user, cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
 	log.print("DataServerImpl.makeRemoteFile(" + exportSpecs.getVCDataIdentifier() + ")");
 	try {
-		ExportEvent exportEvent = exportServiceImpl.makeRemoteFile(user, this, exportSpecs);
+		ExportEvent exportEvent = exportServiceImpl.makeRemoteFile(outputContext,user, this, exportSpecs);
 		return exportEvent;
 	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:11:04 PM)
- * @param function cbit.vcell.math.Function
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void removeFunction(User user, VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException {
-	log.print("DataServerImpl.removeFunction("+function.getName()+"="+function.getExpression().toString()+")");
-	checkWriteAccess(user, vcdID);
-	try {
-		dataSetControllerImpl.removeFunction(vcdID,function);
-	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}

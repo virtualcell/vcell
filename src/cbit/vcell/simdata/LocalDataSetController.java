@@ -6,6 +6,7 @@ import cbit.vcell.solver.SimulationInfo;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.*;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -48,18 +49,6 @@ public LocalDataSetController (LocalVCellConnection argvcConn, SessionLog log, D
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:11:04 PM)
- * @param function cbit.vcell.math.Function[]
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions,boolean[] bReplaceArr) throws org.vcell.util.DataAccessException {
-	dataServerImpl.addFunctions(user, vcdID, functions,bReplaceArr);
-}
-
-
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
 	return dataServerImpl.fieldDataFileOperation(user,fieldDataFileOperationSpec);
 }
@@ -69,8 +58,8 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
  * This method was created by a SmartGuide.
  * @return java.lang.String[]
  */
-public DataIdentifier[] getDataIdentifiers(VCDataIdentifier vcdID) throws DataAccessException {
-	return dataServerImpl.getDataIdentifiers(user, vcdID);
+public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataIdentifier vcdID) throws DataAccessException {
+	return dataServerImpl.getDataIdentifiers(outputContext, user, vcdID);
 }
 
 
@@ -90,29 +79,8 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
-	return dataServerImpl.getFunctions(user, vcdID);
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return boolean
- */
-public boolean getIsODEData(VCDataIdentifier vcdID) throws DataAccessException {
-	return dataServerImpl.getIsODEData(user, vcdID);
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.plot.PlotData
- * @param varName java.lang.String
- * @param begin cbit.vcell.math.CoordinateIndex
- * @param end cbit.vcell.math.CoordinateIndex
- */
-public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time, CoordinateIndex begin, CoordinateIndex end) throws DataAccessException {
-	return dataServerImpl.getLineScan(user, vcdID,varName,time,begin,end);
+public AnnotatedFunction[] getFunctions(OutputContext outputContext,VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	return dataServerImpl.getFunctions(outputContext,user, vcdID);
 }
 
 
@@ -124,8 +92,8 @@ public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time,
  * @param spatialSelection cbit.vcell.simdata.gui.SpatialSelection
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.plot.PlotData getLineScan(VCDataIdentifier vcdID, java.lang.String varName, double time, SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
-	return dataServerImpl.getLineScan(user, vcdID,varName,time,spatialSelection);
+public cbit.plot.PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID, java.lang.String varName, double time, SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	return dataServerImpl.getLineScan(outputContext, user, vcdID,varName,time,spatialSelection);
 }
 
 
@@ -182,8 +150,8 @@ public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessEx
  * @return cbit.vcell.server.DataSet
  * @param time double
  */
-public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String var, double time) throws DataAccessException {
-	return dataServerImpl.getSimDataBlock(user, vcdID,var,time);
+public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdID, String var, double time) throws DataAccessException {
+	return dataServerImpl.getSimDataBlock(outputContext, user, vcdID,var,time);
 }
 
 
@@ -195,8 +163,8 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String var, double t
  * @param y int
  * @param z int
  */
-public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
-	return dataServerImpl.getTimeSeriesValues(user,vcdID,timeSeriesJobSpec);
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+	return dataServerImpl.getTimeSeriesValues(outputContext, user,vcdID,timeSeriesJobSpec);
 }
 
 
@@ -206,8 +174,8 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(VCDataId
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-public ExportEvent makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
-	return dataServerImpl.makeRemoteFile(user, exportSpecs);
+public ExportEvent makeRemoteFile(OutputContext outputContext,cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
+	return dataServerImpl.makeRemoteFile(outputContext,user, exportSpecs);
 
 	/*
 	log.print("LocalDataSetController.makeRemoteFile(" + exportSpecs.getVCDataIdentifier() + ")");
@@ -226,17 +194,5 @@ public ExportEvent makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpe
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}*/
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:11:04 PM)
- * @param function cbit.vcell.math.Function
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void removeFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
-	dataServerImpl.removeFunction(user, vcdID,function);
 }
 }

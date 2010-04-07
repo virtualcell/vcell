@@ -78,7 +78,7 @@ public java.lang.String getBasefileName() {
  * This method was created in VisualAge.
  * @param logFile java.io.File
  */
-public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File functionsFile) throws java.io.FileNotFoundException, java.io.IOException {
+public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File functionsFile, boolean skipUserFunctions) throws java.io.FileNotFoundException, java.io.IOException {
 	// Check if file exists
 	if (!functionsFile.exists()){
 		throw new java.io.FileNotFoundException("functions file "+functionsFile.getPath()+" not found");
@@ -159,13 +159,24 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 //			if(functionSimplifiedExpr != null){
 //				annotatedFunc.setSimplifiedExpression(functionSimplifiedExpr);
 //			}
-			annotatedFunctionsVector.addElement(annotatedFunc);
+			if (!skipUserFunctions) {
+				annotatedFunctionsVector.addElement(annotatedFunc);
+			} else {
+				// do not add user defined functions
+				if (!annotatedFunc.isUserDefined()) {
+					annotatedFunctionsVector.addElement(annotatedFunc);
+				}
+			}
 		}
 
 		j++;
 	}
 
 	return annotatedFunctionsVector;
+}
+
+public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File functionsFile) throws java.io.FileNotFoundException, java.io.IOException {
+	return readFunctionsFile(functionsFile, false);
 }
 
 public static FunctionFileGenerator.FuncFileLineInfo readFunctionLine(String functionFileLine) throws IOException{

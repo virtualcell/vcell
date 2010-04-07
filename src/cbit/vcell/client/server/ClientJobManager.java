@@ -1,5 +1,7 @@
 package cbit.vcell.client.server;
 import cbit.vcell.client.*;
+import cbit.vcell.client.data.OutputContext;
+
 import javax.swing.event.EventListenerList;
 
 import org.vcell.util.DataAccessException;
@@ -143,14 +145,14 @@ public void simulationJobStatusChanged(cbit.rmi.event.SimulationJobStatusEvent s
  * Insert the method's description here.
  * Creation date: (6/4/2004 3:22:42 PM)
  */
-public void startExport(ExportSpecs exportSpecs) throws DataAccessException {
+public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException {
 	try {
-		getClientServerManager().getExportController().startExport(exportSpecs);
+		getClientServerManager().getExportController().startExport(outputContext,exportSpecs);
 	} catch (RemoteException rexc) {
 		handleRemoteException(rexc);
 		// once more before we fail
 		try {
-			getClientServerManager().getExportController().startExport(exportSpecs);
+			getClientServerManager().getExportController().startExport(outputContext,exportSpecs);
 		} catch (RemoteException rexc2) {
 			handleRemoteException(rexc2);
 			throw new DataAccessException("Start export for '"+exportSpecs.getVCDataIdentifier()+"' failed\n"+rexc2.getMessage());
