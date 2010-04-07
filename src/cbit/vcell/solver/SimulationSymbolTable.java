@@ -6,6 +6,7 @@ package cbit.vcell.solver;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
@@ -22,6 +23,7 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionVariable;
@@ -36,11 +38,13 @@ import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.VariableType.VariableDomain;
 /**
  * Specifies the problem to be solved by a solver.
  * It is subclassed for each type of problem/solver.
@@ -586,9 +590,9 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		boolean bExplicitFunctionOfSpace = false;
 		if (symbols != null) {
 			for (int i = 0; i < symbols.length; i++){
-				if (symbols[i].equals(cbit.vcell.math.ReservedVariable.X.toString()) ||
-					symbols[i].equals(cbit.vcell.math.ReservedVariable.Y.toString()) ||
-					symbols[i].equals(cbit.vcell.math.ReservedVariable.Z.toString())){
+				if (symbols[i].equals(ReservedVariable.X.toString()) ||
+					symbols[i].equals(ReservedVariable.Y.toString()) ||
+					symbols[i].equals(ReservedVariable.Z.toString())){
 					bExplicitFunctionOfSpace = true;
 				}
 			}
@@ -604,9 +608,22 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 			} else {	
 				FieldFunctionArguments[] fieldFuncArgs = FieldUtilities.getFieldFunctionArguments(function.getExpression());
 				if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
-					return fieldFuncArgs[0].getVariableType();
-				}			
-				funcType = VariableType.VOLUME;
+					funcType = fieldFuncArgs[0].getVariableType();
+				} else {
+					// for size functions, membrane region takes precedence.
+					Set<FunctionInvocation> fiSet = FieldUtilities.getSizeFunctionInvocations(function.getExpression());
+					for (FunctionInvocation fi : fiSet) {
+						String functionName = fi.getFunctionName();
+						if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())) {
+							funcType = VariableType.MEMBRANE_REGION;
+						} else if (functionName.equals(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
+							// if funcType is already membrane region, don't change
+							if (funcType == null) {								
+								funcType = VariableType.VOLUME_REGION;
+							}
+						}
+					}
+				}
 			}
 		}else{
 			if (funcType.equals(VariableType.MEMBRANE_REGION) && bExplicitFunctionOfSpace){
@@ -616,6 +633,10 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 			}else if (funcType.equals(VariableType.CONTOUR_REGION) && bExplicitFunctionOfSpace){
 				funcType = VariableType.CONTOUR;
 			}
+		}
+		
+		if (funcType == null) {
+			return VariableType.VOLUME; // no knowledge from expression, default variable type
 		}
 		return funcType;
 	}

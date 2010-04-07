@@ -1,6 +1,7 @@
 package cbit.vcell.field;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Map.Entry;
 import org.vcell.util.document.ExternalDataIdentifier;
 
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -21,8 +23,8 @@ import cbit.vcell.simdata.VariableType;
 public class FieldUtilities {
 	
 	public static class FieldFunctionFilter implements FunctionFilter {
-		public boolean accept(int functionId) {
-			return (functionId == ASTFuncNode.FIELD);
+		public boolean accept(String functionName) {
+			return (functionName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]));
 		}
 	};
 
@@ -67,6 +69,27 @@ public class FieldUtilities {
 		}else{
 			return fieldFuncArgsList.toArray(new FieldFunctionArguments[fieldFuncArgsList.size()]);
 		}
+	}
+
+	public static Set<FunctionInvocation> getSizeFunctionInvocations(Expression expression) {
+		if(expression == null){
+			return null;
+		}
+		FunctionInvocation[] functionInvocations = expression.getFunctionInvocations(new FunctionFilter() {
+			
+			public boolean accept(String functionName) {
+				if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())
+						|| functionName.equals(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
+					return true;
+				}
+				return false;
+			}
+		});
+		Set<FunctionInvocation> fiSet = new HashSet<FunctionInvocation>();
+		for (FunctionInvocation fi : functionInvocations){
+			fiSet.add(fi);			
+		}
+		return fiSet;
 	}
 
 	public static void substituteFieldFuncNames(

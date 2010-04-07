@@ -32,6 +32,7 @@ import cbit.vcell.math.GaussianDistribution;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRandomVariable;
@@ -54,6 +55,7 @@ import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.DataSet;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -61,6 +63,7 @@ import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.VariableType.VariableDomain;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
@@ -119,27 +122,28 @@ public FiniteVolumeFileWriter(PrintWriter pw, SimulationJob simJob, Geometry geo
 	userDirectory = dir;
 }
 
-private Expression subsituteExpression(Expression exp) throws ExpressionException  {
-	return subsituteExpression(exp, simulationJob.getSimulationSymbolTable());
+private Expression subsituteExpression(Expression exp, VariableDomain variableDomain) throws ExpressionException  {
+	return subsituteExpression(exp, simulationJob.getSimulationSymbolTable(), variableDomain);
 }
 /**
  * Insert the method's description here.
  * Creation date: (5/9/2005 2:52:48 PM)
  * @throws ExpressionException 
  */
-private Expression subsituteExpression(Expression exp, SymbolTable symbolTable) throws ExpressionException {
-	Expression exp2 = MathUtilities.substituteFunctions(exp, symbolTable).flatten();
-	FieldFunctionArguments[] fieldFunctionArguments = FieldUtilities.getFieldFunctionArguments(exp2);
+private Expression subsituteExpression(Expression exp, SymbolTable symbolTable, VariableDomain variableDomain) throws ExpressionException {
+	Expression newExp = MathUtilities.substituteFunctions(exp, symbolTable).flatten();
+	FieldFunctionArguments[] fieldFunctionArguments = FieldUtilities.getFieldFunctionArguments(newExp);
 	if (fieldFunctionArguments != null && fieldFunctionArguments.length > 0) {
 		if (uniqueFieldDataNSet != null && uniqueFieldDataNSet.size() > 0) {	
 			for (FieldDataNumerics fdn: uniqueFieldDataNSet) {
-				exp2.substituteInPlace(new Expression(fdn.getFieldFunction()), new Expression(fdn.getNumericsSubsitute()));
+				newExp.substituteInPlace(new Expression(fdn.getFieldFunction()), new Expression(fdn.getNumericsSubsitute()));
 			}
 		} else {
-			throw new RuntimeException("Didn't find field functions in simulation when preprocessing, but expression [" + exp.infix() + "] has field function " + exp2.infix() + " in it");
+			throw new RuntimeException("Didn't find field functions in simulation when preprocessing, but expression [" + exp.infix() + "] has field function " + newExp.infix() + " in it");
 		}
 	}
-	return exp2;
+	newExp = MathFunctionDefinitions.substituteSizeFunctions(newExp, variableDomain);
+	return newExp;
 }
 
 
@@ -285,6 +289,7 @@ FAST_SYSTEM_END
  * @throws MathException 
 */
 private void writeFastSystem(SubDomain subDomain) throws MathException, ExpressionException  {
+	VariableDomain variableDomain = (subDomain instanceof CompartmentSubDomain) ? VariableDomain.VARIABLEDOMAIN_VOLUME : VariableDomain.VARIABLEDOMAIN_MEMBRANE; 
 	FastSystem fastSystem = subDomain.getFastSystem();
 	if (fastSystem == null) {
 		return;
@@ -321,7 +326,7 @@ private void writeFastSystem(SubDomain subDomain) throws MathException, Expressi
 		Enumeration<PseudoConstant> enum1 = fs_analyzer.getPseudoConstants();
 		while (enum1.hasMoreElements()) {
 			PseudoConstant pc = enum1.nextElement();
-			printWriter.println(pc.getName() + " " + subsituteExpression(pc.getPseudoExpression(), fs_analyzer).infix() + ";");
+			printWriter.println(pc.getName() + " " + subsituteExpression(pc.getPseudoExpression(), fs_analyzer, variableDomain).infix() + ";");
 		}
 		printWriter.println("PSEUDO_CONSTANT_END");
 		printWriter.println();			
@@ -332,7 +337,7 @@ private void writeFastSystem(SubDomain subDomain) throws MathException, Expressi
 		Enumeration<Expression> enum1 = fs_analyzer.getFastRateExpressions();
 		while (enum1.hasMoreElements()) {
 			Expression exp = enum1.nextElement();	
-			printWriter.println(subsituteExpression(exp, fs_analyzer).infix() + ";");
+			printWriter.println(subsituteExpression(exp, fs_analyzer, variableDomain).infix() + ";");
 		}
 		printWriter.println("FAST_RATE_END");
 		printWriter.println();				
@@ -345,7 +350,7 @@ private void writeFastSystem(SubDomain subDomain) throws MathException, Expressi
 		while (enum_exp.hasMoreElements()){
 			Expression exp = enum_exp.nextElement();
 			Variable depVar = enum_var.nextElement();
-			printWriter.println(depVar.getName() + " " + subsituteExpression(exp, fs_analyzer).infix() + ";");
+			printWriter.println(depVar.getName() + " " + subsituteExpression(exp, fs_analyzer, variableDomain).infix() + ";");
 		}
 		printWriter.println("FAST_DEPENDENCY_END");
 		printWriter.println();
@@ -359,9 +364,9 @@ private void writeFastSystem(SubDomain subDomain) throws MathException, Expressi
 			Enumeration<Variable> enum_var = fs_analyzer.getIndependentVariables();
 			while (enum_var.hasMoreElements()){
 				Variable var = enum_var.nextElement();
-				Expression exp = subsituteExpression(fre, fs_analyzer).flatten();
+				Expression exp = subsituteExpression(fre, fs_analyzer, variableDomain).flatten();
 				Expression differential = exp.differentiate(var.getName());
-				printWriter.println(subsituteExpression(differential, fs_analyzer).infix() + ";");
+				printWriter.println(subsituteExpression(differential, fs_analyzer, variableDomain).infix() + ";");
 			}
 		}
 		printWriter.println("JACOBIAN_END");
@@ -431,23 +436,23 @@ EQUATION_END
  */
 private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDomain, Equation equation) throws ExpressionException {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
-	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
-	Expression rateExpression = subsituteExpression(equation.getRateExpression());
+	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
+	Expression rateExpression = subsituteExpression(equation.getRateExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME);
 	printWriter.println("RATE " + rateExpression.infix() + ";");
 	if (equation instanceof PdeEquation) {
-		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression()).infix() + ";");
+		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
 		if (((PdeEquation)equation).getVelocityX() != null) {
-			printWriter.println("VELOCITY_X " + subsituteExpression(((PdeEquation)equation).getVelocityX()).infix() + ";");
+			printWriter.println("VELOCITY_X " + subsituteExpression(((PdeEquation)equation).getVelocityX(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
 		} else {
 			printWriter.println("VELOCITY_X 0.0;");
 		}
 		if (((PdeEquation)equation).getVelocityY() != null) {
-			printWriter.println("VELOCITY_Y " + subsituteExpression(((PdeEquation)equation).getVelocityY()).infix() + ";");
+			printWriter.println("VELOCITY_Y " + subsituteExpression(((PdeEquation)equation).getVelocityY(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
 		} else if (resampledGeometry.getDimension() > 1) {
 			printWriter.println("VELOCITY_Y 0.0;");
 		}
 		if (((PdeEquation)equation).getVelocityZ() != null) {
-			printWriter.println("VELOCITY_Z " + subsituteExpression(((PdeEquation)equation).getVelocityZ()).infix() + ";");			
+			printWriter.println("VELOCITY_Z " + subsituteExpression(((PdeEquation)equation).getVelocityZ(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");			
 		} else if (resampledGeometry.getDimension() > 2) {
 			printWriter.println("VELOCITY_Z 0.0;");
 		}
@@ -461,7 +466,7 @@ private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDom
 				volSubDomain.getBoundaryConditionZm(),
 				volSubDomain.getBoundaryConditionZp()
 		};
-		writeBoundaryValues(bctypes, pde);
+		writeBoundaryValues(bctypes, pde, VariableDomain.VARIABLEDOMAIN_VOLUME);
 	}	
 
 //	if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
@@ -597,12 +602,12 @@ private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Expressi
 		JumpCondition jc = enum1.nextElement();
 		printWriter.println("JUMP_CONDITION_BEGIN " + jc.getVariable().getName());
 		// influx
-		Expression flux = subsituteExpression(jc.getInFluxExpression());
+		Expression flux = subsituteExpression(jc.getInFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 		String infix = replaceInsideOutside(msd, flux);
 		printWriter.println("FLUX " + msd.getInsideCompartment().getName() + " " + infix + ";");
 		
 		// outflux
-		flux = subsituteExpression(jc.getOutFluxExpression());
+		flux = subsituteExpression(jc.getOutFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 		infix = replaceInsideOutside(msd, flux);
 		printWriter.println("FLUX " + msd.getOutsideCompartment().getName() + " " + infix + ";");
 		
@@ -648,19 +653,19 @@ EQUATION_END
  */
 private void writeMembraneRegion_VarContext_Equation(MembraneSubDomain memSubDomain, MembraneRegionEquation equation) throws ExpressionException {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
-	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
+	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 	
-	Expression rateExp = subsituteExpression(((MembraneRegionEquation)equation).getMembraneRateExpression());
+	Expression rateExp = subsituteExpression(((MembraneRegionEquation)equation).getMembraneRateExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 	String rateStr = replaceInsideOutside(memSubDomain, rateExp);
 	printWriter.println("RATE " + rateStr + ";");
 	
-	printWriter.println("UNIFORMRATE " + subsituteExpression(((MembraneRegionEquation)equation).getUniformRateExpression()).infix() + ";");
+	printWriter.println("UNIFORMRATE " + subsituteExpression(((MembraneRegionEquation)equation).getUniformRateExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 	printWriter.println("EQUATION_END");
 	printWriter.println();
 }
 
 
-private void writeBoundaryValues(BoundaryConditionType[] bctypes, PdeEquation pde) throws ExpressionException {
+private void writeBoundaryValues(BoundaryConditionType[] bctypes, PdeEquation pde, VariableDomain variableDomain) throws ExpressionException {
 	int dimension = resampledGeometry.getDimension();
 	
 	String[] bctitles = new String[]{"BOUNDARY_XM", "BOUNDARY_XP", "BOUNDARY_YM", "BOUNDARY_YP", "BOUNDARY_ZM", "BOUNDARY_ZP"};
@@ -685,7 +690,7 @@ private void writeBoundaryValues(BoundaryConditionType[] bctypes, PdeEquation pd
 			}
 		} 
 		if (valueExp != null) {
-			printWriter.println(bctitles[i] + " " + subsituteExpression(valueExp).infix() + ";");
+			printWriter.println(bctitles[i] + " " + subsituteExpression(valueExp, variableDomain).infix() + ";");
 		}
 	}
 }
@@ -908,7 +913,8 @@ private void writeMeshFile() throws IOException {
 }
 
 private double[] generateRandomNumbers(RandomVariable rv, int numRandomNumbers) throws ExpressionException {
-	Expression seedExpr = subsituteExpression(rv.getSeed());
+	VariableDomain variableDomain = (rv instanceof VolumeRandomVariable) ? VariableDomain.VARIABLEDOMAIN_VOLUME : VariableDomain.VARIABLEDOMAIN_MEMBRANE;
+	Expression seedExpr = subsituteExpression(rv.getSeed(), variableDomain);
 	if (!seedExpr.isNumeric()) {
 		throw new ExpressionException("Seed for RandomVariable '" + rv.getName() + " is not Constant!");
 	}
@@ -920,8 +926,8 @@ private double[] generateRandomNumbers(RandomVariable rv, int numRandomNumbers) 
 	
 	if (distribution instanceof UniformDistribution) {
 		UniformDistribution ud = (UniformDistribution)distribution;
-		Expression minFlattened = subsituteExpression(ud.getMinimum());
-		Expression maxFlattened = subsituteExpression(ud.getMaximum());
+		Expression minFlattened = subsituteExpression(ud.getMinimum(), variableDomain);
+		Expression maxFlattened = subsituteExpression(ud.getMaximum(), variableDomain);
 		
 		if (!minFlattened.isNumeric()) {		
 			throw new ExpressionException("For RandomVariable '" + rv.getName() + "', minimum for UniformDistribution is not Constant!");
@@ -938,8 +944,8 @@ private double[] generateRandomNumbers(RandomVariable rv, int numRandomNumbers) 
 		}
 	} else if (distribution instanceof GaussianDistribution) {
 		GaussianDistribution gd = (GaussianDistribution)distribution;
-		Expression meanFlattened = subsituteExpression(gd.getMean());
-		Expression sdFlattened = subsituteExpression(gd.getStandardDeviation());
+		Expression meanFlattened = subsituteExpression(gd.getMean(), variableDomain);
+		Expression sdFlattened = subsituteExpression(gd.getStandardDeviation(), variableDomain);
 		
 		if (!meanFlattened.isNumeric()) {		
 			throw new ExpressionException("For RandomVariable '" + rv.getName() + "', mean for GaussianDistribution is not Constant!");
@@ -1219,11 +1225,11 @@ EQUATION_END
  */
 private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, Equation equation) throws ExpressionException {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
-	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
-	Expression rateExpression = subsituteExpression(equation.getRateExpression());
+	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
+	Expression rateExpression = subsituteExpression(equation.getRateExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 	printWriter.println("RATE " + replaceInsideOutside(memSubDomain, rateExpression) + ";");
 	if (equation instanceof PdeEquation) {
-		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression()).infix() + ";");
+		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 		
 		PdeEquation pde = (PdeEquation)equation;
 		BoundaryConditionType[] bctypes = new BoundaryConditionType[] {
@@ -1234,7 +1240,7 @@ private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, E
 				memSubDomain.getInsideCompartment().getBoundaryConditionZm(),
 				memSubDomain.getInsideCompartment().getBoundaryConditionZp()
 		};
-		writeBoundaryValues(bctypes, pde);		
+		writeBoundaryValues(bctypes, pde, VariableDomain.VARIABLEDOMAIN_MEMBRANE);		
 	}	
 
 //	if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
@@ -1271,9 +1277,9 @@ EQUATION_END
  */
 private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain volSubDomain, VolumeRegionEquation equation) throws ExpressionException {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
-	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
-	printWriter.println("RATE " + subsituteExpression(equation.getVolumeRateExpression()).infix() + ";");
-	printWriter.println("UNIFORMRATE " + subsituteExpression(equation.getUniformRateExpression()).infix() + ";");
+	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
+	printWriter.println("RATE " + subsituteExpression(equation.getVolumeRateExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
+	printWriter.println("UNIFORMRATE " + subsituteExpression(equation.getUniformRateExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
 //	printWriter.println("FLUX " + subsituteExpression(equation.getMembraneRateExpression()).infix() + ";");
 	printWriter.println("EQUATION_END");
 	printWriter.println();
