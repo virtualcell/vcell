@@ -185,6 +185,25 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 public PDEPlotControlPanel() {
 	super();
 	initialize();
+	setDataIdentifierFilter(DEFAULT_DATAIDENTIFIER_FILTER);
+}
+
+public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
+	this.dataIdentifierFilter = dataIdentifierFilter;
+	filterComboBox.removeActionListener(filterChangeActionListener);
+	filterComboBox.removeAllItems();
+	if(dataIdentifierFilter != null){
+		String[] filterSetNames = this.dataIdentifierFilter.getFilterSetNames();
+		for (int i = 0; i < filterSetNames.length; i++) {
+			filterComboBox.addItem(filterSetNames[i]);
+		}
+		filterComboBox.setSelectedItem(dataIdentifierFilter.getDefaultFilterName());
+		filterComboBox.addActionListener(filterChangeActionListener);
+	}else{
+		filterComboBox.addItem("All Variables");
+		filterComboBox.setSelectedIndex(0);
+	}
+	filterVariableNames();
 }
 
 
@@ -577,7 +596,7 @@ private void filterVariableNames(){
 		AsynchClientTask task1 = new AsynchClientTask("get functions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if(!dataIdentifierFilter.isAcceptAll((String)filterComboBox.getSelectedItem())){
+				if(dataIdentifierFilter != null && !dataIdentifierFilter.isAcceptAll((String)filterComboBox.getSelectedItem())){
 					initFunctionsList();
 				}
 			}
@@ -591,26 +610,25 @@ private void filterVariableNames(){
 					TreeSet<DataIdentifier> dataIdentifierTreeSet =
 						new TreeSet<DataIdentifier>(new Comparator<DataIdentifier>(){
 							public int compare(DataIdentifier o1, DataIdentifier o2) {
-								if(o1.getName().compareToIgnoreCase(o2.getName()) == 0){
+								int bEqualIgnoreCase = o1.getName().compareToIgnoreCase(o2.getName());
+								if (bEqualIgnoreCase == 0){
 									return o1.getName().compareTo(o2.getName());
 								}
-								return o1.getName().compareToIgnoreCase(o2.getName());
+								return bEqualIgnoreCase;
 							}});
 					DataIdentifier[] dataIdentifierArr = getPdeDataContext().getDataIdentifiers();
 					dataIdentifierTreeSet.addAll(Arrays.asList(dataIdentifierArr));
 					DataIdentifier[] sortedDataIdentiferArr = dataIdentifierTreeSet.toArray(new DataIdentifier[0]);
 		
 					for(int i=0; i < sortedDataIdentiferArr.length; i++){
-						if(dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), sortedDataIdentiferArr[i])){
+						if(dataIdentifierFilter == null || dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), sortedDataIdentiferArr[i])){
 							displayVarNames.add(sortedDataIdentiferArr[i].getName());
 						}
 					}
 				}
 				if(displayVarNames.size() == 0){
 					Object emptyFilter = filterComboBox.getSelectedItem();
-		//				filterComboBox.setSelectedItem(dataIdentifierFilter.getDefaultFilterName());
 					System.err.println("No Variables matching filter '"+emptyFilter+"' found");
-		//				return;
 				}
 				String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
 				getDefaultListModelCivilized1().setContents((displayNames.length == 0?null:displayNames));
@@ -1354,17 +1372,6 @@ private void initialize() {
 		this.add(getJSplitPane1(), gridBagConstraints);
 		this.add(getAddFunctionButton(), gridBagConstraints1);
 		initConnections();
-		
-		filterComboBox.removeActionListener(filterChangeActionListener);
-		filterComboBox.removeAllItems();
-		String[] filterSetNames = dataIdentifierFilter.getFilterSetNames();
-		for (int i = 0; i < filterSetNames.length; i++) {
-			filterComboBox.addItem(filterSetNames[i]);
-		}
-		filterComboBox.setSelectedItem(dataIdentifierFilter.getDefaultFilterName());
-		filterComboBox.addActionListener(filterChangeActionListener);
-		
-		filterVariableNames();
 
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -1410,31 +1417,6 @@ private void newTimePoints(double[] newTimes) {
 		getJLabelMax().setText(NumberUtils.formatNumber(newTimes[newTimes.length - 1],8));
 	}
 }
-
-
-/**
- * Comment
- */
-private void setCursorForWindow(Cursor cursor) {
-	
-	BeanUtils.setCursorThroughout(this, cursor);
-	
-//	Container c = null;
-//	// this normally is part of another panel that sits in an internal frame
-//	//JInternalFrame iframe = BeanUtils.internalFrameParent(this);
-//	JInternalFrame iframe = (JInternalFrame)BeanUtils.findTypeParentOfComponent(this,JInternalFrame.class);
-//	if (iframe != null) {
-//		c = (Container)iframe;
-//	} else {
-//		// just in case it will be used outside a desktop
-//		Window window = SwingUtilities.windowForComponent(this);
-//		c = (Container)window;
-//	}
-//	if (c != null) {
-//		BeanUtils.setCursorThroughout(c, cursor);
-//	}
-}
-
 
 /**
  * Sets the displayAdapterService property (cbit.image.DisplayAdapterService) value.
