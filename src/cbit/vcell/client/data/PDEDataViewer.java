@@ -364,10 +364,6 @@ public PDEDataViewer() {
 	initialize();
 }
 
-public void setDataIdentifierFilter(PDEPlotControlPanel.DataIdentifierFilter dataIdentifierFilter){
-	getPDEPlotControlPanel1().setDataIdentifierFilter(dataIdentifierFilter);
-}
-
 /**
  * Comment
  */
