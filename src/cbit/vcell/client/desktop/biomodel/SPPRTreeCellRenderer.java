@@ -78,7 +78,7 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
         	if (!SPPRTreeModel.FOLDER_NODE_IMPLEMENTED[folder.getId()] || !folder.isSupported()) {
 	        	setEnabled(false);
 	        	setDisabledIcon(this.getClosedIcon());
-        	}
+    		}
     	} else if (userObj instanceof SpeciesContext) { // --- species context
     		icon = speciesIcon;
         	labelText = ((SpeciesContext)userObj).getName();

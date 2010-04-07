@@ -83,10 +83,10 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		"Global Parameters",
 		"Reactions",
 		"Events",
-		"Rate Rules",
-		"Application Parameters",
-		"Application Functions",
-		"Application Equations"
+//		"Rate Rules",
+//		"Application Parameters",
+//		"Application Functions",
+//		"Application Equations"
 	};
 		
 	static final boolean FOLDER_NODE_IMPLEMENTED[] = {
