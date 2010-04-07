@@ -11,6 +11,8 @@ import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.CropImageFilter;
@@ -91,6 +93,35 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		
 	private AsynchProgressPopup progressWaitPopup;
 	
+	
+	public static class ComboboxROIName {
+		private String roiName;
+		private boolean bNameEdit;
+		private boolean bDeleteable;
+		private Color highlightColor;
+		public ComboboxROIName(String roiName,boolean bNameEdit,boolean bDeleteable,Color highlightColor){
+			this.roiName = roiName;
+			this.bNameEdit = bNameEdit;
+			this.bDeleteable = bDeleteable;
+			this.highlightColor = highlightColor;
+		}
+		public String getROIName(){
+			return roiName;
+		}
+		public boolean isNameEditable(){
+			return bNameEdit;
+		}
+		public Color getHighlightColor(){
+			return highlightColor;
+		}
+		public boolean isDeleteable(){
+			return bDeleteable;
+		}
+		public String toString(){
+			return getROIName();
+		}
+	}
+
 	public ROIMultiPaintManager(){
 		super();
 	}
@@ -201,6 +232,56 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 	}
 	
+	private void waitAskInitialize(final boolean bHasOriginalData){
+		if(overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length == 0){
+			//Wait until we have a window to popup the initial ROI message
+			new Thread(new Runnable() {
+				public void run() {
+					long startTime = System.currentTimeMillis();
+					while(true){
+						Window window = (Window)BeanUtils.findTypeParentOfComponent(overlayEditorPanelJAI, Window.class);
+						System.out.println(window);
+						if(window != null && window.isVisible()){
+							SwingUtilities.invokeLater(new Runnable() {public void run() {askInitialize(bHasOriginalData);}});
+							break;
+						}
+						try{
+							Thread.sleep(100);
+						}catch(InterruptedException e){
+							e.printStackTrace();
+							break;
+						}
+						if((System.currentTimeMillis()-startTime) > 10000){
+							//Stop checking
+							break;
+						}
+					}
+				}
+			}).start();
+		}
+
+	}
+	private void askInitialize(boolean hasOriginalData){
+
+		final String addROIManual = "Add empty ROI, edit manually";
+		final String addROIAssist = "Add ROI using threshold";
+		final String cancel = "Cancel";
+		String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
+				"Segmenting an image begins with defining at least 1 'region of interest' (ROI)."+
+				"  After creating the initial ROI you can use the segmentation tools to create/edit more ROIs.  Choose an action:\n"+
+				"1. Add an 'empty' ROI to begin."+
+				(!hasOriginalData?"":"\n2. Add an ROI using the 'threshold' tool to begin."),
+				(!hasOriginalData?new String[] {addROIManual,cancel}:new String[] {addROIManual,addROIAssist,cancel}),
+				cancel);
+		
+		if(result.equals(cancel)){
+			return;//throw UserCancelException.CANCEL_GENERIC;
+		}
+		addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors());
+		if(result.equals(addROIAssist)){
+			showROIAssistant(overlayEditorPanelJAI.getAllCompositeROINamesAndColors()[0]);
+		}
+	}
 	public static final String IMPORT_SOURCE_NAME = "IMPORT_SOURCE_NAME";
 	public static final String IMPORTED_DATA_CONTAINER = "fdfos";
 	public static final String CROPPED_ROI = "vcImage";
@@ -289,7 +370,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					(FieldDataFileOperationSpec)hashTable.get(IMPORTED_DATA_CONTAINER);
 //				System.out.println("previous Crop before border fix= "+previousCrop3D);
 				ROIMultiPaintManager.fixBorderProblemInPlace(originalDataContainer, previouslyEditedVCImage,previousCrop3D);
-				initImageDataSet(originalDataContainer.shortSpecData[0][0],originalDataContainer.isize);
+				initImageDataSet((originalDataContainer.shortSpecData==null?null:originalDataContainer.shortSpecData[0][0]),originalDataContainer.isize);
 				initROIComposite();
 				//Crop with mergedCropRectangle
 //				System.out.println("previous Crop crop= "+previousCrop3D);
@@ -382,10 +463,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 		AsynchClientTask showROIPanelTask = new AsynchClientTask(SHOW_ROI_PANEL_TASK_NAME,AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
+			public void run(final Hashtable<String, Object> hashTable) throws Exception {
 				getClientTaskStatusSupport().setMessage("Showing ROI editor.");
 //				System.out.println("----------task "+getTaskName());
 
+				waitAskInitialize(((FieldDataFileOperationSpec)(hashTable.get(IMPORTED_DATA_CONTAINER))).shortSpecData != null);				
+				
 				String sourceName = (String)hashTable.get(IMPORT_SOURCE_NAME);
 				int retCode = DialogUtils.showComponentOKCancelDialog(
 						(Component)hashTable.get(ClientRequestManager.GUI_PARENT),
@@ -401,8 +484,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //				System.out.println("----------task "+getTaskName());
 
 				getClientTaskStatusSupport().setMessage("Checking ROI.");
-				Hashtable<String, Color> roiNamesAndColorsHash = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-				if(roiNamesAndColorsHash == null || roiNamesAndColorsHash.size() == 0){
+				ComboboxROIName[] roiNamesAndColors = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+				if(roiNamesAndColors == null || roiNamesAndColors.length == 0){
 					//No ROI defined
 					final String reloadImage = "Reload Image";
 					final String cancel = "Back to segmentation";
@@ -455,20 +538,21 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						return;
 					}
 					if(bForceAssignBackground){
-						vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColorsHash.size()+1];
+						vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColors.length+1];
 						vcPixelClassesFromROINames[0] = new VCPixelClass(null, RESERVED_NAME_BACKGROUND, 0);					
 					}
 				}else{
-					vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColorsHash.size()];
+					vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColors.length];
 				}
 				
 
 				//find pixel indexes corresponding to colors for ROIs
 				int index = (bForceAssignBackground?1:0);
-				Enumeration<String> roiNameEnum = roiNamesAndColorsHash.keys();
-				while(roiNameEnum.hasMoreElements()){
-					String roiNameString = roiNameEnum.nextElement();
-					Color roiColor = roiNamesAndColorsHash.get(roiNameString);
+//				Enumeration<String> roiNameEnum = roiNamesAndColorsHash.keys();
+//				while(roiNameEnum.hasMoreElements()){
+				for (int j = 0; j < roiNamesAndColors.length; j++) {
+					String roiNameString = roiNamesAndColors[j].getROIName();
+					Color roiColor = roiNamesAndColors[j].getHighlightColor();
 					int colorIndex = -1;
 					for (int i = 0; i < indexColorModel.getMapSize(); i++) {
 						if(indexColorModel.getRGB(i) == roiColor.getRGB()){
@@ -525,13 +609,14 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					if(result.equals(removeROI)){
 						Vector<VCPixelClass> vcPixelClassV = new Vector<VCPixelClass>();
 						vcPixelClassV.addAll(Arrays.asList(vcPixelClassesFromROINames));
-						Hashtable<String, Color> allROINameAndColors = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-						roiNameEnum = allROINameAndColors.keys();
-						while(roiNameEnum.hasMoreElements()){
-							String roiName = roiNameEnum.nextElement();
+//						ComboboxROIName[] = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+//						roiNameEnum = allROINameAndColors.keys();
+//						while(roiNameEnum.hasMoreElements()){
+						for (int k = 0; k < vcPixelClassesFromVCImage.length; k++) {
+							String roiName = roiNamesAndColors[k].getROIName();
 							for (int i = 0; i < missingROINames.size(); i++) {
 								if(missingROINames.elementAt(i).equals(roiName)){
-									Color deleteThisColor = allROINameAndColors.get(roiName);
+									Color deleteThisColor = roiNamesAndColors[k].getHighlightColor();
 									clearROI(false, deleteThisColor);
 									for (int j = 0; j < vcPixelClassV.size(); j++) {
 										if(vcPixelClassV.elementAt(j).getPixelClassName().equals(roiName)){
@@ -647,8 +732,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		UShortImage[] zImageSet = new UShortImage[uncroppedISize.getZ()];
 		for (int i = 0; i < zImageSet.length; i++) {
 			short[] shortData = new short[uncroppedISize.getX()*uncroppedISize.getY()];
-			System.arraycopy(dataToSegment, shortData.length*i, shortData, 0, shortData.length);
-			zImageSet[i] = new UShortImage(shortData,DEFAULT_ORIGIN,DEFAULT_EXTENT,/*newOrigin,newExtent,*/uncroppedISize.getX(),uncroppedISize.getY(),1);
+			if(dataToSegment != null){
+				System.arraycopy(dataToSegment, shortData.length*i, shortData, 0, shortData.length);
+			}
+			zImageSet[i] = new UShortImage(shortData,DEFAULT_ORIGIN,DEFAULT_EXTENT,uncroppedISize.getX(),uncroppedISize.getY(),1);
 		}
 		    
 		imageDataSet = new ImageDataset(zImageSet, new double[] { 0.0 }, uncroppedISize.getZ());
@@ -690,13 +777,13 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
 			
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DELETEROI_PROPERTY)){
-			deleteROI((OverlayEditorPanelJAI.ComboboxROIName)evt.getOldValue());
+			deleteROI((ComboboxROIName)evt.getOldValue());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_ADDNEWROI_PROPERTY)){
-			addNewROI((OverlayEditorPanelJAI.ComboboxROIName[])evt.getOldValue());
+			addNewROI((ComboboxROIName[])evt.getOldValue());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_SHOWROIASSIST_PROPERTY)){
-			showROIAssistant((OverlayEditorPanelJAI.ComboboxROIName)evt.getNewValue());
+			showROIAssistant((ComboboxROIName)evt.getNewValue());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CLEARROI_PROPERTY)){
-			clearROI(true,((OverlayEditorPanelJAI.ComboboxROIName)evt.getOldValue()).getHighlightColor());
+			clearROI(true,((ComboboxROIName)evt.getOldValue()).getHighlightColor());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_BLEND_PROPERTY)){
 			overlayEditorPanelJAI.setBlendPercent((Integer)evt.getNewValue());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY)){
@@ -707,7 +794,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			final String useROI = "Use all ROI";
 			final String cancel = "Cancel";
 			String result = useUnderlying;
-			if(overlayEditorPanelJAI.getAllCompositeROINamesAndColors().size()!= 0){
+			if(overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length!= 0){
 				result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, 
 						"Auto-crop will find the smallest box that encloses all non-background data values and allow you to 'crop' your data to that size. Choose an action:\n"+
 						"1. Use the 'underlying' image to calculate an auto-cropping boundary.\n"+
@@ -1123,7 +1210,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 			
 	}
-	private void deleteROI(OverlayEditorPanelJAI.ComboboxROIName currentComboboxROIName){
+	private void deleteROI(ComboboxROIName currentComboboxROIName){
 		final String deleteCurrentROI = "Delete only current ROI";
 		final String deleteAllROI = "Delete all ROIs";
 		final String cancel = "Cancel";
@@ -1144,7 +1231,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 
 	}
-	private void addNewROI(OverlayEditorPanelJAI.ComboboxROIName[] comboboxROINameArr){
+	private void addNewROI(ROIMultiPaintManager.ComboboxROIName[] comboboxROINameArr){
 		try{
 			String newROIName = null;
 			boolean bNameOK;
@@ -1199,7 +1286,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			//do Nothing
 		}
 	}
-	private void showROIAssistant(OverlayEditorPanelJAI.ComboboxROIName currentComboboxROIName){
+	private void showROIAssistant(ComboboxROIName currentComboboxROIName){
 		if(imageDataSet == null){
 			DialogUtils.showErrorDialog(JOptionPane.getRootFrame(), "No ImageData available for ROIAssistant.");
 			return;
@@ -1281,7 +1368,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 	}
 	private void clearROI(boolean bAskClear,Color roiColor){
-		int roiCount = overlayEditorPanelJAI.getAllCompositeROINamesAndColors().size();
+		int roiCount = overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length;
 		boolean bHighlightOnly = false;
 		if(bAskClear/* && roiCount > 1*/){
 			final String clearAll = "Clear all ROIs";
@@ -1607,11 +1694,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		if(pixelValue == 0){
 			return RESERVED_NAME_BACKGROUND;
 		}
-		Hashtable<String, Color> allROINamesAndColors = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-		Enumeration<String> roiNameEnum2 = allROINamesAndColors.keys();
-		while(roiNameEnum2.hasMoreElements()){
-			String roiName = roiNameEnum2.nextElement();
-			Color roiColor = allROINamesAndColors.get(roiName);
+		ComboboxROIName[] allROINamesAndColors = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+//		Enumeration<String> roiNameEnum2 = allROINamesAndColors.keys();
+//		while(roiNameEnum2.hasMoreElements()){
+		for (int i = 0; i < allROINamesAndColors.length; i++) {
+			String roiName = allROINamesAndColors[i].getROIName();
+			Color roiColor = allROINamesAndColors[i].getHighlightColor();
 			if(OverlayEditorPanelJAI.CONTRAST_COLORS[pixelValue].equals(roiColor)){
 				return roiName;
 			}

@@ -56,11 +56,15 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	private BufferedImage computeComposite(RenderedImage contrastEnhancedUnderlyingImage){
 		DirectColorModel dcm = new DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF);
 		WritableRaster newOverlayRaster = dcm.createCompatibleWritableRaster(contrastEnhancedUnderlyingImage.getWidth(),contrastEnhancedUnderlyingImage.getHeight());
-		try{
+	    BufferedImage result = new BufferedImage(dcm,newOverlayRaster, false, null);
+	    try{
 			int[] newOverlayRasterInts = ((DataBufferInt)newOverlayRaster.getDataBuffer()).getData();
 			byte[] contrastUnderlayBytes = ((DataBufferByte)contrastEnhancedUnderlyingImage.getData().getDataBuffer()).getData();
 			byte[] roiBytes = (allROICompositeImage==null?null:((DataBufferByte)allROICompositeImage.getData().getDataBuffer()).getData());
 			byte[] highlightBytes = (highlightImage==null?null:((DataBufferByte)highlightImage.getData().getDataBuffer()).getData());
+			if(roiBytes != null && roiBytes.length != contrastUnderlayBytes.length){
+				return result;
+			}
 			int index= 0;
 			for (int Y = 0; Y < contrastEnhancedUnderlyingImage.getHeight(); Y++) {
 				for (int X = 0; X < contrastEnhancedUnderlyingImage.getWidth(); X++) {
@@ -83,7 +87,6 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 			e.printStackTrace();
 			//ignore, try to display what you have
 		}
-	    BufferedImage result = new BufferedImage(dcm,newOverlayRaster, false, null);
 	    return result;
 	}
 	public void setModeRemoveROIWhenPainting(boolean bMode){

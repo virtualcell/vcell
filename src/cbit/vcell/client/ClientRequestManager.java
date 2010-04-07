@@ -1170,12 +1170,12 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 												if(totalSize <=0 || totalSize > (SCRATCH_SIZE_LIMIT)){
 													throw new Exception("Total pixels (x*y*z) cannot be <=0 or >"+SCRATCH_SIZE_LIMIT+".");
 												}
-												short[] scratchData = new short[totalSize];
+//												short[] scratchData = new short[totalSize];
 												fdfos = new FieldDataFileOperationSpec();
 												fdfos.origin = new Origin(0, 0, 0);
 												fdfos.extent = new Extent(1, 1, 1);
 												fdfos.isize = new ISize(xsize, ysize, zsize);
-												fdfos.shortSpecData = new short[][][] {{scratchData}};
+//												fdfos.shortSpecData = new short[][][] {{scratchData}};
 												break;
 											}catch(Exception e){
 												DialogUtils.showErrorDialog(guiParent, "Error entering starting sizes\n"+e.getMessage());
@@ -1187,24 +1187,26 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 								}
 								getClientTaskStatusSupport().setMessage("Counting distinct pixel values.");
 								hashTable.put(ROIMultiPaintManager.IMPORTED_DATA_CONTAINER, fdfos);
-								short[] dataToSegment = fdfos.shortSpecData[0][0];//[time 0][channel 0]
-
-								BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
-								for (int i = 0; i < dataToSegment.length; i++) {
-									uniquePixelBS.set((int)(dataToSegment[i]&0x0000FFFF));
-								}
 
 								//ask user if want to manual segment
-								if (documentCreationInfo.getOption() != VCDocument.GEOM_OPTION_FROM_SCRATCH &&
-										askAboutSegmentation(guiParent, uniquePixelBS.cardinality()).equals(SEGMENT_KEEP_IMPORTED)) {
-									hashTable.put(ROIMultiPaintManager.CROPPED_ROI,
-											createVCImageFromUnsignedShorts(dataToSegment, fdfos.extent, fdfos.isize, uniquePixelBS));
-									ROIMultiPaintManager.Crop3D unCropped3D = new ROIMultiPaintManager.Crop3D();
-									unCropped3D.setBounds(0,0,0, fdfos.isize.getX(),fdfos.isize.getY(),fdfos.isize.getZ());
-									hashTable.put(ROIMultiPaintManager.CROP_3D, unCropped3D);
-									hashTable.put(ClientTaskDispatcher.TASK_REWIND, EditImageAttributes.EDIT_IMG_ATTR_TASK_NAME);
-								}else{
+								if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
 									hashTable.put(ClientTaskDispatcher.TASK_REWIND,ROIMultiPaintManager.INIT_ROI_DATA_TASK_NAME);
+								}else{
+									short[] dataToSegment = fdfos.shortSpecData[0][0];//[time 0][channel 0]
+									BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
+									for (int i = 0; i < dataToSegment.length; i++) {
+										uniquePixelBS.set((int)(dataToSegment[i]&0x0000FFFF));
+									}
+									if (askAboutSegmentation(guiParent, uniquePixelBS.cardinality()).equals(SEGMENT_KEEP_IMPORTED)) {
+										hashTable.put(ROIMultiPaintManager.CROPPED_ROI,
+												createVCImageFromUnsignedShorts(dataToSegment, fdfos.extent, fdfos.isize, uniquePixelBS));
+										ROIMultiPaintManager.Crop3D unCropped3D = new ROIMultiPaintManager.Crop3D();
+										unCropped3D.setBounds(0,0,0, fdfos.isize.getX(),fdfos.isize.getY(),fdfos.isize.getZ());
+										hashTable.put(ROIMultiPaintManager.CROP_3D, unCropped3D);
+										hashTable.put(ClientTaskDispatcher.TASK_REWIND, EditImageAttributes.EDIT_IMG_ATTR_TASK_NAME);
+									}else{
+										hashTable.put(ClientTaskDispatcher.TASK_REWIND,ROIMultiPaintManager.INIT_ROI_DATA_TASK_NAME);
+									}
 								}
 							} catch (DataFormatException ex) {
 								throw new Exception("Cannot read image file.\n"+ex.getMessage());
