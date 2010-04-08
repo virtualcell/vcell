@@ -8,6 +8,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 /**
@@ -21,7 +22,7 @@ public class ODEDataManager implements DataManager {
 	private ODESolverResultSet odeSolverResultSet = null;
 	private OutputContext outputContext = null;
 
-private OutputContext getOutputContext() {
+public OutputContext getOutputContext() {
 		return outputContext;
 	}
 
@@ -136,7 +137,7 @@ public VCDataIdentifier getVCDataIdentifier() {
  * Creation date: (6/11/2004 3:53:33 PM)
  * @return cbit.vcell.client.server.VCDataManager
  */
-public VCDataManager getVCDataManager() {
+private VCDataManager getVCDataManager() {
 	return vcDataManager;
 }
 
@@ -161,7 +162,8 @@ private void setVcDataManager(VCDataManager newVcDataManager) {
 }
 
 private void connect() throws DataAccessException {
-	odeSolverResultSet = getVCDataManager().getODEData(getVCDataIdentifier());
+	// clone, so we can operate safely on it (adding/removing user-defined functions) - real remote data is being cached...
+	odeSolverResultSet = new ODESimData(getVCDataIdentifier(),getVCDataManager().getODEData(getVCDataIdentifier()));
 }
 
 private void addOutputFunction(AnnotatedFunction function, ODESolverResultSet odeRS) {
@@ -187,5 +189,10 @@ private void addOutputFunction(AnnotatedFunction function, ODESolverResultSet od
 		javax.swing.JOptionPane.showMessageDialog(null, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
 		e.printStackTrace(System.out);
 	}
+}
+
+
+public DataManager createNewDataManager(VCDataIdentifier newVCdid) throws DataAccessException {
+	return new ODEDataManager(getOutputContext(), getVCDataManager(), newVCdid);
 }
 }

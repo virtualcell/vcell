@@ -264,7 +264,8 @@ public void refreshFunctions() throws DataAccessException {
 	if (isODEData) {
 		updateScanParamChoices();
 	} else {
-		pdeDataViewer.getPdeDataContext().refreshIdentifiers();
+		// no other reliable way until the PDE context/viewer/manager/dataset furball will be cleaned up... 
+		updateScanParamChoices();
 	}
 }
 
@@ -334,7 +335,7 @@ private void updateScanParamChoices(){
 		AsynchClientTask task1 = new AsynchClientTask("get ode results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ODEDataManager odeDatamanager = (ODEDataManager)dataManager;
+				ODEDataManager odeDatamanager = (ODEDataManager)dataManager.createNewDataManager(vcdid);
 				hashTable.put("odeDatamanager", odeDatamanager);
 			}
 		};
@@ -356,13 +357,14 @@ private void updateScanParamChoices(){
 		AsynchClientTask task1 = new AsynchClientTask("get pde results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				PDEDataManager pdeDatamanager = (PDEDataManager)dataManager;
+				PDEDataManager pdeDatamanager = (PDEDataManager)dataManager.createNewDataManager(vcdid);
 			
 				ClientPDEDataContext currentContext = (ClientPDEDataContext)pdeDataViewer.getPdeDataContext();
 				if (currentContext == null || currentContext.getDataIdentifier() == null) {
 					pdeDataViewer.setPdeDataContext(pdeDatamanager.getPDEDataContext());
 				} else {
 					currentContext.setDataManager(pdeDatamanager);
+					currentContext.refreshIdentifiers();
 				}
 			}
 		};

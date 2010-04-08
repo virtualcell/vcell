@@ -204,7 +204,7 @@ public VCDataIdentifier getVCDataIdentifier() {
  * Creation date: (6/11/2004 3:53:21 PM)
  * @return cbit.vcell.client.server.VCDataManager
  */
-public VCDataManager getVCDataManager() {
+private VCDataManager getVCDataManager() {
 	return vcDataManager;
 }
 
@@ -241,5 +241,10 @@ public OutputContext getOutputContext() {
 
 public void setOutputContext(OutputContext outputContext) {
 	this.outputContext = outputContext;
+}
+
+
+public DataManager createNewDataManager(VCDataIdentifier newVCdid) throws DataAccessException {
+	return new PDEDataManager(getOutputContext(), getVCDataManager(), newVCdid);
 }
 }
