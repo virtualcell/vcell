@@ -588,16 +588,16 @@ protected void menuAction(Shape shape, String menuAction) {
 			Species species = (Species)VCellTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
 			if(species != null){
 				IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
-				pasteSpecies(species,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), speciesHash);
+				pasteSpecies(getGraphPane(), species,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION),/* true,*/speciesHash,null);
 			}
 			//See if ReactionStep[]
 			ReactionStep[] reactionStepArr = (ReactionStep[])VCellTransferable.getFromClipboard(VCellTransferable.REACTIONSTEP_ARRAY_FLAVOR);
 			if(reactionStepArr != null){
 				try {
-					pasteReactionSteps(reactionStepArr,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION), getGraphPane());
+					pasteReactionSteps(reactionStepArr,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION),getGraphPane(),null);
 				} catch (Exception e) {
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Error while pasting reaction:\n" + e.getMessage());
+					PopupGenerator.showErrorDialog(getGraphPane(), "Error while pasting reaction:\n" + e.getMessage());
 				}
 			}
 		}
