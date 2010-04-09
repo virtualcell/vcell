@@ -1092,9 +1092,13 @@ public static void main(java.lang.String[] args) {
  * This method was created in VisualAge.
  */
 private void refreshButtons() {
+	boolean bHasGeometry = getGeometry()!= null;
+	boolean bHasGeomSpec = (bHasGeometry?getGeometry().getGeometrySpec()!= null:false);
+	boolean bImageBased = (bHasGeomSpec?getGeometry().getGeometrySpec().getImage() != null:false);
+
 	addShapeButton.setEnabled(true);
 	SubVolume selectedSubVolume = getSelectedSubVolume();
-	if (getGeometry()==null || getGeometry().getDimension()==0 || getGeometrySpec() == null){
+	if (!bHasGeomSpec  || getGeometry().getDimension()==0){
 		getFrontButton().setEnabled(false);
 		getBackButton().setEnabled(false);
 		getDeleteButton().setEnabled(false);
@@ -1113,7 +1117,7 @@ private void refreshButtons() {
 			getFrontButton().setEnabled(false);
 			getBackButton().setEnabled(false);
 		}
-		if (selectedSubVolume instanceof ImageSubVolume || geometrySpec.getNumSubVolumes() <= 1){
+		if (selectedSubVolume instanceof ImageSubVolume || (!bImageBased && (geometrySpec.getNumSubVolumes() <= 1))){
 			getDeleteButton().setEnabled(false);
 		}else{
 			getDeleteButton().setEnabled(true);
