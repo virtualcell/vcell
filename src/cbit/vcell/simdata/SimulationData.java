@@ -1219,7 +1219,21 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 	DataIdentifier[] dis = new DataIdentifier[dataSetIdentifierList.size()];
 	for (int i = 0; i < dataSetIdentifierList.size(); i ++){
 		DataSetIdentifier dsi = (DataSetIdentifier)dataSetIdentifierList.elementAt(i);
-		dis[i] = new DataIdentifier(dsi.getName(), dsi.getVariableType(), dsi.isFunction());
+		String displayName = dsi.getName();
+		if (dsi.isFunction()) {
+			AnnotatedFunction f = null;
+			for (int j=0;j<annotatedFunctionList.size();j++){
+				AnnotatedFunction function = (AnnotatedFunction)annotatedFunctionList.elementAt(j);
+				if (function.getName().equals(dsi.getName())){
+					f = function;
+					break;
+				}
+			}
+			if (f != null && f.isUserDefined()) {
+				displayName = f.getDisplayName();
+			}
+		}
+		dis[i] = new DataIdentifier(dsi.getName(), dsi.getVariableType(), dsi.isFunction(), displayName);
 	}		
 	return dis;
 }

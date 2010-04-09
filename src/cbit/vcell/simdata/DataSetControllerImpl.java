@@ -1844,7 +1844,8 @@ public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataId
 				if (di.isFunction()) {
 					AnnotatedFunction f = getFunction(outputContext,vcdID,di.getName());
 					VariableType varType = getVariableTypeForFieldFunction(outputContext,vcdID, f);
-					di = new DataIdentifier(di.getName(), varType, di.isFunction());
+					String displayName = f.isUserDefined()?f.getDisplayName():f.getName();
+					di = new DataIdentifier(di.getName(), varType, di.isFunction(), displayName);
 				}
 			}		
 			v.addElement(di);

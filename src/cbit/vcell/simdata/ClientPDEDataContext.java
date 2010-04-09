@@ -198,7 +198,10 @@ public void setDataManager(PDEDataManager newDataManager) throws DataAccessExcep
 		((VCSimulationDataIdentifier)oldid).getVcSimID().equals(((VCSimulationDataIdentifier)newid).getVcSimID())
 	) {	
 		dataManager = newDataManager;
-		setTimePoints(getDataManager().getDataSetTimes());
+		DataIdentifier[] dis = getDataManager().getDataIdentifiers();
+		double[] times = getDataManager().getDataSetTimes();
+		setDataIdentifiers(dis);
+		setTimePoints(times);
 		externalRefresh();
 	} else {
 		throw new RuntimeException("DataManager change not allowed: oldID = "+oldid+" newID = "+newid);

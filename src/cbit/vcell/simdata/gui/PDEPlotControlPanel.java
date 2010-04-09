@@ -1,5 +1,6 @@
 package cbit.vcell.simdata.gui;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,6 +14,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.BoundedRangeModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -21,6 +23,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
@@ -482,6 +485,7 @@ private void connEtoM7(PDEDataContext value) {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
 	try {
+		getJList1().clearSelection();
 		filterVariableNames();
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
@@ -492,13 +496,14 @@ private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
 
 private void filterVariableNames(){
 	if ((getpdeDataContext1() != null)) {
-		final Object oldselection = getJList1().getSelectedValue();
+  		final Object oldselection = getJList1().getSelectedValue();
 		AsynchClientTask task1 = new AsynchClientTask("get functions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if(dataIdentifierFilter != null && !dataIdentifierFilter.isAcceptAll((String)filterComboBox.getSelectedItem())){
+//				if(dataIdentifierFilter != null && !dataIdentifierFilter.isAcceptAll((String)filterComboBox.getSelectedItem())){
+				// always, so we can display user-defined functions nicely...
 					initFunctionsList();
-				}
+//				}
 			}
 		};
 		
@@ -814,7 +819,8 @@ private void initFunctionsList() {
 	if (functionsList == null){
 		functionsList = new Vector<AnnotatedFunction>();
 	}
-	if (functionsList.size() == 0) {
+//	if (functionsList.size() == 0) {
+		functionsList.clear();
 		try {
 			 AnnotatedFunction[] functions = getpdeDataContext1().getFunctions();
 			 for (int i = 0; i < functions.length; i++) {
@@ -823,7 +829,7 @@ private void initFunctionsList() {
 		} catch (org.vcell.util.DataAccessException e) {
 			e.printStackTrace(System.out);
 		}
-	}
+//	}
 }
 
 
@@ -1244,7 +1250,35 @@ private void initialize() {
 		handleException(ivjExc);
 	}
 	// user code begin {2}
+	setIdentifierListRenderer();
 	// user code end
+}
+
+private void setIdentifierListRenderer() {
+	class IdentifierListCellRenderer extends DefaultListCellRenderer {
+		IdentifierListCellRenderer() {
+		super();
+	}
+	public java.awt.Component getListCellRendererComponent(javax.swing.JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		java.awt.Component component = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+		String identifier = value.toString();
+		AnnotatedFunction f = null;
+		if (functionsList != null) {
+			AnnotatedFunction[] funcs = (AnnotatedFunction[])functionsList.toArray(new AnnotatedFunction[functionsList.size()]);
+			for (int i = 0; i < funcs.length; i++) {
+				if (funcs[i].getName().equals(identifier)) {
+					f = funcs[i];
+					break;
+				}
+			}
+		}
+		if (f != null && f.isUserDefined()) {
+			setText(f.getDisplayName());
+		}
+		return component;
+	}
+	}
+	getJList1().setCellRenderer(new IdentifierListCellRenderer());
 }
 
 /**

@@ -13,6 +13,7 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.image.SourceDataInfo;
 import cbit.plot.PlotData;
+import cbit.vcell.client.server.DataManager;
 import cbit.vcell.math.Function;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.solvers.CartesianMesh;
@@ -205,7 +206,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
-public void externalRefresh() throws DataAccessException {
+protected void externalRefresh() throws DataAccessException {
 	refreshData(getVariableName(), getTimePoint(),true);
 }
 
@@ -440,7 +441,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 //	}
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (10/3/00 5:03:43 PM)
@@ -585,6 +585,7 @@ protected void setDataIdentifiers(DataIdentifier[] newDataIdentifiers) throws Da
 	}
 
 	if (fire) {
+		fieldDataIdentifier = null;
 		firePropertyChange("dataIdentifiers", oldDataIdentifiers, newDataIdentifiers);
 	}
 }

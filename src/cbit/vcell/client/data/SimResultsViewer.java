@@ -335,7 +335,7 @@ private void updateScanParamChoices(){
 		AsynchClientTask task1 = new AsynchClientTask("get ode results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ODEDataManager odeDatamanager = (ODEDataManager)dataManager.createNewDataManager(vcdid);
+				ODEDataManager odeDatamanager = ((ODEDataManager)dataManager).createNewODEDataManager(vcdid);
 				hashTable.put("odeDatamanager", odeDatamanager);
 			}
 		};
@@ -357,14 +357,13 @@ private void updateScanParamChoices(){
 		AsynchClientTask task1 = new AsynchClientTask("get pde results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				PDEDataManager pdeDatamanager = (PDEDataManager)dataManager.createNewDataManager(vcdid);
-			
 				ClientPDEDataContext currentContext = (ClientPDEDataContext)pdeDataViewer.getPdeDataContext();
 				if (currentContext == null || currentContext.getDataIdentifier() == null) {
+					PDEDataManager pdeDatamanager = ((PDEDataManager)dataManager).createNewPDEDataManager(vcdid, null);
 					pdeDataViewer.setPdeDataContext(pdeDatamanager.getPDEDataContext());
 				} else {
+					PDEDataManager pdeDatamanager = ((PDEDataManager)dataManager).createNewPDEDataManager(vcdid, (NewClientPDEDataContext)currentContext);					
 					currentContext.setDataManager(pdeDatamanager);
-					currentContext.refreshIdentifiers();
 				}
 			}
 		};
