@@ -1094,9 +1094,13 @@ public static void main(java.lang.String[] args) {
  * This method was created in VisualAge.
  */
 private void refreshButtons() {
+	boolean bHasGeometry = getGeometry()!= null;
+	boolean bHasGeomSpec = (bHasGeometry?getGeometry().getGeometrySpec()!= null:false);
+	boolean bImageBased = (bHasGeomSpec?getGeometry().getGeometrySpec().getImage() != null:false);
+
 	addShapeButton.setEnabled(true);
 	SubVolume selectedSubVolume = getSelectedSubVolume();
-	if (getGeometry()==null || getGeometry().getDimension()==0 || getGeometrySpec() == null){
+	if (!bHasGeomSpec  || getGeometry().getDimension()==0){
 		getFrontButton().setEnabled(false);
 		getBackButton().setEnabled(false);
 		getDeleteButton().setEnabled(false);
@@ -1107,15 +1111,15 @@ private void refreshButtons() {
 		getDeleteButton().setEnabled(false);
 	}else{
 		GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
-		int numSubVolumes = geometrySpec.getNumAnalyticSubVolumes();
-		if (numSubVolumes>1){
+		int numAnalyticSubVolumes = geometrySpec.getNumAnalyticSubVolumes();
+		if (numAnalyticSubVolumes>1){
 			getFrontButton().setEnabled(geometrySpec.getSubVolumeIndex(selectedSubVolume)>0);
-			getBackButton().setEnabled(geometrySpec.getSubVolumeIndex(selectedSubVolume)<(numSubVolumes-1));
+			getBackButton().setEnabled(geometrySpec.getSubVolumeIndex(selectedSubVolume)<(numAnalyticSubVolumes-1));
 		}else{
 			getFrontButton().setEnabled(false);
 			getBackButton().setEnabled(false);
 		}
-		if (selectedSubVolume instanceof ImageSubVolume || numSubVolumes <= 1){
+		if (selectedSubVolume instanceof ImageSubVolume || (!bImageBased && (geometrySpec.getNumSubVolumes() <= 1))){
 			getDeleteButton().setEnabled(false);
 		}else{
 			getDeleteButton().setEnabled(true);
