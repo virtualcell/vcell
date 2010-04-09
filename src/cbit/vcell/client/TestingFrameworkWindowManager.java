@@ -149,7 +149,6 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
 			regrRefFlag = argRegrRefFlag;
 		}
 	};
-	private OutputContext outputContext = null;
 	private TestingFrameworkWindowPanel testingFrameworkWindowPanel;
 	private EditTestCriteriaPanel editTestCriteriaPanel =
 		new EditTestCriteriaPanel();
@@ -619,6 +618,7 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 			functionList.add(newFunction);
 		}
 		
+		OutputContext outputContext = null;
 		if (functionList.size()>0){
 			AnnotatedFunction[] newDiffFunctions = (AnnotatedFunction[])BeanUtils.getArray(functionList,AnnotatedFunction.class);
 			outputContext = new OutputContext(newDiffFunctions);
@@ -626,7 +626,7 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 
 		
 		// make the viewer
-		MergedDatasetViewerController mergedDatasetViewerCtr = getRequestManager().getMergedDatasetViewerController(outputContext,mergedDataInfo, isSpatial);
+		MergedDatasetViewerController mergedDatasetViewerCtr = getRequestManager().getMergedDatasetViewerController(outputContext,mergedDataInfo, !isSpatial);
 		addDataListener(mergedDatasetViewerCtr);
 		DataViewer viewer = mergedDatasetViewerCtr.createViewer();
 		viewer.setDataViewerManager(this);
@@ -2859,7 +2859,7 @@ public void viewResults(TestCriteriaNew testCriteria) {
 	try {
 		Simulation sim = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(testCriteria.getSimInfo());
 		
-		DataViewerController dataViewerCtr = getRequestManager().getDataViewerController(outputContext,sim, 0);
+		DataViewerController dataViewerCtr = getRequestManager().getDataViewerController(null,sim, 0);
 		addDataListener(dataViewerCtr);
 		// make the viewer
 		DataViewer viewer = dataViewerCtr.createViewer();
