@@ -173,7 +173,7 @@ private void addOutputFunction(AnnotatedFunction function, ODESolverResultSet od
 	FunctionColumnDescription fcd = null;
 	String funcName = function.getName();
 	Expression funcExp = function.getExpression();
-	fcd = new FunctionColumnDescription(funcExp, funcName, null, funcName+" : "+funcExp.infix(), true);
+	fcd = new FunctionColumnDescription(funcExp, funcName, null, function.getDisplayName(), true);
 
 	try {
 		odeRS.checkFunctionValidity(fcd);
@@ -192,7 +192,7 @@ private void addOutputFunction(AnnotatedFunction function, ODESolverResultSet od
 }
 
 
-public DataManager createNewDataManager(VCDataIdentifier newVCdid) throws DataAccessException {
+public ODEDataManager createNewODEDataManager(VCDataIdentifier newVCdid) throws DataAccessException {
 	return new ODEDataManager(getOutputContext(), getVCDataManager(), newVCdid);
 }
 }

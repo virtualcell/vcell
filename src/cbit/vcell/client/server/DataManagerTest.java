@@ -60,7 +60,7 @@ public void addFunctions(cbit.vcell.math.AnnotatedFunction[] argFunctions) throw
 public cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers() throws org.vcell.util.DataAccessException {
 	cbit.vcell.simdata.DataIdentifier[] dataIdentifiers = new cbit.vcell.simdata.DataIdentifier[functions.length];
 	for (int i = 0; i < dataIdentifiers.length; i++){
-		dataIdentifiers[i] = new cbit.vcell.simdata.DataIdentifier(functions[i].getName(),cbit.vcell.simdata.VariableType.VOLUME);
+		dataIdentifiers[i] = new cbit.vcell.simdata.DataIdentifier(functions[i].getName(),cbit.vcell.simdata.VariableType.VOLUME, true, functions[i].getName());
 	}
 	return dataIdentifiers;
 }

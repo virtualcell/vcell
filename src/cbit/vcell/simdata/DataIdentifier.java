@@ -10,25 +10,19 @@ package cbit.vcell.simdata;
  */
 public class DataIdentifier implements java.io.Serializable {
 	private String name = null;
+	private String displayName = null;
 	private VariableType variableType = null;
 	private boolean bFunction = false;
 
 /**
  * DataIdentifier constructor comment.
  */
-public DataIdentifier(String argName, VariableType argVariableType) {
-	this(argName, argVariableType, false);
-}
-
-
-/**
- * DataIdentifier constructor comment.
- */
-public DataIdentifier(String argName, VariableType argVariableType, boolean arg_bFunction) {
+public DataIdentifier(String argName, VariableType argVariableType, boolean arg_bFunction, String argDisplayName) {
 	super();
 	name = argName;
 	variableType = argVariableType;
 	bFunction = arg_bFunction;
+	displayName = argDisplayName;
 }
 
 
@@ -87,5 +81,17 @@ public boolean isFunction() {
  */
 public String toString() {
 	return "DataIdentifier[\""+getName()+"\","+getVariableType()+"]";
+}
+
+
+/**
+ * @return the displayName
+ */
+public String getDisplayName() {
+	if (displayName != null) {
+		return displayName;
+	} else {
+		return name;
+	}
 }
 }

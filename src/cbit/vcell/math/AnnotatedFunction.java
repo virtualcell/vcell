@@ -68,6 +68,9 @@ public boolean isUserDefined() {
 	return bIsUserDefined;
 }
 
+public String getDisplayName() {
+	return getName() + " : " + getExpression().infix();
+}
 
 ///**
 // * Sets the simplifiedExpression property (cbit.vcell.parser.Expression) value.

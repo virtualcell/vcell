@@ -39,6 +39,12 @@ public PDEDataManager(OutputContext outputContext, VCDataManager vcDataManager, 
 	connect();
 }
 
+private PDEDataManager(OutputContext outputContext, VCDataManager vcDataManager, VCDataIdentifier vcDataIdentifier, NewClientPDEDataContext argNewClientPDEDataContext) {
+	setVcDataManager(vcDataManager);
+	setVcDataIdentifier(vcDataIdentifier);
+	setOutputContext(outputContext);
+	newClientPDEDataContext = argNewClientPDEDataContext;
+}
 
 /**
  * retrieves a list of data names (state variables and functions) defined for this Simulation.
@@ -244,7 +250,11 @@ public void setOutputContext(OutputContext outputContext) {
 }
 
 
-public DataManager createNewDataManager(VCDataIdentifier newVCdid) throws DataAccessException {
-	return new PDEDataManager(getOutputContext(), getVCDataManager(), newVCdid);
+public PDEDataManager createNewPDEDataManager(VCDataIdentifier argVCdid, NewClientPDEDataContext argNewClientPDEDataContext) throws DataAccessException {
+	if (argNewClientPDEDataContext == null) {
+		return new PDEDataManager(getOutputContext(), getVCDataManager(), argVCdid);
+	} else {
+		return new PDEDataManager(getOutputContext(), getVCDataManager(), argVCdid, argNewClientPDEDataContext);
+	}
 }
 }

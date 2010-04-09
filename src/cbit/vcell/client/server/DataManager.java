@@ -51,6 +51,4 @@ public void setOutputContext(OutputContext outputContext);
 
 public OutputContext getOutputContext();
 
-public DataManager createNewDataManager(VCDataIdentifier newVCdid) throws DataAccessException;
-
 }
