@@ -5,8 +5,10 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -86,8 +88,8 @@ public class DBReactionWizardPanel extends javax.swing.JPanel implements java.aw
 	//
 	//
 	private Hashtable<String, Vector<String>> mapRXStringtoRXIDs = new Hashtable<String, Vector<String>>();
-	private Hashtable<String, Vector<String>> mapRXStringtoBMIDs = new Hashtable<String, Vector<String>>();
-	private Hashtable<String, Vector<String>> mapRXStringtoStructRefIDs = new Hashtable<String, Vector<String>>();
+	private Hashtable<KeyValue, KeyValue> mapRXIDtoBMIDs = new Hashtable<KeyValue, KeyValue>();
+	private Hashtable<KeyValue, KeyValue> mapRXIDtoStructRefIDs = new Hashtable<KeyValue, KeyValue>();
 	//
 	private ReactionDescription resolvedReaction = null;
 	private javax.swing.JButton ivjBackJButton = null;
@@ -293,95 +295,86 @@ private void afterSearchConfigure() {
  * Comment
  */
 private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	//
-	javax.swing.DefaultListModel pndlm = (javax.swing.DefaultListModel)getParameterNamesJList().getModel();
-	//
-	if(actionEvent.getSource().equals(getBackJButton())){
-		if(getResolverJPanel().isVisible() && pndlm.size() == 0 && getSearchDictionaryJRadioButton().isSelected() == false){
-			//skip Parameters if there are none
+	try{
+		//
+		javax.swing.DefaultListModel pndlm = (javax.swing.DefaultListModel)getParameterNamesJList().getModel();
+		//
+		if(actionEvent.getSource().equals(getBackJButton())){
+			if(getResolverJPanel().isVisible() && pndlm.size() == 0 && getSearchDictionaryJRadioButton().isSelected() == false){
+				//skip Parameters if there are none
+				((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).previous(getCardLayoutJPanel());
+			}
 			((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).previous(getCardLayoutJPanel());
-		}
-		((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).previous(getCardLayoutJPanel());
-	}else if(actionEvent.getSource().equals(getNextJButton())){
-		if(getSearchCriteriaJPanel().isVisible()){
-			if(getSearchDictionaryJRadioButton().isSelected()){
-				getParameterJPanel().setVisible(false);
-			}else{
-				getParameterJPanel().setVisible(true);
-			}
-			if(!lastSearchIsSameAsCurrent()){
-				search();
-				lastReactionSelection = null;
-				return;
-			}
-		}else if(getParameterJPanel().isVisible()){
-			if(lastReactStepSelection == null || !lastReactStepSelection.equals(getReactionStep0())){
-				lastReactStepSelection = getReactionStep0();
-				String rxType = null;
-				if(getReactionStep0() instanceof FluxReaction){
-					rxType = DatabaseConstants.REACTTYPE_FLUX;
+		}else if(actionEvent.getSource().equals(getNextJButton())){
+			if(getSearchCriteriaJPanel().isVisible()){
+				if(getSearchDictionaryJRadioButton().isSelected()){
+					getParameterJPanel().setVisible(false);
 				}else{
-					rxType = DatabaseConstants.REACTTYPE_SIMPLE;
+					getParameterJPanel().setVisible(true);
 				}
-				
-				String bmid = null;
-				String structRef = null;
-				{
-					Iterator<String> iter = mapRXStringtoRXIDs.keySet().iterator();
-					while(iter.hasNext()){
-						String rxS = iter.next();
-						Vector<String> rxidV = mapRXStringtoRXIDs.get(rxS);
-						if(rxidV.firstElement().equals(lastReactStepSelection.getKey().toString())){
-							Vector<String> bmidV = mapRXStringtoBMIDs.get(rxS);
-							bmid = bmidV.firstElement();
-							Vector<String> structRefV = mapRXStringtoStructRefIDs.get(rxS);
-							structRef = structRefV.firstElement();
-							break;
-						}
-					}
+				if(!lastSearchIsSameAsCurrent()){
+					search();
+					lastReactionSelection = null;
+					return;
 				}
-				ReactionDescription dbfr = new ReactionDescription(
-						getReactionStep0().getName(),rxType,getReactionStep0().getKey(),new KeyValue(bmid),new KeyValue(structRef));
-				//
-				ReactionParticipant[] rpArr = getReactionStep0().getReactionParticipants();
-				for(int i=0;i < rpArr.length;i+= 1){
-					DBNonFormalUnboundSpecies dbnfu = new DBNonFormalUnboundSpecies(rpArr[i].getSpecies().getCommonName());
-					char role;
-					if(rpArr[i] instanceof Reactant){
-						role = ReactionDescription.RX_ELEMENT_REACTANT;
-					}else if(rpArr[i] instanceof Product){
-						role = ReactionDescription.RX_ELEMENT_PRODUCT;
-					}else if(rpArr[i] instanceof Catalyst){
-						role = ReactionDescription.RX_ELEMENT_CATALYST;
-					}else if(rpArr[i] instanceof Flux){
-						role = ReactionDescription.RX_ELEMENT_FLUX;
+			}else if(getParameterJPanel().isVisible()){
+				if(lastReactStepSelection == null || !lastReactStepSelection.equals(getReactionStep0())){
+					lastReactStepSelection = getReactionStep0();
+					String rxType = null;
+					if(getReactionStep0() instanceof FluxReaction){
+						rxType = DatabaseConstants.REACTTYPE_FLUX;
 					}else{
-						throw new RuntimeException("Unsupported ReationParticiapnt="+rpArr[i].getClass().getName());
+						rxType = DatabaseConstants.REACTTYPE_SIMPLE;
 					}
-					dbfr.addReactionElement(dbnfu,rpArr[i].getSpeciesContext().getName(),rpArr[i].getStoichiometry(),role);
-				}
-				if(dbfr.isFluxReaction()){//make sure flux is in right direction
-					Structure outsideStruct = ((Membrane)getReactionStep0().getStructure()).getOutsideFeature();
-					String defaultOutsideSCName = dbfr.getOrigSpeciesContextName(dbfr.getFluxIndexOutside());
+					
+					KeyValue bmid = mapRXIDtoBMIDs.get(lastReactStepSelection.getKey());
+					KeyValue structRef = mapRXIDtoStructRefIDs.get(lastReactStepSelection.getKey());
+					ReactionDescription dbfr = new ReactionDescription(
+							getReactionStep0().getName(),rxType,getReactionStep0().getKey(),bmid,structRef);
+					//
+					ReactionParticipant[] rpArr = getReactionStep0().getReactionParticipants();
 					for(int i=0;i < rpArr.length;i+= 1){
-						if(rpArr[i].getSpeciesContext().getName().equals(defaultOutsideSCName)){
-							if(!rpArr[i].getStructure().equals(outsideStruct)){
-								dbfr.swapFluxSCNames();
+						DBNonFormalUnboundSpecies dbnfu = new DBNonFormalUnboundSpecies(rpArr[i].getSpecies().getCommonName());
+						char role;
+						if(rpArr[i] instanceof Reactant){
+							role = ReactionDescription.RX_ELEMENT_REACTANT;
+						}else if(rpArr[i] instanceof Product){
+							role = ReactionDescription.RX_ELEMENT_PRODUCT;
+						}else if(rpArr[i] instanceof Catalyst){
+							role = ReactionDescription.RX_ELEMENT_CATALYST;
+						}else if(rpArr[i] instanceof Flux){
+							role = ReactionDescription.RX_ELEMENT_FLUX;
+						}else{
+							throw new RuntimeException("Unsupported ReationParticiapnt="+rpArr[i].getClass().getName());
+						}
+						dbfr.addReactionElement(dbnfu,rpArr[i].getSpeciesContext().getName(),rpArr[i].getStoichiometry(),role);
+					}
+					if(dbfr.isFluxReaction()){//make sure flux is in right direction
+						Structure outsideStruct = ((Membrane)getReactionStep0().getStructure()).getOutsideFeature();
+						String defaultOutsideSCName = dbfr.getOrigSpeciesContextName(dbfr.getFluxIndexOutside());
+						for(int i=0;i < rpArr.length;i+= 1){
+							if(rpArr[i].getSpeciesContext().getName().equals(defaultOutsideSCName)){
+								if(!rpArr[i].getStructure().equals(outsideStruct)){
+									dbfr.swapFluxSCNames();
+								}
+								break;
 							}
-							break;
 						}
 					}
+					setupRX(dbfr);
 				}
-				setupRX(dbfr);
 			}
+			//
+			((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).next(getCardLayoutJPanel());
+		}else if(actionEvent.getSource().equals(getFinishJButton())){
+			applySelectedReactionElements();
 		}
 		//
-		((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).next(getCardLayoutJPanel());
-	}else if(actionEvent.getSource().equals(getFinishJButton())){
-		applySelectedReactionElements();
+		configureBFN();
+	}catch(Exception e){
+		e.printStackTrace();
+		DialogUtils.showErrorDialog(this, "DBReactionWizard failed\n"+e.getMessage());
 	}
-	//
-	configureBFN();	
 }
 
 
@@ -2458,10 +2451,9 @@ private void applySelectedReactionElements(){
 			Model fromModel = getDocumentManager().getBioModel(resolvedReaction.getVCellBioModelID()).getModel();
 			//find the user selected ReactionStep in the original model
 			ReactionStep fromRXStep = null;
-			String rxref = mapRXStringtoRXIDs.get(resolvedReaction.toString()).firstElement();
 			ReactionStep[] rxArr = fromModel.getReactionSteps();
 			for (int i = 0; i < rxArr.length; i++) {
-				if(rxArr[i].getKey().toString().equals(rxref)){
+				if(rxArr[i].getKey().equals(resolvedReaction.getVCellRXID())){
 					fromRXStep = rxArr[i];
 					break;
 				}
@@ -2631,12 +2623,11 @@ private void searchUserReactions(final ReactionQuerySpec reactionQuerySpec){
 							String rxString = dbrd[i].toString();
 							if(!mapRXStringtoRXIDs.containsKey(rxString)){
 								mapRXStringtoRXIDs.put(rxString,new Vector<String>());
-								mapRXStringtoBMIDs.put(rxString,new Vector<String>());
-								mapRXStringtoStructRefIDs.put(rxString,new Vector<String>());
 							}
-							(mapRXStringtoRXIDs.get(rxString)).add(dbrd[i].getVCellRXID().toString());
-							(mapRXStringtoBMIDs.get(rxString)).add(dbrd[i].getVCellBioModelID().toString());
-							(mapRXStringtoStructRefIDs.get(rxString)).add(dbrd[i].getVCellStructRef().toString());
+							mapRXStringtoRXIDs.get(rxString).add(dbrd[i].getVCellRXID().toString());
+							
+							mapRXIDtoBMIDs.put(dbrd[i].getVCellRXID(), dbrd[i].getVCellBioModelID());
+							mapRXIDtoStructRefIDs.put(dbrd[i].getVCellRXID(), dbrd[i].getVCellStructRef());
 						}
 						dbrdS = (String[])mapRXStringtoRXIDs.keySet().toArray(new String[0]);
 					}
