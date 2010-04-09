@@ -557,12 +557,12 @@ private void writeFeature_boundaryConditions(CompartmentSubDomain csd) {
  */
 private void writeMembrane_boundaryConditions(MembraneSubDomain msd) {
 	BoundaryConditionType[] bctypes = new BoundaryConditionType[] {
-			msd.getBoundaryConditionXm(),
-			msd.getBoundaryConditionXp(),
-			msd.getBoundaryConditionYm(),
-			msd.getBoundaryConditionYp(),
-			msd.getBoundaryConditionZm(),
-			msd.getBoundaryConditionZp()
+			msd.getInsideCompartment().getBoundaryConditionXm(),
+			msd.getInsideCompartment().getBoundaryConditionXp(),
+			msd.getInsideCompartment().getBoundaryConditionYm(),
+			msd.getInsideCompartment().getBoundaryConditionYp(),
+			msd.getInsideCompartment().getBoundaryConditionZm(),
+			msd.getInsideCompartment().getBoundaryConditionZp()
 	};
 	writeBoundaryConditions(bctypes);
 	printWriter.println();
