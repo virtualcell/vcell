@@ -276,6 +276,10 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
 
     public boolean isCellEditable(int rowIndex,int columnIndex) 
     {
+    	if(columnIndex == COLUMN_DETAILS)
+    	{
+    		return true;
+    	}
         return false;
     }
 

@@ -82,12 +82,12 @@ import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
@@ -114,7 +114,6 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VCData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.gui.DisplayPreferences;
@@ -619,9 +618,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				throw new Exception("CurrentSimulationDataState can't be determined because no savedFrapModelInfo available");
 			}
 			frapChangeInfo = getChangesSinceLastSave();
-			areSimFilesOK = areSimulationFilesOK(getLocalWorkspace(),null);
+			areSimFilesOK = FRAPWorkspace.areSimulationFilesOK(getLocalWorkspace(),null);
 			areExtDataFileOK =
-				areExternalDataOK(getLocalWorkspace(),
+				FRAPWorkspace.areExternalDataOK(getLocalWorkspace(),
 				getFrapWorkspace().getWorkingFrapStudy().getFrapDataExternalDataInfo(),
 				getFrapWorkspace().getWorkingFrapStudy().getRoiExternalDataInfo());
 //			isRefDataFileOK = areReferenceDataOK(getLocalWorkspace(), getFrapStudy().getRefExternalDataInfo());
@@ -771,41 +770,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			ROI_CURSORS[i] = Toolkit.getDefaultToolkit().createCustomCursor(tempImage, new Point(0,0), "cellCursor");
 		}			
 	}
-	public static SavedFrapModelInfo createSavedFrapModelInfo(FRAPStudy frapStudy) throws Exception{
-
-		KeyValue savedSimKey = null;
-		if(frapStudy != null && frapStudy.getBioModel() != null && frapStudy.getBioModel().getSimulations()!= null && frapStudy.getBioModel().getSimulations().length > 0)
-		{
-			savedSimKey = frapStudy.getBioModel().getSimulations()[0].getSimulationVersion().getVersionKey();
-		}
-		
-		FRAPData frapData = frapStudy.getFrapData();
-		
-		ROI savedCellROI = null;
-		ROI savedBleachROI = null;
-		ROI savedBackgroundROI = null;
-		if(frapData != null){
-			savedCellROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
-			savedCellROI = (savedCellROI == null?null:new ROI(savedCellROI));
-			savedBleachROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
-			savedBleachROI = (savedBleachROI == null?null:new ROI(savedBleachROI));
-			savedBackgroundROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
-			savedBackgroundROI = (savedBackgroundROI == null?null:new ROI(savedBackgroundROI));
-		}
-		
-		String lastFreeDiffusionrate = null;
-		String lastFreeMobileFraction = null;
-		String lastComplexDiffusionRate = null;
-		String lastComplexMobileFraction = null;
-		String lastBleachWhileMonitoringRate = null;
-		String lastBSConcentration = null;
-		String reactionOnRate = null;
-		String reactionOffRate = null;
-		String startingIndexForRecovery = null;
-		
-		return new SavedFrapModelInfo(savedSimKey, savedCellROI, savedBleachROI, savedBackgroundROI, lastFreeDiffusionrate, lastFreeMobileFraction, lastComplexDiffusionRate, lastComplexMobileFraction, lastBleachWhileMonitoringRate, lastBSConcentration, reactionOnRate, reactionOffRate, startingIndexForRecovery);
-	}
-
 	/**
 	 * This method initializes this
 	 * 
@@ -1435,7 +1399,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						String xmlString = XmlUtil.getXMLString(inFile.getAbsolutePath());
 						MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
 						newFRAPStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),this.getClientTaskStatusSupport());
-						if(!areExternalDataOK(getLocalWorkspace(),newFRAPStudy.getFrapDataExternalDataInfo(),newFRAPStudy.getRoiExternalDataInfo()))
+						if(!FRAPWorkspace.areExternalDataOK(getLocalWorkspace(),newFRAPStudy.getFrapDataExternalDataInfo(),newFRAPStudy.getRoiExternalDataInfo()))
 						{
 							newFRAPStudy.setFrapDataExternalDataInfo(null);
 							newFRAPStudy.setRoiExternalDataInfo(null);
@@ -1470,69 +1434,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return totalTasks.toArray(new AsynchClientTask[totalTasks.size()]);
 	}
 	
-	public static boolean areSimulationFilesOK(LocalWorkspace localWorkspace,KeyValue key){
-		
-		String[] EXPECTED_SIM_EXTENSIONS =
-			new String[] {
-				SimDataConstants.ZIPFILE_EXTENSION,//may be more than 1 for big files
-				SimDataConstants.FUNCTIONFILE_EXTENSION,
-				".fvinput",
-				SimDataConstants.LOGFILE_EXTENSION,
-				SimDataConstants.MESHFILE_EXTENSION,
-				".meshmetrics",
-				".vcg",
-				SimDataConstants.FIELDDATARESAMP_EXTENSION,//prebleach avg
-				SimDataConstants.FIELDDATARESAMP_EXTENSION//postbleach avg
-			};
-		File[] simFiles = FRAPStudy.getSimulationFileNames(	new File(localWorkspace.getDefaultSimDataDirectory()),	key);
-		//prebleach.fdat,postbleach.fdat,.vcg,.meshmetrics,.mesh,.log,.fvinput,.functions,.zip
-		if(simFiles == null || simFiles.length < EXPECTED_SIM_EXTENSIONS.length){
-			return false;
-		}
-		for (int i = 0; i < EXPECTED_SIM_EXTENSIONS.length; i++) {
-			boolean bFound = false;
-			for (int j = 0; j < simFiles.length; j++) {
-				if(simFiles[j] != null && simFiles[j].getName().endsWith(EXPECTED_SIM_EXTENSIONS[i])){
-					simFiles[j] = null;
-					bFound = true;
-					break;
-				}
-			}
-			if(!bFound){
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	public static boolean areExternalDataOK(LocalWorkspace localWorkspace,ExternalDataInfo imgDataExtDataInfo,ExternalDataInfo roiExtDataInfo)
-	{
-		if(imgDataExtDataInfo == null || imgDataExtDataInfo.getExternalDataIdentifier() == null){
-			return false;
-		}
-		File[] frapDataExtDataFiles =
-			FRAPStudy.getCanonicalExternalDataFiles(localWorkspace,
-					imgDataExtDataInfo.getExternalDataIdentifier());
-		for (int i = 0;frapDataExtDataFiles != null && i < frapDataExtDataFiles.length; i++) {
-			if(!frapDataExtDataFiles[i].exists()){
-				return false;
-			}
-		}
-		if(roiExtDataInfo == null || roiExtDataInfo.getExternalDataIdentifier() == null){
-			return false;
-		}
-		File[] roiDataExtDataFiles =
-			FRAPStudy.getCanonicalExternalDataFiles(localWorkspace,
-					roiExtDataInfo.getExternalDataIdentifier());
-		for (int i = 0;roiDataExtDataFiles != null && i < roiDataExtDataFiles.length; i++) {
-			if(!roiDataExtDataFiles[i].exists()){
-				return false;
-			}
-		}
-
-		return true;
-	}
-	
 	private void showEstimateParamWizard() 
 	{
 		//check if frapOpt data is null? if yes, run ref simulation. 
@@ -1555,7 +1456,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						{
 							//reference data is null, it is not stored, we have to run ref simulation then
 							//check external data info
-							if(!areExternalDataOK(getLocalWorkspace(),fStudy.getFrapDataExternalDataInfo(), fStudy.getRoiExternalDataInfo()))
+							if(!FRAPWorkspace.areExternalDataOK(getLocalWorkspace(),fStudy.getFrapDataExternalDataInfo(), fStudy.getRoiExternalDataInfo()))
 							{
 								//if external files are missing/currupt or ROIs are changed, create keys and save them
 								fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME));
@@ -2108,7 +2009,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			{
 					FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 										
-					boolean bExtDataOK = areExternalDataOK(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo(),fStudy.getRoiExternalDataInfo());
+					boolean bExtDataOK = FRAPWorkspace.areExternalDataOK(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo(),fStudy.getRoiExternalDataInfo());
 					
 					if(!bExtDataOK)
 					{
@@ -2202,7 +2103,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 						
 						fStudy.setBioModel(bioModel);
-						FRAPStudy.removeSimulationFiles(oldSimKey, getLocalWorkspace());
+//						FRAPStudy.removeSimulationFiles(oldSimKey, getLocalWorkspace());
 					}catch(Exception e){
 						if(bioModel != null && bioModel.getSimulations() != null){
 							FRAPStudy.removeExternalDataAndSimulationFiles(

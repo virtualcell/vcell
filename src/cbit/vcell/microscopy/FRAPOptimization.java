@@ -136,7 +136,6 @@ public class FRAPOptimization {
 			diffData = FRAPOptimization.getValueByDiffRate(refDiffRate,
                     diffRate,
                     refData,
-                    expData,
                     refTimePoints,
                     expTimePoints,
                     roiLen);
@@ -192,7 +191,6 @@ public class FRAPOptimization {
 			fastData = FRAPOptimization.getValueByDiffRate(refDiffRate,
                     diffFastRate,
                     refData,
-                    expData,
                     refTimePoints,
                     expTimePoints,
                     roiLen);
@@ -200,7 +198,6 @@ public class FRAPOptimization {
 			slowData = FRAPOptimization.getValueByDiffRate(refDiffRate,
                     diffSlowRate,
                     refData,
-                    expData,
                     refTimePoints,
                     expTimePoints,
                     roiLen);
@@ -248,7 +245,7 @@ public class FRAPOptimization {
 		}
 	}
 	
-	public static double[][] getValueByDiffRate(double refDiffRate, double newDiffRate, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen/*, double refTimeInterval*/) throws Exception
+	public static double[][] getValueByDiffRate(double refDiffRate, double newDiffRate, double[][] refData, double[] refTimePoints, double[] expTimePoints, int roiLen/*, double refTimeInterval*/) throws Exception
 	{
 		double[][] result = new double[roiLen][expTimePoints.length];
 		int preTimeIndex = 0;
@@ -548,6 +545,51 @@ public class FRAPOptimization {
 			return newOdeSolverResultSet;
 		}
 		return null;
+	}
+	
+	/*
+	 * From netCDF file, the rawdata contains average data over time under difference 8 roi rings,
+	 * which are stored in colume1 to colume8. colume0 stores the time average data from region0
+	 * which is the area beyond ring1-8.
+	 * Here we want to generate a double array which includes all roi data (bleached, bg, cell, ring1 to ring8)
+	 */
+	public static double[][] extendSimToFullROIData(FRAPData fData, double[][] rawData, int numTimePoints)
+	{
+		double[][] results = null;
+
+		int numRois = FRAPData.VFRAP_ROI_ENUM.values().length;
+		if(rawData != null && rawData.length > 0)
+		{
+			//get bleached roi data from ring1, ring2 and ring3 data
+			double[] ring1Data = rawData[1];
+			double[] ring2Data = rawData[2];
+			double[] ring3Data = rawData[3];
+			int numRing1Pixels = fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()).getNonzeroPixelsCount();
+			int numRing2Pixels = fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()).getNonzeroPixelsCount();
+			int numRing3Pixels = fData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()).getNonzeroPixelsCount();
+			results = new double[numRois][numTimePoints];
+			int totalRoiRings = 8;
+			int ring1IdxInRawData = 1;
+			int ring1IdxDiff = 2; //because ring1 index in restuls is 3  
+			//move ring1-8(colume 1-8) in rawData to the last 8 columes in results
+			for(int i=ring1IdxInRawData; i<(ring1IdxInRawData+totalRoiRings); i++)
+			{
+				results[i+ring1IdxDiff] = rawData[i];
+			}
+			//get bleached roi time average data and store it in results colume 0
+			double[] bleachedRoiData = new double[numTimePoints];
+			for(int i=0; i<numTimePoints; i++)
+			{
+				bleachedRoiData[i]= (ring1Data[i]*numRing1Pixels + ring2Data[i]*numRing2Pixels + ring3Data[i] *numRing3Pixels)/(numRing1Pixels+numRing2Pixels+numRing3Pixels); 
+			}
+			results[0] = bleachedRoiData;
+			//put rawData[0] to the second and third column in results (for background and cell)
+			//they are not used for optimization, and since we have no way to get the time average data for them
+			//we then use rawData colume 0 to fill them.
+			results[1]=rawData[0];
+			results[2]=rawData[0];        
+		}			                
+		return results;
 	}
 	
 }

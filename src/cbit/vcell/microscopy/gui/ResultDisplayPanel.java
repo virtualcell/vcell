@@ -31,6 +31,7 @@ import cbit.vcell.microscopy.EstimatedParameterTableRenderer;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.ResultPanelButtonHandler;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.WorkFlowButtonHandler;
@@ -338,7 +339,7 @@ public class ResultDisplayPanel extends JPanel
 			setRunSimButtonEnable(true);
 			if(fStudy.getBioModel() != null && fStudy.getBioModel().getSimulations() != null && fStudy.getBioModel().getSimulations().length > 0 &&
 			   fStudy.getBioModel().getSimulations()[0] != null && fStudy.getBioModel().getSimulations()[0].getKey() != null &&
-			   FRAPStudyPanel.areSimulationFilesOK(localWorkspace, fStudy.getBioModel().getSimulations()[0].getKey()))
+			   FRAPWorkspace.areSimulationFilesOK(localWorkspace, fStudy.getBioModel().getSimulations()[0].getKey()))
 			{
 				setResultsButtonEnabled(true);
 			}

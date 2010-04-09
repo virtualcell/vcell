@@ -71,11 +71,13 @@ import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.SolverListener;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 
@@ -122,8 +124,11 @@ public class FRAPStudy implements Matchable{
 	private transient double[][] analysisMSESummaryData = null; 
 	//temporary data structure to store dimension reduced experimental data (all ROIs)
 	private transient double[][] dimensionReducedExpData = null;
+	//temporary data structure to store reduced experimental time points (take recovery start index as time 0)
+	private transient double[] reducedExpTimePoints = null;
 	//temporary data structure to identify whether the current frapStudy needs a save or not
 	private transient boolean bSaveNeeded = false;
+	
 	
 	//static functions
 	public static void removeExternalDataAndSimulationFiles(
@@ -395,18 +400,18 @@ public class FRAPStudy implements Matchable{
 		double timeStepVal = timeStamps[startingIndexForRecovery+1] - timeStamps[startingIndexForRecovery];
 //		double defaultReacDiffTimeStep = 0.001;
 //		TimeStep timeStep = new TimeStep(defaultReacDiffTimeStep, defaultReacDiffTimeStep, defaultReacDiffTimeStep);//not used, too small that run very slowly
-		int keepEvery =1;
-		DefaultOutputTimeSpec timeSpec = new DefaultOutputTimeSpec(keepEvery, 1000);//not used until we use smaller time step
+//		int keepEvery =1;
+//		DefaultOutputTimeSpec timeSpec = new DefaultOutputTimeSpec(keepEvery, 1000);//not used until we use smaller time step
 
-		TimeStep timeStep = null;
-		if(tStep != null)
-		{
-			timeStep = tStep;
-		}
-		else
-		{
-			timeStep = new TimeStep(timeStepVal, timeStepVal, timeStepVal);
-		}
+//		TimeStep timeStep = null;
+//		if(tStep != null)
+//		{
+//			timeStep = tStep;
+//		}
+//		else
+//		{
+//			timeStep = new TimeStep(timeStepVal, timeStepVal, timeStepVal);
+//		}
 		
 		int numX = cellROI_2D.getRoiImages()[0].getNumX();
 		int numY = cellROI_2D.getRoiImages()[0].getNumY();
@@ -564,8 +569,9 @@ public class FRAPStudy implements Matchable{
 		simContext.addSimulation(newSimulation);
 		newSimulation.getSolverTaskDescription().setTimeBounds(timeBounds);
 		newSimulation.getMeshSpecification().setSamplingSize(cellROI_2D.getISize());
-		newSimulation.getSolverTaskDescription().setTimeStep(timeStep);
-		newSimulation.getSolverTaskDescription().setOutputTimeSpec(timeSpec);//not used util we apply smaller time step
+//		newSimulation.getSolverTaskDescription().setTimeStep(timeStep); // Sundials doesn't need time step
+		newSimulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
+		newSimulation.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(timeStepVal));//use exp time step as output time spec
 		
 		return bioModel;
 	}
@@ -705,7 +711,7 @@ public class FRAPStudy implements Matchable{
 		if(bCheckSteadyState)
 		{
 			simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
-			simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
+//			simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 		}
 		
 		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);		
@@ -733,13 +739,13 @@ public class FRAPStudy implements Matchable{
 				SimulationData.createCanonicalMeshFileName(
 					sim.getVersion().getVersionKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
 			// delete old external data mesh files and copy simulation mesh file to them
-			File roiMeshFile = new File(simulationDataDir,roiMeshFileName);
-			File imgMeshFile = new File(simulationDataDir,imageDataMeshFileName);
-			File simMeshFile = new File(simulationDataDir,simulationMeshFileName);
-			if(!roiMeshFile.delete()){throw new Exception("Couldn't delete ROI Mesh file "+roiMeshFile.getAbsolutePath());}
-			if(!imgMeshFile.delete()){throw new Exception("Couldn't delete ImageData Mesh file "+imgMeshFile.getAbsolutePath());}
-			FileUtils.copyFile(simMeshFile, roiMeshFile);
-			FileUtils.copyFile(simMeshFile, imgMeshFile);
+//			File roiMeshFile = new File(simulationDataDir,roiMeshFileName);
+//			File imgMeshFile = new File(simulationDataDir,imageDataMeshFileName);
+//			File simMeshFile = new File(simulationDataDir,simulationMeshFileName);
+//			if(!roiMeshFile.delete()){throw new Exception("Couldn't delete ROI Mesh file "+roiMeshFile.getAbsolutePath());}
+//			if(!imgMeshFile.delete()){throw new Exception("Couldn't delete ImageData Mesh file "+imgMeshFile.getAbsolutePath());}
+//			FileUtils.copyFile(simMeshFile, roiMeshFile);
+//			FileUtils.copyFile(simMeshFile, imgMeshFile);
 		}
 		else{
 			throw new Exception("Sover did not finish normally." + status.toString());
@@ -1512,7 +1518,20 @@ public class FRAPStudy implements Matchable{
 	public void setDimensionReducedExpData(double[][] dimensionReducedExpData) {
 		this.dimensionReducedExpData = dimensionReducedExpData;
 	}
-		
+	
+	public double[] getReducedExpTimePoints() {
+		if(reducedExpTimePoints == null)
+		{
+			int startRecoveryIndex = getStartingIndexForRecovery();
+			reducedExpTimePoints = FRAPOptimization.timeReduction(getFrapData().getImageDataset().getImageTimeStamps(), startRecoveryIndex); 
+		}
+		return reducedExpTimePoints;
+	}
+	
+	public void setReducedExpTimePoints(double[] reducedExpTimePoints)
+	{
+		this.reducedExpTimePoints = reducedExpTimePoints;
+	}
 	public boolean isSaveNeeded() {
 		return bSaveNeeded;
 	}
