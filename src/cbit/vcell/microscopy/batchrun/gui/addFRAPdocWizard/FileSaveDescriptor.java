@@ -24,6 +24,7 @@ import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
+import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel.DataIdentifierFilter;
 
@@ -51,6 +52,14 @@ public class FileSaveDescriptor extends WizardPanelDescriptor {
     public String getBackPanelDescriptorID() {
         return ROISummaryDescriptor.IDENTIFIER;
     }
+    
+    public void aboutToDisplayPanel() {
+    	FRAPStudy workingFrapStudy = getBatchRunWorkspace().getWorkingSingleWorkspace().getWorkingFrapStudy(); 
+    	if(workingFrapStudy.getXmlFilename() != null && workingFrapStudy.getXmlFilename().length() > 0)
+    	{
+    		saveFilePanel.setFileName(workingFrapStudy.getXmlFilename());
+    	}
+	}
     
     //load the data before the panel disappears
     public ArrayList<AsynchClientTask> preNextProcess()

@@ -76,6 +76,7 @@ public class VirtualFrapLoader {
     //create one instance of each kind of filechooser, so that it remembers the last time visited path. 
     public static JFileChooser openVFRAPFileChooser; 
     public static JFileChooser loadFRAPImageFileChooser;
+    public static JFileChooser addDataFileChooser_batchRun;
     public static JFileChooser saveFileChooser; 
     public static JFileChooser multiOpenFileChooser; 
     public static JFileChooser saveMovieFileChooser;
@@ -126,6 +127,12 @@ public class VirtualFrapLoader {
 			    loadFRAPImageFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
 			    loadFRAPImageFileChooser.addChoosableFileFilter(filter_tif);
 			    loadFRAPImageFileChooser.addChoosableFileFilter(filter_lsm); 
+			    addDataFileChooser_batchRun = new JFileChooser(); 
+			    addDataFileChooser_batchRun.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
+			    addDataFileChooser_batchRun.addChoosableFileFilter(filter_vfrap);
+			    addDataFileChooser_batchRun.addChoosableFileFilter(filter_tif);
+			    addDataFileChooser_batchRun.addChoosableFileFilter(filter_lsm);
+			    
 			    saveFileChooser = new JFileChooser();
 			    saveFileChooser.addChoosableFileFilter(filter_vfrap); 
 			    saveFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));

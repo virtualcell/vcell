@@ -148,6 +148,9 @@ public class BatchRunResultsParamTablePanel extends JPanel
             table.addColumn(columns[i]);
         }
 
+        TableColumn detailsCol = table.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_DETAILS);
+        detailsCol.setCellRenderer(new ResultsParamTableRenderer());
+        detailsCol.setCellEditor(new ResultsParamTableEditor(table));
         scrTable = new JScrollPane(table);
         scrTable.setAutoscrolls(true);
 
@@ -158,5 +161,12 @@ public class BatchRunResultsParamTablePanel extends JPanel
     	this.batchRunWorkspace = batchRunWorkspace;
 		resultsTableModel.setBatchRunWorkspace(batchRunWorkspace);
 	}
+    
+    private class DetailedInfoListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            System.out.println("Details pressed");
+        }
+
+    }
 }
 

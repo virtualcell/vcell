@@ -46,13 +46,13 @@ import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.ModelTypesDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.RoiForErrorDescriptor;
 import cbit.vcell.microscopy.gui.AboutDialog;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.HelpViewer;
 import cbit.vcell.microscopy.gui.PreferencePanel;
 import cbit.vcell.microscopy.gui.StatusBar;
@@ -503,7 +503,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 //						
 						//reference data is null, it is not stored, we have to run ref simulation then
 						//check external data info
-						if(!FRAPStudyPanel.areExternalDataOK(localWorkspace,fStudy.getFrapDataExternalDataInfo(), fStudy.getRoiExternalDataInfo()))
+						if(!FRAPWorkspace.areExternalDataOK(localWorkspace,fStudy.getFrapDataExternalDataInfo(), fStudy.getRoiExternalDataInfo()))
 						{
 							//if external files are missing/currupt or ROIs are changed, create keys and save them
 							fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME));

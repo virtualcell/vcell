@@ -1,7 +1,5 @@
 package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -12,18 +10,17 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.WizardPanelDescriptor;
 
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.LocalWorkspace;
+import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SingleFilePanel;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
@@ -32,9 +29,10 @@ public class SingleFileDescriptor extends WizardPanelDescriptor {
     
     public static final String IDENTIFIER = "BATCHRUN_SingleFile";
     //    private FRAPStudy localFrapStudy = null;
-    private LoadFRAPData_SingleFilePanel singleFilePanel = new LoadFRAPData_SingleFilePanel();
+    private SingleFilePanel singleFilePanel = new SingleFilePanel();
     private boolean isFileLoaded = false;
     private FRAPBatchRunWorkspace batchRunWorkspace = null;
+    private LocalWorkspace localWorkspace = null;
     
 	public SingleFileDescriptor() {
     	super();
@@ -100,6 +98,17 @@ public class SingleFileDescriptor extends WizardPanelDescriptor {
 							}else{
 								throw UserCancelException.CANCEL_GENERIC;
 							}
+    					}else if(inFile.getName().endsWith(VirtualFrapLoader.VFRAP_EXTENSION)) //.vfrap
+    					{
+   							String xmlString = XmlUtil.getXMLString(inFile.getAbsolutePath());
+   							MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+   							newFRAPStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),this.getClientTaskStatusSupport());
+   							newFRAPStudy.setXmlFilename(inFile.getAbsolutePath());
+   							if(!FRAPWorkspace.areExternalDataOK(localWorkspace,newFRAPStudy.getFrapDataExternalDataInfo(),newFRAPStudy.getRoiExternalDataInfo()))
+   							{
+   								newFRAPStudy.setFrapDataExternalDataInfo(null);
+   								newFRAPStudy.setRoiExternalDataInfo(null);
+   							}
     					}else //.lsm or other image formatss
     					{
     							newFRAPStudy = getBatchRunWorkspace().loadFRAPDataFromImageFile(inFile, this.getClientTaskStatusSupport());
@@ -146,5 +155,10 @@ public class SingleFileDescriptor extends WizardPanelDescriptor {
     
 	public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace) {
 		this.batchRunWorkspace = batchRunWorkspace;
+	}
+	
+	public void setLocalWorkspace(LocalWorkspace localWorkspace)
+	{
+		this.localWorkspace = localWorkspace;
 	}
 }

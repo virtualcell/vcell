@@ -74,8 +74,6 @@ public class FRAPOptData {
 	private int numEstimatedParams = 0;
 	private double[][] dimensionReducedRefData = null;
 	private double[] refDataTimePoints = null;
-	private double[][] dimensionReducedExpData = null;
-	private double[] reducedExpTimePoints = null;
 	
 	private static final String REFERENCE_DIFF_DELTAT = "0.1";
 	private static final String REFERENCE_DIFF_RATE_COEFFICIENT = "1";
@@ -91,7 +89,6 @@ public class FRAPOptData {
 		if(progressListener != null){
 			progressListener.setMessage("Getting experimental data ROI averages...");
 		}
-		dimensionReducedExpData = getDimensionReducedExpData();
 		dimensionReducedRefData = getDimensionReducedRefData(progressListener, null);
 	}
 	
@@ -104,7 +101,6 @@ public class FRAPOptData {
 		expFrapStudy = argExpFrapStudy;
 		setNumEstimatedParams(numberOfEstimatedParams);
 		localWorkspace = argLocalWorkSpace;
-		dimensionReducedExpData = getDimensionReducedExpData();
 		dimensionReducedRefData = getDimensionReducedRefData(null, simRefData); 
 	}
 	
@@ -194,12 +190,8 @@ public class FRAPOptData {
 	}
 	
 	public double[] getReducedExpTimePoints() {
-		if(reducedExpTimePoints == null)
-		{
-			int startRecoveryIndex = getExpFrapStudy().getStartingIndexForRecovery();
-			reducedExpTimePoints = FRAPOptimization.timeReduction(getExpFrapStudy().getFrapData().getImageDataset().getImageTimeStamps(), startRecoveryIndex); 
-		}
-		return reducedExpTimePoints;
+		
+		return expFrapStudy.getReducedExpTimePoints();
 	}
 	
 	public void refreshDimensionReducedRefData(final ClientTaskStatusSupport progressListener) throws Exception
@@ -224,7 +216,7 @@ public class FRAPOptData {
 		//get summarized raw ref data
 		double[][] rawData = refDataReader.getRegionVar(); //contains only 8rois +1(the area that beyond 8 rois)
 		//extend to whole roi data
-		dimensionReducedRefData = extendFromSimToFullROIData(rawData, refDataTimePoints.length);
+		dimensionReducedRefData = FRAPOptimization.extendSimToFullROIData(expFrapStudy.getFrapData(), rawData, refDataTimePoints.length);
 		
 		System.out.println("generating dimension reduced ref data, done ....");
 		
@@ -252,51 +244,7 @@ public class FRAPOptData {
 		}
 		return shiftedTimePoints;
 	}
-	/*
-	 * From netCDF file, the rawdata contains average data over time under difference 8 roi rings,
-	 * which are stored in colume1 to colume8. colume0 stores the time average data from region0
-	 * which is the area beyond ring1-8.
-	 * Here we want to generate a double array which includes all roi data (bleached, bg, cell, ring1 to ring8)
-	 */
-	private double[][] extendFromSimToFullROIData(double[][] rawData, int numTimePoints)
-	{
-		double[][] results = null;
-
-		int numRois = FRAPData.VFRAP_ROI_ENUM.values().length;
-		if(rawData != null && rawData.length > 0)
-		{
-			//get bleached roi data from ring1, ring2 and ring3 data
-			double[] ring1Data = rawData[1];
-			double[] ring2Data = rawData[2];
-			double[] ring3Data = rawData[3];
-			int numRing1Pixels = expFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()).getNonzeroPixelsCount();
-			int numRing2Pixels = expFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()).getNonzeroPixelsCount();
-			int numRing3Pixels = expFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()).getNonzeroPixelsCount();
-			results = new double[numRois][numTimePoints];
-			int totalRoiRings = 8;
-			int ring1IdxInRawData = 1;
-			int ring1IdxDiff = 2; //because ring1 index in restuls is 3  
-			//move ring1-8(colume 1-8) in rawData to the last 8 columes in results
-			for(int i=ring1IdxInRawData; i<(ring1IdxInRawData+totalRoiRings); i++)
-			{
-				results[i+ring1IdxDiff] = rawData[i];
-			}
-			//get bleached roi time average data and store it in results colume 0
-			double[] bleachedRoiData = new double[numTimePoints];
-			for(int i=0; i<numTimePoints; i++)
-			{
-				bleachedRoiData[i]= (ring1Data[i]*numRing1Pixels + ring2Data[i]*numRing2Pixels + ring3Data[i] *numRing3Pixels)/(numRing1Pixels+numRing2Pixels+numRing3Pixels); 
-			}
-			results[0] = bleachedRoiData;
-			//put rawData[0] to the second and third column in results (for background and cell)
-			//they are not used for optimization, and since we have no way to get the time average data for them
-			//we then use rawData colume 0 to fill them.
-			results[1]=rawData[0];
-			results[2]=rawData[0];        
-		}			                
-		return results;
-	}
-	
+		
 	public KeyValue runRefSimulation(final ClientTaskStatusSupport progressListener) throws Exception
 	{
 		BioModel bioModel = null;
@@ -334,10 +282,6 @@ public class FRAPOptData {
 				progressListener, true);
 
 			KeyValue referenceSimKeyValue = sim.getVersion().getVersionKey();
-			VCSimulationIdentifier vcSimID = 
-				new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
-			VCSimulationDataIdentifier vcSimDataID =
-				new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
 			
 			return referenceSimKeyValue;
 		}catch(Exception e){
@@ -448,7 +392,6 @@ public class FRAPOptData {
 			diffData = FRAPOptimization.getValueByDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
                     									   diffRate,
                     									   getDimensionReducedRefData(null, null),
-                    									   reducedExpData,
                     									   refDataTimePoints,
                     									   reducedExpTimePoints,
                     									   roiLen);
@@ -546,7 +489,6 @@ public class FRAPOptData {
 			fastData = FRAPOptimization.getValueByDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
                     									   diffFastRate,
                     									   getDimensionReducedRefData(null, null),
-                    									   reducedExpData,
                     									   refDataTimePoints,
                     									   reducedExpTimePoints,
                     									   roiLen);
@@ -554,7 +496,6 @@ public class FRAPOptData {
 			slowData = FRAPOptimization.getValueByDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
                     									   diffSlowRate,
                     									   getDimensionReducedRefData(null, null),
-                    									   reducedExpData,
                     									   refDataTimePoints,
                     									   reducedExpTimePoints,
                     									   roiLen);

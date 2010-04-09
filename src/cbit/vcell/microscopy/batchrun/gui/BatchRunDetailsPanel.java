@@ -316,6 +316,7 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 	        WizardPanelDescriptor singleFileDescriptor = new SingleFileDescriptor();
 	        batchRunAddDataWizard.registerWizardPanel(SingleFileDescriptor.IDENTIFIER, singleFileDescriptor);
 	        ((SingleFileDescriptor)singleFileDescriptor).setBatchRunWorkspace(getBatchRunWorkspace());
+	        ((SingleFileDescriptor)singleFileDescriptor).setLocalWorkspace(getLocalWorkspace());
 	
 	        WizardPanelDescriptor multiFileDescriptor = new MultiFileDescriptor();
 	        batchRunAddDataWizard.registerWizardPanel(MultiFileDescriptor.IDENTIFIER, multiFileDescriptor);

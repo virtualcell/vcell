@@ -19,27 +19,27 @@ import javax.swing.JTextField;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 
-public class FileSavePanel extends JPanel
+public class SingleFilePanel extends JPanel
 {
 	private JTextField fileNameTextField;
-	public FileSavePanel() {
+	public SingleFilePanel() {
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowHeights = new int[] {0,7,0,7,7,0,7};
 		gridBagLayout.columnWidths = new int[] {0,7,7,7,7,7};
 		setLayout(gridBagLayout);
 
-		final JLabel saveFrapDataLabel = new JLabel();
-		saveFrapDataLabel.setForeground(new Color(0, 0, 128));
-		saveFrapDataLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 16));
-		saveFrapDataLabel.setText("Save to FRAP Document ");
+		final JLabel loadFrapDataLabel = new JLabel();
+		loadFrapDataLabel.setForeground(new Color(0, 0, 128));
+		loadFrapDataLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 16));
+		loadFrapDataLabel.setText("Load FRAP Data ");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.gridx = 0;
-		add(saveFrapDataLabel, gridBagConstraints);
+		add(loadFrapDataLabel, gridBagConstraints);
 
 		final JLabel selectedFileLabel = new JLabel();
-		selectedFileLabel.setText("Selected save file name :");
+		selectedFileLabel.setText("Select a single file :");
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
 		gridBagConstraints_2.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_2.gridy = 5;
@@ -55,7 +55,7 @@ public class FileSavePanel extends JPanel
 		gridBagConstraints_3.gridx = 0;
 		add(fileNameTextField, gridBagConstraints_3);
 
-		final JButton browserButton = new JButton(new ImageIcon(getClass().getResource("/images/save.gif")));
+		final JButton browserButton = new JButton(new ImageIcon(getClass().getResource("/images/open.gif")));
 		browserButton.setMargin(new Insets(0, 2, 0, 2));
 		browserButton.setText("");
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
@@ -67,11 +67,11 @@ public class FileSavePanel extends JPanel
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				int option = VirtualFrapLoader.saveFileChooser.showOpenDialog(FileSavePanel.this);
+				int option = VirtualFrapLoader.addDataFileChooser_batchRun.showOpenDialog(SingleFilePanel.this);
 				if(option == JFileChooser.APPROVE_OPTION)
 				{
-					String fileStr = VirtualFrapLoader.saveFileChooser.getSelectedFile().getAbsolutePath();
-					setFileName(fileStr);
+					String fileStr = VirtualFrapLoader.addDataFileChooser_batchRun.getSelectedFile().getAbsolutePath();
+					fileNameTextField.setText(fileStr);
 				}
 			}
 			
@@ -85,10 +85,5 @@ public class FileSavePanel extends JPanel
 			return fileNameTextField.getText();
 		}
 		return "";
-	}
-	
-	public void setFileName(String fileName)
-	{
-		fileNameTextField.setText(fileName);
 	}
 }
