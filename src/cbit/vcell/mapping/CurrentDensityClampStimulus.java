@@ -1,9 +1,10 @@
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
-import cbit.vcell.parser.*;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -74,5 +75,11 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 
 public LocalParameter getCurrentDensityParameter() {
 	return parameterContext.getLocalParameterFromRole(ElectricalStimulus.ROLE_CurrentDensity);
+}
+
+
+@Override
+public Parameter getProtocolParameter() {	
+	return getCurrentDensityParameter();
 }
 }

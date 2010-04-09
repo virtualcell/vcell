@@ -22,7 +22,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -518,19 +518,19 @@ public void setParameterValue(LocalParameter parm, Expression exp) throws Expres
 	Expression oldExpression = parm.getExpression();
 	boolean bBound = false;
 	try {
-//		LocalParameter newLocalParameters[] = (LocalParameter[])parameterContext.getLocalParameters().clone();
-//		String symbols[] = exp.getSymbols();
-//		Vector<String> symbolsToAdd = new Vector<String>();
-//		for (int i = 0; symbols!=null && i < symbols.length; i++){
-//			if (parameterContext.getEntry(symbols[i])==null){
-//				symbolsToAdd.add(symbols[i]);
-//			}
-//		}
-//		for (int i = 0; i < symbolsToAdd.size(); i++){
-//			newLocalParameters = (LocalParameter[])BeanUtils.addElement(newLocalParameters,
-//				parameterContext.new LocalParameter(symbolsToAdd.elementAt(i),new Expression(0.0),ROLE_UserDefined,VCUnitDefinition.UNIT_TBD,RoleDescs[ROLE_UserDefined]));
-//		}
-//		parameterContext.setLocalParameters(newLocalParameters);
+		LocalParameter newLocalParameters[] = (LocalParameter[])parameterContext.getLocalParameters().clone();
+		String symbols[] = exp.getSymbols();
+		Vector<String> symbolsToAdd = new Vector<String>();
+		for (int i = 0; symbols!=null && i < symbols.length; i++){
+			if (parameterContext.getEntry(symbols[i])==null){
+				symbolsToAdd.add(symbols[i]);
+			}
+		}
+		for (int i = 0; i < symbolsToAdd.size(); i++){
+			newLocalParameters = (LocalParameter[])BeanUtils.addElement(newLocalParameters,
+				parameterContext.new LocalParameter(symbolsToAdd.elementAt(i),new Expression(0.0),ROLE_UserDefined,VCUnitDefinition.UNIT_TBD,RoleDescs[ROLE_UserDefined]));
+		}
+		parameterContext.setLocalParameters(newLocalParameters);
 		exp.bindExpression(parameterContext);
 		parm.setExpression(exp);
 		bBound = true;
@@ -568,6 +568,12 @@ public void reading(boolean argReading) {
 		parameterContext.resolveUndefinedUnits();
 	}
 }
+
+public SymbolTable getSymbolTable() {
+	return parameterContext;
+}
+
+public abstract Parameter getProtocolParameter();
 
 
 }

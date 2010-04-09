@@ -5,9 +5,13 @@ import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.management.RuntimeErrorException;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+
+import com.sun.xml.internal.bind.v2.model.annotation.FieldLocatable;
 
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
@@ -581,6 +585,7 @@ public void refreshDependencies() {
 	}
 	
 	//refreshUnits();
+	removeUnresolvedParameters(this);
 	resolveUndefinedUnits();
 
 
@@ -607,6 +612,11 @@ public void renameLocalParameter(String oldName, String newName) throws Expressi
 	if (oldName.equals(newName)){
 		throw new RuntimeException("renameParameter from '"+oldName+"' to '"+newName+"', same name not allowed");
 	}
+	LocalParameter existingParameter = getLocalParameterFromName(newName);
+	if (existingParameter != null) {
+		throw new RuntimeException("Parameter '"+newName+"' already exists.");
+	}
+	
 	LocalParameter parameter = getLocalParameterFromName(oldName);
 	if (parameter!=null){
 		//
@@ -617,25 +627,22 @@ public void renameLocalParameter(String oldName, String newName) throws Expressi
 		//
 		// replaces parameter with name 'oldName' with new parameter with name 'newName' and original expression.
 		//
-		for (int i = 0; i < newParameters.length; i++){
-			if (newParameters[i] == parameter){
-				newParameters[i] = new LocalParameter(newName,parameter.getExpression(),parameter.getRole(),parameter.getUnitDefinition(),parameter.getDescription());
-			}
-		}
+		parameter.setName(newName);
+		
 		//
 		// go through all parameters' expressions and replace references to 'oldName' with 'newName'
 		//
 		for (int i = 0; i < newParameters.length; i++){ 
 			if (newParameters[i].getExpression()!=null){
 				Expression newExp = newParameters[i].getExpression().renameBoundSymbols(getNameScope());
-				newParameters[i] = new LocalParameter(newParameters[i].getName(),newExp,newParameters[i].getRole(),newParameters[i].getUnitDefinition(),newParameters[i].getDescription());
+				newParameters[i].setExpression(newExp);
 			}
 		}
 		setLocalParameters(newParameters);
+		
 		//
 		// clean up dangling parameters (those not reachable from the 'required' parameters).
 		//
-
 		try {
 			cleanupParameters();
 		}catch (Exception e){

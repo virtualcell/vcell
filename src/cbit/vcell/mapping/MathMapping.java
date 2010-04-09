@@ -1675,17 +1675,23 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				if (totalCurrentParm!=null && /* totalCurrentDensityParm.getExpression()!=null && */ memMapping.getCalculateVoltage()){
 					Expression totalCurrentDensityExp = (totalCurrentParm.getExpression()!=null)?(totalCurrentParm.getExpression()):(new Expression(0.0));
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentParm,membraneElectricalDevice.getMembraneMapping()),
-													getIdentifierSubstitutions(totalCurrentDensityExp,totalCurrentParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
+							getIdentifierSubstitutions(totalCurrentDensityExp,totalCurrentParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
 				}
 				if (transmembraneCurrentParm!=null && transmembraneCurrentParm.getExpression()!=null && memMapping.getCalculateVoltage()){
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(transmembraneCurrentParm,membraneElectricalDevice.getMembraneMapping()),
-													getIdentifierSubstitutions(transmembraneCurrentParm.getExpression(),transmembraneCurrentParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
+							getIdentifierSubstitutions(transmembraneCurrentParm.getExpression(),transmembraneCurrentParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
 				}
 				if (capacitanceParm!=null && capacitanceParm.getExpression()!=null && memMapping.getCalculateVoltage()){
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,membraneElectricalDevice.getMembraneMapping()),
-													getIdentifierSubstitutions(capacitanceParm.getExpression(),capacitanceParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
+					StructureMappingParameter sizeParameter = membraneElectricalDevice.getMembraneMapping().getSizeParameter();
+					if (sizeParameter.getExpression() == null || sizeParameter.getExpression().isZero()) {
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,membraneElectricalDevice.getMembraneMapping()),
+							getIdentifierSubstitutions(Expression.mult(new Expression(1.0), specificCapacitanceParm.getExpression()),capacitanceParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));						
+					} else {
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,membraneElectricalDevice.getMembraneMapping()),
+							getIdentifierSubstitutions(capacitanceParm.getExpression(),capacitanceParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
+					}
 				}
-				//		
+				//
 				//
 				// membrane ode
 				//
@@ -2256,13 +2262,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		CompartmentSubDomain innerCompartment = mathDesc.getCompartmentSubDomain(innerSubVolume.getName());
 
 		MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment);
-		memSubDomain.setBoundaryConditionXm(new BoundaryConditionType(innerCompartment.getBoundaryConditionXm()));
-		memSubDomain.setBoundaryConditionXp(new BoundaryConditionType(innerCompartment.getBoundaryConditionXp()));
-		memSubDomain.setBoundaryConditionYm(new BoundaryConditionType(innerCompartment.getBoundaryConditionYm()));
-		memSubDomain.setBoundaryConditionYp(new BoundaryConditionType(innerCompartment.getBoundaryConditionYp()));
-		memSubDomain.setBoundaryConditionZm(new BoundaryConditionType(innerCompartment.getBoundaryConditionZm()));
-		memSubDomain.setBoundaryConditionZp(new BoundaryConditionType(innerCompartment.getBoundaryConditionZp()));
-		
 		mathDesc.addSubDomain(memSubDomain);
 
 		//
