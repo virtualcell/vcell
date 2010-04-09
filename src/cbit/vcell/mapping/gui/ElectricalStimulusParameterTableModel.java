@@ -17,6 +17,7 @@ import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.LocalProxyParameter;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -277,6 +278,9 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
 	Parameter parameter = getParameter(rowIndex);
+	if (parameter instanceof ProxyParameter) {
+		return false;
+	}
 	if (columnIndex == COLUMN_NAME){
 		return parameter.isNameEditable();
 	}else if (columnIndex == COLUMN_DESCRIPTION){
@@ -293,7 +297,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
  * isSortable method comment.
  */
 public boolean isSortable(int col) {
-	return true;
+	return false;
 }
 /**
 	 * This method gets called when a bound property is changed.
@@ -367,30 +371,28 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		switch (columnIndex){
 			case COLUMN_VALUE:{
 				try {
-					if (aValue instanceof ScopedExpression){
-//						Expression exp = ((ScopedExpression)aValue).getExpression();
-//						if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
-//							ElectricalStimulus.ElectricalStimulusParameter scsParm = (ElectricalStimulus.ElectricalStimulusParameter)parameter;
-//							getElectricalStimulus().setParameterValue(scsParm,exp);
-//							//fireTableRowsUpdated(rowIndex,rowIndex);
-//						}
-						throw new RuntimeException("unexpected value type ScopedExpression");
-					}else if (aValue instanceof String) {
-						String newExpressionString = (String)aValue;
-						if (parameter instanceof LocalParameter){
-							LocalParameter scsParm = (LocalParameter)parameter;
-							getElectricalStimulus().setParameterValue(scsParm,new Expression(newExpressionString));
-							//fireTableRowsUpdated(rowIndex,rowIndex);
-						}
+					String newExpressionString = (String)aValue;
+					if (parameter instanceof LocalParameter){
+						LocalParameter scsParm = (LocalParameter)parameter;
+						getElectricalStimulus().setParameterValue(scsParm,new Expression(newExpressionString));
+						//fireTableRowsUpdated(rowIndex,rowIndex);
 					}
-				}catch (java.beans.PropertyVetoException e){
-					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
 					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
+				}catch (Exception e){
+					e.printStackTrace(System.out);
+					PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
 				}
 				break;
+			}
+			case COLUMN_NAME: {
+				try {
+					getElectricalStimulus().renameParameter(parameter.getName(), (String)aValue);
+				} catch (Exception e) {
+					e.printStackTrace(System.out);
+					PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
+				}
 			}
 		}
 //	}catch (java.beans.PropertyVetoException e){

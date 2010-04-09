@@ -3,6 +3,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -73,5 +74,11 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 
 public LocalParameter getCurrentParameter() {
 	return parameterContext.getLocalParameterFromRole(ElectricalStimulus.ROLE_TotalCurrent);
+}
+
+
+@Override
+public Parameter getProtocolParameter() {	
+	return getCurrentParameter();
 }
 }

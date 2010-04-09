@@ -4,11 +4,14 @@ import java.beans.PropertyVetoException;
 import java.util.*;
 
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry;
 /**
  * Insert the type's description here.
  * Creation date: (1/29/2002 3:22:16 PM)
@@ -117,6 +120,40 @@ public static Expression substituteFunctions(Expression exp, SymbolTable symbolT
 		}
 	}
 //	exp2 = exp2.flatten();
+	exp2.bindExpression(symbolTable);
+	return exp2;
+}
+
+/**
+ * This method was created in VisualAge.
+ * @return cbit.vcell.parser.Expression
+ * @param exp cbit.vcell.parser.Expression
+ * @exception java.lang.Exception The exception description.
+ */
+public static Expression substituteModelParameters(Expression exp, SymbolTable symbolTable) throws ExpressionException {
+	Expression exp2 = new Expression(exp);
+	//
+	// do until no more functions to substitute
+	//
+	int count = 0;
+	boolean bSubstituted = true;
+	while (bSubstituted){
+		bSubstituted = false;
+		if (count++ > 30){
+			throw new ExpressionBindingException("infinite loop in eliminating function nesting");
+		}
+		String[] symbols = exp2.getSymbols();
+		for (int i = 0; i < symbols.length; i++) {
+			SymbolTableEntry ste = exp2.getSymbolBinding(symbols[i]);
+			if (ste != null && !(ste instanceof SymbolTableFunctionEntry)){
+				Expression steExp = ste.getExpression();
+				if (steExp != null){
+					exp2.substituteInPlace(new Expression(ste.getName()), steExp);
+					bSubstituted = true;
+				}
+			}
+		}
+	}
 	exp2.bindExpression(symbolTable);
 	return exp2;
 }
