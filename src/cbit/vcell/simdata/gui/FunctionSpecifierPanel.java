@@ -1,46 +1,38 @@
 package cbit.vcell.simdata.gui;
 
-import javax.swing.JPanel;
-
-import java.awt.GridBagLayout;
 import java.awt.Dimension;
-
-import javax.swing.JButton;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.text.Document;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
-import java.lang.String;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
-import cbit.gui.TextFieldAutoCompletion;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.Function;
-import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.solver.SimulationSymbolTable;
-
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.text.Document;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
+
+import cbit.gui.TextFieldAutoCompletion;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.VariableType;
 
 public class FunctionSpecifierPanel extends JPanel implements ActionListener,UndoableEditListener{
 
@@ -204,31 +196,7 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 	public AnnotatedFunction getSelectedAnnotatedFunction(){
 		return currentAnnotatedFunction;
 	}
-	public AnnotatedFunction getNewUserCreatedAnnotatedFunction(boolean isSpatial) throws ExpressionException{
-		Function func =
-			new Function("temp",new Expression(getJTextFieldFuncExpression().getText()));
-		
-		String[] dataIdNames = new String[allIdentifiers.length];
-		VariableType[] dataIdVarTypes = new VariableType[allIdentifiers.length];
-		
-		for (int i = 0; i < allIdentifiers.length; i++){
-			dataIdNames[i] = allIdentifiers[i].getName();
-			dataIdVarTypes[i] = allIdentifiers[i].getVariableType();
-		}
-		VariableType funcType = SimulationSymbolTable.getFunctionVariableType(func, dataIdNames, dataIdVarTypes,isSpatial);
-		if (funcType.equals(VariableType.UNKNOWN)) {
-			throw new IllegalArgumentException("Must specify variable type for field function");
-		}
-		
-		return
-			new AnnotatedFunction(
-					getJTextFieldFuncName().getText(),
-					new Expression(getJTextFieldFuncExpression().getText()),
-					null,
-					funcType,
-					true
-			);
-	}
+
 	public int getFunctionOp(){
 		return functionOp;
 	}

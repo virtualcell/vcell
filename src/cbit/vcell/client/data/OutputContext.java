@@ -1,8 +1,10 @@
 package cbit.vcell.client.data;
 
+import java.io.Serializable;
+
 import cbit.vcell.math.AnnotatedFunction;
 
-public class OutputContext {
+public class OutputContext implements Serializable {
 private AnnotatedFunction[] outputFunctions = null;
 
 public OutputContext(AnnotatedFunction[] outputFunctions) {

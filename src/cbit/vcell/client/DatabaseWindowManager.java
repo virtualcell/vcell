@@ -1093,7 +1093,15 @@ private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager
 	tree.setPreferredSize(new java.awt.Dimension(300, 600));
 	openDialog.setMessage("");
 	openDialog.setMessage(tree);
-	final JDialog theJDialog = openDialog.createDialog(requester.getComponent(), "Select document:");
+	String docType = "document";
+	if (tree instanceof BioModelDbTreePanel) {
+		docType = "BioModel";
+	} else if (tree instanceof MathModelDbTreePanel) {
+		docType = "MathModel";
+	} else if (tree instanceof GeometryTreePanel) {
+		docType = "Geometry";
+	}
+	final JDialog theJDialog = openDialog.createDialog(requester.getComponent(), "Select " + docType);
 	theJDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	theJDialog.setResizable(true);
 	

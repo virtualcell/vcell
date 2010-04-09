@@ -33,6 +33,8 @@ public interface SimulationOwner {
 	
 	MathDescription getMathDescription();
 	
+	void refreshMathDescription();
+	
 	Geometry getGeometry();
 }
 

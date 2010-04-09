@@ -6,8 +6,10 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -16,10 +18,15 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.parser.AbstractNameScope;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.VariableType.VariableDomain;
+import cbit.vcell.solver.SimulationSymbolTable;
 
 public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
 	
@@ -301,7 +308,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 			Enumeration<Variable> varEnum = mathDescription.getVariables();
 			while(varEnum.hasMoreElements()) {
 				Variable var = varEnum.nextElement();
-				if (!(var instanceof PseudoConstant)) {
+				if (!(var instanceof PseudoConstant) && !(var instanceof Constant)) {
 					entryMap.put(var.getName(), var);
 				} 
 			}
@@ -335,7 +342,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		MathDescription mathDescription = simulationOwner.getMathDescription();
 		if (mathDescription != null) {
 			ste = mathDescription.getEntry(identifierString);
-			if (ste != null) {
+			if (ste != null && !(ste instanceof PseudoConstant) && !(ste instanceof Constant)) {
 				return ste;
 			}
 		}
@@ -344,4 +351,48 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		return ste;
 	}
 
+	// check if the new expression is valid for outputFunction of functionType 
+	public void validateExpression(Function outputFunction, VariableType functionType, Expression exp) throws ExpressionException {
+		String[] symbols = exp.getSymbols();
+		if (symbols == null || symbols.length == 0) {
+			return;
+		}
+		MathDescription mathDescription = getSimulationOwner().getMathDescription();
+		boolean bSpatial = mathDescription.isSpatial();
+		if (bSpatial) {
+			Expression newexp = new Expression(exp);
+			// making sure that output function is not direct function of constant.
+			newexp.bindExpression(this);			
+			
+			// here use math description as symbol table because we allow 
+			// new expression itself to be function of constant.
+			newexp = MathUtilities.substituteFunctions(newexp, mathDescription).flatten();
+			symbols = newexp.getSymbols();
+			if (symbols != null) {
+				// making sure that new expression is defined in the same domain
+				VariableType[] varTypes = new VariableType[symbols.length];
+				VariableDomain functionVariableDomain = functionType.getVariableDomain();
+				for (int i = 0; i < symbols.length; i++) {
+					Variable var = mathDescription.getVariable(symbols[i]);
+					varTypes[i] = VariableType.getVariableType(var);
+					if (!varTypes[i].getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_UNKNOWN) && !varTypes[i].getVariableDomain().equals(functionVariableDomain)) {
+						boolean bVolume = functionVariableDomain.equals(VariableDomain.VARIABLEDOMAIN_VOLUME);
+						String errMsg = "'" + outputFunction.getName() + "' directly or indirectly references "
+							+  (bVolume ? "membrane" : "volume") + " variable '" + symbols[i] + "'. " 
+							+ functionVariableDomain.getName() + " output functions should only reference " + functionVariableDomain.getName() + " variables.";
+						throw new ExpressionException(errMsg);
+					}
+				}
+				// check with flattened expression to find out the variable type of the new expression
+				Function flattenedFunctiion = new Function(outputFunction.getName(), newexp);
+				VariableType newVarType = SimulationSymbolTable.getFunctionVariableType(flattenedFunctiion, symbols, varTypes, bSpatial);						
+				if (!newVarType.getVariableDomain().equals(functionVariableDomain)) {
+					String errMsg = "The expression for '" + outputFunction.getName() + "' includes at least one " 
+						+ newVarType.getVariableDomain().getName() + " variable. Please make sure that only " + functionVariableDomain.getName() + " variables are " +
+								"referenced in " + functionVariableDomain.getName() + " output functions.";
+					throw new ExpressionException(errMsg);					
+				}
+			}
+		}
+	}
 }

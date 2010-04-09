@@ -681,4 +681,9 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	public void removeGeometryPropertyChangeListener(PropertyChangeListener listener) {
 		getMathDescription().removePropertyChangeListener(listener);
 	}
+
+
+	public void refreshMathDescription() {
+		// do nothing. math description always exists		
+	}
 }

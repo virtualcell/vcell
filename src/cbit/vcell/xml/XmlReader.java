@@ -1426,9 +1426,13 @@ public AnnotatedFunction getAnnotatedFunction(Element param) throws XmlParseExce
 	String temp = param.getText();
 	Expression exp = unMangleExpression(temp);
 	String errStr = unMangle( param.getAttributeValue( XMLTags.ErrorStringTag) );
-//	String funcTypeStr = unMangle( param.getAttributeValue( XMLTags.FunctionTypeTag) );
-	// VariableType funcType = VariableType.getVariableTypeFromVariableTypeName(funcTypeStr);
+	
 	VariableType funcType = VariableType.UNKNOWN;
+	String funcTypeAttr = param.getAttributeValue(XMLTags.FunctionTypeTag);
+	if (funcTypeAttr != null) {
+		String funcTypeStr = unMangle( funcTypeAttr );
+		funcType = VariableType.getVariableTypeFromVariableTypeName(funcTypeStr);
+	}
 	boolean userDefined = Boolean.parseBoolean(unMangle(param.getAttributeValue( XMLTags.UserDefinedTag)));
 	
 	//-- create new AnnotatedFunction --

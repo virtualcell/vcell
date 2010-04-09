@@ -156,6 +156,7 @@ public class MultiPurposeTextPanel extends JPanel {
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
+				textPane.setCharacterAttributes(getDefaultStyle(), true);
                 target.paste();
             	if (text.length() > 0) {
             		highlightKeywords(text, pos);
@@ -1259,7 +1260,7 @@ public class MultiPurposeTextPanel extends JPanel {
 	}
 	
 	private void highlightKeywords(String text, int position) {
-		if (keywords.size() < 1) {
+		if (text == null || keywords.size() < 1) {
 			return;
 		}
 		ArrayList<KeywordToken> tokenList = new ArrayList<KeywordToken>();

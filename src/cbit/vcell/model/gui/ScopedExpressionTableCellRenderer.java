@@ -9,8 +9,10 @@ import java.util.Hashtable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 import org.vcell.util.gui.DefaultTableCellRendererEnhanced;
 
@@ -107,12 +109,18 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 		//
 		//Calculate dimension of all cells
 		//
+		TableColumnModel columnModel = targetTable.getTableHeader().getColumnModel();
 		for(int columnIndex = 0;columnIndex < targetTable.getColumnCount();columnIndex+= 1){
+			// calculate header preferred width
+			TableColumn column = columnModel.getColumn(columnIndex);
+			TableCellRenderer headerRenderer = column.getHeaderRenderer();
+			if (headerRenderer != null) {
+				java.awt.Component comp = headerRenderer.getTableCellRendererComponent(targetTable, column.getHeaderValue(), false, false, 0, 0); 
+				maxColumnWidths[columnIndex] = Math.max(maxColumnWidths[columnIndex],comp.getPreferredSize().width);
+			}
 			for(int rowIndex=0;rowIndex<targetTable.getRowCount();rowIndex+= 1){
-				java.awt.Component comp =
-					targetTable.getCellRenderer(rowIndex,columnIndex).getTableCellRendererComponent(
-						targetTable,targetTable.getValueAt(rowIndex,columnIndex),false,false,rowIndex,columnIndex);
-					
+				java.awt.Component comp = targetTable.getCellRenderer(rowIndex,columnIndex).getTableCellRendererComponent(
+						targetTable,targetTable.getValueAt(rowIndex,columnIndex),false,false,rowIndex,columnIndex);					
 				maxColumnWidths[columnIndex] = Math.max(maxColumnWidths[columnIndex],comp.getPreferredSize().width);
 				maxRowHeights[rowIndex] = Math.max(maxRowHeights[rowIndex],comp.getPreferredSize().height);
 			}
@@ -124,7 +132,6 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 		//
 		int expressionColumn = -1;
 		for (int columnIndex : targetColumns) {
-			TableColumnModel columnModel = targetTable.getTableHeader().getColumnModel();
 			TableColumn column = columnModel.getColumn(columnIndex);
 			// set prefer width if it is expression since the size is computed through image.
 			int preferredWidth = maxColumnWidths[columnIndex] + columnModel.getColumnMargin();
@@ -132,7 +139,7 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 				expressionColumn = columnIndex;
 				column.setPreferredWidth(preferredWidth);
 			}
-			if (column.getPreferredWidth() < maxColumnWidths[columnIndex]){
+			if (column.getPreferredWidth() < preferredWidth){
 				column.setPreferredWidth(preferredWidth);
 			}
 		}
