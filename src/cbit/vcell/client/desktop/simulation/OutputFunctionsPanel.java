@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -28,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.Timer;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -38,12 +40,13 @@ import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
+import cbit.vcell.math.Variable;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.VariableType;
@@ -70,14 +73,19 @@ public class OutputFunctionsPanel extends JPanel {
 
 	class IvjEventHandler implements ActionListener, MouseListener, PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == OutputFunctionsPanel.this.getAddFnButton()) 
-				addOutputFunction(VariableType.NONSPATIAL);
-			if (e.getSource() == OutputFunctionsPanel.this.getAddVolVarFnButton()) 
-				addOutputFunction(VariableType.VOLUME);
-			if (e.getSource() == OutputFunctionsPanel.this.getAddMemVarFnButton()) 
-				addOutputFunction(VariableType.MEMBRANE);
-			if (e.getSource() == OutputFunctionsPanel.this.getDeleteFnButton()) 
-				deleteOutputFunction();
+			try {
+				if (e.getSource() == OutputFunctionsPanel.this.getAddFnButton()) 
+					addOutputFunction(VariableType.NONSPATIAL);
+				if (e.getSource() == OutputFunctionsPanel.this.getAddVolVarFnButton()) 
+					addOutputFunction(VariableType.VOLUME);
+				if (e.getSource() == OutputFunctionsPanel.this.getAddMemVarFnButton()) 
+					addOutputFunction(VariableType.MEMBRANE);
+				if (e.getSource() == OutputFunctionsPanel.this.getDeleteFnButton()) 
+					deleteOutputFunction();
+			} catch (Exception ex) {
+				ex.printStackTrace(System.out);
+				DialogUtils.showErrorDialog(OutputFunctionsPanel.this, ex.getMessage());
+			}
 		}
 
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -425,9 +433,9 @@ public class OutputFunctionsPanel extends JPanel {
 			add(getButtonLabelPanel(), BorderLayout.NORTH);
 			add(getFnTableScrollPane(), BorderLayout.CENTER);
 			initConnections();
-			getFnScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+			getFnScrollPaneTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			getFnScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-			getFnScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getFnScrollPaneTable(), false));
+			getFnScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getFnScrollPaneTable(), true));
 			
 			getOutputFnsListTableModel1().addTableModelListener(
 					new javax.swing.event.TableModelListener(){
@@ -446,14 +454,15 @@ public class OutputFunctionsPanel extends JPanel {
 		}
 	}
 
-	private void addOutputFunction(VariableType varType) {
+	private void addOutputFunction(final VariableType varType) {
+		simulationWorkspace.getSimulationOwner().refreshMathDescription();
 		ArrayList<AnnotatedFunction> outputFunctionList = outputFunctionContext.getOutputFunctionsList();
 		String defaultName = null;
 		int count = 0;
 		while (true) {
 			boolean nameUsed = false;
 			count++;
-			defaultName = "Function" + count;
+			defaultName = "func" + count;
 			for (AnnotatedFunction function : outputFunctionList){
 				if (function.getName().equals(defaultName)) {
 					nameUsed = true;
@@ -472,8 +481,31 @@ public class OutputFunctionsPanel extends JPanel {
 		outputFunctionContext.getEntries(entryMap);
 		autoCompList = entryMap.keySet();
 		getFunctionExpressionTextField().setAutoCompletionWords(autoCompList);
+		getFunctionExpressionTextField().setSymbolTable(outputFunctionContext);
+		final MathDescription mathDescription = simulationWorkspace.getSimulationOwner().getMathDescription();
 		getFunctionExpressionTextField().setAutoCompleteSymbolFilter(new AutoCompleteSymbolFilter() {
 			public boolean accept(SymbolTableEntry ste) {
+				if (mathDescription.isSpatial()) {
+					if (ste instanceof AnnotatedFunction) {
+						return varType.getVariableDomain().equals(((AnnotatedFunction)ste).getFunctionType().getVariableDomain());
+					}			
+					if (ste instanceof Function) {
+						Function f = (Function)ste;
+						try {
+							outputFunctionContext.validateExpression(f, varType, f.getExpression());
+							return true;
+						} catch (Exception e) {
+							return false;
+						}
+					}
+					
+					// must be Variables(Volume, Membrane, VolumeRegion, MembraneRegion)					
+					VariableType vt = VariableType.getVariableType((Variable)ste);
+					if (!varType.getVariableDomain().equals(vt.getVariableDomain())) {
+						return false;
+					}
+				}
+		
 				return true;
 			}
 			public boolean acceptFunction(String funcName) {
@@ -484,6 +516,14 @@ public class OutputFunctionsPanel extends JPanel {
 			}
 		});
 
+		Timer timer = new Timer(100, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				getFunctionExpressionTextField().requestFocusInWindow();			
+				getFunctionExpressionTextField().selectAll();
+			}
+		});
+		timer.setRepeats(false);
+		timer.start();
 		//
 		// Show the editor with a default name and default expression for the function
 		// If the OK option is chosen, get the new name and expression for the function and create a new
@@ -501,10 +541,11 @@ public class OutputFunctionsPanel extends JPanel {
 			}
 			AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, null, varType, true);
 			try {
+				outputFunctionContext.validateExpression(newFunction, varType, funcExp);	
 				outputFunctionContext.addOutputFunction(newFunction);
-			} catch (PropertyVetoException e1) {
+			} catch (Exception e1) {
 				e1.printStackTrace(System.out);
-				DialogUtils.showErrorDialog(this, "Function '" + newFunction.getName() + "' cannot be added." + e1.getMessage());
+				DialogUtils.showErrorDialog(this, "Function '" + newFunction.getName() + "' cannot be added. " + e1.getMessage());
 			}
 		}
 

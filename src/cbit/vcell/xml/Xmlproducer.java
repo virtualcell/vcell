@@ -1596,7 +1596,7 @@ public org.jdom.Element getXML(AnnotatedFunction param) {
 	} else {
 		function.setAttribute(XMLTags.ErrorStringTag, "");
 	}
-	function.setAttribute(XMLTags.FunctionTypeTag, param.getFunctionType().toString());
+	function.setAttribute(XMLTags.FunctionTypeTag, param.getFunctionType().getTypeName());
 	function.setAttribute(XMLTags.UserDefinedTag, Boolean.toString(param.isUserDefined()));
 	function.addContent(mangleExpression(param.getExpression()) );
 

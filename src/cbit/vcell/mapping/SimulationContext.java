@@ -417,33 +417,7 @@ public void addBioEvent(BioEvent bioEvent) throws PropertyVetoException {
  * @see #getSimulations
  */
 public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
-	//The code below is used to check if the sizes are ready for required models.
-	try {
-		checkValidity();
-	} catch (MappingException e1) {
-		e1.printStackTrace(System.out);
-		throw new RuntimeException(e1.getMessage());
-	}
-	
-	if (getMathDescription()==null){
-//		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
-		try {
-			if(isStoch())
-			{
-				setMathDescription((new StochMathMapping(this)).getMathDescription());
-			}
-			else
-			{
-				setMathDescription((new MathMapping(this)).getMathDescription());
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(
-				"Application "+getName()+" has no generated Math\n"+
-				"Failed to generate new Math\n"+
-				e.getMessage()
-			);
-		}
-	}
+	refreshMathDescription();
 	if (bioModel==null){
 		throw new RuntimeException("cannot add simulation, bioModel not set yet");
 	}
@@ -477,6 +451,37 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 	bioModel.addSimulation(newSimulation);
 
 	return newSimulation;
+}
+
+
+public void refreshMathDescription() {
+	//The code below is used to check if the sizes are ready for required models.
+	try {
+		checkValidity();
+	} catch (MappingException e1) {
+		e1.printStackTrace(System.out);
+		throw new RuntimeException(e1.getMessage());
+	}
+	
+	if (getMathDescription()==null){
+//		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
+		try {
+			if(isStoch())
+			{
+				setMathDescription((new StochMathMapping(this)).getMathDescription());
+			}
+			else
+			{
+				setMathDescription((new MathMapping(this)).getMathDescription());
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(
+				"Application "+getName()+" has no generated Math\n"+
+				"Failed to generate new Math\n"+
+				e.getMessage()
+			);
+		}
+	}
 }
 
 

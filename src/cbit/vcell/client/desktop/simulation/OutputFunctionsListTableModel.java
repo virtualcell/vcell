@@ -7,11 +7,19 @@ import javax.swing.JTable;
 
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
+import cbit.vcell.math.Variable;
+import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.simdata.VariableType;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 4:07:40 PM)
@@ -31,11 +39,12 @@ public class OutputFunctionsListTableModel extends ManageTableModel implements P
 			
 			switch (index){
 				case COLUMN_OUTPUTFN_NAME:{
-					if (ascending){
-						return parm1.getName().compareToIgnoreCase(parm2.getName());
-					}else{
-						return parm2.getName().compareToIgnoreCase(parm1.getName());
-					}
+					int bCompare = parm1.getName().compareToIgnoreCase(parm2.getName());
+					return ascending ? bCompare : -bCompare;
+				}
+				case COLUMN_OUTPUTFN_VARIABLETYPE : {
+					int bCompare = parm1.getFunctionType().getVariableDomain().getName().compareToIgnoreCase(parm2.getFunctionType().getVariableDomain().getName());
+					return ascending ? bCompare : - bCompare;					
 				}
 			}
 			return 1;
@@ -44,10 +53,10 @@ public class OutputFunctionsListTableModel extends ManageTableModel implements P
 
 	public final static int COLUMN_OUTPUTFN_NAME = 0;
 	public final static int COLUMN_OUTPUTFN_EXPRESSION = 1;
+	public final static int COLUMN_OUTPUTFN_VARIABLETYPE = 2;
 	
-	private final static int NUM_COLUMNS = 2;
 	private OutputFunctionContext outputFunctionContext = null;
-	private String[] columnNames = new String[] {"Name", "Expression"};
+	private String[] columnNames = new String[] {"Name", "Expression", "Type"};
 	private JTable ownerTable = null;
 
 /**
@@ -92,6 +101,9 @@ public Class<?> getColumnClass(int column) {
 		case COLUMN_OUTPUTFN_EXPRESSION:{
 			return cbit.gui.ScopedExpression.class;
 		}
+		case COLUMN_OUTPUTFN_VARIABLETYPE: {
+			return String.class;
+		}
 		default:{
 			return Object.class;
 		}
@@ -114,9 +126,47 @@ public Object getValueAt(int row, int column) {
 					if (obsFunction.getExpression() == null) {
 						return null; 
 					} else {
-						return new ScopedExpression(obsFunction.getExpression(),outputFunctionContext.getNameScope(), true);
+						final MathDescription mathDescription = outputFunctionContext.getSimulationOwner().getMathDescription();
+						final VariableType varType = VariableType.getVariableTypeFromVariableTypeName((String)getValueAt(row, COLUMN_OUTPUTFN_VARIABLETYPE));
+						AutoCompleteSymbolFilter autoCompleteSymbolFilter = new AutoCompleteSymbolFilter() {
+							public boolean accept(SymbolTableEntry ste) {
+								if (mathDescription.isSpatial()) {
+									if (ste instanceof AnnotatedFunction) {
+										return varType.getVariableDomain().equals(((AnnotatedFunction)ste).getFunctionType().getVariableDomain());
+									}			
+									if (ste instanceof Function) {
+										Function f = (Function)ste;
+										try {
+											outputFunctionContext.validateExpression(f, varType, f.getExpression());
+											return true;
+										} catch (Exception e) {
+											return false;
+										}
+									}
+									
+									// must be Variables(Volume, Membrane, VolumeRegion, MembraneRegion)
+									VariableType vt = VariableType.getVariableType((Variable)ste);
+									if (!varType.getVariableDomain().equals(vt.getVariableDomain())) {
+										return false;
+									}
+								}
+						
+								return true;
+							}
+							public boolean acceptFunction(String funcName) {
+								if (funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]) || funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.GRAD])) {
+									return false;
+								}
+								return true;
+							}
+						};
+						
+						return new ScopedExpression(obsFunction.getExpression(),outputFunctionContext.getNameScope(), true, autoCompleteSymbolFilter);
 					}
-				} 
+				}
+				case COLUMN_OUTPUTFN_VARIABLETYPE: {
+					return obsFunction.getFunctionType().getVariableDomain().getName();
+				}
 				default: {
 					return null;
 				}
@@ -131,11 +181,7 @@ public Object getValueAt(int row, int column) {
 }
 
 public boolean isSortable(int col) {
-	if (col == COLUMN_OUTPUTFN_NAME){
-		return true;
-	}else {
-		return false;
-	}
+	return col != COLUMN_OUTPUTFN_EXPRESSION;
 }
 
 
@@ -147,11 +193,7 @@ public boolean isSortable(int col) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	if (columnIndex == COLUMN_OUTPUTFN_NAME){
-		return false;
-	}else {
-		return true;
-	}
+	return columnIndex == COLUMN_OUTPUTFN_EXPRESSION;
 }
 
 
@@ -176,34 +218,22 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param columnIndex int
  */
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	if (rowIndex<0 || rowIndex>=getRowCount()){
-		throw new RuntimeException("ObservablesListTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("ObservablesListTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
 	AnnotatedFunction outputFunction = (AnnotatedFunction)getData().get(rowIndex);
 	switch (columnIndex){
 		case COLUMN_OUTPUTFN_EXPRESSION:{
 			try {
-				if (aValue instanceof ScopedExpression){
-//					Expression exp = ((ScopedExpression)aValue).getExpression();
-//					// bind expression to outputFunctionContext
-//					exp.bindExpression(outputFunctionContext);
-//					outputFunction.setExpression(exp);
-					throw new RuntimeException("unexpected value type ScopedExpression");
-				}else if (aValue instanceof String) {
-					Expression exp = new Expression((String)aValue);
-					exp.bindExpression(outputFunctionContext);
-					outputFunction.setExpression(exp);
-				}
+				Expression exp = new Expression((String)aValue);
+				exp.bindExpression(outputFunctionContext);
+				getOutputFunctionContext().validateExpression(outputFunction, outputFunction.getFunctionType(), exp);
+				outputFunction.setExpression(exp);
+				
 				// both the 'fire's are being used so that the scopedExpressionRenderer renders the exprs properly, esp with num/dem exprs.
 				fireTableDataChanged();
 				fireTableRowsUpdated(rowIndex,rowIndex);
 				outputFunctionContext.firePropertyChange("outputFunctions", null, outputFunctionContext.getOutputFunctionsList());
 			} catch (ExpressionException e){
 				e.printStackTrace(System.out);
-				cbit.vcell.client.PopupGenerator.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());
+				PopupGenerator.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());
 			}
 			break;
 		}

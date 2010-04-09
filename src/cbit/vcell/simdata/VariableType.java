@@ -2,6 +2,15 @@ package cbit.vcell.simdata;
 
 import org.vcell.util.Matchable;
 
+import cbit.vcell.math.FilamentRegionVariable;
+import cbit.vcell.math.FilamentVariable;
+import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.solvers.CartesianMesh;
 
 /*©
@@ -44,11 +53,19 @@ public class VariableType implements java.io.Serializable, org.vcell.util.Matcha
 	public static final VariableType NONSPATIAL = new VariableType(NONSPATIAL_TYPE);
 	
 	public enum VariableDomain {
-		VARIABLEDOMAIN_UNKNOWN,
-		VARIABLEDOMAIN_VOLUME,
-		VARIABLEDOMAIN_MEMBRANE,
-		VARIABLEDOMAIN_CONTOUR,
-		VARIABLEDOMAIN_NONSPATIAL,
+		VARIABLEDOMAIN_UNKNOWN("Unknown"),
+		VARIABLEDOMAIN_VOLUME("Volume"),
+		VARIABLEDOMAIN_MEMBRANE("Membrane"),
+		VARIABLEDOMAIN_CONTOUR("Contour"),
+		VARIABLEDOMAIN_NONSPATIAL("NonSpatial");
+		
+		private String name = null;
+		private VariableDomain(String arg_name) {
+			name = arg_name;
+		}
+		public String getName() {
+			return name;
+		}
 	}
 /**
  * PDEVariableType constructor comment.
@@ -262,4 +279,25 @@ public final VariableDomain getVariableDomain() {
 	return variableDomain;
 }
 
+public static VariableType getVariableType(Variable var) {
+	if (var instanceof VolVariable) {
+		return VariableType.VOLUME;
+	} else if (var instanceof VolumeRegionVariable) {
+		return VariableType.VOLUME_REGION;
+	} else if (var instanceof MemVariable) {
+		return VariableType.MEMBRANE;
+	} else if (var instanceof MembraneRegionVariable) {
+		return VariableType.MEMBRANE_REGION;
+	} else if (var instanceof FilamentVariable) {
+		return VariableType.CONTOUR;
+	} else if (var instanceof FilamentRegionVariable) {
+		return VariableType.CONTOUR_REGION;
+	} else if (var instanceof InsideVariable) {
+		return VariableType.MEMBRANE;
+	} else if (var instanceof OutsideVariable) {
+		return VariableType.MEMBRANE;
+	} else {
+		return VariableType.UNKNOWN;
+	}
+}
 }

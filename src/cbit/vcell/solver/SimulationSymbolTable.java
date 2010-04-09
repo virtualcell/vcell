@@ -462,53 +462,42 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		}
 	}
 
-	public Vector<AnnotatedFunction> createAnnotatedFunctionsList() {
-		Function[] functions = getFunctions();
-	
+	public Vector<AnnotatedFunction> createAnnotatedFunctionsList() {	
 		// Get the list of (volVariables) in the simulation. Needed to determine 'type' of  functions
-		Variable[] allVariables = getVariables();
-		Vector<Variable> varVector = new Vector<Variable>();
-		for (int i = 0; i < allVariables.length; i++){
-			if ( (allVariables[i] instanceof VolVariable) || (allVariables[i] instanceof VolumeRegionVariable) || (allVariables[i] instanceof MemVariable) || 
-				 (allVariables[i] instanceof MembraneRegionVariable) || (allVariables[i] instanceof FilamentVariable) || (allVariables[i] instanceof FilamentRegionVariable) ||
-				 (allVariables[i] instanceof InsideVariable) || (allVariables[i] instanceof OutsideVariable) ) {
-					 
-				varVector.addElement(allVariables[i]);
+		boolean bSpatial = getSimulation().isSpatial();
+		String[] variableNames = null;
+		VariableType[] variableTypes = null;
+		
+		if (bSpatial) {
+			Variable[] allVariables = getVariables();
+			Vector<Variable> varVector = new Vector<Variable>();
+			for (int i = 0; i < allVariables.length; i++){
+				if ((allVariables[i] instanceof VolVariable) 
+					|| (allVariables[i] instanceof VolumeRegionVariable) 
+					|| (allVariables[i] instanceof MemVariable) 
+					|| (allVariables[i] instanceof MembraneRegionVariable) 
+					|| (allVariables[i] instanceof FilamentVariable) 
+					|| (allVariables[i] instanceof FilamentRegionVariable) 
+					|| (allVariables[i] instanceof InsideVariable) 
+					|| (allVariables[i] instanceof OutsideVariable)) {
+					varVector.addElement(allVariables[i]);
+				}
 			}
-		}
-		Variable[] variables = (Variable[])org.vcell.util.BeanUtils.getArray(varVector, Variable.class);
-		String[] variableNames = new String[variables.length];
-		for (int i = 0; i < variableNames.length; i++){
-			variableNames[i] = variables[i].getName();
-		}
-	
-		// Lookup table for variableType for each variable in 'variables' array.	
-		VariableType[] variableTypes = new VariableType[variables.length];
-		for (int i = 0; i < variables.length; i++){
-			if (variables[i] instanceof VolVariable) {
-				variableTypes[i] = VariableType.VOLUME;
-			} else if (variables[i] instanceof VolumeRegionVariable) {
-				variableTypes[i] = VariableType.VOLUME_REGION;
-			} else if (variables[i] instanceof MemVariable) {
-				variableTypes[i] = VariableType.MEMBRANE;
-			} else if (variables[i] instanceof MembraneRegionVariable) {
-				variableTypes[i] = VariableType.MEMBRANE_REGION;
-			} else if (variables[i] instanceof FilamentVariable) {
-				variableTypes[i] = VariableType.CONTOUR;
-			} else if (variables[i] instanceof FilamentRegionVariable) {
-				variableTypes[i] = VariableType.CONTOUR_REGION;
-			} else if (variables[i] instanceof InsideVariable) {
-				variableTypes[i] = VariableType.MEMBRANE;
-			} else if (variables[i] instanceof OutsideVariable) {
-				variableTypes[i] = VariableType.MEMBRANE;
-			} else {
-				variableTypes[i] = null;
+			variableNames = new String[varVector.size()];
+			for (int i = 0; i < variableNames.length; i++){
+				variableNames[i] = varVector.get(i).getName();
 			}
-		}
-	
+		
+			// Lookup table for variableType for each variable in 'variables' array.
+			variableTypes = new VariableType[variableNames.length];
+			for (int i = 0; i < variableNames.length; i++){
+				variableTypes[i] = VariableType.getVariableType(varVector.get(i));
+			}
+		}	
 		//
 		// Bind and substitute functions to simulation before storing them in the '.functions' file
 		//
+		Function[] functions = getFunctions();
 		Vector<AnnotatedFunction> annotatedFunctionVector = new Vector<AnnotatedFunction>();
 		for (int i = 0; i < functions.length; i++){
 			if (isFunctionSaved(functions[i])) {
@@ -531,7 +520,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 				//
 				// get function's data type from the types of it's identifiers
 				//
-				funcType = getFunctionVariableType(functions[i], variableNames, variableTypes, getSimulation().isSpatial());
+				funcType = bSpatial ? getFunctionVariableType(functions[i], variableNames, variableTypes, bSpatial) : VariableType.NONSPATIAL;
 	
 				AnnotatedFunction annotatedFunc = new AnnotatedFunction(functions[i].getName(), functions[i].getExpression(), errString, funcType, false);
 				annotatedFunctionVector.addElement(annotatedFunc);
@@ -551,6 +540,9 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	 * @param variableTypes cbit.vcell.simdata.VariableType[]
 	 */
 	public static VariableType getFunctionVariableType(Function function, String[] variableNames, VariableType[] variableTypes, boolean isSpatial) {
+		if (!isSpatial) {
+			return VariableType.NONSPATIAL;
+		}
 		VariableType funcType = null;
 		Expression exp = function.getExpression();
 		String symbols[] = exp.getSymbols();
@@ -590,10 +582,11 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		boolean bExplicitFunctionOfSpace = false;
 		if (symbols != null) {
 			for (int i = 0; i < symbols.length; i++){
-				if (symbols[i].equals(ReservedVariable.X.toString()) ||
-					symbols[i].equals(ReservedVariable.Y.toString()) ||
-					symbols[i].equals(ReservedVariable.Z.toString())){
+				if (symbols[i].equals(ReservedVariable.X.getName()) ||
+					symbols[i].equals(ReservedVariable.Y.getName()) ||
+					symbols[i].equals(ReservedVariable.Z.getName())){
 					bExplicitFunctionOfSpace = true;
+					break;
 				}
 			}
 		}
