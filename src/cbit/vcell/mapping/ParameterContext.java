@@ -11,8 +11,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import com.sun.xml.internal.bind.v2.model.annotation.FieldLocatable;
-
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Parameter;
