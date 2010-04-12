@@ -492,7 +492,9 @@ public String getVCML() {
 		buffer.append(VCML.StopAtSpatiallyUniform + " " + stopAtSpatiallyUniformErrorTolerance.getVCML() + "\n");
 	}
 	
-	buffer.append(VCML.RunParameterScanSerially + " " + bSerialParameterScan + "\n");
+	if (bSerialParameterScan) {
+		buffer.append(VCML.RunParameterScanSerially + " " + bSerialParameterScan + "\n");
+	}
 	
 	buffer.append(VCML.EndBlock+"\n");
 		

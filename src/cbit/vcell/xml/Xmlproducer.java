@@ -3262,7 +3262,9 @@ public org.jdom.Element getXML(SolverTaskDescription param) {
 	}
 	
 	boolean bRunParameterScanSerially = param.isSerialParameterScan();
-	solvertask.setAttribute(XMLTags.RunParameterScanSerially, String.valueOf(bRunParameterScanSerially));
+	if (bRunParameterScanSerially) {
+		solvertask.setAttribute(XMLTags.RunParameterScanSerially, String.valueOf(bRunParameterScanSerially));
+	}
 	
 	return solvertask;
 }
