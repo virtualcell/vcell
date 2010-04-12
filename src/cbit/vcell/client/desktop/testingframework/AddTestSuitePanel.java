@@ -6,6 +6,8 @@ import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -157,7 +159,8 @@ private javax.swing.JPanel getJPanel1() {
 			gridBagConstraints_4.gridx = 0;
 			regressionInfoPanel.add(assignNewAsRadioButton, gridBagConstraints_4);
 			ivjJPanel1.add(jLabelAnnot, gridBagConstraints);
-			ivjJPanel1.add(getJTextAreaAnnot(), gridBagConstraints1);
+			JScrollPane jscrollPane = new JScrollPane(getJTextAreaAnnot(), JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			ivjJPanel1.add(jscrollPane, gridBagConstraints1);
 
 			java.awt.GridBagConstraints constraintsVersionLabel = new java.awt.GridBagConstraints();
 			constraintsVersionLabel.gridx = 0; constraintsVersionLabel.gridy = 0;

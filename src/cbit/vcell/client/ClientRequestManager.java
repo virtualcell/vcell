@@ -353,9 +353,13 @@ public static void continueAfterMathModelGeomChangeWarning(MathModelWindowManage
 private boolean checkBeforeClosing(DocumentWindowManager windowManager) {
 	getMdiManager().showWindow(windowManager.getManagerID());
 	// we need to check for changes and get user confirmation...
+	VCDocument vcDocument = windowManager.getVCDocument();
+	if (vcDocument.getVersion() == null && !isDifferentFromBlank(vcDocument.getDocumentType(), vcDocument)) {
+		return true;
+	}
 	boolean isChanged = true;
 	try {
-		isChanged = getDocumentManager().isChanged(windowManager.getVCDocument());
+		isChanged = getDocumentManager().isChanged(vcDocument);
 	} catch (Exception exc) {
 		String choice = PopupGenerator.showWarningDialog(windowManager, getUserPreferences(), UserMessage.warn_UnableToCheckForChanges, null);
 		if (choice.equals(UserMessage.OPTION_CANCEL)){
@@ -380,7 +384,7 @@ private boolean checkBeforeClosing(DocumentWindowManager windowManager) {
  * Insert the method's description here.
  * Creation date: (5/10/2004 3:48:16 PM)
  */
-private boolean checkDifferentFromBlank(int documentType, VCDocument vcDocument) {
+private boolean isDifferentFromBlank(int documentType, VCDocument vcDocument) {
 	// Handle Bio/Math models different from Geometry since createDefaultDoc for Geometry
 	// will bring up the NewGeometryEditor which is unnecessary.
 	// figure out if we come from a blank new document; if so, replace it inside same window
@@ -1955,7 +1959,7 @@ public void openDocument(int documentType, DocumentWindowManager requester) {
 	try {
 		documentInfo = getMdiManager().getDatabaseWindowManager().selectDocument(documentType, requester);
 		// check whether request comes from a blank, unchanged document window; if so, open in same window, otherwise in a new window
-		boolean inNewWindow = checkDifferentFromBlank(documentType, requester.getVCDocument());
+		boolean inNewWindow = isDifferentFromBlank(documentType, requester.getVCDocument());
 		openDocument(documentInfo, requester, inNewWindow);
 	} catch (UserCancelException uexc) {
 		System.out.println(uexc);
