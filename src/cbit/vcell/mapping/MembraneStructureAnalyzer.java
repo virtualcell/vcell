@@ -264,7 +264,7 @@ private void refreshResolvedFluxes() throws Exception {
 								resolvedFluxList.addElement(rf);
 							}
 							
-							Expression reactionRateExpression = sr.getReactionRateExpression(rp_Array[k],mathMapping.getSimulationContext()).renameBoundSymbols(mathMapping.getNameScope());
+							Expression reactionRateExpression = sr.getReactionRateExpression(rp_Array[k]).renameBoundSymbols(mathMapping.getNameScope());
 							if (rp_Array[k].getStructure() == getMembrane().getInsideFeature()){
 								//
 								// for binding on inside, add to ResolvedFlux.inFlux

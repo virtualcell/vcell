@@ -197,7 +197,7 @@ private void refreshFastMatrices() throws Exception {
 				//
 				if (rp0 != null) {
 					Structure structure = fastReactionSteps[j].getStructure();
-					Expression fastRateExpression = fastReactionSteps[j].getReactionRateExpression(rp0,mathMapping.getSimulationContext()).renameBoundSymbols(mathMapping.getNameScope());
+					Expression fastRateExpression = fastReactionSteps[j].getReactionRateExpression(rp0).renameBoundSymbols(mathMapping.getNameScope());
 					if ((structure instanceof Membrane) && (rp0.getStructure()!=structure)){
 						Membrane membrane = (Membrane)structure;
 						MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
@@ -560,7 +560,7 @@ private void refreshTotalMatrices() throws Exception {
 					// (e.g. if reaction is on membrane and reactionParticipant is in a feature)
 					//
 					if (rp0 != null) {
-						Expression reactRateExp = reactionSteps[j].getReactionRateExpression(rp0,mathMapping.getSimulationContext()).renameBoundSymbols(mathMapping.getNameScope());
+						Expression reactRateExp = reactionSteps[j].getReactionRateExpression(rp0).renameBoundSymbols(mathMapping.getNameScope());
 						if ((structure instanceof Membrane) && (sc.getStructure()!=structure)){
 							Membrane membrane = (Membrane)structure;
 							MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);

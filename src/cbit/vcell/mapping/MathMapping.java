@@ -26,7 +26,6 @@ import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.mapping.potential.MembraneElectricalDevice;
 import cbit.vcell.mapping.potential.PotentialMapping;
 import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
-import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
@@ -854,14 +853,6 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 	if (ste instanceof Structure.StructureSize){
 		Structure structure = ((Structure.StructureSize)ste).getStructure();
 		StructureMapping.StructureMappingParameter sizeParameter = simContext.getGeometryContext().getStructureMapping(structure).getSizeParameter();
-		if (simContext.getGeometry().getDimension() == 0) {
-			// if geometry is compartmental, make sure compartment sizes are set.
-			if (!simContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
-				throw new MappingException("\nFor non-spatial applications, all structure sizes must be assigned positive values before being used in expressions.\n\nPlease go to 'StructureMapping' tab to check the sizes.");
-			}
-		} else {
-			throw new RuntimeException("\nIn spatial applications, use of compartment size ('" + structure.getStructureSize().getName() + "') in expression(s) is not allowed.");
-		}
 		return getMathSymbol(sizeParameter,structureMapping);
 	}
 	if (ste instanceof ProxyParameter){
@@ -1015,6 +1006,14 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 			} else if (role==StructureMapping.ROLE_SpecificCapacitance){
 				return "C_"+nameWithScope;
 			} else if (role==StructureMapping.ROLE_Size){
+				if (simContext.getGeometry().getDimension() == 0) {
+					// if geometry is compartmental, make sure compartment sizes are set if referenced in model.
+					if (smParm.getExpression() == null || smParm.getExpression().isZero()) {
+						throw new MappingException("\nIn non-spatial application '" + getSimulationContext().getName() + "', " +
+								"size of structure '" + structure.getName() + "' must be assigned a " +
+								"positive value if referenced in the model.\n\nPlease go to 'Structure Mapping' tab to check the size.");
+					}
+				}
 				return "Size_"+nameWithScope;
 			}
 		}
@@ -1685,7 +1684,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					StructureMappingParameter sizeParameter = membraneElectricalDevice.getMembraneMapping().getSizeParameter();
 					if (sizeParameter.getExpression() == null || sizeParameter.getExpression().isZero()) {
 						varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,membraneElectricalDevice.getMembraneMapping()),
-							getIdentifierSubstitutions(Expression.mult(new Expression(1.0), specificCapacitanceParm.getExpression()),capacitanceParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));						
+							getIdentifierSubstitutions(Expression.mult(memMapping.getNullSizeParameterValue(), specificCapacitanceParm.getExpression()),capacitanceParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));						
 					} else {
 						varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,membraneElectricalDevice.getMembraneMapping()),
 							getIdentifierSubstitutions(capacitanceParm.getExpression(),capacitanceParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));

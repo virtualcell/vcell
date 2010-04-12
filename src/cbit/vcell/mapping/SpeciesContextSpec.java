@@ -1203,7 +1203,13 @@ public Expression convertConcentrationToParticles(Expression iniConcentration) t
 	Expression iniParticlesExpr = null; 
 	Structure structure = getSpeciesContext().getStructure();
 	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structure);
-	double structSize = sm.getSizeParameter().getExpression().evaluateConstant();
+	Expression sizeParameterExpression = sm.getSizeParameter().getExpression();
+	if (sizeParameterExpression == null || sizeParameterExpression.isZero()) {
+		throw new RuntimeException("\nIn application '" + getSimulationContext().getName() + "', " +
+			"size of structure '" + structure.getName() + "' is required to convert " +
+			"concentration to number of particles.\n\nPlease go to 'Structure Mapping' tab to check the size.");
+	}
+	double structSize = sizeParameterExpression.evaluateConstant();
 	if (structure instanceof Membrane) {
 		// convert concentration(particles/area) to number of particles
 		// particles = iniConcentration(molecules/um2)*size(um2)
@@ -1232,7 +1238,13 @@ public Expression convertParticlesToConcentration(Expression iniParticles) throw
 	Expression iniConcentrationExpr = null;
 	Structure structure = getSpeciesContext().getStructure();
 	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structure);
-	double structSize = sm.getSizeParameter().getExpression().evaluateConstant();
+	Expression sizeParameterExpression = sm.getSizeParameter().getExpression();
+	if (sizeParameterExpression == null || sizeParameterExpression.isZero()) {
+		throw new RuntimeException("\nIn application '" + getSimulationContext().getName() + "', " +
+				"size of structure '" + structure.getName() + "' is required to convert " +
+				"number of particles to concentration.\n\nPlease go to 'Structure Mapping' tab to check the size.");
+	}
+	double structSize = sizeParameterExpression.evaluateConstant();
 	if (structure instanceof Membrane) {
 		// convert number of particles to concentration(particles/area)
 		// iniConcentration(molecules/um2) = particles/size(um2)
