@@ -856,7 +856,7 @@ private static Expression getTotalMembraneCurrent(SimulationContext simContext, 
 	Expression area = null;
 	if (simContext.getGeometry().getDimension()==0 && (sizeParameter.getExpression()==null || sizeParameter.getExpression().isZero())){
 		System.out.println("size not set for membrane \""+membrane.getName()+"\", refer to Structure Mapping in Application \""+mathMapping.getSimulationContext().getName()+"\"");
-		area = new Expression(1.0);
+		area = membraneMapping.getNullSizeParameterValue();
 	} else { 
 		area = new Expression(sizeParameter, mathMapping.getNameScope());
 	}

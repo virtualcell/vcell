@@ -24,9 +24,6 @@ import org.vcell.util.document.KeyValue;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.ASTFuncNode;
@@ -389,7 +386,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	return propertyChange;
 }
 
-public Expression getReactionRateExpression(ReactionParticipant reactionParticipant, SimulationContext simContext) throws Exception {
+public Expression getReactionRateExpression(ReactionParticipant reactionParticipant) throws Exception {
 	if (reactionParticipant instanceof Catalyst){
 		throw new Exception("Catalyst "+reactionParticipant+" doesn't have a rate for this reaction");
 		//return new Expression(0.0);
@@ -408,17 +405,16 @@ public Expression getReactionRateExpression(ReactionParticipant reactionParticip
 			return exp;
 		}
 	}else if (getKinetics() instanceof LumpedKinetics){
-		StructureMapping structureMapping = simContext.getGeometryContext().getStructureMapping(getStructure());
-		final StructureMappingParameter sizeParameter = structureMapping.getSizeParameter();
+		Structure.StructureSize structureSize = getStructure().getStructureSize();
 		//
 		// need to put this into concentration/time with respect to structure for reaction.
 		//
 		LumpedKinetics lumpedKinetics = (LumpedKinetics)getKinetics();
 		Expression factor = null;
 		if (getStructure() instanceof Feature || ((getStructure() instanceof Membrane) && this instanceof FluxReaction)){
-			factor = Expression.mult(new Expression(ReservedSymbol.KMOLE, ReservedSymbol.KMOLE.getNameScope()),Expression.invert(new Expression(sizeParameter, getNameScope())));
+			factor = Expression.mult(new Expression(ReservedSymbol.KMOLE, ReservedSymbol.KMOLE.getNameScope()),Expression.invert(new Expression(structureSize, getNameScope())));
 		}else if (getStructure() instanceof Membrane && this instanceof SimpleReaction){
-			factor = Expression.invert(new Expression(sizeParameter, getNameScope()));
+			factor = Expression.invert(new Expression(structureSize, getNameScope()));
 		}else{
 			throw new RuntimeException("failed to create reaction rate expression for reaction "+getName()+", with kinetic type of "+getKinetics().getClass().getName());
 		}

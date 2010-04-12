@@ -424,6 +424,10 @@ public StructureMappingParameter getSizeParameter() {
 	return getParameterFromRole(ROLE_Size);
 }
 
+@Deprecated
+public Expression getNullSizeParameterValue() {
+	return new Expression(1.0);
+}
 
 /**
  * This method was created by a SmartGuide.
