@@ -2040,6 +2040,7 @@ private javax.swing.JRadioButton getSearchDictionaryJRadioButton() {
 	if (ivjSearchDictionaryJRadioButton == null) {
 		try {
 			ivjSearchDictionaryJRadioButton = new javax.swing.JRadioButton();
+			ivjSearchDictionaryJRadioButton.setVisible(false);
 			ivjSearchDictionaryJRadioButton.setName("SearchDictionaryJRadioButton");
 			ivjSearchDictionaryJRadioButton.setText("KEGG Enzymatic Reactions");
 			// user code begin {1}
@@ -2478,7 +2479,8 @@ private void applySelectedReactionElements(){
 				if(userResolvedRxElements.toSpeciesArr[i] != null){
 					SpeciesContext fromSpeciesContext = userResolvedRxElements.fromSpeciesContextArr[i];
 					Species toSpecies = userResolvedRxElements.toSpeciesArr[i];
-					if(!Compare.isEqualOrNull(toSpecies.getDBSpecies(),fromSpeciesContext.getSpecies().getDBSpecies())){
+					if(fromSpeciesContext.getSpecies().getDBSpecies() != null &&
+							!Compare.isEqualOrNull(toSpecies.getDBSpecies(),fromSpeciesContext.getSpecies().getDBSpecies())){
 						warningsSB.append(
 							(warningsSB.length()>0?"\n":"")+							
 							"'"+fromSpeciesContext.getSpecies().getCommonName()+"' formal("+
