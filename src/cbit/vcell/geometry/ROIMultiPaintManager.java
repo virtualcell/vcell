@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.EventObject;
@@ -72,10 +73,13 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.client.task.EditImageAttributes;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
+import cbit.vcell.geometry.gui.HistogramPanel;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
+import cbit.vcell.model.InUseException;
 import cbit.vcell.modeldb.ServerDocumentManager;
 
 public class ROIMultiPaintManager implements PropertyChangeListener{
@@ -263,23 +267,69 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 	private void askInitialize(boolean hasOriginalData){
 
-		final String addROIManual = "Add empty ROI, edit manually";
-		final String addROIAssist = "Add ROI using threshold";
+		TreeSet<Integer> sortedPixVal = new TreeSet<Integer>();
+		BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
+		for (int i = 0; i < imageDataSet.getAllImages().length; i++) {
+			short[] dataToSegment = imageDataSet.getAllImages()[i].getPixels();
+			for (int j = 0; j < dataToSegment.length; j++) {
+				if((int)(dataToSegment[j]&0x0000FFFF) != 0){
+					if(!uniquePixelBS.get((int)(dataToSegment[j]&0x0000FFFF))){
+						sortedPixVal.add((int)(dataToSegment[j]&0x0000FFFF));
+					}
+					uniquePixelBS.set((int)(dataToSegment[j]&0x0000FFFF));
+				}
+			}
+		}
+
+		final String addROIManual = "Add ROI, edit manually";
+		final String addROIAssist = "Add ROI, use histogram";
+		final String addAllDistinct = "Add ROIs for all distinct";
 		final String cancel = "Cancel";
 		String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
-				"Segmenting an image begins with defining at least 1 'region of interest' (ROI)."+
+				"The current image contains "+uniquePixelBS.cardinality()+" distinct non-zero pixel values."+
+				"  Segmenting an image begins with defining at least 1 'region of interest' (ROI)."+
 				"  After creating the initial ROI you can use the segmentation tools to create/edit more ROIs.  Choose an action:\n"+
-				"1. Add an 'empty' ROI to begin."+
-				(!hasOriginalData?"":"\n2. Add an ROI using the 'threshold' tool to begin."),
-				(!hasOriginalData?new String[] {addROIManual,cancel}:new String[] {addROIManual,addROIAssist,cancel}),
+				"1. Add an 'empty' ROI to begin and edit manually."+
+				(!hasOriginalData?"":"\n2. Add an 'empty' ROI to begin and use the 'histogram' tool.")+
+				(uniquePixelBS.cardinality() >= 256 || !hasOriginalData?"":"\n3. Add an ROI for every distinct pixel value."),
+				(!hasOriginalData
+					?new String[] {addROIManual,cancel}
+					:(uniquePixelBS.cardinality() >= 256
+						?new String[] {addROIManual,addROIAssist,cancel}
+						:new String[] {addROIManual,addROIAssist,addAllDistinct,cancel})),
 				cancel);
 		
 		if(result.equals(cancel)){
 			return;//throw UserCancelException.CANCEL_GENERIC;
 		}
-		addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors());
-		if(result.equals(addROIAssist)){
-			showROIAssistant(overlayEditorPanelJAI.getAllCompositeROINamesAndColors()[0]);
+		try{
+			if(result.equals(addAllDistinct)){
+				Integer[] uniquePivValArr = sortedPixVal.toArray(new Integer[0]);
+				int[] lookup = new int[uniquePivValArr[uniquePivValArr.length-1]+1];
+				Arrays.fill(lookup, -1);
+				for (int i = 0; i < uniquePivValArr.length; i++) {
+					lookup[uniquePivValArr[i]] = i+1;
+					overlayEditorPanelJAI.addROIName("roi_"+uniquePivValArr[i], false, "roi_"+uniquePivValArr[0], true, OverlayEditorPanelJAI.CONTRAST_COLORS[i+1]);					
+				}
+				for (int i = 0; i < imageDataSet.getAllImages().length; i++) {
+					short[] dataToSegment = imageDataSet.getAllImages()[i].getPixels();
+					byte[] roiBytes = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
+					for (int j = 0; j < dataToSegment.length; j++) {
+						if((int)(dataToSegment[j]&0x0000FFFF) != 0){
+							roiBytes[j] = (byte)lookup[(int)(dataToSegment[j]&0x0000FFFF)];
+						}
+					}
+				}
+				overlayEditorPanelJAI.setROI(null);
+			}else{
+				addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors());
+				if(result.equals(addROIAssist)){
+					calculateHistogram();
+					overlayEditorPanelJAI.setROI(null);
+				}
+			}
+		}catch(UserCancelException e){
+			//do nothing
 		}
 	}
 	public static final String IMPORT_SOURCE_NAME = "IMPORT_SOURCE_NAME";
@@ -287,8 +337,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	public static final String CROPPED_ROI = "vcImage";
 	public static final String CROP_3D = "previousCrop3D";
 	public static final String ROI_AND_CROP = "ROI_AND_CROP";
-	public static final String SHOW_ROI_PANEL_TASK_NAME = "showROIPanelTask";
-	public static final String INIT_ROI_DATA_TASK_NAME = "initROIDataTask";
+	public static final String SHOW_ROI_PANEL_TASK_NAME = "Show ROI display";
+	public static final String INIT_ROI_DATA_TASK_NAME = "Initialize ROI data";
 
 	public AsynchClientTask[] getROIEditTasks(){
 		AsynchClientTask testTask = new AsynchClientTask("testTask",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -417,7 +467,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		};
 
-		AsynchClientTask initROIPanelTask = new AsynchClientTask("initROIPanelTask",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		AsynchClientTask initROIPanelTask = new AsynchClientTask("Creating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				getClientTaskStatusSupport().setMessage("Initializing ROI editor.");
@@ -428,8 +478,6 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					overlayEditorPanelJAI.setPreferredSize(new Dimension(700,600));
 					overlayEditorPanelJAI.setModeRemoveROIWhenPainting(true);
 					overlayEditorPanelJAI.setUndoableEditSupport(new UndoableEditSupport());
-					overlayEditorPanelJAI.setROITimePlotVisible(false);
-					overlayEditorPanelJAI.setROITimePlotVisible(false);
 					overlayEditorPanelJAI.addPropertyChangeListener(ROIMultiPaintManager.this);
 				}
 				overlayEditorPanelJAI.deleteROIName(null);//delete all names
@@ -478,31 +526,28 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 			}
 		};
-		AsynchClientTask checkROI = new AsynchClientTask("checkROI",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		AsynchClientTask checkROI = new AsynchClientTask("Checking ROI...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 //				System.out.println("----------task "+getTaskName());
 
 				getClientTaskStatusSupport().setMessage("Checking ROI.");
 				ComboboxROIName[] roiNamesAndColors = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-				if(roiNamesAndColors == null || roiNamesAndColors.length == 0){
-					//No ROI defined
-					final String reloadImage = "Reload Image";
-					final String cancel = "Back to segmentation";
-					String result = DialogUtils.showWarningDialog(
-							(Component)hashTable.get(ClientRequestManager.GUI_PARENT),
-							"User has defined no ROIs.  Choose an action:\n"+
-							"1.  Reload image and choose '"+ClientRequestManager.SEGMENT_KEEP_IMPORTED+"'.\n"+
-							"3.  Cancel, go back to segmentation and add 1 or more ROI.",
-							new String[] {reloadImage,cancel}, cancel);
-					if(result.equals(cancel)){
-						hashTable.put(ClientTaskDispatcher.TASK_REWIND, SHOW_ROI_PANEL_TASK_NAME);
-						return;
-					}else{
-						hashTable.put(ClientTaskDispatcher.TASK_REWIND, ClientRequestManager.PARSE_IMAGE_TASK_NAME);
-						return;
-					}
-				}
+//				if(roiNamesAndColors == null || roiNamesAndColors.length == 0){
+//					//No ROI defined
+//					final String cancel = "Back to segmentation";
+//					String result = DialogUtils.showWarningDialog(
+//							overlayEditorPanelJAI,
+//							"No ROIs defined.  At least 1 ROI must be defined",
+//							new String[] {cancel}, cancel);
+//					if(result.equals(cancel)){
+//						hashTable.put(ClientTaskDispatcher.TASK_REWIND, SHOW_ROI_PANEL_TASK_NAME);
+//						return;
+//					}else{
+//						hashTable.put(ClientTaskDispatcher.TASK_REWIND, ClientRequestManager.PARSE_IMAGE_TASK_NAME);
+//						return;
+//					}
+//				}
 				//Check for unassigned "background" pixels
 				boolean bHasUnassignedBackground = false;
 				for (int i = 0; i < roiComposite.length; i++) {
@@ -779,38 +824,141 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DELETEROI_PROPERTY)){
 			deleteROI((ComboboxROIName)evt.getOldValue());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_ADDNEWROI_PROPERTY)){
-			addNewROI((ComboboxROIName[])evt.getOldValue());
-		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_SHOWROIASSIST_PROPERTY)){
+			try{addNewROI((ComboboxROIName[])evt.getOldValue());}catch(UserCancelException e){/*ignore*/}
+		}/*else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_SHOWROIASSIST_PROPERTY)){
 			showROIAssistant((ComboboxROIName)evt.getNewValue());
-		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CLEARROI_PROPERTY)){
+		}*/else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CLEARROI_PROPERTY)){
 			clearROI(true,((ComboboxROIName)evt.getOldValue()).getHighlightColor());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_BLEND_PROPERTY)){
 			overlayEditorPanelJAI.setBlendPercent((Integer)evt.getNewValue());
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY)){
 			checkROI();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOCROP_PROPERTY)){
-
-			final String useUnderlying = "Use Underlying";
-			final String useROI = "Use all ROI";
-			final String cancel = "Cancel";
-			String result = useUnderlying;
-			if(overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length!= 0){
-				result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, 
-						"Auto-crop will find the smallest box that encloses all non-background data values and allow you to 'crop' your data to that size. Choose an action:\n"+
-						"1. Use the 'underlying' image to calculate an auto-cropping boundary.\n"+
-						"2. Use all the user ROIs to calculate an auto-cropping boundary.",
-						new String[] {useUnderlying,useROI,cancel}, useUnderlying);				
-			}
-			if(result.equals(cancel)){
-				return;
-			}else if(result.equals(useUnderlying)){
-				autoCrop(false);
-			}else{
-				autoCrop(true);
-			}
+			autoCropQuestion();
+		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_HISTOGRAM_PROPERTY)){
+			calculateHistogram();
+		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UPDATEHIGHLIGHT_PROPERTY)){
+			highlightHistogramPixels((DefaultListSelectionModel)evt.getNewValue());
+		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY)){
+			updateROIWithHighlight();
 		}
 	}
 
+	private void updateROIWithHighlight(){
+		if(overlayEditorPanelJAI.getROI() != null){
+			final String applyROI = "Update ROI";
+			final String createROI = "Create ROI";
+			final String cancel = "Cancel";
+			String result = null;
+			
+			if(overlayEditorPanelJAI.getCurrentROIInfo() != null){
+				result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
+					"Apply histogram highlighted regions. Choose an action:\n"+
+					"1. Update the current ROI '"+overlayEditorPanelJAI.getCurrentROIInfo().getROIName()+"' using the histogram highlight.\n"+
+					"2. Create a new ROI with the histogram highlight.\n",
+					new String[]{applyROI,createROI,cancel},
+					applyROI);
+			}else{
+				result = createROI;	
+			}
+			if(result.equals(cancel)){
+				return;
+			}else if(result.equals(createROI)){
+				try{
+					addNewROI(overlayEditorPanelJAI.getAllCompositeROINamesAndColors());
+					applyHighlightToROI(overlayEditorPanelJAI.getCurrentROIInfo());
+				}catch(UserCancelException e){
+					return;
+				}
+			}else if(result.equals(applyROI)){
+				applyHighlightToROI(overlayEditorPanelJAI.getCurrentROIInfo());
+			}
+		}else{
+			DialogUtils.showWarningDialog(overlayEditorPanelJAI, "No highlighted regions exist to update ROIs with");
+		}
+
+	}
+	private void highlightHistogramPixels(final DefaultListSelectionModel histSelection){
+		final String HISTO_ROI = "HISTO_ROI";
+		AsynchClientTask histoROITask = new AsynchClientTask("Calculating histogram highlight...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				boolean bHadAny = false;
+				UShortImage[] zROI = new UShortImage[roiComposite.length];
+				for (int i = 0; i < zROI.length; i++) {
+					short[] pixels = new short[imageDataSet.getISize().getX()*imageDataSet.getISize().getY()];
+					for (int j = 0; j < pixels.length; j++) {
+						int currPixelVal = imageDataSet.getAllImages()[i].getPixels()[j]&0x0000FFFF;
+						if(histSelection.isSelectedIndex(currPixelVal)){
+							bHadAny = true;
+							pixels[j] = (short)0xFFFF;							
+						}
+//						for (int k = 0; k < histRanges.length; k++) {
+//							if(currPixelVal>= histRanges[k].getMin() && currPixelVal<= histRanges[k].getMax()){
+//								bHadAny = true;
+//								pixels[j] = (short)0xFFFF;
+//							}							
+//						}
+					}
+					zROI[i] = new UShortImage(pixels, DEFAULT_ORIGIN, DEFAULT_EXTENT,
+							imageDataSet.getISize().getX(), imageDataSet.getISize().getY(),1);
+				}
+				if(bHadAny){
+					ROI histoROI = new ROI(zROI, "histo");
+					hashTable.put(HISTO_ROI, histoROI);
+				}
+			}
+		};
+		AsynchClientTask updatedisplayTask = new AsynchClientTask("Updating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				overlayEditorPanelJAI.setROI((ROI)hashTable.get(HISTO_ROI));
+			}
+		};
+		
+		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<String, Object>(),
+				new AsynchClientTask[] {histoROITask,updatedisplayTask},false,false,null,true);
+	}
+	
+	private void autoCropQuestion(){
+		final String useUnderlying = "Use Underlying";
+		final String useROI = "Use all ROI";
+		final String cancel = "Cancel";
+		String result = useUnderlying;
+		if(overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length!= 0){
+			result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, 
+					"Auto-crop will find the smallest box that encloses all non-background data values and allow you to 'crop' your data to that size. Choose an action:\n"+
+					"1. Use the 'underlying' image to calculate an auto-cropping boundary.\n"+
+					"2. Use all the user ROIs to calculate an auto-cropping boundary.",
+					new String[] {useUnderlying,useROI,cancel}, useUnderlying);				
+		}
+		if(result.equals(cancel)){
+			return;
+		}else if(result.equals(useUnderlying)){
+			autoCrop(false);
+		}else{
+			autoCrop(true);
+		}
+	}
+	private void calculateHistogram(){
+		final String BINS_TREE_MAP = "BINS_TREE_MAP";
+		AsynchClientTask calcBinsTask = new AsynchClientTask("Calulating Histogram",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				TreeMap<Integer, Integer> binTreeMap = getCondensedBins();
+				hashTable.put(BINS_TREE_MAP, binTreeMap);
+			}
+		};
+		AsynchClientTask updatePanelTask = new AsynchClientTask("Updating Display",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				overlayEditorPanelJAI.setHistogram((TreeMap<Integer, Integer>)hashTable.get(BINS_TREE_MAP));
+				overlayEditorPanelJAI.showHistogram();
+			}
+		};
+		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<String, Object>(),
+				new AsynchClientTask[] {calcBinsTask,updatePanelTask},false,false,null,true);
+	}
 	private ROIMultiPaintManager.Crop3D getNonZeroBoundingBox(boolean bUseROI){
 		Rectangle bounding2D = null;
 		int lowZ = Integer.MAX_VALUE;
@@ -1098,12 +1246,13 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 	
 	private void cropROIData(final Crop3D cropRectangle3D,boolean bThread){
-		final String CROP_HIGHLIGHT_KEY = "CROP_HIGHLIGHT_KEY";
-		final AsynchClientTask cropTask = new AsynchClientTask("cropTask",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//		final String CROP_HIGHLIGHT_KEY = "CROP_HIGHLIGHT_KEY";
+		final String HISTOGRAM_DATA = "HISTOGRAM_DATA";
+		final AsynchClientTask cropTask = new AsynchClientTask("Cropping...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				ISize origSize = imageDataSet.getISize();
-				ROI croppedHighlightROI = (overlayEditorPanelJAI != null?overlayEditorPanelJAI.getROI():null);
+//				ROI croppedHighlightROI = (overlayEditorPanelJAI != null?overlayEditorPanelJAI.getROI():null);
 				//
 				//Crop 2D
 				//
@@ -1125,36 +1274,36 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						roiComposite[i].getGraphics().drawImage(croppedROI, 0, 0, null);
 					}
 					//Crop highlight ROI if it exists
-					if(croppedHighlightROI != null){
-						croppedHighlightROI = croppedHighlightROI.crop(cropRectangle);
-					}
+//					if(croppedHighlightROI != null){
+//						croppedHighlightROI = croppedHighlightROI.crop(cropRectangle);
+//					}
 				}
 				//
 				//Crop3D
 				//
 				if(cropRectangle3D.bZSmaller(origSize.getZ())){
 					UShortImage[] newUnderLayImageArr = new UShortImage[cropRectangle3D.depth];
-					UShortImage[] newROIHighlightArr = null;
-					if(croppedHighlightROI != null){
-						newROIHighlightArr = new UShortImage[cropRectangle3D.depth];
-					}
+//					UShortImage[] newROIHighlightArr = null;
+//					if(croppedHighlightROI != null){
+//						newROIHighlightArr = new UShortImage[cropRectangle3D.depth];
+//					}
 					BufferedImage[] newROICompositeArr =  new BufferedImage[cropRectangle3D.depth];
 					int index = 0;
 					for (int i = 0; i < origSize.getZ(); i++) {
 						if(i >= cropRectangle3D.low.z && i < (cropRectangle3D.low.z + cropRectangle3D.depth)){
 							newUnderLayImageArr[index] = imageDataSet.getAllImages()[i];
 							newROICompositeArr[index] = roiComposite[i];
-							if(newROIHighlightArr != null){
-								newROIHighlightArr[index] = overlayEditorPanelJAI.getROI().getRoiImages()[i];
-							}
+//							if(newROIHighlightArr != null){
+//								newROIHighlightArr[index] = overlayEditorPanelJAI.getROI().getRoiImages()[i];
+//							}
 							index+=1;
 						}
 					}
 					imageDataSet = new ImageDataset(newUnderLayImageArr, null, cropRectangle3D.depth);
-					if(newROIHighlightArr != null){
-						croppedHighlightROI = new ROI(newROIHighlightArr, croppedHighlightROI.getROIName());
-						hashTable.put(CROP_HIGHLIGHT_KEY, croppedHighlightROI);
-					}
+//					if(newROIHighlightArr != null){
+//						croppedHighlightROI = new ROI(newROIHighlightArr, croppedHighlightROI.getROIName());
+//						hashTable.put(CROP_HIGHLIGHT_KEY, croppedHighlightROI);
+//					}
 					roiComposite = newROICompositeArr;
 
 				}
@@ -1163,9 +1312,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						mergedCrop3D.low.y+cropRectangle3D.low.y,
 						mergedCrop3D.low.z+cropRectangle3D.low.z,
 						cropRectangle3D.width,cropRectangle3D.height,cropRectangle3D.depth);
+				
+				hashTable.put(HISTOGRAM_DATA,getCondensedBins());
 			}
 		};
-		final AsynchClientTask updatePanelTask = new AsynchClientTask("updatePanelTask",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		final AsynchClientTask updatePanelTask = new AsynchClientTask("Updating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				//Update display with cropped images
@@ -1176,15 +1327,16 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					overlayEditorPanelJAI.setImages(imageDataSet, true,
 							OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
 					overlayEditorPanelJAI.setAllROICompositeImage(roiComposite);
-					overlayEditorPanelJAI.setROI((ROI)hashTable.get(CROP_HIGHLIGHT_KEY));
+//					overlayEditorPanelJAI.setROI((ROI)hashTable.get(CROP_HIGHLIGHT_KEY));
 					overlayEditorPanelJAI.setDisplayContrastFactor(currentContrast);
+					overlayEditorPanelJAI.setHistogram((TreeMap<Integer, Integer>)hashTable.get(HISTOGRAM_DATA));
 				}
 			}
 		};
 		final Hashtable<String, Object> taskHash = new Hashtable<String, Object>();
 		if(bThread){
 			ClientTaskDispatcher.dispatch(overlayEditorPanelJAI,taskHash,
-				new AsynchClientTask[] {cropTask,updatePanelTask},false);
+				new AsynchClientTask[] {cropTask,updatePanelTask},false,false,null,true);
 		}else{
 			new Thread(new Runnable() {
 				public void run(){
@@ -1229,7 +1381,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			overlayEditorPanelJAI.deleteROIName(null);
 			overlayEditorPanelJAI.setROI(null);//force update
 		}
-
+		if(overlayEditorPanelJAI.getCurrentROIInfo() == null){
+			//no rois so set blend so we can see underlay
+			overlayEditorPanelJAI.setBlendPercent(50);
+		}
+		
 	}
 	private void addNewROI(ROIMultiPaintManager.ComboboxROIName[] comboboxROINameArr){
 		try{
@@ -1259,7 +1415,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 				if(bNameOK){
 //						JColorChooser jColorChooser = new JColorChooser();
-//						DialogUtils.showComponentOKCancelDialog(JOptionPane.getRootFrame(), jColorChooser, "Select ROI Color");
+//						DialogUtils.showComponentOKCancelDialog(overlayEditorPanelJAI, jColorChooser, "Select ROI Color");
 					Color newROIColor = Color.black;
 					for (int i = 1; i < OverlayEditorPanelJAI.CONTRAST_COLORS.length; i++) {
 						boolean bColorUsed = false;
@@ -1283,89 +1439,69 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 			}while(!bNameOK);
 		}catch(UtilCancelException cancelExc){
-			//do Nothing
+			throw UserCancelException.CANCEL_GENERIC;
 		}
 	}
-	private void showROIAssistant(ComboboxROIName currentComboboxROIName){
-		if(imageDataSet == null){
-			DialogUtils.showErrorDialog(JOptionPane.getRootFrame(), "No ImageData available for ROIAssistant.");
-			return;
-		}
-		try {
-			Color roiColor = currentComboboxROIName.getHighlightColor();
-			int roiColorIndex = -1;
-			for (int i = 0; i < OverlayEditorPanelJAI.CONTRAST_COLORS.length; i++) {
-				if(OverlayEditorPanelJAI.CONTRAST_COLORS[i].equals(roiColor)){
-					roiColorIndex = i;
+	
+	private void applyHighlightToROI(ROIMultiPaintManager.ComboboxROIName currentComboboxROIName){
+		boolean bOverWrite = true;
+		UShortImage[] roiZ = overlayEditorPanelJAI.getROI().getRoiImages();
+		//Check for existing ROI
+		final String OVERWRITE_ALL = "Overwrite any existing ROIs";
+		final String KEEP_EXISTING = "Keep existing ROIs when overlapping";
+		final String CANCEL_ROI_UPDATE = "Cancel";
+//		boolean bHadAny = false;
+		for (int i = 0; i < roiZ.length; i++) {
+			boolean bDone = false;
+			short[] pixels = roiZ[i].getPixels();
+			byte[] compositePixels = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
+			for (int j = 0; j < compositePixels.length; j++) {
+//				bHadAny|= pixels[j] != 0;
+				if(compositePixels[j] != 0 && pixels[j] != 0/* && compositePixels[j] != (byte)roiColorIndex*/){
+					bDone = true;
+					String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
+							"Some areas of the new ROI overlap with existing ROIs.",
+							new String[] {OVERWRITE_ALL,KEEP_EXISTING,CANCEL_ROI_UPDATE},OVERWRITE_ALL);
+					if(result.equals(KEEP_EXISTING)){
+						bOverWrite = false;
+					}else if(result.equals(CANCEL_ROI_UPDATE)){
+//						overlayEditorPanelJAI.setROI(null);//Clear highlight ROI leftover from ROIAssistPanel
+						return;
+					}
 					break;
 				}
 			}
-
-			//Create empty ROI
-			UShortImage[] roiZ = new UShortImage[imageDataSet.getSizeZ()];
-			for (int i = 0; i < roiZ.length; i++) {
-				short[] pixels = new short[imageDataSet.getISize().getX()*imageDataSet.getISize().getY()];
-				Origin origin = imageDataSet.getImage(i, 0, 0).getOrigin();
-				Extent extent = imageDataSet.getImage(i, 0, 0).getExtent();
-				roiZ[i] = new UShortImage(pixels,origin,extent,
-						imageDataSet.getISize().getX(),imageDataSet.getISize().getY(),1);
+			if(bDone){
+				break;
 			}
-			ROI originalROI = new ROI(roiZ,"Assist ROI");
-			wantBlendSetToEnhance();
-			ROI finalROI = overlayEditorPanelJAI.showAssistDialog(originalROI,null, false,false);
-			
-			if(finalROI != null){
-				boolean bOverWrite = true;
-				roiZ = finalROI.getRoiImages();
-				//Check for existing ROI
-				final String OVERWRITE_ALL = "Overwrite any existing ROIs";
-				final String KEEP_EXISTING = "Keep existing ROIs when overlapping";
-				final String CANCEL_ROI_UPDATE = "Cancel";
-				for (int i = 0; i < roiZ.length; i++) {
-					boolean bDone = false;
-					short[] pixels = roiZ[i].getPixels();
-					byte[] compositePixels = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-					for (int j = 0; j < compositePixels.length; j++) {
-						if(compositePixels[j] != 0 && pixels[j] != 0/* && compositePixels[j] != (byte)roiColorIndex*/){
-							bDone = true;
-							String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
-									"Some areas of the new ROI overlap with existing ROIs.",
-									new String[] {OVERWRITE_ALL,KEEP_EXISTING,CANCEL_ROI_UPDATE},OVERWRITE_ALL);
-							if(result.equals(KEEP_EXISTING)){
-								bOverWrite = false;
-							}else if(result.equals(CANCEL_ROI_UPDATE)){
-								overlayEditorPanelJAI.setROI(null);//Clear highlight ROI leftover from ROIAssistPanel
-								return;
-							}
-							break;
-						}
-					}
-					if(bDone){
-						break;
-					}
-				}
-				//Update composite ROI
-				for (int i = 0; i < roiZ.length; i++) {
-					short[] pixels = roiZ[i].getPixels();
-					byte[] compositePixels = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-					for (int j = 0; j < pixels.length; j++) {
-						if(pixels[j] != 0){
-							compositePixels[j] =
-								(bOverWrite?
-								(byte)roiColorIndex:
-									(compositePixels[j] == 0?(byte)roiColorIndex:compositePixels[j]));
-						}
-					}
-				}
+		}
+//		if(!bHadAny){
+//			return;
+//		}
+		//Update composite ROI
+		Color roiColor = currentComboboxROIName.getHighlightColor();
+		int roiColorIndex = -1;
+		for (int i = 0; i < OverlayEditorPanelJAI.CONTRAST_COLORS.length; i++) {
+			if(OverlayEditorPanelJAI.CONTRAST_COLORS[i].equals(roiColor)){
+				roiColorIndex = i;
+				break;
 			}
-			overlayEditorPanelJAI.setROI(null);//Clear highlight ROI leftover from ROIAssistPanel
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Error in ROI Assistant:\n"+e.getMessage());
 		}
 
+		for (int i = 0; i < roiZ.length; i++) {
+			short[] pixels = roiZ[i].getPixels();
+			byte[] compositePixels = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
+			for (int j = 0; j < pixels.length; j++) {
+				if(pixels[j] != 0){
+					compositePixels[j] =
+						(bOverWrite?
+						(byte)roiColorIndex:
+							(compositePixels[j] == 0?(byte)roiColorIndex:compositePixels[j]));
+				}
+			}
+		}
+		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite);
+		overlayEditorPanelJAI.setROI(null);
 	}
 	private void clearROI(boolean bAskClear,Color roiColor){
 		int roiCount = overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length;
@@ -1389,7 +1525,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 			optionListV.add(cancel);
 			String result = DialogUtils.showWarningDialog(
-					JOptionPane.getRootFrame(),
+					overlayEditorPanelJAI,
 					"Choose action:\n"+
 					sb.toString(),
 					optionListV.toArray(new String[0]),
@@ -1434,28 +1570,28 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 	private void checkROI(){
 
-		AsynchClientTask warnExistingCheck = new AsynchClientTask("Warn existing check",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if(overlayEditorPanelJAI.getROI() != null){
-					final String recheck = "Redo region check";
-					final String clear = "Clear region check";
-					final String cancel = "Cancel";
-					String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
-							"A Check region highlight currently exists.",
-							new String[] {recheck,/*fixCheck,*/clear,cancel},
-							recheck);
-					if(result.equals(recheck)){
-						overlayEditorPanelJAI.setROI(null);
-					}else if(result.equals(clear)){
-						overlayEditorPanelJAI.setROI(null);
-						throw UserCancelException.CANCEL_GENERIC;
-					}else if(result.equals(cancel)){
-						throw UserCancelException.CANCEL_GENERIC;
-					}
-				}
-			}
-		};
+//		AsynchClientTask warnExistingCheck = new AsynchClientTask("Warn existing check",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//			@Override
+//			public void run(Hashtable<String, Object> hashTable) throws Exception {
+//				if(overlayEditorPanelJAI.getROI() != null){
+//					final String recheck = "Redo region check";
+//					final String clear = "Clear region check";
+//					final String cancel = "Cancel";
+//					String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
+//							"A Check region highlight currently exists.",
+//							new String[] {recheck,/*fixCheck,*/clear,cancel},
+//							recheck);
+//					if(result.equals(recheck)){
+//						overlayEditorPanelJAI.setROI(null);
+//					}else if(result.equals(clear)){
+//						overlayEditorPanelJAI.setROI(null);
+//						throw UserCancelException.CANCEL_GENERIC;
+//					}else if(result.equals(cancel)){
+//						throw UserCancelException.CANCEL_GENERIC;
+//					}
+//				}
+//			}
+//		};
 
 		AsynchClientTask regionTask = new AsynchClientTask("Finding distinct regions",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -1477,7 +1613,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					progressWait(null, "Generating neighbor info...",false);
 					final HighlightROIInfo highlightROIInfo =
 						generateHighlightROIInfo(regionImage,
-								RegionAction.createCheckNeighborsOnlyRegionAction(allRegionInfos));			
+								RegionAction.createCheckNeighborsOnlyRegionAction(allRegionInfos),
+								progressWaitPopup);			
+					if(progressWaitPopup.isInterrupted()){
+						throw UserCancelException.CANCEL_GENERIC;
+					}
 					
 					if(highlightROIInfo.neighborsForRegionsMap.size() != allRegionInfos.length ||
 							highlightROIInfo.coordIndexForRegionsMap.size() != allRegionInfos.length){
@@ -1546,11 +1686,15 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						}
 					}
 					Object[][] rowData = new Object[colROIName.size()][4];
+					boolean bHadNoNeighbors = true;
 					for (int i = 0; i < rowData.length; i++) {
 						rowData[i][0] = colROIName.elementAt(i);
 						rowData[i][1] = colRegionInfo.elementAt(i).getNumPixels();
 						rowData[i][2] = new DisplayCoordIndex(highlightROIInfo.coordIndexForRegionsMap.get(sortedRegionInfoArr[i]));
 						rowData[i][3] = colNeighbors.elementAt(i);
+						if(rowData[i][3] != null && ((String)rowData[i][3]).length()!=0){
+							bHadNoNeighbors = false;
+						}
 					}
 					
 					final String highlightSelectedRegions = "Highlight selected in display";
@@ -1563,7 +1707,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						rowData,
 						ListSelectionModel.MULTIPLE_INTERVAL_SELECTION,
 						null,
-						new String[] {highlightSelectedRegions,mergeWithNeighbor,cancel},highlightSelectedRegions,
+						(bHadNoNeighbors?new String[] {highlightSelectedRegions,cancel}:new String[] {highlightSelectedRegions,mergeWithNeighbor,cancel}),
+						highlightSelectedRegions,
 						new Comparator<Object>() {
 							public int compare(Object o1, Object o2) {
 								if(o1 instanceof DisplayCoordIndex){
@@ -1591,7 +1736,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					if(tableListResult.selectedOption.equals(highlightSelectedRegions)){
 						progressWait(null, "Generating highlight info...",false);
 						HighlightROIInfo highlightROIInfo1 = generateHighlightROIInfo(regionImage,
-								RegionAction.createHighlightRegionAction(allRegionInfos, selectedRegionsV));
+								RegionAction.createHighlightRegionAction(allRegionInfos, selectedRegionsV),null);
 						hashTable.put("highlightROI", highlightROIInfo1.highlightROI);				
 					}else if(tableListResult.selectedOption.equals(mergeWithNeighbor)){
 						boolean bLeaveMultiNeighborUnchanged = true;
@@ -1619,7 +1764,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 										allRegionInfos,
 										selectedRegionsV,
 										highlightROIInfo.neighborsForRegionsMap,
-										bLeaveMultiNeighborUnchanged));
+										bLeaveMultiNeighborUnchanged),
+								null);
 					}
 				}finally{
 					progressWait(STOP_PROGRESS, STOP_PROGRESS,false);
@@ -1654,7 +1800,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		ClientTaskDispatcher.dispatch(
 				overlayEditorPanelJAI,
 				new Hashtable<String, Object>(),
-				new AsynchClientTask[] {warnExistingCheck,regionTask,updateROITaks},
+				new AsynchClientTask[] {/*warnExistingCheck,*/regionTask,updateROITaks},
 				true,
 				false,
 				false,
@@ -1768,7 +1914,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		public Hashtable<RegionImage.RegionInfo,CoordinateIndex> coordIndexForRegionsMap =
 			new Hashtable<RegionInfo, CoordinateIndex>();
 	}
-	private HighlightROIInfo generateHighlightROIInfo(RegionImage regionImage,RegionAction regionAction) throws Exception{
+	private HighlightROIInfo generateHighlightROIInfo(RegionImage regionImage,RegionAction regionAction,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
 		
 		HighlightROIInfo highlightROIInfo = new HighlightROIInfo();
 
@@ -1803,6 +1949,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		final int XMAX = roiComposite[0].getWidth()-1;
 		final int YMAX = roiComposite[0].getHeight()-1;
 		for (int z = 0; z < roiComposite.length; z++) {
+			if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
+				return null;
+			}
 			int index = 0;
 			for (int y = 0; y < roiComposite[0].getHeight(); y++) {
 				for (int x = 0; x < roiComposite[0].getWidth(); x++) {
@@ -1889,4 +2038,105 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				updateThisVCImage.getNumY()*origExtent.getY()/origIsISize.getY(),
 				updateThisVCImage.getNumZ()*origExtent.getZ()/origIsISize.getZ())
 		);
-	}}
+	}
+	private boolean fillVoids(BufferedImage[] roiPixels,boolean bCheckOnly) throws Exception{
+		if(true){throw new IllegalArgumentException("Not yet implemented fully");}
+		boolean bHadAnyInternalVoids = false;
+		int xSize = roiPixels[0].getWidth();
+		int ySize = roiPixels[0].getHeight();
+		int zSize = roiPixels.length;
+		int XYSIZE = xSize*ySize;
+		boolean bUseZ = roiPixels.length>1;
+		VCImage checkImage = ROIMultiPaintManager.createVCImageFromBufferedImages(imageDataSet.getExtent(), roiComposite);
+		RegionImage regionImage =
+			new RegionImage(checkImage, 0 /*0 means generate no surfacecollection*/,
+					checkImage.getExtent(),imageDataSet.getAllImages()[0].getOrigin(), RegionImage.NO_SMOOTHING,
+					progressWaitPopup);
+		RegionInfo[] newRegionInfos = regionImage.getRegionInfos();
+		for (int i = 0; i < newRegionInfos.length; i++) {
+			if(newRegionInfos[i].getPixelValue() == 0){
+				boolean bInternalVoid = true;
+				for (int z = 0; z < zSize; z++) {
+					int zOffset = z*XYSIZE;
+					for (int y = 0; y < ySize; y++) {
+						int yoffset = y*xSize;
+						int zyOffset = zOffset+yoffset;
+						for (int x = 0; x < xSize; x++) {
+							if(newRegionInfos[i].isIndexInRegion(zyOffset+x)){
+								if(x==0 || y==0 | (bUseZ && z==0) |
+									x==(xSize-1) ||
+									y==(ySize-1) ||
+									(bUseZ && z==(zSize-1))){
+									bInternalVoid = false;
+									break;
+								}
+							}
+						}
+						if(!bInternalVoid){break;}
+					}
+					if(!bInternalVoid){break;}
+				}
+				if(bInternalVoid){
+					bHadAnyInternalVoids = true;
+					if(bCheckOnly){
+						return bHadAnyInternalVoids;
+					}
+					for (int z = 0; z < zSize; z++) {
+						byte[] roiPixelsBytes = 
+							((DataBufferByte)roiPixels[z].getRaster().getDataBuffer()).getData();
+						for (int xy = 0; xy < XYSIZE; xy++) {
+//							if(newRegionInfos[i].isIndexInRegion(j)){
+//								fillvoidPixels[j]|= 0xFFFF;
+//							}
+						}
+					}
+				}
+			}
+		}
+		return bHadAnyInternalVoids;
+	}
+
+	private TreeMap<Integer, Integer> getCondensedBins(){
+		final int MAX_SCALE = 0x0000FFFF;
+		int[] bins = new int[MAX_SCALE+1];
+		int[] tempLookup = new int[bins.length];
+		for (int i = 0; i < bins.length; i++) {
+			tempLookup[i] = i;
+		}
+		int binTotal = 0;
+		for (int z = 0; z < imageDataSet.getSizeZ(); z++) {
+			for (int xy = 0; xy < imageDataSet.getAllImages()[z].getPixels().length; xy++) {
+				int index = (int)(imageDataSet.getAllImages()[z].getPixels()[xy]&0x0000FFFF);
+				boolean bSet = isSet(imageDataSet.getAllImages()[z].getPixels()[xy], MAX_SCALE, tempLookup,true,false);
+				bins[index]+= (bSet?1:0);
+				binTotal+= (bSet?1:0);
+
+			}
+		}
+		TreeMap<Integer, Integer> condensedBinsMap = new TreeMap<Integer, Integer>();
+		for (int i = 0; i < bins.length; i++) {
+			if(bins[i] != 0){
+				condensedBinsMap.put(i, bins[i]);
+			}
+		}
+		return condensedBinsMap;
+	}
+
+	public static boolean isSet(short roiSourceDataUnsignedShort,int thresholdIndex,int[] thresholdLookupArr,boolean maskArrState,boolean bInvertThreshold){
+		if(bInvertThreshold){
+			if(((int)(roiSourceDataUnsignedShort&0x0000FFFF)) > thresholdLookupArr[thresholdIndex]){
+				return false;
+			}else{
+				return maskArrState;
+			}
+		}else{
+			if(((int)(roiSourceDataUnsignedShort&0x0000FFFF)) < thresholdLookupArr[thresholdLookupArr.length-1-thresholdIndex]){
+				return false;
+			}else{
+				return maskArrState;
+			}
+		}
+
+	}
+
+}

@@ -884,7 +884,6 @@ public Geometry getGeometryFromDocumentSelection(VCDocumentInfo vcDocumentInfo,b
 	return geom;
 }
 public static final String GUI_PARENT = "guiParent";
-public static final String PARSE_IMAGE_TASK_NAME  ="read and parse image file";
 /**
  * Insert the method's description here.
  * Creation date: (5/10/2004 3:48:16 PM)
@@ -1096,7 +1095,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 							hashTable.put(ROIMultiPaintManager.IMPORT_SOURCE_NAME, "File: "+imageFile.getName());
 						}
 					};
-					AsynchClientTask parseImageTask = new AsynchClientTask(PARSE_IMAGE_TASK_NAME, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					AsynchClientTask parseImageTask = new AsynchClientTask("read and parse image file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							Component guiParent =(Component)hashTable.get(ClientRequestManager.GUI_PARENT);
@@ -1175,12 +1174,10 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 												if(totalSize <=0 || totalSize > (SCRATCH_SIZE_LIMIT)){
 													throw new Exception("Total pixels (x*y*z) cannot be <=0 or >"+SCRATCH_SIZE_LIMIT+".");
 												}
-//												short[] scratchData = new short[totalSize];
 												fdfos = new FieldDataFileOperationSpec();
 												fdfos.origin = new Origin(0, 0, 0);
 												fdfos.extent = new Extent(1, 1, 1);
 												fdfos.isize = new ISize(xsize, ysize, zsize);
-//												fdfos.shortSpecData = new short[][][] {{scratchData}};
 												break;
 											}catch(Exception e){
 												DialogUtils.showErrorDialog(guiParent, "Error entering starting sizes\n"+e.getMessage());
@@ -1192,27 +1189,8 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 								}
 								getClientTaskStatusSupport().setMessage("Counting distinct pixel values.");
 								hashTable.put(ROIMultiPaintManager.IMPORTED_DATA_CONTAINER, fdfos);
+								hashTable.put(ClientTaskDispatcher.TASK_REWIND,ROIMultiPaintManager.INIT_ROI_DATA_TASK_NAME);
 
-								//ask user if want to manual segment
-								if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
-									hashTable.put(ClientTaskDispatcher.TASK_REWIND,ROIMultiPaintManager.INIT_ROI_DATA_TASK_NAME);
-								}else{
-									short[] dataToSegment = fdfos.shortSpecData[0][0];//[time 0][channel 0]
-									BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
-									for (int i = 0; i < dataToSegment.length; i++) {
-										uniquePixelBS.set((int)(dataToSegment[i]&0x0000FFFF));
-									}
-									if (askAboutSegmentation(guiParent, uniquePixelBS.cardinality()).equals(SEGMENT_KEEP_IMPORTED)) {
-										hashTable.put(ROIMultiPaintManager.CROPPED_ROI,
-												createVCImageFromUnsignedShorts(dataToSegment, fdfos.extent, fdfos.isize, uniquePixelBS));
-										ROIMultiPaintManager.Crop3D unCropped3D = new ROIMultiPaintManager.Crop3D();
-										unCropped3D.setBounds(0,0,0, fdfos.isize.getX(),fdfos.isize.getY(),fdfos.isize.getZ());
-										hashTable.put(ROIMultiPaintManager.CROP_3D, unCropped3D);
-										hashTable.put(ClientTaskDispatcher.TASK_REWIND, EditImageAttributes.EDIT_IMG_ATTR_TASK_NAME);
-									}else{
-										hashTable.put(ClientTaskDispatcher.TASK_REWIND,ROIMultiPaintManager.INIT_ROI_DATA_TASK_NAME);
-									}
-								}
 							} catch (DataFormatException ex) {
 								throw new Exception("Cannot read image file.\n"+ex.getMessage());
 							}
@@ -1249,23 +1227,6 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 }
 
 private static final int MAX_NUMBER_OF_COLORS_IMPORTED_FILE = 256;
-private final String SEGMENT_USER_WILL_EDIT = "User will edit segmentation";
-public static final String SEGMENT_KEEP_IMPORTED = "Keep imported segmentation";
-private final String SEGMENT_CANCEL = "Cancel";
-
-private String askAboutSegmentation(Component parent,int numPixelClasses) throws UserCancelException{
-	String choice = PopupGenerator.showWarningDialog(parent,
-			"The imported image contains "+numPixelClasses+" colors.\nIf '"+SEGMENT_KEEP_IMPORTED+"' is selected each color will be a different subdomain in the geometry."+
-			"\nChoose '"+SEGMENT_USER_WILL_EDIT+"' to manually define/edit geometry subdomains.", 
-			new String[] {SEGMENT_USER_WILL_EDIT, SEGMENT_KEEP_IMPORTED, SEGMENT_CANCEL}, SEGMENT_USER_WILL_EDIT);
-	if(choice.equals(SEGMENT_CANCEL)){
-		throw UserCancelException.CANCEL_GENERIC;
-	}
-	return choice;
-
-}
-
-
 public static VCImage createVCImageFromUnsignedShorts(short[] dataToSegment,Extent extent,ISize isize,BitSet uniquePixelBS) throws Exception{
 	//auto segment
 
