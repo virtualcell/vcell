@@ -13,10 +13,12 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedImageAdapter;
 import javax.media.jai.operator.CompositeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
@@ -47,6 +49,7 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	
 	private int[][][] blendARGB = new int[2][256][256];
 	private Hashtable<Integer, BufferedImage> contrastHash = new Hashtable<Integer, BufferedImage>();
+	private Hashtable<Rectangle, BufferedImage> compositeHash = new Hashtable<Rectangle, BufferedImage>();
 	
 	public OverlayImageDisplayJAI(){
 		super();
@@ -54,15 +57,25 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	}
 	
 	private BufferedImage computeComposite(RenderedImage contrastEnhancedUnderlyingImage){
-		DirectColorModel dcm = new DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF);
-		WritableRaster newOverlayRaster = dcm.createCompatibleWritableRaster(contrastEnhancedUnderlyingImage.getWidth(),contrastEnhancedUnderlyingImage.getHeight());
-	    BufferedImage result = new BufferedImage(dcm,newOverlayRaster, false, null);
+		//Improve memory use by saving 1 composite image in hash and re-use if sizes don't change
+		Rectangle imageSizeRect = new Rectangle(0, 0, contrastEnhancedUnderlyingImage.getWidth(), contrastEnhancedUnderlyingImage.getHeight());
+		BufferedImage result  = compositeHash.get(imageSizeRect);
+		if(result == null){
+			compositeHash.clear();
+			DirectColorModel dcm = new DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF);
+			WritableRaster newOverlayRaster = dcm.createCompatibleWritableRaster(imageSizeRect.width,imageSizeRect.height);
+		    result = new BufferedImage(dcm,newOverlayRaster, false, null);
+		    compositeHash.put(imageSizeRect,result);
+		}
 	    try{
-			int[] newOverlayRasterInts = ((DataBufferInt)newOverlayRaster.getDataBuffer()).getData();
+			int[] newOverlayRasterInts = ((DataBufferInt)result.getRaster().getDataBuffer()).getData();
 			byte[] contrastUnderlayBytes = ((DataBufferByte)contrastEnhancedUnderlyingImage.getData().getDataBuffer()).getData();
 			byte[] roiBytes = (allROICompositeImage==null?null:((DataBufferByte)allROICompositeImage.getData().getDataBuffer()).getData());
 			byte[] highlightBytes = (highlightImage==null?null:((DataBufferByte)highlightImage.getData().getDataBuffer()).getData());
 			if(roiBytes != null && roiBytes.length != contrastUnderlayBytes.length){
+				return result;
+			}
+			if(highlightBytes != null && highlightBytes.length != contrastUnderlayBytes.length){
 				return result;
 			}
 			int index= 0;
@@ -101,7 +114,6 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 		Color highlightColor = Color.yellow.darker();
 		float a = (100-blendPercent)/100.0f;
 		float b = 1.0f;
-		int index = 0;
 		for (int A = 0; A < 256; A++) {
 			for (int B = 0; B < 256; B++) {
 				//Underlay-ROI composite
@@ -115,18 +127,17 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 				int argb_Under_ROI_composite = 0x00000000 | br<<16 | bg<<8 | bb;
 				blendARGB[0][A][B] = argb_Under_ROI_composite;
 				
+				float ah = a;
 				//Underlay-ROI-highlight composite
 				red = highlightColor.getRed();
-				br= (int)((a*red) + (1 - a)*(b*br));
+				br= (int)((ah*red) + (1 - ah)*(b*br));
 				grn = highlightColor.getGreen();
-				bg= (int)((a*grn) + (1 - a)*(b*bg));
+				bg= (int)((ah*grn) + (1 - ah)*(b*bg));
 				blu = highlightColor.getBlue();
-				bb= (int)((a*blu) + (1 - a)*(b*bb));
+				bb= (int)((ah*blu) + (1 - ah)*(b*bb));
 
 				argb_Under_ROI_composite = 0x00000000 | br<<16 | bg<<8 | bb;
 				blendARGB[1][A][B] = argb_Under_ROI_composite;
-				
-				index++;
 			}
 		}
 	}
