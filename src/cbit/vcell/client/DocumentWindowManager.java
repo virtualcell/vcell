@@ -30,6 +30,7 @@ import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.PerformanceMonitorListener;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.client.desktop.biomodel.ApplicationEditor;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
@@ -1031,7 +1032,7 @@ GeometrySelectionInfo selectGeometry() throws Exception,UserCancelException{
 	return geometrySelectionInfo;
 }
 
-void createGeometry(final GeometrySummaryViewer source,AsynchClientTask[] afterTasks){
+void createGeometry(AsynchClientTask[] afterTasks){
 	
 	try{
 		final DocumentWindowManager.GeometrySelectionInfo geometrySelectionInfo = selectGeometry();

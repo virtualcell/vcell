@@ -80,6 +80,7 @@ public ApplicationComponents(SimulationContext simContext, BioModelWindowManager
 //	}
 	setGeometrySummaryViewer(geoViewer);
 	getGeometrySummaryViewer().setGeometry(simContext.getGeometry());
+	getGeometrySummaryViewer().setStochastic(simContext.isStoch());
 	setGeometrySummaryViewerFrame(DocumentWindowManager.createDefaultFrame(getGeometrySummaryViewer()));
 
 	// make the surface viewer
@@ -258,6 +259,7 @@ public void resetSimulationContext(SimulationContext simContext) {
 	getMathViewer().setSimContext(simContext);
 	// the geometry viewer
 	getGeometrySummaryViewer().setGeometry(simContext.getGeometry());
+	getGeometrySummaryViewer().setStochastic(simContext.isStoch());
 	// the surface viewer
 	getSurfaceViewer().setGeometry(simContext.getGeometry());
 	

@@ -462,10 +462,10 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("ElectricalMembraneMappingPanel");
-		setPreferredSize(new java.awt.Dimension(677, 700));
+		//setPreferredSize(new java.awt.Dimension(677, 700));
 		setLayout(new java.awt.GridBagLayout());
-		setSize(528, 532);
-		setMinimumSize(new java.awt.Dimension(419, 700));
+		//setSize(528, 532);
+		//setMinimumSize(new java.awt.Dimension(419, 700));
 
 		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 		constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 1;

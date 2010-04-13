@@ -95,7 +95,7 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
         	icon = fluxIcon;
         	labelText = ((ReactionStep)userObj).getName();
         	toolTipPrefix = "Flux Reaction : ";
-        } else if (userObj instanceof BioEvent) {			// --- reaction
+        } else if (userObj instanceof BioEvent) {			// --- event
         	BioEvent bioEvent = (BioEvent)userObj;
         	SimulationContext simulationContext = bioEvent.getSimulationContext();
 			if (simulationContext.getGeometry() != null && simulationContext.getGeometry().getDimension() > 0 

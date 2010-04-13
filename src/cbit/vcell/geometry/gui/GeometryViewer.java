@@ -683,7 +683,7 @@ private void initialize() {
 		// user code end
 		setName("ImageView3d");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(506, 564);
+		//setSize(506, 564);
 
 		java.awt.GridBagConstraints constraintsGeometrySubVolumePanel = new java.awt.GridBagConstraints();
 		constraintsGeometrySubVolumePanel.gridx = 0; constraintsGeometrySubVolumePanel.gridy = 1;

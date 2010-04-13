@@ -1,10 +1,9 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Component;
+import java.awt.AWTEventMulticaster;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,21 +12,15 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.Enumeration;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
-import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -35,40 +28,44 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
+import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
+import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
 import cbit.vcell.math.MathDescription;
-
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.gui.ModelParameterPanel;
-import cbit.vcell.parser.ExpressionException;
 
 public class SPPRPanel extends JPanel {
 
 	private JSplitPane outerSplitPane;
 	private javax.swing.JScrollPane treePanel = null;
 	private javax.swing.JTree spprTree = null;
-	private InitialConditionsPanel initialConditionsPanel;
-	private ModelParameterPanel modelParameterPanel;
-	private ReactionSpecsPanel reactionSpecsPanel;
+	private GeometrySummaryViewer ivjGeometrySummaryViewer = null;
+	private StructureMappingCartoonPanel ivjStructureMappingCartoonPanel = null;
+	private InitialConditionsPanel initialConditionsPanel = null;
+	private ModelParameterPanel modelParameterPanel = null;
+	private ReactionSpecsPanel reactionSpecsPanel = null;
+	private ElectricalMembraneMappingPanel ivjElectricalMembraneMappingPanel = null;
 	private EventsDisplayPanel eventsDisplayPanel = null;
 	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
 	private SPPRTreeModel spprTreeModel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 //	private FolderStatus folderStatus = new FolderStatus();
+	protected transient ActionListener commandActionListener = null;
 	
 	// menu items to add events
 	private JMenuItem menuItemAddEvent = null;
 	private JPopupMenu addEventPopupMenu = null;
 	private JPopupMenu deleteEventPopupMenu = null;
 	private JMenuItem menuItemDeleteEvent = null;
-
+	
 	class IvjEventHandler implements javax.swing.event.TreeSelectionListener, MouseListener, PropertyChangeListener, ActionListener {
 		
 		public void valueChanged(javax.swing.event.TreeSelectionEvent e) {			
@@ -110,6 +107,9 @@ public class SPPRPanel extends JPanel {
 			if (evt.getSource() == getEventsDisplayPanel() && evt.getPropertyName().equals("selectedBioEvent")) {
 				getSpprTreeModel().setSelectedValue(evt.getNewValue());
 			}
+			if (evt.getSource() == fieldSimulationContext && evt.getPropertyName().equals("geometry")) {
+				getGeometrySummaryViewer().setGeometry(fieldSimulationContext.getGeometry());
+			}
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource().equals(getMenuItemAddEvent())) {
@@ -118,10 +118,32 @@ public class SPPRPanel extends JPanel {
 			if (e.getSource().equals(getMenuItemDeleteEvent())) {
 				deleteEvent();
 			}
+			if (e.getSource().equals(getGeometrySummaryViewer())) {
+				refireCommandActionPerformed(e);
+			}
 			
 		}	
 	};
 	
+	private void refireCommandActionPerformed(ActionEvent e) {
+		// relays an action event with this as the source
+		fireCommandActionPerformed(new ActionEvent(this, e.getID(), e.getActionCommand(), e.getModifiers()));
+	}
+	
+	public synchronized void addCommandActionListener(ActionListener l) {
+		commandActionListener = AWTEventMulticaster.add(commandActionListener, l);
+	}
+	
+	public synchronized void removeCommandActionListener(ActionListener l) {
+		commandActionListener = AWTEventMulticaster.remove(commandActionListener, l);
+	}
+
+	protected void fireCommandActionPerformed(ActionEvent e) {
+		if (commandActionListener != null) {
+			commandActionListener.actionPerformed(e);
+		}         
+	}
+
 	public static void main(String[] args) {
 	}
 
@@ -132,15 +154,26 @@ public class SPPRPanel extends JPanel {
 	}
 	
 	public void setSimulationContext(SimulationContext simulationContext) {
+		if (fieldSimulationContext!=null){ // unlisten to the old simulation context.
+			fieldSimulationContext.removePropertyChangeListener(ivjEventHandler);
+		}
 		fieldSimulationContext = simulationContext;
-		
+		if (fieldSimulationContext!=null){
+			fieldSimulationContext.addPropertyChangeListener(ivjEventHandler); // listen to the new simlation context.
+			getGeometrySummaryViewer().setGeometry(fieldSimulationContext.getGeometry());
+			getGeometrySummaryViewer().setStochastic(fieldSimulationContext.isStoch());
+		}else{
+			getGeometrySummaryViewer().setGeometry(null);
+		}
+		getStructureMappingCartoonPanel().setSimulationContext(fieldSimulationContext);
 		getInitialConditionsPanel().setSimulationContext(fieldSimulationContext);
 		getModelParameterPanel().setModel(fieldSimulationContext.getModel());
 		getReactionSpecsPanel().setSimulationContext(fieldSimulationContext);
 		getEventsDisplayPanel().setSimulationContext(fieldSimulationContext);
 		getSpprTreeModel().setSimulationContext(fieldSimulationContext);
-		getSpprTree().setSelectionRow(1);
-		getSpprTree().expandRow(1);
+		getElectricalMembraneMappingPanel().setSimulationContext(fieldSimulationContext);
+		getSpprTree().setSelectionRow(SPPRTreeModel.STRUCTURE_MAPPING_NODE+1); // +1 is to go from index (0 based)to row number (1 based).
+//		getSpprTree().expandRow(2);
 	}
 	
 	private void handleException(java.lang.Throwable exception) {
@@ -150,6 +183,7 @@ public class SPPRPanel extends JPanel {
 
 	private void initConnections() throws java.lang.Exception {
 //		System.out.println("SPPRPanel:  initConnections()");
+		getGeometrySummaryViewer().addActionListener(ivjEventHandler);
 		spprTree.addTreeSelectionListener(ivjEventHandler);
 		spprTree.addMouseListener(ivjEventHandler);
 		spprTree.addTreeExpansionListener(getSpprTreeModel());
@@ -184,7 +218,7 @@ public class SPPRPanel extends JPanel {
 			outerSplitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
 			
 			outerSplitPane.setLeftComponent(getTreePanel());
-			outerSplitPane.setRightComponent(getInitialConditionsPanel());
+			outerSplitPane.setRightComponent(getStructureMappingCartoonPanel());
 		}
 		return outerSplitPane;
 	}
@@ -258,7 +292,17 @@ public class SPPRPanel extends JPanel {
 	private void setupRightComponent(SPPRTreeFolderNode folderNode, Object leaf) {
 		int folderId = folderNode.getId();
 		if (SPPRTreeModel.FOLDER_NODE_IMPLEMENTED[folderId] && folderNode.isSupported()) {
-			if(folderId == SPPRTreeModel.INITIAL_CONDITIONS_NODE) {
+			if(folderId == SPPRTreeModel.GEOMETRY_NODE) {
+				//  replace right-side panel only if the correct one is not there already
+				if(outerSplitPane.getRightComponent() != getGeometrySummaryViewer()) {
+					outerSplitPane.setRightComponent(getGeometrySummaryViewer());
+				}
+			} else if(folderId == SPPRTreeModel.STRUCTURE_MAPPING_NODE) {
+				//  replace right-side panel only if the correct one is not there already
+				if(outerSplitPane.getRightComponent() != getStructureMappingCartoonPanel()) {
+					outerSplitPane.setRightComponent(getStructureMappingCartoonPanel());
+				}
+			} else if(folderId == SPPRTreeModel.INITIAL_CONDITIONS_NODE) {
 				//  replace right-side panel only if the correct one is not there already
 				if(outerSplitPane.getRightComponent() != getInitialConditionsPanel()) {
 					outerSplitPane.setRightComponent(getInitialConditionsPanel());
@@ -279,6 +323,11 @@ public class SPPRPanel extends JPanel {
 					outerSplitPane.setRightComponent(getEventsDisplayPanel());
 				}
 				getEventsDisplayPanel().setScrollPaneTableCurrentRow((BioEvent)leaf);	// notify right panel about selection change
+			} else if(folderId == SPPRTreeModel.ELECTRICAL_MAPPING_NODE) {
+				if(outerSplitPane.getRightComponent() != getElectricalMembraneMappingPanel()) {
+					outerSplitPane.setRightComponent(getElectricalMembraneMappingPanel());
+				}
+//				getElectricalMembraneMappingPanel().setScrollPaneTableCurrentRow((BioEvent)leaf);	// notify right panel about selection change
 			}
 		} else {
 			JPanel emptyPanel = new JPanel();
@@ -322,6 +371,30 @@ public class SPPRPanel extends JPanel {
 	}
 		
 //------------- Right Panel	-----------------------
+	private GeometrySummaryViewer getGeometrySummaryViewer() {
+		if (ivjGeometrySummaryViewer == null) {
+			try {
+				ivjGeometrySummaryViewer = new GeometrySummaryViewer();
+				ivjGeometrySummaryViewer.setName("GeometrySummaryViewer");
+				ivjGeometrySummaryViewer.setPreferredSize(new Dimension(500,500));
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return ivjGeometrySummaryViewer;
+	}
+	
+	private StructureMappingCartoonPanel getStructureMappingCartoonPanel() {
+		if (ivjStructureMappingCartoonPanel == null) {
+			try {
+				ivjStructureMappingCartoonPanel = new StructureMappingCartoonPanel();
+				ivjStructureMappingCartoonPanel.setName("StructureMappingCartoonPanel");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return ivjStructureMappingCartoonPanel;
+	}
 	
 	private InitialConditionsPanel getInitialConditionsPanel() {
 		if (initialConditionsPanel == null) {
@@ -334,17 +407,20 @@ public class SPPRPanel extends JPanel {
 		}
 		return initialConditionsPanel;
 	}
+	
 	private ModelParameterPanel getModelParameterPanel() {
 		if (modelParameterPanel == null) {
 			try {
 				modelParameterPanel = new ModelParameterPanel(this);
 				modelParameterPanel.setName("ModelParameterPanel");
+				modelParameterPanel.setEditable(false);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
 		return modelParameterPanel;
 	}
+	
 	private ReactionSpecsPanel getReactionSpecsPanel() {
 		if (reactionSpecsPanel == null) {
 			try {
@@ -355,7 +431,8 @@ public class SPPRPanel extends JPanel {
 			}
 		}
 		return reactionSpecsPanel;
-	}	
+	}
+	
 	private EventsDisplayPanel getEventsDisplayPanel() {
 		if (eventsDisplayPanel == null) {
 			try {
@@ -367,6 +444,18 @@ public class SPPRPanel extends JPanel {
 		}
 		return eventsDisplayPanel;
 	}	
+	
+	private ElectricalMembraneMappingPanel getElectricalMembraneMappingPanel() {
+		if (ivjElectricalMembraneMappingPanel == null) {
+			try {
+				ivjElectricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
+				ivjElectricalMembraneMappingPanel.setName("ElectricalMembraneMappingPanel");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return ivjElectricalMembraneMappingPanel;
+	}
 	
 	private JMenuItem getMenuItemAddEvent() {
 		if (menuItemAddEvent == null) {

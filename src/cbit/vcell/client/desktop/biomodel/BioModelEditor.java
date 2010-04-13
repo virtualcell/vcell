@@ -107,7 +107,7 @@ public void bioModelTreePanel1_ActionPerformed(java.awt.event.ActionEvent e) {
 	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_MATH)) {
 		openApplication(ApplicationEditor.TAB_IDX_VIEW_MATH);
 	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_GEOMETRY)) {
-		openApplication(ApplicationEditor.TAB_IDX_STRUCTURE_MAPPING);
+		openApplication(ApplicationEditor.TAB_IDX_SPPR);
 	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_SIMULATION)) {
 		openApplication(ApplicationEditor.TAB_IDX_SIMULATION);
 	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_DETSTOCH)) {

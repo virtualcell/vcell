@@ -106,6 +106,7 @@ public class ModelParameterTableModel extends ManageTableModel implements java.b
 	private Model fieldModel = null;
 	private JTable ownerTable = null;
 	private boolean filterFlag;
+	private boolean bEditable = true;
 
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -384,6 +385,9 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
+	if (!bEditable){
+		return false;
+	}
 	Parameter parameter = (Parameter)getData().get(rowIndex);
 	if (columnIndex == COLUMN_NAME){
 		return parameter.isNameEditable();
@@ -725,4 +729,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
     Collections.sort(rows, new ParameterColumnComparator(col, ascending));
     fireTableRowsUpdated(0,rows.size()-1);//Added to make sure formatted table cells display with enough space
   }
+
+public void setEditable(boolean editable) {
+	this.bEditable = editable;
+}
 }

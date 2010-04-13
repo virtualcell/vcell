@@ -576,7 +576,7 @@ private void initialize() {
 	try {
 		setName("ModelParameterPanel");
 		setLayout(new java.awt.BorderLayout());
-		setSize(655, 226);
+		//setSize(655, 226);
 		add(getJScrollPane1(), "Center");
 		initConnections();
 		if ((getmodel1() != null)) {
@@ -1214,5 +1214,9 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 		exc.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this, "Failed to edit annotation!\n"+exc.getMessage());
 	}
+}
+
+public void setEditable(boolean bEditable) {
+	getmodelParameterTableModel().setEditable(bEditable);
 }
 }
