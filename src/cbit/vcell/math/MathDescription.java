@@ -2404,6 +2404,10 @@ public boolean isValid() {
 		}
 	}
 	try {
+		if (eventList.size() > 0 && isSpatial()) {
+			setWarning("Events are not supported in spatial models.");
+			return false;
+		}
 		for (Event event : eventList) {
 			event.bind(this);
 		}
