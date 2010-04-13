@@ -28,6 +28,7 @@ public class EventsSummaryTableModel extends ManageTableModel implements Propert
 	public EventsSummaryTableModel(JTable table) {
 		super();
 		ownerTable = table;
+		addPropertyChangeListener(this);
 	}
 	
 	/**
@@ -114,17 +115,9 @@ public class EventsSummaryTableModel extends ManageTableModel implements Propert
 
 	public Object getValueAt(int row, int column) {
 		try{
-			if (row<0 || row>=getRowCount()){
-				throw new RuntimeException("EventsSummaryTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-			}
-			if (column<0 || column>=NUM_COLUMNS){
-				throw new RuntimeException("EventsSummaryTableModel.getValueAt(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-			}
-
 			if (getData().size() <= row){
 				refreshData();
 			}	
-
 			BioEvent event = (BioEvent)getData().get(row);
 			if (row >= 0 && row < getRowCount()) {
 				switch (column) {
