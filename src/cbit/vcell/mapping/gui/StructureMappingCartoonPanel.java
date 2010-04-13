@@ -31,6 +31,7 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	private StructureMappingCartoonTool ivjStructureMappingCartoonTool1 = null;
 	private StructureMappingCartoon ivjStructureMappingCartoon1 = null;
 	private GeometryContext ivjGeometryContext1 = null;
+	private JLabel ivjMessageLabel = null;
 
 /**
  * Constructor
@@ -40,7 +41,6 @@ public StructureMappingCartoonPanel() {
 	super();
 	initialize();
 }
-
 
 /**
  * connEtoM1:  (StructureMappingCartoonPanel.initialize() --> ButtonGroupCivilized.add(Ljavax.swing.AbstractButton;)V)
@@ -113,6 +113,7 @@ private void connEtoM12(java.beans.PropertyChangeEvent arg1) {
 		// user code begin {1}
 		// user code end
 		getLineButton().setEnabled(this.hasMappableGeometry());
+		getMessageLabel().setVisible(this.hasMappableGeometry());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -478,15 +479,23 @@ private javax.swing.JPanel getJPanel2() {
 			ivjJPanel2.setName("JPanel2");
 			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
 
+			java.awt.GridBagConstraints constraintsMessageLabel = new java.awt.GridBagConstraints();
+			constraintsMessageLabel.gridx = 0; constraintsMessageLabel.gridy = 0;
+			constraintsMessageLabel.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsMessageLabel.anchor = GridBagConstraints.CENTER;
+			constraintsMessageLabel.weightx = 1.0;
+			constraintsMessageLabel.weighty = 0;
+			getJPanel2().add(getMessageLabel(), constraintsMessageLabel);
+
 			java.awt.GridBagConstraints constraintsStructureMappingPanel = new java.awt.GridBagConstraints();
-			constraintsStructureMappingPanel.gridx = 0; constraintsStructureMappingPanel.gridy = 1;
+			constraintsStructureMappingPanel.gridx = 0; constraintsStructureMappingPanel.gridy = 2;
 			constraintsStructureMappingPanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsStructureMappingPanel.weightx = 1.0;
 			constraintsStructureMappingPanel.weighty = 1.5;
 			getJPanel2().add(getStructureMappingPanel(), constraintsStructureMappingPanel);
 
 			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
-			constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 0;
+			constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 1;
 			constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsJScrollPane1.weightx = 1.0;
 			constraintsJScrollPane1.weighty = 5.0;
@@ -525,6 +534,30 @@ private javax.swing.JScrollPane getJScrollPane1() {
 		}
 	}
 	return ivjJScrollPane1;
+}
+
+/**
+ * Return the JScrollPane1 property value.
+ * @return javax.swing.JScrollPane
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JLabel getMessageLabel() {
+	if (ivjMessageLabel == null) {
+		try {
+			ivjMessageLabel  = new javax.swing.JLabel();
+			ivjMessageLabel.setName("MessageLabel");
+			ivjMessageLabel.setText("<html>All structures and subdomains must be mapped to run a simulation.<br>  Use line tool or drop down menu in the 'subdomain' column.</html>");
+			ivjMessageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			ivjMessageLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjMessageLabel;
 }
 
 /**
@@ -779,7 +812,7 @@ private void initialize() {
 		// user code end
 		setName("StaticCartoonPanel");
 		setLayout(new java.awt.BorderLayout());
-		setSize(522, 463);
+		//setSize(522, 463);
 		add(getJToolBar1(), "West");
 		add(getJPanel2(), "Center");
 		initConnections();
@@ -906,6 +939,7 @@ private void setSelection(javax.swing.ButtonModel newValue) {
 public void setSimulationContext(SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
+	getMessageLabel().setVisible(this.hasMappableGeometry());
 	firePropertyChange("simulationContext", oldValue, simulationContext);
 }
 

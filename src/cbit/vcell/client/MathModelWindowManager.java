@@ -146,7 +146,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 					}
 			};
 
-		createGeometry((GeometrySummaryViewer)source,new AsynchClientTask[] {editSelectTask,geomRegionsTask,applyGeomTask});
+		createGeometry(new AsynchClientTask[] {editSelectTask,geomRegionsTask,applyGeomTask});
 	}
 
 	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {

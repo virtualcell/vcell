@@ -1056,7 +1056,7 @@ private void initialize() {
 		// user code end
 		setName("GeometrySummaryPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(821, 451);
+		//setSize(821, 451);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 1;

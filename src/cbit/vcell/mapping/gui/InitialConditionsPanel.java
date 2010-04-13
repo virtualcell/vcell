@@ -866,7 +866,7 @@ private void initialize() {
 		// user code end
 		setName("InitialConditionsPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(456, 539);
+		//setSize(456, 539);
 
 		java.awt.GridBagConstraints constraintsJSplitPane1 = new java.awt.GridBagConstraints();
 		constraintsJSplitPane1.gridx = 0; constraintsJSplitPane1.gridy = 0;

@@ -58,31 +58,40 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		}
 	}
 	static final int ROOT_NODE = 100;
-	static final int INITIAL_CONDITIONS_NODE = 0;
-	static final int GLOBAL_PARAMETER_NODE = 1;
-	static final int REACTIONS_NODE = 2;
-	static final int EVENTS_NODE = 3;
-	static final int RATE_RULES_NODE = 4 ;
-	static final int APP_PARAMETERS_NODE = 5;		// not functional
-	static final int APP_FUNCTIONS_NODE = 6;		// not yet implemented
-	static final int APP_EQUATIONS_NODE = 7;		// not yet inplemented
+	static final int GEOMETRY_NODE = 0;
+	static final int STRUCTURE_MAPPING_NODE = 1;
+	static final int INITIAL_CONDITIONS_NODE = 2;
+	static final int GLOBAL_PARAMETER_NODE = 3;
+	static final int REACTIONS_NODE = 4;
+	static final int EVENTS_NODE = 5;
+	static final int ELECTRICAL_MAPPING_NODE = 6 ;
+//	static final int RATE_RULES_NODE = 6 ;			// not implemented
+//	static final int APP_PARAMETERS_NODE = 7;		// not functional
+//	static final int APP_FUNCTIONS_NODE = 8;		// not yet implemented
+//	static final int APP_EQUATIONS_NODE = 9;		// not yet inplemented
 	
 	BioModelNode[] folderNodes = null;
 	static final int FOLDER_NODE_IDS[] = {
+		GEOMETRY_NODE,
+		STRUCTURE_MAPPING_NODE,
 		INITIAL_CONDITIONS_NODE, 
 		GLOBAL_PARAMETER_NODE,
 		REACTIONS_NODE,
 		EVENTS_NODE,
-		RATE_RULES_NODE,
-		APP_PARAMETERS_NODE,
-		APP_FUNCTIONS_NODE,
-		APP_EQUATIONS_NODE,
+		ELECTRICAL_MAPPING_NODE,
+//		RATE_RULES_NODE,
+//		APP_PARAMETERS_NODE,
+//		APP_FUNCTIONS_NODE,
+//		APP_EQUATIONS_NODE,
 	};
 	static final String FOLDER_NODE_NAMES[] = {
+		"Geometry",
+		"Structure Mapping",
 		"Initial Conditions", 
 		"Global Parameters",
 		"Reactions",
 		"Events",
+		"Electrical",
 //		"Rate Rules",
 //		"Application Parameters",
 //		"Application Functions",
@@ -94,10 +103,13 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		true,
 		true,
 		true,
-		false,
-		false,
-		false,
-		false
+		true,
+		true,
+		true,
+//		false,
+//		false,
+//		false,
+//		false
 	};
 	
 	public SPPRTreeModel(JTree tree) {

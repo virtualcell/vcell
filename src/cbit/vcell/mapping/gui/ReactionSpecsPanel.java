@@ -113,7 +113,7 @@ private void initialize(boolean expanded) {
 	try {
 		setName("ReactionSpecsPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(456, 539);
+		//setSize(456, 539);
 
 		java.awt.GridBagConstraints constraintsJSplitPane1 = new java.awt.GridBagConstraints();
 		constraintsJSplitPane1.gridx = 0; constraintsJSplitPane1.gridy = 0;

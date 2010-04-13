@@ -56,12 +56,10 @@ import cbit.vcell.solver.Simulation;
  * @author: Ion Moraru
  */
 public class ApplicationEditor extends JPanel {
-	public static final int TAB_IDX_STRUCTURE_MAPPING = 0;
-	public static final int TAB_IDX_SPPR = 1;
-	public static final int TAB_IDX_ELECTRICAL_MAPPING = 2;
-	public static final int TAB_IDX_VIEW_MATH = 3;
-	public static final int TAB_IDX_SIMULATION = 4;
-	public static final int TAB_IDX_ANALYSIS = 5;
+	public static final int TAB_IDX_SPPR = 0;
+	public static final int TAB_IDX_VIEW_MATH = 1;
+	public static final int TAB_IDX_SIMULATION = 2;
+	public static final int TAB_IDX_ANALYSIS = 3;
 	
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -69,13 +67,11 @@ public class ApplicationEditor extends JPanel {
 	private SimulationWorkspace fieldSimulationWorkspace = null;
     protected transient ActionListener actionListener = null;
 	private SimulationWorkspace ivjsimulationWorkspace1 = null;
-	private ElectricalMembraneMappingPanel ivjElectricalMembraneMappingPanel = null;
 	private InitialConditionsPanel ivjInitialConditionsPanel = null;
 	private JTabbedPane ivjJTabbedPane1 = null;
 	private ReactionSpecsPanel ivjReactionSpecsPanel = null;
 	private SimulationListPanel ivjSimulationListPanel = null;
 	private SPPRPanel ivjSPPRPanel = null;
-	private StructureMappingCartoonPanel ivjStaticCartoonPanel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private boolean ivjConnPtoP4Aligning = false;
 	private boolean ivjConnPtoP5Aligning = false;
@@ -109,13 +105,12 @@ public class ApplicationEditor extends JPanel {
 	private boolean ivjConnPtoP8Aligning = false;
 	private ComboBoxModel ivjmodel1 = null;
 	private JButton ivjCopyButton = null;
-	private JLabel mappingInfoLabel = null; 
 	
 	         
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == ApplicationEditor.this.getViewModifyGeometryButton()) 
-				connEtoC3(e);
+			if (e.getSource() == ApplicationEditor.this.getSPPRPanel()) 
+				refireActionPerformed(e);
 			if (e.getSource() == ApplicationEditor.this.getRefreshMathButton()) 
 				connEtoC4(e);
 			if (e.getSource() == ApplicationEditor.this.getCreateMathModelButton()) 
@@ -139,17 +134,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			if (evt.getSource() == ApplicationEditor.this && (evt.getPropertyName().equals("simulationWorkspace"))) {
 				connPtoP1SetTarget();
 				refreshAnalysisTab();
-				refreshMappingInfoLabel();
 				refreshSPPRTab();
 			}
 			if (evt.getSource() == ApplicationEditor.this.getSimulationListPanel() && (evt.getPropertyName().equals("simulationWorkspace"))) 
 				connPtoP2SetSource();
-			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) 
-				connPtoP3SetTarget();
-			if (evt.getSource() == ApplicationEditor.this.getStaticCartoonPanel() && (evt.getPropertyName().equals("simulationContext")))
-			{	
-				connPtoP3SetSource();
-			}
 			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) {
 				connPtoP4SetTarget();
 				refreshSPPRTab();
@@ -165,18 +153,11 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connPtoP5SetSource();
 			}
 			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) 
-				connPtoP6SetTarget();
-			if (evt.getSource() == ApplicationEditor.this.getElectricalMembraneMappingPanel() && (evt.getPropertyName().equals("simulationContext")))
-			{
-				connPtoP6SetSource();
-			}
-			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) 
 				connEtoM1(evt);
 			if (evt.getSource() == ApplicationEditor.this.getsimulationContext() && (evt.getPropertyName().equals("mathDescription"))) 
 				connEtoM7(evt);
 			if (evt.getSource() == ApplicationEditor.this.getsimulationContext() && (evt.getPropertyName().equals("geometry"))) { 
 				refreshAnalysisTab();
-				refreshMappingInfoLabel();
 			}
 			if (evt.getSource() == ApplicationEditor.this.getAnalysisTaskComboBox() && (evt.getPropertyName().equals("model"))) 
 				connPtoP8SetTarget();
@@ -739,60 +720,6 @@ private void connPtoP2SetTarget() {
 }
 
 /**
- * connPtoP3SetSource:  (simulationWorkspace1.simulationOwner <--> StaticCartoonPanel.simulationContext)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP3Aligning = true;
-			if ((getsimulationWorkspace1() != null)) {
-				getsimulationWorkspace1().setSimulationOwner(getStaticCartoonPanel().getSimulationContext());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP3SetTarget:  (simulationWorkspace1.simulationOwner <--> StaticCartoonPanel.simulationContext)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP3Aligning = true;
-			if ((getsimulationWorkspace1() != null)) {
-				getStaticCartoonPanel().setSimulationContext((SimulationContext)getsimulationWorkspace1().getSimulationOwner());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connPtoP4SetSource:  (simulationWorkspace1.simulationOwner <--> InitialConditionsPanel.simulationContext)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -912,7 +839,7 @@ private void connPtoP6SetSource() {
 			// user code end
 			ivjConnPtoP6Aligning = true;
 			if ((getsimulationWorkspace1() != null)) {
-				getsimulationWorkspace1().setSimulationOwner(getElectricalMembraneMappingPanel().getSimulationContext());
+				getsimulationWorkspace1().setSimulationOwner(getSimulationContext());
 			}
 			// user code begin {2}
 			// user code end
@@ -925,34 +852,6 @@ private void connPtoP6SetSource() {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connPtoP6SetTarget:  (simulationWorkspace1.simulationOwner <--> ElectricalMembraneMappingPanel.simulationContext)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP6SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP6Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP6Aligning = true;
-			if ((getsimulationWorkspace1() != null)) {
-				getElectricalMembraneMappingPanel().setSimulationContext((SimulationContext)getsimulationWorkspace1().getSimulationOwner());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP6Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP6Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connPtoP7SetSource:  (MathViewerPanel.layout <--> cardLayout.this)
@@ -1276,27 +1175,6 @@ private javax.swing.JButton getDeleteAnalysisTaskButton() {
 }
 
 /**
- * Return the ElectricalMembraneMappingPanel property value.
- * @return cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private ElectricalMembraneMappingPanel getElectricalMembraneMappingPanel() {
-	if (ivjElectricalMembraneMappingPanel == null) {
-		try {
-			ivjElectricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
-			ivjElectricalMembraneMappingPanel.setName("ElectricalMembraneMappingPanel");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjElectricalMembraneMappingPanel;
-}
-
-/**
  * Comment
  */
 private GeometryContext getGeometryContext() {
@@ -1357,36 +1235,6 @@ private javax.swing.JPanel getJPanel2() {
 }
 
 /**
- * Return the JPanel3 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel3() {
-	if (ivjJPanel3 == null) {
-		try {
-			ivjJPanel3 = new javax.swing.JPanel();
-			ivjJPanel3.setName("JPanel3");
-			ivjJPanel3.setLayout(new BoxLayout(ivjJPanel3, BoxLayout.Y_AXIS));		
-			
-			getViewModifyGeometryButton().setAlignmentX(CENTER_ALIGNMENT);
-			getJPanel3().add(getViewModifyGeometryButton(), getViewModifyGeometryButton().getName());
-			
-			mappingInfoLabel = new JLabel("All structures and subdomains must be mapped to run a simulation. Use line tool or drop-down menu in the 'Subdomain' column.");
-			mappingInfoLabel.setAlignmentX(CENTER_ALIGNMENT);
-			getJPanel3().add(mappingInfoLabel);			
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel3;
-}
-
-
-/**
  * Return the JTabbedPane1 property value.
  * @return javax.swing.JTabbedPane
  */
@@ -1398,9 +1246,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1.setName("JTabbedPane1");
 			ivjJTabbedPane1.setPreferredSize(new java.awt.Dimension(682, 640));
 			ivjJTabbedPane1.setFont(new java.awt.Font("dialog", 0, 14));
-			ivjJTabbedPane1.insertTab("Structure Mapping", null, getStructureMappingPanel(), null, TAB_IDX_STRUCTURE_MAPPING);
-			ivjJTabbedPane1.insertTab("Parameters", null, getSPPRPanel(), null, TAB_IDX_SPPR);
-			ivjJTabbedPane1.insertTab("Electrical Mapping", null, getElectricalMembraneMappingPanel(), null, TAB_IDX_ELECTRICAL_MAPPING);
+			ivjJTabbedPane1.insertTab("Specifications", null, getSPPRPanel(), null, TAB_IDX_SPPR);
 			ivjJTabbedPane1.insertTab("View Math", null, getViewMathPanel(), null, TAB_IDX_VIEW_MATH);
 			ivjJTabbedPane1.insertTab("Simulation", null, getSimulationListPanel(), null, TAB_IDX_SIMULATION);
 			ivjJTabbedPane1.insertTab("Analysis", null, getParameterEstimationPanel(), null, TAB_IDX_ANALYSIS);
@@ -1695,53 +1541,6 @@ private SimulationWorkspace getsimulationWorkspace1() {
 	return ivjsimulationWorkspace1;
 }
 
-
-/**
- * Return the StaticCartoonPanel property value.
- * @return cbit.vcell.mapping.gui.StructureMappingCartoonPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private StructureMappingCartoonPanel getStaticCartoonPanel() {
-	if (ivjStaticCartoonPanel == null) {
-		try {
-			ivjStaticCartoonPanel = new StructureMappingCartoonPanel();
-			ivjStaticCartoonPanel.setName("StaticCartoonPanel");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjStaticCartoonPanel;
-}
-
-
-/**
- * Return the StructureMappingPanel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getStructureMappingPanel() {
-	if (ivjStructureMappingPanel == null) {
-		try {
-			ivjStructureMappingPanel = new javax.swing.JPanel();
-			ivjStructureMappingPanel.setName("StructureMappingPanel");
-			ivjStructureMappingPanel.setLayout(new java.awt.BorderLayout());
-			getStructureMappingPanel().add(getStaticCartoonPanel(), "Center");
-			getStructureMappingPanel().add(getJPanel3(), "North");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjStructureMappingPanel;
-}
-
 /**
  * Method generated to support the promotion of the userPreferences attribute.
  * @return cbit.vcell.client.server.UserPreferences
@@ -1908,10 +1707,9 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	getSimulationListPanel().addPropertyChangeListener(ivjEventHandler);
 	getSPPRPanel().addPropertyChangeListener(ivjEventHandler);
-	getStaticCartoonPanel().addPropertyChangeListener(ivjEventHandler);
+	getSPPRPanel().addCommandActionListener(ivjEventHandler);
 	getInitialConditionsPanel().addPropertyChangeListener(ivjEventHandler);
 	getReactionSpecsPanel().addPropertyChangeListener(ivjEventHandler);
-	getElectricalMembraneMappingPanel().addPropertyChangeListener(ivjEventHandler);
 	getViewEqunsRadioButton().addItemListener(ivjEventHandler);
 	getViewVCMDLRadioButton().addItemListener(ivjEventHandler);
 	getRefreshMathButton().addActionListener(ivjEventHandler);
@@ -1923,10 +1721,8 @@ private void initConnections() throws java.lang.Exception {
 	getCopyButton().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
-	connPtoP3SetTarget();
 	connPtoP4SetTarget();
 	connPtoP5SetTarget();
-	connPtoP6SetTarget();
 	connPtoP7SetTarget();
 	connPtoP8SetTarget();
 }
@@ -2315,10 +2111,8 @@ private void setsimulationWorkspace1(SimulationWorkspace newValue) {
 			}
 			connPtoP1SetSource();
 			connPtoP2SetTarget();
-			connPtoP3SetTarget();
 			connPtoP4SetTarget();
 			connPtoP5SetTarget();
-			connPtoP6SetTarget();
 			connEtoM3(ivjsimulationWorkspace1);
 //			firePropertyChange("simulationWorkspace", oldValue, newValue);
 			// user code begin {1}
@@ -2428,13 +2222,6 @@ private void viewMath_ItemStateChanged(ItemEvent itemEvent) {
 	}
 }
 
-private void refreshMappingInfoLabel() {
-	if (getSimulationContext().getGeometry().getDimension() == 0) {
-		mappingInfoLabel.setVisible(false);
-	} else {
-		mappingInfoLabel.setVisible(true);
-	}
-}
 
 public void setTabIndex(int tabIndex) {
 	getJTabbedPane1().setSelectedIndex(tabIndex);	

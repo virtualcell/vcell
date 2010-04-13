@@ -1,5 +1,7 @@
 package org.vcell.util.gui;
 
+import javax.swing.border.Border;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -224,11 +226,14 @@ private void setmodel1(javax.swing.ButtonModel newValue) {
  * Comment
  */
 public void updateBorder() {
-	BevelBorderBean border = (BevelBorderBean)getBorder();
-	if (isSelected()) {
-		border.setBevelType(BevelBorderBean.LOWERED);
-	} else {
-		border.setBevelType(BevelBorderBean.RAISED);
+	Border border = getBorder();
+	if (border instanceof BevelBorderBean){
+		BevelBorderBean bevelBorderBean = (BevelBorderBean)border;
+		if (isSelected()) {
+			bevelBorderBean.setBevelType(BevelBorderBean.LOWERED);
+		} else {
+			bevelBorderBean.setBevelType(BevelBorderBean.RAISED);
+		}
 	}
 	return;
 }

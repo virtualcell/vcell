@@ -1527,6 +1527,9 @@ private void setsimulationContext1(SimulationContext newValue) {
 		if(timeFunctionPanel != null){
 			return;
 		}
+		if (getelectricalStimulus()==null){
+			DialogUtils.showInfoDialog(this, "No electrical stimulus selected (e.g. \"Voltage Clamp\" or \"Total Current Clamp\")");
+		}
 		
 		try {
 			Expression protocolParameterExp = new Expression(getelectricalStimulus().getProtocolParameter().getExpression());

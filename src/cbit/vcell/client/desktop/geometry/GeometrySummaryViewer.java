@@ -319,7 +319,7 @@ private void initialize() {
 		// user code end
 		setName("GeometrySummaryViewer");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(877, 568);
+		//setSize(877, 568);
 
 		java.awt.GridBagConstraints constraintsGeometrySummaryPanel1 = new java.awt.GridBagConstraints();
 		constraintsGeometrySummaryPanel1.gridx = 0; constraintsGeometrySummaryPanel1.gridy = 0;
@@ -441,6 +441,11 @@ public void setGeometry(cbit.vcell.geometry.Geometry geometry) {
 //				subVolumes[i].removePropertyChangeListener(ivjEventHandler);
 //				subVolumes[i].addPropertyChangeListener(ivjEventHandler);
 //			}
+		}
+		if (geometry.getDimension()<1){
+			getGeometryViewer().setVisible(false);
+		}else{
+			getGeometryViewer().setVisible(true);
 		}
 	}
 
