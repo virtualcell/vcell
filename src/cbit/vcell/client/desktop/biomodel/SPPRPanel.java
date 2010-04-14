@@ -68,7 +68,7 @@ public class SPPRPanel extends JPanel {
 	
 	class IvjEventHandler implements javax.swing.event.TreeSelectionListener, MouseListener, PropertyChangeListener, ActionListener {
 		
-		public void valueChanged(javax.swing.event.TreeSelectionEvent e) {			
+		public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
 			if (e.getSource() == SPPRPanel.this.getSpprTree())
 				treeValueChanged(e);
 		}
@@ -87,7 +87,7 @@ public class SPPRPanel extends JPanel {
 						Point mousePoint = e.getPoint();
 						if (selectedObject instanceof SPPRTreeFolderNode) {
 							SPPRTreeFolderNode stfn = (SPPRTreeFolderNode)selectedObject;
-							if (stfn.getName().equals("Events")) {
+							if (stfn.getName().equals(SPPRTreeModel.FOLDER_NODE_NAMES[SPPRTreeModel.EVENTS_NODE])) { // "Events"
 								getAddEventPopupMenu().show(getSpprTree(), mousePoint.x, mousePoint.y);
 							}
 						} else if (selectedObject instanceof BioEvent) {
@@ -212,7 +212,7 @@ public class SPPRPanel extends JPanel {
 		}
 	}
 
-	protected JSplitPane getOuterSplitPane() {
+	private JSplitPane getOuterSplitPane() {
 		if (outerSplitPane == null) {
 			outerSplitPane = new JSplitPane();
 			outerSplitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
@@ -355,9 +355,6 @@ public class SPPRPanel extends JPanel {
 		}
 	}
 	private void selectNode(Object oldSelection, Object newSelection, int whatNode) {
-		if(!((SPPRTreeFolderNode) getSpprTreeModel().folderNodes[whatNode].getUserObject()).isExpanded()) {
-			return;		// folder of interest is collapsed, nothing to do
-		}
 		if(oldSelection.equals(newSelection)) {	// already selected
 		} else {
 			BioModelNode folderRoot = getSpprTreeModel().folderNodes[whatNode];

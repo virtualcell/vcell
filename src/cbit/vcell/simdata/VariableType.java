@@ -57,7 +57,7 @@ public class VariableType implements java.io.Serializable, org.vcell.util.Matcha
 		VARIABLEDOMAIN_VOLUME("Volume"),
 		VARIABLEDOMAIN_MEMBRANE("Membrane"),
 		VARIABLEDOMAIN_CONTOUR("Contour"),
-		VARIABLEDOMAIN_NONSPATIAL("NonSpatial");
+		VARIABLEDOMAIN_NONSPATIAL("Nonspatial");
 		
 		private String name = null;
 		private VariableDomain(String arg_name) {

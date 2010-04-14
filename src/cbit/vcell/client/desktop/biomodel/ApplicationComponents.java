@@ -1,22 +1,25 @@
 package cbit.vcell.client.desktop.biomodel;
-import cbit.vcell.solver.*;
-import cbit.vcell.server.*;
-import java.awt.*;
-import cbit.vcell.client.desktop.simulation.*;
-import cbit.vcell.client.*;
-import javax.swing.*;
+import java.awt.Dimension;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import javax.swing.JDesktopPane;
+import javax.swing.JInternalFrame;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
-import java.util.*;
-import cbit.util.*;
-import cbit.gui.*;
-import cbit.vcell.math.gui.*;
-import cbit.vcell.geometry.gui.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
+import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.ClientSimManager;
+import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
+import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
+import cbit.vcell.client.desktop.simulation.SimulationWindow;
+import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.VCSimulationIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (6/3/2004 4:37:44 PM)
@@ -24,14 +27,12 @@ import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
  */
 public class ApplicationComponents {
 	private JInternalFrameEnhanced appEditorFrame = null;
-	private JInternalFrameEnhanced mathViewerFrame = null;
 	private JInternalFrameEnhanced geometrySummaryViewerFrame = null;
 	private JInternalFrameEnhanced surfaceViewerFrame = null;	
 	private ApplicationEditor appEditor = null;
-	private MathViewer mathViewer = null;
 	private GeometrySummaryViewer geometrySummaryViewer = null;
 	private SurfaceViewerPanel surfaceViewer = null;
-	private Hashtable simulationWindowsHash = new Hashtable();
+	private Hashtable<VCSimulationIdentifier, SimulationWindow> simulationWindowsHash = new Hashtable<VCSimulationIdentifier, SimulationWindow>();
 
 /**
  * Insert the method's description here.
@@ -51,40 +52,23 @@ public ApplicationComponents(SimulationContext simContext, BioModelWindowManager
 	getAppEditorFrame().setLocation(400,200);
 	getAppEditorFrame().addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
 		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-			DocumentWindowManager.close(getMathViewerFrame(), pane);
 			DocumentWindowManager.close(getGeometrySummaryViewerFrame(), pane);
+			DocumentWindowManager.close(getSurfaceViewerFrame(), pane);
 			DocumentWindowManager.close(getDataViewerFrames(), pane);
 		};
-	});		
-	// make the math viewer
-	setMathViewer(new MathViewer());
-	getMathViewer().setSimContext(simContext);
-	setMathViewerFrame(new JInternalFrameEnhanced("MATH for: "+simContext.getName(), true, true, true, true));
-	getMathViewerFrame().setContentPane(getMathViewer());
-	getMathViewerFrame().setSize(500,450);
-	getMathViewerFrame().setMinimumSize(new Dimension(400,400));
-	getMathViewerFrame().setLocation(450, 250);
+	});
 	
 	// make the geometry viewer
 	GeometrySummaryViewer geoViewer = new GeometrySummaryViewer();
 	geoViewer.setStochastic(simContext.isStoch());
-//	if(simContext.isStoch())
-//	{
-//		geoViewer.setChangeGeometryEnabled(false);
-//		geoViewer.setEditGeometryEnabled(false);
-//	}
-//	else
-//	{
-//		geoViewer.setChangeGeometryEnabled(true);
-//		geoViewer.setEditGeometryEnabled(true);
-//	}
+
 	setGeometrySummaryViewer(geoViewer);
 	getGeometrySummaryViewer().setGeometry(simContext.getGeometry());
 	getGeometrySummaryViewer().setStochastic(simContext.isStoch());
 	setGeometrySummaryViewerFrame(DocumentWindowManager.createDefaultFrame(getGeometrySummaryViewer()));
 
 	// make the surface viewer
-	setSurfaceViewer(new cbit.vcell.client.desktop.geometry.SurfaceViewerPanel());
+	setSurfaceViewer(new SurfaceViewerPanel());
 	getSurfaceViewer().setGeometry(simContext.getGeometry());
 	setSurfaceViewerFrame(DocumentWindowManager.createDefaultFrame(getSurfaceViewer()));
 }
@@ -105,11 +89,11 @@ public void addDataViewer(SimulationWindow simWindow) {
  */
 public void cleanSimWindowsHash() {
 
-	Enumeration enum1 = simulationWindowsHash.keys();
-	Vector toRemove = new Vector();
+	Enumeration<VCSimulationIdentifier> enum1 = simulationWindowsHash.keys();
+	Vector<VCSimulationIdentifier> toRemove = new Vector<VCSimulationIdentifier>();
 	while(enum1.hasMoreElements()){
-		VCSimulationIdentifier vcsid = (VCSimulationIdentifier)enum1.nextElement();
-		Simulation[] sims = getMathViewer().getSimContext().getSimulations();
+		VCSimulationIdentifier vcsid = enum1.nextElement();
+		Simulation[] sims = getAppEditor().getSimulationWorkspace().getSimulations();
 		boolean bFound = false;
 		for(int i=0;i<sims.length;i+= 1){
 			if(sims[i].getSimulationInfo() != null && sims[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier().equals(vcsid)){
@@ -144,7 +128,7 @@ public ApplicationEditor getAppEditor() {
  * Creation date: (6/3/2004 4:40:40 PM)
  * @return cbit.gui.JInternalFrameEnhanced
  */
-public org.vcell.util.gui.JInternalFrameEnhanced getAppEditorFrame() {
+public JInternalFrameEnhanced getAppEditorFrame() {
 	return appEditorFrame;
 }
 
@@ -178,30 +162,9 @@ public GeometrySummaryViewer getGeometrySummaryViewer() {
  * Creation date: (6/4/2004 1:27:33 AM)
  * @return cbit.gui.JInternalFrameEnhanced
  */
-public org.vcell.util.gui.JInternalFrameEnhanced getGeometrySummaryViewerFrame() {
+public JInternalFrameEnhanced getGeometrySummaryViewerFrame() {
 	return geometrySummaryViewerFrame;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/4/2004 1:26:00 AM)
- * @return cbit.vcell.client.desktop.biomodel.MathViewer
- */
-public MathViewer getMathViewer() {
-	return mathViewer;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/3/2004 4:40:40 PM)
- * @return cbit.gui.JInternalFrameEnhanced
- */
-public org.vcell.util.gui.JInternalFrameEnhanced getMathViewerFrame() {
-	return mathViewerFrame;
-}
-
 
 /**
  * Insert the method's description here.
@@ -255,8 +218,6 @@ public SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulation
 public void resetSimulationContext(SimulationContext simContext) {
 	// the app editor
 	getAppEditor().resetSimContext(simContext);
-	// the math viewer
-	getMathViewer().setSimContext(simContext);
 	// the geometry viewer
 	getGeometrySummaryViewer().setGeometry(simContext.getGeometry());
 	getGeometrySummaryViewer().setStochastic(simContext.isStoch());
@@ -304,27 +265,6 @@ private void setGeometrySummaryViewer(GeometrySummaryViewer newGeometrySummaryVi
 private void setGeometrySummaryViewerFrame(org.vcell.util.gui.JInternalFrameEnhanced newGeometrySummaryViewerFrame) {
 	geometrySummaryViewerFrame = newGeometrySummaryViewerFrame;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/4/2004 1:26:00 AM)
- * @param newMathViewer cbit.vcell.client.desktop.biomodel.MathViewer
- */
-private void setMathViewer(MathViewer newMathViewer) {
-	mathViewer = newMathViewer;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/3/2004 4:40:40 PM)
- * @param newMathViewerFrame cbit.gui.JInternalFrameEnhanced
- */
-private void setMathViewerFrame(org.vcell.util.gui.JInternalFrameEnhanced newMathViewerFrame) {
-	mathViewerFrame = newMathViewerFrame;
-}
-
 
 /**
  * Insert the method's description here.

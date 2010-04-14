@@ -135,11 +135,10 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 			TableColumn column = columnModel.getColumn(columnIndex);
 			// set prefer width if it is expression since the size is computed through image.
 			int preferredWidth = maxColumnWidths[columnIndex] + columnModel.getColumnMargin();
-			if (targetTable.getColumnClass(columnIndex) == ScopedExpression.class) {
+			if (targetTable.getColumnClass(columnIndex).equals(ScopedExpression.class)) {
 				expressionColumn = columnIndex;
 				column.setPreferredWidth(preferredWidth);
-			}
-			if (column.getPreferredWidth() < preferredWidth){
+			} else if (column.getPreferredWidth() < preferredWidth){
 				column.setPreferredWidth(preferredWidth);
 			}
 		}

@@ -526,11 +526,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("name")) {
 		SimulationContext simContext = (SimulationContext)evt.getSource();
 		JInternalFrameEnhanced editorFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getAppEditorFrame();
-		JInternalFrameEnhanced mathFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getMathViewerFrame();
 		JInternalFrameEnhanced geoFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getGeometrySummaryViewerFrame();
 		JInternalFrameEnhanced surfaceFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getSurfaceViewerFrame();
 		editorFrame.setTitle("APPLICATION: "+simContext.getName());
-		mathFrame.setTitle("MATH for: "+simContext.getName());
 		geoFrame.setTitle("GEOMETRY for: "+simContext.getName());
 		surfaceFrame.setTitle("SURFACE for: "+simContext.getName()+"'s Geometry");
 	}
@@ -547,7 +545,6 @@ private void remove(ApplicationComponents appComponents, SimulationContext sc) {
 	sc.removePropertyChangeListener(this);
 	getApplicationsHash().remove(sc);
 	close(appComponents.getAppEditorFrame(), getJDesktopPane());
-	close(appComponents.getMathViewerFrame(), getJDesktopPane());
 	close(appComponents.getGeometrySummaryViewerFrame(), getJDesktopPane());
 	close(appComponents.getSurfaceViewerFrame(), getJDesktopPane());
 	close(appComponents.getDataViewerFrames(), getJDesktopPane());
