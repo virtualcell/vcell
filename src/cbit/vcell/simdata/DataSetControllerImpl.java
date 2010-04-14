@@ -2431,53 +2431,108 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(OutputContext outputCont
 		return null;
 	}
 	
-	
+	TimeSeriesJobResults tsjr = null;
 	if(timeSeriesJobSpec.isCalcTimeStats()){
-		throw new RuntimeException("Time Stats Not yet implemented for 'special' data");
-	}
-	
-	double[][][] varIndicesTimesArr = new double[variableNames.length][][];
-	for(int varNameIndex =0;varNameIndex<variableNames.length;varNameIndex+= 1){
-		int[] dataIndices = timeSeriesJobSpec.getIndices()[varNameIndex];
-		varIndicesTimesArr[varNameIndex] = new double[dataIndices.length + 1][timeInfo.desiredTimeValues.length];
-		varIndicesTimesArr[varNameIndex][0] = timeInfo.desiredTimeValues;
-		for(int timeIndex=0;timeIndex<timeInfo.desiredTimeValues.length;timeIndex+= 1){
-			int num = varNameIndex*timeInfo.desiredTimeValues.length+timeIndex;
-			int denom = variableNames.length*timeInfo.desiredTimeValues.length;
-			double progressTime = 100.0 * (double)num / (double)denom;
-			fireDataJobEventIfNecessary(
-							timeSeriesJobSpec.getVcDataJobID(),
-							MessageEvent.DATA_PROGRESS,
-							vcdID,
-							new Double(progressTime),
-							null,null
-						);
-			SimDataBlock simDatablock = getSimDataBlock(outputContext,vcdID, variableNames[varNameIndex], timeInfo.desiredTimeValues[timeIndex]);
-			double[] data = simDatablock.getData();
-			for(int dataIndex=0;dataIndex<dataIndices.length;dataIndex+= 1){
-				varIndicesTimesArr[varNameIndex][dataIndex+1][timeIndex] = data[dataIndices[dataIndex]];
-			}
-			if(timeSeriesJobSpec.getCrossingMembraneIndices() != null && timeSeriesJobSpec.getCrossingMembraneIndices().length > 0){
-				adjustMembraneAdjacentVolumeValues(
-						outputContext,
-					varIndicesTimesArr[varNameIndex],true,simDatablock,
-					timeSeriesJobSpec.getIndices()[varNameIndex],
-					timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex],
-					vcdID,
-					variableNames[varNameIndex],
-					mesh,
-					timeInfo);
+		throw new RuntimeException("Time Stats Not yet implemented for 'special' data");		
+	}else if(timeSeriesJobSpec.isCalcSpaceStats()){//Get spatial statistics at each time point
+		SpatialStatsInfo ssi = calcSpatialStatsInfo(outputContext,timeSeriesJobSpec, vcdID);
+	    double[/*varName*/][/*time*/] argMin = new double[variableNames.length][timeInfo.desiredTimeValues.length];
+	    double[][] argMax = new double[variableNames.length][timeInfo.desiredTimeValues.length];
+	    double[][] argUnweightedMean = new double[variableNames.length][timeInfo.desiredTimeValues.length];
+	    double[][] argWeightedMean = new double[variableNames.length][timeInfo.desiredTimeValues.length];
+	    double[][] argUnweightedSum = new double[variableNames.length][timeInfo.desiredTimeValues.length];
+	    double[][] argWeightedSum = new double[variableNames.length][timeInfo.desiredTimeValues.length];
+	    double[/*varName*/] argTotalSpace = new double[variableNames.length];
+	    
+		double[][][] indicesForVarForOneTimepoint = new double[1][][];
+		for(int varNameIndex =0;varNameIndex<variableNames.length;varNameIndex+= 1){
+			int[] dataIndices = timeSeriesJobSpec.getIndices()[varNameIndex];
+			indicesForVarForOneTimepoint[0] = new double[dataIndices.length + 1][1];
+			for(int timeIndex=0;timeIndex<timeInfo.desiredTimeValues.length;timeIndex+= 1){
+				indicesForVarForOneTimepoint[0][0] = new double[] {timeInfo.desiredTimeValues[timeIndex]};
+				int num = varNameIndex*timeInfo.desiredTimeValues.length+timeIndex;
+				int denom = variableNames.length*timeInfo.desiredTimeValues.length;
+				double progressTime = 100.0 * (double)num / (double)denom;
+				fireDataJobEventIfNecessary(
+								timeSeriesJobSpec.getVcDataJobID(),
+								MessageEvent.DATA_PROGRESS,
+								vcdID,
+								new Double(progressTime),
+								null,null
+							);
+				SimDataBlock simDatablock = getSimDataBlock(outputContext,vcdID, variableNames[varNameIndex], timeInfo.desiredTimeValues[timeIndex]);
+				double[] data = simDatablock.getData();
+				//Put indices in format expected by calcStats (SHOULD BE CHANGED)
+				for(int dataIndex=0;dataIndex<dataIndices.length;dataIndex+= 1){
+					indicesForVarForOneTimepoint[0][dataIndex+1][0] = data[dataIndices[dataIndex]];
+				}
+				if(timeSeriesJobSpec.getCrossingMembraneIndices() != null && timeSeriesJobSpec.getCrossingMembraneIndices().length > 0){
+					adjustMembraneAdjacentVolumeValues(
+							outputContext,
+						indicesForVarForOneTimepoint[0],true,simDatablock,
+						timeSeriesJobSpec.getIndices()[varNameIndex],
+						timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex],
+						vcdID,
+						variableNames[varNameIndex],
+						mesh,
+						timeInfo);
+				}
+				tsjr = calculateStatisticsFromWhole(timeSeriesJobSpec, indicesForVarForOneTimepoint, indicesForVarForOneTimepoint[0][0], ssi);
+				
+				argMin[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getMinimums()[0][0];
+				argMax[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getMaximums()[0][0];
+				argUnweightedMean[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getUnweightedMean()[0][0];
+				argWeightedMean[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getWeightedMean()[0][0];
+				argUnweightedSum[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getUnweightedSum()[0][0];
+				argWeightedSum[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getWeightedSum()[0][0];
+				argTotalSpace[varNameIndex] = ((TSJobResultsSpaceStats)tsjr).getTotalSpace()[0];
 			}
 		}
-	}
-	
-	TimeSeriesJobResults tsjr = null;
-	if(timeSeriesJobSpec.isCalcSpaceStats()){
-		SpatialStatsInfo ssi = calcSpatialStatsInfo(outputContext,timeSeriesJobSpec, vcdID);
-		tsjr = calculateStatisticsFromWhole(timeSeriesJobSpec, varIndicesTimesArr, timeInfo.desiredTimeValues, ssi);
-	}else if(timeSeriesJobSpec.isCalcTimeStats()){
-		throw new RuntimeException("Time Stats Not yet implemented for 'special' data");		
-	}else{
+		tsjr = new TSJobResultsSpaceStats(
+	            timeSeriesJobSpec.getVariableNames(),
+	            timeSeriesJobSpec.getIndices(),
+	            timeInfo.desiredTimeValues,
+	            argMin,argMax,
+	            argUnweightedMean,
+	            argWeightedMean,
+	            argUnweightedSum,
+	            argWeightedSum,
+	            argTotalSpace);
+	}else{//Get the values for for all the variables and indices
+		double[][][] varIndicesTimesArr = new double[variableNames.length][][];
+		for(int varNameIndex =0;varNameIndex<variableNames.length;varNameIndex+= 1){
+			int[] dataIndices = timeSeriesJobSpec.getIndices()[varNameIndex];
+			varIndicesTimesArr[varNameIndex] = new double[dataIndices.length + 1][timeInfo.desiredTimeValues.length];
+			varIndicesTimesArr[varNameIndex][0] = timeInfo.desiredTimeValues;
+			for(int timeIndex=0;timeIndex<timeInfo.desiredTimeValues.length;timeIndex+= 1){
+				int num = varNameIndex*timeInfo.desiredTimeValues.length+timeIndex;
+				int denom = variableNames.length*timeInfo.desiredTimeValues.length;
+				double progressTime = 100.0 * (double)num / (double)denom;
+				fireDataJobEventIfNecessary(
+								timeSeriesJobSpec.getVcDataJobID(),
+								MessageEvent.DATA_PROGRESS,
+								vcdID,
+								new Double(progressTime),
+								null,null
+							);
+				SimDataBlock simDatablock = getSimDataBlock(outputContext,vcdID, variableNames[varNameIndex], timeInfo.desiredTimeValues[timeIndex]);
+				double[] data = simDatablock.getData();
+				for(int dataIndex=0;dataIndex<dataIndices.length;dataIndex+= 1){
+					varIndicesTimesArr[varNameIndex][dataIndex+1][timeIndex] = data[dataIndices[dataIndex]];
+				}
+				if(timeSeriesJobSpec.getCrossingMembraneIndices() != null && timeSeriesJobSpec.getCrossingMembraneIndices().length > 0){
+					adjustMembraneAdjacentVolumeValues(
+							outputContext,
+						varIndicesTimesArr[varNameIndex],true,simDatablock,
+						timeSeriesJobSpec.getIndices()[varNameIndex],
+						timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex],
+						vcdID,
+						variableNames[varNameIndex],
+						mesh,
+						timeInfo);
+				}
+			}
+		}
 		tsjr = new TSJobResultsNoStats(
 				timeSeriesJobSpec.getVariableNames(),
 				timeSeriesJobSpec.getIndices(),

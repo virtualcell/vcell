@@ -181,11 +181,13 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			TimeSeriesJobSpec timeSeriesJobSpec = (TimeSeriesJobSpec)hashTable.get(StringKey_timeSeriesJobSpec);
-			PDEDataViewer.this.getPdeDataContext().getTimeSeriesValues(timeSeriesJobSpec);
-			DataJobListener djl = new TimeSeriesDataJobListener(timeSeriesJobSpec.getVcDataJobID(), hashTable, getClientTaskStatusSupport());
+			DataJobListener djl = null;
 			try {
+				TimeSeriesJobSpec timeSeriesJobSpec = (TimeSeriesJobSpec)hashTable.get(StringKey_timeSeriesJobSpec);
+				djl =
+					new TimeSeriesDataJobListener(timeSeriesJobSpec.getVcDataJobID(), hashTable, getClientTaskStatusSupport());
 				PDEDataViewer.this.addDataJobListener(djl);
+				PDEDataViewer.this.getPdeDataContext().getTimeSeriesValues(timeSeriesJobSpec);
 				while (true) {
 					Throwable timeSeriesJobFailed = (Throwable)hashTable.get(StringKey_timeSeriesJobException);
 					if (timeSeriesJobFailed != null) {
@@ -208,7 +210,7 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 					}
 				}
 			} finally {
-				PDEDataViewer.this.removeDataJobListener(djl);
+				if(djl != null){PDEDataViewer.this.removeDataJobListener(djl);}
 			}
 		}
 	};
