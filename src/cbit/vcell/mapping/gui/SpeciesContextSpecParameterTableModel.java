@@ -569,17 +569,24 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						String newExpressionString = (String)aValue;
 						if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 							SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
-							if (!(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityX || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityY || scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityZ )) {
-								scsParm.setExpression(new Expression(newExpressionString));
+							if (!(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityX 
+									|| scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityY 
+									|| scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityZ )) {
+								Expression newExp = null;
+								if (newExpressionString == null || newExpressionString.trim().length() == 0) {
+									newExp = new Expression(0.0);
+								} else {
+									newExp = new Expression(newExpressionString);
+								}
+								scsParm.setExpression(newExp);
 							} else {
 								// scsParam is a velocity parameter
-								if (!newExpressionString.equals("0.0")) {
-									scsParm.setExpression(new Expression(newExpressionString));
-								} else {
-									scsParm.setExpression(null);
-								}
+								Expression newExp = null;
+								if (newExpressionString != null && newExpressionString.trim().length() > 0) {
+									newExp = new Expression(newExpressionString);
+								} 
+								scsParm.setExpression(newExp);							
 							}
-							//fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}
 				}catch (java.beans.PropertyVetoException e){
