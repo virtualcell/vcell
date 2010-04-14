@@ -10,6 +10,7 @@ import org.vcell.util.gui.sorttable.ManageTableModel;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
@@ -56,7 +57,7 @@ public class OutputFunctionsListTableModel extends ManageTableModel implements P
 	public final static int COLUMN_OUTPUTFN_VARIABLETYPE = 2;
 	
 	private OutputFunctionContext outputFunctionContext = null;
-	private String[] columnNames = new String[] {"Name", "Expression", "Type"};
+	private String[] columnNames = new String[] {"Name", "Expression", "Subdomain"};
 	private JTable ownerTable = null;
 
 /**
@@ -70,8 +71,9 @@ public OutputFunctionsListTableModel(JTable table) {
 /**
  * getColumnCount method comment.
  */
-public int getColumnCount() {
-	return columnNames.length;
+public int getColumnCount() { 
+	return columnNames.length - ((getOutputFunctionContext() == null 
+			|| getOutputFunctionContext().getSimulationOwner().getGeometry().getDimension() > 0) ? 0 : 1);
 }
 
 /**
@@ -116,8 +118,8 @@ public Class<?> getColumnClass(int column) {
  */
 public Object getValueAt(int row, int column) {
 	try{
-		AnnotatedFunction obsFunction = (AnnotatedFunction)getData().get(row);
 		if (row >= 0 && row < getRowCount()) {
+			AnnotatedFunction obsFunction = (AnnotatedFunction)getData().get(row);
 			switch (column) {
 				case COLUMN_OUTPUTFN_NAME: {
 					return obsFunction.getName();
@@ -127,7 +129,7 @@ public Object getValueAt(int row, int column) {
 						return null; 
 					} else {
 						final MathDescription mathDescription = outputFunctionContext.getSimulationOwner().getMathDescription();
-						final VariableType varType = VariableType.getVariableTypeFromVariableTypeName((String)getValueAt(row, COLUMN_OUTPUTFN_VARIABLETYPE));
+						final VariableType varType = obsFunction.getFunctionType();
 						AutoCompleteSymbolFilter autoCompleteSymbolFilter = new AutoCompleteSymbolFilter() {
 							public boolean accept(SymbolTableEntry ste) {
 								if (mathDescription.isSpatial()) {
@@ -207,6 +209,15 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setData(outputFunctionContext.getOutputFunctionsList());
 		fireTableRowsUpdated(0, getRowCount());
 	}
+	if (evt.getPropertyName().equals("geometry")) {
+		Geometry oldGeometry = (Geometry)evt.getOldValue();
+		Geometry newGeometry = (Geometry)evt.getNewValue();
+		// changing from ode to pde
+		if (oldGeometry.getDimension() == 0 && newGeometry.getDimension() > 0) {
+			fireTableStructureChanged();
+			setData(getOutputFunctionContext().getOutputFunctionsList());
+		}
+	}
 }
 
 
@@ -248,15 +259,17 @@ public OutputFunctionContext getOutputFunctionContext() {
 public void setOutputFunctionContext(OutputFunctionContext argOutputFnContext) {
 	if (argOutputFnContext!=null){
 		argOutputFnContext.removePropertyChangeListener(this);
+		argOutputFnContext.getSimulationOwner().removeGeometryPropertyChangeListener(this);
 	}
 	this.outputFunctionContext = argOutputFnContext;
 	if (this.outputFunctionContext!=null){
 		this.outputFunctionContext.addPropertyChangeListener(this);
+		argOutputFnContext.getSimulationOwner().addGeometryPropertyChangeListener(this);
 	}
 	if (argOutputFnContext != null) {
+		fireTableStructureChanged();
 		setData(argOutputFnContext.getOutputFunctionsList());
 	}
-	// fireTableDataChanged();
 }
 
 public void sortColumn(int col, boolean ascending)

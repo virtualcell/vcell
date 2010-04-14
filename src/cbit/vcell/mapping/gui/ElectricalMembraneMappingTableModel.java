@@ -27,7 +27,7 @@ public class ElectricalMembraneMappingTableModel extends javax.swing.table.Abstr
 	public final static String LABEL_MEMBRANE = "Membrane";
 	public final static String LABEL_CALCULATE_POTENTIAL = "Calculate V?";
 	public final static String LABEL_INITIAL_POTENTIAL = "V initial";
-	public final static String LABEL_SPECIFIC_CAPACITANCE = "specific capacitance (pF/um2)";
+	public final static String LABEL_SPECIFIC_CAPACITANCE = "Specific Capacitance (pF/um2)";
 	private static String LABELS[] = { LABEL_MEMBRANE, LABEL_CALCULATE_POTENTIAL, LABEL_INITIAL_POTENTIAL, LABEL_SPECIFIC_CAPACITANCE };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private GeometryContext fieldGeometryContext = null;

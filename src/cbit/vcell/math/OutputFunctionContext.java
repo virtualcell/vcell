@@ -6,17 +6,18 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -151,6 +152,51 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	public void propertyChange(java.beans.PropertyChangeEvent event) {
 		if (event.getSource() == simulationOwner && event.getPropertyName().equals("mathDescription")) {
 			rebindAll();
+		}
+		if (event.getPropertyName().equals("geometry")) {
+			Geometry oldGeometry = (Geometry)event.getOldValue();
+			Geometry newGeometry = (Geometry)event.getNewValue();
+			// changing from ode to pde
+			if (oldGeometry.getDimension() == 0 && newGeometry.getDimension() > 0) {
+				ArrayList<AnnotatedFunction> newFuncList = new ArrayList<AnnotatedFunction>();
+				for (AnnotatedFunction function : outputFunctionsList) {
+					try {
+						Expression newexp = new Expression(function.getExpression());
+						// making sure that output function is not direct function of constant.
+						newexp.bindExpression(this);			
+						
+						// here use math description as symbol table because we allow 
+						// new expression itself to be function of constant.
+						MathDescription mathDescription = getSimulationOwner().getMathDescription();
+						newexp = MathUtilities.substituteFunctions(newexp, mathDescription).flatten();
+						VariableType newFuncType = VariableType.VOLUME;
+						
+						String[] symbols = newexp.getSymbols();
+						if (symbols != null) {
+							// figure out the function type
+							VariableType[] varTypes = new VariableType[symbols.length];
+							for (int i = 0; i < symbols.length; i++) {
+								Variable var = mathDescription.getVariable(symbols[i]);
+								varTypes[i] = VariableType.getVariableType(var);
+							}
+							// check with flattened expression to find out the variable type of the new expression
+							Function flattenedFunctiion = new Function(function.getName(), newexp);
+							newFuncType = SimulationSymbolTable.getFunctionVariableType(flattenedFunctiion, symbols, varTypes, true);			
+						}
+						AnnotatedFunction newFunc = new AnnotatedFunction(function.getName(), function.getExpression(), "", newFuncType, true);
+						newFuncList.add(newFunc);
+					} catch (ExpressionException ex) {
+						ex.printStackTrace();
+						throw new RuntimeException(ex.getMessage());
+					}
+				}
+				try {
+					setOutputFunctionsList(newFuncList);
+				} catch (PropertyVetoException e) {					
+					e.printStackTrace();
+					throw new RuntimeException(e.getMessage());
+				}
+			}
 		}
 	}
 	
@@ -313,6 +359,17 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 				} 
 			}
 		}
+		entryMap.put(ReservedVariable.TIME.getName(), ReservedVariable.TIME);
+		int dimension = mathDescription.getGeometry().getDimension();
+		if (dimension > 0) {
+			entryMap.put(ReservedVariable.X.getName(), ReservedVariable.X);
+			if (dimension > 1) {
+				entryMap.put(ReservedVariable.Y.getName(), ReservedVariable.Y);
+				if (dimension > 2) {
+					entryMap.put(ReservedVariable.Z.getName(), ReservedVariable.Z);
+				}
+			}
+		}
 		// then add list of output functions.
 		for (SymbolTableEntry ste : outputFunctionsList) {
 			entryMap.put(ste.getName(), ste);
@@ -373,24 +430,28 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 				VariableType[] varTypes = new VariableType[symbols.length];
 				VariableDomain functionVariableDomain = functionType.getVariableDomain();
 				for (int i = 0; i < symbols.length; i++) {
-					Variable var = mathDescription.getVariable(symbols[i]);
-					varTypes[i] = VariableType.getVariableType(var);
-					if (!varTypes[i].getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_UNKNOWN) && !varTypes[i].getVariableDomain().equals(functionVariableDomain)) {
-						boolean bVolume = functionVariableDomain.equals(VariableDomain.VARIABLEDOMAIN_VOLUME);
-						String errMsg = "'" + outputFunction.getName() + "' directly or indirectly references "
-							+  (bVolume ? "membrane" : "volume") + " variable '" + symbols[i] + "'. " 
-							+ functionVariableDomain.getName() + " output functions should only reference " + functionVariableDomain.getName() + " variables.";
-						throw new ExpressionException(errMsg);
+					if (ReservedVariable.fromString(symbols[i]) != null) {
+						varTypes[i] = functionType;
+					} else {
+						Variable var = mathDescription.getVariable(symbols[i]);
+						varTypes[i] = VariableType.getVariableType(var);
+						if (!varTypes[i].getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_UNKNOWN) && !varTypes[i].getVariableDomain().equals(functionVariableDomain)) {
+							boolean bVolume = functionVariableDomain.equals(VariableDomain.VARIABLEDOMAIN_VOLUME);
+							String errMsg = "'" + outputFunction.getName() + "' directly or indirectly references "
+								+  (bVolume ? "membrane" : "volume") + " variable '" + symbols[i] + "'. " 
+								+ functionVariableDomain.getName() + " output functions should only reference " + functionVariableDomain.getName() + " variables.";
+							throw new ExpressionException(errMsg);
+						}
 					}
 				}
 				// check with flattened expression to find out the variable type of the new expression
 				Function flattenedFunctiion = new Function(outputFunction.getName(), newexp);
-				VariableType newVarType = SimulationSymbolTable.getFunctionVariableType(flattenedFunctiion, symbols, varTypes, bSpatial);						
+				VariableType newVarType = SimulationSymbolTable.getFunctionVariableType(flattenedFunctiion, symbols, varTypes, bSpatial);
 				if (!newVarType.getVariableDomain().equals(functionVariableDomain)) {
 					String errMsg = "The expression for '" + outputFunction.getName() + "' includes at least one " 
 						+ newVarType.getVariableDomain().getName() + " variable. Please make sure that only " + functionVariableDomain.getName() + " variables are " +
 								"referenced in " + functionVariableDomain.getName() + " output functions.";
-					throw new ExpressionException(errMsg);					
+					throw new ExpressionException(errMsg);
 				}
 			}
 		}

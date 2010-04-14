@@ -26,6 +26,7 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -489,7 +490,7 @@ public void refreshMathDescription() {
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
+	getPropertyChange().addPropertyChangeListener(new PropertyChangeListenerProxyVCell(listener));
 }
 
 
@@ -1490,6 +1491,7 @@ public void removeBioEvent(BioEvent bioEvent) throws PropertyVetoException {
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+	PropertyChangeListenerProxyVCell.removeProxyListener(getPropertyChange(), listener);
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 

@@ -1,8 +1,6 @@
 package cbit.vcell.mapping.gui;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -13,6 +11,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.desktop.biomodel.SPPRPanel;
 import cbit.vcell.mapping.SimulationContext;
@@ -21,9 +20,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.gui.FluxReactionPanel;
-import cbit.vcell.model.gui.ModelParameterPanel;
-import cbit.vcell.model.gui.ModelParameterTableModel;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.model.gui.SimpleReactionPanel;
 
 /*©
@@ -41,7 +37,7 @@ public class ReactionSpecsPanel extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private SimpleReactionPanel simpleReactionPanel = null;
 	private FluxReactionPanel fluxReactionPanel = null;
-	private javax.swing.JTable ivjScrollPaneTable = null;
+	private JSortTable ivjScrollPaneTable = null;
 	private ReactionSpecsTableModel ivjReactionSpecsTableModel = null;
 	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP2Aligning = false;
@@ -49,7 +45,6 @@ public class ReactionSpecsPanel extends javax.swing.JPanel {
 	private SimulationContext ivjsimulationContext1 = null;
 	private boolean ivjConnPtoP5Aligning = false;
 	private javax.swing.ListSelectionModel ivjselectionModel1 = null;
-	private Model ivjmodel1 = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 // java.awt.event.ActionListener, java.awt.event.MouseListener
@@ -58,28 +53,15 @@ class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.
 				connPtoP2SetTarget();
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+			if (e.getValueIsAdjusting()) {
+				return;
+			}
 			if (e.getSource() instanceof DefaultListSelectionModel) {
 //				System.out.println("ReactionSpecsPanel:  valueChanged()");
 				connEtoM3(e);
 			}
 		};
 	};
-	
-	PropertyChangeListener ReactionSpecsPropertyChangeListener =
-		new PropertyChangeListener(){
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (true) {
-//				if (evt.getSource() instanceof Model && evt.getPropertyName().equals(Model.REACTION_STEPS_PROPERTY_NAME)) {
-//					System.out.println(" --- Property Change Event Source: " + evt.getSource());
-//					System.out.println(" --- Property Change Event Name: " + evt.getPropertyName());
-//					ReactionSpecsTableModel modelparamTableModel = (ReactionSpecsTableModel)getScrollPaneTable().getModel();
-//					modelparamTableModel.setData(modelparamTableModel.getUnsortedParameters());		// ???
-//					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(), null, null);
-//					getScrollPaneTable().invalidate();
-//					getJScrollPane1().repaint();
-				}
-			}
-		};
 
 /**
  * ReactionSpecsPanel constructor comment.
@@ -123,15 +105,12 @@ private void initialize(boolean expanded) {
 		constraintsJSplitPane1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getOuterSplitPane(expanded), constraintsJSplitPane1);
 		initConnections();
-		if ((getmodel1() != null)) {
-			getReactionSpecsTableModel().setModel(getmodel1());
-		}
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
 }
 
-protected JSplitPane getOuterSplitPane(boolean expanded) {
+private JSplitPane getOuterSplitPane(boolean expanded) {
 	if (outerSplitPane == null) {
 		outerSplitPane = new JSplitPane();
 		outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -189,31 +168,6 @@ private FluxReactionPanel getFluxReactionPanel() {
 	return fluxReactionPanel;
 }
 
-/**
- * Return the model1 property value.
- */
-private Model getmodel1() {
-	return ivjmodel1;
-}
-/**
- * Set the model1 to a new value.
- */
-private void setmodel1(Model newValue) {
-	if (ivjmodel1 != newValue) {
-		try {
-			Model oldValue = getmodel1();
-			ivjmodel1 = newValue;
-//			connPtoP3SetSource();		// ??????
-			getReactionSpecsTableModel().setModel(getmodel1());			// ???? never use getModel to recover it
-			if (getmodel1() != null) {
-				getmodel1().addPropertyChangeListener(ReactionSpecsPropertyChangeListener);
-			}
-			firePropertyChange("model", oldValue, newValue);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	};
-}
 /**
  * connEtoM4:  (simulationContext1.this --> ReactionSpecsTableModel.simulationContext)
  * @param value cbit.vcell.mapping.SimulationContext
@@ -351,7 +305,6 @@ private void connEtoM3(javax.swing.event.ListSelectionEvent arg1) {
 		int row = getselectionModel1().getLeadSelectionIndex();
 		if((row >= 0) && (getSPPRPanel() != null)) {
 			getSPPRPanel().setScrollPaneTreeCurrentRow(getReactionSpecsTableModel().getValueAt(row, 0));
-//			getSPPRPanel().setScrollPaneTreeCurrentRow(getReactionSpecsTableModel().getValueAt(row));
 		}
 
 	} catch (java.lang.Throwable ivjExc) {
@@ -406,13 +359,8 @@ private void notifyRelatedPanels(javax.swing.event.ListSelectionEvent arg1) {
 private ReactionSpecsTableModel getReactionSpecsTableModel() {
 	if (ivjReactionSpecsTableModel == null) {
 		try {
-//			ivjReactionSpecsTableModel = new cbit.vcell.mapping.gui.ReactionSpecsTableModel();
-			ivjReactionSpecsTableModel = new cbit.vcell.mapping.gui.ReactionSpecsTableModel(getScrollPaneTable(), false);
-			// user code begin {1}
-			// user code end
+			ivjReactionSpecsTableModel = new ReactionSpecsTableModel(getScrollPaneTable(), false);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -425,10 +373,10 @@ private ReactionSpecsTableModel getReactionSpecsTableModel() {
  * @return javax.swing.JTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTable getScrollPaneTable() {
+private JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new javax.swing.JTable();
+			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);

@@ -135,18 +135,20 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		if(rootNode == null) {
 			rootNode = new BioModelNode(getSimulationContext(),true);
 			setRoot(rootNode);
-			folderNodes = new BioModelNode[FOLDER_NODE_NAMES.length];
-			for (int i = 0; i < folderNodes.length; i ++) {
-				folderNodes[i] = new BioModelNode(new SPPRTreeFolderNode(FOLDER_NODE_IDS[i], FOLDER_NODE_NAMES[i]), true);
-				rootNode.add(folderNodes[i]);
-			}
 		}
 		populateTree(ROOT_NODE);
 	}
 
 	private void populateTree(int nodeId) {
 		boolean bSelected = false;
-		if (nodeId != ROOT_NODE) {
+		if (nodeId == ROOT_NODE) {
+			rootNode.removeAllChildren();
+			folderNodes = new BioModelNode[FOLDER_NODE_NAMES.length];
+			for (int i = 0; i < folderNodes.length; i ++) {
+				folderNodes[i] = new BioModelNode(new SPPRTreeFolderNode(FOLDER_NODE_IDS[i], FOLDER_NODE_NAMES[i]), true);
+				rootNode.add(folderNodes[i]);
+			}
+		} else {
 			BioModelNode selectedNode = (BioModelNode)spprTree.getSelectionPath().getLastPathComponent();
 			if (selectedNode.getUserObject() == folderNodes[nodeId].getUserObject() 
 					|| ((BioModelNode)selectedNode.getParent()).getUserObject() == folderNodes[nodeId].getUserObject()) {
@@ -204,6 +206,9 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		
 		if (nodeId == ROOT_NODE || nodeId == EVENTS_NODE) {
 			if ((simulationContext.getGeometry().getDimension() > 0) || (SPPRTreeModel.this.simulationContext.isStoch())) {
+				if (rootNode.isNodeChild(folderNodes[EVENTS_NODE])) {
+					rootNode.remove(folderNodes[EVENTS_NODE]);
+				}
 				((SPPRTreeFolderNode)folderNodes[EVENTS_NODE].getUserObject()).setSupported(false);
 			} else {
 				folderNodes[EVENTS_NODE].removeAllChildren();

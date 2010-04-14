@@ -4,15 +4,20 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
 
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
+import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 /**
@@ -20,28 +25,22 @@ import cbit.vcell.model.SimpleReaction;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ReactionSpecsTableModel extends AbstractTableModel implements java.beans.PropertyChangeListener {
-//public class ReactionSpecsTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
-//	public class ReactionSpecsTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
-	public static final int NUM_COLUMNS = 4;
+public class ReactionSpecsTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_NAME = 0;
 	public static final int COLUMN_TYPE = 1;
 	public static final int COLUMN_ENABLED = 2;
 	public static final int COLUMN_FAST = 3;
 	private String LABELS[] = { "Name", "Type", "Enabled", "Fast" };
 	
-	private Model fieldModel = null;
 	private JTable ownerTable = null;
 	private boolean filterFlag;
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
+	
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public ReactionSpecsTableModel() {
-	super();
-}
 public ReactionSpecsTableModel(JTable table, boolean flag) {
 	super();
 	ownerTable = table;
@@ -100,7 +99,7 @@ public String getColumnName(int column) {
  * getColumnCount method comment.
  */
 public int getColumnCount() {
-	return NUM_COLUMNS;
+	return LABELS.length;
 }
 /**
  * Accessor for the propertyChange field.
@@ -111,16 +110,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	};
 	return propertyChange;
 }
-/**
- * getRowCount method comment.
- */
-public int getRowCount() {
-	if (getSimulationContext()==null){
-		return 0;
-	}else{
-		return getSimulationContext().getReactionContext().getNumReactionSpecs();
-	}
-}
+
 /**
  * Gets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
  * @return The simulationContext property value.
@@ -133,13 +123,7 @@ public SimulationContext getSimulationContext() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	if (row<0 || row>=getRowCount()){
-		throw new RuntimeException("ReactionSpecsTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (col<0 || col>=NUM_COLUMNS){
-		throw new RuntimeException("ReactionSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	ReactionSpec reactionSpec = getSimulationContext().getReactionContext().getReactionSpecs(row);
+	ReactionSpec reactionSpec = (ReactionSpec)rows.get(row);
 	switch (col){
 		case COLUMN_NAME:{
 			return reactionSpec.getReactionStep();
@@ -158,7 +142,7 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_FAST:{
 			if (reactionSpec.getReactionStep() instanceof FluxReaction){
-				return null;
+				return new Boolean(false);
 			}else{
 				return new Boolean(reactionSpec.isFast());
 			}
@@ -200,15 +184,16 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() instanceof cbit.vcell.mapping.ReactionContext
-		&& evt.getPropertyName().equals("reactionSpecs")) {
+	if (evt.getSource() == this && evt.getPropertyName().equals("simulationContext")) {
+		populateData();
+	}
+	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("reactionSpecs")) {
 		fireTableDataChanged();
 	}
-	if (evt.getSource() instanceof cbit.vcell.model.ReactionStep
-		&& evt.getPropertyName().equals("name")) {
+	if (evt.getSource() instanceof ReactionStep && evt.getPropertyName().equals("name")) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
-	if (evt.getSource() instanceof cbit.vcell.mapping.ReactionSpec) {
+	if (evt.getSource() instanceof ReactionSpec) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
 }
@@ -218,9 +203,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
+
 /**
  * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
  * @param simulationContext The new value for the property.
@@ -230,52 +213,39 @@ public void setSimulationContext(SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	if (oldValue != null){
 		oldValue.removePropertyChangeListener(this);
-		updateListenersReactionContext(oldValue.getReactionContext(),true);
-		//ReactionStep oldSteps[] = oldValue.getModel().getReactionSteps();
-		//for (int i=0;i<oldSteps.length;i++){
-			//oldSteps[i].removePropertyChangeListener(this);
-		//}
-		//oldValue.getReactionContext().removePropertyChangeListener(this);
-		//ReactionSpec oldSpecs[] = oldValue.getReactionContext().getReactionSpecs();
-		//for (int i=0;i<oldSpecs.length;i++){
-			//oldSpecs[i].removePropertyChangeListener(this);
-		//}
+		ReactionContext reactionContext = oldValue.getReactionContext();
+		reactionContext.removePropertyChangeListener(this);
+		ReactionSpec oldSpecs[] = reactionContext.getReactionSpecs();
+		for (int i=0;i<oldSpecs.length;i++){
+			oldSpecs[i].getReactionStep().removePropertyChangeListener(this);
+			oldSpecs[i].removePropertyChangeListener(this);
+		}
 	}
 	fieldSimulationContext = simulationContext;
 	if (simulationContext!=null){
 		simulationContext.addPropertyChangeListener(this);
-		updateListenersReactionContext(simulationContext.getReactionContext(),false);
-		//ReactionStep newSteps[] = simulationContext.getModel().getReactionSteps();
-		//for (int i=0;i<newSteps.length;i++){
-			//newSteps[i].addPropertyChangeListener(this);
-		//}
-		//simulationContext.getReactionContext().addPropertyChangeListener(this);
-		//ReactionSpec newSpecs[] = simulationContext.getReactionContext().getReactionSpecs();
-		//for (int i=0;i<newSpecs.length;i++){
-			//newSpecs[i].addPropertyChangeListener(this);
-		//}
+		ReactionContext reactionContext = fieldSimulationContext.getReactionContext();
+		reactionContext.addPropertyChangeListener(this);
+		ReactionSpec newSpecs[] = reactionContext.getReactionSpecs();
+		for (int i=0;i<newSpecs.length;i++){
+			newSpecs[i].getReactionStep().addPropertyChangeListener(this);
+			newSpecs[i].addPropertyChangeListener(this);
+		}
 	}
 	firePropertyChange("simulationContext", oldValue, simulationContext);
-	fireTableDataChanged();
 }
-/**
- * Sets the model property (cbit.vcell.model.Model) value.
- * @param model The new value for the property.
- * @see #getModel
- */
-public void setModel(Model model) {
-	Model oldValue = fieldModel;
-	fieldModel = model;
-	firePropertyChange("model", oldValue, model);
+
+private void populateData() {
+	if (getSimulationContext() == null) {
+		setData(new ArrayList<ReactionSpec>());
+	} else {
+		List<ReactionSpec> rslist = Arrays.asList(getSimulationContext().getReactionContext().getReactionSpecs());
+		setData(rslist);
+	}
 }
+
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	if (rowIndex<0 || rowIndex>=getRowCount()){
-		throw new RuntimeException("ReactionSpecsTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("ReactionSpecsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	ReactionSpec reactionSpec = getSimulationContext().getReactionContext().getReactionSpecs(rowIndex);
+	ReactionSpec reactionSpec = (ReactionSpec)rows.get(rowIndex);
 	try {
 		switch (columnIndex){
 			case COLUMN_ENABLED:{
@@ -303,28 +273,48 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		e.printStackTrace(System.out);
 	}
 }
-/**
- * Insert the method's description here.
- * Creation date: (9/12/2005 2:44:36 PM)
- */
-private void updateListenersReactionContext(cbit.vcell.mapping.ReactionContext reactionContext,boolean bRemove) {
+@Override
+public void sortColumn(int col, boolean ascending) {
+	  Collections.sort(rows, new ReactionSpecComparator(col, ascending));
+	  fireTableDataChanged();
+}
 
-	if(bRemove){
-		reactionContext.removePropertyChangeListener(this);
-		ReactionSpec oldSpecs[] = reactionContext.getReactionSpecs();
-		for (int i=0;i<oldSpecs.length;i++){
-			oldSpecs[i].getReactionStep().removePropertyChangeListener(this);
-			oldSpecs[i].removePropertyChangeListener(this);
-		}
-	}else{
-		reactionContext.addPropertyChangeListener(this);
-		ReactionSpec newSpecs[] = reactionContext.getReactionSpecs();
-		for (int i=0;i<newSpecs.length;i++){
-			newSpecs[i].getReactionStep().addPropertyChangeListener(this);
-			newSpecs[i].addPropertyChangeListener(this);
-		}
+private class ReactionSpecComparator implements Comparator<ReactionSpec> {
+	protected int index;
+	protected boolean ascending;
+
+	public ReactionSpecComparator(int index, boolean ascending){
+		this.index = index;
+		this.ascending = ascending;
 	}
-
+	
+	public int compare(ReactionSpec parm1, ReactionSpec parm2){
+		
+		switch (index) {
+			case COLUMN_NAME:{
+				int bCompare = parm1.getReactionStep().getName().compareToIgnoreCase(parm2.getReactionStep().getName());
+				return ascending ? bCompare : -bCompare;
+			}
+			case COLUMN_TYPE:{
+				String type1 = (parm1.getReactionStep() instanceof SimpleReaction) ? "Reaction" : "Flux";
+				String type2 = (parm2.getReactionStep() instanceof SimpleReaction) ? "Reaction" : "Flux";
+				int bCompare = type1.compareTo(type2);
+				return ascending ? bCompare : -bCompare;
+				
+			}
+			case COLUMN_ENABLED:{
+				int bCompare = new Boolean(!parm1.isExcluded()).compareTo(new Boolean(!parm2.isExcluded()));
+				return ascending ? bCompare : -bCompare;
+			}
+			case COLUMN_FAST:{
+				Boolean fast1 = (parm1.isFast() && !(parm1.getReactionStep() instanceof FluxReaction)) ? true : false;
+				Boolean fast2 = (parm2.isFast() && !(parm2.getReactionStep() instanceof FluxReaction)) ? true : false;
+				int bCompare = fast1.compareTo(fast2);
+				return ascending ? bCompare : -bCompare;
+			}
+		}
+		return 1;
+	}
 }
 
 }

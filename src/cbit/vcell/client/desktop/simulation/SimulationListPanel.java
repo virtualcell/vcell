@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -22,6 +23,8 @@ import javax.swing.table.TableCellEditor;
 import org.vcell.util.gui.JTableFixed;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
@@ -932,14 +935,23 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 private void newSimulation() {
-	try {
-		int newSimIndex = getSimulationWorkspace().newSimulation();
-		getScrollPaneTable().getSelectionModel().setSelectionInterval(newSimIndex, newSimIndex);
-		getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(newSimIndex, 0, true));
-	} catch (Throwable exc) {
-		exc.printStackTrace(System.out);
-		cbit.vcell.client.PopupGenerator.showErrorDialog(this, "Could not create new simulation\n"+exc.getMessage());
-	}
+	AsynchClientTask task1 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			getSimulationWorkspace().getSimulationOwner().refreshMathDescription();
+		}
+	};
+	AsynchClientTask task2 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			int newSimIndex = getSimulationWorkspace().newSimulation();
+			getScrollPaneTable().getSelectionModel().setSelectionInterval(newSimIndex, newSimIndex);
+			getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(newSimIndex, 0, true));
+		}
+	};
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
 }
 
 

@@ -135,34 +135,6 @@ public ElectricalStimulusPanel() {
 }
 
 /**
- * CurrentClampStimulusPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public ElectricalStimulusPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-
-
-/**
- * CurrentClampStimulusPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public ElectricalStimulusPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * CurrentClampStimulusPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public ElectricalStimulusPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
-
-/**
  * connEtoC1:  (simulationContext1.this --> ElectricalStimulusPanel.setRadioButtons(Lcbit.vcell.mapping.SimulationContext;)V)
  * @param value cbit.vcell.mapping.SimulationContext
  */
@@ -1435,6 +1407,7 @@ private void setPanelsVisible() {
 	boolean bHasStimulus = (getElectricalStimulus(getSimulationContext()) != null);
 	getpatchElectrodePanel().setVisible(bHasStimulus);
 	getgroundElectrodePanel().setVisible(bHasStimulus);
+	getBtnGraphElectricalStimulus().setVisible(bHasStimulus);
 	getparameterTable().setVisible(bHasStimulus);
 	getpatchElectrodeLabel().setVisible(bHasStimulus);
 	getgroundElectrodeLabel().setVisible(bHasStimulus);
