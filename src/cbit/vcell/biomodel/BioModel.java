@@ -54,7 +54,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 		super();
 		fieldName = new String("NoName");		
 		fieldModel = new Model("unnamed");
-		vcMetaData = new VCMetaData(this, "http://vcell.org/data/", null); 
+		vcMetaData = new VCMetaData(this, null); 
 		fieldModel.setVcMetaData(vcMetaData);
 		addVetoableChangeListener(this);
 		addPropertyChangeListener(this);

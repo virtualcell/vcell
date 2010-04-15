@@ -40,22 +40,21 @@ public class VCMetaData {
 
 	protected IdentifiableProvider identifiableProvider;
 	protected SBBox rdfBox = SBBoxFactory.create();
-	protected String baseURI;
 	protected OpenRegistry registry = new OpenRegistry();
 	private IdentityHashMap<OpenEntry, NonRDFAnnotation> nonRDFAnnotationMap =
 				new IdentityHashMap<OpenEntry, NonRDFAnnotation>();
 	private KeyValue keyValue = null;
 	
-	public VCMetaData(IdentifiableProvider arg_IdentifiableProvider, String baseURI, KeyValue key){
+	public VCMetaData(IdentifiableProvider arg_IdentifiableProvider, KeyValue key){
 		this.identifiableProvider = arg_IdentifiableProvider;
-		this.baseURI = baseURI;
 		this.keyValue = key;
 	}
 
 	public SBBox getSBbox() { return rdfBox; }
 	
 	public Model getRdfData() { return rdfBox.getData(); }
-	public String getBaseURI() { return baseURI; }
+	public String getBaseURI() { return XMLTags.METADATA_NS; }
+	public String getBaseURIExtended() { return XMLTags.METADATA_NS_EXTENDED; }
 	public OpenRegistry getRegistry() { return registry; }
 	
 	public boolean compareEquals(VCMetaData vcMetaData) {

@@ -13,16 +13,16 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 public class JenaIOUtil {
 	
-	public static Model modelFromText(String text) {
+	public static Model modelFromText(String text, String uri) {
 		Model model = ModelFactory.createDefaultModel();
 		StringReader strReader = new StringReader(text);
-		model.read(strReader, "");
+		model.read(strReader, uri);
 		return model;
 	}
 	
-	public static Model modelFromText(Model model, String text) {
+	public static Model modelFromText(Model model, String text, String uri) {
 		StringReader strReader = new StringReader(text);
-		model.read(strReader, "");
+		model.read(strReader, uri);
 		return model;
 	}
 	

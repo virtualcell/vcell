@@ -41,7 +41,8 @@ public class PCNeighborsRequest extends PathwayCommonsRequest {
 				response = new PCErrorResponse(this, PCErrorResponse.errorElement(text));
 			} else {
 				try { 
-					response = new PCTextModelResponse(this, text, JenaIOUtil.modelFromText(text)); 
+					response = new PCTextModelResponse(this, text, 
+							JenaIOUtil.modelFromText(text, uriBase)); 
 				} catch(Throwable t) { response = new PCTextResponse(this, text); }				
 			}
 		} 

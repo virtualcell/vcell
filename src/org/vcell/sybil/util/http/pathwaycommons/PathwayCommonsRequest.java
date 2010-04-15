@@ -14,6 +14,8 @@ import org.vcell.sybil.util.text.StringUtil;
 public abstract class PathwayCommonsRequest {
 
 	public static final String defaultBaseURL = "http://www.pathwaycommons.org/pc/webservice.do";
+	public static final String uriBase = "";
+	
 
 	protected Vector<PCRParameter> paras = new Vector<PCRParameter>();
 	

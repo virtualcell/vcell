@@ -19,7 +19,6 @@ import org.vcell.sybil.util.text.StringUtil;
 public class PCIDRequest extends PathwayCommonsRequest {
 	
 	protected String id;
-	
 	public PCIDRequest(String id)  { 
 		super(PCRParameter.CmdVersion.getRecordByCPID); 
 		this.id = id;
@@ -32,7 +31,7 @@ public class PCIDRequest extends PathwayCommonsRequest {
 			URL url = url();
 			URLConnection connection = url.openConnection();
 			String text = StringUtil.textFromInputStream(connection.getInputStream());
-			try { return new PCTextModelResponse(this, text, JenaIOUtil.modelFromText(text)); } 
+			try { return new PCTextModelResponse(this, text, JenaIOUtil.modelFromText(text, uriBase)); } 
 			catch(Throwable t) { return new PCTextResponse(this, text); }
 		} 
 		catch (MalformedURLException e) { return new PCExceptionResponse(this, e); } 
