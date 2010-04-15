@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.axis.utils.XMLUtils;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -483,15 +484,8 @@ public class BiomodelsDB_TestSuite {
 			}
 //		}
 		if(saveSupportedXMLPathname != null){
-			XMLOutputter xmlOut = new XMLOutputter("  ");
-			xmlOut.setEncoding("ISO-8859-1");
-		    xmlOut.setNewlines(true);
-			xmlOut.setTrimAllWhite(true);		
-			String supportedXML = xmlOut.outputString(supportedDocument);
-			FileOutputStream fos = new FileOutputStream(saveSupportedXMLPathname);
-			BufferedOutputStream bos = new BufferedOutputStream(fos);
-			bos.write(supportedXML.getBytes());
-			bos.close();
+			String supportedXML = XmlUtil.xmlToString(supportedDocument, true);
+			XmlUtil.writeXMLStringToFile(supportedXML, saveSupportedXMLPathname.getAbsolutePath(), true);
 		}
 		return supportedDocument;
 	}
