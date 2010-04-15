@@ -29,14 +29,6 @@ public class InfBoxImp implements InferenceBox {
 		rdf = ModelFactory.createUnion(data, infered);
 	}
 	
-	public void performOWLMicroReasoning() {
-		InfModel infModelNew = ModelFactory.createInfModel(ReasonerRegistry.getOWLMicroReasoner(), 
-				schema, data);
-		infered.removeAll();
-		infered.add(infModelNew);
-		rdf = ModelFactory.createUnion(data, infered);
-	}
-	
 	public void performSYBREAMReasoning() {
 		InfModel infModelNew = ModelFactory.createInfModel(SYBREAMFactory.defaultSYBREAM(), 
 				schema, data);

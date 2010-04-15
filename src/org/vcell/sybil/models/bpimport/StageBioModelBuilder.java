@@ -71,7 +71,7 @@ public class StageBioModelBuilder {
 
 		SBBox.MutableSystemModel systemModel = view.systemModel();
 		SBBox box = view.box();
-		box.performOWLMicroReasoning();
+		box.performSYBREAMReasoning();
 		BuilderTray tray = new BuilderTray(box, view.bioModel());
 
 		for(SBBox.Location location : view.locations()) {	    	

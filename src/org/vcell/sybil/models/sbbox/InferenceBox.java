@@ -10,8 +10,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 
 public interface InferenceBox extends RDFBox {
 	
-	public void performOWLMicroReasoning();
-	
 	public void performSYBREAMReasoning();
 	
 	public Model getSbpax();
