@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -349,7 +350,16 @@ public class BioModelsNetJPanel extends JPanel {
 							BioModelsNetJPanel.this, "Select a BioModel to import",
 							new String[] {"Model Names","BioModels Entry ID"}, rowData,
 							ListSelectionModel.SINGLE_SELECTION,null,
-							new String[] {importNow,cancel},importNow,null);
+							new String[] {importNow,cancel},importNow,new Comparator<Object>() {
+
+								public int compare(Object o1, Object o2) {
+									if (o1 instanceof String && o2 instanceof String) {
+										return ((String)o1).compareTo((String)o2);
+									}
+									throw new RuntimeException("row data should only be String");
+								}
+								
+							});
 					
 					if(result.selectedOption != null && result.selectedOption.equals(importNow)){
 						//Close Dialog showing "this" panel so ProgressPopup not obscured during openDocument
