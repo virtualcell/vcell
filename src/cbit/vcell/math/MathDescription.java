@@ -33,6 +33,7 @@ import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.xml.SizeFunctionNotSupportedException;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 /**
@@ -2733,10 +2734,15 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}
 			if (token.equalsIgnoreCase(VCML.Function)){
 				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
-				//exp.bindExpression(this);
-				Function function = new Function(token,exp);
-				varHash.addVariable(function);
+				try {
+					Expression exp = new Expression(tokens);
+					//exp.bindExpression(this);
+					Function function = new Function(token,exp);
+					varHash.addVariable(function);
+				} catch (SizeFunctionNotSupportedException ex) {
+					// ignore size functions.
+					ex.printStackTrace(System.out);
+				}
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.CompartmentSubDomain)){
