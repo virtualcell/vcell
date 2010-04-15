@@ -1,8 +1,8 @@
 package cbit.vcell.xml;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /**
  * This class contains all the XML tags.
  */
@@ -27,8 +27,11 @@ public class XMLTags {
 	public static final String VCML_NS_BLANK 			 = "";
 	public static final String VCELL_NS_PREFIX 			 = "vcell";
 
-	//Tags related to MIRIAM
+	//Tags related to MetaData
 	public static final String HTML_XHTML_ATTR_TAG			= "xhtml";
+	public static final String METADATA_NS					= "http://vcell.org/data";
+	public static final String METADATA_SEP					= "#";
+	public static final String METADATA_NS_EXTENDED			= METADATA_NS  + METADATA_SEP;
 	public static final String XHTML_URI					= "http://www.w3.org/1999/xhtml";
 //	public static final String XHTML_HTML_BEGIN_TEMPLATE	= "<html "+HTML_XHTML_ATTR_TAG+"=\""+XHTML_URI+"\">\n<head><title></title></head>";
 //	public static final String XHTML_HTML_END_TEMPLATE		= "</html>";

@@ -12,6 +12,7 @@ import org.vcell.sybil.rdf.JenaIOUtil;
 import org.vcell.sybil.util.text.StringUtil;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.xml.XMLTags;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
@@ -76,7 +77,7 @@ public class FileManager {
 			throw new IllegalArgumentException( "No file name was provided");
 		} else {
 			String text = StringUtil.textFromFile(file);
-			JenaIOUtil.modelFromText(box().getRdf(), text);
+			JenaIOUtil.modelFromText(box().getRdf(), text, XMLTags.METADATA_NS);
 			setFile(file);
 			if(label != null) { setLabel(label); }
 			return createFileEvent(FileEvent.FileOpen);

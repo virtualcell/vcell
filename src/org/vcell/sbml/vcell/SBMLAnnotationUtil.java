@@ -40,6 +40,7 @@ public class SBMLAnnotationUtil {
 	protected NamespaceAssimilator namespaceAssimilator;
 	protected Identifiable root;
 	protected Model rdfSmelted;
+	protected String nsSBML;
 	protected XMLTriple tripleAnnotation;
 	protected XMLTriple tripleRDF = new XMLTriple("RDF", NameSpace.RDF.uri, NameSpace.RDF.prefix);
 	protected XMLTriple tripleFreeText = 
@@ -54,13 +55,14 @@ public class SBMLAnnotationUtil {
 	public SBMLAnnotationUtil(VCMetaData metaData, Identifiable root, String nsSBML) { 
 		this(metaData, nsSBML);
 		this.root = root;
+		this.nsSBML = nsSBML;
 	}
 	
 	public SBMLAnnotationUtil(VCMetaData metaData, String nsSBML) { 
 		this.metaData = metaData; 
 		tripleAnnotation = new XMLTriple("annotation", nsSBML, "");
 		namespaceAssimilator = 
-			new NamespaceAssimilator(metaData.getRegistry().getResources(), metaData.getBaseURI(), 
+			new NamespaceAssimilator(metaData.getRegistry().getResources(), nsSBML, 
 					localNamer);
 		rdfSmelted = namespaceAssimilator.smelt(metaData.getRdfData());
 		SameAsCrystalizer sameAsCrystalizer = new SameAsCrystalizer(nsSBML);
@@ -78,7 +80,8 @@ public class SBMLAnnotationUtil {
 	
 	public void readMetaID(Identifiable identifiable, SBase sBase) {
 		String metaID = sBase.getMetaId();
-		metaData.getRegistry().forObject(identifiable).setURI(metaData.getBaseURI() + metaID);
+		// TODO this does not work - separator missing - fix
+		metaData.getRegistry().forObject(identifiable).setURI(nsSBML + metaID);
 	}
 	
 	public void writeAnnotation(Identifiable identifiable, SBase sBase, 
@@ -94,8 +97,8 @@ public class SBMLAnnotationUtil {
 			rdfChunk.add(chopper.getRemains());
 		}
 		XMLNode rootRDF = null;
-		if (rdfChunk != null && metaData.getBaseURI() != null) {
-			Element element = XMLRDFWriter.createElement(rdfChunk, metaData.getBaseURI());
+		if (rdfChunk != null && metaData.getBaseURIExtended() != null) {
+			Element element = XMLRDFWriter.createElement(rdfChunk, nsSBML);
 			XMLNamespaces xmlnss = new XMLNamespaces();
 			xmlnss.add(NameSpace.RDF.uri, NameSpace.RDF.prefix);
 			rootRDF = XMLNode.convertStringToXMLNode(XmlUtil.xmlToString(element), xmlnss);
@@ -216,7 +219,7 @@ public class SBMLAnnotationUtil {
 				if(namespace != null) {
 					if(namespace.equals(NameSpace.RDF.uri)) {
 						// read in RDF annotation
-						Model rdfNew = JenaIOUtil.modelFromText(annotationBranch.toXMLString());
+						Model rdfNew = JenaIOUtil.modelFromText(annotationBranch.toXMLString(), nsSBML);
 						metaData.getRdfData().add(rdfNew);
 					} else if(namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD) ||
 							namespace.equals(XMLTags.VCML_NS)) {
