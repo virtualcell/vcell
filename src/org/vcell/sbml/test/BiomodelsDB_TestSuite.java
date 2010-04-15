@@ -471,8 +471,8 @@ public class BiomodelsDB_TestSuite {
 			dis.close();
 			Document document = XmlUtil.stringToXML(new String(xmlBytes), null);
 			Element bioModelElement = document.getRootElement().getChild(BIOMODELINFO_ELEMENT_NAME);
-			Attribute supportedAttribute = bioModelElement.getAttribute(SUPPORTED_ATTRIBUTE_NAME);
-			if(supportedAttribute.getBooleanValue()){
+//			Attribute supportedAttribute = bioModelElement.getAttribute(SUPPORTED_ATTRIBUTE_NAME);
+//			if(supportedAttribute.getBooleanValue()){
 				Element newBioModelElement = new Element(BIOMODELINFO_ELEMENT_NAME);
 				List<Attribute> attrList = bioModelElement.getAttributes();
 				Iterator<Attribute> iterAttr = attrList.iterator();
@@ -481,9 +481,13 @@ public class BiomodelsDB_TestSuite {
 				}
 				supportedDocument.getRootElement().addContent(newBioModelElement);
 			}
-		}
+//		}
 		if(saveSupportedXMLPathname != null){
-			String supportedXML = XmlUtil.xmlToString(supportedDocument, true);
+			XMLOutputter xmlOut = new XMLOutputter("  ");
+			xmlOut.setEncoding("ISO-8859-1");
+		    xmlOut.setNewlines(true);
+			xmlOut.setTrimAllWhite(true);		
+			String supportedXML = xmlOut.outputString(supportedDocument);
 			FileOutputStream fos = new FileOutputStream(saveSupportedXMLPathname);
 			BufferedOutputStream bos = new BufferedOutputStream(fos);
 			bos.write(supportedXML.getBytes());
