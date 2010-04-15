@@ -34,7 +34,7 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	private BufferedImage highlightImage = null;
 	private short[] highlightImageWritebackBuffer = null;
 	private float zoom = 1.0f;
-	private boolean bRemoveROIWhenDrawing = false;
+//	private boolean bRemoveROIWhenDrawing = false;
 	private int blendPercent = 50;
 	
 	private BufferedImage allROICompositeImage = null;
@@ -101,12 +101,6 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 			//ignore, try to display what you have
 		}
 	    return result;
-	}
-	public void setModeRemoveROIWhenPainting(boolean bMode){
-		bRemoveROIWhenDrawing = bMode;
-	}
-	public boolean getModeRemoveROIWhenPainting(){
-		return bRemoveROIWhenDrawing;
 	}
 
 	private void createCompositeLookup(){
@@ -358,9 +352,9 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 			highlightColor = Color.black;
 			compositeColor = Color.black;
 		}
-		if(bRemoveROIWhenDrawing){
-			highlightColor = Color.black;
-		}
+//		if(bRemoveROIWhenDrawing){
+			highlightColor = Color.black;//erase highlight when drawing
+//		}
 		float zoom = getZoom();
 		if (getHighlightImage()!=null || allROICompositeImage != null){
 			Graphics2D highlightGraphics = (getHighlightImage() != null?getHighlightImage().createGraphics():null);

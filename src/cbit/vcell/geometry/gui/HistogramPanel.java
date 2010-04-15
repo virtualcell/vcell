@@ -37,7 +37,7 @@ public class HistogramPanel extends JPanel {
 	public static final String HISTOGRAM_SELECT_PROPERTY = "HISTOGRAM_SELECT_PROPERTY";
 
 	private static final int VERT_EDGE_OFFSET = 25;
-	private static final int HORZ_EDGE_OFFSET = 40;
+	private static final int HORZ_EDGE_OFFSET = 50;
 	private int maxCount;
 	private TreeMap<Integer, Integer> originalTreeMap;//distinct pixel values and count
 	private Range viewPixelRange;
@@ -71,12 +71,13 @@ public class HistogramPanel extends JPanel {
 
 		public void layoutContainer(Container parent) {
 			// TODO Auto-generated method stub
-			hideButton.setBounds(getWidth()-hideButton.getPreferredSize().width-2,
+			int SIDE_BUTTON_WIDTH = 45;
+			hideButton.setBounds(getWidth()-SIDE_BUTTON_WIDTH-2,
 					2,
-					hideButton.getPreferredSize().width, VERT_EDGE_OFFSET-2);
-			applyButton.setBounds(getWidth()-applyButton.getPreferredSize().width-2-hideButton.getBounds().width,
-					2,
-					applyButton.getPreferredSize().width, VERT_EDGE_OFFSET-2);
+					SIDE_BUTTON_WIDTH/*hideButton.getPreferredSize().width*/, VERT_EDGE_OFFSET-2);
+			applyButton.setBounds(getWidth()-SIDE_BUTTON_WIDTH-2/*-hideButton.getBounds().width*/,
+					hideButton.getPreferredSize().height+2,
+					SIDE_BUTTON_WIDTH/*applyButton.getPreferredSize().width*/, VERT_EDGE_OFFSET-2);
 			
 			pixValLowJLabel.setBounds(HORZ_EDGE_OFFSET,
 					parent.getHeight()-VERT_EDGE_OFFSET+2,
@@ -169,7 +170,7 @@ public class HistogramPanel extends JPanel {
 				if(max > originalTreeMap.lastKey()){
 					min-= (max)-originalTreeMap.lastKey();
 				}
-				min = Math.max(0, min);
+				min = Math.max(originalTreeMap.firstKey(), min);
 				max= Math.min(max,originalTreeMap.lastKey());
 				viewPixelRange =
 					new Range(min,max);
@@ -201,7 +202,7 @@ public class HistogramPanel extends JPanel {
 				if(max > originalTreeMap.lastKey()){
 					min-= (max)-originalTreeMap.lastKey();
 				}
-				min = Math.max(0, min);
+				min = Math.max(originalTreeMap.firstKey(), min);
 				max= Math.min(max,originalTreeMap.lastKey());
 				viewPixelRange =
 					new Range(min,max);
@@ -271,16 +272,19 @@ public class HistogramPanel extends JPanel {
 	private void calcSelectedPixelRanges(MouseEvent e){
 		if(mouseStartPoint != null){
 			Range dragRange = getDragRange(e.getPoint());
-			if(isAddingSelection(e)){
-				if(dragStartUnselect){
-					pixelListSelectionModel.removeSelectionInterval((int)dragRange.getMin(), (int)dragRange.getMax());
-				}else{
-					pixelListSelectionModel.addSelectionInterval((int)dragRange.getMin(), (int)dragRange.getMax());
-				}
-			}else if((e.getModifiersEx() & (InputEvent.SHIFT_DOWN_MASK)) != 0){
+			if((e.getModifiersEx() & (InputEvent.SHIFT_DOWN_MASK)) != 0){
 				if(!pixelListSelectionModel.isSelectionEmpty() &&
 						pixelListSelectionModel.getAnchorSelectionIndex() == pixelListSelectionModel.getLeadSelectionIndex()){
 					pixelListSelectionModel.addSelectionInterval(pixelListSelectionModel.getAnchorSelectionIndex(), (int)dragRange.getMin());
+				}
+			}
+			boolean isShiftDown = (e.getModifiersEx() & (InputEvent.SHIFT_DOWN_MASK)) != 0;
+			boolean isCntrlDown = (e.getModifiersEx() & (InputEvent.CTRL_DOWN_MASK)) != 0;
+			if(isCntrlDown || isShiftDown){
+				if(!isShiftDown && dragStartUnselect){
+					pixelListSelectionModel.removeSelectionInterval((int)dragRange.getMin(), (int)dragRange.getMax());
+				}else{
+					pixelListSelectionModel.addSelectionInterval((int)dragRange.getMin(), (int)dragRange.getMax());
 				}
 			}else{
 				pixelListSelectionModel.setSelectionInterval((int)dragRange.getMin(), (int)dragRange.getMax());
@@ -348,12 +352,6 @@ public class HistogramPanel extends JPanel {
 				public void mousePressed(MouseEvent e) {
 					// TODO Auto-generated method stub
 					super.mousePressed(e);
-//					if(!isAddingSelection(e) && ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) == 0)){
-//						pixelListSelectionModel.clearSelection();
-//						if(mouseStartPoint == null && applyButton.isEnabled()){
-//							firePropertyChange(HistogramPanel.HISTOGRAM_SELECT_PROPERTY, null,pixelListSelectionModel);
-//						}
-//					}
 					repaint();
 					int dragStartIndex = getHorizontalIndex(forceInBounds(e.getPoint().x), getTreeMapView().size());
 					int dragStartPixelVal = dragStartIndex+(Integer)getTreeMapView().firstKey();
@@ -411,9 +409,6 @@ public class HistogramPanel extends JPanel {
 			}
 		);		
 	}
-	private boolean isAddingSelection(MouseEvent e){
-		return (e.getModifiersEx() & (InputEvent.CTRL_DOWN_MASK)) != 0;
-	}
 	private int forceInBounds(int forceThis){
 		if(forceThis < HORZ_EDGE_OFFSET){
 			forceThis = HORZ_EDGE_OFFSET;
@@ -450,6 +445,9 @@ public class HistogramPanel extends JPanel {
 	}
 
 	public void setHistogram(TreeMap<Integer, Integer> origHistoTreeMap){
+		pixelListSelectionModel.clearSelection();
+		applyButton.setEnabled(false);
+		
 		originalTreeMap = new TreeMap<Integer, Integer>();
 		originalTreeMap.putAll(origHistoTreeMap);
 		int minPixVal = originalTreeMap.firstKey();
@@ -505,11 +503,15 @@ public class HistogramPanel extends JPanel {
 		}
 		return subsetTreeMap;
 	}
-	public void setHasHighlights(boolean bHasHighlights){
-		applyButton.setEnabled(bHasHighlights);
-		if(!bHasHighlights && !pixelListSelectionModel.isSelectionEmpty()){
-			pixelListSelectionModel.clearSelection();// = new DefaultListSelectionModel();
-			repaint();
+	public void highlightsChanged(String action){
+		if(!action.equals(OverlayEditorPanelJAI.FRAP_DATA_HISTOUPDATEHIGHLIGHT_PROPERTY)){
+			applyButton.setEnabled(false);
+			if(!pixelListSelectionModel.isSelectionEmpty()){
+				pixelListSelectionModel.clearSelection();
+				repaint();
+			}
+		}else{
+			applyButton.setEnabled(true);
 		}
 	}
 	public void drawHistogram(Graphics2D g){
