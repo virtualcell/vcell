@@ -1,6 +1,5 @@
 package cbit.vcell.simdata.gui;
 
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -15,6 +14,7 @@ import java.util.Vector;
 
 import javax.swing.BoundedRangeModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -23,7 +23,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
@@ -1254,6 +1253,8 @@ private void initialize() {
 	// user code end
 }
 
+private static ImageIcon function_icon = null;
+private static ImageIcon old_function_icon = null;
 private void setIdentifierListRenderer() {
 	class IdentifierListCellRenderer extends DefaultListCellRenderer {
 		IdentifierListCellRenderer() {
@@ -1273,6 +1274,14 @@ private void setIdentifierListRenderer() {
 			}
 		}
 		if (f != null && f.isUserDefined()) {
+//			if (old_function_icon == null) {
+//				old_function_icon = new ImageIcon(getClass().getResource("/icons/old_function_icon.png"));
+//			}
+			if (function_icon == null) {
+				function_icon = new ImageIcon(getClass().getResource("/icons/function_icon.png"));
+			}
+//			setIcon(old_function_icon);
+			setIcon(function_icon);
 			setText(f.getDisplayName());
 		}
 		return component;

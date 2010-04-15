@@ -191,7 +191,7 @@ private void scan(File userDir, File outputDir) throws Exception {
 			File fnFile = functionFiles[i];
 			if (fnFile.exists()) {
 				// read the functions from the function files and and check if they have spaces
-				Vector<AnnotatedFunction> annotatedFnsVector = FunctionFileGenerator.readFunctionsFile(fnFile);
+				Vector<AnnotatedFunction> annotatedFnsVector = FunctionFileGenerator.readFunctionsFile(fnFile, null);
 				boolean bNameHasSpaces = false;
 				for (int j = 0; j < annotatedFnsVector.size(); j++) {
 					AnnotatedFunction afn = annotatedFnsVector.elementAt(j);

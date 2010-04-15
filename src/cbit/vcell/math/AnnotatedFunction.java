@@ -12,13 +12,18 @@ public class AnnotatedFunction extends Function implements org.vcell.util.Matcha
 	private VariableType fieldFunctionType = null;
 	private boolean bIsUserDefined = false;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	//private cbit.vcell.parser.Expression fieldSimplifiedExpression = null;
+	private String displayName = null;
 
+	public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, String argErrString, VariableType argFunctionType, boolean userDefined) {
+		this(argFunctionName, argFunctionExpression, null, argErrString, argFunctionType, userDefined);
+	}
+	
 /**
  * AnnotatedFunction constructor comment.
  */
-public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, String argErrString, VariableType argFunctionType, boolean userDefined) {
+public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, String argDisplayName, String argErrString, VariableType argFunctionType, boolean userDefined) {
 	super(argFunctionName, argFunctionExpression);
+	this.displayName = argDisplayName; 
 	if (argFunctionName.indexOf(" ") > 0) {
 		throw new RuntimeException("Spaces are not allowed in user-defined function names. Try adding the function without spaces in its name.");
 	}
@@ -69,7 +74,7 @@ public boolean isUserDefined() {
 }
 
 public String getDisplayName() {
-	return getName() + " : " + getExpression().infix();
+	return displayName != null ? displayName : getName();
 }
 
 ///**
