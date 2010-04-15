@@ -62,7 +62,7 @@ protected void initialize() throws SolverException {
 				try{
 					File existingFunctionFile = new File(functionFileName);
 					if (existingFunctionFile.exists()){
-						Vector<AnnotatedFunction> oldFuncList = FunctionFileGenerator.readFunctionsFile(existingFunctionFile);
+						Vector<AnnotatedFunction> oldFuncList = FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simulationJob.getSimulationJobID());
 						for(AnnotatedFunction func : oldFuncList){
 							if(func.isUserDefined()){
 								funcList.add(func);

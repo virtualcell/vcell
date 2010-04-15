@@ -418,7 +418,7 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 	if (!odeSimData.getColumnDescriptions(0).getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)) {
 		Vector<AnnotatedFunction> funcList;
 		try {
-			funcList = FunctionFileGenerator.readFunctionsFile(functionsFile);
+			funcList = FunctionFileGenerator.readFunctionsFile(functionsFile, vcdId.getID());
 			for (AnnotatedFunction func : funcList){
 				try {
 					Expression expression = new Expression(func.getExpression());
@@ -581,7 +581,7 @@ public static ODESimData readNCDataFile(VCDataIdentifier vcdId, File dataFile, F
 	if (!odeSimData.getColumnDescriptions(0).getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)) {
 		Vector<AnnotatedFunction> funcList;
 		try {
-			funcList = FunctionFileGenerator.readFunctionsFile(functionsFile);
+			funcList = FunctionFileGenerator.readFunctionsFile(functionsFile, vcdId.getID());
 			for (AnnotatedFunction func : funcList){
 				try {
 					Expression expression = new Expression(func.getExpression());

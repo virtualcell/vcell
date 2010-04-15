@@ -2,7 +2,6 @@ package cbit.vcell.parser;
 
 import java.util.ArrayList;
 import java.util.Map;
-
 import cbit.vcell.units.VCUnitDefinition;
 
 /**
@@ -139,6 +138,50 @@ public class SimpleSymbolTable implements ScopedSymbolTable {
 		public double getConstantValue() throws ExpressionException {
 			throw new ExpressionException("can't evaluate to constant");
 		}
+		public void setName(String arg_name){
+			name = arg_name;
+		}
+	};
+	
+	public class DefaultNameScope implements NameScope {
+		
+		public boolean isPeer(NameScope nameScope) {
+			return false;
+		}		
+		public boolean isAncestor(NameScope nameScope) {
+			return false;
+		}		
+		public String getUnboundSymbolName(String unboundName) {
+			return "unbound_" + unboundName;
+		}		
+		public String getSymbolName(SymbolTableEntry symbolTableEntry) {
+			return symbolTableEntry.getName();
+		}		
+		public ScopedSymbolTable getScopedSymbolTable() {
+			return SimpleSymbolTable.this;
+		}		
+		public String getRelativeScopePrefix(NameScope referenceNameScope) {
+			return "";
+		}		
+		public NameScope getParent() {
+			return null;
+		}		
+		public NameScope getNameScopeFromPrefix(String prefix) {
+			return this;
+		}		
+		public String getName() {
+			return "Default";
+		}		
+		public SymbolTableEntry getExternalEntry(String identifier, SymbolTable localSymbolTable) throws ExpressionBindingException {
+			return null;
+		}		
+		public void getExternalEntries(Map<String, SymbolTableEntry> entryMap) {}		
+		public NameScope[] getChildren() {
+			return null;
+		}		
+		public String getAbsoluteScopePrefix() {
+			return "";
+		}
 	};
 	
 public SimpleSymbolTable(String symbols[], SymbolTableFunctionEntry[] functionDefinitions, NameScope nameScope){
@@ -157,6 +200,7 @@ public SimpleSymbolTable(String symbols[], SymbolTableFunctionEntry[] functionDe
 
 public SimpleSymbolTable(String symbols[]){
 	this(symbols,null);
+	nameScope = new DefaultNameScope();
 }
 
 

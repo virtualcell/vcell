@@ -1040,7 +1040,7 @@ private void mergeDatasets() throws DataAccessException, IOException {
  */
 private void readFunctions(OutputContext outputContext) throws FileNotFoundException, IOException {
 
-	Vector<AnnotatedFunction> annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(getFunctionsFile(), true);
+	Vector<AnnotatedFunction> annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(getFunctionsFile(), dataInfo.getID());
 
 	// add user-defined functions from output context, if any
 	if (outputContext != null) {

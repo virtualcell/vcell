@@ -1,19 +1,23 @@
 package cbit.vcell.solvers;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.simdata.VariableType;
-import java.util.StringTokenizer;
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import cbit.vcell.math.AnnotatedFunction;
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import cbit.vcell.math.Function;
-import java.util.Vector;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 import org.vcell.util.TokenMangler;
+
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableEntry;
+import cbit.vcell.simdata.VariableType;
 /**
  * Insert the type's description here.
  * Creation date: (1/12/2004 11:06:55 AM)
@@ -78,7 +82,7 @@ public java.lang.String getBasefileName() {
  * This method was created in VisualAge.
  * @param logFile java.io.File
  */
-public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File functionsFile, boolean skipUserFunctions) throws java.io.FileNotFoundException, java.io.IOException {
+public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File functionsFile, String simJobID) throws java.io.FileNotFoundException, java.io.IOException {
 	// Check if file exists
 	if (!functionsFile.exists()){
 		throw new java.io.FileNotFoundException("functions file "+functionsFile.getPath()+" not found");
@@ -124,6 +128,8 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 	// Each token is a line representing a function name and function expression, 
 	// separated by a semicolon
 	// 
+	HashSet<String> allSymbols = new HashSet<String>();
+	
 	while (lineTokenizer.hasMoreTokens()) {
 		token1 = lineTokenizer.nextToken();
 		FunctionFileGenerator.FuncFileLineInfo funcFileLineInfo = readFunctionLine(token1);
@@ -139,16 +145,7 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 					funcFileLineInfo.functionExpr+"' for function \""+
 					funcFileLineInfo.functionName+"\"");
 			}
-//			Expression functionSimplifiedExpr = null;
-//			if(funcFileLineInfo.functionSimplifiedExpr != null){
-//				try {
-//					functionSimplifiedExpr = new Expression(funcFileLineInfo.functionSimplifiedExpr);
-//				} catch (cbit.vcell.parser.ExpressionException e) {
-//					System.out.println("Error in reading simplified expression '"+
-//						funcFileLineInfo.functionSimplifiedExpr+"' for function \""+
-//						funcFileLineInfo.functionName+"\"");
-//				}
-//			}
+
 			AnnotatedFunction annotatedFunc =
 				new AnnotatedFunction(
 						funcFileLineInfo.functionName,
@@ -156,27 +153,62 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 						funcFileLineInfo.errorString,
 						funcFileLineInfo.funcVarType,
 						funcFileLineInfo.funcIsUserDefined);
-//			if(functionSimplifiedExpr != null){
-//				annotatedFunc.setSimplifiedExpression(functionSimplifiedExpr);
-//			}
-			if (!skipUserFunctions) {
-				annotatedFunctionsVector.addElement(annotatedFunc);
-			} else {
-				// do not add user defined functions
-				if (!annotatedFunc.isUserDefined()) {
-					annotatedFunctionsVector.addElement(annotatedFunc);
-				}
+
+			allSymbols.add(annotatedFunc.getName());
+			String[] symbols = annotatedFunc.getExpression().getSymbols();
+			if (symbols != null) {
+				allSymbols.addAll(Arrays.asList(symbols));
 			}
+			annotatedFunctionsVector.addElement(annotatedFunc);
 		}
 
 		j++;
 	}
-
+	
+	if (simJobID != null && simJobID.trim().length() > 0) {	
+		SimpleSymbolTable simpleSymbolTable = new SimpleSymbolTable(allSymbols.toArray(new String[0]));	
+		
+		// bind
+		for (AnnotatedFunction func : annotatedFunctionsVector) {		
+			if (func.isUserDefined()) {
+				try {
+					func.bind(simpleSymbolTable);
+				} catch (ExpressionBindingException e) {
+					e.printStackTrace();
+				}
+			}		
+		}
+		
+		// rename symbol table entries
+		for (int i = 0; i < annotatedFunctionsVector.size(); i ++) {
+			AnnotatedFunction func = annotatedFunctionsVector.get(i);
+			if (func.isUserDefined()) {
+				try {
+					SimpleSymbolTableEntry ste = (SimpleSymbolTableEntry)simpleSymbolTable.getEntry(func.getName());
+					ste.setName(simJobID + "_" + func.getName());
+				} catch (ExpressionBindingException e) {
+					e.printStackTrace();
+				}
+			}		
+		}
+		
+		// rename in the expressions
+		for (int i = 0; i < annotatedFunctionsVector.size(); i ++) {
+			AnnotatedFunction func = annotatedFunctionsVector.get(i);
+			if (func.isUserDefined()) {
+				try {
+					Expression exp = func.getExpression().renameBoundSymbols(simpleSymbolTable.getNameScope());
+					AnnotatedFunction newfunc = new AnnotatedFunction(simJobID + "_" + func.getName(), 
+							exp, func.getName(), func.getErrorString(), func.getFunctionType(), func.isUserDefined());
+					annotatedFunctionsVector.set(i, newfunc);
+				} catch (ExpressionBindingException e) {
+					e.printStackTrace();
+				}
+			}		
+		}		
+	}
+	
 	return annotatedFunctionsVector;
-}
-
-public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File functionsFile) throws java.io.FileNotFoundException, java.io.IOException {
-	return readFunctionsFile(functionsFile, false);
 }
 
 public static FunctionFileGenerator.FuncFileLineInfo readFunctionLine(String functionFileLine) throws IOException{

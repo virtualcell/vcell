@@ -284,7 +284,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 			Vector<AnnotatedFunction> oldUserDefinedFunctions =
 				new Vector<AnnotatedFunction>();
 			Vector<AnnotatedFunction> allOldFunctionV =
-				FunctionFileGenerator.readFunctionsFile(existingFunctionFile);
+				FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simulationJob.getSimulationJobID());
 			for(int i=0;i<allOldFunctionV.size();i+= 1){
 				if(allOldFunctionV.elementAt(i).isUserDefined()){
 					oldUserDefinedFunctions.add(allOldFunctionV.elementAt(i));

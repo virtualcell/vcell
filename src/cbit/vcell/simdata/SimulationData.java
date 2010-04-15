@@ -1276,16 +1276,16 @@ private void readFunctions(OutputContext outputContext) throws FileNotFoundExcep
 	File firstJobFunctionsFile = getFirstJobFunctionsFile();
 	File jobFunctionsFile = getJobFunctionsFile();
 	// only dataset functions
-	Vector<AnnotatedFunction> annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(jobFunctionsFile, true);
+	Vector<AnnotatedFunction> annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(jobFunctionsFile, vcDataId.getID());
 	/* not required as long as we are skipping any legacy user-defined functions from the functions file */
-//	if (!firstJobFunctionsFile.equals(jobFunctionsFile)) {
-//		Vector <AnnotatedFunction> f1 = FunctionFileGenerator.readFunctionsFile(firstJobFunctionsFile);
-//		for (AnnotatedFunction f : f1) {
-//			if (f.isUserDefined()) {
-//				annotatedFuncsVector.add(f);
-//			}
-//		}
-//	}
+	if (!firstJobFunctionsFile.equals(jobFunctionsFile)) {
+		Vector <AnnotatedFunction> f1 = FunctionFileGenerator.readFunctionsFile(firstJobFunctionsFile, vcDataId.getID());
+		for (AnnotatedFunction f : f1) {
+			if (f.isUserDefined()) {
+				annotatedFuncsVector.add(f);
+			}
+		}
+	}
 	// add user-defined functions from output context, if any
 	if (outputContext != null) {
 		for (int i = 0; i < outputContext.getOutputFunctions().length; i++) {
