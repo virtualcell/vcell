@@ -1,6 +1,6 @@
 package org.vcell.sybil.rdf.reason;
 
-/*   SYBREAMCore  --- by Oliver Ruebenacker, UCHC --- April 2008 to March 2010
+/*   SYBREAMRules  --- by Oliver Ruebenacker, UCHC --- April 2008 to March 2010
  *   Rules for System Biological Reasoning Engine for Analysis and Modeling
  */
 
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import org.vcell.sybil.rdf.reason.builtin.MakeAndKeep;
+import org.vcell.sybil.rdf.reason.rules.OWLRules;
 import org.vcell.sybil.rdf.reason.rules.RuleSpec;
 import org.vcell.sybil.rdf.schemas.BioPAX2;
 import org.vcell.sybil.rdf.schemas.SBPAX;
@@ -17,6 +17,7 @@ import org.vcell.sybil.rdf.schemas.SBPAX;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.reasoner.rulesys.BuiltinRegistry;
 import com.hp.hpl.jena.reasoner.rulesys.Node_RuleVariable;
 import com.hp.hpl.jena.reasoner.rulesys.Rule;
 import com.hp.hpl.jena.reasoner.rulesys.builtins.MakeTemp;
@@ -26,6 +27,10 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 public class SYBREAMRules {
 
 	static public List<Rule> rules = new Vector<Rule>();
+	
+	static {
+		BuiltinRegistry.theRegistry.register(new MakeSkolem());		
+	}
 	
 	static public Rule ruleBioPAX2Catalyst;
 	
@@ -75,7 +80,7 @@ public class SYBREAMRules {
 		rs.body().add(assumptionVar, SYBREAMO.appliesToSubstance, substanceVar);
 		rs.body().add(participantVar, RDF.type, SBPAX.ProcessParticipant);
 		rs.body().add(participantVar, BioPAX2.PHYSICAL_ENTITY, substanceVar);
-		rs.body().add(new MakeAndKeep(), participantVar, BioPAX2.PHYSICAL_ENTITY.asNode(), speciesVar);
+		rs.body().add(new MakeSkolem(), participantVar, BioPAX2.PHYSICAL_ENTITY.asNode(), speciesVar);
 		rs.head().add(participantVar, SBPAX.involves, speciesVar);
 		rs.head().add(speciesVar, SBPAX.consistsOf, substanceVar);
 		ruleUnmodifiableSubstance = rs.createRule();
@@ -90,7 +95,7 @@ public class SYBREAMRules {
 		Node_RuleVariable numberVar = rs.var("number");
 		rs.body().add(participantVar, RDF.type, SBPAX.ProcessParticipant);
 		rs.body().add(participantVar, BioPAX2.STOICHIOMETRIC_COEFFICIENT, numberVar);
-		rs.body().add(new MakeAndKeep(), 
+		rs.body().add(new MakeSkolem(), 
 				participantVar, BioPAX2.STOICHIOMETRIC_COEFFICIENT.asNode(), stoichiometryVar);
 		rs.head().add(stoichiometryVar, RDF.type, SBPAX.Stoichiometry);
 		rs.head().add(participantVar, SBPAX.hasStoichiometry, stoichiometryVar);
@@ -132,6 +137,7 @@ public class SYBREAMRules {
 		rules.add(RDFSCoreRules.ruleRDFS3);
 		rules.add(RDFSCoreRules.ruleRDFS6);
 		rules.add(RDFSCoreRules.ruleRDFS9);
+		rules.add(OWLRules.axiomOWLClassIsRDFSClass);
 		rules.add(ruleBioPAX2Catalyst);
 		rules.add(ruleUnmodifiableSubstanceClass);
 		rules.add(ruleUnmodifiableSubstance);

@@ -13,7 +13,7 @@ public class StageModelsBuilder {
 	
 	static public void build(SBWorkView view) {
 		SBBox box = view.box();
-		box.performOWLMicroReasoning();
+		box.performSYBREAMReasoning();
 		if(view.systemModel() == null) {
 			view.setSystemModel(box.factories().systemModel().createWithDefaultLabel());			
 		}

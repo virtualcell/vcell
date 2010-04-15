@@ -49,7 +49,7 @@ public class StageSBMLBuilder {
 	    
 	    SBBox.MutableSystemModel systemModel = view.systemModel();
 	    SBBox box = view.box();
-	    box.performOWLMicroReasoning();
+	    box.performSYBREAMReasoning();
 	    BuilderTray tray = new BuilderTray(view, new SBMLNamespaces());
 	    
 	    for(SBBox.Location location : view.locations()) { addCompartment(tray, location); }

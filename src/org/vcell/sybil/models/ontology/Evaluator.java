@@ -53,7 +53,7 @@ public class Evaluator {
 	
 	public Event createDataSet(SBWorkView view) {
 	    this.view = view;
-	    view.box().performOWLMicroReasoning();
+	    view.box().performSYBREAMReasoning();
 		chainOneResults.clear();
 		chainTwoResults.clear();
 		return new Event(this);
