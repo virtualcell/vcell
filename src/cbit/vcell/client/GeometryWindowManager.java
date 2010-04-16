@@ -230,15 +230,6 @@ public void resetDocument(VCDocument newDocument) {
 	System.out.println("XXXXXXXXXXXXXXXXXXXX not yet finished");
 }
 
-
-/**
- * Comment
- */
-public void saveDocument(boolean replace) {
-	getRequestManager().saveDocument(this, replace);
-}
-
-
 /**
  * Comment
  */
