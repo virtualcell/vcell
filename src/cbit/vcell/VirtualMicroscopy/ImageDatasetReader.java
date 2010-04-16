@@ -248,7 +248,7 @@ public class ImageDatasetReader {
 	
 	private static double[] getTimes(ImageReader imageReader){
 		MetadataRetrieve meta = (MetadataRetrieve)imageReader.getMetadataStore();
-		Float[] timeFArr = new Float[imageReader.getSizeT()/*getImageCount()*/];
+		Float[] timeFArr = new Float[imageReader.getSizeT()];
 		//Read raw times
 		for (int i = 0; i < timeFArr.length; i++) {
 			Float timeF = meta.getPlaneTimingDeltaT(0, 0, i);
@@ -275,7 +275,7 @@ public class ImageDatasetReader {
 		}
 		//If can't read properly then fill in with integers
 		if(times == null){
-			times = new double[imageReader.getImageCount()];
+			times = new double[imageReader.getSizeT()];
 			for (int i = 0; i < times.length; i++) {
 				times[i] = i;
 			}
