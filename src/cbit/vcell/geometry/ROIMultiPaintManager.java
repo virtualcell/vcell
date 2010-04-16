@@ -422,6 +422,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				getClientTaskStatusSupport().setMessage("Initializing ROI data.");
 //				System.out.println("----------task "+getTaskName());
 				mergedCrop3D = new ROIMultiPaintManager.Crop3D();
+				//Fix border padding problem
+				enhancedImageDataset = null;
+				enhanceImageOp = ROIMultiPaintManager.ENHANCE_NONE;
 				//
 				//previouslyEditedVCImage and previousCrop3D can be null if this is the first time this method
 				//has been called in an editing session. 
