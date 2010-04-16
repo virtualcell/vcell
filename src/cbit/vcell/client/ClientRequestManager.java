@@ -1,38 +1,25 @@
 package cbit.vcell.client;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.awt.image.CropImageFilter;
-import java.awt.image.DataBufferByte;
-import java.awt.image.FilteredImageSource;
-import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 
-import javax.swing.DefaultListSelectionModel;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -40,16 +27,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.undo.UndoableEditSupport;
 
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
-import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.UserCancelException;
@@ -67,28 +50,21 @@ import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.AsynchGuiUpdater;
-import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
 
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
-
-import com.ctc.wstx.io.MergedReader;
-
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
-import cbit.image.VCPixelClass;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
-import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
@@ -112,7 +88,6 @@ import cbit.vcell.client.task.CheckBeforeDelete;
 import cbit.vcell.client.task.CheckUnchanged;
 import cbit.vcell.client.task.ChooseFile;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.client.task.DeleteOldDocument;
 import cbit.vcell.client.task.DocumentToExport;
 import cbit.vcell.client.task.DocumentValid;
@@ -133,13 +108,8 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.ROIMultiPaintManager;
-import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.gui.GeometrySummaryPanel;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
-import cbit.vcell.geometry.gui.OverlayImageDisplayJAI;
-import cbit.vcell.geometry.gui.ROISourceData;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
@@ -345,17 +315,22 @@ public static void continueAfterMathModelGeomChangeWarning(MathModelWindowManage
 	throw UserCancelException.CANCEL_GENERIC;
 }
 
+enum CloseOption {
+	SAVE_AND_CLOSE,
+	CLOSE_IN_ANY_CASE,
+	CANCEL_CLOSE,
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/21/2004 4:20:47 AM)
  * @param windowManager cbit.vcell.client.desktop.DocumentWindowManager
  */
-private boolean checkBeforeClosing(DocumentWindowManager windowManager) {
+private CloseOption checkBeforeClosing(DocumentWindowManager windowManager) {
 	getMdiManager().showWindow(windowManager.getManagerID());
 	// we need to check for changes and get user confirmation...
 	VCDocument vcDocument = windowManager.getVCDocument();
 	if (vcDocument.getVersion() == null && !isDifferentFromBlank(vcDocument.getDocumentType(), vcDocument)) {
-		return true;
+		return CloseOption.CLOSE_IN_ANY_CASE;
 	}
 	boolean isChanged = true;
 	try {
@@ -364,19 +339,22 @@ private boolean checkBeforeClosing(DocumentWindowManager windowManager) {
 		String choice = PopupGenerator.showWarningDialog(windowManager, getUserPreferences(), UserMessage.warn_UnableToCheckForChanges, null);
 		if (choice.equals(UserMessage.OPTION_CANCEL)){
 			// user canceled
-			return false;
+			return CloseOption.CANCEL_CLOSE;
 		}
 	}
 	// warn if necessary
 	if (isChanged) {
-		String choice = PopupGenerator.showWarningDialog(windowManager, getUserPreferences(), UserMessage.warn_closeWithoutSave,null);
+		String choice = PopupGenerator.showWarningDialog(windowManager, getUserPreferences(), UserMessage.warn_close,null);
 		if (choice.equals(UserMessage.OPTION_CANCEL)){
 			// user canceled
-			return false;
+			return CloseOption.CANCEL_CLOSE;
+		}
+		if (choice.equals(UserMessage.OPTION_YES)) {
+			return CloseOption.SAVE_AND_CLOSE;
 		}
 	}
 	// nothing changed, or user confirmed, close it
-	return true;
+	return CloseOption.CLOSE_IN_ANY_CASE;
 }
 
 
@@ -445,24 +423,40 @@ private boolean closeAllWindows(boolean duringExit) {
  * Creation date: (5/24/2005 1:48:09 PM)
  * @param windowID java.lang.String
  */
-public boolean closeWindow(java.lang.String windowID, boolean exitIfLast) {
+public boolean closeWindow(final java.lang.String windowID, final boolean exitIfLast) {
 	// called from DocumentWindow or from DatabaseWindow
-	TopLevelWindowManager windowManager = getMdiManager().getWindowManager(windowID);
+	final TopLevelWindowManager windowManager = getMdiManager().getWindowManager(windowID);
 	if (windowManager instanceof DocumentWindowManager) {
 		// we'll need to run some checks first
 		getMdiManager().showWindow(windowID);
 		getMdiManager().blockWindow(windowID);
-		if (checkBeforeClosing((DocumentWindowManager)windowManager)) {
+		CloseOption closeOption = checkBeforeClosing((DocumentWindowManager)windowManager);
+		if (closeOption.equals(CloseOption.CANCEL_CLOSE)) {
+			// user canceled
+			getMdiManager().unBlockWindow(windowID);
+			return false;
+		} else if (closeOption.equals(CloseOption.SAVE_AND_CLOSE)) {
+			AsynchClientTask closeTask = new AsynchClientTask("close window", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					int openWindows = getMdiManager().closeWindow(windowManager.getManagerID());
+					if (exitIfLast && (openWindows == 0)) {
+						setBExiting(true);
+						exitApplication();
+					}
+				}
+			};
+
+			saveDocument((DocumentWindowManager)windowManager, true, closeTask);
+			return true; 
+		} else {
 			int openWindows = getMdiManager().closeWindow(windowID);
 			if (exitIfLast && (openWindows == 0)) {
 				setBExiting(true);
 				exitApplication();
 			}
 			return true;
-		} else {
-			// user canceled
-			getMdiManager().unBlockWindow(windowID);
-			return false;
 		}
 	} else if (windowManager instanceof DatabaseWindowManager) {
 		// nothing to check here, just close it
@@ -615,13 +609,30 @@ public void connectAs(final String user,  final String password, final TopLevelW
 	String confirm = PopupGenerator.showWarningDialog(requester, getUserPreferences(), UserMessage.warn_changeUser,null);
 	if (confirm.equals(UserMessage.OPTION_CANCEL)){
 		return;
-	}
-	else {
+	} else {
 		boolean closedAllWindows = closeAllWindows(false);
 		if (! closedAllWindows) {
 			// user bailed out on closing some window
 			return;
 		} else {
+			AsynchClientTask waitTask = new AsynchClientTask("wait for window closing", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					// wait until all windows are closed.
+					while (true) {
+						int numOpenWindows = getMdiManager().closeWindow(ClientMDIManager.DATABASE_WINDOW_ID);
+						if (numOpenWindows == 0) {
+							break;
+						}
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}					
+				}
+			};
 			// ok, connect as a different user
 			// asynch & nothing to do on Swing queue (updates handled by events)
 			String taskName = "Connecting as " + user;
@@ -638,10 +649,11 @@ public void connectAs(final String user,  final String password, final TopLevelW
 					getMdiManager().refreshRecyclableWindows();
 				}
 			};
-			AsynchClientTask[] taskArray = new AsynchClientTask[newTasks.length + 2];
-			System.arraycopy(newTasks, 0, taskArray, 0, newTasks.length);
-			taskArray[newTasks.length] = task1;
-			taskArray[newTasks.length + 1] = task2;
+			AsynchClientTask[] taskArray = new AsynchClientTask[newTasks.length + 3];
+			taskArray[0] = waitTask;
+			System.arraycopy(newTasks, 0, taskArray, 1, newTasks.length);
+			taskArray[taskArray.length - 2] = task1;
+			taskArray[taskArray.length - 1] = task2;
 			
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 			hash.put("guiParent", requester.getComponent());
@@ -2264,21 +2276,25 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 	ClientTaskDispatcher.dispatch(currentDocumentWindow, hash, tasks, true);
 }
 
-
+public void saveDocument(DocumentWindowManager documentWindowManager, boolean replace) {
+	saveDocument(documentWindowManager, replace, null);
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/27/2004 3:09:25 PM)
  * @param vcDocument cbit.vcell.document.VCDocument
  * @param replace boolean
  */
-public void saveDocument(DocumentWindowManager documentWindowManager, boolean replace) {
+public void saveDocument(final DocumentWindowManager documentWindowManager, boolean replace, AsynchClientTask closeWindowTask) {
 	
 	/*	run some quick checks first to validate request to save or save edition */
 	if (documentWindowManager.getVCDocument().getVersion() == null) {
-		// never saved - can't see this happening, but check anyway and default to save as
+		// it can never see this happening before, but check anyway and default to save as
+		// but since we can allow user to save during closing, now it can happen
 		// (save/save edition buttons should have not been enabled upon document window creation)
 		System.out.println("\nIGNORED ERROR: should not have been able to use save/save edition on doc with no version key\n");
-		saveDocumentAsNew(documentWindowManager);
+		saveDocumentAsNew(documentWindowManager, closeWindowTask);
+		return;
 	}
 	if(!documentWindowManager.getVCDocument().getVersion().getOwner().compareEqual(getDocumentManager().getUser())) {
 		// not the owner - this should also not happen, but check anyway...
@@ -2287,12 +2303,16 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
 		String choice = PopupGenerator.showWarningDialog(documentWindowManager, getUserPreferences(), UserMessage.warn_SaveNotOwner,null);
 		if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW)){
 			// user chose to Save As
-			saveDocumentAsNew(documentWindowManager);
+			saveDocumentAsNew(documentWindowManager, closeWindowTask);
 			return;
 		} else {
-			// user canceled, just show existing document
-			getMdiManager().showWindow(documentWindowManager.getManagerID());
-			return;
+			if (closeWindowTask == null) {
+				// user canceled, just show existing document
+				getMdiManager().showWindow(documentWindowManager.getManagerID());
+				return;
+			} else {
+				ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {closeWindowTask}, false);
+			}
 		}
 	}
 		
@@ -2316,15 +2336,15 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
 	AsynchClientTask checkUnchanged = new CheckUnchanged(false);
 	// save it
 	AsynchClientTask saveDocument = new SaveDocument();
-	// check for lost results
-	AsynchClientTask checkBeforeDelete = new CheckBeforeDelete();
-	// delete old document
-	AsynchClientTask deleteOldDocument = new DeleteOldDocument();
 	// clean up
 	AsynchClientTask finishSave = new FinishSave();
 	// assemble array
 	AsynchClientTask[] tasks = null;
 	if (replace) {
+		// check for lost results
+		AsynchClientTask checkBeforeDelete = new CheckBeforeDelete();
+		// delete old document
+		AsynchClientTask deleteOldDocument = new DeleteOldDocument();
 		tasks = new AsynchClientTask[] {
 			documentValid,
 			setMathDescription,
@@ -2333,7 +2353,7 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
 			checkBeforeDelete,
 			deleteOldDocument,
 			finishSave
-			};
+		};
 	} else {
 		tasks = new AsynchClientTask[] {
 			documentValid,
@@ -2341,19 +2361,26 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
 			checkUnchanged,
 			saveDocument,
 			finishSave
-			};
+		};
+	}
+	if (closeWindowTask != null) {
+		// replace finishSave 
+		tasks[tasks.length - 1] = closeWindowTask;
 	}
 	/* run tasks */
 	ClientTaskDispatcher.dispatch(currentDocumentWindow, hash, tasks, false);
 }
 
 
+public void saveDocumentAsNew(DocumentWindowManager documentWindowManager) {
+	saveDocumentAsNew(documentWindowManager, null);
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/27/2004 3:09:25 PM)
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-public void saveDocumentAsNew(DocumentWindowManager documentWindowManager) {
+public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, AsynchClientTask closeWindowTask) {
 	
 	/* block document window */
 	JFrame currentDocumentWindow = getMdiManager().blockWindow(documentWindowManager.getManagerID());
@@ -2382,7 +2409,12 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager) {
 		newName,
 		saveDocument,
 		finishSave
-		};
+	};
+	
+	if (closeWindowTask != null) {
+		// replace finishSave 
+		tasks[tasks.length - 1] = closeWindowTask;
+	}
 	/* run tasks */
 	ClientTaskDispatcher.dispatch(currentDocumentWindow, hash, tasks, false);
 }
