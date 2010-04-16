@@ -13,6 +13,7 @@ import java.util.Vector;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
@@ -152,7 +153,7 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 						functionExpr,
 						funcFileLineInfo.errorString,
 						funcFileLineInfo.funcVarType,
-						funcFileLineInfo.funcIsUserDefined);
+						funcFileLineInfo.funcIsUserDefined ? FunctionCategory.OLDUSERDEFINED : FunctionCategory.PREDEFINED);
 
 			allSymbols.add(annotatedFunc.getName());
 			String[] symbols = annotatedFunc.getExpression().getSymbols();
@@ -170,7 +171,7 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 		
 		// bind
 		for (AnnotatedFunction func : annotatedFunctionsVector) {		
-			if (func.isUserDefined()) {
+			if (func.isOldUserDefined()) {
 				try {
 					func.bind(simpleSymbolTable);
 				} catch (ExpressionBindingException e) {
@@ -182,7 +183,7 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 		// rename symbol table entries
 		for (int i = 0; i < annotatedFunctionsVector.size(); i ++) {
 			AnnotatedFunction func = annotatedFunctionsVector.get(i);
-			if (func.isUserDefined()) {
+			if (func.isOldUserDefined()) {
 				try {
 					SimpleSymbolTableEntry ste = (SimpleSymbolTableEntry)simpleSymbolTable.getEntry(func.getName());
 					ste.setName(simJobID + "_" + func.getName());
@@ -195,11 +196,11 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 		// rename in the expressions
 		for (int i = 0; i < annotatedFunctionsVector.size(); i ++) {
 			AnnotatedFunction func = annotatedFunctionsVector.get(i);
-			if (func.isUserDefined()) {
+			if (func.isOldUserDefined()) {
 				try {
 					Expression exp = func.getExpression().renameBoundSymbols(simpleSymbolTable.getNameScope());
 					AnnotatedFunction newfunc = new AnnotatedFunction(simJobID + "_" + func.getName(), 
-							exp, func.getName(), func.getErrorString(), func.getFunctionType(), func.isUserDefined());
+							exp, func.getName(), func.getErrorString(), func.getFunctionType(), FunctionCategory.OLDUSERDEFINED);
 					annotatedFunctionsVector.set(i, newfunc);
 				} catch (ExpressionBindingException e) {
 					e.printStackTrace();
@@ -285,7 +286,7 @@ public void writefunctionFile(PrintWriter out) {
 	if (annotatedFunctionList!=null){
 		for (AnnotatedFunction f : annotatedFunctionList){
 			out.print(f.getName() + "; " + f.getExpression().infix() + "; " + f.getErrorString() + "; " 
-					+ f.getFunctionType().toString()+ "; " + f.isUserDefined());
+					+ f.getFunctionType().toString()+ "; " + f.isOldUserDefined());
 //			if (annotatedFunctionList[i].getSimplifiedExpression() != null) {			
 //				out.print("; " + annotatedFunctionList[i].getSimplifiedExpression().infix());
 //			}

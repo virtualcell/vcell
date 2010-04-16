@@ -1,5 +1,7 @@
 package cbit.vcell.simdata.gui;
 
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -15,9 +17,12 @@ import java.util.Vector;
 import javax.swing.BoundedRangeModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
@@ -25,14 +30,21 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DefaultListModelCivilized;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.DisplayAdapterService;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionPrintFormatter;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType.VariableDomain;
@@ -101,7 +113,7 @@ public class PDEPlotControlPanel extends JPanel {
 				}else if(filterSetName.equals(USER_DEFINED_FILTER_SET)){
 					if(functionsList != null){
 						for (AnnotatedFunction f : functionsList) {
-							if(f.isUserDefined() && f.getName().equals(varName)){
+							if(!f.isPredefined() && f.getName().equals(varName)){
 								return true;
 							}
 						}
@@ -129,11 +141,18 @@ public class PDEPlotControlPanel extends JPanel {
 				filterVariableNames();
 			}
 	};
+	private JButton viewFunctionButton = null;
+	private boolean bHasOldUserDefinedFunctions = false;
+	private static ImageIcon function_icon = null;
+	private static ImageIcon old_function_icon = null;
 	
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListDataListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == PDEPlotControlPanel.this.getJTextField1()) 
 				connEtoC2(e);
+			if (e.getSource() == getViewFunctionButton()) {
+				viewFunction();
+			}
 		};
 		public void contentsChanged(javax.swing.event.ListDataEvent e) {};
 		public void focusGained(java.awt.event.FocusEvent e) {};
@@ -179,6 +198,68 @@ public PDEPlotControlPanel() {
 	super();
 	initialize();
 	setDataIdentifierFilter(DEFAULT_DATAIDENTIFIER_FILTER);
+}
+
+public void viewFunction() {
+	Object selectedValue = getJList1().getSelectedValue();
+	if (selectedValue == null) {
+		return;
+	}
+	String varName = (String)selectedValue;
+	AnnotatedFunction func = findFunction(varName);
+	if (func == null || !func.isOldUserDefined()) {
+		return;
+	}
+	
+	try {
+		Expression newexp = new Expression(func.getExpression());
+		for (AnnotatedFunction af : functionsList) {
+			if (af.isOldUserDefined()) {
+				newexp.substituteInPlace(new Expression(af.getName()), new Expression(af.getDisplayName()));
+			}					 
+		}		
+		 
+		java.awt.Font italicFont = getFont().deriveFont(Font.BOLD, 11);
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JLabel nameLabel = new JLabel(func.getDisplayName() + " = ");
+		nameLabel.setFont(italicFont);
+		panel.add(nameLabel);
+		JLabel label = new JLabel();
+		ExpressionPrintFormatter epf = new ExpressionPrintFormatter(newexp);
+		java.awt.image.BufferedImage graphicsContextProvider = new java.awt.image.BufferedImage(10,10,java.awt.image.BufferedImage.TYPE_BYTE_GRAY);
+		java.awt.Graphics2D tempG2D = (java.awt.Graphics2D)graphicsContextProvider.getGraphics();
+		java.awt.Dimension dim = epf.getSize(tempG2D);
+		java.awt.image.BufferedImage bi = new java.awt.image.BufferedImage(dim.width,dim.height,java.awt.image.BufferedImage.TYPE_INT_RGB);
+		java.awt.Graphics2D g2d = bi.createGraphics();
+		g2d.setClip(0,0,dim.width,dim.height);
+		italicFont = getFont().deriveFont(Font.BOLD + Font.ITALIC, 11);
+		g2d.setFont(italicFont);
+		g2d.setBackground(getBackground());
+		g2d.setColor(getForeground());
+		
+		g2d.clearRect(0,0,dim.width,dim.height);
+		epf.paint(g2d);
+		javax.swing.ImageIcon newImageIcon = new javax.swing.ImageIcon(bi);
+		label.setIcon(newImageIcon);
+		panel.add(label);
+		
+		String COPYEXP = "Copy Expression";
+		JOptionPane inputDialog = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {COPYEXP, UserMessage.OPTION_CLOSE});
+		final JDialog d = inputDialog.createDialog(this, "Function '" + func.getDisplayName() + "'");
+		d.setResizable(true);
+		d.pack();
+		try {
+			ZEnforcer.showModalDialogOnTop(d,this);
+			if (inputDialog.getValue().equals(COPYEXP)) {
+				VCellTransferable.sendToClipboard(newexp.infix());
+			}
+		}finally {
+			d.dispose();
+		}		
+	} catch (Exception ex) {
+		DialogUtils.showErrorDialog(this, ex.getMessage());
+	}
+	
 }
 
 public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
@@ -509,6 +590,7 @@ private void filterVariableNames(){
 		AsynchClientTask task2 = new AsynchClientTask("filter variables", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				getViewFunctionButton().setVisible(bHasOldUserDefinedFunctions);
 				ArrayList<String> displayVarNames = new ArrayList<String>(); 
 				if(getpdeDataContext1().getDataIdentifiers() != null && getpdeDataContext1().getDataIdentifiers().length > 0){
 					TreeSet<DataIdentifier> dataIdentifierTreeSet =
@@ -808,7 +890,6 @@ private DisplayAdapterService getdisplayAdapterService1() {
 	return ivjdisplayAdapterService1;
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (3/3/2004 5:29:59 PM)
@@ -818,17 +899,19 @@ private void initFunctionsList() {
 	if (functionsList == null){
 		functionsList = new Vector<AnnotatedFunction>();
 	}
-//	if (functionsList.size() == 0) {
-		functionsList.clear();
-		try {
-			 AnnotatedFunction[] functions = getpdeDataContext1().getFunctions();
-			 for (int i = 0; i < functions.length; i++) {
-				 functionsList.addElement(functions[i]);
+	bHasOldUserDefinedFunctions = false;
+	functionsList.clear();
+	try {
+		 AnnotatedFunction[] functions = getpdeDataContext1().getFunctions();
+		 for (int i = 0; i < functions.length; i++) {
+			 if (functions[i].isOldUserDefined()) {
+				 bHasOldUserDefinedFunctions = true;
 			 }
-		} catch (org.vcell.util.DataAccessException e) {
-			e.printStackTrace(System.out);
-		}
-//	}
+			 functionsList.addElement(functions[i]);
+		 }
+	} catch (DataAccessException e) {
+		e.printStackTrace(System.out);
+	}
 }
 
 
@@ -1000,7 +1083,16 @@ private javax.swing.JPanel getJPanel2() {
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = 0;
 			ivjJPanel2.add(filterComboBox, gridBagConstraints);
-			getJPanel2().add(getJScrollPane1(), constraintsJScrollPane1);
+			ivjJPanel2.add(getJScrollPane1(), constraintsJScrollPane1);
+			
+			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = 2;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			gbc.weightx = 0;
+			gbc.weighty = 0;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			ivjJPanel2.add(getViewFunctionButton(), gbc);
+
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1012,6 +1104,14 @@ private javax.swing.JPanel getJPanel2() {
 	return ivjJPanel2;
 }
 
+private JButton getViewFunctionButton() {
+	if (viewFunctionButton == null) {
+		viewFunctionButton = new JButton("View Function");
+		viewFunctionButton.setEnabled(false);
+		viewFunctionButton.setVisible(false);
+	}
+	return viewFunctionButton;
+}
 /**
  * Return the JScrollPane1 property value.
  * @return javax.swing.JScrollPane
@@ -1214,6 +1314,7 @@ private void initConnections() throws java.lang.Exception {
 	getJSliderTime().addPropertyChangeListener(ivjEventHandler);
 	getJList1().addListSelectionListener(ivjEventHandler);
 	getDefaultListModelCivilized1().addListDataListener(ivjEventHandler);
+	getViewFunctionButton().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP4SetTarget();
@@ -1253,39 +1354,31 @@ private void initialize() {
 	// user code end
 }
 
-private static ImageIcon function_icon = null;
-private static ImageIcon old_function_icon = null;
 private void setIdentifierListRenderer() {
 	class IdentifierListCellRenderer extends DefaultListCellRenderer {
 		IdentifierListCellRenderer() {
-		super();
-	}
-	public java.awt.Component getListCellRendererComponent(javax.swing.JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-		java.awt.Component component = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-		String identifier = value.toString();
-		AnnotatedFunction f = null;
-		if (functionsList != null) {
-			AnnotatedFunction[] funcs = (AnnotatedFunction[])functionsList.toArray(new AnnotatedFunction[functionsList.size()]);
-			for (int i = 0; i < funcs.length; i++) {
-				if (funcs[i].getName().equals(identifier)) {
-					f = funcs[i];
-					break;
+			super();
+		}
+		public java.awt.Component getListCellRendererComponent(javax.swing.JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			java.awt.Component component = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+			String identifier = value.toString();
+			AnnotatedFunction f = findFunction(identifier);
+			if (f != null) {
+				if (f.isOldUserDefined()) {
+					if (old_function_icon == null) {
+						old_function_icon = new ImageIcon(getClass().getResource("/icons/old_function_icon.png"));
+					}
+					setIcon(old_function_icon);
+				} else if (f.isOutputFunction()) {
+					if (function_icon == null) {
+						function_icon = new ImageIcon(getClass().getResource("/icons/function_icon.png"));
+					}
+					setIcon(function_icon);
 				}
+				setText(f.getDisplayName());
 			}
+			return component;
 		}
-		if (f != null && f.isUserDefined()) {
-//			if (old_function_icon == null) {
-//				old_function_icon = new ImageIcon(getClass().getResource("/icons/old_function_icon.png"));
-//			}
-			if (function_icon == null) {
-				function_icon = new ImageIcon(getClass().getResource("/icons/function_icon.png"));
-			}
-//			setIcon(old_function_icon);
-			setIcon(function_icon);
-			setText(f.getDisplayName());
-		}
-		return component;
-	}
 	}
 	getJList1().setCellRenderer(new IdentifierListCellRenderer());
 }
@@ -1542,59 +1635,77 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 	if(getPdeDataContext() == null){
 		return;
 	}
-	if(listSelectionEvent != null && !listSelectionEvent.getValueIsAdjusting()){
-		final String newVariableName = (String)getJList1().getSelectedValue();
-		if(newVariableName != null){
-			Hashtable<String, Object> hash = new Hashtable<String, Object>();
-			AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					if(getDisplayAdapterService() != null){
-						getDisplayAdapterService().activateMarkedState(newVariableName);
-					}
+	if(listSelectionEvent == null || listSelectionEvent.getValueIsAdjusting()){
+		return;
+	}
+	final String newVariableName = (String)getJList1().getSelectedValue();
+	if(newVariableName != null){
+		Hashtable<String, Object> hash = new Hashtable<String, Object>();
+		AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				AnnotatedFunction f = findFunction(newVariableName);
+				getViewFunctionButton().setEnabled(f != null && f.isOldUserDefined());
+				if(getDisplayAdapterService() != null){
+					getDisplayAdapterService().activateMarkedState(newVariableName);
 				}
-			};
+			}
+		};
+		
+		AsynchClientTask task2  = new AsynchClientTask("Setting Variable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				getPdeDataContext().setVariableName(newVariableName);
+			}
+		};
 			
-			AsynchClientTask task2  = new AsynchClientTask("Setting Variable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					getPdeDataContext().setVariableName(newVariableName);
-				}
-			};
-				
-			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					Exception e = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
-					if (e != null) {
-						int index = -1;
-						if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
-							for(int i=0;i<getJList1().getModel().getSize();i+= 1){
-								if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
-									index = i;
-									break;
-								}
+		AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				Exception e = (Exception)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+				if (e != null) {
+					int index = -1;
+					if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
+						for(int i=0;i<getJList1().getModel().getSize();i+= 1){
+							if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
+								index = i;
+								break;
 							}
 						}
-						if(index != -1){
-							getJList1().setSelectedIndex(index);
-						}else{
-							getJList1().clearSelection();
-						}
+					}
+					if(index != -1){
+						getJList1().setSelectedIndex(index);
+					}else{
+						getJList1().clearSelection();
 					}
 				}
-			};
-			AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
-			ClientTaskDispatcher.dispatch(this, hash, taskArray);
-		}else if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
-			for (int i = 0; i < getJList1().getModel().getSize(); i++) {
-				if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
-					getJList1().setSelectedIndex(i);
-					break;
-				}
+			}
+		};
+		AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
+		ClientTaskDispatcher.dispatch(this, hash, taskArray);
+	}else if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
+		for (int i = 0; i < getJList1().getModel().getSize(); i++) {
+			if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
+				getJList1().setSelectedIndex(i);
+				break;
 			}
 		}
 	}
 }
+
 private void updateTimeTextField(double newTime){
 	getJTextField1().setText(Double.toString(newTime));
+}
+
+private AnnotatedFunction findFunction(String identifier) {
+	AnnotatedFunction f = null;
+	if (functionsList != null) {
+		AnnotatedFunction[] funcs = (AnnotatedFunction[])functionsList.toArray(new AnnotatedFunction[functionsList.size()]);
+		for (int i = 0; i < funcs.length; i++) {
+			if (funcs[i].getName().equals(identifier)) {
+				f = funcs[i];
+				break;
+			}
+		}
+	}
+	return f;
 }
 
 

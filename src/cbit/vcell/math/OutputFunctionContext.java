@@ -17,6 +17,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
@@ -183,7 +184,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 							Function flattenedFunctiion = new Function(function.getName(), newexp);
 							newFuncType = SimulationSymbolTable.getFunctionVariableType(flattenedFunctiion, symbols, varTypes, true);			
 						}
-						AnnotatedFunction newFunc = new AnnotatedFunction(function.getName(), function.getExpression(), "", newFuncType, true);
+						AnnotatedFunction newFunc = new AnnotatedFunction(function.getName(), function.getExpression(), "", newFuncType, FunctionCategory.OUTPUTFUNCTION);
 						newFuncList.add(newFunc);
 					} catch (ExpressionException ex) {
 						ex.printStackTrace();

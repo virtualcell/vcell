@@ -1,37 +1,32 @@
 package cbit.vcell.solver.ode.gui;
+import java.awt.Component;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.JTextField;
 
 import org.vcell.util.BeanUtils;
 
-import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.gui.TextFieldAutoCompletion;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -40,7 +35,6 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.util.ColumnDescription;
 
 /**
@@ -82,6 +76,9 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JComboBox ivjXAxisComboBox = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private ODESolverResultSet ivjodeSolverResultSet1 = null;
+	
+	private static ImageIcon function_icon = null;
+	
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getLogSensCheckbox()) 
@@ -990,7 +987,6 @@ private void handleException(java.lang.Throwable exception) {
 	exception.printStackTrace(System.out);
 }
 
-
 /**
  * Initializes connections
  * @exception java.lang.Exception The exception description.
@@ -1007,6 +1003,30 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP1SetTarget();
 	connPtoP3SetTarget();
 	connPtoP2SetTarget();
+	
+	getYAxisChoice().setCellRenderer(new DefaultListCellRenderer() {
+		
+		public Component getListCellRendererComponent(JList list, Object value,
+				int index, boolean isSelected, boolean cellHasFocus) {
+			super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+			if (getOdeSolverResultSet() == null) {
+				return this;
+			}
+			
+			String varName = (String)value;
+			int col = getOdeSolverResultSet().findColumn(varName);
+			ColumnDescription cd = getOdeSolverResultSet().getColumnDescriptions(col);
+			if (cd instanceof FunctionColumnDescription) {
+				if (((FunctionColumnDescription)cd).getIsUserDefined()) {
+					if (function_icon == null) {
+						function_icon = new ImageIcon(getClass().getResource("/icons/function_icon.png"));
+					}
+					setIcon(function_icon);
+				}
+			}
+			return this;
+		}
+	});
 }
 
 /**

@@ -83,18 +83,6 @@ public String getColumnName(int column) {
 	return columnNames[column];
 }
 
-
-/**
- * getRowCount method comment.
- */
-public int getRowCount() {
-	if (outputFunctionContext != null) {
-		return outputFunctionContext.getOutputFunctionsList().size();
-	} else {
-		return 0;
-	}
-}
-
 public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_OUTPUTFN_NAME:{

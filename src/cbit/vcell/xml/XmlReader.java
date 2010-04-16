@@ -115,6 +115,7 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
 import cbit.vcell.mathmodel.MathModel;
@@ -1420,7 +1421,7 @@ public Function getFunction(Element param) throws XmlParseException {
 	return function;
 }
 
-public AnnotatedFunction getAnnotatedFunction(Element param) throws XmlParseException {
+public AnnotatedFunction getOutputFunction(Element param) throws XmlParseException {
 	//get attributes
 	String name = unMangle( param.getAttributeValue( XMLTags.NameAttrTag) );
 	String temp = param.getText();
@@ -1433,10 +1434,9 @@ public AnnotatedFunction getAnnotatedFunction(Element param) throws XmlParseExce
 		String funcTypeStr = unMangle( funcTypeAttr );
 		funcType = VariableType.getVariableTypeFromVariableTypeName(funcTypeStr);
 	}
-	boolean userDefined = Boolean.parseBoolean(unMangle(param.getAttributeValue( XMLTags.UserDefinedTag)));
-	
+
 	//-- create new AnnotatedFunction --
-	AnnotatedFunction function = new AnnotatedFunction(name, exp, errStr, funcType, userDefined);
+	AnnotatedFunction function = new AnnotatedFunction(name, exp, errStr, funcType, FunctionCategory.OUTPUTFUNCTION);
 
 	return function;
 }
@@ -4149,7 +4149,7 @@ public ArrayList<AnnotatedFunction> getOutputFunctions(Element outputFunctionsEl
 	ArrayList<AnnotatedFunction> outputFunctions = new ArrayList<AnnotatedFunction>();
 	while (outputFnsIterator.hasNext()) {
 		org.jdom.Element observableElement = (Element) outputFnsIterator.next();
-		AnnotatedFunction func = getAnnotatedFunction(observableElement);
+		AnnotatedFunction func = getOutputFunction(observableElement);
 		outputFunctions.add(func);
 	}
 	return (outputFunctions);

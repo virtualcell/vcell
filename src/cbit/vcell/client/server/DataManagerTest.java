@@ -6,6 +6,7 @@ import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 /**
  * Insert the type's description here.
  * Creation date: (11/4/2003 4:48:32 PM)
@@ -191,7 +192,7 @@ public boolean getParticleDataExists() throws org.vcell.util.DataAccessException
 public static DataManagerTest getPDEExample1() {
 	try {
 		Vector<AnnotatedFunction> functionList = new Vector<AnnotatedFunction>();
-		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),"",cbit.vcell.simdata.VariableType.VOLUME,false));
+		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),"",cbit.vcell.simdata.VariableType.VOLUME, FunctionCategory.PREDEFINED));
 		// functionList.add(new cbit.vcell.math.Function("F2",new Expression("cos(x*y*z)")));
 		// functionList.add(new cbit.vcell.math.Function("F3",new Expression("t*sin(x*y*z)")));
 		cbit.vcell.math.AnnotatedFunction functions[] = (cbit.vcell.math.AnnotatedFunction[])org.vcell.util.BeanUtils.getArray(functionList,cbit.vcell.math.Function.class);
@@ -228,7 +229,7 @@ public static DataManagerTest getPDEExample1() {
 public static DataManagerTest getPDEExample2() {
 	try {
 		Vector<AnnotatedFunction> functionList = new Vector<AnnotatedFunction>();
-		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),"",cbit.vcell.simdata.VariableType.VOLUME,false));
+		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),"",cbit.vcell.simdata.VariableType.VOLUME, FunctionCategory.PREDEFINED));
 		// functionList.add(new cbit.vcell.math.Function("F2",new Expression("cos(x*y*z)")));
 		// functionList.add(new cbit.vcell.math.Function("F3",new Expression("t*sin(x*y*z)")));
 		cbit.vcell.math.AnnotatedFunction functions[] = (cbit.vcell.math.AnnotatedFunction[])org.vcell.util.BeanUtils.getArray(functionList,cbit.vcell.math.Function.class);
