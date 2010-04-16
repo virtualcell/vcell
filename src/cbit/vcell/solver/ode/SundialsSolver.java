@@ -22,6 +22,7 @@ import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.VariableType;
@@ -424,15 +425,15 @@ public Vector<AnnotatedFunction> createFunctionList() {
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
 				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
-			} catch (cbit.vcell.math.MathException e) {
+			} catch (MathException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (cbit.vcell.parser.ExpressionException e) {
+			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 			}
 			
-			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, "", VariableType.NONSPATIAL, false);
+			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
 			funcList.add(af);
 		}
 	}
@@ -442,7 +443,8 @@ public Vector<AnnotatedFunction> createFunctionList() {
 
 	if (getSensitivityParameter() != null) {
 		try {
-			AnnotatedFunction saf = new AnnotatedFunction(getSensitivityParameter().getName(), new Expression(getSensitivityParameter().getConstantValue()), "", VariableType.NONSPATIAL, false);
+			AnnotatedFunction saf = new AnnotatedFunction(getSensitivityParameter().getName(), 
+					new Expression(getSensitivityParameter().getConstantValue()), "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
 			if (!funcList.contains(saf)) {
 				funcList.add(saf);
 			}
@@ -461,7 +463,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 					String depSensFnName = new String("sens_"+depSensFunction.getName()+"_wrt_"+getSensitivityParameter().getName());
 					
 					if (depSensFunction != null) {
-						AnnotatedFunction af = new AnnotatedFunction(depSensFnName, depSensFnExpr.flatten(), "", VariableType.NONSPATIAL, false);
+						AnnotatedFunction af = new AnnotatedFunction(depSensFnName, depSensFnExpr.flatten(), "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
 						funcList.add(af);
 					}
 				}

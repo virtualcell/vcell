@@ -922,32 +922,6 @@ private synchronized File getPDEDataZipFile(double time) throws DataAccessExcept
 	return null;
 }
 
-
-
-private AnnotatedFunction[] getReferringUserFunctions(String symbolName){
-	//Check for other userdefined functions using the function we want to delete
-	Vector<AnnotatedFunction> referringFunctionV = new Vector<AnnotatedFunction>();
-	for (int i=0;i<annotatedFunctionList.size();i++){
-		if(annotatedFunctionList.elementAt(i).isUserDefined()){
-//			try{
-//				annotatedFunctionList.elementAt(i).getExpression().flatten();
-//			}catch(ExpressionException e){
-//				throw new DataAccessException(
-//						"Error getting referring functions for '"+function.getName()+"'\n"+
-//						e.getMessage());
-//			}
-			String[] existingUserDefFunctionSymbols =
-				annotatedFunctionList.elementAt(i).getExpression().getSymbols();
-			for (int j = 0; existingUserDefFunctionSymbols != null && j< existingUserDefFunctionSymbols.length; j++) {
-				if (existingUserDefFunctionSymbols[j].equals(symbolName)){
-					referringFunctionV.add(annotatedFunctionList.elementAt(i));
-				}				
-			}
-		}
-	}
-	return referringFunctionV.toArray(new AnnotatedFunction[0]);
-	
-}
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.simdata.SimResultsInfo
@@ -1229,7 +1203,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 					break;
 				}
 			}
-			if (f != null && f.isUserDefined()) {
+			if (f != null) {
 				displayName = f.getDisplayName();
 			}
 		}
@@ -1281,7 +1255,7 @@ private void readFunctions(OutputContext outputContext) throws FileNotFoundExcep
 	if (!firstJobFunctionsFile.equals(jobFunctionsFile)) {
 		Vector <AnnotatedFunction> f1 = FunctionFileGenerator.readFunctionsFile(firstJobFunctionsFile, vcDataId.getID());
 		for (AnnotatedFunction f : f1) {
-			if (f.isUserDefined()) {
+			if (f.isOldUserDefined()) {
 				annotatedFuncsVector.add(f);
 			}
 		}

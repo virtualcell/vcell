@@ -82,6 +82,7 @@ import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.numericstest.AddTestCasesOP;
 import cbit.vcell.numericstest.AddTestCasesOPBioModel;
@@ -600,7 +601,7 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 			String functionName = "DIFF_"+data1Identifiers[i].getName();
 			VariableType varType = data1Identifiers[i].getVariableType();
 			Expression exp = new Expression(data1Name+"-"+data2Name);
-			AnnotatedFunction newFunction = new AnnotatedFunction(functionName,exp,"",varType,true);
+			AnnotatedFunction newFunction = new AnnotatedFunction(functionName,exp,"",varType,FunctionCategory.OUTPUTFUNCTION);
 			
 			//
 			// make sure new "Diff" function isn't already in existing function list.

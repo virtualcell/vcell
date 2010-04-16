@@ -1,27 +1,34 @@
 package cbit.vcell.math;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.parser.Expression;
-import cbit.vcell.math.Function;
 import cbit.vcell.simdata.VariableType;
 /**
  * Insert the type's description here.
  * Creation date: (1/29/2004 11:48:16 AM)
  * @author: Anuradha Lakshminarayana
  */
-public class AnnotatedFunction extends Function implements org.vcell.util.Matchable {
+public class AnnotatedFunction extends Function implements Matchable {
 	private java.lang.String fieldErrorString = null;
 	private VariableType fieldFunctionType = null;
-	private boolean bIsUserDefined = false;
+	private final FunctionCategory functionCatogery;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private String displayName = null;
+	
+	public enum FunctionCategory {
+		PREDEFINED,
+		OLDUSERDEFINED,
+		OUTPUTFUNCTION,
+	}
 
-	public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, String argErrString, VariableType argFunctionType, boolean userDefined) {
-		this(argFunctionName, argFunctionExpression, null, argErrString, argFunctionType, userDefined);
+	public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, String argErrString, VariableType argFunctionType, FunctionCategory fc) {
+		this(argFunctionName, argFunctionExpression, argFunctionName, argErrString, argFunctionType, fc);
 	}
 	
 /**
  * AnnotatedFunction constructor comment.
  */
-public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, String argDisplayName, String argErrString, VariableType argFunctionType, boolean userDefined) {
+public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, String argDisplayName, String argErrString, VariableType argFunctionType, FunctionCategory fc) {
 	super(argFunctionName, argFunctionExpression);
 	this.displayName = argDisplayName; 
 	if (argFunctionName.indexOf(" ") > 0) {
@@ -30,7 +37,7 @@ public AnnotatedFunction(String argFunctionName, Expression argFunctionExpressio
 	//fieldSimplifiedExpression = null;
 	fieldErrorString = argErrString;
 	fieldFunctionType = argFunctionType;
-	bIsUserDefined = userDefined;
+	functionCatogery = fc;
 }
 
 
@@ -53,36 +60,29 @@ public VariableType getFunctionType() {
 	return fieldFunctionType;
 }
 
-
-///**
-// * Gets the simplifiedExpression property (cbit.vcell.parser.Expression) value.
-// * @return The simplifiedExpression property value.
-// * @see #setSimplifiedExpression
-// */
-//public cbit.vcell.parser.Expression getSimplifiedExpression() {
-//	return fieldSimplifiedExpression;
-//}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (2/20/2004 11:05:24 AM)
  * @return boolean
  */
-public boolean isUserDefined() {
-	return bIsUserDefined;
+public boolean isPredefined() {
+	return functionCatogery.equals(FunctionCategory.PREDEFINED);
+}
+
+public boolean isOldUserDefined() {
+	return functionCatogery.equals(FunctionCategory.OLDUSERDEFINED);
+}
+
+public boolean isOutputFunction() {
+	return functionCatogery.equals(FunctionCategory.OUTPUTFUNCTION);
 }
 
 public String getDisplayName() {
-	return displayName != null ? displayName : getName();
+	return displayName;
 }
 
-///**
-// * Sets the simplifiedExpression property (cbit.vcell.parser.Expression) value.
-// * @param simplifiedExpression The new value for the property.
-// * @see #getSimplifiedExpression
-// */
-//public void setSimplifiedExpression(cbit.vcell.parser.Expression simplifiedExpression) {
-//	fieldSimplifiedExpression = simplifiedExpression;
-//}
+public final FunctionCategory getFunctionCatogery() {
+	return functionCatogery;
+}
+
 }

@@ -34,6 +34,7 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -522,7 +523,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 				//
 				funcType = bSpatial ? getFunctionVariableType(functions[i], variableNames, variableTypes, bSpatial) : VariableType.NONSPATIAL;
 	
-				AnnotatedFunction annotatedFunc = new AnnotatedFunction(functions[i].getName(), functions[i].getExpression(), errString, funcType, false);
+				AnnotatedFunction annotatedFunc = new AnnotatedFunction(functions[i].getName(), functions[i].getExpression(), errString, funcType, FunctionCategory.PREDEFINED);
 				annotatedFunctionVector.addElement(annotatedFunc);
 			}
 		}

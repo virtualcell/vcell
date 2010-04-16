@@ -199,7 +199,7 @@ private void scan(File userDir, File outputDir) throws Exception {
 						// if function name has space, mangle the name and store the function in a different list.
 						bNameHasSpaces = true;
 						String newName = TokenMangler.fixTokenStrict(afn.getName());
-						annotatedFnsVector.set(j, new AnnotatedFunction(newName, afn.getExpression(), afn.getErrorString(), afn.getFunctionType(), afn.isUserDefined()));
+						annotatedFnsVector.set(j, new AnnotatedFunction(newName, afn.getExpression(), afn.getErrorString(), afn.getFunctionType(), afn.getFunctionCatogery()));
 					} else {
 						annotatedFnsVector.set(j, afn);
 					}

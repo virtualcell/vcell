@@ -14,6 +14,7 @@ import org.vcell.util.SessionLog;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.VariableType;
@@ -360,7 +361,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 			}
 			
-			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, "", VariableType.NONSPATIAL, false);
+			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
 			funcList.add(af);
 		}
 	}

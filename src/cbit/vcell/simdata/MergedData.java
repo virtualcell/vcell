@@ -959,7 +959,7 @@ public DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputContext outputCon
 					break;
 				}
 			}
-			if (f != null && f.isUserDefined()) {
+			if (f != null) {
 				displayName = f.getDisplayName();
 			}
 		}
@@ -1135,32 +1135,6 @@ private ODESolverResultSet resampleODEData(ODESimData refSimdata, ODESimData sim
 	}
 
 	return newODEresultSet;
-}
-
-
-private AnnotatedFunction[] getReferringUserFunctions(String symbolName) throws DataAccessException{
-	//Check for other userdefined functions using the function we want to delete
-	Vector<AnnotatedFunction> referringFunctionV = new Vector<AnnotatedFunction>();
-	for (int i=0;i<annotatedFunctionList.size();i++){
-		if(annotatedFunctionList.elementAt(i).isUserDefined()){
-//			try{
-//				annotatedFunctionList.elementAt(i).getExpression().flatten();
-//			}catch(ExpressionException e){
-//				throw new DataAccessException(
-//						"Error getting referring functions for '"+function.getName()+"'\n"+
-//						e.getMessage());
-//			}
-			String[] existingUserDefFunctionSymbols =
-				annotatedFunctionList.elementAt(i).getExpression().getSymbols();
-			for (int j = 0; existingUserDefFunctionSymbols != null && j< existingUserDefFunctionSymbols.length; j++) {
-				if (existingUserDefFunctionSymbols[j].equals(symbolName)){
-					referringFunctionV.add(annotatedFunctionList.elementAt(i));
-				}				
-			}
-		}
-	}
-	return referringFunctionV.toArray(new AnnotatedFunction[0]);
-	
 }
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
