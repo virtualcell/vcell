@@ -178,7 +178,7 @@ private void updateScanParamChoices(){
 			for (int ji = 0; ji < jobIndexes.length; ji ++) {
 				int jobIndex = jobIndexes[ji];
 				final VCDataIdentifier vcdid = new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
-				ODEDataManager odeDatamanager = (ODEDataManager)dataManager;
+				ODEDataManager odeDatamanager = ((ODEDataManager)dataManager).createNewODEDataManager(vcdid);
 				ODESolverResultSet odeSolverResultSet = odeDatamanager.getODESolverResultSet();
 				int tcol = odeSolverResultSet.findColumn(ReservedSymbol.TIME.getName());
 				double[] tdata = odeSolverResultSet.extractColumn(tcol);
