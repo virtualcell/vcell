@@ -15,6 +15,7 @@ import javax.swing.JTree;
 
 import org.vcell.sybil.actions.web.PathwayCommonsKeywordAction;
 import org.vcell.sybil.actions.web.PathwayCommonsKeywordAction.KeywordProvider;
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.tree.pckeyword.ResponseTreeManager;
 import org.vcell.sybil.models.tree.pckeyword.XRefTreeSelectionListener;
 import org.vcell.sybil.util.event.Accepter;
@@ -93,5 +94,9 @@ public class PCKeywordQueryPanel extends JPanel {
 			e.printStackTrace(System.out);
 			System.exit(1);
 		}
+	}
+
+	public MIRIAMQualifier getMiriamQualifier() {
+		return MIRIAMQualifier.BioQualifier.isVersionOf;
 	}
 }

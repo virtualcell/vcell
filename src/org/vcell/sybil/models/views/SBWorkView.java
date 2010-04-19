@@ -38,7 +38,7 @@ public class SBWorkView extends SBBasicView {
 	public SBWorkView(SBBox box, BioModel bioModel) { 
 		super(box);
 		this.bioModel = bioModel;
-		ustAssumption = box.factories().ustAssumption().createWithDefaultLabel();
+		ustAssumption = box.factories().ustAssumptionFactory().createWithDefaultLabel();
 	}
 	
 	public MutableUSTAssumption ustAssumption() { return ustAssumption; }

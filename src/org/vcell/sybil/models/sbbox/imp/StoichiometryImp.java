@@ -44,7 +44,7 @@ public class StoichiometryImp extends SBWrapper implements SBBox.MutableStoichio
 			if(uniNode instanceof Resource) { uni = (Resource) uniNode; }
 		}
 		SBBox.Unit unit = null;
-		if(uni != null) { unit = box().factories().unit().open(uni); }
+		if(uni != null) { unit = box().factories().unitFactory().open(uni); }
 		return unit; 
 	}
 

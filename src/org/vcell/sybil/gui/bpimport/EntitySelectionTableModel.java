@@ -48,8 +48,8 @@ public class EntitySelectionTableModel extends AbstractTableModel {
 	protected Vector<Row> rows = new Vector<Row>();
 
 	public EntitySelectionTableModel(SBBox box) {
-		addRows(box.factories().process());
-		addRows(box.factories().substance());
+		addRows(box.factories().processFactory());
+		addRows(box.factories().substanceFactory());
 	}
 	
 	protected <T extends NamedThing> void addRows(ThingFactory<T> factory) {

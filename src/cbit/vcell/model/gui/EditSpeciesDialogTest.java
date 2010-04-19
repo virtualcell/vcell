@@ -32,17 +32,14 @@ public static void main(java.lang.String[] args) {
 		String[] args2 = new String[args.length-1];
 		System.arraycopy(args,0,args2,0,args.length-1);
 		cbit.vcell.model.Model model = cbit.vcell.model.ModelTest.getExample_Bound();
-		cbit.vcell.client.server.ClientServerManager managerManager = mainInit(args2,"CreateSpeciesDialogTest",new javax.swing.JFrame());
-		cbit.vcell.clientdb.DocumentManager docManager = managerManager.getDocumentManager();
 		if(mode.equalsIgnoreCase("edit")){
-			aEditSpeciesDialog.initEditSpecies(model.getSpeciesContexts(model.getStructures(0))[0], model, docManager);
+			aEditSpeciesDialog.initEditSpecies(model.getSpeciesContexts(model.getStructures(0))[0], model);
 		}else if(mode.equalsIgnoreCase("add")){
-			aEditSpeciesDialog.initAddSpecies(model,model.getStructures(0),docManager);
+			aEditSpeciesDialog.initAddSpecies(model,model.getStructures(0));
 		}else{
 			throw new IllegalArgumentException("unknown test type="+args[args.length-1]);
 		}
 
-		
 		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);

@@ -4,11 +4,14 @@ package org.vcell.sybil.models.miriam;
  *   Wrapper for a MIRIAM property
  */
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.vcell.sybil.rdf.schemas.MIRIAM;
 import org.vcell.sybil.rdf.RDFBox;
+
 import com.hp.hpl.jena.rdf.model.Property;
 
 public class MIRIAMQualifier extends RDFBox.PropertyWrapper {
@@ -23,6 +26,12 @@ public class MIRIAMQualifier extends RDFBox.PropertyWrapper {
 
 		public static Set<ModelQualifier> all = new HashSet<ModelQualifier>();
 		
+		public static final ModelQualifier is = newQualifier(MIRIAM.ModelProperties.is);
+		public static final ModelQualifier isDerivedFrom = 
+			newQualifier(MIRIAM.ModelProperties.isDerivedFrom);
+		public static final ModelQualifier isDescribedBy = 
+			newQualifier(MIRIAM.ModelProperties.isDescribedBy);
+		
 		static protected ModelQualifier newQualifier(Property property) {
 			ModelQualifier qualifier = new ModelQualifier(property);
 			MIRIAMQualifier.all.add(qualifier);
@@ -30,26 +39,20 @@ public class MIRIAMQualifier extends RDFBox.PropertyWrapper {
 			return qualifier;
 		}
 		
-		public static final ModelQualifier is = newQualifier(MIRIAM.ModelProperties.is);
-		public static final ModelQualifier isDerivedFrom = 
-			newQualifier(MIRIAM.ModelProperties.isDerivedFrom);
-		public static final ModelQualifier isDescribedBy = 
-			newQualifier(MIRIAM.ModelProperties.isDescribedBy);
-		
 	}
 	
 	public static class BioQualifier extends MIRIAMQualifier  {
 
 		public BioQualifier(Property property) { super(property); }
 
-		public static Set<BioQualifier> all = new HashSet<BioQualifier>();
-		
 		static protected BioQualifier newQualifier(Property property) {
 			BioQualifier qualifier = new BioQualifier(property);
 			MIRIAMQualifier.all.add(qualifier);
 			all.add(qualifier);
 			return qualifier;
 		}
+
+		public static final Set<BioQualifier> all = new HashSet<BioQualifier>();
 		
 		public static final BioQualifier encodes = newQualifier(MIRIAM.BioProperties.encodes);
 		public static final BioQualifier hasPart = newQualifier(MIRIAM.BioProperties.hasPart);
@@ -63,7 +66,10 @@ public class MIRIAMQualifier extends RDFBox.PropertyWrapper {
 		public static final BioQualifier isPropertyOf = newQualifier(MIRIAM.BioProperties.isPropertyOf);
 		public static final BioQualifier isVersionOf = newQualifier(MIRIAM.BioProperties.isVersionOf);
 		public static final BioQualifier occursIn = newQualifier(MIRIAM.BioProperties.occursIn);
-		
+	}
+
+	public URI getURI() throws URISyntaxException {
+		return new URI(property().getURI());
 	}
 
 

@@ -1,6 +1,6 @@
 package org.vcell.sybil.models.sbbox;
 
-/*   SBBox  --- by Oliver Ruebenacker, UCHC --- June 2008 to January 2010
+/*   SBBox  --- by Oliver Ruebenacker, UCHC --- June 2008 to April 2010
  *   Organizes the RDF data and structures to edit it
  */
 
@@ -11,10 +11,11 @@ import org.vcell.sybil.util.label.LabelMan;
 
 public interface SBBox extends InferenceBox {
 	
-	public static interface NamedThing extends RDFThing<SBBox> {
+	public static interface NamedThing extends RDFThing {
 		public String name();
 		public String shortName();
 		public String label();		
+		public SBBox box();
 	}
 	
 	public static interface RDFType extends NamedThing { 

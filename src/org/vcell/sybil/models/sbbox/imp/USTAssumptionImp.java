@@ -27,7 +27,7 @@ implements MutableUSTAssumption {
 		while(nodeIter.hasNext()) {
 			RDFNode node = nodeIter.nextNode();
 			if(node instanceof Resource) {
-				types.add(box().factories().type().open((Resource) node));
+				types.add(box().factories().typeFactory().open((Resource) node));
 			}
 		}
 		return types;

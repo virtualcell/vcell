@@ -52,35 +52,35 @@ public class MutableEdge implements ProcessEdge {
 	}
 
 	public void setProcess(Process process) { 
-		this.process = tray.box().factories().process().create(process.resource()); 
+		this.process = tray.box().factories().processFactory().create(process.resource()); 
 	}
 	
 	public void setParticipant(Participant participant) { 
-		this.participant = tray.box().factories().participant().create(participant.resource()); 
+		this.participant = tray.box().factories().participantFactory().create(participant.resource()); 
 	}
 	
 	public void setSpecies(Species species) { 
-		this.species = tray.box().factories().species().create(species.resource()); 
+		this.species = tray.box().factories().speciesFactory().create(species.resource()); 
 	}
 	
 	public void setEntity(Substance entity) { 
-		this.entity = tray.box().factories().substance().create(entity);
+		this.entity = tray.box().factories().substanceFactory().create(entity);
 	}
 	
 	public void setEntityType(RDFType entityType) { 
-		this.entityType = tray.box().factories().type().create(entityType);
+		this.entityType = tray.box().factories().typeFactory().create(entityType);
 	}
 	
 	public void setSubstance(Substance substance) { 
-		this.substance = tray.box().factories().substance().create(substance); 
+		this.substance = tray.box().factories().substanceFactory().create(substance); 
 	}
 	
 	public void setLocation(Location location) { 
-		this.location = tray.box().factories().location().create(location.resource()); 
+		this.location = tray.box().factories().locationFactory().create(location.resource()); 
 	}
 	
 	public void setStoichiometry(Stoichiometry stoichiometry) { 
-		this.stoichiometry = tray.box().factories().stoichiometry().create(stoichiometry.resource()); 
+		this.stoichiometry = tray.box().factories().stoichiometryFactory().create(stoichiometry.resource()); 
 	}
 	
 	public void setSC(float sc) { this.sc = sc; }

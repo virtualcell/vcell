@@ -34,7 +34,7 @@ public class CompartmentTableModel extends AbstractTableModel {
 	protected Set<SBBox.MutableLocation> locs = new HashSet<SBBox.MutableLocation>();
 	
 	public CompartmentTableModel(SBBox box) {
-		locs.addAll(box.factories().location().openAll());
+		locs.addAll(box.factories().locationFactory().openAll());
 		locDirectory.put("[none]", null);
 		for(SBBox.MutableLocation loc : locs) {
 			String label = loc.label();

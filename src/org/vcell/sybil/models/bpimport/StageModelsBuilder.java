@@ -15,10 +15,10 @@ public class StageModelsBuilder {
 		SBBox box = view.box();
 		box.performSYBREAMReasoning();
 		if(view.systemModel() == null) {
-			view.setSystemModel(box.factories().systemModel().createWithDefaultLabel());			
+			view.setSystemModel(box.factories().systemModelFactory().createWithDefaultLabel());			
 		}
 		for(SBBox.Process process : view.processes()) {
-			SBBox.MutableProcessModel processModel = box.factories().processModel().createAnonymous();
+			SBBox.MutableProcessModel processModel = box.factories().processModelFactory().createAnonymous();
 			processModel.setProcess(process);
 			view.systemModel().addProcessModel(processModel);
 			Set<SBBox.Participant> participants = process.participants();

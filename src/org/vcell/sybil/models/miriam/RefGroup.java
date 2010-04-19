@@ -7,13 +7,12 @@ package org.vcell.sybil.models.miriam;
 import java.util.Set;
 
 import org.vcell.sybil.rdf.RDFBag;
-import org.vcell.sybil.rdf.RDFBox;
 
-public interface RefGroup<B extends RDFBox> extends RDFBag<B> {
-	public RefGroup<B> add(MIRIAMRef ref);
-	public RefGroup<B> remove(MIRIAMRef ref);
+public interface RefGroup extends RDFBag {
+	public RefGroup add(MIRIAMRef ref);
+	public RefGroup remove(MIRIAMRef ref);
 	public boolean contains(MIRIAMRef ref);
 	public Set<MIRIAMRef> refs();
-	public RefGroup<B> removeAll();
+	public RefGroup removeAll();
 	public void delete();
 }

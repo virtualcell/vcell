@@ -25,7 +25,7 @@ public class SubstanceImp extends SBWrapper implements SBBox.MutableSubstance {
 	public Set<Substance> subSubstances() {
 		Set<Substance> subSubstances = new HashSet<Substance>();
 		ResIterator resIter = box().getRdf().listResourcesWithProperty(SBPAX.subSetOf, resource());
-		while(resIter.hasNext()) { subSubstances.add(box().factories().substance().open(resIter.nextResource())); }
+		while(resIter.hasNext()) { subSubstances.add(box().factories().substanceFactory().open(resIter.nextResource())); }
 		return subSubstances;
 	}
 
@@ -51,7 +51,7 @@ public class SubstanceImp extends SBWrapper implements SBBox.MutableSubstance {
 		while(nodeIter.hasNext()) {
 			RDFNode node = nodeIter.nextNode();
 			if(node instanceof Resource) {
-				superSubstances.add(box().factories().substance().open((Resource) node));
+				superSubstances.add(box().factories().substanceFactory().open((Resource) node));
 			}
 		}
 		return superSubstances;
@@ -78,7 +78,7 @@ public class SubstanceImp extends SBWrapper implements SBBox.MutableSubstance {
 		NodeIterator nodeIter = box().getRdf().listObjectsOfProperty(resource(), RDF.type);
 		while(nodeIter.hasNext()) {
 			RDFNode node = nodeIter.nextNode();
-			if(node instanceof Resource) { types.add(box().factories().type().create((Resource)node)); }
+			if(node instanceof Resource) { types.add(box().factories().typeFactory().create((Resource)node)); }
 		}
 		return types;
 	}

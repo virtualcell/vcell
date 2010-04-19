@@ -32,35 +32,35 @@ public class QueryEdgeSBBox extends EdgeSBTray {
 			MutableEdge edge = new MutableEdge(this);
 			RDFNode nodeProc = getRDFNode(binding, ProcessVars.PROCESS);
 			if(nodeProc instanceof Resource) { 
-				edge.setProcess(box().factories().process().create((Resource) nodeProc));
+				edge.setProcess(box().factories().processFactory().create((Resource) nodeProc));
 			}
 			RDFNode nodePart = getRDFNode(binding, ProcessVars.PARTICIPANT);
 			if(nodePart instanceof Resource) { 
-				edge.setParticipant(box().factories().participant().create((Resource) nodePart));
+				edge.setParticipant(box().factories().participantFactory().create((Resource) nodePart));
 			}
 			RDFNode nodeSpec = getRDFNode(binding, ProcessVars.SPECIES);
 			if(nodeSpec instanceof Resource) { 
-				edge.setSpecies(box().factories().species().create((Resource) nodeSpec));
+				edge.setSpecies(box().factories().speciesFactory().create((Resource) nodeSpec));
 			}
 			RDFNode nodeEnti = getRDFNode(binding, ProcessVars.ENTITY);
 			if(nodeEnti instanceof Resource) { 
-				edge.setEntity(box().factories().substance().create((Resource) nodeEnti));
+				edge.setEntity(box().factories().substanceFactory().create((Resource) nodeEnti));
 			}
 			RDFNode nodeType = getRDFNode(binding, ProcessVars.ENTITY_TYPE);
 			if(nodeType instanceof Resource) { 
-				edge.setEntityType(box().factories().type().create((Resource) nodeType));
+				edge.setEntityType(box().factories().typeFactory().create((Resource) nodeType));
 			}
 			RDFNode nodeSubs = getRDFNode(binding, ProcessVars.SUBSTANCE);
 			if(nodeSubs instanceof Resource) { 
-				edge.setSubstance(box().factories().substance().create((Resource) nodeSubs));
+				edge.setSubstance(box().factories().substanceFactory().create((Resource) nodeSubs));
 			}
 			RDFNode nodeLocation = getRDFNode(binding, ProcessVars.LOCATION);
 			if(nodeLocation instanceof Resource) { 
-				edge.setLocation(box().factories().location().create((Resource) nodeLocation));
+				edge.setLocation(box().factories().locationFactory().create((Resource) nodeLocation));
 			}
 			RDFNode nodeStoi = getRDFNode(binding, ProcessVars.STOICHIOMETRY);
 			if(nodeStoi instanceof Resource) { 
-				edge.setStoichiometry(box().factories().stoichiometry().create((Resource) nodeStoi));
+				edge.setStoichiometry(box().factories().stoichiometryFactory().create((Resource) nodeStoi));
 			}
 			RDFNode nodeSC = getRDFNode(binding, ProcessVars.STOICHCOEFF);
 			if(nodeSC instanceof Literal) { 

@@ -71,7 +71,7 @@ public class StageProcessesBuilder {
 				speciesStored = speciesMap.get(key);
 			}
 			if(species == null && speciesStored != null) { species = speciesStored; }
-			if(species == null) { species = box.factories().species().createAnonymous(); }
+			if(species == null) { species = box.factories().speciesFactory().createAnonymous(); }
 			if(key != null && speciesStored == null) { speciesMap.put(key, species); }
 			if(substance != null) { species.setSubstance(substance); }
 			if(location != null) { species.setLocation(location); }
@@ -81,20 +81,20 @@ public class StageProcessesBuilder {
 			if(process != null && participant != null && species != null) {
 				view.processes().add(process);
 				MutableStoichiometry stoichiometry = edge.stoichiometry();
-				if(stoichiometry == null) { stoichiometry = box.factories().stoichiometry().createAnonymous(); }
+				if(stoichiometry == null) { stoichiometry = box.factories().stoichiometryFactory().createAnonymous(); }
 				stoichiometry.setSC(edge.stoichiometricCoeff());
 				participant.setStoichiometry(stoichiometry);
 				participant.setSpecies(species);
-				if(box.factories().participantCatalyst().makesTypeOf(participant)) {
+				if(box.factories().participantCatalystFactory().makesTypeOf(participant)) {
 					MutableParticipantCatalyst participantCatalyst = 
-						box.factories().participantCatalyst().create(participant);
+						box.factories().participantCatalystFactory().create(participant);
 					process.addParticipantCat(participantCatalyst);
-				} else if(box.factories().participantLeft().makesTypeOf(participant)) {
-					MutableParticipantLeft participantLeft = box.factories().participantLeft().create(participant);
+				} else if(box.factories().participantLeftFactory().makesTypeOf(participant)) {
+					MutableParticipantLeft participantLeft = box.factories().participantLeftFactory().create(participant);
 					process.addParticipantLeft(participantLeft);
-				} else if(box.factories().participantRight().makesTypeOf(participant)) {
+				} else if(box.factories().participantRightFactory().makesTypeOf(participant)) {
 					MutableParticipantRight participantRight = 
-						box.factories().participantRight().create(participant);
+						box.factories().participantRightFactory().create(participant);
 					process.addParticipantRight(participantRight);
 				} else {
 					process.addParticipant(participant);

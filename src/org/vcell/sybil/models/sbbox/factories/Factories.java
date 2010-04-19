@@ -8,19 +8,19 @@ import org.vcell.sybil.models.sbbox.SBBox;
 
 public interface Factories {
 	public SBBox box();
-	public TypeFactory type();
-	public LocationFactory location();
-	public SubstanceFactory substance();
-	public UnitFactory unit();
-	public StoichiometryFactory stoichiometry();
-	public SpeciesFactory species();
-	public ParticipantFactory participant();
-	public ParticipantLeftFactory participantLeft();
-	public ParticipantRightFactory participantRight();
-	public ParticipantCatalystFactory participantCatalyst();
-	public InteractionFactory interaction();
-	public ProcessFactory process();
-	public ProcessModelFactory processModel();
-	public SystemModelFactory systemModel();
-	public USTAssumptionFactory ustAssumption();
+	public TypeFactory typeFactory();
+	public LocationFactory locationFactory();
+	public SubstanceFactory substanceFactory();
+	public UnitFactory unitFactory();
+	public StoichiometryFactory stoichiometryFactory();
+	public SpeciesFactory speciesFactory();
+	public ParticipantFactory participantFactory();
+	public ParticipantLeftFactory participantLeftFactory();
+	public ParticipantRightFactory participantRightFactory();
+	public ParticipantCatalystFactory participantCatalystFactory();
+	public InteractionFactory interactionFactory();
+	public ProcessFactory processFactory();
+	public ProcessModelFactory processModelFactory();
+	public SystemModelFactory systemModelFactory();
+	public USTAssumptionFactory ustAssumptionFactory();
 }

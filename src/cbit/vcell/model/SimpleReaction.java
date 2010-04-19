@@ -236,7 +236,7 @@ public boolean isMembrane() {
  * @return java.lang.String
  */
 public String toString() {
-	return "SimpleReaction@"+Integer.toHexString(hashCode())+"("+getKey()+", "+getName()+", "+getReactionParticipants().length+" reactParticipants, valence="+getChargeCarrierValence()+", physicsOption="+getPhysicsOptions()+")";
+	return "SimpleReaction@"+Integer.toHexString(hashCode())+"("+getName()+")";
 }
 
 }

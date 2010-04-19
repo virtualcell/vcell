@@ -14,6 +14,7 @@ import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.NonRDFAnnotation;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.registry.Registry;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 
@@ -72,15 +73,18 @@ public class XMLMetaDataWriter extends XMLMetaData {
 */			
 		// add resource binding table
 		Element bindingListElement = new Element(XMLMetaData.URI_BINDING_LIST_TAG);
-		Set<Resource> resources = metaData.getRegistry().getResources();
-		for (Iterator<Resource> iterator = resources.iterator(); iterator.hasNext();) {
-			Resource uri = iterator.next();
-			OpenEntry entry = metaData.getRegistry().forResource(uri);
-			Element entryElement = new Element(XMLMetaData.URI_BINDING_TAG);
-			entryElement.setAttribute(XMLMetaData.URI_ATTR_TAG, uri.getURI());
-			VCID vcid = identifiableProvider.getVCID((Identifiable)entry.object());
-			entryElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, vcid.toASCIIString());
-			bindingListElement.addContent(entryElement);
+		Set<Registry.Entry> resources = metaData.getRegistry().getAllEntries();
+		for (Registry.Entry entry : resources) {
+			if (entry.getNamedThing()!=null){
+				Element entryElement = new Element(XMLMetaData.URI_BINDING_TAG);
+				Resource resource = entry.getNamedThing().resource();
+				if (resource!=null){
+					entryElement.setAttribute(XMLMetaData.URI_ATTR_TAG, resource.getURI());				
+				}
+				VCID vcid = identifiableProvider.getVCID((Identifiable)entry.getIdentifiable());
+				entryElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, vcid.toASCIIString());
+				bindingListElement.addContent(entryElement);
+			}
 		}
 		element.addContent(bindingListElement);
 		
@@ -102,7 +106,7 @@ public class XMLMetaDataWriter extends XMLMetaData {
 			NonRDFAnnotation nonRDFAnnotation = entry.getValue();
 			if (!nonRDFAnnotation.isEmpty()){
 				Element nonRDFAnnotationElement = new Element(XMLMetaData.NONRDF_ANNOTATION_TAG);
-				nonRDFAnnotationElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, identifiableProvider.getVCID((Identifiable)openEntry.object()).toASCIIString());
+				nonRDFAnnotationElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, identifiableProvider.getVCID((Identifiable)openEntry.getIdentifiable()).toASCIIString());
 				nonRDFAnnotationListElement.addContent(nonRDFAnnotationElement);
 				String freeTextAnnotation = nonRDFAnnotation.getFreeTextAnnotation();
 				if (freeTextAnnotation!=null && freeTextAnnotation.length()>0){

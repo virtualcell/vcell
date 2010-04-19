@@ -23,7 +23,7 @@ public class SBPAXUtil {
 		List<RDFType> types = new Vector<RDFType>();
 		for(Object typeNode : SBPAX.substanceClassList.asJavaList()) {
 			if(typeNode instanceof Resource) {
-				types.add(box.factories().type().create((Resource) typeNode));				
+				types.add(box.factories().typeFactory().create((Resource) typeNode));				
 			}
 		}
 		return types;
@@ -35,7 +35,7 @@ public class SBPAXUtil {
 		while(iterator.hasNext()) {
 			RDFNode typeNode = iterator.nextNode();
 			if(typeNode instanceof Resource) {
-				types.add(box.factories().type().create((Resource) typeNode));				
+				types.add(box.factories().typeFactory().create((Resource) typeNode));				
 			}
 		}
 		return types;

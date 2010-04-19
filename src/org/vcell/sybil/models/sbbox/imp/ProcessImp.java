@@ -24,7 +24,7 @@ public class ProcessImp extends SBWrapper implements SBBox.MutableProcess {
 		while(partIter.hasNext()) {
 			RDFNode partNode = partIter.nextNode();
 			if(partNode instanceof Resource) {
-				participants.add(box().factories().participant().open((Resource) partNode));
+				participants.add(box().factories().participantFactory().open((Resource) partNode));
 			}
 		}
 		return participants;
@@ -36,7 +36,7 @@ public class ProcessImp extends SBWrapper implements SBBox.MutableProcess {
 		while(partIter.hasNext()) {
 			RDFNode partNode = partIter.nextNode();
 			if(partNode instanceof Resource) {
-				participantsLeft.add(box().factories().participantLeft().open((Resource) partNode));
+				participantsLeft.add(box().factories().participantLeftFactory().open((Resource) partNode));
 			}
 		}
 		return participantsLeft;
@@ -48,7 +48,7 @@ public class ProcessImp extends SBWrapper implements SBBox.MutableProcess {
 		while(partIter.hasNext()) {
 			RDFNode partNode = partIter.nextNode();
 			if(partNode instanceof Resource) {
-				participantsRight.add(box().factories().participantRight().open((Resource) partNode));
+				participantsRight.add(box().factories().participantRightFactory().open((Resource) partNode));
 			}
 		}
 		return participantsRight;
@@ -61,7 +61,7 @@ public class ProcessImp extends SBWrapper implements SBBox.MutableProcess {
 		while(partIter.hasNext()) {
 			RDFNode partNode = partIter.nextNode();
 			if(partNode instanceof Resource) {
-				participantsCat.add(box().factories().participantCatalyst().open((Resource) partNode));
+				participantsCat.add(box().factories().participantCatalystFactory().open((Resource) partNode));
 			}
 		}
 		return participantsCat;
