@@ -436,14 +436,30 @@ public boolean closeWindow(final java.lang.String windowID, final boolean exitIf
 			getMdiManager().unBlockWindow(windowID);
 			return false;
 		} else if (closeOption.equals(CloseOption.SAVE_AND_CLOSE)) {
-			AsynchClientTask closeTask = new AsynchClientTask("close window", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+			AsynchClientTask closeTask = new AsynchClientTask("closing document", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					int openWindows = getMdiManager().closeWindow(windowManager.getManagerID());
-					if (exitIfLast && (openWindows == 0)) {
-						setBExiting(true);
-						exitApplication();
+					// if there is error saving the document, try to unblock the window
+					if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) != null) {
+						getMdiManager().unBlockWindow(windowID);
+						getMdiManager().showWindow(windowID);
+					} else {
+						int openWindows = getMdiManager().closeWindow(windowManager.getManagerID());
+						if (exitIfLast && (openWindows == 0)) {
+							setBExiting(true);
+							exitApplication();
+						}
+					}
+				}
+
+				@Override
+				public boolean skipIfCancel(UserCancelException exc) {
+					// if save as new edition, don't skip
+					if (exc == UserCancelException.CANCEL_DELETE_OLD) {
+						return false;
+					} else {
+						return true;
 					}
 				}
 			};
@@ -620,10 +636,15 @@ public void connectAs(final String user,  final String password, final TopLevelW
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					// wait until all windows are closed.
+					long startTime = System.currentTimeMillis();
 					while (true) {
 						int numOpenWindows = getMdiManager().closeWindow(ClientMDIManager.DATABASE_WINDOW_ID);
 						if (numOpenWindows == 0) {
 							break;
+						}
+						// if can't save all the documents, don't connect as thus throw exception.
+						if (System.currentTimeMillis() - startTime > 60000) {
+							throw UserCancelException.CANCEL_GENERIC;
 						}
 						try {
 							Thread.sleep(1000);
