@@ -1,6 +1,6 @@
 package org.vcell.sybil.models.sbbox.imp;
 
-/*   SBWrapper  --- by Oliver Ruebenacker, UCHC --- June to September 2009
+/*   SBWrapper  --- by Oliver Ruebenacker, UCHC --- June 2009 to April 2010
  *   A view of a resource representing an SBPAX object
  */
 
@@ -12,7 +12,7 @@ import org.vcell.sybil.rdf.RDFBox.ResourceWrapper;
 import org.vcell.sybil.rdf.schemas.BioPAX2;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-public class SBWrapper extends ResourceWrapper<SBBox> implements SBBox.NamedThing {
+public class SBWrapper extends ResourceWrapper implements SBBox.NamedThing {
 	
 	public SBWrapper(SBBox box, Resource resource) { super(box, resource); }
 
@@ -40,6 +40,7 @@ public class SBWrapper extends ResourceWrapper<SBBox> implements SBBox.NamedThin
 	
 	public String name() { return nameByList(namingListLong); }
 	public String shortName() { return nameByList(namingListShort); }
+	public SBBox box() { return (SBBox) super.box(); }
 
 
 	public String nameByList(List<ResourceNaming> namingList) { 

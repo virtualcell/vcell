@@ -18,18 +18,18 @@ public interface RDFBox {
 
 	public Model getRdf();
 	
-	public static interface RDFThing<B extends RDFBox> { 
+	public static interface RDFThing { 
 		public Resource resource(); 
-		public B box();
+		public RDFBox box();
 		// public B subBox();
 	}
 	
 	public static interface RDFProperty { public Property property(); }
 	
-	public static class ResourceWrapper<B extends RDFBox> extends 
-	KeyOfTwo<B, Resource> implements RDFThing<B> {
-		public ResourceWrapper(B box, Resource resource) { super(box, resource); }
-		public B box() { return a(); };
+	public static class ResourceWrapper extends 
+	KeyOfTwo<RDFBox, Resource> implements RDFThing {
+		public ResourceWrapper(RDFBox box, Resource resource) { super(box, resource); }
+		public RDFBox box() { return a(); };
 		public Resource resource() { return b(); }
 	}
 	
@@ -48,12 +48,12 @@ public interface RDFBox {
 		public Model getRdf() { return rdfModel; }
 		public void setRDF(Model rdf) { this.rdfModel = rdf; }
 
-		public RDFThing<Default> createThing() { 
-			return new ResourceWrapper<Default>(this, rdfModel.createResource()); 
+		public RDFThing createThing() { 
+			return new ResourceWrapper(this, rdfModel.createResource()); 
 		}
 		
-		public RDFThing<Default> createThing(String uri) { 
-			return new ResourceWrapper<Default>(this, rdfModel.createResource(uri)); 
+		public RDFThing createThing(String uri) { 
+			return new ResourceWrapper(this, rdfModel.createResource(uri)); 
 		}
 		
 	}

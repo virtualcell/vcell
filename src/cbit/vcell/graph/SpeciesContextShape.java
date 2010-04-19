@@ -5,12 +5,17 @@ package cbit.vcell.graph;
 ©*/
 import cbit.gui.graph.*;
 import cbit.gui.graph.Shape;
+import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.model.gui.*;
 import cbit.vcell.model.*;
 import java.awt.*;
 import java.util.*;
+
 import javax.swing.*;
+
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.lowagie.text.List;
@@ -143,18 +148,18 @@ public void paint ( java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY 
 	
 	boolean isBound = false;
 	SpeciesContext sc = (SpeciesContext)getModelObject();
-	VCMetaData vcMetadata = null;
 	boolean bHasPCLink = false;
 	if (graphModel instanceof ModelCartoon) {
 		ModelCartoon mc = (ModelCartoon)graphModel;
-		vcMetadata = mc.getModel().getVcMetaData();
 		// check if species has Pathway Commons link by querying VCMetadata : if it does, need to change color of speciesContext.
-		java.util.List<Statement> statements = vcMetadata.getStatements(sc.getSpecies());
-		if (statements != null && statements.size() > 0) {
-			Iterator<Statement> statementIter = statements.iterator();
-			if (statementIter.hasNext()) {
+		try {
+			MiriamManager miriamManager = mc.getModel().getVcMetaData().getMiriamManager();
+			Set<MiriamRefGroup> miriamRefGroups = miriamManager.getMiriamRefGroups(sc.getSpecies(),MIRIAMQualifier.BioQualifier.isVersionOf);
+			if (miriamRefGroups.size()>0){
 				bHasPCLink = true;
 			}
+		}catch (Exception e){
+			e.printStackTrace(System.out);
 		}
 	}
 	if(sc.getSpecies().getDBSpecies() != null || bHasPCLink){

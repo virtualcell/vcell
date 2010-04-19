@@ -62,20 +62,20 @@ public class FactoriesImp implements Factories {
 
 	public SBBox box() { return box; }
 
-	public TypeFactory type() { return typeFac; }
-	public LocationFactory location() { return locaFac; }
-	public SubstanceFactory substance() { return subsFac; }
-	public UnitFactory unit() { return unitFac; }
-	public StoichiometryFactory stoichiometry() { return stoiFac; }
-	public SpeciesFactory species() { return specFac; }
-	public ParticipantFactory participant() { return partFac; }
-	public ParticipantLeftFactory participantLeft() { return partLeftFac; }
-	public ParticipantRightFactory participantRight() { return partRightFac; }
-	public ParticipantCatalystFactory participantCatalyst() { return partCatFac; }
-	public InteractionFactory interaction() { return inteFac; }
-	public ProcessFactory process() { return procFac; }
-	public ProcessModelFactory processModel() { return procModFac; }
-	public SystemModelFactory systemModel() { return systModFac; }
-	public USTAssumptionFactory ustAssumption() { return USTSumpFac; }
+	public TypeFactory typeFactory() { return typeFac; }
+	public LocationFactory locationFactory() { return locaFac; }
+	public SubstanceFactory substanceFactory() { return subsFac; }
+	public UnitFactory unitFactory() { return unitFac; }
+	public StoichiometryFactory stoichiometryFactory() { return stoiFac; }
+	public SpeciesFactory speciesFactory() { return specFac; }
+	public ParticipantFactory participantFactory() { return partFac; }
+	public ParticipantLeftFactory participantLeftFactory() { return partLeftFac; }
+	public ParticipantRightFactory participantRightFactory() { return partRightFac; }
+	public ParticipantCatalystFactory participantCatalystFactory() { return partCatFac; }
+	public InteractionFactory interactionFactory() { return inteFac; }
+	public ProcessFactory processFactory() { return procFac; }
+	public ProcessModelFactory processModelFactory() { return procModFac; }
+	public SystemModelFactory systemModelFactory() { return systModFac; }
+	public USTAssumptionFactory ustAssumptionFactory() { return USTSumpFac; }
 	
 }

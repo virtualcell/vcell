@@ -69,24 +69,24 @@ public class ColumnManager {
 	protected void initCols() {
 		colProcess = new Column("<html><font color=red>Process (BP)</font>/<br> " +
 				"<font color=blue>Reaction ID (SB)</font>", 
-				new GroupByResource(defaultOptions(box.factories().process())), Column.BY_GROUP, colResource("Process"), 
+				new GroupByResource(defaultOptions(box.factories().processFactory())), Column.BY_GROUP, colResource("Process"), 
 				false);
 		colParticipant = new Column("<html><font color=red>Participants <br> in BioPAX", 
-				new GroupByResource(defaultOptions(box.factories().participant())), Column.BY_GROUP, colResource("Part"), 
+				new GroupByResource(defaultOptions(box.factories().participantFactory())), Column.BY_GROUP, colResource("Part"), 
 				false);
 		colEntity = new Column("<html><font color=red>Entity (BP)", 
-				new GroupByResource(defaultOptions(box.factories().substance())), Column.BY_GROUP, colResource("Entity"), false);
+				new GroupByResource(defaultOptions(box.factories().substanceFactory())), Column.BY_GROUP, colResource("Entity"), false);
 		colEntityType = new Column("<html><font color=red>Entity Class<br> in BioPAX", 
-				new GroupByColumn(colEntity, defaultOptions(box.factories().type())), Column.BY_GROUP, 
+				new GroupByColumn(colEntity, defaultOptions(box.factories().typeFactory())), Column.BY_GROUP, 
 				colResource("EntityType"), false);
 		colStoichCoeff = new Column("<html>Stoich. Coef.<br> BP/SBML", 
 				new GroupCollective(literalOptions()), Column.BY_CELL, colLiteral((float)1.0), true);
 		colSubstance = new Column("<html><font color=blue>SpeciesType ID <br>(SBML)", 
-				new GroupOntoColumn(colEntity, defaultOptions(box.factories().substance())), Column.BY_CELL, 
+				new GroupOntoColumn(colEntity, defaultOptions(box.factories().substanceFactory())), Column.BY_CELL, 
 				colResource("Substance"), true);
 		colLocation = new Column("<html><font color=red>Location (BP)</font>/<br>" + 
 				"<font color=blue>Compartment (SBML)", 
-				new GroupCollective(defaultOptions(box.factories().location())), Column.BY_CELL, colResource("Location"), true);
+				new GroupCollective(defaultOptions(box.factories().locationFactory())), Column.BY_CELL, colResource("Location"), true);
 	}
 	
 	protected void add(Column colNew) { allColumns.add(colNew); }

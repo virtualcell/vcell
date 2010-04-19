@@ -82,7 +82,7 @@ public class PortPanel extends JPanel implements ResultAcceptor {
 			} else if(id == PortStage.stageCompartments) {
 				Resource systMod = view().box().getData()
 				.createResource("http://www.sybil.org/systemModel");
-				systemModel = view().box().factories().systemModel().create(systMod);
+				systemModel = view().box().factories().systemModelFactory().create(systMod);
 				new StageModelsWorker(view(), this).run(this);
 			} else if(id == PortStage.stageModels) {
 				if(portTarget.equals(targetSBML)) {

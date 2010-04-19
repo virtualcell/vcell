@@ -1,5 +1,6 @@
 package org.vcell.sbml.vcell;
 
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -9,6 +10,7 @@ import org.sbml.libsbml.XMLAttributes;
 import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.XMLNode;
 import org.sbml.libsbml.XMLTriple;
+import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.rdf.JenaIOUtil;
 import org.vcell.sybil.rdf.NameSpace;
 import org.vcell.sybil.rdf.RDFChopper;
@@ -71,9 +73,9 @@ public class SBMLAnnotationUtil {
 	}
 	
 	public void writeMetaID(Identifiable identifiable, SBase sBase) {
-		Resource resource = metaData.getRegistry().forObject(identifiable).resource();
-		if (resource != null) {
-			String metaID = namespaceAssimilator.map(resource).getLocalName();
+		NamedThing namedThing = metaData.getRegistry().getEntry(identifiable).getNamedThing();
+		if (namedThing != null) {
+			String metaID = namespaceAssimilator.map(namedThing.resource()).getLocalName();
 			sBase.setMetaId(metaID);
 		}
 	}
@@ -81,17 +83,19 @@ public class SBMLAnnotationUtil {
 	public void readMetaID(Identifiable identifiable, SBase sBase) {
 		String metaID = sBase.getMetaId();
 		// TODO this does not work - separator missing - fix
-		metaData.getRegistry().forObject(identifiable).setURI(nsSBML + metaID);
+		String uri = nsSBML + metaID;
+		System.out.println("SBMLAnnotationUtil.readMetaID("+identifiable+" --> "+uri);
+		metaData.getRegistry().getEntry(identifiable).setNamedThingFromURI(uri);
 	}
 	
 	public void writeAnnotation(Identifiable identifiable, SBase sBase, 
 			Element vcellImportRelatedElement) {
 		// Deal with RDF annotation 
 		XMLNode rootAnnotation = new XMLNode(tripleAnnotation, new XMLAttributes());
-		Resource resource = metaData.getRegistry().forObject(identifiable).resource();
+		NamedThing namedThing = metaData.getRegistry().getEntry(identifiable).getNamedThing();
 		Model rdfChunk = null;
-		if (resource != null) { 
-			rdfChunk = chopper.getChops().get(resource);
+		if (namedThing != null) { 
+			rdfChunk = chopper.getChops().get(namedThing.resource());
 		}
 		if(identifiable == root && rdfChunk != null) { 
 			rdfChunk.add(chopper.getRemains());
@@ -219,7 +223,12 @@ public class SBMLAnnotationUtil {
 				if(namespace != null) {
 					if(namespace.equals(NameSpace.RDF.uri)) {
 						// read in RDF annotation
-						Model rdfNew = JenaIOUtil.modelFromText(annotationBranch.toXMLString(), nsSBML);
+						String text = annotationBranch.toXMLString();
+						
+						// TODO this is a hack to be replaced by proper URI management.
+						text = text.replace("about=\"#_","about=\"_");
+						
+						Model rdfNew = JenaIOUtil.modelFromText(text, nsSBML);
 						metaData.getRdfData().add(rdfNew);
 					} else if(namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD) ||
 							namespace.equals(XMLTags.VCML_NS)) {

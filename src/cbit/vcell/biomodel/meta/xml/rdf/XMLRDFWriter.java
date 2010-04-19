@@ -16,7 +16,7 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 public class XMLRDFWriter extends XMLRDF {
 	
 	public static Element createElement(VCMetaData metaData) {
-		return createElement(metaData.getSBbox().getData(), metaData.getBaseURI());
+		return createElement(metaData.getRdfData(), metaData.getBaseURI());
 	}
 	
 	public static Element createElement(Model rdf, String baseURI) {

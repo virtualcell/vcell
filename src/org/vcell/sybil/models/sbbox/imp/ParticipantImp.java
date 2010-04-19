@@ -23,7 +23,7 @@ public class ParticipantImp extends SBWrapper implements SBBox.MutableParticipan
 		while(stmtIter.hasNext() && species == null) { 
 			RDFNode speNode = stmtIter.nextStatement().getObject(); 
 			if(speNode instanceof Resource) {
-				species = box().factories().species().open((Resource)speNode);
+				species = box().factories().speciesFactory().open((Resource)speNode);
 			}
 		}
 		return species; 
@@ -36,7 +36,7 @@ public class ParticipantImp extends SBWrapper implements SBBox.MutableParticipan
 		while(stmtIter.hasNext() && stoichiometry == null) { 
 			RDFNode stoNode = stmtIter.nextStatement().getObject(); 
 			if(stoNode instanceof Resource) { 
-				stoichiometry = box().factories().stoichiometry().open((Resource) stoNode);
+				stoichiometry = box().factories().stoichiometryFactory().open((Resource) stoNode);
 			}
 		}
 		return stoichiometry; 

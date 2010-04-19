@@ -32,11 +32,11 @@ public class ProcessTableModel implements TableModel {
 	public ProcessTableModel(EdgeSBTray edgeBox) {
 		box = edgeBox.box();
 		colManager = new ColumnManager(box);
-		Set<SBBox.MutableLocation> locations = box.factories().location().openAll();
+		Set<SBBox.MutableLocation> locations = box.factories().locationFactory().openAll();
 		Set<CellThingOption<SBBox.MutableLocation>> locOptions = 
 			new HashSet<CellThingOption<SBBox.MutableLocation>>();
 		for(SBBox.MutableLocation locationImport : locations) {
-			SBBox.MutableLocation location = box().factories().location().insert(locationImport);
+			SBBox.MutableLocation location = box().factories().locationFactory().insert(locationImport);
 			locOptions.add(new CellThingOption<SBBox.MutableLocation>(location));
 		}
 		for(MutableEdge edge : edgeBox.edges()) { addEdgeToRow(edge, locOptions); }

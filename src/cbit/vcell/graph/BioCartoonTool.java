@@ -626,7 +626,7 @@ protected void showCreateSpeciesContextDialog(GraphPane myGraphPane, final Model
 	//
 	JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, javax.swing.JFrame.class);
 	EditSpeciesDialog createSpeciesContextDialog = new EditSpeciesDialog(parent);	
-	createSpeciesContextDialog.initAddSpecies(model,structure,getDocumentManager());
+	createSpeciesContextDialog.initAddSpecies(model,structure);
 	ZEnforcer.showModalDialogOnTop(createSpeciesContextDialog, getJDesktopPane());
 	if (locationForSpeciesContextShape != null && createSpeciesContextDialog.getSpeciesContext()!=null){
 		SpeciesContext speciesContext = model.getSpeciesContext(createSpeciesContextDialog.getSpeciesContext().getName());
@@ -649,7 +649,7 @@ protected void showEditSpeciesDialog(GraphPane myGraphPane, Model model, Species
 	//
 	JFrame parent = (JFrame)BeanUtils.findTypeParentOfComponent(myGraphPane, javax.swing.JFrame.class);
 	EditSpeciesDialog editSpeciesDialog = new EditSpeciesDialog(parent);
-	editSpeciesDialog.initEditSpecies(speciesContext, model, getDocumentManager());
+	editSpeciesDialog.initEditSpecies(speciesContext, model);
 	//
 	ZEnforcer.showModalDialogOnTop(editSpeciesDialog, getJDesktopPane());
 	getGraphModel().fireGraphChanged();

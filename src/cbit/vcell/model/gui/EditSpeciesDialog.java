@@ -3,11 +3,11 @@ package cbit.vcell.model.gui;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -24,34 +24,28 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.event.HyperlinkEvent.EventType;
 
 import org.vcell.sybil.gui.pcsearch.test.PCKeywordQueryPanel;
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.http.uniprot.UniProtConstants;
-import org.vcell.util.BeanUtils;
+import org.vcell.sybil.util.miriam.XRefToURN;
 import org.vcell.util.Compare;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ZEnforcer;
 
 import uk.ac.ebi.miriam.lib.MiriamLink;
+import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.dictionary.DBFormalSpecies;
-import cbit.vcell.dictionary.DictionaryQueryResults;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.xml.XMLTags;
-
-import com.hp.hpl.jena.rdf.model.Bag;
-import com.hp.hpl.jena.rdf.model.NodeIterator;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2003 2:07:01 PM)
@@ -65,13 +59,11 @@ public class EditSpeciesDialog extends JDialog {
 	private static final int ADD_SPECIES_MODE = 0;
 	private static final int EDIT_SPECIES_MODE = 1;
 	//
-	//
+	//getMiriam
 	private SpeciesContext fieldSpeciesContext = null;
 	private javax.swing.JPanel ivjJContentPane = null;
 	private javax.swing.JButton ivjCancelJButton = null;
 	private javax.swing.JLabel ivjContextNameJLabel = null;
-	private javax.swing.JButton ivjDBLinkJButton = null;
-	private javax.swing.JButton ivjDBUnlinkJButton = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private javax.swing.JPanel ivjJButtonsPanel2 = null;
 	private javax.swing.JLabel ivjNameJLabel = null;
@@ -81,13 +73,9 @@ public class EditSpeciesDialog extends JDialog {
 	private Species ivjspecies1 = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private javax.swing.text.Document ivjdocument1 = null;
-	private DBFormalSpecies ivjDBFormalSpecies = null;
 	private String ivjAnnotationString = null;
-	private javax.swing.JLabel ivjLinkJLabel = null;
-	private javax.swing.JLabel ivjLinkValueJLabel = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private SpeciesContext ivjspeciesContext1 = null;
-	private DocumentManager fieldDocumentManager = null;
 	private javax.swing.JCheckBox ivjJCheckBoxHasOverride = null;
 	private javax.swing.JTextField ivjContextNameValueTextField = null;
 	private boolean ivjConnPtoP2Aligning = false;
@@ -95,18 +83,22 @@ public class EditSpeciesDialog extends JDialog {
 	private Model fieldModel = null;
 	private JTextArea annotationTextArea;
 	private JButton pathwayDBJButton = null;
-	private XRef selectedXRef = null;
 	private JLabel PCLinkJlabel = null;
 	private JEditorPane PCLinkValueEditorPane = null;
-	private URI selectedURI = null;
 	
-	public XRef getSelectedXRef() {
-		return selectedXRef;
-	}
-
-	public void setSelectedXRef(XRef selectedXRef) {
-		this.selectedXRef = selectedXRef;
-		getOKJButton().setEnabled(true);
+	public void saveSelectedXRef(XRef selectedXRef, MIRIAMQualifier miriamQualifier) {
+		String urn = XRefToURN.createURN(selectedXRef.db(), selectedXRef.id());
+		try {
+			MiriamManager miriamManager = getModel().getVcMetaData().getMiriamManager();
+			MiriamResource resource = miriamManager.createMiriamResource(urn);
+			Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
+			miriamResources.add(resource);
+			miriamManager.addMiriamRefGroup(getSpeciesContext().getSpecies(), miriamQualifier, miriamResources);
+			miriamManager.invalidateCache(getSpeciesContext().getSpecies());
+		} catch (URNParseFailureException e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, e.getMessage());
+		}
 		updatePCLink();
 	}
 
@@ -120,19 +112,6 @@ public class EditSpeciesDialog extends JDialog {
 					System.err.println("MirianLink library is not up to date!");
 				}
 				ArrayList<String> pcLinkStr = getPCLinks();
-				if (getSelectedXRef() != null) {
-					String dbName = getSelectedXRef().db();
-					if (dbName.contains("RefSeq Protein")) {
-						dbName = "refseq";
-					} else if (dbName.contains("Gene Symbol")) {
-						dbName = "gene.symbol";
-					}
-					String uriText = link.getURI(dbName, getSelectedXRef().id());
-					selectedURI = new URI(uriText);
-					if (!uriText.equals("")) {
-						pcLinkStr.add(uriText);
-					}
-				}
 				if (pcLinkStr != null && pcLinkStr.size() > 0) {
 					StringBuffer buffer = new StringBuffer("<html>");
 					for(String pcLink : pcLinkStr){
@@ -140,12 +119,14 @@ public class EditSpeciesDialog extends JDialog {
 						if (pcLink.toLowerCase().contains("uniprot")) {
 							preferredName = "[" + UniProtConstants.getNameFromID(pcLink) + "]";	
 						}
-						
 						String prettyResourceName = pcLink.replaceFirst("urn:miriam:", "");
 						if (pcLink != null && pcLink.length() > 0) {
 							buffer.append("&#x95;&nbsp;" + prettyResourceName + "  <b>" + preferredName + "</b><br>");
-							for(String url : link.getLocations(pcLink)) {
-								buffer.append("&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;<a href=\"" + url + "\">" + url + "</a><br>");
+							String[] locations = link.getLocations(pcLink);
+							if (locations!=null){
+								for(String url : link.getLocations(pcLink)) {
+									buffer.append("&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;<a href=\"" + url + "\">" + url + "</a><br>");
+								}
 							}
 						}
 					}
@@ -163,30 +144,21 @@ public class EditSpeciesDialog extends JDialog {
 				getPCLinkValueEditorPane().setText(htmlText);
 				getPCLinkValueEditorPane().setCaretPosition(0);
 			};
+
 		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });
 	}
 
 	private ArrayList<String> getPCLinks() {
 		ArrayList<String> pcLinkStrings = new ArrayList<String>();
-		java.util.List<Statement> statements = getModel().getVcMetaData().getStatements(getSpeciesContext().getSpecies());
-		if (statements != null && statements.size() > 0) {
-			Iterator<Statement> stmtIter = statements.iterator();
-			while (stmtIter.hasNext()) {
-				Statement stmt = stmtIter.next();
-				com.hp.hpl.jena.rdf.model.Model rdfModel = getModel().getVcMetaData().getRdfData();
-				RDFNode object = stmt.getObject();
-				if (object.isURIResource()) {
-					pcLinkStrings.add(stmt.asTriple().getObject().getURI());
-				} else if (object.isResource()){
-					Bag bag = rdfModel.getBag((Resource)object); 
-					if (bag != null) { // not sure
-						NodeIterator nodeIterator = bag.iterator();
-						while (nodeIterator.hasNext()){
-							RDFNode node = nodeIterator.next();
-							pcLinkStrings.add(((Resource)node).getURI());
-						}
-					}
+		MiriamManager miriamManager = getModel().getVcMetaData().getMiriamManager();
+		MIRIAMQualifier qualifier = MIRIAMQualifier.BioQualifier.isVersionOf;
+		Set<MiriamRefGroup> refGroups = miriamManager.getMiriamRefGroups(getSpeciesContext().getSpecies(),qualifier);
+		if (refGroups.size()>0) {
+			for (MiriamRefGroup refGroup : refGroups){
+				Set<MiriamResource> miriamResources = refGroup.getMiriamRefs();
+				for (MiriamResource resource : miriamResources){
+					pcLinkStrings.add(resource.getMiriamURN());
 				}
 			}
 		}
@@ -199,10 +171,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC1(e);
 			if (e.getSource() == EditSpeciesDialog.this.getOKJButton()) 
 				connEtoC2(e);
-			if (e.getSource() == EditSpeciesDialog.this.getDBUnlinkJButton()) 
-				connEtoC4(e);
-			if (e.getSource() == EditSpeciesDialog.this.getDBLinkJButton()) 
-				connEtoM4(e);
 			if (e.getSource() == EditSpeciesDialog.this.getPathwayDBbutton()) 
 				showPCKeywordQueryPanel();
 			if (e.getSource() == EditSpeciesDialog.this.getJCheckBoxHasOverride()) 
@@ -318,32 +286,6 @@ private void connEtoC3(java.lang.String value) {
 	}
 }
 
-
-/**
- * connEtoC4:  (DBUnlinkJButton.action.actionPerformed(java.awt.event.ActionEvent) --> EditSpeciesDialog.unlink(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-private void connEtoC4(java.awt.event.ActionEvent arg1) {
-	try {
-		this.unlink(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC7:  (DBFormalSpecies.this --> EditSpeciesDialog.updateInterface()V)
- * @param value cbit.vcell.dictionary.DBFormalSpecies
- */
-private void connEtoC7(DBFormalSpecies value) {
-	try {
-		this.updateInterface();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connEtoC8:  (EditSpeciesDialog.userDictionaryDbServer --> EditSpeciesDialog.updateInterface()V)
  * @param arg1 java.beans.PropertyChangeEvent
@@ -395,32 +337,6 @@ private void connEtoM3(Species value) {
 		if ((getspecies1() != null)) {
 			// setAnnotationString(getspecies1().getAnnotation());
 			setAnnotationString(getModel().getVcMetaData().getFreeTextAnnotation(getspecies1()));
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM4:  (DBLinkJButton.action.actionPerformed(java.awt.event.ActionEvent) --> DBFormalSpecies.this)
- * @param arg1 java.awt.event.ActionEvent
- */
-private void connEtoM4(java.awt.event.ActionEvent arg1) {
-	try {
-		setDBFormalSpecies(this.getDBFormalSpeciesFromDialog());
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM5:  (species1.this --> DBFormalSpecies.this)
- * @param value cbit.vcell.model.Species
- */
-private void connEtoM5(Species value) {
-	try {
-		if ((getspecies1() != null)) {
-			setDBFormalSpecies(getspecies1().getDBSpecies());
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -645,63 +561,6 @@ private javax.swing.JTextField getContextNameValueTextField() {
 	return ivjContextNameValueTextField;
 }
 
-/**
- * Return the DBFormalSpecies property value.
- * @return cbit.vcell.dictionary.DBFormalSpecies
- */
-private DBFormalSpecies getDBFormalSpecies() {
-	return ivjDBFormalSpecies;
-}
-
-
-/**
- * Comment
- */
-private DBFormalSpecies getDBFormalSpeciesFromDialog() {
-	DBFormalSpecies dbfs = showDatabaseBindingDialog();
-	if(dbfs != null){
-		return dbfs;
-	}
-	return getDBFormalSpecies();
-}
-
-
-/**
- * Return the DBLinkJButton property value.
- * @return javax.swing.JButton
- */
-private javax.swing.JButton getDBLinkJButton() {
-	if (ivjDBLinkJButton == null) {
-		try {
-			ivjDBLinkJButton = new javax.swing.JButton();
-			ivjDBLinkJButton.setName("DBLinkJButton");
-			ivjDBLinkJButton.setText("Add DB Link...");
-			ivjDBLinkJButton.setEnabled(false);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjDBLinkJButton;
-}
-
-
-/**
- * Return the DBUnlinkJButton property value.
- * @return javax.swing.JButton
- */
-private javax.swing.JButton getDBUnlinkJButton() {
-	if (ivjDBUnlinkJButton == null) {
-		try {
-			ivjDBUnlinkJButton = new javax.swing.JButton();
-			ivjDBUnlinkJButton.setName("DBUnlinkJButton");
-			ivjDBUnlinkJButton.setText("Unlink");
-			ivjDBUnlinkJButton.setEnabled(false);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjDBUnlinkJButton;
-}
 
 /**
  * Return the document1 property value.
@@ -718,16 +577,6 @@ private javax.swing.text.Document getdocument1() {
  */
 private javax.swing.text.Document getdocument2() {
 	return ivjdocument2;
-}
-
-
-/**
- * Gets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @return The documentManager property value.
- * @see #setDocumentManager
- */
-public DocumentManager getDocumentManager() {
-	return fieldDocumentManager;
 }
 
 
@@ -833,21 +682,6 @@ private javax.swing.JPanel getJDialogContentPane() {
 			gbc_2.gridy = 4;
 			ivjJContentPane.add(getPCLinkJlabel(), gbc_2);
 			
-			java.awt.GridBagConstraints constraintsLinkJLabel = new java.awt.GridBagConstraints();
-			constraintsLinkJLabel.gridx = 0; constraintsLinkJLabel.gridy = 3;
-			constraintsLinkJLabel.anchor = java.awt.GridBagConstraints.EAST;
-			constraintsLinkJLabel.insets = new Insets(4, 4, 5, 5);
-			getJDialogContentPane().add(getLinkJLabel(), constraintsLinkJLabel);
-
-			java.awt.GridBagConstraints constraintsLinkValueJLabel = new java.awt.GridBagConstraints();
-			constraintsLinkValueJLabel.gridx = 1; constraintsLinkValueJLabel.gridy = 3;
-			constraintsLinkValueJLabel.gridwidth = 2;
-			constraintsLinkValueJLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsLinkValueJLabel.anchor = java.awt.GridBagConstraints.WEST;
-//			constraintsLinkValueJLabel.weightx = 1.0;
-			constraintsLinkValueJLabel.insets = new Insets(4, 4, 5, 5);
-			getJDialogContentPane().add(getLinkValueJLabel(), constraintsLinkValueJLabel);
-
 			java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
 			constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 5;
 			constraintsJPanel2.gridwidth = 4;
@@ -912,8 +746,6 @@ private javax.swing.JPanel getJButtonsPanel2() {
 			ivjJButtonsPanel2 = new javax.swing.JPanel();
 			ivjJButtonsPanel2.setName("JPanel2");
 			ivjJButtonsPanel2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-			ivjJButtonsPanel2.add(getDBLinkJButton());
-			ivjJButtonsPanel2.add(getDBUnlinkJButton());
 			ivjJButtonsPanel2.add(getPathwayDBbutton());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -921,43 +753,6 @@ private javax.swing.JPanel getJButtonsPanel2() {
 	}
 	return ivjJButtonsPanel2;
 }
-
-/**
- * Return the LinkJLabel property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getLinkJLabel() {
-	if (ivjLinkJLabel == null) {
-		try {
-			ivjLinkJLabel = new javax.swing.JLabel();
-			ivjLinkJLabel.setName("LinkJLabel");
-			ivjLinkJLabel.setText("DB Link");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjLinkJLabel;
-}
-
-
-/**
- * Return the LinkValueJLabel property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getLinkValueJLabel() {
-	if (ivjLinkValueJLabel == null) {
-		try {
-			ivjLinkValueJLabel = new javax.swing.JLabel();
-			ivjLinkValueJLabel.setName("LinkValueJLabel");
-			ivjLinkValueJLabel.setText("LinkValueJLabel");
-			ivjLinkValueJLabel.setBorder(getNameValueJTextField().getBorder());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjLinkValueJLabel;
-}
-
 
 /**
  * Gets the model property (cbit.vcell.model.Model) value.
@@ -1068,13 +863,7 @@ private void handleException(java.lang.Throwable exception) {
  * @param argSpeciesContext cbit.vcell.model.SpeciesContext
  * @param argDocumentManager cbit.vcell.clientdb.DocumentManager
  */
-public void initAddSpecies(
-				Model argModel,
-				Structure argStructure,
-				DocumentManager argDocumentManager) {
-	//
-	//
-	//
+public void initAddSpecies(Model argModel, Structure argStructure) {
 	if(argStructure != null && argModel != null){
 		setTitle("Add New Species to Structure "+argStructure.getName());
 		getOKJButton().setText("Add");
@@ -1084,10 +873,6 @@ public void initAddSpecies(
 	Species newSpecies = new Species(argModel.getFreeSpeciesName(),null);
 	SpeciesContext newSpeciesContext = new SpeciesContext(newSpecies,argStructure);
 	setSpeciesContext(newSpeciesContext);
-	setDocumentManager(argDocumentManager);
-	
-	
-	
 }
 
 
@@ -1099,8 +884,6 @@ private void initConnections() throws java.lang.Exception {
 	getNameValueJTextField().addPropertyChangeListener(ivjEventHandler);
 	getCancelJButton().addActionListener(ivjEventHandler);
 	getOKJButton().addActionListener(ivjEventHandler);
-	getDBUnlinkJButton().addActionListener(ivjEventHandler);
-	getDBLinkJButton().addActionListener(ivjEventHandler);
 	getPathwayDBbutton().addActionListener(ivjEventHandler);
 	getPCLinkValueEditorPane().addHyperlinkListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
@@ -1119,9 +902,7 @@ private void initConnections() throws java.lang.Exception {
  * @param argSpeciesContext cbit.vcell.model.SpeciesContext
  * @param argDocumentManager cbit.vcell.clientdb.DocumentManager
  */
-public void initEditSpecies(SpeciesContext argSpeciesContext, Model argModel, DocumentManager argDocumentManager) {
-	
-	//
+public void initEditSpecies(SpeciesContext argSpeciesContext, Model argModel) {
 	if(argSpeciesContext != null){
 		setTitle("Edit Species "+argSpeciesContext.getSpecies().getCommonName()+" in Structure "+argSpeciesContext.getStructure().getName());
 		getOKJButton().setText("OK");
@@ -1129,7 +910,6 @@ public void initEditSpecies(SpeciesContext argSpeciesContext, Model argModel, Do
 	mode = EDIT_SPECIES_MODE;
 	setModel(argModel);
 	setSpeciesContext(argSpeciesContext);
-	setDocumentManager(argDocumentManager);
 }
 
 
@@ -1178,16 +958,6 @@ public static void main(java.lang.String[] args) {
  */
 private void oK(java.awt.event.ActionEvent actionEvent) {
 	try{
-		AsynchClientTask task0 = new AsynchClientTask("step1", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {				
-				getSpeciesContext().getSpecies().setDBSpecies(
-						(getDBFormalSpecies() != null?getDocumentManager().getBoundSpecies(getDBFormalSpecies()):null)
-					);
-			}
-		};
-		
 		AsynchClientTask task1 = new AsynchClientTask("step2", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			
 			@Override
@@ -1205,7 +975,6 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 					getSpeciesContext().setName(getContextNameValueTextField().getText());
 				}
 				// if there is a Pathway commons reference to this species, add it as an RDF statement to VCMetadata
-				savePCLink();
 				if(mode == ADD_SPECIES_MODE && getModel() != null){
 					Species existingSpecies = getModel().getSpecies(getSpeciesContext().getSpecies().getCommonName());
 					if (existingSpecies==null){
@@ -1255,7 +1024,7 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 				dispose();
 			}
 		};
-		ClientTaskDispatcher.dispatch(getParent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task0, task1});
+		ClientTaskDispatcher.dispatch(getParent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
 		
 	}catch(Exception e){
 		e.printStackTrace(System.out);
@@ -1273,22 +1042,6 @@ private void setAnnotationString(java.lang.String newValue) {
 		try {
 			ivjAnnotationString = newValue;
 			connEtoC3(ivjAnnotationString);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	};
-}
-
-
-/**
- * Set the DBFormalSpecies to a new value.
- * @param newValue cbit.vcell.dictionary.DBFormalSpecies
- */
-private void setDBFormalSpecies(DBFormalSpecies newValue) {
-	if (ivjDBFormalSpecies != newValue) {
-		try {
-			ivjDBFormalSpecies = newValue;
-			connEtoC7(ivjDBFormalSpecies);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -1343,19 +1096,6 @@ private void setdocument2(javax.swing.text.Document newValue) {
 	};
 }
 
-
-/**
- * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @param documentManager The new value for the property.
- * @see #getDocumentManager
- */
-public void setDocumentManager(DocumentManager documentManager) {
-	DocumentManager oldValue = fieldDocumentManager;
-	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
-}
-
-
 /**
  * Sets the model property (cbit.vcell.model.Model) value.
  * @param model The new value for the property.
@@ -1376,7 +1116,6 @@ private void setspecies1(Species newValue) {
 	if (ivjspecies1 != newValue) {
 		try {
 			ivjspecies1 = newValue;
-			connEtoM5(ivjspecies1);
 			connEtoM2(ivjspecies1);
 			connEtoM3(ivjspecies1);
 		} catch (java.lang.Throwable ivjExc) {
@@ -1418,44 +1157,13 @@ private void setspeciesContext1(SpeciesContext newValue) {
 	};
 }
 
-/**
- * Comment
- */
-private DBFormalSpecies showDatabaseBindingDialog() {
-
-	SpeciesQueryDialog aSpeciesQueryDialog = new SpeciesQueryDialog((java.awt.Frame)null,true);
-	aSpeciesQueryDialog.setDocumentManager(getDocumentManager());
-	aSpeciesQueryDialog.setSize(500,500);
-	BeanUtils.centerOnScreen(aSpeciesQueryDialog);
-	ZEnforcer.showModalDialogOnTop(aSpeciesQueryDialog,this);
-
-	DBFormalSpecies dbfs = null;
-	DictionaryQueryResults dqr = aSpeciesQueryDialog.getDictionaryQueryResults();
-	if(dqr != null && dqr.getSelection() != null){
-		dbfs = dqr.getDBFormalSpecies()[dqr.getSelection()[0]];
-	}
-	
-	return dbfs;
-}
-
 private void showPCKeywordQueryPanel() {
 	 PCKeywordQueryPanel aPCKeywordQueryPanel = new PCKeywordQueryPanel();
-	 int returnVal = DialogUtils.showComponentOKCancelDialog(this, aPCKeywordQueryPanel, "Pathway Commons Database ...");
+	 int returnVal = DialogUtils.showComponentOKCancelDialog(this, aPCKeywordQueryPanel, "Search External Database");
 	 
 	 if (returnVal == JOptionPane.OK_OPTION) {
-		 setSelectedXRef(aPCKeywordQueryPanel.getSelectedXRef());
+		 saveSelectedXRef(aPCKeywordQueryPanel.getSelectedXRef(),aPCKeywordQueryPanel.getMiriamQualifier());
 	 }
-}
-
-
-/**
- * Comment
- */
-private void unlink(java.awt.event.ActionEvent actionEvent) {
-	String ret = PopupGenerator.showWarningDialog(this,"OK to Unlink DB Reference?",new String[] { UserMessage.OPTION_YES, UserMessage.OPTION_NO },UserMessage.OPTION_YES);
-	if (ret.equals(UserMessage.OPTION_YES)){
-		setDBFormalSpecies(null);
-	}
 }
 
 
@@ -1464,7 +1172,7 @@ private void unlink(java.awt.event.ActionEvent actionEvent) {
  */
 private void updateInterface() {
 
-	if (fieldSpeciesContext == null || fieldModel == null || fieldDocumentManager == null) {
+	if (fieldSpeciesContext == null || fieldModel == null) {
 		return;
 	}
 	getNameJLabel().setEnabled(getSpeciesContext() != null);
@@ -1504,14 +1212,8 @@ private void updateInterface() {
 		);
 
 	
-	getLinkValueJLabel().setText((getDBFormalSpecies() != null?getDBFormalSpecies().getFormalSpeciesInfo().getFormalID()+" - "+getDBFormalSpecies().getFormalSpeciesInfo().getPreferredName():" "));
 	updatePCLink();
 	
-	getDBLinkJButton().setEnabled(true);
-	getDBLinkJButton().setText((getDBFormalSpecies() != null?"Change DB Link...":"Add DB Link..."));
-	getDBLinkJButton().setEnabled(getDocumentManager() != null);
-	
-	getDBUnlinkJButton().setEnabled(getDBFormalSpecies() != null);
 	updateOKButton();
 }
 
@@ -1522,7 +1224,6 @@ private void updateOKButton() {
 		(
 			mode == ADD_SPECIES_MODE ||
 			!Compare.isEqualOrNull(getNameValueJTextField().getText(),getSpeciesContext().getSpecies().getCommonName()) ||
-			!Compare.isEqualOrNull(getSpeciesContext().getSpecies().getDBSpecies(),getDBFormalSpecies()) ||
 //			!Compare.isEqualOrNull(getSpeciesContext().getSpecies().getAnnotation(),getAnnotationString()) ||
 			getSpeciesContext().getHasOverride() != getJCheckBoxHasOverride().isSelected() ||
 			!Compare.isEqualOrNull(getSpeciesContext().getName(),getContextNameValueTextField().getText()) ||
@@ -1537,7 +1238,7 @@ private JButton getPathwayDBbutton() {
 		try {
 			pathwayDBJButton = new javax.swing.JButton();
 			pathwayDBJButton.setName("pathwayDBJButton");
-			pathwayDBJButton.setText("Link to Pathway Commons DB");
+			pathwayDBJButton.setText("Link to databases");
 			// pathwayDBJButton.setEnabled(false);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -1548,7 +1249,7 @@ private JButton getPathwayDBbutton() {
 	private JLabel getPCLinkJlabel() {
 		if (PCLinkJlabel == null) {
 			PCLinkJlabel = new JLabel();
-			PCLinkJlabel.setText("Pathway Commons Link");
+			PCLinkJlabel.setText("Database Link");
 			PCLinkJlabel.setName("LinkJLabel");
 		}
 		return PCLinkJlabel;
@@ -1564,17 +1265,4 @@ private JButton getPathwayDBbutton() {
 		return PCLinkValueEditorPane;
 	}
 
-	private void savePCLink() {
-		if (getSelectedXRef() != null && (selectedURI != null && selectedURI.getScheme() != null && selectedURI.getSchemeSpecificPart().length() > 0)) {
-			try {
-				String propertyID = XMLTags.PROPERTY_ISVERSIONOF;	
-				URI propertyNamespace = new URI(XMLTags.BMBIOQUAL_NAMESPACE_URI);
-				getModel().getVcMetaData().addRDFStatement(getSpeciesContext().getSpecies(),
-						new URI(propertyNamespace+propertyID),selectedURI);
-			} catch (Exception e) {
-				e.printStackTrace(System.out);
-				// DialogUtils.showErrorDialog("Error setting vcMetadata for species - URN Problem : " + e.toString());
-			}
-		}
-	}
 }

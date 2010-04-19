@@ -11,15 +11,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
+import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.registry.Registry;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFWriter;
-import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
@@ -53,7 +54,7 @@ public class MIRIAMAnnotationViewer extends JPanel {
 									DialogUtils.showInfoDialog(MIRIAMAnnotationViewer.this, "Not yet Implemented deletion of individual links");
 									return;
 								}
-								metaData.deleteStatement(miriamAnnotationEditor.getSelectedStatements().get(0));
+								miriamAnnotationEditor.removeSelectedRefGroups();
 								miriamAnnotationEditor.setBioModel(biomodel);
 							}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_ADD)){
 								final String ID_CHOICE = "Identifier";
@@ -108,14 +109,15 @@ public class MIRIAMAnnotationViewer extends JPanel {
 		StringWriter sw = new StringWriter();
 		writer.write(rdfModel, sw, biomodel.getVCMetaData().getBaseURI());
 		sw.append("\n\n ResourceMappings : \n");
-		Set<Resource> resourceSet = biomodel.getVCMetaData().getRegistry().getResources();
-		for (Resource rsc : resourceSet) {
-			sw.append(rsc.getURI());
-			Object object = biomodel.getVCMetaData().getRegistry().forResource(rsc).object();
-			if (object instanceof Identifiable) {
-				sw.append(" ============= " + biomodel.getVCID((Identifiable)object).toASCIIString());
+		Set<Registry.Entry> entrySet = biomodel.getVCMetaData().getRegistry().getAllEntries();
+		for (Registry.Entry entry : entrySet) {
+			NamedThing namedThing = entry.getNamedThing();
+			if (namedThing!=null){
+				sw.append(namedThing.resource().getURI());
+				Identifiable identifiable = entry.getIdentifiable();
+				sw.append(" ============= " + biomodel.getVCID(identifiable).toASCIIString());
+				sw.append("\n");
 			}
-			sw.append("\n");
 		}
 
 //		Element root = XmlUtil.stringToXML(sw.getBuffer().toString(), null);
@@ -129,14 +131,15 @@ public class MIRIAMAnnotationViewer extends JPanel {
 			strBuffer.append(st.getSubject()+";\t" + st.getPredicate()+";\t" + st.getObject()+"\n");
 		}
 		strBuffer.append("\n\n ResourceMappings : \n");
-		resourceSet = biomodel.getVCMetaData().getRegistry().getResources();
-		for (Resource rsc : resourceSet) {
-			strBuffer.append(rsc.getURI());
-			Object object = biomodel.getVCMetaData().getRegistry().forResource(rsc).object();
-			if (object instanceof Identifiable) {
-				strBuffer.append(" ============= " + biomodel.getVCID((Identifiable)object).toASCIIString());
+		entrySet = biomodel.getVCMetaData().getRegistry().getAllEntries();
+		for (Registry.Entry entry : entrySet) {
+			NamedThing namedThing = entry.getNamedThing();
+			if (namedThing!=null){
+				strBuffer.append(namedThing.resource().getURI());
+				Identifiable identifiable = entry.getIdentifiable();
+				strBuffer.append(" ============= " + biomodel.getVCID(identifiable).toASCIIString());
+				strBuffer.append("\n");				
 			}
-			strBuffer.append("\n");
 		}
 		LoStextArea.setText(strBuffer.toString());
 	}

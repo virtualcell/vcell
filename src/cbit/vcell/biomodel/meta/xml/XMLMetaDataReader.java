@@ -38,11 +38,11 @@ public class XMLMetaDataReader extends XMLMetaData {
 					String uri = entryElement.getAttributeValue(XMLMetaData.URI_ATTR_TAG);
 					String vcidString = entryElement.getAttributeValue(XMLMetaData.VCID_ATTR_TAG);
 					// make new entry based on URI
-					OpenEntry openEntry = metaData.getRegistry().forURI(uri);
 					// create VCID
 					VCID vcid = VCID.fromString(vcidString);
 					// lookup Identifiable object using VCID ... add to entry.
-					openEntry.setObject(identifiableProvider.getIdentifiableObject(vcid));
+					metaData.getRegistry().newEntry(identifiableProvider.getIdentifiableObject(vcid), uri);
+					
 				} catch (VCID.InvalidVCIDException e){
 					e.printStackTrace();
 					throw new XmlParseException(e.getMessage());

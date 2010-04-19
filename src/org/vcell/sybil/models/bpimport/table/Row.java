@@ -77,7 +77,7 @@ public class Row implements ProcessEdge {
 	}
 
 	public SBBox.Species species() { 
-		if(species == null) { species = table.box().factories().species().createAnonymous(); }
+		if(species == null) { species = table.box().factories().speciesFactory().createAnonymous(); }
 		return species; 
 	}
 
@@ -98,7 +98,7 @@ public class Row implements ProcessEdge {
 	}
 
 	public SBBox.Stoichiometry stoichiometry() { 
-		if(stoichiometry == null) { stoichiometry = table.box().factories().stoichiometry().createAnonymous(); }
+		if(stoichiometry == null) { stoichiometry = table.box().factories().stoichiometryFactory().createAnonymous(); }
 		return stoichiometry; 
 	}
 

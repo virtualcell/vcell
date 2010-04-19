@@ -15,127 +15,125 @@ import org.vcell.sybil.models.miriam.MIRIAMizer;
 import org.vcell.sybil.models.miriam.RefGroup;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier.BioQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier.ModelQualifier;
+import org.vcell.sybil.models.miriam.demo.MIRIAMizerDemo;
 import org.vcell.sybil.rdf.RDFBox;
 import org.vcell.sybil.rdf.RDFBox.RDFThing;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 public class MIRIAMizerImp implements MIRIAMizer {
 
-	public <B extends RDFBox> RefGroupImp<B> newRefGroup(RDFThing<B> thing, MIRIAMQualifier qualifier) {
-		B box = thing.box();
+	public RefGroupImp newRefGroup(RDFThing thing, MIRIAMQualifier qualifier) {
+		RDFBox box = thing.box();
 		Bag bag = box.getRdf().createBag();
 		box.getRdf().add(thing.resource(), qualifier.property(), bag);
-		RefGroupImp<B> group = new RefGroupImp<B>(box, bag);
+		RefGroupImp group = new RefGroupImp(box, bag);
 		return group;		
 	}
 	
-	public <B extends RDFBox> 
-	RefGroupImp<B> newRefGroup(RDFThing<B> thing, MIRIAMQualifier qualifier, MIRIAMRef ref) {
-		B box = thing.box();
+	public RefGroupImp newRefGroup(RDFThing thing, MIRIAMQualifier qualifier, MIRIAMRef ref) {
+		RDFBox box = thing.box();
 		Bag bag = box.getRdf().createBag();
 		box.getRdf().add(thing.resource(), qualifier.property(), bag);
-		RefGroupImp<B> group = new RefGroupImp<B>(box, bag);
+		RefGroupImp group = new RefGroupImp(box, bag);
 		group.add(ref);
 		return group;		
 	}
 	
-	public <B extends RDFBox> RefGroupImp<B> 
-	newRefGroup(RDFThing<B> thing, MIRIAMQualifier qualifier, Set<MIRIAMRef> refs) {
-		B box = thing.box();
+	public RefGroupImp newRefGroup(RDFThing thing, MIRIAMQualifier qualifier, Set<MIRIAMRef> refs) {
+		RDFBox box = thing.box();
 		Bag bag = box.getRdf().createBag();
 		box.getRdf().add(thing.resource(), qualifier.property(), bag);
-		RefGroupImp<B> group = new RefGroupImp<B>(box, bag);
+		RefGroupImp group = new RefGroupImp(box, bag);
 		for(MIRIAMRef ref : refs) { group.add(ref);	}
 		return group;		
 	}
 	
-	public <B extends RDFBox> 
-	Set<RefGroup<B>> getRefGroups(RDFThing<B> thing, MIRIAMQualifier qualifier) {
-		Set<RefGroup<B>> groups = new HashSet<RefGroup<B>>();
-		B box = thing.box();
-		NodeIterator nodeIter = 
-			box.getRdf().listObjectsOfProperty(thing.resource(), qualifier.property());
+	public Set<RefGroup> getRefGroups(RDFThing thing, MIRIAMQualifier qualifier) {
+		Set<RefGroup> groups = new HashSet<RefGroup>();
+		RDFBox box = thing.box();
+		NodeIterator nodeIter = box.getRdf().listObjectsOfProperty(thing.resource(), qualifier.property());
 		while(nodeIter.hasNext()) {
 			RDFNode node = nodeIter.nextNode();
 			if(node instanceof Resource) {
 				Bag bag = box.getRdf().getBag((Resource) node);
-				groups.add(new RefGroupImp<B>(box, bag));
+				groups.add(new RefGroupImp(box, bag));
 			}
 		}
 		return groups;
 	}
 	
-	public <B extends RDFBox> Map<RefGroup<B>, ModelQualifier> getModelRefGroups(RDFThing<B> thing) {
-		Map<RefGroup<B>, ModelQualifier> map = new HashMap<RefGroup<B>, ModelQualifier>();
+	public Map<RefGroup, ModelQualifier> getModelRefGroups(RDFThing thing) {
+		Map<RefGroup, ModelQualifier> map = new HashMap<RefGroup, ModelQualifier>();
 		for(ModelQualifier qualifier : ModelQualifier.all) {
-			Set<RefGroup<B>> groups = getRefGroups(thing, qualifier);
-			for(RefGroup<B> group : groups) { map.put(group, qualifier); }
+			Set<RefGroup> groups = getRefGroups(thing, qualifier);
+			for(RefGroup group : groups) { map.put(group, qualifier); }
 		}
 		return map;
 	}
 
-	public <B extends RDFBox> Map<RefGroup<B>, BioQualifier> getBioRefGroups(RDFThing<B> thing) {
-		Map<RefGroup<B>, BioQualifier> map = new HashMap<RefGroup<B>, BioQualifier>();
+	public Map<RefGroup, BioQualifier> getBioRefGroups(RDFThing thing) {
+		Map<RefGroup, BioQualifier> map = new HashMap<RefGroup, BioQualifier>();
 		for(BioQualifier qualifier : BioQualifier.all) {
-			Set<RefGroup<B>> groups = getRefGroups(thing, qualifier);
-			for(RefGroup<B> group : groups) { map.put(group, qualifier); }
+			Set<RefGroup> groups = getRefGroups(thing, qualifier);
+			for(RefGroup group : groups) { map.put(group, qualifier); }
 		}
 		return map;
 	}
 
-	public <B extends RDFBox> Map<RefGroup<B>, MIRIAMQualifier> getAllRefGroups(RDFThing<B> thing) {
-		Map<RefGroup<B>, MIRIAMQualifier> map = 
-			new HashMap<RefGroup<B>, MIRIAMQualifier>();
+	public Map<RefGroup, MIRIAMQualifier> getAllRefGroups(RDFThing thing) {
+		Map<RefGroup, MIRIAMQualifier> map = 
+			new HashMap<RefGroup, MIRIAMQualifier>();
 		for(MIRIAMQualifier qualifier : MIRIAMQualifier.all) {
-			Set<RefGroup<B>> groups = getRefGroups(thing, qualifier);
-			for(RefGroup<B> group : groups) { map.put(group, qualifier); }
+			Set<RefGroup> groups = getRefGroups(thing, qualifier);
+			for(RefGroup group : groups) { map.put(group, qualifier); }
 		}
 		return map;
 	}
 
-	public <B extends RDFBox> void detachRefGroup(RDFThing<B> thing, RefGroup<B> group) {
+	public void detachRefGroup(RDFThing thing, RefGroup group) {
 		thing.box().getRdf().removeAll(thing.resource(), null, group.bag());
 	}
 	
-	public <B extends RDFBox> void detachRefGroups(RDFThing<B> thing, MIRIAMQualifier qualifier) {
+	public void detachRefGroups(RDFThing thing, MIRIAMQualifier qualifier) {
 		thing.box().getRdf().removeAll(thing.resource(), qualifier.property(), (RDFNode) null);
 	}
 
-	public <B extends RDFBox> void detachModelRefGroups(RDFThing<B> thing) {
+	public void detachModelRefGroups(RDFThing thing) {
 		for(ModelQualifier qualifier : ModelQualifier.all) { detachRefGroups(thing, qualifier); }
 	}
 
-	public <B extends RDFBox> void detachBioRefGroups(RDFThing<B> thing) {
+	public void detachBioRefGroups(RDFThing thing) {
 		for(BioQualifier qualifier : BioQualifier.all) { detachRefGroups(thing, qualifier); }
 	}
 
-	public <B extends RDFBox> void detachAllRefGroups(RDFThing<B> thing) {
+	public void detachAllRefGroups(RDFThing thing) {
 		for(MIRIAMQualifier qualifier : MIRIAMQualifier.all) { detachRefGroups(thing, qualifier); }
 	}
 
-	public <B extends RDFBox> void deleteRefGroup(RDFThing<B> thing, RefGroup<B> group) {
+	public void deleteRefGroup(RDFThing thing, RefGroup group) {
 		detachRefGroup(thing, group);
 		group.delete();
 	}
 
-	public <B extends RDFBox> void deleteRefGroups(RDFThing<B> thing, MIRIAMQualifier qualifier) {
-		Set<RefGroup<B>> groups = getRefGroups(thing, qualifier);
-		for(RefGroup<B> group : groups) { deleteRefGroup(thing, group); }
+	public void deleteRefGroups(RDFThing thing, MIRIAMQualifier qualifier) {
+		Set<RefGroup> groups = getRefGroups(thing, qualifier);
+		for(RefGroup group : groups) { deleteRefGroup(thing, group); }
 	}
 
-	public <B extends RDFBox> void deleteModelRefGroups(RDFThing<B> thing) {
+	public void deleteModelRefGroups(RDFThing thing) {
 		for(ModelQualifier qualifier : ModelQualifier.all) { deleteRefGroups(thing, qualifier); }		
 	}
 
-	public <B extends RDFBox> void deleteBioRefGroups(RDFThing<B> thing) {
+	public void deleteBioRefGroups(RDFThing thing) {
 		for(BioQualifier qualifier : BioQualifier.all) { deleteRefGroups(thing, qualifier); }		
 	}
 
-	public <B extends RDFBox> void deleteAllRefGroups(RDFThing<B> thing) {
+	public void deleteAllRefGroups(RDFThing thing) {
 		for(MIRIAMQualifier qualifier : MIRIAMQualifier.all) { deleteRefGroups(thing, qualifier); }				
 	}
 

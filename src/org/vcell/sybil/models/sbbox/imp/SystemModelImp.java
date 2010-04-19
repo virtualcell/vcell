@@ -24,7 +24,7 @@ public class SystemModelImp extends SBWrapper implements SBBox.MutableSystemMode
 		while(procModIter.hasNext()) {
 			RDFNode procModNode = procModIter.nextNode();
 			if(procModNode instanceof Resource) {
-				processModels.add(box().factories().processModel().open((Resource) procModNode));
+				processModels.add(box().factories().processModelFactory().open((Resource) procModNode));
 			}
 		}
 		return processModels;
@@ -53,7 +53,7 @@ public class SystemModelImp extends SBWrapper implements SBBox.MutableSystemMode
 		while(subsIter.hasNext()) {
 			RDFNode subsNode = subsIter.nextNode();
 			if(subsNode instanceof Resource) {
-				substances.add(box().factories().substance().open((Resource) subsNode));
+				substances.add(box().factories().substanceFactory().open((Resource) subsNode));
 			}
 		}
 		return substances;
@@ -82,7 +82,7 @@ public class SystemModelImp extends SBWrapper implements SBBox.MutableSystemMode
 		while(specIter.hasNext()) {
 			RDFNode specNode = specIter.nextNode();
 			if(specNode instanceof Resource) {
-				specieses.add(box().factories().species().open((Resource) specNode));
+				specieses.add(box().factories().speciesFactory().open((Resource) specNode));
 			}
 		}
 		return specieses;

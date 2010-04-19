@@ -87,12 +87,12 @@ public class GraphModelSelectionInfo implements GraphModel.Listener {
 			for(NamedThing thing : comp.things()) {
 				Resource resource = thing.resource();
 				if(comp instanceof RDFGraphCompThing && 
-						(model().box().factories().interaction().test(resource) 
-						|| model().box().factories().substance().test(resource))) {
+						(model().box().factories().interactionFactory().test(resource) 
+						|| model().box().factories().substanceFactory().test(resource))) {
 					resources.add(resource);					
 				}
 				if(comp instanceof RDFGraphCompRelation && 
-						model().box().factories().participant().test(resource)) {
+						model().box().factories().participantFactory().test(resource)) {
 					resources.add(resource);					
 				}
 			}

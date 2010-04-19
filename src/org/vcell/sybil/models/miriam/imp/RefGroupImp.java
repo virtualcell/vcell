@@ -20,11 +20,11 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
-public class RefGroupImp<B extends RDFBox> extends RDFBagWrapper<B> implements RefGroup<B> {
+public class RefGroupImp extends RDFBagWrapper implements RefGroup {
 
-	public RefGroupImp(B box, Bag bag) { super(box, bag); }
+	public RefGroupImp(RDFBox box, Bag bag) { super(box, bag); }
 
-	public RefGroupImp<B> add(MIRIAMRef ref) {
+	public RefGroupImp add(MIRIAMRef ref) {
 		Resource rRef = box().getRdf().createResource(ref.urn());
 		bag().add(rRef);
 		return this;
@@ -35,7 +35,7 @@ public class RefGroupImp<B extends RDFBox> extends RDFBagWrapper<B> implements R
 		return bag().contains(rRef);
 	}
 
-	public RefGroupImp<B> removeAll() {
+	public RefGroupImp removeAll() {
 		StmtIterator stmtIter = box().getRdf().listStatements(bag(), null, (RDFNode) null);
 		Set<Statement> statements = new HashSet<Statement>();
 		while(stmtIter.hasNext()) {
@@ -68,7 +68,7 @@ public class RefGroupImp<B extends RDFBox> extends RDFBagWrapper<B> implements R
 		return refs;
 	}
 
-	public RefGroupImp<B> remove(MIRIAMRef ref) {
+	public RefGroupImp remove(MIRIAMRef ref) {
 		Resource resourceRef = box().getRdf().createResource(ref.urn());
 		StmtIterator stmtIter = box().getRdf().listStatements(bag(), null, resourceRef);
 		Set<Statement> statements = new HashSet<Statement>();
