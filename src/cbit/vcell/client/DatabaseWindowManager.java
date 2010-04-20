@@ -1153,7 +1153,7 @@ public String showSaveDialog(final int documentType, final Component requester, 
 			throw new RuntimeException("DatabaseWindowManager.showSaveDialog() - unknown document type");
 		}
 	}
-	tree.setPreferredSize(new java.awt.Dimension(300, 600));
+	tree.setPreferredSize(new java.awt.Dimension(405, 600));
 	panel.add(tree, BorderLayout.CENTER);
 	panel.add(new JLabel("Please type a new name:"), BorderLayout.SOUTH);
 	saveDialog.setMessage("");
