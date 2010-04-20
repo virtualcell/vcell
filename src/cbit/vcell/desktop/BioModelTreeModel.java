@@ -1,12 +1,19 @@
 package cbit.vcell.desktop;
 
+import java.util.Set;
+
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.gui.MiriamTreeModel;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
@@ -40,6 +47,18 @@ private void addBioModelContents(BioModelNode bioModelNode, BioModel bioModel) {
 	//if (bioModel.getDescription() != null && !bioModel.getDescription().equals("")){
 		bioModelNode.add(new BioModelNode(new Annotation(bioModel.getDescription()),false));
 	//}
+		Set<MiriamRefGroup> isDescribedByAnnotation = bioModel.getVCMetaData().getMiriamManager().getMiriamRefGroups(bioModel, MIRIAMQualifier.MODEL_isDescribedBy);
+		for (MiriamRefGroup refGroup : isDescribedByAnnotation){
+			for (MiriamResource miriamResources : refGroup.getMiriamRefs()){
+				bioModelNode.add(new MiriamTreeModel.LinkNode(MIRIAMQualifier.MODEL_isDescribedBy, miriamResources));
+			}
+		}
+		Set<MiriamRefGroup> isAnnotation = bioModel.getVCMetaData().getMiriamManager().getMiriamRefGroups(bioModel, MIRIAMQualifier.MODEL_is);
+		for (MiriamRefGroup refGroup : isAnnotation){
+			for (MiriamResource miriamResources : refGroup.getMiriamRefs()){
+				bioModelNode.add(new MiriamTreeModel.LinkNode(MIRIAMQualifier.MODEL_is, miriamResources));
+			}
+		}
 
 	SimulationContext scArray[] = bioModel.getSimulationContexts();
 	if (scArray!=null){

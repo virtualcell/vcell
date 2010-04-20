@@ -3,8 +3,12 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Color;
+import java.awt.Component;
+
 import javax.swing.JLabel;
 import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
@@ -12,6 +16,7 @@ import org.vcell.util.document.User;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  
 public class BioModelCellRenderer extends VCellBasicCellRenderer {
 	
@@ -64,7 +69,23 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 	JLabel component = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 	//
 	try {
-		if (value instanceof BioModelNode) {
+
+		if (value instanceof LinkNode){
+			LinkNode ln = (LinkNode)value;
+			String link = ln.getLink();
+			String text = ln.getText();
+			String qualifier = ln.getMiriamQualifier().getDescription();
+			if (link != null) {
+				String colorString = (sel)?"white":"blue";
+				component.setToolTipText("Double-click to open link");
+				component.setText("<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\"><a href=" + link + ">" + text + "</a></font></html>");
+			}else{
+				String colorString = (sel)?"white":"black";
+				component.setText("<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\">" + text + "</font></html>");
+			}
+			setIcon(fieldTextIcon);
+
+		} else if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			Object userObject = node.getUserObject();
 			if (userObject instanceof User && node.getChildCount()>0 && (((BioModelNode)node.getChildAt(0)).getUserObject() instanceof String) && ((BioModelNode)(node.getChildAt(0).getChildAt(0))).getUserObject() instanceof BioModelInfo){
@@ -113,9 +134,9 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				User nodeUser = infonode.getVCDocumentInfo().getVersion().getOwner();
 				String modelName = infonode.getVCDocumentInfo().getVersion().getName();
 				if (nodeUser.compareEqual(sessionUser)) {
-					setText(modelName);
+					component.setText(modelName);
 				} else {
-					setText("<html><b>" + nodeUser.getName() + " </b> : " + modelName + "</html>");
+					component.setText("<html><b>" + nodeUser.getName() + " </b> : " + modelName + "</html>");
 				}
 			}
 		}

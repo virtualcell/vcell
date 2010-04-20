@@ -4,6 +4,7 @@ package org.vcell.sybil.models.miriam.imp;
  *   Handling MIRIAM annotations
  */
 
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,8 +14,6 @@ import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef;
 import org.vcell.sybil.models.miriam.MIRIAMizer;
 import org.vcell.sybil.models.miriam.RefGroup;
-import org.vcell.sybil.models.miriam.MIRIAMQualifier.BioQualifier;
-import org.vcell.sybil.models.miriam.MIRIAMQualifier.ModelQualifier;
 import org.vcell.sybil.models.miriam.demo.MIRIAMizerDemo;
 import org.vcell.sybil.rdf.RDFBox;
 import org.vcell.sybil.rdf.RDFBox.RDFThing;
@@ -67,18 +66,18 @@ public class MIRIAMizerImp implements MIRIAMizer {
 		return groups;
 	}
 	
-	public Map<RefGroup, ModelQualifier> getModelRefGroups(RDFThing thing) {
-		Map<RefGroup, ModelQualifier> map = new HashMap<RefGroup, ModelQualifier>();
-		for(ModelQualifier qualifier : ModelQualifier.all) {
+	public Map<RefGroup, MIRIAMQualifier> getModelRefGroups(RDFThing thing) {
+		Map<RefGroup, MIRIAMQualifier> map = new HashMap<RefGroup, MIRIAMQualifier>();
+		for(MIRIAMQualifier qualifier : MIRIAMQualifier.MODEL_all) {
 			Set<RefGroup> groups = getRefGroups(thing, qualifier);
 			for(RefGroup group : groups) { map.put(group, qualifier); }
 		}
 		return map;
 	}
 
-	public Map<RefGroup, BioQualifier> getBioRefGroups(RDFThing thing) {
-		Map<RefGroup, BioQualifier> map = new HashMap<RefGroup, BioQualifier>();
-		for(BioQualifier qualifier : BioQualifier.all) {
+	public Map<RefGroup, MIRIAMQualifier> getBioRefGroups(RDFThing thing) {
+		Map<RefGroup, MIRIAMQualifier> map = new HashMap<RefGroup, MIRIAMQualifier>();
+		for(MIRIAMQualifier qualifier : MIRIAMQualifier.BIO_all) {
 			Set<RefGroup> groups = getRefGroups(thing, qualifier);
 			for(RefGroup group : groups) { map.put(group, qualifier); }
 		}
@@ -104,11 +103,11 @@ public class MIRIAMizerImp implements MIRIAMizer {
 	}
 
 	public void detachModelRefGroups(RDFThing thing) {
-		for(ModelQualifier qualifier : ModelQualifier.all) { detachRefGroups(thing, qualifier); }
+		for(MIRIAMQualifier qualifier : MIRIAMQualifier.MODEL_all) { detachRefGroups(thing, qualifier); }
 	}
 
 	public void detachBioRefGroups(RDFThing thing) {
-		for(BioQualifier qualifier : BioQualifier.all) { detachRefGroups(thing, qualifier); }
+		for(MIRIAMQualifier qualifier : MIRIAMQualifier.BIO_all) { detachRefGroups(thing, qualifier); }
 	}
 
 	public void detachAllRefGroups(RDFThing thing) {
@@ -126,11 +125,11 @@ public class MIRIAMizerImp implements MIRIAMizer {
 	}
 
 	public void deleteModelRefGroups(RDFThing thing) {
-		for(ModelQualifier qualifier : ModelQualifier.all) { deleteRefGroups(thing, qualifier); }		
+		for(MIRIAMQualifier qualifier : MIRIAMQualifier.MODEL_all) { deleteRefGroups(thing, qualifier); }		
 	}
 
 	public void deleteBioRefGroups(RDFThing thing) {
-		for(BioQualifier qualifier : BioQualifier.all) { deleteRefGroups(thing, qualifier); }		
+		for(MIRIAMQualifier qualifier : MIRIAMQualifier.BIO_all) { deleteRefGroups(thing, qualifier); }		
 	}
 
 	public void deleteAllRefGroups(RDFThing thing) {

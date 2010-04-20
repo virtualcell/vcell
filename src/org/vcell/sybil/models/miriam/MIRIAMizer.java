@@ -7,8 +7,6 @@ package org.vcell.sybil.models.miriam;
 import java.util.Map;
 import java.util.Set;
 
-import org.vcell.sybil.models.miriam.MIRIAMQualifier.BioQualifier;
-import org.vcell.sybil.models.miriam.MIRIAMQualifier.ModelQualifier;
 import org.vcell.sybil.rdf.RDFBox.RDFThing;
 
 public interface MIRIAMizer {
@@ -18,8 +16,8 @@ public interface MIRIAMizer {
 	public RefGroup newRefGroup(RDFThing thing, MIRIAMQualifier qualifier, Set<MIRIAMRef> refs);
 	
 	public Set<RefGroup> getRefGroups(RDFThing thing, MIRIAMQualifier qualifier);
-	public Map<RefGroup, ModelQualifier> getModelRefGroups(RDFThing thing);
-	public Map<RefGroup, BioQualifier> getBioRefGroups(RDFThing thing);
+	public Map<RefGroup, MIRIAMQualifier> getModelRefGroups(RDFThing thing);
+	public Map<RefGroup, MIRIAMQualifier> getBioRefGroups(RDFThing thing);
 	public Map<RefGroup, MIRIAMQualifier> getAllRefGroups(RDFThing thing);
 	public void detachRefGroups(RDFThing thing, MIRIAMQualifier qualifier);
 	public void detachRefGroup(RDFThing thing, RefGroup group);

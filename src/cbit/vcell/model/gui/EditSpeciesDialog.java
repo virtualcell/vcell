@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JButton;
@@ -152,10 +153,9 @@ public class EditSpeciesDialog extends JDialog {
 	private ArrayList<String> getPCLinks() {
 		ArrayList<String> pcLinkStrings = new ArrayList<String>();
 		MiriamManager miriamManager = getModel().getVcMetaData().getMiriamManager();
-		MIRIAMQualifier qualifier = MIRIAMQualifier.BioQualifier.isVersionOf;
-		Set<MiriamRefGroup> refGroups = miriamManager.getMiriamRefGroups(getSpeciesContext().getSpecies(),qualifier);
+		Map<MiriamRefGroup,MIRIAMQualifier> refGroups = miriamManager.getAllMiriamRefGroups(getSpeciesContext().getSpecies());
 		if (refGroups.size()>0) {
-			for (MiriamRefGroup refGroup : refGroups){
+			for (MiriamRefGroup refGroup : refGroups.keySet()){
 				Set<MiriamResource> miriamResources = refGroup.getMiriamRefs();
 				for (MiriamResource resource : miriamResources){
 					pcLinkStrings.add(resource.getMiriamURN());

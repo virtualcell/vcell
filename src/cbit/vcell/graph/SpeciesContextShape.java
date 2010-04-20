@@ -154,8 +154,8 @@ public void paint ( java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY 
 		// check if species has Pathway Commons link by querying VCMetadata : if it does, need to change color of speciesContext.
 		try {
 			MiriamManager miriamManager = mc.getModel().getVcMetaData().getMiriamManager();
-			Set<MiriamRefGroup> miriamRefGroups = miriamManager.getMiriamRefGroups(sc.getSpecies(),MIRIAMQualifier.BioQualifier.isVersionOf);
-			if (miriamRefGroups.size()>0){
+			Map<MiriamRefGroup,MIRIAMQualifier> miriamRefGroups = miriamManager.getAllMiriamRefGroups(sc.getSpecies());
+			if (miriamRefGroups!=null && miriamRefGroups.size()>0){
 				bHasPCLink = true;
 			}
 		}catch (Exception e){
