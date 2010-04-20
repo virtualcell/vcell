@@ -28,6 +28,7 @@ import cbit.vcell.biomodel.meta.MiriamManager.DataType;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry;
+import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.Structure;
@@ -45,7 +46,7 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 public class MiriamTreeModel extends DefaultTreeModel {
 	private VCMetaData vcMetaData = null;
 	
-	public class LinkNode extends DefaultMutableTreeNode {
+	public static class LinkNode extends BioModelNode {
 		private MIRIAMQualifier miriamQualifier = null;
 		private MiriamResource miriamResource = null;
 		
@@ -70,12 +71,12 @@ public class MiriamTreeModel extends DefaultTreeModel {
 				return "UNKNOWN DATA TYPE (urn="+miriamResource.getMiriamURN()+")";
 			}
 		}
-		public String getPredicatePrefix() {
-			return miriamQualifier.toString();
+		public MIRIAMQualifier getMiriamQualifier() {
+			return miriamQualifier;
 		}
 	}
 	
-	public class IdentifiableNode extends DefaultMutableTreeNode {
+	public static class IdentifiableNode extends BioModelNode {
 		private Identifiable identifiable = null;
 		// private String identifiableName = null;
 		

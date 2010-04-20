@@ -48,6 +48,7 @@ import cbit.vcell.biomodel.meta.MiriamManager.DataType;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.desktop.BioModelCellRenderer;
 import cbit.vcell.xml.gui.MiriamTreeModel.IdentifiableNode;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 
@@ -159,7 +160,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 				jTreeMIRIAM.setRowHeight(0);
 				
 				// Add cellRenderer
-				DefaultTreeCellRenderer dtcr = new DefaultTreeCellRenderer() {
+				DefaultTreeCellRenderer dtcr = new BioModelCellRenderer(null) {
 					@Override
 					public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
 							boolean leaf, int row, boolean hasFocus) {
@@ -168,7 +169,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 						setBackgroundSelectionColor(Color.LIGHT_GRAY);
 						if (value instanceof LinkNode) {
 							LinkNode ln = (LinkNode)value;
-							String predicate = ln.getPredicatePrefix();
+							String predicate = ln.getMiriamQualifier().getDescription();
 							String link = ln.getLink();
 							String text = ln.getText();
 							if (link != null) {
@@ -179,10 +180,6 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 								setText("<html><font color='black'>" + predicate + "</font>" + 
 										"&nbsp;&nbsp;&nbsp;&nbsp;" + text + "</html>");
 							}
-						} else {
-							setToolTipText(null);
-							String text = getText();
-							setText("<html><font color='black'>" + text + "</font></html>");
 						}
 						return this;
 					}

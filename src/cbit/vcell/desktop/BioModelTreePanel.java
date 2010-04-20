@@ -5,7 +5,9 @@ package cbit.vcell.desktop;
 ©*/
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -35,6 +37,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 
 /**
  * Insert the type's description here.
@@ -1198,6 +1201,21 @@ private org.vcell.util.gui.JTreeFancy getJTree2() {
 			ivjJTree2.setBounds(0, 0, 78, 72);
 			ivjJTree2.setRootVisible(true);
 			ivjJTree2.setSelectionModel(ivjLocalSelectionModel);
+			MouseListener mouseListener = new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					if(e.getClickCount() == 2) {
+						Object node = ivjJTree2.getLastSelectedPathComponent();
+						if (node instanceof LinkNode) {
+							String link = ((LinkNode)node).getLink();
+							if (link != null) {
+								DialogUtils.browserLauncher(ivjJTree2, link, "failed to launch", false);
+							}
+						}
+					}
+				} 
+			};
+			ivjJTree2.addMouseListener(mouseListener);
+			
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

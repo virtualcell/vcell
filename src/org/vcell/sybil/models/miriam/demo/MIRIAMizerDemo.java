@@ -4,20 +4,12 @@ package org.vcell.sybil.models.miriam.demo;
  *   Handling MIRIAM annotations
  */
 
-import java.net.URISyntaxException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
-import org.vcell.sybil.models.miriam.MIRIAMRef;
-import org.vcell.sybil.models.miriam.MIRIAMizer;
-import org.vcell.sybil.models.miriam.MIRIAMQualifier.BioQualifier;
-import org.vcell.sybil.models.miriam.MIRIAMQualifier.ModelQualifier;
-import org.vcell.sybil.models.miriam.imp.MIRIAMizerImp;
 import org.vcell.sybil.rdf.RDFBox;
-import org.vcell.sybil.rdf.RDFBox.RDFThing;
 import org.vcell.sybil.rdf.schemas.MIRIAM.BioProperties;
 import org.vcell.sybil.rdf.schemas.MIRIAM.ModelProperties;
 
@@ -82,8 +74,6 @@ public class MIRIAMizerDemo {
 	
 			SBMLImporter importer = new SBMLImporter("C:\\Temp\\BIOMD0000000005.xml", logger);
 			BioModel biomodel = importer.getBioModel();
-			Object abc = BioQualifier.all;
-			Object def = ModelQualifier.all;
 			MiriamManager miriamManager = biomodel.getVCMetaData().getMiriamManager();
 			Species species[] = biomodel.getModel().getSpecies();
 			printSubjects(biomodel.getVCMetaData().getRdfData());

@@ -97,6 +97,6 @@ public class PCKeywordQueryPanel extends JPanel {
 	}
 
 	public MIRIAMQualifier getMiriamQualifier() {
-		return MIRIAMQualifier.BioQualifier.isVersionOf;
+		return MIRIAMQualifier.BIO_isVersionOf;
 	}
 }
