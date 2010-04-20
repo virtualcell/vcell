@@ -136,7 +136,7 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjJMenuItemOnlineHelp = null;
 	private JMenu pluginMenu = null;
 	private JMenuItem ivjRunBNGMenuItem = null;
-	private JMenuItem ivjSybilMenuItem = null;
+//	private JMenuItem ivjSybilMenuItem = null;
 	//Added Oct. 17th, 2007. To put a tool menu in 
 	private JMenu toolMenu = null;
 	private JMenuItem transMAMenuItem = null;
@@ -216,8 +216,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC25(e);
 			if (e.getSource() == DocumentWindow.this.getRunBNGMenuItem()) 
 				connEtoC26(e);
-			if (e.getSource() == DocumentWindow.this.getSybilMenuItem()) 
-				startSybil();
+//			if (e.getSource() == DocumentWindow.this.getSybilMenuItem()) 
+//				startSybil();
 			if (e.getSource() == DocumentWindow.this.getTransMAMenuItem()) 
 				showTransMADialog();
 			if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData()) 
@@ -1101,7 +1101,7 @@ private JMenu getPluginMenu() {
 			pluginMenu.setName("Plugins");
 			pluginMenu.setText("Plugins");
 			pluginMenu.add(getRunBNGMenuItem());
-			pluginMenu.add(getSybilMenuItem());
+//			pluginMenu.add(getSybilMenuItem());
 		} catch (Throwable throwable) {
 			handleException(throwable);
 		}
@@ -2402,18 +2402,18 @@ private javax.swing.JMenuItem getRunBNGMenuItem() {
  * @return javax.swing.JMenuItem
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getSybilMenuItem() {
-	if (ivjSybilMenuItem == null) {
-		try {
-			ivjSybilMenuItem = new javax.swing.JMenuItem();
-			ivjSybilMenuItem.setName("RUNSybilMenuItem");
-			ivjSybilMenuItem.setText("Systems Biology Linker (SyBiL)");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSybilMenuItem;
-}
+//private javax.swing.JMenuItem getSybilMenuItem() {
+//	if (ivjSybilMenuItem == null) {
+//		try {
+//			ivjSybilMenuItem = new javax.swing.JMenuItem();
+//			ivjSybilMenuItem.setName("RUNSybilMenuItem");
+//			ivjSybilMenuItem.setText("Systems Biology Linker (SyBiL)");
+//		} catch (java.lang.Throwable ivjExc) {
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjSybilMenuItem;
+//}
 
 /**
  * Return the Save_AsMenuItem property value.
@@ -3014,7 +3014,7 @@ private void initConnections() throws java.lang.Exception {
 	getTestingFrameworkMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemOnlineHelp().addActionListener(ivjEventHandler);
 	getRunBNGMenuItem().addActionListener(ivjEventHandler);
-	getSybilMenuItem().addActionListener(ivjEventHandler);
+//	getSybilMenuItem().addActionListener(ivjEventHandler);
 	getTransMAMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemFieldData().addActionListener(ivjEventHandler);
 	//added application menu to main menubar
