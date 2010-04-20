@@ -226,7 +226,7 @@ public class SBMLAnnotationUtil {
 						String text = annotationBranch.toXMLString();
 						
 						// TODO this is a hack to be replaced by proper URI management.
-						text = text.replace("about=\"#_","about=\"_");
+						text = text.replace("about=\"#","about=\"");
 						
 						Model rdfNew = JenaIOUtil.modelFromText(text, nsSBML);
 						metaData.getRdfData().add(rdfNew);
