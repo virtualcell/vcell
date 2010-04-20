@@ -7,6 +7,8 @@ import org.jdom.Namespace;
 import org.sbml.libsbml.ASTNode;
 import org.sbml.libsbml.AssignmentRule;
 import org.sbml.libsbml.Compartment;
+import org.sbml.libsbml.Delay;
+import org.sbml.libsbml.Event;
 import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.ModifierSpeciesReference;
 import org.sbml.libsbml.OStringStream;
@@ -14,6 +16,7 @@ import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.Species;
 import org.sbml.libsbml.SpeciesReference;
+import org.sbml.libsbml.Trigger;
 import org.sbml.libsbml.UnitDefinition;
 import org.sbml.libsbml.libsbml;
 import org.vcell.sbml.SBMLUtils;
@@ -22,10 +25,12 @@ import org.vcell.util.TokenMangler;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -41,6 +46,7 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -624,12 +630,16 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
 	// The expr for speciesConcentration from VCell is in terms of VCell units (uM); we have converted species units to SBML conc units
 	// to export to SBML. We need to translate them back to VCell units within the expr; then we translate the VCell rate units into SBML units.
 
-	SpeciesContext[] vcSpeciesContexts = vcBioModel.getModel().getSpeciesContexts();
-	for (int i = 0; i < vcSpeciesContexts.length; i++) {
-		if (origRateExpr.hasSymbol(vcSpeciesContexts[i].getName())) {
+	Model vcModel = vcBioModel.getModel();
+//	SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
+	String[] symbols = origRateExpr.getSymbols();
+	if (symbols != null) {
+	for (int i = 0; i < symbols.length; i++) {
+		SpeciesContext vcSpeciesContext = vcModel.getSpeciesContext(symbols[i]);
+		if (vcSpeciesContext != null) {
 			// this change is applicable only to species in volumes, not on membranes, since the 
 			// concentration units for species on membranes is already in molecules (/um2).
-			org.sbml.libsbml.Species species = sbmlModel.getSpecies(vcSpeciesContexts[i].getName());
+			org.sbml.libsbml.Species species = sbmlModel.getSpecies(vcSpeciesContext.getName());
 			/* Check if species name is used as a kinetic parameter. If so, the parameter in the local namespace 
 			   takes precedence. So ignore unit conversion for the species with the same name. */
 			boolean bSpeciesNameFoundInLocalParamList = false;
@@ -647,14 +657,15 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
 			}
 			// Get the VC and SBML concentration units (from sbmlExportSpec) and get the conversion factor ('factor').
 			// Replace the occurance of species in the rate expression with the new expr : species*factor.
-			cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+			cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
 			VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
-			VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContexts[i].getStructure().getDimension());
+			VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
 			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
 			Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
 			origRateExpr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
 		}
-	} 	// end for (j) - speciesContext
+	} 	// end for (i) - symbols
+	}
 	return origRateExpr;
 }
 
@@ -791,7 +802,74 @@ protected void addUnitDefinitions() {
 	addKineticAndGlobalParameterUnits(unitList);
 }
 
+protected void addEvents() throws ExpressionException {
+	BioEvent[] vcBioevents = getSelectedSimContext().getBioEvents();
+	
+	if (vcBioevents != null) {
+		Model vcModel = vcBioModel.getModel();
+		for (int i = 0; i < vcBioevents.length; i++) {
+			Event sbmlEvent = sbmlModel.createEvent();
+			sbmlEvent.setId(vcBioevents[i].getName());
+			// create trigger
+			Trigger trigger = sbmlEvent.createTrigger();
+			// if trigger expression has speciesContext in its list of symbols, need to multiply the unit conversion factor to SBML
+			Expression triggerExpr = adjustSpeciesConcFactor(vcBioevents[i].getTriggerExpression());
+			ASTNode math = getFormulaFromExpression(triggerExpr);
+			trigger.setMath(math);
+			
+			// create delay
+			if (vcBioevents[i].getDelay() != null) {
+				Delay delay = sbmlEvent.createDelay();
+				// if delay expression has speciesContext in its list of symbols, need to multiply the unit conversion factor to SBML
+				Expression delayExpr = adjustSpeciesConcFactor(vcBioevents[i].getDelay().getDurationExpression());
+				math = getFormulaFromExpression(delayExpr);
+				delay.setMath(math);
+			}
+			
+			// create eventAssignments
+			ArrayList<EventAssignment> vcEventAssgns = vcBioevents[i].getEventAssignments();
+			for (int j = 0; j < vcEventAssgns.size(); j++) {
+				org.sbml.libsbml.EventAssignment sbmlEA = sbmlEvent.createEventAssignment();
+				SymbolTableEntry target = vcEventAssgns.get(j).getTarget();
+				sbmlEA.setVariable(target.getName());
+				Expression eventAssgnExpr = new Expression(vcEventAssgns.get(j).getAssignmentExpression());
+				
+				// if event assignment expression has speciesContext in its list of symbols, need to multiply the unit conversion factor to SBML
+				eventAssgnExpr = adjustSpeciesConcFactor(eventAssgnExpr);
 
+				// if the event assignment variable is a speciesContext, need to convert the entire expression from VC units to SBML units
+				if (target instanceof SpeciesContext) {
+					SpeciesContext spContext = (SpeciesContext)target;
+					SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(spContext);
+					VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
+					VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(spContext.getStructure().getDimension());
+					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits);
+					eventAssgnExpr = Expression.mult(eventAssgnExpr, sbmlUnitParam.getExpression()).flatten();
+				}
+				math = getFormulaFromExpression(eventAssgnExpr);
+				sbmlEA.setMath(math);
+			}
+		}
+	}
+}
+
+private Expression adjustSpeciesConcFactor(Expression origExpr) throws ExpressionException {
+	Expression expr = new Expression(origExpr);
+	String[] symbols = expr.getSymbols();
+	for (int k = 0; symbols != null && k < symbols.length; k++) {
+		SpeciesContext vcSpeciesContext = vcBioModel.getModel().getSpeciesContext(symbols[k]); 
+		if (vcSpeciesContext != null) {
+			Species species = sbmlModel.getSpecies(vcSpeciesContext.getName());
+			SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
+			VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
+			VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContext.getStructure().getDimension());
+			SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
+			Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
+			expr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
+		}
+	}
+	return expr;
+}
 /**
  * 	getAnnotationElement : 
  *	For a flux reaction, we need to add an annotation specifying the structure, flux carrier, carrier valence and fluxOption. 
@@ -1080,10 +1158,17 @@ public void translateBioModel() {
 	try {
 		addParameters();
 	} catch (ExpressionException e) {
-		e.printStackTrace();
+		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
 	// Add Reactions
 	addReactions();
+	// Add Events
+	try {
+		addEvents();
+	} catch (ExpressionException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
+	}
 }
 }
