@@ -37,6 +37,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  * @author: Ion Moraru
  */
 public class ODETimePlotMultipleScansPanel extends JPanel {
+	private static final String JOB_PLOT_NAME = "Set";
 	private Simulation simulation = null;
 	private DataManager dataManager = null;
 	private JTable scanChoiceTable = null;
@@ -91,7 +92,7 @@ private void initialize()  {
 		}
 		public String getColumnName(int column) {
 			if (column == 0) {
-				return "Job";
+				return JOB_PLOT_NAME;
 			}
 			return columnNames[column - 1].toString(); 
 		}
@@ -157,7 +158,7 @@ private void initialize()  {
 			}
 		}
 	});
-	scanChoiceTable.getSelectionModel().setSelectionInterval(0,0);
+	//scanChoiceTable.getSelectionModel().setSelectionInterval(0,0);
 }
 
 /**
@@ -186,7 +187,7 @@ private void updateScanParamChoices(){
 					String varname = variableNames[v];
 					int varcol = odeSolverResultSet.findColumn(varname);
 					double[] vdata = odeSolverResultSet.extractColumn(varcol);
-					plotNames[plotIndex] = varname + " -- Job " + jobIndex;
+					plotNames[plotIndex] = varname + " -- " + JOB_PLOT_NAME + " " + jobIndex;
 					plotDatas[plotIndex] = new PlotData(tdata, vdata);
 					symbolTableEntries[plotIndex] = simulation.getMathDescription().getVariable(varname);
 					plotIndex ++;
