@@ -3,6 +3,7 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -25,11 +26,14 @@ import javax.swing.tree.TreeSelectionModel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.DatabaseWindowManager;
-import cbit.vcell.client.desktop.DatabaseWindowPanel.SearchCriterion;
+import cbit.vcell.client.desktop.DatabaseSearchPanel;
+import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
@@ -72,6 +76,7 @@ public class GeometryTreePanel extends JPanel {
 	private JLabel ivjJLabel3 = null;
 	private JPanel ivjJPanel3 = null;
 	private JMenuItem ivjJMenuItemGeomRefs = null;
+	private DatabaseSearchPanel dbSearchPanel = null;
 
 class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -85,6 +90,9 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 				connEtoC8(e);
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemGeomRefs()) 
 				connEtoC15(e);
+			if (e.getSource() == getDatabaseSearchPanel()) {
+				search(e.getActionCommand().equals(DatabaseSearchPanel.SEARCH_SHOW_ALL_COMMAND));
+			}
 		};
 		public void databaseDelete(DatabaseEvent event) {
 			if (event.getSource() == GeometryTreePanel.this.getDocumentManager()) 
@@ -1483,6 +1491,8 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP2SetTarget();
 	connPtoP4SetTarget();
 	connPtoP3SetTarget();
+	
+	getDatabaseSearchPanel().addActionListener(ivjEventHandler);
 }
 
 /**
@@ -1494,18 +1504,14 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("GeometryTreePanel");
-		setLayout(new java.awt.GridBagLayout());
+		setLayout(new BorderLayout());
 		setPreferredSize(new java.awt.Dimension(200, 150));
 		setSize(240, 453);
 		setMinimumSize(new java.awt.Dimension(198, 148));
 
-		java.awt.GridBagConstraints constraintsJSplitPane1 = new java.awt.GridBagConstraints();
-		constraintsJSplitPane1.gridx = 0; constraintsJSplitPane1.gridy = 0;
-		constraintsJSplitPane1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJSplitPane1.weightx = 1.0;
-		constraintsJSplitPane1.weighty = 1.0;
-		constraintsJSplitPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJSplitPane1(), constraintsJSplitPane1);
+		add(getDatabaseSearchPanel(), BorderLayout.NORTH);
+		add(getJSplitPane1(), BorderLayout.CENTER);
+
 		initConnections();
 		connEtoM2();
 		connEtoC11();
@@ -1768,6 +1774,31 @@ private void treeSelection() {
 		BeanUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
 	}
 
+}
+
+private DatabaseSearchPanel getDatabaseSearchPanel() {
+	if (dbSearchPanel == null) {
+		dbSearchPanel = new DatabaseSearchPanel(VCDocument.GEOMETRY_DOC);
+	}
+	return dbSearchPanel;
+}
+
+public void search(boolean bShowAll) {
+	try {
+		ArrayList<SearchCriterion> searchCriterionList = bShowAll ? null : getDatabaseSearchPanel().getSearchCriterionList();
+		refresh(searchCriterionList);
+	} catch (DataAccessException e) {
+		e.printStackTrace();
+		DialogUtils.showErrorDialog(this, "Search failed : " + e.getMessage());
+	}
+}
+
+public void setSearchPanelVisible(boolean bVisible) {
+	getDatabaseSearchPanel().setVisible(bVisible);
+}
+
+public boolean isSearchPanelVisible() {
+	return getDatabaseSearchPanel().isVisible();
 }
 
 }

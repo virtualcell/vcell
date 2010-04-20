@@ -1,5 +1,6 @@
 package cbit.vcell.desktop;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -28,13 +29,16 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.client.DatabaseWindowManager;
-import cbit.vcell.client.desktop.DatabaseWindowPanel.SearchCriterion;
+import cbit.vcell.client.desktop.DatabaseSearchPanel;
+import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
@@ -81,7 +85,8 @@ public class BioModelDbTreePanel extends JPanel {
 	private JLabel ivjJLabel3 = null;
 	private JPanel ivjJPanel3 = null;
 	private JMenuItem ivjJMenuItemArchive = null;
-	private JMenuItem ivjJMenuItemPublish = null;	
+	private JMenuItem ivjJMenuItemPublish = null;
+	private DatabaseSearchPanel dbSearchPanel = null;
 
 class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -105,6 +110,9 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 				connEtoC22(e);
 			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemPublish()) 
 				connEtoC23(e);
+			if (e.getSource() == getDatabaseSearchPanel()) {
+				search(e.getActionCommand().equals(DatabaseSearchPanel.SEARCH_SHOW_ALL_COMMAND));
+			}
 		};
 		public void databaseDelete(DatabaseEvent event) {
 			if (event.getSource() == BioModelDbTreePanel.this.getDocumentManager()) 
@@ -1855,6 +1863,8 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP4SetTarget();
 	connPtoP5SetTarget();
 	connPtoP3SetTarget();
+	
+	getDatabaseSearchPanel().addActionListener(ivjEventHandler);
 }
 
 /**
@@ -1867,17 +1877,13 @@ private void initialize() {
 		// user code end
 		setName("BioModelTreePanel");
 		setPreferredSize(new java.awt.Dimension(200, 150));
-		setLayout(new java.awt.GridBagLayout());
+		setLayout(new BorderLayout());
 		setSize(240, 453);
 		setMinimumSize(new java.awt.Dimension(198, 148));
+		
+		add(getDatabaseSearchPanel(), BorderLayout.NORTH);
+		add(getJSplitPane1(), BorderLayout.CENTER);
 
-		java.awt.GridBagConstraints constraintsJSplitPane1 = new java.awt.GridBagConstraints();
-		constraintsJSplitPane1.gridx = 0; constraintsJSplitPane1.gridy = 0;
-		constraintsJSplitPane1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJSplitPane1.weightx = 1.0;
-		constraintsJSplitPane1.weighty = 1.0;
-		constraintsJSplitPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJSplitPane1(), constraintsJSplitPane1);
 		initConnections();
 		connEtoM4();
 		connEtoC12();
@@ -2181,4 +2187,28 @@ private void treeSelection() {
 	}
 }
 
+private DatabaseSearchPanel getDatabaseSearchPanel() {
+	if (dbSearchPanel == null) {
+		dbSearchPanel = new DatabaseSearchPanel(VCDocument.BIOMODEL_DOC);
+	}
+	return dbSearchPanel;
+}
+
+public void search(boolean bShowAll) {
+	try {
+		ArrayList<SearchCriterion> searchCriterionList = bShowAll ? null : getDatabaseSearchPanel().getSearchCriterionList();
+		refresh(searchCriterionList);
+	} catch (DataAccessException e) {
+		e.printStackTrace();
+		DialogUtils.showErrorDialog(this, "Search failed : " + e.getMessage());
+	}
+}
+
+public void setSearchPanelVisible(boolean bVisible) {
+	getDatabaseSearchPanel().setVisible(bVisible);
+}
+
+public boolean isSearchPanelVisible() {
+	return getDatabaseSearchPanel().isVisible();
+}
 }
