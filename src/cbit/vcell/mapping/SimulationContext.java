@@ -1544,6 +1544,10 @@ public synchronized void removeVetoableChangeListener(String propertyName, Vetoa
  * @see #getAnalysisTasks
  */
 public void setAnalysisTasks(AnalysisTask[] analysisTasks) throws java.beans.PropertyVetoException {
+	if (getGeometry() != null && getGeometry().getDimension() > 0) {
+		fieldAnalysisTasks = null;
+		return;
+	}
 	AnalysisTask[] oldValue = fieldAnalysisTasks;
 	fireVetoableChange("analysisTasks", oldValue, analysisTasks);
 	fieldAnalysisTasks = analysisTasks;
@@ -1654,6 +1658,7 @@ public void setGeometry(Geometry geometry) throws MappingException {
 		if (geometry != null && geometry.getDimension() > 0) {
 			try {
 				setBioEvents(null);
+				setAnalysisTasks(null);
 			} catch (PropertyVetoException e) {				
 				e.printStackTrace(System.out);
 				throw new MappingException(e.getMessage());
