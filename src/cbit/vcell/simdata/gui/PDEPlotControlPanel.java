@@ -59,7 +59,7 @@ public class PDEPlotControlPanel extends JPanel {
 	private JTextField ivjJTextField1 = null;
 	private PDEDataContext fieldPdeDataContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
-	private org.vcell.util.gui.DefaultListModelCivilized ivjDefaultListModelCivilized1 = null;
+	private DefaultListModelCivilized ivjDefaultListModelCivilized1 = null;
 	private JList ivjJList1 = null;
 	private JPanel ivjJPanel1 = null;
 	private JPanel ivjJPanel2 = null;
@@ -596,9 +596,9 @@ private void filterVariableNames(){
 					TreeSet<DataIdentifier> dataIdentifierTreeSet =
 						new TreeSet<DataIdentifier>(new Comparator<DataIdentifier>(){
 							public int compare(DataIdentifier o1, DataIdentifier o2) {
-								int bEqualIgnoreCase = o1.getName().compareToIgnoreCase(o2.getName());
+								int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
 								if (bEqualIgnoreCase == 0){
-									return o1.getName().compareTo(o2.getName());
+									return o1.getDisplayName().compareTo(o2.getDisplayName());
 								}
 								return bEqualIgnoreCase;
 							}});
