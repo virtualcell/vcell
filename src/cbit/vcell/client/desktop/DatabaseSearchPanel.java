@@ -96,6 +96,8 @@ public class DatabaseSearchPanel extends JPanel {
 				if (name != null && name.trim().length() >= 0) {
 					addSearchWord(name.trim());
 				}
+			} else if (e.getSource() == cancelButton) {
+				nameSearchTextField.setText(null);
 			}
 			fireActionPerformed(e);
 		}
@@ -254,6 +256,7 @@ public class DatabaseSearchPanel extends JPanel {
 		cancelButton.addActionListener(searchEventHandler);
 		searchButton.addActionListener(searchEventHandler);
 		advancedButton.addMouseListener(searchEventHandler);
+		nameSearchTextField.addActionListener(searchEventHandler);
 	}
 	
 	private void addSearchWord(String newWord) {
