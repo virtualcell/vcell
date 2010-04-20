@@ -1,8 +1,6 @@
 package cbit.vcell.client.desktop;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -16,7 +14,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -27,13 +24,11 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
@@ -54,48 +49,6 @@ import cbit.vcell.messaging.admin.DatePanel;
  * @author: Ion Moraru
  */
 public class DatabaseWindowPanel extends JPanel {
-	public static interface SearchCriterion {
-		boolean meetCriterion(VCDocumentInfo docInfo);
-	}	
-	static class SearchByName implements SearchCriterion {
-		private String namePattern = null;
-		
-		public SearchByName(String np) {
-			namePattern = np;
-		}
-
-		public boolean meetCriterion(VCDocumentInfo docInfo) {
-			if (namePattern == null || namePattern.trim().length() == 0) { // no constraints
-				return true;
-			}
-			if (docInfo.getVersion().getName().toLowerCase().indexOf(namePattern.toLowerCase()) >= 0) {
-				return true;
-			}
-			return false;
-		}
-	}
-	
-	static class SearchByDate implements SearchCriterion {
-		private Date startDate = null;
-		private Date endDate = null;
-		
-		public SearchByDate(Date sd, Date ed) {
-			startDate = sd;
-			endDate = ed;
-		}
-
-		public boolean meetCriterion(VCDocumentInfo docInfo) {
-			
-			Date versionDate = docInfo.getVersion().getDate();	
-			Date newEndDate = new Date(endDate.getTime() + 24*3600*1000);	// add one day to end date
-			if (versionDate.compareTo(startDate) >= 0 && versionDate.compareTo(newEndDate) <= 0) {
-				return true;
-			}
-			return false;
-		}
-	}
-	private static final String Search_Doc_Type[] = {"BioModel", "MathModel", "Geometri"};
-
 	private BioModelDbTreePanel ivjBioModelDbTreePanel1 = null;
 	private GeometryTreePanel ivjGeometryTreePanel1 = null;
 	private JTabbedPane ivjJTabbedPane1 = null;
@@ -107,211 +60,8 @@ public class DatabaseWindowPanel extends JPanel {
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private DatabaseWindowManager fieldDatabaseWindowManager = null;
 	private VCDocumentInfo fieldSelectedDocumentInfo = null;
-	private DatabaseSearchPanel[] searchPanels = null;
 	
 	private JToggleButton searchToolBarButton = null;
-	
-	public class DatabaseSearchPanel extends JPanel{		 
-		private SearchEventHandler searchEventHandler = new SearchEventHandler();
-		private Set<String> searchWordSet = new HashSet<String>();
-		TextFieldAutoCompletion nameSearchTextField = null;
-		private JButton searchButton = null;
-		private JButton cancelButton = null;
-		private JLabel advancedButton = null;
-		private int tabIndex = 0;
-		private DatePanel startDatePanel = null;
-		private DatePanel endDatePanel = null;
-		private ArrayList<JComponent> advancedOptions = new ArrayList<JComponent>();
-		
-		class SearchEventHandler extends MouseAdapter implements java.awt.event.ActionListener {
-			public void actionPerformed(java.awt.event.ActionEvent e) {	
-				if (e.getSource() == cancelButton) {
-					getSearchToolBarButton().setSelected(false);
-				} else if (e.getSource() == searchButton || e.getSource() == nameSearchTextField) {		
-					String name = nameSearchTextField.getText();
-					if (name != null && name.trim().length() >= 0) {
-						addSearchWord(name.trim());
-						search(true);
-					}
-				}
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (advancedOptions.size() == 0) {
-					return;
-				}
-				if (e.getSource() == advancedButton) {
-					boolean bVisible = !advancedOptions.get(0).isVisible();
-					if (bVisible) {
-						advancedButton.setText("<html><u>Advanced &lt;&lt;</u></html>");
-					} else {
-						advancedButton.setText("<html><u>Advanced &gt;&gt;</u></html>");
-					}
-					setAdvancedOptionsVisible(bVisible);
-				}
-			}
-		}
-		public DatabaseSearchPanel(int ti) {
-			super();
-			tabIndex = ti;
-			initialize();
-			setAdvancedOptionsVisible(false);
-			setVisible(false);
-		}
-
-		private void setAdvancedOptionsVisible(boolean bVisible) {
-			for (JComponent comp : advancedOptions) {
-				comp.setVisible(bVisible);
-			}
-		}
-		
-		public void search(boolean bEnabled) {
-			try {
-				ArrayList<SearchCriterion> searchCriterionList = null;
-				if (bEnabled) {
-					searchCriterionList = new ArrayList<SearchCriterion>();
-					String namePattern = nameSearchTextField.getText();
-					if (namePattern != null && namePattern.trim().length() >= 0) {
-						SearchByName nameCriterion = new SearchByName(namePattern);
-						searchCriterionList.add(nameCriterion);
-					}
-					
-					if (startDatePanel.isVisible()) {
-						Date startDate = startDatePanel.getDate();
-						Date endDate = endDatePanel.getDate();
-						SearchByDate dateScn = new SearchByDate(startDate, endDate);
-						searchCriterionList.add(dateScn);
-					}
-				}
-				switch (tabIndex) {
-				case 0:				
-					getBioModelDbTreePanel1().refresh(searchCriterionList);
-					break;
-				case 1:	
-					getMathModelDbTreePanel1().refresh(searchCriterionList);
-					break;
-				case 2:	
-					getGeometryTreePanel1().refresh(searchCriterionList);
-					break;
-				}
-			} catch (DataAccessException e) {
-				e.printStackTrace();
-				DialogUtils.showErrorDialog(DatabaseWindowPanel.this, "Search failed : " + e.getMessage());
-			}
-		}
-		
-		private void initialize() {			
-			JLabel nameLabel = new JLabel("Name Containing Text : ");
-			nameSearchTextField = new TextFieldAutoCompletion();
-			advancedButton = new JLabel("<html><u>Advanced &gt;&gt;</u></html>");
-			advancedButton.setForeground(Color.blue);
-			
-			JLabel dateLabel = new JLabel("Modified Between : ");
-			advancedOptions.add(dateLabel);
-			startDatePanel = new DatePanel();
-			advancedOptions.add(startDatePanel);
-			JLabel andLabel = new JLabel("and");
-			advancedOptions.add(andLabel);
-			endDatePanel = new DatePanel();
-			advancedOptions.add(endDatePanel);
-			
-			searchButton = new JButton("Search " + Search_Doc_Type[tabIndex] + "s Now");
-			cancelButton = new JButton("Show All");
-			 
-			setBorder(BorderFactory.createEtchedBorder());
-			setLayout(new GridBagLayout());
-
-			// 0
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 0;
-			gbc.anchor = GridBagConstraints.LINE_END;
-			add(nameLabel, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = 0;
-			gbc.gridwidth = 3;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			add(nameSearchTextField, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 4;
-			gbc.gridy = 0;
-			gbc.weightx = 1.0;
-			gbc.insets = new Insets(0, 20, 0, 0);
-			gbc.anchor = GridBagConstraints.LINE_START;
-			add(advancedButton, gbc);
-			
-			// 1
-			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 1;
-			gbc.insets = new Insets(2, 0, 0, 0);
-			gbc.anchor = GridBagConstraints.LINE_END;
-			add(dateLabel, gbc);
-
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = 1;
-			gbc.insets = new Insets(2, 0, 0, 0);
-			add(startDatePanel, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
-			gbc.gridy = 1;
-			gbc.insets = new Insets(2, 5, 0, 5);
-			add(andLabel, gbc);
-
-			gbc = new GridBagConstraints();
-			gbc.gridx = 3;
-			gbc.gridy = 1;
-			gbc.insets = new Insets(2, 0, 0, 0);
-			add(endDatePanel, gbc);			
-			
-			// 2
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = 2;
-			gbc.insets = new Insets(10, 0, 0, 0);
-			add(searchButton, gbc);
-
-			gbc = new GridBagConstraints();
-			gbc.gridx = 3;
-			gbc.gridy = 2;
-			gbc.insets = new Insets(10, 5, 0, 0);
-			add(cancelButton, gbc);
-
-			initConnections();
-		}
-		
-		private void initConnections() {
-			cancelButton.addActionListener(searchEventHandler);
-			searchButton.addActionListener(searchEventHandler);
-			advancedButton.addMouseListener(searchEventHandler);
-		}
-		
-		private void addSearchWord(String newWord) {
-			if (searchWordSet.contains(newWord)) {
-				return;
-			}
-			Set<String> newList = new HashSet<String>();
-			newList.addAll(searchWordSet);
-			newList.add(newWord);
-			setSearchWordList(newList);
-		}
-		
-		public void setSearchWordList(Set<String> newValue) {
-			if (searchWordSet.containsAll(newValue)) {
-				return;
-			}
-			for (int i = 0; i < searchPanels.length; i++) {
-				searchPanels[i].searchWordSet = newValue;
-				searchPanels[i].nameSearchTextField.setAutoCompletionWords(searchPanels[i].searchWordSet);
-			}
-		}
-	}
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -344,7 +94,20 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
 			if (e.getSource() == DatabaseWindowPanel.this.getJTabbedPane1()) {
 				connEtoC4(e);
-				getSearchToolBarButton().setSelected(searchPanels[getJTabbedPane1().getSelectedIndex()].isVisible());
+				final int selectedIndex = getJTabbedPane1().getSelectedIndex();
+				boolean bSelected = true;
+				switch (selectedIndex) {
+					case 0 :
+						bSelected = getBioModelDbTreePanel1().isSearchPanelVisible();
+						break;
+					case 1:
+						bSelected = getMathModelDbTreePanel1().isSearchPanelVisible();
+						break;
+					case 2:
+						bSelected = getGeometryTreePanel1().isSearchPanelVisible();
+						break;
+				}
+				getSearchToolBarButton().setSelected(bSelected);
 			}			
 		}
 		public void itemStateChanged(ItemEvent e) {
@@ -352,15 +115,33 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				boolean selected = getSearchToolBarButton().isSelected();
 				Border border = null;
 				Border emptyBorder = BorderFactory.createEmptyBorder(0, 0, 0, 4);
-				DatabaseSearchPanel selectedDatabaseSearchPanel = searchPanels[getJTabbedPane1().getSelectedIndex()];
+				final int selectedIndex = getJTabbedPane1().getSelectedIndex();
 				if (selected) {
 					border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), emptyBorder);
 				} else {
 					border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED), emptyBorder);
-					selectedDatabaseSearchPanel.search(false);
 				}
 				getSearchToolBarButton().setBorder(border);
-				selectedDatabaseSearchPanel.setVisible(selected);
+				switch (selectedIndex) {
+				case 0 :
+					getBioModelDbTreePanel1().setSearchPanelVisible(selected);
+					if (!selected) {
+						getBioModelDbTreePanel1().search(true);
+					}
+					break;
+				case 1:
+					getMathModelDbTreePanel1().setSearchPanelVisible(selected);
+					if (!selected) {
+						getMathModelDbTreePanel1().search(true);
+					}
+					break;
+				case 2:
+					getGeometryTreePanel1().setSearchPanelVisible(selected);
+					if (!selected) {
+						getGeometryTreePanel1().search(true);
+					}
+					break;
+				}
 			}
 		}
 	}
@@ -786,25 +567,9 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 	if (ivjJTabbedPane1 == null) {
 		try {
 			ivjJTabbedPane1 = new javax.swing.JTabbedPane();
-			searchPanels = new DatabaseSearchPanel[3];
-			for (int i = 0; i < searchPanels.length; i++) {
-				searchPanels[i] = new DatabaseSearchPanel(i);
-				searchPanels[i].addPropertyChangeListener(ivjEventHandler);
-			}
-			JPanel bioTab = new JPanel(new BorderLayout());
-			bioTab.add(searchPanels[0], BorderLayout.NORTH);
-			bioTab.add(getBioModelDbTreePanel1(), BorderLayout.CENTER);
-			ivjJTabbedPane1.insertTab("BioModels", null, bioTab, null, 0);
-
-			JPanel mathTab = new JPanel(new BorderLayout());
-			mathTab.add(searchPanels[1], BorderLayout.NORTH);
-			mathTab.add(getMathModelDbTreePanel1(), BorderLayout.CENTER);
-			ivjJTabbedPane1.insertTab("MathModels", null, mathTab, null, 1);
-			
-			JPanel geoTab = new JPanel(new BorderLayout());
-			geoTab.add(searchPanels[2], BorderLayout.NORTH);
-			geoTab.add(getGeometryTreePanel1(), BorderLayout.CENTER);
-			ivjJTabbedPane1.insertTab("Geometries", null, geoTab, null, 2);
+			ivjJTabbedPane1.insertTab("BioModels", null, getBioModelDbTreePanel1(), null, 0);
+			ivjJTabbedPane1.insertTab("MathModels", null, getMathModelDbTreePanel1(), null, 1);
+			ivjJTabbedPane1.insertTab("Geometries", null, getGeometryTreePanel1(), null, 2);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -891,6 +656,10 @@ private void initialize() {
 		toolBar.add(getSearchToolBarButton());
 		add(toolBar, BorderLayout.PAGE_START);
 		add(getJTabbedPane1(), BorderLayout.CENTER);
+		
+		getBioModelDbTreePanel1().setSearchPanelVisible(false);
+		getMathModelDbTreePanel1().setSearchPanelVisible(false);
+		getGeometryTreePanel1().setSearchPanelVisible(false);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

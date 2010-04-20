@@ -13,7 +13,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 
-import cbit.vcell.client.desktop.DatabaseWindowPanel.SearchCriterion;
+import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
