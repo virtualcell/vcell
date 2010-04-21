@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop;
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -584,6 +583,7 @@ private javax.swing.JPanel getJFrameContentPane() {
 public DatabaseWindowPanel getDatabaseWindowPanel() {
 	if (ivjdatabaseWindowPanel == null) {
 		ivjdatabaseWindowPanel = new DatabaseWindowPanel();
+		ivjdatabaseWindowPanel.addPropertyChangeListener(ivjEventHandler);
 	}
 	return ivjdatabaseWindowPanel;
 }
