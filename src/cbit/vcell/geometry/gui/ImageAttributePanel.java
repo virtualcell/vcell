@@ -12,7 +12,6 @@ import org.vcell.util.Extent;
 import cbit.image.VCPixelClass;
 import cbit.image.VCImage;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.task.EditImageAttributes;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -386,20 +385,20 @@ private void drawAnnotations(Graphics g){
  */
 private void done(java.awt.event.ActionEvent actionEvent) {
 
-	if(actionEvent.getSource() == getImportJButton()){
-		try{
-			synchronize(getImage(),this);
-			setStatus(EditImageAttributes.STATUS_IMPORT);
-			getDialogParent().dispose();
-		}catch(Exception e){
-			PopupGenerator.showErrorDialog(this, 
-				"Error setting IMAGE values:\n"+(e.getMessage() != null?e.getMessage():e.getClass().getName()));
-		}
-	}else if(actionEvent.getSource() == getCancelJButton()){
-		setStatus(EditImageAttributes.STATUS_MANUAL_SEGMENT);
-	}else if(actionEvent.getSource() == getBtnCancel()){
-		setStatus(EditImageAttributes.STATUS_CANCEL);
-	}
+//	if(actionEvent.getSource() == getImportJButton()){
+//		try{
+//			synchronize(getImage(),this);
+//			setStatus(EditImageAttributes.STATUS_IMPORT);
+//			getDialogParent().dispose();
+//		}catch(Exception e){
+//			PopupGenerator.showErrorDialog(this, 
+//				"Error setting IMAGE values:\n"+(e.getMessage() != null?e.getMessage():e.getClass().getName()));
+//		}
+//	}else if(actionEvent.getSource() == getCancelJButton()){
+//		setStatus(EditImageAttributes.STATUS_MANUAL_SEGMENT);
+//	}else if(actionEvent.getSource() == getBtnCancel()){
+//		setStatus(EditImageAttributes.STATUS_CANCEL);
+//	}
 	getDialogParent().dispose();
 }
 /**

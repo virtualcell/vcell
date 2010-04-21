@@ -1,9 +1,7 @@
 package cbit.vcell.client;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.beans.PropertyVetoException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -117,14 +115,19 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					Geometry newGeom = (Geometry)hashTable.get("doc");
 					if(newGeom != null){
-						GeometryViewer localGeometryViewer = new GeometryViewer();
-						localGeometryViewer.setGeometry(newGeom);
-						int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
-						if(result == JOptionPane.OK_OPTION){
-							showSurfaceViewerFrame(false);
-						}else{
-							throw UserCancelException.CANCEL_GENERIC;
+//						DocumentCreationInfo documentCreationInfo = ((DocumentWindowManager.GeometrySelectionInfo)
+//								hashTable.get(DocumentWindowManager.GEOMETRY_SELECTIONINFO_KEY)).getDocumentCreationInfo();
+						if((Boolean)hashTable.get(B_SHOW_OLD_GEOM_EDITOR)
+								/*documentCreationInfo == null || !ClientRequestManager.isImportGeometryType(documentCreationInfo)*/){
+							GeometryViewer localGeometryViewer = new GeometryViewer();
+							localGeometryViewer.setGeometry(newGeom);
+							int result = DialogUtils.showComponentOKCancelDialog(
+									getComponent(), localGeometryViewer, "Edit Geometry: '"+newGeom.getName()+"'");
+							if(result != JOptionPane.OK_OPTION){
+								throw UserCancelException.CANCEL_GENERIC;
+							}
 						}
+						showSurfaceViewerFrame(false);
 					}else{
 						throw new Exception("No Geometry found in edit task");
 					}
@@ -141,12 +144,18 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 				@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						Geometry newGeom = (Geometry)hashTable.get("doc");
+						if(newGeom.getName() == null){
+							newGeom.setName(
+								getMathModel().getName()+"_"+
+								ClientRequestManager.generateDateTimeString());
+						}
 						((MathModel)getVCDocument()).getMathDescription().setGeometry(newGeom);
 						vcmlEditor.updateWarningText(((MathModel)getVCDocument()).getMathDescription());
 					}
 			};
 
-		createGeometry(new AsynchClientTask[] {editSelectTask,geomRegionsTask,applyGeomTask});
+		createGeometry(getMathModel().getMathDescription().getGeometry(),
+				new AsynchClientTask[] {editSelectTask,geomRegionsTask,applyGeomTask});
 	}
 
 	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {

@@ -1,5 +1,10 @@
 package cbit.vcell.field;
 
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -11,9 +16,12 @@ import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.zip.DataFormatException;
+
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -21,12 +29,24 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.FileFilters;
+
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
@@ -38,24 +58,6 @@ import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.CartesianMesh;
-import javax.swing.JButton;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.GridBagLayout;
-import java.awt.Dimension;
-import javax.swing.JMenuItem;
-
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.FileFilters;
 
 public class FieldDataGUIPanel extends JPanel{
 
@@ -1108,6 +1110,10 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 }
 
 private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+	if(actionEvent.getSource() == getJButtonCreateGeom()){
+		DocumentWindow.showGeometryCreationWarning(FieldDataGUIPanel.this);
+		return;
+	}
 	TreePath selPath = getJTree1().getSelectionPath();
 	final DefaultMutableTreeNode varNode = (DefaultMutableTreeNode)selPath.getLastPathComponent();
 	final DefaultMutableTreeNode mainNode = (DefaultMutableTreeNode)varNode.getParent().getParent();
@@ -1133,13 +1139,10 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 		JComboBox jcBeg = new JComboBox(Arrays.asList(timesStr).toArray(new String[0]));
 		jp.add(jcBeg);
 		
-		if(PopupGenerator.showComponentOKCancelDialog(this, jp,
-				(actionEvent.getSource() == getJButtonFDCopyRef()?
-					"Select Field Data time for function":
-					"Select Field Data time for New Geometry"
-				)
-				) ==JOptionPane.OK_OPTION){
+		if(PopupGenerator.showComponentOKCancelDialog(this, jp,"Select Field Data time for function") ==JOptionPane.OK_OPTION){
 			begIndex = jcBeg.getSelectedIndex();
+		}else{
+			return;
 		}
 	}
 	if(actionEvent.getSource() == getJButtonFDCopyRef()){
@@ -1150,19 +1153,6 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 					times[begIndex],((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getVariableType().getTypeName());
 	
 		VCellTransferable.sendToClipboard(fieldFunctionReference);
-	}else if(actionEvent.getSource() == getJButtonCreateGeom()){
-		try {
-			VCDocument.DocumentCreationInfo docCreateInfo = new VCDocument.GeomFromFieldDataCreationInfo(((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier, 
-					((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getName(), begIndex);
-			AsynchClientTask[] taskArray = fieldDataWindowManager.newDocument(docCreateInfo);
-			Hashtable<String, Object> hash = new Hashtable<String, Object>();
-			hash.put("requestManager", fieldDataWindowManager.getRequestManager());
-			hash.put(ClientRequestManager.GUI_PARENT, this);
-			ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
-		} catch (Exception e) {
-			e.printStackTrace();
-			PopupGenerator.showErrorDialog(this, "Error creating Geometry\n"+e.getMessage());
-		}
 	}
 	
 }

@@ -1,19 +1,18 @@
 package cbit.vcell.geometry;
 
-import java.awt.Button;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Robot;
 import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.InputEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.CropImageFilter;
 import java.awt.image.DataBufferByte;
@@ -25,42 +24,33 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.swing.AbstractButton;
 import javax.swing.DefaultListSelectionModel;
-import javax.swing.FocusManager;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.text.StyledEditorKit.UnderlineAction;
-import javax.swing.undo.UndoableEditSupport;
 
 import loci.formats.ImageTools;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
 import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
-import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.UtilCancelException;
+import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
@@ -68,20 +58,14 @@ import cbit.image.VCPixelClass;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
-import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
-import cbit.vcell.client.task.EditImageAttributes;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
-import cbit.vcell.geometry.gui.HistogramPanel;
+import cbit.vcell.geometry.gui.CopyOfImageAttributePanel;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
-import cbit.vcell.model.InUseException;
-import cbit.vcell.modeldb.ServerDocumentManager;
 
 public class ROIMultiPaintManager implements PropertyChangeListener{
 
@@ -102,11 +86,222 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	private ImageDataset initImageDataSet;
 	private ImageDataset enhancedImageDataset;
 	private String enhanceImageOp = ROIMultiPaintManager.ENHANCE_NONE;
+	private boolean bHasOriginalData;
+	private Extent originalExtent;
+	private Origin originalOrigin;
+	private ISize originalISize;
 	
 	private static final Extent DEFAULT_EXTENT = new Extent(1,1,1);
 	private static final Origin DEFAULT_ORIGIN = new Origin(0,0,0);
 		
 	private AsynchProgressPopup progressWaitPopup;
+	
+	
+//	public static abstract class AbstractBufferedImageOp implements BufferedImageOp {
+//
+//	    public BufferedImage createCompatibleDestImage(BufferedImage src, ColorModel dstCM) {
+//	        if ( dstCM == null )
+//	            dstCM = src.getColorModel();
+//	        return new BufferedImage(dstCM, dstCM.createCompatibleWritableRaster(src.getWidth(), src.getHeight()), dstCM.isAlphaPremultiplied(), null);
+//	    }
+//	    
+//	    public Rectangle2D getBounds2D( BufferedImage src ) {
+//	        return new Rectangle(0, 0, src.getWidth(), src.getHeight());
+//	    }
+//	    
+//	    public Point2D getPoint2D( Point2D srcPt, Point2D dstPt ) {
+//	        if ( dstPt == null )
+//	            dstPt = new Point2D.Double();
+//	        dstPt.setLocation( srcPt.getX(), srcPt.getY() );
+//	        return dstPt;
+//	    }
+//
+//	    public RenderingHints getRenderingHints() {
+//	        return null;
+//	    }
+//
+//		/**
+//		 * A convenience method for getting ARGB pixels from an image. This tries to avoid the performance
+//		 * penalty of BufferedImage.getRGB unmanaging the image.
+//		 */
+//		public int[] getRGB( BufferedImage image, int x, int y, int width, int height, int[] pixels ) {
+//			int type = image.getType();
+//			if ( type == BufferedImage.TYPE_INT_ARGB || type == BufferedImage.TYPE_INT_RGB )
+//				return (int [])image.getRaster().getDataElements( x, y, width, height, pixels );
+//			return image.getRGB( x, y, width, height, pixels, 0, width );
+//	    }
+//
+//		/**
+//		 * A convenience method for setting ARGB pixels in an image. This tries to avoid the performance
+//		 * penalty of BufferedImage.setRGB unmanaging the image.
+//		 */
+//		public void setRGB( BufferedImage image, int x, int y, int width, int height, int[] pixels ) {
+//			int type = image.getType();
+//			if ( type == BufferedImage.TYPE_INT_ARGB || type == BufferedImage.TYPE_INT_RGB )
+//				image.getRaster().setDataElements( x, y, width, height, pixels );
+//			else
+//				image.setRGB( x, y, width, height, pixels, 0, width );
+//	    }
+//	}
+//
+//	public static class ImageMath {
+//		public static int clamp(int x, int a, int b) {
+//			return (x < a) ? a : (x > b) ? b : x;
+//		}
+//
+//	}
+//	public static class BoxBlurFilter extends AbstractBufferedImageOp {
+//
+//		private int hRadius;
+//		private int vRadius;
+//		private int iterations = 1;
+//		
+//	    public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
+//	        int width = src.getWidth();
+//	        int height = src.getHeight();
+//
+//	        if ( dst == null )
+//	            dst = createCompatibleDestImage( src, null );
+//
+//	        int[] inPixels = new int[width*height];
+//	        int[] outPixels = new int[width*height];
+//	        getRGB( src, 0, 0, width, height, inPixels );
+//
+//	        for (int i = 0; i < iterations; i++ ) {
+//	            blur( inPixels, outPixels, width, height, hRadius );
+//	            blur( outPixels, inPixels, height, width, vRadius );
+//	        }
+//
+//	        setRGB( dst, 0, 0, width, height, inPixels );
+//	        return dst;
+//	    }
+//
+//	    public static void blur( int[] in, int[] out, int width, int height, int radius ) {
+//	        int widthMinus1 = width-1;
+//	        int tableSize = 2*radius+1;
+//	        int divide[] = new int[256*tableSize];
+//
+//	        for ( int i = 0; i < 256*tableSize; i++ )
+//	            divide[i] = i/tableSize;
+//
+//	        int inIndex = 0;
+//	        
+//	        for ( int y = 0; y < height; y++ ) {
+//	            int outIndex = y;
+//	            int ta = 0, tr = 0, tg = 0, tb = 0;
+//
+//	            for ( int i = -radius; i <= radius; i++ ) {
+//	                int rgb = in[inIndex + ImageMath.clamp(i, 0, width-1)];
+//	                ta += (rgb >> 24) & 0xff;
+//	                tr += (rgb >> 16) & 0xff;
+//	                tg += (rgb >> 8) & 0xff;
+//	                tb += rgb & 0xff;
+//	            }
+//
+//	            for ( int x = 0; x < width; x++ ) {
+//	                out[ outIndex ] = (divide[ta] << 24) | (divide[tr] << 16) | (divide[tg] << 8) | divide[tb];
+//
+//	                int i1 = x+radius+1;
+//	                if ( i1 > widthMinus1 )
+//	                    i1 = widthMinus1;
+//	                int i2 = x-radius;
+//	                if ( i2 < 0 )
+//	                    i2 = 0;
+//	                int rgb1 = in[inIndex+i1];
+//	                int rgb2 = in[inIndex+i2];
+//	                
+//	                ta += ((rgb1 >> 24) & 0xff)-((rgb2 >> 24) & 0xff);
+//	                tr += ((rgb1 & 0xff0000)-(rgb2 & 0xff0000)) >> 16;
+//	                tg += ((rgb1 & 0xff00)-(rgb2 & 0xff00)) >> 8;
+//	                tb += (rgb1 & 0xff)-(rgb2 & 0xff);
+//	                outIndex += height;
+//	            }
+//	            inIndex += width;
+//	        }
+//	    }
+//	        
+//	    public static void blur( short[] ins, short[] outs, int width, int height, int radius ) {
+//	        int widthMinus1 = width-1;
+//	        int tableSize = 2*radius+1;
+//	        int divide[] = new int[256*tableSize];
+//
+//	        for ( int i = 0; i < 256*tableSize; i++ )
+//	            divide[i] = i/tableSize;
+//
+//	        int inIndex = 0;
+//	        
+//	        for ( int y = 0; y < height; y++ ) {
+//	            int outIndex = y;
+//	            int ta = 0, tr = 0, tg = 0, tb = 0;
+//
+//	            for ( int i = -radius; i <= radius; i++ ) {
+//	                int rgb = ins[inIndex + ImageMath.clamp(i, 0, width-1)]&0x00FF;
+//	                ta += (rgb >> 24) & 0xff;
+//	                tr += (rgb >> 16) & 0xff;
+//	                tg += (rgb >> 8) & 0xff;
+//	                tb += rgb & 0xff;
+//	            }
+//
+//	            for ( int x = 0; x < width; x++ ) {
+//	                outs[ outIndex ] = (short)((divide[ta] << 24) | (divide[tr] << 16) | (divide[tg] << 8) | divide[tb]);
+//
+//	                int i1 = x+radius+1;
+//	                if ( i1 > widthMinus1 )
+//	                    i1 = widthMinus1;
+//	                int i2 = x-radius;
+//	                if ( i2 < 0 )
+//	                    i2 = 0;
+//	                int rgb1 = ins[inIndex+i1]&0x000FF;
+//	                int rgb2 = ins[inIndex+i2]&0x000FF;
+//	                
+//	                ta += ((rgb1 >> 24) & 0xff)-((rgb2 >> 24) & 0xff);
+//	                tr += ((rgb1 & 0xff0000)-(rgb2 & 0xff0000)) >> 16;
+//	                tg += ((rgb1 & 0xff00)-(rgb2 & 0xff00)) >> 8;
+//	                tb += (rgb1 & 0xff)-(rgb2 & 0xff);
+//	                outIndex += height;
+//	            }
+//	            inIndex += width;
+//	        }
+//	    }
+//
+//		public void setHRadius(int hRadius) {
+//			this.hRadius = hRadius;
+//		}
+//		
+//		public int getHRadius() {
+//			return hRadius;
+//		}
+//		
+//		public void setVRadius(int vRadius) {
+//			this.vRadius = vRadius;
+//		}
+//		
+//		public int getVRadius() {
+//			return vRadius;
+//		}
+//		
+//		public void setRadius(int radius) {
+//			this.hRadius = this.vRadius = radius;
+//		}
+//		
+//		public int getRadius() {
+//			return hRadius;
+//		}
+//		
+//		public void setIterations(int iterations) {
+//			this.iterations = iterations;
+//		}
+//		
+//		public int getIterations() {
+//			return iterations;
+//		}
+//		
+//		public String toString() {
+//			return "Blur/Box Blur...";
+//		}
+//	}
+
+	
 	
 	
 	public static class ComboboxROIName {
@@ -247,36 +442,36 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 	}
 	
-	private void waitAskInitialize(final boolean bHasOriginalData){
-		if(overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length == 0){
-			//Wait until we have a window to popup the initial ROI message
-			new Thread(new Runnable() {
-				public void run() {
-					long startTime = System.currentTimeMillis();
-					while(true){
-						Window window = (Window)BeanUtils.findTypeParentOfComponent(overlayEditorPanelJAI, Window.class);
-						System.out.println(window);
-						if(window != null && window.isVisible()){
-							SwingUtilities.invokeLater(new Runnable() {public void run() {askInitialize(bHasOriginalData);}});
-							break;
-						}
-						try{
-							Thread.sleep(100);
-						}catch(InterruptedException e){
-							e.printStackTrace();
-							break;
-						}
-						if((System.currentTimeMillis()-startTime) > 10000){
-							//Stop checking
-							break;
-						}
-					}
-				}
-			}).start();
-		}
-
-	}
-	private void askInitialize(boolean hasOriginalData){
+//	private void waitAskInitialize(final boolean bHasOriginalData){
+//		if(overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length == 0){
+//			//Wait until we have a window to popup the initial ROI message
+//			new Thread(new Runnable() {
+//				public void run() {
+//					long startTime = System.currentTimeMillis();
+//					while(true){
+//						Window window = (Window)BeanUtils.findTypeParentOfComponent(overlayEditorPanelJAI, Window.class);
+//						System.out.println(window);
+//						if(window != null && window.isVisible()){
+//							SwingUtilities.invokeLater(new Runnable() {public void run() {askInitialize(bHasOriginalData);}});
+//							break;
+//						}
+//						try{
+//							Thread.sleep(100);
+//						}catch(InterruptedException e){
+//							e.printStackTrace();
+//							break;
+//						}
+//						if((System.currentTimeMillis()-startTime) > 10000){
+//							//Stop checking
+//							break;
+//						}
+//					}
+//				}
+//			}).start();
+//		}
+//
+//	}
+	private void askInitialize(){
 
 		TreeSet<Integer> sortedPixVal = new TreeSet<Integer>();
 		BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
@@ -293,7 +488,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 
 		final String addROIManual = "Add ROI, edit manually";
-		final String addROIAssist = "Add ROI, use histogram";
+		final String addROIAssist = "Add ROI, show histogram";
 		final String addAllDistinct = "Add ROIs for all distinct";
 		final String cancel = "Cancel";
 		String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
@@ -301,9 +496,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				"  Segmenting an image begins with defining at least 1 'region of interest' (ROI)."+
 				"  After creating the initial ROI you can use the segmentation tools to create/edit more ROIs.  Choose an action:\n"+
 				"1. Add an 'empty' ROI to begin and edit manually."+
-				(!hasOriginalData?"":"\n2. Add an 'empty' ROI to begin and use the 'histogram' tool.")+
-				(uniquePixelBS.cardinality() >= 256 || !hasOriginalData?"":"\n3. Add an ROI for every distinct pixel value."),
-				(!hasOriginalData
+				(!bHasOriginalData?"":"\n2. Add an 'empty' ROI to begin and use the 'histogram' tool.")+
+				(uniquePixelBS.cardinality() >= 256 || !bHasOriginalData?"":"\n3. Add 'filled' ROIs for every distinct pixel value."),
+				(!bHasOriginalData
 					?new String[] {addROIManual,cancel}
 					:(uniquePixelBS.cardinality() >= 256
 						?new String[] {addROIManual,addROIAssist,cancel}
@@ -349,375 +544,816 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return initImageDataSet;
 	}
-	public static final String IMPORT_SOURCE_NAME = "IMPORT_SOURCE_NAME";
-	public static final String IMPORTED_DATA_CONTAINER = "fdfos";
-	public static final String CROPPED_ROI = "vcImage";
-	public static final String CROP_3D = "previousCrop3D";
-	public static final String ROI_AND_CROP = "ROI_AND_CROP";
-	public static final String SHOW_ROI_PANEL_TASK_NAME = "Show ROI display";
-	public static final String INIT_ROI_DATA_TASK_NAME = "Initialize ROI data";
+	public void initROIData(
+			VCImage previouslyEditedVCImage,
+			ROIMultiPaintManager.Crop3D previousCrop3D,
+			FieldDataFileOperationSpec importedDataContainer) throws Exception{
 
-	public AsynchClientTask[] getROIEditTasks(){
-		AsynchClientTask testTask = new AsynchClientTask("testTask",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				new Thread(new Runnable() {
-					public void run(){
-						try{
-							Robot robot = new Robot();
-						while(overlayEditorPanelJAI == null || !overlayEditorPanelJAI.isDisplayable()){
-							System.out.println("waiting for overlay...");
-							Thread.sleep(500);
-						}
-						System.out.println("----------overlayEditor init");
-//						Thread.sleep(10000);
-						Vector<Component> componentsV = new Vector<Component>();
-						Window parentWindow = (Window)BeanUtils.findTypeParentOfComponent(overlayEditorPanelJAI, Window.class);
-						componentsV.add(parentWindow);
-						while(componentsV.size() > 0){
-							Component comp = componentsV.remove(0);
-							if(comp instanceof AbstractButton){
-								System.out.println("----------btn="+
-									"name="+((AbstractButton)comp).getName()+
-									" txt="+((AbstractButton)comp).getText()+
-									" parent="+comp.getParent()+
-									" type="+comp.getClass().getSimpleName());
-//								if("roiAddBtn".equals(((AbstractButton)comp).getName())){
-//									Point roiAddBtnScrnPoint = new Point(0,0);
-//									SwingUtilities.convertPointToScreen(roiAddBtnScrnPoint, comp);
-//									robot.mouseMove(roiAddBtnScrnPoint.x,roiAddBtnScrnPoint.y);
-//									robot.mousePress(InputEvent.BUTTON1_MASK);
-//									robot.mouseRelease(InputEvent.BUTTON1_MASK);
-//								}
-								if("OptionPane.button".equals(((AbstractButton)comp).getName()) &&
-										"OK".equals(((AbstractButton)comp).getText())){
-								Point okBtnScrnPoint = new Point(0,0);
-								SwingUtilities.convertPointToScreen(okBtnScrnPoint, comp);
-								robot.mouseMove(okBtnScrnPoint.x,okBtnScrnPoint.y);
-								robot.mousePress(InputEvent.BUTTON1_MASK);
-								robot.mouseRelease(InputEvent.BUTTON1_MASK);
-							}
-
-							}
-							if(comp instanceof Container && ((Container)comp).getComponentCount() != 0){
-								componentsV.addAll(Arrays.asList(((Container)comp).getComponents()));
-							}
-						}
-//						ROIMultiPaintManager.Crop3D crop3D = new ROIMultiPaintManager.Crop3D();
-//						crop3D.setBounds(20, 20, 0, 100, 50, roiComposite.length);
-//						cropROIData(crop3D,true);
-
-//						ROIMultiPaintManager.this.propertyChange(
-//							new PropertyChangeEvent(this, OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY, null, newValue));
-						}catch(Exception e){
-							e.printStackTrace();
-						}
-					}
-				}).start();
-			}
-		};
-		AsynchClientTask initROIDataTask = new AsynchClientTask(INIT_ROI_DATA_TASK_NAME,AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				getClientTaskStatusSupport().setMessage("Initializing ROI data.");
-//				System.out.println("----------task "+getTaskName());
-				mergedCrop3D = new ROIMultiPaintManager.Crop3D();
-				//Fix border padding problem
-				enhancedImageDataset = null;
-				enhanceImageOp = ROIMultiPaintManager.ENHANCE_NONE;
-				//
-				//previouslyEditedVCImage and previousCrop3D can be null if this is the first time this method
-				//has been called in an editing session. 
-				//They are removed from the hash because later tasks will resave with different crop if necessary
-				//
-				VCImage previouslyEditedVCImage = (VCImage)hashTable.get(CROPPED_ROI);
-				ROIMultiPaintManager.Crop3D previousCrop3D = (ROIMultiPaintManager.Crop3D)hashTable.remove(CROP_3D);
-				if((previousCrop3D == null && previouslyEditedVCImage != null) ||
-						(previousCrop3D != null && previouslyEditedVCImage == null)){
-					throw new IllegalArgumentException("Previous VCImage and Crop must both be null or both be not null.");
-				}
-				FieldDataFileOperationSpec originalDataContainer =
-					(FieldDataFileOperationSpec)hashTable.get(IMPORTED_DATA_CONTAINER);
-//				System.out.println("previous Crop before border fix= "+previousCrop3D);
-				ROIMultiPaintManager.fixBorderProblemInPlace(originalDataContainer, previouslyEditedVCImage,previousCrop3D);
-				initImageDataSet((originalDataContainer.shortSpecData==null?null:originalDataContainer.shortSpecData[0][0]),originalDataContainer.isize);
-				initROIComposite();
-				//Crop with mergedCropRectangle
-//				System.out.println("previous Crop crop= "+previousCrop3D);
-				if(previousCrop3D != null){
-					cropROIData(previousCrop3D,false);
-				}else{
-					mergedCrop3D.setBounds(0, 0, 0,
-							originalDataContainer.isize.getX(), originalDataContainer.isize.getY(), originalDataContainer.isize.getZ());
-				}
-//				System.out.println("merge Crop after apply previous= "+mergedCrop3D);
-
-				//Sanity check crop
-				if(mergedCrop3D.width != roiComposite[0].getWidth() ||
-						mergedCrop3D.height != roiComposite[0].getHeight() ||
-						mergedCrop3D.depth != roiComposite.length){
-					String message =
-						"initial cropping failed.\n"+
-						"previousCrop3D="+(previousCrop3D!= null?previousCrop3D.toString():null)+"\n"+
-						"previouslyEditedVCImage x="+(previouslyEditedVCImage!= null?previouslyEditedVCImage.getNumX():null)+
-						",y="+(previouslyEditedVCImage!= null?previouslyEditedVCImage.getNumY():null)+
-						",z="+(previouslyEditedVCImage!= null?previouslyEditedVCImage.getNumZ():null)+"\n"+
-						"mergeCrop3D="+mergedCrop3D.toString()+"\n"+
-						"roiComposite x="+roiComposite[0].getRaster().getWidth()+
-						",y="+roiComposite[0].getRaster().getHeight()+
-						",z="+roiComposite.length;
-					System.out.println(message);
-					throw new Exception(message);
-				}
-				//initialize the roiComposite with previouslyEditedVCImage pixel values
-				if(previouslyEditedVCImage != null){
-					int index = 0;
-					//sanity check sizes
-					int totalSize = roiComposite[0].getWidth()*roiComposite[0].getHeight()*roiComposite.length;
-					if(previouslyEditedVCImage.getPixels().length != totalSize){
-						throw new Exception("Initial ROI composite size does not match previouslyEditedVCImage");
-					}
-					//copy previous to current roicomposite
-					for (int i = 0; i < roiComposite.length; i++) {
-						byte[] pixdata = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-						System.arraycopy(previouslyEditedVCImage.getPixels(), index, pixdata, 0, pixdata.length);
-						index+= pixdata.length;
-					}
-				}
-			}
-		};
-
-		AsynchClientTask initROIPanelTask = new AsynchClientTask("Creating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				getClientTaskStatusSupport().setMessage("Initializing ROI editor.");
-//				System.out.println("----------task "+getTaskName());
-				if(overlayEditorPanelJAI == null){
-					overlayEditorPanelJAI = new OverlayEditorPanelJAI();
-					overlayEditorPanelJAI.setMinimumSize(new Dimension(700,600));
-					overlayEditorPanelJAI.setPreferredSize(new Dimension(700,600));
-					overlayEditorPanelJAI.addPropertyChangeListener(ROIMultiPaintManager.this);
-				}
-				overlayEditorPanelJAI.deleteROIName(null);//delete all names
-				if(hashTable.containsKey(CROPPED_ROI)){
-					//initialize the ROI names with previouslyEditedVCImage pixelClass names
-					VCImage previouslyEditedVCImage = (VCImage)hashTable.remove(CROPPED_ROI);
-					VCPixelClass[] previousPixelClasses = previouslyEditedVCImage.getPixelClasses();
-					String firstROI = null;
-					for (int i = 0; i < previousPixelClasses.length; i++) {
-						if(previousPixelClasses[i].getPixel() == 0){//don't add background
-							continue;
-						}
-						String nextName = previousPixelClasses[i].getPixelClassName();
-						if(nextName.equals(RESERVED_NAME_BACKGROUND)){
-							//Change reserved background name that didn't have a value of 0
-							nextName = "ROI"+(new Random().nextInt());
-						}
-						if(firstROI == null){
-							firstROI = nextName;
-						}
-						overlayEditorPanelJAI.addROIName(
-								previousPixelClasses[i].getPixelClassName(), true, firstROI,
-								true, OverlayEditorPanelJAI.CONTRAST_COLORS[0x000000FF&previousPixelClasses[i].getPixel()]);
-					}
-				}
-				overlayEditorPanelJAI.setImages(getImageDataSet(), true,
-						OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
-				overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
-			}
-		};
-
-		AsynchClientTask showROIPanelTask = new AsynchClientTask(SHOW_ROI_PANEL_TASK_NAME,AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-			public void run(final Hashtable<String, Object> hashTable) throws Exception {
-				getClientTaskStatusSupport().setMessage("Showing ROI editor.");
-//				System.out.println("----------task "+getTaskName());
-
-				waitAskInitialize(((FieldDataFileOperationSpec)(hashTable.get(IMPORTED_DATA_CONTAINER))).shortSpecData != null);				
-				
-				String sourceName = (String)hashTable.get(IMPORT_SOURCE_NAME);
-				int retCode = DialogUtils.showComponentOKCancelDialog(
-						(Component)hashTable.get(ClientRequestManager.GUI_PARENT),
-						overlayEditorPanelJAI, "segment image for geometry "+(sourceName==null?"(No Name)":"("+sourceName+")"));
-				if (retCode != JOptionPane.OK_OPTION){
-					throw UserCancelException.CANCEL_GENERIC;
-				}
-			}
-		};
-		AsynchClientTask checkROI = new AsynchClientTask("Checking ROI...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-//				System.out.println("----------task "+getTaskName());
-
-				getClientTaskStatusSupport().setMessage("Checking ROI.");
-				ComboboxROIName[] roiNamesAndColors = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-//				if(roiNamesAndColors == null || roiNamesAndColors.length == 0){
-//					//No ROI defined
-//					final String cancel = "Back to segmentation";
-//					String result = DialogUtils.showWarningDialog(
-//							overlayEditorPanelJAI,
-//							"No ROIs defined.  At least 1 ROI must be defined",
-//							new String[] {cancel}, cancel);
-//					if(result.equals(cancel)){
-//						hashTable.put(ClientTaskDispatcher.TASK_REWIND, SHOW_ROI_PANEL_TASK_NAME);
-//						return;
-//					}else{
-//						hashTable.put(ClientTaskDispatcher.TASK_REWIND, ClientRequestManager.PARSE_IMAGE_TASK_NAME);
-//						return;
-//					}
-//				}
-				//Check for unassigned "background" pixels
-				boolean bHasUnassignedBackground = false;
-				for (int i = 0; i < roiComposite.length; i++) {
-					byte[] pixData = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
-					for (int j = 0; j < pixData.length; j++) {
-						if(pixData[j] == 0){
-							bHasUnassignedBackground = true;
-							break;
-						}
-					}
-					if(bHasUnassignedBackground){
-						break;
-					}
-				}
-				//Create PixelClasses
-				VCPixelClass[] vcPixelClassesFromROINames = null;
-				boolean bForceAssignBackground = false;
-				if(bHasUnassignedBackground){
-					final String assignToBackground = "Assign as default 'background'";
-					final String cancelAssign = "Cancel, back to segmentation...";
-					String result = DialogUtils.showWarningDialog(
-							(Component)hashTable.get(ClientRequestManager.GUI_PARENT),
-							"Warning: some areas of image segmentation have not been assigned to an ROI."+
-							"  This can happen when small unintended gaps are left between adjacent ROIs"+
-							" or areas around the edges were intentionally left as background.  Choose an action:\n"+
-							"1.  Leave as is, unassigned areas should be treated as 'background'.\n"+
-							"2.  Go back to segmentation tool. (note: look for areas with no color)",
-							new String[] {assignToBackground,/*assignToNeighbors,*/cancelAssign}, assignToBackground);
-					if(result.equals(assignToBackground)){
-						bForceAssignBackground = true;
-					}else{
-						hashTable.put(ClientTaskDispatcher.TASK_REWIND, SHOW_ROI_PANEL_TASK_NAME);
-						return;
-					}
-					if(bForceAssignBackground){
-						vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColors.length+1];
-						vcPixelClassesFromROINames[0] = new VCPixelClass(null, RESERVED_NAME_BACKGROUND, 0);					
-					}
-				}else{
-					vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColors.length];
-				}
-				
-
-				//find pixel indexes corresponding to colors for ROIs
-				int index = (bForceAssignBackground?1:0);
-//				Enumeration<String> roiNameEnum = roiNamesAndColorsHash.keys();
-//				while(roiNameEnum.hasMoreElements()){
-				for (int j = 0; j < roiNamesAndColors.length; j++) {
-					String roiNameString = roiNamesAndColors[j].getROIName();
-					Color roiColor = roiNamesAndColors[j].getHighlightColor();
-					int colorIndex = -1;
-					for (int i = 0; i < indexColorModel.getMapSize(); i++) {
-						if(indexColorModel.getRGB(i) == roiColor.getRGB()){
-							colorIndex = i;
-							break;
-						}
-					}
-					if(colorIndex == -1){
-						throw new Exception("Couldn't find colormap index for ROI "+roiNameString+" with color "+Hex.toString(roiColor.getRGB()));
-					}
-					vcPixelClassesFromROINames[index] =
-						new VCPixelClass(null, roiNameString, colorIndex);
-					index++;
-				}
+		originalExtent = importedDataContainer.extent;
+		originalOrigin = importedDataContainer.origin;
+		originalISize = importedDataContainer.isize;
+		bHasOriginalData = importedDataContainer.shortSpecData != null;
 		
-				VCImage initImage = createVCImageFromBufferedImages(ROIMultiPaintManager.DEFAULT_EXTENT, roiComposite);
+		mergedCrop3D = new ROIMultiPaintManager.Crop3D();
+		enhancedImageDataset = null;
+		enhanceImageOp = ROIMultiPaintManager.ENHANCE_NONE;
+		//
+		//previouslyEditedVCImage and previousCrop3D can be null if this is the first time this method
+		//has been called in an editing session. 
+		//
+		if((previousCrop3D == null && previouslyEditedVCImage != null) ||
+				(previousCrop3D != null && previouslyEditedVCImage == null)){
+			throw new IllegalArgumentException("Previous VCImage and Crop must both be null or both be not null.");
+		}
+		ROIMultiPaintManager.fixBorderProblemInPlace(importedDataContainer, previouslyEditedVCImage,previousCrop3D);
+		initImageDataSet((!bHasOriginalData?null:importedDataContainer.shortSpecData[0][0]),originalISize);
+		initROIComposite();
+		if(previousCrop3D != null){
+			cropROIData(previousCrop3D,false);
+		}else{
+			mergedCrop3D.setBounds(0, 0, 0,
+					originalISize.getX(), originalISize.getY(), originalISize.getZ());
+		}
 
-				//Sanity check VCImage vcPixelClassesFromROINames and new vcPixelClassesFromVCImage found same pixel values
-				VCPixelClass[] vcPixelClassesFromVCImage = initImage.getPixelClasses();
-				for (int i = 0; i < vcPixelClassesFromVCImage.length; i++) {
-					boolean bFound = false;
-					for (int j = 0; j < vcPixelClassesFromROINames.length; j++) {
-						if(vcPixelClassesFromROINames[j].getPixel() == vcPixelClassesFromVCImage[i].getPixel()){
-							bFound = true;
-							break;
-						}
-					}
-					if(!bFound){
-						throw new Exception("Error processing ROI Image.  Pixels found having no matching ROI.");
-					}
+		//Sanity check crop
+		if(mergedCrop3D.width != roiComposite[0].getWidth() ||
+				mergedCrop3D.height != roiComposite[0].getHeight() ||
+				mergedCrop3D.depth != roiComposite.length){
+			String message =
+				"initial cropping failed.\n"+
+				"previousCrop3D="+(previousCrop3D!= null?previousCrop3D.toString():null)+"\n"+
+				"previouslyEditedVCImage x="+(previouslyEditedVCImage!= null?previouslyEditedVCImage.getNumX():null)+
+				",y="+(previouslyEditedVCImage!= null?previouslyEditedVCImage.getNumY():null)+
+				",z="+(previouslyEditedVCImage!= null?previouslyEditedVCImage.getNumZ():null)+"\n"+
+				"mergeCrop3D="+mergedCrop3D.toString()+"\n"+
+				"roiComposite x="+roiComposite[0].getRaster().getWidth()+
+				",y="+roiComposite[0].getRaster().getHeight()+
+				",z="+roiComposite.length;
+			System.out.println(message);
+			throw new Exception(message);
+		}
+		//initialize the roiComposite with previouslyEditedVCImage pixel values
+		if(previouslyEditedVCImage != null){
+			int index = 0;
+			//sanity check sizes
+			int totalSize = roiComposite[0].getWidth()*roiComposite[0].getHeight()*roiComposite.length;
+			if(previouslyEditedVCImage.getPixels().length != totalSize){
+				throw new Exception("Initial ROI composite size does not match previouslyEditedVCImage");
+			}
+			//copy previous to current roicomposite
+			for (int i = 0; i < roiComposite.length; i++) {
+				byte[] pixdata = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
+				System.arraycopy(previouslyEditedVCImage.getPixels(), index, pixdata, 0, pixdata.length);
+				index+= pixdata.length;
+			}
+		}
+	}
+	
+	private class GeometryAttributes {
+		public String annotation;
+		public Extent extent;
+		public Origin origin;
+		public int dimension;
+	}
+
+//	private void showDataValueSurfaceViewer(GeometryAttributes geomAttr) {
+//
+////		CartesianMesh mesh = new CartesianMesh();
+////		mesh.setOrigin(orig);
+////		mesh.setExtent(extent);
+////		mesh.setSize(size.getX(), size.getY(), size.getZ());
+////		
+////		mesh.meshRegionInfo = new MeshRegionInfo();	
+////		byte[] compressRegionBytes = BeanUtils.compress(regionImage.getShortEncodedRegionIndexImage());
+////		mesh.meshRegionInfo.setCompressedVolumeElementMapVolumeRegion(compressRegionBytes, mesh.getNumVolumeElements());
+////		RegionInfo[] regionInfos = regionImage.getRegionInfos();
+////		for (int i = 0; i < regionInfos.length; i++) {
+////			mesh.meshRegionInfo.mapVolumeRegionToSubvolume(regionInfos[i].getRegionIndex(), regionInfos[i].getPixelValue(), regionInfos[i].getNumPixels());		
+////		}
+//
+//		try{
+////		if(fieldDataValueSurfaceViewer == null){
+//			progressWait("Surface Viewer", "Calculating surfaces...",true);
+//			VCImage checkImage =
+//				ROIMultiPaintManager.createVCImageFromBufferedImages(geomAttr.extent, roiComposite);
+//			RegionImage regionImage =
+//				new RegionImage(checkImage, geomAttr.dimension,
+//						checkImage.getExtent(),geomAttr.origin, RegionImage.NO_SMOOTHING,
+//						progressWaitPopup);
+//			if(progressWaitPopup.isInterrupted()){
+//				throw UserCancelException.CANCEL_GENERIC;
+//			}
+//			
+////			ISize croppedISize = new ISize(mergedCrop3D.width, mergedCrop3D.height, mergedCrop3D.depth);
+////			//Surfaces
+////			CartesianMesh cartesianMesh =
+////				CartesianMesh.createSimpleCartesianMesh(geomAttr.origin,
+////						geomAttr.extent, croppedISize, regionImage);
+////			MeshRegionSurfaces meshRegionSurfaces = new MeshDisplayAdapter(cartesianMesh).generateMeshRegionSurfaces();
+////			SurfaceCollection surfaceCollection = meshRegionSurfaces.getSurfaceCollection();
+//
+//			//SurfaceNames
+//			final String[] surfaceNames = new String[regionImage.getSurfacecollection().getSurfaceCount()];
+//			for (int i = 0; i < regionImage.getSurfacecollection().getSurfaceCount(); i++){
+////				MembraneElement me = //Get the first element, any will do, all have same inside/outside volumeIndex
+////					cartesianMesh.getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(i,0)];
+//				surfaceNames[i] = i+"";
+////				if(getSimulationModelInfo() != null){
+////					surfaceNames[i] = getSimulationModelInfo().getMembraneName(
+////						cartesianMesh.getSubVolumeFromVolumeIndex(me.getInsideVolumeIndex()),
+////						cartesianMesh.getSubVolumeFromVolumeIndex(me.getOutsideVolumeIndex())
+////					);
+////				}else{
+////					surfaceNames[i] = i+"";
+////				}
+//			}
+//
+//			//SurfaceAreas
+//			final Double[] surfaceAreas = new Double[regionImage.getSurfacecollection().getSurfaceCount()];
+//			for (int i = 0; i < regionImage.getSurfacecollection().getSurfaceCount(); i++){
+//				surfaceAreas[i] = 0.0;//new Double(cartesianMesh.getRegionMembraneSurfaceAreaFromMembraneIndex(meshRegionSurfaces.getMembraneIndexForPolygon(i,0)));
+//			}
+//
+//			DataValueSurfaceViewer fieldDataValueSurfaceViewer0 = new DataValueSurfaceViewer();
+//
+////			TaubinSmoothing taubinSmoothing = new TaubinSmoothingWrong();
+////			TaubinSmoothingSpecification taubinSpec = TaubinSmoothingSpecification.getInstance(.3);
+////			taubinSmoothing.smooth(surfaceCollection,taubinSpec);
+//			fieldDataValueSurfaceViewer0.init(
+//				regionImage.getSurfacecollection(),
+//				geomAttr.origin,
+//				geomAttr.extent,
+//				surfaceNames,
+//				surfaceAreas,
+//				geomAttr.dimension
+//			);
+//			progressWait(STOP_PROGRESS, STOP_PROGRESS,false);
+//
+//			final JDialog jDialog = new JDialog(JOptionPane.getRootFrame());
+//			jDialog.setTitle("Surface Viewer");
+//			jDialog.setModal(true);
+//			jDialog.getContentPane().add(fieldDataValueSurfaceViewer0);
+//			jDialog.setSize(500,500);
+//			ZEnforcer.showModalDialogOnTop(jDialog, overlayEditorPanelJAI);
+////		}
+//		}catch(Exception e){
+//			progressWait(STOP_PROGRESS, STOP_PROGRESS,false);
+//			PopupGenerator.showErrorDialog(overlayEditorPanelJAI, e.getClass().getName()+"\n"+e.getMessage());
+//		}finally{
+//			progressWait(STOP_PROGRESS, STOP_PROGRESS,false);
+//		}
+//	}
+
+	private GeometryAttributes showEditGeometryAttributes(String annotation,Origin origin,Extent extent) throws UserCancelException{
+		final GeometryAttributes[] finalGeometryAttributesHolder = new GeometryAttributes[1];
+		final boolean[] cancelHolder = new boolean[] {false};
+
+		final CopyOfImageAttributePanel copyOfImageAttributePanel =
+			new CopyOfImageAttributePanel();
+		copyOfImageAttributePanel.init(origin, extent, getImageDataSet().getISize(), annotation);
+		
+		final JDialog jDialog = new JDialog(JOptionPane.getRootFrame());
+		jDialog.setTitle("Edit Geometry Attributes");
+		jDialog.setModal(true);
+		
+		JPanel okCancelJPanel = new JPanel(new FlowLayout());
+		JButton okJButton = new JButton("OK");
+		okJButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try{
+					finalGeometryAttributesHolder[0] = new GeometryAttributes();
+					finalGeometryAttributesHolder[0].annotation = copyOfImageAttributePanel.getEditedAnnotation();
+					finalGeometryAttributesHolder[0].origin = copyOfImageAttributePanel.getEditedOrigin();
+					finalGeometryAttributesHolder[0].extent = copyOfImageAttributePanel.getEditedExtent();
+					
+					jDialog.dispose();
+				}catch(UserCancelException uce){
+					
+				}catch(Exception exc){
+					DialogUtils.showErrorDialog(overlayEditorPanelJAI,
+							"Error validating Geometry attributes.\n"+exc.getMessage());
 				}
-				Vector<String> missingROINames = new Vector<String>();
-				StringBuffer missingROISB = new StringBuffer();
-				for (int i = 0; i < vcPixelClassesFromROINames.length; i++) {
-					boolean bFound = false;
-					for (int j = 0; j < vcPixelClassesFromVCImage.length; j++) {
-						if(vcPixelClassesFromROINames[i].getPixel() == vcPixelClassesFromVCImage[j].getPixel()){
-							bFound = true;
-							break;
-						}
-					}
-					if(!bFound){
-						missingROISB.append((missingROINames.size()>0?",":"")+"'"+vcPixelClassesFromROINames[i].getPixelClassName()+"'");
-						missingROINames.add(vcPixelClassesFromROINames[i].getPixelClassName());
-					}
+			}
+		});
+		JButton cancelJButton = new JButton("Cancel");
+		cancelJButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cancelHolder[0] = true;
+				jDialog.dispose();
+			}
+		});
+		okCancelJPanel.add(okJButton);
+		okCancelJPanel.add(cancelJButton);
+		jDialog.getContentPane().add(copyOfImageAttributePanel,BorderLayout.CENTER);
+		jDialog.getContentPane().add(okCancelJPanel,BorderLayout.SOUTH);
+		jDialog.setSize(500,300);
+		ZEnforcer.showModalDialogOnTop(jDialog,overlayEditorPanelJAI);
+
+		if(cancelHolder[0]){
+			throw UserCancelException.CANCEL_GENERIC;
+		}
+		return finalGeometryAttributesHolder[0];
+	}
+	public Geometry showGUI(
+			final String okButtonText,
+			final String sourceDataName,
+			Component centerOnComponent,
+			String initalAnnotation){
+		
+		final Geometry[] finalGeometryHolder = new Geometry[1];
+		final boolean[] cancelHolder = new boolean[] {false};
+		
+		if(overlayEditorPanelJAI == null){
+			overlayEditorPanelJAI = new OverlayEditorPanelJAI();
+			overlayEditorPanelJAI.setMinimumSize(new Dimension(700,600));
+			overlayEditorPanelJAI.setPreferredSize(new Dimension(700,600));
+			overlayEditorPanelJAI.addPropertyChangeListener(ROIMultiPaintManager.this);
+		}
+		overlayEditorPanelJAI.deleteROIName(null);//delete all names
+//		if(previouslyEditedVCImage != null){
+//			//initialize the ROI names with previouslyEditedVCImage pixelClass names
+//			VCPixelClass[] previousPixelClasses = previouslyEditedVCImage.getPixelClasses();
+//			String firstROI = null;
+//			for (int i = 0; i < previousPixelClasses.length; i++) {
+//				if(previousPixelClasses[i].getPixel() == 0){//don't add background
+//					continue;
+//				}
+//				String nextName = previousPixelClasses[i].getPixelClassName();
+//				if(nextName.equals(RESERVED_NAME_BACKGROUND)){
+//					//Change reserved background name that didn't have a value of 0
+//					nextName = "ROI"+(new Random().nextInt());
+//				}
+//				if(firstROI == null){
+//					firstROI = nextName;
+//				}
+//				overlayEditorPanelJAI.addROIName(
+//						previousPixelClasses[i].getPixelClassName(), true, firstROI,
+//						true, OverlayEditorPanelJAI.CONTRAST_COLORS[0x000000FF&previousPixelClasses[i].getPixel()]);
+//			}
+//		}
+		overlayEditorPanelJAI.setImages(getImageDataSet(), true,
+				OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
+		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
+
+		final JDialog jDialog = new JDialog(JOptionPane.getRootFrame());
+		jDialog.setTitle("Geometry Editor ("+sourceDataName+")");
+		jDialog.setModal(true);
+		
+		jDialog.addWindowListener(
+			new WindowAdapter() {
+				@Override
+				public void windowOpened(WindowEvent e) {
+					super.windowOpened(e);
+					askInitialize();
 				}
-				if(missingROINames.size() > 0){
-					final String removeROI = "Remove ROI"+(missingROINames.size()>1?"s":"")+" and continue";
-					final String backtoSegment = "Return to segmentation";
-					String result = DialogUtils.showWarningDialog(
-							(Component)hashTable.get(ClientRequestManager.GUI_PARENT), 
-							"ROI"+(missingROINames.size()>1?"s":"")+" named "+missingROISB.toString()+" have no pixels defined",
-							new String[] {removeROI,backtoSegment}, removeROI);
-					if(result.equals(removeROI)){
-						Vector<VCPixelClass> vcPixelClassV = new Vector<VCPixelClass>();
-						vcPixelClassV.addAll(Arrays.asList(vcPixelClassesFromROINames));
-//						ComboboxROIName[] = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
-//						roiNameEnum = allROINameAndColors.keys();
-//						while(roiNameEnum.hasMoreElements()){
-						for (int k = 0; k < vcPixelClassesFromVCImage.length; k++) {
-							String roiName = roiNamesAndColors[k].getROIName();
-							for (int i = 0; i < missingROINames.size(); i++) {
-								if(missingROINames.elementAt(i).equals(roiName)){
-									Color deleteThisColor = roiNamesAndColors[k].getHighlightColor();
-									clearROI(false, deleteThisColor,OverlayEditorPanelJAI.FRAP_DATA_END_PROPERTY);
-									for (int j = 0; j < vcPixelClassV.size(); j++) {
-										if(vcPixelClassV.elementAt(j).getPixelClassName().equals(roiName)){
-											vcPixelClassV.remove(j);
-											break;
-										}
-									}
+			}
+		);
+		
+		final GeometryAttributes geomAttr = new GeometryAttributes();
+		geomAttr.annotation = "";
+		geomAttr.origin = originalOrigin;
+		geomAttr.extent = originalExtent;
+		geomAttr.dimension = 1+
+			(roiComposite.length>2?1:0)+
+			(roiComposite.length>1?1:0);
+		JPanel okCancelJPanel = new JPanel(new FlowLayout());
+		JButton okJButton = new JButton(okButtonText);
+		okJButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try{
+					VCImage finalImage = checkAll();
+					finalGeometryHolder[0] = 
+						new Geometry((String)null, finalImage);
+					finalGeometryHolder[0].getGeometrySpec().setOrigin(geomAttr.origin);
+					finalGeometryHolder[0].getGeometrySpec().setExtent(geomAttr.extent);
+					finalGeometryHolder[0].setDescription(geomAttr.annotation);
+					jDialog.dispose();
+				}catch(UserCancelException uce){
+					
+				}catch(Exception exc){
+					DialogUtils.showErrorDialog(overlayEditorPanelJAI,
+							"Error validating compartments.\n"+exc.getMessage());
+				}
+			}
+		});
+		JButton cancelJButton = new JButton("Cancel");
+		cancelJButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cancelHolder[0] = true;
+				jDialog.dispose();
+			}
+		});
+		JButton attributesJButton = new JButton("Attributes...");
+		attributesJButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try{
+					GeometryAttributes editedGeometryAttributes =
+						showEditGeometryAttributes(geomAttr.annotation,geomAttr.origin,geomAttr.extent);
+					geomAttr.annotation = editedGeometryAttributes.annotation;
+					geomAttr.origin = editedGeometryAttributes.origin;
+					geomAttr.extent = editedGeometryAttributes.extent;
+				}catch(UserCancelException uce){
+					//ignore
+				}
+			}
+		});
+//		JButton surfaceButton = new JButton("View Surfaces...");
+//		surfaceButton.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				showDataValueSurfaceViewer(geomAttr);
+//			}
+//		});
+		okCancelJPanel.add(okJButton);
+		okCancelJPanel.add(attributesJButton);
+//		okCancelJPanel.add(surfaceButton);
+		okCancelJPanel.add(cancelJButton);
+		
+		jDialog.getContentPane().add(overlayEditorPanelJAI,BorderLayout.CENTER);
+		jDialog.getContentPane().add(okCancelJPanel,BorderLayout.SOUTH);
+		jDialog.setSize(700,600);
+		ZEnforcer.showModalDialogOnTop(jDialog,centerOnComponent);
+		
+		if(cancelHolder[0]){
+			throw UserCancelException.CANCEL_GENERIC;
+		}
+		return finalGeometryHolder[0];
+	}
+	private VCImage checkAll() throws Exception{
+		if(overlayEditorPanelJAI.getROI() != null){
+			final String highlightDiscard = "discard 'highlights'";
+			final String cancelAssign = "Cancel, back to segmentation...";
+			String result = DialogUtils.showWarningDialog(
+					overlayEditorPanelJAI,
+					"Warning: Highlights from the 'Resolve' or 'Histogram' tools are present.  Choose an action:\n"+
+					"1.  Discard highlights without applying.\n"+
+					"2.  Go back to segmentation tool. (Use 'Utilities' menu to apply highlights)",
+					new String[] {highlightDiscard,cancelAssign}, highlightDiscard);
+			if(result.equals(highlightDiscard)){
+				overlayEditorPanelJAI.setROI(null, OverlayEditorPanelJAI.FRAP_DATA_END_PROPERTY);
+			}else{
+				throw UserCancelException.CANCEL_GENERIC;
+			}	
+		}
+		ComboboxROIName[] roiNamesAndColors = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+		//Check for unassigned "background" pixels
+		boolean bHasUnassignedBackground = false;
+		for (int i = 0; i < roiComposite.length; i++) {
+			byte[] pixData = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
+			for (int j = 0; j < pixData.length; j++) {
+				if(pixData[j] == 0){
+					bHasUnassignedBackground = true;
+					break;
+				}
+			}
+			if(bHasUnassignedBackground){
+				break;
+			}
+		}
+		//Create PixelClasses
+		VCPixelClass[] vcPixelClassesFromROINames = null;
+		boolean bForceAssignBackground = false;
+		if(bHasUnassignedBackground){
+			final String assignToBackground = "Assign as default 'background'";
+			final String cancelAssign = "Cancel, back to segmentation...";
+			String result = DialogUtils.showWarningDialog(
+					overlayEditorPanelJAI,
+					"Warning: some areas of image segmentation have not been assigned to an ROI."+
+					"  This can happen when small unintended gaps are left between adjacent ROIs"+
+					" or areas around the edges were intentionally left as background.  Choose an action:\n"+
+					"1.  Leave as is, unassigned areas should be treated as 'background'.\n"+
+					"2.  Go back to segmentation tool. (note: look for areas with no color)",
+					new String[] {assignToBackground,/*assignToNeighbors,*/cancelAssign}, assignToBackground);
+			if(result.equals(assignToBackground)){
+				bForceAssignBackground = true;
+			}else{
+				throw UserCancelException.CANCEL_GENERIC;
+			}
+			if(bForceAssignBackground){
+				vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColors.length+1];
+				vcPixelClassesFromROINames[0] = new VCPixelClass(null, RESERVED_NAME_BACKGROUND, 0);					
+			}
+		}else{
+			vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColors.length];
+		}
+		
+
+		//find pixel indexes corresponding to colors for ROIs
+		int index = (bForceAssignBackground?1:0);
+//		Enumeration<String> roiNameEnum = roiNamesAndColorsHash.keys();
+//		while(roiNameEnum.hasMoreElements()){
+		for (int j = 0; j < roiNamesAndColors.length; j++) {
+			String roiNameString = roiNamesAndColors[j].getROIName();
+			Color roiColor = roiNamesAndColors[j].getHighlightColor();
+			int colorIndex = -1;
+			for (int i = 0; i < indexColorModel.getMapSize(); i++) {
+				if(indexColorModel.getRGB(i) == roiColor.getRGB()){
+					colorIndex = i;
+					break;
+				}
+			}
+			if(colorIndex == -1){
+				throw new Exception("Couldn't find colormap index for ROI "+roiNameString+" with color "+Hex.toString(roiColor.getRGB()));
+			}
+			vcPixelClassesFromROINames[index] =
+				new VCPixelClass(null, roiNameString, colorIndex);
+			index++;
+		}
+
+		VCImage initImage = createVCImageFromBufferedImages(ROIMultiPaintManager.DEFAULT_EXTENT, roiComposite);
+
+		//Sanity check VCImage vcPixelClassesFromROINames and new vcPixelClassesFromVCImage found same pixel values
+		VCPixelClass[] vcPixelClassesFromVCImage = initImage.getPixelClasses();
+		for (int i = 0; i < vcPixelClassesFromVCImage.length; i++) {
+			boolean bFound = false;
+			for (int j = 0; j < vcPixelClassesFromROINames.length; j++) {
+				if(vcPixelClassesFromROINames[j].getPixel() == vcPixelClassesFromVCImage[i].getPixel()){
+					bFound = true;
+					break;
+				}
+			}
+			if(!bFound){
+				throw new Exception("Error processing ROI Image.  Pixels found having no matching ROI.");
+			}
+		}
+		Vector<String> missingROINames = new Vector<String>();
+		StringBuffer missingROISB = new StringBuffer();
+		for (int i = 0; i < vcPixelClassesFromROINames.length; i++) {
+			boolean bFound = false;
+			for (int j = 0; j < vcPixelClassesFromVCImage.length; j++) {
+				if(vcPixelClassesFromROINames[i].getPixel() == vcPixelClassesFromVCImage[j].getPixel()){
+					bFound = true;
+					break;
+				}
+			}
+			if(!bFound){
+				missingROISB.append((missingROINames.size()>0?",":"")+"'"+vcPixelClassesFromROINames[i].getPixelClassName()+"'");
+				missingROINames.add(vcPixelClassesFromROINames[i].getPixelClassName());
+			}
+		}
+		if(missingROINames.size() > 0){
+			final String removeROI = "Remove ROI"+(missingROINames.size()>1?"s":"")+" and continue";
+			final String backtoSegment = "Return to segmentation";
+			String result = DialogUtils.showWarningDialog(
+					overlayEditorPanelJAI, 
+					"ROI"+(missingROINames.size()>1?"s":"")+" named "+missingROISB.toString()+" have no pixels defined",
+					new String[] {removeROI,backtoSegment}, removeROI);
+			if(result.equals(removeROI)){
+				Vector<VCPixelClass> vcPixelClassV = new Vector<VCPixelClass>();
+				vcPixelClassV.addAll(Arrays.asList(vcPixelClassesFromROINames));
+//				ComboboxROIName[] = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+//				roiNameEnum = allROINameAndColors.keys();
+//				while(roiNameEnum.hasMoreElements()){
+				for (int k = 0; k < vcPixelClassesFromVCImage.length; k++) {
+					String roiName = roiNamesAndColors[k].getROIName();
+					for (int i = 0; i < missingROINames.size(); i++) {
+						if(missingROINames.elementAt(i).equals(roiName)){
+							Color deleteThisColor = roiNamesAndColors[k].getHighlightColor();
+							clearROI(false, deleteThisColor,OverlayEditorPanelJAI.FRAP_DATA_END_PROPERTY);
+							for (int j = 0; j < vcPixelClassV.size(); j++) {
+								if(vcPixelClassV.elementAt(j).getPixelClassName().equals(roiName)){
+									vcPixelClassV.remove(j);
 									break;
 								}
 							}
+							break;
 						}
-						vcPixelClassesFromROINames = vcPixelClassV.toArray(new VCPixelClass[0]);
-					}else{
-						hashTable.put(ClientTaskDispatcher.TASK_REWIND, SHOW_ROI_PANEL_TASK_NAME);
-						return;
 					}
 				}
-				//Check borders
-				try{
-					Hashtable<VCImage, ROIMultiPaintManager.Crop3D> temp = checkBorders(initImage/*,mergedCrop3D*/);
-					if(temp != null){
-						initImage = temp.keySet().toArray(new VCImage[0])[0];
-						mergedCrop3D = temp.values().toArray(new ROIMultiPaintManager.Crop3D[0])[0];
-					}
-				}catch(UserCancelException uce){
-					hashTable.put(ClientTaskDispatcher.TASK_REWIND, SHOW_ROI_PANEL_TASK_NAME);
-					return;
-				}
-				initImage.setPixelClasses(vcPixelClassesFromROINames);
-				updateExtent(initImage,
-						((FieldDataFileOperationSpec)hashTable.get(IMPORTED_DATA_CONTAINER)).extent,
-						((FieldDataFileOperationSpec)hashTable.get(IMPORTED_DATA_CONTAINER)).isize);
-				hashTable.put(CROPPED_ROI, initImage);
-				hashTable.put(CROP_3D, mergedCrop3D);
+				vcPixelClassesFromROINames = vcPixelClassV.toArray(new VCPixelClass[0]);
+			}else{
+				throw UserCancelException.CANCEL_GENERIC;
 			}
-		};
-		return new AsynchClientTask[] {initROIDataTask,/*testTask,*/initROIPanelTask,showROIPanelTask,checkROI};
+		}
+		//Check borders
+//		try{
+			Hashtable<VCImage, ROIMultiPaintManager.Crop3D> temp = checkBorders(initImage);
+			if(temp != null){
+				initImage = temp.keySet().toArray(new VCImage[0])[0];
+				mergedCrop3D = temp.values().toArray(new ROIMultiPaintManager.Crop3D[0])[0];
+			}
+//		}catch(UserCancelException uce){
+//			hashTable.put(ClientTaskDispatcher.TASK_REWIND, SHOW_ROI_PANEL_TASK_NAME);
+//			return;
+//		}
+		initImage.setPixelClasses(vcPixelClassesFromROINames);
+		updateExtent(initImage,originalExtent,originalISize);
+//		hashTable.put(CROPPED_ROI, initImage);
+//		hashTable.put(CROP_3D, mergedCrop3D);
+		return initImage;
 	}
+	
+	
+	
+//	public static final String IMPORTED_DATA_CONTAINER = "fdfos";
+//	public static final String CROPPED_ROI = "vcImage";
+//	public static final String CROP_3D = "previousCrop3D";
+	public static final String ROI_AND_CROP = "ROI_AND_CROP";
+	public static final String SHOW_ROI_PANEL_TASK_NAME = "Show ROI display";
+//	public static final String INIT_ROI_DATA_TASK_NAME = "Initialize ROI data";
+
+//	public AsynchClientTask[] getROIEditTasks(){
+//		AsynchClientTask initROIDataTask = new AsynchClientTask(INIT_ROI_DATA_TASK_NAME,AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//			@Override
+//			public void run(Hashtable<String, Object> hashTable) throws Exception {
+//				getClientTaskStatusSupport().setMessage("Initializing ROI data.");
+////				System.out.println("----------task "+getTaskName());
+//				mergedCrop3D = new ROIMultiPaintManager.Crop3D();
+//				//Fix border padding problem
+//				enhancedImageDataset = null;
+//				enhanceImageOp = ROIMultiPaintManager.ENHANCE_NONE;
+//				//
+//				//previouslyEditedVCImage and previousCrop3D can be null if this is the first time this method
+//				//has been called in an editing session. 
+//				//They are removed from the hash because later tasks will resave with different crop if necessary
+//				//
+//				VCImage previouslyEditedVCImage = (VCImage)hashTable.get(CROPPED_ROI);
+//				ROIMultiPaintManager.Crop3D previousCrop3D = (ROIMultiPaintManager.Crop3D)hashTable.remove(CROP_3D);
+//				if((previousCrop3D == null && previouslyEditedVCImage != null) ||
+//						(previousCrop3D != null && previouslyEditedVCImage == null)){
+//					throw new IllegalArgumentException("Previous VCImage and Crop must both be null or both be not null.");
+//				}
+//				FieldDataFileOperationSpec originalDataContainer =
+//					(FieldDataFileOperationSpec)hashTable.get(IMPORTED_DATA_CONTAINER);
+////				System.out.println("previous Crop before border fix= "+previousCrop3D);
+//				ROIMultiPaintManager.fixBorderProblemInPlace(originalDataContainer, previouslyEditedVCImage,previousCrop3D);
+//				initImageDataSet((originalDataContainer.shortSpecData==null?null:originalDataContainer.shortSpecData[0][0]),originalDataContainer.isize);
+//				initROIComposite();
+//				//Crop with mergedCropRectangle
+////				System.out.println("previous Crop crop= "+previousCrop3D);
+//				if(previousCrop3D != null){
+//					cropROIData(previousCrop3D,false);
+//				}else{
+//					mergedCrop3D.setBounds(0, 0, 0,
+//							originalDataContainer.isize.getX(), originalDataContainer.isize.getY(), originalDataContainer.isize.getZ());
+//				}
+////				System.out.println("merge Crop after apply previous= "+mergedCrop3D);
+//
+//				//Sanity check crop
+//				if(mergedCrop3D.width != roiComposite[0].getWidth() ||
+//						mergedCrop3D.height != roiComposite[0].getHeight() ||
+//						mergedCrop3D.depth != roiComposite.length){
+//					String message =
+//						"initial cropping failed.\n"+
+//						"previousCrop3D="+(previousCrop3D!= null?previousCrop3D.toString():null)+"\n"+
+//						"previouslyEditedVCImage x="+(previouslyEditedVCImage!= null?previouslyEditedVCImage.getNumX():null)+
+//						",y="+(previouslyEditedVCImage!= null?previouslyEditedVCImage.getNumY():null)+
+//						",z="+(previouslyEditedVCImage!= null?previouslyEditedVCImage.getNumZ():null)+"\n"+
+//						"mergeCrop3D="+mergedCrop3D.toString()+"\n"+
+//						"roiComposite x="+roiComposite[0].getRaster().getWidth()+
+//						",y="+roiComposite[0].getRaster().getHeight()+
+//						",z="+roiComposite.length;
+//					System.out.println(message);
+//					throw new Exception(message);
+//				}
+//				//initialize the roiComposite with previouslyEditedVCImage pixel values
+//				if(previouslyEditedVCImage != null){
+//					int index = 0;
+//					//sanity check sizes
+//					int totalSize = roiComposite[0].getWidth()*roiComposite[0].getHeight()*roiComposite.length;
+//					if(previouslyEditedVCImage.getPixels().length != totalSize){
+//						throw new Exception("Initial ROI composite size does not match previouslyEditedVCImage");
+//					}
+//					//copy previous to current roicomposite
+//					for (int i = 0; i < roiComposite.length; i++) {
+//						byte[] pixdata = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
+//						System.arraycopy(previouslyEditedVCImage.getPixels(), index, pixdata, 0, pixdata.length);
+//						index+= pixdata.length;
+//					}
+//				}
+//			}
+//		};
+
+//		AsynchClientTask initROIPanelTask = new AsynchClientTask("Creating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//			@Override
+//			public void run(Hashtable<String, Object> hashTable) throws Exception {
+//				getClientTaskStatusSupport().setMessage("Initializing ROI editor.");
+////				System.out.println("----------task "+getTaskName());
+//				if(overlayEditorPanelJAI == null){
+//					overlayEditorPanelJAI = new OverlayEditorPanelJAI();
+//					overlayEditorPanelJAI.setMinimumSize(new Dimension(700,600));
+//					overlayEditorPanelJAI.setPreferredSize(new Dimension(700,600));
+//					overlayEditorPanelJAI.addPropertyChangeListener(ROIMultiPaintManager.this);
+//				}
+//				overlayEditorPanelJAI.deleteROIName(null);//delete all names
+//				if(hashTable.containsKey(CROPPED_ROI)){
+//					//initialize the ROI names with previouslyEditedVCImage pixelClass names
+//					VCImage previouslyEditedVCImage = (VCImage)hashTable.remove(CROPPED_ROI);
+//					VCPixelClass[] previousPixelClasses = previouslyEditedVCImage.getPixelClasses();
+//					String firstROI = null;
+//					for (int i = 0; i < previousPixelClasses.length; i++) {
+//						if(previousPixelClasses[i].getPixel() == 0){//don't add background
+//							continue;
+//						}
+//						String nextName = previousPixelClasses[i].getPixelClassName();
+//						if(nextName.equals(RESERVED_NAME_BACKGROUND)){
+//							//Change reserved background name that didn't have a value of 0
+//							nextName = "ROI"+(new Random().nextInt());
+//						}
+//						if(firstROI == null){
+//							firstROI = nextName;
+//						}
+//						overlayEditorPanelJAI.addROIName(
+//								previousPixelClasses[i].getPixelClassName(), true, firstROI,
+//								true, OverlayEditorPanelJAI.CONTRAST_COLORS[0x000000FF&previousPixelClasses[i].getPixel()]);
+//					}
+//				}
+//				overlayEditorPanelJAI.setImages(getImageDataSet(), true,
+//						OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
+//				overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
+//			}
+//		};
+
+//		AsynchClientTask showROIPanelTask = new AsynchClientTask(SHOW_ROI_PANEL_TASK_NAME,AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//			@Override
+//			public void run(final Hashtable<String, Object> hashTable) throws Exception {
+//				getClientTaskStatusSupport().setMessage("Showing ROI editor.");
+////				System.out.println("----------task "+getTaskName());
+//
+//				waitAskInitialize(((FieldDataFileOperationSpec)(hashTable.get(IMPORTED_DATA_CONTAINER))).shortSpecData != null);				
+//				
+//				String sourceName = (String)hashTable.get(IMPORT_SOURCE_NAME);
+//				int retCode = DialogUtils.showComponentOKCancelDialog(
+//						(Component)hashTable.get(ClientRequestManager.GUI_PARENT),
+//						overlayEditorPanelJAI, "segment image for geometry "+(sourceName==null?"(No Name)":"("+sourceName+")"));
+//				if (retCode != JOptionPane.OK_OPTION){
+//					throw UserCancelException.CANCEL_GENERIC;
+//				}
+//			}
+//		};
+//		AsynchClientTask checkROI = new AsynchClientTask("Checking ROI...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//			@Override
+//			public void run(Hashtable<String, Object> hashTable) throws Exception {
+////				System.out.println("----------task "+getTaskName());
+//
+//				getClientTaskStatusSupport().setMessage("Checking ROI.");
+//				ComboboxROIName[] roiNamesAndColors = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+////				if(roiNamesAndColors == null || roiNamesAndColors.length == 0){
+////					//No ROI defined
+////					final String cancel = "Back to segmentation";
+////					String result = DialogUtils.showWarningDialog(
+////							overlayEditorPanelJAI,
+////							"No ROIs defined.  At least 1 ROI must be defined",
+////							new String[] {cancel}, cancel);
+////					if(result.equals(cancel)){
+////						hashTable.put(ClientTaskDispatcher.TASK_REWIND, SHOW_ROI_PANEL_TASK_NAME);
+////						return;
+////					}else{
+////						hashTable.put(ClientTaskDispatcher.TASK_REWIND, ClientRequestManager.PARSE_IMAGE_TASK_NAME);
+////						return;
+////					}
+////				}
+//				//Check for unassigned "background" pixels
+//				boolean bHasUnassignedBackground = false;
+//				for (int i = 0; i < roiComposite.length; i++) {
+//					byte[] pixData = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
+//					for (int j = 0; j < pixData.length; j++) {
+//						if(pixData[j] == 0){
+//							bHasUnassignedBackground = true;
+//							break;
+//						}
+//					}
+//					if(bHasUnassignedBackground){
+//						break;
+//					}
+//				}
+//				//Create PixelClasses
+//				VCPixelClass[] vcPixelClassesFromROINames = null;
+//				boolean bForceAssignBackground = false;
+//				if(bHasUnassignedBackground){
+//					final String assignToBackground = "Assign as default 'background'";
+//					final String cancelAssign = "Cancel, back to segmentation...";
+//					String result = DialogUtils.showWarningDialog(
+//							(Component)hashTable.get(ClientRequestManager.GUI_PARENT),
+//							"Warning: some areas of image segmentation have not been assigned to an ROI."+
+//							"  This can happen when small unintended gaps are left between adjacent ROIs"+
+//							" or areas around the edges were intentionally left as background.  Choose an action:\n"+
+//							"1.  Leave as is, unassigned areas should be treated as 'background'.\n"+
+//							"2.  Go back to segmentation tool. (note: look for areas with no color)",
+//							new String[] {assignToBackground,/*assignToNeighbors,*/cancelAssign}, assignToBackground);
+//					if(result.equals(assignToBackground)){
+//						bForceAssignBackground = true;
+//					}else{
+//						hashTable.put(ClientTaskDispatcher.TASK_REWIND, SHOW_ROI_PANEL_TASK_NAME);
+//						return;
+//					}
+//					if(bForceAssignBackground){
+//						vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColors.length+1];
+//						vcPixelClassesFromROINames[0] = new VCPixelClass(null, RESERVED_NAME_BACKGROUND, 0);					
+//					}
+//				}else{
+//					vcPixelClassesFromROINames = new VCPixelClass[roiNamesAndColors.length];
+//				}
+//				
+//
+//				//find pixel indexes corresponding to colors for ROIs
+//				int index = (bForceAssignBackground?1:0);
+////				Enumeration<String> roiNameEnum = roiNamesAndColorsHash.keys();
+////				while(roiNameEnum.hasMoreElements()){
+//				for (int j = 0; j < roiNamesAndColors.length; j++) {
+//					String roiNameString = roiNamesAndColors[j].getROIName();
+//					Color roiColor = roiNamesAndColors[j].getHighlightColor();
+//					int colorIndex = -1;
+//					for (int i = 0; i < indexColorModel.getMapSize(); i++) {
+//						if(indexColorModel.getRGB(i) == roiColor.getRGB()){
+//							colorIndex = i;
+//							break;
+//						}
+//					}
+//					if(colorIndex == -1){
+//						throw new Exception("Couldn't find colormap index for ROI "+roiNameString+" with color "+Hex.toString(roiColor.getRGB()));
+//					}
+//					vcPixelClassesFromROINames[index] =
+//						new VCPixelClass(null, roiNameString, colorIndex);
+//					index++;
+//				}
+//		
+//				VCImage initImage = createVCImageFromBufferedImages(ROIMultiPaintManager.DEFAULT_EXTENT, roiComposite);
+//
+//				//Sanity check VCImage vcPixelClassesFromROINames and new vcPixelClassesFromVCImage found same pixel values
+//				VCPixelClass[] vcPixelClassesFromVCImage = initImage.getPixelClasses();
+//				for (int i = 0; i < vcPixelClassesFromVCImage.length; i++) {
+//					boolean bFound = false;
+//					for (int j = 0; j < vcPixelClassesFromROINames.length; j++) {
+//						if(vcPixelClassesFromROINames[j].getPixel() == vcPixelClassesFromVCImage[i].getPixel()){
+//							bFound = true;
+//							break;
+//						}
+//					}
+//					if(!bFound){
+//						throw new Exception("Error processing ROI Image.  Pixels found having no matching ROI.");
+//					}
+//				}
+//				Vector<String> missingROINames = new Vector<String>();
+//				StringBuffer missingROISB = new StringBuffer();
+//				for (int i = 0; i < vcPixelClassesFromROINames.length; i++) {
+//					boolean bFound = false;
+//					for (int j = 0; j < vcPixelClassesFromVCImage.length; j++) {
+//						if(vcPixelClassesFromROINames[i].getPixel() == vcPixelClassesFromVCImage[j].getPixel()){
+//							bFound = true;
+//							break;
+//						}
+//					}
+//					if(!bFound){
+//						missingROISB.append((missingROINames.size()>0?",":"")+"'"+vcPixelClassesFromROINames[i].getPixelClassName()+"'");
+//						missingROINames.add(vcPixelClassesFromROINames[i].getPixelClassName());
+//					}
+//				}
+//				if(missingROINames.size() > 0){
+//					final String removeROI = "Remove ROI"+(missingROINames.size()>1?"s":"")+" and continue";
+//					final String backtoSegment = "Return to segmentation";
+//					String result = DialogUtils.showWarningDialog(
+//							(Component)hashTable.get(ClientRequestManager.GUI_PARENT), 
+//							"ROI"+(missingROINames.size()>1?"s":"")+" named "+missingROISB.toString()+" have no pixels defined",
+//							new String[] {removeROI,backtoSegment}, removeROI);
+//					if(result.equals(removeROI)){
+//						Vector<VCPixelClass> vcPixelClassV = new Vector<VCPixelClass>();
+//						vcPixelClassV.addAll(Arrays.asList(vcPixelClassesFromROINames));
+////						ComboboxROIName[] = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+////						roiNameEnum = allROINameAndColors.keys();
+////						while(roiNameEnum.hasMoreElements()){
+//						for (int k = 0; k < vcPixelClassesFromVCImage.length; k++) {
+//							String roiName = roiNamesAndColors[k].getROIName();
+//							for (int i = 0; i < missingROINames.size(); i++) {
+//								if(missingROINames.elementAt(i).equals(roiName)){
+//									Color deleteThisColor = roiNamesAndColors[k].getHighlightColor();
+//									clearROI(false, deleteThisColor,OverlayEditorPanelJAI.FRAP_DATA_END_PROPERTY);
+//									for (int j = 0; j < vcPixelClassV.size(); j++) {
+//										if(vcPixelClassV.elementAt(j).getPixelClassName().equals(roiName)){
+//											vcPixelClassV.remove(j);
+//											break;
+//										}
+//									}
+//									break;
+//								}
+//							}
+//						}
+//						vcPixelClassesFromROINames = vcPixelClassV.toArray(new VCPixelClass[0]);
+//					}else{
+//						hashTable.put(ClientTaskDispatcher.TASK_REWIND, SHOW_ROI_PANEL_TASK_NAME);
+//						return;
+//					}
+//				}
+//				//Check borders
+//				try{
+//					Hashtable<VCImage, ROIMultiPaintManager.Crop3D> temp = checkBorders(initImage/*,mergedCrop3D*/);
+//					if(temp != null){
+//						initImage = temp.keySet().toArray(new VCImage[0])[0];
+//						mergedCrop3D = temp.values().toArray(new ROIMultiPaintManager.Crop3D[0])[0];
+//					}
+//				}catch(UserCancelException uce){
+//					hashTable.put(ClientTaskDispatcher.TASK_REWIND, SHOW_ROI_PANEL_TASK_NAME);
+//					return;
+//				}
+//				initImage.setPixelClasses(vcPixelClassesFromROINames);
+//				updateExtent(initImage,
+//						((FieldDataFileOperationSpec)hashTable.get(IMPORTED_DATA_CONTAINER)).extent,
+//						((FieldDataFileOperationSpec)hashTable.get(IMPORTED_DATA_CONTAINER)).isize);
+//				hashTable.put(CROPPED_ROI, initImage);
+//				hashTable.put(CROP_3D, mergedCrop3D);
+//			}
+//		};
+//		return new AsynchClientTask[] {initROIDataTask,initROIPanelTask,showROIPanelTask,checkROI};
+//	}
 	
 	private static class BorderInfo {
 		public boolean bXYTouch = false;
@@ -931,6 +1567,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		int accum = 0;
 		int convSize = (radius*2+1)*(radius*2+1);
 		int[] convPixels = new int[convSize];
+//		short[] intermediateArr = new short[origImageDataset.getAllImages()[0].getPixels().length];
 		for (int z = 0; z < origImageDataset.getAllImages().length; z++) {
 			int pixelIndex = 0;
 			smoothedZSections[z] =
@@ -939,6 +1576,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						origImageDataset.getISize().getX(),origImageDataset.getISize().getY(),1);
 			short[] enhancedData = smoothedZSections[z].getPixels();
 			short[] roiSourceData = origImageDataset.getAllImages()[z].getPixels();
+			
+//			BoxBlurFilter.blur(roiSourceData, intermediateArr, origImageDataset.getISize().getX(), origImageDataset.getISize().getY(), radius);
+//			BoxBlurFilter.blur(intermediateArr, enhancedData, origImageDataset.getISize().getX(), origImageDataset.getISize().getY(), radius);
+//			if(true){continue;}
 			for (int y = 0; y < origImageDataset.getISize().getY(); y++) {
 				int yoffset = y*origImageDataset.getISize().getX();
 				for (int x = 0; x < origImageDataset.getISize().getX(); x++) {
@@ -1285,7 +1926,6 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	public static class Crop3D {
 		@Override
 		public String toString() {
-			// TODO Auto-generated method stub
 			return (low==null?super.toString():low.x+","+low.y+","+low.z+" ["+width+" "+height+" "+depth+"]");
 		}
 		public CoordinateIndex low  = new CoordinateIndex();
@@ -1913,6 +2553,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				if(highlightROI != null){
 					overlayEditorPanelJAI.setROI(highlightROI, OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
 					wantBlendSetToEnhance();
+				}else{
+					overlayEditorPanelJAI.setROI(overlayEditorPanelJAI.getROI(), OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
 				}
 			}
 		};

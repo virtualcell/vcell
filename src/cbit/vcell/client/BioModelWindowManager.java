@@ -22,6 +22,7 @@ import javax.swing.event.InternalFrameListener;
 import org.vcell.sybil.gui.space.DialogParentProvider;
 import org.vcell.sybil.gui.space.GUIJInternalFrameSpace;
 import org.vcell.sybil.init.SybilApplication;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
@@ -32,7 +33,6 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.ApplicationEditor;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
-import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -40,9 +40,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.gui.GeometryViewer;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.opt.solvers.LocalOptimizationService;
 import cbit.vcell.opt.solvers.OptimizationService;
@@ -99,13 +97,18 @@ public BioModelWindowManager(JPanel panel, RequestManager requestManager, final 
 }
 
 
-private void editSelectGeometry(Geometry newGeom,ApplicationEditor applicationEditor){
+private void editSelectGeometry(boolean bShowOldGeomEditor/*DocumentCreationInfo documentCreationInfo*/,Geometry newGeom,ApplicationEditor applicationEditor){
 	SimulationOwner simulationOwner = applicationEditor.getSimulationWorkspace().getSimulationOwner();
 	Geometry origGeom = simulationOwner.getGeometry();
-	GeometryViewer localGeometryViewer = new GeometryViewer();
-	localGeometryViewer.setGeometry(newGeom);
-	int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
-	if(result == JOptionPane.OK_OPTION){
+	if(bShowOldGeomEditor
+			/*documentCreationInfo == null || !ClientRequestManager.isImportGeometryType(documentCreationInfo)*/){
+		GeometryViewer localGeometryViewer = new GeometryViewer();
+		localGeometryViewer.setGeometry(newGeom);
+		int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
+		if(result != JOptionPane.OK_OPTION){
+			throw UserCancelException.CANCEL_GENERIC;
+		}
+	}
  		Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
 		while (appComponentsEnum.hasMoreElements()) {
 			ApplicationComponents appComponents = (ApplicationComponents)appComponentsEnum.nextElement();
@@ -113,6 +116,12 @@ private void editSelectGeometry(Geometry newGeom,ApplicationEditor applicationEd
 			if (appEditor == applicationEditor) {
 				if (simulationOwner instanceof SimulationContext) {
 					try {
+						if(newGeom.getName() == null){
+							newGeom.setName(
+								getBioModel().getName()+"_"+
+								((SimulationContext)simulationOwner).getName()+"_"+
+								ClientRequestManager.generateDateTimeString());
+						}
 						showSurfaceViewerFrame((SimulationContext)simulationOwner, false);
 						((SimulationContext)simulationOwner).setGeometry(newGeom);
 					} catch (Exception e1) {
@@ -123,7 +132,6 @@ private void editSelectGeometry(Geometry newGeom,ApplicationEditor applicationEd
 					return;
 				} 
 			}
-		}
 		DialogUtils.showErrorDialog(getComponent(), "Geometry "+origGeom.getName()+" key="+origGeom.getVersion().getVersionKey()+" not found in application hash");
 	}
 }
@@ -196,14 +204,22 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Geometry newGeom = (Geometry)hashTable.get("doc");
 				if(newGeom != null){
-					editSelectGeometry(newGeom, (ApplicationEditor)source);
+					editSelectGeometry(
+							(Boolean)hashTable.get(DocumentWindowManager.B_SHOW_OLD_GEOM_EDITOR),
+//						((DocumentWindowManager.GeometrySelectionInfo)
+//						hashTable.get(DocumentWindowManager.GEOMETRY_SELECTIONINFO_KEY)).getDocumentCreationInfo(),
+						newGeom, (ApplicationEditor)source);
 				}else{
 					DialogUtils.showErrorDialog(getComponent(), "No Geometry found in edit task");
 				}
 			}
 		};
 
-		createGeometry(new AsynchClientTask[] {editSelectTask});
+		Geometry currentGeometry =
+			findAppComponentsForSimContextGeomViewer((ApplicationEditor)source).getGeometrySummaryViewer().getGeometry();
+		createGeometry(
+				currentGeometry,
+				new AsynchClientTask[] {editSelectTask});
 	}
 	
 	if (source instanceof ApplicationEditor && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_MATH_MODEL)) {
