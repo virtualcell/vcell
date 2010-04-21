@@ -36,6 +36,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeSelectionModel;
 
+import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
+import org.vcell.sybil.models.dublincore.DublinCoreQualifiers;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.gui.DialogUtils;
@@ -260,7 +262,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 			jButtonAdd = new JButton();
 			jButtonAdd.setText(ACTION_ADD);
 			jButtonAdd.addActionListener(this);
-			jButtonAdd.setEnabled(false);
+			//jButtonAdd.setEnabled(false);
 		}
 		return jButtonAdd;
 	}
@@ -457,8 +459,8 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		getJTextFieldTimeUTC().setText(sdf.format(new Date()));
 		if(PopupGenerator.showComponentOKCancelDialog(MIRIAMAnnotationEditor.this, getJPanelTimeUTC(), "Define New Date") == JOptionPane.OK_OPTION){
 			vcMetaData.addDateToAnnotation(getSelectedIdentifiable(),
-					getJTextFieldTimeUTC().getText(),
-					(String)getJComboBoxTimeUTCType().getSelectedItem());
+					(DublinCoreQualifier.DateQualifier)getJComboBoxTimeUTCType().getSelectedItem(),
+					getJTextFieldTimeUTC().getText());
 //			String qualifierName = (String)jComboBoxQualifier.getSelectedItem();
 //			URI qualifierURI = null;
 //			if(qualifierName.endsWith("(bio)")){
@@ -564,6 +566,9 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private JComboBox getJComboBoxTimeUTCType() {
 		if (jComboBoxTimeUTCType == null) {
 			jComboBoxTimeUTCType = new JComboBox();
+			for(DublinCoreQualifier.DateQualifier qualifier : DublinCoreQualifiers.dateQualifiers) {
+				((DefaultComboBoxModel)jComboBoxTimeUTCType.getModel()).addElement(qualifier);
+			}
 		}
 		return jComboBoxTimeUTCType;
 	}

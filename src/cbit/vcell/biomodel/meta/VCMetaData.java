@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.sybil.models.dublincore.DublinCoreManager;
+import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
@@ -61,6 +63,7 @@ public class VCMetaData {
 	public OpenRegistry getRegistry() { return registry; }
 	
 	public VCMetaDataMiriamManager miriamManager = new VCMetaDataMiriamManager(this);
+	public VCMetaDataDublinCoreManager dublinCoreManager = new VCMetaDataDublinCoreManager(this);
 	
 	public boolean compareEquals(VCMetaData vcMetaData) {
 		return getRdfData().isIsomorphicWith(vcMetaData.getRdfData()) && 
@@ -102,8 +105,9 @@ public class VCMetaData {
 		return Collections.unmodifiableSet(entrySet);
 	}
 	
-	public void addDateToAnnotation(Identifiable identifiable, String text, String selectedItem) {
-		// TODO Auto-generated method stub
+	public void addDateToAnnotation(Identifiable identifiable, 
+			DublinCoreQualifier.DateQualifier dateQualifier, String dateString) {
+		dublinCoreManager.addDate(identifiable, dateQualifier, dateString);
 	}
 
 	public void addCreatorToAnnotation(Identifiable identifiable,
@@ -164,6 +168,10 @@ public class VCMetaData {
 	
 	public MiriamManager getMiriamManager(){
 		return miriamManager;
+	}
+	
+	public DublinCoreManager getDublinCoreManager() {
+		return dublinCoreManager;
 	}
 
 }
