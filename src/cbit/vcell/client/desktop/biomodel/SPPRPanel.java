@@ -81,8 +81,8 @@ public class SPPRPanel extends JPanel {
 						return;
 					}
 					// de-activate pop-up menu if simulationContext is spatial or stochastic
-					MathDescription md = SPPRPanel.this.fieldSimulationContext.getMathDescription();
-					if (md != null && !(md.isSpatial() || md.isStoch())) {
+					int dimension = fieldSimulationContext.getGeometry().getDimension();
+					if (dimension == 0 && !fieldSimulationContext.isStoch()) {
 						Object selectedObject = currentTreeSelection.getUserObject();;
 						Point mousePoint = e.getPoint();
 						if (selectedObject instanceof SPPRTreeFolderNode) {

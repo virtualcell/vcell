@@ -154,7 +154,7 @@ public class EditSpeciesDialog extends JDialog {
 		ArrayList<String> pcLinkStrings = new ArrayList<String>();
 		MiriamManager miriamManager = getModel().getVcMetaData().getMiriamManager();
 		Map<MiriamRefGroup,MIRIAMQualifier> refGroups = miriamManager.getAllMiriamRefGroups(getSpeciesContext().getSpecies());
-		if (refGroups.size()>0) {
+		if (refGroups != null && refGroups.size()>0) {
 			for (MiriamRefGroup refGroup : refGroups.keySet()){
 				Set<MiriamResource> miriamResources = refGroup.getMiriamRefs();
 				for (MiriamResource resource : miriamResources){

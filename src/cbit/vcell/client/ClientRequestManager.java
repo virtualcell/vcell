@@ -169,7 +169,7 @@ private void changeGeometry0(final DocumentWindowManager requester, final Simula
 				"Choose new geometry type",
 				new String[] {"Geometry Type"}, 
 				new String[][] {{"Select from BioModels"},{"Select from MathModels"},{"Select from existing Geometries"}}, ListSelectionModel.SINGLE_SELECTION);
-			VCDocumentInfo vcDocumentInfo = selectDocumentFromType(geomType[0]);
+			VCDocumentInfo vcDocumentInfo = selectDocumentFromType(geomType[0], requester);
 			hashTable.put("vcDocumentInfo", vcDocumentInfo);
 		}		
 	};
@@ -845,10 +845,11 @@ private MathModel createDefaultMathModelDocument() throws Exception {
 	return mathModel;
 }
 
-public VCDocumentInfo selectDocumentFromType(int documentType) throws Exception,UserCancelException{
+public VCDocumentInfo selectDocumentFromType(int documentType, DocumentWindowManager requester) throws Exception,UserCancelException{
 	return
-		getMdiManager().getDatabaseWindowManager().selectDocument(documentType, getMdiManager().getFocusedWindowManager());
+		getMdiManager().getDatabaseWindowManager().selectDocument(documentType, requester);
 }
+
 public Geometry getGeometryFromDocumentSelection(VCDocumentInfo vcDocumentInfo,boolean bClearVersion) throws Exception,UserCancelException{
 	Geometry geom = null;
 	if(vcDocumentInfo.getVersionType().equals(VersionableType.BioModelMetaData)/*documentType == VCDocument.BIOMODEL_DOC*/){
