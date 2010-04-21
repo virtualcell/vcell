@@ -200,7 +200,8 @@ void managerIDchanged(String oldID, String newID);
  */
 AsynchClientTask[] newDocument(TopLevelWindowManager requester, VCDocument.DocumentCreationInfo documentCreationInfo);
 
-
+AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager requester,
+		final VCDocument.DocumentCreationInfo documentCreationInfo,AsynchClientTask[] finalTasks,String okButtonText);
 /**
  * Insert the method's description here.
  * Creation date: (5/21/2004 2:38:26 AM)

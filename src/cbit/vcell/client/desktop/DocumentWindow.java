@@ -119,16 +119,9 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjJMenuItemRevert = null;
 	private JSeparator ivjJSeparator8 = null;
 	private JMenuItem ivjJMenuItemOptions = null;
-	private JMenu ivjAnalyticMenu = null;
-	private JMenuItem ivjChooseImageMenuItem = null;
-	private JMenuItem ivjExistingImageMenuItem = null;
-	private JMenu ivjGeometryMenu = null;
-	private JMenu ivjImageMenu = null;
+	private JMenuItem ivjGeometryMenu = null;
 	private JMenuItem ivjMathFromBioMenuItem = null;
 	private JMenu ivjMathMenu = null;
-	private JMenuItem ivjDim1MenuItem = null;
-	private JMenuItem ivjDim2MenuItem = null;
-	private JMenuItem ivjDim3MenuItem = null;
 	private JMenuItem ivjNonSpatialMenuItem = null;
 	private JMenuItem ivjSpatialMenuItem = null;
 	private JMenuItem ivjEdit_Annotation_JMenuItem = null;
@@ -190,20 +183,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC28(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemCompare()) 
 				connEtoC29(e);
-			if (e.getSource() == DocumentWindow.this.getExistingImageMenuItem()) 
-				connEtoC9(e);
-			if (e.getSource() == DocumentWindow.this.getChooseImageMenuItem()) 
-				connEtoC30(e);
 			if (e.getSource() == DocumentWindow.this.getNonSpatialMenuItem()) 
 				connEtoC8(e);
 			if (e.getSource() == DocumentWindow.this.getMathFromBioMenuItem()) 
 				connEtoC31(e);
-			if (e.getSource() == DocumentWindow.this.getDim1MenuItem()) 
-				connEtoC32(e);
-			if (e.getSource() == DocumentWindow.this.getDim2MenuItem()) 
-				connEtoC33(e);
-			if (e.getSource() == DocumentWindow.this.getDim3MenuItem()) 
-				connEtoC34(e);
 			if (e.getSource() == DocumentWindow.this.getSpatialMenuItem()) 
 				connEtoC35(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemExport()) 
@@ -730,26 +713,6 @@ private void connEtoC3(java.awt.event.ActionEvent arg1) {
 	}
 }
 
-
-/**
- * connEtoC30:  (ChooseImageMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.chooseImageFromFile(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC30(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 /**
  * connEtoC31:  (MathFromBioMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.mathFromBioModel(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
@@ -768,66 +731,6 @@ private void connEtoC31(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-/**
- * connEtoC32:  (Dim1RadioButtonMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.newDocument(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC32(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC33:  (Dim2RadioButtonMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.newDocument(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC33(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC34:  (Dim3RadioButtonMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.newDocument(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC34(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC35:  (SpatialMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.newDocument(Ljava.awt.event.ActionEvent;)V)
@@ -1008,25 +911,6 @@ private void connEtoC8(java.awt.event.ActionEvent arg1) {
 }
 
 /**
- * connEtoC9:  (JMenuItemNewGeometry.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
  * Comment
  */
 private void exitApplication() {
@@ -1062,31 +946,6 @@ private javax.swing.JMenuItem getAbout_BoxMenuItem() {
 		}
 	}
 	return ivjAbout_BoxMenuItem;
-}
-
-/**
- * Return the AnalyticMenu property value.
- * @return javax.swing.JMenu
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenu getAnalyticMenu() {
-	if (ivjAnalyticMenu == null) {
-		try {
-			ivjAnalyticMenu = new javax.swing.JMenu();
-			ivjAnalyticMenu.setName("AnalyticMenu");
-			ivjAnalyticMenu.setText("Analytic");
-			ivjAnalyticMenu.add(getDim1MenuItem());
-			ivjAnalyticMenu.add(getDim2MenuItem());
-			ivjAnalyticMenu.add(getDim3MenuItem());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjAnalyticMenu;
 }
 
 /**
@@ -1225,29 +1084,6 @@ private javax.swing.JMenuItem getUpdate_UserMenuItem() {
 }
 
 /**
- * Return the ChooseImageMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getChooseImageMenuItem() {
-	if (ivjChooseImageMenuItem == null) {
-		try {
-			ivjChooseImageMenuItem = new javax.swing.JMenuItem();
-			ivjChooseImageMenuItem.setName("ChooseImageMenuItem");
-			ivjChooseImageMenuItem.setText("Import File ...");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjChooseImageMenuItem;
-}
-
-
-/**
  * Return the CloseMenuItem property value.
  * @return javax.swing.JMenuItem
  */
@@ -1288,76 +1124,6 @@ private JDialog getCompareDialog() {
 	}
 	return compareDialog;
 }
-
-
-/**
- * Return the Dim1MenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getDim1MenuItem() {
-	if (ivjDim1MenuItem == null) {
-		try {
-			ivjDim1MenuItem = new javax.swing.JMenuItem();
-			ivjDim1MenuItem.setName("Dim1MenuItem");
-			ivjDim1MenuItem.setText("1-D");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjDim1MenuItem;
-}
-
-
-/**
- * Return the Dim2MenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getDim2MenuItem() {
-	if (ivjDim2MenuItem == null) {
-		try {
-			ivjDim2MenuItem = new javax.swing.JMenuItem();
-			ivjDim2MenuItem.setName("Dim2MenuItem");
-			ivjDim2MenuItem.setText("2-D");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjDim2MenuItem;
-}
-
-
-/**
- * Return the Dim3MenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getDim3MenuItem() {
-	if (ivjDim3MenuItem == null) {
-		try {
-			ivjDim3MenuItem = new javax.swing.JMenuItem();
-			ivjDim3MenuItem.setName("Dim3MenuItem");
-			ivjDim3MenuItem.setText("3-D");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjDim3MenuItem;
-}
-
 
 /**
  * Return the DocumentWindowJMenuBar property value.
@@ -1410,30 +1176,6 @@ private javax.swing.JMenuItem getEdit_Annotation_JMenuItem() {
 	}
 	return ivjEdit_Annotation_JMenuItem;
 }
-
-
-/**
- * Return the ExistingImageMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getExistingImageMenuItem() {
-	if (ivjExistingImageMenuItem == null) {
-		try {
-			ivjExistingImageMenuItem = new javax.swing.JMenuItem();
-			ivjExistingImageMenuItem.setName("ExistingImageMenuItem");
-			ivjExistingImageMenuItem.setText("Previously Imported ...");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjExistingImageMenuItem;
-}
-
 
 /**
  * Return the ExitMenuItem property value.
@@ -1507,14 +1249,17 @@ private javax.swing.JMenu getFileMenu() {
  * @return javax.swing.JMenu
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenu getGeometryMenu() {
+private javax.swing.JMenuItem getGeometryMenuItem() {
 	if (ivjGeometryMenu == null) {
 		try {
-			ivjGeometryMenu = new javax.swing.JMenu();
+			ivjGeometryMenu = new javax.swing.JMenuItem();
 			ivjGeometryMenu.setName("GeometryMenu");
 			ivjGeometryMenu.setText("Geometry");
-			ivjGeometryMenu.add(getAnalyticMenu());
-			ivjGeometryMenu.add(getImageMenu());
+			ivjGeometryMenu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					DocumentWindow.showGeometryCreationWarning(DocumentWindow.this);
+				}
+			});
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1526,7 +1271,15 @@ private javax.swing.JMenu getGeometryMenu() {
 	return ivjGeometryMenu;
 }
 
+public static void showGeometryCreationWarning(Component parentComponent){
+	DialogUtils.showWarningDialog(parentComponent,
+			"Geometries are now created within BioModels or MathModels."+
+			"  BioModel geometries are created from a Biomodel document within an Application under the 'Specification' tab in the 'Geometry' section"+
+			" by pressing the 'Create New Geometry...' button."+
+			"  MathModel geometries are created from a MathModel document by pressing the 'Geometry Viewer' button"+
+			" and pressing the 'Create New Geometry...' button.");
 
+}
 /**
  * Return the HelpMenu property value.
  * @return javax.swing.JMenu
@@ -1551,31 +1304,6 @@ private javax.swing.JMenu getHelpMenu() {
 	}
 	return ivjHelpMenu;
 }
-
-/**
- * Return the ImageMenu property value.
- * @return javax.swing.JMenu
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenu getImageMenu() {
-	if (ivjImageMenu == null) {
-		try {
-			ivjImageMenu = new javax.swing.JMenu();
-			ivjImageMenu.setName("ImageMenu");
-			ivjImageMenu.setText("From Image");
-			ivjImageMenu.add(getExistingImageMenuItem());
-			ivjImageMenu.add(getChooseImageMenuItem());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjImageMenu;
-}
-
 
 /**
  * Return the JFrameContentPane property value.
@@ -2292,7 +2020,7 @@ private javax.swing.JMenu getNewMenuItem() {
 			ivjNewMenuItem.setText("New");
 			ivjNewMenuItem.add(getJMenuItemNewBioModel());
 			ivjNewMenuItem.add(getMathMenu());
-			ivjNewMenuItem.add(getGeometryMenu());
+			ivjNewMenuItem.add(getGeometryMenuItem());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -3001,13 +2729,8 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemOptions().addActionListener(ivjEventHandler);
 	getJMenuItemRevert().addActionListener(ivjEventHandler);
 	getJMenuItemCompare().addActionListener(ivjEventHandler);
-	getExistingImageMenuItem().addActionListener(ivjEventHandler);
-	getChooseImageMenuItem().addActionListener(ivjEventHandler);
 	getNonSpatialMenuItem().addActionListener(ivjEventHandler);
 	getMathFromBioMenuItem().addActionListener(ivjEventHandler);
-	getDim1MenuItem().addActionListener(ivjEventHandler);
-	getDim2MenuItem().addActionListener(ivjEventHandler);
-	getDim3MenuItem().addActionListener(ivjEventHandler);
 	getSpatialMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemExport().addActionListener(ivjEventHandler);
 	getEdit_Annotation_JMenuItem().addActionListener(ivjEventHandler);
@@ -3106,17 +2829,7 @@ private void newDocument(java.awt.event.ActionEvent actionEvent) {
 		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL));
 	} else if (actionEvent.getActionCommand().equals("From BioModel")) {
 		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_FROMBIOMODELAPP));
-	} else if (actionEvent.getActionCommand().equals("1-D")) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_1D));
-	} else if (actionEvent.getActionCommand().equals("2-D")) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_2D));
-	} else if (actionEvent.getActionCommand().equals("3-D")) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_3D));
-	} else if (actionEvent.getSource() == getExistingImageMenuItem()) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE));
-	} else if (actionEvent.getSource() == getChooseImageMenuItem()) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE));
-	} else {
+	}else {
 		return;
 	}
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();

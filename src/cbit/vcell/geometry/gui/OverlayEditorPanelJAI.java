@@ -2,10 +2,8 @@ package cbit.vcell.geometry.gui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -19,6 +17,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Hashtable;
 import java.util.TreeMap;
@@ -30,7 +30,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -44,11 +43,12 @@ import javax.swing.JSlider;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.undo.AbstractUndoableEdit;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoableEdit;
-import javax.swing.undo.UndoableEditSupport;
+
+import loci.formats.AWTImageTools;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
@@ -57,19 +57,11 @@ import org.vcell.util.Range;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DialogUtils;
 
-
-import loci.formats.AWTImageTools;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.geometry.ROIMultiPaintManager;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.border.LineBorder;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */
