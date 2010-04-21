@@ -9,12 +9,13 @@ import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.vcell.sybil.models.AnnotationQualifier;
 import org.vcell.sybil.rdf.schemas.MIRIAM;
 import org.vcell.sybil.rdf.RDFBox;
 
 import com.hp.hpl.jena.rdf.model.Property;
 
-public class MIRIAMQualifier extends RDFBox.PropertyWrapper {
+public class MIRIAMQualifier extends RDFBox.PropertyWrapper implements AnnotationQualifier {
 	public static final MIRIAMQualifier BIO_encodes = new MIRIAMQualifier(MIRIAM.BioProperties.encodes,"(bio) encodes");
 	public static final MIRIAMQualifier BIO_hasPart = new MIRIAMQualifier(MIRIAM.BioProperties.hasPart,"(bio) hasPart");
 	public static final MIRIAMQualifier BIO_hasProperty = new MIRIAMQualifier(MIRIAM.BioProperties.hasProperty,"(bio) hasProperty");
