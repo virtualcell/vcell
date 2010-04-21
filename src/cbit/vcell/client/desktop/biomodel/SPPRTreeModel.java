@@ -140,7 +140,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 	}
 
 	private void populateTree(int nodeId) {
-		boolean bSelected = false;
+		BioModelNode toBeSelectedNode = null;
 		if (nodeId == ROOT_NODE) {
 			rootNode.removeAllChildren();
 			folderNodes = new BioModelNode[FOLDER_NODE_NAMES.length];
@@ -149,10 +149,16 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 				rootNode.add(folderNodes[i]);
 			}
 		} else {
+			if (!rootNode.isNodeChild(folderNodes[nodeId])) {
+				return;
+			}
 			BioModelNode selectedNode = (BioModelNode)spprTree.getSelectionPath().getLastPathComponent();
-			if (selectedNode.getUserObject() == folderNodes[nodeId].getUserObject() 
-					|| ((BioModelNode)selectedNode.getParent()).getUserObject() == folderNodes[nodeId].getUserObject()) {
-				bSelected = true;
+			for (int i = 0; i < folderNodes.length; i ++) {
+				if (selectedNode.getUserObject() == folderNodes[i].getUserObject() 
+						|| ((BioModelNode)selectedNode.getParent()).getUserObject() == folderNodes[i].getUserObject()) {
+					toBeSelectedNode = folderNodes[i];
+					break;
+				}
 			}
 		}
 		
@@ -211,6 +217,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 				}
 				((SPPRTreeFolderNode)folderNodes[EVENTS_NODE].getUserObject()).setSupported(false);
 			} else {
+				((SPPRTreeFolderNode)folderNodes[EVENTS_NODE].getUserObject()).setSupported(true);
 				folderNodes[EVENTS_NODE].removeAllChildren();
 				if (getSimulationContext().getBioEvents() != null) {
 				    BioEvent[] bioEvents = getSimulationContext().getBioEvents().clone();
@@ -234,8 +241,10 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		} else {
 			nodeStructureChanged(folderNodes[nodeId]); 
 			restoreTreeExpansion();
-			if (bSelected) {
-				spprTree.setSelectionPath(new TreePath(new Object[] {rootNode, folderNodes[nodeId]}));
+			if (toBeSelectedNode != null && rootNode.isNodeChild(toBeSelectedNode)) {
+				spprTree.setSelectionPath(new TreePath(new Object[] {rootNode, toBeSelectedNode}));
+			} else {
+				spprTree.setSelectionRow(STRUCTURE_MAPPING_NODE + 1);
 			}
 		}
 	}

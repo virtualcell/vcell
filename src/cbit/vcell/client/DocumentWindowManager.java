@@ -1005,11 +1005,11 @@ GeometrySelectionInfo selectGeometry() throws Exception,UserCancelException{
 	}else if(geomType[0] == IMAGE_FILE){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
 	}else if(geomType[0] == COPY_FROM_BIOMODEL){
-		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.BIOMODEL_DOC);
+		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.BIOMODEL_DOC, this);
 	}else if(geomType[0] == COPY_FROM_MATHMODEL){
-		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.MATHMODEL_DOC);
+		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.MATHMODEL_DOC, this);
 	}else if(geomType[0] == COPY_FROM_GEOMETRY){
-		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.GEOMETRY_DOC);
+		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.GEOMETRY_DOC, this);
 	}else if(geomType[0] == FROM_SCRATCH){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_SCRATCH);
 	}else{
