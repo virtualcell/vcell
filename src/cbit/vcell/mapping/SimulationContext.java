@@ -1657,8 +1657,12 @@ public void setGeometry(Geometry geometry) throws MappingException {
 		getGeometry().getGeometrySpec().addPropertyChangeListener(this);
 		if (geometry != null && geometry.getDimension() > 0) {
 			try {
-				setBioEvents(null);
-				setAnalysisTasks(null);
+				if (fieldBioEvents != null) {
+					setBioEvents(null);
+				}
+				if (fieldAnalysisTasks != null) {
+					setAnalysisTasks(null);
+				}
 			} catch (PropertyVetoException e) {				
 				e.printStackTrace(System.out);
 				throw new MappingException(e.getMessage());
