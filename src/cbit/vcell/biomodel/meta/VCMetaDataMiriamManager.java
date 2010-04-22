@@ -12,6 +12,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.vcell.sybil.models.AnnotationQualifiers;
+import org.vcell.sybil.models.dublincore.DublinCoreDate;
+import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
+import org.vcell.sybil.models.dublincore.DublinCoreQualifier.DateQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef;
 import org.vcell.sybil.models.miriam.MIRIAMizer;
@@ -30,9 +34,14 @@ import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.Structure;
+import cbit.vcell.xml.gui.MiriamTreeModel;
 
+import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 public class VCMetaDataMiriamManager implements MiriamManager {
 	
@@ -204,6 +213,7 @@ public class VCMetaDataMiriamManager implements MiriamManager {
 			sybilRefGroup.add(sybilMiriamRef);			
 		}
 		invalidateCache(identifiable);
+		vcMetaData.fireAnnotationEventListener(new VCMetaData.AnnotationEvent(identifiable));
 	}
 	
 	public Map<String,DataType> getAllDataTypes() {
@@ -215,13 +225,7 @@ public class VCMetaDataMiriamManager implements MiriamManager {
 		if (miriamTreeMap==null){
 			final IdentifiableProvider identifiableProvider = vcMetaData.getIdentifiableProvider();
 			miriamTreeMap = new TreeMap<Identifiable,Map<MiriamRefGroup,MIRIAMQualifier>>(
-				new Comparator<Identifiable>(){
-					public int compare(Identifiable o1, Identifiable o2) {
-						VCID vcid1 = identifiableProvider.getVCID(o1);
-						VCID vcid2 = identifiableProvider.getVCID(o2);
-						return vcid1.toASCIIString().compareTo(vcid2.toASCIIString());
-					}
-				}
+				new MiriamTreeModel.IdentifiableComparator(identifiableProvider)
 			);
 			Set<Entry> allEntries = vcMetaData.getRegistry().getAllEntries();
 			for (Entry entry : allEntries){
@@ -293,6 +297,7 @@ public class VCMetaDataMiriamManager implements MiriamManager {
 	public void remove(Identifiable identifiable,
 			MIRIAMQualifier miriamQualifier, MiriamRefGroup miriamRefGroup) {
 		throw new RuntimeException("not yet implemented");
+		//vcMetaData.fireAnnotationEventListener(new VCMetaData.AnnotationEvent(identifiable));
 	}
 
 	public Set<URL> getStoredCrossReferencedLinks(MiriamResource miriamResource) {
@@ -303,16 +308,67 @@ public class VCMetaDataMiriamManager implements MiriamManager {
 		return new VCMetaDataMiriamResource(MIRIAMRef.createFromURN(urnString));
 	}
 
-	public void invalidateCache() {
+	private void invalidateCache() {
 		miriamTreeMap = null;
 	}
 
-	public void invalidateCache(Identifiable identifiable) {
+	private void invalidateCache(Identifiable identifiable) {
 		if (miriamTreeMap==null){
 			return; 
 		}else{
 			miriamTreeMap.put(identifiable, queryAllMiriamRefGroups(identifiable));
 		}
+	}
+
+	public void addDate(Identifiable identifiable, DateQualifier dateQualifier,	DublinCoreDate date) {
+		NamedThing sbThing = vcMetaData.getRegistry().getEntry(identifiable).getNamedThing();
+		Model rdfData = vcMetaData.getRdfData();
+		Literal dateLiteral = rdfData.createLiteral(date.getDateString());
+		rdfData.add(sbThing.resource(), dateQualifier.property(), dateLiteral);
+		vcMetaData.fireAnnotationEventListener(new VCMetaData.AnnotationEvent(identifiable));
+	}
+
+	// this is not yet cached.
+	public Map<Identifiable, Map<DateQualifier, Set<DublinCoreDate>>> getDublinCoreDateMap() {
+		Map<Identifiable, Map<DateQualifier, Set<DublinCoreDate>>> map =
+			new HashMap<Identifiable, Map<DateQualifier, Set<DublinCoreDate>>>();
+		Set<Entry> allEntries = vcMetaData.getRegistry().getAllEntries();
+		Model rdfData = vcMetaData.getRdfData();
+		for (Entry entry : allEntries){
+			NamedThing sbThing = entry.getNamedThing();
+			if (sbThing != null){
+				Identifiable identifiable = entry.getIdentifiable();
+				Map<DateQualifier, Set<DublinCoreDate>> qualifierDateMap = new HashMap<DateQualifier, Set<DublinCoreDate>>();
+				for(DublinCoreQualifier.DateQualifier dateQualifier : AnnotationQualifiers.DC_date_all){
+					StmtIterator stmtIter = 
+						rdfData.listStatements(sbThing.resource(), dateQualifier.property(), 
+								(RDFNode) null);
+					Set<DublinCoreDate> dateStrings = new HashSet<DublinCoreDate>();
+					while(stmtIter.hasNext()) {
+						Statement statement = stmtIter.nextStatement();
+						RDFNode dateObject = statement.getObject();
+						if(dateObject instanceof Literal) {
+							Literal dateLiteral = (Literal) dateObject;
+							String dateString = dateLiteral.getLexicalForm();
+							dateStrings.add(new DublinCoreDate(dateString));
+						}
+					}
+					if(!dateStrings.isEmpty()) {
+						qualifierDateMap.put(dateQualifier, dateStrings);
+					}
+				}
+				if(!qualifierDateMap.isEmpty()) {
+					map.put(identifiable, qualifierDateMap);
+				}
+			}
+		}
+
+		return map;
+	}
+
+	public void addCreatorToAnnotation(Identifiable identifiable, String familyName, String givenName, String email, String organization) {
+		throw new RuntimeException("support for 'Creator' annotation not yet implemented");
+		//vcMetaData.fireAnnotationEventListener(new AnnotationEvent(identifiable));
 	}
 
 }

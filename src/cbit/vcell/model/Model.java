@@ -2750,7 +2750,7 @@ public void populateVCMetadata(boolean bMetadataPopulated) {
 			vcMetaData.setFreeTextAnnotation(fieldReactionSteps[i], fieldReactionSteps[i].getAnnotation());
 		}
 		
-		// No annotation in structures for the moment.
+//		// No annotation in structures for the moment.
 //		for (int i = 0; i < fieldStructures.length; i++) {
 //			vcMetaData.setFreeTextAnnotation(fieldStructures[i], fieldStructures[i].getAnnotation());
 //		}

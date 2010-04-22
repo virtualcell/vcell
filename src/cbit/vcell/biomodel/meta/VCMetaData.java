@@ -4,32 +4,23 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.Map.Entry;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.sybil.models.dublincore.DublinCoreManager;
-import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
 import org.vcell.util.document.KeyValue;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Selector;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-
 import cbit.vcell.biomodel.meta.registry.OpenRegistry;
 import cbit.vcell.biomodel.meta.registry.VCellThingFactory;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.xml.XMLTags;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
 
 /**
  * manager for Notes, Annotations, SBOTerms, and all other meta data regarding 
@@ -39,6 +30,18 @@ import cbit.vcell.xml.XMLTags;
  */
 
 public class VCMetaData {
+	public interface AnnotationEventListener {
+		void annotationChanged(AnnotationEvent annotationEvent);
+	}
+	public static class AnnotationEvent extends java.util.EventObject {
+		public AnnotationEvent(Identifiable identifiable) {
+			super(identifiable);
+		}
+		public Identifiable getIdentifiable(){
+			return (Identifiable)getSource();
+		}
+	}
+	private ArrayList<AnnotationEventListener> annotationEventListeners = new ArrayList<AnnotationEventListener>();
 	
 	public static final Namespace nsVCML = Namespace.getNamespace("vcml",XMLTags.VCML_NS);
 
@@ -63,7 +66,6 @@ public class VCMetaData {
 	public OpenRegistry getRegistry() { return registry; }
 	
 	public VCMetaDataMiriamManager miriamManager = new VCMetaDataMiriamManager(this);
-	public VCMetaDataDublinCoreManager dublinCoreManager = new VCMetaDataDublinCoreManager(this);
 	
 	public boolean compareEquals(VCMetaData vcMetaData) {
 		return getRdfData().isIsomorphicWith(vcMetaData.getRdfData()) && 
@@ -105,17 +107,20 @@ public class VCMetaData {
 		return Collections.unmodifiableSet(entrySet);
 	}
 	
-	public void addDateToAnnotation(Identifiable identifiable, 
-			DublinCoreQualifier.DateQualifier dateQualifier, String dateString) {
-		dublinCoreManager.addDate(identifiable, dateQualifier, dateString);
+	public void addAnnotationEventListener(AnnotationEventListener listener){
+		if (annotationEventListeners.contains(listener)){
+			return;
+		}
+		this.annotationEventListeners.add(listener);
 	}
-
-	public void addCreatorToAnnotation(Identifiable identifiable,
-			String familyName, String givenName, String email,
-			String organization) {
-		// TODO Auto-generated method stub
+	public void removeAnnotationEventListener(AnnotationEventListener listener){
+		annotationEventListeners.remove(listener);
 	}
-	
+	void fireAnnotationEventListener(AnnotationEvent annotationEvent){
+		for (AnnotationEventListener listener : annotationEventListeners){
+			listener.annotationChanged(annotationEvent);
+		}
+	}
 	public KeyValue getKey(){
 		return this.keyValue;
 	}
@@ -133,6 +138,7 @@ public class VCMetaData {
 		NonRDFAnnotation nonRDFAnnotation = getNonRDFAnnotation(identifiable);
 		if (nonRDFAnnotation != null){
 			nonRDFAnnotation.setXhtmlNotes(xhtmlNotes);
+			fireAnnotationEventListener(new AnnotationEvent(identifiable));
 		}
 	}
 	
@@ -148,6 +154,7 @@ public class VCMetaData {
 		NonRDFAnnotation nonRDFAnnotation = getNonRDFAnnotation(identifiable);
 		if (nonRDFAnnotation != null){
 			nonRDFAnnotation.setXmlAnnotations(xmlAnnotations);
+			fireAnnotationEventListener(new AnnotationEvent(identifiable));
 		}
 	}
 
@@ -164,14 +171,11 @@ public class VCMetaData {
 		if (nonRDFAnnotation != null){
 			nonRDFAnnotation.setFreeTextAnnotation(text);
 		}
+		fireAnnotationEventListener(new AnnotationEvent(identifiable));
 	}
 	
 	public MiriamManager getMiriamManager(){
 		return miriamManager;
 	}
 	
-	public DublinCoreManager getDublinCoreManager() {
-		return dublinCoreManager;
-	}
-
 }

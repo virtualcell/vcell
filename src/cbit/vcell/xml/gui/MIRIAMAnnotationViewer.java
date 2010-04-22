@@ -59,17 +59,20 @@ public class MIRIAMAnnotationViewer extends JPanel {
 							}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_ADD)){
 								final String ID_CHOICE = "Identifier";
 								final String DATE_CHOICE = "Date";
-								final String CREATOR_CHOICE = "Creator";
+//								final String CREATOR_CHOICE = "Creator";
+//								final String FREETEXT_CHOICE = "Free Text";
 								String choice =
-									(String)DialogUtils.showListDialog(MIRIAMAnnotationViewer.this, new String[] {CREATOR_CHOICE,ID_CHOICE,DATE_CHOICE/*,"Creator","Date"*/}, "Choose Annotation Type");
+									(String)DialogUtils.showListDialog(MIRIAMAnnotationViewer.this, new String[] {/*CREATOR_CHOICE,*/ID_CHOICE,DATE_CHOICE/*,FREETEXT_CHOICE*//*,"Creator","Date"*/}, "Choose Annotation Type");
 								if(choice != null){
 									if(choice.equals(ID_CHOICE)){
 										miriamAnnotationEditor.addIdentifierDialog();
 									}else if(choice.equals(DATE_CHOICE)){
 										miriamAnnotationEditor.addTimeUTCDialog();
-									}else if(choice.equals(CREATOR_CHOICE)){
+									}/*else if(choice.equals(CREATOR_CHOICE)){
 										miriamAnnotationEditor.addCreatorDialog();
-									}
+									}*//*else if (choice.equals(FREETEXT_CHOICE)){
+										miriamAnnotationEditor.addFreeTextDialog();
+									}*/
 									miriamAnnotationEditor.setBioModel(biomodel);
 								}
 							}

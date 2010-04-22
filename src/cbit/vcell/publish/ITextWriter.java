@@ -1057,8 +1057,9 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 		int chapterNum = 1;
 		if (preferences.includePhysio()) {
 			Chapter physioChapter = new Chapter("Physiology For " + name, chapterNum++);
-			introSection = physioChapter.addSection("General Info", physioChapter.numberDepth() + 1);                 
-			writeMetadata(introSection, name, bioModel.getDescription(), userName, "BioModel");
+			introSection = physioChapter.addSection("General Info", physioChapter.numberDepth() + 1);      
+			String freeTextAnnotation = bioModel.getVCMetaData().getFreeTextAnnotation(bioModel);
+			writeMetadata(introSection, name, freeTextAnnotation, userName, "BioModel");
 			writeModel(physioChapter, bioModel.getModel());
 			document.add(physioChapter);
 		}
@@ -1067,8 +1068,9 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 			if (simContexts.length > 0) {
 				Chapter simContextsChapter = new Chapter("Applications For " + name, chapterNum++);
 				if (introSection == null) {
-					introSection = simContextsChapter.addSection("General Info", simContextsChapter.numberDepth() + 1);                      
-					writeMetadata(introSection, name, bioModel.getDescription(), userName, "BioModel");
+					introSection = simContextsChapter.addSection("General Info", simContextsChapter.numberDepth() + 1);         
+					String freeTextAnnotation = bioModel.getVCMetaData().getFreeTextAnnotation(bioModel);
+					writeMetadata(introSection, name, freeTextAnnotation, userName, "BioModel");
 				}
 				for (int i = 0; i < simContexts.length; i++) {
 					writeSimulationContext(simContextsChapter, simContexts[i], preferences);                           

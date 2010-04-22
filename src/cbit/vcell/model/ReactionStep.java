@@ -783,11 +783,9 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
  * @param ps java.io.PrintStream
  * @exception java.lang.Exception The exception description.
  */
+@Deprecated
 public String getAnnotation() {
 	return annotation;
-}
-public void setAnnotation(String annotation) {
-	this.annotation = annotation;
 }
 
 public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {

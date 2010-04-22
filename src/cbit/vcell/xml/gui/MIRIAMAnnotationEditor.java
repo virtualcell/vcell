@@ -30,17 +30,21 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeSelectionModel;
 
+import org.vcell.sybil.models.AnnotationQualifiers;
+import org.vcell.sybil.models.dublincore.DublinCoreDate;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
-import org.vcell.sybil.models.dublincore.DublinCoreQualifiers;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.Identifiable;
@@ -50,7 +54,11 @@ import cbit.vcell.biomodel.meta.MiriamManager.DataType;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelCellRenderer;
+import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel.IdentifiableNode;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 
@@ -166,7 +174,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 					@Override
 					public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
 							boolean leaf, int row, boolean hasFocus) {
-						super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,
+						JLabel component = (JLabel)super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,
 								row, hasFocus);
 						setBackgroundSelectionColor(Color.LIGHT_GRAY);
 						if (value instanceof LinkNode) {
@@ -175,15 +183,15 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 							String link = ln.getLink();
 							String text = ln.getText();
 							if (link != null) {
-								setToolTipText("Double-click to open link");
-								setText("<html><font color='black'>" + predicate + "</font>" + 
+								component.setToolTipText("Double-click to open link");
+								component.setText("<html><font color='black'>" + predicate + "</font>" + 
 								"&nbsp;&nbsp;&nbsp;&nbsp;<a href=" + link + ">" + text + "</a></html>");
 							}else{
-								setText("<html><font color='black'>" + predicate + "</font>" + 
+								component.setText("<html><font color='black'>" + predicate + "</font>" + 
 										"&nbsp;&nbsp;&nbsp;&nbsp;" + text + "</html>");
 							}
 						}
-						return this;
+						return component;
 					}
 				};
 				jTreeMIRIAM.setCellRenderer(dtcr);
@@ -197,10 +205,30 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 								if (link != null) {
 									DialogUtils.browserLauncher(jTreeMIRIAM, link, "failed to launch", false);
 								}
+							}else if(node instanceof BioModelNode &&
+									((BioModelNode)node).getUserObject() instanceof Annotation){
+								BioModelNode bioModelNode = (BioModelNode)node;
+								Annotation oldAnnotation = (Annotation)bioModelNode.getUserObject();
+								IdentifiableNode parentIdentifiableNode = (IdentifiableNode)bioModelNode.getParent();
+								try{
+									String newAnnotation =
+										DialogUtils.showAnnotationDialog(MIRIAMAnnotationEditor.this, oldAnnotation.toString());
+									if (BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
+										vcMetaData.setFreeTextAnnotation(parentIdentifiableNode.getIdentifiable(),newAnnotation);
+									}
+								}catch(UtilCancelException uce){
+									uce.printStackTrace();
+									//ignore
+								}catch(Exception exc){
+									exc.printStackTrace();
+									DialogUtils.showErrorDialog(MIRIAMAnnotationEditor.this, "Error editing Annotation:\n"+exc.getMessage());
+								}
+								
 							}
 						}
 					} 
 				};
+				
 				jTreeMIRIAM.addMouseListener(mouseListener);
 
 			} catch (java.lang.Throwable ivjExc) {
@@ -210,6 +238,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		return jTreeMIRIAM;
 	}
 	
+
 	/**
 	 * This method initializes jButtonEdit
 	 * 	
@@ -426,7 +455,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private DefaultComboBoxModel getQualifierComboBoxModel() {
 		if (qualifierComboBoxModel == null) {
 			qualifierComboBoxModel = new DefaultComboBoxModel();
-			Set<MIRIAMQualifier> allQualifiers = MIRIAMQualifier.all;
+			Set<MIRIAMQualifier> allQualifiers = AnnotationQualifiers.MIRIAM_all;
 			for (MIRIAMQualifier qualifier : allQualifiers){
 				qualifierComboBoxModel.addElement(qualifier);
 			}
@@ -453,14 +482,34 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	}
 
 	
+//	public void addFreeTextDialog() {
+//		Identifiable identifiable = getSelectedIdentifiable();
+//		if (identifiable==null){
+//			DialogUtils.showErrorDialog(this, "no component selected for annotation");
+//			return;
+//		}
+//		String freeTextAnnotation = vcMetaData.getFreeTextAnnotation(identifiable);
+//		if (freeTextAnnotation==null){
+//			freeTextAnnotation = "";
+//		}
+//		try {
+//			freeTextAnnotation = DialogUtils.showInputDialog0(this, "annotation with free text", freeTextAnnotation);
+//			vcMetaData.setFreeTextAnnotation(identifiable, freeTextAnnotation);
+//		} catch (UtilCancelException e1) {
+//			e1.printStackTrace();
+//		}
+//	}
+
+	
 	public void addTimeUTCDialog(){
 		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 		getJTextFieldTimeUTC().setText(sdf.format(new Date()));
 		if(PopupGenerator.showComponentOKCancelDialog(MIRIAMAnnotationEditor.this, getJPanelTimeUTC(), "Define New Date") == JOptionPane.OK_OPTION){
-			vcMetaData.addDateToAnnotation(getSelectedIdentifiable(),
+			String dateString = getJTextFieldTimeUTC().getText();
+			vcMetaData.getMiriamManager().addDate(getSelectedIdentifiable(),
 					(DublinCoreQualifier.DateQualifier)getJComboBoxTimeUTCType().getSelectedItem(),
-					getJTextFieldTimeUTC().getText());
+					new DublinCoreDate(dateString));
 //			String qualifierName = (String)jComboBoxQualifier.getSelectedItem();
 //			URI qualifierURI = null;
 //			if(qualifierName.endsWith("(bio)")){
@@ -486,7 +535,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 			String givenName = getJTextFieldGiven().getText();
 			String email = getJTextFieldEmail().getText();
 			String organization = getJTextFieldOrganization().getText();
-			vcMetaData.addCreatorToAnnotation(identifiable,familyName,givenName,email,organization);
+			vcMetaData.getMiriamManager().addCreatorToAnnotation(identifiable,familyName,givenName,email,organization);
 //			MIRIAMHelper.addCreatorToAnnotation(
 //					getSelectedMIRIAMAnnotatable(),
 //					getJTextFieldFamily().getText(),
@@ -566,7 +615,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private JComboBox getJComboBoxTimeUTCType() {
 		if (jComboBoxTimeUTCType == null) {
 			jComboBoxTimeUTCType = new JComboBox();
-			for(DublinCoreQualifier.DateQualifier qualifier : DublinCoreQualifiers.dateQualifiers) {
+			for(DublinCoreQualifier.DateQualifier qualifier : AnnotationQualifiers.DC_date_all) {
 				((DefaultComboBoxModel)jComboBoxTimeUTCType.getModel()).addElement(qualifier);
 			}
 		}

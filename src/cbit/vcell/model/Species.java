@@ -168,6 +168,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * @return The speciesReference property value.
  * @see #setSpeciesReference
  */
+@Deprecated
 public String getAnnotation() {
 	return fieldAnnotation;
 }
@@ -261,22 +262,6 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
  */
 public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
-}
-
-
-/**
- * Sets the commonName property (java.lang.String) value.
- * @param commonName The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getCommonName
- */
-public void setAnnotation(java.lang.String annotation) /*throws java.beans.PropertyVetoException*/{
-	//if(annotation != null && annotation.length() == 0){
-		//throw new java.beans.PropertyVetoException("Zero length string should be null",new java.beans.PropertyChangeEvent(this,"annotation",this.fieldAnnotation,annotation));
-	//}
-	String oldValue = fieldAnnotation;
-	fieldAnnotation = annotation;
-	firePropertyChange("annotation", oldValue, annotation);
 }
 
 

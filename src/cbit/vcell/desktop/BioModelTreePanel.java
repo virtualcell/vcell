@@ -651,11 +651,12 @@ private void editAnnotation() {
 		}
 			
 		if(parentObject instanceof BioModel){
-			String oldAnnotation = ((BioModel)parentObject).getDescription();
+			BioModel bioModel = (BioModel)parentObject;
+			String oldAnnotation = bioModel.getVCMetaData().getFreeTextAnnotation(bioModel);
 			try{
 				String newAnnotation = DialogUtils.showAnnotationDialog(this, oldAnnotation);
 				if (BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
-					((BioModel)parentObject).setDescription(newAnnotation);
+					bioModel.getVCMetaData().setFreeTextAnnotation(bioModel,newAnnotation);
 				}
 			}catch(UtilCancelException e){
 				//Do Nothing
