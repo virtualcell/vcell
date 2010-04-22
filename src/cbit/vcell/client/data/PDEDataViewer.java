@@ -1645,23 +1645,25 @@ private javax.swing.JButton getJButtonSnapshotROI() {
 					String variableName = getPdeDataContext().getVariableName();
 					double timePoint = getPdeDataContext().getTimePoint();
 					if(snapshotROI.cardinality() == 0){
-						PopupGenerator.showInfoDialog(PDEDataViewer.this, (isVolumeType?"Volume":"Membrane")+" snapshot ROI cannot be updated.\n"+
-								"No data values for variable '"+variableName+"'\n"+
-								"at time '"+timePoint+"' have values equal to 1.0");
+						PopupGenerator.showInfoDialog(PDEDataViewer.this, (isVolumeType?"Volume":"Membrane")+" snapshot ROI cannot be updated."+
+								"  No data values for variable '"+variableName+"'\n"+
+								"at time '"+timePoint+"' have values equal to 1."+
+								"  Add a function that evaluates to 1 at the points to be included in the ROI (user defined funtions can be added from the 'Simulation' panel), "+
+								" choose the new function name in the Simulation results viewer and press 'Snapshot ROI' again.");
+						return;
 					}else{
-						PopupGenerator.showInfoDialog(PDEDataViewer.this, (isVolumeType?"Volume":"Membrane")+" snapshot ROI updated.\n"+
-								"Variable '"+variableName+"' "+
-								"Time '"+timePoint+"'\n"+
-								"Current Snapshot ROI:\n"+
-								"Count = "+snapshotROI.cardinality()+" of "+dataValues.length+"\n"
+						if(isVolumeType){
+							volumeSnapshotROI = snapshotROI;
+							volumeSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
+						}else{
+							membraneSnapshotROI = snapshotROI;
+							membraneSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
+						}
+						PopupGenerator.showInfoDialog(PDEDataViewer.this, (isVolumeType?"Volume":"Membrane")+" Snapshot ROI updated.\n"+
+								"Variable '"+variableName+"' "+"Time '"+timePoint+"'\n"+
+								"ROI includes "+snapshotROI.cardinality()+" points.  (total size= "+dataValues.length+")\n"+
+								"Snapshot ROI is available for use by choosing a variable/function name and pressing 'Statistics'."
 								);						
-					}
-					if(isVolumeType){
-						volumeSnapshotROI = snapshotROI;
-						volumeSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
-					}else{
-						membraneSnapshotROI = snapshotROI;
-						membraneSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
 					}
 				}});
 			// user code begin {1}
