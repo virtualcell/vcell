@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.vcell.sybil.models.dublincore.DublinCoreDate;
+import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 
@@ -28,7 +30,7 @@ public interface MiriamManager {
 		DataType getDataType();  // database (e.g. uniprot).
 		String getIdentifier();
 	}
-	
+		
 	TreeMap<Identifiable,Map<MiriamRefGroup,MIRIAMQualifier>> getMiriamTreeMap();
 	
 	Set<MiriamRefGroup> getMiriamRefGroups(Identifiable identifiable, MIRIAMQualifier miriamQualifier);
@@ -43,10 +45,15 @@ public interface MiriamManager {
 	
 	MiriamResource createMiriamResource(String urnString) throws URNParseFailureException;
 	
-	void invalidateCache();
-	
-	void invalidateCache(Identifiable identifiable);
-	
 	Map<String,DataType> getAllDataTypes();
+	
+	//
+	// Dublin Core Utilities
+	//
+	public void addDate(Identifiable identifiable, DublinCoreQualifier.DateQualifier dateQualifier,	DublinCoreDate dateString);
+	
+	public Map<Identifiable, Map<DublinCoreQualifier.DateQualifier, Set<DublinCoreDate>>> getDublinCoreDateMap();
+
+	void addCreatorToAnnotation(Identifiable identifiable, String familyName, String givenName, String email, String organization);
 
 }

@@ -4,6 +4,11 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
@@ -20,6 +25,7 @@ import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
@@ -323,6 +329,7 @@ public void gatherIssues(Vector<Issue> issueList) {
  * @return The description property value.
  * @see #setDescription
  */
+@Deprecated
 public java.lang.String getDescription() {
 	return fieldDescription;
 }
@@ -688,6 +695,7 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getDescription
  */
+@Deprecated
 public void setDescription(java.lang.String description) throws java.beans.PropertyVetoException {
 	String oldValue = fieldDescription;
 	fireVetoableChange("description", oldValue, description);
@@ -991,6 +999,15 @@ public VCID getVCID(Identifiable identifiable) {
 	}
 
 	return vcid;
+}
+
+public Set<Identifiable> getAllIdentifiables() {
+	HashSet<Identifiable> allIdenfiables = new HashSet<Identifiable>();
+	allIdenfiables.addAll(Arrays.asList(fieldModel.getSpecies()));
+	allIdenfiables.addAll(Arrays.asList(fieldModel.getStructures()));
+	allIdenfiables.addAll(Arrays.asList(fieldModel.getReactionSteps()));
+	allIdenfiables.add(this);
+	return allIdenfiables;
 }
 
 }

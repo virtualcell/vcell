@@ -2904,6 +2904,7 @@ public void setWindowManager(DocumentWindowManager windowManager) {
 	if(windowManager instanceof BioModelWindowManager)
 	{
 		getApplicationMenu().setVisible(true);
+		getEdit_Annotation_JMenuItem().setVisible(false);
 	}
 	else
 	{

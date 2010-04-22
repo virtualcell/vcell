@@ -10,12 +10,14 @@ import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
+import org.vcell.sybil.models.AnnotationQualifier;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.xml.gui.MiriamTreeModel.DateNode;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  
 public class BioModelCellRenderer extends VCellBasicCellRenderer {
@@ -70,7 +72,13 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 	//
 	try {
 
-		if (value instanceof LinkNode){
+		if (value instanceof DateNode){
+			DateNode dateNode = (DateNode)value;
+			AnnotationQualifier qualifier = dateNode.getDateQualifier();
+			String colorString = (sel)?"white":"black";
+			component.setText("<html>"+qualifier.getDescription()+"&nbsp;<font color=\""+colorString+"\">" + dateNode.getDate().getDateString() + "</font></html>");
+			setIcon(fieldTextIcon);
+		} else if (value instanceof LinkNode){
 			LinkNode ln = (LinkNode)value;
 			String link = ln.getLink();
 			String text = ln.getText();

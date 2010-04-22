@@ -8,8 +8,11 @@ import javax.swing.tree.TreeNode;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
+import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
+import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.Simulation;
@@ -19,7 +22,7 @@ import cbit.vcell.xml.gui.MiriamTreeModel;
  * Creation date: (2/14/01 3:33:23 PM)
  * @author: Jim Schaff
  */
-public class BioModelTreeModel extends javax.swing.tree.DefaultTreeModel implements java.beans.PropertyChangeListener {
+public class BioModelTreeModel extends javax.swing.tree.DefaultTreeModel implements java.beans.PropertyChangeListener, AnnotationEventListener {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.biomodel.BioModel fieldBioModel = null;
 /**
@@ -45,7 +48,7 @@ private void addBioModelContents(BioModelNode bioModelNode, BioModel bioModel) {
 //	bioModelNode.add(new BioModelNode(bioModel.getModel(),false));
 
 	//if (bioModel.getDescription() != null && !bioModel.getDescription().equals("")){
-		bioModelNode.add(new BioModelNode(new Annotation(bioModel.getDescription()),false));
+		bioModelNode.add(new BioModelNode(new Annotation(bioModel.getVCMetaData().getFreeTextAnnotation(bioModel)),false));
 	//}
 		Set<MiriamRefGroup> isDescribedByAnnotation = bioModel.getVCMetaData().getMiriamManager().getMiriamRefGroups(bioModel, MIRIAMQualifier.MODEL_isDescribedBy);
 		for (MiriamRefGroup refGroup : isDescribedByAnnotation){
@@ -368,6 +371,7 @@ public void setBioModel(cbit.vcell.biomodel.BioModel bioModel) {
 		for (int i = 0; sims!=null && i < sims.length; i++){
 			sims[i].removePropertyChangeListener(this);
 		}
+		oldValue.getVCMetaData().removeAnnotationEventListener(this);
 	}
 	fieldBioModel = bioModel;
 	if (bioModel!=null){
@@ -381,8 +385,23 @@ public void setBioModel(cbit.vcell.biomodel.BioModel bioModel) {
 		for (int i = 0; sims!=null && i < sims.length; i++){
 			sims[i].addPropertyChangeListener(this);
 		}
+		bioModel.getVCMetaData().addAnnotationEventListener(this);
 	}
 	firePropertyChange("bioModel", oldValue, bioModel);
 	refreshTree();
+}
+public void annotationChanged(AnnotationEvent annotationEvent) {
+	Identifiable identifiable = annotationEvent.getIdentifiable();
+	if (identifiable!=null){
+		BioModelNode scNode = ((BioModelNode)getRoot()).findNodeByUserObject(identifiable);
+		if (scNode!=null){
+			//nodeStructureChanged(scNode);
+			refreshTree();
+		}else{
+			refreshTree();
+		}
+	}else{
+		refreshTree();
+	}
 }
 }
