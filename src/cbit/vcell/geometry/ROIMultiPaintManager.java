@@ -73,8 +73,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	public static final String ENHANCE_AVG_3X3 = "Avg 3x3";
 	public static final String ENHANCE_AVG_5x5 = "Avg 5x5";
 	public static final String ENHANCE_AVG_7x7 = "Avg 7x7";
-	public static final String ENHANCE_MEDIAN_3X3 = "Median 3x3";
-	public static final String ENHANCE_MEDIAN_5x5 = "Median 5x5";
+//	public static final String ENHANCE_AVG_SETSIZE = "Set Size...";
 
 	private static final String RESERVED_NAME_BACKGROUND = "background";
 	private static final boolean B_DISPLAY_ZERO_INDEX_Z = false;
@@ -96,210 +95,52 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		
 	private AsynchProgressPopup progressWaitPopup;
 	
-	
-//	public static abstract class AbstractBufferedImageOp implements BufferedImageOp {
-//
-//	    public BufferedImage createCompatibleDestImage(BufferedImage src, ColorModel dstCM) {
-//	        if ( dstCM == null )
-//	            dstCM = src.getColorModel();
-//	        return new BufferedImage(dstCM, dstCM.createCompatibleWritableRaster(src.getWidth(), src.getHeight()), dstCM.isAlphaPremultiplied(), null);
-//	    }
-//	    
-//	    public Rectangle2D getBounds2D( BufferedImage src ) {
-//	        return new Rectangle(0, 0, src.getWidth(), src.getHeight());
-//	    }
-//	    
-//	    public Point2D getPoint2D( Point2D srcPt, Point2D dstPt ) {
-//	        if ( dstPt == null )
-//	            dstPt = new Point2D.Double();
-//	        dstPt.setLocation( srcPt.getX(), srcPt.getY() );
-//	        return dstPt;
-//	    }
-//
-//	    public RenderingHints getRenderingHints() {
-//	        return null;
-//	    }
-//
-//		/**
-//		 * A convenience method for getting ARGB pixels from an image. This tries to avoid the performance
-//		 * penalty of BufferedImage.getRGB unmanaging the image.
-//		 */
-//		public int[] getRGB( BufferedImage image, int x, int y, int width, int height, int[] pixels ) {
-//			int type = image.getType();
-//			if ( type == BufferedImage.TYPE_INT_ARGB || type == BufferedImage.TYPE_INT_RGB )
-//				return (int [])image.getRaster().getDataElements( x, y, width, height, pixels );
-//			return image.getRGB( x, y, width, height, pixels, 0, width );
-//	    }
-//
-//		/**
-//		 * A convenience method for setting ARGB pixels in an image. This tries to avoid the performance
-//		 * penalty of BufferedImage.setRGB unmanaging the image.
-//		 */
-//		public void setRGB( BufferedImage image, int x, int y, int width, int height, int[] pixels ) {
-//			int type = image.getType();
-//			if ( type == BufferedImage.TYPE_INT_ARGB || type == BufferedImage.TYPE_INT_RGB )
-//				image.getRaster().setDataElements( x, y, width, height, pixels );
-//			else
-//				image.setRGB( x, y, width, height, pixels, 0, width );
-//	    }
-//	}
-//
-//	public static class ImageMath {
-//		public static int clamp(int x, int a, int b) {
-//			return (x < a) ? a : (x > b) ? b : x;
-//		}
-//
-//	}
-//	public static class BoxBlurFilter extends AbstractBufferedImageOp {
-//
-//		private int hRadius;
-//		private int vRadius;
-//		private int iterations = 1;
-//		
-//	    public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
-//	        int width = src.getWidth();
-//	        int height = src.getHeight();
-//
-//	        if ( dst == null )
-//	            dst = createCompatibleDestImage( src, null );
-//
-//	        int[] inPixels = new int[width*height];
-//	        int[] outPixels = new int[width*height];
-//	        getRGB( src, 0, 0, width, height, inPixels );
-//
-//	        for (int i = 0; i < iterations; i++ ) {
-//	            blur( inPixels, outPixels, width, height, hRadius );
-//	            blur( outPixels, inPixels, height, width, vRadius );
-//	        }
-//
-//	        setRGB( dst, 0, 0, width, height, inPixels );
-//	        return dst;
-//	    }
-//
-//	    public static void blur( int[] in, int[] out, int width, int height, int radius ) {
-//	        int widthMinus1 = width-1;
-//	        int tableSize = 2*radius+1;
-//	        int divide[] = new int[256*tableSize];
-//
-//	        for ( int i = 0; i < 256*tableSize; i++ )
-//	            divide[i] = i/tableSize;
-//
-//	        int inIndex = 0;
-//	        
-//	        for ( int y = 0; y < height; y++ ) {
-//	            int outIndex = y;
-//	            int ta = 0, tr = 0, tg = 0, tb = 0;
-//
-//	            for ( int i = -radius; i <= radius; i++ ) {
-//	                int rgb = in[inIndex + ImageMath.clamp(i, 0, width-1)];
-//	                ta += (rgb >> 24) & 0xff;
-//	                tr += (rgb >> 16) & 0xff;
-//	                tg += (rgb >> 8) & 0xff;
-//	                tb += rgb & 0xff;
-//	            }
-//
-//	            for ( int x = 0; x < width; x++ ) {
-//	                out[ outIndex ] = (divide[ta] << 24) | (divide[tr] << 16) | (divide[tg] << 8) | divide[tb];
-//
-//	                int i1 = x+radius+1;
-//	                if ( i1 > widthMinus1 )
-//	                    i1 = widthMinus1;
-//	                int i2 = x-radius;
-//	                if ( i2 < 0 )
-//	                    i2 = 0;
-//	                int rgb1 = in[inIndex+i1];
-//	                int rgb2 = in[inIndex+i2];
-//	                
-//	                ta += ((rgb1 >> 24) & 0xff)-((rgb2 >> 24) & 0xff);
-//	                tr += ((rgb1 & 0xff0000)-(rgb2 & 0xff0000)) >> 16;
-//	                tg += ((rgb1 & 0xff00)-(rgb2 & 0xff00)) >> 8;
-//	                tb += (rgb1 & 0xff)-(rgb2 & 0xff);
-//	                outIndex += height;
-//	            }
-//	            inIndex += width;
-//	        }
-//	    }
-//	        
-//	    public static void blur( short[] ins, short[] outs, int width, int height, int radius ) {
-//	        int widthMinus1 = width-1;
-//	        int tableSize = 2*radius+1;
-//	        int divide[] = new int[256*tableSize];
-//
-//	        for ( int i = 0; i < 256*tableSize; i++ )
-//	            divide[i] = i/tableSize;
-//
-//	        int inIndex = 0;
-//	        
-//	        for ( int y = 0; y < height; y++ ) {
-//	            int outIndex = y;
-//	            int ta = 0, tr = 0, tg = 0, tb = 0;
-//
-//	            for ( int i = -radius; i <= radius; i++ ) {
-//	                int rgb = ins[inIndex + ImageMath.clamp(i, 0, width-1)]&0x00FF;
-//	                ta += (rgb >> 24) & 0xff;
-//	                tr += (rgb >> 16) & 0xff;
-//	                tg += (rgb >> 8) & 0xff;
-//	                tb += rgb & 0xff;
-//	            }
-//
-//	            for ( int x = 0; x < width; x++ ) {
-//	                outs[ outIndex ] = (short)((divide[ta] << 24) | (divide[tr] << 16) | (divide[tg] << 8) | divide[tb]);
-//
-//	                int i1 = x+radius+1;
-//	                if ( i1 > widthMinus1 )
-//	                    i1 = widthMinus1;
-//	                int i2 = x-radius;
-//	                if ( i2 < 0 )
-//	                    i2 = 0;
-//	                int rgb1 = ins[inIndex+i1]&0x000FF;
-//	                int rgb2 = ins[inIndex+i2]&0x000FF;
-//	                
-//	                ta += ((rgb1 >> 24) & 0xff)-((rgb2 >> 24) & 0xff);
-//	                tr += ((rgb1 & 0xff0000)-(rgb2 & 0xff0000)) >> 16;
-//	                tg += ((rgb1 & 0xff00)-(rgb2 & 0xff00)) >> 8;
-//	                tb += (rgb1 & 0xff)-(rgb2 & 0xff);
-//	                outIndex += height;
-//	            }
-//	            inIndex += width;
-//	        }
-//	    }
-//
-//		public void setHRadius(int hRadius) {
-//			this.hRadius = hRadius;
-//		}
-//		
-//		public int getHRadius() {
-//			return hRadius;
-//		}
-//		
-//		public void setVRadius(int vRadius) {
-//			this.vRadius = vRadius;
-//		}
-//		
-//		public int getVRadius() {
-//			return vRadius;
-//		}
-//		
-//		public void setRadius(int radius) {
-//			this.hRadius = this.vRadius = radius;
-//		}
-//		
-//		public int getRadius() {
-//			return hRadius;
-//		}
-//		
-//		public void setIterations(int iterations) {
-//			this.iterations = iterations;
-//		}
-//		
-//		public int getIterations() {
-//			return iterations;
-//		}
-//		
-//		public String toString() {
-//			return "Blur/Box Blur...";
-//		}
-//	}
+	public static class BoxBlurFilter{
+		
+		public static int clamp(int x, int a, int b) {
+			return (x < a) ? a : (x > b) ? b : x;
+		}
+		public static int[] createDivideTable(int radius){
+	        int tableSize = 2*radius+1;
+	        int divide[] = new int[256*256*tableSize];
+	        for ( int i = 0; i < 256*256*tableSize; i++ ){
+	            divide[i] = i/tableSize;
+	        }
+	        return divide;
+		}
+	    public static void blur( short[] ins, short[] outs, int width, int height, int radius,int[] divideTable) {
+
+	        int widthMinus1 = width-1;
+
+	        int inIndex = 0;
+	        
+	        for ( int y = 0; y < height; y++ ) {
+	            int outIndex = y;
+
+	            int shortSum = 0;
+	            for ( int i = -radius; i <= radius; i++ ) {
+	            	shortSum+= ins[inIndex + clamp(i, 0, width-1)]&0x0000FFFF;
+	            }
+
+	            for ( int x = 0; x < width; x++ ) {
+	                outs[ outIndex ] = (short)divideTable[shortSum];
+
+	                int i1 = x+radius+1;
+	                if ( i1 > widthMinus1 )
+	                    i1 = widthMinus1;
+	                int i2 = x-radius;
+	                if ( i2 < 0 )
+	                    i2 = 0;
+	                int val1 = ins[inIndex+i1]&0x0000FFFF;
+	                int val2 = ins[inIndex+i2]&0x0000FFFF;
+	                
+	                shortSum+= (val1-val2);
+	                outIndex += height;
+	            }
+	            inIndex += width;
+	        }
+	    }
+	}
 
 	
 	
@@ -539,7 +380,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 	}
 	private ImageDataset getImageDataSet(){
-		if(enhancedImageDataset != null/* && enhancedImageDataset != initImageDataSet*/){
+		if(enhancedImageDataset != null){
 			return enhancedImageDataset;
 		}
 		return initImageDataSet;
@@ -1529,7 +1370,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						public boolean isInterrupted() {return getClientTaskStatusSupport().isInterrupted();}
 						public int getProgress() {return 0;}
 					};
-				enhancedImageDataset = ROIMultiPaintManager.smoothImageDataset(initImageDataSet,enhanceImageOp,localClientTaskStatusSupport);
+				enhancedImageDataset = smoothImageDataset(initImageDataSet,enhanceImageOp,localClientTaskStatusSupport);
 				if(getClientTaskStatusSupport().isInterrupted()){
 					throw UserCancelException.CANCEL_GENERIC;
 				}
@@ -1552,24 +1393,27 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				new AsynchClientTask[] {smoothTask,updateDisplayTask},
 				true, true, null, true);
 	}
-	public static ImageDataset smoothImageDataset(ImageDataset origImageDataset,String smoothType,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
+	public ImageDataset smoothImageDataset(ImageDataset origImageDataset,String smoothType,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
 		if(smoothType.equals(ROIMultiPaintManager.ENHANCE_NONE)){
 			return null;//origImageDataset;
 		}
 		
 		UShortImage[] smoothedZSections = new UShortImage[origImageDataset.getISize().getZ()];
-		int radius =
-			(smoothType.equals(ENHANCE_AVG_3X3)?1:0)+
+		int radius = 0;
+//		if(smoothType.equals(ENHANCE_AVG_SETSIZE)){
+//			try{
+//				radius = Integer.parseInt(DialogUtils.showInputDialog0(overlayEditorPanelJAI, "Enter integer smoothing radius", 9+""));
+//			}catch(UtilCancelException uce){
+//				return origImageDataset;
+//			}
+//		}else{
+			radius = (smoothType.equals(ENHANCE_AVG_3X3)?1:0)+
 			(smoothType.equals(ENHANCE_AVG_5x5)?2:0)+
-			(smoothType.equals(ENHANCE_AVG_7x7)?3:0)+
-			(smoothType.equals(ENHANCE_MEDIAN_3X3)?1:0)+
-			(smoothType.equals(ENHANCE_MEDIAN_5x5)?2:0);
-		int accum = 0;
-		int convSize = (radius*2+1)*(radius*2+1);
-		int[] convPixels = new int[convSize];
-//		short[] intermediateArr = new short[origImageDataset.getAllImages()[0].getPixels().length];
+			(smoothType.equals(ENHANCE_AVG_7x7)?3:0);
+//		}
+		int[] divideTable = BoxBlurFilter.createDivideTable(radius);
+		short[] intermediateArr = new short[origImageDataset.getAllImages()[0].getPixels().length];
 		for (int z = 0; z < origImageDataset.getAllImages().length; z++) {
-			int pixelIndex = 0;
 			smoothedZSections[z] =
 				new UShortImage(new short[origImageDataset.getISize().getX()*origImageDataset.getISize().getY()],
 						ROIMultiPaintManager.DEFAULT_ORIGIN,ROIMultiPaintManager.DEFAULT_EXTENT,
@@ -1577,41 +1421,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			short[] enhancedData = smoothedZSections[z].getPixels();
 			short[] roiSourceData = origImageDataset.getAllImages()[z].getPixels();
 			
-//			BoxBlurFilter.blur(roiSourceData, intermediateArr, origImageDataset.getISize().getX(), origImageDataset.getISize().getY(), radius);
-//			BoxBlurFilter.blur(intermediateArr, enhancedData, origImageDataset.getISize().getX(), origImageDataset.getISize().getY(), radius);
-//			if(true){continue;}
-			for (int y = 0; y < origImageDataset.getISize().getY(); y++) {
-				int yoffset = y*origImageDataset.getISize().getX();
-				for (int x = 0; x < origImageDataset.getISize().getX(); x++) {
-					accum = 0;
-					for (int xbox = -radius; xbox <= radius; xbox++) {
-						for (int ybox = -radius; ybox <= radius; ybox++) {
-							if(x+xbox >= 0 && x+xbox < origImageDataset.getISize().getX() &&
-								y+ybox >= 0 && y+ybox < origImageDataset.getISize().getY()){
-								convPixels[accum]= 0x0000FFFF&
-									roiSourceData[yoffset+x+xbox+(ybox*origImageDataset.getISize().getX())];
-							}else{
-								convPixels[accum]= 0x0000FFFF&roiSourceData[yoffset+x];
-							}
-							accum++;
-						}
-
-					}
-					if(smoothType.equals(ENHANCE_AVG_3X3) ||
-							smoothType.equals(ENHANCE_AVG_5x5) ||
-							smoothType.equals(ENHANCE_AVG_7x7)){
-						accum = 0;
-						for (int i = 0; i < convPixels.length; i++) {
-							accum+= convPixels[i];
-						}
-					}else{
-						Arrays.sort(convPixels);
-						accum = convPixels[convSize/2]*convSize;
-					}
-					enhancedData[pixelIndex]|= ((accum/(convSize))&0x0000FFFF);
-					pixelIndex++;
-				}
-			}
+			BoxBlurFilter.blur(roiSourceData, intermediateArr, origImageDataset.getISize().getX(), origImageDataset.getISize().getY(), radius,divideTable);
+			BoxBlurFilter.blur(intermediateArr, enhancedData, origImageDataset.getISize().getY(), origImageDataset.getISize().getX(), radius,divideTable);
 			if(clientTaskStatusSupport != null){
 				if(clientTaskStatusSupport.isInterrupted()){
 					return null;
@@ -2083,8 +1894,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						mergedCrop3D.low.y+cropRectangle3D.low.y,
 						mergedCrop3D.low.z+cropRectangle3D.low.z,
 						cropRectangle3D.width,cropRectangle3D.height,cropRectangle3D.depth);
-				
-				enhancedImageDataset = ROIMultiPaintManager.smoothImageDataset(initImageDataSet, enhanceImageOp,null);
+				if(!ROIMultiPaintManager.ENHANCE_NONE.equals(enhanceImageOp)){
+					getClientTaskStatusSupport().setMessage("smoothing...");
+				}
+				enhancedImageDataset = smoothImageDataset(initImageDataSet, enhanceImageOp,null);
 				hashTable.put(HISTOGRAM_DATA,getCondensedBins(getImageDataSet()));
 			}
 		};

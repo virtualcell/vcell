@@ -866,21 +866,21 @@ public class OverlayEditorPanelJAI extends JPanel{
 					});
 					smoothingJMenu.add(avg7x7);
 	
-					JMenuItem med3x3 = new JMenuItem(ROIMultiPaintManager.ENHANCE_MEDIAN_3X3);
-					med3x3.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY,null,ROIMultiPaintManager.ENHANCE_MEDIAN_3X3);
-						}
-					});
-					smoothingJMenu.add(med3x3);
-	
-					JMenuItem med5x5 = new JMenuItem(ROIMultiPaintManager.ENHANCE_MEDIAN_5x5);
-					med5x5.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY,null,ROIMultiPaintManager.ENHANCE_MEDIAN_5x5);
-						}
-					});
-					smoothingJMenu.add(med5x5);
+//					JMenuItem med3x3 = new JMenuItem(ROIMultiPaintManager.ENHANCE_MEDIAN_3X3);
+//					med3x3.addActionListener(new ActionListener() {
+//						public void actionPerformed(ActionEvent e) {
+//							firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY,null,ROIMultiPaintManager.ENHANCE_MEDIAN_3X3);
+//						}
+//					});
+//					smoothingJMenu.add(med3x3);
+//	
+//					JMenuItem med5x5 = new JMenuItem(ROIMultiPaintManager.ENHANCE_MEDIAN_5x5);
+//					med5x5.addActionListener(new ActionListener() {
+//						public void actionPerformed(ActionEvent e) {
+//							firePropertyChange(FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY,null,ROIMultiPaintManager.ENHANCE_MEDIAN_5x5);
+//						}
+//					});
+//					smoothingJMenu.add(med5x5);
 
 				jp.add(smoothingJMenu);
 				
