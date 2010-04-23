@@ -1,6 +1,5 @@
 package cbit.vcell.xml.gui;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -12,7 +11,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
@@ -27,21 +25,24 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeSelectionModel;
+import javax.swing.tree.TreePath;
 
 import org.vcell.sybil.models.AnnotationQualifiers;
 import org.vcell.sybil.models.dublincore.DublinCoreDate;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
-import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
@@ -57,12 +58,10 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelCellRenderer;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel.IdentifiableNode;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 
-public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
+public class MIRIAMAnnotationEditor extends JPanel{
 
 	private JTree jTreeMIRIAM = null;
 	private JScrollPane jScrollPane = null;
@@ -109,7 +108,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		initialize();
 	}
 
-	public void actionPerformed(ActionEvent e) {
+	private void fireActionPerformed(ActionEvent e) {
 		for (int i = 0; i < actionListenerV.size(); i++) {
 			actionListenerV.get(i).actionPerformed(e);
 		}
@@ -140,6 +139,15 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
         this.setSize(new Dimension(627, 333));
         this.add(getJScrollPane(), gridBagConstraints1);
         this.add(getJPanel(), gridBagConstraints5);
+        getJButtonAdd().setEnabled(false);
+        getJTreeMIRIAM().addTreeSelectionListener(new TreeSelectionListener() {
+			public void valueChanged(TreeSelectionEvent e) {
+				getJButtonAdd().setEnabled(
+						((JTree)e.getSource()).getSelectionPath() != null &&
+						((JTree)e.getSource()).getSelectionPath().getLastPathComponent() instanceof IdentifiableNode);
+//				getJButtonAdd().setEnabled(e.getPath().getLastPathComponent() instanceof IdentifiableNode);
+			}
+		});
 	}
 
 	/**
@@ -174,22 +182,14 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 					@Override
 					public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
 							boolean leaf, int row, boolean hasFocus) {
+//						System.out.println(MIRIAMAnnotationEditor.this.getClass().getName()+".getJTreeMiriam():BioModelCellRenderer  "+value.getClass()+" "+
+//								(value instanceof cbit.vcell.desktop.BioModelNode?
+//										((cbit.vcell.desktop.BioModelNode)value).getUserObject().getClass():""));
 						JLabel component = (JLabel)super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,
 								row, hasFocus);
-						setBackgroundSelectionColor(Color.LIGHT_GRAY);
-						if (value instanceof LinkNode) {
-							LinkNode ln = (LinkNode)value;
-							String predicate = ln.getMiriamQualifier().getDescription();
-							String link = ln.getLink();
-							String text = ln.getText();
-							if (link != null) {
-								component.setToolTipText("Double-click to open link");
-								component.setText("<html><font color='black'>" + predicate + "</font>" + 
-								"&nbsp;&nbsp;&nbsp;&nbsp;<a href=" + link + ">" + text + "</a></html>");
-							}else{
-								component.setText("<html><font color='black'>" + predicate + "</font>" + 
-										"&nbsp;&nbsp;&nbsp;&nbsp;" + text + "</html>");
-							}
+						if(value instanceof BioModelNode &&
+								((cbit.vcell.desktop.BioModelNode)value).getUserObject() instanceof Annotation){
+							component.setToolTipText("Freehand Text (Double-click to edit)");
 						}
 						return component;
 					}
@@ -197,32 +197,33 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 				jTreeMIRIAM.setCellRenderer(dtcr);
 				
 				MouseListener mouseListener = new MouseAdapter() {
+					
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						// TODO Auto-generated method stub
+						super.mouseClicked(e);
+						TreePath closestMousePath =jTreeMIRIAM.getClosestPathForLocation(e.getPoint().x, e.getPoint().y);
+						showPopup(e,closestMousePath);
+					}
+
+					@Override
+					public void mouseReleased(MouseEvent e) {
+						// TODO Auto-generated method stub
+						super.mouseReleased(e);
+						TreePath closestMousePath =jTreeMIRIAM.getClosestPathForLocation(e.getPoint().x, e.getPoint().y);
+						showPopup(e,closestMousePath);
+					}
+
 					public void mousePressed(MouseEvent e) {
+						TreePath closestMousePath =jTreeMIRIAM.getClosestPathForLocation(e.getPoint().x, e.getPoint().y);
+						jTreeMIRIAM.setSelectionPath(closestMousePath);
+						showPopup(e,closestMousePath);
 						if(e.getClickCount() == 2) {
-							Object node = jTreeMIRIAM.getLastSelectedPathComponent();
+							DefaultMutableTreeNode node = (DefaultMutableTreeNode)jTreeMIRIAM.getLastSelectedPathComponent();
 							if (node instanceof LinkNode) {
-								String link = ((LinkNode)node).getLink();
-								if (link != null) {
-									DialogUtils.browserLauncher(jTreeMIRIAM, link, "failed to launch", false);
-								}
-							}else if(node instanceof BioModelNode &&
-									((BioModelNode)node).getUserObject() instanceof Annotation){
-								BioModelNode bioModelNode = (BioModelNode)node;
-								Annotation oldAnnotation = (Annotation)bioModelNode.getUserObject();
-								IdentifiableNode parentIdentifiableNode = (IdentifiableNode)bioModelNode.getParent();
-								try{
-									String newAnnotation =
-										DialogUtils.showAnnotationDialog(MIRIAMAnnotationEditor.this, oldAnnotation.toString());
-									if (BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
-										vcMetaData.setFreeTextAnnotation(parentIdentifiableNode.getIdentifiable(),newAnnotation);
-									}
-								}catch(UtilCancelException uce){
-									uce.printStackTrace();
-									//ignore
-								}catch(Exception exc){
-									exc.printStackTrace();
-									DialogUtils.showErrorDialog(MIRIAMAnnotationEditor.this, "Error editing Annotation:\n"+exc.getMessage());
-								}
+								showBrowseToLink((LinkNode)node);
+							}else if(isNodeFreeHandTextEditable(node)){
+								showEditFreehandText(node);
 								
 							}
 						}
@@ -238,6 +239,141 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		return jTreeMIRIAM;
 	}
 	
+	private void showBrowseToLink(LinkNode linkNode){
+		String link = linkNode.getLink();
+		if (link != null) {
+			DialogUtils.browserLauncher(jTreeMIRIAM, link, "failed to launch", false);
+		}else{
+			DialogUtils.showWarningDialog(this, "No Web-site link available");
+		}
+
+	}
+	private void showEditFreehandText(DefaultMutableTreeNode node){
+		final IdentifiableNode parentIdentifiableNode = (IdentifiableNode)((BioModelNode)node).getParent();
+		final Annotation oldAnnotation = (Annotation)((BioModelNode)node).getUserObject();
+		try{
+			String newAnnotation =
+				DialogUtils.showAnnotationDialog(MIRIAMAnnotationEditor.this, oldAnnotation.toString());
+			if (BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
+				vcMetaData.setFreeTextAnnotation(parentIdentifiableNode.getIdentifiable(),newAnnotation);
+			}
+		}catch(UtilCancelException uce){
+			//ignore
+		}catch(Exception exc){
+			exc.printStackTrace();
+			DialogUtils.showErrorDialog(MIRIAMAnnotationEditor.this, "Error editing Annotation:\n"+exc.getMessage());
+		}
+	}
+	private boolean isNodeFreeHandTextEditable(DefaultMutableTreeNode node){
+		if(node instanceof BioModelNode &&
+				((BioModelNode)node).getParent() instanceof IdentifiableNode &&
+				((BioModelNode)node).getUserObject() instanceof Annotation){
+			return true;
+		}
+		return false;
+	}
+	private void showPopup(MouseEvent mouseEvent,final TreePath closestMousePath){
+		final DefaultMutableTreeNode lastPathComp = ((DefaultMutableTreeNode)closestMousePath.getLastPathComponent());
+		if(mouseEvent.isPopupTrigger()){
+			JPopupMenu jpop = new JPopupMenu();
+			if(lastPathComp.getParent() == null){
+				JMenuItem expandJMenuItem  = new JMenuItem("Expand all");
+				expandJMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						expandJTreeNode(jTreeMIRIAM, lastPathComp, 0, 3);
+					}
+				});
+				jpop.add(expandJMenuItem);
+			}
+			if(lastPathComp instanceof IdentifiableNode){
+				JMenuItem addAnnotationElementMenuItem = new JMenuItem("Add Annotation element");
+				addAnnotationElementMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						fireActionPerformed(new ActionEvent(MIRIAMAnnotationEditor.this, 0, MIRIAMAnnotationEditor.ACTION_ADD));
+					}
+				});
+				jpop.add(addAnnotationElementMenuItem);
+//				JMenuItem addIDentifierJMenuItem = new JMenuItem("Add Identifier...");
+//				addIDentifierJMenuItem.addActionListener(new ActionListener() {
+//					public void actionPerformed(ActionEvent e) {
+//						addIdentifierDialog();
+//					}
+//				});
+//				jpop.add(addIDentifierJMenuItem);
+//				
+//				JMenuItem addIDateJMenuItem = new JMenuItem("Add Date...");
+//				addIDateJMenuItem.addActionListener(new ActionListener() {
+//					public void actionPerformed(ActionEvent e) {
+//						addTimeUTCDialog();
+//					}
+//				});
+//				jpop.add(addIDateJMenuItem);
+			}else if(isNodeFreeHandTextEditable(lastPathComp)){
+				JMenuItem editFreehandJMenuItem = new JMenuItem("Edit freehand text");
+				editFreehandJMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						showEditFreehandText(lastPathComp);
+					}
+				});
+				jpop.add(editFreehandJMenuItem);
+				
+			}else if(lastPathComp instanceof LinkNode){
+				JMenuItem showLinkJMenuItem = new JMenuItem("Show link in web browser");
+				showLinkJMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						showBrowseToLink((LinkNode)lastPathComp);
+					}
+				});
+				jpop.add(showLinkJMenuItem);
+				
+			}
+			
+			jpop.show(jTreeMIRIAM, mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+		}
+	}
+
+	/**
+	 * Expands a given node in a JTree.
+	 *
+	 * @param tree      The JTree to expand.
+	 * @param model     The TreeModel for tree.     
+	 * @param node      The node within tree to expand.     
+	 * @param row       The displayed row in tree that represents
+	 *                  node.     
+	 * @param depth     The depth to which the tree should be expanded. 
+	 *                  Zero will just expand node, a negative
+	 *                  value will fully expand the tree, and a positive
+	 *                  value will recursively expand the tree to that
+	 *                  depth relative to node.
+	 */
+	public static int expandJTreeNode (javax.swing.JTree tree,
+	                                   Object node, int row, int depth)
+	{
+	    if (node != null  &&  !tree.getModel().isLeaf(node)) {
+	        tree.expandRow(row);
+	        if (depth != 0)
+	        {
+	            for (int index = 0;
+	                 row + 1 < tree.getRowCount()  &&  
+	                            index < tree.getModel().getChildCount(node);
+	                 index++)
+	            {
+	                row++;
+	                Object child = tree.getModel().getChild(node, index);
+	                if (child == null)
+	                    break;
+	                javax.swing.tree.TreePath path;
+	                while ((path = tree.getPathForRow(row)) != null  &&
+	                        path.getLastPathComponent() != child)
+	                    row++;
+	                if (path == null)
+	                    break;
+	                row = expandJTreeNode(tree, child, row, depth - 1);
+	            }
+	        }
+	    }
+	    return row;
+	}
 
 	/**
 	 * This method initializes jButtonEdit
@@ -249,7 +385,12 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 			jButtonEdit = new JButton();
 			jButtonEdit.setText(ACTION_EDIT);
 			jButtonEdit.setEnabled(false);
-			jButtonEdit.addActionListener(this);
+			jButtonEdit.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					fireActionPerformed(e);
+				}
+			});
+			jButtonEdit.setVisible(false);//To be implemented
 		}
 		return jButtonEdit;
 	}
@@ -290,8 +431,11 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		if (jButtonAdd == null) {
 			jButtonAdd = new JButton();
 			jButtonAdd.setText(ACTION_ADD);
-			jButtonAdd.addActionListener(this);
-			//jButtonAdd.setEnabled(false);
+			jButtonAdd.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					fireActionPerformed(e);
+				}
+			});
 		}
 		return jButtonAdd;
 	}
@@ -305,8 +449,12 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		if (jButtonDelete == null) {
 			jButtonDelete = new JButton();
 			jButtonDelete.setText(ACTION_DELETE);
-			jButtonDelete.addActionListener(this);
-			jButtonDelete.setEnabled(false);
+			jButtonDelete.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					fireActionPerformed(e);
+				}
+			});
+			jButtonDelete.setVisible(false);//to be implemented
 		}
 		return jButtonDelete;
 	}
@@ -464,7 +612,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	}
 
 
-	public void addIdentifierDialog() throws URISyntaxException{
+	public void addIdentifierDialog(){
 		if(PopupGenerator.showComponentOKCancelDialog(MIRIAMAnnotationEditor.this, getJPanelNewIdentifier(), "Define New Formal Identifier") == JOptionPane.OK_OPTION){
 			MIRIAMQualifier qualifier = (MIRIAMQualifier)jComboBoxQualifier.getSelectedItem();
 			MiriamManager.DataType objectNamespace = (MiriamManager.DataType)jComboBoxURI.getSelectedItem();
@@ -474,9 +622,9 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 			try {
 				miriamResources.add(miriamManager.createMiriamResource(objectNamespace.getBaseURN()+":"+objectID));
 				miriamManager.addMiriamRefGroup(getSelectedIdentifiable(), qualifier, miriamResources);
-			} catch (URNParseFailureException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
-				DialogUtils.showErrorDialog(this,e.getMessage());
+				DialogUtils.showErrorDialog(this,"Add Identifier failed:\n"+e.getMessage());
 			}
 		}
 	}

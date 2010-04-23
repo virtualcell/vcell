@@ -3,12 +3,8 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.Color;
-import java.awt.Component;
-
 import javax.swing.JLabel;
 import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeCellRenderer;
 
 import org.vcell.sybil.models.AnnotationQualifier;
 import org.vcell.util.document.BioModelChildSummary;
@@ -77,7 +73,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			AnnotationQualifier qualifier = dateNode.getDateQualifier();
 			String colorString = (sel)?"white":"black";
 			component.setText("<html>"+qualifier.getDescription()+"&nbsp;<font color=\""+colorString+"\">" + dateNode.getDate().getDateString() + "</font></html>");
-			setIcon(fieldTextIcon);
+//			setIcon(fieldTextIcon);
 		} else if (value instanceof LinkNode){
 			LinkNode ln = (LinkNode)value;
 			String link = ln.getLink();
@@ -91,7 +87,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				String colorString = (sel)?"white":"black";
 				component.setText("<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\">" + text + "</font></html>");
 			}
-			setIcon(fieldTextIcon);
+//			setIcon(fieldTextIcon);
 
 		} else if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
