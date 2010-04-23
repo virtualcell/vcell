@@ -212,6 +212,8 @@ private GeometryViewer getGeometryViewer() {
 }
 
 
+public static final String REPLACE_GEOMETRY_LABEL = "Select different geometry...";
+public static final String NEW_GEOMETRY_LABEL = "Create New Geometry...";
 /**
  * Return the JButton1 property value.
  * @return javax.swing.JButton
@@ -222,7 +224,7 @@ private javax.swing.JButton getJButtonReplace() {
 		try {
 			ivjJButtonReplace = new javax.swing.JButton();
 			ivjJButtonReplace.setName("JButton1");
-			ivjJButtonReplace.setText("Replace Geometry...");
+			ivjJButtonReplace.setText(REPLACE_GEOMETRY_LABEL);
 			ivjJButtonReplace.setActionCommand(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY);
 			// user code begin {1}
 			// user code end
@@ -246,7 +248,7 @@ private javax.swing.JButton getJButtonCreateGeometry() {
 		try {
 			ivjJButtonCreateGeometry = new javax.swing.JButton();
 			ivjJButtonCreateGeometry.setName("JButtonCreateGeometry");
-			ivjJButtonCreateGeometry.setText("Create New Geometry...");
+			ivjJButtonCreateGeometry.setText(NEW_GEOMETRY_LABEL);
 			ivjJButtonCreateGeometry.setActionCommand(GuiConstants.ACTIONCMD_CREATE_GEOMETRY);
 			// user code begin {1}
 			// user code end
