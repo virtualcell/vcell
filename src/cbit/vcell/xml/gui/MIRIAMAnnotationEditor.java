@@ -188,8 +188,12 @@ public class MIRIAMAnnotationEditor extends JPanel{
 						JLabel component = (JLabel)super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,
 								row, hasFocus);
 						if(value instanceof BioModelNode &&
-								((cbit.vcell.desktop.BioModelNode)value).getUserObject() instanceof Annotation){
-							component.setToolTipText("Freehand Text (Double-click to edit)");
+								((BioModelNode)value).getUserObject() instanceof Annotation){
+							component.setToolTipText("(Double-click to edit notes)");
+							Annotation annotation = (Annotation)((BioModelNode)value).getUserObject();
+							if (annotation.toString() == null || annotation.toString().length() == 0) {
+								component.setText("(Double-click to edit notes)");
+							}
 						}
 						return component;
 					}
