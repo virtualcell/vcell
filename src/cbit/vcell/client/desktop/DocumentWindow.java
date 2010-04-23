@@ -149,8 +149,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC10(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemOpenMathModel()) 
 				connEtoC11(e);
-			if (e.getSource() == DocumentWindow.this.getJMenuItemOpenGeometry()) 
-				connEtoC12(e);
 			if (e.getSource() == DocumentWindow.this.getSaveMenuItem()) 
 				connEtoC13(e);
 			if (e.getSource() == DocumentWindow.this.getSave_AsMenuItem()) 
@@ -315,25 +313,6 @@ private void connEtoC10(java.awt.event.ActionEvent arg1) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC11(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.openDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC12:  (JMenuItemOpenGeometry.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -1273,11 +1252,11 @@ private javax.swing.JMenuItem getGeometryMenuItem() {
 
 public static void showGeometryCreationWarning(Component parentComponent){
 	DialogUtils.showWarningDialog(parentComponent,
-			"Geometries are now created within BioModels or MathModels."+
-			"  BioModel geometries are created from a Biomodel document within an Application under the 'Specification' tab in the 'Geometry' section"+
-			" by pressing the 'Create New Geometry...' button."+
-			"  MathModel geometries are created from a MathModel document by pressing the 'Geometry Viewer' button"+
-			" and pressing the 'Create New Geometry...' button.");
+			"Geometries are now viewed/edited/created within BioModels or MathModels.\n"+
+			"\nBioModel geometries are viewed/edited from a Biomodel document within an Application under the 'Specification' tab in the 'Geometry' section"+
+			" and created by pressing the 'Create New Geometry...' button.\n"+
+			" \nMathModel geometries are viewed/edited from a MathModel document by pressing the 'Geometry Viewer' button"+
+			" and created by pressing the 'Create New Geometry...' button.");
 
 }
 /**
@@ -1497,6 +1476,11 @@ private javax.swing.JMenuItem getJMenuItemOpenGeometry() {
 			ivjJMenuItemOpenGeometry = new javax.swing.JMenuItem();
 			ivjJMenuItemOpenGeometry.setName("JMenuItemOpenGeometry");
 			ivjJMenuItemOpenGeometry.setText("Geometry...");
+			ivjJMenuItemOpenGeometry.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					DocumentWindow.showGeometryCreationWarning(DocumentWindow.this);
+				}
+			});
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2711,7 +2695,6 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemNewBioModel().addActionListener(ivjEventHandler);
 	getJMenuItemOpenBioModel().addActionListener(ivjEventHandler);
 	getJMenuItemOpenMathModel().addActionListener(ivjEventHandler);
-	getJMenuItemOpenGeometry().addActionListener(ivjEventHandler);
 	getSaveMenuItem().addActionListener(ivjEventHandler);
 	getSave_AsMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemImport().addActionListener(ivjEventHandler);
