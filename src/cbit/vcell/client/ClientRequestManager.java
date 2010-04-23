@@ -170,9 +170,9 @@ private void changeGeometry0(final DocumentWindowManager requester, final Simula
 			int[] geomType = null;
 			geomType = DialogUtils.showComponentOKCancelTableList(
 				JOptionPane.getRootFrame(), 
-				"Choose new geometry type",
-				new String[] {"Geometry Type"}, 
-				new String[][] {{"Select from BioModels"},{"Select from MathModels"},{"Select from existing Geometries"}}, ListSelectionModel.SINGLE_SELECTION);
+				"Select different Geometry",
+				new String[] {"Search by"}, 
+				new String[][] {{"BioModel names"},{"MathModel names"},{"Geometry names"}}, ListSelectionModel.SINGLE_SELECTION);
 			VCDocumentInfo vcDocumentInfo = selectDocumentFromType(geomType[0], requester);
 			hashTable.put("vcDocumentInfo", vcDocumentInfo);
 		}		

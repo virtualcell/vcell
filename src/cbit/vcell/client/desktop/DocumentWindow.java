@@ -43,6 +43,7 @@ import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -1254,9 +1255,9 @@ public static void showGeometryCreationWarning(Component parentComponent){
 	DialogUtils.showWarningDialog(parentComponent,
 			"Geometries are now viewed/edited/created within BioModels or MathModels.\n"+
 			"\nBioModel geometries are viewed/edited from a Biomodel document within an Application under the 'Specification' tab in the 'Geometry' section"+
-			" and created by pressing the 'Create New Geometry...' button.\n"+
+			" and created by pressing the '"+GeometrySummaryViewer.NEW_GEOMETRY_LABEL+"' button.\n"+
 			" \nMathModel geometries are viewed/edited from a MathModel document by pressing the 'Geometry Viewer' button"+
-			" and created by pressing the 'Create New Geometry...' button.");
+			" and created by pressing the '"+GeometrySummaryViewer.NEW_GEOMETRY_LABEL+"' button.");
 
 }
 /**
