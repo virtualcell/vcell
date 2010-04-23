@@ -3,6 +3,7 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -20,6 +21,7 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -47,7 +49,6 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 public class BioModelTreePanel extends JPanel {
 	
 	private JScrollPane ivjJScrollPane1 = null;
-	private BioModelCellRenderer ivjBioModelCellRendererFactory = null;
 	private JTreeFancy ivjJTree2 = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private TreeSelectionModel ivjselectionModel1 = null;
@@ -528,9 +529,25 @@ private void connEtoM11() {
 private void connEtoM2() {
 	BioModelCellRenderer localValue = null;
 	try {
-		// user code begin {1}
-		// user code end
-		getJTree2().setCellRenderer(localValue = new BioModelCellRenderer(null));
+		// Add cellRenderer
+		DefaultTreeCellRenderer dtcr = new BioModelCellRenderer(null) {
+			@Override
+			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
+					boolean leaf, int row, boolean hasFocus) {
+				JLabel component = (JLabel)super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,
+						row, hasFocus);
+				if(value instanceof BioModelNode &&
+						((BioModelNode)value).getUserObject() instanceof Annotation){
+					component.setToolTipText("(Double-click to edit notes)");
+					Annotation annotation = (Annotation)((BioModelNode)value).getUserObject();
+					if (annotation.toString() == null || annotation.toString().length() == 0) {
+						component.setText("(Double-click to edit notes)");
+					}
+				}
+				return component;
+			}
+		};
+		getJTree2().setCellRenderer(dtcr);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -538,7 +555,6 @@ private void connEtoM2() {
 		// user code end
 		handleException(ivjExc);
 	}
-	setBioModelCellRendererFactory(localValue);
 }
 
 /**
@@ -1216,7 +1232,6 @@ private org.vcell.util.gui.JTreeFancy getJTree2() {
 				} 
 			};
 			ivjJTree2.addMouseListener(mouseListener);
-			
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1470,28 +1485,6 @@ private void setBioModel(BioModel newValue) {
 	// user code begin {3}
 	// user code end
 }
-
-/**
- * Set the BioModelCellRendererFactory to a new value.
- * @param newValue cbit.vcell.desktop.BioModelCellRenderer
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setBioModelCellRendererFactory(BioModelCellRenderer newValue) {
-	if (ivjBioModelCellRendererFactory != newValue) {
-		try {
-			ivjBioModelCellRendererFactory = newValue;
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
 
 /**
  * Sets the selectedVersionable property (cbit.sql.Versionable) value.
