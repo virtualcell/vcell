@@ -321,10 +321,14 @@ public class VCMetaDataMiriamManager implements MiriamManager {
 	}
 
 	public void addDate(Identifiable identifiable, DateQualifier dateQualifier,	DublinCoreDate date) {
-		NamedThing sbThing = vcMetaData.getRegistry().getEntry(identifiable).getNamedThing();
+		OpenEntry entry = vcMetaData.getRegistry().getEntry(identifiable);
+		if (entry.getNamedThing() == null){
+			String newURI = vcMetaData.getRegistry().generateFreeURI(identifiable);
+			entry.setNamedThingFromURI(newURI);
+		}
 		Model rdfData = vcMetaData.getRdfData();
 		Literal dateLiteral = rdfData.createLiteral(date.getDateString());
-		rdfData.add(sbThing.resource(), dateQualifier.property(), dateLiteral);
+		rdfData.add(entry.getNamedThing().resource(), dateQualifier.property(), dateLiteral);
 		vcMetaData.fireAnnotationEventListener(new VCMetaData.AnnotationEvent(identifiable));
 	}
 

@@ -1,19 +1,11 @@
 package cbit.vcell.xml.gui;
 
-import java.net.URISyntaxException;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Vector;
 
-import javax.swing.JEditorPane;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -22,10 +14,7 @@ import org.vcell.sybil.models.dublincore.DublinCoreDate;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier.DateQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
-import org.vcell.sybil.models.miriam.RefGroup;
-import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.MiriamManager;
@@ -36,22 +25,8 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
-import cbit.vcell.biomodel.meta.registry.OpenRegistry;
 import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.Structure;
-
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Selector;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEventListener {
 	public static final class IdentifiableComparator implements Comparator<Identifiable> {
@@ -156,28 +131,26 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 			IdentifiableNode modelComponentNode = new IdentifiableNode(identifiable, modelComponentType + " : " + modelComponentName);
 			String freeTextAnnotation = vcMetaData.getFreeTextAnnotation(identifiable);
 
-			if (refGroupMap==null && dateMap==null && (freeTextAnnotation==null || freeTextAnnotation.length()==0)){
-				modelComponentNode.add(new BioModelNode(new Annotation(""),false));
+			if (freeTextAnnotation!=null){
+				modelComponentNode.add(new BioModelNode(new Annotation(freeTextAnnotation),false));
 			}else{
-				if (refGroupMap!=null){
-					for (MiriamRefGroup refGroup : refGroupMap.keySet()){
-						MIRIAMQualifier qualifier = refGroupMap.get(refGroup);
-						for (MiriamResource miriamResource : refGroup.getMiriamRefs()){
-							LinkNode linkNode = new LinkNode(qualifier, miriamResource);
-							modelComponentNode.add(linkNode);
-						}
+				modelComponentNode.add(new BioModelNode(new Annotation(""),false));
+			}
+			if (refGroupMap!=null){
+				for (MiriamRefGroup refGroup : refGroupMap.keySet()){
+					MIRIAMQualifier qualifier = refGroupMap.get(refGroup);
+					for (MiriamResource miriamResource : refGroup.getMiriamRefs()){
+						LinkNode linkNode = new LinkNode(qualifier, miriamResource);
+						modelComponentNode.add(linkNode);
 					}
 				}
-				if (dateMap!=null){
-					for (DublinCoreQualifier.DateQualifier qualifier : dateMap.keySet()){
-						Set<DublinCoreDate> dates = dateMap.get(qualifier);
-						for (DublinCoreDate date : dates){
-							modelComponentNode.add(new DateNode(qualifier,date));
-						}
+			}
+			if (dateMap!=null){
+				for (DublinCoreQualifier.DateQualifier qualifier : dateMap.keySet()){
+					Set<DublinCoreDate> dates = dateMap.get(qualifier);
+					for (DublinCoreDate date : dates){
+						modelComponentNode.add(new DateNode(qualifier,date));
 					}
-				}
-				if (freeTextAnnotation!=null){
-					modelComponentNode.add(new BioModelNode(new Annotation(freeTextAnnotation),false));
 				}
 			}
 			((DefaultMutableTreeNode)getRoot()).add(modelComponentNode);
