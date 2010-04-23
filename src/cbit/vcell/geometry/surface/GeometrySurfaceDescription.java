@@ -1,5 +1,6 @@
 package cbit.vcell.geometry.surface;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 
 import org.vcell.util.Compare;
 import org.vcell.util.ISize;
@@ -10,9 +11,11 @@ import cbit.image.ImageException;
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -29,6 +32,7 @@ public class GeometrySurfaceDescription implements Matchable, java.io.Serializab
 	private transient SurfaceCollection fieldSurfaceCollection = null;
 	private Geometry fieldGeometry = null;
 	private GeometricRegion[] fieldGeometricRegions = null;
+	private SurfaceClass[] fieldSurfaceClasses = null;
 
 /**
  * GeometrySurfaceDescription constructor comment.
@@ -117,6 +121,7 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
 
+
 /**
  * Checks for internal representation of objects, not keys from database
  * @return boolean
@@ -143,6 +148,17 @@ public boolean compareEqual(Matchable obj) {
 	}else{
 		return false;
 	}
+}
+
+public SurfaceClass[] getAdjacentSurfaceClasses(SubVolume subVolume) {
+	SurfaceClass[] surfaceClasses = getSurfaceClasses();
+	ArrayList<SurfaceClass> adjacentSurfaceClassList = new ArrayList<SurfaceClass>();
+	for (int i = 0; i < surfaceClasses.length; i++) {
+		if (surfaceClasses[i].getSubvolume1()==subVolume || surfaceClasses[i].getSubvolume2()==subVolume){
+			adjacentSurfaceClassList.add(surfaceClasses[i]);
+		}
+	}
+	return adjacentSurfaceClassList.toArray(new SurfaceClass[adjacentSurfaceClassList.size()]);
 }
 
 
@@ -179,6 +195,96 @@ public java.lang.Double getFilterCutoffFrequency() {
  */
 public GeometricRegion[] getGeometricRegions() {
 	return fieldGeometricRegions;
+}
+
+public SurfaceClass[] getSurfaceClasses() {
+	if (fieldSurfaceClasses==null && fieldGeometricRegions!=null){
+		setSurfaceClasses(computeSurfaceClasses(fieldGeometricRegions));
+	}
+	return fieldSurfaceClasses;
+}
+
+public GeometricRegion[] getGeometricRegions(GeometryClass geometryClass){
+	ArrayList<GeometricRegion> regions = new ArrayList<GeometricRegion>();
+	if (this.fieldGeometricRegions==null || this.fieldGeometricRegions.length==0){
+		throw new RuntimeException("geometric regions have not been computed");
+	}
+	for (int j = 0; j < fieldGeometricRegions.length; j++) {
+		if (getGeometryClass(fieldGeometricRegions[j]).equals(geometryClass)){
+			regions.add(fieldGeometricRegions[j]);
+		}
+	}
+	return regions.toArray(new GeometricRegion[regions.size()]);
+}
+
+public GeometryClass getGeometryClass(GeometricRegion geometricRegion){
+	if (geometricRegion instanceof VolumeGeometricRegion){
+		return ((VolumeGeometricRegion)geometricRegion).getSubVolume();
+	}else if (geometricRegion instanceof SurfaceGeometricRegion){
+		SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)geometricRegion;
+		GeometricRegion[] adjacentRegions = surfaceRegion.getAdjacentGeometricRegions();
+		if (adjacentRegions.length!=2 || 
+				!(adjacentRegions[0] instanceof VolumeGeometricRegion) || 
+				!(adjacentRegions[1] instanceof VolumeGeometricRegion)){
+			throw new RuntimeException("expecting two adjacent volume regions for surfaceRegion");
+		}
+		SubVolume subvolume1 = ((VolumeGeometricRegion)adjacentRegions[0]).getSubVolume();
+		SubVolume subvolume2 = ((VolumeGeometricRegion)adjacentRegions[1]).getSubVolume();
+		return getSurfaceClass(subvolume1,subvolume2);
+	}else{
+		throw new RuntimeException("unexpected geometricRegion "+geometricRegion);
+	}
+}
+
+public SurfaceClass getSurfaceClass(SubVolume subvolume1, SubVolume subvolume2) {
+	SurfaceClass[] surfaceClasses = getSurfaceClasses();
+	for (int i = 0; i < surfaceClasses.length; i++) {
+		if (surfaceClasses[i].getSubvolume1()==subvolume1 && surfaceClasses[i].getSubvolume2()==subvolume2){
+			return surfaceClasses[i];
+		}
+		if (surfaceClasses[i].getSubvolume1()==subvolume2 && surfaceClasses[i].getSubvolume2()==subvolume1){
+			return surfaceClasses[i];
+		}
+	}
+	return null;
+}
+
+private SurfaceClass[] computeSurfaceClasses(GeometricRegion[] geometricRegions) {
+	ArrayList<SurfaceClass> surfaceClasses = new ArrayList<SurfaceClass>();
+	for (int i = 0; i < geometricRegions.length; i++) {
+		if (geometricRegions[i] instanceof SurfaceGeometricRegion){
+			SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)geometricRegions[i];
+			GeometricRegion[] adjacentRegions = surfaceRegion.getAdjacentGeometricRegions();
+			if (adjacentRegions.length!=2){
+				throw new RuntimeException("found a Surface Region with "+adjacentRegions.length+" adjacent regions, expected 2");
+			}
+			if (adjacentRegions[0] instanceof VolumeGeometricRegion && adjacentRegions[1] instanceof VolumeGeometricRegion){
+				VolumeGeometricRegion volumeRegion0 = (VolumeGeometricRegion)adjacentRegions[0];
+				SubVolume subVolume0 = volumeRegion0.getSubVolume();
+				VolumeGeometricRegion volumeRegion1 = (VolumeGeometricRegion)adjacentRegions[1];
+				SubVolume subVolume1 = volumeRegion1.getSubVolume();
+				SurfaceClass surfaceClass = null;
+				if (subVolume0.getHandle() < subVolume1.getHandle()){
+					surfaceClass = new SurfaceClass(subVolume0,subVolume1);
+				}else{
+					surfaceClass = new SurfaceClass(subVolume1,subVolume0);
+				}
+				
+				boolean bFound = false;
+				for (int j = 0; j < surfaceClasses.size(); j++) {
+					if (surfaceClass.compareEqual(surfaceClasses.get(j))){
+						bFound = true;
+						break;
+					}
+				}
+				
+				if (!bFound){
+					surfaceClasses.add(surfaceClass);
+				}
+			}
+		}
+	}
+	return surfaceClasses.toArray(new SurfaceClass[surfaceClasses.size()]);
 }
 
 
@@ -291,6 +397,17 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				setGeometricRegions(null);
 			}catch (Exception e){
 				e.printStackTrace(System.out);
+			}
+		}
+	}
+	if (evt.getSource()==this && evt.getPropertyName().equals("geometricRegions")){
+		GeometricRegion[] oldValue = (GeometricRegion[])evt.getOldValue();
+		GeometricRegion[] newValue = (GeometricRegion[])evt.getNewValue();
+		if (oldValue==null || newValue==null || !Compare.isEqual(oldValue,newValue)){
+			if (newValue==null){
+				setSurfaceClasses(null);
+			}else{
+				setSurfaceClasses(computeSurfaceClasses((GeometricRegion[])newValue));
 			}
 		}
 	}
@@ -418,6 +535,14 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
 
 
 /**
+ * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
+ */
+public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
+	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
+}
+
+
+/**
  * Sets the filterCutoffFrequency property (java.lang.Double) value.
  * @param filterCutoffFrequency The new value for the property.
  * @exception java.beans.PropertyVetoException The exception description.
@@ -448,6 +573,23 @@ public void setGeometricRegions(GeometricRegion[] geometricRegions) throws java.
 	fireVetoableChange("geometricRegions", oldValue, geometricRegions);
 	fieldGeometricRegions = geometricRegions;
 	firePropertyChange("geometricRegions", oldValue, geometricRegions);
+}
+
+
+/**
+ * Sets the surfaceClasses property (cbit.vcell.geometry.SurfaceClass[]) value.
+ * @param surfaceClasses The new value for the property.
+ * @exception java.beans.PropertyVetoException The exception description.
+ * @see #getGeometricRegions
+ */
+private void setSurfaceClasses(SurfaceClass[] surfaceClasses) {
+	if (fieldSurfaceClasses == surfaceClasses) {
+		return;
+	}
+//	cbit.vcell.geometry.surface.GeometricRegion[] oldValue = fieldGeometricRegions;
+	SurfaceClass[] oldValue = fieldSurfaceClasses;
+	fieldSurfaceClasses = surfaceClasses;
+	firePropertyChange("surfaceClasses", oldValue, surfaceClasses);
 }
 
 
@@ -550,11 +692,19 @@ public void updateAll() throws GeometryException, ImageException, ExpressionExce
 	if (getGeometricRegions()==null || bChanged){
 		try {
 			setGeometricRegions(GeometrySurfaceUtils.getUpdatedGeometricRegions(this,getRegionImage(),getSurfaceCollection()));
+			bChanged = true;
 		}catch (java.beans.PropertyVetoException e){
 			e.printStackTrace(System.out);
 			throw new GeometryException("unexpected exception while generating regions: "+e.getMessage());
 		}
-	}		
+	}
+	
+	//
+	// identify classes of surfaces within this geometry with same adjacent subVolumes.
+	//
+	if (getSurfaceClasses()==null || bChanged){
+		setSurfaceClasses(computeSurfaceClasses(getGeometricRegions()));
+	}
 }
 
 
@@ -588,5 +738,4 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		}
 	}
 }
-
 }

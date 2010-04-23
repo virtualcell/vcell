@@ -4,10 +4,6 @@ package cbit.vcell.geometry;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-
 import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -17,7 +13,7 @@ import org.vcell.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */
-public abstract class SubVolume implements Serializable, Matchable, Cacheable {
+public abstract class SubVolume implements GeometryClass, Cacheable {
 	private String name = null;
 //	protected Geometry geometry = null;
 	private int handle = -1;
