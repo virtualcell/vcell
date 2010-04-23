@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop;
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;

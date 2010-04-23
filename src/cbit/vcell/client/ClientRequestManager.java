@@ -9,10 +9,12 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
@@ -27,6 +29,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
@@ -35,6 +38,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
@@ -45,10 +49,10 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.gui.AsynchGuiUpdater;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
@@ -58,6 +62,7 @@ import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
+import cbit.image.VCImageInfo;
 import cbit.image.VCImageUncompressed;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
@@ -91,7 +96,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.DeleteOldDocument;
 import cbit.vcell.client.task.DocumentToExport;
 import cbit.vcell.client.task.DocumentValid;
-import cbit.vcell.client.task.EditImageAttributes;
 import cbit.vcell.client.task.ExportToXML;
 import cbit.vcell.client.task.FinishExport;
 import cbit.vcell.client.task.FinishSave;
@@ -849,6 +853,7 @@ public VCDocumentInfo selectDocumentFromType(int documentType, DocumentWindowMan
 	return
 		getMdiManager().getDatabaseWindowManager().selectDocument(documentType, requester);
 }
+
 public Geometry getGeometryFromDocumentSelection(VCDocumentInfo vcDocumentInfo,boolean bClearVersion) throws Exception,UserCancelException{
 	Geometry geom = null;
 	if(vcDocumentInfo.getVersionType().equals(VersionableType.BioModelMetaData)/*documentType == VCDocument.BIOMODEL_DOC*/){
@@ -917,6 +922,258 @@ public Geometry getGeometryFromDocumentSelection(VCDocumentInfo vcDocumentInfo,b
 	return geom;
 }
 public static final String GUI_PARENT = "guiParent";
+
+public static boolean isImportGeometryType(DocumentCreationInfo documentCreationInfo){
+	return
+	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_DBIMAGE ||
+	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA ||
+	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE ||
+	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH;
+}
+
+public static final String IMAGE_FROM_DB = "IMAGE_FROM_DB";
+public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager requester,
+		final VCDocument.DocumentCreationInfo documentCreationInfo,
+		final AsynchClientTask[] afterTasks,
+		final String okButtonText){
+	
+	if(!isImportGeometryType(documentCreationInfo)){
+		throw new IllegalArgumentException("Analytic geometry not implemented.");
+		
+	}
+	final String IMPORT_SOURCE_NAME = "IMPORT_SOURCE_NAME";
+	
+	AsynchClientTask selectImgFromDBTask = new AsynchClientTask("select from database", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(hashTable.get(ClientRequestManager.IMAGE_FROM_DB) != null){
+				//Previous task already loaded our dbImage , no need to ask user
+				return;
+			}
+			Object option = getMdiManager().getDatabaseWindowManager().showImageSelectorDialog(requester);
+			hashTable.put("selectOption", option);
+		}
+	};
+	AsynchClientTask loadImgFromDBTask = new AsynchClientTask("creating geometry from database image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(hashTable.get(ClientRequestManager.IMAGE_FROM_DB) != null){
+				//Previous task already loaded our dbImage
+				return;
+			}
+			Object choice = hashTable.get("selectOption");
+			if (choice != null && choice.equals("OK")) {
+				VCImage image = getMdiManager().getDatabaseWindowManager().selectImageFromDatabase();
+				if (image == null){
+					throw new RuntimeException("failed to create new Geometry, no image");
+				}
+				hashTable.put(IMAGE_FROM_DB, image);
+			} else {
+				throw UserCancelException.CANCEL_DB_SELECTION;
+			}
+		}
+	};
+
+	// Get image from file
+	AsynchClientTask selectImageFileTask = new AsynchClientTask("select image file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			File imageFile = DatabaseWindowManager.showFileChooserDialog(requester, FileFilters.FILE_FILTER_FIELDIMAGES, getUserPreferences());
+			hashTable.put("imageFile", imageFile);
+			hashTable.put(IMPORT_SOURCE_NAME, "File: "+imageFile.getName());
+		}
+	};
+	
+	final String FDFOS = "FDFOS";
+	final String INITIAL_ANNOTATION	 = "INITIAL_ANNOTATION";
+	AsynchClientTask parseImageTask = new AsynchClientTask("read and parse image file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(final Hashtable<String, Object> hashTable) throws Exception {
+			final Component guiParent =(Component)hashTable.get(ClientRequestManager.GUI_PARENT);
+			try {
+				FieldDataFileOperationSpec fdfos = null;
+				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_DBIMAGE){
+					VCImage dbImage = (VCImage)hashTable.get(IMAGE_FROM_DB);
+					hashTable.put(IMPORT_SOURCE_NAME,
+							"Image DB: "+dbImage.getName());
+
+					if(dbImage.getDescription() != null){
+						hashTable.put(INITIAL_ANNOTATION, dbImage.getDescription());
+					}
+					short[] templateShorts = new short[dbImage.getNumXYZ()];
+					for (int i = 0; i < dbImage.getPixels().length; i++) {
+						templateShorts[i] = (short)(0x00FF&dbImage.getPixels()[i]);
+					}
+					fdfos = new FieldDataFileOperationSpec();
+					fdfos.origin = new Origin(0,0,0);
+					fdfos.extent = dbImage.getExtent();
+					fdfos.isize = new ISize(dbImage.getNumX(), dbImage.getNumY(), dbImage.getNumZ());
+					fdfos.shortSpecData = new short[][][] {{templateShorts}};
+				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
+					File imageFile = (File)hashTable.get("imageFile");
+					if(imageFile != null){
+						hashTable.put(INITIAL_ANNOTATION, imageFile.getAbsolutePath());
+					}
+					int userPreferredTime = 0;
+					try{
+						getClientTaskStatusSupport().setMessage("Checking file for time information.");
+						double[] allTimes = ImageDatasetReader.getTimesOnly(imageFile.getAbsolutePath());
+						if(allTimes.length > 1){
+							String[][] rowData = new String[allTimes.length][1];
+							for (int i = 0; i < rowData.length; i++) {
+								rowData[i][0] = allTimes[i]+"";
+							}
+							userPreferredTime = DialogUtils.showComponentOKCancelTableList(
+									guiParent, "File contains data in multiple timepoints, select 1 timepoint for import",
+									new String[] {"times"}, rowData, new Integer(ListSelectionModel.SINGLE_SELECTION))[0];
+						}
+					}catch(UserCancelException uce){
+						throw uce;
+					}catch(Exception e){
+						e.printStackTrace();
+						//ignore, try to load without checking for times and use the first time if successful
+					}
+					fdfos = ClientRequestManager.createFDOSFromImageFile(imageFile,false,userPreferredTime);
+					
+				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
+					getClientTaskStatusSupport().setMessage("Reading data from VCell server.");
+					VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo;
+					hashTable.put(IMPORT_SOURCE_NAME,
+							"FieldData: "+docInfo.getExternalDataID().getName()+" varName="+
+							docInfo.getVarName()+" timeIndex="+docInfo.getTimeIndex());
+					hashTable.put(INITIAL_ANNOTATION, hashTable.get(IMPORT_SOURCE_NAME));
+					PDEDataContext pdeDataContext =	getMdiManager().getFieldDataWindowManager().getPDEDataContext(docInfo.getExternalDataID());
+					pdeDataContext.setVariableAndTime(docInfo.getVarName(), pdeDataContext.getTimePoints()[docInfo.getTimeIndex()]);
+					CartesianMesh mesh = pdeDataContext.getCartesianMesh();
+					ISize meshISize = new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
+					double[] data = pdeDataContext.getDataValues();
+					double minValue = Double.POSITIVE_INFINITY;
+					double maxValue = Double.NEGATIVE_INFINITY;
+					for (int i = 0; i < data.length; i++) {
+						minValue = Math.min(minValue,data[i]);
+						maxValue = Math.max(maxValue,data[i]);
+					}
+					short[] dataToSegment = new short[data.length];
+					double scaleShort = Math.pow(2, Short.SIZE)-1;
+					for (int i = 0; i < data.length; i++) {
+						dataToSegment[i]|= (int)((data[i]-minValue)/(maxValue-minValue)*scaleShort);
+					}
+					fdfos = new FieldDataFileOperationSpec();
+					fdfos.origin = mesh.getOrigin();
+					fdfos.extent = mesh.getExtent();
+					fdfos.isize = meshISize;
+					fdfos.shortSpecData = new short[][][] {{dataToSegment}};
+
+				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
+					try{
+						do{
+							String result = "256,256,1";
+							result = DialogUtils.showInputDialog0(guiParent,
+									"Enter number of pixels for x,y,z to start", result);
+							String tempResult = result;
+							try{
+								if(result == null || result.length() == 0){
+									result = "";
+									throw new Exception("No size values entered.");
+								}
+								int xsize = Integer.parseInt(tempResult.substring(0, tempResult.indexOf(",")));
+								tempResult = tempResult.substring(tempResult.indexOf(",")+1, tempResult.length());
+								int ysize = Integer.parseInt(tempResult.substring(0, tempResult.indexOf(",")));
+								tempResult = tempResult.substring(tempResult.indexOf(",")+1, tempResult.length());
+								int zsize = Integer.parseInt(tempResult);
+								int totalSize = xsize*ysize*zsize;
+								final int SCRATCH_SIZE_LIMIT = 512*512*20;
+								if(totalSize <=0 || totalSize > (SCRATCH_SIZE_LIMIT)){
+									throw new Exception("Total pixels (x*y*z) cannot be <=0 or >"+SCRATCH_SIZE_LIMIT+".");
+								}
+								fdfos = new FieldDataFileOperationSpec();
+								fdfos.origin = new Origin(0, 0, 0);
+								fdfos.extent = new Extent(1, 1, 1);
+								fdfos.isize = new ISize(xsize, ysize, zsize);
+								hashTable.put(IMPORT_SOURCE_NAME,
+										"Scratch: New Geometry");
+								break;
+							}catch(Exception e){
+								DialogUtils.showErrorDialog(guiParent, "Error entering starting sizes\n"+e.getMessage());
+							}
+						}while(true);
+					}catch(UtilCancelException e2){
+						throw UserCancelException.CANCEL_GENERIC;
+					}
+				}
+				hashTable.put(FDFOS, fdfos);
+			} catch (DataFormatException ex) {
+				throw new Exception("Cannot read image file.\n"+ex.getMessage());
+			}
+		}
+	};
+	AsynchClientTask finishTask = new AsynchClientTask("Finishing...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(final Hashtable<String, Object> hashTable) throws Exception {
+			getClientTaskStatusSupport().setMessage("Initializing...");
+			final ROIMultiPaintManager roiMultiPaintManager = new ROIMultiPaintManager();
+			roiMultiPaintManager.initROIData(null,null,(FieldDataFileOperationSpec)hashTable.get(FDFOS));
+			new Thread(new Runnable() {
+				public void run() {
+					final Geometry[] geomHolder = new Geometry[1];
+					try{
+						//user create Geometry
+						SwingUtilities.invokeAndWait(
+							new Runnable() {
+								public void run() {
+									geomHolder[0] = roiMultiPaintManager.showGUI(
+										okButtonText,
+										(String)hashTable.get(IMPORT_SOURCE_NAME),
+										(Component)hashTable.get(GUI_PARENT),
+										(String)hashTable.get(INITIAL_ANNOTATION)
+									);
+								}
+							}
+						);
+						//Create default name for image
+						geomHolder[0].getGeometrySpec().getImage().setName("img_"+ClientRequestManager.generateDateTimeString());
+						//cause update in this thread so later swing threads won't be delayed
+						geomHolder[0].getGeometrySpec().getSampledImage();
+						hashTable.put("doc", geomHolder[0]);
+						//Process Geometry (save, display, replace, etc...)
+						AsynchClientTask[] finalTasks = afterTasks;
+						if(finalTasks == null){
+							finalTasks = new AsynchClientTask[] {
+									getSaveImageAndGeometryTask()};
+						}
+						ClientTaskDispatcher.dispatch(
+								(Component)hashTable.get(GUI_PARENT),
+								hashTable,finalTasks,false, false, null, true);
+						
+					}catch(Exception exc){
+						Throwable realException = exc;
+						if(exc instanceof InvocationTargetException){
+							if(exc.getCause() instanceof UserCancelException){
+								return;
+							}
+							realException = exc.getCause();
+						}
+						realException.printStackTrace();
+						DialogUtils.showErrorDialog((Component)hashTable.get(GUI_PARENT), "Error in Geometry creation.\n"+
+							realException.getMessage());
+						
+					}
+				}
+			}).start();
+		}
+	};
+	Vector<AsynchClientTask> tasksV = new Vector<AsynchClientTask>();
+	if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_DBIMAGE){
+		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImgFromDBTask,loadImgFromDBTask,parseImageTask,finishTask}));
+	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
+		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
+	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
+		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask,finishTask}));
+	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
+		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
+	}
+	return tasksV.toArray(new AsynchClientTask[0]);
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/10/2004 3:48:16 PM)
@@ -1056,200 +1313,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 				taskArray = new AsynchClientTask[] {task1};
 				break;
 			} else  {
-				// image-based
-				final AsynchClientTask saveImage = new AsynchClientTask("saving image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						RequestManager theRequestManager = (RequestManager)hashTable.get("requestManager");
-						VCImage image = (VCImage)hashTable.get("vcImage");
-						String newName = (String)hashTable.get("newName");
-						
-						VCImage editedImage = theRequestManager.getDocumentManager().saveAsNew(image,newName);					
-				
-						getClientTaskStatusSupport().setMessage("finished saving " + newName);
-						//
-						// check that save actually occured (it should have since an insert should be new)
-						//
-						Version newVersion = editedImage.getVersion();
-						Version oldVersion = image.getVersion();
-						if ((oldVersion != null) && newVersion.getVersionKey().compareEqual(oldVersion.getVersionKey())){
-							throw new DataAccessException("Save New Image failed, Old version has same id as New");
-						}
-						hashTable.put("image", editedImage);
-					}
-				};	
-				
-				final AsynchClientTask createGeometry =  new AsynchClientTask("creating geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						VCImage image = (VCImage)hashTable.get("image");
-						Geometry newGeom = new Geometry("Untitled", image);
-						newGeom.setDescription(image.getDescription());
-						hashTable.put("doc", newGeom);
-					}
-				};
-
-				if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_DBIMAGE) {
-					// Get image from database
-					AsynchClientTask task1 = new AsynchClientTask("select from database", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							Object option = getMdiManager().getDatabaseWindowManager().showImageSelectorDialog(requester);
-							hashTable.put("selectOption", option);
-						}
-					};
-					AsynchClientTask task2 = new AsynchClientTask("creating geometry from database image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							Object choice = hashTable.get("selectOption");
-							if (choice != null && choice.equals("OK")) {
-								VCImage image = getMdiManager().getDatabaseWindowManager().selectImageFromDatabase();
-								if (image == null){
-									throw new RuntimeException("failed to create new Geometry, no image");
-								}
-								hashTable.put("image", image);
-							} else {
-								throw UserCancelException.CANCEL_DB_SELECTION;
-							}
-						}
-					};
-					taskArray = new AsynchClientTask[] {task1, task2, createGeometry};
-					break;
-				} else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE ||
-						documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH ||
-						documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA) {
-					// Get image from file --- INCOMPLETE
-					AsynchClientTask selectImageFileTask = new AsynchClientTask("select image file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							File imageFile = DatabaseWindowManager.showFileChooserDialog(requester, FileFilters.FILE_FILTER_FIELDIMAGES, getUserPreferences());
-							hashTable.put("imageFile", imageFile);
-							hashTable.put(ROIMultiPaintManager.IMPORT_SOURCE_NAME, "File: "+imageFile.getName());
-						}
-					};
-					AsynchClientTask parseImageTask = new AsynchClientTask("read and parse image file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							Component guiParent =(Component)hashTable.get(ClientRequestManager.GUI_PARENT);
-							try {
-								FieldDataFileOperationSpec fdfos = null;
-								if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
-									File imageFile = (File)hashTable.get("imageFile");
-									int userPreferredTime = 0;
-									try{
-										getClientTaskStatusSupport().setMessage("Checking file for time information.");
-										double[] allTimes = ImageDatasetReader.getTimesOnly(imageFile.getAbsolutePath());
-										if(allTimes.length > 1){
-											String[][] rowData = new String[allTimes.length][1];
-											for (int i = 0; i < rowData.length; i++) {
-												rowData[i][0] = allTimes[i]+"";
-											}
-											userPreferredTime = DialogUtils.showComponentOKCancelTableList(
-													guiParent, "File contains data in multiple timepoints, select 1 timepoint for import",
-													new String[] {"times"}, rowData, new Integer(ListSelectionModel.SINGLE_SELECTION))[0];
-										}
-									}catch(UserCancelException uce){
-										throw uce;
-									}catch(Exception e){
-										e.printStackTrace();
-										//ignore, try to load without checking for times and use the first time if successful
-									}
-									fdfos = ClientRequestManager.createFDOSFromImageFile(imageFile,false,userPreferredTime);
-									
-								}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
-									getClientTaskStatusSupport().setMessage("Reading data from VCell server.");
-									VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo;
-									hashTable.put(ROIMultiPaintManager.IMPORT_SOURCE_NAME,
-											"FieldData: "+docInfo.getExternalDataID().getName()+" varName="+
-											docInfo.getVarName()+" timeIndex="+docInfo.getTimeIndex());
-									PDEDataContext pdeDataContext =	getMdiManager().getFieldDataWindowManager().getPDEDataContext(docInfo.getExternalDataID());
-									pdeDataContext.setVariableAndTime(docInfo.getVarName(), pdeDataContext.getTimePoints()[docInfo.getTimeIndex()]);
-									CartesianMesh mesh = pdeDataContext.getCartesianMesh();
-									ISize meshISize = new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
-									double[] data = pdeDataContext.getDataValues();
-									double minValue = Double.POSITIVE_INFINITY;
-									double maxValue = Double.NEGATIVE_INFINITY;
-									for (int i = 0; i < data.length; i++) {
-										minValue = Math.min(minValue,data[i]);
-										maxValue = Math.max(maxValue,data[i]);
-									}
-									short[] dataToSegment = new short[data.length];
-									double scaleShort = Math.pow(2, Short.SIZE)-1;
-									for (int i = 0; i < data.length; i++) {
-										dataToSegment[i]|= (int)((data[i]-minValue)/(maxValue-minValue)*scaleShort);
-									}
-									fdfos = new FieldDataFileOperationSpec();
-									fdfos.origin = mesh.getOrigin();
-									fdfos.extent = mesh.getExtent();
-									fdfos.isize = meshISize;
-									fdfos.shortSpecData = new short[][][] {{dataToSegment}};
-
-								}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
-									try{
-										do{
-											String result = "256,256,1";
-											result = DialogUtils.showInputDialog0(guiParent,
-													"Enter number of pixels for x,y,z to start", result);
-											String tempResult = result;
-											try{
-												if(result == null || result.length() == 0){
-													result = "";
-													throw new Exception("No size values entered.");
-												}
-												int xsize = Integer.parseInt(tempResult.substring(0, tempResult.indexOf(",")));
-												tempResult = tempResult.substring(tempResult.indexOf(",")+1, tempResult.length());
-												int ysize = Integer.parseInt(tempResult.substring(0, tempResult.indexOf(",")));
-												tempResult = tempResult.substring(tempResult.indexOf(",")+1, tempResult.length());
-												int zsize = Integer.parseInt(tempResult);
-												int totalSize = xsize*ysize*zsize;
-												final int SCRATCH_SIZE_LIMIT = 512*512*20;
-												if(totalSize <=0 || totalSize > (SCRATCH_SIZE_LIMIT)){
-													throw new Exception("Total pixels (x*y*z) cannot be <=0 or >"+SCRATCH_SIZE_LIMIT+".");
-												}
-												fdfos = new FieldDataFileOperationSpec();
-												fdfos.origin = new Origin(0, 0, 0);
-												fdfos.extent = new Extent(1, 1, 1);
-												fdfos.isize = new ISize(xsize, ysize, zsize);
-												break;
-											}catch(Exception e){
-												DialogUtils.showErrorDialog(guiParent, "Error entering starting sizes\n"+e.getMessage());
-											}
-										}while(true);
-									}catch(UtilCancelException e2){
-										throw UserCancelException.CANCEL_GENERIC;
-									}
-								}
-								getClientTaskStatusSupport().setMessage("Counting distinct pixel values.");
-								hashTable.put(ROIMultiPaintManager.IMPORTED_DATA_CONTAINER, fdfos);
-								hashTable.put(ClientTaskDispatcher.TASK_REWIND,ROIMultiPaintManager.INIT_ROI_DATA_TASK_NAME);
-
-							} catch (DataFormatException ex) {
-								throw new Exception("Cannot read image file.\n"+ex.getMessage());
-							}
-						}
-					};
-
-					ROIMultiPaintManager roiMultiPaintManager = new ROIMultiPaintManager();
-					Vector<AsynchClientTask> tasksV = new Vector<AsynchClientTask>();
-					if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
-						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask}));
-						tasksV.addAll(Arrays.asList(roiMultiPaintManager.getROIEditTasks()));
-						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry}));
-					}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
-						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask}));
-						tasksV.addAll(Arrays.asList(roiMultiPaintManager.getROIEditTasks()));
-						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry}));
-					}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
-						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask}));
-						tasksV.addAll(Arrays.asList(roiMultiPaintManager.getROIEditTasks()));
-						tasksV.addAll(Arrays.asList(new AsynchClientTask[] {new EditImageAttributes(), saveImage, createGeometry}));
-					}
-					taskArray = tasksV.toArray(new AsynchClientTask[0]);
-					break;
-				}else{
-					throw new RuntimeException("Unknown Geometry Document creation option value="+documentCreationInfo.getOption());
-				}
+				throw new RuntimeException("Unknown Geometry Document creation option value="+documentCreationInfo.getOption());
 			}
 		}
 		default: {
@@ -1790,24 +1854,126 @@ public void managerIDchanged(java.lang.String oldID, java.lang.String newID) {
  * Creation date: (5/21/2004 4:20:47 AM)
  * @param documentType int
  */
-public AsynchClientTask[] newDocument(TopLevelWindowManager requester, final VCDocument.DocumentCreationInfo documentCreationInfo) {
+public AsynchClientTask[] newDocument(TopLevelWindowManager requester,
+		final VCDocument.DocumentCreationInfo documentCreationInfo) {
 	/* asynchronous and not blocking any window */
 	AsynchClientTask[] taskArray1 =  createNewDocument(requester, documentCreationInfo);
 	AsynchClientTask[] taskArray = new AsynchClientTask[taskArray1.length + 1];
 	System.arraycopy(taskArray1, 0, taskArray, 0, taskArray1.length);
 	
-	AsynchClientTask taskNew1 = new AsynchClientTask("Creating New Document", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			VCDocument doc = (VCDocument)hashTable.get("doc");			
-			DocumentWindowManager windowManager = createDocumentWindowManager(doc);
-			getMdiManager().createNewDocumentWindow(windowManager);
-		}
-	};
-	taskArray[taskArray1.length] = taskNew1;
+	taskArray[taskArray1.length] = 
+		new AsynchClientTask("Creating New Document", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				VCDocument doc = (VCDocument)hashTable.get("doc");
+				DocumentWindowManager windowManager = createDocumentWindowManager(doc);
+				getMdiManager().createNewDocumentWindow(windowManager);
+			}
+		};
 	return taskArray;
 }
 
+private static VCImage saveImageAutoName(RequestManager requestManager,VCImage vcImage) throws Exception{
+	VCImageInfo[] imageInfos = null;
+	try {
+		imageInfos = requestManager.getDocumentManager().getImageInfos();
+	}catch (DataAccessException e){
+		e.printStackTrace(System.out);
+	}
+	String newName = null;
+	boolean bNameIsGood = false;
+//	Calendar calendar = Calendar.getInstance();
+	newName = "image_"+ClientRequestManager.generateDateTimeString();
+	while (!bNameIsGood){
+		if (imageInfos==null){
+			bNameIsGood = true; // if no image information assume image name is good
+		}else{	
+			boolean bNameExists = false;
+			for (int i = 0; i < imageInfos.length; i++){
+				if (imageInfos[i].getVersion().getName().equals(newName)){
+					bNameExists = true;
+					break;
+				}
+			}
+			if(!bNameExists){
+				bNameIsGood = true;
+			}
+		}
+		if(!bNameIsGood){
+			newName = TokenMangler.getNextEnumeratedToken(newName);
+		}
+	}
+
+	return requestManager.getDocumentManager().saveAsNew(vcImage,newName);					
+
+}
+
+public static String generateDateTimeString(){
+	Calendar calendar = Calendar.getInstance();
+	int year = calendar.get(Calendar.YEAR);
+	int month = calendar.get(Calendar.MONTH)+1;
+	int day = calendar.get(Calendar.DAY_OF_MONTH);
+	int hour = calendar.get(Calendar.HOUR_OF_DAY);
+	int min = calendar.get(Calendar.MINUTE);
+	int sec = calendar.get(Calendar.SECOND);
+	String imageName =
+	year+""+
+	(month < 10?"0"+month:month)+""+
+	(day < 10?"0"+day:day)+
+	"_"+
+	(hour < 10?"0"+hour:hour)+""+
+	(min < 10?"0"+min:min)+""+
+	(sec < 10?"0"+sec:sec);
+
+	return imageName;
+}
+private AsynchClientTask getSaveImageAndGeometryTask(){
+	
+	final AsynchClientTask saveImageAndGeometryTask =  new AsynchClientTask("creating geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			getClientTaskStatusSupport().setMessage("Getting new Geometry name...");
+			String newGeometryName = null;
+			while(true){
+			newGeometryName =
+				ClientRequestManager.this.getMdiManager().getDatabaseWindowManager().showSaveDialog(
+						((Geometry)hashTable.get("doc")).getDocumentType(),
+						(Component)hashTable.get(ClientRequestManager.GUI_PARENT),
+						(newGeometryName==null?"NewGeometry":newGeometryName));
+				if (newGeometryName == null || newGeometryName.trim().length()==0){
+					newGeometryName = null;
+					DialogUtils.showWarningDialog((Component)hashTable.get(ClientRequestManager.GUI_PARENT),
+							"New Geometry name cannot be empty.");
+					continue;
+				}
+				//Check name conflict
+				GeometryInfo[] geometryInfos = ClientRequestManager.this.getDocumentManager().getGeometryInfos();
+				boolean bNameConflict = false;
+				for (int i = 0; i < geometryInfos.length; i++) {
+					if(geometryInfos[i].getVersion().getOwner().equals(ClientRequestManager.this.getDocumentManager().getUser())){
+						if(geometryInfos[i].getVersion().getName().equals(newGeometryName)){
+							bNameConflict = true;
+							break;
+						}
+					}
+				}
+				if(bNameConflict){
+					DialogUtils.showWarningDialog((Component)hashTable.get(ClientRequestManager.GUI_PARENT),
+					"A Geometry with name "+newGeometryName+" already exists.  Choose a different name.");
+					continue;
+				}else{
+					break;
+				}
+			}
+			getClientTaskStatusSupport().setMessage("Saving image portion of Geometry...");
+			saveImageAutoName(ClientRequestManager.this, ((Geometry)hashTable.get("doc")).getGeometrySpec().getImage());
+			getClientTaskStatusSupport().setMessage("Saving final Geometry...");
+			ClientRequestManager.this.getDocumentManager().saveAsNew((Geometry)hashTable.get("doc"), newGeometryName);
+		}
+	};
+	
+	return saveImageAndGeometryTask;
+}
 
 /**
  * onVCellMessageEvent method comment.
@@ -2440,6 +2606,34 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, Async
 	ClientTaskDispatcher.dispatch(currentDocumentWindow, hash, tasks, false);
 }
 
+//public void saveImportedGeometryAsNew(DocumentWindowManager documentWindowManager) {
+//	
+//	/* prepare hashtable for tasks */
+//	Hashtable<String, Object> hash = new Hashtable<String, Object>();
+//	hash.put("mdiManager", getMdiManager());
+//	hash.put("documentManager", getDocumentManager());
+//	hash.put("documentWindowManager", documentWindowManager);
+//	hash.put("requestManager", this);
+//	
+//	/* create tasks */
+//	// check document consistency first
+//	AsynchClientTask documentValid = new DocumentValid();
+//	AsynchClientTask setMathDescription = new SetMathDescription();
+//	// get a new name
+//	AsynchClientTask newName = new NewName();
+//	// save it
+//	AsynchClientTask saveDocument = new SaveDocument();
+//	// assemble array
+//	AsynchClientTask[] tasks = new AsynchClientTask[] {
+//		documentValid,
+//		setMathDescription,
+//		newName,
+//		saveDocument
+//	};
+//	
+//	/* run tasks */
+//	ClientTaskDispatcher.dispatch(JOptionPane.getRootFrame(), hash, tasks, false);
+//}
 
 /**
  * Insert the method's description here.
