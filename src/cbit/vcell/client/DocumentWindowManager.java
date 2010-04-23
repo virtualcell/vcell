@@ -4,6 +4,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.beans.PropertyVetoException;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -51,6 +52,7 @@ public abstract class DocumentWindowManager extends TopLevelWindowManager implem
 	public static class GeometrySelectionInfo{
 		private VCDocumentInfo vcDocumentInfo;
 		private VCDocument.DocumentCreationInfo selectedGeometryDocument;
+		private boolean bFromCurrentGeom = false;
 		
 		public GeometrySelectionInfo(VCDocumentInfo vcDocumentInfo){
 			if(!vcDocumentInfo.getVersionType().equals(VersionableType.BioModelMetaData) && 
@@ -66,11 +68,17 @@ public abstract class DocumentWindowManager extends TopLevelWindowManager implem
 			}
 			this.selectedGeometryDocument = selectedGeometryDocument;
 		}
+		public GeometrySelectionInfo(){
+			this.bFromCurrentGeom = true;
+		}
 		public VCDocumentInfo getVCDocumentInfo(){
 			return vcDocumentInfo;
 		}
 		public VCDocument.DocumentCreationInfo getDocumentCreationInfo(){
 			return selectedGeometryDocument;
+		}
+		public boolean bFromCurrentGeom(){
+			return bFromCurrentGeom;
 		}
 	}
 /**
@@ -971,7 +979,7 @@ public void tileWindows(boolean horizontal) {
 	}
 }
 
-GeometrySelectionInfo selectGeometry() throws Exception,UserCancelException{
+GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice) throws Exception,UserCancelException{
 	final int ANALYTIC_1D = 0;
 	final int ANALYTIC_2D = 1;
 	final int ANALYTIC_3D = 2;
@@ -981,16 +989,24 @@ GeometrySelectionInfo selectGeometry() throws Exception,UserCancelException{
 	final int COPY_FROM_MATHMODEL = 6;
 	final int COPY_FROM_GEOMETRY = 7;
 	final int FROM_SCRATCH = 8;
+	final int FROM_CURRENT_GEOM = 9;
 	int[] geomType = null;
 
+	String[][] choices = new String[][] {{"Analytic Equations (1D)"},{"Analytic Equations (2D)"},{"Analytic Equations (3D)"},
+			{"Image based (legacy from database)"},{"Image based (import from file)"},
+			{"Copy from BioModel application"},{"Copy from MathModel"},{"Copy from saved Geometry"},
+			{"From scratch"}};
+	if(bShowCurrentGeomChoice){
+		Vector<String[]> choiceV = new Vector<String[]>();
+		choiceV.addAll(Arrays.asList(choices));
+		choiceV.add(new String[] {"From Current Geometry"});
+		choices = choiceV.toArray(new String[0][]);
+	}
 	geomType = DialogUtils.showComponentOKCancelTableList(
 			getComponent(), 
 			"Choose new geometry type to create",
 			new String[] {"Geometry Type"}, 
-			new String[][] {{"Analytic Equations (1D)"},{"Analytic Equations (2D)"},{"Analytic Equations (3D)"},
-				{"Image based (legacy from database)"},{"Image based (import from file)"},
-				{"Copy from BioModel application"},{"Copy from MathModel"},{"Copy from saved Geometry"},
-				{"From scratch"}}, ListSelectionModel.SINGLE_SELECTION);
+			choices, ListSelectionModel.SINGLE_SELECTION);
 
 	VCDocument.DocumentCreationInfo documentCreationInfo = null;
 	VCDocumentInfo vcDocumentInfo = null;
@@ -1012,6 +1028,8 @@ GeometrySelectionInfo selectGeometry() throws Exception,UserCancelException{
 		vcDocumentInfo = ((ClientRequestManager)getRequestManager()).selectDocumentFromType(VCDocument.GEOMETRY_DOC, this);
 	}else if(geomType[0] == FROM_SCRATCH){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_SCRATCH);
+	}else if(geomType[0] == FROM_CURRENT_GEOM){
+		return new DocumentWindowManager.GeometrySelectionInfo();
 	}else{
 		throw new IllegalArgumentException("Error selecting geometry, Unknown Geometry type "+geomType[0]);
 	}
@@ -1025,29 +1043,72 @@ GeometrySelectionInfo selectGeometry() throws Exception,UserCancelException{
 	return geometrySelectionInfo;
 }
 
-void createGeometry(AsynchClientTask[] afterTasks){
+public static final String B_SHOW_OLD_GEOM_EDITOR = "B_SHOW_OLD_GEOM_EDITOR";
+void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afterTasks){
 	
 	try{
-		final DocumentWindowManager.GeometrySelectionInfo geometrySelectionInfo = selectGeometry();
 		final Hashtable<String, Object> hash = new Hashtable<String, Object>();
-		AsynchClientTask[] createGeomTaskArr = new AsynchClientTask[0];
+		Vector<AsynchClientTask> createGeomTaskV = new Vector<AsynchClientTask>();
+		final DocumentWindowManager.GeometrySelectionInfo geometrySelectionInfo =
+			selectGeometry(currentGeometry != null && currentGeometry.getDimension() >0);
+		hash.put(B_SHOW_OLD_GEOM_EDITOR, false);
 		if(geometrySelectionInfo.getDocumentCreationInfo() != null){
-			createGeomTaskArr = ((ClientRequestManager)getRequestManager()).createNewDocument(this, geometrySelectionInfo.getDocumentCreationInfo());
+			if(ClientRequestManager.isImportGeometryType(geometrySelectionInfo.getDocumentCreationInfo())){
+				//Create imported Geometry
+				createGeomTaskV.addAll(Arrays.asList(
+					((ClientRequestManager)getRequestManager()).createNewGeometryTasks(this,
+						geometrySelectionInfo.getDocumentCreationInfo(),
+						afterTasks,
+						"Apply Geometry")));
+			}else{//Create Analytic Geometry
+				hash.put(B_SHOW_OLD_GEOM_EDITOR, true);
+				createGeomTaskV.addAll(Arrays.asList(((ClientRequestManager)getRequestManager()).createNewDocument(this,
+						geometrySelectionInfo.getDocumentCreationInfo())));
+				createGeomTaskV.addAll(Arrays.asList(afterTasks));
+			}
 			hash.put("guiParent", (Component)getComponent());
 			hash.put("requestManager", getRequestManager());
-		}else{
-			createGeomTaskArr = new AsynchClientTask[1]; 
-			createGeomTaskArr[0] = new AsynchClientTask("loading Geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		}else{//Copy from existing BioModel,MathModel,Geometry
+			createGeomTaskV.add(new AsynchClientTask("loading Geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					Geometry copiedGeom =
-						((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(geometrySelectionInfo.getVCDocumentInfo(),true);
-					hash.put("doc",copiedGeom);
+					Geometry copiedGeom = null;
+					if(geometrySelectionInfo.bFromCurrentGeom){
+						copiedGeom = new Geometry(currentGeometry);
+					}else{
+						copiedGeom =
+							((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(
+								geometrySelectionInfo.getVCDocumentInfo(),true);
+					}
+					final Vector<AsynchClientTask> runtimeTasksV = new Vector<AsynchClientTask>();
+					if(copiedGeom.getGeometrySpec().getImage() != null &&
+						copiedGeom.getGeometrySpec().getNumAnalyticSubVolumes() == 0){
+						runtimeTasksV.addAll(Arrays.asList(((ClientRequestManager)getRequestManager()).createNewGeometryTasks(DocumentWindowManager.this,
+								new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE),
+								afterTasks,
+								"Apply Geometry")));
+						hashTable.put("guiParent", (Component)getComponent());
+						hashTable.put("requestManager", getRequestManager());
+						hashTable.put(ClientRequestManager.IMAGE_FROM_DB, copiedGeom.getGeometrySpec().getImage());
+					}else{
+						hashTable.put(B_SHOW_OLD_GEOM_EDITOR, true);
+						//preload sampledimage to prevent gui delay later
+						copiedGeom.getGeometrySpec().getSampledImage();
+						hashTable.put("doc",copiedGeom);
+						runtimeTasksV.addAll(Arrays.asList(afterTasks));
+					}
+					new Thread(
+						new Runnable() {
+							public void run() {
+								ClientTaskDispatcher.dispatch(getComponent(),
+										hash,runtimeTasksV.toArray(new AsynchClientTask[0]), false,false,null,true);
+							}
+						}
+					).start();
 				}			
-			};
+			});
 		}
-		createGeomTaskArr = (AsynchClientTask[])BeanUtils.addElements(createGeomTaskArr, afterTasks);
-		ClientTaskDispatcher.dispatch(getComponent(), hash, createGeomTaskArr, false);
+		ClientTaskDispatcher.dispatch(getComponent(), hash, createGeomTaskV.toArray(new AsynchClientTask[0]), false,false,null,true);
 		
 	} catch (UserCancelException e1) {
 		return;

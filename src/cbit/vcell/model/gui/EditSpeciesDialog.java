@@ -95,7 +95,6 @@ public class EditSpeciesDialog extends JDialog {
 			Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
 			miriamResources.add(resource);
 			miriamManager.addMiriamRefGroup(getSpeciesContext().getSpecies(), miriamQualifier, miriamResources);
-			miriamManager.invalidateCache(getSpeciesContext().getSpecies());
 		} catch (URNParseFailureException e) {
 			e.printStackTrace();
 			DialogUtils.showErrorDialog(this, e.getMessage());
