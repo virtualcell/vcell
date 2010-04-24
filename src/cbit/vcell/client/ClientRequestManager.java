@@ -127,6 +127,7 @@ import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -162,7 +163,7 @@ public ClientRequestManager(VCellClient vcellClient) {
 	
 }
 
-
+private static final String GEOMETRY_KEY = "geometry";
 private void changeGeometry0(final DocumentWindowManager requester, final SimulationContext simContext,final VCMLEditorPanel vcmlEditorPanel) {
 	AsynchClientTask selectDocumentTypeTask = new AsynchClientTask("Select/Load geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
@@ -178,41 +179,62 @@ private void changeGeometry0(final DocumentWindowManager requester, final Simula
 		}		
 	};
 
-	AsynchClientTask selectLoadGeomTask = new AsynchClientTask("Select/Load geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	AsynchClientTask selectLoadGeomTask = new AsynchClientTask("Select/Load geometry...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			VCDocumentInfo vcDocumentInfo = (VCDocumentInfo)hashTable.get("vcDocumentInfo");
 			Geometry geom = getGeometryFromDocumentSelection(requester.getComponent(),vcDocumentInfo, false);
 			geom.getGeometrySpec().getSampledImage();//pregenerate sampled image, cpu intensive
-			hashTable.put("geometry", geom);
-			GeometryInfo geometryInfo = getDocumentManager().getGeometryInfo(geom.getVersion().getVersionKey());
-			hashTable.put("geometryInfo", geometryInfo);
+			hashTable.put(GEOMETRY_KEY, geom);
 		}		
 	};
 
-	AsynchClientTask confirmGeomTask = new AsynchClientTask("Changing geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+	AsynchClientTask confirmGeomTask = new AsynchClientTask("Review Geometry...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(final Hashtable<String, Object> hashTable) throws Exception {
-			Geometry geom = (Geometry)hashTable.get("geometry");
+			Geometry geom = (Geometry)hashTable.get(GEOMETRY_KEY);
 			GeometrySummaryPanel geometrySummaryPanel = new GeometrySummaryPanel();
 			geometrySummaryPanel.setGeometry(geom);
 			int result = DialogUtils.showComponentOKCancelDialog(JOptionPane.getFrameForComponent(requester.getComponent()), geometrySummaryPanel, "Confirm Geometry Selection");
 			if(result != JOptionPane.OK_OPTION){
-				return;
+				throw UserCancelException.CANCEL_GENERIC;
 			}
-			
-			//Change geometry confirmed, branch off and start changeGeometryAfterChecking (starts new ClientTaskDispatcher)
-			new Thread(new Runnable() {
-				public void run() {
-					changeGeometryAfterChecking((GeometryInfo)hashTable.get("geometryInfo"), requester, simContext,vcmlEditorPanel);
-				}
-			}).start();
 		}		
+	};
+	AsynchClientTask processGeometryTask = new AsynchClientTask("Processing geometry...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Geometry newGeometry = (Geometry)hashTable.get(GEOMETRY_KEY);
+			if(requester instanceof MathModelWindowManager){
+				//User can cancel here
+				continueAfterMathModelGeomChangeWarning((MathModelWindowManager)requester, newGeometry);
+			}
+			if (newGeometry.getDimension()>0 && newGeometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
+				newGeometry.getGeometrySurfaceDescription().updateAll();				
+			}			
+		}		
+	};
+	AsynchClientTask setNewGeometryTask = new AsynchClientTask("Setting new Geometry...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Geometry newGeometry = (Geometry)hashTable.get(GEOMETRY_KEY);
+			if (newGeometry != null) {
+				if (requester instanceof BioModelWindowManager) {
+					simContext.setGeometry(newGeometry);
+				} else if (requester instanceof MathModelWindowManager) {
+					MathModel mathModel = (MathModel)((MathModelWindowManager)requester).getVCDocument();
+					mathModel.getMathDescription().setGeometry(newGeometry);
+					if(vcmlEditorPanel != null){
+						vcmlEditorPanel.updateWarningText(mathModel.getMathDescription());
+					}
+				}
+			}
+		}
 	};
 
 	Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
 	ClientTaskDispatcher.dispatch(requester.getComponent(),hashTable,
-			new AsynchClientTask[] {selectDocumentTypeTask, selectLoadGeomTask, confirmGeomTask}, false);
+			new AsynchClientTask[] {selectDocumentTypeTask, selectLoadGeomTask, confirmGeomTask,processGeometryTask,setNewGeometryTask}, false);
 	
 }
 
@@ -224,89 +246,33 @@ public void changeGeometry(DocumentWindowManager requester,VCMLEditorPanel vcmlE
 	changeGeometry0(requester, null,vcmlEditorPanel);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 4:20:47 AM)
- * @param windowManager cbit.vcell.client.desktop.DocumentWindowManager
- */
-private void changeGeometryAfterChecking(final GeometryInfo geoInfo, final DocumentWindowManager requester, final SimulationContext simContext,final VCMLEditorPanel vcmlEditorPanel) {
-	/* asynchronous and not blocking any window */
-	AsynchClientTask task1 = new AsynchClientTask("Blocking window", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			getMdiManager().blockWindow(requester.getManagerID());
-		}		
-	};
-	
-	AsynchClientTask task2 = new AsynchClientTask("Getting new geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			Geometry newGeometry = getDocumentManager().getGeometry(geoInfo);
-			
-			if(requester instanceof MathModelWindowManager){
-				continueAfterMathModelGeomChangeWarning((MathModelWindowManager)requester, newGeometry);
-			}
-
-			newGeometry.getGeometrySpec().getSampledImage();
-			if (newGeometry.getDimension()>0 && newGeometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
-				newGeometry.getGeometrySurfaceDescription().updateAll();				
-			}			
-			hashTable.put("geometry", newGeometry);
-		}		
-	};
-	
-	AsynchClientTask task3 = new AsynchClientTask("Changing geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING/*, false, false*/) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-//			try {
-				Geometry geometry = (Geometry)hashTable.get("geometry");
-				if (geometry != null) {
-					if (requester instanceof BioModelWindowManager) {
-						simContext.setGeometry(geometry);
-					} else if (requester instanceof MathModelWindowManager) {
-						MathModel mathModel = (MathModel)((MathModelWindowManager)requester).getVCDocument();
-						mathModel.getMathDescription().setGeometry(geometry);
-						if(vcmlEditorPanel != null){
-							vcmlEditorPanel.updateWarningText(mathModel.getMathDescription());
-						}
-					}
-				}
-//			} finally {
-//				getMdiManager().unBlockWindow(requester.getManagerID());
-//			}
-		}
-	};
-	
-	AsynchClientTask task4 = new AsynchClientTask("Unblocking window", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-				getMdiManager().unBlockWindow(requester.getManagerID());
-		}
-	};
-
-	
-	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3, task4}, false);
-
-}
-
 public static void continueAfterMathModelGeomChangeWarning(MathModelWindowManager mathModelWindowManager,Geometry newGeometry) throws UserCancelException{
 
 	MathModel mathModel = mathModelWindowManager.getMathModel();
+	boolean bHasSims = (mathModel.getSimulations() != null) && (mathModel.getSimulations().length > 0);
+	StringBuffer meshResolutionChangeSB = new StringBuffer();
+	if(bHasSims){
+		ISize newGeomISize = MeshSpecification.calulateResetSamplingSize(newGeometry);
+		for (int i = 0; i < mathModel.getSimulations().length; i++) {
+			String simName = mathModel.getSimulations()[i].getName();
+			ISize simMeshSize = mathModel.getSimulations()[i].getMeshSpecification().getSamplingSize();
+			meshResolutionChangeSB.append((i!=0?"\n":"")+
+				"'"+simName+"' Mesh"+simMeshSize+" will be reset to "+newGeomISize+"");
+		}
+	}
 	if(mathModel != null && mathModel.getMathDescription() != null){
 		Geometry oldGeometry = mathModel.getMathDescription().getGeometry();
-		boolean bHasSims = (mathModel.getSimulations() != null) && (mathModel.getSimulations().length > 0);
 		boolean bMeshResolutionChange = true;
 		if(oldGeometry == null){
 			bMeshResolutionChange = false;
 		}
-		if(newGeometry != null && oldGeometry.getDimension() == newGeometry.getDimension()){
+		if(newGeometry != null && oldGeometry != null && oldGeometry.getDimension() == newGeometry.getDimension()){
 			bMeshResolutionChange = false;
 		}
 		String result = DialogUtils.showWarningDialog(JOptionPane.getFrameForComponent(mathModelWindowManager.getComponent()),
 				"After changing MathModel geometry please note:\n"+
 				"  1.  Check Geometry subvolume names match MathModel compartment names."+
-				(bHasSims && bMeshResolutionChange?"\n  2.  All existing simulations mesh resolutions will be reset.":""),
+				(bHasSims && bMeshResolutionChange?"\n  2.  All existing simulations mesh resolutions will be reset.\n"+meshResolutionChangeSB.toString():""),
 				new String[] {"Continue","Cancel"},
 				"Continue");
 		if(result != null && result.equals("Continue")){
@@ -879,6 +845,7 @@ public Geometry getGeometryFromDocumentSelection(Component parentComponent,VCDoc
 				for (int i = 0; i < bioModel.getSimulationContexts().length; i++) {
 					if(bioModel.getSimulationContexts()[i].getName().equals(rowData[selection[0]][0])){
 						geom = bioModel.getSimulationContexts()[i].getGeometry();
+						break;
 					}
 				}
 			}else{
@@ -901,10 +868,10 @@ public Geometry getGeometryFromDocumentSelection(Component parentComponent,VCDoc
 		}else{
 			throw new Exception("MathModel '"+mathModelInfo.getVersion().getName()+"' contains no spatial geometry.");
 		}
-	}else if(vcDocumentInfo.getVersionType().equals(VersionableType.Geometry)/*documentType == VCDocument.GEOMETRY_DOC*/){
+	}else if(vcDocumentInfo.getVersionType().equals(VersionableType.Geometry)){
 		geom = getDocumentManager().getGeometry((GeometryInfo)vcDocumentInfo);
 		if(geom.getDimension() == 0){
-			throw new Exception("Error, Only spatial geometries allowed (dimesnion > 0).");
+			throw new Exception("Error, Only spatial geometries allowed (dimension > 0).");
 		}
 	}else{
 		throw new IllegalArgumentException("Error selecting geometry from document type "+vcDocumentInfo.getVersionType()+". Must be BioModel,MathModel or Geometry.");

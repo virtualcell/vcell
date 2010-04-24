@@ -248,15 +248,12 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
  * @param geometry The new value for the property.
  * @see #getGeometry
  */
-private void resetSamplingSize() {
-	if (fieldGeometry==null){
-		return;
-	}
+public static ISize calulateResetSamplingSize(Geometry geometry) {
 	long numX = 1;
 	long numY = 1;
 	long numZ = 1;
 	
-	int dim = getGeometry().getDimension();
+	int dim = geometry.getDimension();
 	switch (dim){
 		case 1:{
 			numX = 200;
@@ -266,7 +263,7 @@ private void resetSamplingSize() {
 		}
 		case 2:{
 			long total = 101*101;
-			Extent extent = getGeometry().getExtent();
+			Extent extent = geometry.getExtent();
 			double aspectRatio = extent.getX()/extent.getY();
 			numY = Math.max(3, Math.round(Math.sqrt(total/aspectRatio)));
 			numX = Math.max(3, Math.round(total/numY));
@@ -275,7 +272,7 @@ private void resetSamplingSize() {
 		}
 		case 3:{
 			long total = 51*51*51;
-			Extent extent = getGeometry().getExtent();
+			Extent extent = geometry.getExtent();
 			double aspectRatioZX = extent.getZ()/extent.getX();
 			double aspectRatioZY = extent.getZ()/extent.getY();
 			numZ = Math.max(3, Math.round(Math.pow(total*aspectRatioZX*aspectRatioZY,0.333333333)));
@@ -286,13 +283,16 @@ private void resetSamplingSize() {
 	}
 	
 	ISize samplingSize = new ISize((int)numX,(int)numY,(int)numZ);
+	return samplingSize;
+}
+
+private void resetSamplingSize(){
 	try {
-		setSamplingSize(samplingSize);
+		setSamplingSize(calulateResetSamplingSize(getGeometry()));
 	}catch (java.beans.PropertyVetoException e){
 		throw new RuntimeException("unexpected error while setting mesh sampling : "+e.getMessage());
 	}
 }
-
 
 /**
  * Sets the geometry property (cbit.vcell.geometry.Geometry) value.
