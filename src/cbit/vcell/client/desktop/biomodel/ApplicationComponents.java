@@ -52,20 +52,20 @@ public ApplicationComponents(SimulationContext simContext, BioModelWindowManager
 	getAppEditorFrame().setLocation(400,200);
 	getAppEditorFrame().addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
 		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-			DocumentWindowManager.close(getGeometrySummaryViewerFrame(), pane);
+//			DocumentWindowManager.close(getGeometrySummaryViewerFrame(), pane);
 			DocumentWindowManager.close(getSurfaceViewerFrame(), pane);
 			DocumentWindowManager.close(getDataViewerFrames(), pane);
 		};
 	});
 	
-	// make the geometry viewer
-	GeometrySummaryViewer geoViewer = new GeometrySummaryViewer();
-	geoViewer.setStochastic(simContext.isStoch());
-
-	setGeometrySummaryViewer(geoViewer);
-	getGeometrySummaryViewer().setGeometry(simContext.getGeometry());
-	getGeometrySummaryViewer().setStochastic(simContext.isStoch());
-	setGeometrySummaryViewerFrame(DocumentWindowManager.createDefaultFrame(getGeometrySummaryViewer()));
+//	// make the geometry viewer
+//	GeometrySummaryViewer geoViewer = new GeometrySummaryViewer();
+//	geoViewer.setStochastic(simContext.isStoch());
+//
+//	setGeometrySummaryViewer(geoViewer);
+//	getGeometrySummaryViewer().setGeometry(simContext.getGeometry());
+//	getGeometrySummaryViewer().setStochastic(simContext.isStoch());
+//	setGeometrySummaryViewerFrame(DocumentWindowManager.createDefaultFrame(getGeometrySummaryViewer()));
 
 	// make the surface viewer
 	setSurfaceViewer(new SurfaceViewerPanel());
@@ -147,24 +147,24 @@ public JInternalFrame[] getDataViewerFrames() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/4/2004 1:26:00 AM)
- * @return cbit.vcell.client.desktop.biomodel.GeometrySummaryViewer
- */
-public GeometrySummaryViewer getGeometrySummaryViewer() {
-	return geometrySummaryViewer;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/4/2004 1:27:33 AM)
- * @return cbit.gui.JInternalFrameEnhanced
- */
-public JInternalFrameEnhanced getGeometrySummaryViewerFrame() {
-	return geometrySummaryViewerFrame;
-}
+///**
+// * Insert the method's description here.
+// * Creation date: (6/4/2004 1:26:00 AM)
+// * @return cbit.vcell.client.desktop.biomodel.GeometrySummaryViewer
+// */
+//public GeometrySummaryViewer getGeometrySummaryViewer() {
+//	return geometrySummaryViewer;
+//}
+//
+//
+///**
+// * Insert the method's description here.
+// * Creation date: (6/4/2004 1:27:33 AM)
+// * @return cbit.gui.JInternalFrameEnhanced
+// */
+//public JInternalFrameEnhanced getGeometrySummaryViewerFrame() {
+//	return geometrySummaryViewerFrame;
+//}
 
 /**
  * Insert the method's description here.
@@ -218,9 +218,9 @@ public SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulation
 public void resetSimulationContext(SimulationContext simContext) {
 	// the app editor
 	getAppEditor().resetSimContext(simContext);
-	// the geometry viewer
-	getGeometrySummaryViewer().setGeometry(simContext.getGeometry());
-	getGeometrySummaryViewer().setStochastic(simContext.isStoch());
+//	// the geometry viewer
+//	getGeometrySummaryViewer().setGeometry(simContext.getGeometry());
+//	getGeometrySummaryViewer().setStochastic(simContext.isStoch());
 	// the surface viewer
 	getSurfaceViewer().setGeometry(simContext.getGeometry());
 	

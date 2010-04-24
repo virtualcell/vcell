@@ -20,7 +20,7 @@ public class GuiConstants {
 	public static final String ACTIONCMD_COPY_TO_STOCHASTIC_APPLICATION = "Copy To Stochastic Application";
 	
 	public static final String ACTIONCMD_CHANGE_GEOMETRY = "Change Geometry...";
-	public static final String ACTIONCMD_VIEW_CHANGE_GEOMETRY = "View / Change Geometry";
+//	public static final String ACTIONCMD_VIEW_CHANGE_GEOMETRY = "View / Change Geometry";
 	public static final String ACTIONCMD_CREATE_MATH_MODEL = "Create Math Model";
 //	public static final String ACTIONCMD_OPEN_GEOMETRY = "Open Geometry";
 	public static final String ACTIONCMD_VIEW_SURFACES = "View Surfaces";
