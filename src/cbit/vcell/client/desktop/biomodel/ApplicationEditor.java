@@ -8,13 +8,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.util.Hashtable;
 
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
@@ -25,7 +23,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
 import cbit.gui.MultiPurposeTextPanel;
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -37,10 +34,8 @@ import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StochMathMapping;
-import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
-import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.gui.MathDescEditor;
 import cbit.vcell.math.gui.MathDescPanel;
@@ -72,15 +67,15 @@ public class ApplicationEditor extends JPanel {
 	private ReactionSpecsPanel ivjReactionSpecsPanel = null;
 	private SimulationListPanel ivjSimulationListPanel = null;
 	private SPPRPanel ivjSPPRPanel = null;
-	private boolean ivjConnPtoP3Aligning = false;
+//	private boolean ivjConnPtoP3Aligning = false;
 	private boolean ivjConnPtoP4Aligning = false;
 	private boolean ivjConnPtoP5Aligning = false;
-	private boolean ivjConnPtoP6Aligning = false;
+//	private boolean ivjConnPtoP6Aligning = false;
 	private SimulationContext ivjsimulationContext = null;
 	private GeometryContext ivjgeometryContext = null;
-	private JPanel ivjJPanel3 = null;
-	private JPanel ivjStructureMappingPanel = null;
-	private JButton ivjViewModifyGeometryButton = null;
+//	private JPanel ivjJPanel3 = null;
+//	private JPanel ivjStructureMappingPanel = null;
+//	private JButton ivjViewModifyGeometryButton = null;
 	private JRadioButton ivjViewEqunsRadioButton = null;
 	private JPanel ivjViewMathPanel = null;
 	private JRadioButton ivjViewVCMDLRadioButton = null;
@@ -282,24 +277,24 @@ private void connEtoC2(java.awt.event.ItemEvent arg1) {
 }
 
 
-/**
- * connEtoC3:  (JButton2.action.actionPerformed(java.awt.event.ActionEvent) --> ApplicationEditor.showGeometryViewer()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.refireActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+///**
+// * connEtoC3:  (JButton2.action.actionPerformed(java.awt.event.ActionEvent) --> ApplicationEditor.showGeometryViewer()V)
+// * @param arg1 java.awt.event.ActionEvent
+// */
+///* WARNING: THIS METHOD WILL BE REGENERATED. */
+//private void connEtoC3(java.awt.event.ActionEvent arg1) {
+//	try {
+//		// user code begin {1}
+//		// user code end
+//		this.refireActionPerformed(arg1);
+//		// user code begin {2}
+//		// user code end
+//	} catch (java.lang.Throwable ivjExc) {
+//		// user code begin {3}
+//		// user code end
+//		handleException(ivjExc);
+//	}
+//}
 
 /**
  * connEtoC4:  (RefreshButton.action.actionPerformed(java.awt.event.ActionEvent) --> ApplicationEditor.updateMath()V)
@@ -827,31 +822,31 @@ private void connPtoP5SetTarget() {
 }
 
 
-/**
- * connPtoP6SetSource:  (simulationWorkspace1.simulationOwner <--> ElectricalMembraneMappingPanel.simulationContext)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP6SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP6Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP6Aligning = true;
-			if ((getsimulationWorkspace1() != null)) {
-				getsimulationWorkspace1().setSimulationOwner(getSimulationContext());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP6Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP6Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+///**
+// * connPtoP6SetSource:  (simulationWorkspace1.simulationOwner <--> ElectricalMembraneMappingPanel.simulationContext)
+// */
+///* WARNING: THIS METHOD WILL BE REGENERATED. */
+//private void connPtoP6SetSource() {
+//	/* Set the source from the target */
+//	try {
+//		if (ivjConnPtoP6Aligning == false) {
+//			// user code begin {1}
+//			// user code end
+//			ivjConnPtoP6Aligning = true;
+//			if ((getsimulationWorkspace1() != null)) {
+//				getsimulationWorkspace1().setSimulationOwner(getSimulationContext());
+//			}
+//			// user code begin {2}
+//			// user code end
+//			ivjConnPtoP6Aligning = false;
+//		}
+//	} catch (java.lang.Throwable ivjExc) {
+//		ivjConnPtoP6Aligning = false;
+//		// user code begin {3}
+//		// user code end
+//		handleException(ivjExc);
+//	}
+//}
 
 /**
  * connPtoP7SetSource:  (MathViewerPanel.layout <--> cardLayout.this)
@@ -2098,7 +2093,7 @@ public void setSimulationWorkspace(SimulationWorkspace simulationWorkspace) {
 private void setsimulationWorkspace1(SimulationWorkspace newValue) {
 	if (ivjsimulationWorkspace1 != newValue) {
 		try {
-			SimulationWorkspace oldValue = getsimulationWorkspace1();
+//			SimulationWorkspace oldValue = getsimulationWorkspace1();
 			/* Stop listening for events from the current object */
 			if (ivjsimulationWorkspace1 != null) {
 				ivjsimulationWorkspace1.removePropertyChangeListener(ivjEventHandler);
