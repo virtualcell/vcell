@@ -249,17 +249,6 @@ public void changeGeometry(DocumentWindowManager requester,VCMLEditorPanel vcmlE
 public static void continueAfterMathModelGeomChangeWarning(MathModelWindowManager mathModelWindowManager,Geometry newGeometry) throws UserCancelException{
 
 	MathModel mathModel = mathModelWindowManager.getMathModel();
-	boolean bHasSims = (mathModel.getSimulations() != null) && (mathModel.getSimulations().length > 0);
-	StringBuffer meshResolutionChangeSB = new StringBuffer();
-	if(bHasSims){
-		ISize newGeomISize = MeshSpecification.calulateResetSamplingSize(newGeometry);
-		for (int i = 0; i < mathModel.getSimulations().length; i++) {
-			String simName = mathModel.getSimulations()[i].getName();
-			ISize simMeshSize = mathModel.getSimulations()[i].getMeshSpecification().getSamplingSize();
-			meshResolutionChangeSB.append((i!=0?"\n":"")+
-				"'"+simName+"' Mesh"+simMeshSize+" will be reset to "+newGeomISize+"");
-		}
-	}
 	if(mathModel != null && mathModel.getMathDescription() != null){
 		Geometry oldGeometry = mathModel.getMathDescription().getGeometry();
 		boolean bMeshResolutionChange = true;
@@ -269,10 +258,26 @@ public static void continueAfterMathModelGeomChangeWarning(MathModelWindowManage
 		if(newGeometry != null && oldGeometry != null && oldGeometry.getDimension() == newGeometry.getDimension()){
 			bMeshResolutionChange = false;
 		}
+		boolean bHasSims = (mathModel.getSimulations() != null) && (mathModel.getSimulations().length > 0);
+		StringBuffer meshResolutionChangeSB = new StringBuffer();
+		if(bHasSims && bMeshResolutionChange){
+			ISize newGeomISize = MeshSpecification.calulateResetSamplingSize(newGeometry);
+			for (int i = 0; i < mathModel.getSimulations().length; i++) {
+				String simName = mathModel.getSimulations()[i].getName();
+				ISize simMeshSize = mathModel.getSimulations()[i].getMeshSpecification().getSamplingSize();
+				meshResolutionChangeSB.append((i!=0?"\n":"")+
+					"'"+simName+"' Mesh"+simMeshSize+" will be reset to "+newGeomISize+"");
+			}
+		}
+
 		String result = DialogUtils.showWarningDialog(JOptionPane.getFrameForComponent(mathModelWindowManager.getComponent()),
 				"After changing MathModel geometry please note:\n"+
 				"  1.  Check Geometry subvolume names match MathModel compartment names."+
-				(bHasSims && bMeshResolutionChange?"\n  2.  All existing simulations mesh resolutions will be reset.\n"+meshResolutionChangeSB.toString():""),
+				(bHasSims && bMeshResolutionChange?"\n"+
+						"  2.  All existing simulations mesh sizes will be reset"+
+						" because the new Geometry spatial dimension("+newGeometry.getDimension()+"D)"+
+						" does not equal the current Geometry spatial dimension("+oldGeometry.getDimension()+"D)"+
+						"\n"+meshResolutionChangeSB.toString():""),
 				new String[] {"Continue","Cancel"},
 				"Continue");
 		if(result != null && result.equals("Continue")){
