@@ -984,7 +984,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					}
 					int userPreferredTime = 0;
 					try{
-						getClientTaskStatusSupport().setMessage("Checking file for time information.");
+						getClientTaskStatusSupport().setMessage("Checking file for time information...");
 						double[] allTimes = ImageDatasetReader.getTimesOnly(imageFile.getAbsolutePath());
 						if(allTimes.length > 1){
 							String[][] rowData = new String[allTimes.length][1];
@@ -1001,6 +1001,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						e.printStackTrace();
 						//ignore, try to load without checking for times and use the first time if successful
 					}
+					getClientTaskStatusSupport().setMessage("Reading file...");
 					fdfos = ClientRequestManager.createFDOSFromImageFile(imageFile,false,userPreferredTime);
 					
 				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
