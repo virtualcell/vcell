@@ -530,7 +530,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //			);
 //			progressWait(STOP_PROGRESS, STOP_PROGRESS,false);
 //
-//			final JDialog jDialog = new JDialog(JOptionPane.getRootFrame());
+//			final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(parentComponent));
 //			jDialog.setTitle("Surface Viewer");
 //			jDialog.setModal(true);
 //			jDialog.getContentPane().add(fieldDataValueSurfaceViewer0);
@@ -545,7 +545,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //		}
 //	}
 
-	private GeometryAttributes showEditGeometryAttributes(String annotation,Origin origin,Extent extent) throws UserCancelException{
+	private GeometryAttributes showEditGeometryAttributes(Component parentComponent,String annotation,Origin origin,Extent extent) throws UserCancelException{
 		final GeometryAttributes[] finalGeometryAttributesHolder = new GeometryAttributes[1];
 		final boolean[] cancelHolder = new boolean[] {false};
 
@@ -553,7 +553,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			new CopyOfImageAttributePanel();
 		copyOfImageAttributePanel.init(origin, extent, getImageDataSet().getISize(), annotation);
 		
-		final JDialog jDialog = new JDialog(JOptionPane.getRootFrame());
+		final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(parentComponent));
 		jDialog.setTitle("Edit Geometry Attributes");
 		jDialog.setModal(true);
 		
@@ -598,7 +598,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	public Geometry showGUI(
 			final String okButtonText,
 			final String sourceDataName,
-			Component centerOnComponent,
+			final Component parentComponent,
 			String initalAnnotation){
 		
 		final Geometry[] finalGeometryHolder = new Geometry[1];
@@ -636,7 +636,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
 		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
 
-		final JDialog jDialog = new JDialog(JOptionPane.getRootFrame());
+		final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(parentComponent));
 		jDialog.setTitle("Geometry Editor ("+sourceDataName+")");
 		jDialog.setModal(true);
 		
@@ -651,7 +651,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		);
 		
 		final GeometryAttributes geomAttr = new GeometryAttributes();
-		geomAttr.annotation = "";
+		geomAttr.annotation = initalAnnotation;
 		geomAttr.origin = originalOrigin;
 		geomAttr.extent = originalExtent;
 		geomAttr.dimension = 1+
@@ -689,7 +689,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			public void actionPerformed(ActionEvent e) {
 				try{
 					GeometryAttributes editedGeometryAttributes =
-						showEditGeometryAttributes(geomAttr.annotation,geomAttr.origin,geomAttr.extent);
+						showEditGeometryAttributes(parentComponent,geomAttr.annotation,geomAttr.origin,geomAttr.extent);
 					geomAttr.annotation = editedGeometryAttributes.annotation;
 					geomAttr.origin = editedGeometryAttributes.origin;
 					geomAttr.extent = editedGeometryAttributes.extent;
@@ -712,7 +712,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		jDialog.getContentPane().add(overlayEditorPanelJAI,BorderLayout.CENTER);
 		jDialog.getContentPane().add(okCancelJPanel,BorderLayout.SOUTH);
 		jDialog.setSize(700,600);
-		ZEnforcer.showModalDialogOnTop(jDialog,centerOnComponent);
+		ZEnforcer.showModalDialogOnTop(jDialog,parentComponent);
 		
 		if(cancelHolder[0]){
 			throw UserCancelException.CANCEL_GENERIC;
@@ -762,7 +762,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					"  This can happen when small unintended gaps are left between adjacent ROIs"+
 					" or areas around the edges were intentionally left as background.  Choose an action:\n"+
 					"1.  Leave as is, unassigned areas should be treated as 'background'.\n"+
-					"2.  Go back to segmentation tool. (note: look for areas with no color)",
+					"2.  Go back to segmentation tool. (note: use 'Utilities...'->'Resolve regions...')",
 					new String[] {assignToBackground,/*assignToNeighbors,*/cancelAssign}, assignToBackground);
 			if(result.equals(assignToBackground)){
 				bForceAssignBackground = true;
@@ -1230,7 +1230,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					"One or more ROIs touches the outer boundary "+edgeDescrFrag+"\n"+
 					"Choose an option:\n"+
 					"1. Keep as is, do not change.\n"+
-					"2. Add empty border around outer boundary so no ROI touches an outer edge.",
+					"2. Add empty 'background' border around outer boundary so no ROI touches an outer edge.",
 					new String[] {keep,addBorder,cancel}, keep);
 			if(result.equals(cancel)){
 				throw UserCancelException.CANCEL_GENERIC;

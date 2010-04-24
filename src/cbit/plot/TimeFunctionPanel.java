@@ -117,14 +117,6 @@ public class TimeFunctionPanel extends JPanel {
 		
 		init();
 	}
-
-	public static void main(String[] args){
-    	TimeFunctionPanel test = new TimeFunctionPanel();
-    	JDialog jdialog = new JDialog(JOptionPane.getRootFrame());
-    	jdialog.setContentPane(test);
-    	jdialog.pack();
-    	jdialog.setVisible(true);
-	}
 	
 	private void init(){
 		funcTextField.setText("t");

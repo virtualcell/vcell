@@ -1520,12 +1520,12 @@ private void setsimulationContext1(SimulationContext newValue) {
 			}
 			timeFunctionPanel = new TimeFunctionPanel();
 			timeFunctionPanel.setTimeFunction(protocolParameterExp.flatten().infix());
-		} catch (ExpressionException e) {							
+		} catch (Exception e) {							
 			DialogUtils.showErrorDialog(ElectricalStimulusPanel.this, e.getMessage());
 			return;
 		}
     	
-		JDialog jdialog = new JDialog(JOptionPane.getRootFrame(),true);
+		JDialog jdialog = new JDialog(JOptionPane.getFrameForComponent(this),true);
     	jdialog.addWindowListener(new WindowAdapter() {	
     		@Override
 			public void windowClosing(WindowEvent e) {
