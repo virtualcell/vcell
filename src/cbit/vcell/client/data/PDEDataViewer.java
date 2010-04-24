@@ -1649,7 +1649,7 @@ private javax.swing.JButton getJButtonSnapshotROI() {
 								"  No data values for variable '"+variableName+"'\n"+
 								"at time '"+timePoint+"' have values equal to 1."+
 								"  Add a function that evaluates to 1 at the points to be included in the ROI (user defined funtions can be added from the 'Simulation' panel), "+
-								" choose the new function name in the Simulation results viewer and press 'Snapshot ROI' again.");
+								" then choose the new function name in the Simulation results viewer and press 'Snapshot ROI' again.");
 						return;
 					}else{
 						if(isVolumeType){
