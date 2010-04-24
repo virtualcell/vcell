@@ -143,13 +143,15 @@ public static Expression substituteModelParameters(Expression exp, SymbolTable s
 			throw new ExpressionBindingException("infinite loop in eliminating function nesting");
 		}
 		String[] symbols = exp2.getSymbols();
-		for (int i = 0; i < symbols.length; i++) {
-			SymbolTableEntry ste = exp2.getSymbolBinding(symbols[i]);
-			if (ste != null && !(ste instanceof SymbolTableFunctionEntry)){
-				Expression steExp = ste.getExpression();
-				if (steExp != null){
-					exp2.substituteInPlace(new Expression(ste.getName()), steExp);
-					bSubstituted = true;
+		if (symbols != null) {
+			for (int i = 0; i < symbols.length; i++) {
+				SymbolTableEntry ste = exp2.getSymbolBinding(symbols[i]);
+				if (ste != null && !(ste instanceof SymbolTableFunctionEntry)) {
+					Expression steExp = ste.getExpression();
+					if (steExp != null) {
+						exp2.substituteInPlace(new Expression(ste.getName()),steExp);
+						bSubstituted = true;
+					}
 				}
 			}
 		}
