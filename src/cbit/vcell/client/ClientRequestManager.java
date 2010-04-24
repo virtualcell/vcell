@@ -169,7 +169,7 @@ private void changeGeometry0(final DocumentWindowManager requester, final Simula
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			int[] geomType = null;
 			geomType = DialogUtils.showComponentOKCancelTableList(
-				JOptionPane.getRootFrame(), 
+				JOptionPane.getFrameForComponent(requester.getComponent()), 
 				"Select different Geometry",
 				new String[] {"Search by"}, 
 				new String[][] {{"BioModel names"},{"MathModel names"},{"Geometry names"}}, ListSelectionModel.SINGLE_SELECTION);
@@ -182,7 +182,7 @@ private void changeGeometry0(final DocumentWindowManager requester, final Simula
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			VCDocumentInfo vcDocumentInfo = (VCDocumentInfo)hashTable.get("vcDocumentInfo");
-			Geometry geom = getGeometryFromDocumentSelection(vcDocumentInfo, false);
+			Geometry geom = getGeometryFromDocumentSelection(requester.getComponent(),vcDocumentInfo, false);
 			geom.getGeometrySpec().getSampledImage();//pregenerate sampled image, cpu intensive
 			hashTable.put("geometry", geom);
 			GeometryInfo geometryInfo = getDocumentManager().getGeometryInfo(geom.getVersion().getVersionKey());
@@ -196,7 +196,7 @@ private void changeGeometry0(final DocumentWindowManager requester, final Simula
 			Geometry geom = (Geometry)hashTable.get("geometry");
 			GeometrySummaryPanel geometrySummaryPanel = new GeometrySummaryPanel();
 			geometrySummaryPanel.setGeometry(geom);
-			int result = DialogUtils.showComponentOKCancelDialog(JOptionPane.getRootFrame(), geometrySummaryPanel, "Confirm Geometry Selection");
+			int result = DialogUtils.showComponentOKCancelDialog(JOptionPane.getFrameForComponent(requester.getComponent()), geometrySummaryPanel, "Confirm Geometry Selection");
 			if(result != JOptionPane.OK_OPTION){
 				return;
 			}
@@ -303,7 +303,7 @@ public static void continueAfterMathModelGeomChangeWarning(MathModelWindowManage
 		if(newGeometry != null && oldGeometry.getDimension() == newGeometry.getDimension()){
 			bMeshResolutionChange = false;
 		}
-		String result = DialogUtils.showWarningDialog(JOptionPane.getRootFrame(),
+		String result = DialogUtils.showWarningDialog(JOptionPane.getFrameForComponent(mathModelWindowManager.getComponent()),
 				"After changing MathModel geometry please note:\n"+
 				"  1.  Check Geometry subvolume names match MathModel compartment names."+
 				(bHasSims && bMeshResolutionChange?"\n  2.  All existing simulations mesh resolutions will be reset.":""),
@@ -854,7 +854,7 @@ public VCDocumentInfo selectDocumentFromType(int documentType, DocumentWindowMan
 		getMdiManager().getDatabaseWindowManager().selectDocument(documentType, requester);
 }
 
-public Geometry getGeometryFromDocumentSelection(VCDocumentInfo vcDocumentInfo,boolean bClearVersion) throws Exception,UserCancelException{
+public Geometry getGeometryFromDocumentSelection(Component parentComponent,VCDocumentInfo vcDocumentInfo,boolean bClearVersion) throws Exception,UserCancelException{
 	Geometry geom = null;
 	if(vcDocumentInfo.getVersionType().equals(VersionableType.BioModelMetaData)/*documentType == VCDocument.BIOMODEL_DOC*/){
 		BioModelInfo bioModelInfo =
@@ -873,7 +873,7 @@ public Geometry getGeometryFromDocumentSelection(VCDocumentInfo vcDocumentInfo,b
 					rowData[i][1] = bioModelChildSummary.getGeometryNames()[spatialV.elementAt(i)];
 					rowData[i][2] = bioModelChildSummary.getGeometryDimensions()[spatialV.elementAt(i)]+"";
 				}
-				int[] selection = DialogUtils.showComponentOKCancelTableList(JOptionPane.getRootFrame(),
+				int[] selection = DialogUtils.showComponentOKCancelTableList(JOptionPane.getFrameForComponent(parentComponent),
 						"Select Geometry", columnNames, rowData, ListSelectionModel.SINGLE_SELECTION);
 				BioModel bioModel = getDocumentManager().getBioModel((BioModelInfo)vcDocumentInfo);
 				for (int i = 0; i < bioModel.getSimulationContexts().length; i++) {
@@ -883,7 +883,6 @@ public Geometry getGeometryFromDocumentSelection(VCDocumentInfo vcDocumentInfo,b
 				}
 			}else{
 				throw new Exception("BioModel '"+bioModelInfo.getVersion().getName()+"' contains no spatial geometries.");
-//				DialogUtils.showErrorDialog(JOptionPane.getRootFrame(), "BioModel '"+bioModelInfo.getVersion().getName()+"' contains no spatial geometries.");
 			}
 		}else{
 			throw new Exception("BioModel '"+bioModelInfo.getVersion().getName()+"' contains no spatial geometries.");
@@ -898,7 +897,6 @@ public Geometry getGeometryFromDocumentSelection(VCDocumentInfo vcDocumentInfo,b
 				geom = mathModel.getMathDescription().getGeometry();
 			}else{
 				throw new Exception("MathModel '"+mathModelInfo.getVersion().getName()+"' contains no spatial geometry.");				
-//				DialogUtils.showErrorDialog(JOptionPane.getRootFrame(), "MathModel '"+mathModelInfo.getVersion().getName()+"' contains no spatial geometry.");				
 			}
 		}else{
 			throw new Exception("MathModel '"+mathModelInfo.getVersion().getName()+"' contains no spatial geometry.");
@@ -907,8 +905,6 @@ public Geometry getGeometryFromDocumentSelection(VCDocumentInfo vcDocumentInfo,b
 		geom = getDocumentManager().getGeometry((GeometryInfo)vcDocumentInfo);
 		if(geom.getDimension() == 0){
 			throw new Exception("Error, Only spatial geometries allowed (dimesnion > 0).");
-//			geom = null;
-//			DialogUtils.showErrorDialog(JOptionPane.getRootFrame(), "Geometry '"+geom.getName()+"' is not a spatial geometry.");							
 		}
 	}else{
 		throw new IllegalArgumentException("Error selecting geometry from document type "+vcDocumentInfo.getVersionType()+". Must be BioModel,MathModel or Geometry.");
@@ -2605,35 +2601,6 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, Async
 	/* run tasks */
 	ClientTaskDispatcher.dispatch(currentDocumentWindow, hash, tasks, false);
 }
-
-//public void saveImportedGeometryAsNew(DocumentWindowManager documentWindowManager) {
-//	
-//	/* prepare hashtable for tasks */
-//	Hashtable<String, Object> hash = new Hashtable<String, Object>();
-//	hash.put("mdiManager", getMdiManager());
-//	hash.put("documentManager", getDocumentManager());
-//	hash.put("documentWindowManager", documentWindowManager);
-//	hash.put("requestManager", this);
-//	
-//	/* create tasks */
-//	// check document consistency first
-//	AsynchClientTask documentValid = new DocumentValid();
-//	AsynchClientTask setMathDescription = new SetMathDescription();
-//	// get a new name
-//	AsynchClientTask newName = new NewName();
-//	// save it
-//	AsynchClientTask saveDocument = new SaveDocument();
-//	// assemble array
-//	AsynchClientTask[] tasks = new AsynchClientTask[] {
-//		documentValid,
-//		setMathDescription,
-//		newName,
-//		saveDocument
-//	};
-//	
-//	/* run tasks */
-//	ClientTaskDispatcher.dispatch(JOptionPane.getRootFrame(), hash, tasks, false);
-//}
 
 /**
  * Insert the method's description here.

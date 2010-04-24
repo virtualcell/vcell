@@ -1078,7 +1078,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 					}else{
 						copiedGeom =
 							((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(
-								geometrySelectionInfo.getVCDocumentInfo(),true);
+								getComponent(),geometrySelectionInfo.getVCDocumentInfo(),true);
 					}
 					final Vector<AsynchClientTask> runtimeTasksV = new Vector<AsynchClientTask>();
 					if(copiedGeom.getGeometrySpec().getImage() != null &&
