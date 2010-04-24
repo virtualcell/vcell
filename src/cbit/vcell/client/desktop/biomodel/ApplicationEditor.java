@@ -1637,28 +1637,28 @@ private javax.swing.JPanel getViewMathPanel() {
 	return ivjViewMathPanel;
 }
 
-/**
- * Return the JButton2 property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getViewModifyGeometryButton() {
-	if (ivjViewModifyGeometryButton == null) {
-		try {
-			ivjViewModifyGeometryButton = new javax.swing.JButton();
-			ivjViewModifyGeometryButton.setName("ViewModifyGeometryButton");
-			ivjViewModifyGeometryButton.setText("View / Change Geometry");
-			ivjViewModifyGeometryButton.setActionCommand(GuiConstants.ACTIONCMD_VIEW_CHANGE_GEOMETRY);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjViewModifyGeometryButton;
-}
+///**
+// * Return the JButton2 property value.
+// * @return javax.swing.JButton
+// */
+///* WARNING: THIS METHOD WILL BE REGENERATED. */
+//private javax.swing.JButton getViewModifyGeometryButton() {
+//	if (ivjViewModifyGeometryButton == null) {
+//		try {
+//			ivjViewModifyGeometryButton = new javax.swing.JButton();
+//			ivjViewModifyGeometryButton.setName("ViewModifyGeometryButton");
+//			ivjViewModifyGeometryButton.setText("View / Change Geometry");
+//			ivjViewModifyGeometryButton.setActionCommand(GuiConstants.ACTIONCMD_VIEW_CHANGE_GEOMETRY);
+//			// user code begin {1}
+//			// user code end
+//		} catch (java.lang.Throwable ivjExc) {
+//			// user code begin {2}
+//			// user code end
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjViewModifyGeometryButton;
+//}
 
 /**
  * Return the ViewVCMDLRadioButton property value.
@@ -1703,7 +1703,7 @@ private void handleException(java.lang.Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
-	getViewModifyGeometryButton().addActionListener(ivjEventHandler);
+//	getViewModifyGeometryButton().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getSimulationListPanel().addPropertyChangeListener(ivjEventHandler);
 	getSPPRPanel().addPropertyChangeListener(ivjEventHandler);
