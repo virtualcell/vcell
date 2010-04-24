@@ -27,6 +27,7 @@ import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.Constant;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -92,6 +93,34 @@ class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.
 			if (e.getDocument() == SimulationSummaryPanel.this.getdocument1()) 
 				connEtoC4(e);
 		};
+	};
+
+	PropertyChangeListener simChangeListener = new PropertyChangeListener() {
+		public void propertyChange(PropertyChangeEvent event) {
+			if (event.getSource() instanceof Simulation) {
+				// name is not displayed by this panel so we only need to take care of the rest
+				if (event.getPropertyName().equals("description")) {
+					displayAnnotation();
+				}
+				if (event.getPropertyName().equals("solverTaskDescription")) {
+					displayTask();
+				}
+				if (event.getPropertyName().equals("meshSpecification")) {
+					displayMesh();
+				}
+				if (event.getPropertyName().equals("mathOverrides")) {
+					displayOverrides();
+				}
+				// lots can happen here, so just do it all
+				if (event.getPropertyName().equals("mathDescription")) {
+					refreshDisplay();
+				}
+			}else if(event.getSource() instanceof MeshSpecification){
+				if(event.getPropertyName().equals("geometry")){
+					displayMesh();
+				}
+			}
+		}
 	};
 
 /**
@@ -1342,7 +1371,7 @@ public static void main(java.lang.String[] args) {
 /**
  * Comment
  */
-public void newSimulation(Simulation simulation) {
+private void newSimulation(final Simulation simulation) {
 	refreshDisplay();
 	if (simulation==null){
 		getJTextAreaDescription().setBackground(getBackground());
@@ -1357,28 +1386,10 @@ public void newSimulation(Simulation simulation) {
 					? ", parentSimRef="+simulation.getSimulationVersion().getParentSimulationReference() : "" ) + ")"));
 	}
 	// also set up a listener that will refresh when simulation is edited in place
-	PropertyChangeListener listener = new PropertyChangeListener() {
-		public void propertyChange(PropertyChangeEvent event) {
-			// name is not displayed by this panel so we only need to take care of the rest
-			if (event.getPropertyName().equals("description")) {
-				displayAnnotation();
-			}
-			if (event.getPropertyName().equals("solverTaskDescription")) {
-				displayTask();
-			}
-			if (event.getPropertyName().equals("meshSpecification")) {
-				displayMesh();
-			}
-			if (event.getPropertyName().equals("mathOverrides")) {
-				displayOverrides();
-			}
-			// lots can happen here, so just do it all
-			if (event.getPropertyName().equals("mathDescription")) {
-				refreshDisplay();
-			}
-		}
-	};
-	simulation.addPropertyChangeListener(listener);
+	simulation.removePropertyChangeListener(simChangeListener);
+	simulation.getMeshSpecification().removePropertyChangeListener(simChangeListener);
+	simulation.addPropertyChangeListener(simChangeListener);
+	simulation.getMeshSpecification().addPropertyChangeListener(simChangeListener);
 }
 
 
