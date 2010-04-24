@@ -13,7 +13,6 @@ import org.vcell.util.gui.JInternalFrameEnhanced;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -27,10 +26,10 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  */
 public class ApplicationComponents {
 	private JInternalFrameEnhanced appEditorFrame = null;
-	private JInternalFrameEnhanced geometrySummaryViewerFrame = null;
+//	private JInternalFrameEnhanced geometrySummaryViewerFrame = null;
 	private JInternalFrameEnhanced surfaceViewerFrame = null;	
 	private ApplicationEditor appEditor = null;
-	private GeometrySummaryViewer geometrySummaryViewer = null;
+//	private GeometrySummaryViewer geometrySummaryViewer = null;
 	private SurfaceViewerPanel surfaceViewer = null;
 	private Hashtable<VCSimulationIdentifier, SimulationWindow> simulationWindowsHash = new Hashtable<VCSimulationIdentifier, SimulationWindow>();
 
@@ -247,24 +246,24 @@ private void setAppEditorFrame(org.vcell.util.gui.JInternalFrameEnhanced newAppE
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/4/2004 1:26:00 AM)
- * @param newGeometrySummaryViewer cbit.vcell.client.desktop.biomodel.GeometrySummaryViewer
- */
-private void setGeometrySummaryViewer(GeometrySummaryViewer newGeometrySummaryViewer) {
-	geometrySummaryViewer = newGeometrySummaryViewer;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/4/2004 1:27:33 AM)
- * @param newGeometrySummaryViewerFrame cbit.gui.JInternalFrameEnhanced
- */
-private void setGeometrySummaryViewerFrame(org.vcell.util.gui.JInternalFrameEnhanced newGeometrySummaryViewerFrame) {
-	geometrySummaryViewerFrame = newGeometrySummaryViewerFrame;
-}
+///**
+// * Insert the method's description here.
+// * Creation date: (6/4/2004 1:26:00 AM)
+// * @param newGeometrySummaryViewer cbit.vcell.client.desktop.biomodel.GeometrySummaryViewer
+// */
+//private void setGeometrySummaryViewer(GeometrySummaryViewer newGeometrySummaryViewer) {
+//	geometrySummaryViewer = newGeometrySummaryViewer;
+//}
+//
+//
+///**
+// * Insert the method's description here.
+// * Creation date: (6/4/2004 1:27:33 AM)
+// * @param newGeometrySummaryViewerFrame cbit.gui.JInternalFrameEnhanced
+// */
+//private void setGeometrySummaryViewerFrame(org.vcell.util.gui.JInternalFrameEnhanced newGeometrySummaryViewerFrame) {
+//	geometrySummaryViewerFrame = newGeometrySummaryViewerFrame;
+//}
 
 /**
  * Insert the method's description here.
