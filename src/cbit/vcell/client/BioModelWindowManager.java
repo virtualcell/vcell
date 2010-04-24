@@ -216,7 +216,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		};
 
 		Geometry currentGeometry =
-			findAppComponentsForSimContextGeomViewer((ApplicationEditor)source).getGeometrySummaryViewer().getGeometry();
+			findAppComponentsForSimContextGeomViewer(
+				(ApplicationEditor)source).getAppEditor().getSimulationWorkspace().getSimulationOwner().getGeometry();
 		createGeometry(
 				currentGeometry,
 				new AsynchClientTask[] {editSelectTask});
@@ -226,10 +227,10 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		SimulationContext sc = (SimulationContext)((ApplicationEditor)source).getSimulationWorkspace().getSimulationOwner();
 		getRequestManager().createMathModelFromApplication(this, "Untitled", sc);
 	}
-	if (source instanceof ApplicationEditor && actionCommand.equals(GuiConstants.ACTIONCMD_VIEW_CHANGE_GEOMETRY)) {
-		SimulationContext sc = (SimulationContext)((ApplicationEditor)source).getSimulationWorkspace().getSimulationOwner();
-		showGeometryViewerFrame(sc);
-	}
+//	if (source instanceof ApplicationEditor && actionCommand.equals(GuiConstants.ACTIONCMD_VIEW_CHANGE_GEOMETRY)) {
+//		SimulationContext sc = (SimulationContext)((ApplicationEditor)source).getSimulationWorkspace().getSimulationOwner();
+//		showGeometryViewerFrame(sc);
+//	}
 	if (source instanceof ApplicationEditor && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
 		ApplicationComponents applicationComponents = findAppComponentsForSimContextGeomViewer((ApplicationEditor)source);
 		if(applicationComponents != null){
@@ -370,7 +371,7 @@ private void createAppComponents(SimulationContext simContext) {
 	// register for events
 	simContext.addPropertyChangeListener(this);
 	appComponents.getAppEditor().addActionListener(this);
-	appComponents.getGeometrySummaryViewer().addActionListener(this);
+//	appComponents.getGeometrySummaryViewer().addActionListener(this);
 }
 
 
@@ -521,8 +522,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		appComponents.getSurfaceViewer().setGeometry(null);
 		close(appComponents.getSurfaceViewerFrame(),getJDesktopPane());
 
-		appComponents.getGeometrySummaryViewer().setGeometry(((SimulationContext)evt.getSource()).getGeometry());
-		setDefaultTitle(appComponents.getGeometrySummaryViewerFrame());
+//		appComponents.getGeometrySummaryViewer().setGeometry(((SimulationContext)evt.getSource()).getGeometry());
+//		setDefaultTitle(appComponents.getGeometrySummaryViewerFrame());
 	}
 	
 	if (evt.getSource() == getBioModel() && evt.getPropertyName().equals("simulationContexts")) {
@@ -542,10 +543,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("name")) {
 		SimulationContext simContext = (SimulationContext)evt.getSource();
 		JInternalFrameEnhanced editorFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getAppEditorFrame();
-		JInternalFrameEnhanced geoFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getGeometrySummaryViewerFrame();
+//		JInternalFrameEnhanced geoFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getGeometrySummaryViewerFrame();
 		JInternalFrameEnhanced surfaceFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getSurfaceViewerFrame();
 		editorFrame.setTitle("APPLICATION: "+simContext.getName());
-		geoFrame.setTitle("GEOMETRY for: "+simContext.getName());
+//		geoFrame.setTitle("GEOMETRY for: "+simContext.getName());
 		surfaceFrame.setTitle("SURFACE for: "+simContext.getName()+"'s Geometry");
 	}
 }
@@ -557,11 +558,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  */
 private void remove(ApplicationComponents appComponents, SimulationContext sc) {
 	appComponents.getAppEditor().removeActionListener(this);
-	appComponents.getGeometrySummaryViewer().removeActionListener(this);
+//	appComponents.getGeometrySummaryViewer().removeActionListener(this);
 	sc.removePropertyChangeListener(this);
 	getApplicationsHash().remove(sc);
 	close(appComponents.getAppEditorFrame(), getJDesktopPane());
-	close(appComponents.getGeometrySummaryViewerFrame(), getJDesktopPane());
+//	close(appComponents.getGeometrySummaryViewerFrame(), getJDesktopPane());
 	close(appComponents.getSurfaceViewerFrame(), getJDesktopPane());
 	close(appComponents.getDataViewerFrames(), getJDesktopPane());
 }
@@ -584,7 +585,7 @@ public void resetDocument(VCDocument newDocument) {
 	Enumeration<ApplicationComponents> enumAppComp = applicationsHash.elements();
 	while (enumAppComp.hasMoreElements()){
 		ApplicationComponents appcomp = (ApplicationComponents)enumAppComp.nextElement();
-		setDefaultTitle(appcomp.getGeometrySummaryViewerFrame());
+//		setDefaultTitle(appcomp.getGeometrySummaryViewerFrame());
 		setDefaultTitle(appcomp.getSurfaceViewerFrame());
 	}
 	getRequestManager().updateStatusNow();
@@ -711,19 +712,19 @@ public void showFrame(javax.swing.JInternalFrame frame) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-private void showGeometryViewerFrame(SimulationContext simContext) {
-	JInternalFrameEnhanced editorFrame = null;
-	if (getApplicationsHash().containsKey(simContext)) {
-		editorFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getGeometrySummaryViewerFrame();
-		setDefaultTitle(editorFrame);
-		showFrame(editorFrame);
-	}
-	editorFrame.requestFocus();
-}
+///**
+// * Insert the method's description here.
+// * Creation date: (5/5/2004 9:44:15 PM)
+// */
+//private void showGeometryViewerFrame(SimulationContext simContext) {
+//	JInternalFrameEnhanced editorFrame = null;
+//	if (getApplicationsHash().containsKey(simContext)) {
+//		editorFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getGeometrySummaryViewerFrame();
+//		setDefaultTitle(editorFrame);
+//		showFrame(editorFrame);
+//	}
+//	editorFrame.requestFocus();
+//}
 
 
 /**
