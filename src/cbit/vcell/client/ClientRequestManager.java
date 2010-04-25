@@ -104,6 +104,7 @@ import cbit.vcell.client.task.RunSims;
 import cbit.vcell.client.task.SaveDocument;
 import cbit.vcell.client.task.SetMathDescription;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.ImageDbTreePanel;
 import cbit.vcell.desktop.LoginDialog;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -911,34 +912,30 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 	}
 	final String IMPORT_SOURCE_NAME = "IMPORT_SOURCE_NAME";
 	
-	AsynchClientTask selectImgFromDBTask = new AsynchClientTask("select from database", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if(hashTable.get(ClientRequestManager.IMAGE_FROM_DB) != null){
-				//Previous task already loaded our dbImage , no need to ask user
-				return;
-			}
-			Object option = getMdiManager().getDatabaseWindowManager().showImageSelectorDialog(requester);
-			hashTable.put("selectOption", option);
-		}
-	};
-	AsynchClientTask loadImgFromDBTask = new AsynchClientTask("creating geometry from database image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	AsynchClientTask loadImgFromDBTask = new AsynchClientTask("Select/Load database image...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			if(hashTable.get(ClientRequestManager.IMAGE_FROM_DB) != null){
 				//Previous task already loaded our dbImage
 				return;
 			}
-			Object choice = hashTable.get("selectOption");
-			if (choice != null && choice.equals("OK")) {
-				VCImage image = getMdiManager().getDatabaseWindowManager().selectImageFromDatabase();
-				if (image == null){
-					throw new RuntimeException("failed to create new Geometry, no image");
-				}
-				hashTable.put(IMAGE_FROM_DB, image);
-			} else {
-				throw UserCancelException.CANCEL_DB_SELECTION;
+			//show list of image names
+			ImageDbTreePanel imageDbTreePanel = new ImageDbTreePanel();
+			imageDbTreePanel.setDocumentManager(getDocumentManager());
+			imageDbTreePanel.setPreferredSize(new java.awt.Dimension(200, 400));
+			int result = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), imageDbTreePanel, "Select Image:");
+			if(result != JOptionPane.OK_OPTION){
+				throw UserCancelException.CANCEL_GENERIC;
 			}
+			VCImageInfo vcImageInfo = (VCImageInfo)imageDbTreePanel.getSelectedVersionInfo();
+			if(vcImageInfo == null){
+				throw UserCancelException.CANCEL_GENERIC;
+			}
+			VCImage image = getDocumentManager().getImage(vcImageInfo);
+			if (image == null){
+				throw new Exception("Database Image '"+vcImageInfo.getVersion().getName()+"' couldn't be loaded.");
+			}
+			hashTable.put(IMAGE_FROM_DB, image);
 		}
 	};
 
@@ -1133,7 +1130,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 	};
 	Vector<AsynchClientTask> tasksV = new Vector<AsynchClientTask>();
 	if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_DBIMAGE){
-		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImgFromDBTask,loadImgFromDBTask,parseImageTask,finishTask}));
+		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {loadImgFromDBTask,parseImageTask,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
