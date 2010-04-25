@@ -40,11 +40,9 @@ import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
 
-import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.vcell.client.desktop.ACLEditor;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
-import cbit.vcell.client.desktop.geometry.ImageBrowser;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -84,7 +82,6 @@ public class DatabaseWindowManager extends TopLevelWindowManager{
 		
 	private BioModelDbTreePanel bioModelDbTreePanel = new BioModelDbTreePanel();
 	private ACLEditor aclEditor = new ACLEditor();
-	private ImageBrowser imageBrowser = new ImageBrowser();
 	private GeometryTreePanel geometryTreePanel = new GeometryTreePanel();
 	private MathModelDbTreePanel MathModelDbTreePanel = new MathModelDbTreePanel();
 
@@ -761,16 +758,6 @@ public GeometryTreePanel getGeometryTreePanel() {
 
 /**
  * Insert the method's description here.
- * Creation date: (5/14/2004 5:39:00 PM)
- * @return cbit.vcell.desktop.GeometryTreePanel
- */
-private ImageBrowser getImageBrowser() {
-	return imageBrowser;
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (5/24/2004 2:51:36 AM)
  * @return java.lang.String
  */
@@ -814,7 +801,7 @@ public void initializeAll() {
 				getMathModelDbTreePanel().setDocumentManager(documentManager);
 				getGeometryTreePanel().setDocumentManager(documentManager);
 				getDatabaseWindowPanel().setDocumentManager(documentManager);
-				getImageBrowser().getImageDbTreePanel1().setDocumentManager(documentManager);
+//				getImageBrowser().getImageDbTreePanel1().setDocumentManager(documentManager);
 			} catch (Throwable exc) {
 				exc.printStackTrace(System.out);
 			}
@@ -963,17 +950,6 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 5:35:55 PM)
- */
-public VCImage selectImageFromDatabase() throws DataAccessException {
-	if (getImageBrowser().getImageDbTreePanel1().getSelectedVersionInfo() != null) {
-		return getRequestManager().getDocumentManager().getImage((VCImageInfo)getImageBrowser().getImageDbTreePanel1().getSelectedVersionInfo());
-	}
-	return null;
-}
 	
 /**
  * Insert the method's description here.
@@ -1069,21 +1045,7 @@ public static File showFileChooserDialog(TopLevelWindowManager requester, final 
     }
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 6:11:35 PM)
- */
-public Object showImageSelectorDialog(TopLevelWindowManager requester) {
-	ImageBrowser imageBrowser = getImageBrowser();
-	JOptionPane imageSelectDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
-	imageBrowser.setPreferredSize(new java.awt.Dimension(200, 400));
-	imageSelectDialog.setMessage("");
-	imageSelectDialog.setMessage(imageBrowser);
-	JDialog d = imageSelectDialog.createDialog(null, "Select Image:");
-	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	ZEnforcer.showModalDialogOnTop(d,requester.getComponent());
-	return imageSelectDialog.getValue();
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
