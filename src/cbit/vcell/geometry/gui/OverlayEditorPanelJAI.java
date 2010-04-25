@@ -332,7 +332,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 };
 
 	private static final long serialVersionUID = 1L;
-	private static final double SHORT_TO_BYTE_FACTOR = 256;
 	
 	//properties
 	public static final String FRAP_DATA_INIT_PROPERTY = "FRAP_DATA_INIT_PROPERTY";
@@ -403,7 +402,27 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private Hashtable<String, Cursor> cursorsForROIsHash = null;
 	
 	private JFileChooser openJFileChooser = new JFileChooser();
-	private Range minmaxPixelValues = null;
+	public static class AllPixelValuesRange {
+		private int allPixelValMin;
+		private int allPixelValMax;
+		private double scaleFactor;
+		public AllPixelValuesRange(int min,int max){
+			this.allPixelValMin = min;
+			this.allPixelValMax = max;
+			this.scaleFactor = (double)255/(double)max;
+		}
+		public int getMin(){
+			return allPixelValMin;
+		}
+		public int getMax(){
+			return allPixelValMax;
+		}
+		public double getScaleFactor(){
+			return scaleFactor;
+		}
+	}
+	private AllPixelValuesRange allPixelValuesRange;
+	
 	//variable used to avoid unnecessary firing of the combobox action event
 	private String roiName;
 	
@@ -444,6 +463,20 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public OverlayEditorPanelJAI() {
 		super();
 		initialize();
+		
+		//colormap (grayscale)
+		for(int i=0;i<256;i+= 1){
+			int iv = (int)(0x000000FF&i);
+			cmap[i] = 0xFF000000 | iv<<16 | iv<<8 | i;
+		}
+
+		indexColorModel =
+			new java.awt.image.IndexColorModel(
+				8, cmap.length,cmap,0,
+				false /*false means NOT USE alpha*/   ,
+				-1/*NO transparent single pixel*/,
+				java.awt.image.DataBuffer.TYPE_BYTE);
+
 	}
 	
 	public void updateROICursor(){
@@ -937,9 +970,10 @@ public class OverlayEditorPanelJAI extends JPanel{
 		blendPercentSlider = new JSlider();
 		blendPercentSlider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				if(!blendPercentSlider.getValueIsAdjusting()){
-					setBlendPercent(blendPercentSlider.getValue());
-				}
+				setBlendPercent(blendPercentSlider.getValue());
+//				if(!blendPercentSlider.getValueIsAdjusting()){
+//					setBlendPercent(blendPercentSlider.getValue());
+//				}
 			}
 		});
 		GridBagConstraints gbc_slider = new GridBagConstraints();
@@ -1072,51 +1106,31 @@ public class OverlayEditorPanelJAI extends JPanel{
 		}
 	}
 	
+	private int[] cmap = new int[256];
+	IndexColorModel indexColorModel;
+	
 	/**
 	 * Method createUnderlyingImage.
 	 * @param image UShortImage
 	 * @return BufferedImage
 	 */
 	private BufferedImage createUnderlyingImage(UShortImage image){
-		int width = image.getNumX();
-		int height = image.getNumY();
-		ImageStatistics imageStats = image.getImageStatistics();
 		short[] pixels = image.getPixels();
-		byte[][] byteData = new byte[1][width*height];
-		for (int i = 0; i < byteData[0].length; i++) {
-			byteData[0][i] = (imageStats.maxValue < SHORT_TO_BYTE_FACTOR?(byte)pixels[i]:(byte)(((int)(pixels[i]&0x0000FFFF))/SHORT_TO_BYTE_FACTOR));
-//			byteData[1][i] = byteData[0][i];
-//			byteData[2][i] = byteData[0][i];
-		}
-//		return AWTImageTools.makeImage(byteData, width, height,false);
-//		Image tempImage = AWTImageTools.makeImage(byteData, width, height,false);
-		int[] cmap = new int[256];
-		//colormap (grayscale)
-		for(int i=0;i<256;i+= 1){
-			int iv = (int)(0x000000FF&i);
-			cmap[i] = 0xFF000000 | iv<<16 | iv<<8 | i;
-//			if(i<16){
-//				cmap[i] = 0xFFFF0000;
-//			}
-		}
-		IndexColorModel indexColorModel =
-			new java.awt.image.IndexColorModel(
-				8, cmap.length,cmap,0,
-				false /*false means NOT USE alpha*/   ,
-				-1/*NO transparent single pixel*/,
-				java.awt.image.DataBuffer.TYPE_BYTE);
 
 		WritableRaster raster = indexColorModel.createCompatibleWritableRaster(image.getNumX(), image.getNumY());
-		for (int i = 0; i < byteData[0].length; i++) {
-			((DataBufferByte)raster.getDataBuffer()).getData()[i] = byteData[0][i];
+		byte[] byteData = ((DataBufferByte)raster.getDataBuffer()).getData();
+		if(allPixelValuesRange.getScaleFactor() >= 1){
+			for (int i = 0; i < byteData.length; i++) {
+				byteData[i] = (byte)(pixels[i]&0x0000FFFF);
+			}
+		}else{
+			for (int i = 0; i < byteData.length; i++) {
+				byteData[i] = (byte)((pixels[i]&0x0000FFFF)*allPixelValuesRange.getScaleFactor());
+			}			
 		}
-	    BufferedImage result = new BufferedImage(indexColorModel,raster, false, null);
-//	    Graphics2D g = result.createGraphics();
-//	    g.drawImage(result, 0, 0, null);
-//	    g.dispose();
 
+	    BufferedImage result = new BufferedImage(indexColorModel,raster, false, null);
 	    return result;
-//		return AWTImageTools.makeBuffered(tempImage, indexColorModel);
 	}
 	
 	public void displaySpecialData(short[] specialData,int width, int height) throws Exception{
@@ -1207,10 +1221,13 @@ public class OverlayEditorPanelJAI extends JPanel{
 	}
 	/** Sets the viewer to display the given images. * @param argImageDataset ImageDataset
 	 */
-	public void setImages(ImageDataset argImageDataset,boolean bNew,double originalScaleFactor,double originalOffsetFactor) {
+	public void setImages(ImageDataset argImageDataset,boolean bNew,double originalScaleFactor,double originalOffsetFactor,
+			AllPixelValuesRange allPixelValuesRange) {
 		imageDataset = argImageDataset;
 		BufferedImage underlyingImage = null;
 		if (imageDataset!=null){
+			this.allPixelValuesRange = allPixelValuesRange;
+
 			this.originalScaleFactor = originalScaleFactor;
 			this.originalOffsetFactor = originalOffsetFactor;
 			originalISize = (bNew?imageDataset.getISize():originalISize);
@@ -1250,16 +1267,15 @@ public class OverlayEditorPanelJAI extends JPanel{
 			if(imageDataset.getSizeZ() > 1){
 				zSlider.setLabelTable(zSlider.createStandardLabels(imageDataset.getSizeZ()-1,1));
 			}
-			int currZSliderValue = timeSlider.getValue();
+			int currZSliderValue = zSlider.getValue();
 			zSlider.setValue(Math.max(1,Math.min(imageDataset.getSizeZ(),currZSliderValue)));
 			zSlider.setMaximum(imageDataset.getSizeZ());
 			zSlider.setMajorTickSpacing(imageDataset.getSizeZ());
 			zSlider.setEnabled(imageDataset.getSizeZ() > 1);
 			
-			minmaxPixelValues = calcMinMaxPixelValueRange(imageDataset);
 			underlyingImage = createUnderlyingImage(imageDataset.getImage((zSlider.getValue()-1),0,(timeSlider.getValue()-1)));
 		}else{
-			minmaxPixelValues = null;
+			this.allPixelValuesRange = null;
 			this.originalScaleFactor = DEFAULT_SCALE_FACTOR;
 			this.originalOffsetFactor = DEFAULT_OFFSET_FACTOR;
 			originalISize = null;
@@ -1293,7 +1309,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 //			}
 
 		updateLabel(-1, -1);
-		getImagePane().setUnderlyingImage(underlyingImage,bNew,minmaxPixelValues);
+		getImagePane().setUnderlyingImage(underlyingImage,bNew,this.allPixelValuesRange);
 		if(imageDataset != null && bNew){
 			contrastButtonPlus.doClick();
 		}
@@ -1306,32 +1322,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 		imagePane.setDisplayContrastFactor(displayContrastFactor);
 	}
 	
-	private Range calcMinMaxPixelValueRange(ImageDataset argImageDataset){
-		UShortImage[] allImages = argImageDataset.getAllImages();
-		double min = 0;
-		double max = min;
-		for (int i = 0; i < allImages.length; i++) {
-			ImageStatistics imageStats = allImages[i].getImageStatistics();
-			if(i==0 || imageStats.minValue < min){min = imageStats.minValue;}
-			if(i==0 || imageStats.maxValue > max){max = imageStats.maxValue;}
-		}
-		if(max < SHORT_TO_BYTE_FACTOR){
-			return new Range(min,max);
-		}
-		return new Range(min/SHORT_TO_BYTE_FACTOR,max/SHORT_TO_BYTE_FACTOR);
-//		short min = argImageDataset.getPixelsZ(0, 0)[0];
-//		short max = min;
-//		for (int c = 0; c < argImageDataset.getSizeC(); c++) {
-//			for (int t = 0; t < argImageDataset.getSizeT(); t++) {
-//				short[] pixelVals = argImageDataset.getPixelsZ(c, t);
-//				for (int p = 0; p < pixelVals.length; p++) {
-//					if(pixelVals[p] < min){min = pixelVals[p];}
-//					if(pixelVals[p] > max){max = pixelVals[p];}
-//				}
-//			}
-//		}
-//		return new Range(min,max);
-	}
 	
 	public Color getROIColor(String roiName){
 		Color roiColor = null;
@@ -1542,7 +1532,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		if(imageDataset != null){
 			BufferedImage image = getImage();
 			if (image != null){
-				imagePane.setUnderlyingImage(image,false,minmaxPixelValues);
+				imagePane.setUnderlyingImage(image,false,allPixelValuesRange);
 			}
 		}
 		imagePane.repaint();
@@ -1930,7 +1920,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 					updateLabel(-1, -1);
 					BufferedImage image = getImage();
 					if (image != null){
-						imagePane.setUnderlyingImage(image,false,minmaxPixelValues);
+						imagePane.setUnderlyingImage(image,false,allPixelValuesRange);
 					}
 					refreshROI();
 					imagePane.repaint();

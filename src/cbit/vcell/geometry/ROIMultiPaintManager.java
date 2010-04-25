@@ -58,6 +58,7 @@ import cbit.image.VCPixelClass;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -89,6 +90,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	private Extent originalExtent;
 	private Origin originalOrigin;
 	private ISize originalISize;
+	private String originalAnnotation;
+	private GeometryAttributes editedGeometryAttributes;
+	private OverlayEditorPanelJAI.AllPixelValuesRange allPixelValuesRange;
 	
 	private static final Extent DEFAULT_EXTENT = new Extent(1,1,1);
 	private static final Origin DEFAULT_ORIGIN = new Origin(0,0,0);
@@ -385,6 +389,31 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return initImageDataSet;
 	}
+	private void calculateAllPixelValuesRange(){
+		UShortImage[] allImages = getImageDataSet().getAllImages();
+		double min = 0;
+		double max = min;
+		for (int i = 0; i < allImages.length; i++) {
+			ImageStatistics imageStats = allImages[i].getImageStatistics();
+			if(i==0 || imageStats.minValue < min){min = imageStats.minValue;}
+			if(i==0 || imageStats.maxValue > max){max = imageStats.maxValue;}
+		}
+		allPixelValuesRange = new OverlayEditorPanelJAI.AllPixelValuesRange((int)min, (int)max);
+//		if(bHasOriginalData){
+//			int min = importedDataContainer.shortSpecData[0][0][0];
+//			int max = min;
+//			short[] allShorts = importedDataContainer.shortSpecData[0][0];
+//			for (int i = 0; i < allShorts.length; i++) {
+//				if((allShorts[i]&0x0000FFFF) < min){min = allShorts[i]&0x0000FFFF;}
+//				if((allShorts[i]&0x0000FFFF) > max){max = allShorts[i]&0x0000FFFF;}
+//					
+//			}
+//			allPixelValuesRange = new OverlayEditorPanelJAI.AllPixelValuesRange(min, max);
+//		}else{
+//			allPixelValuesRange = new OverlayEditorPanelJAI.AllPixelValuesRange(0,255);
+//		}
+
+	}
 	public void initROIData(
 			VCImage previouslyEditedVCImage,
 			ROIMultiPaintManager.Crop3D previousCrop3D,
@@ -448,6 +477,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				index+= pixdata.length;
 			}
 		}
+		calculateAllPixelValuesRange();
 	}
 	
 	private class GeometryAttributes {
@@ -545,13 +575,24 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //		}
 //	}
 
-	private GeometryAttributes showEditGeometryAttributes(Component parentComponent,String annotation,Origin origin,Extent extent) throws UserCancelException{
+	private Extent createCroppedExtent(Extent prevExtent,ISize prevISize,ISize cropISize){
+		return new Extent((prevExtent.getX()/prevISize.getX())*cropISize.getX(),
+				(prevExtent.getY()/prevISize.getY())*cropISize.getY(),
+				(prevExtent.getZ()/prevISize.getZ())*cropISize.getZ());
+	}
+	private GeometryAttributes showEditGeometryAttributes(Component parentComponent,GeometryAttributes currentGeometryAttributes) throws UserCancelException{
 		final GeometryAttributes[] finalGeometryAttributesHolder = new GeometryAttributes[1];
 		final boolean[] cancelHolder = new boolean[] {false};
 
 		final CopyOfImageAttributePanel copyOfImageAttributePanel =
 			new CopyOfImageAttributePanel();
-		copyOfImageAttributePanel.init(origin, extent, getImageDataSet().getISize(), annotation);
+		if(currentGeometryAttributes == null){
+			copyOfImageAttributePanel.init(originalOrigin, createCroppedExtent(originalExtent,originalISize,getImageDataSet().getISize()),
+					getImageDataSet().getISize(), originalAnnotation);			
+		}else{
+			copyOfImageAttributePanel.init(currentGeometryAttributes.origin, currentGeometryAttributes.extent,
+					getImageDataSet().getISize(), currentGeometryAttributes.annotation);
+		}
 		
 		final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(parentComponent));
 		jDialog.setTitle("Edit Geometry Attributes");
@@ -600,9 +641,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			final String sourceDataName,
 			final Component parentComponent,
 			String initalAnnotation){
-		
+
+		originalAnnotation = initalAnnotation;
 		final Geometry[] finalGeometryHolder = new Geometry[1];
-		final boolean[] cancelHolder = new boolean[] {false};
 		
 		if(overlayEditorPanelJAI == null){
 			overlayEditorPanelJAI = new OverlayEditorPanelJAI();
@@ -633,9 +674,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //			}
 //		}
 		overlayEditorPanelJAI.setImages(getImageDataSet(), true,
-				OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
+				OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
+				allPixelValuesRange);
 		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
-
 		final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(parentComponent));
 		jDialog.setTitle("Geometry Editor ("+sourceDataName+")");
 		jDialog.setModal(true);
@@ -650,24 +691,25 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		);
 		
-		final GeometryAttributes geomAttr = new GeometryAttributes();
-		geomAttr.annotation = initalAnnotation;
-		geomAttr.origin = originalOrigin;
-		geomAttr.extent = originalExtent;
-		geomAttr.dimension = 1+
-			(roiComposite.length>2?1:0)+
-			(roiComposite.length>1?1:0);
+//		final GeometryAttributes geomAttr = new GeometryAttributes();
+//		geomAttr.annotation = initalAnnotation;
+//		geomAttr.origin = originalOrigin;
+//		geomAttr.extent = originalExtent;
+//		geomAttr.dimension = 1+
+//			(roiComposite.length>2?1:0)+
+//			(roiComposite.length>1?1:0);
 		JPanel okCancelJPanel = new JPanel(new FlowLayout());
 		JButton okJButton = new JButton(okButtonText);
 		okJButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try{
 					VCImage finalImage = checkAll();
+					finalImage.setDescription((editedGeometryAttributes!=null?editedGeometryAttributes.annotation:originalAnnotation));
 					finalGeometryHolder[0] = 
 						new Geometry((String)null, finalImage);
-					finalGeometryHolder[0].getGeometrySpec().setOrigin(geomAttr.origin);
-					finalGeometryHolder[0].getGeometrySpec().setExtent(geomAttr.extent);
-					finalGeometryHolder[0].setDescription(geomAttr.annotation);
+					finalGeometryHolder[0].getGeometrySpec().setOrigin((editedGeometryAttributes!=null?editedGeometryAttributes.origin:originalOrigin));
+					finalGeometryHolder[0].getGeometrySpec().setExtent((editedGeometryAttributes!=null?editedGeometryAttributes.extent:originalExtent));
+					finalGeometryHolder[0].setDescription((editedGeometryAttributes!=null?editedGeometryAttributes.annotation:originalAnnotation));
 					jDialog.dispose();
 				}catch(UserCancelException uce){
 					
@@ -680,7 +722,6 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		JButton cancelJButton = new JButton("Cancel");
 		cancelJButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				cancelHolder[0] = true;
 				jDialog.dispose();
 			}
 		});
@@ -688,11 +729,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		attributesJButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try{
-					GeometryAttributes editedGeometryAttributes =
-						showEditGeometryAttributes(parentComponent,geomAttr.annotation,geomAttr.origin,geomAttr.extent);
-					geomAttr.annotation = editedGeometryAttributes.annotation;
-					geomAttr.origin = editedGeometryAttributes.origin;
-					geomAttr.extent = editedGeometryAttributes.extent;
+					editedGeometryAttributes =
+						showEditGeometryAttributes(parentComponent,editedGeometryAttributes);
+//					geomAttr.annotation = editedGeometryAttributes.annotation;
+//					geomAttr.origin = editedGeometryAttributes.origin;
+//					geomAttr.extent = editedGeometryAttributes.extent;
 				}catch(UserCancelException uce){
 					//ignore
 				}
@@ -714,7 +755,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		jDialog.setSize(700,600);
 		ZEnforcer.showModalDialogOnTop(jDialog,parentComponent);
 		
-		if(cancelHolder[0]){
+		if(finalGeometryHolder[0] == null){
 			throw UserCancelException.CANCEL_GENERIC;
 		}
 		return finalGeometryHolder[0];
@@ -1335,9 +1376,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			calculateHistogram();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_HISTOUPDATEHIGHLIGHT_PROPERTY)){
 			highlightHistogramPixels((DefaultListSelectionModel)evt.getNewValue());
+			wantBlendSetToEnhance();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UPDATEROI_WITHHIGHLIGHT_PROPERTY)){
 			updateROIWithHighlight();
+			wantBlendSetToEnhance();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY)){
+			overlayEditorPanelJAI.setROI(null, OverlayEditorPanelJAI.FRAP_DATA_UNDERLAY_SMOOTH_PROPERTY);
 			enhanceImageOp = (String)evt.getNewValue();
 			smoothUnderlay();
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY)){
@@ -1379,13 +1423,15 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				TreeMap<Integer, Integer> condensedBins = getCondensedBins(getImageDataSet());
 				hashTable.put(SMOOTHED_IMAGEDATASET, getImageDataSet());
 				hashTable.put(HISTO_BINS,condensedBins);
+				calculateAllPixelValuesRange();
 			}
 		};
 		AsynchClientTask updateDisplayTask = new AsynchClientTask("Updating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				overlayEditorPanelJAI.setImages((ImageDataset)hashTable.get(SMOOTHED_IMAGEDATASET), false,
-						OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
+						OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
+						allPixelValuesRange);
 				overlayEditorPanelJAI.setHistogram((TreeMap<Integer, Integer>)hashTable.get(HISTO_BINS));
 			}
 		};
@@ -1899,6 +1945,15 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 				enhancedImageDataset = smoothImageDataset(initImageDataSet, enhanceImageOp,null);
 				hashTable.put(HISTOGRAM_DATA,getCondensedBins(getImageDataSet()));
+				if(editedGeometryAttributes == null){
+					editedGeometryAttributes = new GeometryAttributes();
+					editedGeometryAttributes.origin = originalOrigin;
+					editedGeometryAttributes.extent = createCroppedExtent(originalExtent, originalISize,getImageDataSet().getISize());
+				}else{
+					editedGeometryAttributes.extent =
+						createCroppedExtent(editedGeometryAttributes.extent, origSize,getImageDataSet().getISize());
+				}
+				calculateAllPixelValuesRange();
 			}
 		};
 		final AsynchClientTask updatePanelTask = new AsynchClientTask("Updating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -1910,7 +1965,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY);
 					overlayEditorPanelJAI.setAllROICompositeImage(null,OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY);
 					overlayEditorPanelJAI.setImages(getImageDataSet(), true,
-							OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR);
+							OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
+							allPixelValuesRange);
 					overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY);
 					overlayEditorPanelJAI.setDisplayContrastFactor(currentContrast);
 					overlayEditorPanelJAI.setHistogram((TreeMap<Integer, Integer>)hashTable.get(HISTOGRAM_DATA));
@@ -1978,7 +2034,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			do{
 				bNameOK = true;
 				if(newROIName == null){
-					newROIName = PopupGenerator.showInputDialog0(overlayEditorPanelJAI, "New ROI Name", "cell");
+					newROIName = DialogUtils.showInputDialog0(overlayEditorPanelJAI, "New ROI Name", "cell");
 				}
 				if(newROIName == null || newROIName.length() == 0){
 				bNameOK = false;
@@ -2313,7 +2369,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 							tableListResult.selectedTableRows.length == 0){
 						throw UserCancelException.CANCEL_GENERIC;
 					}
-					
+					SwingUtilities.invokeAndWait(new Runnable() {
+						public void run() {
+							overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
+						}
+					});
 					Vector<RegionImage.RegionInfo> selectedRegionsV = new Vector<RegionImage.RegionInfo>();
 					for (int i = 0; i < tableListResult.selectedTableRows.length; i++) {
 						selectedRegionsV.add(colRegionInfo.elementAt(tableListResult.selectedTableRows[i]));
@@ -2324,26 +2384,46 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 								RegionAction.createHighlightRegionAction(allRegionInfos, selectedRegionsV),null);
 						hashTable.put(HIGHLIGHT_ROI, highlightROIInfo1.highlightROI);				
 					}else if(tableListResult.selectedOption.equals(mergeWithNeighbor)){
-						boolean bLeaveMultiNeighborUnchanged = true;
+						boolean bHasSelectionWithMoreThanOneNeighbor = false;
+//						boolean bHasMixedNeighorSelection = false;
+//						int firstNeighborPixelValue =
+//							highlightROIInfo.neighborsForRegionsMap.get(selectedRegionsV.elementAt(0)).first().intValue();
 						for (int i = 0; i < selectedRegionsV.size(); i++) {
 							if(highlightROIInfo.neighborsForRegionsMap.get(selectedRegionsV.elementAt(i)).size() > 1){
-								final String skip = "Leave multi unchanged";
-								final String pickAny = "Merge multi with default";
-								String result = 
-									DialogUtils.showWarningDialog(overlayEditorPanelJAI,
-											"Some selected regions have more than 1 neighbor.\n"+
-											"Choose an action:\n"+
-											"1. Leave multi-neighbor regions unchanged while merging.\n"+
-											"2. Merge multi-neighbor regions with default neighbor.",
-											new String[] {skip,pickAny,cancel}, cancel);
-								if(result.equals(cancel)){
-									throw UserCancelException.CANCEL_GENERIC;
-								}else if(result.equals(pickAny)){
-									bLeaveMultiNeighborUnchanged = false;
-								}
-								break;
+								bHasSelectionWithMoreThanOneNeighbor = true;
+							}
+//							if(highlightROIInfo.neighborsForRegionsMap.get(selectedRegionsV.elementAt(i)).first().intValue() != firstNeighborPixelValue){
+//								bHasMixedNeighorSelection = true;
+//							}
+						}
+//						if(bHasMixedNeighorSelection){
+//							final String merge = "Merge";
+//							String result = 
+//								DialogUtils.showWarningDialog(overlayEditorPanelJAI,
+//										"Warning: For best results 'merge' selections should all have the same 'Touches ROI' value\n",
+//										new String[] {merge,cancel}, cancel);
+//							if(result.equals(cancel)){
+//								throw UserCancelException.CANCEL_GENERIC;
+//							}
+//						}
+						boolean bLeaveMultiNeighborUnchanged = true;
+						if(bHasSelectionWithMoreThanOneNeighbor){
+							final String skip = "Leave multi unchanged";
+							final String pickAny = "Merge multi with default";
+							String result = 
+								DialogUtils.showWarningDialog(overlayEditorPanelJAI,
+										"Some selected regions have more than 1 neighbor.\n"+
+										"Choose an action:\n"+
+										"1. Leave multi-neighbor regions unchanged while merging.\n"+
+										"2. Merge multi-neighbor regions with default neighbor.",
+										new String[] {skip,pickAny,cancel}, cancel);
+							if(result.equals(cancel)){
+								throw UserCancelException.CANCEL_GENERIC;
+							}else if(result.equals(pickAny)){
+								bLeaveMultiNeighborUnchanged = false;
 							}
 						}
+
 						generateHighlightROIInfo(regionImage,
 								RegionAction.createMergeSelectedWithNeighborsRegionAction(
 										allRegionInfos,
@@ -2383,23 +2463,24 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				true);
 	}
 	
-	private static final int BLEND_ENHANCE_THRESHOLD = 20;
+	private static final int BLEND_ENHANCE_THRESHOLD = 50;
 	private void wantBlendSetToEnhance(){
 		if(overlayEditorPanelJAI.getBlendPercent() > BLEND_ENHANCE_THRESHOLD){
-			final String setSelector = "Yes, Enhance roi region display";
-			final String leaveAsIs = "No, Leave 'blend' unchanged";
-			String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, 
-					"Do you want to set the ROI/Underlay 'blend' slider"+
-					" to enhance the display of highlighted ROI regions?\n"+
-					"Note: Moving the slider left highlights the chosen ROI regions more."+
-					"  Moving the slider right enhances the display of the underlying image.",
-					new String[] {setSelector,leaveAsIs}, setSelector);
-			if(result.equals(setSelector)){
-				overlayEditorPanelJAI.setBlendPercent(BLEND_ENHANCE_THRESHOLD);
-//				return true;
-			}
+			overlayEditorPanelJAI.setBlendPercent(BLEND_ENHANCE_THRESHOLD);
 		}
-//		return false;
+//		if(overlayEditorPanelJAI.getBlendPercent() > BLEND_ENHANCE_THRESHOLD){
+//			final String setSelector = "Yes, Enhance roi region display";
+//			final String leaveAsIs = "No, Leave 'blend' unchanged";
+//			String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, 
+//					"Do you want to set the ROI/Underlay 'blend' slider"+
+//					" to enhance the display of highlighted ROI regions?\n"+
+//					"Note: Moving the slider left highlights the chosen ROI regions more."+
+//					"  Moving the slider right enhances the display of the underlying image.",
+//					new String[] {setSelector,leaveAsIs}, setSelector);
+//			if(result.equals(setSelector)){
+//				overlayEditorPanelJAI.setBlendPercent(BLEND_ENHANCE_THRESHOLD);
+//			}
+//		}
 	}
 	private int compareCoordinateIndex(CoordinateIndex o1CI,CoordinateIndex o2CI){
 		if(o1CI.z != o2CI.z){
