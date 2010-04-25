@@ -45,7 +45,7 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	
 	private static final double SCALE_MAX = Math.pow(2, 8)-1;
 
-	private Range minmaxPixelValues = null;
+	private OverlayEditorPanelJAI.AllPixelValuesRange allPixelValuesRange = null;
 	
 	private int[][][] blendARGB = new int[2][256][256];
 	private Hashtable<Integer, BufferedImage> contrastHash = new Hashtable<Integer, BufferedImage>();
@@ -149,8 +149,8 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	 * Method setUnderlyingImage.
 	 * @param argUnderlyingImage BufferedImage
 	 */
-	public void setUnderlyingImage(BufferedImage argUnderlyingImage,boolean bNew,Range argMinMaxPixelValues){
-		this.minmaxPixelValues = argMinMaxPixelValues;
+	public void setUnderlyingImage(BufferedImage argUnderlyingImage,boolean bNew,OverlayEditorPanelJAI.AllPixelValuesRange allPixelValuesRange){
+		this.allPixelValuesRange = allPixelValuesRange;
 		this.underlyingImage = argUnderlyingImage;
 		contrastHash.clear();
 		if(bNew){
@@ -262,8 +262,8 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 			if(contrastFactor > 0){
 				//Contrast stretch
 				double[][] minmaxArr = null;
-				if(minmaxPixelValues != null){
-					minmaxArr = new double[][] {{minmaxPixelValues.getMin()},{minmaxPixelValues.getMax()}};
+				if(allPixelValuesRange != null){
+					minmaxArr = new double[][] {{allPixelValuesRange.getMin()},{allPixelValuesRange.getMax()}};
 				}else{
 					minmaxArr = (double[][])ExtremaDescriptor.create(underlyingImage, null, 1, 1, false, 1, null).getProperty("extrema");
 				}
