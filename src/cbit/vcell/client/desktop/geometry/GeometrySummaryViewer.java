@@ -1,10 +1,15 @@
 package cbit.vcell.client.desktop.geometry;
-import java.awt.event.*;
-import java.awt.*;
-import javax.swing.*;
+import java.awt.AWTEventMulticaster;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import cbit.vcell.client.GuiConstants;
-import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.GeometryViewer;
 
 
@@ -44,24 +49,18 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC2(e);
 			if (e.getSource() == GeometrySummaryViewer.this.getJButtonCreateGeometry()) 
 				connEtoC4(e);
-//			if (e.getSource() == GeometrySummaryViewer.this.getBtnEditGeometry()){
-//				GeometrySummaryViewer.this.refireActionPerformed(e);
-//			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == GeometrySummaryViewer.this && (evt.getPropertyName().equals("geometry"))) 
 				connEtoM1(evt);
 			if (evt.getSource() == GeometrySummaryViewer.this && (evt.getPropertyName().equals("geometry"))) 
 				connEtoC3(evt);
-			if(evt.getSource() == (getGeometry()!= null?getGeometry().getGeometrySpec():null) &&
-					evt.getPropertyName().equals("sampledImage")){
-				ActionEvent actionEvent = new ActionEvent(getGeometry(), 0, GuiConstants.ACTIONCMD_EDIT_OCCURRED_GEOMETRY);
-				GeometrySummaryViewer.this.refireActionPerformed(actionEvent);
+			if(evt.getSource() == getGeometryViewer() && evt.getPropertyName().equals(GeometryViewer.SUBVOLCNTRSHP_CHANGED)){
+				firePropertyChange(GeometryViewer.SUBVOLCNTRSHP_CHANGED, evt.getOldValue(), evt.getNewValue());
 			}
 		};
 	};
 	private JButton ivjJButtonCreateGeometry = null;
-	private JButton btnEditGeometry;
 
 public GeometrySummaryViewer() {
 	super();
@@ -309,6 +308,7 @@ private void initConnections() throws java.lang.Exception {
 	getJButtonCreateGeometry().addActionListener(ivjEventHandler);
 //	getBtnEditGeometry().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
+	getGeometryViewer().addPropertyChangeListener(ivjEventHandler);
 }
 
 /**

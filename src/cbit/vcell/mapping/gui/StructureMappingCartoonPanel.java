@@ -3,14 +3,19 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.geometry.*;
-import cbit.vcell.model.Model;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.plaf.basic.*;
-import java.awt.*;
-import java.awt.event.*;
-import cbit.vcell.mapping.*;
+import java.awt.GridBagConstraints;
+import java.awt.image.BufferedImage;
+
+import javax.swing.ButtonModel;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
+
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.SimulationContext;
 /**
  * This type was created in VisualAge.
  */
@@ -877,6 +882,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	// user code end
 }
 
+public void refreshSubVolumeContainerShapeDisplayImage(BufferedImage newDisplayImage){
+	getStructureMappingCartoon1().refreshSubVolumeContainerShape(newDisplayImage);
+}
 /**
  * Set the GeometryContext1 to a new value.
  * @param newValue cbit.vcell.mapping.GeometryContext

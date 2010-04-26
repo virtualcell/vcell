@@ -1,21 +1,25 @@
 package cbit.vcell.geometry.gui;
-import cbit.vcell.parser.*;
-import cbit.gui.PropertyChangeListenerProxyVCell;
-import cbit.image.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.image.DisplayAdapterService;
-import java.awt.event.*;
-import java.awt.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.util.Hashtable;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.BevelBorderBean;
+
+import cbit.gui.PropertyChangeListenerProxyVCell;
+import cbit.image.DisplayAdapterService;
+import cbit.image.ImagePaneModel;
+import cbit.image.ImagePlaneManagerPanel;
+import cbit.image.SourceDataInfo;
+import cbit.image.VCImage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.geometry.*;
-import cbit.image.SourceDataInfo;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.graph.SubVolumeContainerShape;
 /**
  * This type was created in VisualAge.
  */
@@ -35,6 +39,9 @@ public class GeometryViewer extends javax.swing.JPanel implements ActionListener
 	private GeometrySpec ivjGeometrySpec = null;
 	private javax.swing.JButton ivjJButtonChangeDomain = null;
 	private PropertyChangeListenerProxyVCell listenerProxy = new PropertyChangeListenerProxyVCell(this);
+	
+	public static final String SUBVOLCNTRSHP_CHANGED = "SUBVOLCNTRSHP_CHANGED";
+
 
 /**
  * Constructor
@@ -60,10 +67,12 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	// user code end
 }
 
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+	getPropertyChange().removePropertyChangeListener(listener);
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
@@ -254,7 +263,7 @@ private void refreshSourceDataInfo() {
 	if ( getGeometry() == null){
 		return;
 	}
-	
+	final String SUBVOLUME_CNTRSHP_DISPIMG_KEY = "SUBVOLUME_CNTRSHP_DISPIMG_KEY";
 	AsynchClientTask task1 = new AsynchClientTask("generating sampled image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 		@Override
@@ -274,7 +283,10 @@ private void refreshSourceDataInfo() {
 									sampledImage.getNumZ(),
 									sampledImage.getNumX() * sampledImage.getNumY());
 			hashTable.put("sdi", sdi);
-		
+			BufferedImage subvolumeContainerShapeDisplayImage = SubVolumeContainerShape.CreateDisplayImage(getGeometry());
+			if(subvolumeContainerShapeDisplayImage != null){
+				hashTable.put(SUBVOLUME_CNTRSHP_DISPIMG_KEY, subvolumeContainerShapeDisplayImage);
+			}
 		}	
 	};
 	
@@ -284,6 +296,10 @@ private void refreshSourceDataInfo() {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			SourceDataInfo sdi = (SourceDataInfo)hashTable.get("sdi");
 			getImagePlaneManagerPanel1().setSourceDataInfo(sdi);
+			if(hashTable.get(SUBVOLUME_CNTRSHP_DISPIMG_KEY) != null){
+				getPropertyChange().firePropertyChange(
+					GeometryViewer.SUBVOLCNTRSHP_CHANGED, null, hashTable.get(SUBVOLUME_CNTRSHP_DISPIMG_KEY));
+			}
 		}	
 	};
 	
@@ -785,8 +801,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		connEtoC5(evt);
 	if (evt.getSource() == getGeometrySpec() && (evt.getPropertyName().equals("sampledImage"))) 
 		connEtoM9(evt);
-	if (evt.getSource() == getGeometrySpec() && (evt.getPropertyName().equals("sampledImage"))) 
+	if (evt.getSource() == getGeometrySpec() && (evt.getPropertyName().equals("sampledImage"))){ 
 		refreshSourceDataInfo();
+	}
 	// user code begin {2}
 	// user code end
 }
