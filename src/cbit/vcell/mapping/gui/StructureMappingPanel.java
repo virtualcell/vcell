@@ -3,11 +3,12 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.*;
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -16,7 +17,9 @@ import org.vcell.util.gui.JTableFixed;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.Expression;
 /**
@@ -639,12 +642,13 @@ private void structureMappingPanel_GeometryContext(GeometryContext arg1) {
 	{
 		//refresh table
 		getScrollPaneTable1().createDefaultColumnsFromModel();
-		subdomainComboBoxCellEditor = new JComboBox(); 
 		SubVolume[] subvolumes = getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
-		subdomainComboBoxCellEditor.removeAll();
+		DefaultComboBoxModel aModel = new DefaultComboBoxModel();
 		for (SubVolume sv : subvolumes) {
-			subdomainComboBoxCellEditor.addItem(sv.getName());
+			aModel.addElement(sv.getName());
 		}
+		subdomainComboBoxCellEditor = new JComboBox(); 
+		subdomainComboBoxCellEditor.setModel(aModel);
 		getScrollPaneTable1().getColumnModel().getColumn(StructureMappingTableModel.COLUMN_SUBDOMAIN).setCellEditor(new DefaultCellEditor(subdomainComboBoxCellEditor));
 		
 		//set column editor
