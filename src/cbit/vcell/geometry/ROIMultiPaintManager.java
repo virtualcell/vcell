@@ -2369,11 +2369,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 							tableListResult.selectedTableRows.length == 0){
 						throw UserCancelException.CANCEL_GENERIC;
 					}
-					SwingUtilities.invokeAndWait(new Runnable() {
-						public void run() {
-							overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
-						}
-					});
+
 					Vector<RegionImage.RegionInfo> selectedRegionsV = new Vector<RegionImage.RegionInfo>();
 					for (int i = 0; i < tableListResult.selectedTableRows.length; i++) {
 						selectedRegionsV.add(colRegionInfo.elementAt(tableListResult.selectedTableRows[i]));
@@ -2447,7 +2443,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					overlayEditorPanelJAI.setROI(highlightROI, OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
 					wantBlendSetToEnhance();
 				}else{
-					overlayEditorPanelJAI.setROI(overlayEditorPanelJAI.getROI(), OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
+					overlayEditorPanelJAI.setROI(null, OverlayEditorPanelJAI.FRAP_DATA_CHECKROI_PROPERTY);
 				}
 			}
 		};
