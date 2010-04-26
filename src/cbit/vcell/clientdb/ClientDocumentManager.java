@@ -1711,7 +1711,7 @@ public boolean isChanged(VCImage vcImage, String vcImageXML) throws DataAccessEx
 		if (vcImageXML==null){
 			vcImageXML = XmlHelper.imageToXML(vcImage);
 		}
-		if (!VCMLComparator.compareEquals(savedImageXML,vcImageXML)){
+		if (!VCMLComparator.compareEquals(savedImageXML,vcImageXML, false)){
 			return true;
 		}
 	}catch (XmlParseException e){
@@ -1743,33 +1743,6 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
 		if (!bioModel.getVersion().getName().equals(bioModel.getName())){
 			return true;
 		}
-		//
-		// check for annotation change
-		//
-		if (!bioModel.getVersion().getAnnot().equals(bioModel.getDescription())){
-			return true;
-		}
-		
-		////
-		//// check for same number of simulations and simulationContexts as saved version
-		////
-		//BioModelInfo savedBioModelInfo = getBioModelInfo(bioModel.getVersion().getVersionKey());
-		//if (savedBioModelInfo==null){
-			////
-			//// if savedBioModelInfo is null, then the record was deleted
-			//// while it was loaded in client (changed is true)
-			////
-			//System.out.println("BioModel("+bioModel.getVersion().getVersionKey()+") must have been deleted, therefore isChanged() is true");
-			//return true;
-		//}
-		//BioModelMetaData savedBioModelMetaData = getBioModelMetaData(savedBioModelInfo);
-			
-		//if (savedBioModelMetaData.getNumSimulationContexts() != bioModel.getNumSimulationContexts()){
-			//return true;
-		//}
-		//if (savedBioModelMetaData.getNumSimulations() != bioModel.getNumSimulations()){
-			//return true;
-		//}
 
 		//
 		// compare saved and this bioModel
@@ -1783,11 +1756,18 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
 			if (bioModelXML==null){
 				bioModelXML = XmlHelper.bioModelToXML(bioModel);
 			}
-			if (VCMLComparator.compareEquals(savedBioModelXML,bioModelXML)){
-				return false;
-			}else{
+			// compare everything except vcmetadata
+			if (!VCMLComparator.compareEquals(savedBioModelXML,bioModelXML, true)){
 				return true;
 			}
+			//
+			// compare vcmetadata
+			//
+			BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(savedBioModelXML));
+			if (!savedBioModel.getVCMetaData().compareEquals(bioModel.getVCMetaData())) {
+				return true;
+			}
+			return false;			
 		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
@@ -1856,7 +1836,7 @@ public boolean isChanged(Geometry geometry, String geometryXML) throws DataAcces
 		if (geometryXML==null){
 			geometryXML = XmlHelper.geometryToXML(geometry);
 		}
-		if (!VCMLComparator.compareEquals(savedGeometryXML,geometryXML)){
+		if (!VCMLComparator.compareEquals(savedGeometryXML,geometryXML, false)){
 			return true;
 		}
 	}catch (XmlParseException e){
@@ -1923,7 +1903,7 @@ public boolean isChanged(MathModel mathModel, String mathModelXML) throws DataAc
 			if (mathModelXML==null){
 				mathModelXML = XmlHelper.mathModelToXML(mathModel);
 			}
-			if (VCMLComparator.compareEquals(savedMathModelXML,mathModelXML)){
+			if (VCMLComparator.compareEquals(savedMathModelXML,mathModelXML, false)){
 				return false;
 			}else{
 				return true;
@@ -1959,7 +1939,7 @@ public boolean isChanged(Simulation sim) throws DataAccessException{
 	}
 
 	try{
-		return !VCMLComparator.compareEquals(XmlHelper.simToXML(sim),loadedSimXML);
+		return !VCMLComparator.compareEquals(XmlHelper.simToXML(sim),loadedSimXML, false);
 	}catch (XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());

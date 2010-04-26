@@ -12,6 +12,7 @@ import org.jdom.Namespace;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
+import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.biomodel.meta.registry.OpenRegistry;
@@ -21,6 +22,7 @@ import cbit.vcell.xml.XMLTags;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * manager for Notes, Annotations, SBOTerms, and all other meta data regarding 
@@ -48,7 +50,7 @@ public class VCMetaData {
 	protected IdentifiableProvider identifiableProvider;
 
 	protected SBBox rdfBox = SBBoxFactory.create();
-	protected OpenRegistry registry = new OpenRegistry(new VCellThingFactory(rdfBox));
+	protected OpenRegistry registry;
 	private IdentityHashMap<OpenEntry, NonRDFAnnotation> nonRDFAnnotationMap =
 				new IdentityHashMap<OpenEntry, NonRDFAnnotation>();
 	private KeyValue keyValue = null;
@@ -56,6 +58,7 @@ public class VCMetaData {
 	public VCMetaData(IdentifiableProvider arg_IdentifiableProvider, KeyValue key){
 		this.identifiableProvider = arg_IdentifiableProvider;
 		this.keyValue = key;
+		registry = new OpenRegistry(new VCellThingFactory(rdfBox), identifiableProvider);
 	}
 
 	public SBBox getSBbox() { return rdfBox; }
@@ -68,29 +71,34 @@ public class VCMetaData {
 	public VCMetaDataMiriamManager miriamManager = new VCMetaDataMiriamManager(this);
 	
 	public boolean compareEquals(VCMetaData vcMetaData) {
-		return getRdfData().isIsomorphicWith(vcMetaData.getRdfData()) && 
-		registry.compareEquals(vcMetaData.registry);
-	}
-	
-	private NamedThing getNamedThing(Identifiable identifiable){
-		return registry.getEntry(identifiable).getNamedThing();
-	}
-	
-	private Property getProperty(URI propertyURI){
-		// Property property = getRdf().getProperty(propertyURI.getPath());
-		Property property = getRdfData().getProperty(propertyURI.toString());
-		if (property == null){
-			// property = getRdf().createProperty(propertyURI.getPath());
-			property = getRdfData().createProperty(propertyURI.toString());
+		if (!getRdfData().isIsomorphicWith(vcMetaData.getRdfData())) {
+			return false; 
 		}
-		// statement
-		return property;
+		if (!registry.compareEquals(vcMetaData.registry)) {
+			return false;
+		}
+		if (nonRDFAnnotationMap.size() != vcMetaData.nonRDFAnnotationMap.size()) {
+			return false;
+		}		
+		Set<OpenEntry> oeSet = nonRDFAnnotationMap.keySet();
+		for (OpenEntry oe : oeSet) {
+			final VCID vcid = identifiableProvider.getVCID(oe.getIdentifiable());
+			Identifiable otherIdentifiable = vcMetaData.identifiableProvider.getIdentifiableObject(vcid);
+			if (otherIdentifiable == null) {
+				return false;
+			}
+			NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(oe);
+			NonRDFAnnotation otherNonRDFAnnotation = vcMetaData.getNonRDFAnnotation(otherIdentifiable);
+			if (!Compare.isEqualOrNull(nonRDFAnnotation, otherNonRDFAnnotation)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public IdentifiableProvider getIdentifiableProvider() {
 		return identifiableProvider;
 	}
-
 
 	public NonRDFAnnotation getNonRDFAnnotation(Identifiable identifiable){
 		OpenEntry entry = registry.getEntry(identifiable);
