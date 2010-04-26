@@ -4,23 +4,28 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.Vector;
+
+import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.model.VCMODL;
-import cbit.vcell.math.VCML;
-import cbit.vcell.model.Model;
+import cbit.gui.PropertyChangeListenerProxyVCell;
+import cbit.vcell.geometry.CompartmentSubVolume;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.*;
-import cbit.util.*;
+import cbit.vcell.model.VCMODL;
 /**
  * GeometryContext handles the mapping of the Structures (Feature,Membrane) to the Geometry
  * (subVolumes).  This should be an observer for Geometry and for Model.
@@ -86,7 +91,7 @@ GeometryContext (Model model, Geometry geometry, SimulationContext simulationCon
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
+	getPropertyChange().addPropertyChangeListener(new PropertyChangeListenerProxyVCell(listener));
 }
 /**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
@@ -677,6 +682,8 @@ public void propertyChange(PropertyChangeEvent event) {
 			e.printStackTrace(System.out);
 		}catch (PropertyVetoException e){
 			e.printStackTrace(System.out);
+		}catch (Exception e){
+			e.printStackTrace(System.out);
 		}
 	}
 	if (event.getSource() == getModel() && event.getPropertyName().equals("structures")){
@@ -685,6 +692,8 @@ public void propertyChange(PropertyChangeEvent event) {
 		}catch (MappingException e){
 			e.printStackTrace(System.out);
 		}catch (PropertyVetoException e){
+			e.printStackTrace(System.out);
+		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}
 	}
@@ -728,9 +737,6 @@ public void refreshDependencies() {
  * This method was created by a SmartGuide.
  */
 private void refreshStructureMappings() throws MappingException, PropertyVetoException {
-	Enumeration enum_mappings;
-	Enumeration enum_structures;
-	Enumeration enum_subvolumes;
 	//
 	// step through all structure mappings
 	//
@@ -831,7 +837,7 @@ private void refreshStructureMappings() throws MappingException, PropertyVetoExc
 	if (newStructureMappings != fieldStructureMappings){
 		try {
 			setStructureMappings(newStructureMappings);
-		}catch (PropertyVetoException e){
+		}catch (Exception e){
 			e.printStackTrace(System.out);
 			throw new MappingException(e.getMessage());
 		}
@@ -841,6 +847,7 @@ private void refreshStructureMappings() throws MappingException, PropertyVetoExc
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+	PropertyChangeListenerProxyVCell.removeProxyListener(getPropertyChange(), listener);
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 /**

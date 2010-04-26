@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -30,13 +31,13 @@ import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.ModelParameter;
@@ -374,6 +375,13 @@ public class SPPRPanel extends JPanel {
 				ivjGeometrySummaryViewer = new GeometrySummaryViewer();
 				ivjGeometrySummaryViewer.setName("GeometrySummaryViewer");
 				ivjGeometrySummaryViewer.setPreferredSize(new Dimension(500,500));
+				ivjGeometrySummaryViewer.addPropertyChangeListener(new PropertyChangeListener() {
+					public void propertyChange(PropertyChangeEvent evt) {
+						if(evt.getPropertyName().equals(GeometryViewer.SUBVOLCNTRSHP_CHANGED)){
+							getStructureMappingCartoonPanel().refreshSubVolumeContainerShapeDisplayImage((BufferedImage)evt.getNewValue());
+						}
+					}
+				});
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
