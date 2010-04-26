@@ -15,6 +15,8 @@ import org.vcell.sybil.rdf.RDFBox.RDFThing;
 import org.vcell.sybil.util.keys.KeyOfTwo;
 
 import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.biomodel.meta.IdentifiableProvider;
+import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
@@ -91,10 +93,11 @@ public class OpenRegistry implements Registry {
 	protected Hashtable<NamedThing, OpenEntry> namedThingToEntry = new Hashtable<NamedThing, OpenEntry>();
 	protected Hashtable<Resource, OpenEntry> resourceToEntry = new Hashtable<Resource, OpenEntry>();
 	protected Hashtable<String, OpenEntry> uriToEntry = new Hashtable<String, OpenEntry>();
+	protected IdentifiableProvider identifiableProvider = null;
 	
-	
-	public OpenRegistry(IdentifiableSBThingFactory thingFactoryNew) {
+	public OpenRegistry(IdentifiableSBThingFactory thingFactoryNew, IdentifiableProvider identifiableProvider) {
 		sbThingFactory = thingFactoryNew;	
+		this.identifiableProvider = identifiableProvider;
 	}
 	
 	public String generateFreeURI(Identifiable identifiable) {
@@ -180,7 +183,20 @@ public class OpenRegistry implements Registry {
 	}
 	
 	public boolean compareEquals(OpenRegistry other) {
-		return identifiableToEntry.equals(other.identifiableToEntry);
+		Set<Resource> resSet = resourceToEntry.keySet();
+		Set<Resource> otherResSet = other.resourceToEntry.keySet();
+		if (!resSet.equals(otherResSet)) {
+			return false;
+		}
+		for (Resource res : resSet) {
+			OpenEntry oe = resourceToEntry.get(res);
+			OpenEntry otherOe = other.resourceToEntry.get(res);
+			final VCID vcid = identifiableProvider.getVCID(oe.getIdentifiable());
+			final VCID otherVcid = other.identifiableProvider.getVCID(otherOe.getIdentifiable());
+			if (!vcid.toASCIIString().equals(otherVcid.toASCIIString())) {
+				return false;
+			}
+		}
+		return true;
 	}
-
 }

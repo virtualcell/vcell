@@ -60,7 +60,7 @@ private VCMLComparatorTest() {}
 		try {
 			xmlStr1 = XmlUtil.xmlToString(XmlUtil.readXML(new File(fileName1)), false);
 			xmlStr2 = XmlUtil.xmlToString(XmlUtil.readXML(new File(fileName2)), false);
-			boolean testResult = VCMLComparator.compareEquals(xmlStr1, xmlStr2);
+			boolean testResult = VCMLComparator.compareEquals(xmlStr1, xmlStr2, false);
 			if (testResult == expectedResult) {
 				System.out.println("Tested succeeded for the files: " + fileName1 + " " + fileName2);
 				return true;
@@ -220,7 +220,7 @@ private VCMLComparatorTest() {}
 			Xmlproducer producer = new Xmlproducer(true);
 			Element root2 = producer.getXML(biomodel);
 			xmlStr2 = XmlUtil.xmlToString(root2);
-			boolean testResult = VCMLComparator.compareEquals(xmlStr1, xmlStr2);
+			boolean testResult = VCMLComparator.compareEquals(xmlStr1, xmlStr2, false);
 			if (testResult) {
 				System.out.println("Roundtrip test succeeded for the file: " + xmlFileName);
 			} else {

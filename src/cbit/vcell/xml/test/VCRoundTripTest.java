@@ -176,7 +176,7 @@ public VCRoundTripTest(String fName, String userName, String testType, String mo
 			if (unresolvedXML.equals(cachedXML)) {
 				ps.println("Cached XML is the same as the DB-read model for: " + bmMeta.getVersion().getVersionKey());
 			} else {
-				boolean result = VCMLComparator.compareEquals(unresolvedXML, cachedXML);
+				boolean result = VCMLComparator.compareEquals(unresolvedXML, cachedXML, false);
 				if (result) {
 					ps.println("The cachedXML and the DB-read model are identical with different ordering: " + 
 					bmMeta.getVersion().getVersionKey());
@@ -201,7 +201,7 @@ public VCRoundTripTest(String fName, String userName, String testType, String mo
 		if (unresolvedXML.equals(postms1XML)) {
 			ps.println("Post and pre math desc refresh models are identical: --- refresh 1");
 		} else {
-			boolean result = VCMLComparator.compareEquals(unresolvedXML, postms1XML);
+			boolean result = VCMLComparator.compareEquals(unresolvedXML, postms1XML, false);
 			if (result) {
 				ps.println("The post and pre math desc refresh models are identical with different ordering: --- refresh 1 " + 
 							bmMeta.getVersion().getVersionKey());
@@ -217,7 +217,7 @@ public VCRoundTripTest(String fName, String userName, String testType, String mo
 					//dbImpl.saveBioModelAs(adminDbServer.getUser("rbadrawi"), bm, bm.getName() + "_REFRESH");
 					//dbImpl.saveBioModel(user, bm);
 				} else {
-					result = VCMLComparator.compareEquals(postms1XML, postms2XML);
+					result = VCMLComparator.compareEquals(postms1XML, postms2XML, false);
 					if (result) {
 						ps.println("The post and the pre math desc refresh models are identical with different ordering: --- refresh 2 " + 
 									bmMeta.getVersion().getVersionKey());
@@ -437,7 +437,7 @@ private void scanBio(User user, String modelKeyValue, BioModelMetaData bmMeta []
 			continue;				
 		}
 		if (result) {
-			result = VCMLComparator.compareMatchables(bm, bmFromXML, XMLTags.BioModelTag);
+			result = VCMLComparator.compareMatchables(bm, bmFromXML, XMLTags.BioModelTag, false);
 		}
 		if (result) {
 			//success
@@ -447,7 +447,7 @@ private void scanBio(User user, String modelKeyValue, BioModelMetaData bmMeta []
 			failedToCompare++;
 			ps.println(i + ": model:" + bm.getName() + " <-- FAILED in roundtrip. Models are not identical." +
 				       " Key = " + bmMeta[i].getVersion().getVersionKey() + "\n");
-			VCMLComparator.compareMatchables(bm, bmFromXML, XMLTags.BioModelTag);
+			VCMLComparator.compareMatchables(bm, bmFromXML, XMLTags.BioModelTag, false);
 		}
 		//XmlUtil.compareMatchables(bm, bmFromXML, XMLTags.BioModelTag);
 	}
@@ -552,7 +552,7 @@ private void scanMath(User user, String modelKeyValue, MathModelMetaData mmMeta 
 			failedToCompare++;
 			ps.println(i + ": model:" + mm.getName() + " <-- FAILED in roundtrip. Models are not identical." +
 				       " Key=" + mmMeta[i].getVersion().getVersionKey() + "\n");
-			VCMLComparator.compareMatchables(mm, mmFromXML, XMLTags.MathModelTag);
+			VCMLComparator.compareMatchables(mm, mmFromXML, XMLTags.MathModelTag, false);
 		}
 		//XmlUtil.compareMatchables(mm, mmFromXML, XMLTags.MathModelTag 
 	}

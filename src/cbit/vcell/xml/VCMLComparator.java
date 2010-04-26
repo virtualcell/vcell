@@ -184,17 +184,17 @@ public class VCMLComparator {
 	}
 
 
-	public static boolean compareEquals(String xmlStr1, String xmlStr2) throws XmlParseException {
+	public static boolean compareEquals(String xmlStr1, String xmlStr2, boolean bSkipVCMetaData) throws XmlParseException {
 
 		if (xmlStr1 == null || xmlStr1.length() == 0 ||
 			xmlStr2 == null || xmlStr2.length() == 0) {
 			throw new XmlParseException("Invalid values for the xml strings.");
 		}
-		return compareXML(xmlStr1, xmlStr2, false);
+		return compareXML(xmlStr1, xmlStr2, false, bSkipVCMetaData);
 	}
 
 
-	public static boolean compareMatchables(Matchable m1, Matchable m2, String type) {
+	public static boolean compareMatchables(Matchable m1, Matchable m2, String type, boolean bSkipVCMetaData) {
 
 		Element source = null, target = null; 
 		try { 
@@ -210,7 +210,7 @@ public class VCMLComparator {
 			}
 			String sourceXMLStr = XmlUtil.xmlToString(source);
 			String targetXMLStr = XmlUtil.xmlToString(target);
-			boolean result = compareXML(sourceXMLStr, targetXMLStr, true);
+			boolean result = compareXML(sourceXMLStr, targetXMLStr, true, bSkipVCMetaData);
 			if (!result && VERBOSE_MODE) {
 				ps.println(sourceXMLStr);
 				ps.println(targetXMLStr);
@@ -224,7 +224,7 @@ public class VCMLComparator {
 
 
 	//the testAll boolean indicate whether to cover all elements in the test, even if the test fails. 
-	private static boolean compareVCML(Element source, Element target, boolean testAll) {
+	private static boolean compareVCML(Element source, Element target, boolean testAll, boolean bSkipVCMetaData) {
 
 		boolean elementFlag = true, attFlag = true, textFlag = true;
 	    VCMLElementSorter elementSorter = new VCMLElementSorter();
@@ -275,7 +275,10 @@ public class VCMLComparator {
 	    for (int j = 0; j < e1.length; j++) {
 	        Element child1 = e1[j];
 	        Element child2 = e2[j];
-	        if (!compareVCML(child1, child2, testAll)){
+	        if (child1.getName().equals(XMLMetaData.VCMETADATA_TAG) && child2.getName().equals(XMLMetaData.VCMETADATA_TAG)) {
+	        	continue;
+	        }
+	        if (!compareVCML(child1, child2, testAll, bSkipVCMetaData)){
 		        bChildrenSame = false;
 				if (!testAll){
 		     	   return false;
@@ -286,7 +289,7 @@ public class VCMLComparator {
 	}
 
 
-	private static boolean compareXML(String xmlStr1, String xmlStr2, boolean testAll) throws XmlParseException {
+	private static boolean compareXML(String xmlStr1, String xmlStr2, boolean testAll, boolean bSkipVCMetaData) throws XmlParseException {
 
 		if (xmlStr1.equals(xmlStr2)) {
 			ps.println("The xml strings are identical.");
@@ -294,7 +297,7 @@ public class VCMLComparator {
 		}
 		Element sRoot = XmlUtil.stringToXML(xmlStr1, null).getRootElement();
 		Element tRoot = XmlUtil.stringToXML(xmlStr2, null).getRootElement();
-		if (compareVCML(sRoot, tRoot, testAll)) {
+		if (compareVCML(sRoot, tRoot, testAll, bSkipVCMetaData)) {
 			ps.println("The two xml trees: " + sRoot.getName() + " are identical with different ordering.");
 			return true;
 		}
