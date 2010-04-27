@@ -159,7 +159,7 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	Variable allVars[] = (Variable[])BeanUtils.getArray(origMathDesc.getVariables(),Variable.class);
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		cbit.vcell.model.Parameter modelParameter = parameterMappingSpecs[i].getModelParameter();
-		String mathSymbol = mathMapping.getMathSymbol(modelParameter,structureMapping);
+		String mathSymbol = mathMapping.getMathSymbol(modelParameter,structureMapping.getGeometryClass());
 		Variable mathVariable = origMathDesc.getVariable(mathSymbol);
 		Parameter optParameter = new Parameter(
 								mathSymbol,
@@ -383,7 +383,7 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping, Structur
 	//
 	for (int i = 0; i < modelObjectList.size(); i++){
 		SymbolTableEntry modelObject = (SymbolTableEntry)modelObjectList.elementAt(i);
-		String symbol = mathMapping.getMathSymbol(modelObject,structureMapping);
+		String symbol = mathMapping.getMathSymbol(modelObject,structureMapping.getGeometryClass());
 		rowColResultSet.addDataColumn(new ODESolverResultSetColumnDescription(symbol));
 	}
 

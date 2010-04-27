@@ -1523,6 +1523,9 @@ public org.jdom.Element getXML(FilamentRegionVariable param) {
 
 	//Add atributes
 	filregvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getDomain()!=null){
+		filregvar.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
+	}
 
 	return filregvar;
 }
@@ -1565,6 +1568,9 @@ public org.jdom.Element getXML(FilamentVariable param) {
 
 	//Add atributes
 	filvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getDomain()!=null){
+		filvar.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
+	}
 
 	return filvar;
 }
@@ -1581,6 +1587,9 @@ public org.jdom.Element getXML(Function param) {
 
 	//Add atributes
 	function.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getDomain()!=null){
+		function.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
+	}
 	function.addContent(mangleExpression(param.getExpression()) );
 
 	return function;
@@ -1595,6 +1604,9 @@ public org.jdom.Element getXML(AnnotatedFunction param) {
 		function.setAttribute(XMLTags.ErrorStringTag, param.getErrorString());
 	} else {
 		function.setAttribute(XMLTags.ErrorStringTag, "");
+	}
+	if (param.getDomain()!=null){
+		function.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
 	}
 	function.setAttribute(XMLTags.FunctionTypeTag, param.getFunctionType().getTypeName());
 	function.addContent(mangleExpression(param.getExpression()) );
@@ -1783,6 +1795,10 @@ private Element getXML(RandomVariable var) {
 	seedElement.addContent(mangleExpression(var.getSeed()));
 	randomVariableElement.addContent(seedElement);
 	
+	if (var.getDomain()!=null){
+		randomVariableElement.setAttribute(XMLTags.DomainAttrTag, mangle(var.getDomain().getName()));
+	}
+
 	Element distElement = null;
 	if (var.getDistribution() instanceof UniformDistribution) {
 		distElement = getXML((UniformDistribution)var.getDistribution());
@@ -1906,6 +1922,9 @@ public org.jdom.Element getXML(MembraneRegionVariable param) {
 
 	//Add atributes
 	memregvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getDomain()!=null){
+		memregvar.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
+	}
 
 	return memregvar;
 }
@@ -1989,6 +2008,9 @@ public org.jdom.Element getXML(MemVariable param) {
 
 	//Add atributes
 	memvariable.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getDomain()!=null){
+		memvariable.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
+	}
 
 	return memvariable;
 }
@@ -2302,6 +2324,9 @@ public org.jdom.Element getXML(VolumeRegionVariable param) {
 
 	//Add atribute
 	volregvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getDomain()!=null){
+		volregvar.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
+	}
 
 	return volregvar;
 }
@@ -2318,6 +2343,9 @@ public org.jdom.Element getXML(VolVariable param) {
 
 	//Add atribute
 	volvariable.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getDomain()!=null){
+		volvariable.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
+	}
 
 	return volvariable;
 }

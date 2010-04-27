@@ -7,6 +7,7 @@ import java.util.Vector;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -333,12 +334,13 @@ public boolean hasDiscontinuities(MathDescription mathDesc) throws ExpressionExc
 	return false;	
 }
 
-public abstract void checkValid(MathDescription mathDesc) throws MathException, ExpressionException;
+public abstract void checkValid(MathDescription mathDesc, SubDomain subDomain) throws MathException, ExpressionException;
 
-protected void checkValid_Volume(MathDescription mathDesc, Expression exp) throws MathException, ExpressionException {
+protected void checkValid_Volume(MathDescription mathDesc, Expression exp, CompartmentSubDomain compartmentSubDomain) throws MathException, ExpressionException {
 	if (exp == null) {
 		return;
 	}
+	Domain volumeDomain = new Domain(compartmentSubDomain);
 	Expression newExp = MathUtilities.substituteFunctions(exp, mathDesc);
 	String[] symbols = newExp.getSymbols();
 	if (symbols == null) {
@@ -346,6 +348,12 @@ protected void checkValid_Volume(MathDescription mathDesc, Expression exp) throw
 	}
 	for (String symbol : symbols) {
 		Variable variable = mathDesc.getVariable(symbol);
+		if (variable != null && variable.getDomain()!=null){
+			// if variable defined on this surface or the appropriate volume domain, then it is ok.
+			if (variable.getDomain().compareEqual(volumeDomain)){
+				continue;
+			}
+		}
 		if ((variable instanceof MemVariable
 				|| variable instanceof MembraneRandomVariable
 				|| variable instanceof MembraneRegionVariable)) {
@@ -361,10 +369,13 @@ protected void checkValid_Volume(MathDescription mathDesc, Expression exp) throw
 	}	
 } 
 
-protected void checkValid_Membrane(MathDescription mathDesc, Expression exp) throws MathException, ExpressionException {
+protected void checkValid_Membrane(MathDescription mathDesc, Expression exp, MembraneSubDomain membraneSubDomain) throws MathException, ExpressionException {
 	if (exp == null) {
 		return;
 	}
+	Domain surfaceDomain = new Domain(membraneSubDomain);
+	Domain volume1Domain = new Domain(membraneSubDomain.getInsideCompartment());
+	Domain volume2Domain = new Domain(membraneSubDomain.getOutsideCompartment());
 	Expression newExp = MathUtilities.substituteFunctions(exp, mathDesc);
 	String[] symbols = newExp.getSymbols();
 	if (symbols == null) {
@@ -372,6 +383,12 @@ protected void checkValid_Membrane(MathDescription mathDesc, Expression exp) thr
 	}
 	for (String symbol : symbols) {
 		Variable variable = mathDesc.getVariable(symbol);
+		if (variable!=null && variable.getDomain()!=null){
+			// if variable defined on this surface or the appropriate volume domain, then it is ok.
+			if (variable.getDomain().compareEqual(surfaceDomain) || variable.getDomain().compareEqual(volume1Domain) || variable.getDomain().compareEqual(volume2Domain)){
+				continue;
+			}
+		}
 		if (variable instanceof VolVariable
 				|| variable instanceof VolumeRandomVariable
 				|| variable instanceof VolumeRegionVariable) {

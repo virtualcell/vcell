@@ -16,8 +16,8 @@ public class Function extends Variable {
  * Constant constructor comment.
  * @param name java.lang.String
  */
-public Function(String name, Expression exp) {
-	super(name);
+public Function(String name, Expression exp, Domain domain) {
+	super(name,domain);
 	this.exp = new Expression(exp);
 	try {
 		this.exp.bindExpression(null);
@@ -92,7 +92,7 @@ public Expression getExpression() {
  * @return java.lang.String
  */
 public String getVCML() {
-	return "Function  "+getName()+"\t "+exp.infix()+";";
+	return VCML.Function+"  "+getQualifiedName()+"\t "+exp.infix()+";";
 }
 
 
@@ -127,6 +127,6 @@ public void setExpression(Expression exp) {
  * @return java.lang.String
  */
 public String toString() {
-	return "Function("+hashCode()+") <"+getName()+"> = '"+getExpression()+"'";
+	return VCML.Function+"("+hashCode()+") <"+getQualifiedName()+"> = '"+getExpression()+"'";
 }
 }

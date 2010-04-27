@@ -4,9 +4,12 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.HashMap;
 import java.util.Vector;
 
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -27,7 +30,7 @@ import cbit.vcell.parser.Expression;
 public class MembraneStructureAnalyzer extends StructureAnalyzer {
 	private SubVolume innerSubVolume = null;
 	private SubVolume outerSubVolume = null;
-	private Membrane membrane = null;
+	private SurfaceClass surfaceClass = null;
 	private ResolvedFlux resolvedFluxes[] = null;
 
 	public static boolean bResolvedFluxCorrectionBug = false;
@@ -39,12 +42,11 @@ public class MembraneStructureAnalyzer extends StructureAnalyzer {
  * @param mathMapping cbit.vcell.mapping.MathMapping
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
-public MembraneStructureAnalyzer(MathMapping mathMapping, Membrane membrane, SubVolume innerSubVolume, SubVolume outerSubVolume) {
+public MembraneStructureAnalyzer(MathMapping mathMapping, SurfaceClass surfaceClass, SubVolume innerSubVolume, SubVolume outerSubVolume) {
 	super(mathMapping);
 	this.innerSubVolume = innerSubVolume;
 	this.outerSubVolume = outerSubVolume;
-	this.membrane = membrane;
-	//refresh();
+	this.surfaceClass = surfaceClass;
 }
 /**
  * This method was created in VisualAge.
@@ -52,13 +54,6 @@ public MembraneStructureAnalyzer(MathMapping mathMapping, Membrane membrane, Sub
  */
 public SubVolume getInnerSubVolume() {
 	return innerSubVolume;
-}
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.model.Membrane
- */
-public Membrane getMembrane() {
-	return membrane;
 }
 /**
  * This method was created in VisualAge.
@@ -94,7 +89,7 @@ private void refreshResolvedFluxes() throws Exception {
 //System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes()");
 
 	GeometryContext geoContext = mathMapping.getSimulationContext().getGeometryContext();
-	Vector<ResolvedFlux> resolvedFluxList = new Vector<ResolvedFlux>();
+	HashMap<SpeciesContext,ResolvedFlux> resolvedFluxMap = new HashMap<SpeciesContext,ResolvedFlux>();
 
 	//
 	// for each reaction, get all fluxReactions associated with this membrane
@@ -106,7 +101,7 @@ private void refreshResolvedFluxes() throws Exception {
 			continue;
 		}
 		ReactionStep rs = reactionSpecs[j].getReactionStep();
-		if (rs.getStructure()==getMembrane()){
+		if (mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(rs.getStructure()).getGeometryClass()==surfaceClass){
 			if (rs instanceof FluxReaction){
 				fluxList.addElement(rs);
 			}
@@ -121,17 +116,10 @@ private void refreshResolvedFluxes() throws Exception {
 		if (fr.getFluxCarrier() == null) {
 			continue;
 		}
-		ResolvedFlux rf = null;
-		for (int j=0;j<resolvedFluxList.size();j++){
-			ResolvedFlux rf_tmp = (ResolvedFlux)resolvedFluxList.elementAt(j);
-			if (rf_tmp.getSpecies() == fr.getFluxCarrier()){
-				rf = rf_tmp;
-			}
-		}
 		//
 		// if "inside" speciesContext is not "fixed", add flux to ResolvedFlux
 		//
-		SpeciesContext insideSpeciesContext = mathMapping.getSimulationContext().getModel().getSpeciesContext(fr.getFluxCarrier(),getMembrane().getInsideFeature());
+		SpeciesContext insideSpeciesContext = mathMapping.getSimulationContext().getModel().getSpeciesContext(fr.getFluxCarrier(),((Membrane)fr.getStructure()).getInsideFeature());
 		SpeciesContextSpec insideSpeciesContextSpec = mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(insideSpeciesContext);
 		//
 		// introduce bug compatability mode for NoFluxIfFixed bug
@@ -141,9 +129,10 @@ private void refreshResolvedFluxes() throws Exception {
 			if (bNoFluxIfFixed && insideSpeciesContextSpec.isConstant()){
 				bNoFluxIfFixedExercised = true;
 			}
-			if (rf == null){
-				rf = new ResolvedFlux(fr.getFluxCarrier());
-				resolvedFluxList.addElement(rf);
+			ResolvedFlux insideResolvedFlux = resolvedFluxMap.get(insideSpeciesContext);
+			if (insideResolvedFlux==null){
+				insideResolvedFlux = new ResolvedFlux(insideSpeciesContext);
+				resolvedFluxMap.put(insideSpeciesContext,insideResolvedFlux);
 			}
 			FeatureMapping insideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(((Membrane)fr.getStructure()).getInsideFeature());
 			
@@ -162,19 +151,18 @@ private void refreshResolvedFluxes() throws Exception {
 			//
 			if (fr.getKinetics() instanceof DistributedKinetics){
 				Expression reactionRateParameter = new Expression(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter(), mathMapping.getNameScope());
-				if (rf.inFlux.isZero()){
-					rf.inFlux = Expression.mult(reactionRateParameter,insideFluxCorrection).flatten();
+				if (insideResolvedFlux.getFlux().isZero()){
+					insideResolvedFlux.setFlux(Expression.mult(reactionRateParameter,insideFluxCorrection).flatten());
 				}else{
-					rf.inFlux = Expression.add(rf.inFlux,Expression.mult(reactionRateParameter,insideFluxCorrection).flatten());
+					insideResolvedFlux.setFlux(Expression.add(insideResolvedFlux.getFlux(),Expression.mult(reactionRateParameter,insideFluxCorrection).flatten()));
 				}
 			}else if (fr.getKinetics() instanceof LumpedKinetics){
 				throw new RuntimeException("Lumped Kinetics for fluxes not yet supported");
 			}else{
 				throw new RuntimeException("unexpected Kinetic type in MembraneStructureAnalyzer.refreshResolvedFluxes()");
 			}
-//			rf.inFlux.bindExpression(mathMapping);
 		}
-		SpeciesContext outsideSpeciesContext = mathMapping.getSimulationContext().getModel().getSpeciesContext(fr.getFluxCarrier(),getMembrane().getOutsideFeature());
+		SpeciesContext outsideSpeciesContext = mathMapping.getSimulationContext().getModel().getSpeciesContext(fr.getFluxCarrier(),((Membrane)fr.getStructure()).getOutsideFeature());
 		SpeciesContextSpec outsideSpeciesContextSpec = mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(outsideSpeciesContext);
 		//
 		// introduce bug compatability mode for NoFluxIfFixed bug
@@ -184,9 +172,10 @@ private void refreshResolvedFluxes() throws Exception {
 			if (bNoFluxIfFixed && outsideSpeciesContextSpec.isConstant()){
 				bNoFluxIfFixedExercised = true;
 			}
-			if (rf == null){
-				rf = new ResolvedFlux(fr.getFluxCarrier());
-				resolvedFluxList.addElement(rf);
+			ResolvedFlux outsideResolvedFlux = resolvedFluxMap.get(outsideSpeciesContext);
+			if (outsideResolvedFlux==null){
+				outsideResolvedFlux = new ResolvedFlux(outsideSpeciesContext);
+				resolvedFluxMap.put(outsideSpeciesContext,outsideResolvedFlux);
 			}
 			FeatureMapping outsideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(((Membrane)fr.getStructure()).getOutsideFeature());
 			Expression residualVolumeFraction = outsideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).renameBoundSymbols(mathMapping.getNameScope());
@@ -204,10 +193,10 @@ private void refreshResolvedFluxes() throws Exception {
 			//
 			if (fr.getKinetics() instanceof DistributedKinetics){
 				Expression reactionRateParameter = new Expression(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter(), mathMapping.getNameScope());
-				if (rf.outFlux.isZero()){
-					rf.outFlux = Expression.mult(Expression.negate(reactionRateParameter),outsideFluxCorrection).flatten();
+				if (outsideResolvedFlux.getFlux().isZero()){
+					outsideResolvedFlux.setFlux(Expression.mult(Expression.negate(reactionRateParameter),outsideFluxCorrection).flatten());
 				}else{
-					rf.outFlux = Expression.add(rf.outFlux,Expression.mult(Expression.negate(reactionRateParameter),outsideFluxCorrection).flatten());
+					outsideResolvedFlux.setFlux(Expression.add(outsideResolvedFlux.getFlux(),Expression.mult(Expression.negate(reactionRateParameter),outsideFluxCorrection).flatten()));
 				}
 			}else if (fr.getKinetics() instanceof LumpedKinetics){
 				throw new RuntimeException("Lumped Kinetics not yet supported for Flux Reaction: "+fr.getName());
@@ -226,7 +215,7 @@ private void refreshResolvedFluxes() throws Exception {
 			continue;
 		}
 		ReactionStep rs = reactionSpecs[i].getReactionStep();
-		if (rs.getStructure()==getMembrane()){
+		if (mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(rs.getStructure()).getGeometryClass()==surfaceClass){
 			if (rs instanceof SimpleReaction){
 				SimpleReaction sr = (SimpleReaction)rs;
 				ReactionParticipant rp_Array[] = sr.getReactionParticipants();
@@ -250,26 +239,22 @@ private void refreshResolvedFluxes() throws Exception {
 							//
 
 							//
-							// get ResolvedFlux for this species
+							// get ResolvedFlux for this speciesContext
 							//
-							ResolvedFlux rf = null;
-							for (int j=0;j<resolvedFluxList.size();j++){
-								ResolvedFlux rf_tmp = (ResolvedFlux)resolvedFluxList.elementAt(j);
-								if (rf_tmp.getSpecies() == rp_Array[k].getSpecies()){
-									rf = rf_tmp;
-								}
-							}
-							if (rf == null){
-								rf = new ResolvedFlux(rp_Array[k].getSpecies());
-								resolvedFluxList.addElement(rf);
+							ResolvedFlux resolvedFlux = resolvedFluxMap.get(rp_Array[k].getSpeciesContext());
+							if (resolvedFlux==null){
+								resolvedFlux = new ResolvedFlux(rp_Array[k].getSpeciesContext());
+								resolvedFluxMap.put(rp_Array[k].getSpeciesContext(),resolvedFlux);
 							}
 							
 							Expression reactionRateExpression = sr.getReactionRateExpression(rp_Array[k]).renameBoundSymbols(mathMapping.getNameScope());
-							if (rp_Array[k].getStructure() == getMembrane().getInsideFeature()){
+							Structure rpStructure = rp_Array[k].getSpeciesContext().getStructure();
+							GeometryClass rpGeometryClass = mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(rpStructure).getGeometryClass();
+							if (rpGeometryClass == surfaceClass.getSubvolume1()){
 								//
 								// for binding on inside, add to ResolvedFlux.inFlux
 								//
-								FeatureMapping insideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(getMembrane().getInsideFeature());
+								FeatureMapping insideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(rpStructure);
 								Expression residualVolumeFraction = insideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).renameBoundSymbols(mathMapping.getNameScope());
 								Expression insideFluxCorrection = Expression.div(new Expression(ReservedSymbol.KMOLE, mathMapping.getNameScope()), residualVolumeFraction).flatten();
 								//
@@ -280,17 +265,17 @@ private void refreshResolvedFluxes() throws Exception {
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
 									insideFluxCorrection = new Expression(ReservedSymbol.KMOLE, mathMapping.getNameScope());
 								}
-								if (rf.inFlux.isZero()){
-									rf.inFlux = Expression.mult(insideFluxCorrection, reactionRateExpression);
+								if (resolvedFlux.getFlux().isZero()){
+									resolvedFlux.setFlux(Expression.mult(insideFluxCorrection, reactionRateExpression));
 								}else{
-									rf.inFlux = Expression.add(rf.inFlux,Expression.mult(insideFluxCorrection, reactionRateExpression));
+									resolvedFlux.setFlux(Expression.add(resolvedFlux.getFlux(),Expression.mult(insideFluxCorrection, reactionRateExpression)));
 								}
 //								rf.inFlux.bindExpression(mathMapping);
-							}else if (rp_Array[k].getStructure() == getMembrane().getOutsideFeature()){
+							}else if (rpGeometryClass == surfaceClass.getSubvolume2()){
 								//
 								// for binding on outside, add to ResolvedFlux.outFlux
 								//
-								FeatureMapping outsideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(getMembrane().getOutsideFeature());
+								FeatureMapping outsideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(rpStructure);
 								Expression residualVolumeFraction = outsideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).renameBoundSymbols(mathMapping.getNameScope());
 								Expression outsideFluxCorrection = Expression.div(new Expression(ReservedSymbol.KMOLE, mathMapping.getNameScope()), residualVolumeFraction).flatten();
 								//
@@ -301,14 +286,14 @@ private void refreshResolvedFluxes() throws Exception {
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
 									outsideFluxCorrection = new Expression(ReservedSymbol.KMOLE, mathMapping.getNameScope());
 								}
-								if (rf.outFlux.isZero()){
-									rf.outFlux = Expression.mult(outsideFluxCorrection, reactionRateExpression);
+								if (resolvedFlux.getFlux().isZero()){
+									resolvedFlux.setFlux(Expression.mult(outsideFluxCorrection, reactionRateExpression));
 								}else{
-									rf.outFlux = Expression.add(rf.outFlux,Expression.mult(outsideFluxCorrection, reactionRateExpression));
+									resolvedFlux.setFlux(Expression.add(resolvedFlux.getFlux(),Expression.mult(outsideFluxCorrection, reactionRateExpression)));
 								}
 //								rf.outFlux.bindExpression(mathMapping);
 							}else{
-								throw new Exception("SpeciesContext "+rp_Array[k].getSpeciesContext().getName()+" doesn't border membrane "+getMembrane().getName()+" but reacts there");
+								throw new Exception("SpeciesContext "+rp_Array[k].getSpeciesContext().getName()+" doesn't border membrane "+surfaceClass.getName()+" but reacts there");
 							}
 						}
 					}
@@ -317,13 +302,8 @@ private void refreshResolvedFluxes() throws Exception {
 		}
 	}
 
-	
-	//
-	// copy Vector into resolvedFluxes[] array
-	//
-	if (resolvedFluxList.size()>0){
-		resolvedFluxes = new ResolvedFlux[resolvedFluxList.size()];
-		resolvedFluxList.copyInto(resolvedFluxes);
+	if (resolvedFluxMap.size()>0){
+		resolvedFluxes = resolvedFluxMap.values().toArray(new ResolvedFlux[0]);
 	}else{
 		resolvedFluxes=null;
 	}
@@ -332,7 +312,9 @@ private void refreshResolvedFluxes() throws Exception {
  * Build list of structures (just one membrane) that are mapped to this volume subdomain
  */
 protected void refreshStructures() {
-	structures = new Structure[1];
-	structures[0] = membrane;
+	structures = mathMapping.getSimulationContext().getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
+}
+public SurfaceClass getSurfaceClass() {
+	return surfaceClass;
 }
 }

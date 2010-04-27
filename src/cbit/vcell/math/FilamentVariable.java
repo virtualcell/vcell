@@ -12,8 +12,8 @@ public class FilamentVariable extends Variable {
  * MembraneVariable constructor comment.
  * @param name java.lang.String
  */
-public FilamentVariable(String name) {
-	super(name);
+public FilamentVariable(String name, Domain domain) {
+	super(name,domain);
 }
 
 
@@ -39,6 +39,6 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * @return java.lang.String
  */
 public String getVCML() {
-	return VCML.FilamentVariable+"   "+getName();
+	return VCML.FilamentVariable+"   "+getQualifiedName();
 }
 }

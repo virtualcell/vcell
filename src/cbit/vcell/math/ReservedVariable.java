@@ -19,7 +19,7 @@ public class ReservedVariable extends Variable
    public final static ReservedVariable Z    = new ReservedVariable("z",3);
    
 private ReservedVariable(String name, int defaultIndex){
-	super(name);
+	super(name,null);
 	setIndex(defaultIndex);
 }         
 /**

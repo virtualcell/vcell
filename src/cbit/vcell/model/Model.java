@@ -1293,7 +1293,20 @@ public Structure getStructures(int index) {
 	return getStructures()[index];
 }
 
-
+public Membrane getMembrane(Feature feature1, Feature feature2){
+	for (int i = 0; i < fieldStructures.length; i++) {
+		if (fieldStructures[i] instanceof Membrane){
+			Membrane membrane = (Membrane)fieldStructures[i];
+			if (membrane.getInsideFeature()==feature1 && membrane.getOutsideFeature()==feature2){ 
+				return membrane;
+			}
+			if (membrane.getInsideFeature()==feature2 && membrane.getOutsideFeature()==feature1){
+				return membrane;
+			}
+		}
+	}
+	return null;
+}
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.Feature

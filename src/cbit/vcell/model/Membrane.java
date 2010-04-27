@@ -13,8 +13,8 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class Membrane extends Structure {
-	public Feature insideFeature = null;
-	public Feature outsideFeature = null;
+	private Feature insideFeature = null;
+	private Feature outsideFeature = null;
 	private MembraneVoltage fieldMembraneVoltage = null;
 
 	public final static String MEMBRANE_VOLTAGE_REGION_NAME = "SpatialMembraneVoltage";	

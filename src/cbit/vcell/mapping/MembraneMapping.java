@@ -9,6 +9,10 @@ import java.beans.PropertyVetoException;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.VCMODL;
@@ -115,6 +119,24 @@ public boolean compareEqual(Matchable obj) {
  */
 public boolean getCalculateVoltage() {
 	return fieldCalculateVoltage;
+}
+
+public GeometryClass getGeometryClass(){
+	if (simulationContext==null){
+		throw new RuntimeException("cannot get GeometryClass, not associated with a simulationContext");
+	}
+	Feature insideFeature = getMembrane().getInsideFeature();
+	Feature outsideFeature = getMembrane().getOutsideFeature();
+	FeatureMapping insideFM = (FeatureMapping)simulationContext.getGeometryContext().getStructureMapping(insideFeature);
+	FeatureMapping outsideFM = (FeatureMapping)simulationContext.getGeometryContext().getStructureMapping(outsideFeature);
+	SubVolume insideSubVolume = insideFM.getSubVolume();
+	SubVolume outsideSubVolume = outsideFM.getSubVolume();
+	if (insideSubVolume==outsideSubVolume){
+		return insideSubVolume;
+	}else{
+		SurfaceClass surfaceClass = simulationContext.getGeometry().getGeometrySurfaceDescription().getSurfaceClass(insideSubVolume, outsideSubVolume);
+		return surfaceClass;
+	}
 }
 /**
  * This method was created by a SmartGuide.

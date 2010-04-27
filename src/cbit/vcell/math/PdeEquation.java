@@ -702,63 +702,50 @@ public boolean isDummy(SimulationSymbolTable simSymbolTable, CompartmentSubDomai
 
 
 @Override
-public void checkValid(MathDescription mathDesc) throws MathException, ExpressionException {
+public void checkValid(MathDescription mathDesc, SubDomain subDomain) throws MathException, ExpressionException {
 	if (getVariable() instanceof VolVariable) {
-		checkValid_Volume(mathDesc, getBoundaryXm());
-		checkValid_Volume(mathDesc, getBoundaryXp());
-		checkValid_Volume(mathDesc, getBoundaryYm());
-		checkValid_Volume(mathDesc, getBoundaryYp());
-		checkValid_Volume(mathDesc, getBoundaryZm());
-		checkValid_Volume(mathDesc, getBoundaryZp());
+		checkValid_Volume(mathDesc, getBoundaryXm(), (CompartmentSubDomain)subDomain);
+		checkValid_Volume(mathDesc, getBoundaryXp(), (CompartmentSubDomain)subDomain);
+		checkValid_Volume(mathDesc, getBoundaryYm(), (CompartmentSubDomain)subDomain);
+		checkValid_Volume(mathDesc, getBoundaryYp(), (CompartmentSubDomain)subDomain);
+		checkValid_Volume(mathDesc, getBoundaryZm(), (CompartmentSubDomain)subDomain);
+		checkValid_Volume(mathDesc, getBoundaryZp(), (CompartmentSubDomain)subDomain);
 
-		checkValid_Volume(mathDesc, getVelocityX());
-		checkValid_Volume(mathDesc, getVelocityY());
-		checkValid_Volume(mathDesc, getVelocityZ());
+		checkValid_Volume(mathDesc, getVelocityX(), (CompartmentSubDomain)subDomain);
+		checkValid_Volume(mathDesc, getVelocityY(), (CompartmentSubDomain)subDomain);
+		checkValid_Volume(mathDesc, getVelocityZ(), (CompartmentSubDomain)subDomain);
 		
-		checkValid_Volume(mathDesc, getRateExpression());
-		checkValid_Volume(mathDesc, getInitialExpression());
-		checkValid_Volume(mathDesc, getExactSolution());
+		checkValid_Volume(mathDesc, getRateExpression(), (CompartmentSubDomain)subDomain);
+		checkValid_Volume(mathDesc, getInitialExpression(), (CompartmentSubDomain)subDomain);
+		checkValid_Volume(mathDesc, getExactSolution(), (CompartmentSubDomain)subDomain);
 
-		checkValid_Volume(mathDesc, diffusionExp);
-
-		//
-		// get Parent Subdomain
-		//
-		SubDomain parentSubDomain = null;
-		Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
-		while (enum1.hasMoreElements()){
-			SubDomain subDomain = enum1.nextElement();
-			if (subDomain.getEquation(getVariable()) == this){
-				parentSubDomain = subDomain;
-				break;
-			}
-		}
+		checkValid_Volume(mathDesc, diffusionExp, (CompartmentSubDomain)subDomain);
 
 		// jump condition can have membrane variable in it
-		MembraneSubDomain membranes[] = mathDesc.getMembraneSubDomains((CompartmentSubDomain)parentSubDomain);
+		MembraneSubDomain membranes[] = mathDesc.getMembraneSubDomains((CompartmentSubDomain)subDomain);
 		for (int i = 0; membranes!=null && i < membranes.length; i++){
 			JumpCondition jump = membranes[i].getJumpCondition((VolVariable)getVariable());
 			if (jump != null) {
-				jump.checkValid(mathDesc);
+				jump.checkValid(mathDesc,membranes[i]);
 			}
 		}
 	} else if (getVariable() instanceof MemVariable) {
-		checkValid_Membrane(mathDesc, getBoundaryXm());
-		checkValid_Membrane(mathDesc, getBoundaryXp());
-		checkValid_Membrane(mathDesc, getBoundaryYm());
-		checkValid_Membrane(mathDesc, getBoundaryYp());
-		checkValid_Membrane(mathDesc, getBoundaryZm());
-		checkValid_Membrane(mathDesc, getBoundaryZp());
+		checkValid_Membrane(mathDesc, getBoundaryXm(), (MembraneSubDomain)subDomain);
+		checkValid_Membrane(mathDesc, getBoundaryXp(), (MembraneSubDomain)subDomain);
+		checkValid_Membrane(mathDesc, getBoundaryYm(), (MembraneSubDomain)subDomain);
+		checkValid_Membrane(mathDesc, getBoundaryYp(), (MembraneSubDomain)subDomain);
+		checkValid_Membrane(mathDesc, getBoundaryZm(), (MembraneSubDomain)subDomain);
+		checkValid_Membrane(mathDesc, getBoundaryZp(), (MembraneSubDomain)subDomain);
 
-		checkValid_Membrane(mathDesc, getVelocityX());
-		checkValid_Membrane(mathDesc, getVelocityY());
-		checkValid_Membrane(mathDesc, getVelocityZ());
+		checkValid_Membrane(mathDesc, getVelocityX(), (MembraneSubDomain)subDomain);
+		checkValid_Membrane(mathDesc, getVelocityY(), (MembraneSubDomain)subDomain);
+		checkValid_Membrane(mathDesc, getVelocityZ(), (MembraneSubDomain)subDomain);
 		
-		checkValid_Membrane(mathDesc, getRateExpression());
-		checkValid_Membrane(mathDesc, getInitialExpression());
-		checkValid_Membrane(mathDesc, getExactSolution());
+		checkValid_Membrane(mathDesc, getRateExpression(), (MembraneSubDomain)subDomain);
+		checkValid_Membrane(mathDesc, getInitialExpression(), (MembraneSubDomain)subDomain);
+		checkValid_Membrane(mathDesc, getExactSolution(), (MembraneSubDomain)subDomain);
 
-		checkValid_Membrane(mathDesc, diffusionExp);
+		checkValid_Membrane(mathDesc, diffusionExp, (MembraneSubDomain)subDomain);
 	}
 }
 }

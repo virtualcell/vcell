@@ -174,15 +174,15 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 
 
 @Override
-public void checkValid(MathDescription mathDesc) throws MathException, ExpressionException {
+public void checkValid(MathDescription mathDesc, SubDomain subDomain) throws MathException, ExpressionException {
 	if (getVariable() instanceof VolVariable) {
-		checkValid_Volume(mathDesc, getInitialExpression());
-		checkValid_Volume(mathDesc, getRateExpression());
-		checkValid_Volume(mathDesc, getExactSolution());
+		checkValid_Volume(mathDesc, getInitialExpression(), (CompartmentSubDomain)subDomain);
+		checkValid_Volume(mathDesc, getRateExpression(), (CompartmentSubDomain)subDomain);
+		checkValid_Volume(mathDesc, getExactSolution(), (CompartmentSubDomain)subDomain);
 	} else {
-		checkValid_Membrane(mathDesc, getInitialExpression());
-		checkValid_Membrane(mathDesc, getRateExpression());
-		checkValid_Membrane(mathDesc, getExactSolution());	
+		checkValid_Membrane(mathDesc, getInitialExpression(), (MembraneSubDomain)subDomain);
+		checkValid_Membrane(mathDesc, getRateExpression(), (MembraneSubDomain)subDomain);
+		checkValid_Membrane(mathDesc, getExactSolution(), (MembraneSubDomain)subDomain);	
 	}
 }
 }

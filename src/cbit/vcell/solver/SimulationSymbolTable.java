@@ -237,7 +237,7 @@ private Function getLocalFunction(Function referenceFunction) throws ExpressionE
 	//
 	// if local Function not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
 	//
-	Function newLocalFunction = new Function(referenceFunction.getName(),referenceFunction.getExpression());
+	Function newLocalFunction = new Function(referenceFunction.getName(),referenceFunction.getExpression(),referenceFunction.getDomain());
 	//newLocalFunction.bind(this);
 	localVariableHash.put(newLocalFunction.getName(), newLocalFunction);
 	
@@ -523,7 +523,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 				//
 				funcType = bSpatial ? getFunctionVariableType(functions[i], variableNames, variableTypes, bSpatial) : VariableType.NONSPATIAL;
 	
-				AnnotatedFunction annotatedFunc = new AnnotatedFunction(functions[i].getName(), functions[i].getExpression(), errString, funcType, FunctionCategory.PREDEFINED);
+				AnnotatedFunction annotatedFunc = new AnnotatedFunction(functions[i].getName(), functions[i].getExpression(), functions[i].getDomain(), errString, funcType, FunctionCategory.PREDEFINED);
 				annotatedFunctionVector.addElement(annotatedFunc);
 			}
 		}

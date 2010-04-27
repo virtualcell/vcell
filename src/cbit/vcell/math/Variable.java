@@ -5,9 +5,13 @@ package cbit.vcell.math;
  * All rights reserved.
 ©*/
 import java.io.Serializable;
+import java.util.StringTokenizer;
 
+import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -22,18 +26,85 @@ import cbit.vcell.units.VCUnitDefinition;
 public abstract class Variable implements SymbolTableEntry, Serializable, Matchable {
 	private String name = null;
 	private transient int symbolTableIndex = -1;
+	private Domain domain = null;  // global if null
+	
+	public static class Domain implements Matchable, Serializable {
+		private String name = null;
+		
+		public Domain(String argName){
+			String nameWithPeriodsMangled = argName.replace('.','_');
+			if (!nameWithPeriodsMangled.equals(TokenMangler.fixTokenStrict(nameWithPeriodsMangled))){
+				throw new RuntimeException("unexpected character sequence in domain name "+argName);
+			}
+			this.name = argName;
+		}
+		public Domain(GeometryClass geometryClass){
+			this(geometryClass.getName());
+		}
+		public Domain(SubDomain subDomain) {
+			this(subDomain.getName());
+		}
+		public String getName(){
+			return this.name;
+		}
+		public boolean compareEqual(Matchable object) {
+			if (object instanceof Domain){
+				Domain domain = (Domain)object;
+
+				if (!getName().equals(domain.getName())){
+					return false;
+				}
+				return true;
+			}
+			return false;
+		}
+		@Override
+		public String toString(){
+			return super.toString();
+		}
+	}
+	
 /**
  * This method was created by a SmartGuide.
  * @param name java.lang.String
  */
-protected Variable (String name) {
-	this.name = name;
+protected Variable ( String argName, Domain argDomain ) {
+	String nameWithPeriodsMangled = argName.replace('.','_');
+	if (!nameWithPeriodsMangled.equals(TokenMangler.fixTokenStrict(nameWithPeriodsMangled))){
+		throw new RuntimeException("unexpected character sequence in variable name "+argName);
+	}
+	this.name = argName;
+	this.domain = argDomain;
 }
 /**
  * This method was created in VisualAge.
  * @param symbolTable cbit.vcell.parser.SymbolTable
  */
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
+}
+
+public static String getNameFromCombinedIdentifier(String combinedIdentifier){
+	String name = combinedIdentifier;
+	if (name.contains("::")){
+		StringTokenizer tokenizer = new StringTokenizer(name,":",false);
+		String domainString = tokenizer.nextToken(); // throw away
+		name = tokenizer.nextToken();
+	}
+	return name;
+}
+
+public static Domain getDomainFromCombinedIdentifier(String combinedIdentifier){
+	if (combinedIdentifier.contains("::")){
+		StringTokenizer tokenizer = new StringTokenizer(combinedIdentifier,":",false);
+		String domainName = tokenizer.nextToken();
+		if (!domainName.equals("null")){
+			return new Domain(domainName);
+		}else{
+			return null;
+		}
+	}else{
+		return null;
+	}
 }
 /**
  * This method was created in VisualAge.
@@ -55,6 +126,13 @@ protected boolean compareEqual0(Matchable object) {
 	// compare names
 	//
 	if (!getName().equals(var.getName())){
+		return false;
+	}
+
+	//
+	// compare domains
+	//
+	if (!Compare.isEqualOrNull(getDomain(),var.getDomain())){
 		return false;
 	}
 
@@ -131,6 +209,19 @@ public void setIndex(int symbolTableIndex) {
  * @return java.lang.String
  */
 public String toString() {
-	return getClass().getName().substring(getClass().getName().lastIndexOf('.')+1)+" <"+getName()+">";
+	return getClass().getName().substring(getClass().getName().lastIndexOf('.')+1)+" <"+getQualifiedName()+">";
+}
+public Domain getDomain() {
+	return this.domain;
+}
+public void setDomain(Domain domain) {
+	this.domain = domain;
+}
+public String getQualifiedName(){
+	if (getDomain()!=null){
+		return getDomain().getName()+"::"+getName();
+	}else{
+		return getName();
+	}
 }
 }

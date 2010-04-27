@@ -37,6 +37,7 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.numericstest.ConstructedSolutionTemplate;
 import cbit.vcell.numericstest.SolutionTemplate;
@@ -678,6 +679,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 	java.util.Enumeration<SubDomain> subDomainEnum = exactMath.getSubDomains();
 	while (subDomainEnum.hasMoreElements()){
 		SubDomain subDomain = subDomainEnum.nextElement();
+		Domain domain = new Domain(subDomain);
 		java.util.Enumeration<Equation> equationEnum = subDomain.getEquations();
 		if (subDomain instanceof MembraneSubDomain){
 			MembraneSubDomain memSubDomain = (MembraneSubDomain)subDomain;
@@ -718,12 +720,12 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				}
 				Expression initExp = new Expression(exactExp);
 				initExp.substituteInPlace(new Expression("t"),new Expression(0.0));
-				varHash.addVariable(new Function(initName,initExp.flatten()));
-				varHash.addVariable(new Function(exactName,exactExp));
-				varHash.addVariable(new Function(errorName,errorExp));
-				varHash.addVariable(new Function(exactTimeDerivativeName,exactTimeDerivativeExp));
-				varHash.addVariable(new Function(origRateName,origRateExp));
-				varHash.addVariable(new Function(substitutedRateName,substitutedRateExp));
+				varHash.addVariable(new Function(initName,initExp.flatten(),domain));
+				varHash.addVariable(new Function(exactName,exactExp,domain));
+				varHash.addVariable(new Function(errorName,errorExp,domain));
+				varHash.addVariable(new Function(exactTimeDerivativeName,exactTimeDerivativeExp,domain));
+				varHash.addVariable(new Function(origRateName,origRateExp,domain));
+				varHash.addVariable(new Function(substitutedRateName,substitutedRateExp,domain));
 				
 				
 				odeEquation.setRateExpression(newRate);
@@ -775,20 +777,20 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 					varHash.addVariable(constants[i]);
 				}
 
-				varHash.addVariable(new Function(initName,initExp));
-				varHash.addVariable(new Function(diffusionRateName,new Expression(pdeEquation.getDiffusionExpression())));
-				varHash.addVariable(new Function(exactName,exactExp));
-				varHash.addVariable(new Function(errorName,errorExp));
-				varHash.addVariable(new Function(exactTimeDerivativeName,exactTimeDerivativeExp));
-				varHash.addVariable(new Function(origRateName,origRateExp));
-				varHash.addVariable(new Function(substitutedRateName,substitutedRateExp));
-				varHash.addVariable(new Function(exactDxName,exactDxExp));
-				varHash.addVariable(new Function(exactDyName,exactDyExp));
-				varHash.addVariable(new Function(exactDzName,exactDzExp));
-				varHash.addVariable(new Function(exactDx2Name,exactDx2Exp));
-				varHash.addVariable(new Function(exactDy2Name,exactDy2Exp));
-				varHash.addVariable(new Function(exactDz2Name,exactDz2Exp));
-				varHash.addVariable(new Function(exactLaplacianName,exactLaplacianExp));
+				varHash.addVariable(new Function(initName,initExp,domain));
+				varHash.addVariable(new Function(diffusionRateName,new Expression(pdeEquation.getDiffusionExpression()),domain));
+				varHash.addVariable(new Function(exactName,exactExp,domain));
+				varHash.addVariable(new Function(errorName,errorExp,domain));
+				varHash.addVariable(new Function(exactTimeDerivativeName,exactTimeDerivativeExp,domain));
+				varHash.addVariable(new Function(origRateName,origRateExp,domain));
+				varHash.addVariable(new Function(substitutedRateName,substitutedRateExp,domain));
+				varHash.addVariable(new Function(exactDxName,exactDxExp,domain));
+				varHash.addVariable(new Function(exactDyName,exactDyExp,domain));
+				varHash.addVariable(new Function(exactDzName,exactDzExp,domain));
+				varHash.addVariable(new Function(exactDx2Name,exactDx2Exp,domain));
+				varHash.addVariable(new Function(exactDy2Name,exactDy2Exp,domain));
+				varHash.addVariable(new Function(exactDz2Name,exactDz2Exp,domain));
+				varHash.addVariable(new Function(exactLaplacianName,exactLaplacianExp,domain));
 				
 				
 				pdeEquation.setRateExpression(newRate);
@@ -956,12 +958,12 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				Expression newInfluxExp = new Expression(origInfluxName+" - "+substitutedInfluxName+" + "+exactInfluxName);
 				Expression newOutfluxExp = new Expression(origOutfluxName+" - "+substitutedOutfluxName+" + "+exactOutfluxName);
 				
-				varHash.addVariable(new Function(origInfluxName,origInfluxExp));
-				varHash.addVariable(new Function(origOutfluxName,origOutfluxExp));
-				varHash.addVariable(new Function(exactInfluxName,exactInfluxExp));
-				varHash.addVariable(new Function(exactOutfluxName,exactOutfluxExp));
-				varHash.addVariable(new Function(substitutedInfluxName,substitutedInfluxExp));
-				varHash.addVariable(new Function(substitutedOutfluxName,substitutedOutfluxExp));
+				varHash.addVariable(new Function(origInfluxName,origInfluxExp,domain));
+				varHash.addVariable(new Function(origOutfluxName,origOutfluxExp,domain));
+				varHash.addVariable(new Function(exactInfluxName,exactInfluxExp,domain));
+				varHash.addVariable(new Function(exactOutfluxName,exactOutfluxExp,domain));
+				varHash.addVariable(new Function(substitutedInfluxName,substitutedInfluxExp,domain));
+				varHash.addVariable(new Function(substitutedOutfluxName,substitutedOutfluxExp,domain));
 								
 				jumpCondition.setInFlux(newInfluxExp);
 				jumpCondition.setOutFlux(newOutfluxExp);
@@ -1053,6 +1055,7 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 	while (subDomainEnum.hasMoreElements()){
 		SubDomain subDomain = subDomainEnum.nextElement();
 		Enumeration<Equation> equationEnum = subDomain.getEquations();
+		Domain domain = new Domain(subDomain);
 		
 		while (equationEnum.hasMoreElements()){
 			Equation equation = equationEnum.nextElement();
@@ -1063,7 +1066,7 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 				// Similar to substituteWithExactSolutions, to bind and substitute functions in the ODE
 				Expression substitutedRateExp = substituteFunctions(odeEquation.getRateExpression(), mathDesc);
 				String varName = odeEquation.getVariable().getName();
-				VolVariable var = new VolVariable(varName);
+				VolVariable var = new VolVariable(varName,domain);
 				varsVector.addElement(var);
 
 				//
@@ -1075,7 +1078,7 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 				Expression rateExpr1 = new Expression(substitutedRateExp);
 				rateExpr1.substituteInPlace(new Expression(varName), new Expression(varName1));
 				rateExpr1.substituteInPlace(new Expression(sensParam.getName()), new Expression(sensParam1.getName()));
-				VolVariable var1 = new VolVariable(varName1);
+				VolVariable var1 = new VolVariable(varName1,domain);
 				var1s.addElement(var1);
 				OdeEquation odeEqun1 = new OdeEquation(var1, initExpr1, rateExpr1);
 				equnsVector.addElement(odeEqun1);
@@ -1089,7 +1092,7 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 				Expression rateExpr2 = new Expression(substitutedRateExp);
 				rateExpr2.substituteInPlace(new Expression(varName), new Expression(varName2));
 				rateExpr2.substituteInPlace(new Expression(sensParam.getName()), new Expression(sensParam2.getName()));
-				VolVariable var2 = new VolVariable(varName2);
+				VolVariable var2 = new VolVariable(varName2,domain);
 				var2s.addElement(var2);
 				OdeEquation odeEqun2 = new OdeEquation(var2, initExpr2, rateExpr2);
 				equnsVector.addElement(odeEqun2);
@@ -1100,7 +1103,7 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 				Expression diffVar = Expression.add(new Expression(var1.getName()), Expression.negate(new Expression(var2.getName())));
 				Expression diffParam = Expression.add(new Expression(sensParam1.getName()), Expression.negate(new Expression(sensParam2.getName())));
 				Expression sensitivityExpr = Expression.mult(diffVar, Expression.invert(diffParam));
-				Function sens_Func = new Function("__sens"+varName+"_wrt_"+sensParam.getName(), sensitivityExpr);
+				Function sens_Func = new Function("__sens"+varName+"_wrt_"+sensParam.getName(), sensitivityExpr, domain);
 
 				varHash.addVariable(epsilon);
 				varHash.addVariable(sensParam1);
@@ -1408,14 +1411,14 @@ public static Function[] getOutwardNormal(Expression analyticSubVolume, String b
 			}
 		}
 		Expression closest = new Expression(closestBuffer.toString());
-		varHash.addVariable(new Function(closestName,closest));
+		varHash.addVariable(new Function(closestName,closest,null));
 		normalBufferX.append(" + ("+baseName+i+"_closest * "+baseName+i+"_Nx)");
 		normalBufferY.append(" + ("+baseName+i+"_closest * "+baseName+i+"_Ny)");
 		normalBufferZ.append(" + ("+baseName+i+"_closest * "+baseName+i+"_Nz)");
 	}
-	varHash.addVariable(new Function(baseName+"_Nx",new Expression(normalBufferX.toString())));
-	varHash.addVariable(new Function(baseName+"_Ny",new Expression(normalBufferY.toString())));
-	varHash.addVariable(new Function(baseName+"_Nz",new Expression(normalBufferZ.toString())));
+	varHash.addVariable(new Function(baseName+"_Nx",new Expression(normalBufferX.toString()),null));
+	varHash.addVariable(new Function(baseName+"_Ny",new Expression(normalBufferY.toString()),null));
+	varHash.addVariable(new Function(baseName+"_Nz",new Expression(normalBufferZ.toString()),null));
 
 	
 	Variable vars[] = varHash.getAlphabeticallyOrderedVariables();
@@ -1458,15 +1461,16 @@ public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression in
 	String normalZName = baseName+"_Nz";
 	Expression normalZ = new Expression(F_dz_name+"/"+normalLengthName);
 
-	varList.add(new Function(F_name,F));
-	varList.add(new Function(F_dx_name,F_dx));
-	varList.add(new Function(F_dy_name,F_dy));
-	varList.add(new Function(F_dz_name,F_dz));
-	varList.add(new Function(normalLengthName,normalLength));
-	varList.add(new Function(normalXName,normalX));
-	varList.add(new Function(normalYName,normalY));
-	varList.add(new Function(normalZName,normalZ));
-	varList.add(new Function(distanceToSurfaceName,distanceToSurface));
+	Domain domain = null;
+	varList.add(new Function(F_name,F,domain));
+	varList.add(new Function(F_dx_name,F_dx,domain));
+	varList.add(new Function(F_dy_name,F_dy,domain));
+	varList.add(new Function(F_dz_name,F_dz,domain));
+	varList.add(new Function(normalLengthName,normalLength,domain));
+	varList.add(new Function(normalXName,normalX,domain));
+	varList.add(new Function(normalYName,normalY,domain));
+	varList.add(new Function(normalZName,normalZ,domain));
+	varList.add(new Function(distanceToSurfaceName,distanceToSurface,domain));
 
 	return (Function[])BeanUtils.getArray(varList,Function.class);
 }

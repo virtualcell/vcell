@@ -10,6 +10,7 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Parameter;
@@ -90,7 +91,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 			
 			return true;
 		}
-
+		
 		public boolean isExpressionEditable(){
 			return true;
 		}
@@ -262,6 +263,8 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 public void fireVetoableChange(String propertyName, Object oldValue, Object newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
+
+public abstract GeometryClass getGeometryClass();
 
 
 /**

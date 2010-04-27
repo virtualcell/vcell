@@ -10,7 +10,7 @@ public class StochVolVariable extends Variable {
  * @param name java.lang.String
  */
 public StochVolVariable(String name) {
-	super(name);
+	super(name, null);
 }
 
 

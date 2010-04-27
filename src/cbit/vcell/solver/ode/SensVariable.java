@@ -25,7 +25,7 @@ public class SensVariable extends Variable {
  * @param name java.lang.String
  */
 public SensVariable(VolVariable volVariable, Constant parameter) {
-	super(getSensName(volVariable,parameter));
+	super(getSensName(volVariable,parameter),volVariable.getDomain());
 	this.volVar = volVariable;
 	this.parameter = parameter;
 }

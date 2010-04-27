@@ -6,6 +6,7 @@ import java.beans.PropertyChangeSupport;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 
 public class SurfaceClass implements GeometryClass {
 	private SubVolume subvolume1 = null;
@@ -36,7 +37,7 @@ public class SurfaceClass implements GeometryClass {
 	}
 	
 	private static String createName(SubVolume subvolume1, SubVolume subvolume2){
-		return subvolume1.getName()+"-"+subvolume2.getName();
+		return TokenMangler.fixTokenStrict(subvolume1.getName()+"_"+subvolume2.getName());
 	}
 
 	public SubVolume getSubvolume1() {

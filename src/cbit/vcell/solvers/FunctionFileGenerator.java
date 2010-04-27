@@ -14,6 +14,7 @@ import org.vcell.util.TokenMangler;
 
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
@@ -146,11 +147,12 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 					funcFileLineInfo.functionExpr+"' for function \""+
 					funcFileLineInfo.functionName+"\"");
 			}
-
+			Domain domain = null; //TODO domain
 			AnnotatedFunction annotatedFunc =
 				new AnnotatedFunction(
 						funcFileLineInfo.functionName,
 						functionExpr,
+						domain,
 						funcFileLineInfo.errorString,
 						funcFileLineInfo.funcVarType,
 						funcFileLineInfo.funcIsUserDefined ? FunctionCategory.OLDUSERDEFINED : FunctionCategory.PREDEFINED);
@@ -200,7 +202,7 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 				try {
 					Expression exp = func.getExpression().renameBoundSymbols(simpleSymbolTable.getNameScope());
 					AnnotatedFunction newfunc = new AnnotatedFunction(simJobID + "_" + func.getName(), 
-							exp, func.getName(), func.getErrorString(), func.getFunctionType(), FunctionCategory.OLDUSERDEFINED);
+							exp, func.getDomain(), func.getName(), func.getErrorString(), func.getFunctionType(), FunctionCategory.OLDUSERDEFINED);
 					annotatedFunctionsVector.set(i, newfunc);
 				} catch (ExpressionBindingException e) {
 					e.printStackTrace();

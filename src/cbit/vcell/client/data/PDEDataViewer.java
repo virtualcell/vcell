@@ -104,6 +104,7 @@ import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
@@ -2274,7 +2275,8 @@ private void showSpatialPlot() {
 			symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(varName);
 		}
 		if(symbolTableEntries[0] == null){
-			symbolTableEntries[0] = new VolVariable(varName);
+			Domain domain = null; //TODO domain
+			symbolTableEntries[0] = new VolVariable(varName,domain);
 		}
 	} catch (ExpressionBindingException e){
 		e.printStackTrace();

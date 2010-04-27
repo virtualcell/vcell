@@ -12,8 +12,8 @@ public class MemVariable extends Variable {
  * MembraneVariable constructor comment.
  * @param name java.lang.String
  */
-public MemVariable(String name) {
-	super(name);
+public MemVariable(String name, Domain domain) {
+	super(name,domain);
 }
 
 
@@ -39,6 +39,6 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * @return java.lang.String
  */
 public String getVCML() {
-	return VCML.MembraneVariable+"   "+getName();
+	return VCML.MembraneVariable+"   "+getQualifiedName();
 }
 }

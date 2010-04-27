@@ -36,35 +36,6 @@ protected void refreshStructures() {
 	//
 	// get all structures that are mapped to this subvolume (subdomain)
 	//
-	Structure structs[] = mathMapping.getSimulationContext().getGeometryContext().getStructures(subVolume);
-	Vector<Structure> structList = new Vector<Structure>();
-	if (structs!=null){
-		for (int i=0;i<structs.length;i++){
-			//
-			// exclude the spatially resolved membrane that is also mapped to this subVolume
-			//
-			if (structs[i] instanceof Membrane){
-				Membrane membrane = (Membrane)structs[i];
-				MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
-				if (membraneMapping.getResolved(mathMapping.getSimulationContext())){
-					continue;
-				}
-			}
-			//
-			// add all others to the structure list
-			//
-			structList.addElement(structs[i]);
-		}
-	}
-
-	//
-	// make array
-	//
-	if (structList.size()>0){
-		structures = new Structure[structList.size()];
-		structList.copyInto(structures);
-	}else{
-		structures = null;
-	}
+	structures = mathMapping.getSimulationContext().getGeometryContext().getStructuresFromGeometryClass(subVolume);
 }
 }

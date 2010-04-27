@@ -181,10 +181,10 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 								varTypes[i] = VariableType.getVariableType(var);
 							}
 							// check with flattened expression to find out the variable type of the new expression
-							Function flattenedFunctiion = new Function(function.getName(), newexp);
+							Function flattenedFunctiion = new Function(function.getName(), newexp, function.getDomain());
 							newFuncType = SimulationSymbolTable.getFunctionVariableType(flattenedFunctiion, symbols, varTypes, true);			
 						}
-						AnnotatedFunction newFunc = new AnnotatedFunction(function.getName(), function.getExpression(), "", newFuncType, FunctionCategory.OUTPUTFUNCTION);
+						AnnotatedFunction newFunc = new AnnotatedFunction(function.getName(), function.getExpression(), function.getDomain(), "", newFuncType, FunctionCategory.OUTPUTFUNCTION);
 						newFuncList.add(newFunc);
 					} catch (ExpressionException ex) {
 						ex.printStackTrace();
@@ -446,7 +446,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 					}
 				}
 				// check with flattened expression to find out the variable type of the new expression
-				Function flattenedFunctiion = new Function(outputFunction.getName(), newexp);
+				Function flattenedFunctiion = new Function(outputFunction.getName(), newexp, outputFunction.getDomain());
 				VariableType newVarType = SimulationSymbolTable.getFunctionVariableType(flattenedFunctiion, symbols, varTypes, bSpatial);
 				if (!newVarType.getVariableDomain().equals(functionVariableDomain)) {
 					String errMsg = "The expression for '" + outputFunction.getName() + "' includes at least one " 

@@ -228,6 +228,7 @@ public class XMLTags {
     public final static String MembraneVariableTag = "MembraneVariable";
     public final static String FilamentVariableTag = "FilamentVariable";
     public final static String VolumeVariableTag = "VolumeVariable";
+    public final static String DomainAttrTag = "Domain";
     public final static String CompartmentSubDomainTag = "CompartmentSubDomain";
     public final static String FilamentSubDomainTag = "FilamentSubDomain";
     public final static String PriorityAttrTag = "Priority";

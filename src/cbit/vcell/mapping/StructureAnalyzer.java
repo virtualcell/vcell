@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.matrix.RationalMatrix;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.matrix.RationalNumberMatrix;
@@ -378,7 +379,8 @@ private void refreshTotalDependancies() throws Exception {
 		//
 		// store totalMass parameter (e.g. K_xyz_total = xyz_init + wzy_init) 
 		//
-		MathMapping.MathMappingParameter totalMassParameter = mathMapping.addMathMappingParameter(constantName,constantExp.flatten(),MathMapping.PARAMETER_ROLE_TOTALMASS,VCUnitDefinition.UNIT_uM);
+		GeometryClass geometryClass = mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(firstSCM.getSpeciesContext().getStructure()).getGeometryClass();
+		MathMapping.MathMappingParameter totalMassParameter = mathMapping.addMathMappingParameter(constantName,constantExp.flatten(),MathMapping.PARAMETER_ROLE_TOTALMASS,VCUnitDefinition.UNIT_uM, geometryClass);
 		//
 		// store dependency parameter (e.g. xyz = K_xyz_total - wzy)
 		//
@@ -471,8 +473,8 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					SpeciesContext sc = scm.getSpeciesContext();
 					StructureMapping sm = simContext_temp.getGeometryContext().getStructureMapping(sc.getStructure());
 					SpeciesContextSpec scs = simContext_temp.getReactionContext().getSpeciesContextSpec(sc);
-					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff.toString()), 
-							sm.getNormalizedConcentrationCorrection(simContext_temp), new Expression(sc, mathMapping_temp.getNameScope()))));
+					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff.toString()),
+							sm.getNormalizedConcentrationCorrection(simContext_temp),new Expression(sc, mathMapping_temp.getNameScope()))));
 					//
 					// add term to K expression
 					//
@@ -482,8 +484,8 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.add(constantExp, Expression.mult(new Expression(coeff.toString()), sm.getNormalizedConcentrationCorrection(simContext_temp),
-																				new Expression(scSTE, mathMapping_temp.getNameScope())));
+					constantExp = Expression.add(constantExp,Expression.mult(new Expression(coeff.toString()),sm.getNormalizedConcentrationCorrection(simContext_temp),
+																			new Expression(scSTE, mathMapping_temp.getNameScope())));
 				}
 			}
 		}
@@ -620,7 +622,7 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 	if (structures == null){
 		return;
 	}
-	
+
 //System.out.println("StructureAnalyzer.refreshSpeciesContextMappings()");
 
 	//GeometryContext geoContext = mathMapping.getSimulationContext().getGeometryContext();

@@ -3,7 +3,13 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.*;
+import org.vcell.util.Compare;
+
+import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 4:28:07 PM)
@@ -14,13 +20,14 @@ public class DataSetIdentifier implements SymbolTableEntry, java.io.Serializable
 	private String name = "un-named";
 	private VariableType variableType = null;
 	private boolean bFunction = false;
+	private Domain domain = null;
 
 /**
  * Insert the method's description here.
  * Creation date: (8/20/2004 10:03:57 AM)
  */
-public DataSetIdentifier(String argName, VariableType argVariableType) {
-	this(argName, argVariableType, false);
+public DataSetIdentifier(String argName, VariableType argVariableType, Domain argDomain) {
+	this(argName, argVariableType, argDomain, false);
 }
 
 
@@ -28,10 +35,11 @@ public DataSetIdentifier(String argName, VariableType argVariableType) {
  * Insert the method's description here.
  * Creation date: (8/20/2004 10:04:34 AM)
  */
-public DataSetIdentifier(String argName, VariableType argVariableType, boolean arg_bFunction) {
+public DataSetIdentifier(String argName, VariableType argVariableType, Domain argDomain, boolean arg_bFunction) {
 	super();
 	name = argName;
 	variableType = argVariableType;
+	domain = argDomain;
 	bFunction = arg_bFunction;
 }
 
@@ -46,11 +54,14 @@ public boolean equals(Object obj) {
 	}
 
 	DataSetIdentifier dsi = (DataSetIdentifier)obj;
-	if (dsi.name.equals(name)) {
-		return true;
+	if (!Compare.isEqual(dsi.name,name)) {
+		return false;
+	}
+	if (!Compare.isEqualOrNull(dsi.domain,domain)) {
+		return false;
 	}
 	
-	return false;
+	return true;
 }
 
 
@@ -89,6 +100,16 @@ public int getIndex() {
  */
 public String getName() {
 	return name;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/11/00 4:46:24 PM)
+ * @return java.lang.String
+ */
+public Domain getDomain() {
+	return domain;
 }
 
 

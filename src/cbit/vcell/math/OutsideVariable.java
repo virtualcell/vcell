@@ -18,7 +18,7 @@ public class OutsideVariable extends Variable {
  * @param name java.lang.String
  */
 public OutsideVariable(String name, String volVariableName) {
-	super(name);
+	super(name, null);
 	this.volVariableName = volVariableName;
 }
 /**

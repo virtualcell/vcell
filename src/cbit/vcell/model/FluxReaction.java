@@ -4,6 +4,7 @@ package cbit.vcell.model;
  * All rights reserved.
 ©*/
 import java.beans.PropertyVetoException;
+import java.util.Vector;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -126,6 +127,24 @@ public Flux getFlux(Feature feature) {
 		}
 	}
 	return null;
+}
+
+
+/**
+ * This method was created in VisualAge.
+ * @return cbit.vcell.model.Flux
+ * @param feature cbit.vcell.model.Feature
+ */
+public Flux[] getFluxes() {
+	ReactionParticipant rp_Array[] = getReactionParticipants();
+	Vector<Flux> fluxList = new Vector<Flux>();
+	for (int i = 0; i < rp_Array.length; i++) { 
+		if (rp_Array[i] instanceof Flux){
+			Flux flux = (Flux)rp_Array[i];
+			fluxList.add(flux);
+		}
+	}
+	return fluxList.toArray(new Flux[fluxList.size()]);
 }
 
 

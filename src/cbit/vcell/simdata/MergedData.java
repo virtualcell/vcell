@@ -153,7 +153,7 @@ private void functionBindAndSubstitute(AnnotatedFunction function) throws Expres
 
 private void addFunctionToListInternal(AnnotatedFunction function){
 	
-	DataSetIdentifier dsi = new DataSetIdentifier(function.getName(),function.getFunctionType(), true);	
+	DataSetIdentifier dsi = new DataSetIdentifier(function.getName(),function.getFunctionType(),function.getDomain(),true);	
 	// add the new function to dataSetIndentifierList so that other functions can bind this function
 	dataSetIdentifierList.addElement(dsi);
 	//Add new func
@@ -314,7 +314,7 @@ public SymbolTableEntry getEntry(String identifier) {
 		String realvar = identifier.substring(0, index);
 		DataSetIdentifier dsi = getDataSetIdentifier(realvar);
 		if (dsi != null) {
-			DataSetIdentifier adsi = new DataSetIdentifier(identifier, dsi.getVariableType(), dsi.isFunction());
+			DataSetIdentifier adsi = new DataSetIdentifier(identifier, dsi.getVariableType(), dsi.getDomain(), dsi.isFunction());
 			dataSetIdentifierList.addElement(adsi);
 			return adsi;
 		}
@@ -963,7 +963,7 @@ public DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputContext outputCon
 				displayName = f.getDisplayName();
 			}
 		}
-		dis[i] = new DataIdentifier(dsi.getName(), dsi.getVariableType(), dsi.isFunction(), displayName);
+		dis[i] = new DataIdentifier(dsi.getName(), dsi.getVariableType(), dsi.getDomain(), dsi.isFunction(), displayName);
 	}		
 	return dis;
 }
@@ -1025,7 +1025,7 @@ private void mergeDatasets() throws DataAccessException, IOException {
 		DataIdentifier[] dataIDs = getDatasetControllerImpl().getDataIdentifiers(null,datasetsIDList[i]);
 		for (int j = 0; j < dataIDs.length; j++) {
 			String newdataIDName = dataSetPrefix[i]+"."+dataIDs[j].getName();
-			DataSetIdentifier newDataSetID = new DataSetIdentifier(newdataIDName,dataIDs[j].getVariableType(), dataIDs[j].isFunction());
+			DataSetIdentifier newDataSetID = new DataSetIdentifier(newdataIDName,dataIDs[j].getVariableType(), dataIDs[j].getDomain(), dataIDs[j].isFunction());
 			if (!dataSetIdentifierList.contains(newDataSetID)) {
 				dataSetIdentifierList.addElement(newDataSetID);
 			}

@@ -7,6 +7,7 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.math.Variable.Domain;
 /**
  * Insert the type's description here.
  * Creation date: (11/4/2003 4:48:32 PM)
@@ -61,7 +62,7 @@ public void addFunctions(cbit.vcell.math.AnnotatedFunction[] argFunctions) throw
 public cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers() throws org.vcell.util.DataAccessException {
 	cbit.vcell.simdata.DataIdentifier[] dataIdentifiers = new cbit.vcell.simdata.DataIdentifier[functions.length];
 	for (int i = 0; i < dataIdentifiers.length; i++){
-		dataIdentifiers[i] = new cbit.vcell.simdata.DataIdentifier(functions[i].getName(),cbit.vcell.simdata.VariableType.VOLUME, true, functions[i].getName());
+		dataIdentifiers[i] = new cbit.vcell.simdata.DataIdentifier(functions[i].getName(),cbit.vcell.simdata.VariableType.VOLUME,functions[i].getDomain(), true, functions[i].getName());
 	}
 	return dataIdentifiers;
 }
@@ -192,7 +193,8 @@ public boolean getParticleDataExists() throws org.vcell.util.DataAccessException
 public static DataManagerTest getPDEExample1() {
 	try {
 		Vector<AnnotatedFunction> functionList = new Vector<AnnotatedFunction>();
-		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),"",cbit.vcell.simdata.VariableType.VOLUME, FunctionCategory.PREDEFINED));
+		Domain domain = null;
+		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),domain,"",cbit.vcell.simdata.VariableType.VOLUME,FunctionCategory.OUTPUTFUNCTION));
 		// functionList.add(new cbit.vcell.math.Function("F2",new Expression("cos(x*y*z)")));
 		// functionList.add(new cbit.vcell.math.Function("F3",new Expression("t*sin(x*y*z)")));
 		cbit.vcell.math.AnnotatedFunction functions[] = (cbit.vcell.math.AnnotatedFunction[])org.vcell.util.BeanUtils.getArray(functionList,cbit.vcell.math.Function.class);
@@ -229,7 +231,8 @@ public static DataManagerTest getPDEExample1() {
 public static DataManagerTest getPDEExample2() {
 	try {
 		Vector<AnnotatedFunction> functionList = new Vector<AnnotatedFunction>();
-		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),"",cbit.vcell.simdata.VariableType.VOLUME, FunctionCategory.PREDEFINED));
+		Domain domain = null;
+		functionList.add(new cbit.vcell.math.AnnotatedFunction("F1",new Expression("sin(x+2*y)"),domain,"",cbit.vcell.simdata.VariableType.VOLUME,FunctionCategory.OUTPUTFUNCTION));
 		// functionList.add(new cbit.vcell.math.Function("F2",new Expression("cos(x*y*z)")));
 		// functionList.add(new cbit.vcell.math.Function("F3",new Expression("t*sin(x*y*z)")));
 		cbit.vcell.math.AnnotatedFunction functions[] = (cbit.vcell.math.AnnotatedFunction[])org.vcell.util.BeanUtils.getArray(functionList,cbit.vcell.math.Function.class);

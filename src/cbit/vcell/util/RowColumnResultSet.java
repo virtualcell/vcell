@@ -1,6 +1,8 @@
 package cbit.vcell.util;
 
 import cbit.vcell.math.*;
+import cbit.vcell.math.Variable.Domain;
+
 import java.util.*;
 
 import org.vcell.util.BeanUtils;
@@ -101,7 +103,8 @@ private final void addFunctionColumnInternal(FunctionColumnDescription functionC
 	//
 	fieldFunctionColumnDescriptions.addElement(functionColumnDescription);
 	
-	Function func = new Function(functionColumnDescription.getName(),new Expression(functionColumnDescription.getExpression()));
+	Domain domain = null; //TODO domain
+	Function func = new Function(functionColumnDescription.getName(),new Expression(functionColumnDescription.getExpression()),domain);
 	getResultSetSymbolTableWithFunction().addVar(func);	
 	func.setIndex(getColumnDescriptionsCount() - 1);
 	
@@ -192,12 +195,14 @@ private VariableSymbolTable createResultSetSymbolTable(boolean bIncludeFunctions
 	for (int i = 0; i < getColumnDescriptionsCount(); i++) {
 		ColumnDescription colDesc = getColumnDescriptions(i);
 		if (colDesc instanceof ODESolverResultSetColumnDescription){
-			VolVariable vVar = new VolVariable(colDesc.getName());
+			Domain domain = null;
+			VolVariable vVar = new VolVariable(colDesc.getName(),domain);
 			vVar.setIndex(i);
 			resultSetSymbolTable.addVar(vVar);
 		}else if (bIncludeFunctions && colDesc instanceof FunctionColumnDescription){
 			FunctionColumnDescription funcColDesc = (FunctionColumnDescription)colDesc;
-			Function func = new Function(funcColDesc.getName(),new Expression(funcColDesc.getExpression()));
+			Domain domain = null;
+			Function func = new Function(funcColDesc.getName(),new Expression(funcColDesc.getExpression()),domain);
 			func.setIndex(i);
 			resultSetSymbolTable.addVar(func);
 		}

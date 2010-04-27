@@ -8,6 +8,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -20,6 +21,7 @@ import org.vcell.util.Matchable;
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
@@ -377,6 +379,19 @@ public StructureMapping getStructureMapping(Structure structure){
 	}
 	return null;
 }               
+public StructureMapping[] getStructureMappings(GeometryClass geometryClass){
+	if (geometryClass==null){
+		return null;
+	}
+	StructureMapping structureMappings[] = getStructureMappings();
+	ArrayList<StructureMapping> structMappings = new ArrayList<StructureMapping>();
+	for (int i=0;i<structureMappings.length;i++){
+		if (structureMappings[i].getGeometryClass() == geometryClass){
+			structMappings.add(structureMappings[i]);
+		}
+	}
+	return structMappings.toArray(new StructureMapping[structMappings.size()]);
+}               
 /**
  * Gets the structureMappings property (cbit.vcell.mapping.StructureMapping[]) value.
  * @return The structureMappings property value.
@@ -394,44 +409,20 @@ public cbit.vcell.mapping.StructureMapping[] getStructureMappings() {
 public StructureMapping getStructureMappings(int index) {
 	return getStructureMappings()[index];
 }
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.model.Structure[]
- * @param subDomain cbit.vcell.math.SubDomain
- */
-public Structure[] getStructures(SubVolume subVolume) {
-	Vector list = new Vector();
+
+public Structure[] getStructuresFromGeometryClass(GeometryClass geometryClass) {
+	Vector<Structure> list = new Vector<Structure>();
 	StructureMapping structureMappings[] = getStructureMappings();
-	//
-	// first pass through, get all Features mapped to this SubVolume
-	//
+
 	for (int i=0;i<structureMappings.length;i++){
 		StructureMapping sm = structureMappings[i];
-		if (sm instanceof FeatureMapping && ((FeatureMapping)sm).getSubVolume() == subVolume){
+		if (sm.getGeometryClass()==geometryClass){
 			list.addElement(sm.getStructure());
 		}
 	}
-	//
-	// second pass, get all Membranes enclosing those features
-	//
-	for (int i=0;i<structureMappings.length;i++){
-		StructureMapping sm = structureMappings[i];
-		if (sm instanceof MembraneMapping){
-			Membrane membrane = ((MembraneMapping)sm).getMembrane();
-			if (list.contains(membrane.getInsideFeature())){
-				list.add(membrane);
-			}
-		}
-	}
-
-	if (list.size()>0){
-		Structure structs[] = new Structure[list.size()];
-		list.copyInto(structs);
-		return structs;
-	}else{
-		return null;
-	}
+	return list.toArray(new Structure[list.size()]);
 }
+
 /**
  * This method was created by a SmartGuide.
  * @return java.lang.String

@@ -1,4 +1,9 @@
 package cbit.vcell.simdata;
+
+import org.vcell.util.Compare;
+
+import cbit.vcell.math.Variable.Domain;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -12,15 +17,18 @@ public class DataIdentifier implements java.io.Serializable {
 	private String name = null;
 	private String displayName = null;
 	private VariableType variableType = null;
+	private Domain domain = null;
 	private boolean bFunction = false;
+
 
 /**
  * DataIdentifier constructor comment.
  */
-public DataIdentifier(String argName, VariableType argVariableType, boolean arg_bFunction, String argDisplayName) {
+public DataIdentifier(String argName, VariableType argVariableType, Domain argDomain, boolean arg_bFunction, String argDisplayName) {
 	super();
 	name = argName;
 	variableType = argVariableType;
+	domain = argDomain;
 	bFunction = arg_bFunction;
 	displayName = argDisplayName;
 }
@@ -36,11 +44,14 @@ public boolean equals(Object obj) {
 	}
 
 	DataIdentifier dsi = (DataIdentifier)obj;
-	if (dsi.name.equals(name)) {
-		return true;
+	if (!Compare.isEqualOrNull(dsi.name,name)) {
+		return false;
+	}
+	if (!Compare.isEqualOrNull(dsi.domain,domain)) {
+		return false;
 	}
 	
-	return false;
+	return true;
 }
 
 
@@ -51,6 +62,16 @@ public boolean equals(Object obj) {
  */
 public String getName() {
 	return name;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (7/6/01 3:01:24 PM)
+ * @return java.lang.String
+ */
+public Domain getDomain() {
+	return domain;
 }
 
 
@@ -80,7 +101,7 @@ public boolean isFunction() {
  * @return java.lang.String
  */
 public String toString() {
-	return "DataIdentifier[\""+getName()+"\","+getVariableType()+"]";
+	return "DataIdentifier[\""+getName()+"\","+getVariableType()+",\""+getDomain()+"\"]";
 }
 
 
