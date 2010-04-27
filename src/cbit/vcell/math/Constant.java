@@ -23,7 +23,7 @@ public class Constant extends Variable {
  * @param name java.lang.String
  */
 public Constant(String name, Expression exp) {
-	super(name);
+	super(name, null);
 	if (name==null){
 		throw new IllegalArgumentException("name is null");
 	}
@@ -99,7 +99,7 @@ public Expression getExpression() {
  * @return java.lang.String
  */
 public String getVCML() {
-	return "Constant  "+getName()+"\t "+((exp==null)?"null":exp.infix())+";";
+	return VCML.Constant+"  "+getName()+"\t "+((exp==null)?"null":exp.infix())+";";
 }
 
 

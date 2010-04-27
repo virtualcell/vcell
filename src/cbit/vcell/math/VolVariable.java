@@ -12,8 +12,8 @@ public class VolVariable extends Variable {
  * VolumeVariable constructor comment.
  * @param name java.lang.String
  */
-public VolVariable(String name) {
-	super(name);
+public VolVariable(String name, Domain domain) {
+	super(name, domain);
 }
 
 
@@ -39,6 +39,6 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * @return java.lang.String
  */
 public String getVCML() {
-	return VCML.VolumeVariable+"   "+getName();
+	return VCML.VolumeVariable+"   "+getQualifiedName();
 }
 }

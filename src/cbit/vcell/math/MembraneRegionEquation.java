@@ -235,12 +235,12 @@ public void setUniformRateExpression(cbit.vcell.parser.Expression newUniformRate
 
 
 @Override
-public void checkValid(MathDescription mathDesc) throws MathException, ExpressionException {
-	checkValid_Membrane(mathDesc, getUniformRateExpression());
-	checkValid_Membrane(mathDesc, getMembraneRateExpression());
+public void checkValid(MathDescription mathDesc, SubDomain subDomain) throws MathException, ExpressionException {
+	checkValid_Membrane(mathDesc, getUniformRateExpression(), (MembraneSubDomain)subDomain);
+	checkValid_Membrane(mathDesc, getMembraneRateExpression(), (MembraneSubDomain)subDomain);
 	
-	checkValid_Membrane(mathDesc, getRateExpression());
-	checkValid_Membrane(mathDesc, getInitialExpression());
-	checkValid_Membrane(mathDesc, getExactSolution());
+	checkValid_Membrane(mathDesc, getRateExpression(), (MembraneSubDomain)subDomain);
+	checkValid_Membrane(mathDesc, getInitialExpression(), (MembraneSubDomain)subDomain);
+	checkValid_Membrane(mathDesc, getExactSolution(), (MembraneSubDomain)subDomain);
 }
 }

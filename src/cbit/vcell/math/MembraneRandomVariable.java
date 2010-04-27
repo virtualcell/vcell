@@ -6,12 +6,12 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
 public class MembraneRandomVariable extends RandomVariable {
-	public MembraneRandomVariable(String name, Expression seed, Distribution dist) {
-		super(name, seed, dist);
+	public MembraneRandomVariable(String name, Expression seed, Distribution dist, Domain domain) {
+		super(name, seed, dist, domain);
 	}
 	
-	public MembraneRandomVariable(String name, MathDescription mathDesc, CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
-		super(name, mathDesc, tokens);
+	public MembraneRandomVariable(String name, MathDescription mathDesc, CommentStringTokenizer tokens, Domain domain) throws MathFormatException, ExpressionException {
+		super(name, mathDesc, tokens, domain);
 	}
 
 	@Override

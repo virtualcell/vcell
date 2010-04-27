@@ -118,6 +118,7 @@ import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;
@@ -784,11 +785,13 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 			Expression paramExp = unMangleExpression(paramExpStr);
 			try {
 				if (varHash.getVariable(paramName) == null){
-					varHash.addVariable(new Function(paramName,paramExp));
+					Domain domain = null;
+					varHash.addVariable(new Function(paramName,paramExp,domain));
 				} else {
 					if (reserved.contains(paramName)) {
 						varHash.removeVariable(paramName);
-						varHash.addVariable(new Function(paramName, paramExp));
+						Domain domain = null;
+						varHash.addVariable(new Function(paramName, paramExp,domain));
 					}
 				}
 			}catch (MappingException e){
@@ -845,7 +848,8 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 		String unresolvedSymbol = varHash.getFirstUnresolvedSymbol();
 		while (unresolvedSymbol!=null){
 			try {
-				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0)));  // will turn into an UnresolvedParameter.
+				Domain domain = null;
+				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0),domain));  // will turn into an UnresolvedParameter.
 			}catch (MappingException e){
 				e.printStackTrace(System.out);
 				throw new XmlParseException(e.getMessage());
@@ -1128,9 +1132,14 @@ public FeatureMapping getFeatureMapping(Element param, SimulationContext simulat
  */
 public FilamentRegionVariable getFilamentRegionVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
 
 	//-- create new FilamentRegionVariable object
-	FilamentRegionVariable filRegVariable = new FilamentRegionVariable( name );
+	FilamentRegionVariable filRegVariable = new FilamentRegionVariable( name, domain );
 
 	return filRegVariable;
 }
@@ -1182,9 +1191,13 @@ public FilamentSubDomain getFilamentSubDomain(Element param, MathDescription mat
  */
 public FilamentVariable getFilamentVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
-
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
 	//-- create new filVariable object
-	FilamentVariable filVariable = new FilamentVariable( name );
+	FilamentVariable filVariable = new FilamentVariable( name, domain );
 
 	return filVariable;
 }
@@ -1411,12 +1424,17 @@ public FormalSpeciesInfo getFormalSpeciesInfo(Element speciesInfoElement) throws
 public Function getFunction(Element param) throws XmlParseException {
 	//get attributes
 	String name = unMangle( param.getAttributeValue( XMLTags.NameAttrTag) );
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
 	String temp = param.getText();
 	
 	Expression exp = unMangleExpression(temp);
 	
 	//-- create new Function --
-	Function function = new Function(name, exp);
+	Function function = new Function(name, exp, domain);
 
 	return function;
 }
@@ -1436,7 +1454,12 @@ public AnnotatedFunction getOutputFunction(Element param) throws XmlParseExcepti
 	}
 
 	//-- create new AnnotatedFunction --
-	AnnotatedFunction function = new AnnotatedFunction(name, exp, errStr, funcType, FunctionCategory.OUTPUTFUNCTION);
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
+	AnnotatedFunction function = new AnnotatedFunction(name, exp, domain, errStr, funcType, FunctionCategory.OUTPUTFUNCTION);
 
 	return function;
 }
@@ -1911,11 +1934,11 @@ public Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash v
 			Expression paramExp = unMangleExpression(paramExpStr);
 			try {
 				if (varHash.getVariable(paramName) == null){
-					varHash.addVariable(new Function(paramName,paramExp));
+					varHash.addVariable(new Function(paramName,paramExp,null));
 				} else {
 					if (reserved.contains(paramName)) {
 						varHash.removeVariable(paramName);
-						varHash.addVariable(new Function(paramName, paramExp));
+						varHash.addVariable(new Function(paramName, paramExp,null));
 					}
 				}
 			}catch (MappingException e){
@@ -1960,7 +1983,7 @@ public Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash v
 		String unresolvedSymbol = varHash.getFirstUnresolvedSymbol();
 		while (unresolvedSymbol!=null){
 			try {
-				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0)));  // will turn into an UnresolvedParameter.
+				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0),null));  // will turn into an UnresolvedParameter.
 			}catch (MappingException e){
 				e.printStackTrace(System.out);
 				throw new XmlParseException(e.getMessage());
@@ -2277,10 +2300,16 @@ public RandomVariable getRandomVariable(Element param) throws XmlParseException 
 		dist = getGaussianDistribution(element);
 	}
 	
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
+
 	if (param.getName().equals(XMLTags.VolumeRandomVariableTag)) {
-		return new VolumeRandomVariable(name, seed, dist);
+		return new VolumeRandomVariable(name, seed, dist, domain);
 	} else if (param.getName().equals(XMLTags.MembraneRandomVariableTag)) {
-		return new MembraneRandomVariable(name, seed, dist);
+		return new MembraneRandomVariable(name, seed, dist, domain);
 	} else {
 		throw new XmlParseException(param.getName() + " is not supported!");
 	}
@@ -2756,9 +2785,14 @@ public MembraneRegionEquation getMembraneRegionEquation(Element param, MathDescr
  */
 public MembraneRegionVariable getMembraneRegionVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
 
 	//-- create new MembraneRegionVariable object
-	MembraneRegionVariable memRegVariable = new MembraneRegionVariable( name );
+	MembraneRegionVariable memRegVariable = new MembraneRegionVariable( name, domain );
 
 	return memRegVariable;
 }
@@ -2891,9 +2925,14 @@ public MembraneSubDomain getMembraneSubDomain(Element param, MathDescription mat
  */
 public MemVariable getMemVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
 
 	//Create new memVariable
-	MemVariable memVariable = new MemVariable( name );
+	MemVariable memVariable = new MemVariable( name, domain );
 	
 	return memVariable;
 }
@@ -4824,9 +4863,13 @@ public VolumeRegionEquation getVolumeRegionEquation(Element param, MathDescripti
  */
 public VolumeRegionVariable getVolumeRegionVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
-
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
 	//-- create new VolumeRegionVariable object
-	VolumeRegionVariable volRegVariable = new VolumeRegionVariable( name );
+	VolumeRegionVariable volRegVariable = new VolumeRegionVariable( name, domain );
 
 	return volRegVariable;
 }
@@ -4840,9 +4883,14 @@ public VolumeRegionVariable getVolumeRegionVariable(Element param) {
  */
 public VolVariable getVolVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
 
 	//-- create new VolVariable object
-	VolVariable volVariable = new VolVariable( name );
+	VolVariable volVariable = new VolVariable( name, domain );
 
 	return volVariable;
 }

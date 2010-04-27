@@ -18,7 +18,7 @@ public class InsideVariable extends Variable {
  * @param name java.lang.String
  */
 public InsideVariable(String name, String volVariableName) {
-	super(name);
+	super(name, null);
 	this.volVariableName = volVariableName;
 }
 /**

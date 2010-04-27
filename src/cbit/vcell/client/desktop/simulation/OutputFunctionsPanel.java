@@ -45,6 +45,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
@@ -540,7 +541,8 @@ public class OutputFunctionsPanel extends JPanel {
 			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
 			}
-			AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, null, varType, FunctionCategory.OUTPUTFUNCTION);
+			Domain domain = null; //TODO domain
+			AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, domain, null, varType, FunctionCategory.OUTPUTFUNCTION);
 			try {
 				outputFunctionContext.validateExpression(newFunction, varType, funcExp);	
 				outputFunctionContext.addOutputFunction(newFunction);

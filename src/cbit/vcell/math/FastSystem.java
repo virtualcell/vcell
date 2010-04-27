@@ -85,6 +85,16 @@ public boolean compareEqual(Matchable object) {
 		
 	return true;
 }
+public SubDomain getSubDomain(){
+	Enumeration<SubDomain> enumSubDomain = mathDesc.getSubDomains();
+	while (enumSubDomain.hasMoreElements()){
+		SubDomain subDomain = enumSubDomain.nextElement();
+		if (subDomain.getFastSystem() == this){
+			return subDomain;
+		}
+	}
+	throw new RuntimeException("couldn't find FastSystem in mathDescription");
+}
 /**
  * @return java.util.Enumeration
  */

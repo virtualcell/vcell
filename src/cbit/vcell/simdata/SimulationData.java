@@ -16,6 +16,7 @@ import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.math.*;
+import cbit.vcell.math.Variable.Domain;
 
 import java.io.*;
 import java.util.*;
@@ -291,7 +292,7 @@ private synchronized void addFunctionToList(AnnotatedFunction function) throws E
 
 private void addFunctionToListInternal(AnnotatedFunction function){
 	
-	DataSetIdentifier dsi = new DataSetIdentifier(function.getName(),function.getFunctionType(), true);	
+	DataSetIdentifier dsi = new DataSetIdentifier(function.getName(),function.getFunctionType(), function.getDomain(), true);	
 	// add the new function to dataSetIndentifierList so that other functions can bind this function
 	dataSetIdentifierList.addElement(dsi);
 	//Add new func
@@ -467,7 +468,7 @@ public SymbolTableEntry getEntry(String identifier) {
 		String realvar = identifier.substring(0, index);
 		DataSetIdentifier dsi = getDataSetIdentifier(realvar);
 		if (dsi != null) {
-			DataSetIdentifier adsi = new DataSetIdentifier(identifier, dsi.getVariableType(), dsi.isFunction());
+			DataSetIdentifier adsi = new DataSetIdentifier(identifier, dsi.getVariableType(), dsi.getDomain(), dsi.isFunction());
 			dataSetIdentifierList.addElement(adsi);
 			return adsi;
 		}
@@ -1166,7 +1167,8 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 				}catch (Throwable e){
 					varType = VariableType.getVariableTypeFromLength(mesh,dataSet.getDataLength(varNames[i]));
 				}
-				dataSetIdentifierList.addElement(new DataSetIdentifier(varNames[i],varType));
+				Domain domain = null; //TODO domain
+				dataSetIdentifierList.addElement(new DataSetIdentifier(varNames[i],varType,domain));
 			}
 		} 
 
@@ -1186,7 +1188,8 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 		dataSetIdentifierList.clear();
 		for (int i=0;i<(colCount-DATA_OFFSET);i++){
 			String varName = odeSimData.getColumnDescriptions(i+DATA_OFFSET).getDisplayName();
-			dataSetIdentifierList.addElement(new DataSetIdentifier(varName,VariableType.NONSPATIAL));
+			Domain domain = null; //TODO domain
+			dataSetIdentifierList.addElement(new DataSetIdentifier(varName,VariableType.NONSPATIAL,domain));
 		}		
 	}	
 	
@@ -1207,7 +1210,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 				displayName = f.getDisplayName();
 			}
 		}
-		dis[i] = new DataIdentifier(dsi.getName(), dsi.getVariableType(), dsi.isFunction(), displayName);
+		dis[i] = new DataIdentifier(dsi.getName(), dsi.getVariableType(), dsi.getDomain(), dsi.isFunction(), displayName);
 	}		
 	return dis;
 }

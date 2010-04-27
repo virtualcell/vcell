@@ -32,7 +32,7 @@ public void getSimulationModel() throws Exception
 {
 	//create a subDomain
 	CompartmentSubDomain sd = new CompartmentSubDomain("bistable",CompartmentSubDomain.NON_SPATIAL_PRIORITY);
-	VolVariable v = new VolVariable("X");//TODO: what kind of variable should use?
+	StochVolVariable v = new StochVolVariable("X");
 	VarIniCondition varIni = new VarIniCondition(v,new Expression(5));
 	//subDomain add variables
 	sd.addVarIniCondition(varIni); 

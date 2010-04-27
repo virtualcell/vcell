@@ -193,7 +193,7 @@ public void setFilamentRateExpression(cbit.vcell.parser.Expression newFilamentRa
 
 
 @Override
-public void checkValid(MathDescription mathDesc) throws MathException {
+public void checkValid(MathDescription mathDesc, SubDomain filamentSubDomain) throws MathException {
 	// TODO Auto-generated method stub	
 }
 }

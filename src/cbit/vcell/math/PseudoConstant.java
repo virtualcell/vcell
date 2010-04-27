@@ -20,8 +20,8 @@ public class PseudoConstant extends Variable {
  * Constant constructor comment.
  * @param name java.lang.String
  */
-public PseudoConstant(String name, Expression exp) {
-	super(name);
+public PseudoConstant(String name, Expression exp, Domain domain) {
+	super(name,domain);
 	this.exp = exp;
 }
 /**

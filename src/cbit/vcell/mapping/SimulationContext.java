@@ -2015,51 +2015,13 @@ protected boolean isPDERequired(SpeciesContext speciesContext) {
 	}
 
 	//
-	// if speciesContext is from a structure which is not spatially resolved, then it won't diffuse (PDE not required).
+	// check speciesContext needs diffusion/advection
 	//
-	StructureMapping sm = getGeometryContext().getStructureMapping(speciesContext.getStructure());
-	if (sm instanceof FeatureMapping){
-		if (!((FeatureMapping)sm).getResolved()){
-			return false;
-		}
-	} else if (sm instanceof MembraneMapping){
-		if (!((MembraneMapping)sm).getResolved(this)){
-			return false;
-		}
-	} else {
-		return false;	// not Feature and not Membrane ... can't diffuse now.
+	SpeciesContextSpec scs = getReactionContext().getSpeciesContextSpec(speciesContext);
+	if (scs.isDiffusing() || scs.isAdvecting()){
+		return true;
 	}
-
-	//
-	// check if any resolved speciesContext from the same species needs diffusion/advection
-	//
-	boolean bPDENeeded = false;
-	SpeciesContext speciesContexts[] = getModel().getSpeciesContexts();
-	for (int i = 0; i < speciesContexts.length; i++){
-		if (speciesContexts[i].getSpecies().compareEqual(speciesContext.getSpecies())){
-			StructureMapping otherSM = getGeometryContext().getStructureMapping(speciesContexts[i].getStructure());
-			SpeciesContextSpec otherSCS = getReactionContext().getSpeciesContextSpec(speciesContexts[i]);
-			//
-			// another speciesContext needs diffusion if it is from a spatially resolved structure and has non-zero diffusion
-			//
-			if (otherSM instanceof FeatureMapping && ((FeatureMapping)otherSM).getResolved() && (otherSCS.isDiffusing() || otherSCS.isAdvecting())){
-				bPDENeeded = true;
-			}
-			if (otherSM instanceof MembraneMapping && ((MembraneMapping)otherSM).getResolved(this) && (otherSCS.isDiffusing() || otherSCS.isAdvecting())){
-				bPDENeeded = true;
-			}
-		}
-	}
-	
-	//
-	// if this speciesContextSpec specifically disables diffusion, but is required elsewhere to make "global" PDE work,
-	// then tell it that diffusion is required and give it a zero diffusion rate.
-	//
-	if (bPDENeeded){
-		System.out.println("WARNING: isDiffusionRequired("+speciesContext+"), diffusion is disabled for "+speciesContext+" but needed for resolved species "+speciesContext.getSpecies());
-	}
-
-	return bPDENeeded;
+	return false;
 }
 
 protected boolean hasEventAssignment(SpeciesContext speciesContext) {

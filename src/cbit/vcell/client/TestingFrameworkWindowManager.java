@@ -601,7 +601,7 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 			String functionName = "DIFF_"+data1Identifiers[i].getName();
 			VariableType varType = data1Identifiers[i].getVariableType();
 			Expression exp = new Expression(data1Name+"-"+data2Name);
-			AnnotatedFunction newFunction = new AnnotatedFunction(functionName,exp,"",varType,FunctionCategory.OUTPUTFUNCTION);
+			AnnotatedFunction newFunction = new AnnotatedFunction(functionName,exp,data1Identifiers[i].getDomain(),"",varType,FunctionCategory.OUTPUTFUNCTION);
 			
 			//
 			// make sure new "Diff" function isn't already in existing function list.

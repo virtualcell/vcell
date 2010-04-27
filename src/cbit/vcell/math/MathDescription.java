@@ -34,6 +34,7 @@ import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.VariableHash;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -824,7 +825,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 			// remove Function
 			//
 			if (countVolumeVars == indepVarList.size()){
-				VolVariable volVariable = new VolVariable(function.getName());
+				VolVariable volVariable = new VolVariable(function.getName(),function.getDomain());
 				newMath.variableList.remove(function);
 				newMath.variableList.add(volVariable);
 				newMath.variableHashTable.remove(function.getName());
@@ -857,7 +858,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 			// case: Membrane Variable
 			//
 			}else if (countMembraneVars == indepVarList.size()){
-				MemVariable memVariable = new MemVariable(function.getName());
+				MemVariable memVariable = new MemVariable(function.getName(),function.getDomain());
 				newMath.variableList.remove(function);
 				newMath.variableList.add(memVariable);
 				newMath.variableHashTable.remove(function.getName());
@@ -1175,7 +1176,7 @@ public static Function[] getFlattenedFunctions(MathDescription originalMathDescr
 					Expression exp1 = new Expression(function.getExpression());
 					try {
 						exp1 = simSymbolTable.substituteFunctions(exp1);
-						functions[i] = new Function(function.getName(),exp1.flatten());
+						functions[i] = new Function(function.getName(),exp1.flatten(),function.getDomain());
 					} catch (MathException e) {
 						e.printStackTrace(System.out);
 						throw new RuntimeException("Substitute function failed on function "+function.getName()+" "+e.getMessage());
@@ -1898,7 +1899,7 @@ public boolean isValid() {
 			Enumeration<Equation> equEnum = subDomain.getEquations();
 			while (equEnum.hasMoreElements()){
 				Equation equ = equEnum.nextElement();
-				equ.checkValid(this);
+				equ.checkValid(this,subDomain);
 				equ.bind(this);
 			}
 			FastSystem fastSystem = subDomain.getFastSystem();
@@ -2551,7 +2552,9 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}			
 			if (token.equalsIgnoreCase(VCML.VolumeVariable)){
 				token = tokens.nextToken();
-				VolVariable var = new VolVariable(token);
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				VolVariable var = new VolVariable(name,domain);
 				varHash.addVariable(var);
 //
 // done in addVariable0()
@@ -2576,31 +2579,41 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}			
 			if (token.equalsIgnoreCase(VCML.MembraneVariable)){
 				token = tokens.nextToken();
-				MemVariable var = new MemVariable(token);
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				MemVariable var = new MemVariable(name,domain);
 				varHash.addVariable(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.FilamentVariable)){
 				token = tokens.nextToken();
-				FilamentVariable var = new FilamentVariable(token);
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				FilamentVariable var = new FilamentVariable(name,domain);
 				varHash.addVariable(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.VolumeRegionVariable)){
 				token = tokens.nextToken();
-				VolumeRegionVariable var = new VolumeRegionVariable(token);
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				VolumeRegionVariable var = new VolumeRegionVariable(name,domain);
 				varHash.addVariable(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.MembraneRegionVariable)){
 				token = tokens.nextToken();
-				MembraneRegionVariable var = new MembraneRegionVariable(token);
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				MembraneRegionVariable var = new MembraneRegionVariable(name,domain);
 				varHash.addVariable(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.FilamentRegionVariable)){
 				token = tokens.nextToken();
-				FilamentRegionVariable var = new FilamentRegionVariable(token);
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				FilamentRegionVariable var = new FilamentRegionVariable(name,domain);
 				varHash.addVariable(var);
 				continue;
 			}
@@ -2621,14 +2634,18 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			if (token.equalsIgnoreCase(VCML.StochVolVariable))
 			{
 				token = tokens.nextToken();
-				StochVolVariable var = new StochVolVariable(token);
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				StochVolVariable var = new StochVolVariable(name);
 				varHash.addVariable(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.Function)){
 				token = tokens.nextToken();
 				Expression exp = new Expression(tokens);
-				Function function = new Function(token,exp);
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				Function function = new Function(name,exp,domain);
 				varHash.addVariable(function);
 				continue;
 			}
@@ -2694,13 +2711,17 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}
 			if (token.equalsIgnoreCase(VCML.VolumeRandomVariable)) {
 				token = tokens.nextToken();
-				RandomVariable randomVariable = new VolumeRandomVariable(token, this, tokens);
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				RandomVariable randomVariable = new VolumeRandomVariable(name, this, tokens, domain);
 				varHash.addVariable(randomVariable);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.MembraneRandomVariable)) {
 				token = tokens.nextToken();
-				RandomVariable randomVariable = new MembraneRandomVariable(token, this, tokens);
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				RandomVariable randomVariable = new MembraneRandomVariable(name, this, tokens, domain);
 				varHash.addVariable(randomVariable);
 				continue;
 			}

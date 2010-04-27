@@ -14,14 +14,14 @@ public abstract class RandomVariable extends Variable {
 	private Expression seed = null;
 	private Distribution distribution = null;
 
-	protected RandomVariable(String name, Expression seed, Distribution dist) {
-		super(name);
+	protected RandomVariable(String name, Expression seed, Distribution dist, Domain domain) {
+		super(name, domain);
 		this.seed = seed;
 		distribution = dist;
 	}
 	
-	protected RandomVariable(String name, MathDescription mathDesc, CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
-		super(name);
+	protected RandomVariable(String name, MathDescription mathDesc, CommentStringTokenizer tokens, Domain domain) throws MathFormatException, ExpressionException {
+		super(name, domain);
 		read(tokens);
 	}
 	
@@ -87,7 +87,7 @@ public abstract class RandomVariable extends Variable {
 	@Override
 	public String getVCML() throws MathException {
 		StringBuffer sb = new StringBuffer();
-		sb.append(getVCMLTag() + " " + getName()  + " " + VCML.BeginBlock + "\n");
+		sb.append(getVCMLTag() + " " + getQualifiedName()  + " " + VCML.BeginBlock + "\n");
 		if (seed != null) {
 			sb.append("\t" + VCML.RandomVariable_Seed + " " + seed.infix() + ";\n");
 		}

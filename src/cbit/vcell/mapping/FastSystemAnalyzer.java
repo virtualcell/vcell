@@ -17,6 +17,7 @@ import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.PseudoConstant;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
@@ -333,7 +334,8 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 	Enumeration<FastInvariant> enum_fi = fastSystem.getFastInvariants();
 	while (enum_fi.hasMoreElements()) {
 		FastInvariant fi = enum_fi.nextElement();
-		PseudoConstant pc = new PseudoConstant(getAvailablePseudoConstantName(),fi.getFunction());
+		Domain domain = new Domain(fastSystem.getSubDomain());
+		PseudoConstant pc = new PseudoConstant(getAvailablePseudoConstantName(),fi.getFunction(),domain);
 		pseudoConstantList.addElement(pc);
 		//System.out.println("FastSystem.refreshSubstitutedRateExps() __C"+i+" = "+fi.getFunction());
 	}

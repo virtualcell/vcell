@@ -2,6 +2,7 @@
 <!--This document contains the rules when processing and merging VCell XML Files-->
 <!-- edited with XML Spy v4.0 U beta 3.1 build Aug 27 2001 (http://www.xmlspy.com) by Daniel Lucio (Physiology/CBIT) -->
 <Rules>
+	<Rule TagName="Function" AttrName="Name"/>
 	<Rule TagName="Constant" AttrName="Name"/>
 	<Rule TagName="VolumeVariable" AttrName="Name"/>
 	<Rule TagName="Feature" AttrName="Name"/>

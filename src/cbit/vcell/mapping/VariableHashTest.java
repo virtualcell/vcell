@@ -5,6 +5,7 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.Variable.Domain;
 /**
  * Insert the type's description here.
  * Creation date: (4/12/2002 4:26:51 PM)
@@ -24,12 +25,13 @@ public static void main(java.lang.String[] args) {
 		hash.addVariable(new Constant("F",new Expression("A+B+C+E")));
 		hash.addVariable(new Constant("C",new Expression("D+5")));
 		hash.addVariable(new Constant("A",new Expression("B+C")));
-		hash.addVariable(new VolVariable("V1"));
-		hash.addVariable(new VolVariable("V2"));
-		hash.addVariable(new Function("B1",new Expression("C1+V3")));
-		hash.addVariable(new Function("F1",new Expression("A+B+C+E/V1+V2-C1+B1")));
-		hash.addVariable(new Function("C1",new Expression("D+5+B1")));
-		hash.addVariable(new VolVariable("V3"));
+		Domain domain = null;
+		hash.addVariable(new VolVariable("V1",domain));
+		hash.addVariable(new VolVariable("V2",domain));
+		hash.addVariable(new Function("B1",new Expression("C1+V3"),domain));
+		hash.addVariable(new Function("F1",new Expression("A+B+C+E/V1+V2-C1+B1"),domain));
+		hash.addVariable(new Function("C1",new Expression("D+5+B1"),domain));
+		hash.addVariable(new VolVariable("V3",domain));
 
 		//
 		// unsorted list

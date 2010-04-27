@@ -441,4 +441,10 @@ public void setSubVolume(cbit.vcell.geometry.SubVolume subVolume) throws java.be
 public String toString() {
 	return getClass().getName()+"@"+Integer.toHexString(hashCode())+" "+getFeature().getName();
 }
+
+
+@Override
+public GeometryClass getGeometryClass() {
+	return fieldSubVolume;
+}
 }

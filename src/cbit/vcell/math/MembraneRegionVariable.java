@@ -12,8 +12,8 @@ public class MembraneRegionVariable extends Variable {
  * MembraneVariable constructor comment.
  * @param name java.lang.String
  */
-public MembraneRegionVariable(String name) {
-	super(name);
+public MembraneRegionVariable(String name, Domain domain) {
+	super(name,domain);
 }
 
 
@@ -39,6 +39,6 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * @return java.lang.String
  */
 public String getVCML() {
-	return VCML.MembraneRegionVariable+"   "+getName();
+	return VCML.MembraneRegionVariable+"   "+getQualifiedName();
 }
 }

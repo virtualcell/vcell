@@ -16,7 +16,7 @@ public class ParameterVariable extends Variable {
  * @param name java.lang.String
  */
 public ParameterVariable(String name) {
-	super(name);
+	super(name,null);
 	if (name==null){
 		throw new IllegalArgumentException("name is null");
 	}

@@ -257,34 +257,21 @@ public void setVolumeRateExpression(Expression newVolumeRateExpression) {
 
 
 @Override
-public void checkValid(MathDescription mathDesc) throws MathException, ExpressionException {	
-	checkValid_Volume(mathDesc,getVolumeRateExpression());
-	checkValid_Volume(mathDesc,getUniformRateExpression());
+public void checkValid(MathDescription mathDesc, SubDomain subDomain) throws MathException, ExpressionException {	
+	checkValid_Volume(mathDesc,getVolumeRateExpression(), (CompartmentSubDomain)subDomain);
+	checkValid_Volume(mathDesc,getUniformRateExpression(), (CompartmentSubDomain)subDomain);
 	
-	checkValid_Volume(mathDesc,getRateExpression());
-	checkValid_Volume(mathDesc,getInitialExpression());
-	checkValid_Volume(mathDesc,getExactSolution());
+	checkValid_Volume(mathDesc,getRateExpression(), (CompartmentSubDomain)subDomain);
+	checkValid_Volume(mathDesc,getInitialExpression(), (CompartmentSubDomain)subDomain);
+	checkValid_Volume(mathDesc,getExactSolution(), (CompartmentSubDomain)subDomain);
 	
-	//
-	// get Parent Subdomain
-	//
-	SubDomain parentSubDomain = null;
-	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
-	while (enum1.hasMoreElements()){
-		SubDomain subDomain = enum1.nextElement();
-		if (subDomain.getEquation(getVariable()) == this){
-			parentSubDomain = subDomain;
-			break;
-		}
-	}
-
 	// jump condition can have membrane variable in it
-	MembraneSubDomain membranes[] = mathDesc.getMembraneSubDomains((CompartmentSubDomain)parentSubDomain);
+	MembraneSubDomain membranes[] = mathDesc.getMembraneSubDomains((CompartmentSubDomain)subDomain);
 	if (membranes!=null) {
 		for (int i = 0; i < membranes.length; i++){
 			JumpCondition jump = membranes[i].getJumpCondition(getVariable());
 			if (jump != null) {
-				jump.checkValid(mathDesc);
+				jump.checkValid(mathDesc, membranes[i]);
 			}
 		}
 	}

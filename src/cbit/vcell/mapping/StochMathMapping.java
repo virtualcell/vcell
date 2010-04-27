@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -16,6 +17,7 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.model.Feature;
@@ -345,6 +347,9 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 	 */
 	private void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException
 	{
+		GeometryClass geometryClass = getSimulationContext().getGeometry().getGeometrySpec().getSubVolumes()[0];
+		Domain domain = new Domain(geometryClass);
+		
 		//use local variable instead of using getter all the time.
 		SimulationContext simContext = getSimulationContext();
 		//local structure mapping list
@@ -385,7 +390,8 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 		}
 		SubVolume subVolumes[] = simContext.getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
 		for (int i = 0; i < subVolumes.length; i++){
-			if (simContext.getGeometryContext().getStructures(subVolumes[i])==null || simContext.getGeometryContext().getStructures(subVolumes[i]).length==0){
+			Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(subVolumes[i]);
+			if (mappedStructures==null || mappedStructures.length==0){
 				throw new MappingException("geometry subVolume '"+subVolumes[i].getName()+"' not mapped from a model structure");
 			}
 		}
@@ -478,8 +484,8 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 		ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
 		for (int j=0;j<modelParameters.length;j++){
 			Expression expr = getSubstitutedExpr(modelParameters[j].getExpression(), true, false);
-			expr = getIdentifierSubstitutions(expr,modelParameters[j].getUnitDefinition(), null);
-			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), expr));
+			expr = getIdentifierSubstitutions(expr,modelParameters[j].getUnitDefinition(), geometryClass);
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j],geometryClass), expr,geometryClass));
 		}
 		
 		//added July 2009, ElectricalStimulusParameter electric mapping tab
@@ -499,8 +505,8 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				try{
 					Expression exp = initialVoltageParm.getExpression();
 					exp.evaluateConstant();
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(memMapping.getMembrane().getMembraneVoltage(),memMapping),
-							getIdentifierSubstitutions(memMapping.getInitialVoltageParameter().getExpression(),memMapping.getInitialVoltageParameter().getUnitDefinition(),memMapping)));
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(memMapping.getMembrane().getMembraneVoltage(),memMapping.getGeometryClass()),
+							getIdentifierSubstitutions(memMapping.getInitialVoltageParameter().getExpression(),memMapping.getInitialVoltageParameter().getUnitDefinition(),memMapping.getGeometryClass()),memMapping.getGeometryClass()));
 				}catch(ExpressionException e){
 					e.printStackTrace(System.out);
 					throw new MappingException("Membrane initial voltage: "+initialVoltageParm.getName()+" cannot be evaluated as constant.");
@@ -530,7 +536,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					//don't add rate, we'll do it later when creating the jump processes
 					if (parameters[i].getRole() != Kinetics.ROLE_ReactionRate) {
 						Expression expr = getSubstitutedExpr(parameters[i].getExpression(), true, false);
-						varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[i],sm), getIdentifierSubstitutions(expr,parameters[i].getUnitDefinition(),sm)));
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[i],sm.getGeometryClass()), getIdentifierSubstitutions(expr,parameters[i].getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
 					}
 				}
 			}
@@ -546,7 +552,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 			{
 				try {
 					double value = parm.getExpression().evaluateConstant();
-					varHash.addVariable(new Constant(getMathSymbol(parm,sm),new Expression(value)));
+					varHash.addVariable(new Constant(getMathSymbol(parm,sm.getGeometryClass()),new Expression(value)));
 				}catch (ExpressionException e){
 					//varHash.addVariable(new Function(getMathSymbol0(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
 					e.printStackTrace(System.out);
@@ -569,13 +575,13 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				iniExp = initParam.getExpression();
 				iniExp = getSubstitutedExpr(iniExp, true, !speciesContextSpecs[i].isConstant());
 				// now create the appropriate function or Constant for the speciesContextSpec.
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParam,sm),getIdentifierSubstitutions(iniExp,initParam.getUnitDefinition(),sm)));
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParam,sm.getGeometryClass()),getIdentifierSubstitutions(iniExp,initParam.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
 
 				//add function for initial amount
 				SpeciesContextSpec.SpeciesContextSpecParameter initAmountParam = speciesContextSpecs[i].getInitialCountParameter();
 				Expression 	iniAmountExp = getExpressionConcToAmt(new Expression(initParam, getNameScope()),speciesContextSpecs[i].getSpeciesContext());
 //				iniAmountExp.bindExpression(this);
-				varHash.addVariable(new Function(getMathSymbol(initAmountParam, sm),getIdentifierSubstitutions(iniAmountExp,initAmountParam.getUnitDefinition(),sm)));
+				varHash.addVariable(new Function(getMathSymbol(initAmountParam, sm.getGeometryClass()),getIdentifierSubstitutions(iniAmountExp,initAmountParam.getUnitDefinition(),sm.getGeometryClass()),domain));
 			}
 			else if(speciesContextSpecs[i].getInitialCountParameter() != null && speciesContextSpecs[i].getInitialCountParameter().getExpression() != null)
 			{// use amount
@@ -583,12 +589,12 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				iniExp = initParam.getExpression();
 				iniExp = getSubstitutedExpr(iniExp, false, !speciesContextSpecs[i].isConstant());
 				// now create the appropriate function or Constant for the speciesContextSpec.
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParam,sm),getIdentifierSubstitutions(iniExp,initParam.getUnitDefinition(),sm)));
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParam,sm.getGeometryClass()),getIdentifierSubstitutions(iniExp,initParam.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
 			}
 
 			//add spConcentration (concentration of species) to varHash as function or constant
 			SpeciesConcentrationParameter spConcParam = getSpeciesConcentrationParameter(speciesContextSpecs[i].getSpeciesContext());
-			varHash.addVariable(newFunctionOrConstant(getMathSymbol(spConcParam,sm),getIdentifierSubstitutions(spConcParam.getExpression(), spConcParam.getUnitDefinition(), sm)));
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(spConcParam,sm.getGeometryClass()),getIdentifierSubstitutions(spConcParam.getExpression(), spConcParam.getUnitDefinition(), sm.getGeometryClass()),sm.getGeometryClass()));
 
 		}
 		
@@ -630,7 +636,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				Expression exp = scm.getDependencyExpression();
 				exp.bindExpression(this);
 				SpeciesCountParameter spCountParam = getSpeciesCountParameter(scm.getSpeciesContext());
-				varHash.addVariable(new Function(getMathSymbol(spCountParam,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules, sm)));
+				varHash.addVariable(new Function(getMathSymbol(spCountParam,sm.getGeometryClass()),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules, sm.getGeometryClass()),domain));
 			}
 		}
 
@@ -767,9 +773,9 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					}
 					
 					//add probability to function or constant
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm.getGeometryClass()),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules_per_s, sm.getGeometryClass()),sm.getGeometryClass()));
 										
-					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,sm)));
+					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,sm.getGeometryClass())));
 					// actions
 					ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
 					for(int j=0; j<reacPart.length; j++)
@@ -782,7 +788,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Reactant)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression("-"+String.valueOf(stoi)));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression("-"+String.valueOf(stoi)));
 								jp.addAction(action);
 							}
 						}
@@ -792,7 +798,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Product)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(stoi));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(stoi));
 								jp.addAction(action);
 							}
 						}
@@ -819,9 +825,9 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						throw new MappingException(pve.getMessage());
 					}
 					//add probability to function or constant
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm.getGeometryClass()),getIdentifierSubstitutions(exp, VCUnitDefinition.UNIT_molecules_per_s, sm.getGeometryClass()),sm.getGeometryClass()));
 									
-					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,sm)));
+					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,sm.getGeometryClass())));
 					// actions
 					ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
 					for(int j=0; j<reacPart.length; j++)
@@ -834,7 +840,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Reactant)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(stoi));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(stoi));
 								jp.addAction(action);
 							}
 						}
@@ -844,7 +850,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Product)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression("-"+String.valueOf(stoi)));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression("-"+String.valueOf(stoi)));
 								jp.addAction(action);
 							}
 						}
@@ -896,23 +902,23 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							throw new MappingException(pve.getMessage());
 						}
 						//add probability to function or constant
-						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm),getIdentifierSubstitutions(probExp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probParm,sm.getGeometryClass()),getIdentifierSubstitutions(probExp, VCUnitDefinition.UNIT_molecules_per_s, sm.getGeometryClass()),sm.getGeometryClass()));
 										
-						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,sm)));
+						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,sm.getGeometryClass())));
 						// actions
 						Action action = null;
 						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
 						
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(-1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(-1));
 							jp.addAction(action);
 						}	
 						
 						sc = fluxFunc.getSpeciesContextInside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(1));
 							jp.addAction(action);
 						}
 							
@@ -950,22 +956,22 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							throw new MappingException(pve.getMessage());
 						}
 						//add probability to function or constant
-						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm),getIdentifierSubstitutions(probRevExp, VCUnitDefinition.UNIT_molecules_per_s, sm)));
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,sm.getGeometryClass()),getIdentifierSubstitutions(probRevExp, VCUnitDefinition.UNIT_molecules_per_s, sm.getGeometryClass()),sm.getGeometryClass()));
 										
-						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,sm)));
+						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,sm.getGeometryClass())));
 						// actions
 						Action action = null;
 						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(1));
 							jp.addAction(action);
 						}
 							
 						sc = fluxFunc.getSpeciesContextInside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(-1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(-1));
 							jp.addAction(action);
 						}
 						
@@ -986,7 +992,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 			//get stochastic variable by name
 			SpeciesCountParameter spCountParam = getSpeciesCountParameter(speciesContextSpecs[i].getSpeciesContext());
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
-			String varName = getMathSymbol(spCountParam, sm); 
+			String varName = getMathSymbol(spCountParam, sm.getGeometryClass()); 
 			if (scSpecs[i].isConstant()) {
 				continue;
 			}
@@ -994,7 +1000,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getInitialCountParameter();//stochastic use initial number of particles
 			//stochastic variables initial expression.
 			if (initParm!=null){
-				VarIniCondition varIni = new VarIniCondition(var,new Expression(getMathSymbol(initParm, sm)));
+				VarIniCondition varIni = new VarIniCondition(var,new Expression(getMathSymbol(initParm, sm.getGeometryClass())));
 				subDomain.addVarIniCondition(varIni);
 			}
 		}
@@ -1111,7 +1117,7 @@ private void refreshSpeciesContextMappings() throws cbit.vcell.parser.Expression
 	for (int i=0;i<structureMappings.length;i++){
 		StructureMapping sm = structureMappings[i];
 		StructureMapping.StructureMappingParameter parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
-		getMathSymbol(parm,sm);
+		getMathSymbol(parm,sm.getGeometryClass());
 	}
 
 	
@@ -1214,7 +1220,7 @@ private void refreshVariables() throws MappingException {
 		}
 
 		if (scm.getDependencyExpression() == null && !scs.isConstant()){
-			scm.setVariable(new StochVolVariable(getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()))));
+			scm.setVariable(new StochVolVariable(getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass())));
 			mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
 		}
 	}

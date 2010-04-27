@@ -66,9 +66,9 @@ public static MathDescription getExample() throws Exception {
 	//
 	// Variables
 	//
-	VolVariable calcium = new VolVariable("calcium");
+	VolVariable calcium = new VolVariable("calcium",null);
 	mathDesc.addVariable(calcium);
-	VolVariable buffer = new VolVariable("buffer");
+	VolVariable buffer = new VolVariable("buffer",null);
 	mathDesc.addVariable(buffer);
 
 	//
@@ -142,7 +142,7 @@ public static MathDescription getFilamentExample() throws Exception {
 	line = new cbit.vcell.geometry.Line(new org.vcell.util.Coordinate(.1,.1,.1),new org.vcell.util.Coordinate(.5,.5,.5));
 	fg.addCurve("filament1",line);
 
-	FilamentVariable filamentVar = new FilamentVariable("granule");
+	FilamentVariable filamentVar = new FilamentVariable("granule",null);
 	mathDesc.addVariable(filamentVar);
 	FilamentSubDomain filamentSubDomain = new FilamentSubDomain("filament1",mathDesc.getCompartmentSubDomain("cytosol"));
 	mathDesc.addSubDomain(filamentSubDomain);
@@ -198,15 +198,15 @@ public static MathDescription getOdeExactExample() throws Exception {
 	//
 	// Variables
 	//
-	VolVariable A = new VolVariable("A");
+	VolVariable A = new VolVariable("A",null);
 	mathDesc.addVariable(A);
 
 	//
 	// Functions
 	//
-	Function A_exact = new Function("A_exact",new Expression("A_init*exp(-k*t)"));
+	Function A_exact = new Function("A_exact",new Expression("A_init*exp(-k*t)"),null);
 	mathDesc.addVariable(A_exact);
-	Function A_error = new Function("A_error",new Expression("A-A_exact"));
+	Function A_error = new Function("A_error",new Expression("A-A_exact"),null);
 	mathDesc.addVariable(A_error);
 	
 	//
@@ -256,9 +256,9 @@ public static MathDescription getOdeExample() throws Exception {
 	//
 	// Variables
 	//
-	VolVariable calcium = new VolVariable("calcium");
+	VolVariable calcium = new VolVariable("calcium",null);
 	mathDesc.addVariable(calcium);
-	VolVariable buffer = new VolVariable("buffer");
+	VolVariable buffer = new VolVariable("buffer",null);
 	mathDesc.addVariable(buffer);
 
 	//
@@ -318,7 +318,7 @@ public static MathDescription getOdeExample2() throws Exception {
 	//
 	// Variables
 	//
-	VolVariable buffer = new VolVariable("buffer");
+	VolVariable buffer = new VolVariable("buffer",null);
 	mathDesc.addVariable(buffer);
 	
 	//
@@ -488,9 +488,9 @@ public static MathDescription getOdeExampleWagner() throws Exception {
 	//
 	// Variables
 	//
-	VolVariable C = new VolVariable("C");
+	VolVariable C = new VolVariable("C",null);
 	mathDesc.addVariable(C);
-	VolVariable h = new VolVariable("h");
+	VolVariable h = new VolVariable("h",null);
 	mathDesc.addVariable(h);
 	
 	//

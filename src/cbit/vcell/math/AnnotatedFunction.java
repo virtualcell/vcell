@@ -21,15 +21,15 @@ public class AnnotatedFunction extends Function implements Matchable {
 		OUTPUTFUNCTION,
 	}
 
-	public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, String argErrString, VariableType argFunctionType, FunctionCategory fc) {
-		this(argFunctionName, argFunctionExpression, argFunctionName, argErrString, argFunctionType, fc);
+	public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, Domain domain, String argErrString, VariableType argFunctionType, FunctionCategory fc) {
+		this(argFunctionName, argFunctionExpression, domain, argFunctionName, argErrString, argFunctionType, fc);
 	}
 	
 /**
  * AnnotatedFunction constructor comment.
  */
-public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, String argDisplayName, String argErrString, VariableType argFunctionType, FunctionCategory fc) {
-	super(argFunctionName, argFunctionExpression);
+public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, Domain domain, String argDisplayName, String argErrString, VariableType argFunctionType, FunctionCategory fc) {
+	super(argFunctionName, argFunctionExpression, domain);
 	this.displayName = argDisplayName; 
 	if (argFunctionName.indexOf(" ") > 0) {
 		throw new RuntimeException("Spaces are not allowed in user-defined function names. Try adding the function without spaces in its name.");

@@ -64,6 +64,7 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -766,7 +767,7 @@ private SimDataBlock evaluateFunction(
 					}
 			};
 			dataSetList.addElement(newSimDataHolder);
-			dependencyList.add(new DataSetIdentifier(ste.getName(), newVariableType));
+			dependencyList.add(new DataSetIdentifier(ste.getName(), newVariableType,((FieldDataParameterVariable) ste).getDomain()));
 			if(variableType == null){
 				variableType = newVariableType;
 				dataLength = newSimDataHolder.getData().length;
@@ -1845,7 +1846,7 @@ public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataId
 				if (di.isFunction()) {
 					AnnotatedFunction f = getFunction(outputContext,vcdID,di.getName());
 					VariableType varType = getVariableTypeForFieldFunction(outputContext,vcdID, f);
-					di = new DataIdentifier(di.getName(), varType, di.isFunction(), f.getDisplayName());
+					di = new DataIdentifier(di.getName(), varType, di.getDomain(), di.isFunction(), f.getDisplayName());
 				}
 			}		
 			v.addElement(di);
@@ -2962,8 +2963,9 @@ private void adjustMembraneAdjacentVolumeValues(
 			if(insideExp != null && outsideExp != null){
 				insideExp.bindExpression(vcData);
 				outsideExp.bindExpression(vcData);
-				insideFunction = new AnnotatedFunction("",insideExp,"",VariableType.MEMBRANE, FunctionCategory.PREDEFINED);
-				outsideFunction = new AnnotatedFunction("",outsideExp,"",VariableType.MEMBRANE,FunctionCategory.PREDEFINED);
+				Domain domain = null; //TODO domain
+				insideFunction = new AnnotatedFunction("",insideExp,domain,"",VariableType.MEMBRANE, FunctionCategory.PREDEFINED);
+				outsideFunction = new AnnotatedFunction("",outsideExp,domain,"",VariableType.MEMBRANE,FunctionCategory.PREDEFINED);
 				insideFunction.setExpression(insideExp.flatten());
 				outsideFunction.setExpression(outsideExp.flatten());
 				FieldFunctionArguments[] insideExpFieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(insideExp);

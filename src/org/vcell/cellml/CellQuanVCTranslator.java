@@ -21,6 +21,7 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -169,7 +170,8 @@ public class CellQuanVCTranslator extends Translator {
 						throw new RuntimeException(e.getMessage());
 					}
 					Expression initExp = new Expression(getInitial(comp, varName));
-					OdeEquation ode = new OdeEquation(new VolVariable(mangledName), initExp, rateExp);
+					Domain domain = null;
+					OdeEquation ode = new OdeEquation(new VolVariable(mangledName,domain), initExp, rateExp);
 					csd.addEquation(ode);
 				}
 			}
@@ -218,7 +220,8 @@ public class CellQuanVCTranslator extends Translator {
 			expStr = exp.infix();
 			nl.mangleString(expStr);
 		}
-		return new Function(mangledName, exp);
+		Domain domain = null;
+		return new Function(mangledName, exp, domain);
     }
 
 
@@ -293,7 +296,8 @@ public class CellQuanVCTranslator extends Translator {
 					formula.append(")");
 				formula.append(")");
 				try {
-					return new Function(mangledName, new Expression(formula.toString()));
+					Domain domain = null;
+					return new Function(mangledName, new Expression(formula.toString()),domain);
 					// fnsVector.add(function);
 					// mathDescription.addVariable(function);
 				} catch (Exception e) {
@@ -607,7 +611,8 @@ public class CellQuanVCTranslator extends Translator {
 			    temp = getMathElementIdentifier(comp, varName, MathMLTags.DIFFERENTIAL);
 			    try {
 				    if (temp != null) {                                   //formula ignored at this point
-				    	VolVariable volVar = new VolVariable(mangledName);
+				    	Domain domain = null;
+				    	VolVariable volVar = new VolVariable(mangledName,domain);
 				    	varsHash.addVariable(volVar);
 						continue;
 				    }

@@ -433,7 +433,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 			}
 			
-			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
+			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, functions[i].getDomain(), "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
 			funcList.add(af);
 		}
 	}
@@ -443,8 +443,8 @@ public Vector<AnnotatedFunction> createFunctionList() {
 
 	if (getSensitivityParameter() != null) {
 		try {
-			AnnotatedFunction saf = new AnnotatedFunction(getSensitivityParameter().getName(), 
-					new Expression(getSensitivityParameter().getConstantValue()), "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
+			AnnotatedFunction saf = new AnnotatedFunction(getSensitivityParameter().getName(),
+					new Expression(getSensitivityParameter().getConstantValue()), getSensitivityParameter().getDomain(), "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
 			if (!funcList.contains(saf)) {
 				funcList.add(saf);
 			}
@@ -463,7 +463,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 					String depSensFnName = new String("sens_"+depSensFunction.getName()+"_wrt_"+getSensitivityParameter().getName());
 					
 					if (depSensFunction != null) {
-						AnnotatedFunction af = new AnnotatedFunction(depSensFnName, depSensFnExpr.flatten(), "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
+						AnnotatedFunction af = new AnnotatedFunction(depSensFnName, depSensFnExpr.flatten(), variables[i].getDomain(), "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
 						funcList.add(af);
 					}
 				}
