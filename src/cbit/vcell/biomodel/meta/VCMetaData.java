@@ -1,8 +1,8 @@
 package cbit.vcell.biomodel.meta;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.sybil.models.sbbox.SBBox;
-import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
 import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
@@ -21,8 +20,6 @@ import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.xml.XMLTags;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * manager for Notes, Annotations, SBOTerms, and all other meta data regarding 
@@ -77,19 +74,35 @@ public class VCMetaData {
 		if (!registry.compareEquals(vcMetaData.registry)) {
 			return false;
 		}
-		if (nonRDFAnnotationMap.size() != vcMetaData.nonRDFAnnotationMap.size()) {
-			return false;
-		}		
+		
 		Set<OpenEntry> oeSet = nonRDFAnnotationMap.keySet();
+		Set<VCID> vcidSet = new HashSet<VCID>();
 		for (OpenEntry oe : oeSet) {
-			final VCID vcid = identifiableProvider.getVCID(oe.getIdentifiable());
+			VCID vcid = identifiableProvider.getVCID(oe.getIdentifiable());
+			vcidSet.add(vcid);
+		}
+		Set<OpenEntry> otherOeSet =  vcMetaData.nonRDFAnnotationMap.keySet();
+		for (OpenEntry oe : otherOeSet) {
+			VCID vcid = vcMetaData.identifiableProvider.getVCID(oe.getIdentifiable());
+			vcidSet.add(vcid);
+		}		
+		NonRDFAnnotation emtpyAnnotation = new NonRDFAnnotation();
+		for (VCID vcid : vcidSet) {
+			Identifiable myIdentifiable = identifiableProvider.getIdentifiableObject(vcid);
 			Identifiable otherIdentifiable = vcMetaData.identifiableProvider.getIdentifiableObject(vcid);
-			if (otherIdentifiable == null) {
+			if (otherIdentifiable == null && myIdentifiable != null || myIdentifiable == null && otherIdentifiable != null) {				
 				return false;
 			}
-			NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(oe);
-			NonRDFAnnotation otherNonRDFAnnotation = vcMetaData.getNonRDFAnnotation(otherIdentifiable);
-			if (!Compare.isEqualOrNull(nonRDFAnnotation, otherNonRDFAnnotation)) {
+			
+			NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(registry.getEntry(myIdentifiable));
+			if (nonRDFAnnotation == null) {
+				nonRDFAnnotation = emtpyAnnotation;
+			}
+			NonRDFAnnotation otherNonRDFAnnotation = vcMetaData.nonRDFAnnotationMap.get(vcMetaData.registry.getEntry(otherIdentifiable));
+			if (otherNonRDFAnnotation == null) {
+				otherNonRDFAnnotation = emtpyAnnotation;
+			}
+			if (!Compare.isEqual(nonRDFAnnotation, otherNonRDFAnnotation)) {
 				return false;
 			}
 		}
