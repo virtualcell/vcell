@@ -10,6 +10,7 @@ import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
+import cbit.vcell.simdata.VariableType;
 
 public class ASTFuncNode extends SimpleNode {
 	
@@ -158,6 +159,23 @@ ASTFuncNode(int id) {
 if (id != ExpressionParserTreeConstants.JJTFUNCNODE){ System.out.println("ASTFuncNode(), id = "+id); }
 }
 
+
+public void fixFieldData(){
+	if (getFunction() == FIELD){
+		if(jjtGetNumChildren() == 2){
+			jjtAddChild(new ASTFloatNode(0.0));
+			ASTIdNode astIDNode = new ASTIdNode();
+			astIDNode.name = VariableType.VOLUME.getTypeName();
+			jjtAddChild(astIDNode);
+		}else if(jjtGetNumChildren() == 3){
+			ASTIdNode astIDNode = new ASTIdNode();
+			astIDNode.name = VariableType.VOLUME.getTypeName();
+			jjtAddChild(astIDNode);
+		}
+	}else{
+		super.fixFieldData();
+	}
+}
 
   /** Bind method, identifiers bind themselves to ValueObjects */
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {

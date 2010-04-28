@@ -26,6 +26,11 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
     id = i;
   }
 
+  public void fixFieldData(){
+	    for (int i = 0; i < jjtGetNumChildren(); i++) {
+	        jjtGetChild(i).fixFieldData();
+	    }
+  }
 
   public boolean isBoolean() {
 	  return false;
