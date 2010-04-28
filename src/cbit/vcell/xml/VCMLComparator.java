@@ -1,20 +1,19 @@
 package cbit.vcell.xml;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.biomodel.meta.xml.XMLMetaData;
-import cbit.util.xml.XmlUtil;
-
-import org.jdom.Attribute;
-import org.jdom.Element;
-import org.vcell.util.Matchable;
-
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
 
+import org.jdom.Attribute;
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.vcell.util.Matchable;
+
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.xml.XMLMetaData;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 
 /**
@@ -253,6 +252,13 @@ public class VCMLComparator {
 	    ArrayList atts2 = new ArrayList(target.getAttributes());
 	    attFlag = compareAtts(atts1, atts2);
 
+	    if (bSkipVCMetaData) {
+	    	source.removeChild(XMLTags.AnnotationTag, Namespace.getNamespace(XMLTags.VCML_NS));
+	    	target.removeChild(XMLTags.AnnotationTag, Namespace.getNamespace(XMLTags.VCML_NS));
+	    	
+	    	source.removeChild(XMLMetaData.VCMETADATA_TAG, Namespace.getNamespace(XMLTags.VCML_NS));
+	    	target.removeChild(XMLMetaData.VCMETADATA_TAG, Namespace.getNamespace(XMLTags.VCML_NS));
+	    }
 	    ArrayList children1 = new ArrayList(source.getChildren());
 	    ArrayList children2 = new ArrayList(target.getChildren());
 	    if (children1.size() != children2.size()) {
@@ -275,9 +281,6 @@ public class VCMLComparator {
 	    for (int j = 0; j < e1.length; j++) {
 	        Element child1 = e1[j];
 	        Element child2 = e2[j];
-	        if (child1.getName().equals(XMLMetaData.VCMETADATA_TAG) && child2.getName().equals(XMLMetaData.VCMETADATA_TAG)) {
-	        	continue;
-	        }
 	        if (!compareVCML(child1, child2, testAll, bSkipVCMetaData)){
 		        bChildrenSame = false;
 				if (!testAll){
