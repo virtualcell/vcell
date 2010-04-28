@@ -630,6 +630,7 @@ parseCount++;
 		ExpressionParser parser;
 		parser = new ExpressionParser(new java.io.ByteArrayInputStream(exp.getBytes()));
 		rootNode = parser.Expression();
+		rootNode.fixFieldData();
 
 		//
 		// get rid of ExpressionNode (worthless for evaluation), artifact of parsing
