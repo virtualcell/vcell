@@ -253,6 +253,9 @@ public class VCMLComparator {
 	    attFlag = compareAtts(atts1, atts2);
 
 	    if (bSkipVCMetaData) {
+	    	source.removeChild(XMLTags.AnnotationTag);
+	    	target.removeChild(XMLTags.AnnotationTag);
+
 	    	source.removeChild(XMLTags.AnnotationTag, Namespace.getNamespace(XMLTags.VCML_NS));
 	    	target.removeChild(XMLTags.AnnotationTag, Namespace.getNamespace(XMLTags.VCML_NS));
 	    	
