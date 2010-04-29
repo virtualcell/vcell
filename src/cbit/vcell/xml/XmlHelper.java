@@ -163,7 +163,7 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, Simula
 	    return sbmlExporter.getSBMLFile();
 	} else if (vcDoc instanceof MathModel) {
 		try {
-			return MathModel_SBMLExporter.getSBML((MathModel)vcDoc).toSBML();
+			return MathModel_SBMLExporter.getSBMLString((MathModel)vcDoc, level, version);
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException(e.getMessage());

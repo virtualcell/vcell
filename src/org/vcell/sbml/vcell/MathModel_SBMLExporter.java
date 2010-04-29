@@ -1,24 +1,16 @@
     package org.vcell.sbml.vcell;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.StringReader;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.input.SAXBuilder;
 import org.sbml.libsbml.ASTNode;
 import org.sbml.libsbml.AssignmentRule;
 import org.sbml.libsbml.InitialAssignment;
+import org.sbml.libsbml.OStringStream;
 import org.sbml.libsbml.RateRule;
 import org.sbml.libsbml.SBMLDocument;
+import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.libsbml;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.XMLSource;
@@ -39,7 +31,7 @@ public class MathModel_SBMLExporter {
  * @return org.sbml.libsbml.Model
  * @param mathModel cbit.vcell.mathmodel.MathModel
  */
-public static org.sbml.libsbml.SBMLDocument getSBML(cbit.vcell.mathmodel.MathModel mathModel) throws cbit.vcell.parser.ExpressionException, java.io.IOException {
+public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, long level, long version) throws cbit.vcell.parser.ExpressionException, java.io.IOException {
 
 	if (mathModel.getMathDescription().isSpatial()){
 		throw new RuntimeException("spatial models export to SBML not supported");
@@ -59,11 +51,10 @@ public static org.sbml.libsbml.SBMLDocument getSBML(cbit.vcell.mathmodel.MathMod
 
 	String dummyID = "ID_0";
 	String compartmentId = "compartment";
-	SBMLDocument document = new SBMLDocument();
-	document.setId(mathModel.getName());
-	org.sbml.libsbml.Model model = document.createModel();
-	model.setId(mathModel.getName());
-	org.sbml.libsbml.Compartment compartment = model.createCompartment();
+	SBMLDocument sbmlDocument = new SBMLDocument(level, version);
+	org.sbml.libsbml.Model sbmlModel = sbmlDocument.createModel();
+	sbmlModel.setId("MathModel_"+mathModel.getName());
+	org.sbml.libsbml.Compartment compartment = sbmlModel.createCompartment();
 	compartment.setId(compartmentId);
 
 	cbit.vcell.math.MathDescription mathDesc = mathModel.getMathDescription();
@@ -85,19 +76,19 @@ public static org.sbml.libsbml.SBMLDocument getSBML(cbit.vcell.mathmodel.MathMod
 //			species.setId(vcVar.getName());
 //			species.setCompartment(compartmentId);
 		}else if (vcVar instanceof cbit.vcell.math.Constant && ((cbit.vcell.math.Constant)vcVar).getExpression().isNumeric()){
-			org.sbml.libsbml.Parameter param = model.createParameter();
+			org.sbml.libsbml.Parameter param = sbmlModel.createParameter();
 			param.setId(vcVar.getName());
 			param.setConstant(true);
 			param.setValue(vcVar.getExpression().evaluateConstant());
 		}else if (vcVar instanceof cbit.vcell.math.Constant || vcVar instanceof cbit.vcell.math.Function) {
-			org.sbml.libsbml.Parameter param = model.createParameter();
+			org.sbml.libsbml.Parameter param = sbmlModel.createParameter();
 			param.setId(vcVar.getName());
 			param.setConstant(false);
 			//
 			// Function or Constant with expressions - create assignment rule and add to model.
 			//
 			ASTNode mathNode = getFormulaFromExpression(vcVar.getExpression());
-			AssignmentRule assignmentRule = model.createAssignmentRule();
+			AssignmentRule assignmentRule = sbmlModel.createAssignmentRule();
 			dummyID = TokenMangler.getNextEnumeratedToken(dummyID);
 			assignmentRule.setId(dummyID);
 			assignmentRule.setVariable(vcVar.getName());
@@ -116,16 +107,16 @@ public static org.sbml.libsbml.SBMLDocument getSBML(cbit.vcell.mathmodel.MathMod
 		cbit.vcell.math.Equation equ = (cbit.vcell.math.Equation)enumEqu.nextElement();
 		if (equ instanceof cbit.vcell.math.OdeEquation){
 			// For ODE equations, add the ode variable as a parameter, add rate as a rate rule and init condition as an initial assignment rule.
-			org.sbml.libsbml.Parameter param = model.createParameter();
+			org.sbml.libsbml.Parameter param = sbmlModel.createParameter();
 			param.setId(equ.getVariable().getName());
 			param.setConstant(false);
 			
 			// try to obtain the constant to which the init expression evaluates.
-			RateRule rateRule = model.createRateRule();
+			RateRule rateRule = sbmlModel.createRateRule();
 			rateRule.setVariable(equ.getVariable().getName());
 			rateRule.setMath(getFormulaFromExpression(equ.getRateExpression()));
 
-			InitialAssignment initialAssignment = model.createInitialAssignment();
+			InitialAssignment initialAssignment = sbmlModel.createInitialAssignment();
 			dummyID = TokenMangler.getNextEnumeratedToken(dummyID);
 			initialAssignment.setId(dummyID);
 			initialAssignment.setMath(getFormulaFromExpression(equ.getInitialExpression()));
@@ -134,8 +125,23 @@ public static org.sbml.libsbml.SBMLDocument getSBML(cbit.vcell.mathmodel.MathMod
 		 	throw new RuntimeException("equation type "+equ.getClass().getName()+" not supported");
 		 }
 	}
+	
+	// write sbml document into sbml writer, so that the sbml str can be retrieved
+	SBMLWriter sbmlWriter = new SBMLWriter();
+	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);
 
-	return document;
+	// Error check - use libSBML's document.printError to print to outputstream
+	System.out.println("\n\nSBML Export Error Report");
+	OStringStream oStrStream = new OStringStream();
+	sbmlDocument.printErrors(oStrStream);
+	System.out.println(oStrStream.str());
+
+	// cleanup
+	sbmlModel.delete();
+	sbmlDocument.delete();
+	sbmlWriter.delete();	
+
+	return sbmlStr;
 }
 
 /**
@@ -182,12 +188,12 @@ public static void main(String[] args) {
 		String outputSBMLFileName = args[1];
 		XMLSource vcmlSource = new XMLSource(new File(inputVCMLFileName));
 		cbit.vcell.mathmodel.MathModel mathModel = cbit.vcell.xml.XmlHelper.XMLToMathModel(vcmlSource);
-		org.sbml.libsbml.SBMLDocument sbmlDoc = getSBML(mathModel);
-		org.sbml.libsbml.SBMLWriter sbmlWriter = new org.sbml.libsbml.SBMLWriter();
-		sbmlWriter.setProgramName("Virtual Cell");
-		String vcellVersion = PropertyLoader.getProperty(PropertyLoader.vcellSoftwareVersion, "unknown");
-		sbmlWriter.setProgramVersion(vcellVersion);
-		String sbmlString = sbmlWriter.writeToString(sbmlDoc);
+		String sbmlString = getSBMLString(mathModel, 2, 3);
+//		org.sbml.libsbml.SBMLWriter sbmlWriter = new org.sbml.libsbml.SBMLWriter();
+//		sbmlWriter.setProgramName("Virtual Cell");
+//		String vcellVersion = PropertyLoader.getProperty(PropertyLoader.vcellSoftwareVersion, "unknown");
+//		sbmlWriter.setProgramVersion(vcellVersion);
+//		String sbmlString = sbmlWriter.writeToString(sbmlDoc);
 		java.io.FileWriter fileWriter = new java.io.FileWriter(new java.io.File(outputSBMLFileName));
 		fileWriter.write(sbmlString);
 		fileWriter.flush();
