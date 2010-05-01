@@ -17,6 +17,7 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.modeldb.MathVerifier.LoadModelsStatTable;
 import cbit.vcell.numericstest.AddTestCasesOP;
 import cbit.vcell.numericstest.AddTestCasesOPBioModel;
 import cbit.vcell.numericstest.AddTestCasesOPMathModel;
@@ -30,6 +31,8 @@ import cbit.vcell.numericstest.EditTestCriteriaOPBioModel;
 import cbit.vcell.numericstest.EditTestCriteriaOPMathModel;
 import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
 import cbit.vcell.numericstest.EditTestSuiteOP;
+import cbit.vcell.numericstest.LoadTestInfoOpResults;
+import cbit.vcell.numericstest.LoadTestInfoOP;
 import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
 import cbit.vcell.numericstest.RemoveTestCasesOP;
 import cbit.vcell.numericstest.RemoveTestCriteriaOP;
@@ -46,6 +49,8 @@ import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
+import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
+import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 
@@ -2751,7 +2756,145 @@ public static TestSuiteInfoNew[] testSuiteInfosGet(Connection con,User user,Sess
 
 }
 
+private static final String MODEL_TYPE_COLUMN = "TYPE";
+private static final String MODEL_ID_COLUMN = "MODELID";
+private static final String PERMISSION_COLUMN = "PERMISSION";
 
+private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshold) throws SQLException{
+
+	String specialColumn = LoadModelsStatTable.table.errorMessage.getUnqualifiedColName();
+	String specialCondition = LoadModelsStatTable.table.errorMessage.getUnqualifiedColName()+" IS NOT NULL";
+	if(slowLoadThreshold != null){
+		specialColumn = LoadModelsStatTable.table.loadTime.getUnqualifiedColName();
+		specialCondition =
+			LoadModelsStatTable.table.loadTime.getUnqualifiedColName() + " IS NOT NULL "+
+			" AND " +
+			LoadModelsStatTable.table.loadTime.getUnqualifiedColName() + " > "+slowLoadThreshold;
+	}
+
+
+	String sql = "SELECT " +
+		LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
+		LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+","+
+		"DECODE("+VersionTable.privacy_ColumnName+",0,'PUBLIC',1,'PRIVATE','GROUP') "+PERMISSION_COLUMN+","+
+		UserTable.table.userid.getUnqualifiedColName()+","+
+		MODEL_TYPE_COLUMN+","+
+		VersionTable.name_ColumnName+","+
+		MODEL_ID_COLUMN+","+
+		VersionTable.versionDate_ColumnName+","+
+		specialColumn+
+		" FROM "+
+	" ("+
+		"SELECT " +
+			LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+","+
+			VersionTable.privacy_ColumnName+","+
+			VersionTable.versionDate_ColumnName+","+
+			VersionTable.name_ColumnName+","+
+			UserTable.table.userid.getUnqualifiedColName()+","+
+			"'BIO' "+MODEL_TYPE_COLUMN+","+
+			BioModelTable.table.id.getQualifiedColName() + " " + MODEL_ID_COLUMN+","+
+			specialColumn+
+		" FROM "+
+			LoadModelsStatTable.table.getTableName()+","+
+			BioModelTable.table.getTableName()+","+
+			UserTable.table.getTableName()+
+		" WHERE "+
+			LoadModelsStatTable.table.bioModelRef.getUnqualifiedColName()+" IS NOT NULL"+
+			" AND "+
+			BioModelTable.table.id.getQualifiedColName()+ " = "+LoadModelsStatTable.table.bioModelRef.getUnqualifiedColName()+
+			" AND "+
+			UserTable.table.id.getQualifiedColName()+" = " +BioModelTable.table.ownerRef.getQualifiedColName()+
+		" UNION "+
+		"SELECT " +
+			LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+","+
+			VersionTable.privacy_ColumnName+","+
+			VersionTable.versionDate_ColumnName+","+
+			VersionTable.name_ColumnName+","+
+			UserTable.table.userid.getUnqualifiedColName()+","+
+			"'MATH' "+MODEL_TYPE_COLUMN+","+
+			MathModelTable.table.id.getQualifiedColName() + " " + MODEL_ID_COLUMN+","+
+			specialColumn+
+		" FROM "+
+			LoadModelsStatTable.table.getTableName()+","+
+			MathModelTable.table.getTableName()+","+
+			UserTable.table.getTableName()+
+		" WHERE "+
+			LoadModelsStatTable.table.mathModelRef.getUnqualifiedColName()+" IS NOT NULL"+
+			" AND "+
+			MathModelTable.table.id.getQualifiedColName()+ " = "+LoadModelsStatTable.table.mathModelRef.getUnqualifiedColName()+
+			" AND "+
+			UserTable.table.id.getQualifiedColName()+" = " +MathModelTable.table.ownerRef.getQualifiedColName()+
+	" )"+
+	" WHERE "+
+		specialCondition;
+
+	
+	Object loadTestDetailHash = null;
+	if(slowLoadThreshold == null){
+		loadTestDetailHash =
+			new Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestFailDetails>>();
+	}else{
+		loadTestDetailHash =
+			new Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestSlowDetails>>();
+	}
+		
+	Statement stmt = con.createStatement();
+	ResultSet rset = stmt.executeQuery(sql);
+	while(rset.next()){
+		String softwareVers =
+			TokenMangler.getSQLRestoredString(rset.getString(LoadModelsStatTable.table.softwareVers.getUnqualifiedColName().toString()));
+		String timeStamp = rset.getString(LoadModelsStatTable.table.timeStamp.getUnqualifiedColName().toString());
+		String permission = rset.getString(PERMISSION_COLUMN);
+		String userid = rset.getString(UserTable.table.userid.getUnqualifiedColName());
+		String modelType = rset.getString(MODEL_TYPE_COLUMN);
+		String modelName = rset.getString(VersionTable.name_ColumnName);
+		KeyValue modelKeyValue = new KeyValue(rset.getString(MODEL_ID_COLUMN));
+		String versionDate = rset.getString(VersionTable.versionDate_ColumnName);
+		String errorMessage = null;
+		Integer loadTime = null;
+		if(slowLoadThreshold == null){
+			errorMessage = rset.getString(LoadModelsStatTable.table.errorMessage.getUnqualifiedColName());
+		}else{
+			loadTime = rset.getInt(LoadModelsStatTable.table.loadTime.getUnqualifiedColName());
+		}
+		
+		LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp versTimeStamp =
+			new LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp(softwareVers,timeStamp);
+		if(slowLoadThreshold == null){
+			Vector<LoadTestInfoOpResults.LoadTestFailDetails> loadTestFailDetailsV =
+				(Vector<LoadTestInfoOpResults.LoadTestFailDetails>)
+				((Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestFailDetails>>)loadTestDetailHash).get(versTimeStamp);
+			if(loadTestFailDetailsV == null){
+				loadTestFailDetailsV =
+					new Vector<LoadTestInfoOpResults.LoadTestFailDetails>();
+				((Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestFailDetails>>)loadTestDetailHash).put(versTimeStamp, loadTestFailDetailsV);
+			}
+			LoadTestInfoOpResults.LoadTestFailDetails loadTestFailDetails = 
+				new LoadTestInfoOpResults.LoadTestFailDetails(
+					permission,userid,modelType,modelName,modelKeyValue,versionDate,errorMessage);
+			loadTestFailDetailsV.add(loadTestFailDetails);			
+		}else{
+			Vector<LoadTestInfoOpResults.LoadTestSlowDetails> loadTestSlowDetailsV =
+				(Vector<LoadTestInfoOpResults.LoadTestSlowDetails>)
+				((Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestSlowDetails>>)loadTestDetailHash).get(versTimeStamp);
+			if(loadTestSlowDetailsV == null){
+				loadTestSlowDetailsV =
+					new Vector<LoadTestInfoOpResults.LoadTestSlowDetails>();
+				((Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestSlowDetails>>)loadTestDetailHash).put(versTimeStamp, loadTestSlowDetailsV);
+			}
+			LoadTestInfoOpResults.LoadTestSlowDetails loadTestSlowDetails = 
+				new LoadTestInfoOpResults.LoadTestSlowDetails(
+					permission,userid,modelType,modelName,modelKeyValue,versionDate,loadTime);
+			loadTestSlowDetailsV.add(loadTestSlowDetails);
+		}
+	}
+	rset.close();
+	stmt.close();
+	
+	return loadTestDetailHash;
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/19/2004 6:55:36 AM)
@@ -2767,8 +2910,145 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 	Statement stmt = null;
 	
 	try{
-		stmt = con.createStatement();
-		
+		//
+		//LoadTest operations -------------------------------------------------------------------------------------------------
+		//
+		if(tsop instanceof LoadTestInfoOP){
+			//
+			//Delete LoadTest
+			//
+			if(((LoadTestInfoOP)tsop).getLoadTestOpFlag() == LoadTestOpFlag.delete){
+				//Delete before return details
+				LoadTestSoftwareVersionTimeStamp[] deleteTheseVersTimeStamps =
+					((LoadTestInfoOP)tsop).getLoadTestSoftwareVersionTimeStamps();
+				for (int i = 0; i < deleteTheseVersTimeStamps.length; i++) {
+					sql =
+						"DELETE FROM "+LoadModelsStatTable.table.getTableName()+
+						" WHERE "+
+						LoadModelsStatTable.table.softwareVers + " = " + "'"+deleteTheseVersTimeStamps[i].getSoftwareVersion()+"'"+
+						" AND " +
+						LoadModelsStatTable.table.timeStamp + " = " + "'"+deleteTheseVersTimeStamps[i].getRunTimeStamp()+"'";
+					DbDriver.updateCleanSQL(con, sql);
+				}
+				return null;
+			}
+			//
+			//Get existing SoftwareVersion-Timestamp  count
+			//
+			Vector<Integer> loadTestInfoCountV = new Vector<Integer>();
+			stmt = con.createStatement();
+			sql =
+				"SELECT COUNT(*)," +
+					LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
+					LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+
+				" FROM "+
+					LoadModelsStatTable.table.getTableName()+
+				" GROUP BY "+
+					LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
+					LoadModelsStatTable.table.timeStamp.getUnqualifiedColName();
+				
+			Vector<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp> 
+			loadTestSoftwareVersionTimeStampsExistingV =
+					new Vector<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp>();
+			ResultSet rset = stmt.executeQuery(sql);
+			while(rset.next()){
+				String softwareVersion =
+					TokenMangler.getSQLRestoredString(rset.getString(LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()));
+				String runTimeStamp = rset.getString(LoadModelsStatTable.table.timeStamp.getUnqualifiedColName());
+				loadTestSoftwareVersionTimeStampsExistingV.add(
+						new LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp(softwareVersion, runTimeStamp));
+				loadTestInfoCountV.add(rset.getInt(1));
+			}
+			rset.close();
+			stmt.close();
+			//
+			//Get empty test info count (models that haven't been checked yet during a test run)
+			//
+			stmt = con.createStatement();
+			sql =
+				"SELECT COUNT(*)," +
+					LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
+					LoadModelsStatTable.table.timeStamp.getUnqualifiedColName()+
+				" FROM "+
+					LoadModelsStatTable.table.getTableName()+
+				" WHERE " +
+					LoadModelsStatTable.table.resultFlag.getUnqualifiedColName() + " IS NULL"+
+				" GROUP BY "+
+					LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()+","+
+					LoadModelsStatTable.table.timeStamp.getUnqualifiedColName();
+				
+			Vector<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp> 
+				loadTestSoftwareVersionTimeStampsEmptyV =
+					new Vector<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp>();
+			rset = stmt.executeQuery(sql);
+			Integer[] loadTestInfoCountEmptyArr = new Integer[loadTestInfoCountV.size()];
+			while(rset.next()){
+				String softwareVersion =
+					TokenMangler.getSQLRestoredString(rset.getString(LoadModelsStatTable.table.softwareVers.getUnqualifiedColName()));
+				String runTimeStamp = rset.getString(LoadModelsStatTable.table.timeStamp.getUnqualifiedColName());
+				loadTestSoftwareVersionTimeStampsEmptyV.add(
+						new LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp(softwareVersion, runTimeStamp));
+				//match to existing array index so full and empty match
+				for (int i = 0; i < loadTestSoftwareVersionTimeStampsExistingV.size(); i++) {
+					if(loadTestSoftwareVersionTimeStampsExistingV.elementAt(i).getSoftwareVersion().equals(softwareVersion) &&
+						loadTestSoftwareVersionTimeStampsExistingV.elementAt(i).getRunTimeStamp().equals(runTimeStamp)){
+						loadTestInfoCountEmptyArr[i] = rset.getInt(1);											
+					}
+				}
+			}
+			rset.close();
+			stmt.close();
+
+			//
+			//Get total Math and Bio model count
+			//
+			int totalBioMathModelCount = 0;
+			stmt = con.createStatement();
+			sql =
+				"SELECT COUNT(*) FROM "+BioModelTable.table.getTableName()+
+				" UNION "+
+				"SELECT COUNT(*) FROM "+MathModelTable.table.getTableName();
+			rset = stmt.executeQuery(sql);
+			if(rset.next()){
+				totalBioMathModelCount = rset.getInt(1);
+				if(rset.next()){
+					totalBioMathModelCount+= rset.getInt(1);
+				}else{
+					totalBioMathModelCount = 0;
+				}
+			}
+			if(totalBioMathModelCount == 0){
+				throw new DataAccessException("No results when querying bio and Mathmodel count");
+			}
+			rset.close();
+			stmt.close();
+			//
+			//Get slow Loads
+			//
+			Object loadTestSlowHash = null;
+			if(((LoadTestInfoOP)tsop).getSlowLoadThresholdMilliSec() != null){
+				Integer slowLoaderThreshold = ((LoadTestInfoOP)tsop).getSlowLoadThresholdMilliSec();
+				loadTestSlowHash = getLoadTestDetails(con,slowLoaderThreshold);			
+			}
+			//
+			//Get failed loads
+			//
+			Object loadTestFailHash = getLoadTestDetails(con,null);
+			
+			return new LoadTestInfoOpResults(
+					loadTestInfoCountV.toArray(new Integer[0]),
+					loadTestInfoCountEmptyArr,
+					totalBioMathModelCount,
+					loadTestSoftwareVersionTimeStampsExistingV.toArray(new LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp[0]),
+					(Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestFailDetails>>) loadTestFailHash,
+					(Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestSlowDetails>>) loadTestSlowHash,
+					((LoadTestInfoOP)tsop).getSlowLoadThresholdMilliSec());
+
+		}
+
+		//
+		//TestSuite operations ---------------------------------------------------------------------------------------------------
+		//
 		if(tsop instanceof AddTestSuiteOP){
 			AddTestSuiteOP addts_tsop = (AddTestSuiteOP)tsop;
 			String annotation = addts_tsop.getTestSuiteAnnotation();

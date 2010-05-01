@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.testingframework;
 
 import cbit.vcell.client.TestingFrameworkWindowManager;
+import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.LoadTestTreeInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.TFRefresh;
@@ -8,15 +9,20 @@ import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
 
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreeNode;
+
+import cbit.vcell.numericstest.LoadTestInfoOpResults;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.numericstest.gui.NumericsTestCellRenderer;
 
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -28,12 +34,23 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
 import javax.swing.tree.TreePath;
 
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/22/2004 6:19:16 PM)
  * @author: Anuradha Lakshminarayana
  */
 public class TestingFrameworkPanel extends javax.swing.JPanel {
+	private Integer slowLoadThreshold;
+	public static final String REFRESH_XML_LOAD_TEST = "REFRESH_XML_LOAD_TEST";
+//	public static final String REFRESH_INCLUDE_SLOW_XML_LOAD_TEST = "REFRESH_INCLUDE_SLOW_XML_LOAD_TEST";
+	public static final String RUN_XML_LOAD_TEST_All = "RUN_XML_LOAD_TEST_All";
+	public static final String RUN_XML_LOAD_TEST_MODELS = "RUN_XML_LOAD_TEST_MODELS";
+	public static final String RUN_XML_LOAD_TEST_USERS = "RUN_XML_LOAD_TEST_USERS";
+	public static final String DELETE_XML_LOAD_TEST = "DELETE_XML_LOAD_TEST";
+	
 	public static final String REFRESH_TESTSUITE = "Refresh TestSuite";
 	public static final String TOGGLE_STEADYSTATE = "Toggle SteadyState...";
 	public static final String EDIT_ANNOT_TESTCASE = "Edit TestCase Annotation...";
@@ -83,7 +100,10 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 			}
 			public void rememberSelectedNode(){
 				selectedNode = (BioModelNode)getJTree1().getSelectionPath().getLastPathComponent();
-				if(selectedNode.getUserObject() instanceof TestSuiteInfoNew){
+				if(selectedNode.getUserObject() instanceof String &&
+						((String)selectedNode.getUserObject()).equals(TestingFrmwkTreeModel.LOAD_TEST_SUBTREE_NAME)){
+					isExpanded = getJTree1().isExpanded(getJTree1().getSelectionPath());
+				}else if(selectedNode.getUserObject() instanceof TestSuiteInfoNew){
 					isExpanded = getJTree1().isExpanded(getJTree1().getSelectionPath());
 				}else if(selectedNode.getUserObject() instanceof TestCaseNew){
 					selectedNode = (BioModelNode)getJTree1().getSelectionPath().getParentPath().getLastPathComponent();
@@ -262,6 +282,8 @@ class IvjEventHandler implements TreeExpansionListener,java.awt.event.ActionList
 					ActionEvent refresh = new ActionEvent(event.getSource(),ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.REFRESH_TESTSUITE);
 					TestingFrameworkPanel.this.refireActionPerformed(refresh);
 				}
+			}else{
+				loadTestTreeAction(event);
 			}
 		};
 	};
@@ -273,8 +295,127 @@ public TestingFrameworkPanel() {
 	initialize();
 }
 
+private void loadTestTreeAction(TreeExpansionEvent event){
+	BioModelNode expandedNode = (BioModelNode)(event.getPath().getLastPathComponent());
+	if(expandedNode == null || !(expandedNode.getUserObject() instanceof String)){
+		return;
+	}
+	if(((String)expandedNode.getUserObject()).equals(TestingFrmwkTreeModel.LOAD_TEST_SUBTREE_NAME)){
+//		tsRefreshListener.rememberSelectedNode();
+		ActionEvent refresh = new ActionEvent(event.getSource(),ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.REFRESH_XML_LOAD_TEST);
+		TestingFrameworkPanel.this.refireActionPerformed(refresh);
+
+		
+	}
+}
 public static boolean hasNullChild(BioModelNode bmNode){
 	return bmNode.getChildCount() == 1 && ((BioModelNode)bmNode.getChildAt(0)).getUserObject() == null;
+}
+
+public Integer getSlowLoadThreshold(){
+	return slowLoadThreshold;
+}
+
+private JPopupMenu getLoadTestMenu(){
+		JPopupMenu mainLoadTestMenu = new JPopupMenu();
+		if(getTreeSelection() instanceof String &&
+				((String)getTreeSelection()).equals(TestingFrmwkTreeModel.LOAD_TEST_SUBTREE_NAME)){
+			JMenuItem refreshThresholdMenuItem = new JMenuItem("Refresh (with load time threshold)...");
+			refreshThresholdMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try{
+						String result = DialogUtils.showInputDialog0(TestingFrameworkPanel.this, "Enter load time threshold (millseconds)","10000");
+						slowLoadThreshold = new Integer(result);
+	
+						ActionEvent refresh =
+							new ActionEvent(TestingFrameworkPanel.this,ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.REFRESH_XML_LOAD_TEST);
+						TestingFrameworkPanel.this.refireActionPerformed(refresh);
+					}catch(UtilCancelException uce){
+						//ignore
+					}catch(Exception e2){
+						e2.printStackTrace();
+						DialogUtils.showErrorDialog(TestingFrameworkPanel.this, e2.getMessage());
+					}
+				}
+			});
+			mainLoadTestMenu.add(refreshThresholdMenuItem);
+
+			JMenuItem runXMLLoadTestAllMenuItem = new JMenuItem("Run XML Load Test for all models...");
+			runXMLLoadTestAllMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ActionEvent refresh =
+						new ActionEvent(TestingFrameworkPanel.this,ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.RUN_XML_LOAD_TEST_All);
+					TestingFrameworkPanel.this.refireActionPerformed(refresh);
+				}
+			});
+			mainLoadTestMenu.add(runXMLLoadTestAllMenuItem);
+		}
+		if(getTreeSelection() instanceof LoadTestTreeInfo && ((LoadTestTreeInfo)getTreeSelection()).userid == null){
+			JMenuItem deleteLoadTestMenuItem = new JMenuItem("Delete Load Test...");
+			deleteLoadTestMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ActionEvent refresh =
+						new ActionEvent(TestingFrameworkPanel.this,ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.DELETE_XML_LOAD_TEST);
+					TestingFrameworkPanel.this.refireActionPerformed(refresh);
+				}
+			});
+			mainLoadTestMenu.add(deleteLoadTestMenuItem);
+		}
+		if(getTreeSelection() instanceof LoadTestTreeInfo && ((LoadTestTreeInfo)getTreeSelection()).userid != null){
+			JMenuItem runXMLLoadTestSelectedMenuItem = new JMenuItem("Run XML Load Test for selected models...");
+			runXMLLoadTestSelectedMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ActionEvent refresh =
+						new ActionEvent(TestingFrameworkPanel.this,ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.RUN_XML_LOAD_TEST_MODELS);
+					TestingFrameworkPanel.this.refireActionPerformed(refresh);
+				}
+			});
+			mainLoadTestMenu.add(runXMLLoadTestSelectedMenuItem);
+		}
+		if(getTreeSelection() instanceof LoadTestTreeInfo && ((LoadTestTreeInfo)getTreeSelection()).userid != null){
+			JMenuItem runXMLLoadTestSelectedMenuItem = new JMenuItem("Run XML Load Test for selected Users...");
+			runXMLLoadTestSelectedMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ActionEvent refresh =
+						new ActionEvent(TestingFrameworkPanel.this,ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.RUN_XML_LOAD_TEST_USERS);
+					TestingFrameworkPanel.this.refireActionPerformed(refresh);
+				}
+			});
+			mainLoadTestMenu.add(runXMLLoadTestSelectedMenuItem);
+		}
+
+	return mainLoadTestMenu;
+}
+
+private boolean isLoadTestPopup(){
+	TreePath[] selectedTreePaths = getSelectedTreePaths();
+	if(selectedTreePaths == null || selectedTreePaths.length == 0){
+		return false;
+	}
+	if(selectedTreePaths.length == 1){
+		if(getTreeSelection() instanceof String &&
+			((String)getTreeSelection()).equals(TestingFrmwkTreeModel.LOAD_TEST_SUBTREE_NAME)){
+			return true;
+		}else if(getTreeSelection() instanceof TestingFrmwkTreeModel.LoadTestTreeInfo){
+			return true;
+		}
+	}else{
+		boolean bAllErrorNodes = true;
+		boolean bAllInfoNodes = true;
+		for (int i = 0; i < selectedTreePaths.length; i++) {
+			Object userObj = ((BioModelNode)selectedTreePaths[i].getLastPathComponent()).getUserObject();
+			if(!(userObj instanceof TestingFrmwkTreeModel.LoadTestTreeInfo ||
+					((TestingFrmwkTreeModel.LoadTestTreeInfo)userObj).userid == null)){
+				bAllErrorNodes = false;
+			}
+			if(!(userObj instanceof TestingFrmwkTreeModel.LoadTestTreeInfo ||
+					((TestingFrmwkTreeModel.LoadTestTreeInfo)userObj).userid != null)){
+				bAllInfoNodes = false;
+			}
+		}
+		return bAllErrorNodes || bAllInfoNodes;
+	}
+	return false;
 }
 /**
  * Comment
@@ -285,14 +426,15 @@ private void actionsOnMouseClick(MouseEvent mouseEvent) {
 		if(getJTree1().getSelectionCount() <= 1){
 			getJTree1().setSelectionPath(getJTree1().getPathForLocation(mouseEvent.getPoint().x, mouseEvent.getPoint().y));
 		}
-		if (getTreeSelection() instanceof String) {
-			if (((String)getTreeSelection()).equals("TestSuites") && getJTree1().getSelectionPath().getParentPath() == null) {
+		if (isLoadTestPopup()) {
+			getLoadTestMenu().show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+		}else if (getTreeSelection() instanceof String) {
+			if (((String)getTreeSelection()).equals(TestingFrmwkTreeModel.TEST_SUITE_SUBTREE_NAME)) {
 				getMainPopupMenu().show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 			}
 		}else if(getTreeSelection() instanceof TestingFrmwkTreeModel.TestCriteriaVarUserObj){
 			getTCritVarPopupMenu().show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);				
-		}
-		else if (getTreeSelection() instanceof TestSuiteInfoNew) {
+		}else if (getTreeSelection() instanceof TestSuiteInfoNew) {
 			if(((TreeNode)getJTree1().getSelectionPath().getLastPathComponent()).getChildCount() == 0){
 				getDuplicateTSMenuItem().setEnabled(false);
 				getRunAllMenuItem().setEnabled(false);
@@ -1762,6 +1904,9 @@ public void refireActionPerformed(java.awt.event.ActionEvent actionEvent) {
  */
 public void refreshTFTree(TestSuiteInfoNew tsin) {
 	gettestingFrmwkTreeModel1().refreshTree(tsin);
+}
+public void refreshTFTree(LoadTestInfoOpResults loadTestInfoOpResults) {
+	gettestingFrmwkTreeModel1().refreshTree(loadTestInfoOpResults);
 }
 public void removeActionListener(java.awt.event.ActionListener newListener) {
 	aActionListener = java.awt.AWTEventMulticaster.remove(aActionListener, newListener);

@@ -98,6 +98,8 @@ import cbit.vcell.numericstest.EditTestCriteriaOPBioModel;
 import cbit.vcell.numericstest.EditTestCriteriaOPMathModel;
 import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
 import cbit.vcell.numericstest.EditTestSuiteOP;
+import cbit.vcell.numericstest.LoadTestInfoOpResults;
+import cbit.vcell.numericstest.LoadTestInfoOP;
 import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
 import cbit.vcell.numericstest.RemoveTestCasesOP;
 import cbit.vcell.numericstest.RemoveTestResultsOP;
@@ -111,6 +113,9 @@ import cbit.vcell.numericstest.TestCriteriaNewBioModel;
 import cbit.vcell.numericstest.TestCriteriaNewMathModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.numericstest.TestSuiteOPResults;
+import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
+import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
 import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults.CrossRefData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataIdentifier;
@@ -2166,7 +2171,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 							return;
 						}
 						d.dispose();
-						getTestingFrameworkWindowPanel().refreshTree(null);
+						getTestingFrameworkWindowPanel().refreshTree((TestSuiteInfoNew)null);
 						if(genReportHash != null){
 							updateReports(genReportHash);
 						}else{
@@ -2280,7 +2285,19 @@ public void removeTestCase(TestCaseNew testCase) throws DataAccessException{
 			new RemoveTestCasesOP(new BigDecimal[] {testCase.getTCKey()}));
 }
 
-
+public void refreshLoadTest(LoadTestInfoOpResults loadTestInfoOpResults){
+	getTestingFrameworkWindowPanel().refreshTree(loadTestInfoOpResults);
+}
+public LoadTestInfoOpResults getLoadTestDetails(Integer slowLoadThreshold) throws DataAccessException{
+	LoadTestInfoOP loadTestInfoOP = new LoadTestInfoOP(LoadTestOpFlag.info,slowLoadThreshold);
+	TestSuiteOPResults testSuiteOPResults = getRequestManager().getDocumentManager().doTestSuiteOP(loadTestInfoOP);
+	if(testSuiteOPResults instanceof LoadTestInfoOpResults){
+		LoadTestInfoOpResults loadTestInfoOpResults =
+			(LoadTestInfoOpResults)testSuiteOPResults;
+		return loadTestInfoOpResults;
+	}
+	throw new IllegalArgumentException("getLoadTestDetails Expecting LoadTestInfoOpResults");
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/10/2003 11:27:32 AM)

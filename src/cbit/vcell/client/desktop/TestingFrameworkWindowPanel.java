@@ -1,4 +1,7 @@
 package cbit.vcell.client.desktop;
+import cbit.vcell.modeldb.MathVerifier;
+import cbit.vcell.numericstest.LoadTestInfoOP;
+import cbit.vcell.numericstest.LoadTestInfoOpResults;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
@@ -6,17 +9,30 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
 import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel;
+import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.LoadTestTreeInfo;
 import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
+import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFAddTestSuite;
 import java.math.BigDecimal;
 import java.util.Hashtable;
+import java.util.TreeSet;
 import java.util.Vector;
+
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.tree.TreePath;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
@@ -367,6 +383,9 @@ public void refreshTree(TestSuiteInfoNew tsin) {
 	gettestingFrameworkPanel().refreshTFTree(tsin);
 }
 
+public void refreshTree(LoadTestInfoOpResults loadTestInfoOpResults){
+	gettestingFrameworkPanel().refreshTFTree(loadTestInfoOpResults);
+}
 public void selectInTreeView(BigDecimal testSuiteKey,BigDecimal testCaseKey,BigDecimal testCriteriaKey){
 	gettestingFrameworkPanel().selectInTreeView(testSuiteKey,testCaseKey,testCriteriaKey);
 }
@@ -412,6 +431,80 @@ private SimulationInfo getUserSelectedSimulationInfo() throws Exception{
 	return getTestingFrameworkWindowManager().getUserSelectedRefSimInfo(getTestingFrameworkWindowManager().getRequestManager(), userDefinedRegrRefModel);
 
 }
+
+private class EnterDBAndSoftwareVersPanel extends JPanel {
+	private JTextField textField;
+	private JTextField textField_1;
+	private JTextField textField_2;
+	private JTextField textField_3;
+	private JTextField textField_4;
+	public EnterDBAndSoftwareVersPanel() {
+		setLayout(new GridLayout(0, 2, 5, 0));
+		
+		JLabel label_1 = new JLabel("Software Version:");
+		label_1.setHorizontalAlignment(SwingConstants.RIGHT);
+		add(label_1);
+		
+		textField = new JTextField();
+		add(textField);
+		textField.setColumns(10);
+		
+		JLabel label = new JLabel("Database Host:");
+		label.setHorizontalAlignment(SwingConstants.RIGHT);
+		label.setHorizontalTextPosition(SwingConstants.LEADING);
+		add(label);
+		
+		textField_1 = new JTextField();
+		add(textField_1);
+		textField_1.setColumns(10);
+		
+		JLabel label_2 = new JLabel("Database name");
+		label_2.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_2.setHorizontalTextPosition(SwingConstants.LEADING);
+		add(label_2);
+		
+		textField_2 = new JTextField();
+		add(textField_2);
+		textField_2.setColumns(10);
+		
+		JLabel label_3 = new JLabel("Database Schema");
+		label_3.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_3.setHorizontalTextPosition(SwingConstants.LEADING);
+		add(label_3);
+		
+		textField_3 = new JTextField();
+		add(textField_3);
+		textField_3.setColumns(10);
+		
+		JLabel label_4 = new JLabel("Database password");
+		label_4.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_4.setHorizontalTextPosition(SwingConstants.LEADING);
+		add(label_4);
+		
+		textField_4 = new JTextField();
+		add(textField_4);
+		textField_4.setColumns(10);
+	}
+
+	public String getSoftwareVersion(){
+		return textField.getText();
+	}
+	public String getDBHost(){
+		return textField_1.getText();
+	}
+	public String getDBName(){
+		return textField_2.getText();
+	}
+
+	public String getDBSchema(){
+		return textField_3.getText();
+	}
+
+	public String getDBPassword(){
+		return textField_4.getText();
+	}
+
+}
 /**
  * Comment
  */
@@ -425,7 +518,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 	Vector<AsynchClientTask> tasksV = new Vector<AsynchClientTask>();
 	
 	try{
-		TreePath[] selectedTreePaths = gettestingFrameworkPanel().getSelectedTreePaths();
+		final TreePath[] selectedTreePaths = gettestingFrameworkPanel().getSelectedTreePaths();
 		if(selectedTreePaths != null && selectedTreePaths.length > 1){
 			Object refObj = ((BioModelNode)selectedTreePaths[0].getLastPathComponent()).getUserObject();
 			for (int i = 1; i < selectedTreePaths.length; i++) {
@@ -441,7 +534,106 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 			}
 		}
 		Object selectedObj = gettestingFrameworkPanel().getTreeSelection();
-		if (e.getActionCommand().equals(TestingFrameworkPanel.QUERY_TCRITVAR_CROSSREF)) {
+		if(e.getActionCommand().equals(TestingFrameworkPanel.DELETE_XML_LOAD_TEST)){
+			int result = DialogUtils.showComponentOKCancelDialog(this, new JLabel("Delete "+selectedTreePaths.length+" Load Tests?"), "Confirm Load Test Delete");
+			if(result != JOptionPane.OK_OPTION){
+				return;
+			}
+			AsynchClientTask deleteLoadTestTask = new AsynchClientTask("Deleting Load Test...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					LoadTestInfoOP deleteLoadTestInfoOP = 
+						new LoadTestInfoOP(LoadTestOpFlag.delete,null);
+					LoadTestSoftwareVersionTimeStamp[] deleteTheseversTimestamps = 
+						new LoadTestSoftwareVersionTimeStamp[selectedTreePaths.length];
+					for (int i = 0; i < selectedTreePaths.length; i++) {
+						deleteTheseversTimestamps[i] = 
+							((LoadTestTreeInfo)((BioModelNode)selectedTreePaths[i].getLastPathComponent()).getUserObject()).loadTestSoftwareVersionTimeStamp;
+					}
+					deleteLoadTestInfoOP.setDeleteInfo(deleteTheseversTimestamps);
+					getTestingFrameworkWindowManager().getRequestManager().getDocumentManager().doTestSuiteOP(deleteLoadTestInfoOP);
+					final ActionEvent refreshAction = new ActionEvent(this, 0, TestingFrameworkPanel.REFRESH_XML_LOAD_TEST);
+					new Thread(new Runnable() {public void run() {testingFrameworkPanel_actionPerformed(refreshAction);}}).start();}
+			};
+			tasksV.add(deleteLoadTestTask);
+		}else if(e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_All) ||
+				e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_MODELS) ||
+				e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_USERS)){
+
+			final Vector<String> userIDV = new Vector<String>();
+			final Vector<KeyValue> bioAndMathModelKeyValueV = new Vector<KeyValue>();
+			if(!e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_All)){
+				TreeSet<String> uniqueUserIDTreeSet = new TreeSet<String>();
+				if(selectedTreePaths != null && selectedTreePaths.length > 0){
+					Object refObj = ((BioModelNode)selectedTreePaths[0].getLastPathComponent()).getUserObject();
+					if(refObj instanceof TestingFrmwkTreeModel.LoadTestTreeInfo){
+						for (int i = 0; i < selectedTreePaths.length; i++) {
+							refObj = ((BioModelNode)selectedTreePaths[i].getLastPathComponent()).getUserObject();
+							uniqueUserIDTreeSet.add(((TestingFrmwkTreeModel.LoadTestTreeInfo)refObj).userid);
+							if(!e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_USERS)){
+								bioAndMathModelKeyValueV.add(((TestingFrmwkTreeModel.LoadTestTreeInfo)refObj).bioOrMathModelKey);								
+							}
+						}
+						userIDV.addAll(uniqueUserIDTreeSet);
+					}
+				}
+			}
+
+			String typeMsg = "All";
+			if(e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_MODELS)){
+				typeMsg = "Models ("+bioAndMathModelKeyValueV.size()+")";
+			}else if(e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_USERS)){
+				typeMsg = "Users ("+userIDV.size()+")";
+			}
+
+			int result =
+				DialogUtils.showComponentOKCancelDialog(TestingFrameworkWindowPanel.this, new JLabel("Run "+typeMsg+" Load Tests?"), "Confirm Load Test Run");
+			if(result != JOptionPane.OK_OPTION){
+				return;
+			}
+
+			final EnterDBAndSoftwareVersPanel enterPanel = new EnterDBAndSoftwareVersPanel();
+			result = DialogUtils.showComponentOKCancelDialog(this, enterPanel, "Enter Software Version running load test");
+			if(result != JOptionPane.OK_OPTION){
+				return;
+			}
+			AsynchClientTask runXMLLoadTestTask = new AsynchClientTask("Running XML Load Test...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+
+					MathVerifier mathVerifier = MathVerifier.createMathVerifier(
+							enterPanel.getDBHost(),enterPanel.getDBName(),enterPanel.getDBSchema(),enterPanel.getDBPassword());
+					mathVerifier.runLoadTest(
+							(userIDV.size()==0?null:userIDV.toArray(new String[0])),
+							(bioAndMathModelKeyValueV.size()==0?null:bioAndMathModelKeyValueV.toArray(new KeyValue[0])),
+							enterPanel.getSoftwareVersion());
+				}
+			};
+			tasksV.add(runXMLLoadTestTask);
+		}else if(e.getActionCommand().equals(TestingFrameworkPanel.REFRESH_XML_LOAD_TEST) /*||
+				e.getActionCommand().equals(TestingFrameworkPanel.REFRESH_INCLUDE_SLOW_XML_LOAD_TEST)*/){
+			final String LOADTESTDETAILS_KEY = "LOADTESTDETAILS_KEY";
+			AsynchClientTask getFailedLoadTest =
+				new AsynchClientTask("Getting FailedLoadTests...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+/*						Integer slowLoadThreshold = null;
+						if(e.getActionCommand().equals(TestingFrameworkPanel.REFRESH_INCLUDE_SLOW_XML_LOAD_TEST)){
+							String result = DialogUtils.showInputDialog0(TestingFrameworkWindowPanel.this, "Enter load time threshold (millseconds)","10000");
+							slowLoadThreshold = new Integer(result);
+						}
+*/						hashTable.put(LOADTESTDETAILS_KEY,getTestingFrameworkWindowManager().getLoadTestDetails(gettestingFrameworkPanel().getSlowLoadThreshold()));
+					}
+				};
+			AsynchClientTask refreshFailedLoadTest = new AsynchClientTask("Refreshing FailedLoadTests...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					getTestingFrameworkWindowManager().refreshLoadTest((LoadTestInfoOpResults)hashTable.get(LOADTESTDETAILS_KEY));
+				}
+			};
+			tasksV.add(getFailedLoadTest);
+			tasksV.add(refreshFailedLoadTest);
+		}else if (e.getActionCommand().equals(TestingFrameworkPanel.QUERY_TCRITVAR_CROSSREF)) {
 			if (selectedObj instanceof TestingFrmwkTreeModel.TestCriteriaVarUserObj && selectedTreePaths.length == 1) {
 				final TestingFrmwkTreeModel.TestCriteriaVarUserObj tcritVaruserObj = (TestingFrmwkTreeModel.TestCriteriaVarUserObj)selectedObj;
 				final TestSuiteInfoNew tsInfoNew = gettestingFrameworkPanel().getTestSuiteInfoOfTreePath(selectedTreePaths[0]);
