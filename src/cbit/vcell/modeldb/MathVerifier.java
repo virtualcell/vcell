@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Vector;
 
 import javax.swing.JFrame;
@@ -69,8 +70,7 @@ public class MathVerifier {
  * ResultSetCrawler constructor comment.
  */
 public MathVerifier(ConnectionFactory argConFactory, KeyFactory argKeyFactory,
-		AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog,
-		String testFlag,Timestamp timeStamp) throws DataAccessException, SQLException {
+		AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog) throws DataAccessException, SQLException {
 	this.conFactory = argConFactory;
 	this.keyFactory = argKeyFactory;
 	this.log = argSessionLog;
@@ -78,8 +78,6 @@ public MathVerifier(ConnectionFactory argConFactory, KeyFactory argKeyFactory,
 	GeomDbDriver geomDB = new GeomDbDriver(argSessionLog);
 	this.mathDescDbDriver = new MathDescriptionDbDriver(geomDB,argSessionLog);
 	this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,argSessionLog);
-	this.testFlag = testFlag;
-	this.timeStamp = timeStamp;
 }
 
 public static class LoadModelsStatTable extends Table{
@@ -121,20 +119,46 @@ public static class LoadModelsStatTable extends Table{
 
 public static final String MV_DEFAULT = "MV_DEFAULT";
 public static final String MV_LOAD_XML = "MV_LOAD_XML";
+
+public static MathVerifier createMathVerifier(
+		String dbHostName,String dbName,String dbSchemaUser,String dbPassword) throws Exception{
+	
+    SessionLog sessionLog = new StdoutSessionLog("MathVerifier");
+    ConnectionFactory conFactory = null;
+    KeyFactory keyFactory = null;
+    new org.vcell.util.PropertyLoader();
+
+    String driverName = "oracle.jdbc.driver.OracleDriver";
+    String connectURL = "jdbc:oracle:thin:@" + dbHostName + ":1521:" + dbName;
+
+    //
+    // get appropriate database factory objects
+    //
+    conFactory =
+        new OraclePoolingConnectionFactory(
+        	sessionLog,
+            driverName,
+            connectURL,
+            dbSchemaUser,
+            dbPassword);
+    keyFactory = new OracleKeyFactory();
+    
+    AdminDatabaseServer adminDbServer =
+    	new LocalAdminDbServer(conFactory, keyFactory, sessionLog);
+    
+    return new MathVerifier(conFactory, keyFactory, adminDbServer, sessionLog);
+}
 /**
  * Starts the application.
  * @param args an array of command-line arguments
  */
-public static void main(java.lang.String[] args) {
+public static void main(String[] args) {
     //
-	MathVerifier mathVerifier = null;
-    try {
         if (args.length != 7) {
             System.out.println(
                 "Usage: host databaseSID schemaUser schemaUserPassword {MV_DEFAULT,MV_LOAD_XML} {user,-} softwareVersion");
             System.exit(0);
         }
-        String driverName = "oracle.jdbc.driver.OracleDriver";
         String host = args[0];
         String db = args[1];
         String connectURL = "jdbc:oracle:thin:@" + host + ":1521:" + db;
@@ -144,7 +168,6 @@ public static void main(java.lang.String[] args) {
         String user = args[5];
         String softwareVersion = args[6];
         //
-    	Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
         int ok =
             javax.swing.JOptionPane.showConfirmDialog(
@@ -161,106 +184,146 @@ public static void main(java.lang.String[] args) {
                     +"\nUser="
                     + (user.equals("-")?"all users":user)
                     +"\nsoftwareVersion="
-                    + softwareVersion
-                    +"\ntimeStamp="
-                    + timestamp.toString(),
+                    + softwareVersion,
                 "Confirm",
                 javax.swing.JOptionPane.OK_CANCEL_OPTION,
                 javax.swing.JOptionPane.WARNING_MESSAGE);
         if (ok != javax.swing.JOptionPane.OK_OPTION) {
             throw new RuntimeException("Aborted by user");
         }
-
-        SessionLog sessionLog = new StdoutSessionLog("MathVerifier");
-        ConnectionFactory conFactory = null;
-        KeyFactory keyFactory = null;
-        new org.vcell.util.PropertyLoader();
-
-        //
-        // get appropriate database factory objects
-        //
-        conFactory =
-            new OraclePoolingConnectionFactory(
-            	sessionLog,
-                driverName,
-                connectURL,
-                dbSchemaUser,
-                dbPassword);
-        keyFactory = new OracleKeyFactory();
         
-        AdminDatabaseServer adminDbServer =
-        	new LocalAdminDbServer(conFactory, keyFactory, sessionLog);
-        
-        UserInfo[] allUserInfos = adminDbServer.getUserInfos();
-        User[] scanUsers = null;
-        if(user.equals("-")){
-        	scanUsers = new User[allUserInfos.length];
-        	for (int i = 0; i < allUserInfos.length; i++) {
-				scanUsers[i] = new User(allUserInfos[i].userid,allUserInfos[i].id);
-			}
-        }else{
-        	scanUsers = new User[1];
-        	for (int i = 0; i < allUserInfos.length; i++) {
-        		if(allUserInfos[i].userid.equals(user)){
-        			scanUsers[0] = new User(allUserInfos[i].userid,allUserInfos[i].id);
-        			break;
-        		}
-			}
-        	if(scanUsers[0] == null){
-        		System.out.println("Error: couldn't find user '"+user+"' in database");
-        		return;
-        	}
-        }
-        
-        mathVerifier = new MathVerifier(conFactory, keyFactory, adminDbServer, sessionLog, testFlag,timestamp);
+	try {
+    	MathVerifier mathVerifier = MathVerifier.createMathVerifier(host, db, dbSchemaUser, dbPassword);
         if(testFlag.equals(MV_LOAD_XML)){
-            MathVerifier.initLoadModelsStatTable(softwareVersion,(user.equals("-")?null:scanUsers),timestamp,conFactory,sessionLog);
-            mathVerifier.scan(scanUsers, true, null);
-         }
-//        mathVerifier.scan(scanUsers, false, bioModelKey, ordinal)
-    } catch (Throwable e) {
-        e.printStackTrace(System.out);
-    }finally{
-    	if(mathVerifier != null && mathVerifier.conFactory != null){
-    		try{mathVerifier.conFactory.closeAll();}catch(Exception e){e.printStackTrace();}
-    	}
-    }
+        	mathVerifier.runLoadTest((user == null?null:new String[] {user}), null,softwareVersion);
+        }else if(testFlag.equals(MV_DEFAULT)){
+        	mathVerifier.runMathTest((user == null?null:new String[] {user}),null);
+        }
+	} catch (Throwable e) {
+	    e.printStackTrace(System.out);
+	}
     System.exit(0);
 }
 
-public static void initLoadModelsStatTable(String softwareVersion,User[] users,Timestamp timestamp,ConnectionFactory conFactory,SessionLog sessionLog) throws Exception{
+private User[] createUsersFromUserids(String[] scanUserids) throws Exception{
+    User[] scanUsers = null;
+    if(scanUserids == null){
+        UserInfo[] allUserInfos = adminDbServer.getUserInfos();
+    	scanUsers = new User[allUserInfos.length];
+    	for (int i = 0; i < allUserInfos.length; i++) {
+			scanUsers[i] = new User(allUserInfos[i].userid,allUserInfos[i].id);
+		}
+    }else{
+    	scanUsers = new User[scanUserids.length];
+    	for (int i = 0; i < scanUserids.length; i++) {
+			scanUsers[i] = adminDbServer.getUser(scanUserids[i]);
+		}
+    }
+    return scanUsers;
+}
+private void closeAllConnections(){
+	if(this.conFactory != null){
+		try{this.conFactory.closeAll();}catch(Exception e){e.printStackTrace();}
+	}
+
+}
+
+public void runLoadTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,String softwareVersion) throws Exception{
+	this.testFlag = MathVerifier.MV_LOAD_XML;
+	this.timeStamp = new Timestamp(System.currentTimeMillis());
+	User[] scanUsers = createUsersFromUserids(scanUserids);
+    try{
+    	MathVerifier.initLoadModelsStatTable(softwareVersion,scanUsers,bioAndMathModelKeys,this.timeStamp,this.conFactory,this.log);
+    	this.scan(scanUsers, true, bioAndMathModelKeys);
+    }finally{
+    	closeAllConnections();
+    }
+
+}
+public void runMathTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys) throws Exception{
+	this.testFlag = MathVerifier.MV_DEFAULT;
+	User[] scanUsers = createUsersFromUserids(scanUserids);
+    try{
+    	this.scan(scanUsers, true, bioAndMathModelKeys);
+    }finally{
+    	closeAllConnections();
+    }
+}
+private static void initLoadModelsStatTable(String softwareVersion,User[] users,KeyValue[] bioAndMathModelKeys,Timestamp timestamp,
+		ConnectionFactory conFactory,SessionLog sessionLog) throws Exception{
 	java.sql.Connection con = null;
 	java.sql.Statement stmt = null;
 	try {
 		con = conFactory.getConnection(new Object());
+		StringBuffer sql = new StringBuffer();
+		
+		//Make sure timestamp does not exist in table
 		stmt = con.createStatement();
-		String onlyUsersClause = "";
+		sql.setLength(0);
+		sql.append(
+			"SELECT COUNT(*)"+
+			" FROM "+LoadModelsStatTable.table.getTableName() +
+			" WHERE "+LoadModelsStatTable.table.timeStamp + " = " + "'" + timestamp.toString() + "'");
+		ResultSet resultSet = stmt.executeQuery(sql.toString());
+		if(resultSet.next()){
+			if(resultSet.getInt(1) != 0){
+				throw new Exception("Timestamp "+timestamp.toString()+" already exists in table '"+LoadModelsStatTable.table.getTableName()+"'");
+			}
+		}else{
+			throw new Exception("Timestamp query returned nothing");
+		}
+		resultSet.close();
+		stmt.close();
+		
+		//Scan only users condition
+		String onlyUsersClause = null;
 		if(users != null){
 			StringBuffer usersSB = new StringBuffer();
 			for (int i = 0; i < users.length; i++) {
 				usersSB.append((i>0?",":"")+users[i].getID());
 			}
 			onlyUsersClause = 
-				" WHERE "+BioModelTable.table.ownerRef.getUnqualifiedColName()+" IN ("+usersSB.toString()+")";
+				BioModelTable.table.ownerRef.getUnqualifiedColName()+" IN ("+usersSB.toString()+")";
+		}
+		//Scan only model user conditions
+		String onlyModelsClause = null;
+		if(bioAndMathModelKeys != null){
+			StringBuffer modelsSB = new StringBuffer();
+			for (int i = 0; i < bioAndMathModelKeys.length; i++) {
+				modelsSB.append((i>0?",":"")+bioAndMathModelKeys[i].toString());
+			}
+			onlyModelsClause = 
+				VersionTable.id_ColumnName+" IN ("+modelsSB.toString()+")";
+		}
+
+		String allConditions = "";
+		if(onlyModelsClause != null && onlyUsersClause != null){
+			allConditions = " WHERE "+onlyUsersClause +" AND "+onlyModelsClause;
+		}else if(onlyModelsClause != null){
+			allConditions = " WHERE "+onlyModelsClause;
+		}else if(onlyUsersClause != null){
+			allConditions = " WHERE "+onlyUsersClause;
 		}
 		//Get ALL BioModel keys
-		StringBuffer sql = new StringBuffer();
+		stmt = con.createStatement();
+		sql.setLength(0);
 		sql.append(
 			"SELECT "+BioModelTable.table.id.getUnqualifiedColName() +
-			" FROM "+BioModelTable.table.getTableName()+onlyUsersClause);
+			" FROM "+BioModelTable.table.getTableName()+allConditions);
 		Vector<BigDecimal> bioModelKeyV = new Vector<BigDecimal>();
-		ResultSet resultSet = stmt.executeQuery(sql.toString());
+		resultSet = stmt.executeQuery(sql.toString());
 		while(resultSet.next()){
 			bioModelKeyV.add(resultSet.getBigDecimal(BioModelTable.table.id.getUnqualifiedColName()));
 		}
 		resultSet.close();
 		stmt.close();
+		
 		//Get ALL MathModel keys
 		stmt = con.createStatement();
 		sql.setLength(0);
 		sql.append(
 			"SELECT "+MathModelTable.table.id.getUnqualifiedColName() +
-			" FROM "+MathModelTable.table.getTableName()+onlyUsersClause);
+			" FROM "+MathModelTable.table.getTableName()+allConditions);
 		Vector<BigDecimal> mathModelKeyV = new Vector<BigDecimal>();
 		resultSet = stmt.executeQuery(sql.toString());
 		while(resultSet.next()){
@@ -268,6 +331,8 @@ public static void initLoadModelsStatTable(String softwareVersion,User[] users,T
 		}
 		resultSet.close();
 		stmt.close();
+		
+		//Init row for each model
 		int totalKeys = bioModelKeyV.size() + mathModelKeyV.size();
 		for (int i = 0; i < totalKeys; i++) {
 			String bioModelKeyS = "NULL";
@@ -285,7 +350,6 @@ public static void initLoadModelsStatTable(String softwareVersion,User[] users,T
 					bioModelKeyS+","+
 					mathModelKeyS+",NULL,NULL,"+
 					"'"+timestamp.toString()+"'"+
-//					"TO_TIMESTAMP("+"'"+timestamp.toString()+"'"+",'yyyy-mm-dd hh:mi:ss.ff')"+
 					",NULL,"+
 					"'"+TokenMangler.getSQLEscapedString(softwareVersion, LoadModelsStatTable.SOFTWARE_VERS_SIZE)+"'"+")");
 			DbDriver.updateCleanSQL(con, sql.toString());
@@ -554,11 +618,17 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 		}
 	}
 }
+private Comparator<KeyValue> keyValueCpmparator =
+	new Comparator<KeyValue>() {
+	public int compare(KeyValue o1, KeyValue o2) {
+		return Integer.parseInt(o1.toString()) - Integer.parseInt(o2.toString());
+	}
+};
 /**
  * Insert the method's description here.
  * Creation date: (2/2/01 3:40:29 PM)
  */
-public void scan(User users[], boolean bUpdateDatabase, KeyValue bioOrMathModelKey) throws MathException, MappingException, SQLException, DataAccessException, ModelException, ExpressionException {
+public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathModelKeys) throws MathException, MappingException, SQLException, DataAccessException, ModelException, ExpressionException {
 //	java.util.Calendar calendar = java.util.GregorianCalendar.getInstance();
 ////	calendar.set(2002,java.util.Calendar.MAY,7+1);
 //	calendar.set(2002,java.util.Calendar.JULY,1);
@@ -567,7 +637,11 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioOrMathModelK
 //	calendar.set(2002,java.util.Calendar.JANUARY,1);
 //	final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 	
-
+	KeyValue[] sortedBioAndMathModelKeys = null;
+	if(bioAndMathModelKeys != null){
+		sortedBioAndMathModelKeys = bioAndMathModelKeys.clone();
+		Arrays.sort(sortedBioAndMathModelKeys,keyValueCpmparator);
+	}
 	for (int i=0;i<users.length;i++){
 		User user = users[i];
 		BioModelInfo[] bioModelInfos0 = dbServerImpl.getBioModelInfos(user,false);
@@ -585,10 +659,14 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioOrMathModelK
 		//
 		for (int j = 0; j < userBioAndMathModelInfoV.size(); j++){
 			//
-			// if a single bioModel is requested, then filter all else out
+			// if certain Bio or Math models are requested, then filter all else out
 			//
-			if (bioOrMathModelKey!=null && !userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey().compareEqual(bioOrMathModelKey)){
-				continue;
+			if (sortedBioAndMathModelKeys != null){
+				int srch =
+					Arrays.binarySearch(sortedBioAndMathModelKeys, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(),keyValueCpmparator);
+				if(srch < 0){
+					continue;
+				}
 			}
 
 			//
@@ -638,7 +716,6 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioOrMathModelK
 		}	
 	}
 }
-
 
 
 /**
