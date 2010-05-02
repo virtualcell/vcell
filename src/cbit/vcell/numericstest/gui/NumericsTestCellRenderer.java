@@ -312,7 +312,7 @@ protected void setComponentProperties(javax.swing.JLabel component, Object objec
 	if (object instanceof TestSuiteInfoNew) {
 		TestSuiteInfoNew tsn = (TestSuiteInfoNew)object;
 		component.setText(
-				"Version No. : "+tsn.getTSID()+
+				(tsn.isLocked()?"(Lock) ":"")+"Version No. : "+tsn.getTSID()+
 				"; Vcell Version No. : "+tsn.getTSVCellBuild()+
 				"; Numerics Build No. : "+tsn.getTSNumericsBuild()+
 				" ; ["+(tsn.getTSAnnotation() == null?"":tsn.getTSAnnotation())+"]");

@@ -66,7 +66,7 @@ private void applyTestSuite() throws Exception{
 		throw new Exception("TestSuite must have Version no./VCell Version no./Numerics Version no.");
 	}
 
-	TestSuiteInfoNew newTSInfo = new TestSuiteInfoNew(null, testSuiteVersionID, vCellBuildVersion, numericsBuildVersion, null,getJTextAreaAnnot().getText());
+	TestSuiteInfoNew newTSInfo = new TestSuiteInfoNew(null, testSuiteVersionID, vCellBuildVersion, numericsBuildVersion, null,getJTextAreaAnnot().getText(),false);
 	setTestSuiteInfo(newTSInfo);
 }
 

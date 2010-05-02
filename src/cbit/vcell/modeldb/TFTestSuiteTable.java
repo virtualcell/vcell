@@ -21,8 +21,9 @@ public class TFTestSuiteTable extends cbit.sql.Table {
 	public final Field creationDate =			new Field("creationDate",		"DATE",			"NOT NULL");
 	public final Field changeDate =				new Field("changeDate",			"DATE",			"");
 	public final Field tsAnnotation =			new Field("tsAnnotation",		"VARCHAR2(512)",	"");
+	public final Field isLocked =				new Field("isLocked",			"INTEGER",		"NOT NULL");
 	
-	private final Field fields[] = {tsVersion,vcBuildVersion,vcNumericsVersion,creationDate,changeDate,tsAnnotation};
+	private final Field fields[] = {tsVersion,vcBuildVersion,vcNumericsVersion,creationDate,changeDate,tsAnnotation,isLocked};
 	
 	public static final TFTestSuiteTable table = new TFTestSuiteTable();
 
