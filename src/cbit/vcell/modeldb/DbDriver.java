@@ -2681,6 +2681,7 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 		String tsNumericsBuild = null;
 		java.util.Date tsDate = null;
 		String tsAnnot = null;
+		boolean islocked = true;
 		if(rset.next()){
 			tsKey = rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName());
 			tsVersion = rset.getString(TFTestSuiteTable.table.tsVersion.getUnqualifiedColName());
@@ -2688,12 +2689,13 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 			tsNumericsBuild = rset.getString(TFTestSuiteTable.table.vcNumericsVersion.getUnqualifiedColName());
 			tsDate = VersionTable.getDate(rset,TFTestSuiteTable.table.creationDate.getUnqualifiedColName());
 			tsAnnot = rset.getString(TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName());
+			islocked = rset.getBoolean(TFTestSuiteTable.table.isLocked.getUnqualifiedColName());
 		}else{
 			throw new ObjectNotFoundException("TestSuite with key="+getThisTS+" not found");
 		}
 		rset.close();
 
-		TestSuiteInfoNew tsiNew = new TestSuiteInfoNew(tsKey,tsVersion,tsVCBuild,tsNumericsBuild,tsDate,tsAnnot);
+		TestSuiteInfoNew tsiNew = new TestSuiteInfoNew(tsKey,tsVersion,tsVCBuild,tsNumericsBuild,tsDate,tsAnnot,islocked);
 
 		TestSuiteNew tsn = new TestSuiteNew(tsiNew,tcnArr);
 		//testSuiteHash.put(tsKey,tsn);
@@ -2739,7 +2741,8 @@ public static TestSuiteInfoNew[] testSuiteInfosGet(Connection con,User user,Sess
 			String vcNumericS = rset.getString(TFTestSuiteTable.table.vcNumericsVersion.getUnqualifiedColName());
 			java.util.Date date = VersionTable.getDate(rset,TFTestSuiteTable.table.creationDate.getUnqualifiedColName());
 			String tsAnnot = rset.getString(TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName());
-			tsiV.add(new TestSuiteInfoNew(tsKey,tsID,vcBuildS,vcNumericS,date,tsAnnot));
+			boolean islocked = rset.getBoolean(TFTestSuiteTable.table.isLocked.getUnqualifiedColName());
+			tsiV.add(new TestSuiteInfoNew(tsKey,tsID,vcBuildS,vcNumericS,date,tsAnnot,islocked));
 		}
 	}finally{
 		if(stmt != null){
@@ -3049,6 +3052,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 		//
 		//TestSuite operations ---------------------------------------------------------------------------------------------------
 		//
+		stmt = con.createStatement();
+		
 		if(tsop instanceof AddTestSuiteOP){
 			AddTestSuiteOP addts_tsop = (AddTestSuiteOP)tsop;
 			String annotation = addts_tsop.getTestSuiteAnnotation();
@@ -3061,11 +3066,12 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			}
 
 			BigDecimal changedTSKey = keyFactory.getUniqueBigDecimal(con);
+			final int NOT_LOCKED = 0;
 			sql = 
 				"INSERT INTO "+TFTestSuiteTable.table.getTableName()+" VALUES("+
 					changedTSKey+",'"+addts_tsop.getTestSuiteVersionID()+"',"+
 					"'"+addts_tsop.getVCellBuildVersionID()+"'"+","+"'"+addts_tsop.getNumericsBuildVersionID()+"'"+","+
-					"SYSDATE,SYSDATE,"+(annotation == null?"NULL":"'"+annotation+"'")+")";
+					"SYSDATE,SYSDATE,"+(annotation == null?"NULL":"'"+annotation+"'")+","+NOT_LOCKED+")";
 			stmt.executeUpdate(sql);
 			if(addts_tsop.getAddTestCasesOPs() != null){
 				for(int i=0;i<addts_tsop.getAddTestCasesOPs().length;i+= 1){
@@ -3782,26 +3788,37 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			BigDecimal[] tsKeys = editts_tsop.getTestSuiteKeys();
 			String[] annots = editts_tsop.getNewAnnotations();
 			if(tsKeys == null || tsKeys.length == 0){
-				throw new DataAccessException(tsop.getClass().getName()+" had no TestCase keys");
+				throw new DataAccessException(tsop.getClass().getName()+" had no TestSuite keys");
 			}
 			StringBuffer sb = new StringBuffer();
 			for(int i=0;i<tsKeys.length;i+= 1){
 				if(i != 0){sb.append(",");}sb.append(tsKeys[i].toString());
-				if(annots != null){
-					String annotation = annots[i];
-					if(annotation != null){
-						if(annotation.length() == 0){
-							annotation = null;
-						}else{
-							annotation = TokenMangler.getSQLEscapedString(annotation);
-						}
-					}
+				
+				if(editts_tsop.isLock() != null){
 					stmt.executeUpdate(
-						"UPDATE "+TFTestSuiteTable.table.getTableName()+
-						" SET "+
-							TFTestSuiteTable.table.tsAnnotation.getQualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
-						" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
-						);
+							"UPDATE "+TFTestSuiteTable.table.getTableName()+
+							" SET "+
+								TFTestSuiteTable.table.isLocked.getQualifiedColName()+"= 1"+
+							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
+							);
+					
+				}else{
+					if(annots != null){
+						String annotation = annots[i];
+						if(annotation != null){
+							if(annotation.length() == 0){
+								annotation = null;
+							}else{
+								annotation = TokenMangler.getSQLEscapedString(annotation);
+							}
+						}
+						stmt.executeUpdate(
+							"UPDATE "+TFTestSuiteTable.table.getTableName()+
+							" SET "+
+								TFTestSuiteTable.table.tsAnnotation.getQualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
+							" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
+							);
+					}
 				}
 			}			
 			
