@@ -13,13 +13,14 @@ public class TestSuiteInfoNew implements org.vcell.util.Matchable, java.io.Seria
 	private String tsNumericsBuild;
 	private java.util.Date tsDate;
 	private String tsAnnot;
+	private boolean isLocked;
 
 /**
  * TestSuiteInfoNew constructor comment.
  * @param argType java.lang.String
  * @param argAnnotation java.lang.String
  */
-public TestSuiteInfoNew(BigDecimal argTSKey,String argTSID,String argTSVCellBuild,String argTSNumericsBuild,java.util.Date argTSDate,String argTSAnnot) {
+public TestSuiteInfoNew(BigDecimal argTSKey,String argTSID,String argTSVCellBuild,String argTSNumericsBuild,java.util.Date argTSDate,String argTSAnnot,boolean isLocked) {
 
 	tsKey = argTSKey;
 	tsID = argTSID;
@@ -27,6 +28,7 @@ public TestSuiteInfoNew(BigDecimal argTSKey,String argTSID,String argTSVCellBuil
 	tsNumericsBuild = argTSNumericsBuild;
 	tsDate = argTSDate;
 	tsAnnot = argTSAnnot;
+	this.isLocked = isLocked;
 }
 
 /**
@@ -60,10 +62,15 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if(!this.tsDate.equals(tsin.tsDate)){
 		return false;
 	}
+	if(this.isLocked != tsin.isLocked){
+		return false;
+	}
 	return true;
 }
 
-
+public Boolean isLocked(){
+	return isLocked;
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/16/2004 1:52:59 PM)

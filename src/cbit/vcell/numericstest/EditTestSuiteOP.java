@@ -5,8 +5,18 @@ import java.math.BigDecimal;
 public class EditTestSuiteOP extends TestSuiteOP {
 	private BigDecimal[] testSuiteKeys;
 	private String[] newAnnotations;
+	private Boolean bLock = null;
 	
 
+	public EditTestSuiteOP(BigDecimal[] editTheseTestSuites,boolean bLock) {
+		
+		super(null);
+		if(!bLock){
+			throw new IllegalArgumentException("Only lock == true implemented for EditTestSuiteOP");
+		}
+		testSuiteKeys = editTheseTestSuites;
+		this.bLock = new Boolean(true);
+	}
 /**
  * EditTestCriteria constructor comment.
  * @param tsin cbit.vcell.numericstest.TestSuiteInfoNew
@@ -21,6 +31,9 @@ public EditTestSuiteOP(BigDecimal[] editTheseTestSuites,String[] argAnnots) {
 	
 	testSuiteKeys = editTheseTestSuites;
 	newAnnotations = argAnnots;
+}
+public Boolean isLock(){
+	return bLock;
 }
 /**
  * Insert the method's description here.
