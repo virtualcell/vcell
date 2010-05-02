@@ -1,39 +1,11 @@
 package cbit.vcell.client;
-import cbit.vcell.desktop.controls.DataManager;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.rmi.event.ExportEvent;
-import cbit.vcell.simdata.MergedDataInfo;
-import javax.swing.JInternalFrame;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-
-import cbit.vcell.client.desktop.simulation.SimulationCompareWindow;
-import cbit.vcell.client.data.DataViewer;
-import cbit.vcell.biomodel.BioModel;
-
-import java.math.*;
-import cbit.vcell.clientdb.DocumentManager;
-import javax.swing.JDialog;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import javax.swing.JComponent;
-import cbit.vcell.client.server.DynamicDataManager;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.test.SimulationComparisonSummary;
-import cbit.vcell.solver.test.VariableComparisonSummary;
-
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -42,18 +14,17 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import cbit.vcell.solver.SimulationInfo;
 import java.util.Vector;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
-import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
-import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
-import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.test.MathTestingUtilities;
-import cbit.vcell.clientdb.ClientDocumentManager;
+
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JInternalFrame;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
@@ -65,17 +36,70 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
+import cbit.rmi.event.ExportEvent;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.data.DataViewer;
+import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
+import cbit.vcell.client.desktop.simulation.SimulationCompareWindow;
+import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
+import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
+import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
+import cbit.vcell.client.server.DynamicDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.client.task.TFGenerateReport;
 import cbit.vcell.client.task.TFRefresh;
-import cbit.vcell.numericstest.*;
+import cbit.vcell.clientdb.ClientDocumentManager;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.controls.DataManager;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.numericstest.AddTestCasesOP;
+import cbit.vcell.numericstest.AddTestCasesOPBioModel;
+import cbit.vcell.numericstest.AddTestCasesOPMathModel;
+import cbit.vcell.numericstest.AddTestCriteriaOPBioModel;
+import cbit.vcell.numericstest.AddTestCriteriaOPMathModel;
+import cbit.vcell.numericstest.AddTestResultsOP;
+import cbit.vcell.numericstest.AddTestSuiteOP;
+import cbit.vcell.numericstest.ChangeTestCriteriaErrorLimitOP;
+import cbit.vcell.numericstest.EditTestCasesOP;
+import cbit.vcell.numericstest.EditTestCriteriaOP;
+import cbit.vcell.numericstest.EditTestCriteriaOPBioModel;
+import cbit.vcell.numericstest.EditTestCriteriaOPMathModel;
+import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
+import cbit.vcell.numericstest.EditTestSuiteOP;
+import cbit.vcell.numericstest.LoadTestInfoOP;
+import cbit.vcell.numericstest.LoadTestInfoOpResults;
+import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
+import cbit.vcell.numericstest.RemoveTestCasesOP;
+import cbit.vcell.numericstest.RemoveTestResultsOP;
+import cbit.vcell.numericstest.RemoveTestSuiteOP;
+import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.numericstest.TestCaseNewBioModel;
+import cbit.vcell.numericstest.TestCaseNewMathModel;
+import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults;
+import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.numericstest.TestCriteriaNewBioModel;
+import cbit.vcell.numericstest.TestCriteriaNewMathModel;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
+import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.numericstest.TestSuiteOPResults;
+import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.test.MathTestingUtilities;
+import cbit.vcell.solver.test.SimulationComparisonSummary;
+import cbit.vcell.solver.test.VariableComparisonSummary;
 /**
  * Insert the type's description here.
  * Creation date: (7/15/2004 11:44:12 AM)
@@ -2124,7 +2148,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 							return;
 						}
 						d.dispose();
-						getTestingFrameworkWindowPanel().refreshTree(null);
+						getTestingFrameworkWindowPanel().refreshTree((TestSuiteInfoNew)null);
 						if(genReportHash != null){
 							updateReports(genReportHash);
 						}else{
@@ -2238,7 +2262,19 @@ public void removeTestCase(TestCaseNew testCase) throws DataAccessException{
 			new RemoveTestCasesOP(new BigDecimal[] {testCase.getTCKey()}));
 }
 
-
+public void refreshLoadTest(LoadTestInfoOpResults loadTestInfoOpResults){
+	getTestingFrameworkWindowPanel().refreshTree(loadTestInfoOpResults);
+}
+public LoadTestInfoOpResults getLoadTestDetails(Integer slowLoadThreshold) throws DataAccessException{
+	LoadTestInfoOP loadTestInfoOP = new LoadTestInfoOP(LoadTestInfoOP.LoadTestOpFlag.info,slowLoadThreshold);
+	TestSuiteOPResults testSuiteOPResults = getRequestManager().getDocumentManager().doTestSuiteOP(loadTestInfoOP);
+	if(testSuiteOPResults instanceof LoadTestInfoOpResults){
+		LoadTestInfoOpResults loadTestInfoOpResults =
+			(LoadTestInfoOpResults)testSuiteOPResults;
+		return loadTestInfoOpResults;
+	}
+	throw new IllegalArgumentException("getLoadTestDetails Expecting LoadTestInfoOpResults");
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/10/2003 11:27:32 AM)
