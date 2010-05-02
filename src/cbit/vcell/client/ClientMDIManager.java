@@ -452,7 +452,7 @@ public void setCanonicalTitle(java.lang.String windowID) {
 	} else if (manager instanceof DatabaseWindowManager) {
 		windowTitle = "Database Manager";
 	} else if (manager instanceof TestingFrameworkWindowManager) {
-		windowTitle = "Math Testing Framework";
+		windowTitle = "VCell Testing Framework";
 	} else if (manager instanceof BNGWindowManager) {
 		windowTitle = "BioNetGen";
 	} else if (manager instanceof FieldDataWindowManager) {
