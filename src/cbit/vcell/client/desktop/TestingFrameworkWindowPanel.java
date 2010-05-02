@@ -659,6 +659,21 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 			}else{
 				throw new Exception("Selected Object is not a TestCriteria! Failed to Query Cross Ref.");				
 			}
+		}else if (e.getActionCommand().equals(TestingFrameworkPanel.LOCK_TESTSUITE)) {
+			if (selectedObj instanceof TestSuiteInfoNew) {
+				final TestSuiteInfoNew tsInfoNew = (TestSuiteInfoNew)selectedObj;
+				AsynchClientTask lockTestSuiteTask =
+					new AsynchClientTask("Lock TestSuite", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING){
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							getTestingFrameworkWindowManager().lockTestSuite(tsInfoNew);
+						}
+					};
+				tasksV.add(lockTestSuiteTask);
+				tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),tsInfoNew);
+				tasksV.add(tfRefreshTreeTask);
+			}else{
+				throw new Exception("Selected Object is not a TestSuite! Failed to Lock TestSuite.");				
+			}
 		}else if (e.getActionCommand().equals(TestingFrameworkPanel.EDIT_ANNOT_TESTSUITE)) {
 			if (selectedObj instanceof TestSuiteInfoNew) {
 				final TestSuiteInfoNew tsInfoNew = (TestSuiteInfoNew)selectedObj;

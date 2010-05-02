@@ -203,7 +203,9 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 	}catch(Throwable e){
 		throw new RuntimeException("couldn't get test suite "+tsInfo.getTSID()+"\n"+e.getClass().getName()+" mesg="+e.getMessage()+"\n");
 	}
-	
+	if(testSuite != null && testSuite.getTSInfoNew().isLocked()){
+		throw new RuntimeException("Cannot addTestCases to locked table");
+	}
 	if(testSuite != null){
 		//Saving BioModels
 		TestCaseNew existingTestCases[] = testSuite.getTestCases();
@@ -769,6 +771,12 @@ public void updateTestSuiteAnnotation(TestSuiteInfoNew tsInfoNew,String newAnnot
 
 }
 
+public void lockTestSuite(TestSuiteInfoNew tsInfoNew) throws DataAccessException{
+	EditTestSuiteOP etsop =
+		new EditTestSuiteOP(new BigDecimal[] {tsInfoNew.getTSKey()},true);
+	getRequestManager().getDocumentManager().doTestSuiteOP(etsop);
+
+}
 private void updateReports(final Hashtable<TestSuiteInfoNew, Vector<TestCriteriaCrossRefOPResults.CrossRefData>> genReportHash){
 	new Thread(
 	new Runnable() {
@@ -2633,8 +2641,8 @@ public String startSimulations(TestCriteriaNew[] tcrits,ClientTaskStatusSupport 
 		try{
 			pp.setProgress((int)(1+(((double)i/(double)tcrits.length)*100)));
 			pp.setMessage("Trying to run sim "+tcrits[i].getSimInfo().getName());
-			getRequestManager().runSimulation(tcrits[i].getSimInfo());
 			updateTCritStatus(tcrits[i],TestCriteriaNew.TCRIT_STATUS_SIMRUNNING,null);
+			getRequestManager().runSimulation(tcrits[i].getSimInfo());
 		}catch(Throwable e){
 			e.printStackTrace();
 			errors.append("Failed to start sim "+tcrits[i].getSimInfo().getVersion().getName()+" "+e.getClass().getName()+" mesg="+e.getMessage()+"\n");

@@ -28,6 +28,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.modeldb.TFTestSuiteTable;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaNew;
@@ -48,6 +49,7 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	public static final String DELETE_XML_LOAD_TEST = "DELETE_XML_LOAD_TEST";
 	
 	public static final String REFRESH_TESTSUITE = "Refresh TestSuite";
+	public static final String LOCK_TESTSUITE = "Lock TestSuite";
 	public static final String TOGGLE_STEADYSTATE = "Toggle SteadyState...";
 	public static final String EDIT_ANNOT_TESTCASE = "Edit TestCase Annotation...";
 	public static final String EDIT_ANNOT_TESTSUITE = "Edit TestSuite Annotation...";
@@ -440,6 +442,7 @@ private void actionsOnMouseClick(MouseEvent mouseEvent) {
 				getRunAllMenuItem().setEnabled(true);
 				getGenTSReportMenuItem().setEnabled(true);
 			}
+			getLockTestSuiteMenuItem().setEnabled(!((TestSuiteInfoNew)getTreeSelection()).isLocked());
 			getTestSuitePopupMenu().show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 		} else if (getTreeSelection() instanceof TestCaseNew) {
 			TestCaseNew tcNew = (TestCaseNew)getTreeSelection();
@@ -1412,6 +1415,38 @@ private javax.swing.JPopupMenu getMainPopupMenu() {
 	return ivjMainPopupMenu;
 }
 
+private JMenuItem lockTestSuiteMenuItem;
+private JMenuItem getLockTestSuiteMenuItem(){
+	if(lockTestSuiteMenuItem == null){
+		lockTestSuiteMenuItem = new JMenuItem("Lock TestSuite...");
+		lockTestSuiteMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				final String lockOption = "Lock TestSuite";
+				final String cancelOption = "Cancel";
+				String result = DialogUtils.showWarningDialog(TestingFrameworkPanel.this,
+						"Locking a TestSuite prevents user actions from changing the locked Testsuite.  "+
+						"Locking sets a flag (isLocked) on the "+TFTestSuiteTable.table.getTableName()+
+						" table.  A 'trigger' is defined in oracle for each of the 4 vc_tf... tables "+
+						"that checks the lock flag for a non-zero value that prevents changes if set.\n\n"+
+						"NOTE:  TestSuites can only be unlocked by using an SQL tool and first DISABLING the 'trigger' "+
+						"on the "+TFTestSuiteTable.table.getTableName()+" table "+
+						"[ALTER TRIGGER VCELL.TS_LOCK_TRIG DISABLE] "+
+						"which unlocks all TestSuites then set "+
+						"the 'isLocked' value for the desired row to 0, then RE_ENABLE the 'trigger' "+
+						"[ALTER TRIGGER VCELL.TS_LOCK_TRIG ENABLE]",
+						new String[] {lockOption,cancelOption}, lockOption);
+				if(!lockOption.equals(result)){
+					return;
+				}
+				ActionEvent refresh =
+					new ActionEvent(TestingFrameworkPanel.this,ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.LOCK_TESTSUITE);
+				TestingFrameworkPanel.this.refireActionPerformed(refresh);
+
+			}
+		});
+	}
+	return lockTestSuiteMenuItem;
+}
 
 private javax.swing.JPopupMenu getTCritVarPopupMenu() {
 	if (ivjTCritVarPopupMenu == null) {
@@ -1846,6 +1881,8 @@ private javax.swing.JPopupMenu getTestSuitePopupMenu() {
 			ivjTestSuitePopupMenu.add(getRemoveTSMenuItem());
 			ivjTestSuitePopupMenu.add(getGenTSReportMenuItem());
 			ivjTestSuitePopupMenu.add(getEditAnnotationTestSuiteMenuItem());
+			ivjTestSuitePopupMenu.add(getLoadMenuItem());
+			ivjTestSuitePopupMenu.add(getLockTestSuiteMenuItem());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
