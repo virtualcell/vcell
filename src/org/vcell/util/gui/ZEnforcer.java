@@ -2,6 +2,7 @@ package org.vcell.util.gui;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,6 +10,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Iterator;
 import java.util.Vector;
+
+import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import org.vcell.util.BeanUtils;
 
@@ -112,6 +115,10 @@ public static void showModalDialogOnTop(Dialog dialog, Component toBeCenteredOn)
 	}
 
 	if (dialog.isModal()) {
+		Frame frame = JOptionPane.getFrameForComponent(toBeCenteredOn);
+		if (frame != null) {
+			frame.setState(Frame.NORMAL);
+		}
 		showOnTop(dialog, toBeCenteredOn);
 	} else {
 		try {
