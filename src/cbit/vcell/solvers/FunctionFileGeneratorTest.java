@@ -25,7 +25,7 @@ public static void main(java.lang.String[] args) {
 		Simulation[] sims = model.getSimulations();
 
 		SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(sims[1], 0);
-		Vector <AnnotatedFunction> annotatedFunctionList = simulationSymbolTable.createAnnotatedFunctionsList();
+		Vector <AnnotatedFunction> annotatedFunctionList = simulationSymbolTable.createAnnotatedFunctionsList(null);
 		
 		FunctionFileGenerator funcFileGen = new FunctionFileGenerator("\\\\C:\\"+sims[1].getName()+".functions", annotatedFunctionList);
 		System.out.println("\n\n FILE NAME : "+funcFileGen.getBasefileName()+"\n\n");

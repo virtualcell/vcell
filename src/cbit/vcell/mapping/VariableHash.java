@@ -86,9 +86,9 @@ public void addVariable(Variable var) throws MappingException {
 			//
 			// for Volume Variables, also create an InsideVariable and an OutsideVariable for use in JumpConditions
 			//
-			cbit.vcell.math.InsideVariable inVar = new cbit.vcell.math.InsideVariable(var.getName()+"_INSIDE", var.getName());
+			InsideVariable inVar = new cbit.vcell.math.InsideVariable(var.getName()+InsideVariable.INSIDE_VARIABLE_SUFFIX, var.getName());
 			addVariable(inVar);
-			cbit.vcell.math.OutsideVariable outVar = new cbit.vcell.math.OutsideVariable(var.getName()+"_OUTSIDE", var.getName());
+			OutsideVariable outVar = new cbit.vcell.math.OutsideVariable(var.getName()+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX, var.getName());
 			addVariable(outVar);
 		}
 	}

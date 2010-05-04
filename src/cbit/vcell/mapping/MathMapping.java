@@ -1937,7 +1937,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					if (mm.getResolved(simContext)){
 						FeatureMapping fm_inside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getInsideFeature());
 						FeatureMapping fm_outside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getOutsideFeature());
-						compartmentName = fm_inside.getSubVolume().getName()+"_"+fm_outside.getSubVolume().getName();
+						SurfaceClass membrane = simContext.getGeometry().getGeometrySurfaceDescription().getSurfaceClass(fm_inside.getSubVolume(), fm_outside.getSubVolume());
+						compartmentName = membrane.getName();
 						sizeFunctionName = MathFunctionDefinitions.Function_regionArea_current.getFunctionName();
 					}else{
 						FeatureMapping fm_inside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getInsideFeature());

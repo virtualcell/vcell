@@ -33,12 +33,15 @@ public class MembraneSubDomain extends SubDomain {
  * @param outside cbit.vcell.math.CompartmentSubDomain
  */
 public MembraneSubDomain (CompartmentSubDomain inside, CompartmentSubDomain outside) {
-	super(inside.getName()+"_"+outside.getName()+"_membrane");
+	super(createCanonicalMembraneSubdomainName(inside, outside));
 	this.insideCompartment = inside;
 	this.outsideCompartment = outside;
 }
 
 
+public static String createCanonicalMembraneSubdomainName(CompartmentSubDomain inside, CompartmentSubDomain outside) {
+	return inside.getName()+"_"+outside.getName()+"_membrane";
+}
 /**
  * This method was created by a SmartGuide.
  * @param equation cbit.vcell.math.Equation

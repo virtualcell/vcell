@@ -1009,7 +1009,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							docInfo.getVarName()+" timeIndex="+docInfo.getTimeIndex());
 					hashTable.put(INITIAL_ANNOTATION, hashTable.get(IMPORT_SOURCE_NAME));
 					PDEDataContext pdeDataContext =	getMdiManager().getFieldDataWindowManager().getPDEDataContext(docInfo.getExternalDataID());
-					pdeDataContext.setVariableAndTime(docInfo.getVarName(), pdeDataContext.getTimePoints()[docInfo.getTimeIndex()]);
+					pdeDataContext.setVariableNameAndTime(docInfo.getVarName(), pdeDataContext.getTimePoints()[docInfo.getTimeIndex()]);
 					CartesianMesh mesh = pdeDataContext.getCartesianMesh();
 					ISize meshISize = new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
 					double[] data = pdeDataContext.getDataValues();

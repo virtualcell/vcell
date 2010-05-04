@@ -1,8 +1,17 @@
 package cbit.image;
 
-import java.awt.*;
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.Toolkit;
+
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.NumberUtils;
 
 import cbit.vcell.client.data.PDEDataViewer;
+import cbit.vcell.geometry.CurveSelectionInfo;
+import cbit.vcell.geometry.gui.CurveEditorTool;
+import cbit.vcell.geometry.gui.CurveEditorToolPanel;
 import cbit.vcell.geometry.gui.CurveRenderer;
 
 /*©
@@ -28,8 +37,8 @@ public class ImagePlaneManagerPanel extends javax.swing.JPanel {
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private int fieldMode = 0;
 	private ImagePaneModel ivjimagePaneModel = null;
-	private cbit.vcell.geometry.gui.CurveEditorToolPanel ivjCurveEditorToolPanel1 = null;
-	private cbit.vcell.geometry.gui.CurveEditorTool ivjCurveEditorTool = null;
+	private CurveEditorToolPanel ivjCurveEditorToolPanel1 = null;
+	private CurveEditorTool ivjCurveEditorTool = null;
 	private cbit.vcell.geometry.gui.CurveRenderer ivjCurveRenderer = null;
 	private DisplayAdapterServicePanel ivjDisplayAdapterServicePanel = null;
 	private boolean ivjConnPtoP3Aligning = false;
@@ -1424,10 +1433,10 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 		//}
 	//}else
 	if(mouseEvent.getID() != java.awt.event.MouseEvent.MOUSE_EXITED){
-		org.vcell.util.Coordinate wc = null;
+		Coordinate wc = null;
 		boolean bNeedsMembraneCursor = false;
-		if( getCurveEditorTool().getTool() == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_ZOOM ||
-			getCurveEditorTool().getTool() == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_PAN ){
+		if( getCurveEditorTool().getTool() == CurveEditorTool.TOOL_ZOOM ||
+			getCurveEditorTool().getTool() == CurveEditorTool.TOOL_PAN ){
 			infoS = getCurveEditorTool().getToolDescription(getCurveEditorTool().getTool());
 			setToolCursor();
 		}else if(mouseEvent.getID() != java.awt.event.MouseEvent.MOUSE_ENTERED){
@@ -1436,10 +1445,10 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 				wc = getImagePlaneManager().getWorldCoordinateFromUnitized2D(unitP.getX(), unitP.getY());
 				if(wc != null){
 					if(getCurveValueProvider() != null){
-						cbit.vcell.geometry.CurveSelectionInfo[] curveCSIArr = getCurveRenderer().getCloseCurveSelectionInfos(wc);
+						CurveSelectionInfo[] curveCSIArr = getCurveRenderer().getCloseCurveSelectionInfos(wc);
 						if(curveCSIArr != null){
 							for(int i = 0;i < curveCSIArr.length;i+= 1){
-								cbit.vcell.geometry.CurveSelectionInfo csiSegment = getCurveRenderer().getClosestSegmentSelectionInfo(wc,curveCSIArr[i].getCurve());
+								CurveSelectionInfo csiSegment = getCurveRenderer().getClosestSegmentSelectionInfo(wc,curveCSIArr[i].getCurve());
 								if(csiSegment != null){
 									String infoTemp = getCurveValueProvider().getCurveValue(csiSegment);
 									if(infoTemp != null){infoS = infoTemp;bNeedsMembraneCursor = true;break;}
@@ -1448,12 +1457,12 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 						}
 					}
 					if (infoS == null && getSourceDataInfo() != null) {
-						org.vcell.util.CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
+						CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
 						int volumeIndex = getSourceDataInfo().calculateWorldIndex(ci);
-						org.vcell.util.Coordinate quantizedWC = getSourceDataInfo().getWorldCoordinateFromIndex(ci);
-						String xCoordString = org.vcell.util.NumberUtils.formatNumber(quantizedWC.getX());
-						String yCoordString = org.vcell.util.NumberUtils.formatNumber(quantizedWC.getY());
-						String zCoordString = org.vcell.util.NumberUtils.formatNumber(quantizedWC.getZ());
+						Coordinate quantizedWC = getSourceDataInfo().getWorldCoordinateFromIndex(ci);
+						String xCoordString = NumberUtils.formatNumber(quantizedWC.getX());
+						String yCoordString = NumberUtils.formatNumber(quantizedWC.getY());
+						String zCoordString = NumberUtils.formatNumber(quantizedWC.getZ());
 						infoS = 
 							"(" + xCoordString +
 							(getSourceDataInfo().getYSize() > 1?"," + yCoordString:"") +
@@ -1462,7 +1471,7 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 							" ["+ci.x+
 							(getSourceDataInfo().getYSize() > 1?","+ci.y:"")+
 							(getSourceDataInfo().getZSize() > 1?","+ci.z:"")+"] "+
-							(getSourceDataInfo().isDataNull()?"empty":getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
+							(getSourceDataInfo().isDataNull()||!getDataInfoProvider().isDefined(volumeIndex)?"Undefined":getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
 						if(getDataInfoProvider() != null){
 							PDEDataViewer.VolumeDataInfo volumeDataInfo =
 								getDataInfoProvider().getVolumeDataInfo(volumeIndex);

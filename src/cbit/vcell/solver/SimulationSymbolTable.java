@@ -27,6 +27,7 @@ import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.ReservedVariable;
@@ -463,7 +464,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		}
 	}
 
-	public Vector<AnnotatedFunction> createAnnotatedFunctionsList() {	
+	public Vector<AnnotatedFunction> createAnnotatedFunctionsList(MathDescription mathDescription) {	
 		// Get the list of (volVariables) in the simulation. Needed to determine 'type' of  functions
 		boolean bSpatial = getSimulation().isSpatial();
 		String[] variableNames = null;
@@ -521,7 +522,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 				//
 				// get function's data type from the types of it's identifiers
 				//
-				funcType = bSpatial ? getFunctionVariableType(functions[i], variableNames, variableTypes, bSpatial) : VariableType.NONSPATIAL;
+				funcType = bSpatial ? getFunctionVariableType(functions[i], mathDescription, variableNames, variableTypes, bSpatial) : VariableType.NONSPATIAL;
 	
 				AnnotatedFunction annotatedFunc = new AnnotatedFunction(functions[i].getName(), functions[i].getExpression(), functions[i].getDomain(), errString, funcType, FunctionCategory.PREDEFINED);
 				annotatedFunctionVector.addElement(annotatedFunc);
@@ -540,7 +541,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	 * @param variableNames java.lang.String[]
 	 * @param variableTypes cbit.vcell.simdata.VariableType[]
 	 */
-	public static VariableType getFunctionVariableType(Function function, String[] variableNames, VariableType[] variableTypes, boolean isSpatial) {
+	public static VariableType getFunctionVariableType(Function function, MathDescription mathDescription, String[] variableNames, VariableType[] variableTypes, boolean isSpatial) {
 		if (!isSpatial) {
 			return VariableType.NONSPATIAL;
 		}
@@ -565,7 +566,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 							}
 						}
 					}
-					if (symbols[j].equals(variableNames[k]+"_INSIDE") || symbols[j].equals(variableNames[k]+"_OUTSIDE")){
+					if (symbols[j].equals(variableNames[k]+InsideVariable.INSIDE_VARIABLE_SUFFIX) || symbols[j].equals(variableNames[k]+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){
 						bFound=true;
 						if (variableTypes[k].equals(VariableType.VOLUME)){
 							funcType = VariableType.MEMBRANE;
@@ -628,10 +629,29 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 				funcType = VariableType.CONTOUR;
 			}
 		}
-		
 		if (funcType == null) {
 			return VariableType.VOLUME; // no knowledge from expression, default variable type
 		}
+		
+		if (function.getDomain() != null) {
+			VariableType funcTypeFromDomain = null;
+			String domainName = function.getDomain().getName();
+			if (mathDescription != null) {
+				SubDomain subdomain = mathDescription.getSubDomain(domainName);
+				if (subdomain instanceof MembraneSubDomain) {
+					funcTypeFromDomain = VariableType.MEMBRANE;
+				} else {
+					funcTypeFromDomain = VariableType.VOLUME;							
+				}
+			}
+			
+			if (funcTypeFromDomain != null) {
+				if (!funcTypeFromDomain.getVariableDomain().equals(funcType.getVariableDomain())) {
+					funcType = funcTypeFromDomain;
+				}
+			}
+		}
+
 		return funcType;
 	}
 }

@@ -1207,6 +1207,9 @@ public int getVolumeRegionIndex(int volumeIndex) {
 	return getMeshRegionInfo().getVolumeElementMapVolumeRegion(volumeIndex);
 }
 
+public String getSubdomainNamefromVolIndex(int volIndex) {
+	return getMeshRegionInfo().getSubdomainNamefromVolIndex(volIndex);
+}
 
 /**
  * This method was created in VisualAge.
@@ -1478,7 +1481,20 @@ private void read(CommentStringTokenizer tokens, MembraneMeshMetrics membraneMes
 					int subvolumeID = Integer.valueOf(token).intValue();
 					token = tokens.nextToken();
 					double volume = Double.valueOf(token).doubleValue();
-					meshRegionInfo.mapVolumeRegionToSubvolume(volRegionID,subvolumeID,volume);
+					String subdomain = tokens.nextToken();
+					if (subdomain.equalsIgnoreCase(VCML.EndBlock)) {
+						tokens.pushToken(subdomain); // if it is }, it must be old format
+						meshRegionInfo.mapVolumeRegionToSubvolume(volRegionID,subvolumeID,volume, null);
+					} else {
+						try {
+							Integer.parseInt(subdomain);
+							tokens.pushToken(subdomain); // if it is an integer, it must be old format
+							meshRegionInfo.mapVolumeRegionToSubvolume(volRegionID,subvolumeID,volume, null);
+						} catch (NumberFormatException ex) {
+							// it's the subdomain name
+							meshRegionInfo.mapVolumeRegionToSubvolume(volRegionID,subvolumeID,volume, subdomain);
+						}
+					}
 				}catch (NumberFormatException e){
 					throw new MathFormatException("expected:  # # #");
 				}

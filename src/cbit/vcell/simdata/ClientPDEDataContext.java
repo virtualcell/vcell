@@ -1,12 +1,19 @@
 package cbit.vcell.simdata;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.TimeSeriesJobResults;
+import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.client.server.DataManager;
+import cbit.plot.PlotData;
 import cbit.vcell.client.server.PDEDataManager;
+import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Function;
+import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solvers.CartesianMesh;
 
 /**
  * Insert the type's description here.
@@ -52,7 +59,7 @@ public PDEDataManager getDataManager() {
  *
  * @see Function
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.DataAccessException {
+public AnnotatedFunction[] getFunctions() throws DataAccessException {
 	return dataManager.getFunctions();
 }
 
@@ -70,7 +77,7 @@ public cbit.vcell.math.AnnotatedFunction[] getFunctions() throws org.vcell.util.
  *
  * @see PlotData
  */
-public cbit.plot.PlotData getLineScan(java.lang.String variable, double time, cbit.vcell.simdata.gui.SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException {
+public PlotData getLineScan(java.lang.String variable, double time, SpatialSelection spatialSelection) throws DataAccessException {
 	return dataManager.getLineScan(variable, time, spatialSelection);
 }
 
@@ -94,7 +101,7 @@ protected ParticleDataBlock getParticleDataBlock(double time) throws DataAccessE
  * @param varName java.lang.String
  * @param time double
  */
-protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws org.vcell.util.DataAccessException {
+protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) throws DataAccessException {
 	return getDataManager().getSimDataBlock(varName, time);
 }
 
@@ -111,7 +118,7 @@ protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) th
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException {
+public TimeSeriesJobResults getTimeSeriesValues(TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	return dataManager.getTimeSeriesValues(timeSeriesJobSpec);
 }
 
@@ -120,7 +127,7 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(org.vcel
  * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
  * @return The simulationInfo property value.
  */
-public org.vcell.util.document.VCDataIdentifier getVCDataIdentifier() {
+public VCDataIdentifier getVCDataIdentifier() {
 	return dataManager.getVCDataIdentifier();
 }
 
@@ -140,10 +147,10 @@ private void initialize() {
 		if (timePoints != null && timePoints.length >0) {
 			tp = timePoints[0];
 		}
-		String variable = getVariableName();
+		DataIdentifier variable = getDataIdentifier();
 		DataIdentifier[] dataIdentifiers = getDataIdentifiers();
 		if (dataIdentifiers != null && dataIdentifiers.length > 0) {
-			variable = getVariableNames()[0];
+			variable = dataIdentifiers[0];
 		}
 		setVariableAndTime(variable, tp);
 	} catch (DataAccessException exc) {
@@ -158,14 +165,14 @@ private void initialize() {
  *
  * @param exportSpec cbit.vcell.export.server.ExportSpecs
  */
-public abstract void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException;
+public abstract void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException;
 
 
 /**
  * 
  * @param event cbit.vcell.desktop.controls.SimulationEvent
  */
-public void newData(cbit.vcell.desktop.controls.DataEvent event) {
+public void newData(DataEvent event) {
 	try {
 		setTimePoints(getDataManager().getDataSetTimes());
 		//

@@ -272,7 +272,7 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 			if (evt.getSource() == PDEDataViewer.this &&
 					(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO) || evt.getPropertyName().equals("pdeDataContext"))) {
 				if (getPdeDataContext() != null && getSimulationModelInfo() != null){
-					getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext().getCartesianMesh(),getSimulationModelInfo()));
+					getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
 				} else {
 					getPDEDataContextPanel1().setDataInfoProvider(null);
 				}
@@ -309,7 +309,7 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 				connPtoP9SetSource();
 			if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("pdeDataContext"))) 
 				connPtoP10SetTarget();
-			if (evt.getSource() == PDEDataViewer.this.getpdeDataContext1() && (evt.getPropertyName().equals("variableName"))) 
+			if (evt.getSource() == PDEDataViewer.this.getpdeDataContext1() && (evt.getPropertyName().equals("variable"))) 
 				connEtoC7(evt);
 		};
 	};
@@ -340,22 +340,33 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 			membraneName =
 				simulationModelInfo.getMembraneName(
 						cartesianMesh.getSubVolumeFromVolumeIndex(membraneElement.getInsideVolumeIndex()),
-						cartesianMesh.getSubVolumeFromVolumeIndex(membraneElement.getOutsideVolumeIndex()));
+						cartesianMesh.getSubVolumeFromVolumeIndex(membraneElement.getOutsideVolumeIndex()), false);
 		}
 	}
 
 	public static class DataInfoProvider{
-		private CartesianMesh cartesianMesh;
+		private PDEDataContext pdeDataContext;
 		private SimulationModelInfo simulationModelInfo;
-		public DataInfoProvider(CartesianMesh cartesianMesh,SimulationModelInfo simulationModelInfo){
-			this.cartesianMesh = cartesianMesh;
+		public DataInfoProvider(PDEDataContext pdeDataContext, SimulationModelInfo simulationModelInfo){
+			this.pdeDataContext = pdeDataContext;
 			this.simulationModelInfo = simulationModelInfo;
 		}
 		public VolumeDataInfo getVolumeDataInfo(int volumeIndex){
-			return new VolumeDataInfo(volumeIndex,cartesianMesh,simulationModelInfo);
+			return new VolumeDataInfo(volumeIndex,pdeDataContext.getCartesianMesh(),simulationModelInfo);
 		}
 		public MembraneDataInfo getMembraneDataInfo(int membraneIndex){
-			return new MembraneDataInfo(membraneIndex,cartesianMesh,simulationModelInfo);
+			return new MembraneDataInfo(membraneIndex,pdeDataContext.getCartesianMesh(),simulationModelInfo);
+		}
+		public boolean isDefined(int volumeIndex) {
+			int subvol = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(volumeIndex);
+			final Domain varDomain = pdeDataContext.getDataIdentifier().getDomain();
+			if (varDomain == null || simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+				return true;
+			}
+			return false;
+		}
+		public final SimulationModelInfo getSimulationModelInfo() {
+			return simulationModelInfo;
 		}
 	}
 
@@ -741,7 +752,7 @@ private void roiAction(){
 			sortedGeomROITreeSet.add(new Object[] {
 				new Object[] { "Geometry",
 					(isVolume ? getSimulationModelInfo().getVolumeNamePhysiology(((Integer)regionMapSubvolumesEntry.getValue()))
-						: getSimulationModelInfo().getMembraneName(((int[])regionMapSubvolumesEntry.getValue())[0], ((int[])regionMapSubvolumesEntry.getValue())[1])),
+						: getSimulationModelInfo().getMembraneName(((int[])regionMapSubvolumesEntry.getValue())[0], ((int[])regionMapSubvolumesEntry.getValue())[1], false)),
 					(isVolume ? "(svID="+regionMapSubvolumesEntry.getValue()+ " " : "(") + "vrID="+regionMapSubvolumesEntry.getKey()+") Predefined "
 					+ (isVolume ? "volume" : "membrane") + " region"}, 
 				regionMapSubvolumesEntry}
@@ -994,7 +1005,7 @@ private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.pdeDataContext1_VariableName();
+		this.pdeDataContext1_Variable();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1013,7 +1024,7 @@ private void connEtoC8(PDEDataContext value) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.pdeDataContext1_VariableName();
+		this.pdeDataContext1_Variable();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1473,7 +1484,7 @@ private DataValueSurfaceViewer getDataValueSurfaceViewer() {
 			if(getSimulationModelInfo() != null){
 				surfaceNames[i] = getSimulationModelInfo().getMembraneName(
 					cartesianMesh.getSubVolumeFromVolumeIndex(me.getInsideVolumeIndex()),
-					cartesianMesh.getSubVolumeFromVolumeIndex(me.getOutsideVolumeIndex())
+					cartesianMesh.getSubVolumeFromVolumeIndex(me.getOutsideVolumeIndex()), false
 				);
 			}else{
 				surfaceNames[i] = i+"";
@@ -2050,7 +2061,7 @@ public static void main(java.lang.String[] args) {
 /**
  * Comment
  */
-private void pdeDataContext1_VariableName() {
+private void pdeDataContext1_Variable() {
 
 	if(getPdeDataContext() == null){
 		return;

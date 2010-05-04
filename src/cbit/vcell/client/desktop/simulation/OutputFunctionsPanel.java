@@ -22,14 +22,17 @@ import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -407,7 +410,7 @@ public class OutputFunctionsPanel extends JPanel {
 		return outputFnsListTableModel1;
 	}
 	
-	private void initConnections() throws java.lang.Exception {
+	private void initConnections() {
 		getAddFnButton().addActionListener(ivjEventHandler);
 		getAddVolVarFnButton().addActionListener(ivjEventHandler);
 		getAddMemVarFnButton().addActionListener(ivjEventHandler);
@@ -426,6 +429,8 @@ public class OutputFunctionsPanel extends JPanel {
 		getFnScrollPaneTable().createDefaultColumnsFromModel();
 	}
 
+	private static ImageIcon function_icon = null;
+	
 	private void initialize() {
 		try {
 			setName("OutputFunctionsListPanel");
@@ -440,17 +445,24 @@ public class OutputFunctionsPanel extends JPanel {
 			getFnScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getFnScrollPaneTable(), true));
 			
 			getOutputFnsListTableModel1().addTableModelListener(
-					new javax.swing.event.TableModelListener(){
-						public void tableChanged(javax.swing.event.TableModelEvent e){
-							try {
-								ScopedExpressionTableCellRenderer.formatTableCellSizes(getFnScrollPaneTable(),null,null);
-							} catch (Exception e1) {
-								e1.printStackTrace(System.out);
+				new javax.swing.event.TableModelListener(){
+					public void tableChanged(javax.swing.event.TableModelEvent e){
+						ScopedExpressionTableCellRenderer.formatTableCellSizes(getFnScrollPaneTable(),null,null);
+							
+						getFnScrollPaneTable().getColumnModel().getColumn(OutputFunctionsListTableModel.COLUMN_OUTPUTFN_NAME).setCellRenderer(new DefaultTableCellRenderer(){
+		
+								@Override
+							protected void setValue(Object value) {
+								super.setValue(value);
+								if (function_icon == null) {
+									function_icon = new ImageIcon(getClass().getResource("/icons/function_icon.png"));
+								}
+								setIcon(function_icon);
 							}
-						}
+						});
 					}
-				);
-
+				}
+			);
 		} catch (java.lang.Throwable e) {
 			e.printStackTrace(System.out);
 		}

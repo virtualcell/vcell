@@ -20,7 +20,7 @@ String getContextName();
  * @param subVolumeIdIn int
  * @param subVolumeIdOut int
  */
-String getMembraneName(int subVolumeIdIn, int subVolumeIdOut);
+String getMembraneName(int subVolumeIdIn, int subVolumeIdOut, boolean bFromGeometry);
 
 
 /**

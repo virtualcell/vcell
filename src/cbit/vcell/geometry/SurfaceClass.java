@@ -37,7 +37,7 @@ public class SurfaceClass implements GeometryClass {
 	}
 	
 	private static String createName(SubVolume subvolume1, SubVolume subvolume2){
-		return TokenMangler.fixTokenStrict(subvolume1.getName()+"_"+subvolume2.getName());
+		return TokenMangler.fixTokenStrict(subvolume1.getName()+"_"+subvolume2.getName()+"_membrane");
 	}
 
 	public SubVolume getSubvolume1() {

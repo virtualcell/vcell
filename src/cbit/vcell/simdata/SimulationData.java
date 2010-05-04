@@ -51,8 +51,6 @@ public class SimulationData extends VCData {
 	// we check first job functions file for user defined functions in the parameter scan,
 	// then append user defined functions  
 	// this is the file that will be changed when users add functions
-	private long firstJobFunctionFileLastModified = 0;
-	private long firstJobFunctionFileLength = 0;
 	private long meshFileLastModified = 0;
 	
 	private CartesianMesh mesh = null;
@@ -463,7 +461,7 @@ public SymbolTableEntry getEntry(String identifier) {
 		return entry;
 	}
 
-	if (identifier.endsWith("_OUTSIDE") || identifier.endsWith("_INSIDE")){
+	if (identifier.endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX) || identifier.endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
 		int index = identifier.lastIndexOf("_");		
 		String realvar = identifier.substring(0, index);
 		DataSetIdentifier dsi = getDataSetIdentifier(realvar);
@@ -961,8 +959,13 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 	}
 		
 	long lastModified = getLastModified(pdeFile, zipFile);
-	double data[] = dataSet.getData(varName, zipFile);
-	int varTypeInt = dataSet.getVariableTypeInteger(varName);
+	DataSetIdentifier dsi = getDataSetIdentifier(varName);
+	if (dsi == null) {
+		throw new DataAccessException("data not found for variable " + varName);
+	}
+	final String varNameInDataSet = dsi.getQualifiedName();
+	double data[] = dataSet.getData(varNameInDataSet, zipFile);
+	int varTypeInt = dataSet.getVariableTypeInteger(varNameInDataSet);
 	VariableType variableType = null;
 	try {
 		variableType = VariableType.getVariableTypeFromInteger(varTypeInt);
@@ -1167,8 +1170,9 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 				}catch (Throwable e){
 					varType = VariableType.getVariableTypeFromLength(mesh,dataSet.getDataLength(varNames[i]));
 				}
-				Domain domain = null; //TODO domain
-				dataSetIdentifierList.addElement(new DataSetIdentifier(varNames[i],varType,domain));
+				Domain domain = Variable.getDomainFromCombinedIdentifier(varNames[i]);
+				String varName = Variable.getNameFromCombinedIdentifier(varNames[i]);
+				dataSetIdentifierList.addElement(new DataSetIdentifier(varName,varType,domain));
 			}
 		} 
 
@@ -1579,8 +1583,6 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
 	logFileLastModified = 0;
 	logFileLength = 0;
 	meshFileLastModified = 0;
-	firstJobFunctionFileLastModified = 0;
-	firstJobFunctionFileLength = 0;
 }
 
 

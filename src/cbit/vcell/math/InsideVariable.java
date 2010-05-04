@@ -13,6 +13,7 @@ import org.vcell.util.Matchable;
  */
 public class InsideVariable extends Variable {
 	private String volVariableName = null;
+	public static final String INSIDE_VARIABLE_SUFFIX = "_INSIDE";
 /**
  * VolumeVariable constructor comment.
  * @param name java.lang.String

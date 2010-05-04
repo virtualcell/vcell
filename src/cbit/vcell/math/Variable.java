@@ -27,6 +27,7 @@ public abstract class Variable implements SymbolTableEntry, Serializable, Matcha
 	private String name = null;
 	private transient int symbolTableIndex = -1;
 	private Domain domain = null;  // global if null
+	public static final String COMBINED_IDENTIFIER_SEPARATOR = "::";
 	
 	public static class Domain implements Matchable, Serializable {
 		private String name = null;
@@ -85,8 +86,8 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 
 public static String getNameFromCombinedIdentifier(String combinedIdentifier){
 	String name = combinedIdentifier;
-	if (name.contains("::")){
-		StringTokenizer tokenizer = new StringTokenizer(name,":",false);
+	if (name.contains(COMBINED_IDENTIFIER_SEPARATOR)){
+		StringTokenizer tokenizer = new StringTokenizer(name,COMBINED_IDENTIFIER_SEPARATOR,false);
 		String domainString = tokenizer.nextToken(); // throw away
 		name = tokenizer.nextToken();
 	}
@@ -94,8 +95,8 @@ public static String getNameFromCombinedIdentifier(String combinedIdentifier){
 }
 
 public static Domain getDomainFromCombinedIdentifier(String combinedIdentifier){
-	if (combinedIdentifier.contains("::")){
-		StringTokenizer tokenizer = new StringTokenizer(combinedIdentifier,":",false);
+	if (combinedIdentifier.contains(COMBINED_IDENTIFIER_SEPARATOR)){
+		StringTokenizer tokenizer = new StringTokenizer(combinedIdentifier,COMBINED_IDENTIFIER_SEPARATOR,false);
 		String domainName = tokenizer.nextToken();
 		if (!domainName.equals("null")){
 			return new Domain(domainName);
@@ -219,7 +220,7 @@ public void setDomain(Domain domain) {
 }
 public String getQualifiedName(){
 	if (getDomain()!=null){
-		return getDomain().getName()+"::"+getName();
+		return getDomain().getName() + COMBINED_IDENTIFIER_SEPARATOR +getName();
 	}else{
 		return getName();
 	}

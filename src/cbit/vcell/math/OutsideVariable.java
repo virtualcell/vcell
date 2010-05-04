@@ -13,6 +13,9 @@ import org.vcell.util.Matchable;
  */
 public class OutsideVariable extends Variable {
 	private String volVariableName = null;
+	
+	public static final String OUTSIDE_VARIABLE_SUFFIX = "_OUTSIDE";
+	
 /**
  * VolumeVariable constructor comment.
  * @param name java.lang.String
