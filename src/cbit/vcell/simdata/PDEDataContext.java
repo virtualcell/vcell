@@ -6,14 +6,14 @@ import java.util.Comparator;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.Range;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
+import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
-import cbit.image.SourceDataInfo;
 import cbit.plot.PlotData;
-import cbit.vcell.client.server.DataManager;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.solvers.CartesianMesh;
@@ -24,40 +24,37 @@ import cbit.vcell.solvers.CartesianMesh;
  */
 public abstract class PDEDataContext implements PropertyChangeListener {
 		
-	private class RefreshedData {
-		public double[] newData;
-		public VariableType newVarType;
-		public double newTimePoint;
-		public ParticleDataBlock newParticleDataBlock;
-		public Range newRange;
-		public SourceDataInfo newSourceDataInfo;
-		
-		public RefreshedData(double[] argNewData,
-				VariableType argNewVarType,
-				double argNewTimePoint,
-				ParticleDataBlock argNewParticleDataBlock){
-			newData = argNewData;
-			newVarType = argNewVarType;
-			newTimePoint = argNewTimePoint;
-			newParticleDataBlock = argNewParticleDataBlock;
-			calculateRange();
-			newSourceDataInfo = calculateSourceDataInfo(newData, newVarType,newRange);
-		}
-		private void calculateRange(){
-			double min = Double.POSITIVE_INFINITY;
-			double max = Double.NEGATIVE_INFINITY;
-			for(int i = 0; i < newData.length; i++){
-				if(!Double.isNaN(newData[i])){
-					min = Math.min(min, newData[i]);
-					max = Math.max(max, newData[i]);
-				}
-			}
-			newRange = new Range(min,max);
-		}
-	}
+//	private class RefreshedData {
+//		public double[] newData;
+//		public VariableType newVarType;
+//		public double newTimePoint;
+//		public ParticleDataBlock newParticleDataBlock;
+//		public Range newRange;
+//		
+//		public RefreshedData(double[] argNewData,
+//				VariableType argNewVarType,
+//				double argNewTimePoint,
+//				ParticleDataBlock argNewParticleDataBlock){
+//			newData = argNewData;
+//			newVarType = argNewVarType;
+//			newTimePoint = argNewTimePoint;
+//			newParticleDataBlock = argNewParticleDataBlock;
+//			//calculateRange();
+//		}
+////		private void calculateRange(){
+////			double min = Double.POSITIVE_INFINITY;
+////			double max = Double.NEGATIVE_INFINITY;
+////			for(int i = 0; i < newData.length; i++){
+////				if(!Double.isNaN(newData[i])){
+////					min = Math.min(min, newData[i]);
+////					max = Math.max(max, newData[i]);
+////				}
+////			}
+////			newRange = new Range(min,max);
+////		}
+//	}
 	//
 	protected transient PropertyChangeSupport propertyChange = null;
-	private SourceDataInfo fieldSourceDataInfo = null;
 	private DataIdentifier fieldDataIdentifier = null;
 	private double fieldTimePoint = -1;
 	private double[] dataValues = null;
@@ -65,7 +62,7 @@ public abstract class PDEDataContext implements PropertyChangeListener {
 	private boolean particleData = false;
 	private ParticleDataBlock fieldParticleDataBlock = null;
 	private CartesianMesh cartesianMesh = null;
-	private Range dataRange = null;
+//	private Range dataRange = null;
 	private double[] fieldTimePoints = null;
 	
 	public static final String PROP_CHANGE_FUNC_ADDED = "functionAdded";
@@ -95,102 +92,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(new PropertyChangeListenerProxyVCell(listener));
 }
 
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-/**
- * Comment
- */
-private SourceDataInfo calculateSourceDataInfo(double[] sdiData,VariableType sdiVarType,Range newRange) {
-	SourceDataInfo sdi = null;
-	CartesianMesh mesh = getCartesianMesh();
-	//
-	if (sdiVarType.equals(VariableType.VOLUME)) {
-		//Set data to display
-		int yIncr = mesh.getSizeX();
-		int zIncr = mesh.getSizeX() * mesh.getSizeY();
-		sdi = 
-			new SourceDataInfo(
-				SourceDataInfo.RAW_VALUE_TYPE, 
-				sdiData, 
-				mesh.getExtent(), 
-				mesh.getOrigin(), 
-				newRange, 
-				0, 
-				mesh.getSizeX(), 
-				1, 
-				mesh.getSizeY(), 
-				yIncr, 
-				mesh.getSizeZ(), 
-				zIncr); 
-	} else if(sdiVarType.equals(VariableType.VOLUME_REGION)) {
-		//
-		double[] expandedVolumeRegionValues = new double[mesh.getSizeX()*mesh.getSizeY()*mesh.getSizeZ()];
-		double[] volumeRegionDataValues = sdiData;
-		for(int i = 0;i<expandedVolumeRegionValues.length;i+= 1){
-			expandedVolumeRegionValues[i] = volumeRegionDataValues[mesh.getVolumeRegionIndex(i)];
-		}
-		//
-		int yIncr = mesh.getSizeX();
-		int zIncr = mesh.getSizeX() * mesh.getSizeY();
-		sdi = 
-			new SourceDataInfo(
-				SourceDataInfo.RAW_VALUE_TYPE, 
-				expandedVolumeRegionValues, 
-				mesh.getExtent(), 
-				mesh.getOrigin(), 
-				newRange, 
-				0, 
-				mesh.getSizeX(), 
-				1, 
-				mesh.getSizeY(), 
-				yIncr, 
-				mesh.getSizeZ(), 
-				zIncr); 
-
-	}else {// Membranes
-		//Create placeholder SDI with null data
-		sdi = 
-			new SourceDataInfo(
-				SourceDataInfo.RAW_VALUE_TYPE, 
-				null,
-				mesh.getExtent(), 
-				mesh.getOrigin(), 
-				newRange, 
-				0, 
-				mesh.getSizeX(), 
-				0, 
-				mesh.getSizeY(), 
-				0, 
-				mesh.getSizeZ(), 
-				0); 
-	}
-	return sdi;
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
@@ -198,16 +99,8 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
 protected void externalRefresh() throws DataAccessException {
-	refreshData(getVariableName(), getTimePoint(),true);
+	refreshData(fieldDataIdentifier, getTimePoint(),true);
 }
 
 /**
@@ -258,7 +151,7 @@ public double[] getDataValues() {
  *
  * @see Function
  */
-public abstract cbit.vcell.math.AnnotatedFunction[] getFunctions() throws DataAccessException;
+public abstract AnnotatedFunction[] getFunctions() throws DataAccessException;
 
 
 /**
@@ -274,7 +167,7 @@ public abstract cbit.vcell.math.AnnotatedFunction[] getFunctions() throws DataAc
  *
  * @see PlotData
  */
-public abstract cbit.plot.PlotData getLineScan(String variable, double time, SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException;
+public abstract PlotData getLineScan(String variable, double time, SpatialSelection spatialSelection) throws DataAccessException;
 
 /**
  * Gets the particleDataBlock property (cbit.vcell.simdata.ParticleDataBlock) value.
@@ -293,7 +186,7 @@ public ParticleDataBlock getParticleDataBlock() {
  * @param varName java.lang.String
  * @param time double
  */
-protected abstract ParticleDataBlock getParticleDataBlock(double time) throws org.vcell.util.DataAccessException;
+protected abstract ParticleDataBlock getParticleDataBlock(double time) throws DataAccessException;
 
 
 /**
@@ -314,18 +207,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @param varName java.lang.String
  * @param time double
  */
-protected abstract SimDataBlock getSimDataBlock(String varName, double time) throws org.vcell.util.DataAccessException;
-
-
-/**
- * Gets the sourceDataInfo property (cbit.image.SourceDataInfo) value.
- * @return The sourceDataInfo property value.
- * @see #setSourceDataInfo
- */
-public cbit.image.SourceDataInfo getSourceDataInfo() {
-	return fieldSourceDataInfo;
-}
-
+protected abstract SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException;
 
 /**
  * Gets the timePoint property (double) value.
@@ -359,7 +241,7 @@ public double[] getTimePoints() {
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public abstract TimeSeriesJobResults getTimeSeriesValues(TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException;
+public abstract TimeSeriesJobResults getTimeSeriesValues(TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException;
 
 
 /**
@@ -398,7 +280,7 @@ public java.lang.String[] getVariableNames() {
  * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
  * @return The simulationInfo property value.
  */
-public abstract org.vcell.util.document.VCDataIdentifier getVCDataIdentifier();
+public abstract VCDataIdentifier getVCDataIdentifier();
 
 
 /**
@@ -424,7 +306,7 @@ public boolean hasParticleData() {
  *
  * @param exportSpec cbit.vcell.export.server.ExportSpecs
  */
-public abstract void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException;
+public abstract void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException;
 
 
 	/**
@@ -445,23 +327,21 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Insert the method's description here.
  * Creation date: (10/3/00 5:03:43 PM)
  */
-private synchronized void refreshData(String varName,double timePoint,boolean bForce) throws DataAccessException{
+private synchronized void refreshData(DataIdentifier selectedDataIdentifier, double timePoint,boolean bForce) throws DataAccessException{
 	
 	if(!bForce){
-		if(getVariableName() != null && getVariableName().equals(varName) &&
-				getTimePoint() == timePoint){
+		if(getDataIdentifier() != null && getDataIdentifier().equals(selectedDataIdentifier) && getTimePoint() == timePoint){
 			return;
 		}
 	}
-	if(varName == null){
-		varName = dataIdentifiers[0].getName();
+	if(selectedDataIdentifier == null){
+		selectedDataIdentifier = dataIdentifiers[0];
 	}
 	if(timePoint == -1){
 		timePoint = fieldTimePoints[0];
 	}
 	
-	ParticleDataBlock newParticleDataBlock = null;
-	if (! BeanUtils.arrayContains(getVariableNames(), varName)) {
+	if (! BeanUtils.arrayContains(dataIdentifiers, selectedDataIdentifier)) {
 		throw new DataAccessException("Requested variable not found");
 	}
 	if (BeanUtils.firstIndexOf(getTimePoints(), timePoint) == -1) {
@@ -471,36 +351,27 @@ private synchronized void refreshData(String varName,double timePoint,boolean bF
 			throw new DataAccessException("Requested time not found");
 		}
 	}
-	SimDataBlock simdataBlock = getSimDataBlock(varName,timePoint);
+	ParticleDataBlock newParticleDataBlock = null;
+	SimDataBlock simdataBlock = getSimDataBlock(selectedDataIdentifier.getName(),timePoint);
 	if (hasParticleData()) {
 		newParticleDataBlock = getParticleDataBlock(timePoint);
 	}
 
-	RefreshedData refreshedData = new RefreshedData(
-				simdataBlock.getData(),
-				simdataBlock.getVariableType(),
-				timePoint,
-				newParticleDataBlock
-				);
+//	RefreshedData refreshedData = new RefreshedData(
+//				simdataBlock.getData(),
+//				simdataBlock.getVariableType(),
+//				timePoint,
+//				newParticleDataBlock
+//				);
 	
-	boolean bVarNameChanged = false;
-	String oldVarname = getVariableName();
+	boolean bVarChanged = false;
+	DataIdentifier oldDataiDataIdentifier = fieldDataIdentifier;
 	boolean bTimePointChanged = false;
 	double oldTimePoint = getTimePoint();
 	
-	if(!varName.equals(getVariableName())){
-		DataIdentifier foundDataIdentifier = null;
-		for (int i = 0; i < dataIdentifiers.length; i++){
-			if (dataIdentifiers[i].getName().equals(varName)){
-				foundDataIdentifier = dataIdentifiers[i];
-				break;
-			}
-		}
-		if(foundDataIdentifier == null){
-			throw new DataAccessException("Couldn't find DataIdentifier for variable name "+varName);
-		}
-		fieldDataIdentifier = foundDataIdentifier;
-		bVarNameChanged = true;
+	if(!selectedDataIdentifier.equals(fieldDataIdentifier)){
+		fieldDataIdentifier = selectedDataIdentifier;
+		bVarChanged = true;
 	}
 
 	if(timePoint != getTimePoint()){
@@ -508,13 +379,12 @@ private synchronized void refreshData(String varName,double timePoint,boolean bF
 		bTimePointChanged = true;
 	}
 	
-	setDataValues(refreshedData.newData);
-	setParticleDataBlock(refreshedData.newParticleDataBlock);
-	setDataRange(refreshedData.newRange);
-	setSourceDataInfo(refreshedData.newSourceDataInfo);
+	setDataValues(simdataBlock.getData());
+	setParticleDataBlock(newParticleDataBlock);
+//	setDataRange(refreshedData.newRange);	
 	
-	if(bVarNameChanged){
-		firePropertyChange("variableName", oldVarname, getVariableName());
+	if(bVarChanged){
+		firePropertyChange("variable", oldDataiDataIdentifier, fieldDataIdentifier);
 	}
 	if(bTimePointChanged){
 		firePropertyChange("timePoint", new Double(oldTimePoint), new Double(getTimePoint()));
@@ -562,7 +432,7 @@ protected void setCartesianMesh(CartesianMesh newCartesianMesh) {
 protected void setDataIdentifiers(DataIdentifier[] newDataIdentifiers) throws DataAccessException{
 	DataIdentifier[] oldDataIdentifiers = dataIdentifiers;
 	if (getVariableName()==null && dataIdentifiers!=null && dataIdentifiers.length>0){
-		setVariableName(dataIdentifiers[0].getName());
+		setVariable(dataIdentifiers[0]);
 	}
 	dataIdentifiers = newDataIdentifiers;
 
@@ -589,17 +459,6 @@ protected void setDataIdentifiers(DataIdentifier[] newDataIdentifiers) throws Da
 		firePropertyChange("dataIdentifiers", oldDataIdentifiers, newDataIdentifiers);
 	}
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/22/2001 4:32:00 PM)
- * @param newDataRange cbit.image.Range
- */
-protected void setDataRange(org.vcell.util.Range newDataRange) {
-	dataRange = newDataRange;
-}
-
 
 /**
  * Insert the method's description here.
@@ -632,24 +491,12 @@ protected void setParticleDataBlock(ParticleDataBlock particleDataBlock) {
 	firePropertyChange("particleDataBlock", oldValue, particleDataBlock);
 }
 
-
-/**
- * Sets the sourceDataInfo property (cbit.image.SourceDataInfo) value.
- * @param sourceDataInfo The new value for the property.
- * @see #getSourceDataInfo
- */
-protected void setSourceDataInfo(cbit.image.SourceDataInfo sourceDataInfo) {
-	cbit.image.SourceDataInfo oldValue = fieldSourceDataInfo;
-	fieldSourceDataInfo = sourceDataInfo;
-	firePropertyChange("sourceDataInfo", oldValue, sourceDataInfo);
-}
-
-public void setVariableAndTime(String variable, double timePoint) throws DataAccessException {
-	refreshData(variable, timePoint, false);
+public void setVariableAndTime(DataIdentifier selectedDataIdentifier, double timePoint) throws DataAccessException {
+	refreshData(selectedDataIdentifier, timePoint, false);
 }
 
 public void setTimePoint(double timePoint) throws DataAccessException {
-	setVariableAndTime(getVariableName(), timePoint);
+	setVariableAndTime(getDataIdentifier(), timePoint);
 }
 
 /**
@@ -663,8 +510,36 @@ protected void setTimePoints(double[] timePoints) {
 	firePropertyChange("timePoints", oldValue, timePoints);
 }
 
-public void setVariableName(String variable) throws DataAccessException {
-	setVariableAndTime(variable, getTimePoint());
+public void setVariable(DataIdentifier selectedDataIdentifier) throws DataAccessException {
+	setVariableAndTime(selectedDataIdentifier, getTimePoint());
+}
+
+public void setVariableName(String varName) throws DataAccessException {
+	DataIdentifier dataIdentifier = findDataIdentifier(varName);
+	if(dataIdentifier == null){
+		throw new DataAccessException("Couldn't find DataIdentifier for variable name "+varName);
+	}
+	setVariableAndTime(dataIdentifier, getTimePoint());
+}
+
+
+private DataIdentifier findDataIdentifier(String varName) {
+	DataIdentifier foundDataIdentifier = null;
+	for (int i = 0; i < dataIdentifiers.length; i++){
+		if (dataIdentifiers[i].getName().equals(varName)){
+			foundDataIdentifier = dataIdentifiers[i];
+			break;
+		}
+	}
+	return foundDataIdentifier;
+}
+
+public void setVariableNameAndTime(String varName, double timePoint) throws DataAccessException {
+	DataIdentifier dataIdentifier = findDataIdentifier(varName);
+	if (dataIdentifier == null){
+		throw new DataAccessException("Couldn't find DataIdentifier for variable name "+varName);
+	}
+	setVariableAndTime(dataIdentifier, timePoint);
 }
 
 }

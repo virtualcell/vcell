@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.TreeSet;
@@ -43,6 +44,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionPrintFormatter;
 import cbit.vcell.simdata.DataIdentifier;
@@ -71,7 +73,7 @@ public class PDEPlotControlPanel extends JPanel {
 	private JSplitPane ivjJSplitPane1 = null;
 	private boolean ivjConnPtoP4Aligning = false;
 	private BoundedRangeModel ivjmodel1 = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private DisplayAdapterService fieldDisplayAdapterService = new DisplayAdapterService();
 	private boolean ivjConnPtoP3Aligning = false;
 	private DisplayAdapterService ivjdisplayAdapterService1 = null;
@@ -133,7 +135,7 @@ public class PDEPlotControlPanel extends JPanel {
 			}
 		};
 	
-	DataIdentifierFilter dataIdentifierFilter = DEFAULT_DATAIDENTIFIER_FILTER;
+	private DataIdentifierFilter dataIdentifierFilter = DEFAULT_DATAIDENTIFIER_FILTER;
 	
 	private ActionListener filterChangeActionListener =
 		new ActionListener(){
@@ -205,8 +207,8 @@ public void viewFunction() {
 	if (selectedValue == null) {
 		return;
 	}
-	String varName = (String)selectedValue;
-	AnnotatedFunction func = findFunction(varName);
+	DataIdentifier di = (DataIdentifier)selectedValue;
+	AnnotatedFunction func = findFunction(di);
 	if (func == null || !func.isOldUserDefined()) {
 		return;
 	}
@@ -250,7 +252,7 @@ public void viewFunction() {
 		d.pack();
 		try {
 			ZEnforcer.showModalDialogOnTop(d,this);
-			if (inputDialog.getValue().equals(COPYEXP)) {
+			if (inputDialog.getValue() != null && inputDialog.getValue().equals(COPYEXP)) {
 				VCellTransferable.sendToClipboard(newexp.infix());
 			}
 		}finally {
@@ -412,7 +414,7 @@ private void connEtoC8(javax.swing.event.ListSelectionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.variableNameChanged(arg1);
+		this.variableChanged(arg1);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -591,33 +593,26 @@ private void filterVariableNames(){
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				getViewFunctionButton().setVisible(bHasOldUserDefinedFunctions);
-				ArrayList<String> displayVarNames = new ArrayList<String>(); 
+				ArrayList<DataIdentifier> displayDataIdentifiers = new ArrayList<DataIdentifier>(); 
 				if(getpdeDataContext1().getDataIdentifiers() != null && getpdeDataContext1().getDataIdentifiers().length > 0){
-					TreeSet<DataIdentifier> dataIdentifierTreeSet =
-						new TreeSet<DataIdentifier>(new Comparator<DataIdentifier>(){
-							public int compare(DataIdentifier o1, DataIdentifier o2) {
-								int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
-								if (bEqualIgnoreCase == 0){
-									return o1.getDisplayName().compareTo(o2.getDisplayName());
-								}
-								return bEqualIgnoreCase;
-							}});
 					DataIdentifier[] dataIdentifierArr = getPdeDataContext().getDataIdentifiers();
-					dataIdentifierTreeSet.addAll(Arrays.asList(dataIdentifierArr));
-					DataIdentifier[] sortedDataIdentiferArr = dataIdentifierTreeSet.toArray(new DataIdentifier[0]);
+					Arrays.sort(dataIdentifierArr, new Comparator<DataIdentifier>(){
+						public int compare(DataIdentifier o1, DataIdentifier o2) {
+							int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+							if (bEqualIgnoreCase == 0){
+								return o1.getDisplayName().compareTo(o2.getDisplayName());
+							}
+							return bEqualIgnoreCase;
+						}
+					});
 		
-					for(int i=0; i < sortedDataIdentiferArr.length; i++){
-						if(dataIdentifierFilter == null || dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), sortedDataIdentiferArr[i])){
-							displayVarNames.add(sortedDataIdentiferArr[i].getName());
+					for(DataIdentifier di : dataIdentifierArr){
+						if(dataIdentifierFilter == null || dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), di)){
+							displayDataIdentifiers.add(di);
 						}
 					}
 				}
-				if(displayVarNames.size() == 0){
-					Object emptyFilter = filterComboBox.getSelectedItem();
-					System.err.println("No Variables matching filter '"+emptyFilter+"' found");
-				}
-				String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
-				getDefaultListModelCivilized1().setContents((displayNames.length == 0?null:displayNames));
+				getDefaultListModelCivilized1().setContents(displayDataIdentifiers.size() == 0?null:displayDataIdentifiers.toArray(new DataIdentifier[0]));
 				
 				if(getJList1().getModel().getSize() > 0){
 					if(oldselection == null){
@@ -819,13 +814,13 @@ private void connPtoP4SetTarget() {
  */
 private void displayAdapterService1_AutoScale(boolean arg1) {
 	if(getDisplayAdapterService() != null && getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
-		String varName = (String)getJList1().getSelectedValue();
-		if(varName != null){
+		DataIdentifier var = (DataIdentifier)getJList1().getSelectedValue();
+		if(var != null){
 			if(!arg1){
 				getDisplayAdapterService().setCustomScaleRange(getDisplayAdapterService().getActiveScaleRange());
-				getDisplayAdapterService().markCurrentState(varName);
+				getDisplayAdapterService().markCurrentState(var.getName());
 			}else{
-				getDisplayAdapterService().clearMarkedState(varName);
+				getDisplayAdapterService().clearMarkedState(var.getName());
 				getDisplayAdapterService().setCustomScaleRange(null);
 			}
 		}
@@ -837,12 +832,12 @@ private void displayAdapterService1_AutoScale(boolean arg1) {
  * Comment
  */
 private void displayAdapterService1_CustomScaleRange(org.vcell.util.Range arg1) {
-	String varName = (String)getJList1().getSelectedValue();
-	if(varName != null){
+	DataIdentifier var = (DataIdentifier)getJList1().getSelectedValue();
+	if(var != null){
 		if(arg1 == null){
-			getDisplayAdapterService().clearMarkedState(varName);
+			getDisplayAdapterService().clearMarkedState(var.getName());
 		}else{
-			getDisplayAdapterService().markCurrentState(varName);
+			getDisplayAdapterService().markCurrentState(var.getName());
 		}
 	}
 }
@@ -1361,8 +1356,8 @@ private void setIdentifierListRenderer() {
 		}
 		public java.awt.Component getListCellRendererComponent(javax.swing.JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			java.awt.Component component = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-			String identifier = value.toString();
-			AnnotatedFunction f = findFunction(identifier);
+			DataIdentifier di = (DataIdentifier)value;
+			AnnotatedFunction f = findFunction(di);
 			if (f != null) {
 				if (f.isOldUserDefined()) {
 					if (old_function_icon == null) {
@@ -1375,8 +1370,8 @@ private void setIdentifierListRenderer() {
 					}
 					setIcon(function_icon);
 				}
-				setText(f.getDisplayName());
 			}
+			setText(di.getDisplayName());
 			return component;
 		}
 	}
@@ -1631,29 +1626,29 @@ private void setTimeFromTextField(String typedValue) {
 /**
  * Comment
  */
-private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {	
+private void variableChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {	
 	if(getPdeDataContext() == null){
 		return;
 	}
 	if(listSelectionEvent == null || listSelectionEvent.getValueIsAdjusting()){
 		return;
 	}
-	final String newVariableName = (String)getJList1().getSelectedValue();
-	if(newVariableName != null){
+	final DataIdentifier selectedDataIdentifier = (DataIdentifier)getJList1().getSelectedValue();
+	if(selectedDataIdentifier != null){
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				AnnotatedFunction f = findFunction(newVariableName);
+				AnnotatedFunction f = findFunction(selectedDataIdentifier);
 				getViewFunctionButton().setEnabled(f != null && f.isOldUserDefined());
 				if(getDisplayAdapterService() != null){
-					getDisplayAdapterService().activateMarkedState(newVariableName);
+					getDisplayAdapterService().activateMarkedState(selectedDataIdentifier.getName());
 				}
 			}
 		};
 		
 		AsynchClientTask task2  = new AsynchClientTask("Setting Variable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				getPdeDataContext().setVariableName(newVariableName);
+				getPdeDataContext().setVariable(selectedDataIdentifier);
 			}
 		};
 			
@@ -1694,12 +1689,12 @@ private void updateTimeTextField(double newTime){
 	getJTextField1().setText(Double.toString(newTime));
 }
 
-private AnnotatedFunction findFunction(String identifier) {
+private AnnotatedFunction findFunction(DataIdentifier identifier) {
 	AnnotatedFunction f = null;
 	if (functionsList != null) {
 		AnnotatedFunction[] funcs = (AnnotatedFunction[])functionsList.toArray(new AnnotatedFunction[functionsList.size()]);
 		for (int i = 0; i < funcs.length; i++) {
-			if (funcs[i].getName().equals(identifier)) {
+			if (funcs[i].getName().equals(identifier.getName())) {
 				f = funcs[i];
 				break;
 			}

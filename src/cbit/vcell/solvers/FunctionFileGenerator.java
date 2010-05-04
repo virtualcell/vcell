@@ -13,6 +13,7 @@ import java.util.Vector;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.Variable;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
@@ -147,10 +148,11 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 					funcFileLineInfo.functionExpr+"' for function \""+
 					funcFileLineInfo.functionName+"\"");
 			}
-			Domain domain = null; //TODO domain
+			Domain domain = Variable.getDomainFromCombinedIdentifier(funcFileLineInfo.functionName); 
+			String funcName = Variable.getNameFromCombinedIdentifier(funcFileLineInfo.functionName);
 			AnnotatedFunction annotatedFunc =
 				new AnnotatedFunction(
-						funcFileLineInfo.functionName,
+						funcName,
 						functionExpr,
 						domain,
 						funcFileLineInfo.errorString,
@@ -287,11 +289,8 @@ public void writefunctionFile(PrintWriter out) {
 
 	if (annotatedFunctionList!=null){
 		for (AnnotatedFunction f : annotatedFunctionList){
-			out.print(f.getName() + "; " + f.getExpression().infix() + "; " + f.getErrorString() + "; " 
+			out.print(f.getQualifiedName() + "; " + f.getExpression().infix() + "; " + f.getErrorString() + "; " 
 					+ f.getFunctionType().toString()+ "; " + f.isOldUserDefined());
-//			if (annotatedFunctionList[i].getSimplifiedExpression() != null) {			
-//				out.print("; " + annotatedFunctionList[i].getSimplifiedExpression().infix());
-//			}
 			out.println();
 		}
 	}

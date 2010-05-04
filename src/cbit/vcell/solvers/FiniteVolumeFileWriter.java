@@ -582,10 +582,15 @@ private void writeBoundaryConditions(BoundaryConditionType[] bctypes) {
 	}
 }
 
-private String replaceInsideOutside(MembraneSubDomain msd, Expression exp) {
+private String replaceVolumeVariable(MembraneSubDomain msd, Expression exp) throws MathException, ExpressionException {
 	String flux = exp.infix();
-	flux = flux.replaceAll("_INSIDE", "_" + msd.getInsideCompartment().getName() + "_membrane");
-	flux = flux.replaceAll("_OUTSIDE", "_" + msd.getOutsideCompartment().getName() + "_membrane");
+	Enumeration<Variable> varEnum = simulationJob.getSimulationSymbolTable().getRequiredVariables(exp);
+	while (varEnum.hasMoreElements()) {
+		Variable var = varEnum.nextElement();
+		if (var instanceof VolVariable || var instanceof VolumeRegionVariable) {
+			flux = flux.replaceAll(var.getName(), var.getName() + "_" + var.getDomain().getName() + "_membrane");
+		}
+	}
 	return flux;
 	
 }
@@ -595,20 +600,21 @@ INFLUX 0.0;
 OUTFLUX 0.0;
 JUMP_CONDITION_END
  * @throws ExpressionException
+ * @throws MathException 
 */
-private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws ExpressionException {
+private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws ExpressionException, MathException {
 	Enumeration<JumpCondition> enum1 = msd.getJumpConditions();
 	while (enum1.hasMoreElements()) {
 		JumpCondition jc = enum1.nextElement();
 		printWriter.println("JUMP_CONDITION_BEGIN " + jc.getVariable().getName());
 		// influx
 		Expression flux = subsituteExpression(jc.getInFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
-		String infix = replaceInsideOutside(msd, flux);
+		String infix = replaceVolumeVariable(msd, flux);
 		printWriter.println("FLUX " + msd.getInsideCompartment().getName() + " " + infix + ";");
 		
 		// outflux
 		flux = subsituteExpression(jc.getOutFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
-		infix = replaceInsideOutside(msd, flux);
+		infix = replaceVolumeVariable(msd, flux);
 		printWriter.println("FLUX " + msd.getOutsideCompartment().getName() + " " + infix + ";");
 		
 		printWriter.println("JUMP_CONDITION_END");
@@ -621,8 +627,9 @@ private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Expressi
  * Insert the method's description here.
  * Creation date: (5/9/2005 2:52:48 PM)
  * @throws ExpressionException 
+ * @throws MathException 
  */
-private void writeMembrane_VarContext(MembraneSubDomain memSubDomain) throws ExpressionException {	
+private void writeMembrane_VarContext(MembraneSubDomain memSubDomain) throws ExpressionException, MathException {	
 	//
 	// add MembraneVarContext coders
 	//
@@ -650,13 +657,14 @@ BOUNDARY_YM 5.0;
 BOUNDARY_YP 5.0;
 EQUATION_END
  * @throws ExpressionException 
+ * @throws MathException 
  */
-private void writeMembraneRegion_VarContext_Equation(MembraneSubDomain memSubDomain, MembraneRegionEquation equation) throws ExpressionException {	
+private void writeMembraneRegion_VarContext_Equation(MembraneSubDomain memSubDomain, MembraneRegionEquation equation) throws ExpressionException, MathException {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 	
 	Expression rateExp = subsituteExpression(((MembraneRegionEquation)equation).getMembraneRateExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
-	String rateStr = replaceInsideOutside(memSubDomain, rateExp);
+	String rateStr = replaceVolumeVariable(memSubDomain, rateExp);
 	printWriter.println("RATE " + rateStr + ";");
 	
 	printWriter.println("UNIFORMRATE " + subsituteExpression(((MembraneRegionEquation)equation).getUniformRateExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
@@ -979,7 +987,7 @@ VARIABLE_END
 private void writeVariables() throws MathException, ExpressionException, IOException {
 	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
 	
-	printWriter.println("# Variables : type name time_dependent_flag advection_flag solve_whole_mesh_flag solve_regions");
+	printWriter.println("# Variables : type name domain time_dependent_flag advection_flag solve_whole_mesh_flag solve_regions");
 	printWriter.println("VARIABLE_BEGIN");
 	MathDescription mathDesc = simSymbolTable.getSimulation().getMathDescription();
 	Variable[] vars = simSymbolTable.getVariables();
@@ -1011,13 +1019,15 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 			VolVariable volVar = (VolVariable)vars[i];
 			if (mathDesc.isPDE(volVar)) {
 				boolean hasTimeVaryingDiffusionOrAdvection = simSymbolTable.hasTimeVaryingDiffusionOrAdvection(volVar);
+				final boolean hasVelocity = mathDesc.hasVelocity(volVar);
 				if (mathDesc.isPdeSteady(volVar)) {
-					printWriter.print("VOLUME_PDE_STEADY " + volVar.getName() + " " + hasTimeVaryingDiffusionOrAdvection + " " + mathDesc.hasVelocity(volVar));
+					printWriter.print("VOLUME_PDE_STEADY ");
 				} else {
-					printWriter.print("VOLUME_PDE " + volVar.getName() + " " + hasTimeVaryingDiffusionOrAdvection + " " + mathDesc.hasVelocity(volVar));
+					printWriter.print("VOLUME_PDE ");
 				}
+				printWriter.print(volVar.getName() + " " + volVar.getDomain().getName() + " " + hasTimeVaryingDiffusionOrAdvection + " " + hasVelocity);
 			} else {
-				printWriter.print("VOLUME_ODE " + volVar.getName());
+				printWriter.print("VOLUME_ODE " + volVar.getName() + " " + volVar.getDomain().getName());
 			}
 
 			if (totalNumCompartments == listOfSubDomains.size()) {
@@ -1032,16 +1042,16 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 			}
 			printWriter.println();
 		} else if (vars[i] instanceof VolumeRegionVariable) {
-			printWriter.println("VOLUME_REGION " + vars[i].getName());
+			printWriter.println("VOLUME_REGION " + vars[i].getName() + " " + vars[i].getDomain().getName());
 		} else if (vars[i] instanceof MemVariable) {
 			MemVariable memVar = (MemVariable)vars[i];
 			if (mathDesc.isPDE(memVar)) {
-				printWriter.println("MEMBRANE_PDE " + memVar.getName() + " " + simSymbolTable.hasTimeVaryingDiffusionOrAdvection(memVar));
+				printWriter.println("MEMBRANE_PDE " + memVar.getName() + " " + memVar.getDomain().getName() + " " + simSymbolTable.hasTimeVaryingDiffusionOrAdvection(memVar));
 			} else {
-				printWriter.println("MEMBRANE_ODE " + memVar.getName());
+				printWriter.println("MEMBRANE_ODE " + memVar.getName() + " " + memVar.getDomain().getName());
 			}
 		} else if (vars[i] instanceof MembraneRegionVariable) {
-			printWriter.println("MEMBRANE_REGION " + vars[i].getName());
+			printWriter.println("MEMBRANE_REGION " + vars[i].getName() + " " + vars[i].getDomain().getName());
 		} else if (vars[i] instanceof FilamentVariable) {
 			throw new RuntimeException("Filament application not supported yet");
 		}
@@ -1222,12 +1232,13 @@ BOUNDARY_YM 5.0;
 BOUNDARY_YP 5.0;
 EQUATION_END
  * @throws ExpressionException 
+ * @throws MathException 
  */
-private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, Equation equation) throws ExpressionException {	
+private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, Equation equation) throws ExpressionException, MathException {	
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 	Expression rateExpression = subsituteExpression(equation.getRateExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
-	printWriter.println("RATE " + replaceInsideOutside(memSubDomain, rateExpression) + ";");
+	printWriter.println("RATE " + replaceVolumeVariable(memSubDomain, rateExpression) + ";");
 	if (equation instanceof PdeEquation) {
 		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 		

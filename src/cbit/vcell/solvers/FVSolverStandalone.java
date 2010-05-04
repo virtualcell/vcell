@@ -57,7 +57,7 @@ protected void initialize() throws SolverException {
 				String basename = new File(getSaveDirectory(), simJob.getSimulationJobID()).getPath();
 				String functionFileName = basename + FUNCTIONFILE_EXTENSION;
 				
-				Vector<AnnotatedFunction> funcList = simJob.getSimulationSymbolTable().createAnnotatedFunctionsList();				
+				Vector<AnnotatedFunction> funcList = simJob.getSimulationSymbolTable().createAnnotatedFunctionsList(simulationJob.getSimulation().getMathDescription());				
 				//Try to save existing user defined functions	
 				try{
 					File existingFunctionFile = new File(functionFileName);

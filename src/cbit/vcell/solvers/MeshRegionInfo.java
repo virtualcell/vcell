@@ -23,11 +23,13 @@ public class MeshRegionInfo implements org.vcell.util.Matchable, java.io.Seriali
 		public final int volumeRegionID;
 		public final int subvolumeID;
 		public final double volumeRegionVolume;
+		public final String subdomain;
 		
-		public VolumeRegionMapSubvolume(int argvolumeRegionID,int argsubvolumeID,double argvolumeRegionVolume){
+		public VolumeRegionMapSubvolume(int argvolumeRegionID,int argsubvolumeID,double argvolumeRegionVolume, String argsubdomain){
 			volumeRegionID = argvolumeRegionID;
 			subvolumeID = argsubvolumeID;
 			volumeRegionVolume = argvolumeRegionVolume;
+			subdomain = argsubdomain;
 		}
 	}
 
@@ -208,6 +210,18 @@ public int getSubVolumeIDfromVolRegion(int volRegion) {
 }
 
 
+public String getSubdomainNamefromVolIndex(int volIndex) {
+	int volRegion = getVolumeElementMapVolumeRegion(volIndex);
+	if (volRegion > volumeRegionMapSubvolume.size()) {
+		throw new RuntimeException("Volume Region not found for volume index " + volIndex + "!");
+	}
+	
+	if (volumeRegionMapSubvolume.elementAt(volRegion).subdomain == null) {
+		throw new RuntimeException("Subdomain name not found for volume index " + volIndex + "!");
+	}
+	return volumeRegionMapSubvolume.elementAt(volRegion).subdomain;	
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (7/5/2001 1:05:24 PM)
@@ -328,9 +342,9 @@ public void mapMembraneRegionToVolumeRegion(int membraneRegionID, int volumeRegi
  * @param subvolumeID int
  * @param volume double
  */
-public void mapVolumeRegionToSubvolume(int volumeRegionID, int subvolumeID, double volumeRegionVolume) {
+public void mapVolumeRegionToSubvolume(int volumeRegionID, int subvolumeID, double volumeRegionVolume, String subdomain) {
 	//Integer volumeRegionIDIint = new Integer(volumeRegionID);
-	VolumeRegionMapSubvolume vrms = new VolumeRegionMapSubvolume(volumeRegionID,subvolumeID,volumeRegionVolume);
+	VolumeRegionMapSubvolume vrms = new VolumeRegionMapSubvolume(volumeRegionID,subvolumeID,volumeRegionVolume,subdomain);
 	//volumeRegionMapSubvolume.put(volumeRegionIDIint,vrms);
 	volumeRegionMapSubvolume.add(vrms);
 }

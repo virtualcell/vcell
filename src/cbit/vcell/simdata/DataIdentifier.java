@@ -2,6 +2,7 @@ package cbit.vcell.simdata;
 
 import org.vcell.util.Compare;
 
+import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 
 /*©
@@ -94,7 +95,6 @@ public boolean isFunction() {
 	return bFunction;
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (7/9/2001 7:06:40 AM)
@@ -104,15 +104,11 @@ public String toString() {
 	return "DataIdentifier[\""+getName()+"\","+getVariableType()+",\""+getDomain()+"\"]";
 }
 
-
-/**
- * @return the displayName
- */
-public String getDisplayName() {
-	if (displayName != null) {
+public String getDisplayName(){
+	if (getDomain()!=null){
+		return getDomain().getName()+Variable.COMBINED_IDENTIFIER_SEPARATOR+displayName;
+	}else{
 		return displayName;
-	} else {
-		return name;
 	}
 }
 }

@@ -274,7 +274,7 @@ public void cleanup() {
  */
 @Override
 public Vector<AnnotatedFunction> createFunctionList() {
-	Vector<AnnotatedFunction> annotatedFunctionVector = simulationJob.getSimulationSymbolTable().createAnnotatedFunctionsList();
+	Vector<AnnotatedFunction> annotatedFunctionVector = simulationJob.getSimulationSymbolTable().createAnnotatedFunctionsList(simulationJob.getSimulation().getMathDescription());
 	//Try to save existing user defined functions
 	
 	try{

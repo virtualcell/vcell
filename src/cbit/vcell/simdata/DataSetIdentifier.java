@@ -5,6 +5,7 @@ package cbit.vcell.simdata;
 ©*/
 import org.vcell.util.Compare;
 
+import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -190,5 +191,13 @@ public void setIndex(int argSymbolTableIndex) {
  */
 public String toString() {
 	return getName();
+}
+
+public String getQualifiedName(){
+	if (getDomain()!=null){
+		return getDomain().getName()+Variable.COMBINED_IDENTIFIER_SEPARATOR+getName();
+	}else{
+		return getName();
+	}
 }
 }

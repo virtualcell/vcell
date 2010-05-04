@@ -60,8 +60,10 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Variable.Domain;
@@ -69,10 +71,8 @@ import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VariableSymbolTable;
-import cbit.vcell.simdata.VariableType.VariableDomain;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.simdata.gui.SpatialSelectionContour;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
@@ -616,6 +616,14 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 	}
 }
 
+private double interpolateVolDataValToMemb(CartesianMesh mesh, Domain domain, int membraneIndex, SimDataHolder simDataHolder, boolean IsRegion){
+	boolean bInside = true;
+	int volIndexNear = mesh.getMembraneElements()[membraneIndex].getInsideVolumeIndex();
+	if (!mesh.getSubdomainNamefromVolIndex(volIndexNear).equals(domain.getName())) {
+		bInside = false;
+	}
+	return interpolateVolDataValToMemb(mesh, membraneIndex, simDataHolder, bInside, IsRegion);
+}
 
 private double interpolateVolDataValToMemb(CartesianMesh mesh,int membraneIndex,SimDataHolder simDataHolder,boolean isInside,boolean IsRegion){
 	
@@ -623,9 +631,9 @@ private double interpolateVolDataValToMemb(CartesianMesh mesh,int membraneIndex,
 	if(volIndexNearFar.volIndexFar == -1){
 		return simDataHolder.getData()[volIndexNearFar.volIndexNear];
 	}
-	return VolumeIndexNearFar.interpolate(simDataHolder.getData()[volIndexNearFar.volIndexNear], simDataHolder.getData()[volIndexNearFar.volIndexFar]);
-	
+	return VolumeIndexNearFar.interpolate(simDataHolder.getData()[volIndexNearFar.volIndexNear], simDataHolder.getData()[volIndexNearFar.volIndexFar]);	
 }
+
 private VolumeIndexNearFar interpolateFindNearFarIndex(CartesianMesh mesh,int membraneIndex,boolean isInside,boolean isRegion){
 	int volIndexNear = -1;
 	int volIndexFar = -1;
@@ -689,20 +697,33 @@ private SimDataBlock evaluateFunction(
 	// variables are indexed by a number, t=0, x=1, y=2, z=3, a(i) = 4+i where a's are other variables
 	// these variables
 	//
+	CartesianMesh mesh = getMesh(vcdID);
+	
 	String[] dependentIDs = exp.getSymbols();
 	Vector<SimDataHolder> dataSetList = new Vector<SimDataHolder>();
 	Vector<DataSetIdentifier> dependencyList = new Vector<DataSetIdentifier>();
 	int varIndex = TXYZ_OFFSET;
 	int dataLength = 0;
 	long lastModified = 0;
-	VariableType variableType = null;
+	VariableType variableType = function.getFunctionType();
+	if (variableType.equals(VariableType.VOLUME)) {
+		dataLength = mesh.getNumVolumeElements();
+	} else if (variableType.equals(VariableType.MEMBRANE)) {
+		dataLength = mesh.getNumMembraneElements();
+	} else if (variableType.equals(VariableType.VOLUME_REGION)) {
+		dataLength = mesh.getNumVolumeRegions();
+	} else if (variableType.equals(VariableType.MEMBRANE_REGION)) {
+		dataLength = mesh.getNumMembraneRegions();
+	}
+	VariableType computedVariableType = null;
+	int computedDataLength = 0;
 	for (int i = 0; dependentIDs!=null && i < dependentIDs.length; i++) {
 		SymbolTableEntry ste = exp.getSymbolBinding(dependentIDs[i]);
 		if (ste instanceof DataSetIdentifier) {
 			DataSetIdentifier dsi = (DataSetIdentifier) ste;
 			dependencyList.addElement(dsi);
 			dsi.setIndex(varIndex++);
-			if (dsi.getName().endsWith("_OUTSIDE") || dsi.getName().endsWith("_INSIDE")){
+			if (dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX) || dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
 				String volVarName = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
 				SimDataBlock simDataBlock = getSimDataBlock(outputContext,vcdID, volVarName, time);
 				lastModified = simDataBlock.getPDEDataInfo().getTimeStamp();
@@ -710,22 +731,22 @@ private SimDataBlock evaluateFunction(
 				// if inside/outside volume element dependent, then can only be a membrane type 
 				//
 				if (simDataBlock.getVariableType().equals(VariableType.VOLUME)){
-					variableType = VariableType.MEMBRANE;
-					dataLength = getMesh(vcdID).getMembraneElements().length;
+					computedVariableType = VariableType.MEMBRANE;
+					computedDataLength = getMesh(vcdID).getMembraneElements().length;
 				//
 				// if inside/outside volume element dependent, then can only be a membrane type 
 				//
 				}else if (simDataBlock.getVariableType().equals(VariableType.VOLUME_REGION) && variableType==null){
-					variableType = VariableType.MEMBRANE_REGION;
-					dataLength = getMesh(vcdID).getNumMembraneRegions();
+					computedVariableType = VariableType.MEMBRANE_REGION;
+					computedDataLength = getMesh(vcdID).getNumMembraneRegions();
 				}
 				dataSetList.addElement(simDataBlock);
 			}else{	
 				SimDataBlock simDataBlock = getSimDataBlock(outputContext,vcdID, dsi.getName(), time);
 				if (variableType==null || simDataBlock.getVariableType().isExpansionOf(variableType)) {
 					lastModified = simDataBlock.getPDEDataInfo().getTimeStamp();
-					dataLength = simDataBlock.getData().length;
-					variableType = simDataBlock.getVariableType();
+					computedDataLength = simDataBlock.getData().length;
+					computedVariableType = simDataBlock.getVariableType();
 				}
 				dataSetList.addElement(simDataBlock);
 			}
@@ -769,17 +790,17 @@ private SimDataBlock evaluateFunction(
 			dataSetList.addElement(newSimDataHolder);
 			dependencyList.add(new DataSetIdentifier(ste.getName(), newVariableType,((FieldDataParameterVariable) ste).getDomain()));
 			if(variableType == null){
-				variableType = newVariableType;
-				dataLength = newSimDataHolder.getData().length;
+				computedVariableType = newVariableType;
+				computedDataLength = newSimDataHolder.getData().length;
 			}
 		}
 	}	       
 	       
-	if (dataLength <= 0) {
+	if (computedDataLength <= 0) {
 		log.alert("dependencies for function '"+function+"' not found, assuming datalength of volume");
 		try {
-			dataLength = getMesh(vcdID).getDataLength(VariableType.VOLUME);
-			variableType = VariableType.VOLUME;
+			computedDataLength = getMesh(vcdID).getDataLength(VariableType.VOLUME);
+			computedVariableType = VariableType.VOLUME;
 		}catch (MathException e){
 			log.exception(e);
 			throw new RuntimeException("MathException, cannot determine domain for function '"+function+"'");
@@ -789,7 +810,9 @@ private SimDataBlock evaluateFunction(
 		}
 	}
 
-	
+	if (!variableType.equals(computedVariableType)) {
+		System.err.println("function [" + function.getName() + "] variable type [" + variableType.getTypeName() + "] is not equal to computed variable type [" + computedVariableType.getTypeName() + "].");
+	}
 	//
 	//Gradient Info for special processing
 	//
@@ -802,8 +825,7 @@ private SimDataBlock evaluateFunction(
 	args[0] = time; // time
 	args[1] = 0.0; // x
 	args[2] = 0.0; // y
-	args[3] = 0.0; // z
-	CartesianMesh mesh = getMesh(vcdID);
+	args[3] = 0.0; // z	
 	String dividedByZeroMsg = "";
 	for (int i = 0; i < dataLength; i++) {
 		//
@@ -841,14 +863,22 @@ private SimDataBlock evaluateFunction(
 			for (int j = 0; j < varIndex - TXYZ_OFFSET; j++) {
 				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
 				SimDataHolder simDataHolder = dataSetList.elementAt(j);
-				if (simDataHolder.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith("_INSIDE")){
-					args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,true,false);//simDataHolder.getData()[volInsideIndex];
-				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith("_OUTSIDE")){
-					args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,false,false);//simDataHolder.getData()[volOutsideIndex];
-				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_INSIDE")){
-					args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,true,true);//simDataHolder.getData()[volRegionIndex];
-				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_OUTSIDE")){
-					args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,false,true);//simDataHolder.getData()[volRegionIndex];
+				if (simDataHolder.getVariableType().equals(VariableType.VOLUME)) {
+					if (dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
+						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,true,false);
+					} else if (dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){
+						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,false,false);
+					} else {
+						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,dsi.getDomain(), i,simDataHolder,false);
+					}
+				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION)) {
+					if (dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
+						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,true,true);
+					} else if (dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){
+						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,false,true);
+					} else {
+						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,dsi.getDomain(),i,simDataHolder,true);
+					}
 				}else if (simDataHolder.getVariableType().equals(VariableType.MEMBRANE)){
 					args[TXYZ_OFFSET + j] = simDataHolder.getData()[i];
 				}else if (simDataHolder.getVariableType().equals(VariableType.MEMBRANE_REGION)){

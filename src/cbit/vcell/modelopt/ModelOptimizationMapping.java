@@ -283,7 +283,7 @@ public static ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec,
 		//
 		// add functions (evaluating them at optimal parameter)
 		//
-		Vector <AnnotatedFunction> annotatedFunctions = simSymbolTable.createAnnotatedFunctionsList();
+		Vector <AnnotatedFunction> annotatedFunctions = simSymbolTable.createAnnotatedFunctionsList(mathDesc);
 		for (AnnotatedFunction f: annotatedFunctions){
 			Expression funcExp = f.getExpression();
 			for (int j = 0; j < optResultSet.getParameterNames().length; j ++) {

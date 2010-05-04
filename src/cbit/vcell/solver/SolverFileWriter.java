@@ -32,7 +32,7 @@ public abstract void write(String[] parameterNames) throws Exception;
 # JMS_Paramters
 JMS_PARAM_BEGIN
 JMS_BROKER tcp://code:2506
-JMS_USER serverUser cbittech
+JMS_USER username passwd
 JMS_QUEUE workerEventDev
 JMS_TOPIC serviceControlDev
 VCELL_USER fgao

@@ -4,11 +4,13 @@ import java.util.Vector;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.Range;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayAdapterServicePanel;
 import cbit.image.ImagePlaneManager;
 import cbit.image.ImagePlaneManagerPanel;
+import cbit.image.SourceDataInfo;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.ControlPointCurve;
 import cbit.vcell.geometry.Curve;
@@ -20,6 +22,7 @@ import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.Spline;
 import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveRenderer;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.VariableType.VariableDomain;
@@ -75,7 +78,8 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 				connPtoP5SetTarget();
 			if (evt.getSource() == PDEDataContextPanel.this && (evt.getPropertyName().equals("normalAxis"))) 
 				connPtoP5SetSource();
-			if (evt.getSource() == PDEDataContextPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("sourceDataInfo"))) 
+			if (evt.getSource() == PDEDataContextPanel.this.getpdeDataContext1() && 
+					(evt.getPropertyName().equals("variable") || evt.getPropertyName().equals("timePoint"))) 
 				connEtoM5(evt);
 			if (evt.getSource() == PDEDataContextPanel.this.getimagePlaneManager1() && (evt.getPropertyName().equals("imagePlaneData"))) 
 				connEtoC3(evt);
@@ -277,7 +281,7 @@ private void connEtoM2(PDEDataContext value) {
 		// user code begin {1}
 		// user code end
 		if ((getpdeDataContext1() != null)) {
-			getImagePlaneManagerPanel().setSourceDataInfo(getpdeDataContext1().getSourceDataInfo());
+			recodeDataForDomain();
 		}
 		// user code begin {2}
 		// user code end
@@ -296,7 +300,7 @@ private void connEtoM5(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getImagePlaneManagerPanel().setSourceDataInfo(getpdeDataContext1().getSourceDataInfo());
+		recodeDataForDomain();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -304,6 +308,69 @@ private void connEtoM5(java.beans.PropertyChangeEvent arg1) {
 		// user code end
 		handleException(ivjExc);
 	}
+}
+
+private double[] originalData = null;
+private SourceDataInfo recodedSourceDataInfo = null;
+
+private void recodeDataForDomain() {
+	if (getDataInfoProvider() == null) {
+		return;
+	}
+	double[] data = null;
+	Domain varDomain = getPdeDataContext().getDataIdentifier().getDomain();
+	VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();	
+	
+	if (getpdeDataContext1().getDataValues() != originalData) {
+		originalData = getpdeDataContext1().getDataValues();
+		data = new double[originalData.length];
+		System.arraycopy(originalData, 0, data, 0, data.length);
+		
+		double min = Double.POSITIVE_INFINITY;
+		for(int i = 0; i < originalData.length; i++){
+			if(!Double.isNaN(originalData[i])){
+				min = Math.min(min, originalData[i]);
+			}
+		}	
+
+		double illegalNumber = min - 1;
+		final CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
+		min = Double.POSITIVE_INFINITY;
+		double max = Double.NEGATIVE_INFINITY;
+		for (int i = 0; i < data.length; i ++) {
+			if (vt.equals(VariableType.VOLUME)) {
+				int subvol = cartesianMesh.getSubVolumeFromVolumeIndex(i);
+				if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+					data[i] = illegalNumber;
+				}
+			} else if (vt.equals(VariableType.VOLUME_REGION)) {
+				int subvol = cartesianMesh.getVolumeRegionMapSubvolume().get(i);
+				if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+					data[i] = illegalNumber;
+				}
+			} else if (vt.equals(VariableType.MEMBRANE)) {
+				int insideVolumeIndex = cartesianMesh.getMembraneElements()[i].getInsideVolumeIndex();
+				int subvol1 =  cartesianMesh.getSubVolumeFromVolumeIndex(insideVolumeIndex);
+				int outsideVolumeIndex = cartesianMesh.getMembraneElements()[i].getOutsideVolumeIndex();
+				int subvol2 =  cartesianMesh.getSubVolumeFromVolumeIndex(outsideVolumeIndex);
+				if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getMembraneName(subvol1, subvol2, true).equals(varDomain.getName())) {
+					data[i] = illegalNumber;
+				}
+			} else if (vt.equals(VariableType.MEMBRANE_REGION)) {
+				int[] subvols = cartesianMesh.getMembraneRegionMapSubvolumesInOut().get(i);
+				if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true).equals(varDomain.getName())) {
+					data[i] = illegalNumber;
+				}
+			}
+			if(!Double.isNaN(data[i]) && data[i] != illegalNumber){
+				min = Math.min(min, data[i]);
+				max = Math.max(max, data[i]);
+			}
+		}
+		Range newRange = new Range(min,max);		
+		recodedSourceDataInfo = calculateSourceDataInfo(cartesianMesh, data, vt, newRange);
+	}
+	getImagePlaneManagerPanel().setSourceDataInfo(recodedSourceDataInfo);
 }
 /**
  * connPtoP1SetSource:  (PDEDataContextPanel2.pdeDataContext <--> pdeDataContext1.this)
@@ -1510,6 +1577,7 @@ private PDEDataViewer.DataInfoProvider getDataInfoProvider() {
 public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider) {
 	this.dataInfoProvider = dataInfoProvider;
 	getImagePlaneManagerPanel().setDataInfoProvider(getDataInfoProvider());
+	recodeDataForDomain();
 }
 
 public void setDescription(Curve curve){
@@ -1524,6 +1592,74 @@ public void setDescription(Curve curve){
 				(curve instanceof CurveSelectionCurve?"l":"?"))))+
 				uniquCurveID++
 	);
+}
+/**
+ * Comment
+ */
+private SourceDataInfo calculateSourceDataInfo(CartesianMesh mesh, double[] sdiData,VariableType sdiVarType,Range newRange) {
+	SourceDataInfo sdi = null;
+	//
+	if (sdiVarType.equals(VariableType.VOLUME)) {
+		//Set data to display
+		int yIncr = mesh.getSizeX();
+		int zIncr = mesh.getSizeX() * mesh.getSizeY();
+		sdi = 
+			new SourceDataInfo(
+				SourceDataInfo.RAW_VALUE_TYPE, 
+				sdiData, 
+				mesh.getExtent(), 
+				mesh.getOrigin(), 
+				newRange, 
+				0, 
+				mesh.getSizeX(), 
+				1, 
+				mesh.getSizeY(), 
+				yIncr, 
+				mesh.getSizeZ(), 
+				zIncr); 
+	} else if(sdiVarType.equals(VariableType.VOLUME_REGION)) {
+		//
+		double[] expandedVolumeRegionValues = new double[mesh.getSizeX()*mesh.getSizeY()*mesh.getSizeZ()];
+		double[] volumeRegionDataValues = sdiData;
+		for(int i = 0;i<expandedVolumeRegionValues.length;i+= 1){
+			expandedVolumeRegionValues[i] = volumeRegionDataValues[mesh.getVolumeRegionIndex(i)];
+		}
+		//
+		int yIncr = mesh.getSizeX();
+		int zIncr = mesh.getSizeX() * mesh.getSizeY();
+		sdi = 
+			new SourceDataInfo(
+				SourceDataInfo.RAW_VALUE_TYPE, 
+				expandedVolumeRegionValues, 
+				mesh.getExtent(), 
+				mesh.getOrigin(), 
+				newRange, 
+				0, 
+				mesh.getSizeX(), 
+				1, 
+				mesh.getSizeY(), 
+				yIncr, 
+				mesh.getSizeZ(), 
+				zIncr); 
+
+	}else {// Membranes
+		//Create placeholder SDI with null data
+		sdi = 
+			new SourceDataInfo(
+				SourceDataInfo.RAW_VALUE_TYPE, 
+				null,
+				mesh.getExtent(), 
+				mesh.getOrigin(), 
+				newRange, 
+				0, 
+				mesh.getSizeX(), 
+				0, 
+				mesh.getSizeY(), 
+				0, 
+				mesh.getSizeZ(), 
+				0); 
+	}
+	return sdi;
 }
 
 }
