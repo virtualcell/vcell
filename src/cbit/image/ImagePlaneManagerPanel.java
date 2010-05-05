@@ -1471,7 +1471,7 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 							" ["+ci.x+
 							(getSourceDataInfo().getYSize() > 1?","+ci.y:"")+
 							(getSourceDataInfo().getZSize() > 1?","+ci.z:"")+"] "+
-							(getSourceDataInfo().isDataNull()||!getDataInfoProvider().isDefined(volumeIndex)?"Undefined":getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
+							(getSourceDataInfo().isDataNull()||(getDataInfoProvider() != null && !getDataInfoProvider().isDefined(volumeIndex))?"Undefined":getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
 						if(getDataInfoProvider() != null){
 							PDEDataViewer.VolumeDataInfo volumeDataInfo =
 								getDataInfoProvider().getVolumeDataInfo(volumeIndex);
