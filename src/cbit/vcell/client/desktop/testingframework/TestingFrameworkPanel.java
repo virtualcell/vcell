@@ -61,7 +61,7 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	public static final String DUPLICATE_TESTSUITE = "Duplicate TestSuite...";
 	public static final String REMOVE_TESTSUITE = "Remove TestSuite...";
 	public static final String EDIT_TESTCRITERIA = "Edit Test Criteria...";
-	public static final String GENTCRITREPORT_USERDEFREF_TESTCRITERIA = "Show TCrit Report (Choose RefSim)";
+	public static final String GENTCRITREPORT_USERDEFREF_TESTCRITERIA = "Generate TestCriteria Report (Choose RefSim)";
 	public static final String GENTCRITREPORT_INTERNALREF_TESTCRITERIA = "Generate TestCriteria Report";
 	
 	public static final String COMPARERREGR_USERDEFREF_TESTCRITERIA = "Compare With Regression (Choose RefSim)";
@@ -402,12 +402,12 @@ private boolean isLoadTestPopup(){
 		boolean bAllInfoNodes = true;
 		for (int i = 0; i < selectedTreePaths.length; i++) {
 			Object userObj = ((BioModelNode)selectedTreePaths[i].getLastPathComponent()).getUserObject();
-			if(!(userObj instanceof TestingFrmwkTreeModel.LoadTestTreeInfo ||
-					((TestingFrmwkTreeModel.LoadTestTreeInfo)userObj).userid == null)){
+			if(!(userObj instanceof TestingFrmwkTreeModel.LoadTestTreeInfo) ||
+					((TestingFrmwkTreeModel.LoadTestTreeInfo)userObj).userid == null){
 				bAllErrorNodes = false;
 			}
-			if(!(userObj instanceof TestingFrmwkTreeModel.LoadTestTreeInfo ||
-					((TestingFrmwkTreeModel.LoadTestTreeInfo)userObj).userid != null)){
+			if(!(userObj instanceof TestingFrmwkTreeModel.LoadTestTreeInfo) ||
+					((TestingFrmwkTreeModel.LoadTestTreeInfo)userObj).userid != null){
 				bAllInfoNodes = false;
 			}
 		}
@@ -415,6 +415,45 @@ private boolean isLoadTestPopup(){
 	}
 	return false;
 }
+private boolean checkAnyLocked(){
+	TreePath[] selectedTreePaths = getSelectedTreePaths();
+	if(selectedTreePaths == null || selectedTreePaths.length == 0){
+		return false;
+	}
+	boolean bAnyLocked = false;
+	for (int i = 0; i < selectedTreePaths.length; i++) {
+		Object userObj = ((BioModelNode)selectedTreePaths[i].getLastPathComponent()).getUserObject();
+		if(userObj instanceof TestSuiteInfoNew){
+			bAnyLocked = bAnyLocked ||  ((TestSuiteInfoNew)userObj).isLocked();
+		}else if(userObj instanceof TestCaseNew){
+			bAnyLocked = bAnyLocked ||  
+			((TestSuiteInfoNew)((BioModelNode)((TreeNode)selectedTreePaths[i].getLastPathComponent()).getParent()).getUserObject()).isLocked();
+		}else if(userObj instanceof TestCriteriaNew){
+			bAnyLocked = bAnyLocked ||  
+			((TestSuiteInfoNew)((BioModelNode)((TreeNode)selectedTreePaths[i].getLastPathComponent()).getParent().getParent()).getUserObject()).isLocked();
+
+		}
+	}
+	return bAnyLocked;
+}
+private boolean checkAllSameType(){
+	TreePath[] selectedTreePaths = getSelectedTreePaths();
+	if(selectedTreePaths == null || selectedTreePaths.length == 0){
+		return false;
+	}
+	Object firstUserObject = null;
+	for (int i = 0; i < selectedTreePaths.length; i++) {
+		Object userObj = ((BioModelNode)selectedTreePaths[i].getLastPathComponent()).getUserObject();
+		if(i==0){
+			firstUserObject = userObj;
+		}
+		if(!userObj.getClass().isInstance(firstUserObject)){
+			return false;
+		}
+	}
+	return true;
+}
+private JMenuItem selectIncompatibleWarning = new JMenuItem("Warning: Selections incompatible");
 /**
  * Comment
  */
@@ -423,6 +462,12 @@ private void actionsOnMouseClick(MouseEvent mouseEvent) {
 	if (mouseEvent.isPopupTrigger()) {
 		if(getJTree1().getSelectionCount() <= 1){
 			getJTree1().setSelectionPath(getJTree1().getPathForLocation(mouseEvent.getPoint().x, mouseEvent.getPoint().y));
+		}
+		if(!checkAllSameType()){
+			JPopupMenu jPopupMenu = new JPopupMenu();
+			jPopupMenu.add(selectIncompatibleWarning);
+			jPopupMenu.show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+			return;
 		}
 		if (isLoadTestPopup()) {
 			getLoadTestMenu().show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
@@ -433,31 +478,81 @@ private void actionsOnMouseClick(MouseEvent mouseEvent) {
 		}else if(getTreeSelection() instanceof TestingFrmwkTreeModel.TestCriteriaVarUserObj){
 			getTCritVarPopupMenu().show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);				
 		}else if (getTreeSelection() instanceof TestSuiteInfoNew) {
-			if(((TreeNode)getJTree1().getSelectionPath().getLastPathComponent()).getChildCount() == 0){
-				getDuplicateTSMenuItem().setEnabled(false);
-				getRunAllMenuItem().setEnabled(false);
-				getGenTSReportMenuItem().setEnabled(false);
-			}else{
-				getDuplicateTSMenuItem().setEnabled(true);
-				getRunAllMenuItem().setEnabled(true);
-				getGenTSReportMenuItem().setEnabled(true);
+			boolean bMenuValid = getJTree1().getSelectionCount() == 1;
+			getRefreshTestSuiteJMenuItem().setEnabled(bMenuValid);
+			boolean isLocked = false;
+			if(getJTree1().getSelectionCount() == 1){
+				isLocked = ((TestSuiteInfoNew)getTreeSelection()).isLocked();			}
+			//Disable if TestSuite locked
+			getDuplicateTSMenuItem().setEnabled(bMenuValid && !isLocked);
+			getRunAllMenuItem().setEnabled(bMenuValid && !isLocked);
+			getGenTSReportMenuItem().setEnabled(!checkAnyLocked()/* && checkAllSameType()*/);
+			getAddTestCaseMenuItem().setEnabled(bMenuValid && !isLocked);
+			getRemoveTSMenuItem().setEnabled(bMenuValid && !isLocked);
+			getEditAnnotationTestSuiteMenuItem().setEnabled(bMenuValid && !isLocked);
+			getLockTestSuiteMenuItem().setEnabled(bMenuValid && !isLocked);
+			
+			//Set enable based on conditions if not locked
+			if(bMenuValid && !isLocked){
+				if(((TreeNode)getJTree1().getSelectionPath().getLastPathComponent()).getChildCount() == 0){
+					getDuplicateTSMenuItem().setEnabled(false);
+					getRunAllMenuItem().setEnabled(false);
+					getGenTSReportMenuItem().setEnabled(false);
+				}else{
+					getDuplicateTSMenuItem().setEnabled(true);
+					getRunAllMenuItem().setEnabled(true);
+					getGenTSReportMenuItem().setEnabled(true);
+				}
 			}
-			getLockTestSuiteMenuItem().setEnabled(!((TestSuiteInfoNew)getTreeSelection()).isLocked());
 			getTestSuitePopupMenu().show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 		} else if (getTreeSelection() instanceof TestCaseNew) {
-			TestCaseNew tcNew = (TestCaseNew)getTreeSelection();
-			if(tcNew.getType().equals(TestCaseNew.EXACT)|| tcNew.getType().equals(TestCaseNew.EXACT_STEADY)){
-				getChangeTypeToSteadyMenuItem().setEnabled(true);
-			}else{
-				getChangeTypeToSteadyMenuItem().setEnabled(false);
+			boolean bMenuValid = getJTree1().getSelectionCount() == 1;
+			getRefreshTestCaseJMenuItem().setEnabled(bMenuValid);
+			getLoadMenuItem().setEnabled(bMenuValid);
+			boolean isLocked = false;
+			if(getJTree1().getSelectionCount() == 1){
+				isLocked =
+					((TestSuiteInfoNew)((BioModelNode)((TreeNode)getJTree1().getSelectionPath().getLastPathComponent()).getParent()).getUserObject()).isLocked();
+			}
+			getRemoveMenuItem().setEnabled(!checkAnyLocked()/* && checkAllSameType()*/);
+			getRunSimsMenuItem().setEnabled(bMenuValid && !isLocked);
+			getGenerateTCReportMenuItem().setEnabled(!checkAnyLocked()/* && checkAllSameType()*/);
+			getChangeTypeToSteadyMenuItem().setEnabled(bMenuValid && !isLocked);
+			getEditAnnotationTestCaseMenuItem().setEnabled(bMenuValid && !isLocked);
+
+			if(bMenuValid && !isLocked){
+				TestCaseNew tcNew = (TestCaseNew)getTreeSelection();
+				if(tcNew.getType().equals(TestCaseNew.EXACT)|| tcNew.getType().equals(TestCaseNew.EXACT_STEADY)){
+					getChangeTypeToSteadyMenuItem().setEnabled(true);
+				}else{
+					getChangeTypeToSteadyMenuItem().setEnabled(false);
+				}
 			}
 			getTestCasePopupMenu().show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 		} else if (getTreeSelection() instanceof TestCriteriaNew) {
-			TestCriteriaNew testCriteria = (TestCriteriaNew)getTreeSelection();
-			if (testCriteria.getRegressionSimInfo() == null) {
-				getCompareMenuItem().setEnabled(false);
-			} else {
-				getCompareMenuItem().setEnabled(true);
+			boolean bMenuValid = getJTree1().getSelectionCount() == 1;
+			getRefreshTestCriteriaJMenuItem().setEnabled(bMenuValid);
+			getViewMenuItem().setEnabled(bMenuValid);
+			getCompareMenuItem().setEnabled(bMenuValid);
+			getCompareUserDefinedMenuItem().setEnabled(bMenuValid);
+			getQueryTCritCrossRefMenuItem1().setEnabled(bMenuValid);
+			boolean isLocked = false;
+			if(getJTree1().getSelectionCount() == 1){
+				isLocked =
+					((TestSuiteInfoNew)((BioModelNode)((TreeNode)getJTree1().getSelectionPath().getLastPathComponent()).getParent().getParent()).getUserObject()).isLocked();
+			}
+			getRunSimMenuItem().setEnabled(!checkAnyLocked()/* && checkAllSameType()*/);
+			getEditTCrMenuItem().setEnabled(bMenuValid && !isLocked);
+			getGenerateTCRitReportMenuItem1().setEnabled(!checkAnyLocked()/* && checkAllSameType()*/);
+			getGenerateTCRitReportUserDefinedReferenceMenuItem1().setEnabled(!checkAnyLocked()/* && checkAllSameType()*/);
+			
+			if(bMenuValid && !isLocked){
+				TestCriteriaNew testCriteria = (TestCriteriaNew)getTreeSelection();
+				if (testCriteria.getRegressionSimInfo() == null) {
+					getCompareMenuItem().setEnabled(false);
+				} else {
+					getCompareMenuItem().setEnabled(true);
+				}
 			}
 			getSimulationPopupMenu().show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 		}
