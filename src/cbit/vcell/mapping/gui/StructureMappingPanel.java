@@ -586,13 +586,21 @@ public void setGeometryContext(GeometryContext geometryContext) {
 		for (int i=0;i<oldStructureMappings.length;i++){
 			oldStructureMappings[i].removePropertyChangeListener(this);
 		}
+		SubVolume[] subvols = oldValue.getGeometry().getGeometrySpec().getSubVolumes();
+		for (int i = 0; i < subvols.length; i++) {
+			subvols[i].removePropertyChangeListener(this);
+		}
 	}
 	fieldGeometryContext = geometryContext;
-	if (getGeometryContext()!=null){
-		getGeometryContext().addPropertyChangeListener(this);
-		StructureMapping newStructureMappings[] = geometryContext.getStructureMappings();
+	if (fieldGeometryContext!=null){
+		fieldGeometryContext.addPropertyChangeListener(this);
+		StructureMapping newStructureMappings[] = fieldGeometryContext.getStructureMappings();
 		for (int i=0;i<newStructureMappings.length;i++){
 			newStructureMappings[i].addPropertyChangeListener(this);
+		}
+		SubVolume[] subvols = fieldGeometryContext.getGeometry().getGeometrySpec().getSubVolumes();
+		for (int i = 0; i < subvols.length; i++) {
+			subvols[i].addPropertyChangeListener(this);
 		}
 	}
 	firePropertyChange("geometryContext", oldValue, geometryContext);
@@ -642,14 +650,7 @@ private void structureMappingPanel_GeometryContext(GeometryContext arg1) {
 	{
 		//refresh table
 		getScrollPaneTable1().createDefaultColumnsFromModel();
-		SubVolume[] subvolumes = getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
-		DefaultComboBoxModel aModel = new DefaultComboBoxModel();
-		for (SubVolume sv : subvolumes) {
-			aModel.addElement(sv.getName());
-		}
-		subdomainComboBoxCellEditor = new JComboBox(); 
-		subdomainComboBoxCellEditor.setModel(aModel);
-		getScrollPaneTable1().getColumnModel().getColumn(StructureMappingTableModel.COLUMN_SUBDOMAIN).setCellEditor(new DefaultCellEditor(subdomainComboBoxCellEditor));
+		updateSubdomainComboBox();
 		
 		//set column editor
 		JComboBox combo=new JComboBox(new String[]{"Flux","Value"});
@@ -768,6 +769,18 @@ private void structureMappingPanel_GeometryContext(GeometryContext arg1) {
 }
 
 
+private void updateSubdomainComboBox() {
+	SubVolume[] subvolumes = getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
+	DefaultComboBoxModel aModel = new DefaultComboBoxModel();
+	for (SubVolume sv : subvolumes) {
+		aModel.addElement(sv.getName());
+	}
+	subdomainComboBoxCellEditor = new JComboBox(); 
+	subdomainComboBoxCellEditor.setModel(aModel);
+	getScrollPaneTable1().getColumnModel().getColumn(StructureMappingTableModel.COLUMN_SUBDOMAIN).setCellEditor(new DefaultCellEditor(subdomainComboBoxCellEditor));
+}
+
+
 /**
  * Comment
  */
@@ -792,14 +805,27 @@ private void structureMappingPanel_Initialize() {
 public void propertyChange(PropertyChangeEvent arg0) {
 	if(arg0.getSource() instanceof GeometryContext)
 	{
+		if (arg0.getPropertyName().equals("geometry")) {
+			SubVolume[] subvols = ((Geometry)arg0.getOldValue()).getGeometrySpec().getSubVolumes();
+			for (int i = 0; i < subvols.length; i++) {
+				subvols[i].removePropertyChangeListener(this);
+			}
+			subvols = ((Geometry)arg0.getNewValue()).getGeometrySpec().getSubVolumes();
+			for (int i = 0; i < subvols.length; i++) {
+				subvols[i].addPropertyChangeListener(this);
+			}
+		}
+
 		//this for spatial model
 		//when it is just created, all features are not resolved. we need to set volFrac and surf/vol ratio when they are null
 		if(((GeometryContext)arg0.getSource()).getGeometry().getDimension() >0 )
 			updateMembraneMappings(((GeometryContext)arg0.getSource()));
 		structureMappingPanel_GeometryContext(((GeometryContext)arg0.getSource()));
-	}
-	else if((arg0.getSource() instanceof StructureMapping)&& getGeometryContext() != null)
+	} else if((arg0.getSource() instanceof StructureMapping)&& getGeometryContext() != null) {
 	    structureMappingPanel_GeometryContext(getGeometryContext());
+	} else if (arg0.getSource() instanceof SubVolume) {
+		updateSubdomainComboBox();
+	}
 }
 
 //to give default volFrac and surf/vol values for spatial models. otherwise there are null point exceptions in XmlProducer for these two paras.
