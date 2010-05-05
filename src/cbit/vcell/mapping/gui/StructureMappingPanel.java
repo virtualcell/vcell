@@ -586,6 +586,10 @@ public void setGeometryContext(GeometryContext geometryContext) {
 		for (int i=0;i<oldStructureMappings.length;i++){
 			oldStructureMappings[i].removePropertyChangeListener(this);
 		}
+		SubVolume[] subvols = oldValue.getGeometry().getGeometrySpec().getSubVolumes();
+		for (int i = 0; i < subvols.length; i++) {
+			subvols[i].removePropertyChangeListener(this);
+		}
 	}
 	fieldGeometryContext = geometryContext;
 	if (fieldGeometryContext!=null){
@@ -593,6 +597,10 @@ public void setGeometryContext(GeometryContext geometryContext) {
 		StructureMapping newStructureMappings[] = fieldGeometryContext.getStructureMappings();
 		for (int i=0;i<newStructureMappings.length;i++){
 			newStructureMappings[i].addPropertyChangeListener(this);
+		}
+		SubVolume[] subvols = fieldGeometryContext.getGeometry().getGeometrySpec().getSubVolumes();
+		for (int i = 0; i < subvols.length; i++) {
+			subvols[i].addPropertyChangeListener(this);
 		}
 	}
 	firePropertyChange("geometryContext", oldValue, geometryContext);
