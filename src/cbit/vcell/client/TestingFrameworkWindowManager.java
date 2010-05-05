@@ -2718,6 +2718,9 @@ public String startTestSuiteSimulations(TestSuiteInfoNew testSuiteInfo,ClientTas
  */
 public String updateSimRunningStatus(ClientTaskStatusSupport pp,TestSuiteInfoNew tsin){
 
+	if(tsin.isLocked()){
+		return null;
+	}
 	StringBuffer errors = new StringBuffer();
 	
 	Vector<TestCriteriaNew> runningTCrits = new Vector<TestCriteriaNew>();
