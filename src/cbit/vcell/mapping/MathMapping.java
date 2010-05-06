@@ -1618,7 +1618,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}
 				if (capacitanceParm!=null && capacitanceParm.getExpression()!=null && memMapping.getCalculateVoltage()){
 					StructureMappingParameter sizeParameter = membraneElectricalDevice.getMembraneMapping().getSizeParameter();
-					if (sizeParameter.getExpression() == null || sizeParameter.getExpression().isZero()) {
+					if (simContext.getGeometry().getDimension() == 0 && (sizeParameter.getExpression() == null || sizeParameter.getExpression().isZero())) {
 						varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,geometryClass),
 							getIdentifierSubstitutions(Expression.mult(memMapping.getNullSizeParameterValue(), specificCapacitanceParm.getExpression()),capacitanceParm.getUnitDefinition(),geometryClass),geometryClass));						
 					} else {
