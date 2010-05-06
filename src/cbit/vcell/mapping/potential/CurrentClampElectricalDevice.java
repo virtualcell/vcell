@@ -74,7 +74,7 @@ private void initializeParameters() throws ExpressionException {
 		MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
 		StructureMappingParameter sizeParameter = membraneMapping.getSizeParameter();
 		Expression area = null;
-		if (sizeParameter.getExpression() == null || sizeParameter.getExpression().isZero()) {
+		if (mathMapping.getSimulationContext().getGeometry().getDimension() == 0 && (sizeParameter.getExpression() == null || sizeParameter.getExpression().isZero())) {
 			area = membraneMapping.getNullSizeParameterValue();
 		} else {
 			area = new Expression(sizeParameter,mathMapping.getNameScope());
