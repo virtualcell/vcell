@@ -1387,9 +1387,12 @@ private void newSimulation(final Simulation simulation) {
 	}
 	// also set up a listener that will refresh when simulation is edited in place
 	simulation.removePropertyChangeListener(simChangeListener);
-	simulation.getMeshSpecification().removePropertyChangeListener(simChangeListener);
 	simulation.addPropertyChangeListener(simChangeListener);
-	simulation.getMeshSpecification().addPropertyChangeListener(simChangeListener);
+	MeshSpecification meshSpecification = simulation.getMeshSpecification();
+	if (meshSpecification != null) {
+		meshSpecification.removePropertyChangeListener(simChangeListener);
+		meshSpecification.addPropertyChangeListener(simChangeListener);
+	}
 }
 
 
