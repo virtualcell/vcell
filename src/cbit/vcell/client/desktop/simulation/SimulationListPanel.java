@@ -95,6 +95,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoC10(e);
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+			if (e.getValueIsAdjusting()) {
+				return;
+			}
 			if (e.getSource() == SimulationListPanel.this.getselectionModel1()) 
 				connEtoC9(e);
 		};
