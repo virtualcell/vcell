@@ -105,10 +105,7 @@ public String toString() {
 }
 
 public String getDisplayName(){
-	if (getDomain()!=null){
-		return getDomain().getName()+Variable.COMBINED_IDENTIFIER_SEPARATOR+displayName;
-	}else{
-		return displayName;
-	}
+	return displayName;	
 }
+
 }
