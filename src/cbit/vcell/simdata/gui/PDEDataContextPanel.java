@@ -314,52 +314,59 @@ private double[] originalData = null;
 private SourceDataInfo recodedSourceDataInfo = null;
 
 private void recodeDataForDomain() {
-	if (getDataInfoProvider() == null) {
+	if (getPdeDataContext() == null) {
 		return;
 	}
-	double[] data = null;
-	Domain varDomain = getPdeDataContext().getDataIdentifier().getDomain();
-	VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();	
 	
-	if (getpdeDataContext1().getDataValues() != originalData) {
+	Domain varDomain = getPdeDataContext().getDataIdentifier().getDomain();
+	double[] data = null;
+	VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();
+	boolean bRecoding = getDataInfoProvider() != null && varDomain != null;	
+	
+	if (getpdeDataContext1().getDataValues() != originalData || recodedSourceDataInfo == null) {
 		originalData = getpdeDataContext1().getDataValues();
-		data = new double[originalData.length];
-		System.arraycopy(originalData, 0, data, 0, data.length);
+		data = originalData;
 		
 		double min = Double.POSITIVE_INFINITY;
-		for(int i = 0; i < originalData.length; i++){
-			if(!Double.isNaN(originalData[i])){
-				min = Math.min(min, originalData[i]);
+		if (bRecoding) {
+			data = new double[originalData.length];
+			System.arraycopy(originalData, 0, data, 0, data.length);
+			for(int i = 0; i < originalData.length; i++){
+				if(!Double.isNaN(originalData[i])){
+					min = Math.min(min, originalData[i]);
+				}
 			}
-		}	
-
+		}
+		
 		double illegalNumber = min - 1;
 		final CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
 		min = Double.POSITIVE_INFINITY;
 		double max = Double.NEGATIVE_INFINITY;
 		for (int i = 0; i < data.length; i ++) {
-			if (vt.equals(VariableType.VOLUME)) {
-				int subvol = cartesianMesh.getSubVolumeFromVolumeIndex(i);
-				if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
-					data[i] = illegalNumber;
-				}
-			} else if (vt.equals(VariableType.VOLUME_REGION)) {
-				int subvol = cartesianMesh.getVolumeRegionMapSubvolume().get(i);
-				if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
-					data[i] = illegalNumber;
-				}
-			} else if (vt.equals(VariableType.MEMBRANE)) {
-				int insideVolumeIndex = cartesianMesh.getMembraneElements()[i].getInsideVolumeIndex();
-				int subvol1 =  cartesianMesh.getSubVolumeFromVolumeIndex(insideVolumeIndex);
-				int outsideVolumeIndex = cartesianMesh.getMembraneElements()[i].getOutsideVolumeIndex();
-				int subvol2 =  cartesianMesh.getSubVolumeFromVolumeIndex(outsideVolumeIndex);
-				if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getMembraneName(subvol1, subvol2, true).equals(varDomain.getName())) {
-					data[i] = illegalNumber;
-				}
-			} else if (vt.equals(VariableType.MEMBRANE_REGION)) {
-				int[] subvols = cartesianMesh.getMembraneRegionMapSubvolumesInOut().get(i);
-				if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true).equals(varDomain.getName())) {
-					data[i] = illegalNumber;
+			if (bRecoding) {
+				if (vt.equals(VariableType.VOLUME)) {
+					int subvol = cartesianMesh.getSubVolumeFromVolumeIndex(i);
+					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+						data[i] = illegalNumber;
+					}
+				} else if (vt.equals(VariableType.VOLUME_REGION)) {
+					int subvol = cartesianMesh.getVolumeRegionMapSubvolume().get(i);
+					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+						data[i] = illegalNumber;
+					}
+				} else if (vt.equals(VariableType.MEMBRANE)) {
+					int insideVolumeIndex = cartesianMesh.getMembraneElements()[i].getInsideVolumeIndex();
+					int subvol1 =  cartesianMesh.getSubVolumeFromVolumeIndex(insideVolumeIndex);
+					int outsideVolumeIndex = cartesianMesh.getMembraneElements()[i].getOutsideVolumeIndex();
+					int subvol2 =  cartesianMesh.getSubVolumeFromVolumeIndex(outsideVolumeIndex);
+					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getMembraneName(subvol1, subvol2, true).equals(varDomain.getName())) {
+						data[i] = illegalNumber;
+					}
+				} else if (vt.equals(VariableType.MEMBRANE_REGION)) {
+					int[] subvols = cartesianMesh.getMembraneRegionMapSubvolumesInOut().get(i);
+					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true).equals(varDomain.getName())) {
+						data[i] = illegalNumber;
+					}
 				}
 			}
 			if(!Double.isNaN(data[i]) && data[i] != illegalNumber){
@@ -367,10 +374,16 @@ private void recodeDataForDomain() {
 				max = Math.max(max, data[i]);
 			}
 		}
-		Range newRange = new Range(min,max);		
+		Range newRange = new Range(min,max);
 		recodedSourceDataInfo = calculateSourceDataInfo(cartesianMesh, data, vt, newRange);
 	}
 	getImagePlaneManagerPanel().setSourceDataInfo(recodedSourceDataInfo);
+	if (!bRecoding) {
+		// reset recodedSourceDataInfo to null because if we are unable to 
+		// recode (no dataInfoProvider or no domain), recodedSourceDataInfo 
+		// is only a holder for original data.
+		recodedSourceDataInfo = null;
+	}
 }
 /**
  * connPtoP1SetSource:  (PDEDataContextPanel2.pdeDataContext <--> pdeDataContext1.this)
