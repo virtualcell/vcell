@@ -1008,7 +1008,7 @@ private Object showAccessPermissionDialog(final JComponent aclEditor,final Compo
  */
 private File showFileChooserDialog(TopLevelWindowManager requester, FileFilter fileFilter) throws Exception {
 
-	return showFileChooserDialog(requester, fileFilter,getUserPreferences());
+	return showFileChooserDialog(requester, fileFilter,getUserPreferences(),JFileChooser.FILES_ONLY);
 }
 
 
@@ -1016,14 +1016,15 @@ private File showFileChooserDialog(TopLevelWindowManager requester, FileFilter f
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-public static File showFileChooserDialog(TopLevelWindowManager requester, final FileFilter fileFilter, final UserPreferences currentUserPreferences) throws Exception{
+public static File showFileChooserDialog(TopLevelWindowManager requester, final FileFilter fileFilter,
+		final UserPreferences currentUserPreferences,int fileSelectMode) throws Exception{
 	// the boolean isXMLNotImage is true if we are trying to choose an XML file
 	// It is false if we are trying to choose an image file
 	// This is used to set the appropriate File filters.
 
 	String defaultPath = (currentUserPreferences != null?currentUserPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED):"");
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
-	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+	fileChooser.setFileSelectionMode(fileSelectMode);
 
 	// setting fileFilter for xml files
 	fileChooser.setFileFilter(fileFilter);
