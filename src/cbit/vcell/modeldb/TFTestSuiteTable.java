@@ -35,4 +35,21 @@ private TFTestSuiteTable() {
 	super(TABLE_NAME,tsBuildAndNumericsUniqueConstraint);
 	addFields(fields);
 }
+public String getCreateTriggerSQL(){
+	return 
+	"CREATE OR REPLACE TRIGGER VCELL.TS_LOCK_TRIG"+"\n"+
+	"BEFORE DELETE OR UPDATE"+"\n"+
+	"ON VCELL."+TFTestSuiteTable.table.getTableName()+"\n"+
+	"REFERENCING NEW AS NEW OLD AS OLD"+"\n"+
+	"FOR EACH ROW"+"\n"+
+	"DECLARE"+"\n"+
+	"lockState NUMBER;"+"\n"+
+	"BEGIN"+"\n"+
+	   "IF :OLD."+TFTestSuiteTable.table.isLocked.getUnqualifiedColName()+" != 0"+"\n"+
+	   "THEN"+"\n"+
+	   "raise_application_error(-20100,'Test Suite ' || :OLD.tsversion || ' locked',true);"+"\n"+
+	   "END IF;"+"\n"+
+	"END;";
+
+}
 }
