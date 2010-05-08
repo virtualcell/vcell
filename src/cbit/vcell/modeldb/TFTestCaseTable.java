@@ -36,4 +36,36 @@ private TFTestCaseTable() {
 	super(TABLE_NAME,tftc_table_constraints);
 	addFields(fields);
 }
+public String getCreateTriggerSQL(){
+	return 
+	"CREATE OR REPLACE TRIGGER VCELL.TC_LOCK_TRIG"+"\n"+
+	"BEFORE DELETE OR INSERT OR UPDATE"+"\n"+
+	"ON VCELL."+TFTestCaseTable.table.getTableName()+"\n"+
+	"REFERENCING NEW AS NEW OLD AS OLD"+"\n"+
+	"FOR EACH ROW"+"\n"+
+	"DECLARE"+"\n"+
+	"PRAGMA AUTONOMOUS_TRANSACTION;"+"\n"+
+	"testsuiteid NUMBER;"+"\n"+
+	"lockState NUMBER;"+"\n"+
+	"BEGIN"+"\n"+
+	"IF INSERTING THEN"+"\n"+
+	"testsuiteid :=:NEW."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+";"+"\n"+
+	"ELSIF UPDATING THEN"+"\n"+
+	"testsuiteid :=:OLD."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+";"+"\n"+
+	"ELSIF DELETING THEN"+"\n"+
+	"testsuiteid :=:OLD."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+";"+"\n"+
+	"END IF;"+"\n"+
+	   "SELECT "+TFTestSuiteTable.table.isLocked.getQualifiedColName()+"\n"+
+	   "INTO lockstate"+"\n"+
+	   "FROM "+
+	   TFTestSuiteTable.table.getTableName()+"\n"+
+	   "WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+" = testsuiteid;"+"\n"+
+	   "IF"+"\n"+
+	  " 	 lockstate != 0"+"\n"+
+	   "THEN"+"\n"+
+	   "	   raise_application_error(-20100,'Test Suite locked',true);"+"\n"+
+	  "END IF;"+"\n"+
+	"END;";
+
+}
 }
