@@ -2,17 +2,15 @@ package cbit.vcell.VirtualMicroscopy;
 
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import org.vcell.util.Extent;
-import org.vcell.util.Origin;
 
 import loci.formats.AWTImageTools;
 import loci.formats.FormatException;
@@ -22,13 +20,28 @@ import loci.formats.ImageReader;
 import loci.formats.MetadataTools;
 import loci.formats.meta.MetadataRetrieve;
 import loci.formats.meta.MetadataStore;
+
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
+
 import cbit.image.ImageException;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 public class ImageDatasetReader {
 	
 	public static double[] getTimesOnly(String fileName) throws Exception{
-		return getTimes(getImageReader(fileName));
+		if(fileName.toUpperCase().endsWith(".ZIP")){
+			return new double[] {0.0};
+		}else{
+			return getTimes(getImageReader(fileName));
+		}
+	}
+	public static int getChannelCount(String fileName) throws Exception{
+		if(fileName.toUpperCase().endsWith(".ZIP")){
+			return readImageDatasetChannels(fileName, null, false).length;
+		}else{
+			return getImageReader(fileName).getSizeC();
+		}
 	}
 	private static ImageReader getImageReader(String imageID) throws FormatException,IOException{
 		ImageReader imageReader = new ImageReader();
@@ -36,7 +49,7 @@ public class ImageDatasetReader {
 		MetadataStore store = MetadataTools.createOMEXMLMetadata();
 		// or if you want a specific schema version, you can use:
 		//MetadataStore store = MetadataTools.createOMEXMLMetadata(null, "2007-06");
-		MetadataRetrieve meta = (MetadataRetrieve) store;
+//		MetadataRetrieve meta = (MetadataRetrieve) store;
 		store.createRoot();
 		imageReader.setMetadataStore(store);
 		FormatReader.debug = true;
@@ -44,12 +57,15 @@ public class ImageDatasetReader {
 		return imageReader;
 
 	}
-// This function has been amended in Jan 2008 to calculate progress when loading zip, or single image file. Class ImageLoadingProgress has been
-// added for counting the actual progress even when there are a couple of files inside a zip file.
+	
 	public static ImageDataset readImageDataset(String imageID, ClientTaskStatusSupport status) throws FormatException, IOException, ImageException {
+		return ImageDatasetReader.readImageDatasetChannels(imageID, status,true)[0];
+	}
+	
+	public static ImageDataset[] readImageDatasetChannels(String imageID, ClientTaskStatusSupport status, boolean bMergeChannels) throws FormatException, IOException, ImageException {
 		if (imageID.toUpperCase().endsWith(".ZIP")){
 			ZipFile zipFile = new ZipFile(new File(imageID),ZipFile.OPEN_READ);
-			ArrayList<ImageDataset> imageDatasetList = new ArrayList<ImageDataset>();
+			Vector<Vector<ImageDataset>> imageDataForEachChannelV = new Vector<Vector<ImageDataset>>();
 			Enumeration<? extends ZipEntry> enumZipEntry = zipFile.entries();
 			int noOfZipEntry = 0;//added Jan 2008
 			while (enumZipEntry.hasMoreElements()){
@@ -74,169 +90,182 @@ public class ImageDatasetReader {
 					fos.write(buffer, 0, bytesRead);
 				}
 				fos.close();
-				//AMENDED July 2009, don't show exact progress for zip file
-				ImageDataset imageDataset = readImageDataset(tempImageFile.getAbsolutePath(), null); 
+				ImageDataset[] imageDatasetChannels = readImageDatasetChannels(tempImageFile.getAbsolutePath(), null,bMergeChannels);
+				for (int i = 0; i < imageDatasetChannels.length; i++) {
+					if(imageDataForEachChannelV.size() < imageDatasetChannels.length){
+						imageDataForEachChannelV.add(new Vector<ImageDataset>());
+					}
+					imageDataForEachChannelV.elementAt(i).add(imageDatasetChannels[i]);
+				}
 				tempImageFile.delete();
-				imageDatasetList.add(imageDataset);
-				noOfZipEntry ++;//added Jan 2008
+				noOfZipEntry ++;
 			}
-			ImageDataset completeImageDataset = ImageDataset.createZStack(imageDatasetList.toArray(new ImageDataset[imageDatasetList.size()]));
-			return completeImageDataset;
+			ImageDataset[] completeImageDatasetChannels = new ImageDataset[imageDataForEachChannelV.size()];
+			for (int i = 0; i < completeImageDatasetChannels.length; i++) {
+				completeImageDatasetChannels[i] =
+					ImageDataset.createZStack(imageDataForEachChannelV.elementAt(i).toArray(new ImageDataset[0]));				
+			}
+			return completeImageDatasetChannels;
 		}
 
 
 		ImageReader imageReader = ImageDatasetReader.getImageReader(imageID);
 		MetadataRetrieve meta = (MetadataRetrieve)imageReader.getMetadataStore();
-//		ImageReader imageReader = new ImageReader();
-//		// create OME-XML metadata store of the latest schema version
-//		MetadataStore store = MetadataTools.createOMEXMLMetadata();
-//		// or if you want a specific schema version, you can use:
-//		//MetadataStore store = MetadataTools.createOMEXMLMetadata(null, "2007-06");
-//		MetadataRetrieve meta = (MetadataRetrieve) store;
-//		store.createRoot();
-//		imageReader.setMetadataStore(store);
-//		FormatReader.debug = true;
-//		imageReader.setId(imageID);
 		IFormatReader formatReader = imageReader.getReader(imageID);
 		formatReader.setId(imageID);
-		int seriesCount = formatReader.getSeriesCount();
-		System.out.println("formatReader.getSeriesCount() = "+formatReader.getSeriesCount());
+//		int seriesCount = formatReader.getSeriesCount();
+//		System.out.println("formatReader.getSeriesCount() = "+formatReader.getSeriesCount());
 		try{
-			System.out.println("before series, image size from imageReader("+
-					formatReader.getSizeX()+","+
-					formatReader.getSizeY()+","+
-					formatReader.getSizeZ()+","+
-					formatReader.getSizeC()+","+
-					formatReader.getSizeT()+")");
-			System.out.println("imagecount = "+formatReader.getImageCount());
+//			System.out.println("before series, image size from imageReader("+
+//					formatReader.getSizeX()+","+
+//					formatReader.getSizeY()+","+
+//					formatReader.getSizeZ()+","+
+//					formatReader.getSizeC()+","+
+//					formatReader.getSizeT()+")");
+//			System.out.println("imagecount = "+formatReader.getImageCount());
 			int numImages = formatReader.getImageCount();
-			int numChannels = formatReader.getSizeC();
-			if (numChannels>1){
-//				throw new RuntimeException("multi-channel images not yet supported");
-			}
-			UShortImage[] images = new UShortImage[numImages];
-			//Added Feb, 2008. Calculate the progress only when loading data to Virtual Microscopy
-			if(status != null)
-			{
-				//start the progress display
+			int desiredNumChannels = (bMergeChannels?1:formatReader.getSizeC());
+
+			UShortImage[][] images = new UShortImage[desiredNumChannels][numImages];
+			if(status != null){
 				status.setProgress(0);
 			}
-			int imageCount = 0;
+			int sizeX = meta.getPixelsSizeX(0, 0);
+			int sizeY = meta.getPixelsSizeY(0,0);
+			int sizeZ = meta.getPixelsSizeZ(0,0);
+
+			Float pixelSizeX_m = meta.getDimensionsPhysicalSizeX(0, 0);
+			Float pixelSizeY_m = meta.getDimensionsPhysicalSizeY(0, 0);
+			Float pixelSizeZ_m = meta.getDimensionsPhysicalSizeZ(0, 0);
+			if (pixelSizeX_m==null || pixelSizeX_m==0f){
+				pixelSizeX_m = 0.3e-6f;
+			}
+			if (pixelSizeY_m==null || pixelSizeY_m==0f){
+				pixelSizeY_m = 0.3e-6f;
+			}
+			if (pixelSizeZ_m==null || pixelSizeZ_m==0f || pixelSizeZ_m==1f){
+				pixelSizeZ_m = 0.9e-6f;
+			}
+			
+			Extent extent = null;
+			if (pixelSizeX_m!=null && pixelSizeY_m!=null && pixelSizeZ_m!=null && pixelSizeX_m>0 && pixelSizeY_m>0 && pixelSizeZ_m>0){
+				extent = new Extent(pixelSizeX_m*sizeX,pixelSizeY_m*sizeY,pixelSizeZ_m*sizeZ);
+			}
+
+			Origin origin = new Origin(0,0,0);
+//			int tzcIndex = 0;
 			for (int i = 0; i < numImages; i++) {
 				BufferedImage origBufferedImage = formatReader.openImage(i);
-				System.out.println("original image is type "+AWTImageTools.getPixelType(origBufferedImage));
-//				BufferedImage ushortBufferedImage = ImageTools.makeType(origBufferedImage, DataBuffer.TYPE_USHORT);
-//				System.out.println("ushort image is type "+ImageTools.getPixelType(ushortBufferedImage));
-				int zct[] = formatReader.getZCTCoords(i);
-//				int pixelType = ImageTools.getPixelType(ushortBufferedImage);
-//				short[][] pixels = ImageTools.getShorts(ushortBufferedImage);
-				short[][] pixels = AWTImageTools.getShorts(origBufferedImage);
-				int minValue = ((int)pixels[0][0])&0xffff;
-				int maxValue = ((int)pixels[0][0])&0xffff;
-				for (int j = 0; j < pixels[0].length; j++) {
-					minValue = Math.min(minValue,0xffff&((int)pixels[0][i]));
-					maxValue = Math.max(maxValue,0xffff&((int)pixels[0][i]));
+				formatReader.close(true);
+//				System.out.println("original image is type "+AWTImageTools.getPixelType(origBufferedImage));
+				short[][] pixels = null;
+				if(bMergeChannels){
+					BufferedImage mergedBufferedImage =
+					AWTImageTools.makeBuffered(origBufferedImage, AWTImageTools.makeColorModel(1, DataBuffer.TYPE_BYTE));
+					pixels = AWTImageTools.getShorts(mergedBufferedImage);
+				}else{
+					pixels = AWTImageTools.getShorts(origBufferedImage);
 				}
-				Float pixelSizeX_m = meta.getDimensionsPhysicalSizeX(0, 0);
-				Float pixelSizeY_m = meta.getDimensionsPhysicalSizeY(0, 0);
-				Float pixelSizeZ_m = meta.getDimensionsPhysicalSizeZ(0, 0);
-				if (pixelSizeX_m==null || pixelSizeX_m==0f){
-					pixelSizeX_m = 0.3e-6f;
+				if(desiredNumChannels != pixels.length){
+					throw new ImageException("bMergeChannels="+bMergeChannels+
+							" AWTImageTools.getShorts() channels ="+pixels.length+" not match desiredNumChannels="+desiredNumChannels);
 				}
-				if (pixelSizeY_m==null || pixelSizeY_m==0f){
-					pixelSizeY_m = 0.3e-6f;
+//				int zct[] = formatReader.getZCTCoords(i);
+//				int minValue = ((int)pixels[0][0])&0xffff;
+//				int maxValue = ((int)pixels[0][0])&0xffff;
+//				for (int j = 0; j < pixels[0].length; j++) {
+//					minValue = Math.min(minValue,0xffff&((int)pixels[0][i]));
+//					maxValue = Math.max(maxValue,0xffff&((int)pixels[0][i]));
+//				}
+//				Float pixelSizeX_m = meta.getDimensionsPhysicalSizeX(0, 0);
+//				Float pixelSizeY_m = meta.getDimensionsPhysicalSizeY(0, 0);
+//				Float pixelSizeZ_m = meta.getDimensionsPhysicalSizeZ(0, 0);
+//				if (pixelSizeX_m==null || pixelSizeX_m==0f){
+//					pixelSizeX_m = 0.3e-6f;
+//				}
+//				if (pixelSizeY_m==null || pixelSizeY_m==0f){
+//					pixelSizeY_m = 0.3e-6f;
+//				}
+//				if (pixelSizeZ_m==null || pixelSizeZ_m==0f || pixelSizeZ_m==1f){
+//					pixelSizeZ_m = 0.9e-6f;
+//				}
+//				
+//				Extent extent = null;
+//				if (pixelSizeX_m!=null && pixelSizeY_m!=null && pixelSizeZ_m!=null && pixelSizeX_m>0 && pixelSizeY_m>0 && pixelSizeZ_m>0){
+//					extent = new Extent(pixelSizeX_m*sizeX,pixelSizeY_m*sizeY,pixelSizeZ_m*sizeZ);
+//				}
+//				System.out.println("reading image "+i+", z="+zct[0]+", channel="+zct[1]+", time="+zct[2]+", pixelType="+meta.getPixelsPixelType(0, 0)+", numSeries="+seriesCount+", size=("+((pixelSizeX_m!=null)?(pixelSizeX_m*1e6):"?")+","+((pixelSizeY_m!=null)?(pixelSizeY_m*1e6):"?")+","+((pixelSizeZ_m!=null)?(pixelSizeZ_m*1e6):"?")+") um, dim=("+sizeX+","+sizeY+","+sizeZ+"), value in ["+minValue+","+maxValue+"]");
+				for (int c = 0; c < desiredNumChannels; c++) {
+					images[c][i] = new UShortImage(pixels[c],origin,extent,sizeX,sizeY,1);
 				}
-				if (pixelSizeZ_m==null || pixelSizeZ_m==0f || pixelSizeZ_m==1f){
-					pixelSizeZ_m = 0.9e-6f;
-				}
-				int sizeX = meta.getPixelsSizeX(0, 0);
-				int sizeY = meta.getPixelsSizeY(0,0);
-				int sizeZ = meta.getPixelsSizeZ(0,0);
-				
-				if (sizeZ > 1){
-//					throw new RuntimeException("3D images not yet supported");
-				}
-				Extent extent = null;
-				if (pixelSizeX_m!=null && pixelSizeY_m!=null && pixelSizeZ_m!=null && pixelSizeX_m>0 && pixelSizeY_m>0 && pixelSizeZ_m>0){
-//					extent = new Extent(pixelSizeX_m*sizeX*1e6,pixelSizeY_m*sizeY*1e6,pixelSizeZ_m*sizeZ*1e6);
-					extent = new Extent(pixelSizeX_m*sizeX,pixelSizeY_m*sizeY,pixelSizeZ_m*sizeZ);
-				}
-				System.out.println("reading image "+i+", z="+zct[0]+", channel="+zct[1]+", time="+zct[2]+", pixelType="+meta.getPixelsPixelType(0, 0)+", numSeries="+seriesCount+", size=("+((pixelSizeX_m!=null)?(pixelSizeX_m*1e6):"?")+","+((pixelSizeY_m!=null)?(pixelSizeY_m*1e6):"?")+","+((pixelSizeZ_m!=null)?(pixelSizeZ_m*1e6):"?")+") um, dim=("+sizeX+","+sizeY+","+sizeZ+"), value in ["+minValue+","+maxValue+"]");
-				images[i] = new UShortImage(pixels[0],new Origin(0,0,0),extent,sizeX,sizeY,1);
-				imageCount ++;
-				//added Jan 2008, calculate the progress only when loading data to Virtual Microscopy
-				if(status != null)
-				{
+				if(status != null){
 					status.setProgress(((int)(i*100/numImages)));
 				}
 			}
-			//added Jan 2008, calculate the progress only when loading data to Virtual Microscopy
-			if(status != null && imageCount == numImages)
-			{
-				//the progress display
-				status.setProgress(100);
-			}
 			
-			System.out.println("before series, image size from Metadata Store("+
-					meta.getPixelsSizeX(0, 0)+","+
-					meta.getPixelsSizeY(0, 0)+","+
-					meta.getPixelsSizeZ(0, 0)+","+
-					meta.getPixelsSizeC(0, 0)+","+
-					meta.getPixelsSizeT(0, 0)+")");
 			
-			Integer ii = new Integer(0);			
-			System.out.println("creationDate: "+meta.getImageCreationDate(ii));
-			System.out.println("description: "+meta.getImageDescription(ii));
-			System.out.println("dimension order: "+meta.getPixelsDimensionOrder(ii,ii));
-			System.out.println("image name: "+meta.getImageName(ii));
-			System.out.println("pixel type: "+meta.getPixelsPixelType(ii,ii));
-			System.out.println("stage name: "+meta.getStageLabelName(ii));
-			System.out.println("big endian: "+meta.getPixelsBigEndian(ii,ii));
-			System.out.println("pixel size X: "+meta.getDimensionsPhysicalSizeX(ii,ii));
-			System.out.println("pixel size Y: "+meta.getDimensionsPhysicalSizeY(ii,ii));
-			System.out.println("pixel size Z: "+meta.getDimensionsPhysicalSizeZ(ii,ii));
-//			System.out.println("pixel size C: "+store.getPixelsSizeC(ii,ii));
-//			System.out.println("pixel size T: "+store.getPixelsSizeT(ii,ii));
-//			Float pixelSizeX = store.getPixelSizeX(ii);
-			if (meta.getDimensionsPhysicalSizeX(0, 0)!=null){
-				System.out.println("   image Size X: "+(meta.getPixelsSizeX(ii,ii)*meta.getDimensionsPhysicalSizeX(0, 0))+" microns");
-			}
-//			Float pixelSizeY = store.getPixelSizeX(ii);
-			if (meta.getDimensionsPhysicalSizeY(0, 0)!=null){
-				System.out.println("   image Size Y: "+(meta.getPixelsSizeY(ii,ii)*meta.getDimensionsPhysicalSizeY(0, 0))+" microns");
-			}
-			System.out.println("size X: "+meta.getPixelsSizeX(ii,ii));
-			System.out.println("size Y: "+meta.getPixelsSizeY(ii,ii));
-			System.out.println("size Z: "+meta.getPixelsSizeZ(ii,ii));
-			System.out.println("size C: "+meta.getPixelsSizeC(ii,ii));
-			System.out.println("size T: "+meta.getPixelsSizeT(ii,ii));
-			System.out.println("stage X: "+meta.getStageLabelX(ii));
-			System.out.println("stage Y: "+meta.getStageLabelY(ii));
-			System.out.println("stage Z: "+meta.getStageLabelZ(ii));
+//			System.out.println("before series, image size from Metadata Store("+
+//					meta.getPixelsSizeX(0, 0)+","+
+//					meta.getPixelsSizeY(0, 0)+","+
+//					meta.getPixelsSizeZ(0, 0)+","+
+//					meta.getPixelsSizeC(0, 0)+","+
+//					meta.getPixelsSizeT(0, 0)+")");
 			
-			for (int i=0; i<formatReader.getSeriesCount(); i++) {
-				formatReader.setSeries(i);
-	
-				System.out.println("image size from imageReader("+
-						formatReader.getSizeX()+","+
-						formatReader.getSizeY()+","+
-						formatReader.getSizeZ()+","+
-						formatReader.getSizeC()+","+
-						formatReader.getSizeT()+")");
-				System.out.println("image size from Metadata Store("+
-						meta.getPixelsSizeX(i,0)+","+
-						meta.getPixelsSizeY(i,0)+","+
-						meta.getPixelsSizeZ(i,0)+","+
-						meta.getPixelsSizeC(i,0)+","+
-						meta.getPixelsSizeT(i,0)+")");
-				
-			}
+//			Integer ii = new Integer(0);			
+//			System.out.println("creationDate: "+meta.getImageCreationDate(ii));
+//			System.out.println("description: "+meta.getImageDescription(ii));
+//			System.out.println("dimension order: "+meta.getPixelsDimensionOrder(ii,ii));
+//			System.out.println("image name: "+meta.getImageName(ii));
+//			System.out.println("pixel type: "+meta.getPixelsPixelType(ii,ii));
+//			System.out.println("stage name: "+meta.getStageLabelName(ii));
+//			System.out.println("big endian: "+meta.getPixelsBigEndian(ii,ii));
+//			System.out.println("pixel size X: "+meta.getDimensionsPhysicalSizeX(ii,ii));
+//			System.out.println("pixel size Y: "+meta.getDimensionsPhysicalSizeY(ii,ii));
+//			System.out.println("pixel size Z: "+meta.getDimensionsPhysicalSizeZ(ii,ii));
+//			if (meta.getDimensionsPhysicalSizeX(0, 0)!=null){
+//				System.out.println("   image Size X: "+(meta.getPixelsSizeX(ii,ii)*meta.getDimensionsPhysicalSizeX(0, 0))+" microns");
+//			}
+//			if (meta.getDimensionsPhysicalSizeY(0, 0)!=null){
+//				System.out.println("   image Size Y: "+(meta.getPixelsSizeY(ii,ii)*meta.getDimensionsPhysicalSizeY(0, 0))+" microns");
+//			}
+//			System.out.println("size X: "+meta.getPixelsSizeX(ii,ii));
+//			System.out.println("size Y: "+meta.getPixelsSizeY(ii,ii));
+//			System.out.println("size Z: "+meta.getPixelsSizeZ(ii,ii));
+//			System.out.println("size C: "+meta.getPixelsSizeC(ii,ii));
+//			System.out.println("size T: "+meta.getPixelsSizeT(ii,ii));
+//			System.out.println("stage X: "+meta.getStageLabelX(ii));
+//			System.out.println("stage Y: "+meta.getStageLabelY(ii));
+//			System.out.println("stage Z: "+meta.getStageLabelZ(ii));
+			
+//			for (int i=0; i<formatReader.getSeriesCount(); i++) {
+//				formatReader.setSeries(i);
+//	
+//				System.out.println("image size from imageReader("+
+//						formatReader.getSizeX()+","+
+//						formatReader.getSizeY()+","+
+//						formatReader.getSizeZ()+","+
+//						formatReader.getSizeC()+","+
+//						formatReader.getSizeT()+")");
+//				System.out.println("image size from Metadata Store("+
+//						meta.getPixelsSizeX(i,0)+","+
+//						meta.getPixelsSizeY(i,0)+","+
+//						meta.getPixelsSizeZ(i,0)+","+
+//						meta.getPixelsSizeC(i,0)+","+
+//						meta.getPixelsSizeT(i,0)+")");
+//				
+//			}
 
 			double[] times = getTimes(imageReader);
 			   
 			int numZ = Math.max(1,formatReader.getSizeZ());
-			ImageDataset imageDataset = new ImageDataset(images,times,numZ);
-	
+			
+			ImageDataset[] imageDataset = new ImageDataset[desiredNumChannels];
+			for (int c = 0; c < desiredNumChannels; c++) {
+				imageDataset[c] = new ImageDataset(images[c],times,numZ);
+			}
+			if(status != null){
+				status.setProgress(100);
+			}
 			return imageDataset;
 		}finally{
 			if(formatReader != null){

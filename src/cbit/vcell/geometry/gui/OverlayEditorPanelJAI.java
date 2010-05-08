@@ -335,6 +335,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	
 	//properties
 	public static final String FRAP_DATA_INIT_PROPERTY = "FRAP_DATA_INIT_PROPERTY";
+	public static final String FRAP_DATA_CHANNEL_PROPERTY = "FRAP_DATA_CHANNEL_PROPERTY";
 	public static final String FRAP_DATA_END_PROPERTY = "FRAP_DATA_END_PROPERTY";
 	public static final String FRAP_DATA_FILL_PROPERTY = "FRAP_DATA_FILL_PROPERTY";
 	public static final String FRAP_DATA_PAINT_PROPERTY = "FRAP_DATA_PAINT_PROPERTY";
@@ -685,9 +686,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 
 		final JPanel panel_1 = new JPanel();
 		final GridBagLayout gridBagLayout_4 = new GridBagLayout();
-		gridBagLayout_4.columnWidths = new int[] {7,0};
+		gridBagLayout_4.columnWeights = new double[]{1.0};
+		gridBagLayout_4.columnWidths = new int[] {7};
 		panel_1.setLayout(gridBagLayout_4);
 		final GridBagConstraints gridBagConstraints_18 = new GridBagConstraints();
+		gridBagConstraints_18.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_18.insets = new Insets(0, 2, 0, 0);
 		gridBagConstraints_18.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_18.weightx = 0;
@@ -695,6 +698,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_18.gridx = 1;
 		editROIPanel.add(panel_1, gridBagConstraints_18);
 		final GridBagConstraints gridBagConstraints_19 = new GridBagConstraints();
+		gridBagConstraints_19.insets = new Insets(0, 0, 5, 0);
 		gridBagConstraints_19.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_19.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_19.weightx = 1;
@@ -742,8 +746,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 		final JPanel editROIButtonPanel = new JPanel();
 		final GridBagLayout gridBagLayout_3 = new GridBagLayout();
 		gridBagLayout_3.rowWeights = new double[]{0.0, 1.0};
-		gridBagLayout_3.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0};
-		gridBagLayout_3.columnWidths = new int[] {0,7,7, 0};
+		gridBagLayout_3.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, 0.0};
+		gridBagLayout_3.columnWidths = new int[] {0,7,7, 0, 0};
 		editROIButtonPanel.setLayout(gridBagLayout_3);
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.weightx = 0;
@@ -947,11 +951,21 @@ public class OverlayEditorPanelJAI extends JPanel{
 		gbc_specialActionsButton.gridy = 0;
 		editROIButtonPanel.add(specialActionsButton, gbc_specialActionsButton);
 		
+		channelComboBox = new JComboBox();
+		GridBagConstraints gbc_channelComboBox = new GridBagConstraints();
+		gbc_channelComboBox.insets = new Insets(4, 4, 5, 4);
+		gbc_channelComboBox.gridx = 4;
+		gbc_channelComboBox.gridy = 0;
+		editROIButtonPanel.add(channelComboBox, gbc_channelComboBox);
+		channelComboBox.addActionListener(channelActionListener);
+		channelComboBox.setPreferredSize(new Dimension(100, 22));
+		channelComboBox.setMinimumSize(new Dimension(100, 20));
+		
 		blendPercentPanel = new JPanel();
 		blendPercentPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		GridBagConstraints gbc_panel_2a = new GridBagConstraints();
-		gbc_panel_2a.gridwidth = 4;
-		gbc_panel_2a.insets = new Insets(0, 0, 0, 5);
+		gbc_panel_2a.gridwidth = 5;
+		gbc_panel_2a.insets = new Insets(4, 4, 4, 5);
 		gbc_panel_2a.fill = GridBagConstraints.BOTH;
 		gbc_panel_2a.gridx = 0;
 		gbc_panel_2a.gridy = 1;
@@ -1349,7 +1363,26 @@ public class OverlayEditorPanelJAI extends JPanel{
 
 	private JPanel panel_2;
 	private HistogramPanel histogramPanel;
-	
+	private JComboBox channelComboBox;
+	private ActionListener channelActionListener = new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			firePropertyChange(OverlayEditorPanelJAI.FRAP_DATA_CHANNEL_PROPERTY, null, channelComboBox.getSelectedIndex());
+		}
+	};
+	public void setChannelNames(String[] channelNames){
+		channelComboBox.removeAllItems();
+		if(channelNames == null){
+			channelComboBox.setVisible(false);
+		}else{
+			channelComboBox.removeActionListener(channelActionListener);
+			for (int i = 0; i < channelNames.length; i++) {
+				channelComboBox.insertItemAt(channelNames[i], i);
+			}
+			channelComboBox.addActionListener(channelActionListener);
+			channelComboBox.setVisible(true);
+			channelComboBox.setSelectedIndex(0);
+		}
+	}
 	private ISize getISizeDataset(){
 		ISize isizeDataset = null;
 		if(imageDataset != null){
