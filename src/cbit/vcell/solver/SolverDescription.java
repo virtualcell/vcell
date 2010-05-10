@@ -37,8 +37,9 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		Feature_PSF("Point Spread Function"),
 		Feature_JVMRequired("JVM Required"),
 		Feature_SerialParameterScans("Serial Parameter Scans"),
-		Feature_VolumeRegionEquation("Volume Region Equations");
-		
+		Feature_VolumeRegionEquations("Volume Region Equations"),
+		Feature_RegionSizeFunctions("Region Size Functions");
+				
 		private String name;
 		private SolverFeature(String name) {
 			this.name = name;
@@ -949,7 +950,8 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_PSF);
 		featureSet.add(SolverFeature.Feature_PeriodicBoundaryCondition);
 		featureSet.add(SolverFeature.Feature_SerialParameterScans);
-		featureSet.add(SolverFeature.Feature_VolumeRegionEquation);
+		featureSet.add(SolverFeature.Feature_VolumeRegionEquations);
+		featureSet.add(SolverFeature.Feature_RegionSizeFunctions);
 		break;
 		
 	case TYPE_SUNDIALS_PDE:
@@ -961,7 +963,8 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_DataProcessingInstructions);
 		featureSet.add(SolverFeature.Feature_PSF);
 		featureSet.add(SolverFeature.Feature_SerialParameterScans);
-		featureSet.add(SolverFeature.Feature_VolumeRegionEquation);
+		featureSet.add(SolverFeature.Feature_VolumeRegionEquations);
+		featureSet.add(SolverFeature.Feature_RegionSizeFunctions);
 		break;
 	}
 	

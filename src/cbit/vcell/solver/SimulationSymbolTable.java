@@ -14,6 +14,7 @@ import org.vcell.util.BeanUtils;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
@@ -451,12 +452,12 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	 */
 	public static boolean isFunctionSaved(Function function) {
 		String name = function.getName();
-		if (!name.startsWith("SurfToVol_") && 
-			!name.startsWith("VolFract_") && 
-			!name.startsWith("KFlux_") && 
+		if (!name.startsWith(MathMapping.PARAMETER_SURF_TO_VOL_PREFIX) && 
+			!name.startsWith(MathMapping.PARAMETER_VOL_FRACT_PREFIX) && 
+			!name.startsWith(MathMapping.PARAMETER_K_FLUX_PREFIX) && 
 			!name.startsWith("Kflux_") &&
-			!name.endsWith("_init") && 
-			!name.endsWith("_total") &&
+			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION) && 
+			!name.endsWith(MathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX) &&
 			!name.equals(SimDataConstants.PSF_FUNCTION_NAME)){
 			return true;
 		}else{

@@ -449,7 +449,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					// first term of dependancy expression   ("K_CalciumCyt")
 					//
 					SpeciesContext firstSC = firstSCM.getSpeciesContext();
-					constantName = "K_"+firstSC.getName()+"_total";
+					constantName = MathMapping.PARAMETER_MASS_CONSERVATION_PREFIX+firstSC.getName()+MathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX;
 					exp = new Expression(constantName);
 					//
 					// first term of K expression

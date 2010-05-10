@@ -15,7 +15,6 @@ import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.client.server.VCellThreadChecker;
-import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
@@ -51,7 +50,7 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.Event.Delay;
-import cbit.vcell.math.Variable.Domain; 
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
@@ -64,7 +63,6 @@ import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -86,14 +84,35 @@ import cbit.vcell.units.VCUnitException;
  * to get an updated MathDescription.
  */
 public class MathMapping implements ScopedSymbolTable {
+	private static final String PARAMETER_VELOCITY_X_SUFFIX = "_velocityX";
+	private static final String PARAMETER_VELOCITY_Y_SUFFIX = "_velocityY";
+	private static final String PARAMETER_VELOCITY_Z_SUFFIX = "_velocityZ";
+	private static final String PARAMETER_BOUNDARY_XM_SUFFIX = "_boundaryXm";
+	private static final String PARAMETER_BOUNDARY_XP_SUFFIX = "_boundaryXp";
+	private static final String PARAMETER_BOUNDARY_YM_SUFFIX = "_boundaryYm";
+	private static final String PARAMETER_BOUNDARY_YP_SUFFIX = "_boundaryYp";
+	private static final String PARAMETER_BOUNDARY_ZM_SUFFIX = "_boundaryZm";
+	private static final String PARAMETER_BOUNDARY_ZP_SUFFIX = "_boundaryZp";
+	private static final String PARAMETER_DIFFUSION_RATE_SUFFIX = "_diffusionRate";
+	private static final String PARAMETER_TRANSMEMBRANE_CURRENT_PREFIX = "F_";
+	private static final String PARAMETER_VOLTAGE_PREFIX = "V_";
+	private static final String PARAMETER_TOTAL_CURRENT_PREFIX = "I_";
+	private static final String PARAMETER_SPECIFIC_CAPACITANCE_PREFIX = "C_";
 	
-	public static final String BIO_PARAM_SUFFIX_SPECIES_COUNT = "_temp_Count";
-	public static final String BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION = "_temp_Conc";
-	public static final String MATH_VAR_SUFFIX_SPECIES_COUNT = "";
-	public static final String MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION = "_Conc";
+	public static final String PARAMETER_SURF_TO_VOL_PREFIX = "SurfToVol_";
+	public static final String PARAMETER_VOL_FRACT_PREFIX = "VolFract_";
+	public static final String PARAMETER_SIZE_FUNCTION_PREFIX = "Size_";
+	public static final String PARAMETER_MASS_CONSERVATION_PREFIX = "K_";
+	public static final String PARAMETER_MASS_CONSERVATION_SUFFIX = "_total";
+	public static final String PARAMETER_K_FLUX_PREFIX = "KFlux_";
+	
+	static final String BIO_PARAM_SUFFIX_SPECIES_COUNT = "_temp_Count";
+	static final String BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION = "_temp_Conc";
+	private static final String MATH_VAR_SUFFIX_SPECIES_COUNT = "";
+	private static final String MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION = "_Conc";
+	private static final String MATH_FUNC_SUFFIX_EVENTASSIGN_INIT = "_init";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT = "_initCount";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION = "_init";
-	public static final String MATH_FUNC_SUFFIX_EVENTASSIGN_INIT = "_init";
 	
 	private SimulationContext simContext = null;
 	protected MathDescription mathDesc = null;
@@ -881,34 +900,34 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_DiffusionRate){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_diffusionRate";
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_DIFFUSION_RATE_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueXm){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryXm";
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_XM_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueXp){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryXp";
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_XP_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueYm){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryYm";
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_YM_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueYp){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryYp";
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_YP_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueZm){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryZm";
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_ZM_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueZp){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_boundaryZp";
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_ZP_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_VelocityX){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_velocityX";
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_VELOCITY_X_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_VelocityY){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_velocityY";
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_VELOCITY_Y_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_VelocityZ){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_velocityZ";
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_VELOCITY_Z_SUFFIX;
 		}
 	}
 	if (ste instanceof ElectricalDevice.ElectricalDeviceParameter){
@@ -917,10 +936,10 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 		if (electricalDevice instanceof MembraneElectricalDevice){
 			String nameWithScope = ((MembraneElectricalDevice)electricalDevice).getMembraneMapping().getMembrane().getNameScope().getName();
 			if (edParm.getRole()==ElectricalDevice.ROLE_TotalCurrent){
-				return "I_"+nameWithScope;
+				return PARAMETER_TOTAL_CURRENT_PREFIX+nameWithScope;
 			}
 			if (edParm.getRole()==ElectricalDevice.ROLE_TransmembraneCurrent){
-				return "F_"+nameWithScope;
+				return PARAMETER_TRANSMEMBRANE_CURRENT_PREFIX+nameWithScope;
 			}
 		//}else if (electricalDevice instanceof CurrentClampElectricalDevice) {
 			//if (edParm.getRole()==ElectricalDevice.ROLE_TotalCurrentDensity){
@@ -942,9 +961,9 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 		LocalParameter esParm = (LocalParameter)ste;
 		String nameWithScope = esParm.getNameScope().getName();
 		if (esParm.getRole()==ElectricalStimulus.ROLE_TotalCurrent){
-			return "I_"+nameWithScope;
+			return PARAMETER_TOTAL_CURRENT_PREFIX+nameWithScope;
 		} else if (esParm.getRole()==ElectricalStimulus.ROLE_Voltage){
-			return "V_"+nameWithScope;
+			return PARAMETER_VOLTAGE_PREFIX+nameWithScope;
 		}
 	}
 	if (ste instanceof StructureMapping.StructureMappingParameter){
@@ -952,15 +971,15 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 		Structure structure = ((StructureMapping)(smParm.getNameScope().getScopedSymbolTable())).getStructure();
 		int role = smParm.getRole();
 		if (role==StructureMapping.ROLE_VolumeFraction){
-			return "VolFract_"+((Membrane)structure).getInsideFeature().getNameScope().getName();
+			return PARAMETER_VOL_FRACT_PREFIX+((Membrane)structure).getInsideFeature().getNameScope().getName();
 		} else {
 			String nameWithScope = structure.getNameScope().getName();
 			if (role==StructureMapping.ROLE_SurfaceToVolumeRatio){
-				return "SurfToVol_"+nameWithScope;
+				return PARAMETER_SURF_TO_VOL_PREFIX+nameWithScope;
 			} else if (role==StructureMapping.ROLE_InitialVoltage){
 				return smParm.getName();
 			} else if (role==StructureMapping.ROLE_SpecificCapacitance){
-				return "C_"+nameWithScope;
+				return PARAMETER_SPECIFIC_CAPACITANCE_PREFIX+nameWithScope;
 			} else if (role==StructureMapping.ROLE_Size){
 				if (simContext.getGeometry().getDimension() == 0) {
 					// if geometry is compartmental, make sure compartment sizes are set if referenced in model.
@@ -970,7 +989,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 								"positive value if referenced in the model.\n\nPlease go to 'Structure Mapping' tab to check the size.");
 					}
 				}
-				return "Size_"+nameWithScope;
+				return PARAMETER_SIZE_FUNCTION_PREFIX+nameWithScope;
 			}
 		}
 	}
@@ -1258,7 +1277,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			insideCorrectionExp.bindExpression(this);
 			Feature insideFeature = membraneMapping.getMembrane().getInsideFeature();
 			String membraneNameWithScope = membraneMapping.getNameScope().getName();
-			String insideName = "KFlux_"+membraneNameWithScope+"_"+insideFeature.getNameScope().getName();
+			String insideName = PARAMETER_K_FLUX_PREFIX+membraneNameWithScope+"_"+insideFeature.getNameScope().getName();
 			KFluxParameter insideKFluxParameter = new KFluxParameter(insideName,insideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,insideFeature);
 			newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(newMathMappingParameters,insideKFluxParameter);
 
@@ -1268,7 +1287,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			Expression outsideCorrectionExp = getOutsideFluxCorrectionExpression(simContext,membraneMapping);
 			outsideCorrectionExp.bindExpression(this);
 			Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
-			String outsideName = "KFlux_"+membraneNameWithScope+"_"+outsideFeature.getNameScope().getName();
+			String outsideName = PARAMETER_K_FLUX_PREFIX+membraneNameWithScope+"_"+outsideFeature.getNameScope().getName();
 			KFluxParameter outsideKFluxParameter = new KFluxParameter(outsideName,outsideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,outsideFeature);
 			newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
 		}

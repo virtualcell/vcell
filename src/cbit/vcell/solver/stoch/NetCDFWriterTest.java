@@ -1,5 +1,8 @@
 package cbit.vcell.solver.stoch;
 
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
+
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -26,7 +29,6 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
  */
 
 public class NetCDFWriterTest {
-		
 		//manually create a bistable example.
 		public static Simulation getExample1()
 		{
@@ -38,7 +40,7 @@ public class NetCDFWriterTest {
 				//subDomain add variables
 				sd.addVarIniCondition(varIni); 
 		
-				Action action1 = new Action(v,"inc", new Expression(1));
+				Action action1 = new Action(v,Action.ACTION_INC, new Expression(1));
 				Expression exp1 = null;
 				try
 				{
@@ -47,7 +49,7 @@ public class NetCDFWriterTest {
 				JumpProcess jp1 = new JumpProcess("R1", exp1); //create jumpPorcess1
 				jp1.addAction(action1);
 		
-				Action action2 = new Action(v,"inc", new Expression(-1));
+				Action action2 = new Action(v,Action.ACTION_INC, new Expression(-1));
 				Expression exp2 = null;
 				try
 				{
@@ -56,7 +58,7 @@ public class NetCDFWriterTest {
 				JumpProcess jp2 = new JumpProcess("R2", exp2); //create jumpProcess2
 				jp2.addAction(action2);
 		
-				Action action3 = new Action(v,"inc", new Expression(1));
+				Action action3 = new Action(v,Action.ACTION_INC, new Expression(1));
 				Expression exp3 = null;
 				try
 				{
@@ -65,7 +67,7 @@ public class NetCDFWriterTest {
 				JumpProcess jp3 = new JumpProcess("R3", exp3); //create jumpProcess3
 				jp3.addAction(action3);
 		
-				Action action4 = new Action(v,"inc", new Expression(-1));
+				Action action4 = new Action(v,Action.ACTION_INC, new Expression(-1));
 				Expression exp4 = null;
 				try
 				{
@@ -90,9 +92,9 @@ public class NetCDFWriterTest {
 		
 				// //copy from getODEExampleWagner---all are nonsense here , just for making MathDescriton valid
 				Geometry geo = new Geometry("getOdeExampleWagner()",0);
-				geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0, 1.0, 1.0));
+				geo.getGeometrySpec().setExtent(new Extent(1.0, 1.0, 1.0));
 		
-				geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
+				geo.getGeometrySpec().setOrigin(new Origin(0.0, 0.0, 0.0));
 				md.setGeometry(geo);
 
 				// variable
@@ -142,9 +144,9 @@ public class NetCDFWriterTest {
 				sd.addVarIniCondition(varIni3);
 				sd.addVarIniCondition(varIni4);
 		
-				Action action11 = new Action(v1,"inc", new Expression(-1));
-				Action action12 = new Action(v2,"inc", new Expression(-1));
-				Action action13 = new Action(v3,"inc", new Expression(1));
+				Action action11 = new Action(v1,Action.ACTION_INC, new Expression(-1));
+				Action action12 = new Action(v2,Action.ACTION_INC, new Expression(-1));
+				Action action13 = new Action(v3,Action.ACTION_INC, new Expression(1));
 				Expression exp1 = null;
 				try
 				{
@@ -155,9 +157,9 @@ public class NetCDFWriterTest {
 				jp1.addAction(action12);
 				jp1.addAction(action13);
 		
-				Action action21 = new Action(v3,"inc", new Expression(-1));
-				Action action22 = new Action(v1,"inc", new Expression(1));
-				Action action23 = new Action(v2,"inc", new Expression(1));
+				Action action21 = new Action(v3,Action.ACTION_INC, new Expression(-1));
+				Action action22 = new Action(v1,Action.ACTION_INC, new Expression(1));
+				Action action23 = new Action(v2,Action.ACTION_INC, new Expression(1));
 				Expression exp2 = null;
 				try
 				{
@@ -168,9 +170,9 @@ public class NetCDFWriterTest {
 				jp2.addAction(action22);
 				jp2.addAction(action23);
 		
-				Action action31 = new Action(v3,"inc", new Expression(-1));
-				Action action32 = new Action(v2,"inc", new Expression(1));
-				Action action33 = new Action(v4,"inc", new Expression(1));
+				Action action31 = new Action(v3,Action.ACTION_INC, new Expression(-1));
+				Action action32 = new Action(v2,Action.ACTION_INC, new Expression(1));
+				Action action33 = new Action(v4,Action.ACTION_INC, new Expression(1));
 				Expression exp3 = null;
 				try
 				{
@@ -196,9 +198,9 @@ public class NetCDFWriterTest {
 		
 				// //copy from getODEExampleWagner---all are nonsense here , just for making MathDescriton valid
 				Geometry geo = new Geometry("getOdeExampleWagner()",0);
-				geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0, 1.0, 1.0));
+				geo.getGeometrySpec().setExtent(new Extent(1.0, 1.0, 1.0));
 		
-				geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
+				geo.getGeometrySpec().setOrigin(new Origin(0.0, 0.0, 0.0));
 				md.setGeometry(geo);
 
 				// variable

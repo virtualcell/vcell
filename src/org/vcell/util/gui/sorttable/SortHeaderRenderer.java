@@ -22,14 +22,8 @@ import javax.swing.table.JTableHeader;
 public class SortHeaderRenderer extends DefaultTableCellRenderer
 {
   public static Icon NONSORTED = new SortArrowIcon(SortArrowIcon.NONE);
-  public static Icon ASCENDING = UIManager.getIcon("Table.ascendingSortIcon");
-  public static Icon DECENDING = UIManager.getIcon("Table.descendingSortIcon");
-  static {
-	  if (ASCENDING == null) {
-		  ASCENDING = new SortArrowIcon(SortArrowIcon.ASCENDING);
-		  DECENDING = new SortArrowIcon(SortArrowIcon.DECENDING);
-	  }
-  }
+  public static Icon ASCENDING = new SortArrowIcon(SortArrowIcon.ASCENDING);
+  public static Icon DECENDING = new SortArrowIcon(SortArrowIcon.DECENDING);
   
 public SortHeaderRenderer() {
   setHorizontalTextPosition(LEFT);

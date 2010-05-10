@@ -56,6 +56,10 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 public class StochMathMapping extends MathMapping {
 
+	private static final String PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX = "_reverse";
+	private static final String PARAMETER_PROBABILITYRATE_PREFIX = "P_";
+
+
 	/**
 	 * The constructor, which pass the simulationContext pointer.
 	 * @param model cbit.vcell.model.Model
@@ -766,7 +770,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					
 					MathMapping.ProbabilityParameter probParm = null;
 					try{
-						probParm = addProbabilityParameter("P_"+jpName, exp,MathMapping.PARAMETER_ROLE_P,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
+						probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, exp,MathMapping.PARAMETER_ROLE_P,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
 					}catch(PropertyVetoException pve){
 						pve.printStackTrace();
 						throw new MappingException(pve.getMessage());
@@ -788,7 +792,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Reactant)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression("-"+String.valueOf(stoi)));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(-stoi));
 								jp.addAction(action);
 							}
 						}
@@ -798,7 +802,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Product)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(stoi));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(stoi));
 								jp.addAction(action);
 							}
 						}
@@ -809,7 +813,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				if (isReverseRatePresent) // one more jump process for a reversible reaction
 				{
 					// get jump process name
-					String jpName = TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
+					String jpName = TokenMangler.mangleToSName(reactionStep.getName())+PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX;
 					Expression exp = null;
 					
 					// reactions are mass actions
@@ -819,7 +823,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					
 					MathMapping.ProbabilityParameter probRevParm = null;
 					try{
-						probRevParm = addProbabilityParameter("P_"+jpName,exp,MathMapping.PARAMETER_ROLE_P_reverse,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
+						probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,exp,MathMapping.PARAMETER_ROLE_P_reverse,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
 					}catch(PropertyVetoException pve){
 						pve.printStackTrace();
 						throw new MappingException(pve.getMessage());
@@ -840,7 +844,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Reactant)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(stoi));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(stoi));
 								jp.addAction(action);
 							}
 						}
@@ -850,7 +854,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Product)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression("-"+String.valueOf(stoi)));
+								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(-stoi));
 								jp.addAction(action);
 							}
 						}
@@ -896,7 +900,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 
 						MathMapping.ProbabilityParameter probParm = null;
 						try{
-							probParm = addProbabilityParameter("P_"+jpName,probExp,MathMapping.PARAMETER_ROLE_P,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
+							probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,MathMapping.PARAMETER_ROLE_P,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
 						}catch(PropertyVetoException pve){
 							pve.printStackTrace();
 							throw new MappingException(pve.getMessage());
@@ -911,14 +915,14 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(-1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(-1));
 							jp.addAction(action);
 						}	
 						
 						sc = fluxFunc.getSpeciesContextInside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(1));
 							jp.addAction(action);
 						}
 							
@@ -927,7 +931,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					if(fluxFunc.getRateToOutside() != null && !fluxFunc.getRateToOutside().isZero()) 
 					{
 						//jump process name
-						String jpName = TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
+						String jpName = TokenMangler.mangleToSName(reactionStep.getName())+PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX;
 											
 						Expression rate = fluxFunc.getRateToOutside();
 						//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
@@ -950,7 +954,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						
 						MathMapping.ProbabilityParameter probRevParm = null;
 						try{
-							probRevParm = addProbabilityParameter("P_"+jpName,probRevExp,MathMapping.PARAMETER_ROLE_P_reverse,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
+							probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probRevExp,MathMapping.PARAMETER_ROLE_P_reverse,VCUnitDefinition.UNIT_molecules_per_s,reactionSpecs[i]);
 						}catch(PropertyVetoException pve){
 							pve.printStackTrace();
 							throw new MappingException(pve.getMessage());
@@ -964,14 +968,14 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(1));
 							jp.addAction(action);
 						}
 							
 						sc = fluxFunc.getSpeciesContextInside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),"inc", new Expression(-1));
+							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(-1));
 							jp.addAction(action);
 						}
 						
@@ -1099,7 +1103,7 @@ private Expression getSubstitutedExpr(Expression expr, boolean bConcentration, b
  * @exception cbit.vcell.mapping.MappingException The exception description.
  * @exception cbit.vcell.math.MathException The exception description.
  */
-private void refreshSpeciesContextMappings() throws cbit.vcell.parser.ExpressionException, MappingException, cbit.vcell.math.MathException 
+private void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException 
 {
 	//
 	// create a SpeciesContextMapping for each speciesContextSpec.

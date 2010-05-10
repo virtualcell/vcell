@@ -1,5 +1,10 @@
 package cbit.vcell.math;
-import cbit.vcell.parser.*;
+import org.vcell.util.Matchable;
+
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
 /**
  * Used by JumpProcess. Action describes how does a variable change
  * in a specific jump process. The operation can be increase, decrease
@@ -8,11 +13,13 @@ import cbit.vcell.parser.*;
  * @author:Tracy LI
  * @see:JumpProcess
  */
-public class Action implements org.vcell.util.Matchable,java.io.Serializable
+public class Action implements Matchable,java.io.Serializable
 {
 	private Variable var;
 	private String operation;
-	private cbit.vcell.parser.Expression operand;
+	private Expression operand;
+	
+	public final static String ACTION_INC = "inc";
 	
 /**
  * Action constructor comment.
@@ -30,7 +37,7 @@ public Action(Variable arg_var, String arg_operation, Expression arg_operand)
  * Creation date: (6/22/2006 8:46:17 AM)
  * @param symbolTable SymbolTable
  */
-public void bindExpression(cbit.vcell.parser.SymbolTable symbolTable) throws cbit.vcell.parser.ExpressionBindingException
+public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingException
 {
 	operand.bindExpression(symbolTable);
 	
@@ -42,7 +49,7 @@ public void bindExpression(cbit.vcell.parser.SymbolTable symbolTable) throws cbi
  * Creation date: (6/22/2006 11:01:21 AM)
  * @return boolean
  */
-public boolean compareEqual(org.vcell.util.Matchable object) 
+public boolean compareEqual(Matchable object) 
 {
 	Action action=(Action) object;
 	if(!action.var.compareEqual(var)) return false;//var
@@ -75,7 +82,7 @@ public double evaluateOperand() throws ExpressionException
  * Creation date: (6/22/2006 8:50:37 AM)
  * @param values double[]
  */
-public double evaluateOperand(double[] values) throws cbit.vcell.parser.ExpressionException
+public double evaluateOperand(double[] values) throws ExpressionException
 {
 	return operand.evaluateVector(values);
 }
@@ -86,7 +93,7 @@ public double evaluateOperand(double[] values) throws cbit.vcell.parser.Expressi
  * Creation date: (6/21/2006 4:22:53 PM)
  * @return cbit.vcell.parser.Expression
  */
-public cbit.vcell.parser.Expression getOperand() {
+public Expression getOperand() {
 	return operand;
 }
 

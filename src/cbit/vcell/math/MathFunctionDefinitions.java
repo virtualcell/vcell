@@ -28,7 +28,7 @@ public class MathFunctionDefinitions {
 	public final static SymbolTableFunctionEntry Function_regionVolume_current = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionvolume_current, VCUnitDefinition.UNIT_um3, null);
 	public final static SymbolTableFunctionEntry Function_field = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_field, VCUnitDefinition.UNIT_TBD, null);
 	
-	public static SymbolTableFunctionEntry createDeferedFunctionEntry(String formalDefinition, VCUnitDefinition vcUnitDefinition, NameScope nameScope){
+	private static SymbolTableFunctionEntry createDeferedFunctionEntry(String formalDefinition, VCUnitDefinition vcUnitDefinition, NameScope nameScope){
 		StringTokenizer tokens = new StringTokenizer(formalDefinition,"(),", false);
 		String funcName = tokens.nextToken();
 		ArrayList<FunctionArgType> argTypeList = new ArrayList<FunctionArgType>();

@@ -154,7 +154,7 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 		java.util.Enumeration enumVars = mathDesc.getVariables();
 		while (enumVars.hasMoreElements()){
 			Variable var = (Variable)enumVars.nextElement();
-			if (var.getName().startsWith("Kflux_") && var instanceof Function){
+			if (var.getName().startsWith(MathMapping.PARAMETER_K_FLUX_PREFIX) && var instanceof Function){
 				Expression kfluxExp = new Expression(((Function)var).getExpression());
 				kfluxExp.bindExpression(mathDesc);
 				kfluxExp = MathUtilities.substituteFunctions(kfluxExp,mathDesc);
