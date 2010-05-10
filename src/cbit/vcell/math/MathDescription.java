@@ -67,6 +67,8 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	public final static String MATH_DIFFERENT = "different";
 	public final static String MATH_EQUIVALENT = "equivalent";
 	public final static String MATH_SAME = "same";
+	
+	private boolean bRegionSizeFunctionsUsed = false;
 
 /**
  * MathDescription constructor comment.
@@ -1040,6 +1042,12 @@ public SymbolTableEntry getEntry(String id) throws ExpressionBindingException {
 	
 	entry = getFunctionHashTable().get(id);
 	if (entry!=null){
+		if (entry.equals(MathFunctionDefinitions.Function_regionArea_current)
+				|| entry.equals(MathFunctionDefinitions.Function_regionArea_indexed)
+				|| entry.equals(MathFunctionDefinitions.Function_regionVolume_current)
+				|| entry.equals(MathFunctionDefinitions.Function_regionVolume_indexed)) {
+			bRegionSizeFunctionsUsed = true;
+		}
 		return entry;
 	}
 
@@ -3124,6 +3132,11 @@ public boolean hasVolumeRegionEquations() {
 		}
 	}
 	return false;		
+}
+
+
+public boolean hasRegionSizeFunctions() {
+	return bRegionSizeFunctionsUsed;
 }
 
 }
