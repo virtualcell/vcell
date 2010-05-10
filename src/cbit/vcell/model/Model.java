@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+import org.vcell.sybil.util.miriam.XRefToURN;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -23,7 +25,10 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.dictionary.DBSpecies;
+import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
@@ -2758,6 +2763,38 @@ public void populateVCMetadata(boolean bMetadataPopulated) {
 	if (!bMetadataPopulated) {
 		for (int i = 0; i < fieldSpecies.length; i++) {
 			vcMetaData.setFreeTextAnnotation(fieldSpecies[i], fieldSpecies[i].getAnnotation());
+			if(fieldSpecies[i].getDBSpecies() != null){
+				DBSpecies dbSpecies = fieldSpecies[i].getDBSpecies();
+				try{
+					if(dbSpecies.getFormalSpeciesInfo().getFormalSpeciesType().equals(FormalSpeciesType.compound)){
+						//urn:miriam:kegg.compound
+						MiriamResource resource = vcMetaData.getMiriamManager().createMiriamResource(
+							"urn:miriam:kegg.compound:"+dbSpecies.getFormalSpeciesInfo().getFormalID());
+						Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
+						miriamResources.add(resource);
+						vcMetaData.getMiriamManager().addMiriamRefGroup(fieldSpecies[i], MIRIAMQualifier.BIO_isVersionOf,
+								miriamResources);
+					}else if(dbSpecies.getFormalSpeciesInfo().getFormalSpeciesType().equals(FormalSpeciesType.enzyme)){
+						//urn:miriam:ec-code
+						MiriamResource resource = vcMetaData.getMiriamManager().createMiriamResource(
+								"urn:miriam:ec-code:"+dbSpecies.getFormalSpeciesInfo().getFormalID());
+							Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
+							miriamResources.add(resource);
+							vcMetaData.getMiriamManager().addMiriamRefGroup(fieldSpecies[i], MIRIAMQualifier.BIO_isVersionOf,
+									miriamResources);
+
+					}else if(dbSpecies.getFormalSpeciesInfo().getFormalSpeciesType().equals(FormalSpeciesType.protein)){
+						MiriamResource resource = vcMetaData.getMiriamManager().createMiriamResource(
+								"urn:miriam:uniprot:"+dbSpecies.getFormalSpeciesInfo().getFormalID());
+							Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
+							miriamResources.add(resource);
+							vcMetaData.getMiriamManager().addMiriamRefGroup(fieldSpecies[i], MIRIAMQualifier.BIO_isVersionOf,
+									miriamResources);
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
 		}
 		for (int i = 0; i < fieldReactionSteps.length; i++) {
 			vcMetaData.setFreeTextAnnotation(fieldReactionSteps[i], fieldReactionSteps[i].getAnnotation());
