@@ -1,9 +1,20 @@
 package cbit.vcell.math;
-import cbit.vcell.solver.*;
-import cbit.vcell.parser.*;
-import cbit.vcell.solver.stoch.*;
-import cbit.vcell.geometry.*;
-import java.io.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
+
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.stoch.StochFileWriter;
 
 /**
  * Test program for Stochastic simulation.
@@ -37,7 +48,7 @@ public void getSimulationModel() throws Exception
 	//subDomain add variables
 	sd.addVarIniCondition(varIni); 
 
-	Action action1 = new Action(v,"inc", new Expression(1));
+	Action action1 = new Action(v,Action.ACTION_INC, new Expression(1));
 	Expression exp1 = null;
 	try
 	{
@@ -46,7 +57,7 @@ public void getSimulationModel() throws Exception
 	JumpProcess jp1 = new JumpProcess("R1", exp1); //create jumpPorcess1
 	jp1.addAction(action1);
 
-	Action action2 = new Action(v,"inc", new Expression(-1));
+	Action action2 = new Action(v,Action.ACTION_INC, new Expression(-1));
 	Expression exp2 = null;
 	try
 	{
@@ -55,7 +66,7 @@ public void getSimulationModel() throws Exception
 	JumpProcess jp2 = new JumpProcess("R2", exp2); //create jumpProcess2
 	jp2.addAction(action2);
 
-	Action action3 = new Action(v,"inc", new Expression(1));
+	Action action3 = new Action(v,Action.ACTION_INC, new Expression(1));
 	Expression exp3 = null;
 	try
 	{
@@ -64,7 +75,7 @@ public void getSimulationModel() throws Exception
 	JumpProcess jp3 = new JumpProcess("R3", exp3); //create jumpProcess3
 	jp3.addAction(action3);
 
-	Action action4 = new Action(v,"inc", new Expression(-1));
+	Action action4 = new Action(v,Action.ACTION_INC, new Expression(-1));
 	Expression exp4 = null;
 	try
 	{
@@ -89,9 +100,9 @@ public void getSimulationModel() throws Exception
 
 	// //copy from getODEExampleWagner---all are nonsense here , just for making MathDescriton valid
 	Geometry geo = new Geometry("getOdeExampleWagner()",0);
-	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0, 1.0, 1.0));
+	geo.getGeometrySpec().setExtent(new Extent(1.0, 1.0, 1.0));
 
-	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
+	geo.getGeometrySpec().setOrigin(new Origin(0.0, 0.0, 0.0));
 	md.setGeometry(geo);
 
 	//	Constants

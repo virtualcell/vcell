@@ -190,12 +190,12 @@ public class XmlReader extends XmlBase{
  * This constructor takes a parameter to specify if the KeyValue should be ignored
  * Creation date: (3/13/2001 12:16:30 PM)
  */
-public XmlReader(boolean readKeys) {
+    public XmlReader(boolean readKeys) {
 	super();
 	this.readKeysFlag = readKeys;
 }
 
-public XmlReader(boolean readKeys, Namespace argNS) {
+    public XmlReader(boolean readKeys, Namespace argNS) {
 	super();
 	this.readKeysFlag = readKeys;
 	this.vcNamespace = argNS;
@@ -208,7 +208,7 @@ public XmlReader(boolean readKeys, Namespace argNS) {
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public Action getAction(Element param, MathDescription md) throws XmlParseException, MathException, ExpressionException
+private Action getAction(Element param, MathDescription md) throws XmlParseException, MathException, ExpressionException
 {
 	//retrieve values
 	String operation = unMangle( param.getAttributeValue(XMLTags.OperationAttrTag) );
@@ -248,7 +248,7 @@ public Action getAction(Element param, MathDescription md) throws XmlParseExcept
  * @return cbit.vcell.geometry.AnalyticSubVolume
  * @param param org.jdom.Element
  */
-public AnalyticSubVolume getAnalyticSubVolume(Element param) throws XmlParseException{
+private AnalyticSubVolume getAnalyticSubVolume(Element param) throws XmlParseException{
 	//retrieve the attributes
 	String name = param.getAttributeValue(XMLTags.NameAttrTag);
 	int handle = Integer.parseInt( param.getAttributeValue(XMLTags.HandleAttrTag) );
@@ -379,7 +379,7 @@ public BioModel getBioModel(Element param) throws XmlParseException{
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public Catalyst getCatalyst(Element param, ReactionStep reaction, Model model) throws XmlParseException {
+private Catalyst getCatalyst(Element param, ReactionStep reaction, Model model) throws XmlParseException {
     //retrieve the key if there is one
     KeyValue key = null;
     String keystring = param.getAttributeValue(XMLTags.KeyValueAttrTag);
@@ -406,7 +406,7 @@ public Catalyst getCatalyst(Element param, ReactionStep reaction, Model model) t
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
+private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get attributes
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	int priority = -1;
@@ -530,7 +530,7 @@ public CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescripti
  * @return cbit.vcell.geometry.CompartmentSubVolume
  * @param param org.jdom.Element
  */
-public CompartmentSubVolume getCompartmentSubVolume(Element param) throws XmlParseException{
+private CompartmentSubVolume getCompartmentSubVolume(Element param) throws XmlParseException{
 	//retrieve the attributes
 	String name = param.getAttributeValue(XMLTags.NameAttrTag);
 	int handle = Integer.parseInt( param.getAttributeValue(XMLTags.HandleAttrTag) );
@@ -564,7 +564,7 @@ public CompartmentSubVolume getCompartmentSubVolume(Element param) throws XmlPar
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public Constant getConstant(Element param) throws XmlParseException {
+private Constant getConstant(Element param) throws XmlParseException {
 	//retrieve values
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	Expression exp = unMangleExpression(param.getText());
@@ -582,7 +582,7 @@ public Constant getConstant(Element param) throws XmlParseException {
  * @return cbit.vcell.geometry.ControlPointCurve
  * @param param org.jdom.Element
  */
-public ControlPointCurve getControlPointCurve(Element param) {
+private ControlPointCurve getControlPointCurve(Element param) {
 	ControlPointCurve curve = null;
 	//get Attributes
 	String type = param.getAttributeValue(XMLTags.TypeAttrTag);
@@ -627,7 +627,7 @@ public ControlPointCurve getControlPointCurve(Element param) {
  * @return cbit.vcell.geometry.Coordinate
  * @param param org.jdom.Element
  */
-public Coordinate getCoordinate(Element param) {
+private Coordinate getCoordinate(Element param) {
 	//get attributes
 	double x = Double.parseDouble( param.getAttributeValue(XMLTags.XAttrTag) );
 	double y = Double.parseDouble( param.getAttributeValue(XMLTags.YAttrTag) );
@@ -646,7 +646,7 @@ public Coordinate getCoordinate(Element param) {
  * @return cbit.vcell.dictionary.DBFormalSpecies
  * @param formalSpeciesElement org.jdom.Element
  */
-public DBFormalSpecies getDBFormalSpecies(Element formalSpeciesElement) throws XmlParseException {
+private DBFormalSpecies getDBFormalSpecies(Element formalSpeciesElement) throws XmlParseException {
 	//read key
 	String keystring = formalSpeciesElement.getAttributeValue(XMLTags.KeyValueAttrTag);
 	KeyValue key = new KeyValue(keystring);
@@ -678,7 +678,7 @@ public DBFormalSpecies getDBFormalSpecies(Element formalSpeciesElement) throws X
  * @return cbit.vcell.dictionary.DBSpecies
  * @param dbSpeciesElement org.jdom.Element
  */
-public DBSpecies getDBSpecies(Element dbSpeciesElement) throws XmlParseException {
+private DBSpecies getDBSpecies(Element dbSpeciesElement) throws XmlParseException {
 	//Read the key
 	String keystring = dbSpeciesElement.getAttributeValue(XMLTags.KeyValueAttrTag);
 	KeyValue key = new KeyValue(keystring);
@@ -712,7 +712,7 @@ public DBSpecies getDBSpecies(Element dbSpeciesElement) throws XmlParseException
  * @return cbit.vcell.model.Diagram
  * @param param org.jdom.Element
  */
-public Diagram getDiagram(Element param, Model model) throws XmlParseException{
+private Diagram getDiagram(Element param, Model model) throws XmlParseException{
 	//get Attibutes
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	String structureName = unMangle( param.getAttributeValue(XMLTags.StructureAttrTag) );
@@ -742,7 +742,7 @@ public Diagram getDiagram(Element param, Model model) throws XmlParseException{
  * @return cbit.vcell.mapping.ElectricalStimulus
  * @param param org.jdom.Element
  */
-public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext currentSimulationContext) throws XmlParseException{
+private ElectricalStimulus getElectricalStimulus(Element param, SimulationContext currentSimulationContext) throws XmlParseException{
 	ElectricalStimulus clampStimulus = null;
 	
 	//get name
@@ -910,7 +910,7 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
  * Creation date: (6/6/2002 4:22:55 PM)
  * @return cbit.vcell.mapping.Electrode
  */
-public Electrode getElectrode(org.jdom.Element elem, SimulationContext currentSimulationContext) {
+private Electrode getElectrode(org.jdom.Element elem, SimulationContext currentSimulationContext) {
 	//retrieve feature
 	String featureName = unMangle(elem.getAttributeValue(XMLTags.FeatureAttrTag));
 	Feature feature = (Feature)currentSimulationContext.getModel().getStructure(featureName);
@@ -929,7 +929,7 @@ public Electrode getElectrode(org.jdom.Element elem, SimulationContext currentSi
  * @return cbit.vcell.solver.ErrorTolerance
  * @param param org.jdom.Element
  */
-public ErrorTolerance getErrorTolerance(Element param) {
+private ErrorTolerance getErrorTolerance(Element param) {
 	//getAttributes
 	double absolut = Double.parseDouble( param.getAttributeValue(XMLTags.AbsolutErrorToleranceTag) );
 	double relative = Double.parseDouble( param.getAttributeValue(XMLTags.RelativeErrorToleranceTag) );
@@ -941,7 +941,7 @@ public ErrorTolerance getErrorTolerance(Element param) {
 }
 
 
-public Extent getExtent(Element parsed) {
+Extent getExtent(Element parsed) {
 	double x = Double.parseDouble( parsed.getAttributeValue(XMLTags.XAttrTag) );
 	double y = Double.parseDouble( parsed.getAttributeValue(XMLTags.YAttrTag) );
 	double z = Double.parseDouble( parsed.getAttributeValue(XMLTags.ZAttrTag) );
@@ -958,7 +958,7 @@ public Extent getExtent(Element parsed) {
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public FastSystem getFastSystem(
+private FastSystem getFastSystem(
     Element param,
     MathDescription mathDesc)
     throws XmlParseException {
@@ -1011,7 +1011,7 @@ public FastSystem getFastSystem(
  * @return cbit.vcell.model.Structure
  * @param param org.jdom.Element
  */
-public Structure getFeature(Element param) throws XmlParseException {
+private Structure getFeature(Element param) throws XmlParseException {
 	Feature newfeature = null;
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 
@@ -1043,7 +1043,7 @@ public Structure getFeature(Element param) throws XmlParseException {
  * @return cbit.vcell.mapping.FeatureMapping
  * @param param org.jdom.Element
  */
-public FeatureMapping getFeatureMapping(Element param, SimulationContext simulationContext) throws XmlParseException{
+private FeatureMapping getFeatureMapping(Element param, SimulationContext simulationContext) throws XmlParseException{
 	//Retrieve attributes
 	String featurename = unMangle( param.getAttributeValue(XMLTags.FeatureAttrTag) );
 	String subvolumename = param.getAttributeValue(XMLTags.SubVolumeAttrTag);
@@ -1130,7 +1130,7 @@ public FeatureMapping getFeatureMapping(Element param, SimulationContext simulat
  * @return cbit.vcell.math.FilamentRegionVariable
  * @param param org.jdom.Element
  */
-public FilamentRegionVariable getFilamentRegionVariable(Element param) {
+private FilamentRegionVariable getFilamentRegionVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
 	Domain domain = null;
@@ -1152,7 +1152,7 @@ public FilamentRegionVariable getFilamentRegionVariable(Element param) {
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public FilamentSubDomain getFilamentSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
+private FilamentSubDomain getFilamentSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get name
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	
@@ -1189,7 +1189,7 @@ public FilamentSubDomain getFilamentSubDomain(Element param, MathDescription mat
  * @return cbit.vcell.math.FilamentVariable
  * @param param org.jdom.Element
  */
-public FilamentVariable getFilamentVariable(Element param) {
+private FilamentVariable getFilamentVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
 	Domain domain = null;
@@ -1209,7 +1209,7 @@ public FilamentVariable getFilamentVariable(Element param) {
  * @return cbit.vcell.model.FluxReaction
  * @param param org.jdom.Element
  */
-public FluxReaction getFluxReaction( Element param, Model model, VariableHash varsHash) throws XmlParseException, java.beans.PropertyVetoException {
+private FluxReaction getFluxReaction( Element param, Model model, VariableHash varsHash) throws XmlParseException, java.beans.PropertyVetoException {
 	//retrieve the key if there is one
 	KeyValue key = null;
 	String keystring = param.getAttributeValue(XMLTags.KeyValueAttrTag);
@@ -1307,7 +1307,7 @@ public FluxReaction getFluxReaction( Element param, Model model, VariableHash va
  * @return cbit.vcell.dictionary.FormalSpeciesInfo
  * @param speciesInfoElement org.jdom.Element
  */
-public FormalSpeciesInfo getFormalSpeciesInfo(Element speciesInfoElement) throws XmlParseException {
+private FormalSpeciesInfo getFormalSpeciesInfo(Element speciesInfoElement) throws XmlParseException {
 	//get formalID
 	String formalID = unMangle(speciesInfoElement.getAttributeValue(XMLTags.FormalIDTag));
 	//get names
@@ -1421,7 +1421,7 @@ public FormalSpeciesInfo getFormalSpeciesInfo(Element speciesInfoElement) throws
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public Function getFunction(Element param) throws XmlParseException {
+private Function getFunction(Element param) throws XmlParseException {
 	//get attributes
 	String name = unMangle( param.getAttributeValue( XMLTags.NameAttrTag) );
 	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
@@ -1439,7 +1439,7 @@ public Function getFunction(Element param) throws XmlParseException {
 	return function;
 }
 
-public AnnotatedFunction getOutputFunction(Element param) throws XmlParseException {
+private AnnotatedFunction getOutputFunction(Element param) throws XmlParseException {
 	//get attributes
 	String name = unMangle( param.getAttributeValue( XMLTags.NameAttrTag) );
 	String temp = param.getText();
@@ -1567,7 +1567,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 }
 
 
-    public GeometrySurfaceDescription getGeometrySurfaceDescription(Element param, Geometry geom) throws XmlParseException {
+    private GeometrySurfaceDescription getGeometrySurfaceDescription(Element param, Geometry geom) throws XmlParseException {
  
 	    GeometrySurfaceDescription gsd = geom.getGeometrySurfaceDescription();
 	    String cutoffStr = param.getAttributeValue(XMLTags.CutoffFrequencyAttrTag);
@@ -1665,7 +1665,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
  * @return cbit.vcell.server.GroupAccess
  * @param xmlGroup org.jdom.Element
  */
-public GroupAccess getGroupAccess(Element xmlGroup) {
+private GroupAccess getGroupAccess(Element xmlGroup) {
 	//guess the type of group
 	String temp = xmlGroup.getAttributeValue(XMLTags.TypeAttrTag);
 	java.math.BigDecimal type = new java.math.BigDecimal(temp);
@@ -1710,7 +1710,7 @@ public GroupAccess getGroupAccess(Element xmlGroup) {
  * @return cbit.vcell.geometry.ImageSubVolume
  * @param param org.jdom.Element
  */
-public ImageSubVolume getImageSubVolume(Element param) throws XmlParseException{
+private ImageSubVolume getImageSubVolume(Element param) throws XmlParseException{
 	//retrieve the attributes
 	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	int handle = Integer.parseInt( param.getAttributeValue(XMLTags.HandleAttrTag) );
@@ -1762,7 +1762,7 @@ public ImageSubVolume getImageSubVolume(Element param) throws XmlParseException{
  * @return cbit.vcell.math.InsideVariable
  * @param param org.jdom.Element
  */
-public InsideVariable getInsideVariable(Element param) {
+private InsideVariable getInsideVariable(Element param) {
 	//Get name
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	//get VolVariableRef
@@ -1782,7 +1782,7 @@ public InsideVariable getInsideVariable(Element param) {
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public JumpCondition getJumpCondition(Element param, MathDescription mathDesc) throws XmlParseException {
+private JumpCondition getJumpCondition(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get VolVariable ref
 	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	
@@ -1823,7 +1823,7 @@ public JumpCondition getJumpCondition(Element param, MathDescription mathDesc) t
  * @param md cbit.vcell.math.MathDescription
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public JumpProcess getJumpProcess(Element param, MathDescription md) throws XmlParseException 
+private JumpProcess getJumpProcess(Element param, MathDescription md) throws XmlParseException 
 {
 	//name
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
@@ -1853,7 +1853,7 @@ public JumpProcess getJumpProcess(Element param, MathDescription md) throws XmlP
  * @return cbit.vcell.model.Kinetics
  * @param param org.jdom.Element
  */
-public Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash varHash) throws XmlParseException{
+private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash varHash) throws XmlParseException{
 
 	String type = param.getAttributeValue(XMLTags.KineticsTypeAttrTag);
 	Kinetics newKinetics = null;
@@ -2043,7 +2043,7 @@ public Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash v
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public MathDescription getMathDescription(Element param) throws XmlParseException {
+MathDescription getMathDescription(Element param) throws XmlParseException {
 	MathDescription mathdes = null;
 	Element tempelement;
 
@@ -2282,7 +2282,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 	return mathdes;
 }
 
-public RandomVariable getRandomVariable(Element param) throws XmlParseException {
+private RandomVariable getRandomVariable(Element param) throws XmlParseException {
 	//get attributes
 	String name = unMangle(param.getAttributeValue( XMLTags.NameAttrTag));
 	Element element = param.getChild(XMLTags.RandomVariableSeedTag, vcNamespace);
@@ -2516,7 +2516,7 @@ public MathModel getMathModel(Element param) throws XmlParseException{
  * @return cbit.vcell.solver.MathOverrides
  * @param param org.jdom.Element
  */
-public MathOverrides getMathOverrides(Element param, Simulation simulation) throws XmlParseException{
+private MathOverrides getMathOverrides(Element param, Simulation simulation) throws XmlParseException{
 
 	MathOverrides mathOverrides = null;
 	try {
@@ -2558,7 +2558,7 @@ public MathOverrides getMathOverrides(Element param, Simulation simulation) thro
  * @return cbit.vcell.model.Membrane
  * @param param org.jdom.Element
  */
-public Membrane getMembrane(Element param, List<Structure> featureList) throws XmlParseException {
+private Membrane getMembrane(Element param, List<Structure> featureList) throws XmlParseException {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	Membrane newmembrane = null;
 
@@ -2625,7 +2625,7 @@ public Membrane getMembrane(Element param, List<Structure> featureList) throws X
  * @return cbit.vcell.mapping.MembraneMapping
  * @param param org.jdom.Element
  */
-public MembraneMapping getMembraneMapping(Element param, SimulationContext simulationContext) throws XmlParseException{
+private MembraneMapping getMembraneMapping(Element param, SimulationContext simulationContext) throws XmlParseException{
 	//Retrieve attributes
 	String membranename = unMangle( param.getAttributeValue(XMLTags.MembraneAttrTag) );
 	
@@ -2722,7 +2722,7 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public MembraneRegionEquation getMembraneRegionEquation(Element param, MathDescription mathDesc) throws XmlParseException {
+private MembraneRegionEquation getMembraneRegionEquation(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get attributes
 	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	
@@ -2783,7 +2783,7 @@ public MembraneRegionEquation getMembraneRegionEquation(Element param, MathDescr
  * @return cbit.vcell.math.MembraneRegionVariable
  * @param param org.jdom.Element
  */
-public MembraneRegionVariable getMembraneRegionVariable(Element param) {
+private MembraneRegionVariable getMembraneRegionVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
 	Domain domain = null;
@@ -2805,7 +2805,7 @@ public MembraneRegionVariable getMembraneRegionVariable(Element param) {
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public MembraneSubDomain getMembraneSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
+private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get compartmentSubDomain references
 	//inside
 	String name = unMangle( param.getAttributeValue(XMLTags.InsideCompartmentTag) );
@@ -2923,7 +2923,7 @@ public MembraneSubDomain getMembraneSubDomain(Element param, MathDescription mat
  * @return cbit.vcell.math.MemVariable
  * @param param org.jdom.Element
  */
-public MemVariable getMemVariable(Element param) {
+private MemVariable getMemVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
 	Domain domain = null;
@@ -2944,7 +2944,7 @@ public MemVariable getMemVariable(Element param) {
  * @return cbit.vcell.mesh.MeshSpecification
  * @param param org.jdom.Element
  */
-public MeshSpecification getMeshSpecification(Element param, Geometry geometry) throws XmlParseException {
+private MeshSpecification getMeshSpecification(Element param, Geometry geometry) throws XmlParseException {
 	//*** create new MeshSpecification ***
 	MeshSpecification meshSpec = new MeshSpecification(geometry);
 	
@@ -2975,7 +2975,7 @@ public MeshSpecification getMeshSpecification(Element param, Geometry geometry) 
  * @return cbit.vcell.model.Model
  * @param param org.jdom.Element
  */
-public Model getModel(Element param) throws XmlParseException {
+private Model getModel(Element param) throws XmlParseException {
 	if (param==null) {
 		throw new XmlParseException("Invalid 'NULL' XML 'model' element arrived!");
 	}
@@ -3081,7 +3081,7 @@ public Model getModel(Element param) throws XmlParseException {
  * @return cbit.vcell.model.NodeReference
  * @param param org.jdom.Element
  */
-public NodeReference getNodeReference(Element param) throws XmlParseException{
+private NodeReference getNodeReference(Element param) throws XmlParseException{
 	String tempname = param.getName();
 	NodeReference newnoderef = null;
 	
@@ -3119,7 +3119,7 @@ public NodeReference getNodeReference(Element param) throws XmlParseException{
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public OdeEquation getOdeEquation(Element param, MathDescription mathDesc) throws XmlParseException {
+private OdeEquation getOdeEquation(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get attributes
 	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	//find reference in the dictionnary
@@ -3165,7 +3165,7 @@ public OdeEquation getOdeEquation(Element param, MathDescription mathDesc) throw
 }
 
 
-public Origin getOrigin(Element parsed){
+private Origin getOrigin(Element parsed){
 	double x = Double.parseDouble( parsed.getAttributeValue(XMLTags.XAttrTag) );
 	double y = Double.parseDouble( parsed.getAttributeValue(XMLTags.YAttrTag) );
 	double z = Double.parseDouble( parsed.getAttributeValue(XMLTags.ZAttrTag) );
@@ -3181,7 +3181,7 @@ public Origin getOrigin(Element parsed){
  * @return cbit.vcell.solver.TimeStep
  * @param param org.jdom.Element
  */
-public OutputTimeSpec getOutputTimeSpec(Element param) {
+private OutputTimeSpec getOutputTimeSpec(Element param) {
 	if (param != null) {
 		//get attributes
 		if (param.getAttributeValue(XMLTags.KeepEveryAttrTag) != null) {
@@ -3206,7 +3206,7 @@ public OutputTimeSpec getOutputTimeSpec(Element param) {
  * @return cbit.vcell.math.InsideVariable
  * @param param org.jdom.Element
  */
-public OutsideVariable getOutsideVariable(Element param) {
+private OutsideVariable getOutsideVariable(Element param) {
 	//Get name
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	//get VolVariableRef
@@ -3227,7 +3227,7 @@ public OutsideVariable getOutsideVariable(Element param) {
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
 
-public PdeEquation getPdeEquation(Element param, MathDescription mathDesc) throws XmlParseException {
+private PdeEquation getPdeEquation(Element param, MathDescription mathDesc) throws XmlParseException {
     //Retrieve the variable reference
     String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
     boolean bSteady = false;
@@ -3366,7 +3366,7 @@ public PdeEquation getPdeEquation(Element param, MathDescription mathDesc) throw
  * @return cbit.image.VCImageRegion
  * @param param org.jdom.Element
  */
-public VCPixelClass getPixelClass(Element param) {
+private VCPixelClass getPixelClass(Element param) {
 	//Read attributes
 	String pixelClassName = unMangle(param.getAttributeValue( XMLTags.NameAttrTag));
 	int pixelvalue = Integer.parseInt( param.getAttributeValue(XMLTags.ImagePixelValueTag) );
@@ -3390,7 +3390,7 @@ public VCPixelClass getPixelClass(Element param) {
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public Product getProduct(Element param, SimpleReaction reaction, Model model) throws XmlParseException {
+private Product getProduct(Element param, SimpleReaction reaction, Model model) throws XmlParseException {
     //retrieve the key if there is one
     KeyValue key = null;
     String keystring = param.getAttributeValue(XMLTags.KeyValueAttrTag);
@@ -3429,7 +3429,7 @@ public Product getProduct(Element param, SimpleReaction reaction, Model model) t
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public Reactant getReactant(Element param, SimpleReaction reaction, Model model) throws XmlParseException {
+private Reactant getReactant(Element param, SimpleReaction reaction, Model model) throws XmlParseException {
     //retrieve the key if there is one
     String keystring = param.getAttributeValue(XMLTags.KeyValueAttrTag);
     KeyValue key = null;
@@ -3467,7 +3467,7 @@ public Reactant getReactant(Element param, SimpleReaction reaction, Model model)
  * @return cbit.vcell.mapping.ReactionSpec
  * @param param org.jdom.Element
  */
-public ReactionSpec getReactionSpec(Element param, Model model) throws XmlParseException{
+private ReactionSpec getReactionSpec(Element param, Model model) throws XmlParseException{
 	ReactionSpec reactionspec = null;
 
 	//retrieve the reactionstep reference
@@ -3525,7 +3525,7 @@ private ArrayList<String> getReservedVars() {
  * @return cbit.vcell.model.SimpleReaction
  * @param param org.jdom.Element
  */
-public SimpleReaction getSimpleReaction(Element param, Model model, VariableHash varsHash) throws XmlParseException {
+private SimpleReaction getSimpleReaction(Element param, Model model, VariableHash varsHash) throws XmlParseException {
     //resolve reference to the  structure that it belongs to.
     String structureName = unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
     Structure structureref = (Structure) model.getStructure(structureName);
@@ -3654,7 +3654,7 @@ public SimpleReaction getSimpleReaction(Element param, Model model, VariableHash
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public Simulation getSimulation(Element param, MathDescription mathDesc) throws XmlParseException {
+Simulation getSimulation(Element param, MathDescription mathDesc) throws XmlParseException {
 	//retrive metadata (if any)
 	SimulationVersion simulationVersion = getSimulationVersion(param.getChild(XMLTags.VersionTag, vcNamespace));
 	
@@ -3726,7 +3726,7 @@ public Simulation getSimulation(Element param, MathDescription mathDesc) throws 
  * @return cbit.vcell.mapping.SimulationContext
  * @param param org.jdom.Element
  */
-public SimulationContext getSimulationContext(Element param, BioModel biomodel) throws XmlParseException{
+private SimulationContext getSimulationContext(Element param, BioModel biomodel) throws XmlParseException{
 	//get the attributes
 	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag)); //name
 	boolean bStoch = false;
@@ -3978,7 +3978,7 @@ public SimulationContext getSimulationContext(Element param, BioModel biomodel) 
  * @return cbit.sql.Version
  * @param param org.jdom.Element
  */
-public SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlParseException {
+private SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlParseException {
 	if (xmlVersion == null) {
 		return null;
 	}
@@ -4054,7 +4054,7 @@ public SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlPars
  * @param param org.jdom.Element
  * @param simulation cbit.vcell.solver.Simulation
  */
-public SolverTaskDescription getSolverTaskDescription(Element param, Simulation simulation) throws XmlParseException{
+private SolverTaskDescription getSolverTaskDescription(Element param, Simulation simulation) throws XmlParseException{
 	//*** create new SolverTaskDescription ***
 	SolverTaskDescription solverTaskDesc = new SolverTaskDescription(simulation);
 	//Added July 22nd, 2007, used as condition for stochSimOptions or stochHybridOprtions
@@ -4200,7 +4200,7 @@ public ArrayList<AnnotatedFunction> getOutputFunctions(Element outputFunctionsEl
  * @return cbit.vcell.model.Species
  * @param param org.jdom.Element
  */
-public Species getSpecies(Element param) throws XmlParseException {
+private Species getSpecies(Element param) throws XmlParseException {
 	//get its data
 	String specieName = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	String specieAnnotation = null;
@@ -4240,7 +4240,7 @@ public Species getSpecies(Element param) throws XmlParseException {
  * @return cbit.vcell.model.SpeciesContext
  * @param param org.jdom.Element
  */
-public SpeciesContext getSpeciesContext(Element param, Model model) throws XmlParseException{
+private SpeciesContext getSpeciesContext(Element param, Model model) throws XmlParseException{
 	//retrieve its information
 	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	String hasOverrideString = param.getAttributeValue(XMLTags.HasOverrideAttrTag);
@@ -4283,7 +4283,7 @@ public SpeciesContext getSpeciesContext(Element param, Model model) throws XmlPa
  * @return cbit.vcell.mapping.SpeciesContextSpec
  * @param param org.jdom.Element
  */
-public void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext rxnContext, Model model) throws XmlParseException{
+private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext rxnContext, Model model) throws XmlParseException{
 	for (int i = 0; i < scsChildren.size(); i++) {
 		Element scsElement = scsChildren.get(i); 
 		SpeciesContextSpec specspec = null;
@@ -4455,7 +4455,7 @@ public void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext rx
  * @return cbit.vcell.solver.TimeStep
  * @param param org.jdom.Element
  */
-public StochSimOptions getStochSimOptions(Element param, boolean isHybrid) {
+private StochSimOptions getStochSimOptions(Element param, boolean isHybrid) {
 	//get attributes
 	boolean isUseCustomSeed  = Boolean.parseBoolean( param.getAttributeValue(XMLTags.UseCustomSeedAttrTag) );
 	int customSeed = 0;
@@ -4489,7 +4489,7 @@ public StochSimOptions getStochSimOptions(Element param, boolean isHybrid) {
  * @return cbit.vcell.math.StochVolVariable
  * @param param org.jdom.Element
  */
-public StochVolVariable getStochVolVariable(Element param) 
+private StochVolVariable getStochVolVariable(Element param) 
 {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	//-- create new StochVolVariable object
@@ -4504,7 +4504,7 @@ public StochVolVariable getStochVolVariable(Element param)
  * @return SubVolume
  * @param param org.jdom.Element
  */
-public SubVolume getSubVolume(Element param) throws XmlParseException{
+private SubVolume getSubVolume(Element param) throws XmlParseException{
 	String typeString = param.getAttributeValue(XMLTags.TypeAttrTag);
 	SubVolume newsubvolume = null;
 	
@@ -4541,7 +4541,7 @@ public SubVolume getSubVolume(Element param) throws XmlParseException{
  * @return cbit.vcell.solver.TimeBounds
  * @param param org.jdom.Element
  */
-public TimeBounds getTimeBounds(Element param) {
+private TimeBounds getTimeBounds(Element param) {
 	//get Attributes
 	double start = Double.parseDouble( param.getAttributeValue(XMLTags.StartTimeAttrTag) );
 	double end = Double.parseDouble( param.getAttributeValue(XMLTags.EndTimeAttrTag) );
@@ -4559,7 +4559,7 @@ public TimeBounds getTimeBounds(Element param) {
  * @return cbit.vcell.solver.TimeStep
  * @param param org.jdom.Element
  */
-public TimeStep getTimeStep(Element param) {
+private TimeStep getTimeStep(Element param) {
 	//get attributes
 	double min = Double.parseDouble( param.getAttributeValue(XMLTags.MinTimeAttrTag) );
 	double def = Double.parseDouble( param.getAttributeValue(XMLTags.DefaultTimeAttrTag) );
@@ -4578,7 +4578,7 @@ public TimeStep getTimeStep(Element param) {
  * @return cbit.vcell.server.User
  * @param param org.jdom.Element
  */
-public User getUser(Element param) {
+private User getUser(Element param) {
 	User newuser =
 		new User(
 			param.getAttributeValue( XMLTags.NameAttrTag),
@@ -4622,7 +4622,7 @@ private void addResevedSymbols(VariableHash varHash) throws XmlParseException {
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public VarIniCondition getVarIniCondition(Element param, MathDescription md) throws XmlParseException, MathException, ExpressionException
+private VarIniCondition getVarIniCondition(Element param, MathDescription md) throws XmlParseException, MathException, ExpressionException
 {
 	//retrieve values
 	Expression exp = unMangleExpression(param.getText());
@@ -4650,7 +4650,7 @@ public VarIniCondition getVarIniCondition(Element param, MathDescription md) thr
  * @return VCImage
  * @param param org.jdom.Element
  */
-public VCImage getVCImage(Element param, Extent extent) throws XmlParseException{
+VCImage getVCImage(Element param, Extent extent) throws XmlParseException{
 	//try to get metadata(version)
 	Version version = getVersion(param.getChild(XMLTags.VersionTag, vcNamespace));
 	
@@ -4733,7 +4733,7 @@ public VCImage getVCImage(Element param, Extent extent) throws XmlParseException
  * @return cbit.sql.Version
  * @param param org.jdom.Element
  */
-public Version getVersion(Element xmlVersion) throws XmlParseException {
+private Version getVersion(Element xmlVersion) throws XmlParseException {
 	if (xmlVersion == null) {
 		return null;
 	}
@@ -4802,7 +4802,7 @@ public Version getVersion(Element xmlVersion) throws XmlParseException {
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public VolumeRegionEquation getVolumeRegionEquation(Element param, MathDescription mathDesc) throws XmlParseException {
+private VolumeRegionEquation getVolumeRegionEquation(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get attributes
 	String varname = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	
@@ -4861,7 +4861,7 @@ public VolumeRegionEquation getVolumeRegionEquation(Element param, MathDescripti
  * @return cbit.vcell.math.VolumeRegionVariable
  * @param param org.jdom.Element
  */
-public VolumeRegionVariable getVolumeRegionVariable(Element param) {
+private VolumeRegionVariable getVolumeRegionVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
 	Domain domain = null;
@@ -4881,7 +4881,7 @@ public VolumeRegionVariable getVolumeRegionVariable(Element param) {
  * @return cbit.vcell.math.VolVariable
  * @param param org.jdom.Element
  */
-public VolVariable getVolVariable(Element param) {
+private VolVariable getVolVariable(Element param) {
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
 	Domain domain = null;

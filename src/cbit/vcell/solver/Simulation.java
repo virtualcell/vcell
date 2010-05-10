@@ -432,7 +432,10 @@ public Set<SolverFeature> getRequiredFeatures() {
 		requiredFeatures.add(SolverFeature.Feature_SerialParameterScans);
 	}
 	if (getMathDescription().hasVolumeRegionEquations()) {
-		requiredFeatures.add(SolverFeature.Feature_VolumeRegionEquation);
+		requiredFeatures.add(SolverFeature.Feature_VolumeRegionEquations);
+	}
+	if (getMathDescription().hasRegionSizeFunctions()) {
+		requiredFeatures.add(SolverFeature.Feature_RegionSizeFunctions);
 	}
 	return requiredFeatures;
 }

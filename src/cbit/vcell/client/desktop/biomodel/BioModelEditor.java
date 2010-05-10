@@ -1,8 +1,12 @@
 package cbit.vcell.client.desktop.biomodel;
+import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.util.Hashtable;
 
+import javax.swing.Icon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -10,6 +14,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.Versionable;
@@ -552,7 +557,20 @@ private javax.swing.JMenu getApplicationMenu() {
 			ivjApplicationMenu = new javax.swing.JMenu();
 			ivjApplicationMenu.setName("ApplicationMenu");
 			ivjApplicationMenu.setMnemonic('a');
+			ivjApplicationMenu.setIcon(new Icon() {
+				public void paintIcon(Component c, Graphics g, int x, int y) {
+				    Polygon p = new Polygon();
+				    p.addPoint(x, y);
+				    p.addPoint(x+getIconWidth(), y);
+				    p.addPoint(x+getIconWidth()/2, y+getIconHeight());
+				    g.fillPolygon(p);
+
+				}
+				public int getIconWidth() { return 8; }
+				public int getIconHeight() { return 4; }
+			    } );
 			ivjApplicationMenu.setText("Applications");
+			ivjApplicationMenu.setHorizontalTextPosition(SwingConstants.LEFT);
 			ivjApplicationMenu.add(getJMenuNew());
 			ivjApplicationMenu.add(getCopyMenuItem());
 			ivjApplicationMenu.add(getJSeparator1());

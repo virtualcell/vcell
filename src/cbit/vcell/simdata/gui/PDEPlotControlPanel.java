@@ -42,6 +42,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.Variable;
@@ -98,7 +99,9 @@ public class PDEPlotControlPanel extends JPanel {
 			public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
 				String varName = dataidentifier.getName();
 				boolean bSizeVar = varName.startsWith(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName()) 
-						|| varName.startsWith(MathFunctionDefinitions.Function_regionArea_current.getFunctionName());
+						|| varName.startsWith(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())
+								|| varName.startsWith(MathMapping.PARAMETER_SIZE_FUNCTION_PREFIX);
+				
 				if (filterSetName.equals(REGION_SIZE_FILTER_SET)) {
 					return bSizeVar;
 				}
