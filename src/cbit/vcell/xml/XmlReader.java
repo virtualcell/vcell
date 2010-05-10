@@ -2182,6 +2182,12 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		}
 	}
 	
+	// Throw error if math contains BioEvents (not supported in 4.7)
+	iterator = param.getChildren(XMLTags.EventTag, vcNamespace).iterator();
+	while (iterator.hasNext()) {
+		throw new RuntimeException("Events are not supported in VCell 4.7. Please use VCell 4.8 or later.");
+	}
+	
 	return mathdes;
 }
 
@@ -2240,6 +2246,12 @@ public cbit.vcell.mathmodel.MathModel getMathModel(Element param) throws XmlPars
 		throw new XmlParseException("It needs to be a Geometry within a MathModel!");
 	}
 		
+	// Throw error if math model contains OutputFunctions (not supported in 4.7)
+	Element outputFunctionsElement = param.getChild(XMLTags.OutputFunctionsTag, vcNamespace);
+	if (outputFunctionsElement != null) {
+		throw new RuntimeException("Output Functions are not supported in VCell 4.7. Please use VCell 4.8 or later.");
+	}
+
 	//Set simulations contexts (if any)
 	List childList = param.getChildren(XMLTags.SimulationTag, vcNamespace);
 	cbit.vcell.solver.Simulation[] simList = new cbit.vcell.solver.Simulation[childList.size()];
@@ -3686,6 +3698,12 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	children = tempelement.getChildren(XMLTags.SpeciesContextSpecTag, vcNamespace);
 	getSpeciesContextSpecs(children, newsimcontext.getReactionContext());
 
+	// Throw error if model contains OutputFunctions (not supported in 4.7)
+	Element outputFunctionsElement = param.getChild(XMLTags.OutputFunctionsTag, vcNamespace);
+	if (outputFunctionsElement != null) {
+		throw new RuntimeException("Output Functions are not supported in VCell 4.7. Please use VCell 4.8 or later.");
+	}
+
 	//Retrieve Electrical context
 	org.jdom.Element electElem = param.getChild(XMLTags.ElectricalContextTag, vcNamespace);
 	
@@ -3716,6 +3734,12 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 			}
 		}
 	}	
+
+	// Throw error if model contains BioEvents (not supported in 4.7)
+	tempelement = param.getChild(XMLTags.BioEventsTag, vcNamespace);
+	if(tempelement != null){
+		throw new RuntimeException("Events are not supported in VCell 4.7. Please use VCell 4.8 or later.");
+	}
 
 	org.jdom.Element analysisTaskListElement = param.getChild(XMLTags.AnalysisTaskListTag, vcNamespace);
 	if (analysisTaskListElement!=null){
