@@ -2109,6 +2109,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		}
 	}
 	
+	SizeFunctionNotSupportedException sizeFunctionNotSupportedException = null;
 	//Retrieve all the Functions //This needs to be processed before all the variables are read!
 	iterator = param.getChildren(XMLTags.FunctionTag, vcNamespace).iterator();
 	while ( iterator.hasNext() ){
@@ -2117,6 +2118,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 			varHash.addVariable(getFunction(tempelement));
 		} catch (SizeFunctionNotSupportedException ex) {
 			// ignore size functions
+			sizeFunctionNotSupportedException = ex;
 			ex.printStackTrace(System.out);
 		}catch (MappingException e){
 			e.printStackTrace();
@@ -2138,6 +2140,11 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 	} catch (cbit.vcell.parser.ExpressionBindingException e) {
 		e.printStackTrace();
 		throw new XmlParseException("A ExpressionBindingException was fired when adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
+	} catch (VariableHash.UnresolvedException ex) {
+		if (sizeFunctionNotSupportedException != null && ex.getName().startsWith("Size_")) {
+			throw new XmlParseException(sizeFunctionNotSupportedException.getMessage() + "\n(" + ex.getMessage() + ")");
+		}
+		throw ex;
 	}
 
 	//Retrieve CompartmentsSubdomains
