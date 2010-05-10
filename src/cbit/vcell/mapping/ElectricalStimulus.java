@@ -301,6 +301,9 @@ public abstract class ElectricalStimulus implements Matchable, ScopedSymbolTable
 		"total current",
 		"potential difference",
 	};
+
+	public static final String NEWNAME_CURRENTDENSITY = "current density";
+	public static final String NEWNAME_CURRENT = "current";
 	
 /**
  * ElectricalStimulus constructor comment.
@@ -712,6 +715,14 @@ public Parameter getParameter(String pName){
 			}	
 		}
 
+		if (paramRole == -1) {
+			if (paramDesc.equals(NEWNAME_CURRENTDENSITY)) {
+				paramRole = ROLE_Current;
+			} else if (paramDesc.equals(NEWNAME_CURRENT)) {
+				throw new IllegalArgumentException("Current Clamp (pA) is not supported in VCell 4.7. Please use VCell 4.8 or later.");
+			}
+		}
+		
 		if (paramRole == -1) {
 			throw new IllegalArgumentException("Parameter description: " + paramDesc + " is not valid.");
 		}
