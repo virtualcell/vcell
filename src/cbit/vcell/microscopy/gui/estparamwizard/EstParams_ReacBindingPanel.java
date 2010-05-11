@@ -35,6 +35,7 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.plot.Plot2DPanel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -277,8 +278,37 @@ public class EstParams_ReacBindingPanel extends JPanel {
 				DataSource[] newDataSourceArr = new DataSource[2];
 				newDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE] = expDataSource;
 				newDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
-				
-				multisourcePlotPane.setDataSources(newDataSourceArr);
+				//the following paragraph of code is just to get selected color for selected ROIs
+				//and make them the same as we show on ChooseModel_RoiForErrorPanel/RoiForErrorPanel 
+				int validROISize = FRAPData.VFRAP_ROI_ENUM.values().length-2;//double valid ROI colors (not include cell and background)
+				Color[] fullColors = Plot2DPanel.generateAutoColor(validROISize*2, getBackground(), new Integer(0));
+				boolean[] selectedROIs = frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation();
+				int selectedROICounter = 0;
+				for (int i=0; i<selectedROIs.length; i++)
+				{
+					if(selectedROIs[i])
+					{
+						selectedROICounter++;
+					}
+				}
+				Color[] selectedColors = new Color[selectedROICounter*2];//double the size, each ROI is a comparison of exp and sim
+				int selectedColorIdx = 0;
+				for(int i=0; i<selectedROIs.length; i++)
+				{
+					if(selectedROIs[i] && i==0)
+					{
+						selectedColors[selectedColorIdx] = fullColors[i];
+						selectedColors[selectedColorIdx+selectedROICounter] = fullColors[i+validROISize];
+						selectedColorIdx++;
+					}
+					if(selectedROIs[i] && i>2) //skip cell and background ROIs
+					{
+						selectedColors[selectedColorIdx] = fullColors[i-2];
+						selectedColors[selectedColorIdx+selectedROICounter] = fullColors[i-2+validROISize];
+						selectedColorIdx++;
+					}
+				}
+				multisourcePlotPane.setDataSources(newDataSourceArr, selectedColors);
 				multisourcePlotPane.selectAll();
 				
 			}

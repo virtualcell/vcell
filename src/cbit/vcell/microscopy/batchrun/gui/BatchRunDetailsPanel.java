@@ -7,8 +7,11 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -29,7 +32,10 @@ import javax.swing.tree.TreePath;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
+import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.BackgroundROIDescriptor;
@@ -44,9 +50,10 @@ import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.MultiFileDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.ROISummaryDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.SingleFileDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypePanel;
+import cbit.vcell.opt.Parameter;
 
 
-public class BatchRunDetailsPanel extends JPanel implements ActionListener
+public class BatchRunDetailsPanel extends JPanel implements ActionListener, PropertyChangeListener
 {
 	public URL[] iconFiles = {getClass().getResource("/images/add.gif"),
 							  getClass().getResource("/images/delete.gif"),
@@ -186,6 +193,33 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 		return tascrollPane;
 	}
 
+	public void updateParameterDisplay()
+	{
+		double[][] statData = getBatchRunWorkspace().getStatisticsData();
+		String paramStr = "<Average parameter values among datasets>\n";
+		for(int i = 0 ; i < BatchRunResultsParamTableModel.NUM_COLUMNS-2; i++)
+		{
+			if(batchRunWorkspace.getSelectedModel()==FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+			{
+				if(BatchRunResultsParamTableModel.COL_LABELS[i+1].equals(BatchRunResultsParamTableModel.COL_LABELS[BatchRunResultsParamTableModel.COLUMN_SEC_DIFF_RATE])||
+				   BatchRunResultsParamTableModel.COL_LABELS[i+1].equals(BatchRunResultsParamTableModel.COL_LABELS[BatchRunResultsParamTableModel.COLUMN_SEC_MOBILE_FRACTION]))
+				{
+					continue;
+				}
+			}
+			paramStr = paramStr + BatchRunResultsParamTableModel.COL_LABELS[i+1] + ": "
+				      + statData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][i] + "\n";
+		}
+		parameterTa.setText(paramStr);
+		parameterTa.setCaretPosition(0);
+	}
+	
+	private void clearParameterDisplay()
+	{
+		parameterTa.setText("");
+		parameterTa.setCaretPosition(0);
+	}
+	
 	public static void main(java.lang.String[] args) {
 		try {
 			try{
@@ -214,54 +248,39 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 		Object source = e.getSource();
   	    if (source == addButton)
 	    {
+  	    	//check file before loading into batch run, if .vfrap and 
+  	    	//have parameters ready, then keep results, otherwise, clear results
   	    	final Wizard loadWizard = getAddFRAPDataWizard();
    			if(loadWizard != null)
    			{
-//   				ArrayList<AsynchClientTask> totalTasks = new ArrayList<AsynchClientTask>();
-   				//check if save is needed before loading data
-//	   				if(getBatchRunWorkspace().isSaveNeeded())
-//	   				{
-//	   					String choice = DialogUtils.showWarningDialog(this.getParent(), "There are unsaved changes. Save current document before loading new data?", new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
-//	   					if(choice.equals(UserMessage.OPTION_OK))
-//	   					{
-//	   						AsynchClientTask[] saveTasks = save();
-//	   						for(int i=0; i<saveTasks.length; i++)
-//	   						{
-//	   							totalTasks.add(saveTasks[i]);
-//	   						}
-//	   					}
-//	   				}
-	   				
-//  	   			AsynchClientTask showLoadWizardTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
-//  	    		{
-//  	    			public void run(Hashtable<String, Object> hashTable) throws Exception
-//  	    			{
-  	    				loadWizard.showModalDialog(new Dimension(550,640));
-//  	    			}
-//  	    		};
-  	    		
-//  	    		AsynchClientTask afterCloseLoadWizardTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
-//  	    		{
-//  	    			public void run(Hashtable<String, Object> hashTable) throws Exception
-//  	    			{
-//  	    				if(loadWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
-//	  	   				{
-////	  	   					getAnalysisProcedurePanel().setWorkFlowStage(AnalysisProcedurePanel.STAGE_DEFINE_ROIS);
-//	  	   					//set need save flag
-////	  	   					getFrapWorkspace().getFrapStudy().setSaveNeeded(true);
-//	  	   				}
-//  	    			}
-//  	    		};
-  	    		
-//  	    		totalTasks.add(showLoadWizardTask);
-//  	    		totalTasks.add(afterCloseLoadWizardTask);
-  	    		//dispatch
-//  	    		ClientTaskDispatcher.dispatch(this.getParent(), new Hashtable<String, Object>(), totalTasks.toArray(new AsynchClientTask[totalTasks.size()]), false);;
+   				loadWizard.showModalDialog(new Dimension(550,640));
   	    		//code return 
 				if(loadWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
    				{
 					//add to frapList in batchrunworkspace
-					getBatchRunWorkspace().addFrapStudy(getBatchRunWorkspace().getWorkingFrapStudy());
+					FRAPStudy fStudy = getBatchRunWorkspace().getWorkingFrapStudy();
+					getBatchRunWorkspace().addFrapStudy(fStudy);
+					//if newly loaded frapstudy has same frapmodel and has results ready
+					if(getBatchRunWorkspace().isBatchRunResultsAvailable())
+					{
+						//newly loaded frapstudy doesn't have estimation data ready, generate the data
+						Parameter[] parameters = fStudy.getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
+						double[][] fitData = null;
+						try {
+							FRAPOptData optData= fStudy.getFrapOptData();
+							if(optData == null)
+							{
+								optData = new FRAPOptData(fStudy, parameters.length, getLocalWorkspace(), fStudy.getStoredRefData());
+							}
+							fitData = optData.getFitData(parameters);
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setData(fitData);
+						//refresh the results
+						getBatchRunWorkspace().refreshBatchRunResults();
+					}
 					//update tree
 					DefaultMutableTreeNode newNode = frapBatchRunViewTree.addBatchRunDocNode(new File(getBatchRunWorkspace().getWorkingFrapStudy().getXmlFilename()));
 					frapBatchRunViewTree.setSelectionPath(new TreePath(newNode.getPath()));
@@ -272,6 +291,8 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 					getBatchRunWorkspace().clearWorkingSingleWorkspace();
 					//clear tree selection
 					frapBatchRunViewTree.clearSelection();
+					//clear stored tree selection
+					batchRunWorkspace.clearStoredTreeSelection();
 				}
    			}
    			
@@ -280,22 +301,37 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
         {
         	//remove tree node(doc node removable only)
         	DefaultMutableTreeNode parent = frapBatchRunViewTree.removeCurrentNode();
-        	//remove the data & displayed image
-        	if(parent.equals(BatchRunTree.FRAP_BATCHRUN_DOC_NODE))
+        	//handle differently for doc node and results node
+        	if(parent.equals(BatchRunTree.FRAP_BATCHRUN_DOC_NODE)) //doc node
         	{
+        		//remove the data & displayed image
 	        	getBatchRunWorkspace().removeFrapStudy(getBatchRunWorkspace().getWorkingFrapStudy());
+        	}
+        	else if(parent.equals(BatchRunTree.FRAP_BATCHRUN_RESULT_NODE))//results node
+        	{
+        		getBatchRunWorkspace().clearResultData();
         	}
         	getBatchRunWorkspace().clearWorkingSingleWorkspace();
         	//clear tree selection
 			frapBatchRunViewTree.clearSelection();
+			if(batchRunWorkspace.getFrapStudyList() == null || batchRunWorkspace.getFrapStudyList().size() < 1)
+			{
+				frapBatchRunViewTree.clearAll();
+			}
+			batchRunWorkspace.clearStoredTreeSelection();
+			//clear parameter display
+			clearParameterDisplay();
         }
         else if(source == delAllButton)
         {
         	//clear tree selection
         	frapBatchRunViewTree.clearAll();
+        	batchRunWorkspace.clearStoredTreeSelection();
         	//remove the data & displayed image
         	getBatchRunWorkspace().removeAllFrapStudies();
         	getBatchRunWorkspace().clearWorkingSingleWorkspace();
+        	//clear parameter display
+			clearParameterDisplay();
         }
 	}
 	
@@ -413,7 +449,14 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 		return batchRunWorkspace;
 	}
 
-	public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace) {
+	public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)
+	{
+		FRAPBatchRunWorkspace oldBatchRunWorkspace = this.batchRunWorkspace;
+		if(oldBatchRunWorkspace != null)
+		{
+			oldBatchRunWorkspace.removePropertyChangeListener(this);
+		}
+		batchRunWorkspace.addPropertyChangeListener(this);
 		this.batchRunWorkspace = batchRunWorkspace;
 	}
 	
@@ -427,11 +470,11 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 		treeHandler.setBatchRunWorkspace(getBatchRunWorkspace());
 	}
 
-	public void updateResultsInfo(boolean bNew)
+	public void updateResultsInfo(boolean bNewlyCreated)
 	{
 		clearResultsInfo();
 		DefaultMutableTreeNode newNode = frapBatchRunViewTree.addBatchRunResultNode("Results Available");
-		if(bNew)
+		if(bNewlyCreated)
 		{
 			frapBatchRunViewTree.setSelectionPath(new TreePath(newNode.getPath()));
 		}
@@ -439,7 +482,47 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener
 	
 	public void clearResultsInfo()
 	{
+		batchRunWorkspace.clearResultData();//clear table data
 		frapBatchRunViewTree.clearResults();
+		batchRunWorkspace.clearStoredTreeSelection();
+		clearParameterDisplay();
+	}
+
+	public void updateViewTreeForNewBatchRunFile(FRAPBatchRunWorkspace batchRunWorkspace)
+	{
+		frapBatchRunViewTree.clearAll();
+		ArrayList<FRAPStudy> fStudyList = batchRunWorkspace.getFrapStudyList();
+		DefaultMutableTreeNode firstDocNode = null; 
+		for(int i=0; i< fStudyList.size(); i++)
+		{
+			//update tree
+			if(i==0)
+			{
+				firstDocNode = frapBatchRunViewTree.addBatchRunDocNode(new File(fStudyList.get(i).getXmlFilename()));
+			}
+			else
+			{
+				frapBatchRunViewTree.addBatchRunDocNode(new File(fStudyList.get(i).getXmlFilename()));
+			}
+			if(batchRunWorkspace.getAverageParameters()!= null && batchRunWorkspace.getAverageParameters().length > 0)
+			{
+				updateResultsInfo(false);
+			}
+		}
+		//set fist doc selected when opening a new Batch Run file
+		frapBatchRunViewTree.setSelectionPath(new TreePath(firstDocNode.getPath()));
+	}
+	
+	public void propertyChange(PropertyChangeEvent evt) {
+		if(evt.getPropertyName().equals(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_UPDATE_STATISTICS) ||
+		   evt.getPropertyName().equals(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DISPLAY_PARAM))
+		{
+			updateParameterDisplay();
+		}
+		else if(evt.getPropertyName().equals(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_CLEAR_RESULTS))
+		{
+			clearResultsInfo();
+		}
 	}
 	
 }//end of class BatchRunDetailsFrame

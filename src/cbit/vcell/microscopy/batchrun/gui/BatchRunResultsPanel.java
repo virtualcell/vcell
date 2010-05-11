@@ -93,6 +93,12 @@ public class BatchRunResultsPanel extends JPanel
     	getBatchRunMSEPanel().setBatchRunWorkspace(batchRunWorkspace);
     }
 	
+	 public void updateTableData()
+	 {
+		 batchRunParamPanel.updateTableData();
+		 batchRunMSEPanel.updateTableData();
+	 }
+	 
 	public static void main(java.lang.String[] args) {
 		try {
 			javax.swing.JFrame frame = new javax.swing.JFrame();

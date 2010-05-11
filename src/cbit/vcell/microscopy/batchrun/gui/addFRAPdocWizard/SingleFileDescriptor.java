@@ -28,6 +28,7 @@ import cbit.vcell.simdata.VariableType;
 public class SingleFileDescriptor extends WizardPanelDescriptor {
     
     public static final String IDENTIFIER = "BATCHRUN_SingleFile";
+    private static final String CLEAR_RESULT_KEY = "CLEAR_RESULT";
     //    private FRAPStudy localFrapStudy = null;
     private SingleFilePanel singleFilePanel = new SingleFilePanel();
     private boolean isFileLoaded = false;
@@ -114,10 +115,36 @@ public class SingleFileDescriptor extends WizardPanelDescriptor {
     							newFRAPStudy = getBatchRunWorkspace().loadFRAPDataFromImageFile(inFile, this.getClientTaskStatusSupport());
     							isFileLoaded = true;
     					}
-    					
-    					//for all loaded file
-    					hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
-    					
+    					//check if there is results, if so, if the loaded frapStudy has the same model type and paramters then proceed
+    					//otherwise, popup a dialog saying the result will be invalid.
+    					if(!batchRunWorkspace.isBatchRunResultsAvailable())
+    					{
+    						hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
+    					}
+    					else if((batchRunWorkspace.isBatchRunResultsAvailable() && inFile.getName().endsWith(VirtualFrapLoader.VFRAP_EXTENSION)) &&
+    							((newFRAPStudy.getSelectedModels().size() == 1) &&  
+    		    						   (newFRAPStudy.getFrapModel(batchRunWorkspace.getSelectedModel()) != null) &&
+    		    	    				   (newFRAPStudy.getFrapModel(batchRunWorkspace.getSelectedModel()).getModelParameters() != null)))
+    					{
+    						//put newfrapstudy into hashtable to be used for next task
+    	    				hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
+    					}
+    					else
+    					{
+    						String continueStr = "Remove results and continue";
+    						String cancelStr = "Cancel loading data";
+    						String msg = "Loading new data file, or vfrap file with no model data/different selected model type will invalid the existing resuls.";
+    						String choice = DialogUtils.showWarningDialog(singleFilePanel, msg, new String[]{continueStr, cancelStr}, continueStr);
+    						if(choice == continueStr)
+    						{
+    							hashTable.put(CLEAR_RESULT_KEY, new Boolean(true));
+    							hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
+    						}
+    						else//cancel
+    						{
+    							throw UserCancelException.CANCEL_GENERIC;
+    						}
+    					}
     			}
     		};
     		
@@ -125,11 +152,18 @@ public class SingleFileDescriptor extends WizardPanelDescriptor {
     		{
     			public void run(Hashtable<String, Object> hashTable) throws Exception
     			{
+    				//check to see if results need to be cleared
+    				Boolean needClear = (Boolean)hashTable.get(CLEAR_RESULT_KEY);
+    				if(needClear != null && needClear.booleanValue())
+    				{
+    					double[][] oldAnalysisData = batchRunWorkspace.getAnalysisMSESummaryData();
+					    double[][] newAnalysisData = null;
+						batchRunWorkspace.firePropertyChange(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_CLEAR_RESULTS, oldAnalysisData, newAnalysisData);
+    				}
     				FRAPStudy newFRAPStudy = (FRAPStudy)hashTable.get(FRAPStudyPanel.NEW_FRAPSTUDY_KEY);
     				//setFrapStudy fires property change, so we have to put it in Swing thread.
     				getBatchRunWorkspace().getWorkingSingleWorkspace().setFrapStudy(newFRAPStudy, true);
     				
-//    				VirtualFrapLoader.mf.setMainFrameTitle("");
     				VirtualFrapBatchRunFrame.updateProgress(0);
     				if(isFileLoaded)
     				{
@@ -145,7 +179,11 @@ public class SingleFileDescriptor extends WizardPanelDescriptor {
     		taskArrayList.add(loadTask);
     		taskArrayList.add(afterLoadingSwingTask);
     	}
-		
+    	else
+    	{
+    		DialogUtils.showErrorDialog(singleFilePanel, "Load File name is empty. Please input a file name to continue.");
+    		throw new RuntimeException("Load File name is empty. Please input a file name to continue.");
+    	}
 		return taskArrayList;
     } 
     

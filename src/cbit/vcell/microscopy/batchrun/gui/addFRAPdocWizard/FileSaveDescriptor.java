@@ -131,7 +131,6 @@ public class FileSaveDescriptor extends WizardPanelDescriptor {
     		    		
     		    		if(outputFile != null)
     		    		{
-//    		    			VirtualFrapMainFrame.updateStatus("Saving file " + outputFile.getAbsolutePath()+" ...");
     		    			hashTable.put(FRAPStudyPanel.SAVE_FILE_NAME_KEY, outputFile);
     		    		}
     				}
@@ -152,19 +151,18 @@ public class FileSaveDescriptor extends WizardPanelDescriptor {
     			public void run(Hashtable<String, Object> hashTable) throws Exception
     			{
     				File outFile = (File)hashTable.get(FRAPStudyPanel.SAVE_FILE_NAME_KEY);
-//    				VirtualFrapMainFrame.updateStatus("File " + outFile.getAbsolutePath()+" has been saved.");
-//    		        VirtualFrapLoader.mf.setMainFrameTitle(outFile.getName());
-//    		        VirtualFrapMainFrame.updateProgress(0);
     			}
     		};
 
-
-    		
     		taskArrayList.add(beforeSaveTask);
     		taskArrayList.add(saveTask);
     		taskArrayList.add(afterSaveTask);
     	}
-		
+    	else
+    	{
+    		DialogUtils.showErrorDialog(saveFilePanel, "Save File name is empty. Please input a file name to continue.");
+    		throw new RuntimeException("Save File name is empty. Please input a file name to continue.");
+    	}
 		return taskArrayList;
     } 
     

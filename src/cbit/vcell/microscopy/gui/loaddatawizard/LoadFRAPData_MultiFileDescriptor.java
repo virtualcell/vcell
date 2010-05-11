@@ -115,7 +115,11 @@ public class LoadFRAPData_MultiFileDescriptor extends WizardPanelDescriptor {
     		taskArrayList.add(loadTask);
     		taskArrayList.add(afterLoadingSwingTask);
     	}
-		
+    	else
+    	{
+    		DialogUtils.showErrorDialog(multiFilePanel, "No file is selected. Please input one or more file names to continue.");
+    		throw new RuntimeException("No file is selected. Please input one or more file names to continue.");
+    	}
 		return taskArrayList;
     } 
     

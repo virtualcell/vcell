@@ -29,6 +29,11 @@ public class BatchRunMSEPanel extends BoxPanel
 		mseTablePanel.setBatchRunWorkspace(batchRunWorkspace);
 	}
 	
+    public void updateTableData()
+    {
+    	mseTablePanel.updateTableData();
+    }
+    
 	public static void main(java.lang.String[] args) {
 		try {
 			javax.swing.JFrame frame = new javax.swing.JFrame();

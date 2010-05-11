@@ -3,6 +3,8 @@ package cbit.vcell.microscopy.batchrun.gui;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.EventObject;
 
 import javax.swing.AbstractCellEditor;
@@ -14,6 +16,8 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 
+import cbit.vcell.microscopy.DescriptiveStatistics;
+import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.estparamwizard.HyperLinkLabel;
 
 public class ResultsParamTableEditor extends AbstractCellEditor implements TableCellEditor, ActionListener
@@ -21,23 +25,58 @@ public class ResultsParamTableEditor extends AbstractCellEditor implements Table
 {
 	private JButton button = new JButton("Details...");
 	private JTable table;
+	private PropertyChangeSupport propertyChangeSupport;
 	
 	public ResultsParamTableEditor(JTable table) {
 		super();
 		this.table = table;
 	    button.addActionListener(this);
+	    propertyChangeSupport = new PropertyChangeSupport(this);
 	}
-	 
+	
+	public void addPropertyChangeListener(PropertyChangeListener p) {
+    	propertyChangeSupport.addPropertyChangeListener(p);
+    }
+  
+    public void removePropertyChangeListener(PropertyChangeListener p) {
+    	propertyChangeSupport.removePropertyChangeListener(p);
+    }
+    
+    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+    	propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+    }
+	
 	public Component getTableCellEditorComponent(JTable table, Object value,
 	                 boolean isSelected, int row, int column) 
 	{
-		if (isSelected) {
-	      button.setForeground(table.getSelectionForeground());
-	      button.setBackground(table.getSelectionBackground());
-	    } else {
-	      button.setForeground(table.getForeground());
-	      button.setBackground(table.getBackground());
-	    }
+		if(column == BatchRunResultsParamTableModel.COLUMN_DETAILS)
+		{
+			Object firstColStr = table.getValueAt(row, BatchRunResultsParamTableModel.COLUMN_FILE_NAME); 
+			if((firstColStr instanceof String) && (firstColStr.equals(DescriptiveStatistics.MEAN_NAME)||
+			   firstColStr.equals(DescriptiveStatistics.MEDIAN_NAME)||
+			   firstColStr.equals(DescriptiveStatistics.MODE_NAME)||
+			   firstColStr.equals(DescriptiveStatistics.MIN_NAME)||
+			   firstColStr.equals(DescriptiveStatistics.MAX_NAME)||
+			   firstColStr.equals(DescriptiveStatistics.STANDARD_DEVIATION_NAME)))
+			{
+				return null;
+			}
+			else
+			{
+				button.setBorderPainted(false);
+				if (isSelected) {
+			      button.setForeground(table.getSelectionForeground());
+			      button.setBackground(table.getSelectionBackground());
+			    } else {
+			      button.setForeground(table.getForeground());
+			      button.setBackground(table.getBackground());
+			    }
+				return button;
+			}
+			
+		}
+		
+			
 //	    label = (value == null) ? "" : value.toString();
 //	    button.setText(label);
 //	    isPushed = true;
@@ -56,10 +95,9 @@ public class ResultsParamTableEditor extends AbstractCellEditor implements Table
 
 	public void actionPerformed(ActionEvent e) 
 	{
-		
-		System.out.println("Action preformed in RestultsParamTableEditor");
-		System.out.println("row:" + table.getSelectedRow() + "     col:" +table.getSelectedColumn());
 		fireEditingStopped();
+		int oldSelectedRow = -1;
+		firePropertyChange(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DETAIL, oldSelectedRow, table.getSelectedRow());
 	}
 	public boolean isCellEditable(EventObject anEvent) {
         return true;
