@@ -58,34 +58,18 @@ public class MicroscopyXMLTags {
 	//reference simulation data info.
 	public static final String ReferenceDataTag = "ReferenceData";
 	public static final String DiffusionReactionDataTag = "DiffusionReactionData";
+	
+	//batch run 
+	public static final String FrapBatchRunTag = "FrapBatchRun";
+	public static final String FrapStudyListTag = "FrapStudyList";
+	public static final String NumFrapStudyListAttrTag = "NumOfFrapStudies";
+	public static final String FrapFileNameTag = "FrapFileName";
+	public static final String BatchRunSelectedModelTypeTag = "BatchRunSelectedModelType";
     
-	//----old parameters, may be used for loading old files(VFRAP 0.9 version)
-	public static final String FRAPModelParametersTag = "FrapModelParameters";
-	public static final String FRAPInitialParametersTag = "FrapInitialParameters";//for initial parameters
-	public static final String RecoveryDiffusionRateAttrTag = "RecoveryDiffusionRate";
-	public static final String MobileFractionAttrTag = "MobileFraction";
-	public static final String FRAPPureDiffusionParametersTag = "FrapPureDiffusionParameters";//for pure diffusion parameters
-	public static final String isSecondDiffAppliedAttTag = "IsSecondDiffusionApplied";
-	public static final String FRAPReactionDiffusionParametersTag = "FrapReactionDiffusionParameters";
-	public static final String FreeDiffusionRateAttTag = "FreeDiffusionRate";
-	public static final String FreeMobileFractionAttTag = "FreeMobileFraction";
-	public static final String ComplexDiffusionRateAttTag = "ComplexDiffusionRate";
-	public static final String ComplexMobileFractionAttTag = "ComplexMobileFraction";
-	public static final String RecoveryTauAttrTag = "RecoveryTau";
-	public static final String BleachWidthAttrTag = "BleachWidth";
-	public static final String BleachTypeAttrTag = "BleachType";
-	public static final String FitExpressionAttrTag = "FitExpression";
-	//----end of old parameters
-	
-	
-	
-	
-	
-    
-/**
- * XMLTags default constructor.
- */
-public MicroscopyXMLTags() {
-	super();
-}
+	/**
+	 * XMLTags default constructor.
+	 */
+	public MicroscopyXMLTags() {
+		super();
+	}
 }

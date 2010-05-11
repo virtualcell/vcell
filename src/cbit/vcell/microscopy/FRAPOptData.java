@@ -52,7 +52,7 @@ public class FRAPOptData {
 	public static final Parameter REF_BLEACH_WHILE_MONITOR_PARAM =
 		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 0, 1, 1.0,  0);
 	public static final Parameter REF_SECOND_DIFFUSION_RATE_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE], 0, 40, 1.0, 1.0);
+		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE], 0, 100, 1.0, 1.0);
 	public static final Parameter REF_SECOND_MOBILE_FRACTION_PARAM =
 		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION], 0, 1, 1.0, 1.0);
 	
@@ -62,7 +62,7 @@ public class FRAPOptData {
 	
 //	private static int maxRefSavePoints = 500;
 	private static double REF_STARTINGTIME = 0;
-	private static double REF_ENDINGTIME = 1000;
+	private static double REF_ENDINGTIME = 500;
 	
 //	private Boolean bRunRefSim = null;
 	

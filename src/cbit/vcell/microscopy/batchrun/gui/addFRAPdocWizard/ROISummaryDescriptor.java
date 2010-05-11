@@ -99,11 +99,13 @@ public class ROISummaryDescriptor extends WizardPanelDescriptor {
 								"x="+distinctCellAreaLocations[1].x+",y="+distinctCellAreaLocations[1].y+"\n"+
 						"Use ROI editing tools to define a single continuous CELL ROI");				
 					}
-					
-					fStudy.setStartingIndexForRecovery(startIndex);
-					getBatchRunWorkspace().setWorkingFRAPStudy(fStudy);
-					//generate ROI rings
-					fStudy.refreshDependentROIs();
+					if(!fStudy.getFrapData().checkROIConstraints(imgPanel))
+					{
+						fStudy.setStartingIndexForRecovery(startIndex);
+						getBatchRunWorkspace().setWorkingFRAPStudy(fStudy);
+						//generate ROI rings
+						fStudy.refreshDependentROIs();
+					}
 				}
 				else throw new Exception(msg);
 			}

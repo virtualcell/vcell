@@ -32,6 +32,11 @@ public class BatchRunResultsParameterPanel extends BoxPanel
 		paramTablePanel.setBatchRunWorkspace(batchRunWorkspace);
 	}
 	
+    public void updateTableData()
+    {
+    	paramTablePanel.updateTableData();
+    }
+    
 	public static void main(java.lang.String[] args) {
 		try {
 			javax.swing.JFrame frame = new javax.swing.JFrame();

@@ -1,7 +1,10 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.Component;
+import java.awt.Font;
+import java.io.File;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.UIManager;
@@ -16,32 +19,47 @@ public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 	public ResultsParamTableRenderer()
 	{
 		button.setBorderPainted(false);
+        setFont(new Font("Arial", Font.PLAIN, 11));
+        setBorder(BorderFactory.createEmptyBorder(1, 5, 1, 1));
 //		button.setBorder(new )
 	}
 	public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) 
 	{
-		String firstColStr = (String)table.getValueAt(row, BatchRunResultsParamTableModel.COLUMN_FILE_NAME); 
-		if(firstColStr.equals(DescriptiveStatistics.MEAN_NAME)||
-		   firstColStr.equals(DescriptiveStatistics.MEDIAN_NAME)||
-		   firstColStr.equals(DescriptiveStatistics.MODE_NAME)||
-		   firstColStr.equals(DescriptiveStatistics.MIN_NAME)||
-		   firstColStr.equals(DescriptiveStatistics.MAX_NAME)||
-		   firstColStr.equals(DescriptiveStatistics.STANDARD_DEVIATION_NAME))
+		if(column == BatchRunResultsParamTableModel.COLUMN_FILE_NAME)
 		{
-			if(column == BatchRunResultsParamTableModel.COLUMN_DETAILS)
+			if(value instanceof String)
+			{
+				setText((String)value);
+			}
+			else if(value instanceof File)
+			{
+				setText(((File)value).getName());
+			}
+			if(value != null)
+	        {
+	        	setToolTipText(value.toString());
+	        }
+		}
+		else if(column == BatchRunResultsParamTableModel.COLUMN_DETAILS)
+		{
+			Object firstColStr = table.getValueAt(row, BatchRunResultsParamTableModel.COLUMN_FILE_NAME); 
+			if((firstColStr instanceof String) && (firstColStr.equals(DescriptiveStatistics.MEAN_NAME)||
+			   firstColStr.equals(DescriptiveStatistics.MEDIAN_NAME)||
+			   firstColStr.equals(DescriptiveStatistics.MODE_NAME)||
+			   firstColStr.equals(DescriptiveStatistics.MIN_NAME)||
+			   firstColStr.equals(DescriptiveStatistics.MAX_NAME)||
+			   firstColStr.equals(DescriptiveStatistics.STANDARD_DEVIATION_NAME)))
 			{
 				return null;
 			}
-		}
-		else
-		{
-			button.setBorderPainted(false);
-			if(column == BatchRunResultsParamTableModel.COLUMN_DETAILS)
+			else
 			{
+				button.setBorderPainted(false);
 				return button;
 			}
 		}
+		
 		return this;
 	}
 }

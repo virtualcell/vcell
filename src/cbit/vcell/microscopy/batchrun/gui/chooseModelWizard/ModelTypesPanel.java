@@ -38,7 +38,7 @@ public class ModelTypesPanel extends JPanel
 		add(choosePossibleModelLabel, gridBagConstraints);
 
 		final JLabel chooseOneOrLabel = new JLabel();
-		chooseOneOrLabel.setText("Choose a model that will be evaluated across all the FRAP data.");
+		chooseOneOrLabel.setText("Choose a model that will be evaluated across all the FRAP datasets.");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_1.gridy = 4;

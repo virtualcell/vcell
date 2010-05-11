@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -25,15 +26,13 @@ import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
 
 public class BatchRunMSETablePanel extends JPanel
 {
-	private /*StyleTable*/JTable table;
+	private JTable table;
     private BatchRunMSEPanel parent;
     private JLabel lessLable;
     private HyperLinkLabel hypDetail;
     private JScrollPane scrTable;
     private BatchRunMSETableModel mseTableModel = null;
     private FRAPBatchRunWorkspace batchRunWorkspace = null;
-    float[] prefColumnWidth = new float[]{0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f};
-    TableColumn[] columns = new TableColumn[BatchRunMSETableModel.NUM_COLUMNS];
 
     public BatchRunMSETablePanel(BatchRunMSEPanel arg_parent) 
     {
@@ -133,24 +132,23 @@ public class BatchRunMSETablePanel extends JPanel
     }
 
     private void setupTable() {
-        table = new StyleTable();
-        table.setAutoCreateColumnsFromModel(false);
-        table.setModel(mseTableModel);
+    	
+    	TableSorter sorter = new TableSorter(mseTableModel);
+        table = new StyleTable(sorter);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        sorter.setTableHeader(table.getTableHeader());
 
         DefaultCellEditor  mseEditor = new DefaultCellEditor(new JTextField());
         TableCellRenderer mseRenderer = new  AnalysisTableRenderer(8);//double precision 8 digits
-        for (int i = 0; i < mseTableModel.getColumnCount(); i++) {
-
-            int w = (int) (prefColumnWidth[i]);
-            columns[i] = new TableColumn(i, w, mseRenderer, mseEditor);
-
-            table.addColumn(columns[i]);
-
+        for (int i = 0; i < table.getColumnCount(); i++) {
+        	TableColumn col = table.getColumnModel().getColumn(i);
+        	col.setPreferredWidth(0);
+        	col.setCellRenderer(mseRenderer);
+        	col.setCellEditor(mseEditor);
         }
 
         scrTable = new JScrollPane(table);
         scrTable.setAutoscrolls(true);
-
     }
 
     public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)
@@ -158,4 +156,9 @@ public class BatchRunMSETablePanel extends JPanel
     	this.batchRunWorkspace = batchRunWorkspace;
 		mseTableModel.setBatchRunWorkspace(batchRunWorkspace);
 	}
+    
+    public void updateTableData()
+    {
+    	mseTableModel.fireTableDataChanged();
+    }
 }

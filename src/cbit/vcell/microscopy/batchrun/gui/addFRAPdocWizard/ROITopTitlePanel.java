@@ -18,7 +18,7 @@ import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 
 public class ROITopTitlePanel extends JPanel
 {
-	public URL arrowUrl = getClass().getResource("/images/arrow.jpg");
+	public URL arrowUrl = getClass().getResource("/images/arrow.gif");
 	
 	JLabel cropLabel = null;
 	JLabel cellRoiLabel = null;

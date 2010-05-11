@@ -38,7 +38,7 @@ public class RoiForErrorDescriptor extends WizardPanelDescriptor{
     public void setBatchRunWorkspace(FRAPBatchRunWorkspace arg_BarchRunWorkspace)
     {
     	bathRunWorkspace = arg_BarchRunWorkspace;
-    	((RoiForErrorPanel)getPanelComponent()).setFrapWorkspace(arg_BarchRunWorkspace.getWorkingSingleWorkspace());
+    	((RoiForErrorPanel)getPanelComponent()).setFrapBatchRunWorkspace(arg_BarchRunWorkspace);
     }
     
     public ArrayList<AsynchClientTask> preNextProcess()

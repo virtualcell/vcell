@@ -1,43 +1,55 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import org.vcell.util.gui.DialogUtils;
+
+import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
+import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.microscopy.gui.estparamwizard.AnalysisTableRenderer;
+import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentPanel;
+import cbit.vcell.microscopy.gui.estparamwizard.EstParams_TwoDiffComponentPanel;
 import cbit.vcell.microscopy.gui.estparamwizard.HyperLinkLabel;
 import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
 
-public class BatchRunResultsParamTablePanel extends JPanel
+public class BatchRunResultsParamTablePanel extends JPanel implements PropertyChangeListener
 {
-	private /*StyleTable*/JTable table;
+	private JTable table;
     private BatchRunResultsParameterPanel parent;
     private JLabel lessLable;
     private HyperLinkLabel hypDetail;
     private JScrollPane scrTable;
     private BatchRunResultsParamTableModel resultsTableModel = null;
     private FRAPBatchRunWorkspace batchRunWorkspace = null;
-    float[] prefColumnWidth = new float[]{0.25f, 0.5f, 0.5f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f};
-    TableColumn[] columns = new TableColumn[BatchRunResultsParamTableModel.NUM_COLUMNS];
-
-
+    private EstParams_OneDiffComponentPanel oneDiffComponentPanel = null;
+	private EstParams_TwoDiffComponentPanel twoDiffComponentPanel = null;
+   
     public BatchRunResultsParamTablePanel(BatchRunResultsParameterPanel arg_parent) 
     {
     	this.parent = arg_parent;
@@ -136,21 +148,29 @@ public class BatchRunResultsParamTablePanel extends JPanel
     }
 
     private void setupTable() {
-        table = new StyleTable();
-        table.setAutoCreateColumnsFromModel(false);
-        table.setModel(resultsTableModel);
 
+        TableSorter sorter = new TableSorter(resultsTableModel);
+        table = new StyleTable(sorter);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        sorter.setTableHeader(table.getTableHeader());
+        
         DefaultCellEditor  resultsEditor = new DefaultCellEditor(new JTextField());
         TableCellRenderer resultsRanderer = new  AnalysisTableRenderer(8); //double precision 8 digits
-        for (int i = 0; i < resultsTableModel.getColumnCount(); i++) {
-            int w = (int) (prefColumnWidth[i]);
-            columns[i] = new TableColumn(i, w, resultsRanderer, resultsEditor);
-            table.addColumn(columns[i]);
+        for (int i = 0; i < table.getColumnCount(); i++) {
+        	TableColumn col = table.getColumnModel().getColumn(i);
+        	col.setPreferredWidth(0);
+        	col.setCellRenderer(resultsRanderer);
+        	col.setCellEditor(resultsEditor);
         }
-
+        //apply table renderer for name column(override the previous one)
+        TableColumn nameCol = table.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_FILE_NAME);
+        nameCol.setCellRenderer(new ResultsParamTableRenderer());
+        //apply table renderer and table editor for details column(override the previous ones)
         TableColumn detailsCol = table.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_DETAILS);
         detailsCol.setCellRenderer(new ResultsParamTableRenderer());
-        detailsCol.setCellEditor(new ResultsParamTableEditor(table));
+        ResultsParamTableEditor tableEditor = new ResultsParamTableEditor(table);
+        tableEditor.addPropertyChangeListener(this);
+        detailsCol.setCellEditor(tableEditor);
         scrTable = new JScrollPane(table);
         scrTable.setAutoscrolls(true);
 
@@ -162,11 +182,95 @@ public class BatchRunResultsParamTablePanel extends JPanel
 		resultsTableModel.setBatchRunWorkspace(batchRunWorkspace);
 	}
     
-    private class DetailedInfoListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            System.out.println("Details pressed");
-        }
+    public EstParams_OneDiffComponentPanel getOneDiffComponentPanel() {
+    	if(oneDiffComponentPanel == null)
+    	{
+    		oneDiffComponentPanel = new EstParams_OneDiffComponentPanel();
+    		oneDiffComponentPanel.setPreferredSize(new Dimension(980,680));
+    		oneDiffComponentPanel.setMaximumSize(new Dimension(980,680));
+    		oneDiffComponentPanel.setMinimumSize(new Dimension(980,680));
+    		oneDiffComponentPanel.setApplyBatchRunParamButtonVisible(false);
+    	}
+		return oneDiffComponentPanel;
+	}
 
-    }
+	public void setOneDiffComponentPanel(EstParams_OneDiffComponentPanel oneDiffComponentPanel) {
+		this.oneDiffComponentPanel = oneDiffComponentPanel;
+	}
+    
+	public EstParams_TwoDiffComponentPanel getTwoDiffComponentPanel() {
+		if(twoDiffComponentPanel == null)
+		{
+			twoDiffComponentPanel = new EstParams_TwoDiffComponentPanel();
+			twoDiffComponentPanel.setPreferredSize(new Dimension(980,680));
+			twoDiffComponentPanel.setMaximumSize(new Dimension(980,680));
+			twoDiffComponentPanel.setMinimumSize(new Dimension(980,680));
+			twoDiffComponentPanel.setApplyBatchRunParamButtonVisible(false);
+		}
+		return twoDiffComponentPanel;
+	}
+
+	public void setTwoDiffComponentPanel(EstParams_TwoDiffComponentPanel twoDiffComponentPanel) {
+		this.twoDiffComponentPanel = twoDiffComponentPanel;
+	}
+
+	public void updateTableData()
+	{
+		resultsTableModel.fireTableDataChanged();
+	}
+	
+	public void propertyChange(PropertyChangeEvent evt) {
+		
+		if(evt.getPropertyName().equals(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DETAIL))
+		{
+			int rowNum = ((Integer)evt.getNewValue()).intValue();
+			String fileName = ((File)table.getValueAt(rowNum, BatchRunResultsParamTableModel.COLUMN_FILE_NAME)).getAbsolutePath();
+			System.out.println("FileName---" + fileName);
+			FRAPStudy selectedFrapStudy = batchRunWorkspace.getFRAPStudy(fileName);
+			//display estimation result for each selected frapStudy based on model type
+			if(batchRunWorkspace.getSelectedModel() == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+			{
+				try {
+					batchRunWorkspace.getWorkingSingleWorkspace().setFrapStudy(selectedFrapStudy, false, true);
+					getOneDiffComponentPanel().setFrapWorkspace(batchRunWorkspace.getWorkingSingleWorkspace());
+					getOneDiffComponentPanel().setData(selectedFrapStudy.getFrapOptData(), selectedFrapStudy.getFrapData(),
+							                           selectedFrapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters(),
+							                           selectedFrapStudy.getFrapData().getImageDataset().getImageTimeStamps(),
+							                           selectedFrapStudy.getStartingIndexForRecovery(),
+							                           batchRunWorkspace.getSelectedROIsForErrorCalculation());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				int choice = DialogUtils.showComponentOKCancelDialog(JOptionPane.getFrameForComponent(BatchRunResultsParamTablePanel.this), getOneDiffComponentPanel(), "Estimation Details for "+selectedFrapStudy.getXmlFilename());
+				if(choice == JOptionPane.OK_OPTION)
+				{
+					selectedFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT).setModelParameters(getOneDiffComponentPanel().getCurrentParameters());
+					batchRunWorkspace.refreshStatisticsData();
+				}
+			}
+			else if(batchRunWorkspace.getSelectedModel() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+			{
+				try {
+					batchRunWorkspace.getWorkingSingleWorkspace().setFrapStudy(selectedFrapStudy, false, true);
+					getTwoDiffComponentPanel().setFrapWorkspace(batchRunWorkspace.getWorkingSingleWorkspace());
+					getTwoDiffComponentPanel().setData(selectedFrapStudy.getFrapOptData(), selectedFrapStudy.getFrapData(),
+							                           selectedFrapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters(),
+							                           selectedFrapStudy.getFrapData().getImageDataset().getImageTimeStamps(),
+							                           selectedFrapStudy.getStartingIndexForRecovery(),
+							                           batchRunWorkspace.getSelectedROIsForErrorCalculation());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				int choice = DialogUtils.showComponentOKCancelDialog(JOptionPane.getFrameForComponent(BatchRunResultsParamTablePanel.this), getTwoDiffComponentPanel(), "Estimation Details for "+selectedFrapStudy.getXmlFilename());
+				if(choice == JOptionPane.OK_OPTION)
+				{
+					selectedFrapStudy.getFrapModel(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS).setModelParameters(getTwoDiffComponentPanel().getCurrentParameters());
+					batchRunWorkspace.refreshStatisticsData();
+				}
+			}
+		}
+	}
 }
 

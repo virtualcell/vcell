@@ -69,15 +69,19 @@ public class VirtualFrapLoader {
 	public static final String LSM_EXTENSION = "lsm";
 	public static final String TIFF_EXTENSION = "tif";
 	public static final String QT_EXTENSION = "mov";
+	public static final String VFRAP_BATCH_EXTENSION = "vfbatch";
 	public final static  VirtualFrapMainFrame.AFileFilter filter_lsm = new VirtualFrapMainFrame.AFileFilter(LSM_EXTENSION,"Zeiss Lsm Images");
 	public final static  VirtualFrapMainFrame.AFileFilter filter_tif = new VirtualFrapMainFrame.AFileFilter(TIFF_EXTENSION, "TIFF Images");
 	public final static  VirtualFrapMainFrame.AFileFilter filter_vfrap = new VirtualFrapMainFrame.AFileFilter(VFRAP_EXTENSION,"Virtual FRAP Files");
 	public final static  VirtualFrapMainFrame.AFileFilter filter_qt = new VirtualFrapMainFrame.AFileFilter(QT_EXTENSION,"Quick Time Movie Files");
+	public final static  VirtualFrapMainFrame.AFileFilter filter_vfbatch = new VirtualFrapMainFrame.AFileFilter(VFRAP_BATCH_EXTENSION,"Virtual FRAP BatchRun Files");
     //create one instance of each kind of filechooser, so that it remembers the last time visited path. 
     public static JFileChooser openVFRAPFileChooser; 
+    public static JFileChooser openVFRAPBatchRunChooser;
     public static JFileChooser loadFRAPImageFileChooser;
     public static JFileChooser addDataFileChooser_batchRun;
     public static JFileChooser saveFileChooser; 
+    public static JFileChooser saveFileChooser_batchRun;
     public static JFileChooser multiOpenFileChooser; 
     public static JFileChooser saveMovieFileChooser;
     //set default font 
@@ -123,6 +127,10 @@ public class VirtualFrapLoader {
 			    openVFRAPFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
 			    openVFRAPFileChooser.addChoosableFileFilter(filter_vfrap); 
 			    openVFRAPFileChooser.setAcceptAllFileFilterUsed(false);
+			    openVFRAPBatchRunChooser = new JFileChooser(); 
+			    openVFRAPBatchRunChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
+			    openVFRAPBatchRunChooser.addChoosableFileFilter(filter_vfbatch); 
+			    openVFRAPBatchRunChooser.setAcceptAllFileFilterUsed(false);
 			    loadFRAPImageFileChooser = new JFileChooser(); 
 			    loadFRAPImageFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
 			    loadFRAPImageFileChooser.addChoosableFileFilter(filter_tif);
@@ -132,10 +140,12 @@ public class VirtualFrapLoader {
 			    addDataFileChooser_batchRun.addChoosableFileFilter(filter_vfrap);
 			    addDataFileChooser_batchRun.addChoosableFileFilter(filter_tif);
 			    addDataFileChooser_batchRun.addChoosableFileFilter(filter_lsm);
-			    
 			    saveFileChooser = new JFileChooser();
 			    saveFileChooser.addChoosableFileFilter(filter_vfrap); 
 			    saveFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
+			    saveFileChooser_batchRun = new JFileChooser();
+			    saveFileChooser_batchRun.addChoosableFileFilter(filter_vfbatch); 
+			    saveFileChooser_batchRun.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 			    multiOpenFileChooser = new JFileChooser(); 
 			    multiOpenFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 			    multiOpenFileChooser.addChoosableFileFilter(filter_tif);

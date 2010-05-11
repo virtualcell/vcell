@@ -177,6 +177,7 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 		}
 		else if(evt.getPropertyName().equals(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DISPLAY_PARAM))
 		{
+			resultsPanel.updateTableData();
 			((CardLayout)topDisplayPanel.getLayout()).show(topDisplayPanel, DISPLAY_PARAM_ID);
 		}
 		else if(evt.getPropertyName().equals(JobStatusPanel.STATUSPANEL_PROPERTY_CHANGE))

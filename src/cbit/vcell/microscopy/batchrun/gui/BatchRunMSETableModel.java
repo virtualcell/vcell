@@ -72,7 +72,7 @@ public class BatchRunMSETableModel extends AbstractTableModel{
 		}
 		else
 		{
-			//in mseSummaryData there is not model name col, therefore we use col-1 here.
+			//in mseSummaryData there is no model name col, therefore we use col-1 here.
 			if(mseSummaryData[row][col-1] != FRAPOptimization.largeNumber)
 			{
 				return mseSummaryData[row][col-1];

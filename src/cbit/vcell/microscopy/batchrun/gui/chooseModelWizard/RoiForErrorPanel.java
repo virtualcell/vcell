@@ -23,6 +23,8 @@ import cbit.plot.Plot2DPanel;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.ROIImagePanel;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 
@@ -31,7 +33,7 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 	private JTable table;
 	JPanel centerPanel = null;
 	ROIImagePanel roiImagePanel = null;
-	FRAPSingleWorkspace frapWorkspace = null;
+	FRAPBatchRunWorkspace batchRunWorkspace = null;
 	
 	private JCheckBox roi_bleachedCheckBox = null;
 	private JCheckBox roi_bleached_ring1CheckBox = null;
@@ -53,7 +55,7 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 	private JLabel roi_bleached_ring7Label = null;
 	private JLabel roi_bleached_ring8Label = null;
 	
-	private static final int NUM_SELECTED_ROIS = 9;
+	private static final int NUM_SELECTED_ROIS = FRAPData.VFRAP_ROI_ENUM.values().length-2; //exclude cell and background ROIs
 	private static final int IDX_ROI_BLEACHED = 0;
 	private static final int IDX_ROI_BLEACHED_RING1 = 1;
 	private static final int IDX_ROI_BLEACHED_RING2 = 2;
@@ -280,7 +282,7 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 	public ROI[] getAllROIs()
 	{
 		allROIs = new ROI[NUM_SELECTED_ROIS];
-		FRAPData frapData = frapWorkspace.getWorkingFrapStudy().getFrapData();
+		FRAPData frapData = batchRunWorkspace.getFrapStudyList().get(0).getFrapData();//always use the first frap study'ROIs for display
 		allROIs[IDX_ROI_BLEACHED] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 		allROIs[IDX_ROI_BLEACHED_RING1] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name());
 		allROIs[IDX_ROI_BLEACHED_RING2] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name());
@@ -297,8 +299,8 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 	{
 		if(allROIColors == null)
 		{
-			allROIColors = new Color[NUM_SELECTED_ROIS];//ROI colors, use index 0 for bleached, index 1-9 for ring1-9
-			Color[] availableColors = Plot2DPanel.generateAutoColor(NUM_SELECTED_ROIS, Color.black, new Integer(0));
+			allROIColors = new Color[(FRAPData.VFRAP_ROI_ENUM.values().length-2)*2];//double valid ROI colors (not include cell and background)
+			Color[] availableColors = Plot2DPanel.generateAutoColor(allROIColors.length, getBackground(), new Integer(0));
 			System.arraycopy(availableColors, 0, allROIColors, 0, allROIColors.length);
 		}
 		return allROIColors;
@@ -314,7 +316,7 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 	
 	public void refreshROIImage()
 	{
-		FRAPData frapData = frapWorkspace.getWorkingFrapStudy().getFrapData();
+		FRAPData frapData = batchRunWorkspace.getFrapStudyList().get(0).getFrapData();
 		ROI[] allROIs = getAllROIs();
 		Color[] allColors = getAllROIColors();
 		ArrayList<ROI> plottedROIs = new ArrayList<ROI>();
@@ -474,7 +476,7 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 	
 	public void refreshROIImageForDisplay()
 	{
-		FRAPData frapData = frapWorkspace.getWorkingFrapStudy().getFrapData();
+		FRAPData frapData = batchRunWorkspace.getFrapStudyList().get(0).getFrapData();
 		ROI[] allROIs = getAllROIs();
 		Color[] allColors = getAllROIColors();
 		ArrayList<ROI> plottedROIs = new ArrayList<ROI>();
@@ -536,14 +538,14 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 	
 	public void refreshCheckboxes()
 	{
-		FRAPData frapData = frapWorkspace.getWorkingFrapStudy().getFrapData();
+		FRAPData frapData = batchRunWorkspace.getFrapStudyList().get(0).getFrapData();
 		ROI[] rois = frapData.getRois();
 		//enable all the checkboxes first
 		setAllCheckboxesEnabled(false);
 		setAllCheckboxesSelected(false);
 		//disable ROIs with 0 pixel in it
 		//or disselect checkboxes according to stored selected ROIS
-		boolean[] storedSelectedROIs = frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation(); 
+		boolean[] storedSelectedROIs = batchRunWorkspace.getFrapStudyList().get(0).getSelectedROIsForErrorCalculation(); 
 		for(int i=0; i<rois.length; i++)
 		{
 			if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&
@@ -646,9 +648,9 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 		return selectedROIs;
 	}
 	
-	public void setFrapWorkspace(FRAPSingleWorkspace arg_FrapWorkspace)
+	public void setFrapBatchRunWorkspace(FRAPBatchRunWorkspace arg_FrapBatchRunWorkspace)
     {
-    	frapWorkspace = arg_FrapWorkspace;
+    	batchRunWorkspace = arg_FrapBatchRunWorkspace;
     }
 
 }

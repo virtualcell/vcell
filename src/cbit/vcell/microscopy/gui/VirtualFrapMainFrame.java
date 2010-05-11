@@ -76,6 +76,7 @@ public class VirtualFrapMainFrame extends JFrame
 
 	private MenuHandler menuHandler = new MenuHandler();
 	private static final String VERSION_NUMBER = "VFrap 1.0";
+	private static final String BATCHRUN_VER_NUMBER = "VFRAP 1.0_Batch_Run";
 	private static final String OPEN_ACTION_COMMAND = "Open vfrap";
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
@@ -205,22 +206,6 @@ public class VirtualFrapMainFrame extends JFrame
   //Inner class MenuHandler
   public class MenuHandler implements ActionListener
   {
-	  private void saveAndSaveAs(final boolean bSaveAs)
-	  {
-    	  
-    	  if(bSaveAs)
-    	  {
-    		  AsynchClientTask[] saveAsTasks = frapStudyPanel.saveAs();
-    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveAsTasks, true);
-    	  }else{
-    		  //dispatch
-    		  AsynchClientTask[] saveTasks = frapStudyPanel.save();
-    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveTasks, true);
-    		  
-    	  }
-		  
-
-	  }
  		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() instanceof JMenuItem)
 		    {
@@ -242,11 +227,13 @@ public class VirtualFrapMainFrame extends JFrame
 		      }
 			  else if(arg.equals(SAVE_ACTION_COMMAND))
 		      {
-				  saveAndSaveAs(false);
+				  AsynchClientTask[] saveTasks = frapStudyPanel.save();
+	    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveTasks, true);
 		      }
 		      else if(arg.equals(SAVEAS_ACTION_COMMAND))
 		      {
-		    	  saveAndSaveAs(true);
+		    	  AsynchClientTask[] saveAsTasks = frapStudyPanel.saveAs();
+	    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveAsTasks, true);
 		      }
 		      else if(arg.equals(IMPORTFILESERIES_ACTION_COMMAND))
 		      {
@@ -310,7 +297,7 @@ public class VirtualFrapMainFrame extends JFrame
 		      else if(arg.equals(BATCH_RUN_ACTION_COMMAND))
 		      {
 		    	  System.out.println("Batch run command clicked.");
-		    	  getBatchRunFrame().setBatchRunTitle("");
+		    	  setBatchRunFrameTitle("");
 	    		  getBatchRunFrame().setVisible(true);
 		    	  getBatchRunFrame().setState(JFrame.NORMAL);
 		    	  
@@ -567,24 +554,6 @@ public class VirtualFrapMainFrame extends JFrame
     setJMenuBar(mb);
   } // end of setup menu
 
-  /**
-  * Before shuting down the running application, a good
-  * implementation would at least check to see if a save
-  * is needed.
-  *//*
-  protected WindowAdapter createAppCloser()
-  {
-      return new AppCloser();
-  }
-
-  protected final class AppCloser extends WindowAdapter
-  {
-      public void windowClosing(WindowEvent e)
-      {
-	  		menuHandler.actionPerformed(new ActionEvent(menuExit,0,EXIT_ACTION_COMMAND));
-	  }
-  }*/
-  
   //setTitle overrides the orginal function in java.awt.Frame
   //to show the software name and version.
   public void setMainFrameTitle(String str)
@@ -599,4 +568,16 @@ public class VirtualFrapMainFrame extends JFrame
 	  }
   }
 
+  public void setBatchRunFrameTitle(String str)
+  {
+	  if(str.equals(""))
+	  {
+		  getBatchRunFrame().setTitle(BATCHRUN_VER_NUMBER);
+	  }
+	  else
+	  {
+		  getBatchRunFrame().setTitle(str + " - " + BATCHRUN_VER_NUMBER);
+	  }
+  }
+  
 } // end of class MainFrame

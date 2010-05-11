@@ -2,7 +2,6 @@ package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -10,9 +9,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Hashtable;
 
 import javax.swing.ImageIcon;
@@ -24,17 +21,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.undo.UndoableEdit;
 
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
@@ -44,25 +37,19 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
-import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.ModelTypesDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.RoiForErrorDescriptor;
 import cbit.vcell.microscopy.gui.AboutDialog;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.HelpViewer;
-import cbit.vcell.microscopy.gui.PreferencePanel;
 import cbit.vcell.microscopy.gui.StatusBar;
 import cbit.vcell.microscopy.gui.ToolBar;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame.MenuHandler;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame.ToolBarHandler;
-import cbit.vcell.microscopy.gui.estparamwizard.MSEPanel;
-import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
 import cbit.vcell.opt.Parameter;
 
 /**
@@ -87,7 +74,6 @@ public class VirtualFrapBatchRunFrame extends JFrame
 
 	private BatchRunMenuHandler menuHandler = new BatchRunMenuHandler();
 	
-	private static final String BATCHRUN_VER_NUMBER = "VFRAP 1.0_Batch_Run";
 	private static final String OPEN_ACTION_COMMAND = "Open vfbatch";
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
@@ -95,7 +81,6 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	private static final String HELPTOPICS_ACTION_COMMAND = "Help Topics";
 	private static final String ABOUT_ACTION_COMMAND = "About Virtual Frap";
 	private static final String VIEW_JOB_ACTION_COMMAND = "Job Status Panel";
-//	private static final String MAIN_WINDOW_ACTION_COMMAND = "Main Window";
 	
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
 	private static final JMenuItem menuClose= new JMenuItem(CLOSE_ACTION_COMMAND,'C');
@@ -111,23 +96,14 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	public static ToolBar toolBar = null;
 	private HelpViewer hviewer = null;
 	  
+	//for opening batch run file, may be changed later
+	ArrayList<String> frapFileList = null;
+	String openErrMsg = "";
 	//modeltype wizard
 	private Wizard modelTypeWizard = null;
 	
     public class BatchRunMenuHandler implements ActionListener
 	{
-    	private void saveAndSaveAs(final boolean bSaveAs)
-		{
-	    	if(bSaveAs)
-	    	{
-//	    		AsynchClientTask[] saveAsTasks = frapStudyPanel.saveAs();
-//	    		ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), saveAsTasks, true);
-	    	}else{
-//	    		AsynchClientTask[] saveTasks = frapStudyPanel.save();
-//	    		ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), saveTasks, true);
-	    		  
-	    	}
-        }
 	 	public void actionPerformed(ActionEvent e) 
 	 	{
 			if(e.getSource() instanceof JMenuItem)
@@ -137,23 +113,25 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				if(arg.equals(OPEN_ACTION_COMMAND))
 			    {
 					File inputFile = null;
-//		  			int option = VirtualFrapLoader.openVFRAPFileChooser.showOpenDialog(frapStudyPanel);
-//		  			if (option == JFileChooser.APPROVE_OPTION){
-//		  				inputFile = VirtualFrapLoader.openVFRAPFileChooser.getSelectedFile();
-//		  			}else{
-//		  				return;
-//		  			}
-//		  			  
-//		  	  		AsynchClientTask[] openTasks = frapStudyPanel.open(inputFile);
-//		    		ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), openTasks, true);
+		  			int option = VirtualFrapLoader.openVFRAPBatchRunChooser.showOpenDialog(VirtualFrapBatchRunFrame.this);
+		  			if (option == JFileChooser.APPROVE_OPTION){
+		  				inputFile = VirtualFrapLoader.openVFRAPBatchRunChooser.getSelectedFile();
+		  			}else{
+		  				return;
+		  			}
+		  			  
+		  	  		AsynchClientTask[] openTasks = open(inputFile);
+		    		ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), openTasks, true);
 			    }
 				else if(arg.equals(SAVE_ACTION_COMMAND))
 			    {
-					saveAndSaveAs(false);
+					AsynchClientTask[] saveTasks = save();
+		    		ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), saveTasks, true);
 			    }
 				else if(arg.equals(SAVEAS_ACTION_COMMAND))
 				{
-					saveAndSaveAs(true);
+					AsynchClientTask[] saveAsTasks = saveAs();
+		    		ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), saveAsTasks, true);
 				}
 				else if(arg.equals(CLOSE_ACTION_COMMAND))
 				{
@@ -228,42 +206,38 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		  	   			menuHandler.actionPerformed(new ActionEvent(mHelpTopics,0,HELPTOPICS_ACTION_COMMAND));
 		  	   			break;
 			  	   	case ToolBar.BUT_RUN:
-			  	   		
-				  	   	final Wizard typeWizard = getChooseModelTypeWizard();
-			   			if(typeWizard != null)
-			   			{
-			   				typeWizard.showModalDialog(new Dimension(550,420));
-			   				if(typeWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
-			   				{
-			   					//create and run the batch files
-			   					ArrayList<AsynchClientTask> batchRunTaskList = getBatchRunTasks();
-								//generate results
-			   					
-			   					
-			   					AsynchClientTask displayTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
-			   					{
-			   						public void run(Hashtable<String, Object> hashTable) throws Exception
-			   						{
-			   							getBatchRunDetailsPanel().updateResultsInfo(true);
-			   						}
-			   					};
-			   					
-//			   					batchRunTaskList.add(arg0);
-			   					batchRunTaskList.add(displayTask);
-								//run tasks
-			   					AsynchClientTask[] tasks = batchRunTaskList.toArray(new AsynchClientTask[batchRunTaskList.size()]);
-								ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), tasks, true, false, false, null, true);
-							}
-			   			}
-//			  	   		MessagePanel msgPanel = new MessagePanel("Start running c:\\VirtualMicroscopy\\test2.vfrap", false);
-//			  	   		getBatchRunDisplayPanel().getJobStatusPanel().appendMessage(msgPanel);
-//			  	   		
-//			  	   		msgPanel = new MessagePanel("Saving information", true);
-//			  	   		getBatchRunDisplayPanel().getJobStatusPanel().appendMessage(msgPanel);
-//			  	   		int progCounter = 0;
-//			  	   		msgPanel.setProgress(10);
-			  	   		
-//			  	   		msgPanel.setProgressCompleted();
+			  	   		if(batchRunWorkspace.getFrapStudyList().size() > 0)
+			  	   		{
+					  	   	final Wizard typeWizard = getChooseModelTypeWizard();
+				   			if(typeWizard != null)
+				   			{
+				   				typeWizard.showModalDialog(new Dimension(550,420));
+				   				if(typeWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
+				   				{
+				   					//create and run the batch files
+				   					ArrayList<AsynchClientTask> batchRunTaskList = getBatchRunTasks();
+									//generate results
+				   					AsynchClientTask displayTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+				   					{
+				   						public void run(Hashtable<String, Object> hashTable) throws Exception
+				   						{
+				   							getBatchRunDetailsPanel().updateResultsInfo(true);
+				   						}
+				   					};
+				   					
+	//			   					batchRunTaskList.add(arg0);
+				   					batchRunTaskList.add(displayTask);
+									//run tasks
+				   					AsynchClientTask[] tasks = batchRunTaskList.toArray(new AsynchClientTask[batchRunTaskList.size()]);
+									ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), tasks, true, false, false, null, true);
+								}
+				   			}
+			  	   		}
+			  	   		else
+			  	   		{
+				  	   		DialogUtils.showErrorDialog(VirtualFrapBatchRunFrame.this, "There is no Dataset for batch run.");
+				    		throw new RuntimeException("There are no Datasets for batch run.");
+			  	   		}
 		  	   			break;
 		  	   		default:
 		                break;
@@ -439,20 +413,6 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		  }
 	  }
 	  
-	  //setTitle overrides the orginal function in java.awt.Frame
-	  //to show the software name and version.
-	  public void setBatchRunTitle(String str)
-	  {
-		  if(str.equals(""))
-		  {
-			  this.setTitle(BATCHRUN_VER_NUMBER);
-		  }
-		  else
-		  {
-			  this.setTitle(str + " - " + BATCHRUN_VER_NUMBER);
-		  }
-	  }
-	  
 	  public Wizard getChooseModelTypeWizard()
 	  {
 	      if(modelTypeWizard == null)
@@ -563,8 +523,8 @@ public class VirtualFrapBatchRunFrame extends JFrame
 								{
 									if(model == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
 									{
-										if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() == null)
-										{
+//										if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() == null)
+//										{//always run
 											fStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF);
 											Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
 											//set model parameters and data
@@ -572,14 +532,12 @@ public class VirtualFrapBatchRunFrame extends JFrame
 											double[][] fitData = fStudy.getFrapOptData().getFitData(bestParameters);
 											fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(bestParameters);
 											fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setData(fitData);
-										}
-										
-										
+//										}
 									}
 									else if(model == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
 									{
-										if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() == null)
-										{
+//										if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() == null)
+//										{//always run
 											fStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF);
 											Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
 											//set model parameters and data
@@ -587,7 +545,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 											double[][] fitData = fStudy.getFrapOptData().getFitData(bestParameters);
 											fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
 											fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setData(fitData);
-										}
+//										}
 									}
 								}
 								else{
@@ -621,4 +579,222 @@ public class VirtualFrapBatchRunFrame extends JFrame
 			
 			return batchRunTaskList;
 	  }
+	  
+	public AsynchClientTask[] save() 
+	{
+		ArrayList<AsynchClientTask> saveTasks = new ArrayList<AsynchClientTask>();
+		AsynchClientTask beforeSaveTask = new AsynchClientTask("Saving file ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				if(batchRunWorkspace.getFrapStudyList() == null || batchRunWorkspace.getFrapStudyList().size() < 1)
+				{
+					throw new Exception("No Data exists to save");
+				}else{
+					File outputFile = null;
+					String saveFileName = batchRunWorkspace.getBatchRunXmlFileName();
+		    		if(saveFileName == null)
+		    		{
+		    			int choice = VirtualFrapLoader.saveFileChooser_batchRun.showSaveDialog(VirtualFrapBatchRunFrame.this);
+		    			if (choice != JFileChooser.APPROVE_OPTION) {
+		    				throw UserCancelException.CANCEL_FILE_SELECTION;
+		    			}
+		    			saveFileName = VirtualFrapLoader.saveFileChooser_batchRun.getSelectedFile().getPath();		    			
+		    			if(saveFileName != null)
+			    		{
+		    				File tempOutputFile = new File(saveFileName);
+				    		if(!VirtualFrapLoader.filter_vfbatch.accept(tempOutputFile)){
+		    					if(tempOutputFile.getName().indexOf(".") == -1){
+		    						tempOutputFile = new File(tempOutputFile.getParentFile(),tempOutputFile.getName()+"."+VirtualFrapLoader.VFRAP_BATCH_EXTENSION);
+		    					}else{
+		    						throw new Exception("Virtual FRAP Batchrun document names must have an extension of ."+VirtualFrapLoader.VFRAP_BATCH_EXTENSION);//return?
+		    					}
+		    				}
+				    		if(tempOutputFile.exists())
+				    		{
+				    			String overwriteChoice = DialogUtils.showWarningDialog(VirtualFrapBatchRunFrame.this, "OverWrite file\n"+ tempOutputFile.getAbsolutePath(),
+				    						new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CANCEL);
+				    			if(overwriteChoice.equals(UserMessage.OPTION_CANCEL)){
+				    				throw UserCancelException.CANCEL_GENERIC;//----? Should use "return"?
+	//					    				return;
+				    			}
+				    			else
+				    			{
+					    			//Remove single vfrap files in the overwritten batchRun
+					    			try{
+					    				// TODO 
+					    			}catch(Exception e){
+					    				System.out.println(
+					    					"Error deleting externalData and simulation files for overwritten vfrap document "+
+					    					tempOutputFile.getAbsolutePath()+"  "+e.getMessage());
+					    				e.printStackTrace();
+					    			}
+				    			}
+				    		}
+				    		outputFile = tempOutputFile;
+			    		}
+		    		}
+		    		else
+		    		{
+		    			outputFile = new File(saveFileName);
+		    		}
+		    		
+		    		if(outputFile != null)
+		    		{
+		    			updateStatus("Saving file " + outputFile.getAbsolutePath()+" ...");
+		    			hashTable.put(FRAPStudyPanel.SAVE_FILE_NAME_KEY, outputFile);
+		    		}
+				}
+			}
+		};
+		saveTasks.add(beforeSaveTask);
+		//add saving each single vfrap files in the batchrun
+		saveTasks.add(batchRunWorkspace.getSaveSingleFilesTask());
+		//write batch run file
+		saveTasks.add(batchRunWorkspace.getSaveBatchRunFileTask());
+		
+		AsynchClientTask afterSaveTask = new AsynchClientTask("Saving file ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				File outFile = (File)hashTable.get(FRAPStudyPanel.SAVE_FILE_NAME_KEY);
+				VirtualFrapBatchRunFrame.updateStatus("File " + outFile.getAbsolutePath()+" has been saved.");
+		        VirtualFrapLoader.mf.setMainFrameTitle(outFile.getName());
+			}
+		};
+		saveTasks.add(afterSaveTask);
+		return saveTasks.toArray(new AsynchClientTask[saveTasks.size()]);
+	}
+
+	public AsynchClientTask[] saveAs()
+	{
+		ArrayList<AsynchClientTask> saveAsTasks = new ArrayList<AsynchClientTask>();
+		AsynchClientTask beforeSaveTask = new AsynchClientTask("Saving file ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				if(batchRunWorkspace.getWorkingFrapStudy() == null || batchRunWorkspace.getWorkingFrapStudy().getFrapData() == null)
+				{
+					throw new Exception("No FRAP Data exists to save");
+				}else{
+					File outputFile = null;
+					String saveFileName = null;
+	    			int choice = VirtualFrapLoader.saveFileChooser_batchRun.showSaveDialog(VirtualFrapBatchRunFrame.this);
+	    			if (choice != JFileChooser.APPROVE_OPTION)
+	    			{
+	    				throw UserCancelException.CANCEL_FILE_SELECTION;
+	    			}
+	    			saveFileName = VirtualFrapLoader.saveFileChooser_batchRun.getSelectedFile().getPath();	
+		    		if(saveFileName != null)
+		    		{
+			    		File tempOutputFile = new File(saveFileName);
+			    		if(!VirtualFrapLoader.filter_vfbatch.accept(tempOutputFile)){
+	    					if(tempOutputFile.getName().indexOf(".") == -1){
+	    						tempOutputFile = new File(tempOutputFile.getParentFile(),tempOutputFile.getName()+"."+VirtualFrapLoader.VFRAP_BATCH_EXTENSION);
+	    					}else{
+	    						throw new Exception("Virtual FRAP Batchrun document names must have an extension of ."+VirtualFrapLoader.VFRAP_BATCH_EXTENSION);//return?
+	    					}
+	    				}
+			    		if(tempOutputFile.exists())
+			    		{
+			    			String overwriteChoice = DialogUtils.showWarningDialog(VirtualFrapBatchRunFrame.this, "OverWrite file\n"+ tempOutputFile.getAbsolutePath(),
+			    						new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CANCEL);
+			    			if(overwriteChoice.equals(UserMessage.OPTION_CANCEL)){
+			    				throw UserCancelException.CANCEL_GENERIC;//----? Should use "return"?
+			    			}
+			    			else
+			    			{
+			    				//Remove single vfrap files in the overwritten batchRun
+				    			try{
+				    				//TODO
+				    			}catch(Exception e){
+				    				System.out.println(
+				    					"Error deleting externalData and simulation files for overwritten vfrap document "+
+				    					tempOutputFile.getAbsolutePath()+"  "+e.getMessage());
+				    				e.printStackTrace();
+				    			}
+			    			}
+			    		}
+			    		outputFile = tempOutputFile;
+		    		}
+		    		if(outputFile != null)
+		    		{
+		    			updateStatus("Saving file " + outputFile.getAbsolutePath()+" ...");
+		    			hashTable.put(FRAPStudyPanel.SAVE_FILE_NAME_KEY, outputFile);
+		    		}
+				}
+			}
+		};
+		saveAsTasks.add(beforeSaveTask);
+		//add saving each single vfrap files in the batchrun
+		saveAsTasks.add(batchRunWorkspace.getSaveSingleFilesTask());
+		//write batch run file
+		saveAsTasks.add(batchRunWorkspace.getSaveBatchRunFileTask());
+
+		AsynchClientTask afterSaveAsTask = new AsynchClientTask("Saving file ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				File outFile = (File)hashTable.get(FRAPStudyPanel.SAVE_FILE_NAME_KEY);
+				VirtualFrapBatchRunFrame.updateStatus("File " + outFile.getAbsolutePath()+" has been saved.");
+		        VirtualFrapLoader.mf.setMainFrameTitle(outFile.getName());
+			}
+		};
+		saveAsTasks.add(afterSaveAsTask);
+		return saveAsTasks.toArray(new AsynchClientTask[saveAsTasks.size()]);
+	}
+
+	public AsynchClientTask[] open(final File inFile) 
+	{
+		
+		ArrayList<AsynchClientTask> totalTasks = new ArrayList<AsynchClientTask>(); 
+				 
+	    //check if save is needed before loading data
+//	    if(getFrapWorkspace().getWorkingFrapStudy().isSaveNeeded())
+//	    {
+//			String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "There are unsaved changes. Save current document before loading new document?", new String[]{SAVE_CONTINUE_MSG, NO_THANKS_MSG}, SAVE_CONTINUE_MSG);
+//			if(choice.equals(SAVE_CONTINUE_MSG))
+//			{
+//				AsynchClientTask[] saveTasks = save();
+//				for(int i=0; i<saveTasks.length; i++)
+//				{
+//					totalTasks.add(saveTasks[i]);
+//				}
+//			}
+//	    }
+	    
+		AsynchClientTask preOpenTask = new AsynchClientTask("Loading "+inFile.getAbsolutePath()+"...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				VirtualFrapBatchRunFrame.updateStatus("Loading "+inFile.getAbsolutePath()+"...");
+			}
+		};
+		totalTasks.add(preOpenTask);
+		
+		//load frap batch run file
+		totalTasks.add(batchRunWorkspace.getLoadBatchRunFileTask(inFile));
+		
+		//load each single vfrap file
+		totalTasks.add(batchRunWorkspace.getLoadSingleFilesTask(localWorkspace));
+		
+		//after loading task
+		AsynchClientTask updateUIAfterLoadingTask = new AsynchClientTask("Updating User Interface ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				FRAPBatchRunWorkspace tempBatchRunWorkspace = (FRAPBatchRunWorkspace)hashTable.get(FRAPBatchRunWorkspace.BATCH_RUN_WORKSPACE_KEY);
+				//if loaded successfully, update the batchrunworkspace with the temporary one.
+				batchRunWorkspace.update(tempBatchRunWorkspace);
+				//update tree
+				getBatchRunDetailsPanel().updateViewTreeForNewBatchRunFile(batchRunWorkspace);
+				//update ui
+				VirtualFrapLoader.mf.setBatchRunFrameTitle(batchRunWorkspace.getBatchRunXmlFileName());
+				VirtualFrapBatchRunFrame.updateStatus("Loaded " + tempBatchRunWorkspace.getBatchRunXmlFileName());
+			}
+		};
+		totalTasks.add(updateUIAfterLoadingTask);
+		
+		return totalTasks.toArray(new AsynchClientTask[totalTasks.size()]);
+	}
 }

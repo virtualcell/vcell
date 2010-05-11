@@ -53,7 +53,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 	private JLabel roi_bleached_ring7Label = null;
 	private JLabel roi_bleached_ring8Label = null;
 	
-	private static final int NUM_SELECTED_ROIS = 9;
+	private static final int NUM_SELECTED_ROIS = FRAPData.VFRAP_ROI_ENUM.values().length-2; //exclude cell and background ROIs
 	private static final int IDX_ROI_BLEACHED = 0;
 	private static final int IDX_ROI_BLEACHED_RING1 = 1;
 	private static final int IDX_ROI_BLEACHED_RING2 = 2;
@@ -297,8 +297,8 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 	{
 		if(allROIColors == null)
 		{
-			allROIColors = new Color[NUM_SELECTED_ROIS];//ROI colors, use index 0 for bleached, index 1-9 for ring1-9
-			Color[] availableColors = Plot2DPanel.generateAutoColor(NUM_SELECTED_ROIS, Color.black, new Integer(0));
+			allROIColors = new Color[(FRAPData.VFRAP_ROI_ENUM.values().length-2)*2];//double valid ROI colors (not include cell and background)
+			Color[] availableColors = Plot2DPanel.generateAutoColor(allROIColors.length, getBackground(), new Integer(0));
 			System.arraycopy(availableColors, 0, allROIColors, 0, allROIColors.length);
 		}
 		return allROIColors;

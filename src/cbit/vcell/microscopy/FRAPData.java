@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy;
 
+import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -38,9 +39,12 @@ import org.vcell.util.document.VCDataJobID;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 import org.vcell.util.document.User;
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -465,6 +469,60 @@ private UShortImage fastDilate(UShortImage dilateSource,int radius,UShortImage m
 				dilateSource.getNumZ());
 	resultImage.and(mask);
 	return resultImage;
+}
+
+public boolean checkROIConstraints(Component componentToDisplayMsg) throws Exception{
+	short[] cellPixels = getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getPixelsXYZ();
+	short[] bleachPixels = getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getPixelsXYZ();
+	short[] backgroundPixels = getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).getPixelsXYZ();
+	boolean bFixedBleach = false;
+	boolean bFixedBackground = false;
+	for (int i = 0; i < cellPixels.length; i++) {
+		if(cellPixels[i] == 0 && bleachPixels[i] != 0){
+			bFixedBleach = true;
+			bleachPixels[i] = 0;
+		}
+		if(cellPixels[i] != 0 && backgroundPixels[i] != 0){
+			bFixedBackground = true;
+			backgroundPixels[i] = 0;
+		}
+	}
+	if(bFixedBackground || bFixedBleach){
+		final String FIX_AUTO = "Fix Automatically";
+		final String NO_THANKS = "No, Thanks";
+		String result = DialogUtils.showWarningDialog(componentToDisplayMsg,
+				(bFixedBleach?"Bleach ROI extends beyond Cell ROI":"")+
+				(bFixedBackground &&bFixedBleach?" and" :"")+
+				(bFixedBackground?"Background ROI overlaps Cell ROI":"")+
+				".  Ensure that the Bleach ROI is completely inside the Cell ROI and the Background ROI is completely outside the Cell ROI.\nDo you want Virtual Frap to fix it automatically?",
+				new String[] {FIX_AUTO,NO_THANKS}, FIX_AUTO);
+		if(result != null && result.equals(FIX_AUTO)){
+			if(bFixedBleach){
+				UShortImage ushortImage =
+					new UShortImage(bleachPixels,
+						getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
+						getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
+						getCurrentlyDisplayedROI().getISize().getX(),
+						getCurrentlyDisplayedROI().getISize().getY(),
+						getCurrentlyDisplayedROI().getISize().getZ());
+				ROI newBleachROI = new ROI(ushortImage,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
+				addReplaceRoi(newBleachROI);
+			}
+			if(bFixedBackground){
+				UShortImage ushortImage =
+					new UShortImage(backgroundPixels,
+						getCurrentlyDisplayedROI().getRoiImages()[0].getOrigin(),
+						getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
+						getCurrentlyDisplayedROI().getISize().getX(),
+						getCurrentlyDisplayedROI().getISize().getY(),
+						getCurrentlyDisplayedROI().getISize().getZ());
+				ROI newBackgroundROI = new ROI(ushortImage,FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
+				addReplaceRoi(newBackgroundROI);
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
 protected void refreshDependentROIs()

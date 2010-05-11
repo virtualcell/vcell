@@ -41,7 +41,6 @@ public class TreeHandler extends MouseAdapter implements TreeSelectionListener
        {
            if(selectedInfo != null && selectedInfo instanceof File)//selected node is a batch run document
            {
-	           System.out.println("batch run files selected:" + ((File)selectedInfo).getAbsolutePath());
 	           getBatchRunWorkspace().updateDisplayForTreeSelection(selectedInfo);
            }
        }
@@ -49,7 +48,6 @@ public class TreeHandler extends MouseAdapter implements TreeSelectionListener
        {
     	    if(selectedInfo != null && selectedInfo instanceof String) //selected node is a batch run result
            {
-               System.out.println("batch run results selected:" + (String)selectedInfo);
                getBatchRunWorkspace().updateDisplayForTreeSelection(selectedInfo); //TODO: shift to result panel.
            }
        }

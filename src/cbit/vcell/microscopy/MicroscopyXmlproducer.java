@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.zip.DeflaterOutputStream;
+
 import org.jdom.Element;
 import org.vcell.util.document.ExternalDataIdentifier;
 
@@ -18,7 +19,6 @@ import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.Xmlproducer;

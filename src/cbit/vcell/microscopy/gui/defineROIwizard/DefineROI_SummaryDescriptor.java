@@ -10,10 +10,13 @@ import java.util.Hashtable;
 
 import javax.swing.JPanel;
 
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.FRAPData;
@@ -95,11 +98,13 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
 								" and " + "x="+distinctCellAreaLocations[1].x+",y="+distinctCellAreaLocations[1].y+"\n"+
 								"Use ROI editing tools to define a single continuous CELL ROI");				
 					}
-					
-					fStudy.setStartingIndexForRecovery(startIndex);
-					getFrapWorkspace().setFrapStudy(fStudy, true);
-					//generate ROI rings
-					fStudy.refreshDependentROIs();
+					if(fStudy.getFrapData().checkROIConstraints(imgPanel))
+					{
+						fStudy.setStartingIndexForRecovery(startIndex);
+						getFrapWorkspace().setFrapStudy(fStudy, true);
+						//generate ROI rings
+						fStudy.refreshDependentROIs();
+					}
 				}
 				else
 				{

@@ -84,7 +84,7 @@ public class FileSavePanel extends JPanel
 		{
 			return fileNameTextField.getText();
 		}
-		return "";
+		return null;
 	}
 	
 	public void setFileName(String fileName)
