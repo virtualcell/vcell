@@ -20,6 +20,7 @@ import java.util.zip.DataFormatException;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -1015,7 +1016,9 @@ private AsynchClientTask[] fdFromFile() {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			FieldDataFileOperationSpec argfdos = (FieldDataFileOperationSpec)hashTable.get("argfdos");
 			if (argfdos == null) {
-				File imageFile = DatabaseWindowManager.showFileChooserDialog(fieldDataWindowManager, FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
+				File imageFile = DatabaseWindowManager.showFileChooserDialog(
+						fieldDataWindowManager, FileFilters.FILE_FILTER_FIELDIMAGES,
+						clientRequestManager.getUserPreferences(),JFileChooser.FILES_AND_DIRECTORIES);
 				hashTable.put("imageFile", imageFile);
 			}
 		}

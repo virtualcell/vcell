@@ -83,8 +83,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	private ROIMultiPaintManager.Crop3D mergedCrop3D;
 	private BufferedImage[] roiComposite;
 	private IndexColorModel indexColorModel;
-	private ImageDataset initImageDataSet;
-	private ImageDataset enhancedImageDataset;
+	private ImageDataset[] initImageDataSetChannels;
+	private int imageDatasetChannel = 0;
+	private ImageDataset[] enhancedImageDatasetChannels;
 	private String enhanceImageOp = ROIMultiPaintManager.ENHANCE_NONE;
 	private boolean bHasOriginalData;
 	private Extent originalExtent;
@@ -92,7 +93,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	private ISize originalISize;
 	private String originalAnnotation;
 	private GeometryAttributes editedGeometryAttributes;
-	private OverlayEditorPanelJAI.AllPixelValuesRange allPixelValuesRange;
+	private OverlayEditorPanelJAI.AllPixelValuesRange[] allPixelValuesRangeChannels;
+	private TreeMap<Integer, Integer>[] condensedBinsMapChannels;
 	
 	private static final Extent DEFAULT_EXTENT = new Extent(1,1,1);
 	private static final Origin DEFAULT_ORIGIN = new Origin(0,0,0);
@@ -320,8 +322,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 		TreeSet<Integer> sortedPixVal = new TreeSet<Integer>();
 		BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
-		for (int i = 0; i < getImageDataSet().getAllImages().length; i++) {
-			short[] dataToSegment = getImageDataSet().getAllImages()[i].getPixels();
+		for (int i = 0; i < getImageDataSetChannel().getAllImages().length; i++) {
+			short[] dataToSegment = getImageDataSetChannel().getAllImages()[i].getPixels();
 			for (int j = 0; j < dataToSegment.length; j++) {
 				if((int)(dataToSegment[j]&0x0000FFFF) != 0){
 					if(!uniquePixelBS.get((int)(dataToSegment[j]&0x0000FFFF))){
@@ -362,8 +364,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					lookup[uniquePivValArr[i]] = i+1;
 					overlayEditorPanelJAI.addROIName("roi_"+uniquePivValArr[i], false, "roi_"+uniquePivValArr[0], true, OverlayEditorPanelJAI.CONTRAST_COLORS[i+1]);					
 				}
-				for (int i = 0; i < getImageDataSet().getAllImages().length; i++) {
-					short[] dataToSegment = getImageDataSet().getAllImages()[i].getPixels();
+				for (int i = 0; i < getImageDataSetChannel().getAllImages().length; i++) {
+					short[] dataToSegment = getImageDataSetChannel().getAllImages()[i].getPixels();
 					byte[] roiBytes = ((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData();
 					for (int j = 0; j < dataToSegment.length; j++) {
 						if((int)(dataToSegment[j]&0x0000FFFF) != 0){
@@ -383,36 +385,33 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			//do nothing
 		}
 	}
-	private ImageDataset getImageDataSet(){
-		if(enhancedImageDataset != null){
-			return enhancedImageDataset;
+	private ImageDataset getImageDataSetChannel(){
+		if(enhancedImageDatasetChannels != null){
+			return enhancedImageDatasetChannels[imageDatasetChannel];
 		}
-		return initImageDataSet;
+		return initImageDataSetChannels[imageDatasetChannel];
 	}
-	private void calculateAllPixelValuesRange(){
-		UShortImage[] allImages = getImageDataSet().getAllImages();
-		double min = 0;
-		double max = min;
-		for (int i = 0; i < allImages.length; i++) {
-			ImageStatistics imageStats = allImages[i].getImageStatistics();
-			if(i==0 || imageStats.minValue < min){min = imageStats.minValue;}
-			if(i==0 || imageStats.maxValue > max){max = imageStats.maxValue;}
+	private ImageDataset[] getImageDataset(){
+		if(enhancedImageDatasetChannels != null){
+			return enhancedImageDatasetChannels;
 		}
-		allPixelValuesRange = new OverlayEditorPanelJAI.AllPixelValuesRange((int)min, (int)max);
-//		if(bHasOriginalData){
-//			int min = importedDataContainer.shortSpecData[0][0][0];
-//			int max = min;
-//			short[] allShorts = importedDataContainer.shortSpecData[0][0];
-//			for (int i = 0; i < allShorts.length; i++) {
-//				if((allShorts[i]&0x0000FFFF) < min){min = allShorts[i]&0x0000FFFF;}
-//				if((allShorts[i]&0x0000FFFF) > max){max = allShorts[i]&0x0000FFFF;}
-//					
-//			}
-//			allPixelValuesRange = new OverlayEditorPanelJAI.AllPixelValuesRange(min, max);
-//		}else{
-//			allPixelValuesRange = new OverlayEditorPanelJAI.AllPixelValuesRange(0,255);
-//		}
-
+		return initImageDataSetChannels;
+	}
+	private static OverlayEditorPanelJAI.AllPixelValuesRange[] calculateAllPixelValuesRangeChannels0(ImageDataset[] sourceImageDatasetChannels){
+		OverlayEditorPanelJAI.AllPixelValuesRange[] pixelValuesRangeChannels =
+			new OverlayEditorPanelJAI.AllPixelValuesRange[sourceImageDatasetChannels.length];
+		for (int c = 0; c < sourceImageDatasetChannels.length; c++) {
+			UShortImage[] allImages = sourceImageDatasetChannels[c].getAllImages();
+			double min = 0;
+			double max = min;
+			for (int i = 0; i < allImages.length; i++) {
+				ImageStatistics imageStats = allImages[i].getImageStatistics();
+				if(i==0 || imageStats.minValue < min){min = imageStats.minValue;}
+				if(i==0 || imageStats.maxValue > max){max = imageStats.maxValue;}
+			}
+			pixelValuesRangeChannels[c] = new OverlayEditorPanelJAI.AllPixelValuesRange((int)min, (int)max);
+		}
+		return pixelValuesRangeChannels;
 	}
 	public void initROIData(
 			VCImage previouslyEditedVCImage,
@@ -425,7 +424,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		bHasOriginalData = importedDataContainer.shortSpecData != null;
 		
 		mergedCrop3D = new ROIMultiPaintManager.Crop3D();
-		enhancedImageDataset = null;
+		enhancedImageDatasetChannels = null;
 		enhanceImageOp = ROIMultiPaintManager.ENHANCE_NONE;
 		//
 		//previouslyEditedVCImage and previousCrop3D can be null if this is the first time this method
@@ -436,7 +435,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			throw new IllegalArgumentException("Previous VCImage and Crop must both be null or both be not null.");
 		}
 		ROIMultiPaintManager.fixBorderProblemInPlace(importedDataContainer, previouslyEditedVCImage,previousCrop3D);
-		initImageDataSet((!bHasOriginalData?null:importedDataContainer.shortSpecData[0][0]),originalISize);
+		initImageDataSet((!bHasOriginalData?null:importedDataContainer.shortSpecData[0]),originalISize);
 		initROIComposite();
 		if(previousCrop3D != null){
 			cropROIData(previousCrop3D,false);
@@ -477,7 +476,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				index+= pixdata.length;
 			}
 		}
-		calculateAllPixelValuesRange();
+		allPixelValuesRangeChannels = calculateAllPixelValuesRangeChannels0(getImageDataset());
 	}
 	
 	private class GeometryAttributes {
@@ -587,11 +586,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		final CopyOfImageAttributePanel copyOfImageAttributePanel =
 			new CopyOfImageAttributePanel();
 		if(currentGeometryAttributes == null){
-			copyOfImageAttributePanel.init(originalOrigin, createCroppedExtent(originalExtent,originalISize,getImageDataSet().getISize()),
-					getImageDataSet().getISize(), originalAnnotation);			
+			copyOfImageAttributePanel.init(originalOrigin, createCroppedExtent(originalExtent,originalISize,getImageDataSetChannel().getISize()),
+					getImageDataSetChannel().getISize(), originalAnnotation);			
 		}else{
 			copyOfImageAttributePanel.init(currentGeometryAttributes.origin, currentGeometryAttributes.extent,
-					getImageDataSet().getISize(), currentGeometryAttributes.annotation);
+					getImageDataSetChannel().getISize(), currentGeometryAttributes.annotation);
 		}
 		
 		final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(parentComponent));
@@ -673,9 +672,19 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //						true, OverlayEditorPanelJAI.CONTRAST_COLORS[0x000000FF&previousPixelClasses[i].getPixel()]);
 //			}
 //		}
-		overlayEditorPanelJAI.setImages(getImageDataSet(), true,
-				OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
-				allPixelValuesRange);
+		if(getImageDataset().length > 1){
+			String[] channelNames = new String[getImageDataset().length];
+			for (int i = 0; i < channelNames.length; i++) {
+				channelNames[i] = "channel "+i;
+			}
+			overlayEditorPanelJAI.setChannelNames(channelNames);		
+		}else{
+			overlayEditorPanelJAI.setChannelNames(null);
+		}
+		updateUnderlayHistogramDisplay();
+//		overlayEditorPanelJAI.setImages(getImageDataSetChannel(), true,
+//				OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
+//				allPixelValuesRangeChannels[imageDatasetChannel]);
 		overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
 		final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(parentComponent));
 		jDialog.setTitle("Geometry Editor ("+sourceDataName+")");
@@ -1307,19 +1316,21 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		result.put(newVCImage, newCrop3D);
 		return result;
 	}
-	private void initImageDataSet(short[] dataToSegment,
+	private void initImageDataSet(short[][] dataToSegmentChannels,
 			ISize uncroppedISize) throws Exception{
 		
-		UShortImage[] zImageSet = new UShortImage[uncroppedISize.getZ()];
-		for (int i = 0; i < zImageSet.length; i++) {
-			short[] shortData = new short[uncroppedISize.getX()*uncroppedISize.getY()];
-			if(dataToSegment != null){
-				System.arraycopy(dataToSegment, shortData.length*i, shortData, 0, shortData.length);
+		initImageDataSetChannels = new ImageDataset[dataToSegmentChannels.length];
+		for (int c = 0; c < dataToSegmentChannels.length; c++) {	
+			UShortImage[] zImageSet = new UShortImage[uncroppedISize.getZ()];
+			for (int i = 0; i < zImageSet.length; i++) {
+				short[] shortData = new short[uncroppedISize.getX()*uncroppedISize.getY()];
+				if(dataToSegmentChannels != null){
+					System.arraycopy(dataToSegmentChannels[c], shortData.length*i, shortData, 0, shortData.length);
+				}
+				zImageSet[i] = new UShortImage(shortData,DEFAULT_ORIGIN,DEFAULT_EXTENT,uncroppedISize.getX(),uncroppedISize.getY(),1);
 			}
-			zImageSet[i] = new UShortImage(shortData,DEFAULT_ORIGIN,DEFAULT_EXTENT,uncroppedISize.getX(),uncroppedISize.getY(),1);
+			initImageDataSetChannels[c] = new ImageDataset(zImageSet, new double[] { 0.0 }, uncroppedISize.getZ());
 		}
-		    
-		initImageDataSet = new ImageDataset(zImageSet, new double[] { 0.0 }, uncroppedISize.getZ());
 
 	}
 	private void initROIComposite(){
@@ -1337,10 +1348,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				false /*false means NOT USE alpha*/   ,
 				-1/*NO transparent single pixel*/,
 				java.awt.image.DataBuffer.TYPE_BYTE);
-		roiComposite = new BufferedImage[getImageDataSet().getISize().getZ()];
+		roiComposite = new BufferedImage[getImageDataSetChannel().getISize().getZ()];
 		for (int i = 0; i < roiComposite.length; i++) {
 			roiComposite[i] = 
-				new BufferedImage(getImageDataSet().getISize().getX(), getImageDataSet().getISize().getY(),
+				new BufferedImage(getImageDataSetChannel().getISize().getX(), getImageDataSetChannel().getISize().getY(),
 						BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
 		}
 	}
@@ -1388,6 +1399,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			overlayEditorPanelJAI.setROI(null, OverlayEditorPanelJAI.FRAP_DATA_DISCARDHIGHLIGHT_PROPERTY);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY)){
 			fillFromPoint((Point)evt.getNewValue());
+		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CHANNEL_PROPERTY)){
+			imageDatasetChannel = (Integer)evt.getNewValue();
+			updateUnderlayHistogramDisplay();
 		}
 	}
 
@@ -1399,8 +1413,6 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		overlayEditorPanelJAI.setROI(null, OverlayEditorPanelJAI.FRAP_DATA_FILL_PROPERTY);
 	}
 	private void smoothUnderlay(){
-		final String SMOOTHED_IMAGEDATASET = "SMOOTHED_IMAGEDATASET";
-		final String HISTO_BINS = "HISTO_BINS";
 		AsynchClientTask smoothTask = new AsynchClientTask("Processing Image...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -1414,72 +1426,80 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						public boolean isInterrupted() {return getClientTaskStatusSupport().isInterrupted();}
 						public int getProgress() {return 0;}
 					};
-				enhancedImageDataset = smoothImageDataset(initImageDataSet,enhanceImageOp,localClientTaskStatusSupport);
+				enhancedImageDatasetChannels = smoothImageDataset(initImageDataSetChannels,enhanceImageOp,localClientTaskStatusSupport);
 				if(getClientTaskStatusSupport().isInterrupted()){
 					throw UserCancelException.CANCEL_GENERIC;
 				}
 				getClientTaskStatusSupport().setProgress((int)(progressSmoothFraction*100));
 				getClientTaskStatusSupport().setMessage("Calculating histogram...");
-				TreeMap<Integer, Integer> condensedBins = getCondensedBins(getImageDataSet());
-				hashTable.put(SMOOTHED_IMAGEDATASET, getImageDataSet());
-				hashTable.put(HISTO_BINS,condensedBins);
-				calculateAllPixelValuesRange();
+				condensedBinsMapChannels = calculateCondensedBinsChannels0(getImageDataset());
+				allPixelValuesRangeChannels = calculateAllPixelValuesRangeChannels0(getImageDataset());
 			}
 		};
 		AsynchClientTask updateDisplayTask = new AsynchClientTask("Updating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				overlayEditorPanelJAI.setImages((ImageDataset)hashTable.get(SMOOTHED_IMAGEDATASET), false,
-						OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
-						allPixelValuesRange);
-				overlayEditorPanelJAI.setHistogram((TreeMap<Integer, Integer>)hashTable.get(HISTO_BINS));
+				updateUnderlayHistogramDisplay();
 			}
 		};
 		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable<String, Object>(),
 				new AsynchClientTask[] {smoothTask,updateDisplayTask},
 				true, true, null, true);
 	}
-	public ImageDataset smoothImageDataset(ImageDataset origImageDataset,String smoothType,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
-		if(smoothType.equals(ROIMultiPaintManager.ENHANCE_NONE)){
-			return null;//origImageDataset;
+	private void updateUnderlayHistogramDisplay(){
+		overlayEditorPanelJAI.setImages(getImageDataSetChannel(), false,
+				OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
+				allPixelValuesRangeChannels[imageDatasetChannel]);
+		if(condensedBinsMapChannels != null){
+			overlayEditorPanelJAI.setHistogram(condensedBinsMapChannels[imageDatasetChannel]);
 		}
-		
-		UShortImage[] smoothedZSections = new UShortImage[origImageDataset.getISize().getZ()];
-		int radius = 0;
-//		if(smoothType.equals(ENHANCE_AVG_SETSIZE)){
-//			try{
-//				radius = Integer.parseInt(DialogUtils.showInputDialog0(overlayEditorPanelJAI, "Enter integer smoothing radius", 9+""));
-//			}catch(UtilCancelException uce){
-//				return origImageDataset;
-//			}
-//		}else{
-			radius = (smoothType.equals(ENHANCE_AVG_3X3)?1:0)+
-			(smoothType.equals(ENHANCE_AVG_5x5)?2:0)+
-			(smoothType.equals(ENHANCE_AVG_7x7)?3:0);
-//		}
-		int[] divideTable = BoxBlurFilter.createDivideTable(radius);
-		short[] intermediateArr = new short[origImageDataset.getAllImages()[0].getPixels().length];
-		for (int z = 0; z < origImageDataset.getAllImages().length; z++) {
-			smoothedZSections[z] =
-				new UShortImage(new short[origImageDataset.getISize().getX()*origImageDataset.getISize().getY()],
-						ROIMultiPaintManager.DEFAULT_ORIGIN,ROIMultiPaintManager.DEFAULT_EXTENT,
-						origImageDataset.getISize().getX(),origImageDataset.getISize().getY(),1);
-			short[] enhancedData = smoothedZSections[z].getPixels();
-			short[] roiSourceData = origImageDataset.getAllImages()[z].getPixels();
-			
-			BoxBlurFilter.blur(roiSourceData, intermediateArr, origImageDataset.getISize().getX(), origImageDataset.getISize().getY(), radius,divideTable);
-			BoxBlurFilter.blur(intermediateArr, enhancedData, origImageDataset.getISize().getY(), origImageDataset.getISize().getX(), radius,divideTable);
-			if(clientTaskStatusSupport != null){
-				if(clientTaskStatusSupport.isInterrupted()){
-					return null;
-				}
-				clientTaskStatusSupport.setProgress((int)(100*((double)(z+1))/(double)origImageDataset.getAllImages().length));
-			}
-		}
-		ImageDataset smoothedImageDataset =
-			new ImageDataset(smoothedZSections, new double[]{0}, origImageDataset.getISize().getZ());
 
-		return smoothedImageDataset;
+	}
+	public ImageDataset[] smoothImageDataset(ImageDataset[] origImageDatasetChannels,String smoothType,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
+		if(smoothType.equals(ROIMultiPaintManager.ENHANCE_NONE)){
+			return null;
+		}
+		ImageDataset[] smoothedImageDatasetChannels = new ImageDataset[origImageDatasetChannels.length];
+		for (int c = 0; c < origImageDatasetChannels.length; c++) {
+			UShortImage[] smoothedZSections = new UShortImage[origImageDatasetChannels[c].getISize().getZ()];
+			int radius = 0;
+	//		if(smoothType.equals(ENHANCE_AVG_SETSIZE)){
+	//			try{
+	//				radius = Integer.parseInt(DialogUtils.showInputDialog0(overlayEditorPanelJAI, "Enter integer smoothing radius", 9+""));
+	//			}catch(UtilCancelException uce){
+	//				return origImageDataset;
+	//			}
+	//		}else{
+				radius = (smoothType.equals(ENHANCE_AVG_3X3)?1:0)+
+				(smoothType.equals(ENHANCE_AVG_5x5)?2:0)+
+				(smoothType.equals(ENHANCE_AVG_7x7)?3:0);
+	//		}
+			int[] divideTable = BoxBlurFilter.createDivideTable(radius);
+			short[] intermediateArr = new short[origImageDatasetChannels[c].getAllImages()[0].getPixels().length];
+			for (int z = 0; z < origImageDatasetChannels[c].getAllImages().length; z++) {
+				smoothedZSections[z] =
+					new UShortImage(new short[origImageDatasetChannels[c].getISize().getX()*origImageDatasetChannels[c].getISize().getY()],
+							ROIMultiPaintManager.DEFAULT_ORIGIN,ROIMultiPaintManager.DEFAULT_EXTENT,
+							origImageDatasetChannels[c].getISize().getX(),origImageDatasetChannels[c].getISize().getY(),1);
+				short[] enhancedData = smoothedZSections[z].getPixels();
+				short[] roiSourceData = origImageDatasetChannels[c].getAllImages()[z].getPixels();
+				
+				BoxBlurFilter.blur(roiSourceData, intermediateArr, origImageDatasetChannels[c].getISize().getX(), origImageDatasetChannels[c].getISize().getY(), radius,divideTable);
+				BoxBlurFilter.blur(intermediateArr, enhancedData, origImageDatasetChannels[c].getISize().getY(), origImageDatasetChannels[c].getISize().getX(), radius,divideTable);
+				if(clientTaskStatusSupport != null){
+					if(clientTaskStatusSupport.isInterrupted()){
+						return null;
+					}
+					clientTaskStatusSupport.setProgress(
+						(int)(100*((double)(z+1))/(double)origImageDatasetChannels[c].getAllImages().length));
+				}
+			}
+			ImageDataset smoothedImageDataset =
+				new ImageDataset(smoothedZSections, new double[]{0}, origImageDatasetChannels[c].getISize().getZ());
+			smoothedImageDatasetChannels[c] = smoothedImageDataset;
+		}
+
+		return smoothedImageDatasetChannels;
 
 	}
 	private void updateROIWithHighlight(){
@@ -1528,7 +1548,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				for (int i = 0; i < highlight.getRoiImages().length; i++) {
 					short[] pixels = highlight.getRoiImages()[i].getPixels();
 					for (int j = 0; j < pixels.length; j++) {
-						int currPixelVal = getImageDataSet().getAllImages()[i].getPixels()[j]&0x0000FFFF;
+						int currPixelVal = getImageDataSetChannel().getAllImages()[i].getPixels()[j]&0x0000FFFF;
 						if(histSelection != null && histSelection.isSelectedIndex(currPixelVal)){
 							pixels[j] = (short)0xFFFF;							
 						}else{
@@ -1571,18 +1591,16 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 	}
 	private void calculateHistogram(){
-		final String BINS_TREE_MAP = "BINS_TREE_MAP";
 		AsynchClientTask calcBinsTask = new AsynchClientTask("Calulating Histogram",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				TreeMap<Integer, Integer> binTreeMap = getCondensedBins(getImageDataSet());
-				hashTable.put(BINS_TREE_MAP, binTreeMap);
+				condensedBinsMapChannels = calculateCondensedBinsChannels0(getImageDataset());
 			}
 		};
 		AsynchClientTask updatePanelTask = new AsynchClientTask("Updating Display",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				overlayEditorPanelJAI.setHistogram((TreeMap<Integer, Integer>)hashTable.get(BINS_TREE_MAP));
+				overlayEditorPanelJAI.setHistogram(condensedBinsMapChannels[imageDatasetChannel]);
 				overlayEditorPanelJAI.showHistogram();
 			}
 		};
@@ -1620,7 +1638,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				bounding2D = new Rectangle(lowX,lowY,highX-lowX+1,highY-lowY+1);
 			}
 		}else{
-			UShortImage[] images = getImageDataSet().getAllImages();
+			UShortImage[] images = getImageDataSetChannel().getAllImages();
 			for (int z = 0; z < images.length; z++) {
 				Rectangle boundingRect = images[z].getNonzeroBoundingBox();
 				if(boundingRect != null){
@@ -1641,17 +1659,18 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		bounding3D.setBounds(bounding2D.x, bounding2D.y, lowZ, bounding2D.width, bounding2D.height, highZ-lowZ+1);
 		return bounding3D;
 	}
+
 	private void autoCrop(boolean bUseROI){
 		ROIMultiPaintManager.Crop3D nonZeroBoundingBox3D = getNonZeroBoundingBox(bUseROI);
 		if(nonZeroBoundingBox3D != null){
 			boolean isAutoCroppable3D = 
 				!(nonZeroBoundingBox3D.low.z == 0 && 
-						nonZeroBoundingBox3D.depth == getImageDataSet().getISize().getZ());
+						nonZeroBoundingBox3D.depth == getImageDataSetChannel().getISize().getZ());
 			boolean isAutoCroppable2D = 
 				!(nonZeroBoundingBox3D.low.x == 0 && 
 						nonZeroBoundingBox3D.low.y == 0 && 
-						nonZeroBoundingBox3D.width == getImageDataSet().getISize().getX() &&
-						nonZeroBoundingBox3D.height == getImageDataSet().getISize().getY());
+						nonZeroBoundingBox3D.width == getImageDataSetChannel().getISize().getX() &&
+						nonZeroBoundingBox3D.height == getImageDataSetChannel().getISize().getY());
 	
 			if(isAutoCroppable3D || isAutoCroppable2D){
 				
@@ -1678,15 +1697,15 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 								?nonZeroBoundingBox3D.low.z-1
 								:nonZeroBoundingBox3D.low.z-1+1)
 							:-1);
-					int highZlower = ((nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth) != getImageDataSet().getISize().getZ()
+					int highZlower = ((nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth) != getImageDataSetChannel().getISize().getZ()
 							?(B_DISPLAY_ZERO_INDEX_Z
 								?(nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth)
 								:nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth+1):
 							-1);
-					int highZupper = ((nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth) != getImageDataSet().getISize().getZ()
+					int highZupper = ((nonZeroBoundingBox3D.low.z+nonZeroBoundingBox3D.depth) != getImageDataSetChannel().getISize().getZ()
 							?(B_DISPLAY_ZERO_INDEX_Z
-								?(getImageDataSet().getISize().getZ()-1)
-								:getImageDataSet().getISize().getZ()-1+1)
+								?(getImageDataSetChannel().getISize().getZ()-1)
+								:getImageDataSetChannel().getISize().getZ()-1+1)
 							:-1);
 					String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, 
 							"Auto-crop using "+(bUseROI?"ROIs":"underlying image")+" has detected empty Z Sections from"+
@@ -1712,13 +1731,13 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 				if(!bIncludeZ){
 					nonZeroBoundingBox3D.low.z = 0;
-					nonZeroBoundingBox3D.depth = getImageDataSet().getISize().getZ();
+					nonZeroBoundingBox3D.depth = getImageDataSetChannel().getISize().getZ();
 				}
 				if(!bIncludeXY){
 					nonZeroBoundingBox3D.low.x = 0;
 					nonZeroBoundingBox3D.low.y = 0;
-					nonZeroBoundingBox3D.width = getImageDataSet().getISize().getX();
-					nonZeroBoundingBox3D.height = getImageDataSet().getISize().getY();
+					nonZeroBoundingBox3D.width = getImageDataSetChannel().getISize().getX();
+					nonZeroBoundingBox3D.height = getImageDataSetChannel().getISize().getY();
 				}
 				cropROIData(nonZeroBoundingBox3D,true);
 			}else{
@@ -1875,65 +1894,50 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 	
 	private void cropROIData(final Crop3D cropRectangle3D,boolean bThread){
-		final String HISTOGRAM_DATA = "HISTOGRAM_DATA";
 		final AsynchClientTask cropTask = new AsynchClientTask("Cropping...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ISize origSize = getImageDataSet().getISize();
-//				ROI croppedHighlightROI = (overlayEditorPanelJAI != null?overlayEditorPanelJAI.getROI():null);
+				ISize origSize = getImageDataSetChannel().getISize();
 				//
 				//Crop 2D
 				//
-				if(cropRectangle3D.bXYSmaller(origSize.getX(), origSize.getY())){
-					Rectangle cropRectangle =
-						new Rectangle(cropRectangle3D.low.x,cropRectangle3D.low.y,cropRectangle3D.width,cropRectangle3D.height);
-					//crop underlying image
-					initImageDataSet = initImageDataSet.crop(cropRectangle);
-					//Crop Composite ROI zsections
-					for (int i = 0; i < roiComposite.length; i++) {
-						Image croppedROI = 
-							Toolkit.getDefaultToolkit().createImage(
-								new FilteredImageSource(roiComposite[i].getSource(),
-									new CropImageFilter(cropRectangle.x, cropRectangle.y, cropRectangle.width, cropRectangle.height))
-							);
-						roiComposite[i] =
-							new BufferedImage(cropRectangle.width, cropRectangle.height,
-									BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
-						roiComposite[i].getGraphics().drawImage(croppedROI, 0, 0, null);
-					}
-					//Crop highlight ROI if it exists
-//					if(croppedHighlightROI != null){
-//						croppedHighlightROI = croppedHighlightROI.crop(cropRectangle);
-//					}
-				}
-				//
-				//Crop3D
-				//
-				if(cropRectangle3D.bZSmaller(origSize.getZ())){
-					UShortImage[] newUnderLayImageArr = new UShortImage[cropRectangle3D.depth];
-//					UShortImage[] newROIHighlightArr = null;
-//					if(croppedHighlightROI != null){
-//						newROIHighlightArr = new UShortImage[cropRectangle3D.depth];
-//					}
-					BufferedImage[] newROICompositeArr =  new BufferedImage[cropRectangle3D.depth];
-					int index = 0;
-					for (int i = 0; i < origSize.getZ(); i++) {
-						if(i >= cropRectangle3D.low.z && i < (cropRectangle3D.low.z + cropRectangle3D.depth)){
-							newUnderLayImageArr[index] = getImageDataSet().getAllImages()[i];
-							newROICompositeArr[index] = roiComposite[i];
-//							if(newROIHighlightArr != null){
-//								newROIHighlightArr[index] = overlayEditorPanelJAI.getROI().getRoiImages()[i];
-//							}
-							index+=1;
+				for (int c = 0; c < initImageDataSetChannels.length; c++) {		
+					if(cropRectangle3D.bXYSmaller(origSize.getX(), origSize.getY())){
+						Rectangle cropRectangle =
+							new Rectangle(cropRectangle3D.low.x,cropRectangle3D.low.y,cropRectangle3D.width,cropRectangle3D.height);
+						//crop underlying image
+						initImageDataSetChannels[c] = initImageDataSetChannels[c].crop(cropRectangle);
+						//Crop Composite ROI zsections
+						for (int i = 0; i < roiComposite.length; i++) {
+							Image croppedROI = 
+								Toolkit.getDefaultToolkit().createImage(
+									new FilteredImageSource(roiComposite[i].getSource(),
+										new CropImageFilter(cropRectangle.x, cropRectangle.y, cropRectangle.width, cropRectangle.height))
+								);
+							roiComposite[i] =
+								new BufferedImage(cropRectangle.width, cropRectangle.height,
+										BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
+							roiComposite[i].getGraphics().drawImage(croppedROI, 0, 0, null);
 						}
 					}
-					initImageDataSet = new ImageDataset(newUnderLayImageArr, null, cropRectangle3D.depth);
-//					if(newROIHighlightArr != null){
-//						croppedHighlightROI = new ROI(newROIHighlightArr, croppedHighlightROI.getROIName());
-//						hashTable.put(CROP_HIGHLIGHT_KEY, croppedHighlightROI);
-//					}
-					roiComposite = newROICompositeArr;
-
+					//
+					//Crop3D
+					//
+					if(cropRectangle3D.bZSmaller(origSize.getZ())){
+						UShortImage[] newUnderLayImageArr = new UShortImage[cropRectangle3D.depth];
+						BufferedImage[] newROICompositeArr =  new BufferedImage[cropRectangle3D.depth];
+						int index = 0;
+						for (int i = 0; i < origSize.getZ(); i++) {
+							if(i >= cropRectangle3D.low.z && i < (cropRectangle3D.low.z + cropRectangle3D.depth)){
+								newUnderLayImageArr[index] = initImageDataSetChannels[c].getAllImages()[i];
+								newROICompositeArr[index] = roiComposite[i];
+								index+=1;
+							}
+						}
+						initImageDataSetChannels[c] = new ImageDataset(newUnderLayImageArr, null, cropRectangle3D.depth);
+						roiComposite = newROICompositeArr;
+	
+					}
 				}
 				mergedCrop3D.setBounds(
 						mergedCrop3D.low.x+cropRectangle3D.low.x,
@@ -1943,17 +1947,17 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				if(!ROIMultiPaintManager.ENHANCE_NONE.equals(enhanceImageOp)){
 					getClientTaskStatusSupport().setMessage("smoothing...");
 				}
-				enhancedImageDataset = smoothImageDataset(initImageDataSet, enhanceImageOp,null);
-				hashTable.put(HISTOGRAM_DATA,getCondensedBins(getImageDataSet()));
+				enhancedImageDatasetChannels = smoothImageDataset(initImageDataSetChannels, enhanceImageOp,null);
+				condensedBinsMapChannels = calculateCondensedBinsChannels0(getImageDataset());
+				allPixelValuesRangeChannels = calculateAllPixelValuesRangeChannels0(getImageDataset());
 				if(editedGeometryAttributes == null){
 					editedGeometryAttributes = new GeometryAttributes();
 					editedGeometryAttributes.origin = originalOrigin;
-					editedGeometryAttributes.extent = createCroppedExtent(originalExtent, originalISize,getImageDataSet().getISize());
+					editedGeometryAttributes.extent = createCroppedExtent(originalExtent, originalISize,getImageDataSetChannel().getISize());
 				}else{
 					editedGeometryAttributes.extent =
-						createCroppedExtent(editedGeometryAttributes.extent, origSize,getImageDataSet().getISize());
+						createCroppedExtent(editedGeometryAttributes.extent, origSize,getImageDataSetChannel().getISize());
 				}
-				calculateAllPixelValuesRange();
 			}
 		};
 		final AsynchClientTask updatePanelTask = new AsynchClientTask("Updating display...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -1964,12 +1968,13 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					int currentContrast = overlayEditorPanelJAI.getDisplayContrastFactor();
 					overlayEditorPanelJAI.setROI(null,OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY);
 					overlayEditorPanelJAI.setAllROICompositeImage(null,OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY);
-					overlayEditorPanelJAI.setImages(getImageDataSet(), true,
-							OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
-							allPixelValuesRange);
+					updateUnderlayHistogramDisplay();
+//					overlayEditorPanelJAI.setImages(getImageDataSetChannel(), true,
+//							OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
+//							allPixelValuesRangeChannels[imageDatasetChannel]);
 					overlayEditorPanelJAI.setAllROICompositeImage(roiComposite,OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY);
 					overlayEditorPanelJAI.setDisplayContrastFactor(currentContrast);
-					overlayEditorPanelJAI.setHistogram((TreeMap<Integer, Integer>)hashTable.get(HISTOGRAM_DATA));
+//					overlayEditorPanelJAI.setHistogram(condensedBinsMapChannels[imageDatasetChannel]);
 				}
 			}
 		};
@@ -2579,7 +2584,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		byte[] shortEncodedRegionIndexes = regionImage.getShortEncodedRegionIndexImage();
 		
-		final int XSIZE = getImageDataSet().getISize().getX();
+		final int XSIZE = getImageDataSetChannel().getISize().getX();
 
 		highlightROIInfo.highlightROI = createEmptyROI();
 
@@ -2656,10 +2661,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			for (int i = 0; i < ushortRegionHighlightArr.length; i++) {
 				ushortRegionHighlightArr[i] =
 					new UShortImage(
-							new short[getImageDataSet().getISize().getX()*getImageDataSet().getISize().getY()],
+							new short[getImageDataSetChannel().getISize().getX()*getImageDataSetChannel().getISize().getY()],
 							DEFAULT_ORIGIN,DEFAULT_EXTENT,
-							getImageDataSet().getISize().getX(),
-							getImageDataSet().getISize().getY(),
+							getImageDataSetChannel().getISize().getX(),
+							getImageDataSetChannel().getISize().getY(),
 							1);
 			}
 			return new ROI(ushortRegionHighlightArr,"roi");
@@ -2706,10 +2711,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		int zSize = roiPixels.length;
 		int XYSIZE = xSize*ySize;
 		boolean bUseZ = roiPixels.length>1;
-		VCImage checkImage = ROIMultiPaintManager.createVCImageFromBufferedImages(getImageDataSet().getExtent(), roiComposite);
+		VCImage checkImage = ROIMultiPaintManager.createVCImageFromBufferedImages(getImageDataSetChannel().getExtent(), roiComposite);
 		RegionImage regionImage =
 			new RegionImage(checkImage, 0 /*0 means generate no surfacecollection*/,
-					checkImage.getExtent(),getImageDataSet().getAllImages()[0].getOrigin(), RegionImage.NO_SMOOTHING,
+					checkImage.getExtent(),getImageDataSetChannel().getAllImages()[0].getOrigin(), RegionImage.NO_SMOOTHING,
 					progressWaitPopup);
 		RegionInfo[] newRegionInfos = regionImage.getRegionInfos();
 		for (int i = 0; i < newRegionInfos.length; i++) {
@@ -2755,30 +2760,35 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		return bHadAnyInternalVoids;
 	}
 
-	private static TreeMap<Integer, Integer> getCondensedBins(ImageDataset imageDataSet){
+	private static TreeMap<Integer, Integer>[] calculateCondensedBinsChannels0(ImageDataset[] sourceImageDatasetChannels){
 		final int MAX_SCALE = 0x0000FFFF;
-		int[] bins = new int[MAX_SCALE+1];
-		int[] tempLookup = new int[bins.length];
-		for (int i = 0; i < bins.length; i++) {
+		int[] tempLookup = new int[MAX_SCALE+1];
+		for (int i = 0; i < tempLookup.length; i++) {
 			tempLookup[i] = i;
 		}
-		int binTotal = 0;
-		for (int z = 0; z < imageDataSet.getSizeZ(); z++) {
-			for (int xy = 0; xy < imageDataSet.getAllImages()[z].getPixels().length; xy++) {
-				int index = (int)(imageDataSet.getAllImages()[z].getPixels()[xy]&0x0000FFFF);
-				boolean bSet = isSet(imageDataSet.getAllImages()[z].getPixels()[xy], MAX_SCALE, tempLookup,true,false);
-				bins[index]+= (bSet?1:0);
-				binTotal+= (bSet?1:0);
+		TreeMap<Integer, Integer>[] condensedBinsMapChannels = new TreeMap[sourceImageDatasetChannels.length];
+		for (int c = 0; c < sourceImageDatasetChannels.length; c++) {
+			int[] bins = new int[MAX_SCALE+1];
+			int binTotal = 0;
+			for (int z = 0; z < sourceImageDatasetChannels[c].getSizeZ(); z++) {
+				for (int xy = 0; xy < sourceImageDatasetChannels[c].getAllImages()[z].getPixels().length; xy++) {
+					int index = (int)(sourceImageDatasetChannels[c].getAllImages()[z].getPixels()[xy]&0x0000FFFF);
+					boolean bSet = isSet(sourceImageDatasetChannels[c].getAllImages()[z].getPixels()[xy], MAX_SCALE, tempLookup,true,false);
+					bins[index]+= (bSet?1:0);
+					binTotal+= (bSet?1:0);
+	
+				}
+			}
+			TreeMap<Integer, Integer> condensedBinsMap = new TreeMap<Integer, Integer>();
+			for (int i = 0; i < bins.length; i++) {
+				if(bins[i] != 0){
+					condensedBinsMap.put(i, bins[i]);
+				}
+			}
+			condensedBinsMapChannels[c] = condensedBinsMap;
+		}
 
-			}
-		}
-		TreeMap<Integer, Integer> condensedBinsMap = new TreeMap<Integer, Integer>();
-		for (int i = 0; i < bins.length; i++) {
-			if(bins[i] != 0){
-				condensedBinsMap.put(i, bins[i]);
-			}
-		}
-		return condensedBinsMap;
+		return condensedBinsMapChannels;
 	}
 
 	public static boolean isSet(short roiSourceDataUnsignedShort,int thresholdIndex,int[] thresholdLookupArr,boolean maskArrState,boolean bInvertThreshold){
