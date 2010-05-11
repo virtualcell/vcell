@@ -7,7 +7,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.TreeMap;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -38,7 +41,7 @@ public class ImageDatasetReader {
 	}
 	public static int getChannelCount(String fileName) throws Exception{
 		if(fileName.toUpperCase().endsWith(".ZIP")){
-			return readImageDatasetChannels(fileName, null, false).length;
+			return readZipFile(fileName, false, false).length;
 		}else{
 			return getImageReader(fileName).getSizeC();
 		}
@@ -62,50 +65,77 @@ public class ImageDatasetReader {
 		return ImageDatasetReader.readImageDatasetChannels(imageID, status,true)[0];
 	}
 	
+	private static ImageDataset[] readZipFile(String imageID,boolean bAll,boolean bMergeChannels) throws IOException,ImageException,FormatException{
+		ZipFile zipFile = new ZipFile(new File(imageID),ZipFile.OPEN_READ);
+		Vector<Vector<ImageDataset>> imageDataForEachChannelV = new Vector<Vector<ImageDataset>>();
+		Enumeration<? extends ZipEntry> enumZipEntry = zipFile.entries();
+		int noOfZipEntry = 0;//added Jan 2008
+		int numChannels = -1;
+		//Sort entryNames because ZipFile doesn't guarantee order
+		TreeMap<String, Integer> sortedChannelsTreeMap = new TreeMap<String, Integer>();
+		while (enumZipEntry.hasMoreElements()){
+
+			ZipEntry entry = enumZipEntry.nextElement();
+			String entryName = entry.getName();
+			String imageFileSuffix = null;
+			int dotIndex = entryName.indexOf(".");
+			if(dotIndex != -1){
+				imageFileSuffix = entryName.substring(dotIndex);
+			}
+			InputStream zipInputStream = zipFile.getInputStream(entry);
+			File tempImageFile = File.createTempFile("ImgDataSetReader", imageFileSuffix);
+			tempImageFile.deleteOnExit();
+			FileOutputStream fos = new FileOutputStream(tempImageFile,false);
+			byte[] buffer = new byte[50000];
+			while (true){
+				int bytesRead = zipInputStream.read(buffer);
+				if (bytesRead==-1){
+					break;
+				}
+				fos.write(buffer, 0, bytesRead);
+			}
+			fos.close();
+			zipInputStream.close(); 
+			ImageDataset[] imageDatasetChannels = readImageDatasetChannels(tempImageFile.getAbsolutePath(), null,bMergeChannels);
+			if(numChannels == -1){
+				numChannels = imageDatasetChannels.length;
+				for (int i = 0; i < numChannels; i++) {
+					imageDataForEachChannelV.add(new Vector<ImageDataset>());
+				}
+			}
+			if(numChannels != imageDatasetChannels.length){
+				throw new ImageException("ZipFile reader found images with different number of channels");
+			}
+			
+			sortedChannelsTreeMap.put(entryName, imageDataForEachChannelV.elementAt(0).size());
+			for (int i = 0; i < numChannels; i++) {
+				imageDataForEachChannelV.elementAt(i).add(imageDatasetChannels[i]);
+			}
+			
+			tempImageFile.delete();
+			noOfZipEntry ++;
+			if(!bAll){
+				break;
+			}
+		}
+		zipFile.close();
+		ImageDataset[] completeImageDatasetChannels = new ImageDataset[imageDataForEachChannelV.size()];
+		Integer[] sortIndexes = sortedChannelsTreeMap.values().toArray(new Integer[0]);
+		for (int i = 0; i < completeImageDatasetChannels.length; i++) {
+			//sort based on entryName
+			ImageDataset[] unSortedChannel = imageDataForEachChannelV.elementAt(i).toArray(new ImageDataset[0]);
+			ImageDataset[] sortedChannel = new ImageDataset[unSortedChannel.length];
+			for (int j = 0; j < unSortedChannel.length; j++) {
+				sortedChannel[j] = unSortedChannel[sortIndexes[j]];
+			}
+			completeImageDatasetChannels[i] = ImageDataset.createZStack(sortedChannel);			
+		}
+		return completeImageDatasetChannels;
+
+	}
 	public static ImageDataset[] readImageDatasetChannels(String imageID, ClientTaskStatusSupport status, boolean bMergeChannels) throws FormatException, IOException, ImageException {
 		if (imageID.toUpperCase().endsWith(".ZIP")){
-			ZipFile zipFile = new ZipFile(new File(imageID),ZipFile.OPEN_READ);
-			Vector<Vector<ImageDataset>> imageDataForEachChannelV = new Vector<Vector<ImageDataset>>();
-			Enumeration<? extends ZipEntry> enumZipEntry = zipFile.entries();
-			int noOfZipEntry = 0;//added Jan 2008
-			while (enumZipEntry.hasMoreElements()){
-
-				ZipEntry entry = enumZipEntry.nextElement();
-				String entryName = entry.getName();
-				String imageFileSuffix = null;
-				int dotIndex = entryName.indexOf(".");
-				if(dotIndex != -1){
-					imageFileSuffix = entryName.substring(dotIndex);
-				}
-				InputStream inputStream = zipFile.getInputStream(entry);
-				File tempImageFile = File.createTempFile("ImgDataSetReader", imageFileSuffix);
-				tempImageFile.deleteOnExit();
-				FileOutputStream fos = new FileOutputStream(tempImageFile,false);
-				byte[] buffer = new byte[50000];
-				while (true){
-					int bytesRead = inputStream.read(buffer);
-					if (bytesRead==-1){
-						break;
-					}
-					fos.write(buffer, 0, bytesRead);
-				}
-				fos.close();
-				ImageDataset[] imageDatasetChannels = readImageDatasetChannels(tempImageFile.getAbsolutePath(), null,bMergeChannels);
-				for (int i = 0; i < imageDatasetChannels.length; i++) {
-					if(imageDataForEachChannelV.size() < imageDatasetChannels.length){
-						imageDataForEachChannelV.add(new Vector<ImageDataset>());
-					}
-					imageDataForEachChannelV.elementAt(i).add(imageDatasetChannels[i]);
-				}
-				tempImageFile.delete();
-				noOfZipEntry ++;
-			}
-			ImageDataset[] completeImageDatasetChannels = new ImageDataset[imageDataForEachChannelV.size()];
-			for (int i = 0; i < completeImageDatasetChannels.length; i++) {
-				completeImageDatasetChannels[i] =
-					ImageDataset.createZStack(imageDataForEachChannelV.elementAt(i).toArray(new ImageDataset[0]));				
-			}
-			return completeImageDatasetChannels;
+			return readZipFile(imageID, true, bMergeChannels);
 		}
 
 

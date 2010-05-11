@@ -15,6 +15,7 @@ import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
@@ -25,7 +26,6 @@ import java.util.zip.DataFormatException;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -918,8 +918,8 @@ private static boolean askMergeChannels(Component guiParent,File imageFile,int n
 }
 
 private static void throwImportWholeDirectoryException(File invalidFile,String extraInfo) throws Exception{
-	throw new Exception("Import whole directory failed: directory contains invalid file '"+
-			invalidFile.getAbsolutePath()+"'  Import from whole directory can contain only files for "+
+	throw new Exception("Import whole directory failed: directory '"+invalidFile.getAbsolutePath()+"' "+
+			"contains invalid file.  Import from whole directory can contain only files for "+
 			"a single z-series, each file must be 2D, single time.  "+
 			"All files must be the same size and have the same number color channels."+
 			(extraInfo==null?"":"\n"+extraInfo));
@@ -1009,15 +1009,18 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					File[] dirFiles = null;
 					int numChannels = 0;
 					if(imageFile.isDirectory()){
-						dirFiles = imageFile.listFiles();
+						dirFiles = imageFile.listFiles(new java.io.FileFilter(){
+							public boolean accept(File pathname) {
+								return pathname.isFile() && !pathname.isHidden();//exclude windows Thumbs.db
+							}});
 						if(dirFiles.length == 0){
-							throw new Exception("No files in selected directory");
+							throw new Exception("No valid files in selected directory");
 						}
-						for (int i = 0; i < dirFiles.length; i++) {
-							if(!dirFiles[i].isFile()){
-								throwImportWholeDirectoryException(dirFiles[i],null);
-							}
-						}
+//						for (int i = 0; i < dirFiles.length; i++) {
+//							if(!dirFiles[i].isFile()){
+//								throwImportWholeDirectoryException(dirFiles[i],null);
+//							}
+//						}
 						hashTable.put(IMPORT_SOURCE_NAME,"Directory: "+imageFile.getAbsolutePath());
 						if(dirFiles.length > 1){
 							numChannels = ImageDatasetReader.getChannelCount(dirFiles[0].getAbsolutePath());
@@ -1037,6 +1040,10 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					
 					boolean bMergeChannels = false;
 					if(dirFiles != null){
+						Arrays.sort(dirFiles, new Comparator<File>(){
+							public int compare(File o1, File o2) {
+								return o1.getName().compareToIgnoreCase(o2.getName());
+							}});
 						if(numChannels > 1){
 							bMergeChannels = ClientRequestManager.askMergeChannels(guiParent, imageFile, numChannels);
 						}
@@ -1046,6 +1053,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						Origin origin = null;
 						Extent extent = null;
 						int sizeXY = 0;
+						ISize firstImageISize = null;
 						for (int i = 0; i < dirFiles.length; i++) {
 							ImageDataset[] imageDatasets = ImageDatasetReader.readImageDatasetChannels(dirFiles[i].getAbsolutePath(), null,bMergeChannels);
 							for (int c = 0; c < imageDatasets.length; c++) {
@@ -1054,14 +1062,16 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 											dirFiles[i].getAbsolutePath()+" has Z="+imageDatasets[c].getSizeZ()+" T="+imageDatasets[c].getSizeT());
 								}
 								if(isize == null){
+									firstImageISize = imageDatasets[c].getISize();
 									sizeXY = imageDatasets[c].getISize().getX()*imageDatasets[c].getISize().getY();
 									dataToSegment = new short[imageDatasets.length][sizeXY*dirFiles.length];
 									isize = new ISize(imageDatasets[c].getISize().getX(),imageDatasets[c].getISize().getY(),dirFiles.length);
 									origin = imageDatasets[c].getAllImages()[0].getOrigin();
 									extent = imageDatasets[c].getExtent();
-								}else if(!isize.compareEqual(imageDatasets[c].getISize())){
+								}
+								if(!firstImageISize.compareEqual(imageDatasets[c].getISize())){
 									throwImportWholeDirectoryException(imageFile,
-											dirFiles[0].getAbsolutePath()+" "+isize+" does not equal "+dirFiles[i].getAbsolutePath()+" "+imageDatasets[c].getISize());	
+											dirFiles[0].getAbsolutePath()+" "+firstImageISize+" does not equal "+dirFiles[i].getAbsolutePath()+" "+imageDatasets[c].getISize());	
 								}
 								System.arraycopy(imageDatasets[c].getImage(0, 0, 0).getPixels(), 0, dataToSegment[c], sizeXY*i, sizeXY);								
 								
