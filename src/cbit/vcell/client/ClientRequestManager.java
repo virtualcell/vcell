@@ -15,6 +15,7 @@ import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
@@ -900,6 +901,31 @@ public static boolean isImportGeometryType(DocumentCreationInfo documentCreation
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH;
 }
 
+private static boolean askMergeChannels(Component guiParent,File imageFile,int numChannels) throws UserCancelException{
+	final String keepChannels = "Keep Channels";
+	final String mergeGrayscale = "Merge Grayscale";
+	final String cancelOption = "Cancel";
+	String result = DialogUtils.showWarningDialog(guiParent, 
+			"Import "+(imageFile.isDirectory()?"directory":"file")+
+			" '"+imageFile.getAbsolutePath()+"' image has "+numChannels+" color channels.  Choose an import option.",
+			new String[] {keepChannels,mergeGrayscale,cancelOption}, keepChannels);
+	if(result.equals(cancelOption)){
+		throw UserCancelException.CANCEL_GENERIC;
+	}else if(result.equals(mergeGrayscale)){
+		return true;
+	}
+	return false;
+}
+
+private static void throwImportWholeDirectoryException(File invalidFile,String extraInfo) throws Exception{
+	throw new Exception("Import whole directory failed: directory '"+invalidFile.getAbsolutePath()+"' "+
+			"contains invalid file.  Import from whole directory can contain only files for "+
+			"a single z-series, each file must be 2D, single time.  "+
+			"All files must be the same size and have the same number color channels."+
+			(extraInfo==null?"":"\n"+extraInfo));
+
+}
+
 public static final String IMAGE_FROM_DB = "IMAGE_FROM_DB";
 public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager requester,
 		final VCDocument.DocumentCreationInfo documentCreationInfo,
@@ -943,7 +969,9 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 	AsynchClientTask selectImageFileTask = new AsynchClientTask("select image file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			File imageFile = DatabaseWindowManager.showFileChooserDialog(requester, FileFilters.FILE_FILTER_FIELDIMAGES, getUserPreferences());
+			File imageFile = DatabaseWindowManager.showFileChooserDialog(
+					requester, null,
+					getUserPreferences(),JFileChooser.FILES_AND_DIRECTORIES);
 			hashTable.put("imageFile", imageFile);
 			hashTable.put(IMPORT_SOURCE_NAME, "File: "+imageFile.getName());
 		}
@@ -959,8 +987,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 				FieldDataFileOperationSpec fdfos = null;
 				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_DBIMAGE){
 					VCImage dbImage = (VCImage)hashTable.get(IMAGE_FROM_DB);
-					hashTable.put(IMPORT_SOURCE_NAME,
-							"Image DB: "+dbImage.getName());
+					hashTable.put(IMPORT_SOURCE_NAME,"Img Database: "+dbImage.getName());
 
 					if(dbImage.getDescription() != null){
 						hashTable.put(INITIAL_ANNOTATION, dbImage.getDescription());
@@ -976,30 +1003,115 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					fdfos.shortSpecData = new short[][][] {{templateShorts}};
 				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
 					File imageFile = (File)hashTable.get("imageFile");
-					if(imageFile != null){
-						hashTable.put(INITIAL_ANNOTATION, imageFile.getAbsolutePath());
+					if(imageFile == null){
+						throw new Exception("No file selected");
 					}
-					int userPreferredTime = 0;
-					try{
-						getClientTaskStatusSupport().setMessage("Checking file for time information...");
-						double[] allTimes = ImageDatasetReader.getTimesOnly(imageFile.getAbsolutePath());
-						if(allTimes.length > 1){
-							String[][] rowData = new String[allTimes.length][1];
-							for (int i = 0; i < rowData.length; i++) {
-								rowData[i][0] = allTimes[i]+"";
-							}
-							userPreferredTime = DialogUtils.showComponentOKCancelTableList(
-									guiParent, "File contains data in multiple timepoints, select 1 timepoint for import",
-									new String[] {"times"}, rowData, new Integer(ListSelectionModel.SINGLE_SELECTION))[0];
+					File[] dirFiles = null;
+					int numChannels = 0;
+					if(imageFile.isDirectory()){
+						dirFiles = imageFile.listFiles(new java.io.FileFilter(){
+							public boolean accept(File pathname) {
+								return pathname.isFile() && !pathname.isHidden();//exclude windows Thumbs.db
+							}});
+						if(dirFiles.length == 0){
+							throw new Exception("No valid files in selected directory");
 						}
-					}catch(UserCancelException uce){
-						throw uce;
-					}catch(Exception e){
-						e.printStackTrace();
-						//ignore, try to load without checking for times and use the first time if successful
+//						for (int i = 0; i < dirFiles.length; i++) {
+//							if(!dirFiles[i].isFile()){
+//								throwImportWholeDirectoryException(dirFiles[i],null);
+//							}
+//						}
+						hashTable.put(IMPORT_SOURCE_NAME,"Directory: "+imageFile.getAbsolutePath());
+						if(dirFiles.length > 1){
+							numChannels = ImageDatasetReader.getChannelCount(dirFiles[0].getAbsolutePath());
+							final String importZ = "Import Z-Sections";
+							final String cancelOption = "Cancel";
+							String result = DialogUtils.showWarningDialog(guiParent, 
+									"Import all files in directory '"+imageFile.getAbsolutePath()+"' as Z-Sections",
+									new String[] {importZ,cancelOption}, importZ);
+							if(result.equals(cancelOption)){
+								throw UserCancelException.CANCEL_GENERIC;
+							}
+						}
+					}else{
+						numChannels = ImageDatasetReader.getChannelCount(imageFile.getAbsolutePath());
+						hashTable.put(IMPORT_SOURCE_NAME,"File: "+imageFile.getAbsolutePath());
 					}
-					getClientTaskStatusSupport().setMessage("Reading file...");
-					fdfos = ClientRequestManager.createFDOSFromImageFile(imageFile,false,userPreferredTime);
+					
+					boolean bMergeChannels = false;
+					if(dirFiles != null){
+						Arrays.sort(dirFiles, new Comparator<File>(){
+							public int compare(File o1, File o2) {
+								return o1.getName().compareToIgnoreCase(o2.getName());
+							}});
+						if(numChannels > 1){
+							bMergeChannels = ClientRequestManager.askMergeChannels(guiParent, imageFile, numChannels);
+						}
+						hashTable.put(INITIAL_ANNOTATION, dirFiles[0].getAbsolutePath()+"\n.\n.\n.\n"+dirFiles[dirFiles.length-1].getAbsolutePath());
+						short[][] dataToSegment = null;
+						ISize isize = null;
+						Origin origin = null;
+						Extent extent = null;
+						int sizeXY = 0;
+						ISize firstImageISize = null;
+						for (int i = 0; i < dirFiles.length; i++) {
+							ImageDataset[] imageDatasets = ImageDatasetReader.readImageDatasetChannels(dirFiles[i].getAbsolutePath(), null,bMergeChannels);
+							for (int c = 0; c < imageDatasets.length; c++) {
+								if(imageDatasets[c].getSizeZ() != 1 || imageDatasets[c].getSizeT() != 1){
+									throwImportWholeDirectoryException(imageFile,
+											dirFiles[i].getAbsolutePath()+" has Z="+imageDatasets[c].getSizeZ()+" T="+imageDatasets[c].getSizeT());
+								}
+								if(isize == null){
+									firstImageISize = imageDatasets[c].getISize();
+									sizeXY = imageDatasets[c].getISize().getX()*imageDatasets[c].getISize().getY();
+									dataToSegment = new short[imageDatasets.length][sizeXY*dirFiles.length];
+									isize = new ISize(imageDatasets[c].getISize().getX(),imageDatasets[c].getISize().getY(),dirFiles.length);
+									origin = imageDatasets[c].getAllImages()[0].getOrigin();
+									extent = imageDatasets[c].getExtent();
+								}
+								if(!firstImageISize.compareEqual(imageDatasets[c].getISize())){
+									throwImportWholeDirectoryException(imageFile,
+											dirFiles[0].getAbsolutePath()+" "+firstImageISize+" does not equal "+dirFiles[i].getAbsolutePath()+" "+imageDatasets[c].getISize());	
+								}
+								System.arraycopy(imageDatasets[c].getImage(0, 0, 0).getPixels(), 0, dataToSegment[c], sizeXY*i, sizeXY);								
+								
+							}
+						}
+						fdfos = new FieldDataFileOperationSpec();
+						fdfos.origin = origin;
+						fdfos.extent = extent;
+						fdfos.isize = isize;
+						fdfos.shortSpecData = new short[][][] {dataToSegment};
+
+					}else{
+						if(numChannels > 1){
+							bMergeChannels = ClientRequestManager.askMergeChannels(guiParent, imageFile, numChannels);
+						}
+						hashTable.put(INITIAL_ANNOTATION, imageFile.getAbsolutePath());
+						int userPreferredTime = 0;
+						try{
+							getClientTaskStatusSupport().setMessage("Checking file for time information...");
+							double[] allTimes = ImageDatasetReader.getTimesOnly(imageFile.getAbsolutePath());
+							if(allTimes.length > 1){
+								String[][] rowData = new String[allTimes.length][1];
+								for (int i = 0; i < rowData.length; i++) {
+									rowData[i][0] = allTimes[i]+"";
+								}
+								userPreferredTime = DialogUtils.showComponentOKCancelTableList(
+										guiParent, "File contains data in multiple timepoints, select 1 timepoint for import",
+										new String[] {"times"}, rowData, new Integer(ListSelectionModel.SINGLE_SELECTION))[0];
+							}
+						}catch(UserCancelException uce){
+							throw uce;
+						}catch(Exception e){
+							e.printStackTrace();
+							//ignore, try to load without checking for times and use the first time if successful
+						}
+						getClientTaskStatusSupport().setMessage("Reading file...");
+						ImageDataset[] imageDatasets =
+							ImageDatasetReader.readImageDatasetChannels(imageFile.getAbsolutePath(), null,bMergeChannels);
+						fdfos = ClientRequestManager.createFDOSWithChannels(imageDatasets,new Integer(userPreferredTime));
+					}
 					
 				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 					getClientTaskStatusSupport().setMessage("Reading data from VCell server.");
@@ -2874,39 +2986,41 @@ public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff d
 
 
 public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,boolean bCropOutBlack,Integer saveOnlyThisTimePointIndex) throws DataFormatException,ImageException{
-	ImageDataset imagedataSet = null;
-	final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
 	try{
-		imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath(),null);
+		ImageDataset imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath(),null);
 		if (imagedataSet!=null && bCropOutBlack){
-//			System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): BEFORE CROPPING, size="+imagedataSet.getISize().toString());
 			Rectangle nonZeroRect = imagedataSet.getNonzeroBoundingRectangle();
 			if(nonZeroRect != null){
 				imagedataSet = imagedataSet.crop(nonZeroRect);
 			}
-//			System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): AFTER CROPPING, size="+imagedataSet.getISize().toString());
 		}
+		return createFDOSWithChannels(new ImageDataset[] {imagedataSet},saveOnlyThisTimePointIndex);
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 		throw new DataFormatException(e.getMessage());
 	}
+}
+
+public static FieldDataFileOperationSpec createFDOSWithChannels(ImageDataset[] imagedataSets,Integer saveOnlyThisTimePointIndex){
+	final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
+
 	//[time][var][data]
-	int numXY = imagedataSet.getISize().getX()*imagedataSet.getISize().getY();
-	int numXYZ = imagedataSet.getSizeZ()*numXY;
-	fdos.variableTypes = new VariableType[imagedataSet.getSizeC()];
-	fdos.varNames = new String[imagedataSet.getSizeC()];
+	int numXY = imagedataSets[0].getISize().getX()*imagedataSets[0].getISize().getY();
+	int numXYZ = imagedataSets[0].getSizeZ()*numXY;
+	fdos.variableTypes = new VariableType[imagedataSets.length];
+	fdos.varNames = new String[imagedataSets.length];
 	short[][][] shortData =
-		new short[(saveOnlyThisTimePointIndex != null?1:imagedataSet.getSizeT())][imagedataSet.getSizeC()][numXYZ];
-	for(int c=0;c<imagedataSet.getSizeC();c+= 1){
+		new short[(saveOnlyThisTimePointIndex != null?1:imagedataSets[0].getSizeT())][imagedataSets.length][numXYZ];
+	for(int c=0;c<imagedataSets.length;c+= 1){
 		fdos.variableTypes[c] = VariableType.VOLUME;
 		fdos.varNames[c] = "Channel"+c;
-		for(int t=0;t<imagedataSet.getSizeT();t+=1){
+		for(int t=0;t<imagedataSets[c].getSizeT();t+=1){
 			if(saveOnlyThisTimePointIndex != null && saveOnlyThisTimePointIndex.intValue() != t){
 				continue;
 			}
 			int zOffset = 0;
-			for(int z=0;z<imagedataSet.getSizeZ();z+=1){
-				UShortImage ushortImage = imagedataSet.getImage(z,c,t);
+			for(int z=0;z<imagedataSets[c].getSizeZ();z+=1){
+				UShortImage ushortImage = imagedataSets[c].getImage(z,0,t);
 				System.arraycopy(ushortImage.getPixels(), 0, shortData[(saveOnlyThisTimePointIndex != null?0:t)][c], zOffset, numXY);
 //				shortData[t][c] = ushortImage.getPixels();
 				zOffset+= numXY;
@@ -2914,21 +3028,21 @@ public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,
 		}
 	}
 	fdos.shortSpecData = shortData;
-	fdos.times = imagedataSet.getImageTimeStamps();
+	fdos.times = imagedataSets[0].getImageTimeStamps();
 	if(fdos.times == null){
-		fdos.times = new double[imagedataSet.getSizeT()];
+		fdos.times = new double[imagedataSets[0].getSizeT()];
 		for(int i=0;i<fdos.times.length;i+= 1){
 			fdos.times[i] = i;
 		}
 	}
 
-	fdos.origin = (imagedataSet.getAllImages()[0].getOrigin() != null?imagedataSet.getAllImages()[0].getOrigin():new Origin(0,0,0));
-	fdos.extent = (imagedataSet.getExtent()!=null)?(imagedataSet.getExtent()):(new Extent(1,1,1));
-	fdos.isize = imagedataSet.getISize();
+	fdos.origin = (imagedataSets[0].getAllImages()[0].getOrigin() != null?imagedataSets[0].getAllImages()[0].getOrigin():new Origin(0,0,0));
+	fdos.extent = (imagedataSets[0].getExtent()!=null)?(imagedataSets[0].getExtent()):(new Extent(1,1,1));
+	fdos.isize = imagedataSets[0].getISize();
 	
 	return fdos;
-}
 
+}
 
 public void accessPermissions(Component requester, VCDocument vcDoc) {
 	VersionInfo selectedVersionInfo = null;

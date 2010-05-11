@@ -993,7 +993,7 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice) throws Exce
 	int[] geomType = null;
 
 	String[][] choices = new String[][] {{"Analytic Equations (1D)"},{"Analytic Equations (2D)"},{"Analytic Equations (3D)"},
-			{"Image based (legacy from database)"},{"Image based (import from file)"},
+			{"Image based (legacy from database)"},{"Image based (import from file, zip or directory)"},
 			{"Copy from BioModel application"},{"Copy from MathModel"},{"Copy from saved Geometry"},
 			{"From scratch"}};
 	if(bShowCurrentGeomChoice){
