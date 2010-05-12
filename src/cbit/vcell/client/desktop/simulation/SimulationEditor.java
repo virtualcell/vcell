@@ -7,6 +7,13 @@ import javax.swing.*;
  * @author: Ion Moraru
  */
 public class SimulationEditor extends JPanel {
+	private static final int TAB_TASK_INDEX = 2;
+	private static final int TAB_MESH_INDEX = 1;
+	private static final int TAB_PARAMETERS_INDEX = 0;
+	private static final String TAB_ADVANCED_TITLE = "Advanced";
+	private static final String TAB_TASK_TITLE = "Task";
+	private static final String TAB_PARAMETERS_TITLE = "Parameters";
+	private static final String TAB_MESH_TITLE = "Mesh";
 	private JTabbedPane ivjJTabbedPane1 = null;
 	private cbit.vcell.solver.ode.gui.MathOverridesPanel ivjMathOverridesPanel1 = null;
 	private cbit.vcell.math.gui.MeshSpecificationPanel ivjMeshSpecificationPanel1 = null;
@@ -57,10 +64,10 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 		try {
 			ivjJTabbedPane1 = new javax.swing.JTabbedPane();
 			ivjJTabbedPane1.setName("JTabbedPane1");
-			ivjJTabbedPane1.insertTab("Parameters", null, getMathOverridesPanel1(), null, 0);
-			ivjJTabbedPane1.insertTab("Mesh", null, getMeshSpecificationPanel1(), null, 1);
-			ivjJTabbedPane1.insertTab("Task", null, getSolverTaskDescriptionPanel1(), null, 2);
-			ivjJTabbedPane1.insertTab("Advanced", null, getSolverTaskDescriptionAdvancedPanel1(), null, 3);
+			ivjJTabbedPane1.insertTab(TAB_PARAMETERS_TITLE, null, getMathOverridesPanel1(), null, TAB_PARAMETERS_INDEX);
+			ivjJTabbedPane1.insertTab(TAB_MESH_TITLE, null, getMeshSpecificationPanel1(), null, TAB_MESH_INDEX);
+			ivjJTabbedPane1.insertTab(TAB_TASK_TITLE, null, getSolverTaskDescriptionPanel1(), null, TAB_TASK_INDEX);
+			ivjJTabbedPane1.insertTab(TAB_ADVANCED_TITLE, null, getSolverTaskDescriptionAdvancedPanel1(), null, 3);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -259,14 +266,17 @@ public void prepareToEdit(cbit.vcell.solver.Simulation simulation) {
 			meshSpec.getGeometry().getDimension() > 0){
 				shouldMeshBeEnabled = true;
 		}
-
-		int meshTabIndex = getJTabbedPane1().indexOfTab("Mesh");
-		if(getJTabbedPane1().isEnabledAt(meshTabIndex) != shouldMeshBeEnabled){
-			if(!shouldMeshBeEnabled && getJTabbedPane1().getSelectedIndex() == meshTabIndex){
-				getJTabbedPane1().setSelectedIndex(0);
-			}
-			getJTabbedPane1().setEnabledAt(meshTabIndex,shouldMeshBeEnabled);
+		if (!shouldMeshBeEnabled) {
+			getJTabbedPane1().remove(TAB_MESH_INDEX);
 		}
+
+//		int meshTabIndex = getJTabbedPane1().indexOfTab(TAB_MESH_TITLE);
+//		if(getJTabbedPane1().isEnabledAt(meshTabIndex) != shouldMeshBeEnabled){
+//			if(!shouldMeshBeEnabled && getJTabbedPane1().getSelectedIndex() == meshTabIndex){
+//				getJTabbedPane1().setSelectedIndex(0);
+//			}
+//			getJTabbedPane1().setEnabledAt(meshTabIndex,shouldMeshBeEnabled);
+//		}
 		// ok, we're ready
 		setClonedSimulation(clonedSimulation);
 	} catch (Throwable exc) {

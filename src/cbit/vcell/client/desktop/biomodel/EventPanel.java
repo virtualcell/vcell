@@ -46,6 +46,7 @@ import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.gui.TextFieldAutoCompletion;
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContextTest;
@@ -539,7 +540,7 @@ public class EventPanel extends JPanel {
 					if (bValid) {
 						getTriggerTextField().setBorder(UIManager.getBorder("TextField.border"));
 					} else {
-						getTriggerTextField().setBorder(BorderFactory.createLineBorder(Color.red));
+						getTriggerTextField().setBorder(GuiConstants.ProblematicTextFieldBorder);
 						SwingUtilities.invokeLater(new Runnable() { 
 						    public void run() { 
 						    	getTriggerTextField().requestFocus();

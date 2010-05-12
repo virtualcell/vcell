@@ -579,41 +579,18 @@ public ISize getDefaultSampledImageSize() {
 				break;
 			}
 			case 1:{
-				sampleSize = new ISize(50,1,1);
+				int total = 50;	
+				sampleSize = calulateResetSamplingSize(dim, getExtent(), total);
 				break;
 			}
 			case 2:{
-				//
-				// choose so that the aspect ratio is correct and about 3000 total pixels
-				//
-				//    so x * y = Max2D    and x/y = extentX/extentY
-				//
-				double max2D = 101*101;
-				double xyRatio = getExtent().getX()/getExtent().getY();
-				double y = Math.sqrt(max2D/xyRatio);
-				double x = max2D/y;
-				sampleSize = new ISize((int)x,(int)y,1);
+				long max2D = 101*101;
+				sampleSize = calulateResetSamplingSize(dim, extent, max2D);
 				break;
 			}
 			case 3:{
-				//
-				// choose so that the aspect ratio is correct and about 15000 total pixels
-				//
-				//       x * y * z = 15000    
-				//           y / x = extentY/extentX = yxRatio
-				//           z / x = extentZ/extentX = zxRatio
-				//
-				//    thus  x = pow(1500/(yxRatio*zxRatio),1/3)
-				//          y = yxRatio * x;
-				//          z = zxRatio * x;
-				//
-				double max3D = 101*101*101;
-				double yxRatio = getExtent().getY()/getExtent().getX();
-				double zxRatio = getExtent().getZ()/getExtent().getX();
-				double x = Math.pow(max3D/(yxRatio*zxRatio),1.0/3.0);
-				double y = yxRatio * x;
-				double z = zxRatio * x;
-				sampleSize = new ISize((int)x,(int)y,(int)z);
+				long max3D = 101*101*101;
+				sampleSize = calulateResetSamplingSize(dim, extent, max3D);
 				break;
 			}
 		}
@@ -622,6 +599,57 @@ public ISize getDefaultSampledImageSize() {
 	return sampleSize;
 }
 
+public static ISize calulateResetSamplingSize(int dim, Extent extent, long total) {
+	long numX = 1;
+	long numY = 1;
+	long numZ = 1;
+	
+	switch (dim){
+		case 1:{
+			numX = total;
+			numY = 1;
+			numZ = 1;
+			break;
+		}
+		case 2:{
+			//
+			// choose so that the aspect ratio is correct
+			//
+			//    so x * y = total    and x/y = extentX/extentY = xyRatio
+			//
+			//    thus  y = sqrt(total/xyRatio);
+			//          x = total/y;
+			//
+			double aspectRatio = extent.getX()/extent.getY();
+			numY = Math.max(3, Math.round(Math.sqrt(total/aspectRatio)));
+			numX = Math.max(3, Math.round(total/numY));
+			numZ = 1;
+			break;
+		}
+		case 3:{
+			//
+			// choose so that the aspect ratio is correct
+			//
+			//       x * y * z = total    
+			//           z / x = extentZ/extentX = zxRatio
+			//           z / y = extentZ/extentY = zyRatio
+			//
+			//    thus  z = pow(total*zxRatio*zyRatio,1/3)
+			//          x = z/zxRatio;
+			//          y = z/zyRatio;
+			//
+			double aspectRatioZX = extent.getZ()/extent.getX();
+			double aspectRatioZY = extent.getZ()/extent.getY();
+			numZ = Math.max(3, Math.round(Math.pow(total*aspectRatioZX*aspectRatioZY,1.0/3.0)));
+			numX = Math.max(3, Math.round(numZ/aspectRatioZX));
+			numY = Math.max(3, Math.round(numZ/aspectRatioZY));
+			break;
+		}
+	}
+	
+	ISize samplingSize = new ISize((int)numX,(int)numY,(int)numZ);
+	return samplingSize;
+} 
 
 /**
  * This method was created by a SmartGuide.

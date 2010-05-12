@@ -24,6 +24,7 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -567,36 +568,41 @@ public class OutputOptionsPanel extends JPanel {
 			@Override
 			public boolean shouldYieldFocus(JComponent input) {
 				boolean bValid = true;
-				double outputTime = Double.parseDouble(getOutputTimeStepTextField().getText());
-				if (solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver()) {
-					double timeStep = solverTaskDescription.getTimeStep().getDefaultTimeStep();
-					
-					String suggestedInterval = outputTime + "";
-					if (outputTime < timeStep) {
-						suggestedInterval = timeStep + "";
-						bValid = false;
-					} else {
-						float n = (float)(outputTime/timeStep);
-						if (n != (int)n) {
+				try {
+					double outputTime = Double.parseDouble(getOutputTimeStepTextField().getText());
+					if (solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver()) {
+						double timeStep = solverTaskDescription.getTimeStep().getDefaultTimeStep();
+						
+						String suggestedInterval = outputTime + "";
+						if (outputTime < timeStep) {
+							suggestedInterval = timeStep + "";
 							bValid = false;
-							suggestedInterval = ((float)((int)(n + 0.5) * timeStep)) + "";
-						}
-					} 
-					
-					if (!bValid) {					
-						String ret = PopupGenerator.showWarningDialog(OutputOptionsPanel.this, "Output Interval must " +
-								"be integer multiple of time step.\n\nChange Output Interval to " + suggestedInterval + "?", 
-								new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
-						if (ret.equals(UserMessage.OPTION_YES)) {
-							getOutputTimeStepTextField().setText(suggestedInterval + "");
-							bValid = true;
+						} else {
+							float n = (float)(outputTime/timeStep);
+							if (n != (int)n) {
+								bValid = false;
+								suggestedInterval = ((float)((int)(n + 0.5) * timeStep)) + "";
+							}
 						} 
+					
+						if (!bValid) {					
+							String ret = PopupGenerator.showWarningDialog(OutputOptionsPanel.this, "Output Interval must " +
+									"be integer multiple of time step.\n\nChange Output Interval to " + suggestedInterval + "?", 
+									new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
+							if (ret.equals(UserMessage.OPTION_YES)) {
+								getOutputTimeStepTextField().setText(suggestedInterval + "");
+								bValid = true;
+							} 
+						}
 					}
+				} catch (NumberFormatException ex) {
+					DialogUtils.showErrorDialog(OutputOptionsPanel.this, "Wrong number format " + ex.getMessage().toLowerCase());
+					bValid = false;
 				}
 				if (bValid) {
 					getOutputTimeStepTextField().setBorder(UIManager.getBorder("TextField.border"));
 				} else {
-					getOutputTimeStepTextField().setBorder(BorderFactory.createLineBorder(Color.red));
+					getOutputTimeStepTextField().setBorder(GuiConstants.ProblematicTextFieldBorder);
 					SwingUtilities.invokeLater(new Runnable() { 
 					    public void run() { 
 					    	getOutputTimeStepTextField().requestFocus();
@@ -649,7 +655,7 @@ public class OutputOptionsPanel extends JPanel {
 		if (bValid) {
 			getOutputTimesTextField().setBorder(UIManager.getBorder("TextField.border"));
 		} else {
-			getOutputTimesTextField().setBorder(BorderFactory.createLineBorder(Color.red));
+			getOutputTimesTextField().setBorder(GuiConstants.ProblematicTextFieldBorder);
 			javax.swing.SwingUtilities.invokeLater(new Runnable() { 
 			    public void run() { 
 			          getOutputTimesTextField().requestFocus();

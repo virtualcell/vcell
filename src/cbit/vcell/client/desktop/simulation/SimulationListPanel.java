@@ -14,6 +14,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -25,6 +26,7 @@ import org.vcell.util.gui.JTableFixed;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
@@ -1023,7 +1025,19 @@ private void runSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
-		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
+		Simulation sim = getSimulationWorkspace().getSimulations()[selections[i]];
+		MeshSpecification meshSpecification = sim.getMeshSpecification();
+		if (!meshSpecification.isAspectRatioOK()) {
+			String warningMessage =  "Simulation '" + sim.getName() + "' has differences in mesh sizes. This might affect the accuracy of the solution.\n"
+			+ "\u0394x=" + meshSpecification.getDx() + "\n" 
+			+ "\u0394y=" + meshSpecification.getDy()
+			+ (meshSpecification.getGeometry().getDimension() < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz());			
+			int result = JOptionPane.showConfirmDialog(this, warningMessage + "\n\nDo you want to continue anyway?", "Warning", JOptionPane.YES_NO_OPTION);
+			if (result != JOptionPane.YES_OPTION) {
+				return;
+			}
+		}
+		v.add(sim);
 	}
 	Simulation[] toRun = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().runSimulations(toRun);

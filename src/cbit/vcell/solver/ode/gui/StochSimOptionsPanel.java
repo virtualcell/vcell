@@ -1,11 +1,9 @@
 package cbit.vcell.solver.ode.gui;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 
-import javax.swing.BorderFactory;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -17,6 +15,7 @@ import javax.swing.border.TitledBorder;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -193,14 +192,14 @@ public class StochSimOptionsPanel extends JPanel {
 				boolean bValid = true;
 				try {
 					Double.parseDouble(text);
-				} catch (Exception ex) {
-					DialogUtils.showErrorDialog(StochSimOptionsPanel.this, ex.getMessage() + ", wrong number format.");
+				} catch (NumberFormatException ex) {
+					DialogUtils.showErrorDialog(StochSimOptionsPanel.this, ex.getMessage() + "Wrong number format " + ex.getMessage().toLowerCase());
 					bValid = false;
 				}
 				if (bValid) {
 					input.setBorder(UIManager.getBorder("TextField.border"));
 				} else {
-					input.setBorder(BorderFactory.createLineBorder(Color.red));
+					input.setBorder(GuiConstants.ProblematicTextFieldBorder);
 					SwingUtilities.invokeLater(new Runnable() { 
 					    public void run() { 
 					    	input.requestFocus();

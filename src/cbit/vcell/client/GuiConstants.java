@@ -1,5 +1,10 @@
 package cbit.vcell.client;
 
+import java.awt.Color;
+
+import javax.swing.BorderFactory;
+import javax.swing.border.Border;
+
 public class GuiConstants {
 	
 	public static final String ACTIONCMD_OPEN_APPLICATION_SIMULATION = "OpenApplicationSimulation";
@@ -30,4 +35,6 @@ public class GuiConstants {
 	public static final String ACTIONCMD_ADD_EVENT = "Add Event";
 	
 	public static final String VCELL_SUPPORT_ACCOUNT_ID = "VCellSupport";
+	
+	public static final Border ProblematicTextFieldBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.red), BorderFactory.createEmptyBorder(2, 2, 2, 2));
 }

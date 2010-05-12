@@ -6,14 +6,16 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
+
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
-
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.client.ClientSimManager;
@@ -21,6 +23,7 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
@@ -30,12 +33,14 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.gui.MeshSpecificationPanel;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
@@ -304,6 +309,15 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 				warningMessage = warningMessage == null? msg : warningMessage + "\n\n" + msg;
 			}
 		}
+		
+		MeshSpecification meshSpecification = simulation.getMeshSpecification();
+		if (!meshSpecification.isAspectRatioOK()) {
+			warningMessage =  (warningMessage == null? "" : warningMessage + "\n\n") 
+				+ "Differences in mesh sizes are detected. This might affect the accuracy of the solution.\n"
+				+ "\u0394x=" + meshSpecification.getDx() + "\n" 
+				+ "\u0394y=" + meshSpecification.getDy()
+				+ (meshSpecification.getGeometry().getDimension() < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz());
+		}		
 		if (warningMessage != null)
 		{
 			int result = JOptionPane.showConfirmDialog(parent, warningMessage + "\n\nDo you want to continue anyway?", "Warning", JOptionPane.YES_NO_OPTION);

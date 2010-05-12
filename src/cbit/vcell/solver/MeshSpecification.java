@@ -3,16 +3,15 @@ package cbit.vcell.solver;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.beans.*;
+import java.beans.PropertyVetoException;
 import java.io.Serializable;
 
 import org.vcell.util.Compare;
-import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 
-import cbit.util.*;
-import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.math.VCML;
 /**
  * Insert the class' description here.
@@ -22,18 +21,10 @@ import cbit.vcell.math.VCML;
 public class MeshSpecification implements Serializable, Matchable, java.beans.VetoableChangeListener {
 	private java.lang.Double fieldMinimumAngleConstraint = null;
 	private java.lang.Double fieldMaximumSizeConstraint = null;
-	private cbit.vcell.geometry.Geometry fieldGeometry = null;
-	private org.vcell.util.ISize fieldSamplingSize = new org.vcell.util.ISize(0, 0, 0);
-	protected transient java.beans.PropertyChangeSupport propertyChange;
-	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
-
-/**
- * MeshDescription constructor comment.
- */
-public MeshSpecification() {
-	this((Geometry)null);
-}
-
+	private Geometry fieldGeometry = null;
+	private ISize fieldSamplingSize = new ISize(0, 0, 0);
+	protected transient java.beans.PropertyChangeSupport propertyChange;	
+	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;	
 
 /**
  * MeshDescription constructor comment.
@@ -146,7 +137,7 @@ public void fireVetoableChange(String propertyName, Object oldValue, Object newV
  * @return The geometry property value.
  * @see #setGeometry
  */
-public cbit.vcell.geometry.Geometry getGeometry() {
+public Geometry getGeometry() {
 	return fieldGeometry;
 }
 
@@ -187,8 +178,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return The samplingSize property value.
  * @see #setSamplingSize
  */
-public org.vcell.util.ISize getSamplingSize() {
-	// cbit.util.Assertion.assertNotNull(fieldSamplingSize);
+public ISize getSamplingSize() {
 	return fieldSamplingSize;
 }
 
@@ -248,42 +238,23 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
  * @param geometry The new value for the property.
  * @see #getGeometry
  */
-public static ISize calulateResetSamplingSize(Geometry geometry) {
-	long numX = 1;
-	long numY = 1;
-	long numZ = 1;
-	
+public static ISize calulateResetSamplingSize(Geometry geometry) {	
 	int dim = geometry.getDimension();
 	switch (dim){
 		case 1:{
-			numX = 200;
-			numY = 1;
-			numZ = 1;
-			break;
+			int total = 200;
+			return GeometrySpec.calulateResetSamplingSize(dim, geometry.getExtent(), total);
 		}
 		case 2:{
 			long total = 101*101;
-			Extent extent = geometry.getExtent();
-			double aspectRatio = extent.getX()/extent.getY();
-			numY = Math.max(3, Math.round(Math.sqrt(total/aspectRatio)));
-			numX = Math.max(3, Math.round(total/numY));
-			numZ = 1;
-			break;
+			return GeometrySpec.calulateResetSamplingSize(dim, geometry.getExtent(), total);
 		}
 		case 3:{
 			long total = 51*51*51;
-			Extent extent = geometry.getExtent();
-			double aspectRatioZX = extent.getZ()/extent.getX();
-			double aspectRatioZY = extent.getZ()/extent.getY();
-			numZ = Math.max(3, Math.round(Math.pow(total*aspectRatioZX*aspectRatioZY,0.333333333)));
-			numX = Math.max(3, Math.round(numZ/aspectRatioZX));
-			numY = Math.max(3, Math.round(numZ/aspectRatioZY));
-			break;
-		}
+			return GeometrySpec.calulateResetSamplingSize(dim, geometry.getExtent(), total);		
+		}	
 	}
-	
-	ISize samplingSize = new ISize((int)numX,(int)numY,(int)numZ);
-	return samplingSize;
+	throw new RuntimeException("unsupported geometry dimension " + dim);
 }
 
 private void resetSamplingSize(){
@@ -299,7 +270,7 @@ private void resetSamplingSize(){
  * @param geometry The new value for the property.
  * @see #getGeometry
  */
-public void setGeometry(cbit.vcell.geometry.Geometry geometry) {
+public void setGeometry(Geometry geometry) {
 	Geometry oldGeometry = fieldGeometry;
 	fieldGeometry = geometry;
 	firePropertyChange("geometry",oldGeometry,fieldGeometry);
@@ -339,7 +310,7 @@ public void setMinimumAngleConstraint(java.lang.Double minimumAngleConstraint) {
  * @param samplingSize The new value for the property.
  * @see #getSamplingSize
  */
-public void setSamplingSize(org.vcell.util.ISize samplingSize) throws java.beans.PropertyVetoException {
+public void setSamplingSize(ISize samplingSize) throws java.beans.PropertyVetoException {
 	// cbit.util.Assertion.assertNotNull(fieldSamplingSize);
 	//
 	// check for no-change
@@ -348,7 +319,7 @@ public void setSamplingSize(org.vcell.util.ISize samplingSize) throws java.beans
 		(samplingSize.getY() != fieldSamplingSize.getY()) ||
 		(samplingSize.getZ() != fieldSamplingSize.getZ())){
 			
-		org.vcell.util.ISize oldSamplingSize = fieldSamplingSize;
+		ISize oldSamplingSize = fieldSamplingSize;
 		fireVetoableChange("samplingSize",oldSamplingSize,samplingSize);
 		fieldSamplingSize = samplingSize;
 		firePropertyChange("samplingSize",oldSamplingSize,fieldSamplingSize);
@@ -368,13 +339,13 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws java.bea
 		if (getGeometry()!=null){
 			int dim = getGeometry().getDimension();
 			if (dim == 1){
-				if (isize.getX()<3 || isize.getY()!=1 || isize.getZ()!=1){
-					throw new java.beans.PropertyVetoException("1D geometry, mesh size must be x>=3, y=1, z=1",event);
+				if (isize.getX()<3){
+					throw new java.beans.PropertyVetoException("1D geometry, mesh size must be x>=3",event);
 				}
 			}
 			if (dim == 2){
-				if (isize.getX()<3 || isize.getY()<3 || isize.getZ()!=1){
-					throw new java.beans.PropertyVetoException("2D geometry, mesh size must be x>=3, y>=3, z=1",event);
+				if (isize.getX()<3 || isize.getY()<3){
+					throw new java.beans.PropertyVetoException("2D geometry, mesh size must be x>=3, y>=3",event);
 				}
 			}
 			if (dim == 3){
@@ -384,5 +355,35 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws java.bea
 			}
 		}
 	}
+}
+
+public boolean isAspectRatioOK() {
+	final int dimension = fieldGeometry.getDimension();
+	if (dimension > 1) {		
+		double dx = getDx();
+		double dy = getDy();
+		double dz = getDz();
+		
+		double min = Math.min(dx, dy);
+		double max = Math.max(dx, dy);
+		if (dimension > 2) {
+			min = Math.min(min, dz);
+			max = Math.max(max, dz);
+		}
+		if ((max-min)/max > 0.10) {
+			return false;
+		}
+	}
+	return true;
+}
+
+public double getDx() {
+	return fieldGeometry.getExtent().getX()/(fieldSamplingSize.getX() - 1);
+}
+public double getDy() {
+	return fieldGeometry.getExtent().getY()/(fieldSamplingSize.getY() - 1);
+}
+public double getDz() {
+	return fieldGeometry.getExtent().getZ()/(fieldSamplingSize.getZ() - 1);
 }
 }

@@ -830,9 +830,9 @@ private void refreshSize() {
 		getSizeLabel().setText("compartmental model");
 	}else{
 		getSizeLabel().setText(dim+" dimensional,"+
-							"  size=("+sizeX+(dim > 1?","+sizeY:"")+(dim > 2?","+sizeZ:"")+")"+
-							//","+sizeY+","+sizeZ+")"+
-							"  origin=("+originX+","+originY+","+originZ+")");
+				"  size=("+sizeX+(dim > 1?","+sizeY:"")+(dim > 2?","+sizeZ:"")+")"+
+				//","+sizeY+","+sizeZ+")"+
+				"  origin=("+originX+(dim>1?","+originY:"")+(dim>2?","+originZ:"")+")");
 	}
 }
 
