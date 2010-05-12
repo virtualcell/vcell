@@ -270,17 +270,18 @@ public class SPPRPanel extends JPanel {
 	
 	public void treeValueChanged(TreeSelectionEvent e) {
 		try {
-			BioModelNode node = (BioModelNode)spprTree.getLastSelectedPathComponent();
-			if (node == null) {
+			Object node = spprTree.getLastSelectedPathComponent();
+			if (!(node instanceof BioModelNode)) {
 				return;
 			}
-		    Object userObject = node.getUserObject();
+			BioModelNode selectedNode = (BioModelNode)node;
+		    Object userObject = selectedNode.getUserObject();
 		    if (userObject instanceof SPPRTreeFolderNode) { // it's a folder
 		        setupRightComponent((SPPRTreeFolderNode)userObject, null);
 		    } else if (userObject instanceof SimulationContext){
 		    } else {
 		        Object leaf = userObject;
-				BioModelNode parentNode = (BioModelNode) node.getParent();
+				BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
 				userObject =  parentNode.getUserObject();
 				SPPRTreeFolderNode parent = (SPPRTreeFolderNode)userObject;
 		        setupRightComponent(parent, leaf);
