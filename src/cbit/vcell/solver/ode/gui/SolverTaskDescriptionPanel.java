@@ -3,11 +3,11 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.Color;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.TreeSet;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -152,7 +152,7 @@ private void connEtoC10(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoC11(SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -165,26 +165,6 @@ private void connEtoC11(cbit.vcell.solver.SolverTaskDescription value) {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC12:  (SolverTaskDescriptionPanel.initialize() --> SolverTaskDescriptionPanel.makeBold()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.makeBold();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC2:  (TornOffSolverTaskDescription.timeBounds --> SolverTaskDescriptionPanel.updateSensitivityParameterDisplay(Lcbit.vcell.math.Constant;)V)
@@ -292,7 +272,7 @@ private void connEtoC6(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoC7(SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -354,7 +334,7 @@ private void connEtoC9(java.awt.event.FocusEvent arg1) {
  * @param value cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.solver.TimeStep value) {
+private void connEtoM1(TimeStep value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -375,7 +355,7 @@ private void connEtoM1(cbit.vcell.solver.TimeStep value) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoM10(SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -417,7 +397,7 @@ private void connEtoM11(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM12(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoM12(SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -504,7 +484,7 @@ private void connEtoM2(java.awt.event.FocusEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getTornOffSolverTaskDescription().setTimeStep(localValue = new cbit.vcell.solver.TimeStep(gettimeStep1().getMinimumTimeStep(), new Double(getTimeStepTextField().getText()).doubleValue(), gettimeStep1().getMaximumTimeStep()));
+		getTornOffSolverTaskDescription().setTimeStep(localValue = new TimeStep(gettimeStep1().getMinimumTimeStep(), new Double(getTimeStepTextField().getText()).doubleValue(), gettimeStep1().getMaximumTimeStep()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -521,7 +501,7 @@ private void connEtoM2(java.awt.event.FocusEvent arg1) {
  * @param value cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(cbit.vcell.solver.TimeBounds value) {
+private void connEtoM3(TimeBounds value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -542,7 +522,7 @@ private void connEtoM3(cbit.vcell.solver.TimeBounds value) {
  * @param value cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM5(cbit.vcell.solver.TimeBounds value) {
+private void connEtoM5(TimeBounds value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -564,11 +544,11 @@ private void connEtoM5(cbit.vcell.solver.TimeBounds value) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM6(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.TimeBounds localValue = null;
+	TimeBounds localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		getTornOffSolverTaskDescription().setTimeBounds(localValue = new cbit.vcell.solver.TimeBounds(new Double(getStartTimeTextField().getText()).doubleValue(), new Double(getEndTimeTextField().getText()).doubleValue()));
+		getTornOffSolverTaskDescription().setTimeBounds(localValue = new TimeBounds(new Double(getStartTimeTextField().getText()).doubleValue(), new Double(getEndTimeTextField().getText()).doubleValue()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -586,11 +566,11 @@ private void connEtoM6(java.awt.event.FocusEvent arg1) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM7(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.TimeBounds localValue = null;
+	TimeBounds localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		getTornOffSolverTaskDescription().setTimeBounds(localValue = new cbit.vcell.solver.TimeBounds(new Double(getStartTimeTextField().getText()).doubleValue(), new Double(getEndTimeTextField().getText()).doubleValue()));
+		getTornOffSolverTaskDescription().setTimeBounds(localValue = new TimeBounds(new Double(getStartTimeTextField().getText()).doubleValue(), new Double(getEndTimeTextField().getText()).doubleValue()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -793,14 +773,12 @@ private javax.swing.JLabel getJLabelTimeSamples() {
 private javax.swing.JLabel getJLabelTitle() {
 	if (ivjJLabelTitle == null) {
 		try {
-			org.vcell.util.gui.EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new org.vcell.util.gui.EmptyBorderBean();
-			ivjLocalBorder.setInsets(new java.awt.Insets(10, 0, 10, 0));
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
-			ivjJLabelTitle.setBorder(ivjLocalBorder);
+			ivjJLabelTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 			ivjJLabelTitle.setText("Specify time conditions and optional sensitivity analysis:");
 			ivjJLabelTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+			ivjJLabelTitle.setFont(ivjJLabelTitle.getFont().deriveFont(java.awt.Font.BOLD));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -962,7 +940,7 @@ private cbit.vcell.math.Constant getSelectedSensitivityParameter(String constant
  * @return The solverTaskDescription property value.
  * @see #setSolverTaskDescription
  */
-public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription() {
+private SolverTaskDescription getSolverTaskDescription() {
 	return fieldSolverTaskDescription;
 }
 
@@ -1071,7 +1049,6 @@ private javax.swing.JTextField getTimeStepTextField() {
 			ivjTimeStepTextField = new javax.swing.JTextField();
 			ivjTimeStepTextField.setName("TimeStepTextField");
 			ivjTimeStepTextField.setText("");
-			ivjTimeStepTextField.setBackground(java.awt.Color.white);
 			ivjTimeStepTextField.setColumns(10);
 			// user code begin {1}
 			// user code end
@@ -1090,7 +1067,7 @@ private javax.swing.JTextField getTimeStepTextField() {
  * @return cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.SolverTaskDescription getTornOffSolverTaskDescription() {
+private SolverTaskDescription getTornOffSolverTaskDescription() {
 	// user code begin {1}
 	// user code end
 	return ivjTornOffSolverTaskDescription;
@@ -1251,7 +1228,6 @@ private void initialize() {
 		constraintsJLabelTitle.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelTitle(), constraintsJLabelTitle);
 		initConnections();
-		connEtoC12();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -1277,7 +1253,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1286,15 +1261,6 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
-
-
-/**
- * Comment
- */
-private void makeBold() {
-	getJLabelTitle().setFont(getJLabelTitle().getFont().deriveFont(java.awt.Font.BOLD));
-}
-
 
 /**
  * Comment
@@ -1319,7 +1285,7 @@ private void performSensitivityAnalysisCheckbox_ItemStateChanged(java.awt.event.
 /**
  * Comment
  */
-public void setKeepEvery(SolverTaskDescription arg1) {
+private void setKeepEvery(SolverTaskDescription arg1) {
 	getJTextFieldKeepEvery().setText("");
 	BeanUtils.enableComponents(getJPanelKeepEvery(), false);
 	if (arg1 == null) { 
@@ -1616,13 +1582,12 @@ public void updateTimeStepDisplay() {
 	if (getTornOffSolverTaskDescription().getSolverDescription().hasVariableTimestep())
 	{
 		getTimeStepLabel().setEnabled(false);
+		getTimeStepTextField().setText("");
 		getTimeStepTextField().setEnabled(false);
-		getTimeStepTextField().setBackground(new java.awt.Color(220,220,220));
 		getJLabel2().setEnabled(false);
 	} else {
 		getTimeStepLabel().setEnabled(true);
 		getTimeStepTextField().setEnabled(true);
-		getTimeStepTextField().setBackground(Color.white);
 		getJLabel2().setEnabled(true);
 	}
 }
