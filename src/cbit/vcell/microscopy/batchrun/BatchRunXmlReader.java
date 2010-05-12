@@ -128,29 +128,6 @@ public class BatchRunXmlReader {
 			}
 			tempBatchRunWorkspace.setAverageParameters(params);
 		}
-		//selected ROIs
-		Element selectedROIsElement = param.getChild(MicroscopyXMLTags.SelectedROIsTag);
-		if(selectedROIsElement != null)
-		{
-		    String roiBooleanText = selectedROIsElement.getText();
-		    if(roiBooleanText != null)
-		    {
-			    CommentStringTokenizer tokens = new CommentStringTokenizer(roiBooleanText);
-			    int arrayLen = FRAPData.VFRAP_ROI_ENUM.values().length;
-			    boolean[] selectedROIsBooleanArray = new boolean[arrayLen];
-			    for (int i = 0; i < arrayLen; i++)
-			    {
-			        if (tokens.hasMoreTokens())
-			        {
-			            String token = tokens.nextToken();
-			            selectedROIsBooleanArray[i] = Boolean.parseBoolean(token);
-			        }else{
-			            throw new RuntimeException("failed to read boolean value for selected ROIs for error calculation.");
-			        }
-			    }
-			    tempBatchRunWorkspace.setSelectedROIsForErrorCalculation(selectedROIsBooleanArray);
-		    }
-		}
 		
 		//get FrapStudy file list
 		Element frapStudyListElement = param.getChild(MicroscopyXMLTags.FrapStudyListTag);

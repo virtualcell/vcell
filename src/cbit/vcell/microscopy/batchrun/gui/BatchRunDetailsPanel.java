@@ -48,6 +48,7 @@ import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.FileSummaryDescriptor
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.FileTypeDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.MultiFileDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.ROISummaryDescriptor;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.RoiForErrorDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.SingleFileDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypePanel;
 import cbit.vcell.opt.Parameter;
@@ -196,7 +197,7 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 	public void updateParameterDisplay()
 	{
 		double[][] statData = getBatchRunWorkspace().getStatisticsData();
-		String paramStr = "<Average parameter values among datasets>\n";
+		String paramStr = "Average parameter values among datasets:\n\n";
 		for(int i = 0 ; i < BatchRunResultsParamTableModel.NUM_COLUMNS-2; i++)
 		{
 			if(batchRunWorkspace.getSelectedModel()==FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
@@ -208,7 +209,7 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 				}
 			}
 			paramStr = paramStr + BatchRunResultsParamTableModel.COL_LABELS[i+1] + ": "
-				      + statData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][i] + "\n";
+				      + statData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][i] + "\n";
 		}
 		parameterTa.setText(paramStr);
 		parameterTa.setCaretPosition(0);
@@ -433,6 +434,10 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
         batchRunAddDataWizard.registerWizardPanel(ROISummaryDescriptor.IDENTIFIER, roiSummaryDescriptor);
         roiSummaryDescriptor.setBatchRunWorkspace(getBatchRunWorkspace());
 		
+        WizardPanelDescriptor roiForErrorDescriptor = new RoiForErrorDescriptor();
+        batchRunAddDataWizard.registerWizardPanel(RoiForErrorDescriptor.IDENTIFIER, roiForErrorDescriptor);
+        ((RoiForErrorDescriptor)roiForErrorDescriptor).setBatchRunWorkspace(batchRunWorkspace);
+        
         FileSaveDescriptor fileSaveDescriptor = new FileSaveDescriptor();
         batchRunAddDataWizard.registerWizardPanel(FileSaveDescriptor.IDENTIFIER, fileSaveDescriptor);
         fileSaveDescriptor.setBatchRunWorkspace(getBatchRunWorkspace());

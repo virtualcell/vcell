@@ -1,4 +1,4 @@
-package cbit.vcell.microscopy.batchrun.gui.chooseModelWizard;
+package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -282,7 +282,7 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 	public ROI[] getAllROIs()
 	{
 		allROIs = new ROI[NUM_SELECTED_ROIS];
-		FRAPData frapData = batchRunWorkspace.getFrapStudyList().get(0).getFrapData();//always use the first frap study'ROIs for display
+		FRAPData frapData = batchRunWorkspace.getWorkingFrapStudy().getFrapData();//always use the first frap study'ROIs for display
 		allROIs[IDX_ROI_BLEACHED] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
 		allROIs[IDX_ROI_BLEACHED_RING1] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name());
 		allROIs[IDX_ROI_BLEACHED_RING2] = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name());
@@ -316,7 +316,7 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 	
 	public void refreshROIImage()
 	{
-		FRAPData frapData = batchRunWorkspace.getFrapStudyList().get(0).getFrapData();
+		FRAPData frapData = batchRunWorkspace.getWorkingFrapStudy().getFrapData();
 		ROI[] allROIs = getAllROIs();
 		Color[] allColors = getAllROIColors();
 		ArrayList<ROI> plottedROIs = new ArrayList<ROI>();
@@ -538,14 +538,14 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 	
 	public void refreshCheckboxes()
 	{
-		FRAPData frapData = batchRunWorkspace.getFrapStudyList().get(0).getFrapData();
+		FRAPData frapData = batchRunWorkspace.getWorkingFrapStudy().getFrapData();
 		ROI[] rois = frapData.getRois();
 		//enable all the checkboxes first
 		setAllCheckboxesEnabled(false);
 		setAllCheckboxesSelected(false);
 		//disable ROIs with 0 pixel in it
 		//or disselect checkboxes according to stored selected ROIS
-		boolean[] storedSelectedROIs = batchRunWorkspace.getFrapStudyList().get(0).getSelectedROIsForErrorCalculation(); 
+		boolean[] storedSelectedROIs = batchRunWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation(); 
 		for(int i=0; i<rois.length; i++)
 		{
 			if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&

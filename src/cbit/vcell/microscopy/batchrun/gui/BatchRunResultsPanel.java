@@ -1,6 +1,8 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
 
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -8,20 +10,21 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.border.EmptyBorder;
 
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.estparamwizard.MSEPanel;
+import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
 
 public class BatchRunResultsPanel extends JPanel
 {
-	public final static String MODEL_TYPE_PREFIX = "Selected Model Type : ";
+	public final static String MODEL_TYPE_PREFIX = "  Selected Model Type : ";
 	private FRAPBatchRunWorkspace batchRunWorkspace = null;
 	private BatchRunResultsParameterPanel batchRunParamPanel = null;
 	private BatchRunMSEPanel batchRunMSEPanel = null;
 	private JScrollPane scrollPane = null;
 	private JLabel modelTypeLabel = null;
 	private JPanel centerPanel = null;
-	private String modelType = "";
 	
 	public BatchRunResultsPanel()
 	{
@@ -41,19 +44,17 @@ public class BatchRunResultsPanel extends JPanel
 	{
 		if(modelTypeLabel == null)
 		{
-			modelTypeLabel = new JLabel(MODEL_TYPE_PREFIX + getModelType()); 
+			modelTypeLabel = new JLabel(MODEL_TYPE_PREFIX); 
+			modelTypeLabel.setBorder(new EmptyBorder(2, 0, 4, 0));
+			modelTypeLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
+			modelTypeLabel.setForeground(new Color(100, 100, 255));
 		}
 		return modelTypeLabel;
 	}
 	
-	public String getModelType()
+	public void setModelTypeLabel(String modelType)
 	{
-		return modelType;
-	}
-	
-	public void setModelType(String arg_modelType)
-	{
-		modelType = arg_modelType;
+		modelTypeLabel.setText(MODEL_TYPE_PREFIX +" " + modelType); 
 	}
 	
 	private JPanel getCenterPanel()

@@ -50,7 +50,7 @@ public class FileSaveDescriptor extends WizardPanelDescriptor {
     }
     //This method is override to make sure that it backs to FileTypePanel
     public String getBackPanelDescriptorID() {
-        return ROISummaryDescriptor.IDENTIFIER;
+        return RoiForErrorDescriptor.IDENTIFIER;
     }
     
     public void aboutToDisplayPanel() {

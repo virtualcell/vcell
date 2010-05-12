@@ -44,7 +44,7 @@ public class ChooseModel_RoiForErrorDescriptor extends WizardPanelDescriptor{
     {   
     	ArrayList<AsynchClientTask> tasks = new ArrayList<AsynchClientTask>();
     	
-    	AsynchClientTask aTask1 = new AsynchClientTask("Saving selected model types...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+    	AsynchClientTask aTask1 = new AsynchClientTask("Saving selected ROIs...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{

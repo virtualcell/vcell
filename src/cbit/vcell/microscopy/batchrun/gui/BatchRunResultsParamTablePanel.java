@@ -40,12 +40,15 @@ import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
 
 public class BatchRunResultsParamTablePanel extends JPanel implements PropertyChangeListener
 {
-	private JTable table;
+	private JTable table_param;
+	private JTable table_stat;
     private BatchRunResultsParameterPanel parent;
     private JLabel lessLable;
     private HyperLinkLabel hypDetail;
-    private JScrollPane scrTable;
+    private JScrollPane scrTable_param;
+    private JScrollPane scrTable_stat;
     private BatchRunResultsParamTableModel resultsTableModel = null;
+    private BatchRunResultsStatTableModel statTableModel = null;
     private FRAPBatchRunWorkspace batchRunWorkspace = null;
     private EstParams_OneDiffComponentPanel oneDiffComponentPanel = null;
 	private EstParams_TwoDiffComponentPanel twoDiffComponentPanel = null;
@@ -93,6 +96,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         add(lessLable, gc3);
         //create table model
         resultsTableModel = new BatchRunResultsParamTableModel();
+        statTableModel = new BatchRunResultsStatTableModel();
         //by default, expend this table
         setDetail(true);
    }
@@ -109,29 +113,50 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 
     public void setDetail(boolean isDetail) {
         if (isDetail) {
-            if (table == null) setupTable();
+            if (table_stat == null) setupTable_stat();
+            if (table_param == null) setupTable_param();
             remove(lessLable);
             GridBagConstraints gc = new GridBagConstraints();
             gc.gridy = 1;
             gc.gridwidth = 2;
             gc.weightx = 1.0;
             gc.fill = GridBagConstraints.HORIZONTAL;
-            add(table.getTableHeader(), gc); // absurd to put head and body seperately
+            add(table_stat.getTableHeader(), gc); //table head
             gc.weighty = 1.0;
             gc.gridy = 2;
             gc.fill = GridBagConstraints.BOTH;
-            if (table.getModel().getRowCount() > 20) {
-                add(scrTable, gc);
+            if (table_stat.getModel().getRowCount() > 20) {
+                add(scrTable_stat, gc);//table
             }
             else {
-                add(table, gc);
+                add(table_stat, gc);
+            }
+            GridBagConstraints gc2 = new GridBagConstraints();
+            gc2.gridy = 3;
+            gc2.gridwidth = 2;
+            gc2.weightx = 1.0;
+            gc2.fill = GridBagConstraints.HORIZONTAL;
+            add(table_param.getTableHeader(), gc2); //table head
+            gc2.weighty = 1.0;
+            gc2.gridy = 4;
+            gc2.fill = GridBagConstraints.BOTH;
+            if (table_param.getModel().getRowCount() > 20) {
+                add(scrTable_param, gc2);//table
+            }
+            else {
+                add(table_param, gc2);
             }
         }
         else {
-            if (table != null) {
-                remove(table.getTableHeader());
-                remove(scrTable);
-                remove(table);
+            if (table_param != null) {
+                remove(table_param.getTableHeader());
+                remove(scrTable_param);
+                remove(table_param);
+            }
+            if (table_stat != null) {
+                remove(table_stat.getTableHeader());
+                remove(scrTable_stat);
+                remove(table_stat);
             }
             GridBagConstraints gc = new GridBagConstraints();
             gc.gridy = 1;
@@ -147,39 +172,61 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         parent.repaint();
     }
 
-    private void setupTable() {
+    private void setupTable_param() {
 
         TableSorter sorter = new TableSorter(resultsTableModel);
-        table = new StyleTable(sorter);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        sorter.setTableHeader(table.getTableHeader());
+        table_param = new StyleTable(sorter);
+        table_param.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        sorter.setTableHeader(table_param.getTableHeader());
         
         DefaultCellEditor  resultsEditor = new DefaultCellEditor(new JTextField());
         TableCellRenderer resultsRanderer = new  AnalysisTableRenderer(8); //double precision 8 digits
-        for (int i = 0; i < table.getColumnCount(); i++) {
-        	TableColumn col = table.getColumnModel().getColumn(i);
+        for (int i = 0; i < table_param.getColumnCount(); i++) {
+        	TableColumn col = table_param.getColumnModel().getColumn(i);
         	col.setPreferredWidth(0);
         	col.setCellRenderer(resultsRanderer);
         	col.setCellEditor(resultsEditor);
         }
         //apply table renderer for name column(override the previous one)
-        TableColumn nameCol = table.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_FILE_NAME);
+        TableColumn nameCol = table_param.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_FILE_NAME);
         nameCol.setCellRenderer(new ResultsParamTableRenderer());
         //apply table renderer and table editor for details column(override the previous ones)
-        TableColumn detailsCol = table.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_DETAILS);
+        TableColumn detailsCol = table_param.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_DETAILS);
         detailsCol.setCellRenderer(new ResultsParamTableRenderer());
-        ResultsParamTableEditor tableEditor = new ResultsParamTableEditor(table);
+        ResultsParamTableEditor tableEditor = new ResultsParamTableEditor(table_param);
         tableEditor.addPropertyChangeListener(this);
         detailsCol.setCellEditor(tableEditor);
-        scrTable = new JScrollPane(table);
-        scrTable.setAutoscrolls(true);
+        scrTable_param = new JScrollPane(table_param);
+        scrTable_param.setAutoscrolls(true);
+        
+    }
+    
+    private void setupTable_stat() {
+        table_stat = new StyleTable();
+        table_stat.setAutoCreateColumnsFromModel(false);
+        table_stat.setModel(statTableModel);
 
+        DefaultCellEditor statEditor = new DefaultCellEditor(new JTextField());
+        TableCellRenderer statRenderer = new  AnalysisTableRenderer(8);//double precision 8 digits
+        TableColumn[] columns = new TableColumn[statTableModel.NUM_COLUMNS];
+        for (int i = 0; i < statTableModel.getColumnCount(); i++) {
+
+            columns[i] = new TableColumn(i, 0, statRenderer, statEditor);
+
+            table_stat.addColumn(columns[i]);
+
+        }
+
+        scrTable_stat = new JScrollPane(table_stat);
+        scrTable_stat.setAutoscrolls(true);
+        
     }
 
     public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)
 	{
     	this.batchRunWorkspace = batchRunWorkspace;
 		resultsTableModel.setBatchRunWorkspace(batchRunWorkspace);
+		statTableModel.setBatchRunWorkspace(batchRunWorkspace);
 	}
     
     public EstParams_OneDiffComponentPanel getOneDiffComponentPanel() {
@@ -217,6 +264,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 	public void updateTableData()
 	{
 		resultsTableModel.fireTableDataChanged();
+		statTableModel.fireTableDataChanged();
 	}
 	
 	public void propertyChange(PropertyChangeEvent evt) {
@@ -224,7 +272,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 		if(evt.getPropertyName().equals(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DETAIL))
 		{
 			int rowNum = ((Integer)evt.getNewValue()).intValue();
-			String fileName = ((File)table.getValueAt(rowNum, BatchRunResultsParamTableModel.COLUMN_FILE_NAME)).getAbsolutePath();
+			String fileName = ((File)table_param.getValueAt(rowNum, BatchRunResultsParamTableModel.COLUMN_FILE_NAME)).getAbsolutePath();
 			System.out.println("FileName---" + fileName);
 			FRAPStudy selectedFrapStudy = batchRunWorkspace.getFRAPStudy(fileName);
 			//display estimation result for each selected frapStudy based on model type
@@ -237,7 +285,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 							                           selectedFrapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters(),
 							                           selectedFrapStudy.getFrapData().getImageDataset().getImageTimeStamps(),
 							                           selectedFrapStudy.getStartingIndexForRecovery(),
-							                           batchRunWorkspace.getSelectedROIsForErrorCalculation());
+							                           selectedFrapStudy.getSelectedROIsForErrorCalculation());
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -258,7 +306,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 							                           selectedFrapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters(),
 							                           selectedFrapStudy.getFrapData().getImageDataset().getImageTimeStamps(),
 							                           selectedFrapStudy.getStartingIndexForRecovery(),
-							                           batchRunWorkspace.getSelectedROIsForErrorCalculation());
+							                           selectedFrapStudy.getSelectedROIsForErrorCalculation());
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

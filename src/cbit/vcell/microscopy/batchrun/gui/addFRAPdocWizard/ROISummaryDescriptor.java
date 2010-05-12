@@ -38,7 +38,7 @@ public class ROISummaryDescriptor extends WizardPanelDescriptor {
     }
     
     public String getNextPanelDescriptorID() {
-        return FileSaveDescriptor.IDENTIFIER;
+        return RoiForErrorDescriptor.IDENTIFIER;
     }
     
     public String getBackPanelDescriptorID() {

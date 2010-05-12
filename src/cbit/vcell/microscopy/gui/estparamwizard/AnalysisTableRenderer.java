@@ -55,11 +55,11 @@ public class AnalysisTableRenderer  extends DefaultTableCellRenderer {
 		if(nameObj instanceof String)
 		{
 			String name = (String)nameObj;
-			if(name.equals(DescriptiveStatistics.MEAN_NAME) ||
+			if(name.equals(DescriptiveStatistics.MEAN_NAME) /*||
 			   name.equals(DescriptiveStatistics.STANDARD_DEVIATION_NAME) ||
 			   name.equals(DescriptiveStatistics.MEDIAN_NAME) ||
 			   name.equals(DescriptiveStatistics.MIN_NAME) ||
-			   name.equals(DescriptiveStatistics.MAX_NAME))
+			   name.equals(DescriptiveStatistics.MAX_NAME)*/)
 			{
 				setBackground( new Color(255,255,128));
 				setForeground(Color.black);

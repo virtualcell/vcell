@@ -26,6 +26,7 @@ import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
 import cbit.vcell.microscopy.batchrun.gui.BatchRunResultsParamTableModel;
+import cbit.vcell.microscopy.batchrun.gui.BatchRunResultsStatTableModel;
 import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
@@ -36,8 +37,8 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 {
 	//Properties that are used in VFRAP Batch Run
 	public static final String PROPERTY_CHANGE_BATCHRUN_DISPLAY_IMG = "BATCHRUN_DISPLAY_IMG";
-	public static final String PROPERTY_CHANGE_BATCHRUN_DISPLAY_PARAM = "BATCHRUN_DISPLAY_PARAM";
-	public static final String PROPERTY_CHANGE_BATCHRUN_DETAIL = "PROPERTY_CHANGE_BATCHRUN_DETAIL";
+	public static final String PROPERTY_CHANGE_BATCHRUN_DISPLAY_PARAM = "BATCHRUN_DISPLAY_PARAM";//property to disply results
+	public static final String PROPERTY_CHANGE_BATCHRUN_DETAIL = "PROPERTY_CHANGE_BATCHRUN_DETAIL";//property when details button pressed
 	public static final String PROPERTY_CHANGE_BATCHRUN_UPDATE_STATISTICS = "PROPERTY_CHANGE_BATCHRUN_UPDATE_STATISTICS";
 	public static final String PROPERTY_CHANGE_BATCHRUN_CLEAR_RESULTS = "PROPERTY_CHANGE_BATCHRUN_CLEAR_RESULTS";
 	
@@ -51,7 +52,6 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	private int selectedModel;
 	private Parameter[] averageParameters = null;
 
-	private boolean[] selectedROIsForErrCalculation = null;
 	private transient String batchRunXmlFileName = null;
 	//first dimension: number of frap studys, second dimension: bleahed + 8 Rings + sum of MSE, any element that is not applicable should fill with 1e8.
 	private transient double[][] analysisMSESummaryData = null;
@@ -208,21 +208,6 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		}
 	}
 	
-	public void setSelectedROIsForErrorCalculation(boolean[] arg_selectedROIs)
-	{
-		selectedROIsForErrCalculation = arg_selectedROIs;
-		//update selectedROIs of FrapStudies in the BatchRun
-		for(int i=0; i<getFrapStudyList().size(); i++)
-		{
-			getFrapStudyList().get(i).setSelectedROIsForErrorCalculation(arg_selectedROIs);
-		}
-	}
-	
-	public boolean[] getSelectedROIsForErrorCalculation()
-	{
-		return selectedROIsForErrCalculation;
-	}
-
 	public void refreshMSESummaryData()
 	{
 		int studySize = getFrapStudyList().size();
@@ -277,9 +262,9 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		
 		double[][] oldStatData = statisticsData;
 		//stores statistics for each parameters . (column-name and column-details should be excluded)
-		statisticsData = new double[BatchRunResultsParamTableModel.NUM_STATISTICS][BatchRunResultsParamTableModel.NUM_COLUMNS-2];
+		statisticsData = new double[BatchRunResultsStatTableModel.NUM_STATISTICS][BatchRunResultsParamTableModel.NUM_COLUMNS-2];
 		
-		for(int i=0; i<BatchRunResultsParamTableModel.NUM_STATISTICS; i++)
+		for(int i=0; i<BatchRunResultsStatTableModel.NUM_STATISTICS; i++)
 		{
 			//fill all elements with 1e8 first
 			Arrays.fill(statisticsData[i], FRAPOptimization.largeNumber);
@@ -289,11 +274,11 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		{
 			//statistics for primary diffusion rate
 			DescriptiveStatistics stat = DescriptiveStatistics.CreateBasicStatistics(parameterVals[i]);
-			statisticsData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][i] = stat.getMean();
-			statisticsData[BatchRunResultsParamTableModel.ROW_IDX_STD][i] = stat.getStandardDeviation();
-			statisticsData[BatchRunResultsParamTableModel.ROW_IDX_MEDIAN][i] = stat.getMedian();
-			statisticsData[BatchRunResultsParamTableModel.ROW_IDX_MIN][i] = stat.getMin();
-			statisticsData[BatchRunResultsParamTableModel.ROW_IDX_MAX][i] = stat.getMax();
+			statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][i] = stat.getMean();
+			statisticsData[BatchRunResultsStatTableModel.ROW_IDX_STD][i] = stat.getStandardDeviation();
+			statisticsData[BatchRunResultsStatTableModel.ROW_IDX_MEDIAN][i] = stat.getMedian();
+			statisticsData[BatchRunResultsStatTableModel.ROW_IDX_MIN][i] = stat.getMin();
+			statisticsData[BatchRunResultsStatTableModel.ROW_IDX_MAX][i] = stat.getMax();
 		}
 		updateAverageParameters();
 		firePropertyChange(PROPERTY_CHANGE_BATCHRUN_UPDATE_STATISTICS, oldStatData, statisticsData);
@@ -307,17 +292,17 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
 			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
 			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
-			                    statisticsData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_DIFF_RATE-1]);
+			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_DIFF_RATE-1]);
 			Parameter mobileFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
 			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
 			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
 			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),
-			                    statisticsData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_MOBILE_FRACTION-1]);
+			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_MOBILE_FRACTION-1]);
 			Parameter bleachWhileMonitoringRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE],
 			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
 			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
 			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
-			                    statisticsData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_BMR-1]);
+			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_BMR-1]);
 
 			setAverageParameters(new Parameter[]{diff, mobileFrac, bleachWhileMonitoringRate});
 		}
@@ -327,27 +312,27 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
 			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
 			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
-			                    statisticsData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_DIFF_RATE-1]);
+			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_DIFF_RATE-1]);
 			Parameter mobileFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
 			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
 			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
 			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
-			                    statisticsData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_MOBILE_FRACTION-1]);
+			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_MOBILE_FRACTION-1]);
 			Parameter bleachWhileMonitoringRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
 					            FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
 					            FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
 					            FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
-					            statisticsData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_BMR-1]);
+					            statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_BMR-1]);
 			Parameter secDiffRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE],
 			                    FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
 			                    FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
 			                    FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
-			                    statisticsData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_SEC_DIFF_RATE-1]);
+			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_SEC_DIFF_RATE-1]);
 			Parameter secMobileFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
 			                    FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
 			                    FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
 			                    FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
-			                    statisticsData[BatchRunResultsParamTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_SEC_MOBILE_FRACTION-1]);
+			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_SEC_MOBILE_FRACTION-1]);
 			
 			setAverageParameters(new Parameter[]{diff, mobileFrac, bleachWhileMonitoringRate, secDiffRate, secMobileFrac});
 		}
@@ -405,7 +390,6 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		this.displaySelection = null;
 		this.selectedModel = tempBatchRunWorkspace.getSelectedModel();
 		this.averageParameters = tempBatchRunWorkspace.getAverageParameters();
-		this.selectedROIsForErrCalculation = tempBatchRunWorkspace.getSelectedROIsForErrorCalculation();
 		this.batchRunXmlFileName = tempBatchRunWorkspace.getBatchRunXmlFileName();
 		
 		this.analysisMSESummaryData = null;
