@@ -2355,7 +2355,7 @@ public org.jdom.Element getXML(cbit.vcell.mathmodel.MathModel param) throws XmlP
 	// Add output functions
 	if (param.getOutputFunctionContext() != null) {
 		ArrayList<AnnotatedFunction> outputFunctions = param.getOutputFunctionContext().getOutputFunctionsList();
-		if(outputFunctions != null) {
+		if(outputFunctions != null && outputFunctions.size() > 0) {
 			// get output functions
 			mathmodel.addContent(getXML(outputFunctions));
 		}
