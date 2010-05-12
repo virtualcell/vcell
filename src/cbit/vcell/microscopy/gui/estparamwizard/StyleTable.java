@@ -12,7 +12,7 @@ import java.awt.*;
  */
 public class StyleTable extends JTable {
 
-    public static Color color = new Color(166, 166, 255); //Preference.getUser().getColor (Preference.REPORT_TABLE_COLOR); // light blue
+    public static Color color = new Color(166, 166, 255); // light blue
 
     public StyleTable(TableModel dm) {
         super(dm);

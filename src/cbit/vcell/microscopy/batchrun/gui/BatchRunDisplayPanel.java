@@ -19,6 +19,7 @@ import javax.swing.border.EmptyBorder;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
@@ -178,6 +179,7 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 		else if(evt.getPropertyName().equals(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DISPLAY_PARAM))
 		{
 			resultsPanel.updateTableData();
+			resultsPanel.setModelTypeLabel(FRAPModel.MODEL_TYPE_ARRAY[batchRunWorkspace.getSelectedModel()]);
 			((CardLayout)topDisplayPanel.getLayout()).show(topDisplayPanel, DISPLAY_PARAM_ID);
 		}
 		else if(evt.getPropertyName().equals(JobStatusPanel.STATUSPANEL_PROPERTY_CHANGE))

@@ -5,35 +5,39 @@ import java.util.ArrayList;
 
 import javax.swing.table.AbstractTableModel;
 
-import sun.security.action.GetBooleanAction;
-
 import cbit.vcell.microscopy.DescriptiveStatistics;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.opt.Parameter;
-public class BatchRunResultsParamTableModel extends AbstractTableModel
+
+public class BatchRunResultsStatTableModel extends AbstractTableModel 
 {
-	public final static int NUM_COLUMNS = 8;
+	public final static int NUM_COLUMNS = 7;
+	public final static int NUM_STATISTICS = 5;
+	public final static int ROW_IDX_AVERAGE = 0;
+	public final static int ROW_IDX_STD = 1;
+	public final static int ROW_IDX_MEDIAN = 2;
+	public final static int ROW_IDX_MIN = 3;
+	public final static int ROW_IDX_MAX = 4;
 	
-	public final static int COLUMN_FILE_NAME = 0;
+	public final static int COLUMN_STAT_NAME = 0;
 	public final static int COLUMN_PRI_DIFF_RATE = 1;
 	public final static int COLUMN_PRI_MOBILE_FRACTION = 2;
 	public final static int COLUMN_BMR = 3;
 	public final static int COLUMN_SEC_DIFF_RATE = 4;
 	public final static int COLUMN_SEC_MOBILE_FRACTION = 5;
 	public final static int COLUMN_IMMOBILE_FRACTION = 6;
-	public final static int COLUMN_DETAILS = 7;
 	
-	public final static String COL_LABELS[] = { "File Name", "Primary Diff Rate", "Primary Mobile Fraction",
+	public final static String COL_LABELS[] = { "Statistics", "Primary Diff Rate", "Primary Mobile Fraction",
 												"Bleach Monitor Rate", "Secondary Mobile Fraction",
-												"Secondary Diff Rate", "Immobile Fraction", "Details"};
+												"Secondary Diff Rate", "Immobile Fraction"};
 	
 	private FRAPBatchRunWorkspace batchRunWorkspace = null;
 	private ArrayList<FRAPStudy> frapStudys = null;
 	
-    public BatchRunResultsParamTableModel() {
+    public BatchRunResultsStatTableModel() {
     	super();
     }
 
@@ -42,7 +46,7 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     }
 
     public int getRowCount() {
-       return (getBatchRunWorkspace() == null)? 0:getBatchRunWorkspace().getFrapStudyList().size();
+       return NUM_STATISTICS;
     }
 
     public Object getValueAt(int row, int col) 
@@ -52,89 +56,109 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     	}
     	    	
     	frapStudys = batchRunWorkspace.getFrapStudyList();
+    	double stat[][] = getBatchRunWorkspace().getStatisticsData();
     	
-    	if (frapStudys == null)
+    	if (frapStudys == null)//no frap studies, then no statisttics
     	{
     		return null;
     	}
-    	if(col == COLUMN_FILE_NAME)
+    	if(col == COLUMN_STAT_NAME)
     	{
-   			return new File(frapStudys.get(row).getXmlFilename());
+    		if(row == ROW_IDX_AVERAGE)
+    		{
+    			return DescriptiveStatistics.MEAN_NAME;
+    		}
+    		else if(row == ROW_IDX_STD)
+    		{
+    			return DescriptiveStatistics.STANDARD_DEVIATION_NAME;
+    		}
+    		else if(row == ROW_IDX_MEDIAN)
+    		{
+    			return DescriptiveStatistics.MEDIAN_NAME;
+    		}
+    		else if(row == ROW_IDX_MIN)
+    		{
+    			return DescriptiveStatistics.MIN_NAME;
+    		}
+    		else if(row == ROW_IDX_MAX)
+    		{
+    			return DescriptiveStatistics.MAX_NAME;
+    		}
     	}
     	else if(col == COLUMN_PRI_DIFF_RATE)
     	{
-			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
-			if(modelParams != null)
-			{
-				return modelParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess();
-			}
+    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
+    		{
+    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
+    			{
+    				return stat[row][col-1];//stat array doesn't have name at the first column
+    			}
+    		}
     	}
     	else if(col == COLUMN_PRI_MOBILE_FRACTION)
     	{
-			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
-			if(modelParams != null)
-			{
-				return modelParams[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
-			}
+    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
+    		{
+    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
+    			{
+    				return stat[row][col-1];//stat array doesn't have name at the first column
+    			}
+    		}
     	}
     	else if(col == COLUMN_SEC_DIFF_RATE)
     	{
     		if(getBatchRunWorkspace().getSelectedModel() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
     		{
-    			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
-    			if(modelParams != null)
-    			{
-    				return modelParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess();
-    			}
+	    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
+	    		{
+	    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
+	    			{
+	    				return stat[row][col-1];//stat array doesn't have name at the first column
+	    			}
+	    		}
     		}
     	}
     	else if(col == COLUMN_SEC_MOBILE_FRACTION)
     	{
     		if(getBatchRunWorkspace().getSelectedModel() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
     		{
-    			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
-    			if(modelParams != null)
-    			{
-    				return modelParams[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
-    			}
+    		
+	    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
+	    		{
+	    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
+	    			{
+	    				return stat[row][col-1];//stat array doesn't have name at the first column
+	    			}
+	    		}
     		}
     	}
     	else if(col == COLUMN_BMR)
     	{
-			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
-			if(modelParams != null)
-			{
-				return modelParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess();
-			}
+    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
+    		{
+    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
+    			{
+    				return stat[row][col-1];//stat array doesn't have name at the first column
+    			}
+    		}
     	}
     	else if(col == COLUMN_IMMOBILE_FRACTION)
     	{
-			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
-			if(modelParams != null)
-			{
-    			double primaryFrac = modelParams[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
-    			if(getBatchRunWorkspace().getSelectedModel() == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
-        		{
-        			return Math.max(0, (1-primaryFrac));
-        		}
-    			else
+    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
+    		{
+    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
     			{
-    				double secFrac = modelParams[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
-    				return Math.max(0, (1-primaryFrac-secFrac));
+    				return stat[row][col-1];//stat array doesn't have name at the first column
     			}
-			}
-    	}
-    	else if(col == COLUMN_DETAILS)
-    	{
-    		return "Details";
+    		}
     	}
     	return null;
     }
 
     public Class<?> getColumnClass(int column) {
     	switch (column){
-    		case COLUMN_FILE_NAME:{
-    			return File.class;
+    		case COLUMN_STAT_NAME:{
+    			return String.class;
     		}
     		case COLUMN_PRI_DIFF_RATE:{
     			return Double.class;
@@ -154,9 +178,7 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     		case COLUMN_IMMOBILE_FRACTION: {
     			return Double.class;
     		}
-    		case COLUMN_DETAILS: {
-    			return Object.class;
-    		}
+    		
     		default:{
     			return Object.class;
     		}
@@ -172,10 +194,6 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
 
     public boolean isCellEditable(int rowIndex,int columnIndex) 
     {
-    	if(columnIndex == COLUMN_DETAILS)
-    	{
-    		return true;
-    	}
         return false;
     }
 
@@ -194,5 +212,3 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     	fireTableDataChanged();
     }
 }
-
-

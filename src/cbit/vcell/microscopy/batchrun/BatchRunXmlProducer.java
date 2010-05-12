@@ -85,21 +85,7 @@ public class BatchRunXmlProducer
 			}
 		}
 		batchRunNode.addContent(parametersNode);
-		//Get selected ROIs
-		if(param.getSelectedROIsForErrorCalculation() != null && param.getSelectedROIsForErrorCalculation().length >0)
-		{
-			Element selectedROIsNode = new Element(MicroscopyXMLTags.SelectedROIsTag);
-			boolean[] selectedROIs = param.getSelectedROIsForErrorCalculation();
-			String rowText = "";
-			for (int i = 0; i < selectedROIs.length; i++){
-	            if (i > 0){
-	                  rowText += " ";
-	            }
-	            rowText += selectedROIs[i];
-		    }
-			selectedROIsNode.addContent(rowText);
-			batchRunNode.addContent(selectedROIsNode);
-		}
+		
 		//Get frap study file lists
 		if(param.getFrapStudyList() != null && param.getFrapStudyList().size() > 0)
 		{

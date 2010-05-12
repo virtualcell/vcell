@@ -10,6 +10,8 @@ import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
+
+import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
 public class ModelTypesDescriptor extends WizardPanelDescriptor {
@@ -25,7 +27,7 @@ public class ModelTypesDescriptor extends WizardPanelDescriptor {
     }
     
     public String getNextPanelDescriptorID() {
-        return RoiForErrorDescriptor.IDENTIFIER;
+        return Wizard.FINISH.getPanelDescriptorIdentifier();
     }
     
     public String getBackPanelDescriptorID() {

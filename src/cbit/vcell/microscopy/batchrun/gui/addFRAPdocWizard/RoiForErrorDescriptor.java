@@ -1,4 +1,4 @@
-package cbit.vcell.microscopy.batchrun.gui.chooseModelWizard;
+package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -7,6 +7,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
+import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.ModelTypesDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
 
 import org.vcell.wizard.Wizard;
@@ -22,11 +23,11 @@ public class RoiForErrorDescriptor extends WizardPanelDescriptor{
     }
     
     public String getNextPanelDescriptorID() {
-        return Wizard.FINISH.getPanelDescriptorIdentifier();
+        return FileSaveDescriptor.IDENTIFIER;
     }
     
     public String getBackPanelDescriptorID() {
-        return ModelTypesDescriptor.IDENTIFIER;
+        return ROISummaryDescriptor.IDENTIFIER;
     }
     
     public void aboutToDisplayPanel() 
@@ -45,7 +46,7 @@ public class RoiForErrorDescriptor extends WizardPanelDescriptor{
     {   
     	ArrayList<AsynchClientTask> tasks = new ArrayList<AsynchClientTask>();
     	
-    	AsynchClientTask aTask1 = new AsynchClientTask("Saving selected model types...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+    	AsynchClientTask aTask1 = new AsynchClientTask("Saving selected ROIs...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
@@ -61,7 +62,7 @@ public class RoiForErrorDescriptor extends WizardPanelDescriptor{
 				}
 				if(isOneSelected)
 				{
-					bathRunWorkspace.setSelectedROIsForErrorCalculation(selectedROIs);
+					bathRunWorkspace.getWorkingFrapStudy().setSelectedROIsForErrorCalculation(selectedROIs);
 				}
 				else
 				{

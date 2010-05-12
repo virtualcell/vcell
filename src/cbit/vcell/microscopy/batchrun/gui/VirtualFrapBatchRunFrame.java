@@ -41,8 +41,8 @@ import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.RoiForErrorDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.ModelTypesDescriptor;
-import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.RoiForErrorDescriptor;
 import cbit.vcell.microscopy.gui.AboutDialog;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.HelpViewer;
@@ -173,10 +173,6 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				{
 					new AboutDialog(getClass().getResource("/images/splash.jpg"), VirtualFrapBatchRunFrame.this);
 				}
-//				else if(arg.equals(MAIN_WINDOW_ACTION_COMMAND))
-//				{
-//					System.out.println("MAIN_WINDOW_ACTION_COMMAND command clicked.");
-//				}
 		    }
 	 	}
 	}// end of inner class BatchRunMenuHandler
@@ -423,10 +419,6 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	          WizardPanelDescriptor modelTypesDescriptor = new ModelTypesDescriptor();
 	          modelTypeWizard.registerWizardPanel(ModelTypesDescriptor.IDENTIFIER, modelTypesDescriptor);
 	          ((ModelTypesDescriptor)modelTypesDescriptor).setBatchRunWorkspace(batchRunWorkspace);
-	        
-	          WizardPanelDescriptor roiForErrorDescriptor = new RoiForErrorDescriptor();
-	          modelTypeWizard.registerWizardPanel(RoiForErrorDescriptor.IDENTIFIER, roiForErrorDescriptor);
-	          ((RoiForErrorDescriptor)roiForErrorDescriptor).setBatchRunWorkspace(batchRunWorkspace);
 		  }
 		  //always start from the first page
 		  modelTypeWizard.setCurrentPanel(ModelTypesDescriptor.IDENTIFIER);

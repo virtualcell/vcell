@@ -48,7 +48,7 @@ public class TreeHandler extends MouseAdapter implements TreeSelectionListener
        {
     	    if(selectedInfo != null && selectedInfo instanceof String) //selected node is a batch run result
            {
-               getBatchRunWorkspace().updateDisplayForTreeSelection(selectedInfo); //TODO: shift to result panel.
+               getBatchRunWorkspace().updateDisplayForTreeSelection(selectedInfo); 
            }
        }
     }
