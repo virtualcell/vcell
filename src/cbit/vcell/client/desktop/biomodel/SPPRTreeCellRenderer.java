@@ -64,68 +64,70 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
                         boolean hasFocus) {
 
 		super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-        BioModelNode node = (BioModelNode)value;  
-        Object userObj = node.getUserObject();
-    	String labelText = null;
-    	String toolTipPrefix = "";
-    	Icon icon = null;
-    	if (userObj instanceof SimulationContext) { // --- species context	
-    		labelText = ((SimulationContext)userObj).getName();
-        	toolTipPrefix = "Application : ";
-    	} else if (userObj instanceof SPPRTreeFolderNode) {
-        	SPPRTreeFolderNode folder = (SPPRTreeFolderNode)userObj; 
-        	labelText = folder.getName();
-        	if (!SPPRTreeModel.FOLDER_NODE_IMPLEMENTED[folder.getId()] || !folder.isSupported()) {
-	        	setEnabled(false);
-	        	setDisabledIcon(this.getClosedIcon());
-    		}
-    	} else if (userObj instanceof SpeciesContext) { // --- species context
-    		icon = speciesIcon;
-        	labelText = ((SpeciesContext)userObj).getName();
-        	toolTipPrefix = "SpeciesContext : ";
-        } else if (userObj instanceof ModelParameter) {		// --- global parameter
-        	icon = gParamIcon;
-        	labelText = ((ModelParameter)userObj).getName();
-        	toolTipPrefix = "Global Parameter : ";
-        } else if (userObj instanceof SimpleReaction) {			// --- simple reaction
-        	icon = reactionsIcon;
-        	labelText = ((ReactionStep)userObj).getName();
-        	toolTipPrefix = "Simple Reaction : ";
-        } else if (userObj instanceof FluxReaction) {			// --- flux reaction
-        	icon = fluxIcon;
-        	labelText = ((ReactionStep)userObj).getName();
-        	toolTipPrefix = "Flux Reaction : ";
-        } else if (userObj instanceof BioEvent) {			// --- event
-        	BioEvent bioEvent = (BioEvent)userObj;
-        	SimulationContext simulationContext = bioEvent.getSimulationContext();
-			if (simulationContext.getGeometry() != null && simulationContext.getGeometry().getDimension() > 0 
-					|| simulationContext.isStoch()) {
-				setEnabled(false);
-				setDisabledIcon(this.getClosedIcon());
-			} else {
-				icon = eventIcon;
-				labelText = bioEvent.getName();
-				toolTipPrefix = "Event : ";
-			}
-			
-//        } else if (isApplicationParam(value)) {	// --- not implemented
-//        	icon = aParamIcon;
-//        	labelText = (String)((BioModelNode)value).getUserObject();
-//        	toolTipPrefix = "Application parameter";
-//        } else if (isApplicationFunction(value)) {	// --- not implemented
-//        	icon = aParamIcon;
-//        	labelText = ((String)((BioModelNode)value).getUserObject());
-//        	toolTipPrefix = "Application Function";
-//        } else if (isApplicationEquation(value)) {	// --- not implemented
-//        	icon = aParamIcon;
-//        	labelText = ((String)((BioModelNode)value).getUserObject());
-//        	toolTipPrefix = "Application Equation";
-        }
-        if (icon != null) {
-	    	setIcon(icon);
-	    }
-    	setText(labelText);
-    	setToolTipText(toolTipPrefix + labelText);
+		if (value instanceof BioModelNode) {
+	        BioModelNode node = (BioModelNode)value;
+	        Object userObj = node.getUserObject();
+	    	String labelText = null;
+	    	String toolTipPrefix = "";
+	    	Icon icon = null;
+	    	if (userObj instanceof SimulationContext) { // --- species context	
+	    		labelText = ((SimulationContext)userObj).getName();
+	        	toolTipPrefix = "Application : ";
+	    	} else if (userObj instanceof SPPRTreeFolderNode) {
+	        	SPPRTreeFolderNode folder = (SPPRTreeFolderNode)userObj; 
+	        	labelText = folder.getName();
+	        	if (!SPPRTreeModel.FOLDER_NODE_IMPLEMENTED[folder.getId()] || !folder.isSupported()) {
+		        	setEnabled(false);
+		        	setDisabledIcon(this.getClosedIcon());
+	    		}
+	    	} else if (userObj instanceof SpeciesContext) { // --- species context
+	    		icon = speciesIcon;
+	        	labelText = ((SpeciesContext)userObj).getName();
+	        	toolTipPrefix = "SpeciesContext : ";
+	        } else if (userObj instanceof ModelParameter) {		// --- global parameter
+	        	icon = gParamIcon;
+	        	labelText = ((ModelParameter)userObj).getName();
+	        	toolTipPrefix = "Global Parameter : ";
+	        } else if (userObj instanceof SimpleReaction) {			// --- simple reaction
+	        	icon = reactionsIcon;
+	        	labelText = ((ReactionStep)userObj).getName();
+	        	toolTipPrefix = "Simple Reaction : ";
+	        } else if (userObj instanceof FluxReaction) {			// --- flux reaction
+	        	icon = fluxIcon;
+	        	labelText = ((ReactionStep)userObj).getName();
+	        	toolTipPrefix = "Flux Reaction : ";
+	        } else if (userObj instanceof BioEvent) {			// --- event
+	        	BioEvent bioEvent = (BioEvent)userObj;
+	        	SimulationContext simulationContext = bioEvent.getSimulationContext();
+				if (simulationContext.getGeometry() != null && simulationContext.getGeometry().getDimension() > 0 
+						|| simulationContext.isStoch()) {
+					setEnabled(false);
+					setDisabledIcon(this.getClosedIcon());
+				} else {
+					icon = eventIcon;
+					labelText = bioEvent.getName();
+					toolTipPrefix = "Event : ";
+				}
+				
+	//        } else if (isApplicationParam(value)) {	// --- not implemented
+	//        	icon = aParamIcon;
+	//        	labelText = (String)((BioModelNode)value).getUserObject();
+	//        	toolTipPrefix = "Application parameter";
+	//        } else if (isApplicationFunction(value)) {	// --- not implemented
+	//        	icon = aParamIcon;
+	//        	labelText = ((String)((BioModelNode)value).getUserObject());
+	//        	toolTipPrefix = "Application Function";
+	//        } else if (isApplicationEquation(value)) {	// --- not implemented
+	//        	icon = aParamIcon;
+	//        	labelText = ((String)((BioModelNode)value).getUserObject());
+	//        	toolTipPrefix = "Application Equation";
+	        }
+	        if (icon != null) {
+		    	setIcon(icon);
+		    }
+	    	setText(labelText);
+	    	setToolTipText(toolTipPrefix + labelText);
+		}
         return this;
     }
 
