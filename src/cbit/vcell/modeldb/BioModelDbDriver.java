@@ -172,7 +172,7 @@ private BioModelMetaData getBioModelMetaData(Connection con,User user, KeyValue 
 					" AND " + 
 						userTable.id.getQualifiedColName() + " = " + bioModelTable.ownerRef.getQualifiedColName()+
 					" AND "+
-						VCMetaDataTable.table.bioModelRef.getQualifiedColName() + "(+) = " + bioModelKey;
+						VCMetaDataTable.table.bioModelRef.getQualifiedColName() + "(+) = " + bioModelTable.id.getQualifiedColName();
 	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null,true);
 
 	Statement stmt = con.createStatement();
