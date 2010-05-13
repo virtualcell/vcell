@@ -993,6 +993,8 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 	Variable[] vars = simSymbolTable.getVariables();
 	ArrayList<RandomVariable> rvList = new ArrayList<RandomVariable>();
 	for (int i = 0; i < vars.length; i ++) {
+		String varName = vars[i].getName();
+		String domainName = vars[i].getDomain() == null ? null : vars[i].getDomain().getName();
 		if (vars[i] instanceof VolumeRandomVariable || vars[i] instanceof MembraneRandomVariable) {
 			rvList.add((RandomVariable)vars[i]);		
 		} else if (vars[i] instanceof VolVariable) {
@@ -1025,9 +1027,9 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 				} else {
 					printWriter.print("VOLUME_PDE ");
 				}
-				printWriter.print(volVar.getName() + " " + volVar.getDomain().getName() + " " + hasTimeVaryingDiffusionOrAdvection + " " + hasVelocity);
+				printWriter.print(varName + " " + domainName + " " + hasTimeVaryingDiffusionOrAdvection + " " + hasVelocity);
 			} else {
-				printWriter.print("VOLUME_ODE " + volVar.getName() + " " + volVar.getDomain().getName());
+				printWriter.print("VOLUME_ODE " + varName + " " + domainName);
 			}
 
 			if (totalNumCompartments == listOfSubDomains.size()) {
@@ -1042,16 +1044,16 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 			}
 			printWriter.println();
 		} else if (vars[i] instanceof VolumeRegionVariable) {
-			printWriter.println("VOLUME_REGION " + vars[i].getName() + " " + vars[i].getDomain().getName());
+			printWriter.println("VOLUME_REGION " + varName + " " + domainName);
 		} else if (vars[i] instanceof MemVariable) {
 			MemVariable memVar = (MemVariable)vars[i];
 			if (mathDesc.isPDE(memVar)) {
-				printWriter.println("MEMBRANE_PDE " + memVar.getName() + " " + memVar.getDomain().getName() + " " + simSymbolTable.hasTimeVaryingDiffusionOrAdvection(memVar));
+				printWriter.println("MEMBRANE_PDE " + varName + " " + domainName + " " + simSymbolTable.hasTimeVaryingDiffusionOrAdvection(memVar));
 			} else {
-				printWriter.println("MEMBRANE_ODE " + memVar.getName() + " " + memVar.getDomain().getName());
+				printWriter.println("MEMBRANE_ODE " + varName + " " + domainName);
 			}
 		} else if (vars[i] instanceof MembraneRegionVariable) {
-			printWriter.println("MEMBRANE_REGION " + vars[i].getName() + " " + vars[i].getDomain().getName());
+			printWriter.println("MEMBRANE_REGION " + varName + " " + domainName);
 		} else if (vars[i] instanceof FilamentVariable) {
 			throw new RuntimeException("Filament application not supported yet");
 		}
