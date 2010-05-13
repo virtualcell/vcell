@@ -476,7 +476,10 @@ public MathModel getMathModelUnresolved(QueryHashtable dbc, User user, KeyValue 
 	try {
 		newMathModel.setMathDescription(mathDescription);
 		newMathModel.setSimulations(simArray);
-		newMathModel.getOutputFunctionContext().setOutputFunctionsList(mathModelMetaData.getOutputFunctions());
+		ArrayList<AnnotatedFunction> outputFunctions = mathModelMetaData.getOutputFunctions();
+		if (outputFunctions != null) {
+			newMathModel.getOutputFunctionContext().setOutputFunctions(outputFunctions);
+		}
 	}catch (java.beans.PropertyVetoException e){
 		throw new DataAccessException("PropertyVetoException caught "+e.getMessage());
 	}
@@ -1889,7 +1892,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 		for (int i = 0; i < mathModel.getNumSimulations(); i++){
 			updatedMathModel.addSimulation((Simulation)memoryToDatabaseHash.get(mathModel.getSimulations(i)));
 		}
-		updatedMathModel.getOutputFunctionContext().setOutputFunctionsList(mathModel.getOutputFunctionContext().getOutputFunctionsList());
+		updatedMathModel.getOutputFunctionContext().setOutputFunctions(mathModel.getOutputFunctionContext().getOutputFunctionsList());
 		mathModelXML = cbit.vcell.xml.XmlHelper.mathModelToXML(updatedMathModel);
 		dbServer.insertVersionableChildSummary(user,VersionableType.MathModelMetaData,updatedMathModel.getVersion().getVersionKey(),
 				updatedMathModel.createMathModelChildSummary().toDatabaseSerialization());
