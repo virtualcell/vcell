@@ -708,9 +708,7 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	ArrayList<AnnotatedFunction> outputFunctionList = ApplicationMathTable.table.getOutputFunctionsSimcontext(con, simContextKey);
 	if(outputFunctionList != null){
 		OutputFunctionContext outputFnContext = simContext.getOutputFunctionContext();
-		for (AnnotatedFunction outputFn : outputFunctionList) {
-			outputFnContext.addOutputFunction(outputFn);
-		}
+		outputFnContext.setOutputFunctions(outputFunctionList);
 	}
 	
 	BioEvent[] bioEvents = SimContextTable.table.getBioEvents(con, simContext);

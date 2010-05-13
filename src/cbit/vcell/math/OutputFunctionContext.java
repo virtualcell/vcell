@@ -13,12 +13,10 @@ import java.util.Vector;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
-import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
-import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -103,13 +101,16 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	}
 	
 	public void rebindAll() {
+		AnnotatedFunction func = null;
 		try {
 			for (int i = 0; i < outputFunctionsList.size(); i++) {
-				outputFunctionsList.get(i).getExpression().bindExpression(this);
+				func = outputFunctionsList.get(i);
+				func.getExpression().bindExpression(this);
 			}
 		} catch (ExpressionBindingException e) {
 			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException("Error parsing the following output function:\n\n" 
+					+ func.getName() + " = " + func.getExpression().infix() + "\n\n" + e.getMessage());
 		}
 	}
 
@@ -126,7 +127,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 
 		ArrayList<AnnotatedFunction> newFunctionsList = new ArrayList<AnnotatedFunction>(outputFunctionsList);
 		newFunctionsList.add(obsFunction);
-		setOutputFunctionsList(newFunctionsList);
+		setOutputFunctions0(newFunctionsList);
 	}   
 
 	public void removeOutputFunction(AnnotatedFunction obsFunction) throws PropertyVetoException {
@@ -136,7 +137,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		if (outputFunctionsList.contains(obsFunction)){
 			ArrayList<AnnotatedFunction> newFunctionsList = new ArrayList<AnnotatedFunction>(outputFunctionsList);
 			newFunctionsList.remove(obsFunction);
-			setOutputFunctionsList(newFunctionsList);
+			setOutputFunctions0(newFunctionsList);
 		}
 	}         
 
@@ -181,8 +182,8 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 								varTypes[i] = VariableType.getVariableType(var);
 							}
 							// check with flattened expression to find out the variable type of the new expression
-							Function flattenedFunctiion = new Function(function.getName(), newexp, function.getDomain());
-							newFuncType = SimulationSymbolTable.getFunctionVariableType(flattenedFunctiion, getSimulationOwner().getMathDescription(), symbols, varTypes, true);			
+							Function flattenedFunction = new Function(function.getName(), newexp, function.getDomain());
+							newFuncType = SimulationSymbolTable.getFunctionVariableType(flattenedFunction, getSimulationOwner().getMathDescription(), symbols, varTypes, true);			
 						}
 						AnnotatedFunction newFunc = new AnnotatedFunction(function.getName(), function.getExpression(), function.getDomain(), "", newFuncType, FunctionCategory.OUTPUTFUNCTION);
 						newFuncList.add(newFunc);
@@ -192,7 +193,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 					}
 				}
 				try {
-					setOutputFunctionsList(newFuncList);
+					setOutputFunctions0(newFuncList);
 				} catch (PropertyVetoException e) {					
 					e.printStackTrace();
 					throw new RuntimeException(e.getMessage());
@@ -201,11 +202,16 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		}
 	}
 	
-	public void setOutputFunctionsList(ArrayList<AnnotatedFunction> outputFunctions) throws java.beans.PropertyVetoException {
+	private void setOutputFunctions0(ArrayList<AnnotatedFunction> outputFunctions) throws java.beans.PropertyVetoException {
 		ArrayList<AnnotatedFunction> oldValue = outputFunctionsList;
 		fireVetoableChange("outputFunctions", oldValue, outputFunctions);
 		outputFunctionsList = outputFunctions;
 		firePropertyChange("outputFunctions", oldValue, outputFunctions);
+	}
+	
+	public void setOutputFunctions(ArrayList<AnnotatedFunction> outputFunctions) throws java.beans.PropertyVetoException {
+		setOutputFunctions0(outputFunctions);
+		rebindAll();		
 	}
 
 	/**
@@ -282,7 +288,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		if (evt.getSource() == this && evt.getPropertyName().equals("outputFunctions")){
 			ArrayList<AnnotatedFunction> newOutputFnsList = (ArrayList<AnnotatedFunction>)evt.getNewValue();
 			if(newOutputFnsList == null){
-				return;
+				throw new IllegalArgumentException("outputFunctions cannot be null");
 			}
 			//
 			// while adding a function: check that names are not duplicated and that no common names are mathSymbols
