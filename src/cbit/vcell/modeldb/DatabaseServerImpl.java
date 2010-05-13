@@ -377,7 +377,7 @@ public BioModelMetaData[] getBioModelMetaDatas(User user, boolean bAll) throws D
 public BigString getBioModelXML(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getBioModelXML(user="+user+", Key="+key+")");
-		return new BigString(serverDocumentManager.getBioModelXML(new QueryHashtable(), user, key,true));
+		return new BigString(serverDocumentManager.getBioModelXML(new QueryHashtable(), user, key, false));
 	} catch (ObjectNotFoundException e) {
 		log.exception(e);
 		throw new ObjectNotFoundException(e.getMessage());
@@ -595,7 +595,7 @@ public MathModelMetaData[] getMathModelMetaDatas(User user, boolean bAll) throws
 public BigString getMathModelXML(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getMathModelXML(user="+user+", Key="+key+")");
-		return new BigString(serverDocumentManager.getMathModelXML(new QueryHashtable(), user, key,true));
+		return new BigString(serverDocumentManager.getMathModelXML(new QueryHashtable(), user, key, false));
 	} catch (ObjectNotFoundException e) {
 		log.exception(e);
 		throw new ObjectNotFoundException(e.getMessage());
