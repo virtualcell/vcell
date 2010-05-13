@@ -122,6 +122,34 @@ public class ClientDocumentManager implements DocumentManager{
 	static final String FAIL_SAVE_MESSAGE = "Failed to save document. Possible reason :\n" +
 	"You are no longer connected to the server. Reconnect in order to save model.";
 
+	
+	
+	private class XMLHolder<T extends VCDocument> {
+		private String xmlString;
+		private T document;
+		
+		public XMLHolder(String xmlString){
+			this(xmlString, null);
+		}
+		
+		public XMLHolder(String xmlString, T document){
+			if (xmlString == null){
+				throw new IllegalArgumentException("xmlString cannot be null");
+			}
+			this.xmlString = xmlString;
+			this.document = document;
+		}
+		
+		public final String getXmlString() {
+			return xmlString;
+		}
+		public final T getDocument() {
+			return document;
+		}
+	}
+
+
+	
 /**
  * ClientDocumentManager constructor comment.
  */
@@ -739,25 +767,25 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
  * @return cbit.vcell.biomodel.BioModel
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  */
-public BioModel getBioModel(KeyValue bioModelKey) throws DataAccessException {
+	public BioModel getBioModel(KeyValue bioModelKey) throws DataAccessException {
 
-	String bioModelXML = getBioModelXML(bioModelKey);
+		XMLHolder<BioModel> bioModelXML = getBioModelXML(bioModelKey);
 
-	BioModel bioModel = getBioModelFromDatabaseXML(bioModelXML);
+		BioModel bioModel = getBioModelFromDatabaseXML(bioModelXML);
 
-	//
-	// preload SimulationJobStatus for all simulations if any missing from hash.
-	// 
-	Simulation simulations[] = bioModel.getSimulations();
-	KeyValue simKeys[] = new KeyValue[simulations.length];
-	for (int i = 0; i < simulations.length; i++){
-		VCSimulationIdentifier vcSimulationIdentifier = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-		simKeys[i] = vcSimulationIdentifier.getSimulationKey();
+		//
+		// preload SimulationJobStatus for all simulations if any missing from hash.
+		// 
+		Simulation simulations[] = bioModel.getSimulations();
+		KeyValue simKeys[] = new KeyValue[simulations.length];
+		for (int i = 0; i < simulations.length; i++){
+			VCSimulationIdentifier vcSimulationIdentifier = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+			simKeys[i] = vcSimulationIdentifier.getSimulationKey();
+		}
+		preloadSimulationStatus(simKeys);
+		
+		return bioModel;
 	}
-	preloadSimulationStatus(simKeys);
-	
-	return bioModel;
-}
 
 
 /**
@@ -771,17 +799,13 @@ public BioModel getBioModel(BioModelInfo bioModelInfo) throws DataAccessExceptio
 	return getBioModel(bioModelInfo.getVersion().getVersionKey());
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/22/2004 5:22:40 PM)
- * @return cbit.vcell.mathmodel.MathModel
- * @param mathModelXML java.lang.String
- */
-private BioModel getBioModelFromDatabaseXML(String bioModelXML) throws DataAccessException{
+private BioModel getBioModelFromDatabaseXML(XMLHolder<BioModel> bioModelXMLHolder) throws DataAccessException{
 
 	try{
-		BioModel bm = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
+		BioModel bm = bioModelXMLHolder.getDocument();
+		if (bm==null){
+			bm = XmlHelper.XMLToBioModel(new XMLSource(bioModelXMLHolder.getXmlString()));
+		}
 		cacheSimulations(bm.getSimulations());
 		// XmlHelper.XMLToBioModel() already calls BioModel.refreshDependencies()
 		//bm.refreshDependencies(); 
@@ -791,8 +815,6 @@ private BioModel getBioModelFromDatabaseXML(String bioModelXML) throws DataAcces
 		throw new DataAccessException(e.getMessage());
 	}
 }
-
-
 /**
  * Insert the method's description here.
  * Creation date: (11/14/00 2:50:07 PM)
@@ -851,7 +873,7 @@ public BioModelInfo[] getBioModelInfos() {
  * @param vType cbit.sql.VersionableType
  * @param vKey cbit.sql.KeyValue
  */
-private String getBioModelXML(KeyValue vKey) throws DataAccessException {
+private XMLHolder<BioModel> getBioModelXML(KeyValue vKey) throws DataAccessException {
 
 	try{
 		String xmlString = (String)xmlHash.get(vKey);
@@ -859,13 +881,15 @@ private String getBioModelXML(KeyValue vKey) throws DataAccessException {
 			BigString xmlBS = sessionManager.getUserMetaDbServer().getBioModelXML(vKey);
 			xmlString = (xmlBS != null?xmlBS.toString():null);
 			if(xmlString != null){
-				xmlHash.put(vKey,xmlString);
-				return xmlString;
+				BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(xmlString));
+				String newXmlString = XmlHelper.bioModelToXML(bioModel);
+				xmlHash.put(vKey,newXmlString);
+				return new XMLHolder<BioModel>(newXmlString,bioModel);
 			}else{
 				throw new RuntimeException("unexpected: UserMetaDbServer.getBioModelXML() returned null");
 			}
 		}else{
-			return xmlString;
+			return new XMLHolder<BioModel>(xmlString);
 		}
 	}catch (ObjectNotFoundException e){
 		throw new DataAccessException("BioModel (id=" + vKey + ") does not exist. It either " +
@@ -1188,7 +1212,7 @@ private String getImageXML(KeyValue vKey) throws DataAccessException {
  */
 public MathModel getMathModel(KeyValue mathModelKey) throws DataAccessException {
 
-	String mathModelXML = getMathModelXML(mathModelKey);
+	XMLHolder<MathModel> mathModelXML = getMathModelXML(mathModelKey);
 	MathModel mathModel = getMathModelFromDatabaseXML(mathModelXML);
 
 	//
@@ -1223,10 +1247,13 @@ public MathModel getMathModel(MathModelInfo mathModelInfo) throws DataAccessExce
  * @return cbit.vcell.mathmodel.MathModel
  * @param mathModelXML java.lang.String
  */
-private MathModel getMathModelFromDatabaseXML(String mathModelXML) throws DataAccessException{
+private MathModel getMathModelFromDatabaseXML(XMLHolder<MathModel> mathModelXML) throws DataAccessException{
 
 	try{
-		MathModel mm = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML));
+		MathModel mm = mathModelXML.getDocument();
+		if (mm==null){
+			mm = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.getXmlString()));
+		}
 		cacheSimulations(mm.getSimulations());
 		mm.refreshDependencies();
 
@@ -1309,20 +1336,22 @@ public MathModelInfo[] getMathModelInfos() {
  * @param vType cbit.sql.VersionableType
  * @param vKey cbit.sql.KeyValue
  */
-private String getMathModelXML(KeyValue vKey) throws DataAccessException {
+private XMLHolder<MathModel> getMathModelXML(KeyValue vKey) throws DataAccessException {
 
 	try{
 		String xmlString = (String)xmlHash.get(vKey);
 		if (xmlString==null){
 			xmlString = sessionManager.getUserMetaDbServer().getMathModelXML(vKey).toString();
 			if(xmlString != null){
-				xmlHash.put(vKey,xmlString);
-				return xmlString;
+				MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(xmlString));
+				String newXmlString = XmlHelper.mathModelToXML(mathModel);
+				xmlHash.put(vKey,newXmlString);
+				return new XMLHolder<MathModel>(newXmlString,mathModel);
 			}else{
 				throw new RuntimeException("unexpected: UserMetaDbServer.getMathModelXML() returned null");
 			}
 		}else{
-			return xmlString;
+			return new XMLHolder<MathModel>(xmlString);
 		}
 	}catch (ObjectNotFoundException e){
 		throw new DataAccessException("MathModel (id=" + vKey + ") does not exist. It either " +
@@ -1559,19 +1588,6 @@ public ReactionStepInfo[] getUserReactionStepInfos(KeyValue[] reactionStepKeys) 
 	}
 }
 
-
-public String getXML(BioModelInfo bmInfo) throws DataAccessException, XmlParseException{
-	return getBioModelXML(bmInfo.getVersion().getVersionKey()); // faster ... this is how it's cached.
-}
-
-
-public String getXML(MathModelInfo mmInfo) throws DataAccessException, XmlParseException{
-	
-	return getMathModelXML(mmInfo.getVersion().getVersionKey());
-	
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (11/14/00 5:24:29 PM)
@@ -1747,7 +1763,7 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
 		//
 		// compare saved and this bioModel
 		//
-		String savedBioModelXML = getBioModelXML(bioModel.getVersion().getVersionKey());
+		XMLHolder<BioModel> savedBioModelXML = getBioModelXML(bioModel.getVersion().getVersionKey());
 		if (savedBioModelXML == null){
 			// must have been deleted
 			return true;
@@ -1757,13 +1773,16 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
 				bioModelXML = XmlHelper.bioModelToXML(bioModel);
 			}
 			// compare everything except vcmetadata
-			if (!VCMLComparator.compareEquals(savedBioModelXML,bioModelXML, true)){
+			if (!VCMLComparator.compareEquals(savedBioModelXML.getXmlString(),bioModelXML, true)){
 				return true;
 			}
 			//
 			// compare vcmetadata
 			//
-			BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(savedBioModelXML));
+			BioModel savedBioModel = savedBioModelXML.getDocument();
+			if (savedBioModel==null){
+				savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(savedBioModelXML.getXmlString()));
+			}
 			if (!savedBioModel.getVCMetaData().compareEquals(bioModel.getVCMetaData())) {
 				return true;
 			}
@@ -1894,7 +1913,7 @@ public boolean isChanged(MathModel mathModel, String mathModelXML) throws DataAc
 		//
 		// compare saved and this bioModel
 		//
-		String savedMathModelXML = getMathModelXML(mathModel.getVersion().getVersionKey());
+		XMLHolder<MathModel> savedMathModelXML = getMathModelXML(mathModel.getVersion().getVersionKey());
 		if (savedMathModelXML == null){
 			// must have been deleted
 			return true;
@@ -1903,7 +1922,7 @@ public boolean isChanged(MathModel mathModel, String mathModelXML) throws DataAc
 			if (mathModelXML==null){
 				mathModelXML = XmlHelper.mathModelToXML(mathModel);
 			}
-			if (VCMLComparator.compareEquals(savedMathModelXML,mathModelXML, false)){
+			if (VCMLComparator.compareEquals(savedMathModelXML.getXmlString(),mathModelXML, false)){
 				return false;
 			}else{
 				return true;
@@ -2366,7 +2385,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 		
 		String savedBioModelXML = sessionManager.getUserMetaDbServer().saveBioModel(new BigString(bioModelXML),independentSims).toString();
 
-		BioModel savedBioModel = getBioModelFromDatabaseXML(savedBioModelXML);
+		BioModel savedBioModel = getBioModelFromDatabaseXML(new XMLHolder<BioModel>(savedBioModelXML));
 		
 		KeyValue savedKey = savedBioModel.getVersion().getVersionKey();
 
@@ -2448,7 +2467,7 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 			
 		String savedMathModelXML = sessionManager.getUserMetaDbServer().saveMathModel(new BigString(mathModelXML),independentSims).toString();
 
-		MathModel savedMathModel = getMathModelFromDatabaseXML(savedMathModelXML);
+		MathModel savedMathModel = getMathModelFromDatabaseXML(new XMLHolder<MathModel>(savedMathModelXML));
 		
 		KeyValue savedKey = savedMathModel.getVersion().getVersionKey();
 
@@ -2566,7 +2585,7 @@ public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String in
 
 		String savedBioModelXML = sessionManager.getUserMetaDbServer().saveBioModelAs(new BigString(bioModelXML), newName, independentSims).toString();
 
-		BioModel savedBioModel = getBioModelFromDatabaseXML(savedBioModelXML);		
+		BioModel savedBioModel = getBioModelFromDatabaseXML(new XMLHolder<BioModel>(savedBioModelXML));		
 		
 		KeyValue savedKey = savedBioModel.getVersion().getVersionKey();
 
@@ -2653,7 +2672,7 @@ public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String
 
 		String savedMathModelXML = sessionManager.getUserMetaDbServer().saveMathModelAs(new BigString(mathModelXML), newName, independentSims).toString();
 
-		MathModel savedMathModel = getMathModelFromDatabaseXML(savedMathModelXML);
+		MathModel savedMathModel = getMathModelFromDatabaseXML(new XMLHolder<MathModel>(savedMathModelXML));
 		
 		KeyValue savedKey = savedMathModel.getVersion().getVersionKey();
 

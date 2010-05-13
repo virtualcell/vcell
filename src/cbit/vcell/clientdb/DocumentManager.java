@@ -372,15 +372,7 @@ public ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec react
 public ReactionStepInfo[] getUserReactionStepInfos(KeyValue reactionStepKeys[]) throws DataAccessException;
 
 
-	public String getXML(BioModelInfo bmInfo) throws DataAccessException, java.rmi.RemoteException, XmlParseException;
-
-
-
-	public String getXML(MathModelInfo mmInfo) throws DataAccessException, java.rmi.RemoteException, XmlParseException;
-
-
-
-/**
+	/**
  * Insert the method's description here.
  * Creation date: (10/28/00 12:07:09 AM)
  *
