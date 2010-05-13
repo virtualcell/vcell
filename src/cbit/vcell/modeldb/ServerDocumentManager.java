@@ -256,7 +256,7 @@ private void forceDirtyIfForeign(User user,Versionable versionable) {
 //
 // this returns a BioModel that contains multiple instances of objects.
 // 
-private String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioModelKey) throws DataAccessException, XmlParseException, java.sql.SQLException {
+public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioModelKey) throws DataAccessException, XmlParseException, java.sql.SQLException {
 	
 	//
 	// get meta data associated with BioModel
@@ -366,13 +366,23 @@ private String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bio
  * @param vType cbit.sql.VersionableType
  * @param vKey cbit.sql.KeyValue
  */
-public String getBioModelXML(QueryHashtable dbc, User user, KeyValue bioModelKey) throws DataAccessException {
+public String getBioModelXML(QueryHashtable dbc, User user, KeyValue bioModelKey,boolean bRegenerateXML) throws DataAccessException {
 	String bioModelXML = null;
 	
 	try {
 		bioModelXML = dbServer.getDBTopLevel().getBioModelXML(user,bioModelKey,true);
 		if (bioModelXML != null){
-			return bioModelXML;
+			if(bRegenerateXML){
+				try {
+					BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
+					return cbit.vcell.xml.XmlHelper.bioModelToXML(bioModel);
+				} catch (XmlParseException e) {
+					e.printStackTrace();
+					throw new DataAccessException(e.getMessage(),e);
+				}
+			}else{
+				return bioModelXML;
+			}
 		}
 	} catch (java.sql.SQLException e) {
 		e.printStackTrace(System.out);
@@ -497,13 +507,23 @@ public MathModel getMathModelUnresolved(QueryHashtable dbc, User user, KeyValue 
  * @param vType cbit.sql.VersionableType
  * @param vKey cbit.sql.KeyValue
  */
-public String getMathModelXML(QueryHashtable dbc, User user, KeyValue mathModelKey) throws DataAccessException {
+public String getMathModelXML(QueryHashtable dbc, User user, KeyValue mathModelKey,boolean bRegenerateXML) throws DataAccessException {
 	String mathModelXML = null;
 	
 	try {
 		mathModelXML = dbServer.getDBTopLevel().getMathModelXML(user,mathModelKey,true);
 		if (mathModelXML != null){
-			return mathModelXML;
+			if(bRegenerateXML){
+				try {
+					MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML));
+					return cbit.vcell.xml.XmlHelper.mathModelToXML(mathModel);
+				} catch (XmlParseException e) {
+					e.printStackTrace();
+					throw new DataAccessException(e.getMessage(),e);
+				}
+			}else{
+				return mathModelXML;
+			}
 		}
 	} catch (java.sql.SQLException e) {
 		e.printStackTrace(System.out);
@@ -728,7 +748,7 @@ long start = System.currentTimeMillis();
 
 	BioModel origBioModel = null;
 	if (oldVersion!=null){
-		String origBioModelXML = getBioModelXML(dbc, user,oldVersion.getVersionKey());
+		String origBioModelXML = getBioModelXML(dbc, user,oldVersion.getVersionKey(),false);
 		origBioModel = XmlHelper.XMLToBioModel(new XMLSource(origBioModelXML));
 	}
 
@@ -1497,7 +1517,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 
 	MathModel origMathModel = null;
 	if (oldVersion!=null){
-		String origMathModelXML = getMathModelXML(dbc, user,oldVersion.getVersionKey());
+		String origMathModelXML = getMathModelXML(dbc, user,oldVersion.getVersionKey(),false);
 		origMathModel = XmlHelper.XMLToMathModel(new XMLSource(origMathModelXML));
 	}
 
