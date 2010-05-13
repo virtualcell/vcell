@@ -169,7 +169,7 @@ public VCRoundTripTest(String fName, String userName, String testType, String mo
 		Element root = new Xmlproducer(true).getXML(bm); 
 		String unresolvedXML = XmlUtil.xmlToString(root);
 		//String cachedXML = dbImpl.getServerDocumentManager().getBioModelXMLResolved(user, bmMeta.getVersion().getVersionKey());
-		String cachedXML = dbImpl.getServerDocumentManager().getBioModelXML(new QueryHashtable(), user, bmMeta.getVersion().getVersionKey());
+		String cachedXML = dbImpl.getServerDocumentManager().getBioModelXML(new QueryHashtable(), user, bmMeta.getVersion().getVersionKey(),false);
 		if (cachedXML == null) {
 			ps.println("No cached copy yet of model: " + bmMeta);
 		} else {
@@ -388,7 +388,7 @@ private void scanBio(User user, String modelKeyValue, BioModelMetaData bmMeta []
 		//Load the biomodel from DB
 		BioModel bm = null;
 		try {
-			String dbXML = dbImpl.getServerDocumentManager().getBioModelXML(new QueryHashtable(), user, bmMeta[i].getVersion().getVersionKey());
+			String dbXML = dbImpl.getServerDocumentManager().getBioModelXML(new QueryHashtable(), user, bmMeta[i].getVersion().getVersionKey(),false);
 			bm = XmlHelper.XMLToBioModel(new XMLSource(dbXML));
 			//compareBioWithCached(bm, user, bmMeta[i]);                                   //temporary?
 		} catch (Exception e) {
