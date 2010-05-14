@@ -2,14 +2,17 @@ package cbit.vcell.client.task;
 
 
 import java.util.Hashtable;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.Version;
+
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.clientdb.DocumentManager;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.VCDocument;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
@@ -46,12 +49,17 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		}
 	}
 	boolean isChanged = true;
-	try {
-		isChanged = documentManager.isChanged(documentWindowManager.getVCDocument());
-	} catch (DataAccessException exc) {
-		String choice = PopupGenerator.showWarningDialog(documentWindowManager, documentWindowManager.getUserPreferences(), UserMessage.warn_UnableToCheckForChanges,null);
-		if (!choice.equals(UserMessage.OPTION_CONTINUE)){
-			throw UserCancelException.WARN_UNABLE_CHECK;
+	Version v = documentWindowManager.getVCDocument().getVersion();
+	if (v == null || !v.getOwner().equals(documentManager.getSessionManager().getUser())){
+		isChanged = true;
+	} else {
+		try {
+			isChanged = documentManager.isChanged(documentWindowManager.getVCDocument());
+		} catch (DataAccessException exc) {
+			String choice = PopupGenerator.showWarningDialog(documentWindowManager, documentWindowManager.getUserPreferences(), UserMessage.warn_UnableToCheckForChanges,null);
+			if (!choice.equals(UserMessage.OPTION_CONTINUE)){
+				throw UserCancelException.WARN_UNABLE_CHECK;
+			}
 		}
 	}
 	if (! isChanged) {

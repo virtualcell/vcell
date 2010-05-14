@@ -1746,7 +1746,8 @@ public boolean isChanged(VCImage vcImage, String vcImageXML) throws DataAccessEx
  */
 public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAccessException {
 
-	if(isChangedVersion(bioModel.getVersion())){
+	if(bioModel.getVersion() == null){ 
+		// if owner is not the user, if no changes were made, isChanged=false
 		//
 		// never been saved before (has changed with respect to database)
 		//
@@ -1873,7 +1874,7 @@ public boolean isChanged(Geometry geometry, String geometryXML) throws DataAcces
  */
 public boolean isChanged(MathModel mathModel, String mathModelXML) throws DataAccessException {
 
-	if(isChangedVersion(mathModel.getVersion())){
+	if(mathModel.getVersion() == null){
 		//
 		// never been saved before (has changed with respect to database)
 		//
