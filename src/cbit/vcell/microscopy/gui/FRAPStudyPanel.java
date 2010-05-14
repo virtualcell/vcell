@@ -852,44 +852,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			cursorsForROIsHash.put(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name(), FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BACKGROUNDROI]);
 			frapDataPanel.getOverlayEditorPanelJAI().setCursorsForROIs(cursorsForROIsHash);
 			
-			VFrap_OverlayEditorPanelJAI.CustomROIImport importVFRAPROI = new VFrap_OverlayEditorPanelJAI.CustomROIImport(){
-				public boolean importROI(File inputFile) throws Exception{
-					try{
-						if(!VirtualFrapLoader.filter_vfrap.accept(inputFile)){
-							return false;
-						}
-						String xmlString = XmlUtil.getXMLString(inputFile.getAbsolutePath());
-						MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
-
-						FRAPStudy importedFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),null);
-						VirtualFrapMainFrame.updateProgress(0);
-						ROI roi = getFrapWorkspace().getWorkingFrapStudy().getFrapData().getCurrentlyDisplayedROI();
-						ROI[] importedROIs = importedFrapStudy.getFrapData().getRois();
-						if(importedFrapStudy.getFrapData() != null && importedROIs != null){
-							if(!importedROIs[0].getISize().compareEqual(roi.getISize())){
-								throw new Exception(
-										"Imported ROI mask size ("+
-										importedROIs[0].getISize().getX()+","+
-										importedROIs[0].getISize().getY()+","+
-										importedROIs[0].getISize().getZ()+")"+
-										" does not match current Frap DataSet size ("+
-										roi.getISize().getX()+","+
-										roi.getISize().getY()+","+
-										roi.getISize().getZ()+
-										")");
-							}
-							for (int i = 0; i < importedROIs.length; i++) {
-								getFrapWorkspace().getWorkingFrapStudy().getFrapData().addReplaceRoi(importedROIs[i]);
-							}
-							undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
-						}
-						return true;
-					} catch (Exception e1) {
-						throw new Exception("VFRAP ROI Import - "+e1.getMessage());
-					}
-				}
-			};
-			frapDataPanel.getOverlayEditorPanelJAI().setCustomROIImport(importVFRAPROI);
 			//set display mode
 			frapDataPanel.adjustComponents(VFrap_OverlayEditorPanelJAI.DISPLAY_WITH_ROIS);
 		}
@@ -1509,7 +1471,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				String[] variableNames = new String[]{NORM_FLUOR_VAR, NORM_SIM_VAR};
 				VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
 						
-				int endTimeIndex = (int)Math.round(sim.getSolverTaskDescription().getTimeBounds().getEndingTime()/((UniformOutputTimeSpec)sim.getSolverTaskDescription().getOutputTimeSpec()).getOutputTimeStep());
+//				int endTimeIndex = (int)Math.round(sim.getSolverTaskDescription().getTimeBounds().getEndingTime()/((UniformOutputTimeSpec)sim.getSolverTaskDescription().getOutputTimeSpec()).getOutputTimeStep());
+				int endTimeIndex = getFRAPSimDataViewerPanel().getOriginalDataViewer().getPdeDataContext().getTimePoints().length - 1;
 				TimeSpecs timeSpecs = new TimeSpecs(0, endTimeIndex, pdeDataContext.getTimePoints(), ExportConstants.TIME_RANGE);
 				int geoMode = ExportConstants.GEOMETRY_SLICE;
 				GeometrySpecs geometrySpecs = new GeometrySpecs(null, Coordinate.Z_AXIS, 0, geoMode);

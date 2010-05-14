@@ -227,7 +227,44 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 				}
 			}
 		);
-		
+		VFrap_OverlayEditorPanelJAI.CustomROIImport importVFRAPROI = new VFrap_OverlayEditorPanelJAI.CustomROIImport(){
+			public boolean importROI(File inputFile) throws Exception{
+				try{
+					if(!VirtualFrapLoader.filter_vfrap.accept(inputFile)){
+						return false;
+					}
+					String xmlString = XmlUtil.getXMLString(inputFile.getAbsolutePath());
+					MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+
+					FRAPStudy importedFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),null);
+					VirtualFrapMainFrame.updateProgress(0);
+					ROI roi = getFrapWorkspace().getWorkingFrapStudy().getFrapData().getCurrentlyDisplayedROI();
+					ROI[] importedROIs = importedFrapStudy.getFrapData().getRois();
+					if(importedFrapStudy.getFrapData() != null && importedROIs != null){
+						if(!importedROIs[0].getISize().compareEqual(roi.getISize())){
+							throw new Exception(
+									"Imported ROI mask size ("+
+									importedROIs[0].getISize().getX()+","+
+									importedROIs[0].getISize().getY()+","+
+									importedROIs[0].getISize().getZ()+")"+
+									" does not match current Frap DataSet size ("+
+									roi.getISize().getX()+","+
+									roi.getISize().getY()+","+
+									roi.getISize().getZ()+
+									")");
+						}
+						for (int i = 0; i < importedROIs.length; i++) {
+							getFrapWorkspace().getWorkingFrapStudy().getFrapData().addReplaceRoi(importedROIs[i]);
+						}
+//						undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
+					}
+					return true;
+				} catch (Exception e1) {
+					throw new Exception("VFRAP ROI Import - "+e1.getMessage());
+				}
+			}
+		};
+		getOverlayEditorPanelJAI().setCustomROIImport(importVFRAPROI);
 	}
 	
 //	public void setCurrentROI(String roiName)

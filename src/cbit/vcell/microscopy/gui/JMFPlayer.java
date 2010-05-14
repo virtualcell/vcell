@@ -208,7 +208,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 		// add movie player in the center
 		JMFPlayer jp = new JMFPlayer(dialog, urlStr, fileStr);
 		dialog.getContentPane().add(jp, BorderLayout.CENTER);
-		dialog.setSize(250,450);
+		dialog.setSize(250,500);
 		dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		ZEnforcer.showModalDialogOnTop(dialog, parent);
 		// frame.addWindowListener(new WindowAdapter(){
