@@ -121,6 +121,7 @@ import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
@@ -1508,7 +1509,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				String[] variableNames = new String[]{NORM_FLUOR_VAR, NORM_SIM_VAR};
 				VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
 						
-				int endTimeIndex = (int)Math.round(sim.getSolverTaskDescription().getTimeBounds().getEndingTime()/sim.getSolverTaskDescription().getTimeStep().getDefaultTimeStep());
+				int endTimeIndex = (int)Math.round(sim.getSolverTaskDescription().getTimeBounds().getEndingTime()/((UniformOutputTimeSpec)sim.getSolverTaskDescription().getOutputTimeSpec()).getOutputTimeStep());
 				TimeSpecs timeSpecs = new TimeSpecs(0, endTimeIndex, pdeDataContext.getTimePoints(), ExportConstants.TIME_RANGE);
 				int geoMode = ExportConstants.GEOMETRY_SLICE;
 				GeometrySpecs geometrySpecs = new GeometrySpecs(null, Coordinate.Z_AXIS, 0, geoMode);
