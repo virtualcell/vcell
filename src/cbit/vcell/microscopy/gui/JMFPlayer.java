@@ -61,6 +61,8 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 
 	JButton saveButton2 = null;
 
+	private JPanel playerPanel;
+
 	/** Construct the player object and the GUI. */
 	public JMFPlayer(JDialog pf, String mediaName, String fileStr) {
 		super();
@@ -104,7 +106,8 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 
 		add(infoPanel, BorderLayout.NORTH);
 
-		JPanel playerPanel = new JPanel();
+		playerPanel = new JPanel();
+		
 		playerPanel.setLayout(new BorderLayout());
 		try {
 			theURL = new URL(getClass().getResource("."), mediaName);
@@ -175,9 +178,9 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 	public synchronized void controllerUpdate(ControllerEvent event) {
 		if (event instanceof RealizeCompleteEvent) {
 			if ((visualComponent = thePlayer.getVisualComponent()) != null)
-				add(BorderLayout.CENTER, visualComponent);
+				playerPanel.add(BorderLayout.CENTER, visualComponent);
 			if ((controlComponent = thePlayer.getControlPanelComponent()) != null)
-				add(BorderLayout.SOUTH, controlComponent);
+				playerPanel.add(BorderLayout.SOUTH, controlComponent);
 			// re-size the main window
 			if (parentFrame != null) {
 				try {
@@ -205,9 +208,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 		// add movie player in the center
 		JMFPlayer jp = new JMFPlayer(dialog, urlStr, fileStr);
 		dialog.getContentPane().add(jp, BorderLayout.CENTER);
-		dialog.setLocation(
-				(Toolkit.getDefaultToolkit().getScreenSize().width - 200) / 2,
-				(Toolkit.getDefaultToolkit().getScreenSize().height - 220) / 2);
+		dialog.setSize(250,450);
 		dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		ZEnforcer.showModalDialogOnTop(dialog, parent);
 		// frame.addWindowListener(new WindowAdapter(){

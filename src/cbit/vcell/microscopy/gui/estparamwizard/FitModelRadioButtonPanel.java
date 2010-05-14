@@ -15,7 +15,7 @@ public class FitModelRadioButtonPanel extends JPanel
 {
 	private JRadioButton diffOneRadioButton = null;
 	private JRadioButton diffTwoRadioButton = null;
-	private JRadioButton diffBindingRadioButton = null;
+//	private JRadioButton diffBindingRadioButton = null;
 	
 	public FitModelRadioButtonPanel() {
 		super();
@@ -44,20 +44,20 @@ public class FitModelRadioButtonPanel extends JPanel
 		gridBagConstraints_1.gridx = 0;
 		add(diffTwoRadioButton, gridBagConstraints_1);
 
-		diffBindingRadioButton = new JRadioButton();
-//		diffBindingRadioButton.setBackground(Color.white);
-		diffBindingRadioButton.setText("Diffusion plus Binding");
-		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
-		gridBagConstraints_2.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_2.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_2.gridy = 2;
-		gridBagConstraints_2.gridx = 0;
-		add(diffBindingRadioButton, gridBagConstraints_2);
+//		diffBindingRadioButton = new JRadioButton();
+////		diffBindingRadioButton.setBackground(Color.white);
+//		diffBindingRadioButton.setText("Diffusion plus Binding");
+//		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
+//		gridBagConstraints_2.fill = GridBagConstraints.HORIZONTAL;
+//		gridBagConstraints_2.anchor = GridBagConstraints.WEST;
+//		gridBagConstraints_2.gridy = 2;
+//		gridBagConstraints_2.gridx = 0;
+//		add(diffBindingRadioButton, gridBagConstraints_2);
 		
 		ButtonGroup bg = new ButtonGroup();
 		bg.add(diffOneRadioButton);
 		bg.add(diffTwoRadioButton);
-		bg.add(diffBindingRadioButton);
+//		bg.add(diffBindingRadioButton);
 		
 	}
 
@@ -71,11 +71,10 @@ public class FitModelRadioButtonPanel extends JPanel
 		{
 			diffTwoRadioButton.setSelected(true);
 		}
-		else if(bestModel == FRAPModel.IDX_MODEL_DIFF_BINDING)
-		{
-			diffBindingRadioButton.setSelected(true);
-		}
-			
+//		else if(bestModel == FRAPModel.IDX_MODEL_DIFF_BINDING)
+//		{
+//			diffBindingRadioButton.setSelected(true);
+//		}
 	}
 	
 	public int getBestModelIndex()
@@ -98,7 +97,7 @@ public class FitModelRadioButtonPanel extends JPanel
 	{
 		diffOneRadioButton.setEnabled(false);
 		diffTwoRadioButton.setEnabled(false);
-		diffBindingRadioButton.setEnabled(false);
+//		diffBindingRadioButton.setEnabled(false);
 	}
 	
 	public void enableRadioButton(int modelIdx)
@@ -111,9 +110,9 @@ public class FitModelRadioButtonPanel extends JPanel
 		{
 			diffTwoRadioButton.setEnabled(true);
 		}
-		else if(modelIdx == FRAPModel.IDX_MODEL_DIFF_BINDING)
-		{
-			diffBindingRadioButton.setEnabled(true);
-		}
+//		else if(modelIdx == FRAPModel.IDX_MODEL_DIFF_BINDING)
+//		{
+//			diffBindingRadioButton.setEnabled(true);
+//		}
 	}
 }

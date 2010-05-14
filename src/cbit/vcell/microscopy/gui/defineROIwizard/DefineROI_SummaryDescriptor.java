@@ -98,7 +98,7 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
 								" and " + "x="+distinctCellAreaLocations[1].x+",y="+distinctCellAreaLocations[1].y+"\n"+
 								"Use ROI editing tools to define a single continuous CELL ROI");				
 					}
-					if(fStudy.getFrapData().checkROIConstraints(imgPanel))
+					if(!fStudy.getFrapData().checkROIConstraints(imgPanel))
 					{
 						fStudy.setStartingIndexForRecovery(startIndex);
 						getFrapWorkspace().setFrapStudy(fStudy, true);
