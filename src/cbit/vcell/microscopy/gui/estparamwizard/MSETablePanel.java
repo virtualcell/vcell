@@ -38,7 +38,7 @@ public class MSETablePanel extends JPanel
 
         JLabel headingLabel = new JLabel("Models under Selected ROIs");
         headingLabel.setFont(/*((Font)VirtualFrapLoader.loadProperty("report.table.subheading.font"))*/new Font("Tahoma", Font.BOLD, 11));
-        hypDetail = new HyperLinkLabel("Detail", new HyperLinkListener(), 0);
+        hypDetail = new HyperLinkLabel("Less Detail", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
 //
         lessLable = new JLabel("3 Models");
@@ -71,6 +71,8 @@ public class MSETablePanel extends JPanel
         add(lessLable, gc3);
         //create table model
         mseTableModel = new MSETableModel();
+        //by default, expend this table
+        setDetail(true);
    }
 
 

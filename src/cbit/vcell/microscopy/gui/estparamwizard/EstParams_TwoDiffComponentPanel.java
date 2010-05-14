@@ -166,25 +166,25 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		gbc_showRoisButton.gridy = 0;
 		panel_3.add(showRoisButton, gbc_showRoisButton);
 
-		appParamButton = new JButton("Apply Batch Run Parmas");
-		appParamButton.setFont(new Font("", Font.PLAIN, 11));
-		appParamButton.setMargin(new Insets(0, 8, 0, 8));
-		final GridBagConstraints gridBagConstraints_appParam = new GridBagConstraints();
-		gridBagConstraints_appParam.gridy = 0;
-		gridBagConstraints_appParam.gridx = 4;
-		panel_3.add(appParamButton, gridBagConstraints_appParam);
-		appParamButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				File inputFile = null;
-	  			int option = VirtualFrapLoader.openVFRAPBatchRunChooser.showOpenDialog(EstParams_TwoDiffComponentPanel.this);
-	  			if (option == JFileChooser.APPROVE_OPTION){
-	  				inputFile = VirtualFrapLoader.openVFRAPBatchRunChooser.getSelectedFile();
-	  				loadBatchRunParameters(inputFile);
-	  			}else{
-	  				return;
-	  			}
-			}
-		});
+//		appParamButton = new JButton("Apply Batch Run Parmas");
+//		appParamButton.setFont(new Font("", Font.PLAIN, 11));
+//		appParamButton.setMargin(new Insets(0, 8, 0, 8));
+//		final GridBagConstraints gridBagConstraints_appParam = new GridBagConstraints();
+//		gridBagConstraints_appParam.gridy = 0;
+//		gridBagConstraints_appParam.gridx = 4;
+//		panel_3.add(appParamButton, gridBagConstraints_appParam);
+//		appParamButton.addActionListener(new ActionListener() {
+//			public void actionPerformed(final ActionEvent e) {
+//				File inputFile = null;
+//	  			int option = VirtualFrapLoader.openVFRAPBatchRunChooser.showOpenDialog(EstParams_TwoDiffComponentPanel.this);
+//	  			if (option == JFileChooser.APPROVE_OPTION){
+//	  				inputFile = VirtualFrapLoader.openVFRAPBatchRunChooser.getSelectedFile();
+//	  				loadBatchRunParameters(inputFile);
+//	  			}else{
+//	  				return;
+//	  			}
+//			}
+//		});
 		
 		final JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(Color.black, 1, false));

@@ -534,8 +534,8 @@ public class VirtualFrapMainFrame extends JFrame
     mPreference.addActionListener(menuHandler);
     toolsMenu.add(mPreference);
     
-    mBatchRun.addActionListener(menuHandler);
-    toolsMenu.add(mBatchRun);
+   /* mBatchRun.addActionListener(menuHandler);
+    toolsMenu.add(mBatchRun);*/
     
     //Help Menu
     JMenu helpMenu =new JMenu("Help");
