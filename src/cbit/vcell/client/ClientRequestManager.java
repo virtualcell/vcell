@@ -433,7 +433,7 @@ public boolean closeWindow(final java.lang.String windowID, final boolean exitIf
 				@Override
 				public boolean skipIfCancel(UserCancelException exc) {
 					// if save as new edition, don't skip
-					if (exc == UserCancelException.CANCEL_DELETE_OLD) {
+					if (exc == UserCancelException.CANCEL_DELETE_OLD || exc == UserCancelException.CANCEL_NEW_NAME) {
 						return false;
 					} else {
 						return true;
