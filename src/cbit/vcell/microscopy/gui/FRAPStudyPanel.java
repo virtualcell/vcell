@@ -239,6 +239,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			  	   					getAnalysisProcedurePanel().setWorkFlowStage(AnalysisProcedurePanel.STAGE_DEFINE_ROIS);
 			  	   					//set need save flag
 			  	   					getFrapWorkspace().getWorkingFrapStudy().setSaveNeeded(true);
+			  	   					//clear movie buffer
+			  	   					clearMovieBuffer();
 			  	   				}
 		  	    			}
 		  	    		};
@@ -1311,6 +1313,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				VirtualFrapLoader.mf.setMainFrameTitle(fName);
 				VirtualFrapMainFrame.updateStatus("Loaded " + fName);
 	            VirtualFrapMainFrame.updateProgress(0);
+	            //clear movie buffer
+ 				clearMovieBuffer();
 			}
 		};
 		totalTasks.add(updateUIAfterLoadingTask);
@@ -1457,6 +1461,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		
 		//dispatch
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask1, runOptTask, showDialogTask, updateSaveStatusTask}, false);
+	}
+	
+	public void clearMovieBuffer()
+	{
+		movieURLString = null;
+		movieFileString = null;
 	}
 	
 	private void showMovie()
