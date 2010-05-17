@@ -55,9 +55,12 @@ public static String fixTokenStrict(String name) {
  * @return java.lang.String
  */
 public static String fixTokenStrict(String name, int maxLength) {
+	if (name == null) {
+		return ""; 
+	}
 	String string = name.trim();
-	if (string==null){ 
-		return "";
+	if (string.length() == 0){ 
+		return string;
 	}
 	StringBuffer newString = new StringBuffer(string);
 	if (!Character.isLetter(newString.charAt(0)) && newString.charAt(0)!='_'){

@@ -12,7 +12,9 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -309,7 +311,7 @@ public SymbolTableEntry getEntry(String identifier) {
 		return entry;
 	}
 
-	if (identifier.endsWith("_OUTSIDE") || identifier.endsWith("_INSIDE")){
+	if (identifier.endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX) || identifier.endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
 		int index = identifier.lastIndexOf("_");		
 		String realvar = identifier.substring(0, index);
 		DataSetIdentifier dsi = getDataSetIdentifier(realvar);
