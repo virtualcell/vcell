@@ -5,32 +5,51 @@ package cbit.vcell.simdata;
  * All rights reserved.
 ©*/
 
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
-import cbit.vcell.solver.ode.ODESimData;
-import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.field.SimResampleInfoProvider;
-import cbit.vcell.math.*;
-import cbit.vcell.math.Variable.Domain;
-
-import java.io.*;
-import java.util.*;
-
-import cbit.vcell.solvers.*;
-import cbit.vcell.parser.*;
-
-import java.util.zip.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDataIdentifier;
+
+import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.SimResampleInfoProvider;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.parser.ASTFuncNode;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
+import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.FunctionFileGenerator;
+import cbit.vcell.solvers.LocalSolverController;
 /**
  * This type was created in VisualAge.
  */
@@ -392,9 +411,10 @@ public SimulationData.DataMoverThread getDataMover() {
  * @param identifier java.lang.String
  */
 private DataSetIdentifier getDataSetIdentifier(String identifier) {
+	String varName = Variable.getNameFromCombinedIdentifier(identifier);
 	for (int i = 0; i < dataSetIdentifierList.size();i ++){
 		DataSetIdentifier dsi = (DataSetIdentifier)dataSetIdentifierList.elementAt(i);
-		if (dsi.getName().equals(identifier)){
+		if (dsi.getName().equals(varName)){
 			return dsi;
 		}
 	}
@@ -1009,6 +1029,10 @@ synchronized double[][][] getSimDataTimeSeries0(
 		ex.printStackTrace(System.out);
 	}
 
+	String varNamesInDataSet[] = new String[varNames.length];
+	for (int i = 0; i < varNamesInDataSet.length; i++) {
+		varNamesInDataSet[i] = getDataSetIdentifier(varNames[i]).getQualifiedName();
+	}
 	// Setup parameters for SimDataReader
 	int resultsCounter = 0;
 	for(int i=0;i<wantsThisTime.length;i+= 1){
@@ -1041,7 +1065,7 @@ synchronized double[][][] getSimDataTimeSeries0(
 	double[][][] results = new double[resultsCounter][][];
 
 	for(int i=0;i<results.length;i+= 1){
-		results[i] = new double[varNames.length][];
+		results[i] = new double[varNamesInDataSet.length][];
 		for(int j=0;j<results[i].length;j+= 1){
 			if(spatialStatsInfo != null){
 				results[i][j] = new double[NUM_STATS];//min,max.mean,wmean
@@ -1052,7 +1076,7 @@ synchronized double[][][] getSimDataTimeSeries0(
 	}
 
 	
-	double[][] singleTimePointResultsBuffer = new double[varNames.length][];
+	double[][] singleTimePointResultsBuffer = new double[varNamesInDataSet.length][];
 	for(int i=0;i<singleTimePointResultsBuffer.length;i+= 1){
 		singleTimePointResultsBuffer[i] = new double[indexes[i].length];
 	}
@@ -1076,7 +1100,7 @@ synchronized double[][][] getSimDataTimeSeries0(
 				tempDataTimes,
 				tempZipFileNames,
 				tempSimDataFileNames,
-				varNames,
+				varNamesInDataSet,
 				indexes
 			);
 		int counter = 0;
@@ -1085,7 +1109,7 @@ synchronized double[][][] getSimDataTimeSeries0(
 			sdr.getNextDataAtCurrentTime(singleTimePointResultsBuffer);
 			// Copy data to timeSeries format
 			if(wantsThisTime[counter]){
-				for(int i=0;i<varNames.length;i+= 1){
+				for(int i=0;i<varNamesInDataSet.length;i+= 1){
 					if(spatialStatsInfo != null){
 						results[progressCounter][i] = calcSpaceStats(singleTimePointResultsBuffer[i],i,spatialStatsInfo);
 					}else{
