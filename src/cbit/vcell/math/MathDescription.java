@@ -196,11 +196,11 @@ private void addVariable0(Variable var) throws MathException, ExpressionBindingE
 		//
 		// for Volume Variables, also create an InsideVariable and an OutsideVariable for use in JumpConditions
 		//
-		InsideVariable inVar = new InsideVariable(var.getName()+"_INSIDE", var.getName());
+		InsideVariable inVar = new InsideVariable(var.getName()+InsideVariable.INSIDE_VARIABLE_SUFFIX, var.getName());
 		variableList.addElement(inVar);
 		variableHashTable.put(inVar.getName(), inVar);
 		inVar.bind(this);
-		OutsideVariable outVar = new OutsideVariable(var.getName()+"_OUTSIDE", var.getName());
+		OutsideVariable outVar = new OutsideVariable(var.getName()+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX, var.getName());
 		variableList.addElement(outVar);
 		variableHashTable.put(outVar.getName(), outVar);
 		outVar.bind(this);

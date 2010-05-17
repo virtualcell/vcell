@@ -890,7 +890,7 @@ private SimDataBlock evaluateFunction(
 			for (int j = 0; j < varIndex - TXYZ_OFFSET; j++) {
 				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
 				SimDataHolder simDataHolder = dataSetList.elementAt(j);
-				if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_INSIDE")){
+				if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
 					//
 					// find "inside" volume element index for first membrane element in MembraneRegion 'i'.
 					//
@@ -900,7 +900,7 @@ private SimDataBlock evaluateFunction(
 							break;
 						}
 					}
-				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_OUTSIDE")){
+				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){
 					//
 					// find "outside" volume element index for first membrane element in MembraneRegion 'i'.
 					//
@@ -1586,26 +1586,26 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 			coords[i] = mesh.getCoordinateFromMembraneIndex(dataIndexes[i]);
 			for (int j = 0; j < varIndex - TXYZ_OFFSET; j++) {
 				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
-				if (dsi.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith("_INSIDE")){		
+				if (dsi.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){		
 					int volInsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getInsideVolumeIndex();
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
 					varIndexes[i][j] = volInsideIndex;
 					inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, false);
-				}else if (dsi.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith("_OUTSIDE")){					
+				}else if (dsi.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){					
 					int volOutsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getOutsideVolumeIndex();
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
 					varIndexes[i][j] = volOutsideIndex;
 					outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], false, false);
-				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_INSIDE")){					
+				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){					
 					int insideVolumeIndex = mesh.getMembraneElements()[dataIndexes[i]].getInsideVolumeIndex();
 					int volRegionIndex = mesh.getVolumeRegionIndex(insideVolumeIndex);
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
 					varIndexes[i][j] = volRegionIndex;
 					inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, true);
-				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_OUTSIDE")){					
+				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){					
 					int outsideVolumeIndex = mesh.getMembraneElements()[dataIndexes[i]].getOutsideVolumeIndex();
 					int volRegionIndex = mesh.getVolumeRegionIndex(outsideVolumeIndex);
 					varNames[j]=dsi.getName();
@@ -1626,7 +1626,7 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 		}else if (variableType.equals(VariableType.MEMBRANE_REGION)){
 			for (int j = 0; j < varIndex - TXYZ_OFFSET; j++) {
 				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
-				if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_INSIDE")){					
+				if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){					
 					//
 					// find "inside" volume element index for first membrane element in MembraneRegion 'i'.
 					//
@@ -1642,7 +1642,7 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
 					varIndexes[i][j] = volRegionIndex;
 					inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, true);;
-				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_OUTSIDE")){					
+				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){					
 					//
 					// find "outside" volume element index for first membrane element in MembraneRegion 'i'.
 					//
@@ -1871,7 +1871,7 @@ public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataId
 	Vector<DataIdentifier> v = new Vector<DataIdentifier>();
 	for (int i = 0; i < dataIdentifiersIncludingOutsideAndInside.length; i++){
 		DataIdentifier di = dataIdentifiersIncludingOutsideAndInside[i];
-		if (!di.getName().endsWith("_INSIDE") && !di.getName().endsWith("_OUTSIDE")) {		
+		if (!di.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX) && !di.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)) {		
 			if (di.getVariableType() == null || di.getVariableType().equals(VariableType.UNKNOWN)) {
 				if (di.isFunction()) {
 					AnnotatedFunction f = getFunction(outputContext,vcdID,di.getName());
@@ -2980,15 +2980,15 @@ private void adjustMembraneAdjacentVolumeValues(
 				for (int j = 0; j < dependencyList.size(); j++) {
 					insideExp.substituteInPlace(
 							new Expression(dependencyList.elementAt(j).getName()),
-							new Expression(dependencyList.elementAt(j).getName()+"_INSIDE"));
+							new Expression(dependencyList.elementAt(j).getName()+InsideVariable.INSIDE_VARIABLE_SUFFIX));
 					outsideExp.substituteInPlace(
 							new Expression(dependencyList.elementAt(j).getName()),
-							new Expression(dependencyList.elementAt(j).getName()+"_OUTSIDE"));
+							new Expression(dependencyList.elementAt(j).getName()+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX));
 				}
 
 			}else{
-				insideExp = new Expression(varName+"_INSIDE");
-				outsideExp = new Expression(varName+"_OUTSIDE");
+				insideExp = new Expression(varName+InsideVariable.INSIDE_VARIABLE_SUFFIX);
+				outsideExp = new Expression(varName+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX);
 			}
 			if(insideExp != null && outsideExp != null){
 				insideExp.bindExpression(vcData);
