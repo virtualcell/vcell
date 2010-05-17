@@ -1,11 +1,18 @@
 package cbit.gui;
 
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Event;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -37,11 +44,14 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.ReservedVariable;
@@ -90,7 +100,10 @@ public class TextFieldAutoCompletion extends JTextField {
 				if (e.getClickCount() == 2) {
 					SwingUtilities.invokeLater(new CompletionTask());
 				}
+			} else if (e.getSource() == TextFieldAutoCompletion.this) {
+				highlightParenthesis();
 			}
+			
 		}
 
 		public void mouseEntered(MouseEvent e) {
@@ -114,6 +127,7 @@ public class TextFieldAutoCompletion extends JTextField {
 
 		public void keyReleased(KeyEvent e) {
 			if (e.getSource() == TextFieldAutoCompletion.this) {
+				highlightParenthesis();
 				if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
 					if (e.getModifiersEx() != 0) {
 						autoCompJPopupMenu.setVisible(false);
@@ -513,26 +527,33 @@ public class TextFieldAutoCompletion extends JTextField {
 	
 	// test main
 	public static void main(String[] args) {
-		final TextFieldAutoCompletion tf = new TextFieldAutoCompletion();
-		tf.setColumns(100);
-		Set<String> al = new HashSet<String>();
-//		for (String s : RegistrationPanel.COUNTRY_LIST) {
-//			al.add(s);
-//		}
-		al.add("t");
-		al.add("ab");
-		al.add("aaaaaaa");
-		tf.setAutoCompletionWords(al);
-		
-		JFrame frame = new JFrame();
-		frame.setTitle("AutoCompleteTextField");
-		JPanel panel = new JPanel();
-		panel.add(tf);
-		frame.getContentPane().add(panel);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.pack();
-		BeanUtils.centerOnScreen(frame);
-		frame.setVisible(true);
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			
+			final TextFieldAutoCompletion tf = new TextFieldAutoCompletion();
+			tf.setText("((x >  - 2.25) && (((((( - 1.5 + sqrt((2.25 + x))) ^ 2.0) + (0.25 * (y ^ 2.0)) + (z ^ 2.0)) ^ 2.0) - pow(((( - 1.5 + sqrt((2.25 + x))) ^ 2.0) + (0.25 * (y ^ 2.0)) + (z ^ 2.0)),1.5) - (0.8 * z * ((( - 1.5 + sqrt((2.25 + x))) ^ 2.0) + (0.25 * (y ^ 2.0)) + (z ^ 2.0))) + (0.7 * pow(z,3.0))) <= 0.0))");
+//			tf.setColumns(100);
+			Set<String> al = new HashSet<String>();
+	//		for (String s : RegistrationPanel.COUNTRY_LIST) {
+	//			al.add(s);
+	//		}
+			al.add("t");
+			al.add("ab");
+			al.add("aaaaaaa");
+			tf.setAutoCompletionWords(al);
+			
+			JFrame frame = new JFrame();
+			frame.setTitle("AutoCompleteTextField");
+			JPanel panel = new JPanel(new BorderLayout());
+			panel.add(tf, BorderLayout.CENTER);
+			frame.getContentPane().add(panel);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.pack();
+			BeanUtils.centerOnScreen(frame);
+			frame.setVisible(true);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 	
 	public void setSymbolTable(SymbolTable symbolTable) {
@@ -561,4 +582,86 @@ public class TextFieldAutoCompletion extends JTextField {
 		}
 		return -1;
 	}
+	
+	private boolean bMatchParenthesisFound = false;
+	private void highlightParenthesis(){
+		if (bMatchParenthesisFound) {
+			repaint();
+		}
+		String text = getText();		
+		int txtLen = text.length();
+		if (txtLen == 0) {
+			return;
+		}
+			
+		boolean bRight = false;
+		int pos1 = -1;
+		int caretPos = getCaretPosition();
+		if (caretPos == 0) {
+			return;
+		}
+		pos1 = caretPos -1;
+		pos1 = Math.max(0, Math.min(pos1, txtLen - 1));
+		char currChar = text.charAt(pos1);
+		if (currChar == ')') {
+			bRight = true;			
+		} else if (currChar == '(') {
+			bRight = false;			
+		} else {
+			return;
+		}
+		int pos2 = -1;
+		int count = 1;
+		if (bRight) {
+			for (pos2 = pos1 -1; pos2 >= 0; pos2 --) {
+				if (text.charAt(pos2) == ')') {
+					count ++;
+				}
+				if (text.charAt(pos2) == '(') {
+					count --;
+					if (count == 0) {
+						break;
+					}
+				}
+			}
+		} else {
+			for (pos2 = pos1 + 1; pos2 < txtLen; pos2 ++) {
+				if (text.charAt(pos2) == '(') {
+					count ++;
+				}
+				if (text.charAt(pos2) == ')') {
+					count --;
+					if (count == 0) {
+						break;
+					}
+				}
+			}
+		}
+		if (pos2 == -1 || pos2 >= txtLen || pos1 == pos2) {
+			return;
+		}
+		
+		bMatchParenthesisFound = true;
+		final Graphics g = getGraphics();
+		if (g instanceof Graphics2D) {
+//			((Graphics2D)g).setStroke(new BasicStroke(1.3f));
+		}
+		g.setColor(new Color(0xff, 0x99, 0x33));
+		
+		FontMetrics fm=g.getFontMetrics();
+		final int charWidth = fm.getWidths()['('];
+		try {
+			final Rectangle rect2 = modelToView(pos2);
+			
+			Timer t = new Timer(10, new ActionListener() {				
+				public void actionPerformed(ActionEvent e) {
+					g.drawRect(rect2.x, rect2.y, charWidth, rect2.height);					
+				}
+			});
+			t.setRepeats(false);
+			t.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}	 
 }
