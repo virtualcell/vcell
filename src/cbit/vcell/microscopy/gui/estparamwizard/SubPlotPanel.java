@@ -20,6 +20,8 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import cbit.plot.Plot2DPanel;
+import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
@@ -128,7 +130,47 @@ public class SubPlotPanel extends JPanel
 
     public void setPlotData(DataSource[] argDataSources)
     {
-    	plotPane.setDataSources(argDataSources);
+    	//the following paragraph of code is just to get selected color for selected ROIs
+		//and make them the same as we show on ChooseModel_RoiForErrorPanel/RoiForErrorPanel
+		int validROISize = FRAPData.VFRAP_ROI_ENUM.values().length-2;//double valid ROI colors (not include cell and background)
+		//need to know how many models(1,2,3) are selected to generate color sets, total 1(exp) + number of selected models
+		int numColorSet = frapWorkspace.getFrapStudy().getSelectedModels().size() + 1;
+		Color[] fullColors = Plot2DPanel.generateAutoColor(validROISize*numColorSet, getBackground(), new Integer(0));
+		boolean[] selectedROIs = frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation();
+		int selectedROICounter = 0;
+		for (int i=0; i<selectedROIs.length; i++)
+		{
+			if(selectedROIs[i])
+			{
+				selectedROICounter++;
+			}
+		}
+		Color[] selectedColors = new Color[selectedROICounter*numColorSet];//ROI is a comparison of exp and several opt/sim results, color set should be number of models +1
+		int selectedColorIdx = 0;
+		for(int i=0; i<selectedROIs.length; i++)
+		{
+			if(selectedROIs[i] && i>2) //skip cell and background ROIs
+			{
+				for(int j = 0; j < numColorSet; j++)//len is numColorSet, exp + all opt/sim 
+				{
+					selectedColors[selectedColorIdx+selectedROICounter*j] = fullColors[i-2+validROISize*j];
+				}
+				selectedColorIdx++;
+			}
+			else if(selectedROIs[i] && i==0)// bleached ROI
+			{
+				for(int j = 0; j < numColorSet; j++)//len is numColorSet, exp + all opt/sim 
+				{
+					selectedColors[selectedColorIdx+selectedROICounter*j] = fullColors[i+validROISize*j];
+				}
+				selectedColorIdx++;
+			}
+		}
+    	//above code trying to get selected color for exp plots and multiple opt/sim plots, which corresponding to the colors in 
+    	//ChooseModel_RoiForErrorPanel/RoiForErrorPanel. However, since the numColors are different with the colors in ChooseModel_RoiForErrorPanel/RoiForErrorPanel,
+    	//we cannot always get the same colors as in those panels. (only when there is a single model selected)
+    	
+    	plotPane.setDataSources(argDataSources, selectedColors);
     	plotPane.selectAll();
     }
     

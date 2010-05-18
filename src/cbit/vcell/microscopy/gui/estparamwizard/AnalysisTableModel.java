@@ -9,15 +9,15 @@ import cbit.vcell.opt.Parameter;
 
 public class AnalysisTableModel extends AbstractTableModel 
 {
-	public final static int NUM_ROWS = FRAPModel.NUM_MODEL_PARAMETERS_BINDING +1; //add one more row for immobile fraction
-	public final static int NUM_COLUMNS = 4;
+	public final static int NUM_ROWS = FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF +1; //add one more row for immobile fraction
+	public final static int NUM_COLUMNS = 3;
 	public final static int INDEX_IMMOBILE_FRAC = 8;
 	public final static String IMMOBILE_FRAC_NAME = "Immobile Fraction";
 	public final static int COLUMN_PARAM_NAME = 0;
 	public final static int COLUMN_DIFF_ONE = 1;
 	public final static int COLUMN_DIFF_TWO = 2;
-	public final static int COLUMN_REAC_BINDING = 3;
-	public final static String COL_LABELS[] = { "Parameter Name", "Diffusion with 1 component (DF1)", "Diffusion with 2 components (DF2)", "Diffusion with binding reaction (DB)"};
+//	public final static int COLUMN_REAC_BINDING = 3;
+	public final static String COL_LABELS[] = { "Parameter Name", "Diffusion with 1 diffusing component", "Diffusion with 2 diffusing components"};
 	
 	private FRAPWorkspace frapWorkspace = null;
 	private FRAPModel[] frapModels = null;
@@ -126,40 +126,40 @@ public class AnalysisTableModel extends AbstractTableModel
     			}
     		}
     	}
-    	else if(col == COLUMN_REAC_BINDING)
-    	{
-    		if(frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING] == null || frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].getModelParameters() == null)
-    		{
-    			return null;
-    		}
-    		else
-    		{
-    			Parameter[] params = frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].getModelParameters();
-    			if(row == INDEX_IMMOBILE_FRAC)
-    			{
-    				double ff = params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
-    				double fc =params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
-    				double fimm = 1-ff-fc;
-    				if(fimm < FRAPOptimization.epsilon && fimm > (0 - FRAPOptimization.epsilon))
-    				{
-    					fimm = 0;
-    				}
-    				if(fimm < (1+FRAPOptimization.epsilon) && fimm > (1 - FRAPOptimization.epsilon))
-    				{
-    					fimm = 1;
-    				}
-    				return fimm; 
-    			}
-    			else if(row < FRAPModel.NUM_MODEL_PARAMETERS_BINDING)
-    			{
-    				return params[row].getInitialGuess();
-    			}
-    			else
-    			{
-    				return null;
-    			}
-    		}
-    	}
+//    	else if(col == COLUMN_REAC_BINDING)
+//    	{
+//    		if(frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING] == null || frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].getModelParameters() == null)
+//    		{
+//    			return null;
+//    		}
+//    		else
+//    		{
+//    			Parameter[] params = frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].getModelParameters();
+//    			if(row == INDEX_IMMOBILE_FRAC)
+//    			{
+//    				double ff = params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
+//    				double fc =params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
+//    				double fimm = 1-ff-fc;
+//    				if(fimm < FRAPOptimization.epsilon && fimm > (0 - FRAPOptimization.epsilon))
+//    				{
+//    					fimm = 0;
+//    				}
+//    				if(fimm < (1+FRAPOptimization.epsilon) && fimm > (1 - FRAPOptimization.epsilon))
+//    				{
+//    					fimm = 1;
+//    				}
+//    				return fimm; 
+//    			}
+//    			else if(row < FRAPModel.NUM_MODEL_PARAMETERS_BINDING)
+//    			{
+//    				return params[row].getInitialGuess();
+//    			}
+//    			else
+//    			{
+//    				return null;
+//    			}
+//    		}
+//    	}
     	
     	return null;
     }
@@ -175,9 +175,9 @@ public class AnalysisTableModel extends AbstractTableModel
     		case COLUMN_DIFF_TWO: {
     			return Double.class;
     		}
-    		case COLUMN_REAC_BINDING: {
-    			return Double.class;
-    		}
+//    		case COLUMN_REAC_BINDING: {
+//    			return Double.class;
+//    		}
     		default:{
     			return Object.class;
     		}

@@ -10,12 +10,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
+import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
@@ -46,7 +46,7 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
     {
     	((JPanel)getPanelComponent()).removeAll();
     	((JPanel)getPanelComponent()).add(imgPanel);
-    	((DefineROI_Panel)imgPanel).adjustComponents(OverlayEditorPanelJAI.DEFINE_BACKGROUNDROI);
+    	((DefineROI_Panel)imgPanel).adjustComponents(VFrap_OverlayEditorPanelJAI.DEFINE_BACKGROUNDROI);
     }
     
     public ArrayList<AsynchClientTask> preNextProcess()

@@ -53,7 +53,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 	private JLabel roi_bleached_ring7Label = null;
 	private JLabel roi_bleached_ring8Label = null;
 	
-	private static final int NUM_SELECTED_ROIS = 9;
+	private static final int NUM_SELECTED_ROIS = FRAPData.VFRAP_ROI_ENUM.values().length-2; //exclude cell and background ROIs
 	private static final int IDX_ROI_BLEACHED = 0;
 	private static final int IDX_ROI_BLEACHED_RING1 = 1;
 	private static final int IDX_ROI_BLEACHED_RING2 = 2;
@@ -297,8 +297,8 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 	{
 		if(allROIColors == null)
 		{
-			allROIColors = new Color[NUM_SELECTED_ROIS];//ROI colors, use index 0 for bleached, index 1-9 for ring1-9
-			Color[] availableColors = Plot2DPanel.generateAutoColor(NUM_SELECTED_ROIS, Color.black, new Integer(0));
+			allROIColors = new Color[(FRAPData.VFRAP_ROI_ENUM.values().length-2)*2];//double valid ROI colors (not include cell and background)
+			Color[] availableColors = Plot2DPanel.generateAutoColor(allROIColors.length, getBackground(), new Integer(0));
 			System.arraycopy(availableColors, 0, allROIColors, 0, allROIColors.length);
 		}
 		return allROIColors;
@@ -544,70 +544,88 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 		//disable ROIs with 0 pixel in it
 		//or disselect checkboxes according to stored selected ROIS
 		boolean[] storedSelectedROIs = frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation(); 
-		
 		for(int i=0; i<rois.length; i++)
 		{
 			if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&
 			   frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getNonzeroPixelsCount()>0)
 			{
 				roi_bleachedCheckBox.setEnabled(true);
-				roi_bleachedCheckBox.setSelected(storedSelectedROIs[i]);
+				if(storedSelectedROIs == null || storedSelectedROIs.length < 1 || storedSelectedROIs[i])
+				{
+					roi_bleachedCheckBox.setSelected(true);
+				}
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()) &&
-			    frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()).getNonzeroPixelsCount()>0)
+			     frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()).getNonzeroPixelsCount()>0)
 			{
 				roi_bleached_ring1CheckBox.setEnabled(true);
-				roi_bleached_ring1CheckBox.setSelected(storedSelectedROIs[i]);
+				if(storedSelectedROIs == null || storedSelectedROIs.length < 1 || storedSelectedROIs[i])
+				{
+					roi_bleached_ring1CheckBox.setSelected(true);
+				}
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()) &&
-			    frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()).getNonzeroPixelsCount()>0)
+			     frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()).getNonzeroPixelsCount()>0)
 			{
 				roi_bleached_ring2CheckBox.setEnabled(true);
-				roi_bleached_ring2CheckBox.setSelected(storedSelectedROIs[i]);
-				
+				if(storedSelectedROIs == null || storedSelectedROIs.length < 1 || storedSelectedROIs[i])
+				{
+					roi_bleached_ring2CheckBox.setSelected(true);
+				}
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()) &&
-			    frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()).getNonzeroPixelsCount()>0)
+			     frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()).getNonzeroPixelsCount()>0)
 			{
 				roi_bleached_ring3CheckBox.setEnabled(true);
-				
-				roi_bleached_ring3CheckBox.setSelected(storedSelectedROIs[i]);
-	
+				if(storedSelectedROIs == null || storedSelectedROIs.length < 1 || storedSelectedROIs[i])
+				{
+					roi_bleached_ring3CheckBox.setSelected(true);
+				}
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name()) &&
-			    frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name()).getNonzeroPixelsCount()>0)
+			     frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name()).getNonzeroPixelsCount()>0)
 			{
 				roi_bleached_ring4CheckBox.setEnabled(true);
-				roi_bleached_ring4CheckBox.setSelected(storedSelectedROIs[i]);
-				
+				if(storedSelectedROIs == null || storedSelectedROIs.length < 1 || storedSelectedROIs[i])
+				{
+					roi_bleached_ring4CheckBox.setSelected(true);
+				}
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name()) &&
-			    frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name()).getNonzeroPixelsCount()>0)
+			     frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name()).getNonzeroPixelsCount()>0)
 			{
 				roi_bleached_ring5CheckBox.setEnabled(true);
-				roi_bleached_ring5CheckBox.setSelected(storedSelectedROIs[i]);
-				
+				if(storedSelectedROIs == null || storedSelectedROIs.length < 1 || storedSelectedROIs[i])
+				{
+					roi_bleached_ring5CheckBox.setSelected(true);
+				}
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name()) &&
-			    frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name()).getNonzeroPixelsCount()>0)
+			     frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name()).getNonzeroPixelsCount()>0)
 			{
 				roi_bleached_ring6CheckBox.setEnabled(true);
-				roi_bleached_ring6CheckBox.setSelected(storedSelectedROIs[i]);
-				
+				if(storedSelectedROIs == null || storedSelectedROIs.length < 1 || storedSelectedROIs[i])
+				{
+					roi_bleached_ring6CheckBox.setSelected(true);
+				}
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name()) &&
-			    frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name()).getNonzeroPixelsCount()>0)
+			     frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name()).getNonzeroPixelsCount()>0)
 			{
 				roi_bleached_ring7CheckBox.setEnabled(true);
-				roi_bleached_ring7CheckBox.setSelected(storedSelectedROIs[i]);
-				
+				if(storedSelectedROIs == null || storedSelectedROIs.length < 1 || storedSelectedROIs[i])
+				{
+					roi_bleached_ring7CheckBox.setSelected(true);
+				}
 			}
 			else if(rois[i].getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name()) &&
-			    frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name()).getNonzeroPixelsCount()>0)
+			     frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name()).getNonzeroPixelsCount()>0)
 			{
 				roi_bleached_ring8CheckBox.setEnabled(true);
-				roi_bleached_ring8CheckBox.setSelected(storedSelectedROIs[i]);
-				
+				if(storedSelectedROIs == null || storedSelectedROIs.length < 1 || storedSelectedROIs[i])
+				{
+					roi_bleached_ring8CheckBox.setSelected(true);
+				}
 			}
 		}
 	}

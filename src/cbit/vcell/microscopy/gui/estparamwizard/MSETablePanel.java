@@ -27,10 +27,6 @@ public class MSETablePanel extends JPanel
 
     JPopupMenu popupMenu;
 
-    float[] prefColumnWidth = new float[]{0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f};
-
-    TableColumn[] columns = new TableColumn[MSETableModel.NUM_COLUMNS];
-
     public MSETablePanel(MSEPanel arg_parent/*may need to pass in frapstudy as parameter*/) 
     {
     	this.parent = arg_parent;
@@ -42,7 +38,7 @@ public class MSETablePanel extends JPanel
 
         JLabel headingLabel = new JLabel("Models under Selected ROIs");
         headingLabel.setFont(/*((Font)VirtualFrapLoader.loadProperty("report.table.subheading.font"))*/new Font("Tahoma", Font.BOLD, 11));
-        hypDetail = new HyperLinkLabel("Detail", new HyperLinkListener(), 0);
+        hypDetail = new HyperLinkLabel("Less Detail", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
 //
         lessLable = new JLabel("3 Models");
@@ -75,6 +71,8 @@ public class MSETablePanel extends JPanel
         add(lessLable, gc3);
         //create table model
         mseTableModel = new MSETableModel();
+        //by default, expend this table
+        setDetail(true);
    }
 
 
@@ -131,13 +129,10 @@ public class MSETablePanel extends JPanel
 
         DefaultCellEditor  mseEditor = new DefaultCellEditor(new JTextField());
         TableCellRenderer mseRenderer = new  AnalysisTableRenderer(8);//double precision 8 digits
+        TableColumn[] columns = new TableColumn[MSETableModel.NUM_COLUMNS];
         for (int i = 0; i < mseTableModel.getColumnCount(); i++) {
-
-            int w = (int) (prefColumnWidth[i]);
-            columns[i] = new TableColumn(i, w, mseRenderer, mseEditor);
-
+            columns[i] = new TableColumn(i, 0, mseRenderer, mseEditor);
             table.addColumn(columns[i]);
-
         }
 //        table.getTableHeader().addMouseListener(new TableMouseListener());
 

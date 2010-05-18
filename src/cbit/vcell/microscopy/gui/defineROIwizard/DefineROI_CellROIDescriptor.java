@@ -12,7 +12,7 @@ import javax.swing.ListSelectionModel;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
+import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.VFRAPPreference;
@@ -58,7 +58,7 @@ public class DefineROI_CellROIDescriptor extends WizardPanelDescriptor {
     {
     	((JPanel)getPanelComponent()).removeAll();
     	((JPanel)getPanelComponent()).add(imgPanel);
-    	((DefineROI_Panel)imgPanel).adjustComponents(OverlayEditorPanelJAI.DEFINE_CELLROI);
+    	((DefineROI_Panel)imgPanel).adjustComponents(VFrap_OverlayEditorPanelJAI.DEFINE_CELLROI);
     }
     
     public ArrayList<AsynchClientTask> preNextProcess()

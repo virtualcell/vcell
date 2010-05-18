@@ -76,6 +76,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 						(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound()-FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound())*
 						((double)diffusionRateSlider.getValue()/(double)diffusionRateSlider.getMaximum());
 					diffusionRateTextField.setText(value+"");
+					diffusionRateTextField.setCaretPosition(0);
 					diffusionRateSetButton.setEnabled(false);
 				}else if(e.getSource() == mobileFractionSlider){
 					double value =
@@ -83,6 +84,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 						(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound())*
 						((double)mobileFractionSlider.getValue()/(double)mobileFractionSlider.getMaximum());
 					mobileFractionTextField.setText(value+"");
+					mobileFractionTextField.setCaretPosition(0);
 					mobileFractionSetButton.setEnabled(false);
 				}else if(e.getSource() == bleachWhileMonitorSlider){
 					double value = FRAPOptData.REF_BWM_LOG_VAL_MIN + (FRAPOptData.REF_BWM_LOG_VAL_MAX - FRAPOptData.REF_BWM_LOG_VAL_MIN)* 
@@ -93,6 +95,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 						realVal = 0;
 					}
 					bleachWhileMonitorRateTextField.setText(realVal+"");
+					bleachWhileMonitorRateTextField.setCaretPosition(0);
 					bleachWhileMonitorSetButton.setEnabled(false);
 				}
 							
@@ -119,7 +122,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 							}
 							mobileFractionSlider.setValue(sliderValue);
 							mobileFractionTextField.setText(value+"");
-							
+							mobileFractionTextField.setCaretPosition(0);
 							//immobile
 							immoFracValueLabel.setText(adjustedVals[1]+"");
 						}finally{
@@ -155,6 +158,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 							value = FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound();
 						}
 						diffusionRateTextField.setText(value+"");
+						diffusionRateTextField.setCaretPosition(0);
 						int sliderValue = (int)
 							(((value-FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound())*(double)diffusionRateSlider.getMaximum())/
 							(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound()-FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound()));
@@ -169,6 +173,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 //					}else if(e.getSource() == mobileFractionSetButton){
 						value = adjustedVals[0];
 						mobileFractionTextField.setText(value+"");
+						mobileFractionTextField.setCaretPosition(0);
 						sliderValue = (int)
 							(((value-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound())*(double)mobileFractionSlider.getMaximum())/
 							(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()));
@@ -190,6 +195,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 							value = FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound();
 						}
 						bleachWhileMonitorRateTextField.setText(value+"");
+						bleachWhileMonitorRateTextField.setCaretPosition(0);
 						if(value == FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound())
 						{
 							sliderValue = 0;
@@ -477,10 +483,10 @@ public class FRAPDiffOneParamPanel extends JPanel
 		try{
 			Hashtable<Integer, JComponent> diffusionSliderLabelTable = new Hashtable<Integer, JComponent>();
 			diffusionRateSlider.setMinimum(0);
-			diffusionRateSlider.setMaximum(100);
-			diffusionRateSlider.setValue(50);
+			diffusionRateSlider.setMaximum(2000);
+			diffusionRateSlider.setValue(0);
 			diffusionSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound()+""));
-			diffusionSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound()+""));
+			diffusionSliderLabelTable.put(2000,new JLabel(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound()+""));
 			diffusionRateSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
 			diffusionRateSlider.setLabelTable(diffusionSliderLabelTable);
 			
@@ -491,7 +497,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 			Hashtable<Integer, JComponent> mobileFractionSliderLabelTable = new Hashtable<Integer, JComponent>();
 			mobileFractionSlider.setMinimum(0);
 			mobileFractionSlider.setMaximum(100);
-			mobileFractionSlider.setValue(50);
+			mobileFractionSlider.setValue(0);
 			mobileFractionSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()+""));
 			mobileFractionSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()+""));
 			mobileFractionSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
@@ -585,7 +591,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 		
 	}
 	//set text fields, update slider values and plot.
-	private void setParameterValues(Double diffusionRate,Double mobileFraction,Double monitorBleachRate){
+	protected void setParameterValues(Double diffusionRate,Double mobileFraction,Double monitorBleachRate){
 		diffusionRateTextField.setText(diffusionRate.doubleValue()+"");
 		mobileFractionTextField.setText((mobileFraction != null?mobileFraction.doubleValue()+"":"1.0"));
 		bleachWhileMonitorRateTextField.setText((monitorBleachRate != null?monitorBleachRate.doubleValue()+"":"0"));

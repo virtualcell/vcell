@@ -35,11 +35,6 @@ public class AnalysisResultsTablePanel extends JPanel /*implements ActionListene
 
     JPopupMenu popupMenu;
 
-    float[] prefColumnWidth = new float[]{0.25f, 0.5f, 0.5f, 0.15f};
-
-    TableColumn[] columns = new TableColumn[AnalysisTableModel.NUM_COLUMNS];
-
-
     public AnalysisResultsTablePanel(AnalysisResultsPanel arg_parent/*may need to pass in frapstudy as parameter*/) 
     {
     	this.parent = arg_parent;
@@ -144,9 +139,9 @@ public class AnalysisResultsTablePanel extends JPanel /*implements ActionListene
 //        DefaultCellEditor  txtEditor = new DefaultCellEditor(errEditor);
         DefaultCellEditor  anaEditor = new DefaultCellEditor(new JTextField());
         TableCellRenderer anaRenderer = new  AnalysisTableRenderer(8); //double precision 8 digits
+        TableColumn[] columns = new TableColumn[AnalysisTableModel.NUM_COLUMNS];
         for (int i = 0; i < anaTableModel.getColumnCount(); i++) {
-            int w = (int) (prefColumnWidth[i]);
-            columns[i] = new TableColumn(i, w, anaRenderer, anaEditor);
+            columns[i] = new TableColumn(i, 0, anaRenderer, anaEditor);
             table.addColumn(columns[i]);
             if (i > 4) table.removeColumn(columns[i]);
         }

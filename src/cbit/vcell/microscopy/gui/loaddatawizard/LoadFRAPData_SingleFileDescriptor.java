@@ -133,7 +133,11 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
     		taskArrayList.add(loadTask);
     		taskArrayList.add(afterLoadingSwingTask);
     	}
-		
+    	else
+    	{
+    		DialogUtils.showErrorDialog(singleFilePanel, "Load File name is empty. Please input a file name to continue.");
+    		throw new RuntimeException("Load File name is empty. Please input a file name to continue.");
+    	}
 		return taskArrayList;
     } 
     

@@ -56,12 +56,12 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] {7,7,7,7,7,7,7,0,7,7,0,0,7,7};
-		gridBagLayout.rowHeights = new int[] {7,7,7,7,0,7,0,0,7};
+		gridBagLayout.rowHeights = new int[] {7,7,7,7, 0,0,7,0,0,7};
 		setLayout(gridBagLayout);
 		runSimbutton = new JButton();
 		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
 		gridBagConstraints_13.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_13.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_13.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_13.gridy = 1;
 		gridBagConstraints_13.gridx = 0;
 		add(runSimbutton, gridBagConstraints_13);
@@ -79,6 +79,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		estFromDiffParamButton = new JButton();
 		estFromDiffParamButton.setText("Help on Setting Params");
 		final GridBagConstraints gridBagConstraints_20 = new GridBagConstraints();
+		gridBagConstraints_20.insets = new Insets(0, 0, 5, 5);
 		gridBagConstraints_20.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_20.gridwidth = 5;
 		gridBagConstraints_20.gridy = 1;
@@ -90,41 +91,42 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			}
 		});
 
-		final JLabel freeDiffRateLabel = new JLabel();
-		freeDiffRateLabel.setText("Free  Diffusion  Rate(um2/s):");
-		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
-		gridBagConstraints_9.insets = new Insets(2, 2, 2, 2);
-		gridBagConstraints_9.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_9.gridy = 3;
-		gridBagConstraints_9.gridx = 0;
-
 		final JButton parameterScanButton = new JButton();
 		parameterScanButton.setEnabled(false);
 		parameterScanButton.setText("Parameter Scan on Current param set");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
+		gridBagConstraints_1.insets = new Insets(0, 0, 5, 5);
 		gridBagConstraints_1.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_1.gridwidth = 2;
 		gridBagConstraints_1.gridy = 1;
 		gridBagConstraints_1.gridx = 10;
-//		add(parameterScanButton, gridBagConstraints_1);
-//		add(freeDiffRateLabel, gridBagConstraints_9);
+		add(parameterScanButton, gridBagConstraints_1);
 
 		freeDiffRateTextField = new JTextField();
 		freeDiffRateTextField.setPreferredSize(new Dimension(125, 20));
 		freeDiffRateTextField.setMinimumSize(new Dimension(125, 20));
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.gridy = 3;
 		gridBagConstraints.gridx = 1;
 		add(freeDiffRateTextField, gridBagConstraints);
+		
+		final JLabel freeDiffRateLabel = new JLabel();
+		freeDiffRateLabel.setText("Free  Diffusion  Rate(um2/s):");
+		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
+		gridBagConstraints_9.insets = new Insets(2, 2, 5, 5);
+		gridBagConstraints_9.anchor = GridBagConstraints.EAST;
+		gridBagConstraints_9.gridy = 4;
+		gridBagConstraints_9.gridx = 0;
+		add(freeDiffRateLabel, gridBagConstraints_9);
 
 		final JLabel freeMobileFractionLabel = new JLabel();
 		freeMobileFractionLabel.setText("Free Particle fraction:");
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
-		gridBagConstraints_11.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints_11.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_11.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_11.gridy = 6;
+		gridBagConstraints_11.gridy = 7;
 		gridBagConstraints_11.gridx = 0;
 		add(freeMobileFractionLabel, gridBagConstraints_11);
 
@@ -146,17 +148,18 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			}
 		});
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
-		gridBagConstraints_2.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_2.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_2.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_2.gridy = 6;
+		gridBagConstraints_2.gridy = 7;
 		gridBagConstraints_2.gridx = 1;
 		add(freeFractionTextField, gridBagConstraints_2);
 
 		final JLabel complexFractionLabel = new JLabel();
 		complexFractionLabel.setText("Complex fraction :");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
+		gridBagConstraints_5.insets = new Insets(0, 0, 5, 5);
 		gridBagConstraints_5.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_5.gridy = 6;
+		gridBagConstraints_5.gridy = 7;
 		gridBagConstraints_5.gridx = 5;
 		add(complexFractionLabel, gridBagConstraints_5);
 
@@ -177,33 +180,34 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			}
 		});
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
-		gridBagConstraints_6.gridy = 6;
+		gridBagConstraints_6.insets = new Insets(0, 0, 5, 5);
+		gridBagConstraints_6.gridy = 7;
 		gridBagConstraints_6.gridx = 6;
 		add(complexFractionTextField, gridBagConstraints_6);
 
 		final JLabel onRateLabel = new JLabel();
-		onRateLabel.setText("Pseudo Reaction on Rate(1/s):");
+		onRateLabel.setText("Psedo Reaction on Rate(1/s):");
 		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
 		gridBagConstraints_15.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_15.insets = new Insets(2, 2, 2, 2);
-		gridBagConstraints_15.gridy = 6;
+		gridBagConstraints_15.insets = new Insets(2, 2, 5, 5);
+		gridBagConstraints_15.gridy = 7;
 		gridBagConstraints_15.gridx = 10;
 		add(onRateLabel, gridBagConstraints_15);
 
 		onRateTextField = new JTextField();
 		final GridBagConstraints gridBagConstraints_18 = new GridBagConstraints();
-		gridBagConstraints_18.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_18.insets = new Insets(2, 2, 5, 5);
 		gridBagConstraints_18.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_18.gridy = 6;
+		gridBagConstraints_18.gridy = 7;
 		gridBagConstraints_18.gridx = 11;
 		add(onRateTextField, gridBagConstraints_18);
 		
 		final JLabel bleachWhileMonitorLabel = new JLabel();
 		bleachWhileMonitorLabel.setText("Bleach While Monitor Rate(1/s): ");
 		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
-		gridBagConstraints_12.insets = new Insets(2, 2, 0, 2);
+		gridBagConstraints_12.insets = new Insets(2, 2, 0, 5);
 		gridBagConstraints_12.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_12.gridy = 9;
+		gridBagConstraints_12.gridy = 10;
 		gridBagConstraints_12.gridx = 0;
 		add(bleachWhileMonitorLabel, gridBagConstraints_12);
 
@@ -211,18 +215,18 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		bleachWhileMonitorRateTextField.setPreferredSize(new Dimension(125, 20));
 		bleachWhileMonitorRateTextField.setMinimumSize(new Dimension(125, 20));
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-		gridBagConstraints_3.insets = new Insets(2, 2, 0, 0);
+		gridBagConstraints_3.insets = new Insets(2, 2, 0, 5);
 		gridBagConstraints_3.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_3.gridy = 9;
+		gridBagConstraints_3.gridy = 10;
 		gridBagConstraints_3.gridx = 1;
 		add(bleachWhileMonitorRateTextField, gridBagConstraints_3);
 
 		final JLabel immobileLabel = new JLabel();
 		immobileLabel.setText("Immobile Fraction:");
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
-		gridBagConstraints_8.insets = new Insets(0, 0, 0, 0);
+		gridBagConstraints_8.insets = new Insets(0, 0, 0, 5);
 		gridBagConstraints_8.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_8.gridy = 9;
+		gridBagConstraints_8.gridy = 10;
 		gridBagConstraints_8.gridx = 5;
 		add(immobileLabel, gridBagConstraints_8);
 
@@ -230,8 +234,8 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		immobileValueLabel.setText("");
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_7.insets = new Insets(2, 2, 2, 0);
-		gridBagConstraints_7.gridy = 9;
+		gridBagConstraints_7.insets = new Insets(2, 2, 2, 5);
+		gridBagConstraints_7.gridy = 10;
 		gridBagConstraints_7.gridx = 6;
 		add(immobileValueLabel, gridBagConstraints_7);
 
@@ -240,8 +244,8 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		offRateLabel.setText("Reaction  off  Rate(1/s):");
 		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
 		gridBagConstraints_16.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_16.insets = new Insets(2, 2, 0, 2);
-		gridBagConstraints_16.gridy = 9;
+		gridBagConstraints_16.insets = new Insets(2, 2, 0, 5);
+		gridBagConstraints_16.gridy = 10;
 		gridBagConstraints_16.gridx = 10;
 		add(offRateLabel, gridBagConstraints_16);
 
@@ -249,9 +253,9 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		offRateTextField.setPreferredSize(new Dimension(125, 20));
 		offRateTextField.setMinimumSize(new Dimension(125, 20));
 		final GridBagConstraints gridBagConstraints_19 = new GridBagConstraints();
-		gridBagConstraints_19.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_19.insets = new Insets(2, 2, 2, 5);
 		gridBagConstraints_19.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_19.gridy = 9;
+		gridBagConstraints_19.gridy = 10;
 		gridBagConstraints_19.gridx = 11;
 		add(offRateTextField, gridBagConstraints_19);
 	}
@@ -296,10 +300,10 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		}
 		if(params.length ==5)
 		{
-			double fastRate = params[frapOptData.TWODIFFRATES_FAST_DIFFUSION_RATE_INDEX].getInitialGuess();
-			double fastMobileFrac = params[frapOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX].getInitialGuess();
-			double slowRate = params[frapOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX].getInitialGuess();
-			double slowMobileFrac = params[frapOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX].getInitialGuess();
+			double fastRate = params[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess();
+			double fastMobileFrac = params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
+			double slowRate = params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess();
+			double slowMobileFrac = params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
 			String msg = "";
 			if(slowRate > fastRate)
 			{

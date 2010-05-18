@@ -12,6 +12,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Hashtable;
 
 import javax.swing.BoxLayout;
@@ -24,16 +26,22 @@ import javax.swing.JRadioButton;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
+import org.jdom.CDATA;
+import org.vcell.optimization.OptXmlTags;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ISize;
 import org.vcell.util.Range;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.plot.Plot2DPanel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.FRAPData;
@@ -49,10 +57,14 @@ import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.solvers.FiniteVolumeFileWriter;
 
 public class EstParams_ReacBindingPanel extends JPanel {
 	
@@ -76,7 +88,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		gridBagLayout.rowHeights = new int[] {7,7,7,0,7};
 		gridBagLayout.columnWidths = new int[] {7};
 		setLayout(gridBagLayout);
-		
+				
 		//set up tabbed pane for two kinds of models.
 		paramPanel=new JPanel();
 		paramPanel.setForeground(new Color(0,0,244));
@@ -126,7 +138,6 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		gridBagConstraints_9.gridx = 0;
 		add(paramPanel, gridBagConstraints_9);
 		
-		
 		final JPanel panel_3 = new JPanel();
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
 		gridBagLayout_1.columnWidths = new int[] {0,7};
@@ -144,7 +155,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		panel_3.add(standardErrorRoiLabel, gridBagConstraints_4);
 		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 12));
 		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time          ");
-		
+
 		final JButton showRoisButton = new JButton();
 		showRoisButton.setFont(new Font("", Font.PLAIN, 11));
 		showRoisButton.setMargin(new Insets(0, 8, 0, 8));
@@ -195,7 +206,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		}
 		return roiPanel;
 	}
-
+	
 	private void plotDerivedSimulationResults(AnalysisParameters[] anaParams)
 	{
 		try{
@@ -266,8 +277,37 @@ public class EstParams_ReacBindingPanel extends JPanel {
 				DataSource[] newDataSourceArr = new DataSource[2];
 				newDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE] = expDataSource;
 				newDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
-				
-				multisourcePlotPane.setDataSources(newDataSourceArr);
+				//the following paragraph of code is just to get selected color for selected ROIs
+				//and make them the same as we show on ChooseModel_RoiForErrorPanel/RoiForErrorPanel 
+				int validROISize = FRAPData.VFRAP_ROI_ENUM.values().length-2;//double valid ROI colors (not include cell and background)
+				Color[] fullColors = Plot2DPanel.generateAutoColor(validROISize*2, getBackground(), new Integer(0));
+				boolean[] selectedROIs = frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation();
+				int selectedROICounter = 0;
+				for (int i=0; i<selectedROIs.length; i++)
+				{
+					if(selectedROIs[i])
+					{
+						selectedROICounter++;
+					}
+				}
+				Color[] selectedColors = new Color[selectedROICounter*2];//double the size, each ROI is a comparison of exp and sim
+				int selectedColorIdx = 0;
+				for(int i=0; i<selectedROIs.length; i++)
+				{
+					if(selectedROIs[i] && i==0)
+					{
+						selectedColors[selectedColorIdx] = fullColors[i];
+						selectedColors[selectedColorIdx+selectedROICounter] = fullColors[i+validROISize];
+						selectedColorIdx++;
+					}
+					if(selectedROIs[i] && i>2) //skip cell and background ROIs
+					{
+						selectedColors[selectedColorIdx] = fullColors[i-2];
+						selectedColors[selectedColorIdx+selectedROICounter] = fullColors[i-2+validROISize];
+						selectedColorIdx++;
+					}
+				}
+				multisourcePlotPane.setDataSources(newDataSourceArr, selectedColors);
 				multisourcePlotPane.selectAll();
 				
 			}
@@ -547,7 +587,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				//check external data before running simulation
-				if(!FRAPStudyPanel.areExternalDataOK(getLocalWorkspace(),fStudy.getFrapDataExternalDataInfo(), fStudy.getRoiExternalDataInfo()))
+				if(!FRAPWorkspace.areExternalDataOK(getLocalWorkspace(),fStudy.getFrapDataExternalDataInfo(), fStudy.getRoiExternalDataInfo()))
 				{
 					//if external files are missing/currupt or ROIs are changed, create keys and save them
 					fStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(getLocalWorkspace(), FRAPStudy.IMAGE_EXTDATA_NAME));
@@ -616,14 +656,31 @@ public class EstParams_ReacBindingPanel extends JPanel {
 						fStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),
 						this.getClientTaskStatusSupport(), false);
 					
-		//			//if reference simulation completes successfully, we save reference data info and remove old simulation files.
-		//			getExpFrapStudy().setRefExternalDataInfo(refDataInfo);
-		//			//we have to save again here, because if user doesn't press "save button" the reference simulation external info won't be saved.
-		//			MicroscopyXmlproducer.writeXMLFile(getExpFrapStudy(), new File(getExpFrapStudy().getXmlFilename()), true, null, VirtualFrapMainFrame.SAVE_COMPRESSED);
-		//			if(oldRefDataInfo != null && oldRefDataInfo.getExternalDataIdentifier() != null)
-		//			{
-		//				FRAPStudy.removeExternalDataAndSimulationFiles(oldRefDataInfo.getExternalDataIdentifier().getKey(), null, null, getLocalWorkspace());
-		//			}
+					/*//prepare to run native FV solver
+					Simulation simulation = bioModel.getSimulations()[0];
+					// clone and resample geometry
+					Geometry resampledGeometry = null;
+					try {
+						resampledGeometry = (Geometry) BeanUtils.cloneSerializable(simulation.getMathDescription().getGeometry());
+						GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
+						ISize newSize = simulation.getMeshSpecification().getSamplingSize();
+						geoSurfaceDesc.setVolumeSampleSize(newSize);
+						geoSurfaceDesc.updateAll();		
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw new SolverException(e.getMessage());
+					}	
+					
+					SimulationJob simJob = new SimulationJob(simulation, 0, null); //fielddata ID?
+					
+					StringWriter simulationInputStringWriter = new StringWriter();
+					FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(new PrintWriter(simulationInputStringWriter,true), simJob, resampledGeometry, new File(getLocalWorkspace().getDefaultSimDataDirectory())); //need dir?		
+					fvFileWriter.write(null); //what are parameter names?
+					simulationInputStringWriter.close();
+					String fvInputStr = simulationInputStringWriter.getBuffer().toString();
+					
+					//run simulation with native FV solver
+					double[][][] rawSimResults = new NativeFVSolver().solve(fvInputStr);*/
 					
 					simKey = bioModel.getSimulations()[0].getVersion().getVersionKey();
 				}catch(Exception e){

@@ -31,6 +31,7 @@ import cbit.vcell.microscopy.EstimatedParameterTableRenderer;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.ResultPanelButtonHandler;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.WorkFlowButtonHandler;
@@ -41,7 +42,7 @@ public class ResultDisplayPanel extends JPanel
 {
 	private JLabel oneDiffComponentLabel = null;
 	private JLabel twoDiffComponentLabel = null;
-	private JLabel reacBindingLabel = null;
+//	private JLabel reacBindingLabel = null;
 	private JPanel titlePanel = null;
 	private JPanel modelPanel = null;
 	private JPanel tablePanel = null;
@@ -76,6 +77,7 @@ public class ResultDisplayPanel extends JPanel
 		gridBagConstraints2.gridy = 2;
 		gridBagConstraints2.gridheight = 3;
 		gridBagConstraints2.ipady = 0;
+		gridBagConstraints2.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints2.anchor = GridBagConstraints.WEST;
 		
 		GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
@@ -139,17 +141,17 @@ public class ResultDisplayPanel extends JPanel
 //			gridBagConstraints2.ipadx = 0;
 			gridBagConstraints2.anchor = GridBagConstraints.WEST;
 					
-			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
-			gridBagConstraints3.gridwidth = 2;
-			gridBagConstraints3.gridx = 19;
-			gridBagConstraints3.gridy = 0;
-//			gridBagConstraints3.ipady = 0;
-//			gridBagConstraints3.ipadx = 0;
-			gridBagConstraints3.anchor = GridBagConstraints.CENTER;
+//			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
+//			gridBagConstraints3.gridwidth = 2;
+//			gridBagConstraints3.gridx = 19;
+//			gridBagConstraints3.gridy = 0;
+////			gridBagConstraints3.ipady = 0;
+////			gridBagConstraints3.ipadx = 0;
+//			gridBagConstraints3.anchor = GridBagConstraints.CENTER;
 			
 			modelPanel.add(getOneDiffComLabel(), gridBagConstraints1);
 			modelPanel.add(getTwoDiffComLabel(), gridBagConstraints2);
-			modelPanel.add(getReacBindingLabel(), gridBagConstraints3);
+//			modelPanel.add(getReacBindingLabel(), gridBagConstraints3);
 		}	
 		return modelPanel;
 	}
@@ -158,7 +160,7 @@ public class ResultDisplayPanel extends JPanel
 	{
 		if(oneDiffComponentLabel == null)
 		{
-			oneDiffComponentLabel = new JLabel("Diffusion (1 Component)");
+			oneDiffComponentLabel = new JLabel(" \u25CF  Diffusion with One Diffusing Component ");
 			oneDiffComponentLabel.setFont(new Font("arial", Font.PLAIN, 12));
 		}
 		return oneDiffComponentLabel;
@@ -168,21 +170,21 @@ public class ResultDisplayPanel extends JPanel
 	{
 		if(twoDiffComponentLabel == null)
 		{
-			twoDiffComponentLabel = new JLabel("Diffusion (2 Components)");
+			twoDiffComponentLabel = new JLabel(" \u25CF  Diffusion with Two Diffusing Components ");
 			twoDiffComponentLabel.setFont(new Font("arial", Font.PLAIN, 12));
 		}
 		return twoDiffComponentLabel;
 	}
 	
-	public JLabel getReacBindingLabel()
-	{
-		if(reacBindingLabel == null)
-		{
-			reacBindingLabel = new JLabel("Diffusion  plus  Binding");
-			reacBindingLabel.setFont(new Font("arial", Font.PLAIN, 12));
-		}
-		return reacBindingLabel;
-	}
+//	public JLabel getReacBindingLabel()
+//	{
+//		if(reacBindingLabel == null)
+//		{
+//			reacBindingLabel = new JLabel("Diffusion  plus  Binding");
+//			reacBindingLabel.setFont(new Font("arial", Font.PLAIN, 12));
+//		}
+//		return reacBindingLabel;
+//	}
 	
 	private void highLightOneDiffLabel()
 	{
@@ -194,16 +196,16 @@ public class ResultDisplayPanel extends JPanel
 		twoDiffComponentLabel.setBorder(new LineBorder(Color.black, 2));
 	}
 	
-	private void highLightReacBindingLabel()
-	{
-		reacBindingLabel.setBorder(new LineBorder(Color.black, 2));
-	}
+//	private void highLightReacBindingLabel()
+//	{
+//		reacBindingLabel.setBorder(new LineBorder(Color.black, 2));
+//	}
 	
 	public void clearBestModel()
 	{
 		oneDiffComponentLabel.setBorder(null);
 		twoDiffComponentLabel.setBorder(null);
-		reacBindingLabel.setBorder(null);
+//		reacBindingLabel.setBorder(null);
 	}
 	
 	public void clearResultTable()
@@ -326,7 +328,7 @@ public class ResultDisplayPanel extends JPanel
 		}
 		else
 		{
-			highLightReacBindingLabel();
+//			highLightReacBindingLabel();
 		}
 		//refresh parameter table and buttons
 		FRAPStudy fStudy = getFRAPWorkspace().getFrapStudy();
@@ -338,7 +340,7 @@ public class ResultDisplayPanel extends JPanel
 			setRunSimButtonEnable(true);
 			if(fStudy.getBioModel() != null && fStudy.getBioModel().getSimulations() != null && fStudy.getBioModel().getSimulations().length > 0 &&
 			   fStudy.getBioModel().getSimulations()[0] != null && fStudy.getBioModel().getSimulations()[0].getKey() != null &&
-			   FRAPStudyPanel.areSimulationFilesOK(localWorkspace, fStudy.getBioModel().getSimulations()[0].getKey()))
+			   FRAPWorkspace.areSimulationFilesOK(localWorkspace, fStudy.getBioModel().getSimulations()[0].getKey()))
 			{
 				setResultsButtonEnabled(true);
 			}

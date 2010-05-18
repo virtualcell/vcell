@@ -52,10 +52,10 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 			{
 				modelTypesPanel.setDiffTwoSelected(true);
 			}
-			if(models[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
-			{
-				modelTypesPanel.setDiffBindingSelected(true);
-			}
+//			if(models[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
+//			{
+//				modelTypesPanel.setDiffBindingSelected(true);
+//			}
     	}
     	else //new frap document
     	{
@@ -101,23 +101,8 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 				}
 			}
 		};
-		AsynchClientTask aTask2 = new AsynchClientTask("Refreshing dependent ROIs...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
-		{
-			public void run(Hashtable<String, Object> hashTable) throws Exception
-			{
-				FRAPStudy fStudy = frapWorkspace.getFrapStudy();
-				if(fStudy != null)
-		    	{
-	    			fStudy.refreshDependentROIs();
-		    	}
-				else
-				{
-					throw new Exception("FRAPStudy is null. Please load data.");
-				}
-			}
-		};
+		
         tasks.add(aTask1);
-        tasks.add(aTask2);
 
         return tasks;
     }

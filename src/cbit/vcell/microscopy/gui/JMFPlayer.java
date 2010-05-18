@@ -1,15 +1,11 @@
 package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Label;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -22,7 +18,6 @@ import javax.media.ControllerListener;
 import javax.media.Manager;
 import javax.media.Player;
 import javax.media.RealizeCompleteEvent;
-import javax.sound.midi.ControllerEventListener;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -61,6 +56,8 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 	URL theURL;
 
 	JButton saveButton2 = null;
+
+	private JPanel playerPanel;
 
 	/** Construct the player object and the GUI. */
 	public JMFPlayer(JDialog pf, String mediaName, String fileStr) {
@@ -105,7 +102,8 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 
 		add(infoPanel, BorderLayout.NORTH);
 
-		JPanel playerPanel = new JPanel();
+		playerPanel = new JPanel();
+		
 		playerPanel.setLayout(new BorderLayout());
 		try {
 			theURL = new URL(getClass().getResource("."), mediaName);
@@ -173,12 +171,12 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 	}
 
 	/** Called by JMF when the Player has something to tell us about. */
-	public synchronized void controllerUpdate(ControllerEventListener event) {
+	public synchronized void controllerUpdate(ControllerEvent event) {
 		if (event instanceof RealizeCompleteEvent) {
 			if ((visualComponent = thePlayer.getVisualComponent()) != null)
-				add(BorderLayout.CENTER, visualComponent);
+				playerPanel.add(BorderLayout.CENTER, visualComponent);
 			if ((controlComponent = thePlayer.getControlPanelComponent()) != null)
-				add(BorderLayout.SOUTH, controlComponent);
+				playerPanel.add(BorderLayout.SOUTH, controlComponent);
 			// re-size the main window
 			if (parentFrame != null) {
 				try {
@@ -206,9 +204,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 		// add movie player in the center
 		JMFPlayer jp = new JMFPlayer(dialog, urlStr, fileStr);
 		dialog.getContentPane().add(jp, BorderLayout.CENTER);
-		dialog.setLocation(
-				(Toolkit.getDefaultToolkit().getScreenSize().width - 200) / 2,
-				(Toolkit.getDefaultToolkit().getScreenSize().height - 220) / 2);
+		dialog.setSize(250,500);
 		dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		ZEnforcer.showModalDialogOnTop(dialog, parent);
 		// frame.addWindowListener(new WindowAdapter(){
@@ -242,10 +238,5 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 		dialog.setSize(500,500);
 		showMovieInDialog(dialog, "file:///C:/VirtualMicroscopy/test.mov",
 				"C:/VirtualMicroscopy/test.mov");
-	}
-
-	public void controllerUpdate(ControllerEvent arg0) {
-		// TODO Auto-generated method stub
-		
 	}
 }

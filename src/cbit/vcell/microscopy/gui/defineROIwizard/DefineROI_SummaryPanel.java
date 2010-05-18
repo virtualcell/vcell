@@ -363,7 +363,7 @@ public class DefineROI_SummaryPanel extends JPanel
 		}
 		if(startIndexCombo.getSelectedIndex() == 0)
 		{
-			errMsg = errMsg + "Pre-bleach images are reqired. Starting Index for recovery should not be the first image.";
+			errMsg = errMsg + "Pre-bleach images are required. Starting Index for recovery should not be the first image.";
 		}
 		return errMsg;
 	}

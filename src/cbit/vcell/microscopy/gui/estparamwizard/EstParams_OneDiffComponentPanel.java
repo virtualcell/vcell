@@ -11,11 +11,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Hashtable;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -26,16 +28,21 @@ import javax.swing.border.LineBorder;
 import org.vcell.util.Range;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.plot.Plot2DPanel;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.ROIImagePanel;
+import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_RoiForErrorPanel;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
@@ -47,11 +54,11 @@ import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 public class EstParams_OneDiffComponentPanel extends JPanel {
 	
 	private SpatialAnalysisResults spatialAnalysisResults; //will be initialized in setData
-	private final JPanel paramPanel; //exclusively display pure diffusion panel and reaction diffusion panel
+	private JPanel paramPanel; //exclusively display pure diffusion panel and reaction diffusion panel
 	
 
 	private FRAPDiffOneParamPanel diffOnePanel;
-		
+	private JButton appParamButton;	
 	private FRAPOptData frapOptData;
 	private FRAPWorkspace frapWorkspace;
 	
@@ -68,20 +75,19 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		setLayout(gridBagLayout);
 		
 		JPanel buttonPanel = new JPanel(new FlowLayout());
-				
 		//set up tabbed pane for two kinds of models.
 		paramPanel=new JPanel(new GridBagLayout());
 		paramPanel.setForeground(new Color(0,0,244));
 		paramPanel.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
 		
 		//pure diffusion panel
-		JLabel interactiveAnalysisUsingLabel = new JLabel();
+		JLabel interactiveAnalysisLabel = new JLabel();
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.gridy = 0;
 		gridBagConstraints_8.gridx = 0;
-		paramPanel.add(interactiveAnalysisUsingLabel, gridBagConstraints_8);
-		interactiveAnalysisUsingLabel.setFont(new Font("", Font.PLAIN, 14));
-		interactiveAnalysisUsingLabel.setText("Interactive Analysis on 'Diffusion with One Diffusing Component' Model using FRAP Simulation Results");
+		paramPanel.add(interactiveAnalysisLabel, gridBagConstraints_8);
+		interactiveAnalysisLabel.setFont(new Font("", Font.PLAIN, 14));
+		interactiveAnalysisLabel.setText("Interactive Analysis on 'Diffusion with One Diffusing Component' Model using FRAP Simulation Results");
 
 		diffOnePanel = new FRAPDiffOneParamPanel();
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
@@ -116,7 +122,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		
 		final JPanel panel_3 = new JPanel();
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
-		gridBagLayout_1.columnWidths = new int[] {0,7};
+		gridBagLayout_1.columnWidths = new int[] {0, 0, 0, 0};
 		panel_3.setLayout(gridBagLayout_1);
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
 		gridBagConstraints_11.gridy = 1;
@@ -127,7 +133,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
 		gridBagConstraints_4.gridx = 0;
 		gridBagConstraints_4.gridy = 0;
-		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints_4.insets = new Insets(2, 2, 2, 5);
 		panel_3.add(standardErrorRoiLabel, gridBagConstraints_4);
 		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 12));
 		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time          ");
@@ -149,10 +155,31 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		showRoisButton.setMargin(new Insets(0, 8, 0, 8));
 		showRoisButton.setText("Show ROIs");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.insets = new Insets(0, 0, 0, 5);
 		gridBagConstraints.anchor = GridBagConstraints.EAST;
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.gridx = 1;
 		panel_3.add(showRoisButton, gridBagConstraints);
+
+//		appParamButton = new JButton("Apply Batch Run Parmas");
+//		appParamButton.setFont(new Font("", Font.PLAIN, 11));
+//		appParamButton.setMargin(new Insets(0, 8, 0, 8));
+//		final GridBagConstraints gridBagConstraints_appParam = new GridBagConstraints();
+//		gridBagConstraints_appParam.gridy = 0;
+//		gridBagConstraints_appParam.gridx = 4;
+//		panel_3.add(appParamButton, gridBagConstraints_appParam);
+//		appParamButton.addActionListener(new ActionListener() {
+//			public void actionPerformed(final ActionEvent e) {
+//				File inputFile = null;
+//	  			int option = VirtualFrapLoader.openVFRAPBatchRunChooser.showOpenDialog(EstParams_OneDiffComponentPanel.this);
+//	  			if (option == JFileChooser.APPROVE_OPTION){
+//	  				inputFile = VirtualFrapLoader.openVFRAPBatchRunChooser.getSelectedFile();
+//	  				loadBatchRunParameters(inputFile);
+//	  			}else{
+//	  				return;
+//	  			}
+//			}
+//		});
 		
 		final JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(Color.black, 1, false));
@@ -261,7 +288,37 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 					}
 					else
 					{
-						multisourcePlotPane.setDataSources(newDataSourceArr);
+						//the following paragraph of code is just to get selected color for selected ROIs
+						//and make them the same as we show on ChooseModel_RoiForErrorPanel/RoiForErrorPanel
+						int validROISize = FRAPData.VFRAP_ROI_ENUM.values().length-2;//double valid ROI colors (not include cell and background)
+						Color[] fullColors = Plot2DPanel.generateAutoColor(validROISize*2, getBackground(), new Integer(0));
+						boolean[] selectedROIs = frapWorkspace.getFrapStudy().getSelectedROIsForErrorCalculation();
+						int selectedROICounter = 0;
+						for (int i=0; i<selectedROIs.length; i++)
+						{
+							if(selectedROIs[i])
+							{
+								selectedROICounter++;
+							}
+						}
+						Color[] selectedColors = new Color[selectedROICounter*2];//double the size, each ROI is a comparison of exp and sim
+						int selectedColorIdx = 0;
+						for(int i=0; i<selectedROIs.length; i++)
+						{
+							if(selectedROIs[i] && i==0)
+							{
+								selectedColors[selectedColorIdx] = fullColors[i];
+								selectedColors[selectedColorIdx+selectedROICounter] = fullColors[i+validROISize];
+								selectedColorIdx++;
+							}
+							if(selectedROIs[i] && i>2) //skip cell and background ROIs
+							{
+								selectedColors[selectedColorIdx] = fullColors[i-2];
+								selectedColors[selectedColorIdx+selectedROICounter] = fullColors[i-2+validROISize];
+								selectedColorIdx++;
+							}
+						}
+						multisourcePlotPane.setDataSources(newDataSourceArr, selectedColors);
 						multisourcePlotPane.selectAll();
 					}
 				}
@@ -336,7 +393,11 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		this.currentEstimationResults = currentEstimationResults;
 	}
 	
-		
+	public void setApplyBatchRunParamButtonVisible(boolean bVisible)
+	{
+		appParamButton.setVisible(false);
+	}
+	
 	public static void main(java.lang.String[] args) {
 		try {
 			javax.swing.JFrame frame = new javax.swing.JFrame();

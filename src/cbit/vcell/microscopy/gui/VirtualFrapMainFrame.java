@@ -201,22 +201,6 @@ public class VirtualFrapMainFrame extends JFrame
   //Inner class MenuHandler
   public class MenuHandler implements ActionListener
   {
-	  private void saveAndSaveAs(final boolean bSaveAs)
-	  {
-    	  
-    	  if(bSaveAs)
-    	  {
-    		  AsynchClientTask[] saveAsTasks = frapStudyPanel.saveAs();
-    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveAsTasks, true);
-    	  }else{
-    		  //dispatch
-    		  AsynchClientTask[] saveTasks = frapStudyPanel.save();
-    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveTasks, true);
-    		  
-    	  }
-		  
-
-	  }
  		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() instanceof JMenuItem)
 		    {
@@ -236,13 +220,15 @@ public class VirtualFrapMainFrame extends JFrame
 	    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), openTasks, true);
 	  			  
 		      }
-			  else if(arg.equals(SAVE_ACTION_COMMAND))
+		      else if(arg.equals(SAVE_ACTION_COMMAND))
 		      {
-				  saveAndSaveAs(false);
+				  AsynchClientTask[] saveTasks = frapStudyPanel.save();
+	    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveTasks, true);
 		      }
 		      else if(arg.equals(SAVEAS_ACTION_COMMAND))
 		      {
-		    	  saveAndSaveAs(true);
+		    	  AsynchClientTask[] saveAsTasks = frapStudyPanel.saveAs();
+	    		  ClientTaskDispatcher.dispatch(VirtualFrapMainFrame.this, new Hashtable<String, Object>(), saveAsTasks, true);
 		      }
 		      else if(arg.equals(IMPORTFILESERIES_ACTION_COMMAND))
 		      {
@@ -262,8 +248,8 @@ public class VirtualFrapMainFrame extends JFrame
 		    	  if (frapWorkspace != null && frapWorkspace.getFrapStudy() != null && frapWorkspace.getFrapStudy().isSaveNeeded()) {
 		    		  text = "UnSaved changes will be lost!";
 		    	  }
-		    	  String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? " + text, new String[]{UserMessage.OPTION_CLOSE, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CLOSE); 
-		    	  if (result == UserMessage.OPTION_CLOSE)
+		    	  String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? " + text, new String[]{UserMessage.OPTION_EXIT, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_EXIT); 
+		    	  if (result == UserMessage.OPTION_EXIT)
 	    	      {
 	    	    	  System.exit(0);
 	    	      }
