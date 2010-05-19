@@ -340,6 +340,7 @@ public class ResultDisplayPanel extends JPanel
 			setRunSimButtonEnable(true);
 			if(fStudy.getBioModel() != null && fStudy.getBioModel().getSimulations() != null && fStudy.getBioModel().getSimulations().length > 0 &&
 			   fStudy.getBioModel().getSimulations()[0] != null && fStudy.getBioModel().getSimulations()[0].getKey() != null &&
+			   fStudy.getFrapDataExternalDataInfo() != null && fStudy.getRoiExternalDataInfo() != null &&
 			   FRAPWorkspace.areSimulationFilesOK(localWorkspace, fStudy.getBioModel().getSimulations()[0].getKey()))
 			{
 				setResultsButtonEnabled(true);
