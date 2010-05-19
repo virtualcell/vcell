@@ -587,6 +587,7 @@ public class TextFieldAutoCompletion extends JTextField {
 	private void highlightParenthesis(){
 		if (bMatchParenthesisFound) {
 			repaint();
+			bMatchParenthesisFound = false;
 		}
 		String text = getText();		
 		int txtLen = text.length();
