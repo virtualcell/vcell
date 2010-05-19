@@ -29,11 +29,11 @@ public class AnalysisProcedurePanel extends JPanel
 	public final static int NUM_BUTTON_IMAGES = 4;
 	public final static int NUM_LABEL_IMAGES = 3;
 	private URL[] iconFiles = {getClass().getResource("/images/loadDataButton.jpg"),
-							   getClass().getResource("/images/arrow.jpg"),
+							   getClass().getResource("/images/arrow.gif"),
 							   getClass().getResource("/images/defineROIButton.jpg"),
-							   getClass().getResource("/images/arrow.jpg"),
+							   getClass().getResource("/images/arrow.gif"),
 							   getClass().getResource("/images/modelTypeButton.jpg"),
-							   getClass().getResource("/images/arrow.jpg"),
+							   getClass().getResource("/images/arrow.gif"),
 							   getClass().getResource("/images/estimateButton.jpg")};
 							   
 	private static final String[] buttonTips = new String[]{"Load FRAP images", "Define regions of interest", "Choose possible models", "Estimate parameters for all selected models"};

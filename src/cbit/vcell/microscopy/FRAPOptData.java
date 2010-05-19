@@ -1,43 +1,28 @@
 package cbit.vcell.microscopy;
 
 import java.io.File;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
 
-import org.vcell.util.Origin;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
-
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.client.server.VCDataManager;
-import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DataProcessingInstructions;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solvers.CartesianMesh;
 
 
 public class FRAPOptData {
