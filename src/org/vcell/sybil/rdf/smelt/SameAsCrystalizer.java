@@ -86,6 +86,7 @@ public class SameAsCrystalizer implements RDFSmelter {
 							rdfNewNext.add(subject, predicate, object);
 						}						
 					}
+					rdfNew.close();
 					rdfNew = rdfNewNext;
 				}
 			}			
