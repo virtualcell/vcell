@@ -1027,7 +1027,7 @@ private void runSimulations() {
 	for (int i = 0; i < selections.length; i++){
 		Simulation sim = getSimulationWorkspace().getSimulations()[selections[i]];
 		MeshSpecification meshSpecification = sim.getMeshSpecification();
-		if (!meshSpecification.isAspectRatioOK()) {
+		if (meshSpecification != null && !meshSpecification.isAspectRatioOK()) {
 			String warningMessage =  "Simulation '" + sim.getName() + "' has differences in mesh sizes. This might affect the accuracy of the solution.\n"
 			+ "\u0394x=" + meshSpecification.getDx() + "\n" 
 			+ "\u0394y=" + meshSpecification.getDy()
