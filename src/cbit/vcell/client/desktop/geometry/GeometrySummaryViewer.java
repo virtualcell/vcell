@@ -211,7 +211,7 @@ private GeometryViewer getGeometryViewer() {
 }
 
 
-public static final String REPLACE_GEOMETRY_LABEL = "Select different geometry...";
+public static final String REPLACE_GEOMETRY_LABEL = "Select Different Geometry...";
 public static final String NEW_GEOMETRY_LABEL = "Create New Geometry...";
 /**
  * Return the JButton1 property value.

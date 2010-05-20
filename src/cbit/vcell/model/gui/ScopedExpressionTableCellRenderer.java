@@ -114,6 +114,9 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 			// calculate header preferred width
 			TableColumn column = columnModel.getColumn(columnIndex);
 			TableCellRenderer headerRenderer = column.getHeaderRenderer();
+			if (headerRenderer == null) {
+				headerRenderer = targetTable.getTableHeader().getDefaultRenderer();
+			}
 			if (headerRenderer != null) {
 				java.awt.Component comp = headerRenderer.getTableCellRendererComponent(targetTable, column.getHeaderValue(), false, false, 0, 0); 
 				maxColumnWidths[columnIndex] = Math.max(maxColumnWidths[columnIndex],comp.getPreferredSize().width);

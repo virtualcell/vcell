@@ -5,6 +5,8 @@ package cbit.vcell.geometry.gui;
 ©*/
 import javax.swing.JTable;
 
+import org.vcell.util.gui.DialogUtils;
+
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
@@ -24,7 +26,6 @@ import cbit.vcell.parser.SymbolTableEntry;
  * @author: 
  */
 public class GeometrySubVolumeTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
-	private final int NUM_COLUMNS = 2;
 	private final int COLUMN_NAME = 0;
 	private final int COLUMN_VALUE = 1;
 	private String LABELS[] = { "Name", "Value" };
@@ -84,7 +85,7 @@ public Class<?> getColumnClass(int column) {
  * getColumnCount method comment.
  */
 public int getColumnCount() {
-	return NUM_COLUMNS;
+	return LABELS.length;
 }
 
 
@@ -95,8 +96,8 @@ public int getColumnCount() {
  * @param column int
  */
 public String getColumnName(int column) {
-	if (column<0 || column>=NUM_COLUMNS){
-		throw new RuntimeException("GeometrySubVolumeTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (column<0 || column>=getColumnCount()){
+		throw new RuntimeException("GeometrySubVolumeTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
 	return LABELS[column];
 }
@@ -143,8 +144,8 @@ public Object getValueAt(int row, int col) {
 		if (row<0 || row>=getRowCount()){
 			throw new RuntimeException("GeometrySubVolumeTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		if (col<0 || col>=NUM_COLUMNS){
-			throw new RuntimeException("GeometrySubVolumeTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+		if (col<0 || col>=getColumnCount()){
+			throw new RuntimeException("GeometrySubVolumeTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(getColumnCount()-1)+"]");
 		}
 		SubVolume subVolume = getGeometry().getGeometrySpec().getSubVolumes(row);
 		switch (col){
@@ -264,8 +265,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (rowIndex<0 || rowIndex>=getRowCount()){
 		throw new RuntimeException("GeometrySubVolumeTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("GeometrySubVolumeTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (columnIndex<0 || columnIndex>=getColumnCount()){
+		throw new RuntimeException("GeometrySubVolumeTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
 	SubVolume subVolume = getGeometry().getGeometrySpec().getSubVolumes(rowIndex);
 	try {
@@ -299,6 +300,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		}
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
+		DialogUtils.showErrorDialog(ownerTable, e.getMessage());
 	}
 }
 

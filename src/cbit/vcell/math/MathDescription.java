@@ -2028,7 +2028,7 @@ public boolean isValid() {
 			}
 		}
 		if (geometry.getGeometrySpec().getNumSubVolumes()!=compartmentCount){
-			setWarning("Spatial Model, there are "+geometry.getGeometrySpec().getNumSubVolumes()+" subvolumes in geometry, but "+compartmentCount+" "+VCML.CompartmentSubDomain+"'s, must be equal");
+			setWarning("Spatial Model, there are "+geometry.getGeometrySpec().getNumSubVolumes()+" subdomains in geometry, but "+compartmentCount+" "+VCML.CompartmentSubDomain+"s in math description. They must match.");
 			return false;
 		}
 		if (geometry.getGeometrySpec().getFilamentGroup().getFilamentCount()!=filamentCount){
@@ -2154,7 +2154,7 @@ public boolean isValid() {
 						}
 						MembraneSubDomain membraneSubDomain = getMembraneSubDomain(compartment1,compartment2);
 						if (membraneSubDomain==null){
-							setWarning("should have MembraneSubDomain between compartments '"+compartment1.getName()+"' and '"+compartment2.getName()+"'");
+							setWarning("There should be a MembraneSubDomain between compartments '"+compartment1.getName()+"' and '"+compartment2.getName()+"'");
 							return false;
 						}
 					}

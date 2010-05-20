@@ -211,7 +211,7 @@ public static JInternalFrameEnhanced createDefaultFrame(JPanel frameContent) {
 	}else if(frameContent instanceof GeometrySummaryViewer){
 		jif = new JInternalFrameEnhanced("Geometry Summary", true, true, true, true);
 		jif.setContentPane(frameContent);
-		jif.setSize(700,500);
+		jif.setSize(700,600);
 		jif.setMinimumSize(new Dimension(600,400));
 		jif.setLocation(200, 300);
 	}

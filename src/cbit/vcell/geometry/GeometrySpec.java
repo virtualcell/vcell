@@ -1523,7 +1523,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 		//
 		SubVolume sv = getSubVolume(newName);
 		if (sv != null && sv != event.getSource()){
-			throw new PropertyVetoException("subdomain name '"+newName+"' is already used",event);
+			throw new PropertyVetoException("A subdomain with name '" + newName + "' already exists.", event);
 		}
 	}
 }
