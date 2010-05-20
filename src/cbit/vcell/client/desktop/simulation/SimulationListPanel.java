@@ -21,6 +21,8 @@ import javax.swing.JSplitPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellEditor;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DefaultTableCellRendererEnhanced;
 import org.vcell.util.gui.JTableFixed;
 
 import cbit.vcell.client.PopupGenerator;
@@ -29,6 +31,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)
@@ -48,14 +51,14 @@ public class SimulationListPanel extends JPanel {
 	private JButton ivjNewButton = null;
 	private JButton ivjResultsButton = null;
 	private JButton ivjRunButton = null;
-	private org.vcell.util.gui.JTableFixed ivjScrollPaneTable = null;
+	private JTableFixed ivjScrollPaneTable = null;
 	private JButton ivjStopButton = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
 	private SimulationWorkspace fieldSimulationWorkspace = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private ListSelectionModel ivjselectionModel1 = null;
-	private cbit.vcell.solver.ode.gui.SimulationSummaryPanel ivjSimulationSummaryPanel1 = null;
+	private SimulationSummaryPanel ivjSimulationSummaryPanel1 = null;
 	private DefaultCellEditor ivjcellEditor1 = null;
 	private java.awt.Component ivjComponent1 = null;
 	private JButton ivjStatusDetailsButton = null;
@@ -388,7 +391,7 @@ private void copySimulations() {
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] toCopy = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toCopy = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	int index = -1;
 	try {
 		index = getSimulationWorkspace().copySimulations(toCopy, this);
@@ -407,7 +410,7 @@ private void copySimulations() {
  */
 private void customizeTable() {
 	getScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-	getScrollPaneTable().setDefaultRenderer(Object.class, new org.vcell.util.gui.DefaultTableCellRendererEnhanced());
+	getScrollPaneTable().setDefaultRenderer(Object.class, new DefaultTableCellRendererEnhanced());
 }
 
 
@@ -423,12 +426,12 @@ private void deleteSimulations() {
 			v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 		}
 	}
-	Simulation[] toDelete = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toDelete = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	try {
 		getSimulationWorkspace().deleteSimulations(toDelete);
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		cbit.vcell.client.PopupGenerator.showErrorDialog(this, "Could not delete all simulations\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(this, "Could not delete all simulations\n"+exc.getMessage());
 	}
 	// unset selection - may not be needed...
 	getScrollPaneTable().clearSelection();
@@ -768,10 +771,10 @@ private SimulationListTableModel getSimulationListTableModel1() {
  * @return cbit.vcell.solver.ode.gui.SimulationSummaryPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.ode.gui.SimulationSummaryPanel getSimulationSummaryPanel1() {
+private SimulationSummaryPanel getSimulationSummaryPanel1() {
 	if (ivjSimulationSummaryPanel1 == null) {
 		try {
-			ivjSimulationSummaryPanel1 = new cbit.vcell.solver.ode.gui.SimulationSummaryPanel();
+			ivjSimulationSummaryPanel1 = new SimulationSummaryPanel();
 			ivjSimulationSummaryPanel1.setPreferredSize(new Dimension(750, 390));
 			ivjSimulationSummaryPanel1.setName("SimulationSummaryPanel1");
 			// user code begin {1}
@@ -925,7 +928,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -1039,7 +1041,7 @@ private void runSimulations() {
 		}
 		v.add(sim);
 	}
-	Simulation[] toRun = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toRun = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().runSimulations(toRun);
 }
 
@@ -1180,7 +1182,7 @@ private void showSimulationResults() {
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] toShow = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toShow = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().showSimulationResults(toShow);
 }
 
@@ -1194,7 +1196,7 @@ public void showSimulationStatusDetails(java.awt.event.ActionEvent actionEvent) 
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] sims = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] sims = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().showSimulationStatusDetails(sims);
 	return;
 }
@@ -1209,7 +1211,7 @@ private void stopSimulations() {
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] toStop = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toStop = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().stopSimulations(toStop);
 }
 
