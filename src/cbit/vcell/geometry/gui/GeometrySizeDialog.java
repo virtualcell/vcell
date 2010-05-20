@@ -142,12 +142,8 @@ private void connEtoM6() {
 private javax.swing.JButton getButton1() {
 	if (ivjButton1 == null) {
 		try {
-			org.vcell.util.gui.BevelBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new org.vcell.util.gui.BevelBorderBean();
-			ivjLocalBorder1.setColor(new java.awt.Color(160,160,255));
 			ivjButton1 = new javax.swing.JButton();
 			ivjButton1.setName("Button1");
-			ivjButton1.setBorder(ivjLocalBorder1);
 			ivjButton1.setText("Cancel");
 			// user code begin {1}
 			// user code end
@@ -167,12 +163,8 @@ private javax.swing.JButton getButton1() {
 private javax.swing.JButton getButton2() {
 	if (ivjButton2 == null) {
 		try {
-			org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
-			ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
-			ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 			ivjButton2 = new javax.swing.JButton();
 			ivjButton2.setName("Button2");
-			ivjButton2.setBorder(ivjLocalBorder);
 			ivjButton2.setText("OK");
 			// user code begin {1}
 			// user code end

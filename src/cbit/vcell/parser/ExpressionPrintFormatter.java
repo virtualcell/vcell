@@ -67,7 +67,7 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 	if (node instanceof ASTRelationalNode ||
 		 node instanceof ASTAndNode ||
 		 node instanceof ASTOrNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);	
@@ -80,7 +80,7 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		//
 		// calculate sizes for string
 		//
-		Vector sumSizes = new Vector();
+		Vector<FormatSize> sumSizes = new Vector<FormatSize>();
 		int operatorWidth = 0;
 		if (node instanceof ASTRelationalNode){
 			ASTRelationalNode relNode = (ASTRelationalNode)node;
@@ -106,19 +106,19 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		
 	}else if (node instanceof DerivativeNode){
 		SimpleNode displayRoot = ((DerivativeNode)node).displayExp.getRootNode();
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		terms.addElement(displayRoot);
 		terms.addElement((SimpleNode)node.jjtGetChild(0));
 		//
 		// calculate sizes for argument of laplacian
 		//
-		Vector argSizes = new Vector();
+		Vector<FormatSize> argSizes = new Vector<FormatSize>();
 		FormatSize argBound = getSizeHorizontalList(terms,argSizes,0);		
 
 		return argBound;
 
 	}else if (node instanceof ASTLaplacianNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);
@@ -129,7 +129,7 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		//
 		// calculate sizes for argument of laplacian
 		//
-		Vector argSizes = new Vector();
+		Vector<FormatSize> argSizes = new Vector<FormatSize>();
 		FormatSize argBound = getSizeHorizontalList(terms,argSizes,0);		
 
 		//
@@ -151,7 +151,7 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		return laplacianBound;
 
 	}else if (node instanceof ASTAssignNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);
@@ -162,17 +162,17 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		//
 		// calculate sizes for string
 		//
-		Vector assignSizes = new Vector();
+		Vector<FormatSize> assignSizes = new Vector<FormatSize>();
 		FormatSize assignBound = getSizeHorizontalList(terms,assignSizes,assignStringWidth);		
 
 		return assignBound;
 		
 	}else if (node instanceof ASTAddNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			if (child instanceof ASTMinusTermNode){
-				terms.addElement(child.jjtGetChild(0));
+				terms.addElement((SimpleNode)child.jjtGetChild(0));
 			}else{	
 				terms.addElement(child);
 			}	
@@ -183,7 +183,7 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		//
 		// calculate sizes for string
 		//
-		Vector sumSizes = new Vector();
+		Vector<FormatSize> sumSizes = new Vector<FormatSize>();
 		FormatSize sumBound = getSizeHorizontalList(terms,sumSizes,sumStringWidth);		
 		sumBound.width += parenStringWidth*2;		
 		if (node.jjtGetChild(0) instanceof ASTMinusTermNode){
@@ -194,12 +194,12 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		
 	}else if (node instanceof ASTFloatNode){
 		FormatSize size = new FormatSize();
-		size.width = fm.stringWidth(node.infixString(node.LANGUAGE_DEFAULT));
+		size.width = fm.stringWidth(node.infixString(SimpleNode.LANGUAGE_DEFAULT));
 		size.high = fontMaxAscent;
 		size.low = fontMaxDescent;
 		return size;
 	}else if (node instanceof ASTNotNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);
@@ -210,13 +210,13 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		//
 		// calculate sizes for string
 		//
-		Vector sumSizes = new Vector();
+		Vector<FormatSize> sumSizes = new Vector<FormatSize>();
 		FormatSize sumBound = getSizeHorizontalList(terms,sumSizes,sumStringWidth);		
 		sumBound.width += parenStringWidth*2 + fm.stringWidth(notString);		
 		return sumBound;
 		
 	}else if (node instanceof ASTFuncNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);
@@ -227,7 +227,7 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		//
 		// calculate sizes for string
 		//
-		Vector sumSizes = new Vector();
+		Vector<FormatSize> sumSizes = new Vector<FormatSize>();
 		FormatSize sumBound = getSizeHorizontalList(terms,sumSizes,sumStringWidth);		
 		String functionName = ((ASTFuncNode)node).getName();
 		if (functionName.equalsIgnoreCase("pow")){
@@ -249,7 +249,7 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		}	
 		
 	}else if (node instanceof ASTPowerNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);
@@ -260,7 +260,7 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		//
 		// calculate sizes for string
 		//
-		Vector sumSizes = new Vector();
+		Vector<FormatSize> sumSizes = new Vector<FormatSize>();
 		FormatSize sumBound = getSizeHorizontalList(terms,sumSizes,sumStringWidth);		
 		FormatSize mantissaSize = (FormatSize)sumSizes.elementAt(0);
 		FormatSize exponentSize = (FormatSize)sumSizes.elementAt(1);
@@ -268,9 +268,9 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		sumBound.high = mantissaSize.high + exponentSize.high + exponentSize.low;
 		sumBound.low = mantissaSize.low;
 		return sumBound;
-	}else if (node instanceof ASTIdNode){
+	}else if (node instanceof ASTIdNode || node instanceof ASTLiteralNode){
 		FormatSize size = new FormatSize();
-		size.width = fm.stringWidth(node.infixString(node.LANGUAGE_DEFAULT));
+		size.width = fm.stringWidth(node.infixString(SimpleNode.LANGUAGE_DEFAULT));
 		size.high = fontMaxAscent;
 		size.low = fontMaxDescent;
 		return size;
@@ -286,12 +286,12 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 			return getSize((SimpleNode)node.jjtGetChild(0));
 		}
 			
-		Vector numerators = new Vector();
-		Vector denominators = new Vector();
+		Vector<SimpleNode> numerators = new Vector<SimpleNode>();
+		Vector<SimpleNode> denominators = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			if (child instanceof ASTInvertTermNode){
-				denominators.addElement(child.jjtGetChild(0));
+				denominators.addElement((SimpleNode)child.jjtGetChild(0));
 			}else{
 				numerators.addElement(child);
 			}
@@ -302,13 +302,13 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		//
 		// calculate sizes for numerator
 		//
-		Vector numeratorSizes = new Vector();
+		Vector<FormatSize> numeratorSizes = new Vector<FormatSize>();
 		FormatSize numeratorBound = getSizeHorizontalList(numerators,numeratorSizes,productStringWidth);		
 			
 		//
 		// calculate sizes for denominator
 		//
-		Vector denominatorSizes = new Vector();
+		Vector<FormatSize> denominatorSizes = new Vector<FormatSize>();
 		FormatSize denominatorBound = getSizeHorizontalList(denominators,denominatorSizes,productStringWidth);		
 		
 		//
@@ -373,11 +373,11 @@ public Dimension getSize(Graphics2D g) throws ExpressionException {
  * @param separatorWidth int
  * @exception java.lang.Exception The exception description.
  */
-private FormatSize getSizeHorizontalList(Vector nodeList, Vector sizeList, int separatorWidth) throws ExpressionException {
+private FormatSize getSizeHorizontalList(Vector<SimpleNode> nodeList, Vector<FormatSize> sizeList, int separatorWidth) throws ExpressionException {
 	FormatSize bound = new FormatSize();
 	sizeList.removeAllElements();
 	for (int i=0;i<nodeList.size();i++){
-		FormatSize sz = getSize((SimpleNode)nodeList.elementAt(i));
+		FormatSize sz = getSize(nodeList.elementAt(i));
 		sizeList.addElement(sz);
 		bound.high = Math.max(bound.high,sz.high);
 		bound.low = Math.max(bound.low,sz.low);
@@ -415,7 +415,7 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 	if (node instanceof ASTRelationalNode ||
 		 node instanceof ASTAndNode ||
 		 node instanceof ASTOrNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);
@@ -428,7 +428,7 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		//
 		// calculate sizes for string
 		//
-		Vector sumSizes = new Vector();
+		Vector<FormatSize> sumSizes = new Vector<FormatSize>();
 		FormatSize sumBound = getSizeHorizontalList(terms,sumSizes,sumStringWidth);		
 		sumBound.width += parenStringWidth*2;		
 					
@@ -480,7 +480,7 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		g.drawString(rightParenString,x+posX,y+posY);
 		
 	}else if (node instanceof DerivativeNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		terms.addElement(((DerivativeNode)node).displayExp.getRootNode());
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
@@ -492,8 +492,8 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		//
 		// calculate sizes for string
 		//
-		Vector argSizes = new Vector();
-		FormatSize argBound = getSizeHorizontalList(terms,argSizes,0);		
+		Vector<FormatSize> argSizes = new Vector<FormatSize>();
+		FormatSize argBound = getSizeHorizontalList(terms,argSizes,0);
 				
 		int posX = 0;
 		int posY = 0;
@@ -504,19 +504,14 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 			posX += size.width;
 		}	
 	}else if (node instanceof ASTLaplacianNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);
 		}
 		if (terms.size() != 1){
 			throw new ExpressionException("ASTLaplacianNode must have one node");
-		}	
-		//
-		// calculate sizes for string
-		//
-		Vector argSizes = new Vector();
-		FormatSize argBound = getSizeHorizontalList(terms,argSizes,0);		
+		}		
 				
 		int posX = 0;
 		//
@@ -543,7 +538,7 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		paint(g,termNode,x+posX,y+posY);
 
 	}else if (node instanceof ASTAssignNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);
@@ -554,8 +549,8 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		//
 		// calculate sizes for string
 		//
-		Vector assignSizes = new Vector();
-		FormatSize assignBound = getSizeHorizontalList(terms,assignSizes,assignStringWidth);		
+		Vector<FormatSize> assignSizes = new Vector<FormatSize>();
+		FormatSize assignBound = getSizeHorizontalList(terms,assignSizes,assignStringWidth);
 					
 		//
 		// draw assign
@@ -577,11 +572,11 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		posX += size.width;
 					
 	}else if (node instanceof ASTAddNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			if (child instanceof ASTMinusTermNode){
-				terms.addElement(child.jjtGetChild(0));
+				terms.addElement((SimpleNode)child.jjtGetChild(0));
 			}else{	
 				terms.addElement(child);
 			}	
@@ -592,7 +587,7 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		//
 		// calculate sizes for string
 		//
-		Vector sumSizes = new Vector();
+		Vector<FormatSize> sumSizes = new Vector<FormatSize>();
 		FormatSize sumBound = getSizeHorizontalList(terms,sumSizes,sumStringWidth);		
 		sumBound.width += parenStringWidth*2;		
 					
@@ -623,9 +618,9 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		}	
 		g.drawString(rightParenString,x+posX,y+posY);
 	}else if (node instanceof ASTFloatNode){
-		g.drawString(node.infixString(node.LANGUAGE_DEFAULT),x,y);
+		g.drawString(node.infixString(SimpleNode.LANGUAGE_DEFAULT),x,y);
 	}else if (node instanceof ASTNotNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);
@@ -636,7 +631,7 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		//
 		// calculate sizes for string
 		//
-		Vector argSizes = new Vector();
+		Vector<FormatSize> argSizes = new Vector<FormatSize>();
 		FormatSize argBound = getSizeHorizontalList(terms,argSizes,commaStringWidth);		
 		argBound.width += parenStringWidth*2;		
 				
@@ -669,7 +664,7 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		g.drawString(rightParenString,x+posX,y+posY);
 
 	}else if (node instanceof ASTFuncNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);
@@ -680,7 +675,7 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		//
 		// calculate sizes for string
 		//
-		Vector argSizes = new Vector();
+		Vector<FormatSize> argSizes = new Vector<FormatSize>();
 		FormatSize argBound = getSizeHorizontalList(terms,argSizes,commaStringWidth);		
 		argBound.width += parenStringWidth*2;		
 				
@@ -757,7 +752,7 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		}	
 						
 	}else if (node instanceof ASTPowerNode){
-		Vector terms = new Vector();
+		Vector<SimpleNode> terms = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			terms.addElement(child);
@@ -768,7 +763,7 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		//
 		// calculate sizes for string
 		//
-		Vector argSizes = new Vector();
+		Vector<FormatSize> argSizes = new Vector<FormatSize>();
 		FormatSize argBound = getSizeHorizontalList(terms,argSizes,commaStringWidth);		
 		argBound.width += parenStringWidth*2;		
 				
@@ -795,12 +790,11 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		posY = - size1.low - size0.high;
 		paint(g,termNode,x+posX,y+posY);
 
-	}else if (node instanceof ASTIdNode){
-		g.drawString(node.infixString(node.LANGUAGE_DEFAULT),x,y);
+	}else if (node instanceof ASTIdNode || node instanceof ASTLiteralNode){
+		g.drawString(node.infixString(SimpleNode.LANGUAGE_DEFAULT),x,y);
 	}else if (node instanceof ASTInvertTermNode){
 		throw new ExpressionException("node type not supported yet");
 	}else if (node instanceof ASTMinusTermNode){
-		FormatSize termBound = getSize(node);
 		int posX = 0;
 		int posY = 0;
 		g.drawString(minusString,x+posX,y+posY);
@@ -815,12 +809,12 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 			return;
 		}
 			
-		Vector numerators = new Vector();
-		Vector denominators = new Vector();
+		Vector<SimpleNode> numerators = new Vector<SimpleNode>();
+		Vector<SimpleNode> denominators = new Vector<SimpleNode>();
 		for (int i=0;i<node.jjtGetNumChildren();i++){
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
 			if (child instanceof ASTInvertTermNode){
-				denominators.addElement(child.jjtGetChild(0));
+				denominators.addElement((SimpleNode)child.jjtGetChild(0));
 			}else{
 				numerators.addElement(child);
 			}
@@ -831,13 +825,13 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		//
 		// calculate sizes for numerator
 		//
-		Vector numeratorSizes = new Vector();
+		Vector<FormatSize> numeratorSizes = new Vector<FormatSize>();
 		FormatSize numeratorBound = getSizeHorizontalList(numerators,numeratorSizes,productStringWidth);		
 			
 		//
 		// calculate sizes for denominator
 		//
-		Vector denominatorSizes = new Vector();
+		Vector<FormatSize> denominatorSizes = new Vector<FormatSize>();
 		FormatSize denominatorBound = getSizeHorizontalList(denominators,denominatorSizes,productStringWidth);		
 		
 		//

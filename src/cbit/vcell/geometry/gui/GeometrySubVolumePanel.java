@@ -8,6 +8,8 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -27,10 +29,10 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
-
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
+import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.ImageSubVolume;
@@ -51,11 +53,9 @@ public class GeometrySubVolumePanel extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private javax.swing.JTable ivjScrollPaneTable = null;
 	private javax.swing.ListSelectionModel ivjselectionModel1 = null;
-	private javax.swing.table.TableColumn ivjTableColumnName = null;
-	private javax.swing.table.TableColumn ivjTableColumnValue = null;
 	private SubVolume ivjSelectedSubVolume = null;
 	private javax.swing.JLabel ivjJWarningLabel = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private GeometrySpec ivjGeometrySpec = null;
 	private final JButton addShapeButton = new JButton();
 
@@ -63,31 +63,20 @@ public class GeometrySubVolumePanel extends javax.swing.JPanel {
 	private PropertyChangeListenerProxyVCell listenerProxy = new PropertyChangeListenerProxyVCell(ivjEventHandler);
 
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
+class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == GeometrySubVolumePanel.this.getFrontButton()) 
-				connEtoC4(e);
 			if (e.getSource() == GeometrySubVolumePanel.this.getFrontButton()) 
 				connEtoM6(e);
 			if (e.getSource() == GeometrySubVolumePanel.this.getFrontButton()) 
 				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(), null, null);
 			if (e.getSource() == GeometrySubVolumePanel.this.getBackButton()) 
-				connEtoC5(e);
-			if (e.getSource() == GeometrySubVolumePanel.this.getBackButton()) 
 				connEtoM9(e);
 			if (e.getSource() == GeometrySubVolumePanel.this.getBackButton()) 
 				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(), null, null);
 			if (e.getSource() == GeometrySubVolumePanel.this.getDeleteButton()) 
-				connEtoC7(e);
-			if (e.getSource() == GeometrySubVolumePanel.this.getDeleteButton()) 
 				connEtoM1(e);
 			if (e.getSource() == GeometrySubVolumePanel.this.getDeleteButton()) 
 				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(), null, null);
-		};
-		public void focusGained(java.awt.event.FocusEvent e) {};
-		public void focusLost(java.awt.event.FocusEvent e) {
-			if (e.getSource() == GeometrySubVolumePanel.this.getJScrollPane1()) 
-				connEtoC9(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == GeometrySubVolumePanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("selectionModel"))) 
@@ -101,8 +90,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == GeometrySubVolumePanel.this.getselectionModel1()) 
-				connEtoC3(e);
-			if (e.getSource() == GeometrySubVolumePanel.this.getselectionModel1()) 
 				connEtoM3(e);
 		};
 	};
@@ -114,25 +101,13 @@ public GeometrySubVolumePanel() {
 	super();
 	initialize();
 }
-/**
- * Comment
- */
-private void cancelEdit() {
-	if(getScrollPaneTable() != null &&
-		getScrollPaneTable().getCellEditor() != null){
-			//This line will apply current editing changes
-			getScrollPaneTable().getCellEditor().stopCellEditing();
 
-			//This line will NOT apply current editing changes
-			//getScrollPaneTable().getCellEditor().cancelCellEditing();
-		}
-}
 /**
  * connEtoC1:  (SelectedSubVolume.this --> GeometrySubVolumePanel.refreshButtons()V)
  * @param value cbit.vcell.geometry.SubVolume
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(cbit.vcell.geometry.SubVolume value) {
+private void connEtoC1(SubVolume value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -167,7 +142,7 @@ private void connEtoC10() {
  * @param value cbit.vcell.geometry.GeometrySpec
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(cbit.vcell.geometry.GeometrySpec value) {
+private void connEtoC11(GeometrySpec value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -185,7 +160,7 @@ private void connEtoC11(cbit.vcell.geometry.GeometrySpec value) {
  * @param value cbit.vcell.geometry.Geometry
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12(cbit.vcell.geometry.Geometry value) {
+private void connEtoC12(Geometry value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -216,114 +191,7 @@ private void connEtoC2(java.beans.PropertyChangeEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-/**
- * connEtoC3:  (selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> GeometrySubVolumePanel.cancelEdit()V)
- * @param arg1 javax.swing.event.ListSelectionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.cancelEdit();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoC4:  (FrontButton.action.actionPerformed(java.awt.event.ActionEvent) --> GeometrySubVolumePanel.cancelEdit()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.cancelEdit();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoC5:  (BackButton.action.actionPerformed(java.awt.event.ActionEvent) --> GeometrySubVolumePanel.cancelEdit()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.cancelEdit();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoC7:  (DeleteButton.action.actionPerformed(java.awt.event.ActionEvent) --> GeometrySubVolumePanel.cancelEdit()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.cancelEdit();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoC8:  (Geometry.this --> GeometrySubVolumePanel.cancelEdit()V)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(cbit.vcell.geometry.Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.cancelEdit();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoC9:  (JScrollPane1.focus.focusLost(java.awt.event.FocusEvent) --> GeometrySubVolumePanel.cancelEdit()V)
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(java.awt.event.FocusEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.cancelEdit();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+
 /**
  * connEtoM1:  (DeleteButton.action.actionPerformed(java.awt.event.ActionEvent) --> Geometry.removeAnalyticSubVolume(Lcbit.vcell.geometry.AnalyticSubVolume;)V)
  * @param arg1 java.awt.event.ActionEvent
@@ -334,7 +202,7 @@ private void connEtoM1(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		if ((getSelectedSubVolume() != null)) {
-			getGeometrySpec().removeAnalyticSubVolume((cbit.vcell.geometry.AnalyticSubVolume)getSelectedSubVolume());
+			getGeometrySpec().removeAnalyticSubVolume((AnalyticSubVolume)getSelectedSubVolume());
 		}
 		// user code begin {2}
 		// user code end
@@ -367,7 +235,7 @@ private void connEtoM10(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.geometry.Geometry
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.geometry.Geometry value) {
+private void connEtoM2(Geometry value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -410,7 +278,7 @@ private void connEtoM6(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		if ((getSelectedSubVolume() != null)) {
-			getGeometrySpec().bringForward((cbit.vcell.geometry.AnalyticSubVolume)getSelectedSubVolume());
+			getGeometrySpec().bringForward((AnalyticSubVolume)getSelectedSubVolume());
 		}
 		// user code begin {2}
 		// user code end
@@ -443,7 +311,7 @@ private void connEtoM7(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.geometry.Geometry
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(cbit.vcell.geometry.Geometry value) {
+private void connEtoM8(Geometry value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -468,7 +336,7 @@ private void connEtoM9(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		if ((getSelectedSubVolume() != null)) {
-			getGeometrySpec().sendBackward((cbit.vcell.geometry.AnalyticSubVolume)getSelectedSubVolume());
+			getGeometrySpec().sendBackward((AnalyticSubVolume)getSelectedSubVolume());
 		}
 		// user code begin {2}
 		// user code end
@@ -545,7 +413,7 @@ private void connPtoP2SetTarget() {
 /**
  * Comment
  */
-private cbit.vcell.geometry.SubVolume findSubVolume() {
+private SubVolume findSubVolume() {
 	int selectedIndex = getselectionModel1().getMinSelectionIndex();
 	if (selectedIndex>=0 && getGeometry()!=null && selectedIndex<getGeometry().getGeometrySpec().getNumSubVolumes()){
 		return getGeometry().getGeometrySpec().getSubVolumes(selectedIndex);
@@ -556,7 +424,7 @@ private cbit.vcell.geometry.SubVolume findSubVolume() {
 /**
  * Comment
  */
-private void geometry_This(cbit.vcell.geometry.Geometry arg1) {
+private void geometry_This(Geometry arg1) {
 	cbit.vcell.model.gui.ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
 }
 /**
@@ -684,7 +552,7 @@ private javax.swing.JButton getFrontButton() {
  * @return cbit.vcell.geometry.Geometry
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public cbit.vcell.geometry.Geometry getGeometry() {
+public Geometry getGeometry() {
 	// user code begin {1}
 	// user code end
 	return ivjGeometry;
@@ -694,7 +562,7 @@ public cbit.vcell.geometry.Geometry getGeometry() {
  * @return cbit.vcell.geometry.GeometrySpec
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.geometry.GeometrySpec getGeometrySpec() {
+private GeometrySpec getGeometrySpec() {
 	// user code begin {1}
 	// user code end
 	return ivjGeometrySpec;
@@ -708,6 +576,7 @@ private GeometrySubVolumeTableModel getgeometrySubVolumeTableModel() {
 	if (ivjgeometrySubVolumeTableModel == null) {
 		try {
 			ivjgeometrySubVolumeTableModel = new GeometrySubVolumeTableModel(getScrollPaneTable());
+			getScrollPaneTable().createDefaultColumnsFromModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -928,16 +797,9 @@ private javax.swing.JTable getScrollPaneTable() {
 			ivjScrollPaneTable = new javax.swing.JTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-//			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
+			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			ivjScrollPaneTable.setAutoCreateColumnsFromModel(false);
-			ivjScrollPaneTable.addColumn(getTableColumnName());
-			ivjScrollPaneTable.addColumn(getTableColumnValue());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -946,7 +808,7 @@ private javax.swing.JTable getScrollPaneTable() {
 /**
  * Comment
  */
-private cbit.vcell.geometry.SubVolume getSelectedSubVolume() {
+private SubVolume getSelectedSubVolume() {
 	// user code begin {1}
 	// user code end
 	return ivjSelectedSubVolume;
@@ -960,52 +822,6 @@ private javax.swing.ListSelectionModel getselectionModel1() {
 	// user code begin {1}
 	// user code end
 	return ivjselectionModel1;
-}
-/**
- * Return the TableColumnName property value.
- * @return javax.swing.table.TableColumn
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.table.TableColumn getTableColumnName() {
-	if (ivjTableColumnName == null) {
-		try {
-			ivjTableColumnName = new javax.swing.table.TableColumn();
-			ivjTableColumnName.setIdentifier("name");
-			ivjTableColumnName.setWidth(150);
-			ivjTableColumnName.setHeaderValue("name");
-			ivjTableColumnName.setMaxWidth(150);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjTableColumnName;
-}
-/**
- * Return the TableColumnValue property value.
- * @return javax.swing.table.TableColumn
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.table.TableColumn getTableColumnValue() {
-	if (ivjTableColumnValue == null) {
-		try {
-			ivjTableColumnValue = new javax.swing.table.TableColumn();
-			ivjTableColumnValue.setIdentifier("value");
-			ivjTableColumnValue.setWidth(400);
-			ivjTableColumnValue.setModelIndex(1);
-			ivjTableColumnValue.setHeaderValue("value");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjTableColumnValue;
 }
 /**
  * Called whenever the part throws an exception.
@@ -1028,9 +844,14 @@ private void initConnections() throws java.lang.Exception {
 	getBackButton().addActionListener(ivjEventHandler);
 	getDeleteButton().addActionListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
-	getJScrollPane1().addFocusListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
+	
+	getJScrollPane1().addComponentListener(new ComponentAdapter() {
+		public void componentResized(ComponentEvent e) {
+			ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
+		}
+	});
 }
 /**
  * Initialize the class.
@@ -1129,12 +950,11 @@ private void refreshButtons() {
  * @param newValue cbit.vcell.geometry.Geometry
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void setGeometry(cbit.vcell.geometry.Geometry newValue) {
+public void setGeometry(Geometry newValue) {
 	if (ivjGeometry != newValue) {
 		try {
-			cbit.vcell.geometry.Geometry oldValue = getGeometry();
+			Geometry oldValue = getGeometry();
 			ivjGeometry = newValue;
-			connEtoC8(ivjGeometry);
 			connEtoM2(ivjGeometry);
 			connEtoM8(ivjGeometry);
 			connEtoC12(ivjGeometry);
@@ -1155,7 +975,7 @@ public void setGeometry(cbit.vcell.geometry.Geometry newValue) {
  * @param newValue cbit.vcell.geometry.GeometrySpec
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setGeometrySpec(cbit.vcell.geometry.GeometrySpec newValue) {
+private void setGeometrySpec(GeometrySpec newValue) {
 	if (ivjGeometrySpec != newValue) {
 		try {
 			/* Stop listening for events from the current object */
@@ -1185,7 +1005,7 @@ private void setGeometrySpec(cbit.vcell.geometry.GeometrySpec newValue) {
  * @param newValue cbit.vcell.geometry.SubVolume
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setSelectedSubVolume(cbit.vcell.geometry.SubVolume newValue) {
+private void setSelectedSubVolume(SubVolume newValue) {
 	if (ivjSelectedSubVolume != newValue) {
 		try {
 			ivjSelectedSubVolume = newValue;

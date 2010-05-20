@@ -3,15 +3,20 @@ package cbit.vcell.opt.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.Hashtable;
+
+import javax.swing.JScrollPane;
+
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.math.gui.*;
-import cbit.vcell.math.*;
-import java.util.*;
-
-import cbit.vcell.opt.*;
-import cbit.vcell.opt.solvers.*;
+import cbit.vcell.opt.OptimizationException;
+import cbit.vcell.opt.OptimizationResultSet;
+import cbit.vcell.opt.OptimizationSolverSpec;
+import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.opt.Parameter;
+import cbit.vcell.opt.solvers.OptSolverCallbacks;
+import cbit.vcell.opt.solvers.OptimizationService;
 /**
  * This type was created in VisualAge.
  */
@@ -561,7 +566,6 @@ private javax.swing.JTextArea getTextArea1() {
 		try {
 			ivjTextArea1 = new javax.swing.JTextArea();
 			ivjTextArea1.setName("TextArea1");
-			ivjTextArea1.setBorder(new org.vcell.util.gui.BevelBorderBean());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -584,7 +588,6 @@ private javax.swing.JTextArea getTextArea2() {
 		try {
 			ivjTextArea2 = new javax.swing.JTextArea();
 			ivjTextArea2.setName("TextArea2");
-			ivjTextArea2.setBorder(new org.vcell.util.gui.BevelBorderBean());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -643,7 +646,7 @@ private void initialize() {
 		constraintsTextArea1.weightx = 1.0;
 		constraintsTextArea1.weighty = 1.0;
 		constraintsTextArea1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getTextArea1(), constraintsTextArea1);
+		add(new JScrollPane(getTextArea1()), constraintsTextArea1);
 
 		java.awt.GridBagConstraints constraintsTextArea2 = new java.awt.GridBagConstraints();
 		constraintsTextArea2.gridx = 0; constraintsTextArea2.gridy = 3;
@@ -652,7 +655,7 @@ private void initialize() {
 		constraintsTextArea2.weightx = 1.0;
 		constraintsTextArea2.weighty = 1.0;
 		constraintsTextArea2.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getTextArea2(), constraintsTextArea2);
+		add(new JScrollPane(getTextArea2()), constraintsTextArea2);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 4;

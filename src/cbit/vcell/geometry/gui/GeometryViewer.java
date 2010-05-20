@@ -6,8 +6,9 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.Hashtable;
 
+import javax.swing.BorderFactory;
+
 import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.BevelBorderBean;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.image.DisplayAdapterService;
@@ -24,9 +25,6 @@ import cbit.vcell.graph.SubVolumeContainerShape;
  * This type was created in VisualAge.
  */
 public class GeometryViewer extends javax.swing.JPanel implements ActionListener, java.beans.PropertyChangeListener {
-	private java.awt.Point beginPick = null;
-	private java.awt.Point endPick = null;
-	private boolean bPickMode = true;
 	private GeometrySubVolumePanel ivjGeometrySubVolumePanel = null;
 	private javax.swing.JLabel ivjSizeLabel = null;
 	private Geometry ivjGeometry = null;
@@ -497,7 +495,7 @@ public Geometry getGeometry() {
 public GeometryFilamentCurveDialog getGeometryFilamentCurveDialog1() {
 	if (ivjGeometryFilamentCurveDialog1 == null) {
 		try {
-			ivjGeometryFilamentCurveDialog1 = new cbit.vcell.geometry.gui.GeometryFilamentCurveDialog();
+			ivjGeometryFilamentCurveDialog1 = new GeometryFilamentCurveDialog();
 			ivjGeometryFilamentCurveDialog1.setName("GeometryFilamentCurveDialog1");
 			ivjGeometryFilamentCurveDialog1.setLocation(618, 437);
 			// user code begin {1}
@@ -542,12 +540,9 @@ private GeometrySpec getGeometrySpec() {
 private GeometrySubVolumePanel getGeometrySubVolumePanel() {
 	if (ivjGeometrySubVolumePanel == null) {
 		try {
-			BevelBorderBean ivjLocalBorder;
-			ivjLocalBorder = new BevelBorderBean();
-			ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 			ivjGeometrySubVolumePanel = new GeometrySubVolumePanel();
 			ivjGeometrySubVolumePanel.setName("GeometrySubVolumePanel");
-			ivjGeometrySubVolumePanel.setBorder(ivjLocalBorder);
+			ivjGeometrySubVolumePanel.setBorder(BorderFactory.createEtchedBorder());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -589,12 +584,8 @@ private ImagePlaneManagerPanel getImagePlaneManagerPanel1() {
 private javax.swing.JButton getJButtonChangeDomain() {
 	if (ivjJButtonChangeDomain == null) {
 		try {
-			BevelBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new BevelBorderBean();
-			ivjLocalBorder1.setColor(new java.awt.Color(160,160,255));
 			ivjJButtonChangeDomain = new javax.swing.JButton();
 			ivjJButtonChangeDomain.setName("JButtonChangeDomain");
-			ivjJButtonChangeDomain.setBorder(ivjLocalBorder1);
 			ivjJButtonChangeDomain.setText("Change domain");
 			// user code begin {1}
 			// user code end
@@ -706,6 +697,7 @@ private void initialize() {
 		constraintsGeometrySubVolumePanel.gridwidth = 4;
 		constraintsGeometrySubVolumePanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsGeometrySubVolumePanel.insets = new java.awt.Insets(5, 5, 0, 5);
+		constraintsGeometrySubVolumePanel.weighty = 0.15;
 		add(getGeometrySubVolumePanel(), constraintsGeometrySubVolumePanel);
 
 		java.awt.GridBagConstraints constraintsSizeLabel = new java.awt.GridBagConstraints();
@@ -832,7 +824,7 @@ private void refreshSize() {
 		getSizeLabel().setText(dim+" dimensional,"+
 				"  size=("+sizeX+(dim > 1?","+sizeY:"")+(dim > 2?","+sizeZ:"")+")"+
 				//","+sizeY+","+sizeZ+")"+
-				"  origin=("+originX+(dim>1?","+originY:"")+(dim>2?","+originZ:"")+")");
+				", origin=("+originX+(dim>1?","+originY:"")+(dim>2?","+originZ:"")+")");
 	}
 }
 

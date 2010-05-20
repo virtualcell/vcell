@@ -1,5 +1,7 @@
 package org.vcell.util.gui;
 
+import javax.swing.BorderFactory;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 
 /*©
@@ -126,11 +128,8 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
-		org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
-		ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
-		ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 		setName("JToolBarToggleButton");
-		setBorder(ivjLocalBorder);
+		setBorder(BorderFactory.createRaisedBevelBorder());
 		setText("");
 		setMaximumSize(new java.awt.Dimension(40, 40));
 		setPreferredSize(new java.awt.Dimension(40, 40));
@@ -226,14 +225,10 @@ private void setmodel1(javax.swing.ButtonModel newValue) {
  * Comment
  */
 public void updateBorder() {
-	Border border = getBorder();
-	if (border instanceof BevelBorderBean){
-		BevelBorderBean bevelBorderBean = (BevelBorderBean)border;
-		if (isSelected()) {
-			bevelBorderBean.setBevelType(BevelBorderBean.LOWERED);
-		} else {
-			bevelBorderBean.setBevelType(BevelBorderBean.RAISED);
-		}
+	if (isSelected()) {
+		setBorder(BorderFactory.createLoweredBevelBorder());
+	} else {
+		setBorder(BorderFactory.createRaisedBevelBorder());
 	}
 	return;
 }
