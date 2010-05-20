@@ -311,7 +311,7 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 		}
 		
 		MeshSpecification meshSpecification = simulation.getMeshSpecification();
-		if (!meshSpecification.isAspectRatioOK()) {
+		if (meshSpecification != null && !meshSpecification.isAspectRatioOK()) {
 			warningMessage =  (warningMessage == null? "" : warningMessage + "\n\n") 
 				+ "Differences in mesh sizes are detected. This might affect the accuracy of the solution.\n"
 				+ "\u0394x=" + meshSpecification.getDx() + "\n" 
