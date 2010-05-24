@@ -149,13 +149,13 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	 * Method setUnderlyingImage.
 	 * @param argUnderlyingImage BufferedImage
 	 */
-	public void setUnderlyingImage(BufferedImage argUnderlyingImage,boolean bNew,OverlayEditorPanelJAI.AllPixelValuesRange allPixelValuesRange){
+	public void setUnderlyingImage(BufferedImage argUnderlyingImage,/*boolean bNew,*/OverlayEditorPanelJAI.AllPixelValuesRange allPixelValuesRange){
 		this.allPixelValuesRange = allPixelValuesRange;
 		this.underlyingImage = argUnderlyingImage;
 		contrastHash.clear();
-		if(bNew){
-			resetGUI();
-		}
+//		if(bNew){
+//			resetGUI();
+//		}
 		refreshImage();
 	}
 	private void resetGUI(){
@@ -389,6 +389,10 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 		}
 	}
 	
+	public void setContrastToMinMax(){
+		contrastFactor = 1;
+		refreshImage();
+	}
 	public void increaseContrast(){
 		contrastFactor++;
 		refreshImage();
