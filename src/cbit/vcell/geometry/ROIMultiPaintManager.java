@@ -318,7 +318,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //		}
 //
 //	}
-	private void askInitialize(){
+	private void askInitialize(boolean bForceAddDistinct){
 
 		TreeSet<Integer> sortedPixVal = new TreeSet<Integer>();
 		BitSet uniquePixelBS = new BitSet((int)Math.pow(2, Short.SIZE));
@@ -338,8 +338,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		final String addROIAssist = "Add ROI, show histogram";
 		final String addAllDistinct = "Add ROIs for all distinct";
 		final String cancel = "Cancel";
-		String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
-				"The current image contains "+uniquePixelBS.cardinality()+" distinct non-zero pixel values."+
+		String result = null;
+		String distinctDescr =
+			"The current image contains "+uniquePixelBS.cardinality()+" distinct non-zero pixel values.";
+		if(!bForceAddDistinct){
+			result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
+				distinctDescr+
 				"  Segmenting an image begins with defining at least 1 'region of interest' (ROI)."+
 				"  After creating the initial ROI you can use the segmentation tools to create/edit more ROIs.  Choose an action:\n"+
 				"1. Add an 'empty' ROI to begin and edit manually."+
@@ -352,8 +356,26 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						:new String[] {addROIManual,addROIAssist,addAllDistinct,cancel})),
 				cancel);
 		
-		if(result.equals(cancel)){
-			return;//throw UserCancelException.CANCEL_GENERIC;
+			if(result.equals(cancel)){
+				return;//throw UserCancelException.CANCEL_GENERIC;
+			}
+		}else{
+			if(uniquePixelBS.cardinality() == 0){
+				DialogUtils.showWarningDialog(overlayEditorPanelJAI, 
+						"Underlay contains no non-zero pixel values available for ROI assignment.");
+				return;
+			}
+			boolean bHasExistingROIs =
+				overlayEditorPanelJAI.getAllCompositeROINamesAndColors() != null &&
+				overlayEditorPanelJAI.getAllCompositeROINamesAndColors().length > 0;
+			result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
+					(bHasExistingROIs?"Warning: Existing ROIs may be overwritten.  ":"")+
+					distinctDescr,
+					new String[] {addAllDistinct,cancel}, addAllDistinct);
+
+			if(result.equals(cancel)){
+				return;//throw UserCancelException.CANCEL_GENERIC;
+			}
 		}
 		try{
 			if(result.equals(addAllDistinct)){
@@ -682,6 +704,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			overlayEditorPanelJAI.setChannelNames(null);
 		}
 		updateUnderlayHistogramDisplay();
+		overlayEditorPanelJAI.setContrastToMinMax();
 //		overlayEditorPanelJAI.setImages(getImageDataSetChannel(), true,
 //				OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
 //				allPixelValuesRangeChannels[imageDatasetChannel]);
@@ -695,7 +718,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				@Override
 				public void windowOpened(WindowEvent e) {
 					super.windowOpened(e);
-					askInitialize();
+					askInitialize(false);
 				}
 			}
 		);
@@ -1319,8 +1342,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	private void initImageDataSet(short[][] dataToSegmentChannels,
 			ISize uncroppedISize) throws Exception{
 		
-		initImageDataSetChannels = new ImageDataset[dataToSegmentChannels.length];
-		for (int c = 0; c < dataToSegmentChannels.length; c++) {	
+		initImageDataSetChannels = new ImageDataset[(dataToSegmentChannels != null?dataToSegmentChannels.length:1)];
+		for (int c = 0; c < initImageDataSetChannels.length; c++) {	
 			UShortImage[] zImageSet = new UShortImage[uncroppedISize.getZ()];
 			for (int i = 0; i < zImageSet.length; i++) {
 				short[] shortData = new short[uncroppedISize.getX()*uncroppedISize.getY()];
@@ -1402,6 +1425,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CHANNEL_PROPERTY)){
 			imageDatasetChannel = (Integer)evt.getNewValue();
 			updateUnderlayHistogramDisplay();
+		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_ADDALLDISTINCT_PROPERTY)){
+			askInitialize(true);
 		}
 	}
 
@@ -1447,7 +1472,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				true, true, null, true);
 	}
 	private void updateUnderlayHistogramDisplay(){
-		overlayEditorPanelJAI.setImages(getImageDataSetChannel(), false,
+		overlayEditorPanelJAI.setImages(getImageDataSetChannel(),
 				OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR, OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR,
 				allPixelValuesRangeChannels[imageDatasetChannel]);
 		if(condensedBinsMapChannels != null){
