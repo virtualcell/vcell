@@ -606,7 +606,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 					mathVerifier.runLoadTest(
 							(userIDV.size()==0?null:userIDV.toArray(new String[0])),
 							(bioAndMathModelKeyValueV.size()==0?null:bioAndMathModelKeyValueV.toArray(new KeyValue[0])),
-							enterPanel.getSoftwareVersion());
+							enterPanel.getSoftwareVersion(), true);
 				}
 			};
 			tasksV.add(runXMLLoadTestTask);
