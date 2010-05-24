@@ -26,6 +26,7 @@ this class does not extend java.util.Comparator
 public class VCMLComparator {
 
 	private static boolean VERBOSE_MODE = true;	                //for now...
+	private static boolean DEBUG_MODE = false;
 	
 	private static PrintStream ps;
 	public static PrintStream getPs() {
@@ -221,6 +222,16 @@ public class VCMLComparator {
 		}
 	}
 
+	private static void printInfo(Element source, Element target){
+		//
+		if(VCMLComparator.DEBUG_MODE){
+			System.err.println("-source parent="+source.getParent());
+			System.err.println("-target parent="+target.getParent());
+			System.err.println("--source ="+source);
+			System.err.println("--target ="+target);
+			System.out.println("failed");
+		}
+	}
 
 	//the testAll boolean indicate whether to cover all elements in the test, even if the test fails. 
 	private static boolean compareVCML(Element source, Element target, boolean testAll, boolean bSkipVCMetaData) {
@@ -230,6 +241,7 @@ public class VCMLComparator {
 
 	    if (!source.getName().equals(target.getName())) {           //wrong element.
 	        ps.println("Element: "  + source.getName() + " with parent: " + source.getParent() + " is lost.");
+	        printInfo(source, target);
 			elementFlag = false;
 			if (!testAll) {
 				return elementFlag;
@@ -243,6 +255,7 @@ public class VCMLComparator {
 	                    + " with text: "
 	                    + source.getTextTrim()
 	                    + " is lost.");
+	    	printInfo(source, target);
 	        textFlag = false;
 	        if (!testAll) {
 				return textFlag;
@@ -259,6 +272,10 @@ public class VCMLComparator {
 	    	source.removeChild(XMLTags.AnnotationTag, Namespace.getNamespace(XMLTags.VCML_NS));
 	    	target.removeChild(XMLTags.AnnotationTag, Namespace.getNamespace(XMLTags.VCML_NS));
 	    	
+//	    	// legacy sbmlAnnotation "annotation" attribute??
+//	    	source.removeChild(XMLTags.SbmlAnnotationTag, Namespace.getNamespace(XMLTags.VCML_NS));
+//	    	target.removeChild(XMLTags.SbmlAnnotationTag, Namespace.getNamespace(XMLTags.VCML_NS));
+	    	
 	    	source.removeChild(XMLMetaData.VCMETADATA_TAG, Namespace.getNamespace(XMLTags.VCML_NS));
 	    	target.removeChild(XMLMetaData.VCMETADATA_TAG, Namespace.getNamespace(XMLTags.VCML_NS));
 	    }
@@ -272,6 +289,7 @@ public class VCMLComparator {
 	        ps.println("Element's children: " + source.getName() + ": "
 	                + source.getAttributeValue(pkName)
 	                + " are partially/completely lost");
+	        printInfo(source, target);
 	        return false;
 	    }
 	    Element e1[] = (Element[]) children1.toArray(new Element[children1.size()]);
@@ -285,13 +303,22 @@ public class VCMLComparator {
 	        Element child1 = e1[j];
 	        Element child2 = e2[j];
 	        if (!compareVCML(child1, child2, testAll, bSkipVCMetaData)){
+	        	printInfo(source, target);
 		        bChildrenSame = false;
 				if (!testAll){
 		     	   return false;
 				}
 	        }
 	    }
-	    return bChildrenSame && elementFlag && attFlag && textFlag;
+	    boolean bFinalFlag = bChildrenSame && elementFlag && attFlag && textFlag;
+	    
+	    if (bFinalFlag) {
+	    	return true;
+	    } else {
+	    	printInfo(source, target);
+	    	return false;
+	    }
+//		return bFinalFlag;
 	}
 
 

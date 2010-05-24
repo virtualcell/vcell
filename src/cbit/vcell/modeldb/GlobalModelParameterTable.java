@@ -108,7 +108,7 @@ public void setModelParameters(Connection con,Model model) throws SQLException,D
 					xmlReader.getModelParams(modelParameeterXMLElement, model);
 				model.setModelParameters(modelParameterArr);
 			}catch(Exception e){
-				throw new DataAccessException("error reading GlobalModelParameters for model "+model.getName(),e);
+				throw new DataAccessException("error reading ModelParameters for model "+model.getName(),e);
 			}
 		}
 	} finally {
