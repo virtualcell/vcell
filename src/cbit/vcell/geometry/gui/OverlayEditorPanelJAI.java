@@ -53,14 +53,12 @@ import loci.formats.AWTImageTools;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
-import org.vcell.util.Range;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.geometry.ROIMultiPaintManager;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
@@ -336,6 +334,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	//properties
 	public static final String FRAP_DATA_INIT_PROPERTY = "FRAP_DATA_INIT_PROPERTY";
 	public static final String FRAP_DATA_CHANNEL_PROPERTY = "FRAP_DATA_CHANNEL_PROPERTY";
+	public static final String FRAP_DATA_ADDALLDISTINCT_PROPERTY = "FRAP_DATA_ADDALLDISTINCT_PROPERTY";
 	public static final String FRAP_DATA_END_PROPERTY = "FRAP_DATA_END_PROPERTY";
 	public static final String FRAP_DATA_FILL_PROPERTY = "FRAP_DATA_FILL_PROPERTY";
 	public static final String FRAP_DATA_PAINT_PROPERTY = "FRAP_DATA_PAINT_PROPERTY";
@@ -360,7 +359,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public static final double DEFAULT_OFFSET_FACTOR = 0.0;
 	private double originalScaleFactor = DEFAULT_SCALE_FACTOR;
 	private double originalOffsetFactor = DEFAULT_OFFSET_FACTOR;
-	private ISize originalISize;
+//	private ISize originalISize;
 	//panel components
 	private JComboBox roiComboBox;
 	private JButton contrastButtonMinus;
@@ -941,6 +940,15 @@ public class OverlayEditorPanelJAI extends JPanel{
 					}
 				});
 				jp.add(histogramToolJMenuItem);
+				
+				JMenuItem addAllDistinctJMenuItem = new JMenuItem("Add ROI for each pixel value...");
+				addAllDistinctJMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						firePropertyChange(FRAP_DATA_ADDALLDISTINCT_PROPERTY, null, null);
+					}
+				});
+				jp.add(addAllDistinctJMenuItem);
+
 				jp.show((Component)e.getSource(), 0, ((Component)e.getSource()).getHeight());
 			}
 		});
@@ -1154,7 +1162,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		}
 		UShortImage specialUShortImage = new UShortImage(specialData,null,null,width,height,1);
 		BufferedImage specialBufferedImage = createUnderlyingImage(specialUShortImage);
-		imagePane.setUnderlyingImage(specialBufferedImage, false,null);
+		imagePane.setUnderlyingImage(specialBufferedImage,/* false,*/null);
 	}
 	/**
 	 * Method createHighlightImageFromROI.
@@ -1233,9 +1241,12 @@ public class OverlayEditorPanelJAI extends JPanel{
 		imagePane.setAllROICompositeImage((allROICompositeImageArr==null?null:allROICompositeImageArr[getZ()]));
 		histogramPanel.highlightsChanged(action);
 	}
+	public void setContrastToMinMax(){
+		imagePane.setContrastToMinMax();
+	}
 	/** Sets the viewer to display the given images. * @param argImageDataset ImageDataset
 	 */
-	public void setImages(ImageDataset argImageDataset,boolean bNew,double originalScaleFactor,double originalOffsetFactor,
+	public void setImages(ImageDataset argImageDataset,double originalScaleFactor,double originalOffsetFactor,
 			AllPixelValuesRange allPixelValuesRange) {
 		imageDataset = argImageDataset;
 		BufferedImage underlyingImage = null;
@@ -1244,7 +1255,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 
 			this.originalScaleFactor = originalScaleFactor;
 			this.originalOffsetFactor = originalOffsetFactor;
-			originalISize = (bNew?imageDataset.getISize():originalISize);
 			if(!timeSlider.isEnabled()) //if the component is already enabled, don't do anything
 			{
 				BeanUtils.enableComponents(leftJPanel, true);
@@ -1292,7 +1302,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 			this.allPixelValuesRange = null;
 			this.originalScaleFactor = DEFAULT_SCALE_FACTOR;
 			this.originalOffsetFactor = DEFAULT_OFFSET_FACTOR;
-			originalISize = null;
 			timeSlider.setValue(1);
 			timeSlider.setMaximum(1);
 			timeSlider.setLabelTable(null);
@@ -1302,31 +1311,12 @@ public class OverlayEditorPanelJAI extends JPanel{
 			zSlider.setLabelTable(null);
 			zSlider.setEnabled(false);
 			BeanUtils.enableComponents(leftJPanel, false);
-//			BeanUtils.enableComponents(topJPanel, false);
 			BeanUtils.enableComponents(editROIPanel, false);
 			underlyingImage = null;
-//			setROI(null);
 		}
-
-//		if((getROI() != null && imageDataset != null) &&
-//				(getROI().getISize().getX() != imageDataset.getISize().getX() ||
-//				getROI().getISize().getY() != imageDataset.getISize().getY() ||
-//				getROI().getISize().getZ() != imageDataset.getSizeZ())){
-//				
-//				roiComboBox.removeAllItems();
-//				try {
-//					setROI(null);
-//				} catch (Exception e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//			}
-
+		
 		updateLabel(-1, -1);
-		getImagePane().setUnderlyingImage(underlyingImage,bNew,this.allPixelValuesRange);
-		if(imageDataset != null && bNew){
-			contrastButtonPlus.doClick();
-		}
+		getImagePane().setUnderlyingImage(underlyingImage,this.allPixelValuesRange);
 	}
 
 	public int getDisplayContrastFactor(){
@@ -1565,7 +1555,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		if(imageDataset != null){
 			BufferedImage image = getImage();
 			if (image != null){
-				imagePane.setUnderlyingImage(image,false,allPixelValuesRange);
+				imagePane.setUnderlyingImage(image,/*false,*/allPixelValuesRange);
 			}
 		}
 		imagePane.repaint();
@@ -1953,7 +1943,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 					updateLabel(-1, -1);
 					BufferedImage image = getImage();
 					if (image != null){
-						imagePane.setUnderlyingImage(image,false,allPixelValuesRange);
+						imagePane.setUnderlyingImage(image,/*false,*/allPixelValuesRange);
 					}
 					refreshROI();
 					imagePane.repaint();
