@@ -2795,7 +2795,7 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 			VersionTable.versionDate_ColumnName+","+
 			VersionTable.name_ColumnName+","+
 			UserTable.table.userid.getUnqualifiedColName()+","+
-			"'BIO' "+MODEL_TYPE_COLUMN+","+
+			"'"+LoadTestInfoOpResults.MODELTYPE_BIO+"' "+MODEL_TYPE_COLUMN+","+
 			BioModelTable.table.id.getQualifiedColName() + " " + MODEL_ID_COLUMN+","+
 			specialColumn+
 		" FROM "+
@@ -2816,7 +2816,7 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 			VersionTable.versionDate_ColumnName+","+
 			VersionTable.name_ColumnName+","+
 			UserTable.table.userid.getUnqualifiedColName()+","+
-			"'MATH' "+MODEL_TYPE_COLUMN+","+
+			"'"+LoadTestInfoOpResults.MODELTYPE_MATH+"' "+MODEL_TYPE_COLUMN+","+
 			MathModelTable.table.id.getQualifiedColName() + " " + MODEL_ID_COLUMN+","+
 			specialColumn+
 		" FROM "+

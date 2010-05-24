@@ -28,17 +28,20 @@ import cbit.sql.Field;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverResultSetInfo;
+import cbit.vcell.xml.VCMLComparator;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 /**
@@ -80,6 +83,11 @@ public MathVerifier(ConnectionFactory argConFactory, KeyFactory argKeyFactory,
 	this.dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,argSessionLog);
 }
 
+
+//long compareXMLTime,long compareObjTime,
+//boolean bSameCachedAndNotCachedXML,boolean bSameCachedAndNotCachedObj,boolean bSameSelfXMLCachedRoundtrip,
+//Exception bSameCachedAndNotCachedXMLExc,Exception bSameCachedAndNotCachedObjExc,Exception bSameSelfXMLCachedRoundtripExc){
+
 public static class LoadModelsStatTable extends Table{
 	private static final String TABLE_NAME = "loadmodelstat";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
@@ -103,8 +111,20 @@ public static class LoadModelsStatTable extends Table{
 	public final Field timeStamp		= new Field("timeStamp",	"varchar2(32)",	"NOT NULL");
 	public final Field loadTime			= new Field("loadTime",		"integer",	"");
 	public final Field softwareVers		= new Field("softwareVers",	"varchar2("+SOFTWARE_VERS_SIZE+")",	"NOT NULL");
+	public final Field loadOriginalXMLTime	= new Field("loadOriginalXMLTime",		"integer",	"");
+	public final Field loadUnresolvedTime	= new Field("loadUnresolvedTime",		"integer",	"");
+	public final Field bSameCachedAndNotCachedXML		= new Field("bSameCachedAndNotCachedXML",	"integer",	"");
+	public final Field bSameCachedAndNotCachedObj		= new Field("bSameCachedAndNotCachedObj",	"integer",	"");
+	public final Field bSameSelfXMLCachedRoundtrip		= new Field("bSameSelfXMLCachedRoundtrip",	"integer",	"");
+	public final Field bSameCachedAndNotCachedXMLExc	= new Field("bSameCachedAndNotCachedXMLExc",	"varchar2("+MAX_ERROR_MSG_SIZE+")",	"");
+	public final Field bSameCachedAndNotCachedObjExc	= new Field("bSameCachedAndNotCachedObjExc",	"varchar2("+MAX_ERROR_MSG_SIZE+")",	"");
+	public final Field bSameSelfXMLCachedRoundtripExc	= new Field("bSameSelfXMLCachedRoundtripExc",	"varchar2("+MAX_ERROR_MSG_SIZE+")",	"");
 	
-	private final Field fields[] = {bioModelRef,mathModelRef,resultFlag,errorMessage,timeStamp,loadTime,softwareVers};
+	private final Field fields[] =
+		{bioModelRef,mathModelRef,resultFlag,errorMessage,timeStamp,loadTime,softwareVers,
+			loadOriginalXMLTime,loadUnresolvedTime,
+			bSameCachedAndNotCachedXML,bSameCachedAndNotCachedObj,bSameSelfXMLCachedRoundtrip,
+			bSameCachedAndNotCachedXMLExc,bSameCachedAndNotCachedObjExc,bSameSelfXMLCachedRoundtripExc};
 	
 	public static final LoadModelsStatTable table = new LoadModelsStatTable();
 	/**
@@ -154,9 +174,9 @@ public static MathVerifier createMathVerifier(
  */
 public static void main(String[] args) {
     //
-        if (args.length != 7) {
+        if (args.length != 9) {
             System.out.println(
-                "Usage: host databaseSID schemaUser schemaUserPassword {MV_DEFAULT,MV_LOAD_XML} {user,-} softwareVersion");
+                "Usage: host databaseSID schemaUser schemaUserPassword {MV_DEFAULT,MV_LOAD_XML} {user,-} {BioMathKey,-} softwareVersion bUpdateDatabase");
             System.exit(0);
         }
         String host = args[0];
@@ -165,8 +185,10 @@ public static void main(String[] args) {
         String dbSchemaUser = args[2];
         String dbPassword = args[3];
         String testFlag = args[4];
-        String user = args[5];
-        String softwareVersion = args[6];
+        String user = (args[5].equals("-")?null:args[5]);
+        KeyValue[] bioMathKeyArr = (args[6].equals("-")?null:new KeyValue[] {new KeyValue(args[6])});
+        String softwareVersion = args[7];
+        boolean bUpdateDatabase = Boolean.parseBoolean(args[8]);
         //
 
         int ok =
@@ -175,16 +197,20 @@ public static void main(String[] args) {
                 "Will run MathVerifier with settings: "
                     + "\nconnectURL="
                     + connectURL
-                    + "\nUser="
+                    + "\nDBSchema="
                     + dbSchemaUser
                     + "\npassword="
                     + dbPassword
                     +"\ntestFlag="
                     + testFlag
                     +"\nUser="
-                    + (user.equals("-")?"all users":user)
+                    + (user==null?"all users":user)
+                    +"\nBioMathKey="
+                    + (bioMathKeyArr == null?"all Bio and Math models":bioMathKeyArr[0])
                     +"\nsoftwareVersion="
-                    + softwareVersion,
+                    + softwareVersion
+                    +"\nbUpdateDatabase="
+                    + bUpdateDatabase,
                 "Confirm",
                 javax.swing.JOptionPane.OK_CANCEL_OPTION,
                 javax.swing.JOptionPane.WARNING_MESSAGE);
@@ -195,9 +221,9 @@ public static void main(String[] args) {
 	try {
     	MathVerifier mathVerifier = MathVerifier.createMathVerifier(host, db, dbSchemaUser, dbPassword);
         if(testFlag.equals(MV_LOAD_XML)){
-        	mathVerifier.runLoadTest((user == null?null:new String[] {user}), null,softwareVersion);
+        	mathVerifier.runLoadTest((user == null?null:new String[] {user}), bioMathKeyArr,softwareVersion,bUpdateDatabase);
         }else if(testFlag.equals(MV_DEFAULT)){
-        	mathVerifier.runMathTest((user == null?null:new String[] {user}),null);
+        	mathVerifier.runMathTest((user == null?null:new String[] {user}),bioMathKeyArr,bUpdateDatabase);
         }
 	} catch (Throwable e) {
 	    e.printStackTrace(System.out);
@@ -228,23 +254,25 @@ private void closeAllConnections(){
 
 }
 
-public void runLoadTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,String softwareVersion) throws Exception{
+public void runLoadTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,String softwareVersion,boolean bUpdateDatabase) throws Exception{
 	this.testFlag = MathVerifier.MV_LOAD_XML;
 	this.timeStamp = new Timestamp(System.currentTimeMillis());
 	User[] scanUsers = createUsersFromUserids(scanUserids);
     try{
-    	MathVerifier.initLoadModelsStatTable(softwareVersion,scanUsers,bioAndMathModelKeys,this.timeStamp,this.conFactory,this.log);
-    	this.scan(scanUsers, true, bioAndMathModelKeys);
+    	if(bUpdateDatabase){
+    		MathVerifier.initLoadModelsStatTable(softwareVersion,(scanUserids==null?null:scanUsers),bioAndMathModelKeys,this.timeStamp,this.conFactory,this.log);
+    	}
+    	this.scan(scanUsers, bUpdateDatabase, bioAndMathModelKeys);
     }finally{
     	closeAllConnections();
     }
 
 }
-public void runMathTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys) throws Exception{
+public void runMathTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,boolean bUpdateDatabase) throws Exception{
 	this.testFlag = MathVerifier.MV_DEFAULT;
 	User[] scanUsers = createUsersFromUserids(scanUserids);
     try{
-    	this.scan(scanUsers, true, bioAndMathModelKeys);
+    	this.scan(scanUsers, bUpdateDatabase, bioAndMathModelKeys);
     }finally{
     	closeAllConnections();
     }
@@ -351,7 +379,8 @@ private static void initLoadModelsStatTable(String softwareVersion,User[] users,
 					mathModelKeyS+",NULL,NULL,"+
 					"'"+timestamp.toString()+"'"+
 					",NULL,"+
-					"'"+TokenMangler.getSQLEscapedString(softwareVersion, LoadModelsStatTable.SOFTWARE_VERS_SIZE)+"'"+")");
+					"'"+TokenMangler.getSQLEscapedString(softwareVersion, LoadModelsStatTable.SOFTWARE_VERS_SIZE)+"'"+
+					",NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)");
 			DbDriver.updateCleanSQL(con, sql.toString());
 
 		}
@@ -371,7 +400,7 @@ private static void initLoadModelsStatTable(String softwareVersion,User[] users,
 	}
 }
 
-private void updateLoadModelsStatTable(long loadTimeMilliSec,SessionLog userLog,KeyValue BioOrMathModelKey,Exception exception){
+private void updateLoadModelsStatTable_LoadTest(long loadTimeMilliSec,SessionLog userLog,KeyValue BioOrMathModelKey,Exception exception){
 	String sql =
 		"UPDATE "+LoadModelsStatTable.table.getTableName()+
 		" SET "+
@@ -404,6 +433,55 @@ private void updateLoadModelsStatTable(long loadTimeMilliSec,SessionLog userLog,
 	}
 }
 
+private void updateLoadModelsStatTable_CompareTest(SessionLog userLog,KeyValue BioOrMathModelKey,
+		Long loadOriginalXMLTime,Long loadUnresolvedTime,
+		Boolean bSameCachedAndNotCachedXML,Boolean bSameCachedAndNotCachedObj,Boolean bSameSelfXMLCachedRoundtrip,
+		Exception bSameCachedAndNotCachedXMLExc,Exception bSameCachedAndNotCachedObjExc,Exception bSameSelfXMLCachedRoundtripExc){
+	String sql =
+		"UPDATE "+LoadModelsStatTable.table.getTableName()+
+		" SET "+
+		LoadModelsStatTable.table.bSameCachedAndNotCachedXML + " = " +
+			(bSameCachedAndNotCachedXML==null?"NULL":(bSameCachedAndNotCachedXML?1:0))+","+
+		LoadModelsStatTable.table.bSameCachedAndNotCachedXMLExc + " = " +
+			(bSameCachedAndNotCachedXMLExc==null?"NULL":"'"+TokenMangler.getSQLEscapedString(bSameCachedAndNotCachedXMLExc.getClass().getName()+"::"+bSameCachedAndNotCachedXMLExc.getMessage(), LoadModelsStatTable.MAX_ERROR_MSG_SIZE)+"'")+","+
+		
+		LoadModelsStatTable.table.bSameCachedAndNotCachedObj + " = " +
+			(bSameCachedAndNotCachedObj==null?"NULL":(bSameCachedAndNotCachedObj?1:0))+","+
+		LoadModelsStatTable.table.bSameCachedAndNotCachedObjExc + " = " +
+			(bSameCachedAndNotCachedObjExc==null?"NULL":"'"+TokenMangler.getSQLEscapedString(bSameCachedAndNotCachedObjExc.getClass().getName()+"::"+bSameCachedAndNotCachedObjExc.getMessage(), LoadModelsStatTable.MAX_ERROR_MSG_SIZE)+"'")+","+
+		
+		LoadModelsStatTable.table.bSameSelfXMLCachedRoundtrip + " = " +
+			(bSameSelfXMLCachedRoundtrip==null?"NULL":(bSameSelfXMLCachedRoundtrip?1:0))+","+
+		LoadModelsStatTable.table.bSameSelfXMLCachedRoundtripExc + " = " +
+			(bSameSelfXMLCachedRoundtripExc==null?"NULL":"'"+TokenMangler.getSQLEscapedString(bSameSelfXMLCachedRoundtripExc.getClass().getName()+"::"+bSameSelfXMLCachedRoundtripExc.getMessage(), LoadModelsStatTable.MAX_ERROR_MSG_SIZE)+"'")+","+
+
+		LoadModelsStatTable.table.loadOriginalXMLTime + " = " +
+			(loadOriginalXMLTime!=null?loadOriginalXMLTime:"NULL") + ","+
+		LoadModelsStatTable.table.loadUnresolvedTime + " = " +
+			(loadUnresolvedTime!=null?loadUnresolvedTime:"NULL") +
+
+		" WHERE " +
+		"("+
+			"("+LoadModelsStatTable.table.bioModelRef + " IS NOT NULL"+
+				" AND " + LoadModelsStatTable.table.bioModelRef + " = " + BioOrMathModelKey.toString()+")"+
+			" OR "+
+			"("+LoadModelsStatTable.table.mathModelRef + " IS NOT NULL"+
+				" AND " + LoadModelsStatTable.table.mathModelRef + " = " + BioOrMathModelKey.toString()+")"+
+		") AND "+LoadModelsStatTable.table.timeStamp + " = '" + timeStamp.toString()+"'";
+	try{
+    	Connection con = null;
+    	Object lock = new Object();
+    	try{
+    		con = conFactory.getConnection(lock);
+    		DbDriver.updateCleanSQL(con, sql);
+    		con.commit();
+    	}finally{
+    		if(con != null){conFactory.release(con, lock);}
+    	}
+	}catch(Exception e){
+		userLog.exception(e);
+	}
+}
 private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelFromDB,User user,SessionLog userLog,boolean bUpdateDatabase) throws Exception{
 	BioModel bioModelNewMath = XmlHelper.XMLToBioModel(new XMLSource(bioModelXMLFromDB.toString()));
 	bioModelFromDB.refreshDependencies();
@@ -683,30 +761,147 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 				//
 				// read in the BioModel and MathModel from the database
 				//
-				VCDocument vcDocumentFromDB = null;
-				BigString vcDocumentXMLFromDB = null;
+				VCDocument vcDocumentFromDBCache = null;
+				BigString vcDocumentXMLFromDBCache = null;
 				try{
 					long startTime = System.currentTimeMillis();
 					if(userBioAndMathModelInfoV.elementAt(j) instanceof BioModelInfo){
-						vcDocumentXMLFromDB = dbServerImpl.getBioModelXML(user, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey());
-						vcDocumentFromDB = XmlHelper.XMLToBioModel(new XMLSource(vcDocumentXMLFromDB.toString()));
+						vcDocumentXMLFromDBCache =
+							new BigString(dbServerImpl.getServerDocumentManager().getBioModelXML(
+								new QueryHashtable(), user, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(), false));
+						vcDocumentFromDBCache = XmlHelper.XMLToBioModel(new XMLSource(vcDocumentXMLFromDBCache.toString()));
 					}else{
-						vcDocumentXMLFromDB = dbServerImpl.getMathModelXML(user, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey());						
-						vcDocumentFromDB = XmlHelper.XMLToMathModel(new XMLSource(vcDocumentXMLFromDB.toString()));
+						vcDocumentXMLFromDBCache =
+							new BigString(dbServerImpl.getServerDocumentManager().getMathModelXML(
+								new QueryHashtable(), user, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(), false));						
+						vcDocumentFromDBCache = XmlHelper.XMLToMathModel(new XMLSource(vcDocumentXMLFromDBCache.toString()));
 					}
 					if(bUpdateDatabase && testFlag.equals(MathVerifier.MV_LOAD_XML)){
-						updateLoadModelsStatTable(System.currentTimeMillis()-startTime,
+						updateLoadModelsStatTable_LoadTest(System.currentTimeMillis()-startTime,
 							userLog, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(), null);
 					}
 				}catch(Exception e){
-					log.exception(e); // exception in SimContext
+					log.exception(e);
 					if (bUpdateDatabase && testFlag.equals(MathVerifier.MV_LOAD_XML)){
-						updateLoadModelsStatTable(0,userLog, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(), e);
+						updateLoadModelsStatTable_LoadTest(0,userLog, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(), e);
 					}
-
 				}
-				if(vcDocumentFromDB instanceof BioModel && testFlag.equals(MathVerifier.MV_DEFAULT)){
-					checkMathForBioModel(vcDocumentXMLFromDB, (BioModel)vcDocumentFromDB, user, userLog, bUpdateDatabase);
+				if(testFlag.equals(MathVerifier.MV_LOAD_XML) && vcDocumentXMLFromDBCache != null){
+//					try{
+//						String vcDocumentXMLFromDBCacheRoundtrip = null;
+
+						//Compare self same
+						Exception bSameCachedAndNotCachedXMLExc = null;
+						Exception bSameCachedAndNotCachedObjExc = null;
+						Exception bSameSelfXMLCachedRoundtripExc = null;
+						Boolean bSameCachedAndNotCachedXML = null;
+						Boolean bSameCachedAndNotCachedObj = null;
+						Boolean bSameSelfCachedRoundtrip = null;
+//						Boolean bSameSelfObjCachedRoundTrip = null;
+						long startTime = 0;
+//						Long compareXMLTime = null;
+//						Long compareObjTime = null;
+//						Long loadOriginalXMLTime = null;
+						Long loadUnresolvedTime = null;
+
+						if(userBioAndMathModelInfoV.elementAt(j) instanceof BioModelInfo){
+							try {
+								String xmlRndTrip0 = XmlHelper.bioModelToXML((BioModel)vcDocumentFromDBCache);
+								BioModel bioModelRndTrip0 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip0));
+								String xmlRndTrip1 = XmlHelper.bioModelToXML((BioModel)bioModelRndTrip0);
+								BioModel bioModelRndTrip1 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip1));
+								bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0,xmlRndTrip1, true);
+								bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && bioModelRndTrip0.compareEqual(bioModelRndTrip1);
+							} catch (Exception e) {
+								bSameSelfCachedRoundtrip = null;
+								log.exception(e);
+								bSameSelfXMLCachedRoundtripExc = e;
+							}
+							
+							String fromDBBioModelUnresolvedXML = null;
+							try {
+								startTime = System.currentTimeMillis();
+								fromDBBioModelUnresolvedXML =
+									dbServerImpl.getServerDocumentManager().getBioModelUnresolved(
+										new QueryHashtable(), user, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey());	
+								BioModel vcDocumentFromDBNotCached = XmlHelper.XMLToBioModel(new XMLSource(fromDBBioModelUnresolvedXML));
+								loadUnresolvedTime = System.currentTimeMillis()-startTime;
+								bSameCachedAndNotCachedObj = vcDocumentFromDBCache.compareEqual(vcDocumentFromDBNotCached);
+							} catch (Exception e) {
+								log.exception(e);
+								bSameCachedAndNotCachedObjExc = e;
+							}
+							
+							if(fromDBBioModelUnresolvedXML != null){
+								try {
+									String vcDocumentXMLFromDBCacheRegenerate =
+										XmlHelper.bioModelToXML((BioModel)vcDocumentFromDBCache);
+									bSameCachedAndNotCachedXML = VCMLComparator.compareEquals(vcDocumentXMLFromDBCacheRegenerate, fromDBBioModelUnresolvedXML, true);
+								} catch (Exception e) {
+									log.exception(e);
+									bSameCachedAndNotCachedXMLExc = e;
+								}
+							}
+						}else{
+							try {
+								String xmlRndTrip0 = XmlHelper.mathModelToXML((MathModel)vcDocumentFromDBCache);
+								MathModel mathModelRndTrip0 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip0));
+								String xmlRndTrip1 = XmlHelper.mathModelToXML((MathModel)mathModelRndTrip0);
+								MathModel mathModelRndTrip1 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip1));
+								bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0,xmlRndTrip1, true);
+								bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && mathModelRndTrip0.compareEqual(mathModelRndTrip1);
+							} catch (Exception e) {
+								bSameSelfCachedRoundtrip = null;
+								log.exception(e);
+								bSameSelfXMLCachedRoundtripExc = e;
+							}
+
+							String fromDBMathModelUnresolvedXML = null;
+							try {
+								startTime = System.currentTimeMillis();
+								MathModel vcDocumentFromDBNotCached =
+									dbServerImpl.getServerDocumentManager().getMathModelUnresolved(
+										new QueryHashtable(), user, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey());
+								loadUnresolvedTime = System.currentTimeMillis()-startTime;
+								fromDBMathModelUnresolvedXML = XmlHelper.mathModelToXML(vcDocumentFromDBNotCached);
+								bSameCachedAndNotCachedObj = vcDocumentFromDBCache.compareEqual(vcDocumentFromDBNotCached);
+							} catch (Exception e) {
+								log.exception(e);
+								bSameCachedAndNotCachedObjExc = e;
+							}
+
+							if(fromDBMathModelUnresolvedXML != null){
+								try {
+									String vcDocumentXMLFromDBCacheRegenerate =
+										XmlHelper.mathModelToXML((MathModel)vcDocumentFromDBCache);
+									bSameCachedAndNotCachedXML = VCMLComparator.compareEquals(vcDocumentXMLFromDBCacheRegenerate, fromDBMathModelUnresolvedXML, true);
+								} catch (Exception e) {
+									log.exception(e);
+									bSameCachedAndNotCachedXMLExc = e;
+								}
+							}
+						}
+
+						if(bUpdateDatabase){
+							updateLoadModelsStatTable_CompareTest(userLog, userBioAndMathModelInfoV.elementAt(j).getVersion().getVersionKey(),
+								null/*loadOriginalXMLTime*/, loadUnresolvedTime,
+								bSameCachedAndNotCachedXML, bSameCachedAndNotCachedObj, bSameSelfCachedRoundtrip,
+								bSameCachedAndNotCachedXMLExc, bSameCachedAndNotCachedObjExc, bSameSelfXMLCachedRoundtripExc);
+						}else{
+							System.out.println("loadOriginalXMLTime="+null/*loadOriginalXMLTime*/+" loadUnresolvedTime="+loadUnresolvedTime);
+							System.out.println("bSameCachedAndNotCachedXML="+bSameCachedAndNotCachedXML+
+									" bSameCachedAndNotCachedObj="+bSameCachedAndNotCachedObj+
+									" bSameSelfXMLCachedRoundtrip="+bSameSelfCachedRoundtrip);
+							System.out.println("bSameCachedAndNotCachedXMLExc="+bSameCachedAndNotCachedXMLExc+
+									"\nbSameCachedAndNotCachedObjExc="+bSameCachedAndNotCachedObjExc+
+									"\nbSameSelfXMLCachedRoundtripExc="+bSameSelfXMLCachedRoundtripExc);
+							System.out.println();
+						}
+				}
+				
+				
+				if(vcDocumentFromDBCache instanceof BioModel && testFlag.equals(MathVerifier.MV_DEFAULT)){
+					checkMathForBioModel(vcDocumentXMLFromDBCache, (BioModel)vcDocumentFromDBCache, user, userLog, bUpdateDatabase);
 				}
 				
 			}catch (Throwable e){

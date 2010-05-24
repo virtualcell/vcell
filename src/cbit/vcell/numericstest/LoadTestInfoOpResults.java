@@ -9,6 +9,9 @@ import org.vcell.util.document.KeyValue;
 
 public class LoadTestInfoOpResults extends TestSuiteOPResults {
 
+	public static final String MODELTYPE_MATH = "MATH";
+	public static final String MODELTYPE_BIO = "BIO";
+	
 	public static class LoadTestDetails {
 		public String permission;
 		public String userid;
@@ -93,7 +96,7 @@ public class LoadTestInfoOpResults extends TestSuiteOPResults {
 			Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestFailDetails>> loadTestFailHash,
 			Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestSlowDetails>> loadTestSlowHash,
 			Integer slowLoadThresholdMillisec){
-		this((BigDecimal) null);
+		super(null);
 		this.loadTestFailHash = loadTestFailHash;
 		this.loadTestSlowHash = loadTestSlowHash;
 		this.loadTestSoftwareVersionTimeStamps = loadTestSoftwareVersionTimeStamps;
@@ -101,9 +104,6 @@ public class LoadTestInfoOpResults extends TestSuiteOPResults {
 		this.loadTestInfoCounts = loadTestInfoCounts;
 		this.loadTestInfoEmptyCounts = loadTestInfoEmptyCounts;
 		this.slowLoadThresholdMillisec = slowLoadThresholdMillisec;
-	}
-	public LoadTestInfoOpResults(BigDecimal argTSKey) {
-		super(argTSKey);
 	}
 	public Integer getSlowLoadThresholdMillisec(){
 		return slowLoadThresholdMillisec;
