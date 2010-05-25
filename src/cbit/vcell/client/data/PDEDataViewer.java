@@ -30,6 +30,7 @@ import org.vcell.util.TimeSeriesJobSpec;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.LineBorderBean;
@@ -283,7 +284,29 @@ public void setDataIdentifierFilter(PDEPlotControlPanel.DataIdentifierFilter dat
  */
 private void calcStatistics(final ActionEvent actionEvent) {
 	try {
-		roiAction();
+		AsynchClientTask waitTask = new AsynchClientTask("Waiting for data to refresh...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				getPdeDataContext().waitWhileBusy();			
+			}
+		};
+		AsynchClientTask roiActionTask = new AsynchClientTask("Statistics task...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				roiAction();				
+			}
+		};
+
+		if(getPdeDataContext().isBusy()){
+			//Show wait dialog
+			ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
+					new AsynchClientTask[] {waitTask,roiActionTask}, false, false, null, true);
+		}else{
+			//Not show wait dialog
+			ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
+					new AsynchClientTask[] {waitTask,roiActionTask});
+		}
+
 	}catch(Throwable e){
 		PopupGenerator.showErrorDialog("Error calculating statistics\n"+e.getMessage());
 	}
@@ -1547,33 +1570,62 @@ private javax.swing.JButton getJButtonSnapshotROI() {
 			ivjJButtonSnapshotROI.setText("Snapshot ROI");
 			ivjJButtonSnapshotROI.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
-					double[] dataValues = getPdeDataContext().getDataValues();
-					VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
-					boolean isVolumeType = (variableType.equals(VariableType.VOLUME) ||	variableType.equals(VariableType.VOLUME_REGION));
-					BitSet snapshotROI = new BitSet(dataValues.length);
-					for (int i = 0; i < dataValues.length; i++) {
-						snapshotROI.set(i,(dataValues[i] == 1.0));
-					}
-					String variableName = getPdeDataContext().getVariableName();
-					double timePoint = getPdeDataContext().getTimePoint();
-					if(snapshotROI.cardinality() == 0){
-						PopupGenerator.showInfoDialog((isVolumeType?"Volume":"Membrane")+" snapshot ROI cannot be updated.\n"+
-								"No data values for variable '"+variableName+"'\n"+
-								"at time '"+timePoint+"' have values equal to 1.0");
+					final AsynchClientTask createSnapshotTask = new AsynchClientTask("Creating Snapshot...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							if(getClientTaskStatusSupport() != null){
+								getClientTaskStatusSupport().setMessage("Waiting for data to refresh...");
+							}
+							getPdeDataContext().waitWhileBusy();
+							if(getClientTaskStatusSupport() != null){
+								getClientTaskStatusSupport().setMessage("Creating Snapshot...");
+							}
+							final double[] dataValues = getPdeDataContext().getDataValues();
+							final VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
+							final boolean isVolumeType = (variableType.equals(VariableType.VOLUME) ||	variableType.equals(VariableType.VOLUME_REGION));
+							final BitSet snapshotROI = new BitSet(dataValues.length);
+							for (int i = 0; i < dataValues.length; i++) {
+								snapshotROI.set(i,(dataValues[i] == 1.0));
+							}
+							final String variableName = getPdeDataContext().getVariableName();
+							final double timePoint = getPdeDataContext().getTimePoint();
+							//Do the following so the 'progress' spinner will go away (if showing) when the message is displayed.
+							SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+									if(snapshotROI.cardinality() == 0){
+										PopupGenerator.showWarningDialog(PDEDataViewer.this,(isVolumeType?"Volume":"Membrane")+" snapshot ROI cannot be updated.\n"+
+												"No data values for variable '"+variableName+"'\n"+
+												"at time '"+timePoint+"' have values equal to 1.0."+
+												"  Add a function that evaluates to 1 at the points to be included in the ROI"+
+												" then choose the new function name in the Simulation results viewer and press 'Snapshot ROI' again."
+												,new String[] {"OK"},"OK");
+										return;
+									}else{
+										if(isVolumeType){
+											volumeSnapshotROI = snapshotROI;
+											volumeSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
+										}else{
+											membraneSnapshotROI = snapshotROI;
+											membraneSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
+										}
+										PopupGenerator.showWarningDialog(PDEDataViewer.this,(isVolumeType?"Volume":"Membrane")+" snapshot ROI updated using "+
+												"Variable '"+variableName+"' at "+"Time '"+timePoint+"' (where values = 1.0).\n"+
+												"ROI includes "+snapshotROI.cardinality()+" points.  (total size= "+dataValues.length+")\n"+
+												"Snapshot ROI is available for use by choosing a variable/function name and pressing 'Statistics'."
+												,new String[] {"OK"},"OK");						
+									}
+								}
+							});
+						}
+					};
+					if(getPdeDataContext().isBusy()){
+						//Show wait dialog
+						ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
+								new AsynchClientTask[] {createSnapshotTask}, false, false, null, true);
 					}else{
-						PopupGenerator.showInfoDialog((isVolumeType?"Volume":"Membrane")+" snapshot ROI updated.\n"+
-								"Variable '"+variableName+"' "+
-								"Time '"+timePoint+"'\n"+
-								"Current Snapshot ROI:\n"+
-								"Count = "+snapshotROI.cardinality()+" of "+dataValues.length+"\n"
-								);						
-					}
-					if(isVolumeType){
-						volumeSnapshotROI = snapshotROI;
-						volumeSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
-					}else{
-						membraneSnapshotROI = snapshotROI;
-						membraneSnapshotROIDescription = "Variable='"+variableName+"', Timepoint= "+timePoint;
+						//Not show wait dialog
+						ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
+								new AsynchClientTask[] {createSnapshotTask});
 					}
 				}});
 			// user code begin {1}
