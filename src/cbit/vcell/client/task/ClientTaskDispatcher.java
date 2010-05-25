@@ -206,7 +206,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 					System.out.println("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
 					Thread.dumpStack();
 				}
-				PopupGenerator.showErrorDialog(requester, msg);
+				PopupGenerator.showErrorDialog(requester, msg, e);
 			} else if (hash.containsKey(TASK_ABORTED_BY_USER)) {
 				// depending on where user canceled we might want to automatically start a new job
 				dispatchFollowUp(hash);

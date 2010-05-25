@@ -58,7 +58,7 @@ public class OptimizationController {
 				parameterEstimationTask.setOptimizationResultSet((OptimizationResultSet)params);
 			}else if (params instanceof Exception){
 				parameterEstimationTask.appendSolverMessageText("\n"+((Exception)params).getMessage());
-				DialogUtils.showErrorDialog(OptimizationController.this.optTestPanel,((Exception)params).getMessage());
+				DialogUtils.showErrorDialog(OptimizationController.this.optTestPanel,((Exception)params).getMessage(), (Exception)params);
 				parameterEstimationTask.setOptimizationResultSet(null);
 			}
 			this.stop();
@@ -189,7 +189,7 @@ public void saveSolutionAsNewSimulation() {
 		}
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(optTestPanel,"Error creating simulation: "+e.getMessage());
+		DialogUtils.showErrorDialog(optTestPanel,"Error creating simulation: "+e.getMessage(), e);
 	}
 }
 

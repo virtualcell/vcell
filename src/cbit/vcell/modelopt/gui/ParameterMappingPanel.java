@@ -544,7 +544,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 
 			VCellTransferable.sendToClipboard(rvs);
 		}catch(Throwable e){
-			PopupGenerator.showErrorDialog(this, "ParameterMappingPanel copy failed.  "+e.getMessage());
+			PopupGenerator.showErrorDialog(this, "ParameterMappingPanel copy failed.  "+e.getMessage(), e);
 		}
 	}
 }
@@ -666,7 +666,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 
 		}
 	}catch(Throwable e){
-		PopupGenerator.showErrorDialog(this, "Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Paste failed during pre-check (no changes made).\n"+e.getMessage(), e);
 		return;
 	}
 
@@ -684,7 +684,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			PopupGenerator.showInfoDialog(this, "No paste items match the destination (no changes made).");
 		}
 	}catch(Throwable e){
-		PopupGenerator.showErrorDialog(this, "Paste Error\n"+e.getClass().getName()+" "+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Paste Error\n"+e.getMessage(), e);
 	}
 
 }

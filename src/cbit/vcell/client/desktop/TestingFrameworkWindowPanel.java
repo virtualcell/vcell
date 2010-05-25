@@ -980,7 +980,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 							}
 						}catch(Exception e){
 							e.printStackTrace();
-							PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Error GenerateTestSuiteReport\n"+e.getMessage());
+							PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Error GenerateTestSuiteReport\n"+e.getMessage(), e);
 							return;
 						}
 					}
@@ -1064,7 +1064,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 		
 	}catch(Throwable exc){
 		if(!(exc instanceof UserCancelException) && !(exc instanceof UtilCancelException)){
-			PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, exc.getClass().getName()+"\n"+exc.getMessage());
+			PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, exc.getMessage(), exc);
 		}
 	}
 

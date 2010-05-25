@@ -174,7 +174,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 					setDefaultTitle(surfaceViewerFrame);
 					surfaceViewer.updateSurfaces();					
 				} catch(Exception e2){
-					PopupGenerator.showErrorDialog(this, "Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage());
+					PopupGenerator.showErrorDialog(this, "Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage(), e2);
 				}
 		}
 		showSurfaceViewerFrame(true);

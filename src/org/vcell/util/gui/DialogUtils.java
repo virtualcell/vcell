@@ -8,7 +8,6 @@ import java.awt.Font;
 import java.awt.Window;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 
@@ -37,6 +36,7 @@ import org.vcell.util.gui.sorttable.ManageTableModel;
 
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import edu.stanford.ejalbert.BrowserLauncher;
 import edu.stanford.ejalbert.BrowserLauncherRunner;
@@ -248,7 +248,7 @@ public static void browserLauncher(final Component requester, final String targe
 private static void browserLauncherError(Component requester, Throwable e, String userMessage) {
 	showErrorDialog(requester, userMessage + "\n\n" +
 			"Sorry, your local WWW Browser could not be automatically launched.\n" + 
-			"Error Type=" + e.getClass().getName() + "\nError Info='" + e.getMessage()+"'");
+			"Error Type=" + e.getClass().getName() + "\nError Info='" + e.getMessage()+"'", e);
 }
 
 
@@ -283,20 +283,6 @@ private static JPanel createMessagePanel(final String message) {
 	scroller.getViewport().setPreferredSize(preferredSize);
 	panel.add(scroller, BorderLayout.CENTER);
 	return panel;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/27/2004 3:01:00 AM)
- * @param message java.lang.Object
- */
-private static JDialog prepareErrorDialog(final Component requester,final String message) {
-	JPanel panel = createMessagePanel(message);
-	JOptionPane pane = new JOptionPane(panel, JOptionPane.ERROR_MESSAGE);
-	JDialog dialog = pane.createDialog(requester, "ERROR:");
-	dialog.setResizable(true);
-	return dialog;
 }
 
 private static JDialog prepareWarningDialog(final Component requester,final String message) {
@@ -620,6 +606,9 @@ private static String showOptionsDialog(final Component requester,Component show
 	}
 }
 
+public static void showErrorDialog(final Component requester,final String message) {
+	showErrorDialog(requester, message, null);
+}
 
 /**
  * Insert the method's description here.
@@ -627,13 +616,36 @@ private static String showOptionsDialog(final Component requester,Component show
  * @param owner java.awt.Component
  * @param message java.lang.Object
  */
-public static void showErrorDialog(final Component requester,final  String message) {
+public static void showErrorDialog(final Component requester, final String message, final Throwable exception) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
-			final JDialog dialog = prepareErrorDialog(requester, message);
+			String errMsg = message;
+			boolean bSER = false;
+			if (errMsg == null || errMsg.trim().length() == 0) {
+				errMsg = "Virtual Cell has encountered a problem. Please tell Virtual Cell about this problem to help improve Virtual Cell.";
+				if (exception != null) {
+					bSER = true;
+				}
+			} 
+			if (exception instanceof ClassCastException || exception instanceof ArrayIndexOutOfBoundsException) {
+				bSER = true;
+//				String stackTrace = BeanUtils.getStackTrace(exception);
+//
+//				errMsg = "<html>" + errMsg +
+//				"<p>We have created an error report as follows that you can send to help improve Virtual Cell. " +
+//				"<p><u>Error Report</u><p>" + stackTrace + "</html>";
+			}
+			
+			JPanel panel = createMessagePanel(errMsg);
+			JOptionPane pane =  new JOptionPane(panel, JOptionPane.ERROR_MESSAGE);
+			JDialog dialog = pane.createDialog(requester, "Error");
+			dialog.setResizable(true);
 			try{
 				ZEnforcer.showModalDialogOnTop(dialog,requester);
-			}finally{
+				if (bSER && VCellClientTest.getVCellClient() != null) {
+					VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(exception);
+				}
+			} finally{
 				dialog.dispose();
 			}
 			return null;

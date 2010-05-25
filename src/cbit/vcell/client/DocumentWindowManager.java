@@ -1114,7 +1114,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 		return;
 	} catch (Exception e1) {
 		e1.printStackTrace();
-		DialogUtils.showErrorDialog(getComponent(), e1.getMessage());
+		DialogUtils.showErrorDialog(getComponent(), e1.getMessage(), e1);
 	}
 	
 

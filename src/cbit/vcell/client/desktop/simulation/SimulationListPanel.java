@@ -397,7 +397,7 @@ private void copySimulations() {
 		index = getSimulationWorkspace().copySimulations(toCopy, this);
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Could not copy all simulations\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(this, "Could not copy all simulations\n"+exc.getMessage(), exc);
 	}
 	// set selection to the last copied one
 	getScrollPaneTable().getSelectionModel().setSelectionInterval(index, index);
@@ -431,7 +431,7 @@ private void deleteSimulations() {
 		getSimulationWorkspace().deleteSimulations(toDelete);
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Could not delete all simulations\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(this, "Could not delete all simulations\n"+exc.getMessage(), exc);
 	}
 	// unset selection - may not be needed...
 	getScrollPaneTable().clearSelection();

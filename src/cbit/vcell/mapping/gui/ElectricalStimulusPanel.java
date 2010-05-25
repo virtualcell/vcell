@@ -1521,7 +1521,7 @@ private void setsimulationContext1(SimulationContext newValue) {
 			timeFunctionPanel = new TimeFunctionPanel();
 			timeFunctionPanel.setTimeFunction(protocolParameterExp.flatten().infix());
 		} catch (Exception e) {							
-			DialogUtils.showErrorDialog(ElectricalStimulusPanel.this, e.getMessage());
+			DialogUtils.showErrorDialog(ElectricalStimulusPanel.this, e.getMessage(), e);
 			return;
 		}
     	

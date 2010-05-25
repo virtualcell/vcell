@@ -262,7 +262,7 @@ public void viewFunction() {
 			d.dispose();
 		}		
 	} catch (Exception ex) {
-		DialogUtils.showErrorDialog(this, ex.getMessage());
+		DialogUtils.showErrorDialog(this, ex.getMessage(), ex);
 	}
 	
 }

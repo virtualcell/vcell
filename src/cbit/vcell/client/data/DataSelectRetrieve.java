@@ -239,7 +239,6 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 			if(analyticS.indexOf("X") != -1 ||
 				analyticS.indexOf("Y") != -1 ||
 				analyticS.indexOf("Z") != -1){
-
 				PopupGenerator.showErrorDialog(this, "Any use of X,Y,Z in Analytic must be lower case (x,y,z)");
 				return;
 			}
@@ -249,7 +248,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 			try{
 				getAreaAnalyticExpression();
 			}catch(Throwable exc){
-				PopupGenerator.showErrorDialog(this, "Error parsing 'Select Area Analytic' expression\n"+exc.getMessage());
+				PopupGenerator.showErrorDialog(this, "Error parsing 'Select Area Analytic' expression\n"+exc.getMessage(), exc);
 				return;
 			}
 		}

@@ -77,7 +77,7 @@ public class MIRIAMAnnotationViewer extends JPanel {
 								}
 							}
 						}catch(Exception e2){
-							DialogUtils.showErrorDialog(MIRIAMAnnotationViewer.this, "Error during Edit action\n"+e2.getMessage());
+							DialogUtils.showErrorDialog(MIRIAMAnnotationViewer.this, "Error during Edit action\n"+e2.getMessage(), e2);
 						}
 					}
 				}

@@ -3,20 +3,32 @@ package cbit.vcell.messaging.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.io.FileNotFoundException;
 import java.net.URL;
-import java.io.*;
-import java.rmi.*;
-import java.rmi.server.*;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
-import cbit.rmi.event.*;
-import cbit.vcell.messaging.*;
-import cbit.vcell.messaging.event.*;
-import cbit.vcell.server.*;
+import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
+import cbit.rmi.event.SimpleMessageHandler;
+import cbit.vcell.messaging.JmsClientMessaging;
+import cbit.vcell.messaging.JmsConnection;
+import cbit.vcell.messaging.JmsConnectionFactory;
+import cbit.vcell.messaging.event.SimpleMessageServiceMessaging;
+import cbit.vcell.server.DataSetController;
+import cbit.vcell.server.LocalVCellServer;
+import cbit.vcell.server.PerformanceMonitoringFacility;
+import cbit.vcell.server.SimulationController;
+import cbit.vcell.server.URLFinder;
+import cbit.vcell.server.UserMetaDbServer;
+import cbit.vcell.server.VCellConnection;
 
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
@@ -242,4 +254,10 @@ public boolean isTimeout() throws java.rmi.RemoteException {
 
 	return false;
 }
+
+
+public void sendErrorReport(Throwable exception) throws RemoteException {
+	BeanUtils.sendErrorReport(exception);
+}
+
 }

@@ -276,7 +276,7 @@ public class MathDebuggerPanel extends JPanel {
 						compareTree();
 					} catch (Exception e1) {
 						e1.printStackTrace();
-						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage());
+						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage(), e1);
 					}
 				}
 			});
@@ -313,7 +313,7 @@ public class MathDebuggerPanel extends JPanel {
 						compareEquivalent();
 					} catch (Exception e1) {
 						e1.printStackTrace();
-						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage());
+						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage(), e1);
 					}
 				}
 			});
@@ -363,7 +363,7 @@ public class MathDebuggerPanel extends JPanel {
 						expandBoth();
 					}catch (Exception e1){
 						e1.printStackTrace(System.out);
-						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage());
+						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage(), e1);
 					}
 				}
 			});
@@ -445,7 +445,7 @@ public class MathDebuggerPanel extends JPanel {
 						paste();
 					}catch (Exception e1){
 						e1.printStackTrace(System.out);
-						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage());
+						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage(), e1);
 					}
 				}
 			});
@@ -508,7 +508,7 @@ public class MathDebuggerPanel extends JPanel {
 						flatten();
 					}catch (Exception e1){
 						e1.printStackTrace(System.out);
-						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage());
+						DialogUtils.showErrorDialog(MathDebuggerPanel.this, e1.getMessage(), e1);
 					}
 				}
 			});

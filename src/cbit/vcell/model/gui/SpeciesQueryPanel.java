@@ -8,6 +8,7 @@ import javax.swing.JList;
 
 import org.vcell.util.gui.TitledBorderBean;
 
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.dictionary.CompoundInfo;
@@ -949,7 +950,7 @@ private void createDBSpecies(javax.swing.event.ListSelectionEvent listSelectionE
 					
 				 }catch(Exception e){
 					e.printStackTrace();
-					cbit.vcell.client.PopupGenerator.showErrorDialog(this,"Error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog(this,"Error:\n"+e.getMessage(), e);
 				 }
 			 }else{
 			 	setDictionaryQueryResults(null);

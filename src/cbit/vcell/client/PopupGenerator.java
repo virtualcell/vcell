@@ -23,22 +23,12 @@ public class PopupGenerator extends DialogUtils {
  * @param preferences cbit.vcell.client.UserPreferences
  * @param preferenceName java.lang.String
  */
-public static String showErrorDialog(TopLevelWindowManager requester, UserPreferences preferences, UserMessage userMessage, String replacementText) {
-	return showDialog(requester.getComponent(), preferences, userMessage, replacementText,JOptionPane.ERROR_MESSAGE);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:23:18 AM)
- * @return int
- * @param owner java.awt.Component
- * @param message java.lang.String
- * @param preferences cbit.vcell.client.UserPreferences
- * @param preferenceName java.lang.String
- */
 public static void showErrorDialog(TopLevelWindowManager requester, String message) {
 	showErrorDialog(requester.getComponent(), message);
+}
+
+public static void showErrorDialog(TopLevelWindowManager requester, String message, Throwable ex) {
+	showErrorDialog(requester.getComponent(), message, ex);
 }
 
 public static void showInfoDialog(TopLevelWindowManager requester, String message) {

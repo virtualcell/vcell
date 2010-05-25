@@ -95,7 +95,7 @@ private void generateErrorDialog(Exception e,int x,int y) {
 	Point canvasLoc = getGraphPane().getLocationOnScreen();
 	canvasLoc.x += x;
 	canvasLoc.y += y;
-	PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
+	PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage(), e);
 }
 
 
@@ -203,7 +203,7 @@ protected void menuAction(Shape shape, String menuAction) {
 				}
 			}
 		}catch (Throwable e){
-			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
+			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage(), e);
 		}
 		
 	}else if (menuAction.equals(REACTIONS_MENU_ACTION)){
@@ -226,7 +226,7 @@ protected void menuAction(Shape shape, String menuAction) {
 				showSaveStructureImageDialog(((StructureShape)shape).getModel(), resType);
 			}
 		} catch(Exception e) {
-			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
+			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage(), e);
 		}
 	}else if (menuAction.equals(MOVE_MENU_ACTION)){
 		if (shape instanceof FeatureShape){
@@ -799,7 +799,7 @@ private void showMoveDialog(FeatureShape featureShape) {
 			}
 		}
 	}catch(Throwable e){
-		PopupGenerator.showErrorDialog(getGraphPane(), e.getClass().getName()+"\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage(), e);
 	}
 }
 

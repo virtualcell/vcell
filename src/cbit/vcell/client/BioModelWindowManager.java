@@ -127,7 +127,7 @@ private void editSelectGeometry(boolean bShowOldGeomEditor/*DocumentCreationInfo
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
-						DialogUtils.showErrorDialog(getComponent(), e1.getMessage());
+						DialogUtils.showErrorDialog(getComponent(), e1.getMessage(), e1);
 					}
 					return;
 				} 
@@ -756,7 +756,7 @@ private void showSurfaceViewerFrame(SimulationContext simContext,boolean bOpen) 
 			}
 			
 		}catch(Exception e){
-			DialogUtils.showErrorDialog(getComponent(), "Error Generating Surfaces\n"+e.getMessage());
+			DialogUtils.showErrorDialog(getComponent(), "Error Generating Surfaces\n"+e.getMessage(), e);
 		}
 	}
 }

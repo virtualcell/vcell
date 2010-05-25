@@ -2,18 +2,30 @@ package cbit.vcell.client.test;
 import java.io.File;
 import java.util.StringTokenizer;
 
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.client.server.*;
-import cbit.vcell.client.*;
-import javax.swing.*;
+import javax.swing.JOptionPane;
 
 import org.jdom.Document;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.VCDocument;
+
+import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.client.TranslationLogger;
+import cbit.vcell.client.VCellClient;
+import cbit.vcell.client.server.ClientServerInfo;
+import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2004 12:02:01 PM)
  * @author: Ion Moraru
  */
 public class VCellClientTest {
+	private static VCellClient vcellClient = null;
+	
+	public static VCellClient getVCellClient() {
+		return vcellClient;
+	}
+	
 /**
  * Starts the application.
  * @param args an array of command-line arguments
@@ -26,7 +38,7 @@ public static void main(java.lang.String[] args) {
 	System.out.println("starting with arguments ["+stringBuffer+"]");
 	
 	ClientServerInfo csInfo = null;
-	String hoststr = System.getProperty(org.vcell.util.PropertyLoader.vcellServerHost);
+	String hoststr = System.getProperty(PropertyLoader.vcellServerHost);
 	String[] hosts = null;
 	if (hoststr != null) {
 		StringTokenizer st = new StringTokenizer(hoststr," ,;");
@@ -43,7 +55,7 @@ public static void main(java.lang.String[] args) {
 	}
 	String user = null;
 	String password = null;
-	org.vcell.util.document.VCDocument initialDocument = null;
+	VCDocument initialDocument = null;
 	if (args.length == 3) {
 		hosts[0] = args[0];
 		user = args[1];
@@ -58,8 +70,8 @@ public static void main(java.lang.String[] args) {
 			Document xmlDoc = XmlUtil.readXML(new File(filename));
 			String vcmlString = XmlUtil.xmlToString(xmlDoc, false);
 			java.awt.Component parent = null;
-			cbit.util.xml.VCLogger vcLogger = new TranslationLogger(parent);
-			initialDocument = cbit.vcell.xml.XmlHelper.XMLToDocument(vcLogger,vcmlString);
+			VCLogger vcLogger = new TranslationLogger(parent);
+			initialDocument = XmlHelper.XMLToDocument(vcLogger,vcmlString);
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 			JOptionPane.showMessageDialog(null,e.getMessage(),"vcell startup error",JOptionPane.ERROR_MESSAGE);
@@ -74,7 +86,7 @@ public static void main(java.lang.String[] args) {
 		csInfo = ClientServerInfo.createRemoteServerInfo(hosts, user, password);
 	}
 	try {
-		VCellClient.startClient(initialDocument, csInfo);
+		vcellClient = VCellClient.startClient(initialDocument, csInfo);
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of VCellApplication");
 		exception.printStackTrace(System.out);

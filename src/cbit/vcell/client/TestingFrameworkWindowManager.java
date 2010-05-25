@@ -656,7 +656,7 @@ public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrS
 		}
 
 	} catch (Throwable e) {
-		PopupGenerator.showErrorDialog(this, e.getMessage());
+		PopupGenerator.showErrorDialog(this, e.getMessage(), e);
 	}
 	
 }
@@ -1546,7 +1546,7 @@ public TestCaseNew[] getNewTestCaseArr() throws UserCancelException{
 			try{
 				return getTestCaseAddPanel().getNewTestCaseArr();
 			}catch(Exception e){
-				PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Error getting New TestCase:\n"+e.getMessage());
+				PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Error getting New TestCase:\n"+e.getMessage(), e);
 				continue;
 			}
 		}

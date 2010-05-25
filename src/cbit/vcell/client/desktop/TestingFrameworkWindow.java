@@ -42,7 +42,7 @@ private void addTestSuite() {
 	} catch(UserCancelException e){
 		//ignore
 	}catch (Exception e) {
-		PopupGenerator.showErrorDialog(this, e.getMessage());
+		PopupGenerator.showErrorDialog(this, e.getMessage(), e);
 	}
 }
 /**

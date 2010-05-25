@@ -1297,7 +1297,7 @@ private void handleException(java.lang.Throwable exception) {
 	
 	PopupGenerator.showErrorDialog(this, 
 		(exception.getMessage() != null?exception.getMessage():exception.getClass().getName())+"\n"+
-		this.getClass().getName()+" internal error\n"+"Please Cancel and try again"
+		this.getClass().getName()+" internal error\n"+"Please Cancel and try again", exception
 		);
 
 	//exception.printStackTrace();

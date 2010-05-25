@@ -265,7 +265,7 @@ public class MIRIAMAnnotationEditor extends JPanel{
 			//ignore
 		}catch(Exception exc){
 			exc.printStackTrace();
-			DialogUtils.showErrorDialog(MIRIAMAnnotationEditor.this, "Error editing Annotation:\n"+exc.getMessage());
+			DialogUtils.showErrorDialog(MIRIAMAnnotationEditor.this, "Error editing Annotation:\n"+exc.getMessage(), exc);
 		}
 	}
 	private boolean isNodeFreeHandTextEditable(DefaultMutableTreeNode node){
@@ -628,7 +628,7 @@ public class MIRIAMAnnotationEditor extends JPanel{
 				miriamManager.addMiriamRefGroup(getSelectedIdentifiable(), qualifier, miriamResources);
 			} catch (Exception e) {
 				e.printStackTrace();
-				DialogUtils.showErrorDialog(this,"Add Identifier failed:\n"+e.getMessage());
+				DialogUtils.showErrorDialog(this,"Add Identifier failed:\n"+e.getMessage(), e);
 			}
 		}
 	}

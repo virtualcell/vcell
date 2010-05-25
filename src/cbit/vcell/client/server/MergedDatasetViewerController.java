@@ -67,7 +67,7 @@ public void propertyChange(PropertyChangeEvent evt) {
 			mergedDatasetViewer.refreshFunctions();
 		} catch (Exception e) {
 			e.printStackTrace();
-			DialogUtils.showErrorDialog(mergedDatasetViewer, "Failed to update viewer after function change: "+e.getMessage());
+			DialogUtils.showErrorDialog(mergedDatasetViewer, "Failed to update viewer after function change: "+e.getMessage(), e);
 		}
 	}
 }

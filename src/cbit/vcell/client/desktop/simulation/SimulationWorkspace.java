@@ -12,8 +12,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 
@@ -23,7 +21,6 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.document.SimulationOwner;
-import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
@@ -33,7 +30,6 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.gui.MeshSpecificationPanel;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -416,7 +412,7 @@ void editSimulation(JComponent parent, Simulation simulation) {
 			throw new Exception("Some or all of the changes could not be applied:" + errors);
 		}
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog(parent, e.getMessage());
+		DialogUtils.showErrorDialog(parent, e.getMessage(), e);
 	}
 }
 

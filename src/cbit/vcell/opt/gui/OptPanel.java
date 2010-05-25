@@ -178,7 +178,7 @@ private void connEtoM5(java.awt.event.ActionEvent arg1) {
  */
 private void connEtoM5_ExceptionOccurred(java.lang.Throwable arg1) {
 	arg1.printStackTrace(System.out);
-	PopupGenerator.showErrorDialog(OptPanel.this, arg1.getMessage());
+	PopupGenerator.showErrorDialog(OptPanel.this, arg1.getMessage(), arg1);
 }
 
 

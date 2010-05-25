@@ -619,7 +619,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 							PopupGenerator.showErrorDialog(ownerTable, "Size of Feature " + featureMapping.getFeature().getName() + " can not be solved as constant!");
 						} catch (Exception ex) {
 							ex.printStackTrace(System.out);
-							PopupGenerator.showErrorDialog(ownerTable, ex.getMessage());
+							PopupGenerator.showErrorDialog(ownerTable, ex.getMessage(), ex);
 						}
 					}
 					else 
@@ -635,7 +635,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 								sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
 							} catch (Exception ex) {
 								ex.printStackTrace(System.out);
-								PopupGenerator.showErrorDialog(ownerTable, ex.getMessage());
+								PopupGenerator.showErrorDialog(ownerTable, ex.getMessage(), ex);
 							}
 						}
 						fireTableRowsUpdated(0, getRowCount());
@@ -681,7 +681,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 								PopupGenerator.showErrorDialog(ownerTable, "Size of Membrane " + membraneMapping.getMembrane().getName() + " can not be solved as constant!");
 							}catch (Exception ex) {
 								ex.printStackTrace(System.out);
-								PopupGenerator.showErrorDialog(ownerTable, ex.getMessage());
+								PopupGenerator.showErrorDialog(ownerTable, ex.getMessage(), ex);
 							}
 						}
 						else
@@ -697,7 +697,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 									sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
 								} catch (Exception ex) {
 									ex.printStackTrace(System.out);
-									PopupGenerator.showErrorDialog(ownerTable, ex.getMessage());
+									PopupGenerator.showErrorDialog(ownerTable, ex.getMessage(), ex);
 								}
 							}
 							fireTableRowsUpdated(0,getRowCount());

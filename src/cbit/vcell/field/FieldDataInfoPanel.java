@@ -1452,7 +1452,7 @@ private JButton getJButtonEditTimes() {
 							}
 						}catch(Exception e2){
 							PopupGenerator.showErrorDialog(FieldDataInfoPanel.this, 
-									"Error parsing new times. Try again.\n"+e2.getMessage());
+									"Error parsing new times. Try again.\n"+e2.getMessage(), e2);
 							continue;
 						}
 						initTimes(newTimes);
@@ -1516,7 +1516,7 @@ private JButton getJButtonSeqTimes() {
 				}catch(UserCancelException e2){
 					//ignore
 				}catch(Exception e2){
-					PopupGenerator.showErrorDialog(FieldDataInfoPanel.this, "Error generating sequence\n"+e2.getMessage());
+					PopupGenerator.showErrorDialog(FieldDataInfoPanel.this, "Error generating sequence\n"+e2.getMessage(), e2);
 				}
 			}
 		});

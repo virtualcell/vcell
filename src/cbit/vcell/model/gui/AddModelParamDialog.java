@@ -13,6 +13,7 @@ import javax.swing.text.Document;
 
 import org.vcell.util.Compare;
 
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
@@ -692,7 +693,7 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 		dispose();
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		cbit.vcell.client.PopupGenerator.showErrorDialog(this,"Add Global Parameter Error: \n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this,"Add Global Parameter Error: \n"+e.getMessage(), e);
 	}
 }
 

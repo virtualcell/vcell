@@ -108,7 +108,7 @@ private void apply() {
 		dispose();
 	}catch(Exception e){
 		e.printStackTrace();
-		PopupGenerator.showErrorDialog(this, "failed to apply changes: " + e.getMessage());
+		PopupGenerator.showErrorDialog(this, "failed to apply changes: " + e.getMessage(), e);
 	}
 }
 /**

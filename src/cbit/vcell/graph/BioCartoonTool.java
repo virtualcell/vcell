@@ -599,7 +599,7 @@ protected static final SpeciesContext pasteSpecies(
 				pasteToModel.addSpeciesContext(newSpecies,preferredToStructure);
 			}
 		}catch(Exception e){
-			cbit.vcell.client.PopupGenerator.showErrorDialog(parent, e.getMessage());
+			cbit.vcell.client.PopupGenerator.showErrorDialog(parent, e.getMessage(), e);
 		}
 	}
 	return pasteToModel.getSpeciesContext(newSpecies,preferredToStructure);

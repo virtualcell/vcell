@@ -382,7 +382,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}catch (Exception e){
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, e.getMessage(), e);
 				}
 				break;
 			}
@@ -391,7 +391,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					getElectricalStimulus().renameParameter(parameter.getName(), (String)aValue);
 				} catch (Exception e) {
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
+					PopupGenerator.showErrorDialog(ownerTable, e.getMessage(), e);
 				}
 			}
 		}

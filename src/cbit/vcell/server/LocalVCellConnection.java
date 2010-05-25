@@ -3,27 +3,37 @@ package cbit.vcell.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.io.FileNotFoundException;
 import java.net.URL;
-import cbit.sql.*;
-import cbit.vcell.simdata.*;
-import java.io.*;
-import java.rmi.*;
-import java.rmi.server.*;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
+
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 
-import cbit.rmi.event.*;
+import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
+import cbit.rmi.event.SimpleMessageService;
+import cbit.sql.KeyFactory;
+import cbit.vcell.client.GuiConstants;
+import cbit.vcell.simdata.LocalDataSetController;
+import cbit.vcell.simdata.LocalDataSetControllerProxy;
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
  * after the user has been authenticated.
  * Creation date: (Unknown)
  * @author: Jim Schaff.
  */
-public class LocalVCellConnection extends UnicastRemoteObject implements VCellConnection, ExportListener ,DataJobListener{
-	
+public class LocalVCellConnection extends UnicastRemoteObject implements VCellConnection, ExportListener ,DataJobListener{	
 	private DataSetController dataSetControllerProxy = null;
 	private SimulationController simulationController = null;
 	private UserMetaDbServer userMetaDbServer = null;
@@ -305,5 +315,10 @@ public void dataJobMessage(DataJobEvent event) {
 	if (getUser().equals(event.getUser())) {
 		messageService.getMessageCollector().dataJobMessage(event);
 	}
+}
+
+
+public void sendErrorReport(Throwable exception) throws RemoteException {
+	BeanUtils.sendErrorReport(exception);
 }
 }

@@ -431,7 +431,7 @@ public void setValueAt(Object object, int r, int c) {
 			}
 		}
 	} catch (Throwable exc) {
-		PopupGenerator.showErrorDialog(ownerTable, exc.getMessage() + "\nOld value was restored.");		
+		PopupGenerator.showErrorDialog(ownerTable, exc.getMessage() + "\nOld value was restored.", exc);		
 	}
 }
 

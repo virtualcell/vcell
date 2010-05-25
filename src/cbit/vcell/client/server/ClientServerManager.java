@@ -751,4 +751,14 @@ private void setVcellConnection(VCellConnection newVcellConnection) {
 		throw new RuntimeException("DataAccessException: "+ex.getMessage());
 	}
 }
+
+
+public void sendErrorReport(Throwable exception) {
+	try {
+		getVcellConnection().sendErrorReport(exception);
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
+	}
+	
+}
 }

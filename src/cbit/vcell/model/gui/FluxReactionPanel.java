@@ -153,7 +153,7 @@ private void changeFluxCarrier(String selection) {
 			//
 			getFluxReaction1().setFluxCarrier(species,getModel1());
 		}catch (Exception e){
-			PopupGenerator.showErrorDialog(this,"Error changing flux carrier:\n"+e.getMessage());
+			PopupGenerator.showErrorDialog(this,"Error changing flux carrier:\n"+e.getMessage(), e);
 		}
 	}
 }
@@ -1082,9 +1082,9 @@ private JButton getToggleButton() {
 					} catch (UtilCancelException e1) {
 					} catch (Exception e2){
 						if (getKinetics().getKineticsDescription().isElectrical()){
-							DialogUtils.showErrorDialog(FluxReactionPanel.this,"failed to translate into General Current Kinetics [pA]: "+e2.getMessage());
+							DialogUtils.showErrorDialog(FluxReactionPanel.this,"failed to translate into General Current Kinetics [pA]: "+e2.getMessage(), e2);
 						}else{
-							DialogUtils.showErrorDialog(FluxReactionPanel.this,"failed to translate into General Lumped Kinetics [molecules/s]: "+e2.getMessage());
+							DialogUtils.showErrorDialog(FluxReactionPanel.this,"failed to translate into General Lumped Kinetics [molecules/s]: "+e2.getMessage(), e2);
 						}
 					}
 				}else if (getKinetics() instanceof LumpedKinetics){
@@ -1095,9 +1095,9 @@ private JButton getToggleButton() {
 					} catch (UtilCancelException e1) {
 					} catch (Exception e2){
 						if (getKinetics().getKineticsDescription().isElectrical()){
-							DialogUtils.showErrorDialog(FluxReactionPanel.this,"failed to translate into General Current Density Kinetics [pA/um2]: "+e2.getMessage());
+							DialogUtils.showErrorDialog(FluxReactionPanel.this,"failed to translate into General Current Density Kinetics [pA/um2]: "+e2.getMessage(), e2);
 						}else{
-							DialogUtils.showErrorDialog(FluxReactionPanel.this,"failed to translate into General Kinetics [molecules/um2.s]: "+e2.getMessage());
+							DialogUtils.showErrorDialog(FluxReactionPanel.this,"failed to translate into General Kinetics [molecules/um2.s]: "+e2.getMessage(), e2);
 						}
 					}
 				}

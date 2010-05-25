@@ -1027,7 +1027,7 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 		
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage(), e);
 	}
 }
 

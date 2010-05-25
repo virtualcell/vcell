@@ -949,7 +949,7 @@ private void copyAnalysisTaskButton_ActionPerformed() {
 		}
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		org.vcell.util.gui.DialogUtils.showErrorDialog(this,e.getMessage());
+		DialogUtils.showErrorDialog(this,e.getMessage(), e);
 	}
 }
 
@@ -1881,7 +1881,7 @@ private void newParameterEstimationTaskButton_ActionPerformed() {
 		refreshAnalysisTaskEnables();
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(this,e.getMessage());
+		DialogUtils.showErrorDialog(this,e.getMessage(), e);
 	}
 }
 
