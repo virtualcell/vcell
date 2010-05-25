@@ -323,72 +323,111 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 //	}
 }
 
+private boolean bBusy = false;
+public boolean isBusy(){
+	return bBusy;
+}
+public synchronized void waitWhileBusy(){
+	//
+	//This method added for synchronized blocking of access to PDEDatacontext
+	//when refreshData is updating to prevent threads seeing an inconsistent view of PDEDataContext data.
+	//Any thread calling this method will block if another thread is executing refreshData() until refreshData() has finished.
+	//
+//	System.out.println("Reading bBusy="+bBusy);
+	while (bBusy) {
+		//We should never get here,  waitWhileBusy() method will not be entered by any thread
+		//when bBusy == true (because refreshData(...) is synchronized).  If we do get here,
+		//wait() is guaranteed to be notified (woken up)
+		//by refreshData(...) when bBusy == false because refreshData controls the value of bBusy.
+		try {
+			wait();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (10/3/00 5:03:43 PM)
  */
 private synchronized void refreshData(DataIdentifier selectedDataIdentifier, double timePoint,boolean bForce) throws DataAccessException{
-	
-	if(!bForce){
-		if(getDataIdentifier() != null && getDataIdentifier().equals(selectedDataIdentifier) && getTimePoint() == timePoint){
-			return;
+	try{
+		bBusy = true;
+//		System.out.println("Setting bBusy="+bBusy);
+//		try {
+//			Thread.sleep(3000);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+
+		if(!bForce){
+			if(getDataIdentifier() != null && getDataIdentifier().equals(selectedDataIdentifier) && getTimePoint() == timePoint){
+				return;
+			}
 		}
-	}
-	if(selectedDataIdentifier == null){
-		selectedDataIdentifier = dataIdentifiers[0];
-	}
-	if(timePoint == -1){
-		timePoint = fieldTimePoints[0];
-	}
-	
-	if (! BeanUtils.arrayContains(dataIdentifiers, selectedDataIdentifier)) {
-		throw new DataAccessException("Requested variable not found");
-	}
-	if (BeanUtils.firstIndexOf(getTimePoints(), timePoint) == -1) {
-		if (getTimePoints() == null || getTimePoints().length == 0) {
-			throw new DataAccessException("No timepoints available");
-		} else {
-			throw new DataAccessException("Requested time not found");
+		if(selectedDataIdentifier == null){
+			selectedDataIdentifier = dataIdentifiers[0];
 		}
-	}
-	ParticleDataBlock newParticleDataBlock = null;
-	SimDataBlock simdataBlock = getSimDataBlock(selectedDataIdentifier.getName(),timePoint);
-	if (hasParticleData()) {
-		newParticleDataBlock = getParticleDataBlock(timePoint);
+		if(timePoint == -1){
+			timePoint = fieldTimePoints[0];
+		}
+		
+		if (! BeanUtils.arrayContains(dataIdentifiers, selectedDataIdentifier)) {
+			throw new DataAccessException("Requested variable not found");
+		}
+		if (BeanUtils.firstIndexOf(getTimePoints(), timePoint) == -1) {
+			if (getTimePoints() == null || getTimePoints().length == 0) {
+				throw new DataAccessException("No timepoints available");
+			} else {
+				throw new DataAccessException("Requested time not found");
+			}
+		}
+		ParticleDataBlock newParticleDataBlock = null;
+		SimDataBlock simdataBlock = getSimDataBlock(selectedDataIdentifier.getName(),timePoint);
+		if (hasParticleData()) {
+			newParticleDataBlock = getParticleDataBlock(timePoint);
+		}
+	
+	//	RefreshedData refreshedData = new RefreshedData(
+	//				simdataBlock.getData(),
+	//				simdataBlock.getVariableType(),
+	//				timePoint,
+	//				newParticleDataBlock
+	//				);
+		
+		boolean bVarChanged = false;
+		DataIdentifier oldDataiDataIdentifier = fieldDataIdentifier;
+		boolean bTimePointChanged = false;
+		double oldTimePoint = getTimePoint();
+		
+		if(!selectedDataIdentifier.equals(fieldDataIdentifier)){
+			fieldDataIdentifier = selectedDataIdentifier;
+			bVarChanged = true;
+		}
+	
+		if(timePoint != getTimePoint()){
+			fieldTimePoint = timePoint;
+			bTimePointChanged = true;
+		}
+		
+		setDataValues(simdataBlock.getData());
+		setParticleDataBlock(newParticleDataBlock);
+	//	setDataRange(refreshedData.newRange);	
+		
+		if(bVarChanged){
+			firePropertyChange("variable", oldDataiDataIdentifier, fieldDataIdentifier);
+		}
+		if(bTimePointChanged){
+			firePropertyChange("timePoint", new Double(oldTimePoint), new Double(getTimePoint()));
+		}
+	}finally{
+		bBusy = false;
+	//	System.out.println("Setting bBusy="+bBusy);
+		notifyAll();
 	}
 
-//	RefreshedData refreshedData = new RefreshedData(
-//				simdataBlock.getData(),
-//				simdataBlock.getVariableType(),
-//				timePoint,
-//				newParticleDataBlock
-//				);
-	
-	boolean bVarChanged = false;
-	DataIdentifier oldDataiDataIdentifier = fieldDataIdentifier;
-	boolean bTimePointChanged = false;
-	double oldTimePoint = getTimePoint();
-	
-	if(!selectedDataIdentifier.equals(fieldDataIdentifier)){
-		fieldDataIdentifier = selectedDataIdentifier;
-		bVarChanged = true;
-	}
-
-	if(timePoint != getTimePoint()){
-		fieldTimePoint = timePoint;
-		bTimePointChanged = true;
-	}
-	
-	setDataValues(simdataBlock.getData());
-	setParticleDataBlock(newParticleDataBlock);
-//	setDataRange(refreshedData.newRange);	
-	
-	if(bVarChanged){
-		firePropertyChange("variable", oldDataiDataIdentifier, fieldDataIdentifier);
-	}
-	if(bTimePointChanged){
-		firePropertyChange("timePoint", new Double(oldTimePoint), new Double(getTimePoint()));
-	}
 }
 
 
