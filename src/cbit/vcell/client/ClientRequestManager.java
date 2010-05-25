@@ -1172,7 +1172,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 										"Scratch: New Geometry");
 								break;
 							}catch(Exception e){
-								DialogUtils.showErrorDialog(guiParent, "Error entering starting sizes\n"+e.getMessage());
+								DialogUtils.showErrorDialog(guiParent, "Error entering starting sizes\n"+e.getMessage(), e);
 							}
 						}while(true);
 					}catch(UtilCancelException e2){
@@ -1233,7 +1233,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						}
 						realException.printStackTrace();
 						DialogUtils.showErrorDialog((Component)hashTable.get(GUI_PARENT), "Error in Geometry creation.\n"+
-							realException.getMessage());
+							realException.getMessage(), realException);
 						
 					}
 				}
@@ -1505,7 +1505,7 @@ public void updateUserRegistration(final DocumentWindowManager currWindowManager
 		return;
 	} catch (Exception e) {
 		e.printStackTrace();
-		PopupGenerator.showErrorDialog(currWindowManager, (bNewUser?"Create new":"Update")+" user Registration error:\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(currWindowManager, (bNewUser?"Create new":"Update")+" user Registration error:\n"+e.getMessage(), e);
 		return;
 	}
 }
@@ -1519,7 +1519,7 @@ public void sendLostPassword(final DocumentWindowManager currWindowManager, fina
 				null);
 	} catch (Exception e) {
 		e.printStackTrace();
-		PopupGenerator.showErrorDialog(currWindowManager, "Update user Registration error:\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(currWindowManager, "Update user Registration error:\n" + e.getMessage(), e);
 	}
 }
 /**
@@ -2204,7 +2204,7 @@ public void openDocument(int documentType, DocumentWindowManager requester) {
 		return;
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(requester, "Open document failed\n"+exc);
+		PopupGenerator.showErrorDialog(requester, "Open document failed\n" + exc.getMessage(), exc);
 	}
 }
 
@@ -2698,7 +2698,7 @@ public BioModelInfo selectBioModelInfo(TopLevelWindowManager requester) {
 		return null;
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(requester, "Selection of BioModel failed\n"+exc);
+		PopupGenerator.showErrorDialog(requester, "Selection of BioModel failed\n"+exc.getMessage(), exc);
 	}
 	return (BioModelInfo)documentInfo;
 }
@@ -2718,7 +2718,7 @@ public MathModelInfo selectMathModelInfo(TopLevelWindowManager requester) {
 		return null;
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(requester, "Selection of MathModel failed\n"+exc);
+		PopupGenerator.showErrorDialog(requester, "Selection of MathModel failed\n" + exc.getMessage(), exc);
 	}
 	return (MathModelInfo)documentInfo;
 }
@@ -2841,7 +2841,7 @@ public void stopSimulations(final ClientSimManager clientSimManager, final Simul
 					Simulation sim = (Simulation)en.nextElement();
 					Throwable exc = (Throwable)failures.get(sim);
 					// notify user
-					PopupGenerator.showErrorDialog(clientSimManager.getDocumentWindowManager(), "Failed to dispatch stop request for simulation'"+sim.getName()+"'\n"+exc.getMessage());
+					PopupGenerator.showErrorDialog(clientSimManager.getDocumentWindowManager(), "Failed to dispatch stop request for simulation'"+sim.getName()+"'\n" + exc.getMessage(), exc);
 				}
 			}
 		}

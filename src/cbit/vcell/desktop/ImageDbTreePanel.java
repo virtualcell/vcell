@@ -27,6 +27,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VersionInfo;
 
 import cbit.image.VCImageInfo;
+import cbit.vcell.client.PopupGenerator;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)
@@ -871,7 +872,7 @@ private void jMenuItemDelete_ActionPerformed1(java.awt.event.ActionEvent actionE
 				getDocumentManager().delete((VCImageInfo)getSelectedVersionInfo());
 		}
 	}catch(Exception e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog(this,e.getMessage());
+		PopupGenerator.showErrorDialog(this,e.getMessage(), e);
 	}
 }
 /**

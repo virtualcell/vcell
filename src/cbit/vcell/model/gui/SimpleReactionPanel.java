@@ -1101,9 +1101,9 @@ private JButton getJToggleButton() {
 					} catch (UtilCancelException e1) {
 					} catch (Exception e2){
 						if (getKinetics().getKineticsDescription().isElectrical()){
-							DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Current Kinetics [pA]: "+e2.getMessage());
+							DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Current Kinetics [pA]: "+e2.getMessage(), e2);
 						}else{
-							DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Lumped Kinetics [molecules/s]: "+e2.getMessage());
+							DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Lumped Kinetics [molecules/s]: "+e2.getMessage(), e2);
 						}
 					}
  				}else if (getKinetics() instanceof LumpedKinetics){
@@ -1114,12 +1114,12 @@ private JButton getJToggleButton() {
 					} catch (UtilCancelException e1) {
 					} catch (Exception e2){
 						if (getKinetics().getKineticsDescription().isElectrical()){
-							DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Current Density Kinetics [pA/"+MU+"m"+SQUARED+"]: "+e2.getMessage());
+							DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Current Density Kinetics [pA/"+MU+"m"+SQUARED+"]: "+e2.getMessage(), e2);
 						}else{
 							if (getKinetics().getReactionStep().getStructure() instanceof Feature){
-								DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Kinetics ["+MU+"M/s]: "+e2.getMessage());
+								DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Kinetics ["+MU+"M/s]: "+e2.getMessage(), e2);
 							}else{
-								DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Kinetics [molecules/"+MU+"m"+SQUARED+".s]: "+e2.getMessage());
+								DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Kinetics [molecules/"+MU+"m"+SQUARED+".s]: "+e2.getMessage(), e2);
 							}
 						}
 					}

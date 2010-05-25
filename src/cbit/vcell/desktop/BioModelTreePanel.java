@@ -702,7 +702,7 @@ private void editAnnotation() {
 		}
 	}catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(this, "Failed to edit annotation!\n"+exc.getMessage());
+		DialogUtils.showErrorDialog(this, "Failed to edit annotation!\n"+exc.getMessage(), exc);
 	}
 }
 

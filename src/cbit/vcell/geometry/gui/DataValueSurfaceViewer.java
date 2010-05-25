@@ -1853,7 +1853,7 @@ private void jButtonStats_ActionPerformed(java.awt.event.ActionEvent actionEvent
 				try{
 					getSurfaceCollectionDataInfoProvider().plotTimeSeriesData(indices,true,false,true);	
 				}catch(Exception e2){
-					PopupGenerator.showErrorDialog(this, e2.getMessage());
+					PopupGenerator.showErrorDialog(this, e2.getMessage(), e2);
 				}
 			}else{
 				PopupGenerator.showErrorDialog(this, "Region of Interest must be defined to calculate Statistics");
@@ -1931,7 +1931,7 @@ public void pickByAnalytic() {
 			updateAreaOfInterest();
 		}
 	}catch(Throwable e){
-		PopupGenerator.showErrorDialog(this, "Error while picking Analytic AreaOfInterest\n"+e.getClass().getName()+"\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Error while picking Analytic AreaOfInterest\n"+e.getMessage(), e);
 	}
 
 }

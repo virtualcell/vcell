@@ -642,7 +642,7 @@ protected void menuAction(Shape shape, String menuAction) {
 					pasteReactionSteps(reactionStepArr,getReactionCartoon().getModel(),((ReactionContainerShape)shape).getStructure(),menuAction.equals(PASTE_NEW_MENU_ACTION),getGraphPane(),null);
 				} catch (Exception e) {
 					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(getGraphPane(), "Error while pasting reaction:\n" + e.getMessage());
+					PopupGenerator.showErrorDialog(getGraphPane(), "Error while pasting reaction:\n" + e.getMessage(), e);
 				}
 			}
 		}
@@ -673,7 +673,7 @@ protected void menuAction(Shape shape, String menuAction) {
 		}catch (java.beans.PropertyVetoException e){
 			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
 		}catch (Exception e){
-			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
+			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage(), e);
 		}
 				
 	}else if (menuAction.equals(ADD_ENZYME_REACTION_MENU_ACTION)){
@@ -682,7 +682,7 @@ protected void menuAction(Shape shape, String menuAction) {
 				showReactionBrowserDialog(getReactionCartoon(),((ReactionContainerShape)shape).getStructure(),null);
 			}
 		}catch(Exception e){
-			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
+			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage(), e);
 		}
 	} else if (menuAction.equals(HIGH_RES_MENU_ACTION) || menuAction.equals(MED_RES_MENU_ACTION) ||
 			   menuAction.equals(LOW_RES_MENU_ACTION)) { 
@@ -699,7 +699,7 @@ protected void menuAction(Shape shape, String menuAction) {
 				showSaveReactionImageDialog(((ReactionContainerShape)shape).getStructure(), resType);
 			}
 		} catch(Exception e) {
-			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
+			PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage(), e);
 		}
 	}else if(menuAction.equals(ANNOTATE_MENU_ACTION)){
 		if(shape instanceof ReactionStepShape){
@@ -714,7 +714,7 @@ protected void menuAction(Shape shape, String menuAction) {
 				//Do Nothing
 			}catch (Throwable exc) {
 				exc.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(getGraphPane(), "Failed to edit annotation!\n"+exc.getMessage());
+				PopupGenerator.showErrorDialog(getGraphPane(), "Failed to edit annotation!\n"+exc.getMessage(), exc);
 			}
 		}
 	}else{
@@ -844,7 +844,7 @@ public void mouseClicked(java.awt.event.MouseEvent event) {
 		Point canvasLoc = getGraphPane().getLocationOnScreen();
 		canvasLoc.x += screenPoint.x;
 		canvasLoc.y += screenPoint.y;
-		PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage());
+		PopupGenerator.showErrorDialog(getGraphPane(), e.getMessage(), e);
 	}				
 }
 

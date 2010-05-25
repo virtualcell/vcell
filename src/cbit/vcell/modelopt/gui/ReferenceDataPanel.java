@@ -719,7 +719,7 @@ private void showEditor() {
 	}catch (UtilCancelException e){
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(this,e.getMessage());
+		DialogUtils.showErrorDialog(this,e.getMessage(), e);
 	}
 	return;
 }
@@ -774,7 +774,7 @@ private ReferenceData subsample() {
 		return srd;
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(this, e.getMessage());
+		DialogUtils.showErrorDialog(this, e.getMessage(), e);
 		return refData;
 	}
 	

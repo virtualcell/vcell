@@ -1633,7 +1633,7 @@ public void setVcellDrawable(VCellDrawable vcellDrawable) {
  * Comment
  */
 public void showErrorDialog(java.lang.Throwable arg1) {
-	PopupGenerator.showErrorDialog(this,"Set Filament Error:\n"+arg1.getMessage());
+	PopupGenerator.showErrorDialog(this,"Set Filament Error:\n"+arg1.getMessage(), arg1);
 }
 
 

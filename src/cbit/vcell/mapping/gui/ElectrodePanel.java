@@ -950,7 +950,7 @@ private void selectFeature(Model model) {
 		getelectrode1().setFeature(feature);
 	}catch (Exception e){
 		handleException(e);
-		PopupGenerator.showErrorDialog(this,"Error changing feature for electrode");
+		PopupGenerator.showErrorDialog(this,"Error changing feature for electrode", e);
 	}
 }
 /**

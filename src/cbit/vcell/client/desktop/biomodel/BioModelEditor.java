@@ -492,7 +492,7 @@ private void copyApplication(ActionEvent evt) {
 		}
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Failed to Copy Application!\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(this, "Failed to Copy Application!\n"+exc.getMessage(), exc);
 	}
 }
 
@@ -541,7 +541,7 @@ private void deleteApplication() {
 		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Failed to Delete!\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(this, "Failed to Delete!\n"+exc.getMessage(), exc);
 	}
 }
 
@@ -1154,7 +1154,7 @@ private void newApplication(java.awt.event.ActionEvent event) {
 		}
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Failed to create new Application!\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(this, "Failed to create new Application!\n"+exc.getMessage(), exc);
 	}
 }
 
@@ -1215,7 +1215,7 @@ private void renameApplication() {
 		}
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, exc.getMessage());
+		PopupGenerator.showErrorDialog(this, exc.getMessage(), exc);
 	}	
 }
 

@@ -3005,7 +3005,7 @@ private void showEditAnnotationWindow() {
 		}
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Failed to edit annotation!\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(this, "Failed to edit annotation!\n"+exc.getMessage(), exc);
 	}
 }
 

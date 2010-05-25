@@ -93,7 +93,7 @@ public void propertyChange(PropertyChangeEvent evt) {
 			simResultsViewer.refreshFunctions();
 		} catch (Exception e) {
 			e.printStackTrace();
-			DialogUtils.showErrorDialog(simResultsViewer, "Failed to update viewer after function change: "+e.getMessage());
+			DialogUtils.showErrorDialog(simResultsViewer, "Failed to update viewer after function change: "+e.getMessage(), e);
 		}
 	}
 }

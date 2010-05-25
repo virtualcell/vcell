@@ -373,7 +373,7 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 		configureBFN();
 	}catch(Exception e){
 		e.printStackTrace();
-		DialogUtils.showErrorDialog(this, "DBReactionWizard failed\n"+e.getMessage());
+		DialogUtils.showErrorDialog(this, "DBReactionWizard failed\n"+e.getMessage(), e);
 	}
 }
 
@@ -2419,7 +2419,7 @@ private void parameterNameSelectionChanged() {
 			setReactionStep(null);
 		}
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog(this,e.getMessage());
+		PopupGenerator.showErrorDialog(this,e.getMessage(), e);
 	}
 	//
 	configureBFN();

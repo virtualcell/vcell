@@ -415,7 +415,7 @@ public void updateMath() {
 		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Failed to generate new Math:\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(this, "Failed to generate new Math:\n"+exc.getMessage(), exc);
 	}
 }
 

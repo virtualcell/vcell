@@ -462,7 +462,7 @@ private void initConnections() {
 			JTextField jtf = (JTextField)input;
 			try {
 				Integer.parseInt(jtf.getText());
-			} catch (Exception ex) {
+			} catch (NumberFormatException ex) {
 				DialogUtils.showErrorDialog(MeshSpecificationPanel.this, "Wrong number format " + ex.getMessage().toLowerCase());
 				bValid = false;
 			}

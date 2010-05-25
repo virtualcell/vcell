@@ -173,7 +173,7 @@ public class TimeFunctionPanel extends JPanel {
 			plotPane.setPlot2D(	plot2D);
 		} catch (Exception e) {
 			e.printStackTrace();
-			DialogUtils.showErrorDialog(this, "Error refreshing Plot:\n"+e.getMessage());
+			DialogUtils.showErrorDialog(this, "Error refreshing Plot:\n"+e.getMessage(), e);
 			plotPane.setPlot2D(	null);
 		}
 

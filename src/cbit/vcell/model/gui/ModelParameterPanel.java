@@ -817,7 +817,7 @@ private void jMenuItemConvertToLocal_ActionPerformed(ActionEvent actionEvent) {
 							}
 						} catch (Exception e) {
 							e.printStackTrace(System.out);
-							PopupGenerator.showErrorDialog(this, "Unable to convert parameter : \'" + selectedParams[i].getName() + "\' to local kinetics parameter : " + e.getMessage());
+							PopupGenerator.showErrorDialog(this, "Unable to convert parameter : \'" + selectedParams[i].getName() + "\' to local kinetics parameter : " + e.getMessage(), e);
 						}
 					} 
 				}
@@ -900,7 +900,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 
 			VCellTransferable.sendToClipboard(rvs);
 		}catch(Throwable e){
-			PopupGenerator.showErrorDialog(this, "ModelParametersPanel Copy failed.  "+e.getMessage());
+			PopupGenerator.showErrorDialog(this, "ModelParametersPanel Copy failed.  "+e.getMessage(), e);
 		}
 	}
 }
@@ -980,7 +980,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 
 		}
 	}catch(Throwable e){
-		PopupGenerator.showErrorDialog(this, "Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage(), e);
 		return;
 	}
 
@@ -999,7 +999,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 		}
 	}catch(Throwable e){
 		e.printStackTrace();
-		PopupGenerator.showErrorDialog(this, "Paste Error\n"+e.getClass().getName()+" "+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Paste Error\n"+e.getMessage(), e);
 	}
 
 }
@@ -1212,7 +1212,7 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 		//Do Nothing
 	}catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Failed to edit annotation!\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(this, "Failed to edit annotation!\n"+exc.getMessage(), exc);
 	}
 }
 

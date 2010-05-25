@@ -2150,14 +2150,14 @@ private void saveOutput(java.awt.event.ActionEvent actionEvent) {
 private void sbmlImportButton_ActionPerformed() {
 	String sbml;
 	try {
-	sbml = BnglSbmlTransformer.transformSBML(getBngOutput());
+		sbml = BnglSbmlTransformer.transformSBML(getBngOutput());
 	} catch(SbmlTransformException e) {
 		e.printStackTrace(System.out);
 		DialogUtils.showErrorDialog(this, e.getMessage());
 		return;
 	} catch(Exception e) {
 		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(this, SbmlTransformException.DefaultMessage);
+		DialogUtils.showErrorDialog(this, SbmlTransformException.DefaultMessage, e);
 		return;
 	}
 	getBngWindowManager().importSbml(sbml);

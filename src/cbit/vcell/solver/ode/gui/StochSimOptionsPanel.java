@@ -567,7 +567,7 @@ public class StochSimOptionsPanel extends JPanel {
 						customSeed, numTrials, epsilon, lambda, MSRTolerance, SDETolerance));
 			}
 		} catch(Exception e){
-			PopupGenerator.showErrorDialog(this, e.getMessage());
+			PopupGenerator.showErrorDialog(this, e.getMessage(), e);
 		}
 	}
 	

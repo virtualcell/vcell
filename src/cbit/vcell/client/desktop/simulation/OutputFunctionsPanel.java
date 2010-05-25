@@ -89,7 +89,7 @@ public class OutputFunctionsPanel extends JPanel {
 					deleteOutputFunction();
 			} catch (Exception ex) {
 				ex.printStackTrace(System.out);
-				DialogUtils.showErrorDialog(OutputFunctionsPanel.this, ex.getMessage());
+				DialogUtils.showErrorDialog(OutputFunctionsPanel.this, ex.getMessage(), ex);
 			}
 		}
 
@@ -560,7 +560,7 @@ public class OutputFunctionsPanel extends JPanel {
 				outputFunctionContext.addOutputFunction(newFunction);
 			} catch (Exception e1) {
 				e1.printStackTrace(System.out);
-				DialogUtils.showErrorDialog(this, "Function '" + newFunction.getName() + "' cannot be added. " + e1.getMessage());
+				DialogUtils.showErrorDialog(this, "Function '" + newFunction.getName() + "' cannot be added. " + e1.getMessage(), e1);
 			}
 		}
 

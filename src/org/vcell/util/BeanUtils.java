@@ -5,21 +5,49 @@
 
 package org.vcell.util;
 
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.awt.geom.*;
-import java.awt.*;
-import java.util.Enumeration;
-import java.util.Vector;
-import javax.swing.*;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.rmi.RemoteException;
+import java.util.Enumeration;
+import java.util.Vector;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.swing.JDesktopPane;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JMenu;
+import javax.swing.JRootPane;
+import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 /**
  * Insert the type's description here.
  * Creation date: (8/18/2000 2:29:31 AM)
@@ -1001,5 +1029,56 @@ public static byte[] uncompress(byte[] compressedBytes) throws java.io.IOExcepti
 	iis.close();
 	bis.close();
 	return bos.toByteArray();
+}
+
+public static String getStackTrace(Throwable exception) {
+	StringWriter out = new StringWriter();
+	PrintWriter pw = new PrintWriter(out);
+	exception.printStackTrace(pw);
+	pw.close();
+	return out.getBuffer().toString();
+}
+
+
+public static void sendSMTP(String smtpHost, int smtpPort,String from, String to,String subject, String content)
+	throws AddressException, MessagingException {
+	
+	// Create a mail session
+	java.util.Properties props = new java.util.Properties();
+	props.put("mail.smtp.host", smtpHost);
+	props.put("mail.smtp.port", ""+smtpPort);
+	Session session = Session.getDefaultInstance(props, null);
+	
+	// Construct the message
+	Message msg = new MimeMessage(session);
+	msg.setFrom(new InternetAddress(from));
+	msg.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
+	msg.setSubject(subject);
+	msg.setText(content);
+	
+	// Send the message
+	Transport.send(msg);
+}
+
+public static void sendErrorReport(Throwable exception) throws RemoteException {
+	if (exception == null) {
+		throw new RemoteException("Send Error Report, exception is null");
+	}
+	String smtpHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName);
+	int smtpPort = new Integer(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)).intValue();
+	String from = "VCell";
+	String to = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress);
+	String subject = "VCell Error Report from " + PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+	String content = BeanUtils.getStackTrace(exception);
+	
+	try {
+		BeanUtils.sendSMTP(smtpHost, smtpPort, from, to, subject, content);
+	} catch (AddressException e) {
+		e.printStackTrace();
+		throw new RemoteException(e.getMessage());
+	} catch (MessagingException e) {
+		e.printStackTrace();
+		throw new RemoteException(e.getMessage());
+	}
 }
 }

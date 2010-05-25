@@ -1038,7 +1038,7 @@ private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
 				);
 			getImagePlaneManagerPanel1().setSourceDataInfo(sdi);
 		}catch(Exception e){
-			PopupGenerator.showErrorDialog(GeometrySummaryPanel.this, e.getMessage());
+			PopupGenerator.showErrorDialog(GeometrySummaryPanel.this, e.getMessage(), e);
 		}
 	}else{
 		getImagePlaneManagerPanel1().setSourceDataInfo(null);

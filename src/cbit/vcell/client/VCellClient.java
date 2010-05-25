@@ -128,7 +128,7 @@ private DocumentWindowManager createAndShowGUI(VCDocument startupDoc, boolean fr
  * Creation date: (5/12/2004 4:36:34 PM)
  * @return cbit.vcell.client.server.ClientServerManager
  */
-ClientServerManager getClientServerManager() {
+public ClientServerManager getClientServerManager() {
 	return clientServerManager;
 }
 

@@ -89,7 +89,7 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
 			connEtoM6();
 		} catch (Exception e) {
 			e.printStackTrace();
-			PopupGenerator.showErrorDialog(this, "Error\n"+e.getMessage());
+			PopupGenerator.showErrorDialog(this, "Error\n"+e.getMessage(), e);
 		}
 		// user code begin {2}
 		// user code end

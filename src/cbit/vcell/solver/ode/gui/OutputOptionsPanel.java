@@ -693,7 +693,7 @@ public class OutputOptionsPanel extends JPanel {
 				throw new RuntimeException(e.getMessage());
 			}
 		} catch (Exception e) {
-			DialogUtils.showErrorDialog(this, e.getMessage());
+			DialogUtils.showErrorDialog(this, e.getMessage(), e);
 		}
 	}
 

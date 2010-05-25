@@ -634,7 +634,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					
 				}catch(Exception exc){
 					DialogUtils.showErrorDialog(overlayEditorPanelJAI,
-							"Error validating Geometry attributes.\n"+exc.getMessage());
+							"Error validating Geometry attributes.\n"+exc.getMessage(), exc);
 				}
 			}
 		});
@@ -747,7 +747,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					
 				}catch(Exception exc){
 					DialogUtils.showErrorDialog(overlayEditorPanelJAI,
-							"Error validating compartments.\n"+exc.getMessage());
+							"Error validating compartments.\n"+exc.getMessage(), exc);
 				}
 			}
 		});
@@ -2025,7 +2025,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					}catch(Exception e){
 						e.printStackTrace();
 						DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Crop failed:\n"+e.getMessage()+
-								(e.getCause()!= null?"\n"+e.getCause().getMessage():""));
+								(e.getCause()!= null?"\n"+e.getCause().getMessage():""), e);
 					}
 				}
 			}).run();

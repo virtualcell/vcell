@@ -336,7 +336,7 @@ private JPopupMenu getLoadTestMenu(){
 						//ignore
 					}catch(Exception e2){
 						e2.printStackTrace();
-						DialogUtils.showErrorDialog(TestingFrameworkPanel.this, e2.getMessage());
+						DialogUtils.showErrorDialog(TestingFrameworkPanel.this, e2.getMessage(), e2);
 					}
 				}
 			});

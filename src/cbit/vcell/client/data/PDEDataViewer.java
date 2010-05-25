@@ -389,7 +389,7 @@ private void calcStatistics(final ActionEvent actionEvent) {
 	try {
 		roiAction();
 	}catch(Throwable e){
-		PopupGenerator.showErrorDialog(this, "Error calculating statistics\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Error calculating statistics\n"+e.getMessage(), e);
 	}
 }
 
@@ -859,7 +859,7 @@ private void roiAction(){
 						ClientTaskDispatcher.dispatch(PDEDataViewer.this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
 					} catch (Exception e1) {
 						e1.printStackTrace();
-						PopupGenerator.showErrorDialog(PDEDataViewer.this, "ROI Error.\n"+e1.getMessage());
+						PopupGenerator.showErrorDialog(PDEDataViewer.this, "ROI Error.\n"+e1.getMessage(), e1);
 					}
 				}
 				BeanUtils.dispose(mainJPanel);
@@ -1524,7 +1524,7 @@ private DataValueSurfaceViewer getDataValueSurfaceViewer() {
 		fieldDataValueSurfaceViewer = fieldDataValueSurfaceViewer0;
 	}
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog(PDEDataViewer.this, e.getClass().getName()+"\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(PDEDataViewer.this, e.getMessage(), e);
 	}
 
 	return fieldDataValueSurfaceViewer;
@@ -2241,7 +2241,7 @@ private void showKymograph() {
 				symbolTable);
 		}
 	} catch (Exception e) {
-		PopupGenerator.showErrorDialog(PDEDataViewer.this, this.getClass().getName()+".showKymograph: "+e.getMessage());
+		PopupGenerator.showErrorDialog(PDEDataViewer.this, this.getClass().getName()+".showKymograph: "+e.getMessage(), e);
 		e.printStackTrace(System.out);
 	}
 

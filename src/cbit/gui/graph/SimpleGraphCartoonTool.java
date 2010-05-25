@@ -362,7 +362,7 @@ public void mouseClicked(java.awt.event.MouseEvent event) {
 		java.awt.Point screenPoint = new java.awt.Point(event.getX(),event.getY());
 		canvasLoc.x += screenPoint.x;
 		canvasLoc.y += screenPoint.y;
-		DialogUtils.showErrorDialog(getGraphPane(), "Error:\n"+e.getMessage());
+		DialogUtils.showErrorDialog(getGraphPane(), "Error:\n"+e.getMessage(), e);
 	}				
 }
 

@@ -978,7 +978,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 	}catch(UserCancelException e){
 		return;
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog(this, "Error creating Field Data from simulation\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Error creating Field Data from simulation\n"+e.getMessage(), e);
 	}
 }
 
@@ -1187,7 +1187,7 @@ private void jTree1_TreeExpanded(final javax.swing.event.TreeExpansionEvent tree
 			return;
 		}
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog(this, "Error getting Field Data Info\n"+e.getMessage());
+		PopupGenerator.showErrorDialog(this, "Error getting Field Data Info\n"+e.getMessage(), e);
 		return;
 	}
 	
@@ -1356,19 +1356,19 @@ private AsynchClientTask[] addNewExternalData(final boolean isFromSimulation) {
 					try{
 						userDefinedFDOS.extent = fdip.getExtent();
 					}catch(Exception e){
-						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Problem with Extent values. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
+						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Problem with Extent values. Please re-enter.\n"+e.getMessage()+"\nTry Again.", e);
 						continue;
 						}
 					try{
 						userDefinedFDOS.origin = fdip.getOrigin();
 					}catch(Exception e){
-						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Problem with Origin values. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
+						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Problem with Origin values. Please re-enter.\n"+e.getMessage()+"\nTry Again.", e);
 						continue;
 					}
 					try{
 						userDefinedFDOS.varNames = fdip.getVariableNames();
 					}catch(Exception e){
-						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Problem with Variable names. Please re-enter.\n"+e.getMessage()+"\nTry Again.");
+						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Problem with Variable names. Please re-enter.\n"+e.getMessage()+"\nTry Again.", e);
 						continue;
 					}
 					userDefinedFDOS.annotation = fdip.getAnnotation();
@@ -1388,7 +1388,7 @@ private AsynchClientTask[] addNewExternalData(final boolean isFromSimulation) {
 							}
 						}
 					}catch(Exception e){
-						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Error saving Field Data Name to Database. Try again.\n"+e.getMessage());
+						PopupGenerator.showErrorDialog(FieldDataGUIPanel.this, "Error saving Field Data Name to Database. Try again.\n"+e.getMessage(), e);
 						continue;
 					}
 					hashTable.put("userDefinedFDOS", userDefinedFDOS);
