@@ -1556,6 +1556,10 @@ private void setTimeFromSlider(int sliderPosition) {
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();			
 			AsynchClientTask task2  = new AsynchClientTask("Setting TimePoint", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					if(getClientTaskStatusSupport() != null){
+						getClientTaskStatusSupport().setMessage("Waiting for timepoint data:"+ timepoint);
+					}
+					getpdeDataContext1().waitWhileBusy();
 					getpdeDataContext1().setTimePoint(timepoint);
 				}
 			};
@@ -1584,7 +1588,13 @@ private void setTimeFromSlider(int sliderPosition) {
 				}
 			};
 			AsynchClientTask[] taskArray = new AsynchClientTask[]{task2, task3};
-			ClientTaskDispatcher.dispatch(this, hash, taskArray);
+			if(getPdeDataContext().isBusy()){
+				//Show waiting
+				ClientTaskDispatcher.dispatch(this, hash, taskArray,false,false,null,true);
+			}else{
+				//Not show waiting
+				ClientTaskDispatcher.dispatch(this, hash, taskArray);
+			}
 		}else{
 			updateTimeTextField(timepoint);
 		}
@@ -1651,6 +1661,10 @@ private void variableChanged(javax.swing.event.ListSelectionEvent listSelectionE
 		
 		AsynchClientTask task2  = new AsynchClientTask("Setting Variable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if(getClientTaskStatusSupport() != null){
+					getClientTaskStatusSupport().setMessage("Waiting for variable data: "+selectedDataIdentifier.getDisplayName());
+				}
+				getpdeDataContext1().waitWhileBusy();
 				getPdeDataContext().setVariable(selectedDataIdentifier);
 			}
 		};
@@ -1677,7 +1691,13 @@ private void variableChanged(javax.swing.event.ListSelectionEvent listSelectionE
 			}
 		};
 		AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
-		ClientTaskDispatcher.dispatch(this, hash, taskArray);
+		if(getPdeDataContext().isBusy()){
+			//Show waiting
+			ClientTaskDispatcher.dispatch(this, hash, taskArray,false,false,null,true);
+		}else{
+			//Not show waiting
+			ClientTaskDispatcher.dispatch(this, hash, taskArray);
+		}
 	}else if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
 		for (int i = 0; i < getJList1().getModel().getSize(); i++) {
 			if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
