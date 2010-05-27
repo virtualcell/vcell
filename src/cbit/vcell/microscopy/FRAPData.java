@@ -519,11 +519,16 @@ public boolean checkROIConstraints(Component componentToDisplayMsg) throws Excep
 				ROI newBackgroundROI = new ROI(ushortImage,FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
 				addReplaceRoi(newBackgroundROI);
 			}
+			return true;
 		}
+	}
+	else //nothing to fix
+	{
 		return true;
 	}
 	return false;
 }
+
 
 protected void refreshDependentROIs()
 {

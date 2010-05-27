@@ -38,15 +38,13 @@ import cbit.vcell.microscopy.gui.FRAPStudyPanel.WorkFlowButtonHandler;
 import cbit.vcell.microscopy.gui.estparamwizard.AnalysisTableRenderer;
 
 
-public class ResultDisplayPanel extends JPanel
+public class ResultDisplayPanel extends AdvancedTablePanel
 {
 	private JLabel oneDiffComponentLabel = null;
 	private JLabel twoDiffComponentLabel = null;
-//	private JLabel reacBindingLabel = null;
 	private JPanel titlePanel = null;
 	private JPanel modelPanel = null;
 	private JPanel tablePanel = null;
-	private JTable resultTable = null;
 	private JPanel buttonPanel = null;
 	private JButton show2DResultButton = null;
 	private JButton runSimButton = null;
@@ -277,23 +275,24 @@ public class ResultDisplayPanel extends JPanel
 	
 	public JTable getRestultTable()
 	{
-		if(resultTable == null)
+		if(table == null)
 		{
-			resultTable = new JTable();
+			table = new JTable();
 			//set table model
 			tableModel = getBestParameterTableModel(); 
-			resultTable.setModel(tableModel);//set table model
-			
+			table.setModel(tableModel);//set table model
+			table.setCellSelectionEnabled(true);
+			table.addMouseListener(evtHandler);
 			//set table renderer
-			TableCellRenderer tableRenderer = new  BestParameterTableRenderer(8); //double precision 8 digits
+			TableCellRenderer tableRenderer = new AnalysisTableRenderer(8); //double precision 8 digits
 			for(int i=0; i<tableModel.getColumnCount(); i++)
 			{
-				TableColumn column=resultTable.getColumnModel().getColumn(i);
+				TableColumn column=table.getColumnModel().getColumn(i);
 				column.setCellRenderer(tableRenderer);			
 			}
 
 		}
-		return resultTable;
+		return table;
 	}
 	
 	private BestParameterTableModel getBestParameterTableModel()

@@ -11,7 +11,7 @@ public class AnalysisTableModel extends AbstractTableModel
 {
 	public final static int NUM_ROWS = FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF +1; //add one more row for immobile fraction
 	public final static int NUM_COLUMNS = 3;
-	public final static int INDEX_IMMOBILE_FRAC = 8;
+	public final static int INDEX_IMMOBILE_FRAC = 5;
 	public final static String IMMOBILE_FRAC_NAME = "Immobile Fraction";
 	public final static int COLUMN_PARAM_NAME = 0;
 	public final static int COLUMN_DIFF_ONE = 1;

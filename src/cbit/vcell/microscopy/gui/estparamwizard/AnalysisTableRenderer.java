@@ -19,25 +19,25 @@ public class AnalysisTableRenderer  extends DefaultTableCellRenderer {
     public AnalysisTableRenderer(int precision) {
         super();
         setFont(new Font("Arial", Font.PLAIN, 11));
-        setBorder(BorderFactory.createEmptyBorder(1, 5, 1, 1));
         //set double precision
         format = NumberFormat.getNumberInstance();
         format.setMaximumFractionDigits(precision);
-        format.setMinimumFractionDigits(precision);
+        format.setMinimumFractionDigits(0);
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column)    
     {
-        setValue(value);
+    	super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+    	setBorder(BorderFactory.createEmptyBorder(1, 5, 1, 1));
         if(value != null)
         {
         	setToolTipText(value.toString());
         }
-//    	if(value != null && column != AnalysisTableModel.COLUMN_PARAM_NAME)
-//		{
-//			setText(format.format(value));
-//		}
+    	if(value != null && (value instanceof Double || value instanceof Float || value instanceof Integer))
+		{
+			setText(format.format(value));
+		}
     	
     	if(value == null)
 		{
@@ -45,7 +45,11 @@ public class AnalysisTableRenderer  extends DefaultTableCellRenderer {
 			setForeground(new Color(238,238,238));
 		}else
 		{
-			setBackground(table.getBackground());
+			if (isSelected) {
+    			setBackground(table.getSelectionBackground());
+    		} else {
+    			setBackground(table.getBackground());
+    		}
 			setForeground(Color.black);
 		}
         return this;
