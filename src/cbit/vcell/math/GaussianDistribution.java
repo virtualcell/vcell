@@ -36,11 +36,11 @@ public class GaussianDistribution extends Distribution {
 				break;
 			}
 			if (token.equalsIgnoreCase(VCML.GaussianDistribution_Mean)) {
-				mean = new Expression(tokens);
+				mean = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.GaussianDistribution_StandardDeviation)) {
-				standardDeviation = new Expression(tokens);
+				standardDeviation = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				continue;
 			} else
 				throw new MathFormatException("unexpected identifier " + token);

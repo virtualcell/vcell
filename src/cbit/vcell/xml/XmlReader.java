@@ -1064,7 +1064,7 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 	{
 		String size = unMangle( param.getAttributeValue(XMLTags.SizeTag) );
 		try {
-			feamap.getSizeParameter().setExpression(new Expression(size));
+			feamap.getSizeParameter().setExpression(unMangleExpression(size));
 		} catch (ExpressionException e) {
 			e.printStackTrace();
 			throw new XmlParseException("An expressionException was fired when setting the size Expression " + size + " to a featureMapping!"+" : "+e.getMessage());
@@ -2642,7 +2642,7 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 	{
 		String ratio = unMangle( param.getAttributeValue(XMLTags.SurfaceToVolumeRatioTag) );
 		try {
-			memmap.getSurfaceToVolumeParameter().setExpression(new Expression(ratio));
+			memmap.getSurfaceToVolumeParameter().setExpression(unMangleExpression(ratio));
 		} catch (ExpressionException e) {
 			e.printStackTrace();
 			throw new XmlParseException("An expressionException was fired when setting the SurfacetoVolumeRatio Expression " + ratio + " to a membraneMapping!"+" : "+e.getMessage());
@@ -2657,7 +2657,7 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 	{
 		String fraction = unMangle( param.getAttributeValue(XMLTags.VolumeFractionTag) );
 		try {
-			memmap.getVolumeFractionParameter().setExpression(new Expression(fraction));
+			memmap.getVolumeFractionParameter().setExpression(unMangleExpression(fraction));
 		} catch (ExpressionException e) {
 			e.printStackTrace();
 			throw new XmlParseException("An expressionException was fired when setting the VolumeFraction Expression " + fraction + " to a membraneMapping!"+" : "+e.getMessage());
@@ -2672,7 +2672,7 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 	{
 		String size = unMangle( param.getAttributeValue(XMLTags.SizeTag) );
 		try {
-			memmap.getSizeParameter().setExpression(new Expression(size));
+			memmap.getSizeParameter().setExpression(unMangleExpression(size));
 		} catch (ExpressionException e) {
 			e.printStackTrace();
 			throw new XmlParseException("An expressionException was fired when setting the size Expression " + size + " to a membraneMapping!"+" : "+e.getMessage());
@@ -4372,32 +4372,32 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 				//Xm
 				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXm);
 				if (temp != null) {
-					specspec.getBoundaryXmParameter().setExpression(new Expression(unMangle(temp)));
+					specspec.getBoundaryXmParameter().setExpression(unMangleExpression(temp));
 				}
 				//Xp
 				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXp);
 				if (temp != null) {
-					specspec.getBoundaryXpParameter().setExpression(new Expression(unMangle(temp)));
+					specspec.getBoundaryXpParameter().setExpression(unMangleExpression(temp));
 				}
 				//Ym
 				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYm);
 				if (temp != null) {
-					specspec.getBoundaryYmParameter().setExpression(new Expression(unMangle(temp)));
+					specspec.getBoundaryYmParameter().setExpression(unMangleExpression(temp));
 				}
 				//Yp
 				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYp);
 				if (temp != null) {
-					specspec.getBoundaryYpParameter().setExpression(new Expression(unMangle(temp)));
+					specspec.getBoundaryYpParameter().setExpression(unMangleExpression(temp));
 				}
 				//Zm
 				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZm);
 				if (temp != null) {
-					specspec.getBoundaryZmParameter().setExpression(new Expression(unMangle(temp)));
+					specspec.getBoundaryZmParameter().setExpression(unMangleExpression(temp));
 				}
 				//Zp
 				temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZp);
 				if (temp != null) {
-					specspec.getBoundaryZpParameter().setExpression(new Expression(unMangle(temp)));
+					specspec.getBoundaryZpParameter().setExpression(unMangleExpression(temp));
 				}
 			} catch (ExpressionException e) {
 				e.printStackTrace();

@@ -248,9 +248,6 @@ public void setGeometry(Geometry geometry) {
 				return false;
 			}
 			public boolean acceptFunction(String funcName) {
-				if (funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]) || funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.GRAD])) {
-					return false;
-				}
 				return true;
 			}	   
 		};

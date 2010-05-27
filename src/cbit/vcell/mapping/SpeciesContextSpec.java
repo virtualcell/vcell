@@ -14,6 +14,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
@@ -1000,12 +1001,12 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
 			continue;
 		}		
 		if (token.equalsIgnoreCase(VCMODL.InitialConcentration)){
-			Expression exp = new Expression(tokens);
+			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			getInitialConditionParameter().setExpression(exp);
 			continue;
 		}		
 		if (token.equalsIgnoreCase(VCMODL.DiffusionRate)){
-			Expression exp = new Expression(tokens);
+			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			getDiffusionParameter().setExpression(exp);
 			continue;
 		}		
@@ -1014,7 +1015,7 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
 		//	
 		if (token.equalsIgnoreCase(VCMODL.BoundaryCondition)){
 			BoundaryLocation bl = BoundaryLocation.fromString(tokens.nextToken());
-			Expression exp = new Expression(tokens);
+			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			getParameterFromRole(getRole(bl)).setExpression(exp);
 			continue;
 		}
@@ -1023,17 +1024,17 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
 		// read Velocity Expressions
 		//	
 		if (token.equalsIgnoreCase(VCMODL.VelocityX)){
-			Expression exp = new Expression(tokens);
+			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			getVelocityXParameter().setExpression(exp);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCMODL.VelocityY)){
-			Expression exp = new Expression(tokens);
+			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			getVelocityYParameter().setExpression(exp);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCMODL.VelocityZ)){
-			Expression exp = new Expression(tokens);
+			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			getVelocityZParameter().setExpression(exp);
 			continue;
 		}

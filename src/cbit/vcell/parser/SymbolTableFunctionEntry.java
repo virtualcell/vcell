@@ -3,7 +3,7 @@ package cbit.vcell.parser;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ ©*/
 /**
  * A <code>SymbolTableEntry</code> describes an interface for any object that
  * can represent the value corresponding to a symbol in an expression.  
@@ -13,6 +13,15 @@ package cbit.vcell.parser;
  * <p>
  */
 public interface SymbolTableFunctionEntry extends SymbolTableEntry {
+
+	public interface Differentiable {
+		Expression differentiate(Expression args[], String variable) throws ExpressionException;
+	}
+
+	public interface Evaluable {
+		double evaluateConstant(Expression[] arguments) throws ExpressionException;
+		double evaluateVector(Expression[] arguments, double[] vectorValues) throws ExpressionException;
+	}
 
 enum FunctionArgType {
 	NUMERIC,

@@ -13,11 +13,12 @@ import org.vcell.util.document.User;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.xml.XMLTags;
+import cbit.vcell.math.MathFunctionDefinitions;
 
 public final class DataProcessingInstructions implements Matchable, Serializable {
 	private String scriptName;
@@ -102,7 +103,7 @@ public final class DataProcessingInstructions implements Matchable, Serializable
 			st.nextToken();
 			String key = st.nextToken();
 			
-			index = scriptInput.indexOf(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]);
+			index = scriptInput.indexOf(FieldFunctionDefinition.FUNCTION_name);
 			if (index >= 0) {
 				st = new StringTokenizer(scriptInput.substring(index), "\n");
 				if (st.hasMoreTokens()) {

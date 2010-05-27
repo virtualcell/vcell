@@ -27,8 +27,10 @@ import org.vcell.util.document.VCDataIdentifier;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.GradientFunctionDefinition;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -36,7 +38,6 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -507,7 +508,8 @@ private HashMap<String, SymbolTableFunctionEntry> getFunctionHashTable() {
 		functionHashTable.put(MathFunctionDefinitions.Function_regionArea_current.getName(),MathFunctionDefinitions.Function_regionArea_current);
 		functionHashTable.put(MathFunctionDefinitions.Function_regionVolume_indexed.getName(),MathFunctionDefinitions.Function_regionVolume_indexed);
 		functionHashTable.put(MathFunctionDefinitions.Function_regionVolume_current.getName(),MathFunctionDefinitions.Function_regionVolume_current);
-		functionHashTable.put(MathFunctionDefinitions.Function_field.getName(),MathFunctionDefinitions.Function_field);
+		functionHashTable.put(FieldFunctionDefinition.FUNCTION_field,new FieldFunctionDefinition());
+		functionHashTable.put(GradientFunctionDefinition.FUNCTION_grad,new GradientFunctionDefinition());
 	}
 	return functionHashTable;
 }
@@ -1632,9 +1634,8 @@ public static String createCanonicalFieldDataLogFileName(KeyValue fieldDataKey){
 
 public static String createCanonicalFieldFunctionSyntax(String externalDataIdentifierName,String varName,double beginTime,String extDataIdVariableTypeName){	
 	VariableType vt = VariableType.getVariableTypeFromVariableTypeName(extDataIdVariableTypeName);
-	return ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD] + "("+
-		externalDataIdentifierName+","+varName+","+beginTime+
-		(vt.equals(VariableType.UNKNOWN)?"": ","+vt.getTypeName())+")";
+	return FieldFunctionDefinition.FUNCTION_name + "('"+
+		externalDataIdentifierName+"','"+varName+"',"+beginTime+",'"+vt.getTypeName()+"')";
 }
 
 public static String createCanonicalSimZipFileName(KeyValue fieldDataKey,int zipIndex,int jobIndex,boolean isOldStyle){

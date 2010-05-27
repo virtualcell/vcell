@@ -12,6 +12,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VCML;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.stoch.StochHybridOptions;
@@ -739,7 +740,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 					throw new DataAccessException("unexpected token " + token + " expecting " + VCML.Constant); 
 				}
 				String name = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				Constant constant = new Constant(name,exp);
 				setSensitivityParameter(constant);
 				token = tokens.nextToken();

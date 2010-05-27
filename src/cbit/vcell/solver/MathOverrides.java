@@ -14,6 +14,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
@@ -609,7 +610,7 @@ private void readVCML(CommentStringTokenizer tokens)
 			}
 			if (token.equalsIgnoreCase(VCML.Constant)) {
 				String name = tokens.nextToken();
-				Expression act = new Expression(tokens);
+				Expression act = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				Expression def = getDefaultExpression(name);
 				//
 				// ignore override if not present in math or if it is the same

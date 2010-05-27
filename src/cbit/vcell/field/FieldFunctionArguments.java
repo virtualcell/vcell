@@ -5,7 +5,7 @@ import java.util.StringTokenizer;
 
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.parser.ASTFuncNode;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
@@ -27,7 +27,7 @@ public class FieldFunctionArguments implements Serializable {
 	}
 	
 	public FieldFunctionArguments(FunctionInvocation functionInvocation){
-		if (functionInvocation.getFunctionId() != ASTFuncNode.FIELD) {
+		if (functionInvocation.getFunctionName().equals(FieldFunctionDefinition.FUNCTION_name)) {
 			throw new IllegalArgumentException("not a FieldData function invocation");
 		}
 		Expression[] arguments = functionInvocation.getArguments();
@@ -46,11 +46,13 @@ public class FieldFunctionArguments implements Serializable {
 	
 
 	private String getSymbol(Expression exp){
-		String[] symbols = exp.getSymbols();
-		if (symbols.length!=1 || !symbols[0].equals(exp.infix())){
-			throw new IllegalArgumentException("field function argument '"+exp.infix()+"' is unexpected");
+		if (exp.isIdentifier()){
+			return exp.infix();
 		}
-		return symbols[0];
+		if (exp.isLiteral()){
+			return exp.infix().replace("'","");
+		}
+		throw new IllegalArgumentException("field function argument '"+exp.infix()+"' is unexpected");
 	}
 
 	public static FieldFunctionArguments fromTokens(StringTokenizer st) throws ExpressionException{
@@ -63,11 +65,11 @@ public class FieldFunctionArguments implements Serializable {
 	}
 	
 	public String infix(){
-		return ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD] + "(" + toCSVString() + ")";
+		return FieldFunctionDefinition.FUNCTION_name+"('"+fieldName+"','"+variableName+"',"+time.infix()+",'"+variableType.getTypeName()+"')";
 	}
 	
 	public String toCSVString(){
-		return fieldName+","+variableName  + "," + time.infix()+"," + variableType.getTypeName();
+		return fieldName+","+variableName+","+time.infix()+","+variableType.getTypeName();
 	}
 	
 	public String getFieldName() {

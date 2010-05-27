@@ -101,7 +101,7 @@ public boolean compareEqual(Matchable obj)
 	if (obj != null && obj instanceof Parameter) 
 	{
 		Parameter param = (Parameter) obj;
-		if (Compare.isEqual(name, param.getName()))
+		if (!Compare.isEqual(name, param.getName()))
 		{
 			return false;
 		}

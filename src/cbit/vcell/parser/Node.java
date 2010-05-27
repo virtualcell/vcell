@@ -136,5 +136,4 @@ void getDiscontinuities(Vector<Discontinuity> v) throws ExpressionException;
 
 public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingException;
 
-void fixFieldData();
 }

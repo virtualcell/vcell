@@ -144,9 +144,6 @@ public Object getValueAt(int row, int column) {
 								return true;
 							}
 							public boolean acceptFunction(String funcName) {
-								if (funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]) || funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.GRAD])) {
-									return false;
-								}
 								return true;
 							}
 						};

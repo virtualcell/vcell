@@ -175,7 +175,7 @@ private XmlUtil() {
  */
 public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, org.jdom.Namespace namespace) {
 	//only if there is a node and it has no default namespace!
-	if (rootNode!=null & rootNode.getNamespaceURI().length()==0) {
+	if (rootNode!=null && rootNode.getNamespaceURI().length()==0) {
 		//set namespace for this node
 		rootNode.setNamespace(namespace);
 		

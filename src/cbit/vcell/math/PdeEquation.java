@@ -414,57 +414,57 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 			break;
 		}			
 		if (token.equalsIgnoreCase(VCML.Initial)){
-			initialExp = new Expression(tokens);
+			initialExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCML.Diffusion)){
-			diffusionExp = new Expression(tokens);
+			diffusionExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCML.Rate)){
-			Expression exp = new Expression(tokens);
+			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			setRateExpression(exp);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCML.Exact)){
-			exactExp = new Expression(tokens);
+			exactExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			solutionType = EXACT_SOLUTION;
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCML.BoundaryXm)){
-			boundaryXm = new Expression(tokens);
+			boundaryXm = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.BoundaryXp)){
-			boundaryXp = new Expression(tokens);
+			boundaryXp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.BoundaryYm)){
-			boundaryYm = new Expression(tokens);
+			boundaryYm = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.BoundaryYp)){
-			boundaryYp = new Expression(tokens);
+			boundaryYp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.BoundaryZm)){
-			boundaryZm = new Expression(tokens);
+			boundaryZm = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.BoundaryZp)){
-			boundaryZp = new Expression(tokens);
+			boundaryZp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.VelocityX)){
-			velocityX = new Expression(tokens);
+			velocityX = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.VelocityY)){
-			velocityY = new Expression(tokens);
+			velocityY = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.VelocityZ)){
-			velocityZ = new Expression(tokens);
+			velocityZ = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}			
 		throw new MathFormatException("unexpected identifier "+token);

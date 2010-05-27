@@ -39,7 +39,7 @@ public abstract class RandomVariable extends Variable {
 			}			
 			if(token.equalsIgnoreCase(VCML.RandomVariable_Seed))
 			{
-				seed = new Expression(tokens);
+				seed = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.UniformDistribution)) {

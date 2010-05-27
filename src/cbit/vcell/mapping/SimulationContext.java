@@ -1990,9 +1990,6 @@ public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
 		}
 
 		public boolean acceptFunction(String funcName) {
-			if (funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.GRAD])) {
-				return false;
-			}
 			return true;
 		}
 	};

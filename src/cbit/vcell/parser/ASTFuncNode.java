@@ -10,15 +10,9 @@ import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
-import cbit.vcell.simdata.VariableType;
 
 public class ASTFuncNode extends SimpleNode {
 	
-	private static final int BOTH_NEIGHBORS = 0;
-	private static final int NO_NEIGHBORS = 3;
-	private static final int USE_ADJACENT_PLUS = 1;
-	private static final int USE_ADJACENT = 2;
- 	
 	private String funcName = null;
  	private int funcType = USERDEFINED;
  	private transient SymbolTableFunctionEntry symbolTableFunctionEntry = null;
@@ -61,8 +55,6 @@ public class ASTFuncNode extends SimpleNode {
 	public final static int	FACTORIAL = 34;	
 	public final static int	LOG_10 		= 35;
 	public final static int	LOGBASE 	= 36;
-	public final static int	FIELD 	= 37;
-	public final static int	GRAD 	= 38;
 	
 
 	private final static String[] functionNamesVCML = {
@@ -103,8 +95,6 @@ public class ASTFuncNode extends SimpleNode {
 		"factorial",// 34
 		"log10",	// 35
 		"logbase", 	// 36
-		"field",     // 37
-		"grad"     // 38
 	};
 	
 	private final static String[] functionNamesMathML = {
@@ -145,8 +135,6 @@ public class ASTFuncNode extends SimpleNode {
 		MathMLTags.FACTORIAL,			// 34
 		MathMLTags.LOG_10,				// 35
 		MathMLTags.LOGBASE,		 		// 36
-		null,                // 37, not supported by MathML
-		null                // 38, not supported by MathML
 	};
 	
   ASTFuncNode() {
@@ -159,33 +147,9 @@ ASTFuncNode(int id) {
 if (id != ExpressionParserTreeConstants.JJTFUNCNODE){ System.out.println("ASTFuncNode(), id = "+id); }
 }
 
-
-public void fixFieldData(){
-	if (getFunction() == FIELD){
-		if(jjtGetNumChildren() == 2){
-			jjtAddChild(new ASTFloatNode(0.0));
-			ASTIdNode astIDNode = new ASTIdNode();
-			astIDNode.name = VariableType.VOLUME.getTypeName();
-			jjtAddChild(astIDNode);
-		}else if(jjtGetNumChildren() == 3){
-			ASTIdNode astIDNode = new ASTIdNode();
-			astIDNode.name = VariableType.VOLUME.getTypeName();
-			jjtAddChild(astIDNode);
-		}
-	}else{
-		super.fixFieldData();
-	}
-}
-
   /** Bind method, identifiers bind themselves to ValueObjects */
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
-	if (getFunction() == FIELD){
-		jjtGetChild(2).bind(symbolTable);
-		return;
-	}else if (getFunction() == GRAD){
-		jjtGetChild(jjtGetNumChildren()-1).bind(symbolTable);
-		return;
-	}else if (getFunction() == USERDEFINED){
+	if (getFunction() == USERDEFINED){
 		if (symbolTable == null){
 			symbolTableFunctionEntry = null;
 			return;
@@ -270,7 +234,7 @@ private SimpleNode getSubstitutedFunction() throws ExpressionException {
 		throw new ExpressionException("function "+getFormalDefinition()+" is unbound");
 	}
 	if (symbolTableFunctionEntry.getExpression()==null){
-		throw new ExpressionException("function "+getFormalDefinition()+" doesn't support substitution");
+		return null;
 	}
 	Expression substitutedExp = new Expression(symbolTableFunctionEntry.getExpression());
 	String[] argumentNames = symbolTableFunctionEntry.getArgNames();
@@ -298,7 +262,13 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	switch (funcType){
 	case USERDEFINED: {
 		SimpleNode substitutedFunction = getSubstitutedFunction();
-		return substitutedFunction.differentiate(independentVariable);
+		if (substitutedFunction!=null){
+			return substitutedFunction.differentiate(independentVariable);
+		}else if (symbolTableFunctionEntry instanceof SymbolTableFunctionEntry.Differentiable){
+			return ((SymbolTableFunctionEntry.Differentiable)symbolTableFunctionEntry).differentiate(getArguments(),independentVariable).getRootNode();
+		}else{
+			throw new ExpressionException("user defined function "+getName()+" is not differentiable");
+		}
 	}
 	case EXP: {
 		// 
@@ -1184,12 +1154,6 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		ASTFloatNode floatNode = new ASTFloatNode(0.0);
 		return floatNode;
 	}
-	case FIELD:
-		if (jjtGetChild(2) instanceof ASTFloatNode) {
-			return new ASTFloatNode(0.0);
-		} else {
-			throw new Error("derivative not defined for field data with non-constant time argument");
-		}
 	default: {
 		throw new Error("undefined function");
 	}
@@ -1234,7 +1198,14 @@ public double evaluateConstant() throws ExpressionException {
 	switch (funcType){
 	case USERDEFINED: {
 		SimpleNode substitutedFunction = getSubstitutedFunction();
-		result = substitutedFunction.evaluateConstant();
+		if (substitutedFunction!=null){
+			result = substitutedFunction.evaluateConstant();
+		}else if (symbolTableFunctionEntry instanceof SymbolTableFunctionEntry.Evaluable){
+			SymbolTableFunctionEntry.Evaluable evaluatableFunction = (SymbolTableFunctionEntry.Evaluable)symbolTableFunctionEntry;
+			result = evaluatableFunction.evaluateConstant(getArguments());
+		}else{
+			throw new ExpressionException("function '"+getName()+"()' cannot be evaluated as a constant");
+		}
 		break;
 	}
 	case EXP: {
@@ -1549,12 +1520,6 @@ public double evaluateConstant() throws ExpressionException {
 		result = 1.0/Math.log(argument);
 		break;
 	}
-	case FIELD: {
-		throw new ExpressionException("field(A, B, time) cannot be simplified to a constant");
-	}
-	case GRAD: {
-		throw new FunctionDomainException("grad([x,y,z,m],var) is undefined for all constants");
-	}
 	default: {
 		throw new Error("undefined function");
 	}
@@ -1854,7 +1819,14 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	switch (funcType){
 	case USERDEFINED: {
 		SimpleNode substitutedFunction = getSubstitutedFunction();
-		result = substitutedFunction.evaluateVector(values);
+		if (substitutedFunction!=null){
+			result = substitutedFunction.evaluateVector(values);
+		}else if (symbolTableFunctionEntry instanceof SymbolTableFunctionEntry.Evaluable){
+			SymbolTableFunctionEntry.Evaluable evaluatableFunction = (SymbolTableFunctionEntry.Evaluable)symbolTableFunctionEntry;
+			result = evaluatableFunction.evaluateVector(getArguments(),values);
+		}else{
+			throw new ExpressionException("function '"+getName()+"()' cannot be evaluated");
+		}
 		break;
 	}
 	case EXP: {
@@ -2106,96 +2078,6 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		result = flanagan.math.Fmath.factorial(argument);
 		break;
 	}
-	case FIELD: {
-		throw new FunctionDomainException("field(A, B, time, variableType) can't be evaluated in regular way");
-	}	
-	case GRAD: {
-		//
-		//Assumes 13 blocks of double values arranged in order given below
-		//p,xm,xp,ym,yp,zm,zp,xmm,xpp,ymm,ypp,zmm,zpp
-		//All 13 blocks composed of [time,x,y,z] followed by data values
-		//First grad argument is a code indicating the gradient function
-		//"m" = magnitude(xyz), "x" = x gradient, "y" = y gradient, "z" = z gradient,
-		//Second grad argument is variable to be evaluated
-		//
-		if(jjtGetNumChildren() != 2){
-			throw new ExpressionException("grad function expetcs 2 arguments");
-		}
-		Node argNode = jjtGetChild(1);
-		String opName = ((ASTIdNode)jjtGetChild(0)).infixString(LANGUAGE_DEFAULT);
-		if(((values.length%Expression.GRADIENT_NUM_SPATIAL_ELEMENTS) != 0)){
-			throw new ExpressionException("number of grad values is not an even multiple of "+Expression.GRADIENT_NUM_SPATIAL_ELEMENTS+"\n"+
-											"current point plus 12 spatial neighbors)");
-		}
-		int numInternalArgs = values.length/Expression.GRADIENT_NUM_SPATIAL_ELEMENTS;
-		double[] tempArgs = new double[numInternalArgs];
-		result = 0;
-		boolean isMagnitude = opName.equalsIgnoreCase(Expression.GRAD_MAGNITUDE);
-		double[] magnitudeComponents = (isMagnitude?new double[3]:null);
-		for(int i=0;i<3;i+= 1){
-			int axisCode =
-				(opName.equalsIgnoreCase(Expression.GRAD_X) || (isMagnitude && i==0)?org.vcell.util.Coordinate.X_AXIS:0) +
-				(opName.equalsIgnoreCase(Expression.GRAD_Y) || (isMagnitude && i==1)?org.vcell.util.Coordinate.Y_AXIS:0) +
-				(opName.equalsIgnoreCase(Expression.GRAD_Z) || (isMagnitude && i==2)?org.vcell.util.Coordinate.Z_AXIS:0);
-
-			int[] gradCase = getGradCase(values,axisCode,numInternalArgs);
-			//
-			if(gradCase == null){
-				throw new FunctionDomainException("grad(A,B) unknown case for axis code "+axisCode);
-			}else if(gradCase[0] == NO_NEIGHBORS){
-				// =[p]= (bounded on both sides)
-				//g(x) = 0;
-				result = 0;
-			}else if(gradCase[0] == USE_ADJACENT){
-				// =[p0][p]= or =[p][p0]= (bound on 1 side with 1 adjacent available)
-				//g(x) = (u(p0) - u(p))/(p0-p)
-				System.arraycopy(values,gradCase[2]*numInternalArgs,tempArgs,0,tempArgs.length);
-				double eV = argNode.evaluateVector(tempArgs);
-				double eP = tempArgs[1+axisCode];
-				System.arraycopy(values,gradCase[1]*numInternalArgs,tempArgs,0,tempArgs.length);
-				double pV = argNode.evaluateVector(tempArgs);
-				double pP = tempArgs[1+axisCode];
-				result = (eV-pV)/(eP-pP);
-			}else if(gradCase[0] == USE_ADJACENT_PLUS){
-				// ...[p1][p0][p]= or =[p][p0][p1]... (bound on 1 side only)
-				//g(x) = ((-3*u(p)) + (4*u(p0)) + (-u(p1))) / (p1-p)
-				System.arraycopy(values,gradCase[3]*numInternalArgs,tempArgs,0,tempArgs.length);
-				double eeV = argNode.evaluateVector(tempArgs);
-				double eeP = tempArgs[1+axisCode];
-				System.arraycopy(values,gradCase[2]*numInternalArgs,tempArgs,0,tempArgs.length);
-				double eV = argNode.evaluateVector(tempArgs);
-				//double eP = tempArgs[1+axisCode];
-				System.arraycopy(values,gradCase[1]*numInternalArgs,tempArgs,0,tempArgs.length);
-				double pV = argNode.evaluateVector(tempArgs);
-				double pP = tempArgs[1+axisCode];
-				result = ((-3*pV)+(4*eV)+(-eeV))/(eeP-pP);
-			}else if(gradCase[0] == BOTH_NEIGHBORS){
-				// [pm][p][pp] (not bound on either side)
-				//g(x) = (u(pp) - u(pm))/(pp-pm)
-				System.arraycopy(values,gradCase[3]*numInternalArgs,tempArgs,0,tempArgs.length);
-				double eV = argNode.evaluateVector(tempArgs);
-				double eP = tempArgs[1+axisCode];
-				System.arraycopy(values,gradCase[1]*numInternalArgs,tempArgs,0,tempArgs.length);
-				double wV = argNode.evaluateVector(tempArgs);
-				double wP = tempArgs[1+axisCode];
-				result = (eV-wV)/(eP-wP);			
-			}
-
-			if(!isMagnitude){
-				break;
-			}else{
-				magnitudeComponents[i] = result;
-			}
-		}
-		if(isMagnitude){
-			result = Math.sqrt(
-						(magnitudeComponents[0] *magnitudeComponents[0]) +
-						(magnitudeComponents[1] *magnitudeComponents[1]) +
-						(magnitudeComponents[2] *magnitudeComponents[2])
-					);
-		}
-		break;
-	}	
 	default: {
 		throw new Error("undefined function");
 	}
@@ -2213,12 +2095,10 @@ public double evaluateVector(double values[]) throws ExpressionException {
  */
 public Node flatten() throws ExpressionException {
 	
-	if (funcType!=FIELD){ // skip those that can never be constant.
-		try {
-			double value = evaluateConstant();
-			return new ASTFloatNode(value);
-		}catch (Exception e){}		
-	}
+	try {
+		double value = evaluateConstant();
+		return new ASTFloatNode(value);
+	}catch (Exception e){}		
 	ASTFuncNode funcNode = new ASTFuncNode();
 	funcNode.funcType = funcType;
 	funcNode.funcName = funcName;
@@ -2429,14 +2309,6 @@ public Node flatten() throws ExpressionException {
 		if (tempChildren.size()!=1) throw new ExpressionException("factorial() expects 1 argument");
 		break;
 	}
-	case FIELD: {
-		if (tempChildren.size()!=3 && tempChildren.size()!=4) throw new ExpressionException("field() expects 3 or 4 arguments");
-		break;
-	}
-	case GRAD: {
-		if (tempChildren.size()!=2) throw new ExpressionException("grad() expects 2 arguments");
-		break;
-	}
 	default: {
 		throw new ExpressionException("undefined function");
 	}
@@ -2457,33 +2329,13 @@ void getFunctionInvocations(java.util.Vector<FunctionInvocation> v, FunctionFilt
 	super.getFunctionInvocations(v, filter);
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Node
- * @param origExp cbit.vcell.parser.Node
- * @param newExp cbit.vcell.parser.Node
- * @exception java.lang.Exception The exception description.
- */
-public void substitute(Node origNode, Node newNode) throws ExpressionException {
-	if (getFunction() == ASTFuncNode.FIELD) {
-		// only substitute time argument
-		if (jjtGetChild(2).equals(origNode)){
-			children[2] = newNode.copyTree();
-			newNode.jjtSetParent(this);
-		}else{				
-			jjtGetChild(2).substitute(origNode,newNode);
-		}
-	} else {
-		super.substitute(origNode, newNode);
+private Expression[] getArguments(){
+	int numChildren = jjtGetNumChildren();
+	Expression[] arguments = new Expression[numChildren];
+	for (int i=0;i<numChildren;i++){
+		arguments[i] = new Expression((SimpleNode)jjtGetChild(i).copyTree());
 	}
-}
-
-boolean hasGradient(){
-	if(getFunction() == GRAD){
-		return true;
-	}else{
-		return super.hasGradient();
-	}
+	return arguments;
 }
 
 
@@ -2497,59 +2349,7 @@ int getFunction() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2007 2:47:07 PM)
- */
-private static int[] getGradCase(double[] args,int axisCode,int numInternalArgs) {
 
-
-	final int COORD_OFFSET = 1;
-	
-	int axisOffset = axisCode*2;
-	int wIndex = (1+0+axisOffset);
-	boolean w = Double.isNaN(args[COORD_OFFSET+numInternalArgs*wIndex]);
-	int eIndex = (1+1+axisOffset);
-	boolean e = Double.isNaN(args[COORD_OFFSET+numInternalArgs*eIndex]);
-	//
-	//Both adjacent neighbors available [ok][p][ok]
-	//
-	if(!w && !e){
-		return new int[] {BOTH_NEIGHBORS,wIndex,0,eIndex};
-	}
-	//
-	//Neither adjacent neighbor available [block][p][block]
-	//
-	if(w && e){
-		return new int[] {NO_NEIGHBORS,-1,-1,-1};
-	}
-
-	int wwIndex = (1+6+axisOffset);
-	boolean ww = Double.isNaN(args[COORD_OFFSET+numInternalArgs*wwIndex]);
-	int eeIndex = (1+7+axisOffset);
-	boolean ee = Double.isNaN(args[COORD_OFFSET+numInternalArgs*eeIndex]);
-	//
-	//One adjacent neighbor and One adjacent-adjacent neighbor available [block][p][ok][ok] -or- [ok][ok][p][block]
-	//
-	if((!e && !ee)){
-		return new int[] {USE_ADJACENT_PLUS,0,eIndex,eeIndex};
-	}
-	if((!w && !ww)){
-		return new int[] {USE_ADJACENT_PLUS,0,wIndex,wwIndex};
-	}
-	//
-	//One adjacent neighbor is available only [block][p][ok][block] -or- [block][ok][p][block]
-	//
-	if(!w){
-		return new int[] {USE_ADJACENT,0,wIndex,-1};
-	}
-	if(!e){
-		return new int[] {USE_ADJACENT,0,eIndex,-1};
-	}		
-
-	return null;
-	
-}
 
 
 /**
@@ -2573,21 +2373,6 @@ String getMathMLName() {
 String getName() {
 	return funcName;
 }
-
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String[]
- */
-public String[] getSymbols(int language) {
-	if (getFunction() == FIELD) {
-		return new String[0];
-	}else if (getFunction() == GRAD){
-		return jjtGetChild(jjtGetNumChildren()-1).getSymbols(language);
-	}
-	return super.getSymbols(language);
-}
-
 
 /**
  * Insert the method's description here.
@@ -2636,19 +2421,6 @@ public String infixString(int lang) {
 			}
 			break;
 		}
-	 	case FIELD: {
-		 	if (lang == LANGUAGE_C){
-		 		throw new RuntimeException("field functions must be substituted away before infix_C() is called");
-		 	} else {
-				buffer.append(getName() + "(");
-				for (int i=0;i<jjtGetNumChildren();i++){
-					if (i>0) buffer.append(", ");
-					buffer.append(jjtGetChild(i).infixString(lang));
-				}
-				buffer.append(")");
-		 	}
-		 	break;
-	 	}
 	 	default:{
 			buffer.append(getName() + "(");
 			for (int i=0;i<jjtGetNumChildren();i++){
@@ -2917,19 +2689,6 @@ void setFunctionFromName(String parserToken) {
 
 public static String[] getFunctionNames() {
 	return functionNamesVCML;
-}
-
-
-@Override
-public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingException {
-	if (getFunction() == FIELD){
-		jjtGetChild(2).renameBoundSymbols(nameScope);
-		return;
-	}else if (getFunction() == GRAD){
-		jjtGetChild(jjtGetNumChildren()-1).renameBoundSymbols(nameScope);
-		return;
-	}
-	super.renameBoundSymbols(nameScope);
 }
 
 
