@@ -158,13 +158,13 @@ public void read(CommentStringTokenizer tokens) throws MathException, Expression
 			break;
 		}			
 		if (token.equalsIgnoreCase(VCML.FastRate)){
-			Expression rate = new Expression(tokens);
+			Expression rate = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			FastRate fr = new FastRate(rate);
 			addFastRate(fr);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.FastInvariant)){
-			Expression invariant = new Expression(tokens);
+			Expression invariant = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			FastInvariant fi = new FastInvariant(invariant);
 			addFastInvariant(fi);
 			continue;

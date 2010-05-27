@@ -26,6 +26,7 @@ import org.vcell.util.document.Versionable;
 
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
+import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
@@ -2627,7 +2628,7 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}
 			if (token.equalsIgnoreCase(VCML.Constant)){
 				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				Constant constant = new Constant(token,exp);
 				varHash.addVariable(constant);
 				continue;
@@ -2650,7 +2651,7 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}
 			if (token.equalsIgnoreCase(VCML.Function)){
 				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
 				String name = Variable.getNameFromCombinedIdentifier(token);
 				Function function = new Function(name,exp,domain);
@@ -2895,7 +2896,8 @@ private HashMap<String, SymbolTableFunctionEntry> getFunctionHashTable(){
 		functionHashTable.put(MathFunctionDefinitions.Function_regionArea_current.getName(),MathFunctionDefinitions.Function_regionArea_current);
 		functionHashTable.put(MathFunctionDefinitions.Function_regionVolume_indexed.getName(),MathFunctionDefinitions.Function_regionVolume_indexed);
 		functionHashTable.put(MathFunctionDefinitions.Function_regionVolume_current.getName(),MathFunctionDefinitions.Function_regionVolume_current);
-		functionHashTable.put(MathFunctionDefinitions.Function_field.getName(),MathFunctionDefinitions.Function_field);
+		functionHashTable.put(FieldFunctionDefinition.FUNCTION_field,new FieldFunctionDefinition());
+		functionHashTable.put(GradientFunctionDefinition.FUNCTION_grad,new GradientFunctionDefinition());
 	}
 	return functionHashTable;
 }

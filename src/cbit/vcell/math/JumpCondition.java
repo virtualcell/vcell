@@ -170,11 +170,11 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 			break;
 		}			
 		if (token.equalsIgnoreCase(VCML.InFlux)){
-			inFluxExp = new Expression(tokens);
+			inFluxExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCML.OutFlux)){
-			outFluxExp = new Expression(tokens);
+			outFluxExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}
 		throw new MathFormatException("unexpected identifier "+token);

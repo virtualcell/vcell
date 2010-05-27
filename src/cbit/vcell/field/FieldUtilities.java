@@ -13,7 +13,6 @@ import org.vcell.util.document.ExternalDataIdentifier;
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
-import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
@@ -24,7 +23,7 @@ public class FieldUtilities {
 	
 	public static class FieldFunctionFilter implements FunctionFilter {
 		public boolean accept(String functionName) {
-			return (functionName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]));
+			return (functionName.equals(FieldFunctionDefinition.FUNCTION_name));
 		}
 	};
 

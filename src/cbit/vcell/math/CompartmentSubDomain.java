@@ -329,7 +329,7 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 				throw new MathFormatException("variable "+token+" not a Stochastic Volume Variable");
 			}
 			try {
-				Expression varIniExp = new Expression(tokens);
+				Expression varIniExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				VarIniCondition vic= new VarIniCondition(var,varIniExp);
 				addVarIniCondition(vic);
 			} catch (Exception e){e.printStackTrace();}
@@ -347,7 +347,7 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 			token = tokens.nextToken();	
 			if(token.equalsIgnoreCase(VCML.ProbabilityRate))
 			{
-				Expression probExp = new Expression(tokens);
+				Expression probExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				//check if probability functions contain "t", which is not allowed.
 				Expression extProb = MathUtilities.substituteFunctions(probExp,mathDesc).flatten();
 				String[] symbols = extProb.getSymbols();
@@ -386,7 +386,7 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 							throw new MathFormatException("variable "+token+" not a Stochastic Volume Variable");
 						}
 						String opera = tokens.nextToken();
-						Expression exp = new Expression(tokens);
+						Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 
 						try {
 							Action action = new Action(var,opera,exp);

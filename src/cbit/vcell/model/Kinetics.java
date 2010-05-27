@@ -869,7 +869,7 @@ public final void fromTokens(CommentStringTokenizer tokens) throws ExpressionExc
 			}
 			if (token.equalsIgnoreCase(VCMODL.Parameter)){
 				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				Expression exp = new Expression(tokens.readToSemicolon());
 				String symbols[] = exp.getSymbols();
 				for (int j = 0;symbols!=null && j < symbols.length; j++){
 					if (getReactionStep().getLocalEntry(symbols[j])==null){
@@ -949,7 +949,7 @@ public final void fromTokens(CommentStringTokenizer tokens) throws ExpressionExc
 						//     e.g. CurrentDensity a+b/c;
 						//
 						tokens.pushToken(token);
-						Expression exp = new Expression(tokens);
+						Expression exp = new Expression(tokens.readToSemicolon());
 						
 						String[] symbols = exp.getSymbols();
 						boolean bIsSingleId = false;

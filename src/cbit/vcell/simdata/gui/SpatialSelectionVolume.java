@@ -588,7 +588,7 @@ private SSHelper resampleMeshBoundaries(int[] indexes,Coordinate[] wcV,boolean b
 					//Coordinate b1 = newWCV[i+2];
 					//newWCV[i+1] = new Coordinate((b0.getX()+b1.getX())/2.0,(b0.getY()+b1.getY())/2.0,(b0.getZ()+b1.getZ())/2.0);
 				//}else{
-					newWCV[i+1] = newWCV[i+1];
+					newWCV[i+1] = newWCV[i+1];    //TODO: why is this here, is this really what we want? ... A = A;
 				//}
 				finalCount+= 1;
 			}

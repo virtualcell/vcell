@@ -32,7 +32,7 @@ public class Event implements Matchable, Serializable {
 			if (variable == null || !(variable instanceof VolVariable)) {
 				throw new MathException("'" + token + "' in EventAssignment is not valid. An event assignment target must be a VolVariable.");
 			}
-			assignmentExpression = new Expression(tokens);
+			assignmentExpression = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 		}
 		public Object getVCML() {
 			StringBuffer buffer = new StringBuffer();
@@ -98,7 +98,7 @@ public class Event implements Matchable, Serializable {
 					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.Duration)) {
-					durationExpression = new Expression(tokens);
+					durationExpression = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 					continue;
 				}				
 				else throw new MathFormatException("unexpected identifier "+token);
@@ -165,7 +165,7 @@ public class Event implements Matchable, Serializable {
 			}			
 			if(token.equalsIgnoreCase(VCML.Trigger))
 			{
-				triggerExpression = new Expression(tokens);
+				triggerExpression = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.Delay)) {

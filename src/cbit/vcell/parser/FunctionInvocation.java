@@ -5,6 +5,7 @@ public class FunctionInvocation {
 	private int functionId;
 	private Expression[] arguments = null;
 	private Expression functionExpression = null;
+	private SymbolTableFunctionEntry symbolTableFunctionEntry = null;
 	
 	FunctionInvocation(ASTFuncNode funcNode){
 		functionName = funcNode.getName();
@@ -15,6 +16,7 @@ public class FunctionInvocation {
 			arguments[i] = new Expression((SimpleNode)funcNode.jjtGetChild(i).copyTree());
 		}
 		functionExpression = new Expression((SimpleNode)funcNode.copyTree());
+		symbolTableFunctionEntry = funcNode.getSymbolTableFunctionEntry();
 	}
 
 	public String getFunctionName() {
@@ -31,6 +33,10 @@ public class FunctionInvocation {
 
 	public Expression getFunctionExpression() {
 		return functionExpression;
+	}
+	
+	public SymbolTableFunctionEntry getSymbolTableFunctionEntry() {
+		return symbolTableFunctionEntry;
 	}
 	
 	public boolean equals(Object obj){

@@ -28,12 +28,6 @@ public class Expression implements java.io.Serializable, org.vcell.util.Matchabl
    private static long substituteCount = 0;
    private static long bindCount = 0;
    
-   public static final int GRADIENT_NUM_SPATIAL_ELEMENTS = 13;
-   public static final String GRAD_MAGNITUDE = "m";
-   public static final String GRAD_X = "x";
-   public static final String GRAD_Y = "y";
-   public static final String GRAD_Z = "z";
-  
 /**
  * This method was created in VisualAge.
  * @param value double
@@ -96,9 +90,6 @@ public Expression(String expString) throws ExpressionException {
 	}
 	parseExpression(expString);
 }
-public Expression(CommentStringTokenizer tokens) throws ExpressionException {
-	read(tokens);
-}  
 
 
 /**
@@ -504,6 +495,14 @@ public static Expression invert(Expression expression) throws ExpressionExceptio
 public boolean isAtomic() {
 	return rootNode.jjtGetNumChildren()==0;
 }
+
+public boolean isIdentifier() {
+	return (rootNode instanceof ASTIdNode);
+}
+
+public boolean isLiteral() {
+	return (rootNode instanceof ASTLiteralNode);
+}
 /**
  * Insert the method's description here.
  * Creation date: (1/23/2003 7:19:57 PM)
@@ -630,7 +629,6 @@ parseCount++;
 		ExpressionParser parser;
 		parser = new ExpressionParser(new java.io.ByteArrayInputStream(exp.getBytes()));
 		rootNode = parser.Expression();
-		rootNode.fixFieldData();
 
 		//
 		// get rid of ExpressionNode (worthless for evaluation), artifact of parsing
@@ -724,40 +722,6 @@ public static void printNode(org.w3c.dom.Node nodeArg, String pad){
 		 rootNode.dump("");
 	  }
    }   
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-private void read(CommentStringTokenizer tokens) throws ExpressionException {
-	String expressionString = new String();
-	String token = null;
-	while (tokens.hasMoreTokens()){
-		token = tokens.nextToken();
-		if (token.equals(";")){
-			break;
-		}	
-		if (token.charAt(token.length()-1) == ';'){
-			expressionString += token.substring(0,token.length()-1);
-			break;
-		}	
-		expressionString += token;
-	}	
-	//
-	// first see if it is a number (should be must faster not to invoke the expression parser).
-	//
-	try {
-		double value = Double.parseDouble(expressionString);
-		this.rootNode = new ASTFloatNode(value);
-		this.normalizedInfixString = Double.toString(value);
-		return;
-	}catch (Exception e){
-	}
-	//
-	// not just a number, must parse string
-	//
-	parseExpression(expressionString+";");
-}
 /**
  * Insert the method's description here.
  * Creation date: (1/29/01 5:18:34 PM)

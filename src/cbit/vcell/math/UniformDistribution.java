@@ -35,11 +35,11 @@ public class UniformDistribution extends Distribution {
 			}			
 			if(token.equalsIgnoreCase(VCML.UniformDistribution_Minimum))
 			{
-				minimum = new Expression(tokens);
+				minimum = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.UniformDistribution_Maximum)) {
-				maximum = new Expression(tokens);
+				maximum = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				continue;
 			}
 			else throw new MathFormatException("unexpected identifier "+token);

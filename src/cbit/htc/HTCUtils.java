@@ -27,7 +27,7 @@ public class HTCUtils {
 				break;
 			}
 		}
-		if (submitTemplate == null && !submitTemplate.exists()) {
+		if (submitTemplate == null || !submitTemplate.exists()) {
 			throw new RuntimeException("Condor submit template doesn't exist");
 		}
 		return submitTemplate;

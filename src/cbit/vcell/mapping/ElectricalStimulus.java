@@ -15,6 +15,7 @@ import org.vcell.util.TokenMangler;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.VCMODL;
@@ -364,7 +365,7 @@ public final void parameterVCMLSet(CommentStringTokenizer tokens) throws Express
 				throw new RuntimeException(ElectricalStimulus.class.getName()+".parameterVCMLRead, unexpected token for roleName "+roleName);
 			}
 			String parameterName = tokens.nextToken();
-			Expression exp = new Expression(tokens);
+			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			
 			String unitsString = tokens.nextToken();
 			VCUnitDefinition unitDef = VCUnitDefinition.UNIT_TBD;

@@ -1,4 +1,5 @@
 package cbit.vcell.opt;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -31,7 +32,7 @@ public ExplicitObjectiveFunction(cbit.vcell.parser.Expression argExpression) {
  * @param tokens java.io.StreamTokenizer
  */
 public static ExplicitObjectiveFunction fromVCML(org.vcell.util.CommentStringTokenizer tokens) throws ExpressionException {
-	Expression exp = new Expression(tokens);
+	Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 	return new ExplicitObjectiveFunction(exp);
 }
 

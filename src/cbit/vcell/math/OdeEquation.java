@@ -154,16 +154,16 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 			break;
 		}			
 		if (token.equalsIgnoreCase(VCML.Initial)){
-			initialExp = new Expression(tokens);
+			initialExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCML.Rate)){
-			Expression exp = new Expression(tokens);
+			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			setRateExpression(exp);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCML.Exact)){
-			exactExp = new Expression(tokens);
+			exactExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			solutionType = EXACT_SOLUTION;
 			continue;
 		}

@@ -1,5 +1,7 @@
 package cbit.vcell.xml;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression.FunctionFilter;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -117,6 +119,7 @@ public static String unMangle(String param) {
 		//
 		try {
 			tempExp = new Expression(unMangle(expStr)); 
+			tempExp = MathFunctionDefinitions.fixFunctionSyntax(tempExp);
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());

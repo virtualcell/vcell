@@ -13,7 +13,9 @@ import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.simulation.ParameterScanPanel;
+import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.GradientFunctionDefinition;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -241,7 +243,7 @@ public Object getValueAt(int row, int column) {
 						}
 
 						public boolean acceptFunction(String funcName) {
-							if (funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.FIELD]) || funcName.equals(ASTFuncNode.getFunctionNames()[ASTFuncNode.GRAD])) {
+							if (FieldFunctionDefinition.FUNCTION_name.equals(funcName) || GradientFunctionDefinition.FUNCTION_name.equals(funcName)){
 								return false;
 							}
 							return true;

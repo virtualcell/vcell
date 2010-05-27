@@ -1,4 +1,5 @@
 package cbit.vcell.opt;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.Expression;
@@ -326,7 +327,7 @@ public void read(CommentStringTokenizer tokens) {
 				continue;
 			}
 			if (token.equalsIgnoreCase(ConstraintType.LinearEquality.toString())){
-				Expression exp = new Expression(tokens);
+				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				SimpleSymbolTable symbolTable = new SimpleSymbolTable(getParameterNames());
 				exp.bindExpression(symbolTable);
 				Constraint constraint = new Constraint(ConstraintType.LinearEquality,exp);
@@ -334,7 +335,7 @@ public void read(CommentStringTokenizer tokens) {
 				continue;
 			}
 			if (token.equalsIgnoreCase(ConstraintType.LinearInequality.toString())){
-				Expression exp = new Expression(tokens);
+				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				SimpleSymbolTable symbolTable = new SimpleSymbolTable(getParameterNames());
 				exp.bindExpression(symbolTable);
 				Constraint constraint = new Constraint(ConstraintType.LinearInequality,exp);
@@ -342,7 +343,7 @@ public void read(CommentStringTokenizer tokens) {
 				continue;
 			}
 			if (token.equalsIgnoreCase(ConstraintType.NonlinearInequality.toString())){
-				Expression exp = new Expression(tokens);
+				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				SimpleSymbolTable symbolTable = new SimpleSymbolTable(getParameterNames());
 				exp.bindExpression(symbolTable);
 				Constraint constraint = new Constraint(ConstraintType.NonlinearInequality,exp);
@@ -350,7 +351,7 @@ public void read(CommentStringTokenizer tokens) {
 				continue;
 			}
 			if (token.equalsIgnoreCase(ConstraintType.NonlinearEquality.toString())){
-				Expression exp = new Expression(tokens);
+				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 				SimpleSymbolTable symbolTable = new SimpleSymbolTable(getParameterNames());
 				exp.bindExpression(symbolTable);
 				Constraint constraint = new Constraint(ConstraintType.NonlinearEquality,exp);
