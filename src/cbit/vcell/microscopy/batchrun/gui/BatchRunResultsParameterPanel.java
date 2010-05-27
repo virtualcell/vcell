@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 
 import javax.swing.BoxLayout;
@@ -17,7 +18,7 @@ public class BatchRunResultsParameterPanel extends BoxPanel
 		super("Analysis Parameters for Each FRAP Document");
 		setName("");
 		paramTablePanel = new BatchRunResultsParamTablePanel(this);
-        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+        contentPane.setLayout(new BorderLayout());
         contentPane.add(paramTablePanel);
 	}
 	

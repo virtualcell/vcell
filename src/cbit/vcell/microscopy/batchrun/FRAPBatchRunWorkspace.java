@@ -57,6 +57,8 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	private transient double[][] analysisMSESummaryData = null;
 	//first dimension: number of statistics (5, mean, std, median, min, max), second dimention: parameter sizes (6,prim diff rate, fraction,sec diff rate, fraction, bmr, immobile fraction), any element that is not applicable should fill with 1e8.
 	private transient double[][] statisticsData = null;
+	//temporary data structure to identify whether the current batch run doc needs a save or not
+	private transient boolean bSaveNeeded = false;
 	
 	public FRAPBatchRunWorkspace() 
 	{
@@ -229,6 +231,10 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		return analysisMSESummaryData;
 	}
 	
+	public void setAnalysisMSESummaryData(double[][] analysisMSESummaryData) {
+		this.analysisMSESummaryData = analysisMSESummaryData;
+	}
+	
 	public void refreshStatisticsData()
 	{
 		int studySize = getFrapStudyList().size();
@@ -286,6 +292,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	
 	private void updateAverageParameters() 
 	{
+		Parameter[] oldParameters = null; //used to save old parameters to check if save is needed
 		if(selectedModel == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
 		{
 			Parameter diff = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE],
@@ -303,7 +310,8 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
 			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_BMR-1]);
-
+			//get old parameters
+			oldParameters = getAverageParameters();
 			setAverageParameters(new Parameter[]{diff, mobileFrac, bleachWhileMonitoringRate});
 		}
 		else if (selectedModel == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
@@ -333,8 +341,15 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 			                    FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
 			                    FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
 			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_SEC_MOBILE_FRACTION-1]);
-			
+			//get old parameters
+			oldParameters = getAverageParameters();
 			setAverageParameters(new Parameter[]{diff, mobileFrac, bleachWhileMonitoringRate, secDiffRate, secMobileFrac});
+		}
+		
+		//check to see if we need to set save flag
+		if(!Compare.isEqualOrNull(oldParameters, getAverageParameters()))
+		{
+			setSaveNeeded(true);
 		}
 	}
 
@@ -347,6 +362,10 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		return statisticsData;
 	}
 	
+	public void setStatisticsData(double[][] statisticsData) {
+		this.statisticsData = statisticsData;
+	}
+	
 	public void refreshBatchRunResults()
 	{
 		refreshStatisticsData();
@@ -357,11 +376,12 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	{
 		analysisMSESummaryData = null;
 		statisticsData = null;
+		setAverageParameters(null);
 	}
 	
 	public boolean isBatchRunResultsAvailable()
 	{
-		return (analysisMSESummaryData != null) && (statisticsData != null); 
+		return getAverageParameters()!= null && getAverageParameters().length > 0;
 	}
 	
 	public Parameter[] getAverageParameters() {
@@ -380,23 +400,32 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		this.batchRunXmlFileName = batchRunXmlFileName;
 	}
 	
+	public boolean isSaveNeeded() {
+		return bSaveNeeded;
+	}
+
+	public void setSaveNeeded(boolean bNeedSave) {
+		this.bSaveNeeded = bNeedSave;
+	}
+	
+	/*used when opening a vfrap batch file. Batch run is read into a 
+	  temp batch run workspace. If no errors occur, move the info from temp to the working batch run workspace */
 	public void update(FRAPBatchRunWorkspace tempBatchRunWorkspace)
 	{
 		//frapStudyList
 		this.frapStudyList = tempBatchRunWorkspace.getFrapStudyList();
 		
-//		private FRAPSingleWorkspace workingSingleWorkspace = null;
-//		private Object displaySelection = null;
 		this.displaySelection = null;
 		this.selectedModel = tempBatchRunWorkspace.getSelectedModel();
 		this.averageParameters = tempBatchRunWorkspace.getAverageParameters();
 		this.batchRunXmlFileName = tempBatchRunWorkspace.getBatchRunXmlFileName();
-		
+		//set save flag
+		setSaveNeeded(false);
 		this.analysisMSESummaryData = null;
 		this.statisticsData = null;
 	}
 	
-	//get client task for saving single frap files
+	//get client task for saving single vfrap files
 	public AsynchClientTask getSaveSingleFilesTask()
 	{
 		AsynchClientTask saveSingleFileTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
@@ -425,7 +454,8 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 				//save a Batchrun file
 				BatchRunXmlProducer.writeXMLFile(FRAPBatchRunWorkspace.this, outFile);
 				setBatchRunXmlFileName(outFile.getAbsolutePath());
-//				fStudy.setSaveNeeded(false);
+				//after saving singles files and the batch xml file, set save needed flag to false.
+				setSaveNeeded(false);
 			}
 		};
 		return saveBatchFileTask;
@@ -436,7 +466,6 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		//save a single vfrap file
 		MicroscopyXmlproducer.writeXMLFile(fStudy, xmlFrapFile, true,progressListener,VirtualFrapMainFrame.SAVE_COMPRESSED);
 		fStudy.setXmlFilename(xmlFrapFile.getAbsolutePath());
-//		fStudy.setSaveNeeded(false);
 	}
 	
 	//get client task for loading a vfrap batch run file

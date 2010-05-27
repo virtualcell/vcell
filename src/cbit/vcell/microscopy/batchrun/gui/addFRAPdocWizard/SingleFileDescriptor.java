@@ -122,9 +122,9 @@ public class SingleFileDescriptor extends WizardPanelDescriptor {
     						hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
     					}
     					else if((batchRunWorkspace.isBatchRunResultsAvailable() && inFile.getName().endsWith(VirtualFrapLoader.VFRAP_EXTENSION)) &&
-    							((newFRAPStudy.getSelectedModels().size() == 1) &&  
-    		    						   (newFRAPStudy.getFrapModel(batchRunWorkspace.getSelectedModel()) != null) &&
-    		    	    				   (newFRAPStudy.getFrapModel(batchRunWorkspace.getSelectedModel()).getModelParameters() != null)))
+    							((newFRAPStudy.getSelectedModels().size() == 1) && 
+    							 (newFRAPStudy.getFrapModel(batchRunWorkspace.getSelectedModel()) != null) &&
+    		    	    		 (newFRAPStudy.getFrapModel(batchRunWorkspace.getSelectedModel()).getModelParameters() != null)))
     					{
     						//put newfrapstudy into hashtable to be used for next task
     	    				hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);

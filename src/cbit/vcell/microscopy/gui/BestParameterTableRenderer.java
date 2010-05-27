@@ -25,7 +25,7 @@ public class BestParameterTableRenderer extends DefaultTableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column)    
     {
-        setValue(value);
+    	super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         if(value != null)
         {
         	setToolTipText(value.toString());

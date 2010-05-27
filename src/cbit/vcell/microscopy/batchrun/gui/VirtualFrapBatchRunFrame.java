@@ -136,7 +136,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				else if(arg.equals(CLOSE_ACTION_COMMAND))
 				{
 					String text = "";
-					if (batchRunWorkspace != null)//TODO: need to check save flag
+					if (batchRunWorkspace != null && batchRunWorkspace.isSaveNeeded())
 					{
 						text = "UnSaved changes will be lost!";
 					}
@@ -482,7 +482,14 @@ public class VirtualFrapBatchRunFrame extends JFrame
 						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
 						MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
 						//run ref sim
-						fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, localWorkspace, msgPanel));
+						if(fStudy.getStoredRefData() != null)//if ref data is stored ,we don't have to re-run
+						{
+							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, localWorkspace, fStudy.getStoredRefData()));
+						}
+						else
+						{
+							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, localWorkspace, msgPanel));
+						}
 					}
 				};
 				
@@ -741,20 +748,21 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		
 		ArrayList<AsynchClientTask> totalTasks = new ArrayList<AsynchClientTask>(); 
 				 
-	    //check if save is needed before loading data
-//	    if(getFrapWorkspace().getWorkingFrapStudy().isSaveNeeded())
-//	    {
-//			String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "There are unsaved changes. Save current document before loading new document?", new String[]{SAVE_CONTINUE_MSG, NO_THANKS_MSG}, SAVE_CONTINUE_MSG);
-//			if(choice.equals(SAVE_CONTINUE_MSG))
-//			{
-//				AsynchClientTask[] saveTasks = save();
-//				for(int i=0; i<saveTasks.length; i++)
-//				{
-//					totalTasks.add(saveTasks[i]);
-//				}
-//			}
-//	    }
-	    
+		//check if save is needed before loading batch run file
+	    if(batchRunWorkspace.isSaveNeeded())
+	    {
+			String choice = DialogUtils.showWarningDialog(VirtualFrapBatchRunFrame.this, "There are unsaved changes. Save current document before loading new document?", new String[]{FRAPStudyPanel.SAVE_CONTINUE_MSG, FRAPStudyPanel.NO_THANKS_MSG}, FRAPStudyPanel.SAVE_CONTINUE_MSG);
+			if(choice.equals(FRAPStudyPanel.SAVE_CONTINUE_MSG))
+			{
+				AsynchClientTask[] saveTasks = save();
+				for(int i=0; i<saveTasks.length; i++)
+				{
+					totalTasks.add(saveTasks[i]);
+				}
+			}
+	    }
+		
+		
 		AsynchClientTask preOpenTask = new AsynchClientTask("Loading "+inFile.getAbsolutePath()+"...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception

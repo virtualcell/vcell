@@ -20,38 +20,36 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
+import cbit.vcell.microscopy.gui.AdvancedTablePanel;
 import cbit.vcell.microscopy.gui.estparamwizard.AnalysisTableRenderer;
 import cbit.vcell.microscopy.gui.estparamwizard.HyperLinkLabel;
 import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
 
-public class BatchRunMSETablePanel extends JPanel
+public class BatchRunMSETablePanel extends AdvancedTablePanel
 {
-	private JTable table;
     private BatchRunMSEPanel parent;
-    private JLabel lessLable;
+    private JLabel modelLable;
     private HyperLinkLabel hypDetail;
-    private JScrollPane scrTable;
     private BatchRunMSETableModel mseTableModel = null;
     private FRAPBatchRunWorkspace batchRunWorkspace = null;
 
     public BatchRunMSETablePanel(BatchRunMSEPanel arg_parent) 
     {
+    	super();
     	this.parent = arg_parent;
         final GridBagLayout gridBagLayout = new GridBagLayout();
-//        gridBagLayout.columnWidths = new int[] {0,0};
         setLayout(gridBagLayout);
-//        setBackground(Color.white);
         setBorder(new EmptyBorder(5, 0, 10, 0));
 
         JLabel headingLabel = new JLabel("Documents under Selected ROIs");
         headingLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
-        hypDetail = new HyperLinkLabel("Less Detail", new HyperLinkListener(), 0);
+        hypDetail = new HyperLinkLabel("Less Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
-//
-        lessLable = new JLabel("Documents");
-        lessLable.setOpaque(true);
-        lessLable.setBackground(new Color(166, 166, 255));
-        lessLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
+
+        modelLable = new JLabel("Documents");
+        modelLable.setOpaque(true);
+        modelLable.setBackground(new Color(166, 166, 255));
+        modelLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();
         gc1.gridx = 0;
@@ -75,47 +73,47 @@ public class BatchRunMSETablePanel extends JPanel
         gc3.gridwidth = 2;
         gc3.weightx = 1.0;
         gc3.fill = GridBagConstraints.BOTH;
-        add(lessLable, gc3);
+        add(modelLable, gc3);
         //create table model
         mseTableModel = new BatchRunMSETableModel();
         //by default, expend this table
+        if (table == null) setupTable();
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.gridy = 1;
+        gc.gridwidth = 2;
+        gc.weightx = 1.0;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        //By default, if you don't place a table in a scroll pane, the table  header  is not  shown. You need to explicitly display it.
+        add(table.getTableHeader(), gc); 
+        gc.weighty = 1.0;
+        gc.gridy = 2;
+        gc.fill = GridBagConstraints.BOTH;
+        add(table, gc);
         setDetail(true);
    }
 
     private class HyperLinkListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            boolean isDetail = hypDetail.getText().equals("Detail");
+            boolean isDetail = hypDetail.getText().equals("Details");
             setDetail(isDetail);
-            hypDetail.setText(isDetail? "Less Detail" : "Detail");
+            hypDetail.setText(isDetail? "Less Details" : "Details");
         }
 
     }
 
     public void setDetail(boolean isDetail) {
         if (isDetail) {
-            if (table == null) setupTable();
-            remove(lessLable);
-            GridBagConstraints gc = new GridBagConstraints();
-            gc.gridy = 1;
-            gc.gridwidth = 2;
-            gc.weightx = 1.0;
-            gc.fill = GridBagConstraints.HORIZONTAL;
-            add(table.getTableHeader(), gc); // absurd to put head and body seperately
-            gc.weighty = 1.0;
-            gc.gridy = 2;
-            gc.fill = GridBagConstraints.BOTH;
-            if (table.getModel().getRowCount() > 20) {
-                add(scrTable, gc);
-            }
-            else {
-                add(table, gc);
+            remove(modelLable);
+            if(table != null)
+            {
+            	table.getTableHeader().setVisible(true);
+            	table.setVisible(true);
             }
         }
         else {
             if (table != null) {
-                remove(table.getTableHeader());
-                remove(scrTable);
-                remove(table);
+            	table.getTableHeader().setVisible(false);
+            	table.setVisible(false);
             }
             GridBagConstraints gc = new GridBagConstraints();
             gc.gridy = 1;
@@ -124,9 +122,9 @@ public class BatchRunMSETablePanel extends JPanel
             gc.fill = GridBagConstraints.HORIZONTAL;
             if(batchRunWorkspace != null)
             {
-            	lessLable.setText(batchRunWorkspace.getFrapStudyList().size() + " Documents");
+            	modelLable.setText(batchRunWorkspace.getFrapStudyList().size() + " Documents");
             }
-            add(lessLable, gc);
+            add(modelLable, gc);
         }
         parent.repaint();
     }
@@ -135,7 +133,7 @@ public class BatchRunMSETablePanel extends JPanel
     	
     	TableSorter sorter = new TableSorter(mseTableModel);
         table = new StyleTable(sorter);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setCellSelectionEnabled(true);
         sorter.setTableHeader(table.getTableHeader());
 
         DefaultCellEditor  mseEditor = new DefaultCellEditor(new JTextField());
@@ -146,9 +144,7 @@ public class BatchRunMSETablePanel extends JPanel
         	col.setCellRenderer(mseRenderer);
         	col.setCellEditor(mseEditor);
         }
-
-        scrTable = new JScrollPane(table);
-        scrTable.setAutoscrolls(true);
+        table.addMouseListener(evtHandler);
     }
 
     public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)

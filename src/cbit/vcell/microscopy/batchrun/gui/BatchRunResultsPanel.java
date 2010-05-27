@@ -3,6 +3,8 @@ package cbit.vcell.microscopy.batchrun.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -61,10 +63,23 @@ public class BatchRunResultsPanel extends JPanel
 	{
 		if(centerPanel == null)
 		{
-			centerPanel= new JPanel();
-			centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-			centerPanel.add(getBatchRunResultsParameterPanel());
-			centerPanel.add(getBatchRunMSEPanel());
+			centerPanel= new JPanel(new GridBagLayout());
+//			centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+			 GridBagConstraints gc1 = new GridBagConstraints();
+		        gc1.gridx = 0;
+		        gc1.gridy = 0;
+		        gc1.weightx = 1.0;
+		        gc1.anchor = GridBagConstraints.WEST;
+		        gc1.fill = GridBagConstraints.HORIZONTAL;
+
+		        GridBagConstraints gc2 = new GridBagConstraints();
+		        gc2.gridx = 0;
+		        gc2.gridy = 1;
+		        gc2.weightx = 1.0;
+		        gc1.anchor = GridBagConstraints.WEST;
+		        gc2.fill = GridBagConstraints.HORIZONTAL;
+			centerPanel.add(getBatchRunResultsParameterPanel(),gc1);
+			centerPanel.add(getBatchRunMSEPanel(),gc2);
 		}
 		return centerPanel;
 	}

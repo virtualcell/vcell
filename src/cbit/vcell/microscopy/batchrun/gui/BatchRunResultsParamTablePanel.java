@@ -12,6 +12,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -31,6 +32,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
+import cbit.vcell.microscopy.gui.AdvancedTablePanel;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.microscopy.gui.estparamwizard.AnalysisTableRenderer;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentPanel;
@@ -40,13 +42,13 @@ import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
 
 public class BatchRunResultsParamTablePanel extends JPanel implements PropertyChangeListener
 {
+	private AdvancedTablePanel paramTablePanel;
+	private AdvancedTablePanel statTablePanel;
 	private JTable table_param;
 	private JTable table_stat;
     private BatchRunResultsParameterPanel parent;
-    private JLabel lessLable;
+    private JLabel modelLable;
     private HyperLinkLabel hypDetail;
-    private JScrollPane scrTable_param;
-    private JScrollPane scrTable_stat;
     private BatchRunResultsParamTableModel resultsTableModel = null;
     private BatchRunResultsStatTableModel statTableModel = null;
     private FRAPBatchRunWorkspace batchRunWorkspace = null;
@@ -63,18 +65,18 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 
         JLabel lblConfHeading = new JLabel("Documents");
         lblConfHeading.setFont(new Font("Tahoma", Font.BOLD, 11));
-        hypDetail = new HyperLinkLabel("Less Detail", new HyperLinkListener(), 0);
+        hypDetail = new HyperLinkLabel("Less Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
         
-        lessLable = new JLabel("Many VFRAP Docs");
-        lessLable.setOpaque(true);
-        lessLable.setBackground(new Color(166, 166, 255));
-        lessLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
+        modelLable = new JLabel("Many VFRAP Docs");
+        modelLable.setOpaque(true);
+        modelLable.setBackground(new Color(166, 166, 255));
+        modelLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();
         gc1.gridx = 0;
         gc1.gridy = 0;
-        gc1.weightx = 1.0;
+        gc1.weightx = 0.0;
         gc1.anchor = GridBagConstraints.WEST;
         gc1.fill = GridBagConstraints.HORIZONTAL;
         add(lblConfHeading, gc1);
@@ -93,11 +95,45 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         gc3.gridwidth = 2;
         gc3.weightx = 1.0;
         gc3.fill = GridBagConstraints.BOTH;
-        add(lessLable, gc3);
+        add(modelLable, gc3);
         //create table model
         resultsTableModel = new BatchRunResultsParamTableModel();
         statTableModel = new BatchRunResultsStatTableModel();
         //by default, expend this table
+        if (table_stat == null) setupTable_stat();
+        if (table_param == null) setupTable_param();
+        GridBagConstraints gc4 = new GridBagConstraints();
+        gc4.gridx = 0;
+        gc4.gridy = 1;
+        gc4.gridwidth = 2;
+        gc4.weightx = 1;
+        gc4.fill = GridBagConstraints.HORIZONTAL;
+        add(statTablePanel, gc4);//add statistics panel
+        //add some distance between two tables
+        GridBagConstraints gc6 = new GridBagConstraints();
+        gc6.gridx = 0;
+        gc6.gridy = 2;
+        gc6.gridwidth = 2;
+        gc6.weightx = 1;
+        gc6.fill = GridBagConstraints.HORIZONTAL;
+        add(Box.createRigidArea(new Dimension(0,40)),gc6);
+
+        GridBagConstraints gc5 = new GridBagConstraints();
+        gc5.gridx = 0;
+        gc5.gridy = 3;
+        gc5.gridwidth = 2;
+        gc5.weightx = 1;
+        gc5.fill = GridBagConstraints.HORIZONTAL;
+        add(paramTablePanel, gc5);//add parameters panel
+        
+        //add distance after the parameters table
+        GridBagConstraints gc7 = new GridBagConstraints();
+        gc7.gridx = 0;
+        gc7.gridy = 2;
+        gc7.gridwidth = 2;
+        gc7.weightx = 1;
+        gc7.fill = GridBagConstraints.HORIZONTAL;
+        add(Box.createRigidArea(new Dimension(0,20)),gc7);
         setDetail(true);
    }
 
@@ -105,78 +141,45 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 
     private class HyperLinkListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            boolean isDetail = hypDetail.getText().equals("Detail");
+            boolean isDetail = hypDetail.getText().equals("Details");
             setDetail(isDetail);
-            hypDetail.setText(isDetail? "Less Detail" : "Detail");
+            hypDetail.setText(isDetail? "Less Details" : "Details");
         }
     }
 
     public void setDetail(boolean isDetail) {
         if (isDetail) {
-            if (table_stat == null) setupTable_stat();
-            if (table_param == null) setupTable_param();
-            remove(lessLable);
-            GridBagConstraints gc = new GridBagConstraints();
-            gc.gridy = 1;
-            gc.gridwidth = 2;
-            gc.weightx = 1.0;
-            gc.fill = GridBagConstraints.HORIZONTAL;
-            add(table_stat.getTableHeader(), gc); //table head
-            gc.weighty = 1.0;
-            gc.gridy = 2;
-            gc.fill = GridBagConstraints.BOTH;
-            if (table_stat.getModel().getRowCount() > 20) {
-                add(scrTable_stat, gc);//table
-            }
-            else {
-                add(table_stat, gc);
-            }
-            GridBagConstraints gc2 = new GridBagConstraints();
-            gc2.gridy = 3;
-            gc2.gridwidth = 2;
-            gc2.weightx = 1.0;
-            gc2.fill = GridBagConstraints.HORIZONTAL;
-            add(table_param.getTableHeader(), gc2); //table head
-            gc2.weighty = 1.0;
-            gc2.gridy = 4;
-            gc2.fill = GridBagConstraints.BOTH;
-            if (table_param.getModel().getRowCount() > 20) {
-                add(scrTable_param, gc2);//table
-            }
-            else {
-                add(table_param, gc2);
-            }
+            remove(modelLable);
+            statTablePanel.setVisible(true);
+            paramTablePanel.setVisible(true);
         }
         else {
             if (table_param != null) {
-                remove(table_param.getTableHeader());
-                remove(scrTable_param);
-                remove(table_param);
+            	paramTablePanel.setVisible(false);
             }
             if (table_stat != null) {
-                remove(table_stat.getTableHeader());
-                remove(scrTable_stat);
-                remove(table_stat);
+            	statTablePanel.setVisible(false);
             }
             GridBagConstraints gc = new GridBagConstraints();
-            gc.gridy = 1;
+            gc.gridy = 1;//1;
             gc.gridwidth = 2;
             gc.weightx = 1.0;
             gc.fill = GridBagConstraints.HORIZONTAL;
             if(batchRunWorkspace != null)
             {
-            	lessLable.setText(batchRunWorkspace.getFrapStudyList().size() + " Documents");
+            	modelLable.setText(batchRunWorkspace.getFrapStudyList().size() + " Documents");
             }
-            add(lessLable, gc);
+            add(modelLable, gc);
         }
         parent.repaint();
     }
 
     private void setupTable_param() {
 
+    	paramTablePanel = new AdvancedTablePanel();
         TableSorter sorter = new TableSorter(resultsTableModel);
         table_param = new StyleTable(sorter);
-        table_param.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table_param.setCellSelectionEnabled(true);
         sorter.setTableHeader(table_param.getTableHeader());
         
         DefaultCellEditor  resultsEditor = new DefaultCellEditor(new JTextField());
@@ -196,30 +199,51 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         ResultsParamTableEditor tableEditor = new ResultsParamTableEditor(table_param);
         tableEditor.addPropertyChangeListener(this);
         detailsCol.setCellEditor(tableEditor);
-        scrTable_param = new JScrollPane(table_param);
-        scrTable_param.setAutoscrolls(true);
-        
+        //add table to panel.By default, if you don't place a table in a scroll pane, the table  header  is not  shown. You need to explicitly display it. 
+        paramTablePanel.setTable(table_param);
+        paramTablePanel.setLayout(new GridBagLayout());
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.gridy = 0;
+        gc.gridx =0;
+        gc.weightx = 1;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        paramTablePanel.add(table_param.getTableHeader(), gc);
+        gc.gridy = 1;
+        gc.gridx =0;
+        gc.weightx = 1;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        paramTablePanel.add(table_param, gc);
     }
     
     private void setupTable_stat() {
+    	statTablePanel = new AdvancedTablePanel();
         table_stat = new StyleTable();
-        table_stat.setAutoCreateColumnsFromModel(false);
         table_stat.setModel(statTableModel);
-
+        table_stat.setCellSelectionEnabled(true);
+        
         DefaultCellEditor statEditor = new DefaultCellEditor(new JTextField());
         TableCellRenderer statRenderer = new  AnalysisTableRenderer(8);//double precision 8 digits
         TableColumn[] columns = new TableColumn[statTableModel.NUM_COLUMNS];
-        for (int i = 0; i < statTableModel.getColumnCount(); i++) {
-
-            columns[i] = new TableColumn(i, 0, statRenderer, statEditor);
-
-            table_stat.addColumn(columns[i]);
-
+        for (int i = 0; i < table_stat.getColumnCount(); i++) {
+        	TableColumn col = table_stat.getColumnModel().getColumn(i);
+        	col.setPreferredWidth(0);
+        	col.setCellRenderer(statRenderer);
+        	col.setCellEditor(statEditor);
         }
-
-        scrTable_stat = new JScrollPane(table_stat);
-        scrTable_stat.setAutoscrolls(true);
-        
+        //add table to panel.By default, if you don't place a table in a scroll pane, the table  header  is not  shown. You need to explicitly display it.
+        statTablePanel.setTable(table_stat);
+        statTablePanel.setLayout(new GridBagLayout());
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.gridy = 0;
+        gc.gridx =0;
+        gc.weightx = 1;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        statTablePanel.add(table_stat.getTableHeader(),gc);
+        gc.gridy = 1;
+        gc.gridx =0;
+        gc.weightx = 1;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        statTablePanel.add(table_stat,gc);
     }
 
     public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)
@@ -234,9 +258,6 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
     	{
     		oneDiffComponentPanel = new EstParams_OneDiffComponentPanel();
     		oneDiffComponentPanel.setPreferredSize(new Dimension(980,680));
-    		oneDiffComponentPanel.setMaximumSize(new Dimension(980,680));
-    		oneDiffComponentPanel.setMinimumSize(new Dimension(980,680));
-    		oneDiffComponentPanel.setApplyBatchRunParamButtonVisible(false);
     	}
 		return oneDiffComponentPanel;
 	}
@@ -250,9 +271,6 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 		{
 			twoDiffComponentPanel = new EstParams_TwoDiffComponentPanel();
 			twoDiffComponentPanel.setPreferredSize(new Dimension(980,680));
-			twoDiffComponentPanel.setMaximumSize(new Dimension(980,680));
-			twoDiffComponentPanel.setMinimumSize(new Dimension(980,680));
-			twoDiffComponentPanel.setApplyBatchRunParamButtonVisible(false);
 		}
 		return twoDiffComponentPanel;
 	}
