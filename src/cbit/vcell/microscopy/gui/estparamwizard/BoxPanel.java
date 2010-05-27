@@ -24,7 +24,7 @@ public abstract class BoxPanel extends JPanel {
     /**
      * Panel for button
      */
-    protected JPanel buttonPanel;
+    protected JPanel gluePanel;
 
     /**
      * Content panel
@@ -38,17 +38,16 @@ public abstract class BoxPanel extends JPanel {
         setOpaque(false);
         setBorder(new BoxBorder());
         JPanel titlePanel = new JPanel(new BorderLayout());
-        buttonPanel = new JPanel();
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
-        buttonPanel.add(Box.createHorizontalGlue());
-//        buttonPanel.setBackground(Color.white);
+        gluePanel = new JPanel();
+        gluePanel.setLayout(new BoxLayout(gluePanel, BoxLayout.X_AXIS));
+        gluePanel.add(Box.createHorizontalGlue());
         JLabel lblTitle = new JLabel(title);
         lblTitle.setFont(new Font("Tahoma", Font.BOLD, 13));
 
         JPanel linePanel = new LinePanel();
 
         titlePanel.add(lblTitle, BorderLayout.WEST);
-        titlePanel.add(buttonPanel, BorderLayout.CENTER);
+        titlePanel.add(gluePanel, BorderLayout.CENTER);
         titlePanel.add(linePanel, BorderLayout.SOUTH);
 
         BorderFactory.createEmptyBorder(1,1,1,1);

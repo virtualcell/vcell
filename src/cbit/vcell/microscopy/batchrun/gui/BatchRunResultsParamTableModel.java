@@ -28,7 +28,7 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
 	
 	public final static String COL_LABELS[] = { "File Name", "Primary Diff Rate", "Primary Mobile Fraction",
 												"Bleach Monitor Rate", "Secondary Mobile Fraction",
-												"Secondary Diff Rate", "Immobile Fraction", "Details"};
+												"Secondary Diff Rate", "Immobile Fraction", "Show Details"};
 	
 	private FRAPBatchRunWorkspace batchRunWorkspace = null;
 	private ArrayList<FRAPStudy> frapStudys = null;

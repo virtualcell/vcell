@@ -281,6 +281,8 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 						fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setData(fitData);
 						//refresh the results
 						getBatchRunWorkspace().refreshBatchRunResults();
+						//set save flag true when a doc has been added successfully
+						getBatchRunWorkspace().setSaveNeeded(true);
 					}
 					//update tree
 					DefaultMutableTreeNode newNode = frapBatchRunViewTree.addBatchRunDocNode(new File(getBatchRunWorkspace().getWorkingFrapStudy().getXmlFilename()));
@@ -318,6 +320,10 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 			if(batchRunWorkspace.getFrapStudyList() == null || batchRunWorkspace.getFrapStudyList().size() < 1)
 			{
 				frapBatchRunViewTree.clearAll();
+			}
+			else //if doc has been deleted successfully and frapStudyList still has doc, set save flag true.
+			{
+				batchRunWorkspace.setSaveNeeded(true);
 			}
 			batchRunWorkspace.clearStoredTreeSelection();
 			//clear parameter display
@@ -477,7 +483,20 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 
 	public void updateResultsInfo(boolean bNewlyCreated)
 	{
-		clearResultsInfo();
+		//clear results first
+		if(bNewlyCreated)
+		{
+			clearResultsInfo();
+		}
+		else
+		{
+			//do the following two lines instead of calling batchRunWorkspace.clearResultData(). in order to not to clear average parameters 
+			batchRunWorkspace.setAnalysisMSESummaryData(null);
+			batchRunWorkspace.setStatisticsData(null);
+			frapBatchRunViewTree.clearResults();
+			batchRunWorkspace.clearStoredTreeSelection();
+			clearParameterDisplay();
+		}
 		DefaultMutableTreeNode newNode = frapBatchRunViewTree.addBatchRunResultNode("Results Available");
 		if(bNewlyCreated)
 		{
@@ -509,10 +528,10 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 			{
 				frapBatchRunViewTree.addBatchRunDocNode(new File(fStudyList.get(i).getXmlFilename()));
 			}
-			if(batchRunWorkspace.getAverageParameters()!= null && batchRunWorkspace.getAverageParameters().length > 0)
-			{
-				updateResultsInfo(false);
-			}
+		}
+		if(batchRunWorkspace.isBatchRunResultsAvailable())
+		{
+			updateResultsInfo(false);
 		}
 		//set fist doc selected when opening a new Batch Run file
 		frapBatchRunViewTree.setSelectionPath(new TreePath(firstDocNode.getPath()));

@@ -1,5 +1,7 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
+import java.awt.BorderLayout;
+
 import javax.swing.BoxLayout;
 
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
@@ -14,7 +16,7 @@ public class BatchRunMSEPanel extends BoxPanel
 	{
 		super("Squared Error among FRAP Documents under Selected ROIs");
 			mseTablePanel = new BatchRunMSETablePanel(this);
-	        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+	        contentPane.setLayout(new BorderLayout());
 	        contentPane.add(mseTablePanel);
 	}
 	

@@ -20,12 +20,12 @@ public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 	{
 		button.setBorderPainted(false);
         setFont(new Font("Arial", Font.PLAIN, 11));
-        setBorder(BorderFactory.createEmptyBorder(1, 5, 1, 1));
-//		button.setBorder(new )
 	}
 	public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) 
 	{
+		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+		setBorder(BorderFactory.createEmptyBorder(1, 5, 1, 1));
 		if(column == BatchRunResultsParamTableModel.COLUMN_FILE_NAME)
 		{
 			if(value instanceof String)

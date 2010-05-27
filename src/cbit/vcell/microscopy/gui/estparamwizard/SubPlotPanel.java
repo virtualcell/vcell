@@ -29,13 +29,9 @@ import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 public class SubPlotPanel extends JPanel
 {
     private SummaryPlotPanel parent;
-
-    private JLabel lessLable;
-
+    private JLabel modelLable;
     private HyperLinkLabel hypDetail;
-
     private MultisourcePlotPane plotPane;
-    
     private FRAPSingleWorkspace frapWorkspace;
 
     public SubPlotPanel(SummaryPlotPanel arg_parent) 
@@ -47,13 +43,13 @@ public class SubPlotPanel extends JPanel
 
         JLabel headingLabel = new JLabel("Plots under Selected ROIs");
         headingLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
-        hypDetail = new HyperLinkLabel("Detail", new HyperLinkListener(), 0);
+        hypDetail = new HyperLinkLabel("Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
 
-        lessLable = new JLabel("3 Models");
-        lessLable.setOpaque(true);
-        lessLable.setBackground(new Color(166, 166, 255));
-        lessLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
+        modelLable = new JLabel("3 Models");
+        modelLable.setOpaque(true);
+        modelLable.setBackground(new Color(166, 166, 255));
+        modelLable.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();
         gc1.gridx = 0;
@@ -77,53 +73,51 @@ public class SubPlotPanel extends JPanel
         gc3.gridwidth = 2;
         gc3.weightx = 1.0;
         gc3.fill = GridBagConstraints.BOTH;
-        add(lessLable, gc3);
-        
+        add(modelLable, gc3);
+        //add plot pane
         plotPane = new MultisourcePlotPane();
-        plotPane.setMaximumSize(new Dimension(660,500));
-        plotPane.setMinimumSize(new Dimension(660,500));
         plotPane.setPreferredSize(new Dimension(660,460));
         plotPane.setBorder(new EtchedBorder(EtchedBorder.RAISED));
+        plotPane.setVisible(false);//by default it is not visible
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.gridwidth = 2;
+        gc.weightx = 1.0;
+        gc.weighty = 1.0;
+        gc.gridy = 2;
+        gc.fill = GridBagConstraints.BOTH;
+        add(plotPane, gc);
    }
 
 
 
     private class HyperLinkListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            boolean isDetail = hypDetail.getText().equals("Detail");
+            boolean isDetail = hypDetail.getText().equals("Details");
             setDetail(isDetail);
-            hypDetail.setText(isDetail? "Less Detail" : "Detail");
+            hypDetail.setText(isDetail? "Less Details" : "Details");
         }
 
     }
 
     public void setDetail(boolean isDetail) {
         if (isDetail) {
-            remove(lessLable);
-            GridBagConstraints gc = new GridBagConstraints();
-            gc.gridy = 1;
-            gc.gridwidth = 2;
-            gc.weightx = 1.0;
-            gc.fill = GridBagConstraints.HORIZONTAL;
-
-            gc.weighty = 1.0;
-            gc.gridy = 2;
-            gc.fill = GridBagConstraints.BOTH;
-            add(plotPane, gc);
-
+            remove(modelLable);
+            if(plotPane != null)
+            {
+            	plotPane.setVisible(true);
+            }
         }
         else {
-
         	if(plotPane != null)
         	{
-        		remove(plotPane);
+        		plotPane.setVisible(false);
         	}
             GridBagConstraints gc = new GridBagConstraints();
             gc.gridy = 1;
             gc.gridwidth = 2;
             gc.weightx = 1.0;
             gc.fill = GridBagConstraints.HORIZONTAL;
-            add(lessLable, gc);
+            add(modelLable, gc);
         }
         parent.repaint();
     }
@@ -177,6 +171,6 @@ public class SubPlotPanel extends JPanel
     public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
 	{
 		this.frapWorkspace = frapWorkspace;
-		lessLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
+		modelLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
 	}
 }
