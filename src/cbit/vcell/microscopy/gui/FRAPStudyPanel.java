@@ -242,6 +242,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			  	   					getFrapWorkspace().getWorkingFrapStudy().setSaveNeeded(true);
 			  	   					//clear movie buffer
 			  	   					clearMovieBuffer();
+			  	   					//clear plot selected indices
+			  	   					if(diffOneDescriptor != null && diffTwoDescriptor != null)
+			  	   					{
+				  	   				    diffOneDescriptor.clearSelectedPlotIndices();
+				  	   				    diffTwoDescriptor.clearSelectedPlotIndices();
+			  	   					}
 			  	   				}
 		  	    			}
 		  	    		};
@@ -1278,6 +1284,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	            VirtualFrapMainFrame.updateProgress(0);
 	            //clear movie buffer
  				clearMovieBuffer();
+ 				//clear plot selected indices
+ 				if(diffOneDescriptor != null && diffTwoDescriptor != null)
+ 				{
+	 				diffOneDescriptor.clearSelectedPlotIndices();
+	 				diffTwoDescriptor.clearSelectedPlotIndices();
+ 				}
 			}
 		};
 		totalTasks.add(updateUIAfterLoadingTask);
