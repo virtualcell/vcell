@@ -50,6 +50,7 @@ import cbit.vcell.microscopy.gui.StatusBar;
 import cbit.vcell.microscopy.gui.ToolBar;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
+import cbit.vcell.microscopy.gui.estparamwizard.FRAPDiffOneParamPanel;
 import cbit.vcell.opt.Parameter;
 
 /**
@@ -225,7 +226,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				   					batchRunTaskList.add(displayTask);
 									//run tasks
 				   					AsynchClientTask[] tasks = batchRunTaskList.toArray(new AsynchClientTask[batchRunTaskList.size()]);
-									ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), tasks, true, false, false, null, true);
+									ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), tasks, false, true, null, true);
 								}
 				   			}
 			  	   		}
