@@ -110,7 +110,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 							double[] adjustedVals = adjustMobileFractions(primaryFrac);
 							//primary				
 							double value = adjustedVals[0];
-							mobileFractionSetButton.setEnabled(false);
+							
 							int sliderValue = (int)
 								(((value-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound())*(double)mobileFractionSlider.getMaximum())/
 								(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()));
@@ -121,7 +121,8 @@ public class FRAPDiffOneParamPanel extends JPanel
 								sliderValue = mobileFractionSlider.getMaximum();
 							}
 							mobileFractionSlider.setValue(sliderValue);
-							mobileFractionTextField.setText(value+"");
+							mobileFractionTextField.setText(value+"");//this will trigger the undoableEditorListener to set the button on
+							mobileFractionSetButton.setEnabled(false);//we set the button off again.
 							mobileFractionTextField.setCaretPosition(0);
 							//immobile
 							immoFracValueLabel.setText(adjustedVals[1]+"");
@@ -186,7 +187,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 						mobileFractionSlider.setValue(sliderValue);
 						mobileFractionSetButton.setEnabled(false);
 //					}else if(e.getSource() == bleachWhileMonitorSetButton){
-						/*double*/ value = Double.parseDouble(bleachWhileMonitorRateTextField.getText());
+						value = Double.parseDouble(bleachWhileMonitorRateTextField.getText());
 						
 						if(value <= (Math.pow(10, FRAPOptData.REF_BWM_LOG_VAL_MIN)+FRAPOptimization.epsilon)){
 							value = FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound();
@@ -291,23 +292,6 @@ public class FRAPDiffOneParamPanel extends JPanel
 		});
 		getOptimalButton.setText("Estimate");
 		getOptimalButton.setToolTipText("Set best parameters through optimization with experimental data");
-//		gridBagConstraints_13.gridwidth = 2;
-//		gridBagConstraints_13.ipadx = 10;
-//		gridBagConstraints_13.insets = new Insets(2, 2, 2, 0);
-//		gridBagConstraints_13.gridy = 0;
-//		gridBagConstraints_13.gridx = 1;
-//		add(runSimbutton, gridBagConstraints_13);
-////		runSimbutton.setFont(new Font("", Font.BOLD, 14));
-//		runSimbutton.addActionListener(new ActionListener() {
-//			public void actionPerformed(final ActionEvent e) {
-//				if(checkParameters())
-//				{
-//					firePropertyChange(PROPERTY_CHANGE_RUNSIM, null,null);
-//				}
-//			}
-//		});
-//		runSimbutton.setText("Simulate with Parameters");
-//		runSimbutton.setToolTipText("Create new FRAP simulation using current parameter settings");
 
 		final JLabel diffusionRateLabel = new JLabel();
 		diffusionRateLabel.setText("Primary  Diff.  Rate(um2/s):");
@@ -395,20 +379,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 		gridBagConstraints_6.gridx = 3;
 		add(mobileFractionSlider, gridBagConstraints_6);
 
-//		secondMobileFracSlider = new JSlider();
-//		secondMobileFracSlider.setPreferredSize(new Dimension(0, 0));
-//		secondMobileFracSlider.setEnabled(false);
-//		secondMobileFracSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
-//		secondMobileFracSlider.setPaintLabels(true);
-//		final GridBagConstraints gridBagConstraints_23 = new GridBagConstraints();
-//		gridBagConstraints_23.insets = new Insets(2, 2, 2, 2);
-//		gridBagConstraints_23.weightx = 1;
-//		gridBagConstraints_23.gridy = 2;
-//		gridBagConstraints_23.gridx = 7;
-//		add(secondMobileFracSlider, gridBagConstraints_23);
-
 		final JLabel bleachWhileMonitorLabel = new JLabel();
-//		bleachWhileMonitorLabel.setFont(new Font("", Font.BOLD, 14));
 		bleachWhileMonitorLabel.setText("Bleach While Monitor Rate(1/s):");
 		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
 		gridBagConstraints_12.insets = new Insets(2, 2, 2, 2);
@@ -422,7 +393,6 @@ public class FRAPDiffOneParamPanel extends JPanel
 		bleachWhileMonitorRateTextField.setPreferredSize(new Dimension(125, 20));
 		bleachWhileMonitorRateTextField.setMinimumSize(new Dimension(125, 20));
 		bleachWhileMonitorRateTextField.addActionListener(OPTIMIZER_VALUE_ACTION_LISTENER);
-//		bleachWhileMonitorRateTextField.setText("bleachWhileMonitorRate");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.insets = new Insets(2, 2, 2, 0);
 		gridBagConstraints_3.fill = GridBagConstraints.HORIZONTAL;
@@ -453,7 +423,6 @@ public class FRAPDiffOneParamPanel extends JPanel
 		add(bleachWhileMonitorSlider, gridBagConstraints_7);		
 
 		final JLabel immboileFractionLabel = new JLabel();
-//		immboileFractionLabel.setFont(new Font("", Font.BOLD, 14));
 		immboileFractionLabel.setText("Model    Immobile    Fraction:");
 		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
 		gridBagConstraints_16.anchor = GridBagConstraints.WEST;
@@ -478,7 +447,6 @@ public class FRAPDiffOneParamPanel extends JPanel
 		
 		diffusionRateSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		mobileFractionSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
-//		secondMobileFracSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		bleachWhileMonitorSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 		try{
 			Hashtable<Integer, JComponent> diffusionSliderLabelTable = new Hashtable<Integer, JComponent>();
@@ -503,15 +471,6 @@ public class FRAPDiffOneParamPanel extends JPanel
 			mobileFractionSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
 			mobileFractionSlider.setLabelTable(mobileFractionSliderLabelTable);
 			
-//			Hashtable<Integer, JComponent> secondMobileFractionSliderLabelTable = new Hashtable<Integer, JComponent>();
-//			secondMobileFracSlider.setMinimum(0);
-//			secondMobileFracSlider.setMaximum(100);
-//			secondMobileFracSlider.setValue(0);
-//			secondMobileFractionSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound()+""));
-//			secondMobileFractionSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound()+""));
-//			secondMobileFracSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
-//			secondMobileFracSlider.setLabelTable(secondMobileFractionSliderLabelTable);
-			
 			Hashtable<Integer, JComponent> bleachWhileMonitorSliderLabelTable = new Hashtable<Integer, JComponent>();
 			bleachWhileMonitorSlider.setMinimum(0);
 			bleachWhileMonitorSlider.setMaximum(100);
@@ -529,56 +488,61 @@ public class FRAPDiffOneParamPanel extends JPanel
 		}finally{
 			diffusionRateSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 			mobileFractionSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
-//			secondMobileFracSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 			bleachWhileMonitorSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 	
 		}
 	}
 	
-	private boolean checkParameters()
+	private String checkParameters()
 	{
-		Parameter[] params = getCurrentParameters();
+		String errMsg = "";
+		Parameter[] params = getCurrentParameters();//checks null and illegal formats
 		if (params == null)
 		{
-			DialogUtils.showErrorDialog(FRAPDiffOneParamPanel.this, "Some of the editable parameters are empty or in illegal forms!");
-			throw new RuntimeException("Some of the editable parameters are empty or in illegal forms!");
+			errMsg = "Some of the editable parameters are empty or in illegal forms!";
 		}
-		return true;
+		return errMsg;
 	}
 	
 	public void runAndSetBestParameters()
 	{
-		if(checkParameters())
+		
+		AsynchClientTask optTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
 		{
-			AsynchClientTask optTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				public void run(Hashtable<String, Object> hashTable) throws Exception
+				String errorStr = checkParameters();
+				if(errorStr.equals(""))
 				{
 					frapOptData.setNumEstimatedParams(getCurrentParameters().length);
 					final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation());
 					hashTable.put("bestParameters", bestParameters);
 				}
-			};
-			
-			AsynchClientTask showResultTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
-			{
-				public void run(Hashtable<String, Object> hashTable) throws Exception
+				else
 				{
-					final Parameter[] bestParameters = (Parameter[])hashTable.get("bestParameters");
-					if(bestParameters.length == FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF)
-					{
-						setParameterValues(
-								new Double(bestParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess()),
-								new Double(bestParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess()),
-								new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess())
-								);
-						firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
-					}
+					throw new IllegalArgumentException(errorStr);
 				}
-			};
-			//dispatch
-			ClientTaskDispatcher.dispatch(FRAPDiffOneParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{optTask, showResultTask}, false);
-		}
+			}
+		};
+		
+		AsynchClientTask showResultTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				final Parameter[] bestParameters = (Parameter[])hashTable.get("bestParameters");
+				if(bestParameters.length == FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF)
+				{
+					setParameterValues(
+							new Double(bestParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess()),
+							new Double(bestParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess()),
+							new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess())
+							);
+					firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
+				}
+			}
+		};
+		//dispatch
+		ClientTaskDispatcher.dispatch(FRAPDiffOneParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{optTask, showResultTask}, false, false, null, true); 
 	}
 	
 	public void setData(FRAPOptData frapOptData, Parameter[] modelParameters) throws Exception

@@ -322,8 +322,16 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 								selectedColorIdx++;
 							}
 						}
+						int[] selectedIndices = multisourcePlotPane.getSelectedIndices();
 						multisourcePlotPane.setDataSources(newDataSourceArr, selectedColors);
-						multisourcePlotPane.selectAll();
+						if(selectedIndices.length == 0)
+						{
+							multisourcePlotPane.selectAll();
+						}
+						else
+						{
+							multisourcePlotPane.setSelectedIndices(selectedIndices);
+						}
 					}
 				}
 			}

@@ -58,7 +58,6 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 	private final JButton diffusionRateSetButton;
 	private final JButton mobileFractionSetButton;
 	private final JButton bleachWhileMonitorSetButton;
-//	private final JCheckBox secondDiffRateCheckBox = new JCheckBox();
 	
 	private FRAPOptData frapOptData;
 	private FRAPSingleWorkspace frapWorkspace;
@@ -151,7 +150,6 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 							double[] adjustedVals = adjustMobileFractions(primaryFrac, secFrac, isSetPrimaryMFrac);
 							//primary				
 							double value = adjustedVals[0];
-							mobileFractionSetButton.setEnabled(false);
 							int sliderValue = (int)
 								(((value-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound())*(double)mobileFractionSlider.getMaximum())/
 								(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()));
@@ -162,7 +160,8 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 								sliderValue = mobileFractionSlider.getMaximum();
 							}
 							mobileFractionSlider.setValue(sliderValue);
-							mobileFractionTextField.setText(value+"");
+							mobileFractionTextField.setText(value+"");//this will trigger the undoableEditorListener to set the button on
+							mobileFractionSetButton.setEnabled(false);//we set the button off again.
 							mobileFractionTextField.setCaretPosition(0);
 							//secondary
 							value = adjustedVals[1];
@@ -177,7 +176,8 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 								sliderValue = secondMobileFracSlider.getMaximum();
 							}
 							secondMobileFracSlider.setValue(sliderValue);
-							secondMobileFracTextField.setText(value+"");
+							secondMobileFracTextField.setText(value+"");//this will trigger the undoableEditorListener to set the button on
+							secondMobileFracSetButton.setEnabled(false);//we set the button off again.
 							secondMobileFracTextField.setCaretPosition(0);
 							//immobile
 							immoFracValueLabel.setText(adjustedVals[2]+"");
@@ -749,51 +749,56 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		}
 	}
 	
-	private boolean checkParameters()
+	private String checkParameters()
 	{
-		Parameter[] params = getCurrentParameters();
+		String errMsg = "";
+		Parameter[] params = getCurrentParameters();//checks null and illegal formats
 		if (params == null)
 		{
-			DialogUtils.showErrorDialog(FRAPDiffTwoParamPanel.this, "Some of the editable parameters are empty or in illegal forms!");
-			throw new RuntimeException("Some of the editable parameters are empty or in illegal forms!");
+			errMsg = "Some of the editable parameters are empty or in illegal forms!";
 		}
-		return true;
+		return errMsg;
 	}
 	
 	public void runAndSetBestParameters()
 	{
-		if(checkParameters())
+		AsynchClientTask optTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
 		{
-			AsynchClientTask optTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				public void run(Hashtable<String, Object> hashTable) throws Exception
+				String errorStr = checkParameters();
+				if(errorStr.equals(""))
 				{
 					frapOptData.setNumEstimatedParams(getCurrentParameters().length);
 					final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation());
 					hashTable.put("bestParameters", bestParameters);
 				}
-			};
-			
-			AsynchClientTask showResultTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
-			{
-				public void run(Hashtable<String, Object> hashTable) throws Exception
+				else
 				{
-					final Parameter[] bestParameters = (Parameter[])hashTable.get("bestParameters");
-					if(bestParameters.length == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
-					{
-						setParameterValues(
-							new Double(bestParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess()),
-							new Double(bestParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess()),
-							new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()),
-							new Double(bestParameters[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess()),
-							new Double(bestParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess()));
-						firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
-					}
+					throw new IllegalArgumentException(errorStr);
 				}
-			};
-			//dispatch
-			ClientTaskDispatcher.dispatch(FRAPDiffTwoParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{optTask, showResultTask}, false);
-		}
+			}
+		};
+		
+		AsynchClientTask showResultTask = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				final Parameter[] bestParameters = (Parameter[])hashTable.get("bestParameters");
+				if(bestParameters.length == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
+				{
+					setParameterValues(
+						new Double(bestParameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess()),
+						new Double(bestParameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess()),
+						new Double(bestParameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess()),
+						new Double(bestParameters[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess()),
+						new Double(bestParameters[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess()));
+					firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
+				}
+			}
+		};
+		//dispatch
+		ClientTaskDispatcher.dispatch(FRAPDiffTwoParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{optTask, showResultTask}, false, false, null, true);
 	}
 	
 	public void setData(FRAPOptData frapOptData, Parameter[] modelParameters) throws Exception
