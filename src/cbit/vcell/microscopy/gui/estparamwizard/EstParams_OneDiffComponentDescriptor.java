@@ -71,4 +71,8 @@ public class EstParams_OneDiffComponentDescriptor extends WizardPanelDescriptor
 		((EstParams_OneDiffComponentPanel)getPanelComponent()).setFrapWorkspace(frapWorkspace);
 	}
 	
+	public void clearSelectedPlotIndices()
+	{
+		((EstParams_OneDiffComponentPanel)getPanelComponent()).clearSelectedPlotIndices();
+	}
 }

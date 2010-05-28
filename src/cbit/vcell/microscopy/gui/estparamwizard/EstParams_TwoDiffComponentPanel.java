@@ -342,6 +342,11 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 
 	}
 
+	public void clearSelectedPlotIndices()
+	{
+		multisourcePlotPane.clearSelection();
+	}
+	
 	public void setData(final FRAPOptData frapOptData, final FRAPData fData, Parameter[] modelParams,final double[] frapDataTimeStamps,int startIndexForRecovery, boolean[] selectedROIs) throws Exception
 	{
 		this.frapOptData = frapOptData;
