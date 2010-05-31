@@ -528,6 +528,9 @@ public static int firstIndexOf(double[] dd, double d) {
  */
 public static String forceStringSize(String s, int size,String padChar,boolean bPrependPad) {
 	//
+	if(padChar == null || padChar.length()==0){
+		padChar = " ";
+	}
 	StringBuffer pad = new StringBuffer();
 	for(int c = 0;c < size;c+= 1){
 		pad.append(padChar);
