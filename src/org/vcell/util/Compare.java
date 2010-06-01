@@ -11,6 +11,68 @@ import java.util.AbstractList;
  */
 public class Compare {
 
+	public interface CompareLogger {
+		public void compareFailed();
+	}
+	public static class CompareLoggerException extends Exception {
+	}
+	public static CompareLogger logger = null;//User sets logger implementation
+	public static boolean loggingEnabled = false;//User sets logging on/off
+	private static Object logInternalDisable = null;//logging off for intermediate comparisons
+	
+	private static Object getLogInternalDisableLock(){
+		return (loggingEnabled?new Object():null);
+	}
+	private static void logInternalDisable(Object lock){
+		//Turns off logging internally.  Needed when unordered lists are being compared so
+		//inappropriate 'false' logging doesn't occur.
+		//'lock' ensures that nested Compare.xxx comparisons can't re-enable logging before finishing
+		//a temporarily logging-disabled compare operation
+		if(logInternalDisable == null){
+			logInternalDisable = lock;
+		}
+	}
+	private static void logInternalEnable(Object lock){
+		//Only the lock owner can turn logging back on after
+		//being internally disabled
+		if(lock != null && lock.equals(logInternalDisable)){
+			logInternalDisable = null;
+		}
+	}
+	public static boolean logFailure(){
+		return Compare.logFailure(null);
+	}
+	public static boolean logFailure(Object internalDisableLock){
+		if(internalDisableLock != null){
+			//try our lock to re-enable logging
+			logInternalEnable(internalDisableLock);
+		}
+		if ((logInternalDisable == null) && Compare.logger != null && Compare.loggingEnabled){
+			logger.compareFailed();
+		}
+		return false;
+	}
+	public static Compare.CompareLogger DEFAULT_COMPARE_LOGGER =
+		new Compare.CompareLogger() {
+			public void compareFailed() {
+				Thread.dumpStack();
+//				try{
+//					Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
+//					StackTraceElement[] thisThreadStackTraceElements = allStackTraces.get(Thread.currentThread());
+//					for (int i = 0; i < thisThreadStackTraceElements.length; i++) {
+//						System.out.println(VCMLComparator.class.getName()+" --- "+thisThreadStackTraceElements[i].getClassName());
+//						if(thisThreadStackTraceElements[i].getClassName().equals(MathVerifier.class.getName())){
+//							throw new Compare.CompareLoggerException();
+//						}
+//					}
+//				}catch(CompareLoggerException e){
+//					e.printStackTrace();
+//				}
+			}
+		};
+
+
+
 /**
  * @return boolean
  * @param v1 double[]
@@ -21,7 +83,7 @@ public static boolean isEqual(double v1[], double v2[]) {
 		throw new RuntimeException("Compare.isEqual(double[],double[]) received null argument(s)");
 	}
 	if (v1.length != v2.length){
-		return false;
+		return logFailure();
 	}
 
 	//
@@ -29,7 +91,7 @@ public static boolean isEqual(double v1[], double v2[]) {
 	//
 	for (int i=0;i<v1.length;i++){
 		if (v1[i] != v2[i]){
-			return false;
+			return logFailure();
 		}
 	}
 	return true;
@@ -40,7 +102,7 @@ public static boolean isEqual(int v1[], int v2[]) {
 		throw new RuntimeException("Compare.isEqual(int[],int[]) received null argument(s)");
 	}
 	if (v1.length != v2.length){
-		return false;
+		return logFailure();
 	}
 
 	//
@@ -48,7 +110,7 @@ public static boolean isEqual(int v1[], int v2[]) {
 	//
 	for (int i=0;i<v1.length;i++){
 		if (v1[i] != v2[i]){
-			return false;
+			return logFailure();
 		}
 	}
 	return true;
@@ -59,7 +121,7 @@ public static boolean isEqual(short v1[], short v2[]) {
 		throw new RuntimeException("Compare.isEqual(short[],short[]) received null argument(s)");
 	}
 	if (v1.length != v2.length){
-		return false;
+		return logFailure();
 	}
 
 	//
@@ -67,7 +129,7 @@ public static boolean isEqual(short v1[], short v2[]) {
 	//
 	for (int i=0;i<v1.length;i++){
 		if (v1[i] != v2[i]){
-			return false;
+			return logFailure();
 		}
 	}
 	return true;
@@ -78,7 +140,7 @@ public static boolean isEqual(float v1[], float v2[]) {
 		throw new RuntimeException("Compare.isEqual(float[],float[]) received null argument(s)");
 	}
 	if (v1.length != v2.length){
-		return false;
+		return logFailure();
 	}
 
 	//
@@ -86,7 +148,7 @@ public static boolean isEqual(float v1[], float v2[]) {
 	//
 	for (int i=0;i<v1.length;i++){
 		if (v1[i] != v2[i]){
-			return false;
+			return logFailure();
 		}
 	}
 	return true;
@@ -97,13 +159,14 @@ public static boolean isEqual(Matchable v1[], Matchable v2[]) {
 		throw new RuntimeException("Compare.isEqual(Matchable[],Matchable[]) received null argument(s)");
 	}
 	if (v1.length != v2.length){
-		return false;
+		return logFailure();
 	}
 	
 	int arrayLen = v1.length;
 	//
 	// check that every element v1[i] == v2[i]
 	//
+	Object internalDisableLock = getLogInternalDisableLock();Compare.logInternalDisable(internalDisableLock);
 	boolean bSame = true;
 	int ii = 0;
 	for (ii=0;ii<arrayLen;ii++){
@@ -112,8 +175,8 @@ public static boolean isEqual(Matchable v1[], Matchable v2[]) {
 			break;
 		}
 	}
-
 	if (bSame) {
+		Compare.logInternalEnable(internalDisableLock);
 		return true;
 	}
 	
@@ -131,7 +194,7 @@ public static boolean isEqual(Matchable v1[], Matchable v2[]) {
 			}
 		}
 		if (!bFound){
-			return false;
+			return logFailure(internalDisableLock);
 		}
 	}
 	//
@@ -148,22 +211,23 @@ public static boolean isEqual(Matchable v1[], Matchable v2[]) {
 			}
 		}
 		if (!bFound){
-			return false;
+			return logFailure(internalDisableLock);
 		}
 	}
-	
+	Compare.logInternalEnable(internalDisableLock);	
 	return true;
 }
 
 public static boolean isEqual(String[] v1, String[] v2) {
 	if (v1.length != v2.length){
-		return false;
+		return logFailure();
 	}
 
 	int arrayLen = v1.length;
 	//
 	// check that every element v1[i] == v2[i]
 	//
+	Object internalDisableLock = getLogInternalDisableLock();Compare.logInternalDisable(internalDisableLock);
 	boolean bSame = true;
 	int ii = 0;
 	for (ii=0;ii<arrayLen;ii++){
@@ -172,8 +236,8 @@ public static boolean isEqual(String[] v1, String[] v2) {
 			break;
 		}
 	}
-
 	if (bSame) {
+		Compare.logInternalEnable(internalDisableLock);
 		return true;
 	}
 	
@@ -191,7 +255,7 @@ public static boolean isEqual(String[] v1, String[] v2) {
 			}
 		}
 		if (!bFound){
-			return false;
+			return logFailure(internalDisableLock);
 		}
 	}
 	//
@@ -208,19 +272,19 @@ public static boolean isEqual(String[] v1, String[] v2) {
 			}
 		}
 		if (!bFound){
-			return false;
+			return logFailure(internalDisableLock);
 		}
 	}
-	
+	Compare.logInternalEnable(internalDisableLock);
 	return true;
 }
 
 public static boolean isEqual(Matchable obj1, Matchable obj2) {
 	if (obj1==null || obj2==null){
-		return false;
+		return logFailure();
 	}
 	if (!obj1.compareEqual(obj2)){
-		return false;
+		return logFailure();
 	}
 	return true;
 }
@@ -231,10 +295,10 @@ public static boolean isEqual(java.lang.Number obj1, java.lang.Number obj2) {
 
 private static <T> boolean isEqual0(T obj1, T obj2) {
 	if (obj1==null || obj2==null){
-		return false;
+		return logFailure();
 	}
 	if (!obj1.equals(obj2)){
-		return false;
+		return logFailure();
 	}
 	return true;
 }
@@ -252,7 +316,7 @@ public static boolean isEqualOrNull(AbstractList<? extends Matchable> v1, Abstra
 		return true;
 	}
 	if (v1 == null || v2 == null){
-		return false;
+		return logFailure();
 	}
 	return isEqual(v1,v2);
 }
@@ -264,13 +328,14 @@ public static boolean isEqualOrNull(AbstractList<? extends Matchable> v1, Abstra
  */
 public static boolean isEqual(AbstractList<? extends Matchable> v1, AbstractList<? extends Matchable> v2) {
 	if (v1.size() != v2.size()){
-		return false;
+		return logFailure();
 	}
 
 	int arrayLen = v1.size();
 	//
 	// check that every element v1[i] == v2[i]
 	//
+	Object internalDisableLock = getLogInternalDisableLock();Compare.logInternalDisable(internalDisableLock);
 	boolean bSame = true;
 	int ii=0;
 	for (ii=0;ii<arrayLen;ii++){
@@ -281,8 +346,8 @@ public static boolean isEqual(AbstractList<? extends Matchable> v1, AbstractList
 			break;
 		}
 	}
-
 	if (bSame) {
+		Compare.logInternalEnable(internalDisableLock);
 		return true;
 	}
 	//
@@ -299,7 +364,7 @@ public static boolean isEqual(AbstractList<? extends Matchable> v1, AbstractList
 			}
 		}
 		if (!bFound){
-			return false;
+			return logFailure(internalDisableLock);
 		}
 	}
 	//
@@ -316,10 +381,10 @@ public static boolean isEqual(AbstractList<? extends Matchable> v1, AbstractList
 			}
 		}
 		if (!bFound){
-			return false;
+			return logFailure(internalDisableLock);
 		}
 	}
-	
+	Compare.logInternalEnable(internalDisableLock);
 	return true;
 }
 
@@ -328,7 +393,7 @@ public static boolean isEqualOrdered(Matchable v1[], Matchable v2[]) {
 		throw new RuntimeException("Compare.isEqual(Matchable[],Matchable[]) received null argument(s)");
 	}
 	if (v1.length != v2.length){
-		return false;
+		return logFailure();
 	}
 
 	//
@@ -338,7 +403,7 @@ public static boolean isEqualOrdered(Matchable v1[], Matchable v2[]) {
 		Matchable c1 = (Matchable)v1[i];
 		Matchable c2 = (Matchable)v2[i];
 		if (!c2.compareEqual(c1)){
-			return false;
+			return logFailure();
 		}
 	}
 	
@@ -365,7 +430,7 @@ public static boolean isEqualOrNull(Matchable v1[], Matchable v2[]) {
 	if (v1==null && v2==null){
 		return true;
 	}else if (v1==null || v2==null){
-		return false;
+		return logFailure();
 	}else{
 		return isEqual(v1,v2);
 	}
@@ -376,10 +441,10 @@ public static boolean isEqualOrNull(Matchable obj1, Matchable obj2) {
 		return true;
 	}
 	if (obj1==null || obj2==null){
-		return false;
+		return logFailure();
 	}
 	if (!obj1.compareEqual(obj2)){
-		return false;
+		return logFailure();
 	}
 	return true;
 }
@@ -393,10 +458,10 @@ private static <T> boolean isEqualOrNull0(T obj1, T obj2) {
 		return true;
 	}
 	if (obj1==null || obj2==null){
-		return false;
+		return logFailure();
 	}
 	if (!obj1.equals(obj2)){
-		return false;
+		return logFailure();
 	}
 	return true;
 }
@@ -423,7 +488,7 @@ public static boolean isEqualStrict(Matchable v1[], Matchable v2[]) {
 		throw new RuntimeException("Compare.isEqualStrict(Matchable[],Matchable[]) received null argument(s)");
 	}
 	if (v1.length != v2.length){
-		return false;
+		return logFailure();
 	}
 
 	//
@@ -431,7 +496,7 @@ public static boolean isEqualStrict(Matchable v1[], Matchable v2[]) {
 	//
 	for (int i=0;i<v1.length;i++){
 		if (!v1[i].compareEqual(v2[i])){
-			return false;
+			return logFailure();
 		}
 	}
 

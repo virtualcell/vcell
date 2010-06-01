@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Matchable;
 
 import cbit.util.xml.XmlUtil;
@@ -26,7 +28,8 @@ this class does not extend java.util.Comparator
 public class VCMLComparator {
 
 	private static boolean VERBOSE_MODE = true;	                //for now...
-	private static boolean DEBUG_MODE = false;
+	public static boolean DEBUG_MODE = false;
+	private static boolean ERROR_RECORDED = false;
 	
 	private static PrintStream ps;
 	public static PrintStream getPs() {
@@ -127,7 +130,10 @@ public class VCMLComparator {
 		ps = System.out;
 	}
 	
-	private static boolean compareAtts(ArrayList list1, ArrayList list2) {
+	private static boolean compareAtts(Element source,Element target) {
+
+	    ArrayList list1 = new ArrayList(source.getAttributes());
+	    ArrayList list2 = new ArrayList(target.getAttributes());
 
 	    //not sure of Attribute.equals(). For now, only name and value are compared.
 	    /*class AttComparator implements Comparator {
@@ -156,6 +162,7 @@ public class VCMLComparator {
 	    Attribute atts2[] = (Attribute[]) list2.toArray(new Attribute[list2.size()]);
 
 	    if (atts1.length != atts2.length) {
+	    	printInfo(source, target);
 		    return false;
 	    }
 	    
@@ -179,13 +186,14 @@ public class VCMLComparator {
 	            attFlag = false;
 	        }
 	    }
-
+	    if(!attFlag){
+	    	printInfo(source, target);
+	    }
 	    return attFlag;
 	}
 
-
 	public static boolean compareEquals(String xmlStr1, String xmlStr2, boolean bSkipVCMetaData) throws XmlParseException {
-
+//		System.out.println("-----VCMLComparator.DEBUG_MODE="+VCMLComparator.DEBUG_MODE);
 		if (xmlStr1 == null || xmlStr1.length() == 0 ||
 			xmlStr2 == null || xmlStr2.length() == 0) {
 			throw new XmlParseException("Invalid values for the xml strings.");
@@ -224,15 +232,46 @@ public class VCMLComparator {
 
 	private static void printInfo(Element source, Element target){
 		//
-		if(VCMLComparator.DEBUG_MODE){
+//		System.out.println("VCMLComparator.DEBUG_MODE="+VCMLComparator.DEBUG_MODE);
+		if(VCMLComparator.DEBUG_MODE &&  !VCMLComparator.ERROR_RECORDED){
+			VCMLComparator.ERROR_RECORDED = true;
 			System.err.println("-source parent="+source.getParent());
 			System.err.println("-target parent="+target.getParent());
+
 			System.err.println("--source ="+source);
 			System.err.println("--target ="+target);
+
+			printAttributeList("source",source);
+			printAttributeList("target",target);
+			
 			System.out.println("failed");
 		}
 	}
 
+	private static void printAttributeList(String originator,Element element){
+		List<Attribute> attributeList = element.getAttributes();
+		System.err.print("--"+originator+" Attributes("+(attributeList == null?0:attributeList.size())+") = ");
+		if(attributeList != null && attributeList.size() != 0){
+			Attribute[] attrArr = attributeList.toArray(new Attribute[0]);
+			Arrays.sort(attrArr,new Comparator<Attribute>() {
+				public int compare(Attribute o1, Attribute o2) {
+					return o1.getName().compareTo(o2.getName());
+				}
+			});
+			final int PRINTSIZE = 35;
+			final String PRINTSIZEWARN = " (...)";
+			for (int i = 0; i < attrArr.length; i++) {
+				String attrNameVal = attrArr[i].getName()+":"+attrArr[i].getValue();
+				if(attrNameVal.length() > PRINTSIZE){
+					attrNameVal = attrNameVal.substring(0,PRINTSIZE-PRINTSIZEWARN.length())+PRINTSIZEWARN;
+				}
+				System.err.print(BeanUtils.forceStringSize(attrNameVal,PRINTSIZE, "", false)+(i==(attrArr.length-1)?"":" , "));
+			}
+			System.err.println();
+		}else{
+			System.err.println("empty");
+		}
+	}
 	//the testAll boolean indicate whether to cover all elements in the test, even if the test fails. 
 	private static boolean compareVCML(Element source, Element target, boolean testAll, boolean bSkipVCMetaData) {
 
@@ -261,9 +300,7 @@ public class VCMLComparator {
 				return textFlag;
 			}
 	    }
-	    ArrayList atts1 = new ArrayList(source.getAttributes());
-	    ArrayList atts2 = new ArrayList(target.getAttributes());
-	    attFlag = compareAtts(atts1, atts2);
+	    attFlag = compareAtts(source,target);
 
 	    if (bSkipVCMetaData) {
 	    	source.removeChild(XMLTags.AnnotationTag);
@@ -312,18 +349,18 @@ public class VCMLComparator {
 	    }
 	    boolean bFinalFlag = bChildrenSame && elementFlag && attFlag && textFlag;
 	    
-	    if (bFinalFlag) {
-	    	return true;
-	    } else {
-	    	printInfo(source, target);
-	    	return false;
-	    }
-//		return bFinalFlag;
+//	    if (bFinalFlag) {
+//	    	return true;
+//	    } else {
+//	    	printInfo(source, target);
+//	    	return false;
+//	    }
+		return bFinalFlag;
 	}
 
 
 	private static boolean compareXML(String xmlStr1, String xmlStr2, boolean testAll, boolean bSkipVCMetaData) throws XmlParseException {
-
+		VCMLComparator.ERROR_RECORDED = false;
 		if (xmlStr1.equals(xmlStr2)) {
 			ps.println("The xml strings are identical.");
 			return true;
