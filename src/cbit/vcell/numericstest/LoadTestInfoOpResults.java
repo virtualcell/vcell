@@ -82,6 +82,9 @@ public class LoadTestInfoOpResults extends TestSuiteOPResults {
 		loadTestFailHash;
 	private Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestSlowDetails>>
 		loadTestSlowHash;
+	private Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestDetails>>
+		loadTestUserQueryHash;
+
 	private LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp[] loadTestSoftwareVersionTimeStamps;
 	private int totalBioAndMathmodelCount;
 	private Integer[] loadTestInfoCounts;
@@ -95,6 +98,7 @@ public class LoadTestInfoOpResults extends TestSuiteOPResults {
 			LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp[] loadTestSoftwareVersionTimeStamps,
 			Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestFailDetails>> loadTestFailHash,
 			Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestSlowDetails>> loadTestSlowHash,
+			Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestDetails>> loadTestUserQueryHash,
 			Integer slowLoadThresholdMillisec){
 		super(null);
 		this.loadTestFailHash = loadTestFailHash;
@@ -104,6 +108,7 @@ public class LoadTestInfoOpResults extends TestSuiteOPResults {
 		this.loadTestInfoCounts = loadTestInfoCounts;
 		this.loadTestInfoEmptyCounts = loadTestInfoEmptyCounts;
 		this.slowLoadThresholdMillisec = slowLoadThresholdMillisec;
+		this.loadTestUserQueryHash = loadTestUserQueryHash;
 	}
 	public Integer getSlowLoadThresholdMillisec(){
 		return slowLoadThresholdMillisec;
@@ -125,6 +130,11 @@ public class LoadTestInfoOpResults extends TestSuiteOPResults {
 	getLoadTestSlowHash(){
 		return loadTestSlowHash;
 	}
+	public Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestDetails>>
+	getLoadTestUserQueryHash(){
+		return loadTestUserQueryHash;
+	}
+
 	public LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp[] getLoadTestSoftwareVersionTimeStamps(){
 		return loadTestSoftwareVersionTimeStamps;
 	}

@@ -92,6 +92,7 @@ public static final String LOAD_TEST_SUBTREE_NAME = "LoadTests";
 //public static final String LOAD_TEST_INFO_NAME = "Load Tests Info";
 public static final String LOAD_TEST_FAIL_NAME = "Failed To Load";
 public static final String LOAD_TEST_SLOW_NAME = "Slow To Load";
+public static final String LOAD_TEST_USERQUERY_NAME = "User Query";
 
 private BioModelNode createLoadTestTree(){
 	BioModelNode rootRootNode = new BioModelNode(LOAD_TEST_SUBTREE_NAME,true);
@@ -357,6 +358,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 public static class LoadTestTreeInfo{
 	public String userid;
 	public KeyValue bioOrMathModelKey;
+	public String modelType;
 	public String treeDisplayText;
 	public LoadTestSoftwareVersionTimeStamp loadTestSoftwareVersionTimeStamp;
 	@Override
@@ -410,6 +412,7 @@ public void refreshTree(LoadTestInfoOpResults loadTestInfoOpResults) {
 				loadTestFailTreeInfo.loadTestSoftwareVersionTimeStamp = loadTestInfoOpResults.getLoadTestSoftwareVersionTimeStamps()[i];
 				loadTestFailTreeInfo.userid = sortedDetails[j].userid;
 				loadTestFailTreeInfo.bioOrMathModelKey = sortedDetails[j].modelKeyValue;
+				loadTestFailTreeInfo.modelType = sortedDetails[j].modelType;
 				loadTestFailTreeInfo.treeDisplayText =
 					sortedDetails[j].userid+" ["+sortedDetails[j].modelType+"] '"+
 					sortedDetails[j].modelName+"'     "+sortedDetails[j].errorMessage;
@@ -422,7 +425,7 @@ public void refreshTree(LoadTestInfoOpResults loadTestInfoOpResults) {
 		detailsNode.add(loadTestFailNode);
 
 		//
-		//Create Slow subtree (may have node if user not specify threshold)
+		//Create Slow subtree (may not have node if user not specify threshold)
 		//
 		if(loadTestInfoOpResults.getLoadTestSlowHash() != null){
 			Vector<LoadTestInfoOpResults.LoadTestSlowDetails> slowDetailsV = loadTestInfoOpResults.getLoadTestSlowHash().get(loadTestInfoOpResults.getLoadTestSoftwareVersionTimeStamps()[i]);
@@ -441,6 +444,7 @@ public void refreshTree(LoadTestInfoOpResults loadTestInfoOpResults) {
 					loadTestSlowTreeInfo.loadTestSoftwareVersionTimeStamp = loadTestInfoOpResults.getLoadTestSoftwareVersionTimeStamps()[i];
 					loadTestSlowTreeInfo.userid = sortedDetails[j].userid;
 					loadTestSlowTreeInfo.bioOrMathModelKey = sortedDetails[j].modelKeyValue;
+					loadTestSlowTreeInfo.modelType = sortedDetails[j].modelType;
 					loadTestSlowTreeInfo.treeDisplayText =
 						sortedDetails[j].userid+" ["+sortedDetails[j].modelType+"] '"+
 						sortedDetails[j].modelName+"'     millisec="+sortedDetails[j].loadTime;
@@ -461,6 +465,47 @@ public void refreshTree(LoadTestInfoOpResults loadTestInfoOpResults) {
 			detailsNode.add(loadTestSlowNode);
 		}
 		
+		//
+		//Create User Query subtree (may not have node if user not specify query)
+		//
+		if(loadTestInfoOpResults.getLoadTestUserQueryHash() != null){
+			Vector<LoadTestInfoOpResults.LoadTestDetails> userQueryDetailsV = loadTestInfoOpResults.getLoadTestUserQueryHash().get(loadTestInfoOpResults.getLoadTestSoftwareVersionTimeStamps()[i]);
+			if(userQueryDetailsV != null){
+				BioModelNode loadTestUserQueryNode =
+					new BioModelNode(TestingFrmwkTreeModel.LOAD_TEST_USERQUERY_NAME+" ("+userQueryDetailsV.size()+" records found)", true);
+				LoadTestInfoOpResults.LoadTestDetails[] sortedDetails =
+					userQueryDetailsV.toArray(new LoadTestInfoOpResults.LoadTestDetails[0]);
+				Arrays.sort(sortedDetails,new Comparator<LoadTestInfoOpResults.LoadTestDetails>() {
+					public int compare(LoadTestInfoOpResults.LoadTestDetails o1, LoadTestInfoOpResults.LoadTestDetails o2) {
+						return o1.userid.compareToIgnoreCase(o2.userid);
+					}
+				});
+				for (int j = 0; j < sortedDetails.length; j++) {
+					LoadTestTreeInfo loadTestUserQueryTreeInfo = new LoadTestTreeInfo();
+					loadTestUserQueryTreeInfo.loadTestSoftwareVersionTimeStamp = loadTestInfoOpResults.getLoadTestSoftwareVersionTimeStamps()[i];
+					loadTestUserQueryTreeInfo.userid = sortedDetails[j].userid;
+					loadTestUserQueryTreeInfo.bioOrMathModelKey = sortedDetails[j].modelKeyValue;
+					loadTestUserQueryTreeInfo.modelType = sortedDetails[j].modelType;
+					loadTestUserQueryTreeInfo.treeDisplayText =
+						sortedDetails[j].userid+" ["+sortedDetails[j].modelType+"] '"+
+						sortedDetails[j].modelName+"' id="+sortedDetails[j].modelKeyValue.toString();
+		
+					BioModelNode detailNode = new BioModelNode(loadTestUserQueryTreeInfo, false);
+					loadTestUserQueryNode.add(detailNode);
+					//Add user query nodes to detailsNode
+					detailsNode.add(loadTestUserQueryNode);
+				}
+			}else{
+				BioModelNode loadTestSlowNode =
+					new BioModelNode(TestingFrmwkTreeModel.LOAD_TEST_USERQUERY_NAME+" (No Results For Query)", false);
+				detailsNode.add(loadTestSlowNode);
+			}
+		}else{
+			BioModelNode loadTestUserQueryNode =
+				new BioModelNode(TestingFrmwkTreeModel.LOAD_TEST_USERQUERY_NAME+" (No User Query)", false);
+			detailsNode.add(loadTestUserQueryNode);
+		}
+
 		//Save detail nodes for adding to versionTimestamp node
 		infoNodeArr[i] = detailsNode;
 

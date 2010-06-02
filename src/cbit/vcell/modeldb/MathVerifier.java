@@ -11,6 +11,7 @@ import java.util.Vector;
 import javax.swing.JFrame;
 
 import org.vcell.util.BigString;
+import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -174,9 +175,9 @@ public static MathVerifier createMathVerifier(
  */
 public static void main(String[] args) {
     //
-        if (args.length != 9) {
+        if (args.length != 10) {
             System.out.println(
-                "Usage: host databaseSID schemaUser schemaUserPassword {MV_DEFAULT,MV_LOAD_XML} {user,-} {BioMathKey,-} softwareVersion bUpdateDatabase");
+                "Usage: host databaseSID schemaUser schemaUserPassword {MV_DEFAULT,MV_LOAD_XML} {user,-} {BioMathKey,-} softwareVersion bUpdateDatabase bCompareLoggerException");
             System.exit(0);
         }
         String host = args[0];
@@ -189,6 +190,7 @@ public static void main(String[] args) {
         KeyValue[] bioMathKeyArr = (args[6].equals("-")?null:new KeyValue[] {new KeyValue(args[6])});
         String softwareVersion = args[7];
         boolean bUpdateDatabase = Boolean.parseBoolean(args[8]);
+        boolean bCompareLoggerException = Boolean.parseBoolean(args[9]);
         //
 
         int ok =
@@ -210,7 +212,9 @@ public static void main(String[] args) {
                     +"\nsoftwareVersion="
                     + softwareVersion
                     +"\nbUpdateDatabase="
-                    + bUpdateDatabase,
+                    + bUpdateDatabase
+                    +"\nbCompareLoggerException="
+                    + bCompareLoggerException,
                 "Confirm",
                 javax.swing.JOptionPane.OK_CANCEL_OPTION,
                 javax.swing.JOptionPane.WARNING_MESSAGE);
@@ -221,7 +225,11 @@ public static void main(String[] args) {
 	try {
     	MathVerifier mathVerifier = MathVerifier.createMathVerifier(host, db, dbSchemaUser, dbPassword);
         if(testFlag.equals(MV_LOAD_XML)){
-        	mathVerifier.runLoadTest((user == null?null:new String[] {user}), bioMathKeyArr,softwareVersion,bUpdateDatabase);
+        	Compare.CompareLogger compareLogger = null;
+        	if(bCompareLoggerException){
+        		compareLogger = Compare.DEFAULT_COMPARE_LOGGER;
+        	}
+        	mathVerifier.runLoadTest((user == null?null:new String[] {user}), bioMathKeyArr,softwareVersion,bUpdateDatabase,compareLogger);
         }else if(testFlag.equals(MV_DEFAULT)){
         	mathVerifier.runMathTest((user == null?null:new String[] {user}),bioMathKeyArr,bUpdateDatabase);
         }
@@ -254,7 +262,8 @@ private void closeAllConnections(){
 
 }
 
-public void runLoadTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,String softwareVersion,boolean bUpdateDatabase) throws Exception{
+public void runLoadTest(String[] scanUserids,KeyValue[] bioAndMathModelKeys,String softwareVersion,boolean bUpdateDatabase,Compare.CompareLogger compareLogger) throws Exception{
+	Compare.logger = compareLogger;
 	this.testFlag = MathVerifier.MV_LOAD_XML;
 	this.timeStamp = new Timestamp(System.currentTimeMillis());
 	User[] scanUsers = createUsersFromUserids(scanUserids);
@@ -810,12 +819,22 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 								BioModel bioModelRndTrip0 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip0));
 								String xmlRndTrip1 = XmlHelper.bioModelToXML((BioModel)bioModelRndTrip0);
 								BioModel bioModelRndTrip1 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip1));
+								if(Compare.logger != null){
+									Compare.loggingEnabled = true;
+									VCMLComparator.DEBUG_MODE = true;
+								}
 								bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0,xmlRndTrip1, true);
-								bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && bioModelRndTrip0.compareEqual(bioModelRndTrip1);
+								System.out.println("----------XML same="+bSameSelfCachedRoundtrip);
+								boolean objectSame = bioModelRndTrip0.compareEqual(bioModelRndTrip1);
+								System.out.println("----------Objects same="+objectSame);
+								bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && objectSame;
 							} catch (Exception e) {
 								bSameSelfCachedRoundtrip = null;
 								log.exception(e);
 								bSameSelfXMLCachedRoundtripExc = e;
+							}finally{
+								Compare.loggingEnabled = false;
+								VCMLComparator.DEBUG_MODE = false;
 							}
 							
 							String fromDBBioModelUnresolvedXML = null;
@@ -848,12 +867,19 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue[] bioAndMathMod
 								MathModel mathModelRndTrip0 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip0));
 								String xmlRndTrip1 = XmlHelper.mathModelToXML((MathModel)mathModelRndTrip0);
 								MathModel mathModelRndTrip1 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip1));
+								if(Compare.logger != null){
+									Compare.loggingEnabled = true;
+									VCMLComparator.DEBUG_MODE = true;
+								}
 								bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0,xmlRndTrip1, true);
 								bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && mathModelRndTrip0.compareEqual(mathModelRndTrip1);
 							} catch (Exception e) {
 								bSameSelfCachedRoundtrip = null;
 								log.exception(e);
 								bSameSelfXMLCachedRoundtripExc = e;
+							}finally{
+								Compare.loggingEnabled = false;
+								VCMLComparator.DEBUG_MODE = false;
 							}
 
 							String fromDBMathModelUnresolvedXML = null;
