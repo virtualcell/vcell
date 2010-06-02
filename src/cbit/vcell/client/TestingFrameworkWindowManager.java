@@ -1759,15 +1759,13 @@ public boolean isRecyclable() {
  * Creation date: (4/9/2003 1:31:08 PM)
  * @return cbit.vcell.numericstestingframework.TestSuiteInfo
  */
-public void loadModel(TestCaseNew testCase) throws DataAccessException{
+public void loadModel(VCDocumentInfo vcDocumentInfo) throws DataAccessException{
 	
 	VCDocumentInfo vcDocInfo = null;
-	if (testCase instanceof TestCaseNewMathModel) {
-		TestCaseNewMathModel mathTestCase = (TestCaseNewMathModel)testCase;
-		vcDocInfo = getRequestManager().getDocumentManager().getMathModelInfo(mathTestCase.getMathModelInfo().getVersion().getVersionKey());
-	} else if (testCase instanceof TestCaseNewBioModel) {
-		TestCaseNewBioModel bioTestCase = (TestCaseNewBioModel)testCase;
-		vcDocInfo = getRequestManager().getDocumentManager().getBioModelInfo(bioTestCase.getBioModelInfo().getVersion().getVersionKey());
+	if (vcDocumentInfo instanceof MathModelInfo) {
+		vcDocInfo = getRequestManager().getDocumentManager().getMathModelInfo(vcDocumentInfo.getVersion().getVersionKey());
+	} else if (vcDocumentInfo instanceof BioModelInfo) {
+		vcDocInfo = getRequestManager().getDocumentManager().getBioModelInfo(vcDocumentInfo.getVersion().getVersionKey());
 	}			
 	getRequestManager().openDocument(vcDocInfo, this, true);
 }
@@ -2296,8 +2294,8 @@ public void removeTestCase(TestCaseNew testCase) throws DataAccessException{
 public void refreshLoadTest(LoadTestInfoOpResults loadTestInfoOpResults){
 	getTestingFrameworkWindowPanel().refreshTree(loadTestInfoOpResults);
 }
-public LoadTestInfoOpResults getLoadTestDetails(Integer slowLoadThreshold) throws DataAccessException{
-	LoadTestInfoOP loadTestInfoOP = new LoadTestInfoOP(LoadTestOpFlag.info,slowLoadThreshold);
+public LoadTestInfoOpResults getLoadTestDetails(Integer slowLoadThreshold,String loadTestSQLCondition) throws DataAccessException{
+	LoadTestInfoOP loadTestInfoOP = new LoadTestInfoOP(LoadTestOpFlag.info,slowLoadThreshold,loadTestSQLCondition);
 	TestSuiteOPResults testSuiteOPResults = getRequestManager().getDocumentManager().doTestSuiteOP(loadTestInfoOP);
 	if(testSuiteOPResults instanceof LoadTestInfoOpResults){
 		LoadTestInfoOpResults loadTestInfoOpResults =

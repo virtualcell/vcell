@@ -45,6 +45,8 @@ import org.vcell.util.gui.UtilCancelException;
  */
 public class TestingFrameworkPanel extends javax.swing.JPanel {
 	private Integer slowLoadThreshold;
+	private String loadTestSQLCondition;
+	
 	public static final String REFRESH_XML_LOAD_TEST = "REFRESH_XML_LOAD_TEST";
 //	public static final String REFRESH_INCLUDE_SLOW_XML_LOAD_TEST = "REFRESH_INCLUDE_SLOW_XML_LOAD_TEST";
 	public static final String RUN_XML_LOAD_TEST_All = "RUN_XML_LOAD_TEST_All";
@@ -67,7 +69,7 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	public static final String EDIT_TESTCRITERIA = "Edit Test Criteria...";
 	public static final String GENTCRITREPORT_USERDEFREF_TESTCRITERIA = "Generate TestCriteria Report (Choose RefSim)";
 	public static final String GENTCRITREPORT_INTERNALREF_TESTCRITERIA = "Generate TestCriteria Report";
-	
+	public static final String LOAD_MODEL = "Load Model";
 	public static final String COMPARERREGR_USERDEFREF_TESTCRITERIA = "Compare With Regression (Choose RefSim)";
 	public static final String COMPARERREGR_INTERNALREF_TESTCRITERIA = "Compare With Regression";
 
@@ -317,7 +319,9 @@ public static boolean hasNullChild(BioModelNode bmNode){
 public Integer getSlowLoadThreshold(){
 	return slowLoadThreshold;
 }
-
+public String getLoadTestSQLCondition(){
+	return loadTestSQLCondition;
+}
 private JPopupMenu getLoadTestMenu(){
 		JPopupMenu mainLoadTestMenu = new JPopupMenu();
 		if(getTreeSelection() instanceof String &&
@@ -327,7 +331,7 @@ private JPopupMenu getLoadTestMenu(){
 				public void actionPerformed(ActionEvent e) {
 					try{
 						String result = DialogUtils.showInputDialog0(TestingFrameworkPanel.this, "Enter load time threshold (millseconds)","10000");
-						slowLoadThreshold = new Integer(result);
+						slowLoadThreshold = (result == null || result.length()==0?null:new Integer(result));
 	
 						ActionEvent refresh =
 							new ActionEvent(TestingFrameworkPanel.this,ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.REFRESH_XML_LOAD_TEST);
@@ -342,6 +346,30 @@ private JPopupMenu getLoadTestMenu(){
 			});
 			mainLoadTestMenu.add(refreshThresholdMenuItem);
 
+			
+			JMenuItem loadTestSQLMenuItem = new JMenuItem("Add SQL Condition...");
+			loadTestSQLMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try{
+						String result = DialogUtils.showInputDialog0(TestingFrameworkPanel.this, "Enter SQL Condition",loadTestSQLCondition);
+						loadTestSQLCondition = (result == null || result.length()==0?null:result);
+	
+						ActionEvent refresh =
+							new ActionEvent(TestingFrameworkPanel.this,ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.REFRESH_XML_LOAD_TEST);
+						TestingFrameworkPanel.this.refireActionPerformed(refresh);
+					}catch(UtilCancelException uce){
+						//ignore
+					}catch(Exception e2){
+						e2.printStackTrace();
+						DialogUtils.showErrorDialog(TestingFrameworkPanel.this, e2.getMessage(), e2);
+					}
+				}
+			});
+			mainLoadTestMenu.add(loadTestSQLMenuItem);
+
+			
+			
+			
 			JMenuItem runXMLLoadTestAllMenuItem = new JMenuItem("Run XML Load Test for all models...");
 			runXMLLoadTestAllMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -364,28 +392,37 @@ private JPopupMenu getLoadTestMenu(){
 			mainLoadTestMenu.add(deleteLoadTestMenuItem);
 		}
 		if(getTreeSelection() instanceof LoadTestTreeInfo && ((LoadTestTreeInfo)getTreeSelection()).userid != null){
-			JMenuItem runXMLLoadTestSelectedMenuItem = new JMenuItem("Run XML Load Test for selected models...");
-			runXMLLoadTestSelectedMenuItem.addActionListener(new ActionListener() {
+			JMenuItem loadModelSelectedMenuItem = new JMenuItem(TestingFrameworkPanel.LOAD_MODEL);
+			loadModelSelectedMenuItem.setEnabled(getJTree1().getSelectionCount() == 1);
+			loadModelSelectedMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ActionEvent refresh =
+						new ActionEvent(TestingFrameworkPanel.this,ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.LOAD_MODEL);
+					TestingFrameworkPanel.this.refireActionPerformed(refresh);
+				}
+			});
+			mainLoadTestMenu.add(loadModelSelectedMenuItem);
+
+			JMenuItem runXMLLoadTestModelsSelectedMenuItem = new JMenuItem("Run XML Load Test for selected models...");
+			runXMLLoadTestModelsSelectedMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					ActionEvent refresh =
 						new ActionEvent(TestingFrameworkPanel.this,ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.RUN_XML_LOAD_TEST_MODELS);
 					TestingFrameworkPanel.this.refireActionPerformed(refresh);
 				}
 			});
-			mainLoadTestMenu.add(runXMLLoadTestSelectedMenuItem);
-		}
-		if(getTreeSelection() instanceof LoadTestTreeInfo && ((LoadTestTreeInfo)getTreeSelection()).userid != null){
-			JMenuItem runXMLLoadTestSelectedMenuItem = new JMenuItem("Run XML Load Test for selected Users...");
-			runXMLLoadTestSelectedMenuItem.addActionListener(new ActionListener() {
+			mainLoadTestMenu.add(runXMLLoadTestModelsSelectedMenuItem);
+			
+			JMenuItem runXMLLoadTestUsersSelectedMenuItem = new JMenuItem("Run XML Load Test for selected Users...");
+			runXMLLoadTestUsersSelectedMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					ActionEvent refresh =
 						new ActionEvent(TestingFrameworkPanel.this,ActionEvent.ACTION_PERFORMED,TestingFrameworkPanel.RUN_XML_LOAD_TEST_USERS);
 					TestingFrameworkPanel.this.refireActionPerformed(refresh);
 				}
 			});
-			mainLoadTestMenu.add(runXMLLoadTestSelectedMenuItem);
+			mainLoadTestMenu.add(runXMLLoadTestUsersSelectedMenuItem);
 		}
-
 	return mainLoadTestMenu;
 }
 
@@ -1451,7 +1488,7 @@ private javax.swing.JMenuItem getLoadMenuItem() {
 		try {
 			ivjLoadMenuItem = new javax.swing.JMenuItem();
 			ivjLoadMenuItem.setName("LoadMenuItem");
-			ivjLoadMenuItem.setText("Load Model");
+			ivjLoadMenuItem.setText(LOAD_MODEL);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

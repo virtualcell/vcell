@@ -3,10 +3,12 @@ import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.numericstest.LoadTestInfoOP;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
+import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TestingFrameworkWindowManager;
+import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
 import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel;
 import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.LoadTestTreeInfo;
@@ -18,6 +20,8 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+
+import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFAddTestSuite;
 import java.math.BigDecimal;
@@ -28,12 +32,18 @@ import java.util.Vector;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.tree.TreePath;
+
+import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.UtilCancelException;
@@ -47,6 +57,7 @@ import cbit.vcell.client.task.TFUpdateTestCriteria;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.desktop.BioModelNode;
 /**
  * Insert the type's description here.
@@ -437,11 +448,11 @@ private class EnterDBAndSoftwareVersPanel extends JPanel {
 	private JTextField textField_1;
 	private JTextField textField_2;
 	private JTextField textField_3;
-	private JTextField textField_4;
+	private JPasswordField textField_4;
 	public EnterDBAndSoftwareVersPanel() {
 		setLayout(new GridLayout(0, 2, 5, 0));
 		
-		JLabel label_1 = new JLabel("Software Version:");
+		JLabel label_1 = new JLabel("Software Version (No DB update if empty):");
 		label_1.setHorizontalAlignment(SwingConstants.RIGHT);
 		add(label_1);
 		
@@ -454,7 +465,7 @@ private class EnterDBAndSoftwareVersPanel extends JPanel {
 		label.setHorizontalTextPosition(SwingConstants.LEADING);
 		add(label);
 		
-		textField_1 = new JTextField();
+		textField_1 = new JTextField("dbs4");
 		add(textField_1);
 		textField_1.setColumns(10);
 		
@@ -463,7 +474,7 @@ private class EnterDBAndSoftwareVersPanel extends JPanel {
 		label_2.setHorizontalTextPosition(SwingConstants.LEADING);
 		add(label_2);
 		
-		textField_2 = new JTextField();
+		textField_2 = new JTextField("orcl");
 		add(textField_2);
 		textField_2.setColumns(10);
 		
@@ -472,7 +483,7 @@ private class EnterDBAndSoftwareVersPanel extends JPanel {
 		label_3.setHorizontalTextPosition(SwingConstants.LEADING);
 		add(label_3);
 		
-		textField_3 = new JTextField();
+		textField_3 = new JTextField("vcell");
 		add(textField_3);
 		textField_3.setColumns(10);
 		
@@ -481,7 +492,7 @@ private class EnterDBAndSoftwareVersPanel extends JPanel {
 		label_4.setHorizontalTextPosition(SwingConstants.LEADING);
 		add(label_4);
 		
-		textField_4 = new JTextField();
+		textField_4 = new JPasswordField();
 		add(textField_4);
 		textField_4.setColumns(10);
 	}
@@ -505,6 +516,7 @@ private class EnterDBAndSoftwareVersPanel extends JPanel {
 	}
 
 }
+private EnterDBAndSoftwareVersPanel enterDBAndSoftwareVersPanel = new EnterDBAndSoftwareVersPanel();
 /**
  * Comment
  */
@@ -533,7 +545,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				}
 			}
 		}
-		Object selectedObj = gettestingFrameworkPanel().getTreeSelection();
+		final Object selectedObj = gettestingFrameworkPanel().getTreeSelection();
 		if(e.getActionCommand().equals(TestingFrameworkPanel.DELETE_XML_LOAD_TEST)){
 			int result = DialogUtils.showComponentOKCancelDialog(this, new JLabel("Delete "+selectedTreePaths.length+" Load Tests?"), "Confirm Load Test Delete");
 			if(result != JOptionPane.OK_OPTION){
@@ -543,7 +555,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					LoadTestInfoOP deleteLoadTestInfoOP = 
-						new LoadTestInfoOP(LoadTestOpFlag.delete,null);
+						new LoadTestInfoOP(LoadTestOpFlag.delete,null,null);
 					LoadTestSoftwareVersionTimeStamp[] deleteTheseversTimestamps = 
 						new LoadTestSoftwareVersionTimeStamp[selectedTreePaths.length];
 					for (int i = 0; i < selectedTreePaths.length; i++) {
@@ -592,8 +604,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				return;
 			}
 
-			final EnterDBAndSoftwareVersPanel enterPanel = new EnterDBAndSoftwareVersPanel();
-			result = DialogUtils.showComponentOKCancelDialog(this, enterPanel, "Enter Software Version running load test");
+			result = DialogUtils.showComponentOKCancelDialog(this, enterDBAndSoftwareVersPanel, "Enter Software Version running load test");
 			if(result != JOptionPane.OK_OPTION){
 				return;
 			}
@@ -602,11 +613,16 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 
 					MathVerifier mathVerifier = MathVerifier.createMathVerifier(
-							enterPanel.getDBHost(),enterPanel.getDBName(),enterPanel.getDBSchema(),enterPanel.getDBPassword());
+							enterDBAndSoftwareVersPanel.getDBHost(),
+							enterDBAndSoftwareVersPanel.getDBName(),
+							enterDBAndSoftwareVersPanel.getDBSchema(),
+							enterDBAndSoftwareVersPanel.getDBPassword());
 					mathVerifier.runLoadTest(
 							(userIDV.size()==0?null:userIDV.toArray(new String[0])),
 							(bioAndMathModelKeyValueV.size()==0?null:bioAndMathModelKeyValueV.toArray(new KeyValue[0])),
-							enterPanel.getSoftwareVersion(), true);
+							enterDBAndSoftwareVersPanel.getSoftwareVersion(),
+							(enterDBAndSoftwareVersPanel.getSoftwareVersion().length()==0?false:true),
+							(enterDBAndSoftwareVersPanel.getSoftwareVersion().length()==0?Compare.DEFAULT_COMPARE_LOGGER:null));
 				}
 			};
 			tasksV.add(runXMLLoadTestTask);
@@ -622,7 +638,17 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 							String result = DialogUtils.showInputDialog0(TestingFrameworkWindowPanel.this, "Enter load time threshold (millseconds)","10000");
 							slowLoadThreshold = new Integer(result);
 						}
-*/						hashTable.put(LOADTESTDETAILS_KEY,getTestingFrameworkWindowManager().getLoadTestDetails(gettestingFrameworkPanel().getSlowLoadThreshold()));
+*/
+						if(gettestingFrameworkPanel().getSlowLoadThreshold() != null &&
+								gettestingFrameworkPanel().getLoadTestSQLCondition() != null){
+							throw new IllegalArgumentException(
+								"SlowLoadThreshold and 'SQL Condition' cannot both be non-null at the same time.");
+						}
+							hashTable.put(
+							LOADTESTDETAILS_KEY,
+							getTestingFrameworkWindowManager().getLoadTestDetails(
+								gettestingFrameworkPanel().getSlowLoadThreshold(),
+								gettestingFrameworkPanel().getLoadTestSQLCondition()));
 					}
 				};
 			AsynchClientTask refreshFailedLoadTest = new AsynchClientTask("Refreshing FailedLoadTests...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -1045,16 +1071,52 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 			} else {
 				throw new Exception("Selected Object is not a TestCriteria! Cannot edit test criteria.");
 			}
-		} 
-		
-		else if (e.getActionCommand().equals("Load Model")) {
-			if (selectedObj instanceof TestCaseNew) {
-				TestCaseNew testCase = (TestCaseNew)selectedObj;
-				getTestingFrameworkWindowManager().loadModel(testCase);
-				return;
-			} else {
-				throw new Exception("Selected Object is not a TestCase, cannot load corresponding mathModel!");
-			}
+		}else if (e.getActionCommand().equals(TestingFrameworkPanel.LOAD_MODEL)) {
+			final String LOAD_THIS_MODEL	 = "LOAD_THIS_MODEL";
+			AsynchClientTask modelInfoTask = new AsynchClientTask("Finding Model Info...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					VCDocumentInfo vcDocumentInfo = null;
+					if (selectedObj instanceof TestCaseNew) {
+						TestCaseNew testCase = (TestCaseNew)selectedObj;
+						if (testCase instanceof TestCaseNewMathModel) {
+							vcDocumentInfo = ((TestCaseNewMathModel)testCase).getMathModelInfo();
+						} else if (testCase instanceof TestCaseNewBioModel) {
+							vcDocumentInfo = ((TestCaseNewBioModel)testCase).getBioModelInfo();
+						}else{
+							throw new IllegalArgumentException("Unexpected TestCase type="+testCase.getClass().getName());
+						}
+						hashTable.put(LOAD_THIS_MODEL, vcDocumentInfo);
+					}else if(selectedObj instanceof LoadTestTreeInfo){
+						throw new Exception("Not yet implemented for LoadTest.");
+//						LoadTestTreeInfo loadTestTreeInfo = (LoadTestTreeInfo)selectedObj;
+//						if(loadTestTreeInfo.modelType.equals(LoadTestInfoOpResults.MODELTYPE_BIO)){
+//							vcDocumentInfo = getDocumentManager().getBioModelInfo(loadTestTreeInfo.bioOrMathModelKey);
+//						}else if(loadTestTreeInfo.modelType.equals(LoadTestInfoOpResults.MODELTYPE_MATH)){
+//							vcDocumentInfo = getDocumentManager().getMathModelInfo(loadTestTreeInfo.bioOrMathModelKey);
+//						}else{
+//							throw new IllegalArgumentException("Unexpected LoadTestTreeInfo type="+loadTestTreeInfo.modelType);
+//						}
+//						hashTable.put(LOAD_THIS_MODEL, vcDocumentInfo);
+					}
+				}
+			};
+			AsynchClientTask openModelTask = new AsynchClientTask("Opening model...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					if (selectedObj instanceof TestCaseNew) {
+						getTestingFrameworkWindowManager().loadModel((VCDocumentInfo)hashTable.get(LOAD_THIS_MODEL));
+					}else if(selectedObj instanceof LoadTestTreeInfo){
+						throw new Exception("Not yet implemented for LoadTest.");
+					}else {
+						throw new Exception(
+							"Load Model expecting TestCaseNew or LoadTestTreeInfo but got "+selectedObj.getClass().getName());
+					}
+				}
+			};
+			
+			tasksV.add(modelInfoTask);
+			tasksV.add(openModelTask);
 		} 
 
 		//tasksV.add(tfRefreshTreeTask);

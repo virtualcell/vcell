@@ -9,17 +9,14 @@ public class LoadTestInfoOP extends TestSuiteOP {
 	private LoadTestOpFlag opFlag;
 	private LoadTestSoftwareVersionTimeStamp[] loadTestSoftwareVersionTimeStamp;
 	private Integer slowLoadThresholdMilliSec;
+	private String sql;
 	
-	public LoadTestInfoOP(LoadTestOpFlag opFlag,Integer slowLoadThresholdMilliSec){
-		this((BigDecimal)null);
+	public LoadTestInfoOP(LoadTestOpFlag opFlag,Integer slowLoadThresholdMilliSec,String sql){
+		super(null);
 		this.opFlag = opFlag;
 		this.slowLoadThresholdMilliSec = slowLoadThresholdMilliSec;
+		this.sql = sql;
 	}
-	protected LoadTestInfoOP(BigDecimal argTSKey) {
-		super(argTSKey);
-		// TODO Auto-generated constructor stub
-	}
-
 	public LoadTestOpFlag getLoadTestOpFlag(){
 		return opFlag;
 	}
@@ -34,5 +31,8 @@ public class LoadTestInfoOP extends TestSuiteOP {
 	}
 	public Integer getSlowLoadThresholdMilliSec(){
 		return slowLoadThresholdMilliSec;
+	}
+	public String getUserQueryCondition(){
+		return sql;
 	}
 }

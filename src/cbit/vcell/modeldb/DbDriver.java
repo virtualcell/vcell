@@ -2763,16 +2763,23 @@ private static final String MODEL_TYPE_COLUMN = "TYPE";
 private static final String MODEL_ID_COLUMN = "MODELID";
 private static final String PERMISSION_COLUMN = "PERMISSION";
 
-private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshold) throws SQLException{
+private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshold,String loadTestUserQueryCondition) throws SQLException{
 
-	String specialColumn = LoadModelsStatTable.table.errorMessage.getUnqualifiedColName();
-	String specialCondition = LoadModelsStatTable.table.errorMessage.getUnqualifiedColName()+" IS NOT NULL";
+	if(slowLoadThreshold != null && loadTestUserQueryCondition != null){
+		throw new IllegalArgumentException(
+			"SlowLoadThreshold and 'SQL user Query' cannot both be non-null at the same time.");
+	}
+	
+	String specialCondition = null;
 	if(slowLoadThreshold != null){
-		specialColumn = LoadModelsStatTable.table.loadTime.getUnqualifiedColName();
 		specialCondition =
 			LoadModelsStatTable.table.loadTime.getUnqualifiedColName() + " IS NOT NULL "+
 			" AND " +
 			LoadModelsStatTable.table.loadTime.getUnqualifiedColName() + " > "+slowLoadThreshold;
+	}else if(loadTestUserQueryCondition == null){
+		specialCondition = LoadModelsStatTable.table.errorMessage.getUnqualifiedColName()+" IS NOT NULL";
+	}else{
+		specialCondition = loadTestUserQueryCondition;
 	}
 
 
@@ -2785,7 +2792,15 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 		VersionTable.name_ColumnName+","+
 		MODEL_ID_COLUMN+","+
 		VersionTable.versionDate_ColumnName+","+
-		specialColumn+
+		LoadModelsStatTable.table.resultFlag.getUnqualifiedColName()+","+
+		LoadModelsStatTable.table.loadTime.getUnqualifiedColName()+","+
+		LoadModelsStatTable.table.errorMessage.getUnqualifiedColName()+","+
+		LoadModelsStatTable.table.bSameCachedAndNotCachedObj.getUnqualifiedColName()+","+
+		LoadModelsStatTable.table.bSameCachedAndNotCachedObjExc.getUnqualifiedColName()+","+
+		LoadModelsStatTable.table.bSameCachedAndNotCachedXML.getUnqualifiedColName()+","+
+		LoadModelsStatTable.table.bSameCachedAndNotCachedXMLExc.getUnqualifiedColName()+","+
+		LoadModelsStatTable.table.bSameSelfXMLCachedRoundtrip.getUnqualifiedColName()+","+
+		LoadModelsStatTable.table.bSameSelfXMLCachedRoundtripExc.getUnqualifiedColName()+
 		" FROM "+
 	" ("+
 		"SELECT " +
@@ -2797,7 +2812,15 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 			UserTable.table.userid.getUnqualifiedColName()+","+
 			"'"+LoadTestInfoOpResults.MODELTYPE_BIO+"' "+MODEL_TYPE_COLUMN+","+
 			BioModelTable.table.id.getQualifiedColName() + " " + MODEL_ID_COLUMN+","+
-			specialColumn+
+			LoadModelsStatTable.table.resultFlag.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.loadTime.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.errorMessage.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameCachedAndNotCachedObj.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameCachedAndNotCachedObjExc.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameCachedAndNotCachedXML.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameCachedAndNotCachedXMLExc.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameSelfXMLCachedRoundtrip.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameSelfXMLCachedRoundtripExc.getUnqualifiedColName()+
 		" FROM "+
 			LoadModelsStatTable.table.getTableName()+","+
 			BioModelTable.table.getTableName()+","+
@@ -2818,7 +2841,15 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 			UserTable.table.userid.getUnqualifiedColName()+","+
 			"'"+LoadTestInfoOpResults.MODELTYPE_MATH+"' "+MODEL_TYPE_COLUMN+","+
 			MathModelTable.table.id.getQualifiedColName() + " " + MODEL_ID_COLUMN+","+
-			specialColumn+
+			LoadModelsStatTable.table.resultFlag.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.loadTime.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.errorMessage.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameCachedAndNotCachedObj.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameCachedAndNotCachedObjExc.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameCachedAndNotCachedXML.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameCachedAndNotCachedXMLExc.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameSelfXMLCachedRoundtrip.getUnqualifiedColName()+","+
+			LoadModelsStatTable.table.bSameSelfXMLCachedRoundtripExc.getUnqualifiedColName()+
 		" FROM "+
 			LoadModelsStatTable.table.getTableName()+","+
 			MathModelTable.table.getTableName()+","+
@@ -2832,15 +2863,17 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 	" )"+
 	" WHERE "+
 		specialCondition;
-
-	
+		
 	Object loadTestDetailHash = null;
-	if(slowLoadThreshold == null){
+	if(slowLoadThreshold == null && loadTestUserQueryCondition == null){
 		loadTestDetailHash =
 			new Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestFailDetails>>();
-	}else{
+	}else if(slowLoadThreshold != null){
 		loadTestDetailHash =
 			new Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestSlowDetails>>();
+	}else{
+		loadTestDetailHash =
+			new Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestDetails>>();		
 	}
 		
 	Statement stmt = con.createStatement();
@@ -2857,15 +2890,15 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 		String versionDate = rset.getString(VersionTable.versionDate_ColumnName);
 		String errorMessage = null;
 		Integer loadTime = null;
-		if(slowLoadThreshold == null){
+		if(slowLoadThreshold == null && loadTestUserQueryCondition == null){
 			errorMessage = rset.getString(LoadModelsStatTable.table.errorMessage.getUnqualifiedColName());
-		}else{
+		}else if(slowLoadThreshold != null){
 			loadTime = rset.getInt(LoadModelsStatTable.table.loadTime.getUnqualifiedColName());
 		}
 		
 		LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp versTimeStamp =
 			new LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp(softwareVers,timeStamp);
-		if(slowLoadThreshold == null){
+		if(slowLoadThreshold == null && loadTestUserQueryCondition == null){
 			Vector<LoadTestInfoOpResults.LoadTestFailDetails> loadTestFailDetailsV =
 				(Vector<LoadTestInfoOpResults.LoadTestFailDetails>)
 				((Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestFailDetails>>)loadTestDetailHash).get(versTimeStamp);
@@ -2878,7 +2911,7 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 				new LoadTestInfoOpResults.LoadTestFailDetails(
 					permission,userid,modelType,modelName,modelKeyValue,versionDate,errorMessage);
 			loadTestFailDetailsV.add(loadTestFailDetails);			
-		}else{
+		}else if(slowLoadThreshold != null){
 			Vector<LoadTestInfoOpResults.LoadTestSlowDetails> loadTestSlowDetailsV =
 				(Vector<LoadTestInfoOpResults.LoadTestSlowDetails>)
 				((Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestSlowDetails>>)loadTestDetailHash).get(versTimeStamp);
@@ -2891,6 +2924,20 @@ private static Object getLoadTestDetails(Connection con,Integer slowLoadThreshol
 				new LoadTestInfoOpResults.LoadTestSlowDetails(
 					permission,userid,modelType,modelName,modelKeyValue,versionDate,loadTime);
 			loadTestSlowDetailsV.add(loadTestSlowDetails);
+		}else{
+			Vector<LoadTestInfoOpResults.LoadTestDetails> loadTestDetailsUserQueryV =
+				(Vector<LoadTestInfoOpResults.LoadTestDetails>)
+				((Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestDetails>>)loadTestDetailHash).get(versTimeStamp);
+			if(loadTestDetailsUserQueryV == null){
+				loadTestDetailsUserQueryV =
+					new Vector<LoadTestInfoOpResults.LoadTestDetails>();
+				((Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestDetails>>)loadTestDetailHash).put(versTimeStamp, loadTestDetailsUserQueryV);
+			}
+			LoadTestInfoOpResults.LoadTestDetails loadTestDetailsUserQuery = 
+				new LoadTestInfoOpResults.LoadTestDetails(
+					permission,userid,modelType,modelName,modelKeyValue,versionDate);
+			loadTestDetailsUserQueryV.add(loadTestDetailsUserQuery);
+		
 		}
 	}
 	rset.close();
@@ -3031,12 +3078,21 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			Object loadTestSlowHash = null;
 			if(((LoadTestInfoOP)tsop).getSlowLoadThresholdMilliSec() != null){
 				Integer slowLoaderThreshold = ((LoadTestInfoOP)tsop).getSlowLoadThresholdMilliSec();
-				loadTestSlowHash = getLoadTestDetails(con,slowLoaderThreshold);			
+				loadTestSlowHash = getLoadTestDetails(con,slowLoaderThreshold,null);			
 			}
 			//
 			//Get failed loads
 			//
-			Object loadTestFailHash = getLoadTestDetails(con,null);
+			Object loadTestFailHash = getLoadTestDetails(con,null,null);
+			
+			//
+			//Get user specified query info.
+			//
+			Object loadTestUserQueryHash = null;
+			if(((LoadTestInfoOP)tsop).getUserQueryCondition() != null){
+				loadTestUserQueryHash = getLoadTestDetails(con, null, ((LoadTestInfoOP)tsop).getUserQueryCondition());
+			}
+
 			
 			return new LoadTestInfoOpResults(
 					loadTestInfoCountV.toArray(new Integer[0]),
@@ -3045,6 +3101,7 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 					loadTestSoftwareVersionTimeStampsExistingV.toArray(new LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp[0]),
 					(Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestFailDetails>>) loadTestFailHash,
 					(Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestSlowDetails>>) loadTestSlowHash,
+					(Hashtable<LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp, Vector<LoadTestInfoOpResults.LoadTestDetails>>) loadTestUserQueryHash,
 					((LoadTestInfoOP)tsop).getSlowLoadThresholdMilliSec());
 
 		}
