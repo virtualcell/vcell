@@ -1048,7 +1048,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 	if (event.getSource() == this && event.getPropertyName().equals("subVolumes")) {
 		SubVolume oldSubVolumes[] = (SubVolume[])event.getOldValue();
 		SubVolume newSubVolumes[] = (SubVolume[])event.getNewValue();
-		if (!Compare.isEqualOrdered(oldSubVolumes,newSubVolumes)){  // ignore if just a change of instances
+		if (!Compare.isEqualStrict(oldSubVolumes,newSubVolumes)){  // ignore if just a change of instances
 			VCImage oldSampledImage = sampledImage;
 			//
 			// RATIONALE:

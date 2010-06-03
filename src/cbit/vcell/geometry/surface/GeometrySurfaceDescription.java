@@ -468,7 +468,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		// if instances are different but content is same, then just replace instances
 		// otherwise, invalidate surfaces and regions.
 		//
-		if (oldValue==null || newValue==null || !org.vcell.util.Compare.isEqualOrdered(oldValue,newValue)){
+		if (oldValue==null || newValue==null || !org.vcell.util.Compare.isEqualStrict(oldValue,newValue)){
 			try {
 				fieldRegionImage = null;
 				setSurfaceCollection(null);
