@@ -388,28 +388,6 @@ public static boolean isEqual(AbstractList<? extends Matchable> v1, AbstractList
 	return true;
 }
 
-public static boolean isEqualOrdered(Matchable v1[], Matchable v2[]) {
-	if (v1==null || v2==null){
-		throw new RuntimeException("Compare.isEqual(Matchable[],Matchable[]) received null argument(s)");
-	}
-	if (v1.length != v2.length){
-		return logFailure();
-	}
-
-	//
-	// check that every element in v1 is in v2
-	//
-	for (int i=0;i<v1.length;i++){
-		Matchable c1 = (Matchable)v1[i];
-		Matchable c2 = (Matchable)v2[i];
-		if (!c2.compareEqual(c1)){
-			return logFailure();
-		}
-	}
-	
-	return true;
-}
-
 public static boolean isEqualOrNull(double v1[], double v2[]) {
 	if (v1==null && v2==null){
 		return true;
