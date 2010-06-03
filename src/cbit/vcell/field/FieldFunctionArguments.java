@@ -27,8 +27,8 @@ public class FieldFunctionArguments implements Serializable {
 	}
 	
 	public FieldFunctionArguments(FunctionInvocation functionInvocation){
-		if (functionInvocation.getFunctionName().equals(FieldFunctionDefinition.FUNCTION_name)) {
-			throw new IllegalArgumentException("not a FieldData function invocation");
+		if (!functionInvocation.getFunctionName().equals(FieldFunctionDefinition.FUNCTION_name)) {
+			throw new IllegalArgumentException("'"+functionInvocation.getFunctionName()+"' is not a FieldData function invocation");
 		}
 		Expression[] arguments = functionInvocation.getArguments();
 		if (arguments==null || arguments.length<3 || arguments.length>4){

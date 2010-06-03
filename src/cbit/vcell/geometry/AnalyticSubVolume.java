@@ -93,7 +93,7 @@ public boolean compareEqual(Matchable obj) {
  * @exception java.lang.Exception The exception description.
  */
 public SymbolTableEntry getEntry(String identifier) {
-	return ReservedVariable.fromString(identifier);
+	return ReservedMathSymbolEntries.getReservedVariableEntry(identifier);
 }
 
 
@@ -167,6 +167,6 @@ public void setExpression(Expression exp) throws ExpressionBindingException {
 
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
-	ReservedVariable.getAll(entryMap);
+	ReservedMathSymbolEntries.getAll(entryMap);
 }
 }

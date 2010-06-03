@@ -34,6 +34,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry;
 /**
  * This class is the superclass of all classes representing 
  * a step within a <code>Reaction</code>. This encapsulates capability for
@@ -270,6 +271,9 @@ public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingExce
 			
 	SymbolTableEntry externalSTE = getNameScope().getExternalEntry(identifier,this);
 
+	if (externalSTE instanceof SymbolTableFunctionEntry){
+		return externalSTE;
+	}
 	//
 	// external ste is null and found unresolved parameter, then return unresolved parameter.  
 	// (external entry overrides unresolved parameter).
@@ -285,10 +289,9 @@ public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingExce
 	//
 	// if all else fails, try reserved symbols
 	//
-	SymbolTableEntry reservedSTE = ReservedSymbol.fromString(identifier);
+	SymbolTableEntry reservedSTE = ReservedBioSymbolEntries.getEntry(identifier);
 	if (reservedSTE != null){
-		ReservedSymbol rs = (ReservedSymbol)reservedSTE;
-		if (rs.isX() || rs.isY() || rs.isZ()){
+		if (reservedSTE.equals(ReservedSymbol.X) || reservedSTE.equals(ReservedSymbol.Y) || reservedSTE.equals(ReservedSymbol.Z)){
 			throw new ExpressionBindingException("x, y or z can not be used in the Reaction Editor. " 
 					+ "They are reserved as spatial variables and Physiological Models must be spatially independent.");
 		}

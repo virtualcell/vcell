@@ -8,10 +8,10 @@ import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
 
 public class FieldFunctionDefinition extends SimpleSymbolTableFunctionEntry implements SymbolTableFunctionEntry.Differentiable {
 	
-	public final static String FUNCTION_field				= "vcField(DatasetName:LITERAL,VariableName:LITERAL,Time:NUMERIC,VariableType:LITERAL)";
 	public final static String FUNCTION_name				= "vcField";
+	public final static FieldFunctionDefinition fieldFunctionDefinition = new FieldFunctionDefinition();
 	
-	public FieldFunctionDefinition() {
+	private FieldFunctionDefinition() {
 		super("vcField", 
 				new String[]{"DatasetName","VariableName","Time","VariableType"}, 
 				new FunctionArgType[] { FunctionArgType.LITERAL, FunctionArgType.LITERAL, FunctionArgType.NUMERIC, FunctionArgType.LITERAL }, 

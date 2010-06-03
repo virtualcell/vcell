@@ -1,5 +1,6 @@
 package cbit.vcell.modeldb;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.parser.Expression;
@@ -96,11 +97,11 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 	buffer.append(simContextKey + ",");
 	buffer.append("'"+stimulus.getName()+"',");
 	buffer.append(stimulusType+",");
-	buffer.append("'"+exp.infix()+"',");
+	buffer.append("'"+TokenMangler.getSQLEscapedString(exp.infix())+"',");
 	buffer.append(stimulus.getElectrode().getPosition().getX()+",");
 	buffer.append(stimulus.getElectrode().getPosition().getY()+",");
 	buffer.append(stimulus.getElectrode().getPosition().getZ()+",");
-	buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(esParameterWriter.getBuffer().toString())+"'");
+	buffer.append("'"+TokenMangler.getSQLEscapedString(esParameterWriter.getBuffer().toString())+"'");
 	buffer.append(")");
 
 	return buffer.toString();

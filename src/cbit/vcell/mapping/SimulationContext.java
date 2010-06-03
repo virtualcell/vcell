@@ -35,7 +35,6 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.math.Event;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OutputFunctionContext;
@@ -46,14 +45,13 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
-import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -984,7 +982,7 @@ public KeyValue getKey() {
  */
 public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
 	// try reserved symbols
-	SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
+	SymbolTableEntry ste = ReservedBioSymbolEntries.getEntry(identifier);
 	if (ste!=null){
 		return ste;
 	}
@@ -1000,10 +998,9 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws Expres
 	if (ste != null){
 		return ste;
 	}
-	
+		
 	return null;
 }
-
 
 /**
  * Insert the method's description here.
@@ -1825,8 +1822,8 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			if (nameSet.contains(name)){
 				throw new PropertyVetoException("multiple bioevents with same name '"+name+"' defined",evt);
 			}
-			if (ReservedSymbol.fromString(name)!=null){
-				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a bioevent name",evt);
+			if (ReservedBioSymbolEntries.getEntry(name)!=null){
+				throw new PropertyVetoException("cannot use reserved symbol '"+name+"' as a bioevent name",evt);
 			}
 			nameSet.add(name);
 		}
@@ -1955,7 +1952,7 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (SymbolTableEntry ste : fieldSimulationContextParameters) {
 		entryMap.put(ste.getName(), ste);
 	}
-	ReservedSymbol.getAll(entryMap, true, true);
+	ReservedBioSymbolEntries.getAll(entryMap);
 }
 
 

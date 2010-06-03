@@ -198,7 +198,7 @@ public final Enumeration<Variable> getRequiredVariables(SimulationSymbolTable si
 				for (int j=0;j<identifiers.length;j++){
 					Variable var = simSymbolTable.getVariable(identifiers[j]);
 					if (var == null){
-						var = ReservedVariable.fromString(identifiers[j]);
+						var = ReservedMathSymbolEntries.getReservedVariableEntry(identifiers[j]);
 					}
 					if (var==null){
 						throw new Exception("unresolved symbol "+identifiers[j]+" in expression "+exp);

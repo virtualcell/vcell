@@ -1,6 +1,7 @@
 package cbit.vcell.model;
 
 import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.parser.ExpressionBindingException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -11,7 +12,6 @@ import java.io.Serializable;
 import java.util.*;
 
 import org.vcell.util.Cacheable;
-import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
@@ -197,13 +197,15 @@ public KeyValue getKey() {
  */
 public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
 	
-	SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
+	SymbolTableEntry ste = ReservedBioSymbolEntries.getEntry(identifier);
 	if (ste != null){
-		ReservedSymbol rs = (ReservedSymbol)ste;
-		if (rs.isX() || rs.isY() || rs.isZ()){
+		if (ste.equals(ReservedSymbol.X) || ste.equals(ReservedSymbol.Y) || ste.equals(ReservedSymbol.Z)){
 			throw new ExpressionBindingException("can't use x, y, or z, Physiological Models must be spatially independent");
 		}
-		return rs;
+		if (ste.equals(FieldFunctionDefinition.fieldFunctionDefinition)){
+			throw new ExpressionBindingException("can't use field functions, Physiological Models must be spatially independent");
+		}
+		return ste;
 	}	
 
 	if (this instanceof Membrane){
@@ -349,8 +351,12 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	if (this instanceof Membrane){
 		Membrane.MembraneVoltage membraneVoltage = ((Membrane)this).getMembraneVoltage();
 		entryMap.put(membraneVoltage.getName(), membraneVoltage);
-	}	
-	ReservedSymbol.getAll(entryMap, true, false);	
+	}
+	ReservedBioSymbolEntries.getAll(entryMap);
+	entryMap.remove(ReservedSymbol.X);
+	entryMap.remove(ReservedSymbol.Y);
+	entryMap.remove(ReservedSymbol.Z);
+	entryMap.remove(FieldFunctionDefinition.fieldFunctionDefinition);
 }
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {

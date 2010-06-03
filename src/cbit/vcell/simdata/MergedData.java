@@ -15,6 +15,7 @@ import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -301,7 +302,7 @@ public double[] getDataTimes() {
 public SymbolTableEntry getEntry(String identifier) {
 	SymbolTableEntry entry = null;
 	
-	entry = ReservedVariable.fromString(identifier);
+	entry = ReservedMathSymbolEntries.getEntry(identifier);
 	if (entry != null){
 		return entry;
 	}
@@ -1140,7 +1141,7 @@ private ODESolverResultSet resampleODEData(ODESimData refSimdata, ODESimData sim
 }
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
-	ReservedVariable.getAll(entryMap);
+	ReservedMathSymbolEntries.getAll(entryMap);
 	for (DataSetIdentifier dsi : dataSetIdentifierList) {
 		entryMap.put(dsi.getName(), dsi);
 	}

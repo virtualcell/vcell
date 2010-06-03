@@ -9,6 +9,7 @@ import cbit.vcell.parser.*;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -210,7 +211,7 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) throws Expre
 }
 
 public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
-	ReservedSymbol.getAll(entryMap, true, true);
+	ReservedBioSymbolEntries.getAll(entryMap);
 	for (SymbolTableEntry ste : fieldParameters) {
 		entryMap.put(ste.getName(), ste);
 	}
@@ -237,7 +238,7 @@ public final SymbolTableEntry getTotalCurrentSymbol() {
  * @param identifier java.lang.String
  */
 public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
-	SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
+	SymbolTableEntry ste = ReservedBioSymbolEntries.getEntry(identifier);
 	if (ste!=null){
 		return ste;
 	}

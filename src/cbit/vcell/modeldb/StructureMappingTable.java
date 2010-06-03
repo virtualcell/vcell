@@ -100,7 +100,7 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 		//amended Sept. 17th, 2007
 		if(mm.getSurfaceToVolumeParameter().getExpression() != null)
 		{
-			buffer.append("'"+mm.getSurfaceToVolumeParameter().getExpression().infix() + "',");
+			buffer.append("'"+TokenMangler.getSQLEscapedString(mm.getSurfaceToVolumeParameter().getExpression().infix()) + "',");
 		}
 		else
 		{
@@ -108,7 +108,7 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 		}
 		if(mm.getVolumeFractionParameter().getExpression() != null)
 		{
-			buffer.append("'"+mm.getVolumeFractionParameter().getExpression().infix() + "',");
+			buffer.append("'"+TokenMangler.getSQLEscapedString(mm.getVolumeFractionParameter().getExpression().infix()) + "',");
 		}
 		else
 		{
@@ -127,7 +127,7 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 			e.printStackTrace(System.out);
 			throw new DataAccessException("specific capacitance for "+mm.getMembrane().getName()+" not constant: ("+e.getMessage()+")");
 		}
-		buffer.append("'"+mm.getInitialVoltageParameter().getExpression().infix()+"',");
+		buffer.append("'"+TokenMangler.getSQLEscapedString(mm.getInitialVoltageParameter().getExpression().infix())+"',");
 	}
 	if(structureMapping.getSizeParameter().getExpression() != null)
 		buffer.append("'"+TokenMangler.getSQLEscapedString(structureMapping.getSizeParameter().getExpression().infix())+ "')");

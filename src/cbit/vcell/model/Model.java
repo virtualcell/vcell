@@ -881,13 +881,12 @@ public Kinetics.KineticsParameter getKineticsParameter(String kineticsParameterN
  */
 public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
 	
-	SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
+	SymbolTableEntry ste = ReservedBioSymbolEntries.getEntry(identifier);
 	if (ste != null){
-		ReservedSymbol rs = (ReservedSymbol)ste;
-		if (rs.isX() || rs.isY() || rs.isZ()){
+		if (ste.equals(ReservedSymbol.X) || ste.equals(ReservedSymbol.Y) || ste.equals(ReservedSymbol.Z)){
 			throw new ExpressionBindingException("can't use x, y, or z, Physiological Models must be spatially independent");
 		}
-		return rs;
+		return ste;
 	}	
 
 	// look through the global/model parameters
@@ -2347,8 +2346,8 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			if (getSpecies(commonName) != null){
 				throw new PropertyVetoException("Species with common name '"+commonName+"' already defined",e);
 			}
-			if (ReservedSymbol.fromString(commonName)!=null){
-				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a Species common name",e);
+			if (ReservedBioSymbolEntries.getReservedSymbolEntry(commonName)!=null){
+				throw new PropertyVetoException("cannot use reserved symbol '"+commonName+"' as a Species common name",e);
 			}
 		}
 	}
@@ -2457,8 +2456,8 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			if (commonNameSet.contains(newSpeciesArray[i].getCommonName())){
 				throw new PropertyVetoException("multiple species with common name '"+newSpeciesArray[i].getCommonName()+"' defined",e);
 			}
-			if (ReservedSymbol.fromString(newSpeciesArray[i].getCommonName())!=null){
-				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a Species common name",e);
+			if (ReservedBioSymbolEntries.getEntry(newSpeciesArray[i].getCommonName())!=null){
+				throw new PropertyVetoException("cannot use reserved symbol '"+newSpeciesArray[i].getCommonName()+"' as a Species common name",e);
 			}
 			commonNameSet.add(newSpeciesArray[i].getCommonName());
 		}
@@ -2625,8 +2624,8 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			if (nameSet.contains(newReactionStepArr[i].getName())){
 				throw new PropertyVetoException("multiple reactionSteps with name '"+newReactionStepArr[i].getName()+"' defined",e);
 			}
-			if (ReservedSymbol.fromString(newReactionStepArr[i].getName())!=null){
-				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a Reaction name",e);
+			if (ReservedBioSymbolEntries.getEntry(newReactionStepArr[i].getName())!=null){
+				throw new PropertyVetoException("cannot use reserved symbol '"+newReactionStepArr[i].getName()+"' as a Reaction name",e);
 			}
 			nameSet.add(newReactionStepArr[i].getName());
 
@@ -2739,7 +2738,10 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (SymbolTableEntry ste : fieldModelParameters) {
 		entryMap.put(ste.getName(), ste);
 	}
-	ReservedSymbol.getAll(entryMap, true, false);
+	ReservedBioSymbolEntries.getAll(entryMap);
+	entryMap.remove(ReservedSymbol.X.getName());
+	entryMap.remove(ReservedSymbol.Y.getName());
+	entryMap.remove(ReservedSymbol.Z.getName());
 }
 
 

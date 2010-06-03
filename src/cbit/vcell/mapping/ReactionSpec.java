@@ -350,7 +350,7 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) throws Expre
 public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
 	SymbolTableEntry ste = null;
 
-	ste = ReservedSymbol.fromString(identifier);
+	ste = ReservedBioSymbolEntries.getEntry(identifier);
 	if (ste!=null){
 		return ste;
 	}
@@ -764,7 +764,10 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		for (SymbolTableEntry ste : fieldReactionSpecParameters) {
 			entryMap.put(ste.getName(), ste);
 		}
-		ReservedSymbol.getAll(entryMap, true, false);		
+		ReservedBioSymbolEntries.getAll(entryMap);
+		entryMap.remove(ReservedSymbol.X);
+		entryMap.remove(ReservedSymbol.Y);
+		entryMap.remove(ReservedSymbol.Z);
 	}
 
 

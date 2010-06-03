@@ -35,6 +35,7 @@ import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
@@ -85,8 +86,6 @@ public class SimulationData extends VCData {
 
 	private DataMoverThread dataMover = null;
 
-	private HashMap<String, SymbolTableFunctionEntry> functionHashTable = null;
-	
 	public class DataMoverThread implements Runnable {
 		private File serverDirectory = null;
 		private LocalSolverController localSolverController = null;
@@ -472,7 +471,7 @@ public synchronized double[] getDataTimes() throws DataAccessException {
 public SymbolTableEntry getEntry(String identifier) {
 	SymbolTableEntry entry = null;
 	
-	entry = ReservedVariable.fromString(identifier);
+	entry = ReservedMathSymbolEntries.getEntry(identifier);
 	if (entry != null){
 		return entry;
 	}
@@ -493,25 +492,7 @@ public SymbolTableEntry getEntry(String identifier) {
 		}
 	}
 	
-	entry = getFunctionHashTable().get(identifier);
-	if (entry!=null){
-		return entry;
-	}
-	
 	return null;
-}
-
-private HashMap<String, SymbolTableFunctionEntry> getFunctionHashTable() {
-	if (functionHashTable == null) {
-		functionHashTable = new HashMap<String, SymbolTableFunctionEntry>();
-		functionHashTable.put(MathFunctionDefinitions.Function_regionArea_indexed.getName(),MathFunctionDefinitions.Function_regionArea_indexed);
-		functionHashTable.put(MathFunctionDefinitions.Function_regionArea_current.getName(),MathFunctionDefinitions.Function_regionArea_current);
-		functionHashTable.put(MathFunctionDefinitions.Function_regionVolume_indexed.getName(),MathFunctionDefinitions.Function_regionVolume_indexed);
-		functionHashTable.put(MathFunctionDefinitions.Function_regionVolume_current.getName(),MathFunctionDefinitions.Function_regionVolume_current);
-		functionHashTable.put(FieldFunctionDefinition.FUNCTION_field,new FieldFunctionDefinition());
-		functionHashTable.put(GradientFunctionDefinition.FUNCTION_grad,new GradientFunctionDefinition());
-	}
-	return functionHashTable;
 }
 
 
@@ -1683,7 +1664,7 @@ public static String createSimIDWithJobIndex(KeyValue fieldDataKey,int jobIndex,
 }
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
-	ReservedVariable.getAll(entryMap);
+	ReservedMathSymbolEntries.getAll(entryMap);
 	for (DataSetIdentifier dsi : dataSetIdentifierList) {
 		entryMap.put(dsi.getName(), dsi);
 	}

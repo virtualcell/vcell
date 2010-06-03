@@ -11,6 +11,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolProxy;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 public abstract class ProxyParameter extends Parameter implements SymbolProxy {
@@ -27,6 +28,9 @@ public abstract class ProxyParameter extends Parameter implements SymbolProxy {
 	};
 
 	public ProxyParameter(SymbolTableEntry targetSymbolTableEntry){
+		if (targetSymbolTableEntry instanceof SymbolTableFunctionEntry){
+			throw new RuntimeException("internal error: tried to make a proxy parameter for a function definition");
+		}
 		this.target = targetSymbolTableEntry;
 		try {
 			Method addPropertyChangeListenerMethod = target.getClass().getMethod("addPropertyChangeListener", PropertyChangeListener.class);

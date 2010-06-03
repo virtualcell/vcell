@@ -61,6 +61,7 @@ import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
@@ -676,7 +677,7 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws Expres
 	// try "truely" local first
 	//
 	SymbolTableEntry localSTE = null;	
-	localSTE = ReservedSymbol.fromString(identifier);
+	localSTE = ReservedBioSymbolEntries.getEntry(identifier);
 	if (localSTE!=null){
 		return localSTE;
 	}else{
@@ -2640,8 +2641,8 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	simContext.getLocalEntries(entryMap);
 	for (SymbolTableEntry ste : fieldMathMappingParameters) {
 		entryMap.put(ste.getName(), ste);
-	}	
-	ReservedSymbol.getAll(entryMap, true, true);
+	}
+	ReservedBioSymbolEntries.getAll(entryMap);
 }
 
 
