@@ -219,6 +219,9 @@ public static boolean isEqual(Matchable v1[], Matchable v2[]) {
 }
 
 public static boolean isEqual(String[] v1, String[] v2) {
+	if (v1==null || v2==null){
+		throw new RuntimeException("Compare.isEqual(String[],String[]) received null argument(s)");
+	}
 	if (v1.length != v2.length){
 		return logFailure();
 	}
@@ -280,6 +283,9 @@ public static boolean isEqual(String[] v1, String[] v2) {
 }
 
 public static boolean isEqual(Matchable obj1, Matchable obj2) {
+	if (obj1==null && obj2==null){
+		return true;
+	}
 	if (obj1==null || obj2==null){
 		return logFailure();
 	}
@@ -294,6 +300,9 @@ public static boolean isEqual(java.lang.Number obj1, java.lang.Number obj2) {
 }
 
 private static <T> boolean isEqual0(T obj1, T obj2) {
+	if (obj1==null && obj2==null){
+		return true;
+	}
 	if (obj1==null || obj2==null){
 		return logFailure();
 	}
@@ -327,6 +336,9 @@ public static boolean isEqualOrNull(AbstractList<? extends Matchable> v1, Abstra
  * @param v2 java.util.AbstractList
  */
 public static boolean isEqual(AbstractList<? extends Matchable> v1, AbstractList<? extends Matchable> v2) {
+	if (v1==null || v2==null){
+		throw new RuntimeException("Compare.isEqual(AbstractList,AbstractList) received null argument(s)");
+	}
 	if (v1.size() != v2.size()){
 		return logFailure();
 	}
