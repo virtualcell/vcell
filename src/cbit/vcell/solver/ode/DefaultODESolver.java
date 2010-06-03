@@ -103,10 +103,10 @@ private Vector<Variable> createIdentifiers() throws MathException, ExpressionExc
 	// create list of possible identifiers (including reserved x,y,z,t)
 	Vector<Variable> identifiers = new Vector<Variable>();
 	// add reserved variables x,y,z,t
-	identifiers.addElement(ReservedVariable.fromString("t"));
-	identifiers.addElement(ReservedVariable.fromString("x"));
-	identifiers.addElement(ReservedVariable.fromString("y"));
-	identifiers.addElement(ReservedVariable.fromString("z"));
+	identifiers.addElement(ReservedVariable.TIME);
+	identifiers.addElement(ReservedVariable.X);
+	identifiers.addElement(ReservedVariable.Y);
+	identifiers.addElement(ReservedVariable.Z);
 	// add regular variables
 	Variable variables[] = simSymbolTable.getVariables();
 	for (int i = 0; i < variables.length; i++){	
@@ -425,7 +425,7 @@ protected SubDomain getSubDomain() {
  * @return The timeIndex property value.
  */
 public int getTimeIndex() {
-	return (ReservedVariable.fromString("t").getIndex());
+	return (ReservedVariable.TIME.getIndex());
 }
 
 

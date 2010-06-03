@@ -52,10 +52,8 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContextTest;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
-import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -597,10 +595,10 @@ public class EventPanel extends JPanel {
 			fieldSimContext.getEntries(entryMap);
 			Set<String> varNamesSet = entryMap.keySet();
 			Iterator<String> varNames = varNamesSet.iterator();
-			// add symbols from simContext, without ReservedSymbols
+			// add symbols from simContext, without ReservedSymbols.
 			while (varNames.hasNext()) {
 				String varName = varNames.next();
-				if (!(ReservedSymbol.fromString(varName) instanceof ReservedSymbol)) {
+				if (ReservedBioSymbolEntries.getReservedSymbolEntry(varName) == null) {
 					getVarNameComboBoxModel().addElement(varName);
 				}
 			}

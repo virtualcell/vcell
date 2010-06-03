@@ -54,7 +54,7 @@ private static Enumeration<Variable> getRequiredVariablesExplicit(Expression exp
 				// look for reserved symbols
 				//
 				if (var == null){
-					var = ReservedVariable.fromString(identifiers[i]);
+					var = ReservedMathSymbolEntries.getReservedVariableEntry(identifiers[i]);
 				}
 				//
 				// PseudoConstant's are locally bound variables, look for existing binding

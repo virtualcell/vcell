@@ -1,6 +1,6 @@
 package cbit.vcell.model;
 
-import cbit.vcell.model.ReservedSymbol.ReservedSymbolNameScope;
+import cbit.vcell.model.ReservedBioSymbolEntries.ReservedBioSymbolNameScope;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.NameScope;
 /**
@@ -21,7 +21,7 @@ public BioNameScope() {
  * see ReservedSymbolNameScope.isPeer() which accepts any subclass of BioNameScope as a peer).
  */
 public boolean isPeer(NameScope nameScope){
-	if (nameScope instanceof ReservedSymbolNameScope){
+	if (nameScope instanceof ReservedBioSymbolNameScope){
 		return true;
 	}else{
 		return false;

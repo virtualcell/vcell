@@ -5,19 +5,21 @@ package cbit.vcell.model;
 ©*/
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
 {
+/**
+ * please see ReservedBioSymbolEntries for support of symbol tables.
+ *
+*/
    public final static ReservedSymbol TIME 	 = new ReservedSymbol("t","time",VCUnitDefinition.UNIT_s,null);
    public final static ReservedSymbol X    	 = new ReservedSymbol("x","x coord",VCUnitDefinition.UNIT_um,null);
    public final static ReservedSymbol Y    	 = new ReservedSymbol("y","y coord",VCUnitDefinition.UNIT_um,null);
@@ -57,74 +59,6 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
 	   K_GHK,
    };
    
-   private static NameScope nameScope = new ReservedSymbol.ReservedSymbolNameScope(); 
-
-   public static class ReservedSymbolTable implements ScopedSymbolTable {
-		private boolean bIncludeTime = false;
-		/**
-		 * ReservedSymbolTable constructor comment.
-		 */
-		public ReservedSymbolTable(boolean bIncludeTime) {
-			this.bIncludeTime = bIncludeTime;
-		}
-		/**
-		 * getEntry method comment.
-		 */
-		public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
-			SymbolTableEntry ste;
-			
-			ste = ReservedSymbol.fromString(identifierString);
-			if (ste != null){
-				if (((ReservedSymbol)ste).isTIME() && !bIncludeTime){
-					throw new ExpressionBindingException("expression must not be a function of time");
-				}else{
-					return ste;
-				}
-			}	
-			
-			throw new ExpressionBindingException("unresolved symbol <"+identifierString+">");
-		}
-		public void getEntries(Map<String, SymbolTableEntry> entryMap) {
-			ReservedSymbol.getAll(entryMap, bIncludeTime, true);
-			
-		}
-		public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
-			getEntries(entryMap);
-			
-		}
-		public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
-			return getEntry(identifier);
-		}
-		public NameScope getNameScope() {
-			return nameScope;
-		}
-   }
-	public static class ReservedSymbolNameScope extends BioNameScope {
-		private NameScope children[] = new NameScope[0];
-		public ReservedSymbolNameScope(){
-			super();
-		}
-		public NameScope[] getChildren() {
-			return children;
-		}
-		public String getName() {
-			return "ReservedSymbols";
-		}
-		public NameScope getParent() {
-			//System.out.println("ModelNameScope.getParent() returning null ... no parent");
-			return null;
-		}
-		public ScopedSymbolTable getScopedSymbolTable() {
-			return new ReservedSymbolTable(true);
-		}
-		public boolean isPeer(NameScope nameScope){
-			if (nameScope instanceof BioNameScope){
-				return true;
-			}else{
-				return false;
-			}
-		}
-	}
 
 private ReservedSymbol(String argName, String argDescription, VCUnitDefinition argUnitDefinition, Expression argConstantValue){
 	this.name = argName;
@@ -160,53 +94,6 @@ public static void gatherLocalEntries(Set<SymbolTableEntry> symbolTableEntries){
 	symbolTableEntries.add(Y);
 	symbolTableEntries.add(Z);
 }
-
-public static void getAll(Map<String, SymbolTableEntry> entryMap, boolean bIncludeTime, boolean bIncludeSpace){
-	for (ReservedSymbol rs : otherReservedSymbols) {
-		entryMap.put(rs.getName(), rs);			
-	}
-	if (bIncludeTime) {
-		entryMap.put(TIME.getName(), TIME);
-	}
-	if (bIncludeSpace) {
-		entryMap.put(X.getName(), X);
-		entryMap.put(Y.getName(), Y);
-		entryMap.put(Z.getName(), Z);
-	}
-}
-
-public static ReservedSymbol fromString(String symbolName) {
-	if (symbolName==null){
-		return null;
-	}else if (symbolName.equals(TIME.getName())){
-		return TIME;
-	}else if (symbolName.equals(X.getName())){
-		return X;
-	}else if (symbolName.equals(Y.getName())){
-		return Y;
-	}else if (symbolName.equals(Z.getName())){
-		return Z;
-	}else if (symbolName.equals(TEMPERATURE.getName())){
-		return TEMPERATURE;
-	}else if (symbolName.equals(GAS_CONSTANT.getName())){
-		return GAS_CONSTANT;
-	}else if (symbolName.equals(FARADAY_CONSTANT.getName())){
-		return FARADAY_CONSTANT;
-	}else if (symbolName.equals(FARADAY_CONSTANT_NMOLE.getName())){
-		return FARADAY_CONSTANT_NMOLE;
-	}else if (symbolName.equals(KMOLE.getName())){
-		return KMOLE;
-	}else if (symbolName.equals(N_PMOLE.getName())){
-		return N_PMOLE;
-	}else if (symbolName.equals(KMILLIVOLTS.getName())){
-		return KMILLIVOLTS;
-	}else if (symbolName.equals(K_GHK.getName())){
-		return K_GHK;
-	}else{
-		return null;
-	}
-}         
-
 
 /**
  * This method was created in VisualAge.
@@ -258,7 +145,7 @@ public int getIndex() {
  * @return cbit.vcell.parser.NameScope
  */
 public NameScope getNameScope() {
-	return nameScope;
+	return ReservedBioSymbolEntries.nameScope;
 }
 
 

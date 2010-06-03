@@ -13,6 +13,11 @@ import cbit.vcell.parser.SymbolTableEntry;
 
 public class ReservedVariable extends Variable
 {
+/**
+ * please see ReservedMathSymbolEntries for support of symbol tables.
+ *
+*/
+
    public final static ReservedVariable TIME = new ReservedVariable("t",0);
    public final static ReservedVariable X    = new ReservedVariable("x",1);
    public final static ReservedVariable Y    = new ReservedVariable("y",2);
@@ -37,21 +42,6 @@ public boolean compareEqual(Matchable obj) {
 	
 	return true;
 }
-public static ReservedVariable fromString(String symbolName) {
-	if (symbolName==null){
-		return null;
-	}else if (symbolName.equals(TIME.getName())){
-		return TIME;
-	}else if (symbolName.equals(X.getName())){
-		return X;
-	}else if (symbolName.equals(Y.getName())){
-		return Y;
-	}else if (symbolName.equals(Z.getName())){
-		return Z;
-	}else{
-		return null;
-	}
-}         
 public String getSyntax() throws ExpressionBindingException {
 	if (isTIME()){
 		return "t";
@@ -122,12 +112,6 @@ public boolean isZ() {
    }         
 
 
-public static void getAll(Map<String, SymbolTableEntry> entryMap) {
-	entryMap.put(TIME.getName(), TIME);
-	entryMap.put(X.getName(), X);
-	entryMap.put(Y.getName(), Y);
-	entryMap.put(Z.getName(), Z);
-}
 @Override
 public String getVCML() throws MathException {
 	throw new MathException("VCML not supported " + this.getClass().getName());

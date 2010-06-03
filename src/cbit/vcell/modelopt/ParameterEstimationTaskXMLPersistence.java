@@ -10,6 +10,7 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.ReferenceData;
@@ -209,7 +210,7 @@ private static SymbolTableEntry getSymbolTableEntry(SimulationContext simContext
 	try {
 		if (parameterName.startsWith("ReservedSymbols.")){
 			String symbol = parameterName.substring(parameterName.indexOf("."));
-			ste = ReservedSymbol.fromString(symbol);
+			ste = ReservedBioSymbolEntries.getReservedSymbolEntry(symbol);
 		}
 	}catch (Exception e){
 	}

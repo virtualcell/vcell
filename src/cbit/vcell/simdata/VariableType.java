@@ -217,6 +217,16 @@ public static final VariableType getVariableTypeFromVariableTypeName(String type
 	throw new IllegalArgumentException("varType="+type+" is undefined");	
 }
 
+public static final VariableType getVariableTypeFromVariableTypeNameIgnoreCase(String type) {	
+	for (int i = 0; i < NAMES.length; i ++) {
+		if (type.equalsIgnoreCase(NAMES[i])) {
+			return new VariableType(i);
+		}		
+	}
+	
+	throw new IllegalArgumentException("varType="+type+" is undefined");	
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (10/3/00 2:48:55 PM)

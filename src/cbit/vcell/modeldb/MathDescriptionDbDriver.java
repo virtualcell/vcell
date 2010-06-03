@@ -227,6 +227,7 @@ private void insertMathDescExternalDataLink(Connection con,User user,MathDescrip
 			}
 		}
 	}catch(Exception e){
+		e.printStackTrace(System.out);
 		throw new DataAccessException("Error inserting MathDescription-ExtrnalData link\n"+e.getMessage());
 	}
 }

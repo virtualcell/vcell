@@ -12,6 +12,7 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParameterVariable;
+import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolumeRegionVariable;
@@ -275,7 +276,7 @@ private Variable[] reorderVariables(Variable[] variables) throws VariableHash.Un
 				if (symbolNode!=null){
 					Edge dependency = new Edge(functionNodes[i],symbolNode,function.getName()+"->"+((Variable)symbolNode.getData()).getName());
 					functionGraph.addEdge(dependency);
-				}else if (ReservedVariable.fromString(symbols[j])==null && constantGraph.getNode(symbols[j])==null && variableGraph.getNode(symbols[j])==null){
+				}else if (ReservedMathSymbolEntries.getReservedVariableEntry(symbols[j])==null && constantGraph.getNode(symbols[j])==null && variableGraph.getNode(symbols[j])==null){
 					throw new VariableHash.UnresolvedException(symbols[j],"Unable to sort, unknown identifier "+symbols[j]);
 				}
 			}

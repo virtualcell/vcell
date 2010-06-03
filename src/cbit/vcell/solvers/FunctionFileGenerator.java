@@ -13,6 +13,7 @@ import java.util.Vector;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Variable.Domain;
@@ -143,6 +144,7 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 			Expression functionExpr = null;
 			try {
 				functionExpr = new Expression(funcFileLineInfo.functionExpr);
+				functionExpr = MathFunctionDefinitions.fixFunctionSyntax(functionExpr);
 			} catch (cbit.vcell.parser.ExpressionException e) {
 				throw new RuntimeException("Error in reading expression '"+
 					funcFileLineInfo.functionExpr+"' for function \""+

@@ -57,7 +57,6 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	private Vector<Variable> variableList = new Vector<Variable>();
 	private HashMap<String, Variable> variableHashTable = new HashMap<String, Variable>();
 	private Geometry geometry = null;
-	private transient HashMap<String, SymbolTableFunctionEntry> functionHashTable = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -1032,8 +1031,16 @@ public java.lang.String getDescription() {
 public SymbolTableEntry getEntry(String id) throws ExpressionBindingException {
 	SymbolTableEntry entry = null;
 	
-	entry = ReservedVariable.fromString(id);
+	entry = ReservedMathSymbolEntries.getEntry(id);
 	if (entry != null){
+		if (entry instanceof SymbolTableFunctionEntry){
+			if (entry.equals(MathFunctionDefinitions.Function_regionArea_current)
+				|| entry.equals(MathFunctionDefinitions.Function_regionArea_indexed)
+				|| entry.equals(MathFunctionDefinitions.Function_regionVolume_current)
+				|| entry.equals(MathFunctionDefinitions.Function_regionVolume_indexed)) {
+				bRegionSizeFunctionsUsed = true;
+			}
+		}
 		return entry;
 	}
 	
@@ -1042,17 +1049,6 @@ public SymbolTableEntry getEntry(String id) throws ExpressionBindingException {
 		return entry;
 	}
 	
-	entry = getFunctionHashTable().get(id);
-	if (entry!=null){
-		if (entry.equals(MathFunctionDefinitions.Function_regionArea_current)
-				|| entry.equals(MathFunctionDefinitions.Function_regionArea_indexed)
-				|| entry.equals(MathFunctionDefinitions.Function_regionVolume_current)
-				|| entry.equals(MathFunctionDefinitions.Function_regionVolume_indexed)) {
-			bRegionSizeFunctionsUsed = true;
-		}
-		return entry;
-	}
-
 	return null;
 }
 
@@ -2889,20 +2885,6 @@ private void setGeometry0(Geometry geometry) {
 	}
 }
 
-private HashMap<String, SymbolTableFunctionEntry> getFunctionHashTable(){
-	if (functionHashTable == null) {
-		functionHashTable = new HashMap<String, SymbolTableFunctionEntry>();
-		functionHashTable.put(MathFunctionDefinitions.Function_regionArea_indexed.getName(),MathFunctionDefinitions.Function_regionArea_indexed);
-		functionHashTable.put(MathFunctionDefinitions.Function_regionArea_current.getName(),MathFunctionDefinitions.Function_regionArea_current);
-		functionHashTable.put(MathFunctionDefinitions.Function_regionVolume_indexed.getName(),MathFunctionDefinitions.Function_regionVolume_indexed);
-		functionHashTable.put(MathFunctionDefinitions.Function_regionVolume_current.getName(),MathFunctionDefinitions.Function_regionVolume_current);
-		functionHashTable.put(FieldFunctionDefinition.FUNCTION_field,new FieldFunctionDefinition());
-		functionHashTable.put(GradientFunctionDefinition.FUNCTION_grad,new GradientFunctionDefinition());
-	}
-	return functionHashTable;
-}
-
-
 /**
  * Sets the name property (java.lang.String) value.
  * @param name The new value for the property.
@@ -3106,7 +3088,7 @@ public String getMathType()
 
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
-	ReservedVariable.getAll(entryMap);
+	ReservedMathSymbolEntries.getAll(entryMap);
 	for (Variable v : variableList) {
 		entryMap.put(v.getName(), v);
 	}

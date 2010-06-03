@@ -117,7 +117,8 @@ public class MathFunctionDefinitions {
 					
 					if (argExpressions.length>=4){
 						if (argExpressions[3].isIdentifier()){
-							functionBuffer.append("'"+argExpressions[3].infix()+"'");
+							VariableType varType = VariableType.getVariableTypeFromVariableTypeNameIgnoreCase(argExpressions[3].infix());
+							functionBuffer.append("'"+varType.getTypeName()+"'");
 						}else{
 							throw new ExpressionException("unexpected function format '"+functionInvocations[i].getFunctionExpression()+"'");
 						}

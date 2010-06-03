@@ -437,7 +437,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 				VariableType[] varTypes = new VariableType[symbols.length];
 				VariableDomain functionVariableDomain = functionType.getVariableDomain();
 				for (int i = 0; i < symbols.length; i++) {
-					if (ReservedVariable.fromString(symbols[i]) != null) {
+					if (ReservedMathSymbolEntries.getReservedVariableEntry(symbols[i]) != null) {
 						varTypes[i] = functionType;
 					} else {
 						Variable var = mathDescription.getVariable(symbols[i]);

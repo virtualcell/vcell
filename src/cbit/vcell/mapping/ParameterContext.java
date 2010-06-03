@@ -5,8 +5,6 @@ import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.Map;
 
-import javax.management.RuntimeErrorException;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -15,7 +13,7 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
-import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
@@ -25,6 +23,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.units.VCUnitDefinition;
 
@@ -431,6 +430,10 @@ public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindi
 			
 	ste = getNameScope().getExternalEntry(identifierString,this);
 
+	if (ste instanceof SymbolTableFunctionEntry){
+		return ste;
+	}
+	
 	if (ste!=null){
 		return addProxyParameter(ste);
 	}
@@ -438,7 +441,10 @@ public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindi
 	//
 	// if all else fails, try reserved symbols
 	//
-	SymbolTableEntry reservedSTE = ReservedSymbol.fromString(identifierString);
+	SymbolTableEntry reservedSTE = ReservedBioSymbolEntries.getEntry(identifierString);
+	if (reservedSTE instanceof SymbolTableFunctionEntry){
+		return reservedSTE;
+	}
 	if (reservedSTE != null){
 		return addProxyParameter(reservedSTE);
 	}
@@ -455,7 +461,7 @@ public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindi
 public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
 	SymbolTableEntry ste = null;
 
-	ste = ReservedSymbol.fromString(identifier);
+	ste = ReservedBioSymbolEntries.getEntry(identifier);
 	if (ste!=null){
 		return ste;
 	}
@@ -844,7 +850,7 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (SymbolTableEntry ste : fieldParameters) {
 		entryMap.put(ste.getName(), ste);
 	}
-	ReservedSymbol.getAll(entryMap, true, true);
+	ReservedBioSymbolEntries.getAll(entryMap);
 }
 
 

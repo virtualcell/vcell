@@ -250,55 +250,55 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 						scs.setEnableDiffusing(bEnableDiffusing);
 						scs.setConstant(bForceConstant);
 						if(initCondConcExpS != null){
-							scs.getInitialConcentrationParameter().setExpression(new Expression(initCondConcExpS));	
+							scs.getInitialConcentrationParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(initCondConcExpS)));	
 							scs.getInitialCountParameter().setExpression(null);
 						}else {
-							scs.getInitialCountParameter().setExpression(new Expression(initCondCountExpS));
+							scs.getInitialCountParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(initCondCountExpS)));
 							scs.getInitialConcentrationParameter().setExpression(null);
 						}
-						scs.getDiffusionParameter().setExpression(new Expression(diffRateString));
+						scs.getDiffusionParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(diffRateString)));
 						if (boundaryXmString!=null){
-							scs.getBoundaryXmParameter().setExpression(new Expression(boundaryXmString));
+							scs.getBoundaryXmParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(boundaryXmString)));
 						}else{
 							scs.getBoundaryXmParameter().setExpression(null);
 						}
 						if (boundaryXpString!=null){
-							scs.getBoundaryXpParameter().setExpression(new Expression(boundaryXpString));
+							scs.getBoundaryXpParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(boundaryXpString)));
 						}else{
 							scs.getBoundaryXpParameter().setExpression(null);
 						}
 						if (boundaryYmString!=null){
-							scs.getBoundaryYmParameter().setExpression(new Expression(boundaryYmString));
+							scs.getBoundaryYmParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(boundaryYmString)));
 						}else{
 							scs.getBoundaryYmParameter().setExpression(null);
 						}
 						if (boundaryYpString!=null){
-							scs.getBoundaryYpParameter().setExpression(new Expression(boundaryYpString));
+							scs.getBoundaryYpParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(boundaryYpString)));
 						}else{
 							scs.getBoundaryYpParameter().setExpression(null);
 						}
 						if (boundaryZmString!=null){
-							scs.getBoundaryZmParameter().setExpression(new Expression(boundaryZmString));
+							scs.getBoundaryZmParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(boundaryZmString)));
 						}else{
 							scs.getBoundaryZmParameter().setExpression(null);
 						}
 						if (boundaryZpString!=null){
-							scs.getBoundaryZpParameter().setExpression(new Expression(boundaryZpString));
+							scs.getBoundaryZpParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(boundaryZpString)));
 						}else{
 							scs.getBoundaryZpParameter().setExpression(null);
 						}
 						if (velocityXString!=null){
-							scs.getVelocityXParameter().setExpression(new Expression(velocityXString));
+							scs.getVelocityXParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(velocityXString)));
 						}else{
 							scs.getVelocityXParameter().setExpression(null);
 						}
 						if (velocityYString!=null){
-							scs.getVelocityYParameter().setExpression(new Expression(velocityYString));
+							scs.getVelocityYParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(velocityYString)));
 						}else{
 							scs.getVelocityYParameter().setExpression(null);
 						}
 						if (velocityZString!=null){
-							scs.getVelocityZParameter().setExpression(new Expression(velocityZString));
+							scs.getVelocityZParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(velocityZString)));
 						}else{
 							scs.getVelocityZParameter().setExpression(null);
 						}
@@ -360,7 +360,7 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 				if (rset.wasNull()){
 					exp = null;
 				}else{
-					exp = new Expression(expString);
+					exp = new Expression(TokenMangler.getSQLRestoredString(expString));
 				}
 				double posX = rset.getBigDecimal(stimulusTable.positionX.toString()).doubleValue();
 				double posY = rset.getBigDecimal(stimulusTable.positionY.toString()).doubleValue();
@@ -522,7 +522,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 				String surfToVolString = rset.getString(structureMappingTable.surfToVolExp.toString());
 				if (!rset.wasNull()) {
 					try {
-						mm.getSurfaceToVolumeParameter().setExpression(new Expression(surfToVolString));
+						mm.getSurfaceToVolumeParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(surfToVolString)));
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
@@ -534,7 +534,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 				String volFractString = rset.getString(structureMappingTable.volFractExp.toString());
 				if (!rset.wasNull()) {
 					try {
-						mm.getVolumeFractionParameter().setExpression(new Expression(volFractString));
+						mm.getVolumeFractionParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(volFractString)));
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new DataAccessException("parse error in volFract expression: " + e.getMessage());
@@ -562,7 +562,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 				String initialVoltageString = rset.getString(structureMappingTable.initialVoltage.toString());
 				if (!rset.wasNull()) {
 					try {
-						mm.getInitialVoltageParameter().setExpression(new Expression(initialVoltageString));
+						mm.getInitialVoltageParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(initialVoltageString)));
 					}catch (ExpressionException e){
 						e.printStackTrace(System.out);
 						throw new DataAccessException("database parse error in initial membrane voltage: "+e.getMessage());

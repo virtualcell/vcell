@@ -8,6 +8,7 @@ import java.sql.*;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.geometry.*;
@@ -107,7 +108,7 @@ public String getSQLValueList(InsertHashtable hash, KeyValue key, Geometry geom,
 	//buffer.append(geom.getKey() + ",");
 	buffer.append(geomKey + ",");
 	if (sv instanceof AnalyticSubVolume) {
-		buffer.append("'" + ((AnalyticSubVolume) sv).getExpression().infix() + "',");
+		buffer.append("'" + TokenMangler.getSQLEscapedString(((AnalyticSubVolume) sv).getExpression().infix()) + "',");
 	} else {
 		buffer.append("null"+",");
 	}

@@ -10,8 +10,8 @@ import cbit.vcell.parser.SymbolTableFunctionEntry.Evaluable;
 
 public class GradientFunctionDefinition extends SimpleSymbolTableFunctionEntry implements Differentiable, Evaluable {
 	
-	public final static String FUNCTION_grad				= "vcGrad(VariableName:NUMERIC,VectorComponent:LITERAL)";
 	public final static String FUNCTION_name				= "vcGrad";
+	public final static GradientFunctionDefinition gradientFunctionDefinition = new GradientFunctionDefinition();
 	
 	private static final int BOTH_NEIGHBORS = 0;
 	private static final int NO_NEIGHBORS = 3;
@@ -25,7 +25,7 @@ public class GradientFunctionDefinition extends SimpleSymbolTableFunctionEntry i
 	  
 	
 	
-	public GradientFunctionDefinition() {
+	private GradientFunctionDefinition() {
 		super("vcGrad", 
 				new String[]{"VariableName","VectorComponent"}, 
 				new FunctionArgType[] { FunctionArgType.NUMERIC, FunctionArgType.LITERAL}, 

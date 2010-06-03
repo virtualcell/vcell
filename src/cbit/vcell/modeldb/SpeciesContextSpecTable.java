@@ -4,6 +4,7 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.*;
@@ -71,50 +72,50 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 	buffer.append((bForceIndependent ? 1 : 0) + ",");
 
 	if(speciesContextSpec.getInitialConditionParameter().getRole() == SpeciesContextSpec.ROLE_InitialConcentration){
-		buffer.append("'" + speciesContextSpec.getInitialConditionParameter().getExpression().infix() + "'" + ",");		
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getInitialConditionParameter().getExpression().infix()) + "'" + ",");		
 	}else{
 		buffer.append("NULL" + ",");				
 	}
-	buffer.append("'" + speciesContextSpec.getDiffusionParameter().getExpression().infix() + "'" + ",");
+	buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getDiffusionParameter().getExpression().infix()) + "'" + ",");
 
 	if (speciesContextSpec.getBoundaryXmParameter().getExpression() == null){
 		buffer.append(" NULL " + ",");
 	}else{
-		buffer.append("'" + speciesContextSpec.getBoundaryXmParameter().getExpression().infix() + "'" + ",");
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getBoundaryXmParameter().getExpression().infix()) + "'" + ",");
 	}
 
 	if (speciesContextSpec.getBoundaryXpParameter().getExpression() == null){
 		buffer.append(" NULL " + ",");
 	}else{
-		buffer.append("'" + speciesContextSpec.getBoundaryXpParameter().getExpression().infix() + "'" + ",");
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getBoundaryXpParameter().getExpression().infix()) + "'" + ",");
 	}
 
 	if (speciesContextSpec.getBoundaryYmParameter().getExpression() == null){
 		buffer.append(" NULL " + ",");
 	}else{
-		buffer.append("'" + speciesContextSpec.getBoundaryYmParameter().getExpression().infix() + "'" + ",");
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getBoundaryYmParameter().getExpression().infix()) + "'" + ",");
 	}
 
 	if (speciesContextSpec.getBoundaryYpParameter().getExpression() == null){
 		buffer.append(" NULL " + ",");
 	}else{
-		buffer.append("'" + speciesContextSpec.getBoundaryYpParameter().getExpression().infix() + "'" + ",");
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getBoundaryYpParameter().getExpression().infix()) + "'" + ",");
 	}
 
 	if (speciesContextSpec.getBoundaryZmParameter().getExpression() == null){
 		buffer.append(" NULL " + ",");
 	}else{
-		buffer.append("'" + speciesContextSpec.getBoundaryZmParameter().getExpression().infix() + "'" + ",");
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getBoundaryZmParameter().getExpression().infix()) + "'" + ",");
 	}
 
 	if (speciesContextSpec.getBoundaryZpParameter().getExpression() == null){
 		buffer.append(" NULL " + ",");
 	}else{
-		buffer.append("'" + speciesContextSpec.getBoundaryZpParameter().getExpression().infix() + "'" + ",");
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getBoundaryZpParameter().getExpression().infix()) + "'" + ",");
 	}
 
 	if(speciesContextSpec.getInitialConditionParameter().getRole() == SpeciesContextSpec.ROLE_InitialCount){
-		buffer.append("'" + speciesContextSpec.getInitialConditionParameter().getExpression().infix() + "'" + ",");		
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getInitialConditionParameter().getExpression().infix()) + "'" + ",");		
 	}else{
 		buffer.append(" NULL " + ",");
 	}
@@ -123,17 +124,17 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 	if (speciesContextSpec.getVelocityXParameter().getExpression() == null){
 		buffer.append(" NULL " + ",");
 	}else{
-		buffer.append("'" + speciesContextSpec.getVelocityXParameter().getExpression().infix() + "'" + ",");
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getVelocityXParameter().getExpression().infix()) + "'" + ",");
 	}
 	if (speciesContextSpec.getVelocityYParameter().getExpression() == null){
 		buffer.append(" NULL " + ",");
 	}else{
-		buffer.append("'" + speciesContextSpec.getVelocityYParameter().getExpression().infix() + "'" + ",");
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getVelocityYParameter().getExpression().infix()) + "'" + ",");
 	}
 	if (speciesContextSpec.getVelocityZParameter().getExpression() == null){
 		buffer.append(" NULL " + ")");
 	}else{
-		buffer.append("'" + speciesContextSpec.getVelocityZParameter().getExpression().infix() + "'" + ")");
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getVelocityZParameter().getExpression().infix()) + "'" + ")");
 	}
 
 	return buffer.toString();
