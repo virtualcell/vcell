@@ -1,25 +1,12 @@
 package cbit.vcell.client.desktop;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
@@ -33,16 +20,13 @@ import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelDbTreePanel;
 import cbit.vcell.desktop.GeometryTreePanel;
 import cbit.vcell.desktop.MathModelDbTreePanel;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.messaging.admin.DatePanel;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 1:13:39 PM)
@@ -466,6 +450,7 @@ private void currentDocumentInfo() {
 /**
  * Comment
  */
+public static final String NEW_GEOMETRY = "New Geometry...";
 private void dbTreePanelActionPerformed(java.awt.event.ActionEvent e) {
 	String actionCommand = e.getActionCommand();
 	if (actionCommand.equals("Open") || actionCommand.equals(DatabaseWindowManager.BM_MM_GM_DOUBLE_CLICK_ACTION)) {
@@ -490,6 +475,8 @@ private void dbTreePanelActionPerformed(java.awt.event.ActionEvent e) {
 		getDatabaseWindowManager().archive();
 	} else if (actionCommand.equals("Publish")) {
 		getDatabaseWindowManager().publish();
+	} else if (actionCommand.equals(NEW_GEOMETRY)) {
+		getDatabaseWindowManager().createNewGeometry();
 	}
 }
 

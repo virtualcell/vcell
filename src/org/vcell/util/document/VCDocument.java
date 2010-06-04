@@ -28,6 +28,7 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 	public static class DocumentCreationInfo {
 		private int documentType;
 		private int option;
+		private VCDocument preCreatedDocument;
 		public DocumentCreationInfo(int documentType,int option){
 			this.documentType = documentType;
 			this.option = option;
@@ -37,6 +38,12 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 		}
 		public int getOption(){
 			return option;
+		}
+		public void setPreCreatedDocument(VCDocument preCreatedDocument){
+			this.preCreatedDocument = preCreatedDocument;
+		}
+		public VCDocument getPreCreatedDocument(){
+			return preCreatedDocument;
 		}
 	};
 	public static class GeomFromFieldDataCreationInfo extends DocumentCreationInfo{

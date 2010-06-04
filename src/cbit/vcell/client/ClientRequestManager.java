@@ -166,7 +166,7 @@ public ClientRequestManager(VCellClient vcellClient) {
 }
 
 private static final String GEOMETRY_KEY = "geometry";
-private void changeGeometry0(final DocumentWindowManager requester, final SimulationContext simContext,final VCMLEditorPanel vcmlEditorPanel) {
+private void changeGeometry0(final TopLevelWindowManager requester, final SimulationContext simContext,final VCMLEditorPanel vcmlEditorPanel) {
 	AsynchClientTask selectDocumentTypeTask = new AsynchClientTask("Select/Load geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -822,7 +822,7 @@ private MathModel createDefaultMathModelDocument() throws Exception {
 	return mathModel;
 }
 
-public VCDocumentInfo selectDocumentFromType(int documentType, DocumentWindowManager requester) throws Exception,UserCancelException{
+public VCDocumentInfo selectDocumentFromType(int documentType, TopLevelWindowManager requester) throws Exception,UserCancelException{
 	return
 		getMdiManager().getDatabaseWindowManager().selectDocument(documentType, requester);
 }
@@ -1935,11 +1935,22 @@ public void managerIDchanged(java.lang.String oldID, java.lang.String newID) {
 public AsynchClientTask[] newDocument(TopLevelWindowManager requester,
 		final VCDocument.DocumentCreationInfo documentCreationInfo) {
 	/* asynchronous and not blocking any window */
-	AsynchClientTask[] taskArray1 =  createNewDocument(requester, documentCreationInfo);
-	AsynchClientTask[] taskArray = new AsynchClientTask[taskArray1.length + 1];
-	System.arraycopy(taskArray1, 0, taskArray, 0, taskArray1.length);
+	AsynchClientTask[] taskArray = null;
+	if(documentCreationInfo.getPreCreatedDocument() == null){
+		AsynchClientTask[] taskArray1 =  createNewDocument(requester, documentCreationInfo);
+		taskArray = new AsynchClientTask[taskArray1.length + 1];
+		System.arraycopy(taskArray1, 0, taskArray, 0, taskArray1.length);	
+	}else{
+		taskArray = new AsynchClientTask[2];
+		taskArray[0] = new AsynchClientTask("Setting document...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				hashTable.put("doc", documentCreationInfo.getPreCreatedDocument());
+			}
+		};
+	}
 	
-	taskArray[taskArray1.length] = 
+	taskArray[taskArray.length-1] = 
 		new AsynchClientTask("Creating New Document", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {

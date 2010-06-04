@@ -35,6 +35,7 @@ import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.VCFileChooser;
@@ -50,6 +51,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelDbTreePanel;
 import cbit.vcell.desktop.GeometryTreePanel;
 import cbit.vcell.desktop.MathModelDbTreePanel;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.xml.XMLInfo;
 import cbit.xml.merge.XmlTreeDiff;
@@ -888,7 +890,24 @@ public void openLatest() {
 	getRequestManager().openDocument(latestDocumentInfo, this, true);
 }
 
+public void createNewGeometry(){
+	AsynchClientTask editSelectTask = new AsynchClientTask("Edit/Apply Geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				Geometry newGeom = (Geometry)hashTable.get("doc");
+				if(newGeom == null){
+					throw new Exception("No Geometry found in edit task");
+				}
+				DocumentCreationInfo documentCreationInfo = new DocumentCreationInfo(VCDocument.GEOMETRY_DOC, -1);
+				documentCreationInfo.setPreCreatedDocument(newGeom);
+				AsynchClientTask[] newGeometryTaskArr = 
+					getRequestManager().newDocument(DatabaseWindowManager.this, documentCreationInfo);
+				ClientTaskDispatcher.dispatch(DatabaseWindowManager.this.getComponent(), hashTable, newGeometryTaskArr);
+			}
+		};
 
+	createGeometry(null, new AsynchClientTask[] {editSelectTask});
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/1/2004 9:49:06 PM)
