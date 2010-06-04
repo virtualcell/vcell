@@ -33,6 +33,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
+import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
@@ -56,6 +57,7 @@ public class GeometryTreePanel extends JPanel {
 	private JMenuItem ivjJMenuItemDelete = null;
 	private JMenuItem ivjJMenuItemNew = null;
 	private JMenuItem ivjJMenuItemOpen = null;
+	private JMenuItem ivjJMenuItemCreateNewGeometry = null;
 	private JSeparator ivjJSeparator1 = null;
 	private JSeparator ivjJSeparator2 = null;
 	protected transient java.awt.event.ActionListener aActionListener = null;
@@ -80,6 +82,8 @@ public class GeometryTreePanel extends JPanel {
 
 class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
+			if (e.getSource() == GeometryTreePanel.this.getJMenuItemCreateNewGeometry()) 
+				refireActionPerformed(e);
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemOpen()) 
 				connEtoC4(e);
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemDelete()) 
@@ -165,7 +169,28 @@ private void actionsOnClick(MouseEvent mouseEvent) {
 		getJMenuItemDelete().setEnabled(isOwner);
 		getJMenuItemGeomRefs().setEnabled(isOwner);
 		getGeometryPopupMenu().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+		return;
 	}
+	
+	if(SwingUtilities.isRightMouseButton(mouseEvent) && !getPopupMenuDisabled()){
+		TreeSelectionModel treeSelectionModel = getselectionModel1();
+		TreePath treePath = treeSelectionModel.getSelectionPath();
+		if (treePath == null){
+			return;
+		}
+		BioModelNode bioModelNode = (BioModelNode)treePath.getLastPathComponent();
+		Object object = bioModelNode.getUserObject();
+		if(object instanceof User){
+			User selectedUser = (User)object;
+			boolean isOwner = selectedUser.compareEqual(getDocumentManager().getUser());
+			if(isOwner){
+				JPopupMenu jPopupMenu = new JPopupMenu();
+				jPopupMenu.add(getJMenuItemCreateNewGeometry());
+				jPopupMenu.show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+			}
+		}		
+	}
+
 }
 
 
@@ -935,6 +960,7 @@ private javax.swing.JPopupMenu getGeometryPopupMenu() {
 			ivjGeometryPopupMenu.setName("GeometryPopupMenu");
 			ivjGeometryPopupMenu.add(getJLabel1());
 			ivjGeometryPopupMenu.add(getJSeparator1());
+//			ivjGeometryPopupMenu.add(getJMenuItemCreateNewGeometry());
 			ivjGeometryPopupMenu.add(getJMenuItemOpen());
 			ivjGeometryPopupMenu.add(getJMenuItemDelete());
 			ivjGeometryPopupMenu.add(getJMenuItemPermission());
@@ -1118,6 +1144,23 @@ private javax.swing.JMenuItem getJMenuItemOpen() {
 	return ivjJMenuItemOpen;
 }
 
+private javax.swing.JMenuItem getJMenuItemCreateNewGeometry() {
+	if (ivjJMenuItemCreateNewGeometry == null) {
+		try {
+			ivjJMenuItemCreateNewGeometry = new javax.swing.JMenuItem();
+			ivjJMenuItemCreateNewGeometry.setName("JMenuItemCreateNewGeometry");
+//			ivjJMenuItemCreateNewGeometry.setMnemonic('o');
+			ivjJMenuItemCreateNewGeometry.setText(DatabaseWindowPanel.NEW_GEOMETRY);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemCreateNewGeometry;
+}
 
 /**
  * Return the JMenuItemPublish property value.
@@ -1480,6 +1523,7 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	getJTree1().addPropertyChangeListener(ivjEventHandler);
 	getJTree1().addMouseListener(ivjEventHandler);
+	getJMenuItemCreateNewGeometry().addActionListener(ivjEventHandler);
 	getJMenuItemOpen().addActionListener(ivjEventHandler);
 	getJMenuItemDelete().addActionListener(ivjEventHandler);
 	getJMenuItemNew().addActionListener(ivjEventHandler);
