@@ -542,109 +542,111 @@ public void exportDocument() {
  * Creation date: (11/6/2005 9:15:25 AM)
  */
 public void findModelsUsingSelectedGeometry() {
-	
-	VCDocumentInfo selectedDocument = getPanelSelection();
-	
-	if(!(selectedDocument instanceof GeometryInfo)){
-		PopupGenerator.showErrorDialog(this, "DatabaseWindowManager.findModelsUsingSelectedGeometry expected a GeometryInfo\nbut got type="+selectedDocument.getClass().getName()+" instead");
-		return;
-	}
+	AsynchClientTask findModelsTask = new AsynchClientTask("Finding Models...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			VCDocumentInfo selectedDocument = getPanelSelection();
+			
+			if(!(selectedDocument instanceof GeometryInfo)){
+				PopupGenerator.showErrorDialog(DatabaseWindowManager.this, "DatabaseWindowManager.findModelsUsingSelectedGeometry expected a GeometryInfo\nbut got type="+selectedDocument.getClass().getName()+" instead");
+				return;
+			}
 
-	ReferenceQuerySpec rqs = new ReferenceQuerySpec(VersionableType.Geometry,selectedDocument.getVersion().getVersionKey());
-	try{
-		ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
-		//cbit.vcell.modeldb.VersionableTypeVersion[] children = (rqr.getVersionableFamily().bChildren()?rqr.getVersionableFamily().getUniqueChildren():null);
-		VersionableTypeVersion[] dependants = (rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
-		//System.out.println("\n");
-		//if(children != null){
-			//for(int i=0;i<children.length;i+= 1){
-				//if( children[i] != rqr.getVersionableFamily().getTarget()){
-					//System.out.println("Children "+children[i]+" key="+children[i].getVersion().getVersionKey()+" date="+children[i].getVersion().getDate());
+			ReferenceQuerySpec rqs = new ReferenceQuerySpec(VersionableType.Geometry,selectedDocument.getVersion().getVersionKey());
+//			try{
+				ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
+				//cbit.vcell.modeldb.VersionableTypeVersion[] children = (rqr.getVersionableFamily().bChildren()?rqr.getVersionableFamily().getUniqueChildren():null);
+				VersionableTypeVersion[] dependants = (rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
+				//System.out.println("\n");
+				//if(children != null){
+					//for(int i=0;i<children.length;i+= 1){
+						//if( children[i] != rqr.getVersionableFamily().getTarget()){
+							//System.out.println("Children "+children[i]+" key="+children[i].getVersion().getVersionKey()+" date="+children[i].getVersion().getDate());
+						//}
+					//}
+				//}else{
+					//System.out.println("No Children");
 				//}
-			//}
-		//}else{
-			//System.out.println("No Children");
-		//}
 
-		//if(dependants != null){
-			//for(int i=0;i<dependants.length;i+= 1){
-				//if( dependants[i] != rqr.getVersionableFamily().getTarget()){
-					//System.out.println("Dependants "+dependants[i]+" key="+dependants[i].getVersion().getVersionKey()+" date="+dependants[i].getVersion().getDate());
+				//if(dependants != null){
+					//for(int i=0;i<dependants.length;i+= 1){
+						//if( dependants[i] != rqr.getVersionableFamily().getTarget()){
+							//System.out.println("Dependants "+dependants[i]+" key="+dependants[i].getVersion().getVersionKey()+" date="+dependants[i].getVersion().getDate());
+						//}
+					//}
+				//}else{
+					//System.out.println("No Dependants");
 				//}
-			//}
-		//}else{
-			//System.out.println("No Dependants");
-		//}
 
-		//System.out.println("\nVersionableRelationships");
-		//cbit.vcell.modeldb.VersionableRelationship[] vrArr = rqr.getVersionableFamily().getDependantRelationships();
-		//for(int i=0;i<vrArr.length;i+= 1){
-			//System.out.println(vrArr[i].from() +" -> "+vrArr[i].to());
-		//}
+				//System.out.println("\nVersionableRelationships");
+				//cbit.vcell.modeldb.VersionableRelationship[] vrArr = rqr.getVersionableFamily().getDependantRelationships();
+				//for(int i=0;i<vrArr.length;i+= 1){
+					//System.out.println(vrArr[i].from() +" -> "+vrArr[i].to());
+				//}
 
-		Hashtable<String, Object> choices = new Hashtable<String, Object>();
-		if(dependants != null){
-			//System.out.println("\nMajor Relationships");
-			for(int i=0;i<dependants.length;i+= 1){
-				boolean isBioModel = dependants[i].getVType().equals(VersionableType.BioModelMetaData);
-				boolean isTop = isBioModel || dependants[i].getVType().equals(VersionableType.MathModelMetaData);
-				if(isTop){
-					VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
-					for(int j=0;j<vrArr2.length;j+= 1){
-						if( (vrArr2[j].from() == dependants[i]) &&
-							vrArr2[j].to().getVType().equals((isBioModel?VersionableType.SimulationContext:VersionableType.MathDescription))){
-								for(int k=0;k<vrArr2.length;k+= 1){
-									if( (vrArr2[k].from() == vrArr2[j].to()) &&
-										vrArr2[k].to().getVType().equals(VersionableType.Geometry)){
-											String s = (isBioModel?"BioModel":"MathModel")+"  "+
-												"\""+dependants[i].getVersion().getName()+"\"  ("+dependants[i].getVersion().getDate() +")"+
-												(isBioModel?" (App=\""+vrArr2[k].from().getVersion().getName()+"\")"/*+" -> "*/:"");
-												//+" Geometry="+vrArr2[k].to().getVersion().getName()+" "+vrArr2[k].to().getVersion().getDate();
-											choices.put(s,dependants[i]);
-											//System.out.println(s);
+				Hashtable<String, Object> choices = new Hashtable<String, Object>();
+				if(dependants != null){
+					//System.out.println("\nMajor Relationships");
+					for(int i=0;i<dependants.length;i+= 1){
+						boolean isBioModel = dependants[i].getVType().equals(VersionableType.BioModelMetaData);
+						boolean isTop = isBioModel || dependants[i].getVType().equals(VersionableType.MathModelMetaData);
+						if(isTop){
+							VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
+							for(int j=0;j<vrArr2.length;j+= 1){
+								if( (vrArr2[j].from() == dependants[i]) &&
+									vrArr2[j].to().getVType().equals((isBioModel?VersionableType.SimulationContext:VersionableType.MathDescription))){
+										for(int k=0;k<vrArr2.length;k+= 1){
+											if( (vrArr2[k].from() == vrArr2[j].to()) &&
+												vrArr2[k].to().getVType().equals(VersionableType.Geometry)){
+													String s = (isBioModel?"BioModel":"MathModel")+"  "+
+														"\""+dependants[i].getVersion().getName()+"\"  ("+dependants[i].getVersion().getDate() +")"+
+														(isBioModel?" (App=\""+vrArr2[k].from().getVersion().getName()+"\")"/*+" -> "*/:"");
+														//+" Geometry="+vrArr2[k].to().getVersion().getName()+" "+vrArr2[k].to().getVersion().getDate();
+													choices.put(s,dependants[i]);
+													//System.out.println(s);
+												}
 										}
 								}
+							}
 						}
+						
 					}
 				}
-				
-			}
-		}
 
-		if(choices.size() > 0){
-			Object[] listObj = choices.keySet().toArray();
-			Object o = DialogUtils.showListDialog(getComponent(),listObj,"Models Referencing Geometry (Select To Open) "+selectedDocument.getVersion().getName()+" "+selectedDocument.getVersion().getDate());
-			if(o != null){
-				VersionableTypeVersion v = (VersionableTypeVersion)choices.get(o);
-				//System.out.println(v);
-				if(v.getVType().equals(VersionableType.BioModelMetaData)){
-					BioModelInfo bmi = getRequestManager().getDocumentManager().getBioModelInfo(v.getVersion().getVersionKey());
-					getRequestManager().openDocument(bmi,this,true);
-				}else if(v.getVType().equals(VersionableType.MathModelMetaData)){
-					MathModelInfo mmi = getRequestManager().getDocumentManager().getMathModelInfo(v.getVersion().getVersionKey());
-					getRequestManager().openDocument(mmi,this,true);
+				if(choices.size() > 0){
+					Object[] listObj = choices.keySet().toArray();
+					Object o = DialogUtils.showListDialog(getComponent(),listObj,"Models Referencing Geometry (Select To Open) "+selectedDocument.getVersion().getName()+" "+selectedDocument.getVersion().getDate());
+					if(o != null){
+						VersionableTypeVersion v = (VersionableTypeVersion)choices.get(o);
+						//System.out.println(v);
+						if(v.getVType().equals(VersionableType.BioModelMetaData)){
+							BioModelInfo bmi = getRequestManager().getDocumentManager().getBioModelInfo(v.getVersion().getVersionKey());
+							getRequestManager().openDocument(bmi,DatabaseWindowManager.this,true);
+						}else if(v.getVType().equals(VersionableType.MathModelMetaData)){
+							MathModelInfo mmi = getRequestManager().getDocumentManager().getMathModelInfo(v.getVersion().getVersionKey());
+							getRequestManager().openDocument(mmi,DatabaseWindowManager.this,true);
+						}
+					}
+				}else{
+					if(dependants == null){
+						DialogUtils.showInfoDialog(getComponent(),
+							"No Model references found.\n"+
+							(rqr.getVersionableFamily().getTarget().getVersion().getFlag().isArchived()?"Info: Not Deletable (key="+rqr.getVersionableFamily().getTarget().getVersion().getVersionKey()+") because legacy ARCHIVE set":""));
+					}else{
+						DialogUtils.showInfoDialog(getComponent(),
+							"No current Model references found.\n"+
+							"Geometry has internal database references from\n"+
+							"previously linked Model(s).\n"+
+							"Not Deletable until database is culled (daily).");
+					}
+//					return;
 				}
-			}
-		}else{
-			if(dependants == null){
-				DialogUtils.showInfoDialog(getComponent(),
-					"No Model references found.\n"+
-					(rqr.getVersionableFamily().getTarget().getVersion().getFlag().isArchived()?"Info: Not Deletable (key="+rqr.getVersionableFamily().getTarget().getVersion().getVersionKey()+") because legacy ARCHIVE set":""));
-			}else{
-				DialogUtils.showInfoDialog(getComponent(),
-					"No current Model references found.\n"+
-					"Geometry has internal database references from\n"+
-					"previously linked Model(s).\n"+
-					"Not Deletable until database is culled (daily).");
-			}
-			return;
+//			}catch(DataAccessException e){
+//				DialogUtils.showErrorDialog(getComponent(), "Error find Geometry Model references\n"+e.getClass().getName()+"\n"+e.getMessage());
+//			}
 		}
-
-		
-		}catch(DataAccessException e){
-			DialogUtils.showErrorDialog(getComponent(), "Error find Geometry Model references\n"+e.getClass().getName()+"\n"+e.getMessage());
-	}
-	
+	};
+	ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {findModelsTask}, false);
 }
 
 
