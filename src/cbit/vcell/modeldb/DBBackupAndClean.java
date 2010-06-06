@@ -583,11 +583,11 @@ public class DBBackupAndClean {
 			
 			cleanRemoveUnreferencedSimulations(con, logStringBuffer);
 			cleanClearVersionBranchPointRef(con,SimulationTable.table, logStringBuffer);
+			cleanRemoveUnReferencedSimulationContexts(con, logStringBuffer);
+			cleanClearVersionBranchPointRef(con,SimContextTable.table, logStringBuffer);
 			cleanRemoveUnreferencedMathDescriptions(con, logStringBuffer);
 			cleanClearVersionBranchPointRef(con,MathDescTable.table, logStringBuffer);
 			cleanRemoveUnReferencedNonSpatialGeometries(con, logStringBuffer);
-			cleanClearVersionBranchPointRef(con,SimContextTable.table, logStringBuffer);
-			cleanRemoveUnReferencedSimulationContexts(con, logStringBuffer);
 			cleanRemoveUnReferencedModels(con, logStringBuffer);
 			cleanRemoveUnReferencedSotwareVersions(con, logStringBuffer);
 			
