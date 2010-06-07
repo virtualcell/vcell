@@ -9,7 +9,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -196,11 +195,11 @@ public class EventsDisplayPanel extends JPanel {
 		// if 'Event' node is selected, EventSummary table should have no selection & panel below should not be visible.
 		if (selectedEvent == null) {
 			getScrollPaneTable().clearSelection();
-			getEventPanel().setVisible(false);
+			getEventPanel().setEnabled(false);
 			return;
 		}
 		
-		getEventPanel().setVisible(true);
+		getEventPanel().setEnabled(true);
 		outerSplitPane.setDividerLocation(300);
 		// 'selectedEvent' is the leaf selection in the SPRR Panel tree, so change the row in table to reflect 'selectedEvent'
 		int numRows = getScrollPaneTable().getRowCount();
@@ -222,5 +221,6 @@ public class EventsDisplayPanel extends JPanel {
 		}
 		firePropertyChange("selectedBioEvent", oldValue, selectedBioEvent);   		
    		getEventPanel().setBioEvent(selectedBioEvent);
-   	}	
+   	}
+	
 }

@@ -1,7 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -20,7 +19,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
@@ -39,6 +37,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -136,6 +135,9 @@ public class EventPanel extends JPanel {
 			public void focusGained(FocusEvent e) {
 			}
 			public void focusLost(FocusEvent e) {
+				if (!isEnabled() || fieldBioEvent == null) {
+					return;
+				}
 				if (e.isTemporary()) {
 					return;
 				}
@@ -530,20 +532,22 @@ public class EventPanel extends JPanel {
 				@Override
 				public boolean shouldYieldFocus(JComponent input) {
 					boolean bValid = true;
-					String text = getTriggerTextField().getText();
-					if (text == null || text.trim().length() == 0) {
-						bValid = false;
-						DialogUtils.showErrorDialog(EventPanel.this, "Invalid expression for Trigger!");
-					}					
-					if (bValid) {
-						getTriggerTextField().setBorder(UIManager.getBorder("TextField.border"));
-					} else {
-						getTriggerTextField().setBorder(GuiConstants.ProblematicTextFieldBorder);
-						SwingUtilities.invokeLater(new Runnable() { 
-						    public void run() { 
-						    	getTriggerTextField().requestFocus();
-						    }
-						});
+					if (fieldBioEvent != null && getTriggerTextField().isEnabled()) {
+						String text = getTriggerTextField().getText();
+						if (text == null || text.trim().length() == 0) {
+							bValid = false;
+							DialogUtils.showErrorDialog(EventPanel.this, "Invalid expression for Trigger!");
+						}
+						if (bValid) {
+							getTriggerTextField().setBorder(UIManager.getBorder("TextField.border"));
+						} else {
+							getTriggerTextField().setBorder(GuiConstants.ProblematicTextFieldBorder);
+							SwingUtilities.invokeLater(new Runnable() { 
+							    public void run() { 
+							    	getTriggerTextField().requestFocus();
+							    }
+							});
+						}
 					}
 					return bValid;
 				}
@@ -795,6 +799,9 @@ public class EventPanel extends JPanel {
 
 		private void setNewDelay() {
 			try {
+				if (fieldBioEvent == null) {
+					return;
+				}
 				String text = getDelayTextField().getText();
 				Delay delay = null;
 				if (text != null && text.trim().length() > 0) {
@@ -811,6 +818,9 @@ public class EventPanel extends JPanel {
 
 		private void setNewTrigger() {
 			try {
+				if (fieldBioEvent == null) {
+					return;
+				}
 				String text = getTriggerTextField().getText();
 				Expression triggerExpr = new Expression(text);
 				triggerExpr.bindExpression(fieldSimContext);
@@ -820,4 +830,15 @@ public class EventPanel extends JPanel {
 				DialogUtils.showErrorDialog(EventPanel.this, e1.getMessage());
 			}
 		}
+		
+	@Override
+	public void setEnabled(boolean enabled) {		
+		if (!enabled) {
+			getTriggerTextField().setText(null);
+			getDelayTextField().setText(null);
+			getEventAssignmentsTableModel().setBioEvent(null);
+		}
+		super.setEnabled(enabled);
+		BeanUtils.enableComponents(this, enabled);
+	}
 }
