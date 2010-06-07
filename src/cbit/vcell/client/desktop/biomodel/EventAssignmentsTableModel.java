@@ -44,7 +44,6 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 		public final static int COLUMN_EVENTASSGN_VARNAME = 0;
 		public final static int COLUMN_EVENTASSIGN_EXPRESSION = 1;
 		public final static int COLUMN_EVENTASSIGN_UNITS = 2;
-		private final static int NUM_COLUMNS = 3;
 		private String[] columnNames = new String[] {"Variable", "Expression", "Units"};
 		
 		private SimulationContext fieldSimContext = null;
@@ -72,23 +71,11 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 	 * getColumnCount method comment.
 	 */
 	public String getColumnName(int column) {
-		if (column<0 || column>=NUM_COLUMNS){
-			throw new RuntimeException("EventAssignmentsTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+		if (column<0 || column>=getColumnCount()){
+			throw new RuntimeException("EventAssignmentsTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(getColumnCount()-1)+"]");
 		}
 
 		return columnNames[column];
-	}
-
-
-	/**
-	 * getRowCount method comment.
-	 */
-	public int getRowCount() {
-		if (fieldBioEvent != null) {
-			return fieldBioEvent.getNumEventAssignments();
-		} else {
-			return 0;
-		}
 	}
 
 	public Class<?> getColumnClass(int column) {
@@ -117,14 +104,14 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 			if (row<0 || row>=getRowCount()){
 				throw new RuntimeException("EventAssignmentsTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 			}
-			if (column<0 || column>=NUM_COLUMNS){
-				throw new RuntimeException("EventAssignmentsTableModel.getValueAt(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+			if (column<0 || column>=getColumnCount()){
+				throw new RuntimeException("EventAssignmentsTableModel.getValueAt(), column = "+column+" out of range ["+0+","+(getColumnCount()-1)+"]");
 			}
 
 			if (getData().size() <= row){
 				refreshData();
-			}	
-
+			}
+			
 			EventAssignment eventAssignment = (EventAssignment)getData().get(row);
 			if (row >= 0 && row < getRowCount()) {
 				switch (column) {
@@ -135,7 +122,7 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 						if (eventAssignment.getAssignmentExpression() == null) {
 							return null; 
 						} else {
-							return new ScopedExpression(eventAssignment.getAssignmentExpression(), fieldBioEvent.getNameScope(), true);
+							return new ScopedExpression(eventAssignment.getAssignmentExpression(), fieldBioEvent.getNameScope(), true, autoCompleteSymbolFilter);
 						}
 					}
 					case COLUMN_EVENTASSIGN_UNITS: {
@@ -193,12 +180,10 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 	}
 
 	private void refreshData() {
-
-		if (getSimulationContext()==null){
-			return;
-		}
 		rows.clear();
-		rows.addAll(fieldBioEvent.getEventAssignments());
+		if (getSimulationContext() != null && fieldBioEvent != null){
+			rows.addAll(fieldBioEvent.getEventAssignments());
+		}
 		fireTableDataChanged();
 	}
 	
@@ -206,8 +191,8 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 		if (rowIndex<0 || rowIndex>=getRowCount()){
 			throw new RuntimeException("EventAssignmentsTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-			throw new RuntimeException("EventAssignmentsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+		if (columnIndex<0 || columnIndex>=getColumnCount()){
+			throw new RuntimeException("EventAssignmentsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 		}
 		EventAssignment eventAssignment = (EventAssignment)getData().get(rowIndex);
 		switch (columnIndex){

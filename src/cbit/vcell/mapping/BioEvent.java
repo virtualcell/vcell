@@ -7,22 +7,17 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
-import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
 public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
@@ -342,7 +337,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	}
 
 	public void bind() throws ExpressionBindingException {
-		triggerExpression.bindExpression(getSimulationContext());
+		triggerExpression.bindExpression(parameterContext);
 		if (delay != null) {
 			delay.rebind();
 		}

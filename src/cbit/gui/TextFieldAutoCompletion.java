@@ -13,6 +13,8 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -83,7 +85,7 @@ public class TextFieldAutoCompletion extends JTextField {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private ArrayList<String> functList = new ArrayList<String>();
 		
-	private class InternalEventHandler implements DocumentListener, MouseListener, KeyListener {
+	private class InternalEventHandler implements DocumentListener, MouseListener, KeyListener, FocusListener {
 		public void changedUpdate(DocumentEvent e) {
 			showPopupChoices(e);		
 		}
@@ -148,6 +150,15 @@ public class TextFieldAutoCompletion extends JTextField {
 		}
 
 		public void keyTyped(KeyEvent e) {
+		}
+
+		public void focusGained(FocusEvent e) {			
+		}
+		public void focusLost(FocusEvent e) {
+			if (e.isTemporary()) {
+				return;
+			}
+			repaint();
 		}
 	}
 	
@@ -313,6 +324,7 @@ public class TextFieldAutoCompletion extends JTextField {
 		am.put(COMMIT_ACTION, new CommitAction());
 		am.put(DISMISSLIST_ACTION, new DismissList());
 		
+		addFocusListener(eventHandler);
 		im = getInputMap();
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), GOUPLIST_ACTION);
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), GODOWNLIST_ACTION);
