@@ -1926,12 +1926,13 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				//
 				//Crop 2D
 				//
-				for (int c = 0; c < initImageDataSetChannels.length; c++) {		
 					if(cropRectangle3D.bXYSmaller(origSize.getX(), origSize.getY())){
 						Rectangle cropRectangle =
 							new Rectangle(cropRectangle3D.low.x,cropRectangle3D.low.y,cropRectangle3D.width,cropRectangle3D.height);
 						//crop underlying image
-						initImageDataSetChannels[c] = initImageDataSetChannels[c].crop(cropRectangle);
+						for (int c = 0; c < initImageDataSetChannels.length; c++) {	
+							initImageDataSetChannels[c] = initImageDataSetChannels[c].crop(cropRectangle);
+						}
 						//Crop Composite ROI zsections
 						for (int i = 0; i < roiComposite.length; i++) {
 							Image croppedROI = 
@@ -1949,21 +1950,24 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					//Crop3D
 					//
 					if(cropRectangle3D.bZSmaller(origSize.getZ())){
-						UShortImage[] newUnderLayImageArr = new UShortImage[cropRectangle3D.depth];
+						UShortImage[][] newUnderLayImageArr = new UShortImage[initImageDataSetChannels.length][cropRectangle3D.depth];
 						BufferedImage[] newROICompositeArr =  new BufferedImage[cropRectangle3D.depth];
 						int index = 0;
 						for (int i = 0; i < origSize.getZ(); i++) {
 							if(i >= cropRectangle3D.low.z && i < (cropRectangle3D.low.z + cropRectangle3D.depth)){
-								newUnderLayImageArr[index] = initImageDataSetChannels[c].getAllImages()[i];
+								for (int c = 0; c < initImageDataSetChannels.length; c++) {
+									newUnderLayImageArr[c][index] = initImageDataSetChannels[c].getAllImages()[i];
+								}
 								newROICompositeArr[index] = roiComposite[i];
 								index+=1;
 							}
 						}
-						initImageDataSetChannels[c] = new ImageDataset(newUnderLayImageArr, null, cropRectangle3D.depth);
+						for (int c = 0; c < initImageDataSetChannels.length; c++) {
+							initImageDataSetChannels[c] = new ImageDataset(newUnderLayImageArr[c], null, cropRectangle3D.depth);
+						}
 						roiComposite = newROICompositeArr;
 	
 					}
-				}
 				mergedCrop3D.setBounds(
 						mergedCrop3D.low.x+cropRectangle3D.low.x,
 						mergedCrop3D.low.y+cropRectangle3D.low.y,
