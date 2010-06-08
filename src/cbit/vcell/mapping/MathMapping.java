@@ -1056,8 +1056,10 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 				if (sc.getStructure()==membrane.getInsideFeature() || sc.getStructure()==membrane.getOutsideFeature()){
 					if (((MembraneMapping)structureMapping).getResolved(simContext) && !scs.isConstant()){
 						if (!scs.isDiffusing()) {
-							throw new MappingException("To save model or run simulations, enable diffusion for all the species in flux reactions (e.g '" + sc.getName() + "') " 
-									+ "by setting the diffusion rate to a non-zero value in Initial Conditions or disable those reactions in Reaction Mapping.\n\n");
+							throw new MappingException("Enable diffusion in Application '" + simContext.getName() 
+									+  "'. This must be done for any species (e.g '" + sc.getName() + "') in flux reactions.\n\n" 
+									+ "To save or run simulations, set the diffusion rate to a non-zero " +
+											"value in Initial Conditions or disable those reactions in Specifications->Reactions.");
 						}					
 						return scm.getVariable().getName()+ (sc.getStructure()==membrane.getInsideFeature() ? "_INSIDE" : "_OUTSIDE");
 					}else{

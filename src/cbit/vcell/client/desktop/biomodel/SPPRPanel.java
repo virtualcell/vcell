@@ -279,6 +279,8 @@ public class SPPRPanel extends JPanel {
 		    if (userObject instanceof SPPRTreeFolderNode) { // it's a folder
 		        setupRightComponent((SPPRTreeFolderNode)userObject, null);
 		    } else if (userObject instanceof SimulationContext){
+		    	JPanel emptyPanel = new JPanel();
+				outerSplitPane.setRightComponent(emptyPanel);
 		    } else {
 		        Object leaf = userObject;
 				BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
@@ -329,8 +331,8 @@ public class SPPRPanel extends JPanel {
 				if(outerSplitPane.getRightComponent() != getElectricalMembraneMappingPanel()) {
 					outerSplitPane.setRightComponent(getElectricalMembraneMappingPanel());
 				}
-//				getElectricalMembraneMappingPanel().setScrollPaneTableCurrentRow((BioEvent)leaf);	// notify right panel about selection change
 			}
+			outerSplitPane.setDividerLocation(200);
 		} else {
 			JPanel emptyPanel = new JPanel();
 			outerSplitPane.setRightComponent(emptyPanel);

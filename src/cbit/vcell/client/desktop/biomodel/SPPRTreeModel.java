@@ -152,12 +152,15 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 			if (!rootNode.isNodeChild(folderNodes[nodeId])) {
 				return;
 			}
-			BioModelNode selectedNode = (BioModelNode)spprTree.getSelectionPath().getLastPathComponent();
-			for (int i = 0; i < folderNodes.length; i ++) {
-				if (selectedNode.getUserObject() == folderNodes[i].getUserObject() 
-						|| ((BioModelNode)selectedNode.getParent()).getUserObject() == folderNodes[i].getUserObject()) {
-					toBeSelectedNode = folderNodes[i];
-					break;
+			TreePath selectionPath = spprTree.getSelectionPath();
+			if (selectionPath != null) {
+				BioModelNode selectedNode = (BioModelNode)selectionPath.getLastPathComponent();
+				for (int i = 0; i < folderNodes.length; i ++) {
+					if (selectedNode.getUserObject() == folderNodes[i].getUserObject() 
+							|| ((BioModelNode)selectedNode.getParent()).getUserObject() == folderNodes[i].getUserObject()) {
+						toBeSelectedNode = folderNodes[i];
+						break;
+					}
 				}
 			}
 		}
