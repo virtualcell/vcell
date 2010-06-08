@@ -121,6 +121,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 								/*documentCreationInfo == null || !ClientRequestManager.isImportGeometryType(documentCreationInfo)*/){
 							GeometryViewer localGeometryViewer = new GeometryViewer();
 							localGeometryViewer.setGeometry(newGeom);
+							localGeometryViewer.setSize(800,600);
 							int result = DialogUtils.showComponentOKCancelDialog(
 									getComponent(), localGeometryViewer, "Edit Geometry: '"+newGeom.getName()+"'");
 							if(result != JOptionPane.OK_OPTION){
