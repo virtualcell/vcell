@@ -74,7 +74,7 @@ public void addParameter(Parameter optVar) {
  * Creation date: (8/22/2005 1:06:33 PM)
  * @return boolean
  */
-public void gatherIssues(Vector issueList) {
+public void gatherIssues(Vector<Issue> issueList) {
 	try {
 		for (int i=0;i<this.constraintList.size();i++){
 //			((Constraint)constraintList.elementAt(i)).gatherIssues(issueList);
@@ -108,7 +108,8 @@ public void gatherIssues(Vector issueList) {
 	// check that there is at least one parameter to optimize
 	//
 	if (parameterList.size()==0){
-		issueList.add(new Issue(this,"Parameter","no parameters to optimize",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(this,"Parameter","No parameters are selected for optimization. Please select parameters " +
+				"by checking \"optimize\" in \"Parameters\" table.",Issue.SEVERITY_ERROR));
 	}
 }
 

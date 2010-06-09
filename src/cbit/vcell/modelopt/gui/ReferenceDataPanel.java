@@ -785,13 +785,13 @@ private ReferenceData subsample() {
  * Comment
  */
 private void updatePlot() {
-	if (getReferenceData()==null || timeIndex < 0){
+	if (getReferenceData()==null){
 		getmultisourcePlotPane().setDataSources(null);
 		return;
 	}
 	
 	DataSource[] dataSources = new DataSource[1];
-	dataSources[0] = new DataSource.DataSourceReferenceData("refData", timeIndex, getReferenceData());
+	dataSources[0] = new DataSource.DataSourceReferenceData("refData", timeIndex < 0 ? 0 : timeIndex, getReferenceData());
 	getmultisourcePlotPane().setDataSources(dataSources);
 
 	getmultisourcePlotPane().selectAll();
@@ -821,6 +821,7 @@ public void setParameterEstimationTask(ParameterEstimationTask parameterEstimati
 	
 	timeIndex = fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceDataTimeColumnIndex();
 	setReferenceData(fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceData());
+	updatePlot();
 }
 
 

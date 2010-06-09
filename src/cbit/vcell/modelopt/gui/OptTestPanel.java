@@ -126,34 +126,6 @@ public OptTestPanel() {
 }
 
 /**
- * OptTestPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public OptTestPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-
-
-/**
- * OptTestPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public OptTestPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * OptTestPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public OptTestPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
-
-/**
  * connEtoC1:  (SolverTypeComboBox.action.actionPerformed(java.awt.event.ActionEvent) --> OptTestPanel.solverTypeComboBox_ActionPerformed()V)
  * @param arg1 java.awt.event.ActionEvent
  */
