@@ -1397,7 +1397,7 @@ public void verifyCompleteSampling(VCImage argSampledImage) throws ImageExceptio
 	}
 	if (count>0){
 		bHasError = true;
-		errorMessage = "Invalid Geometry - "+count+" of "+samples.length+" samples of geometry domain didn't map to any SubVolume";
+		errorMessage = "Invalid Geometry - "+count+" of "+samples.length+" samples of geometry domain didn't map to any subdomain";
 	}
 	//
 	// make sure that each subvolume is resolved in the geometry

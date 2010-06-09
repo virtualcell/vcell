@@ -221,7 +221,11 @@ private void connEtoM10(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getJWarningLabel().setText(String.valueOf(getGeometrySpec().getWarningMessage()));
+		getJWarningLabel().setVisible(false);
+		if (getGeometrySpec().getWarningMessage() != null && getGeometrySpec().getWarningMessage().length() > 0) {		
+			getJWarningLabel().setVisible(true);
+			getJWarningLabel().setText(String.valueOf(getGeometrySpec().getWarningMessage()));
+		}
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -739,6 +743,7 @@ private javax.swing.JLabel getJWarningLabel() {
 			ivjJWarningLabel = new javax.swing.JLabel();
 			ivjJWarningLabel.setName("JWarningLabel");
 			ivjJWarningLabel.setText(" ");
+			ivjJWarningLabel.setVisible(false);
 			ivjJWarningLabel.setForeground(new java.awt.Color(255,0,1));
 			// user code begin {1}
 			// user code end

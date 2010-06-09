@@ -2453,6 +2453,7 @@ private void showTimePlot() {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
 				PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(PDEDataViewer.this, 
+						getPDEPlotControlPanel1().getVariableListCellRenderer(),
 						getSimulation(), singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
 				final JInternalFrame frame = new JInternalFrame("Time Plot", true, true, true, true);
 				frame.add(pdeTimePlotPanel);

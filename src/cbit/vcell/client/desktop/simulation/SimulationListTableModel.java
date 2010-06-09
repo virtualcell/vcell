@@ -12,12 +12,10 @@ import cbit.vcell.solver.Simulation;
  * @author: Ion Moraru
  */
 public class SimulationListTableModel extends AbstractTableModel implements PropertyChangeListener {
-	private final static int COLUMN_NAME = 0;
+	public final static int COLUMN_NAME = 0;
 	private final static int COLUMN_LASTSAVED = 1;
 	private final static int COLUMN_STATUS = 2;
 	private final static int COLUMN_RESULTS = 3;
-	
-	private final static int NUM_COLUMNS = 4;
 	
 	private String[] columnNames = new String[] {"Name", "Last saved", "Running status", "Results"};
 	private SimulationWorkspace simulationWorkspace = null;
@@ -68,7 +66,6 @@ public int getRowCount() {
 private SimulationWorkspace getSimulationWorkspace() {
 	return simulationWorkspace;
 }
-
 
 /**
  * getValueAt method comment.
@@ -169,8 +166,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (rowIndex<0 || rowIndex>=getRowCount()){
 		throw new RuntimeException("SimulationListTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("SimulationListTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (columnIndex<0 || columnIndex>=getColumnCount()){
+		throw new RuntimeException("SimulationListTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
 	Simulation simulation = getSimulationWorkspace().getSimulations(rowIndex);
 	switch (columnIndex){
@@ -190,5 +187,14 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			break;
 		}
 	}
+}
+
+public Simulation getSelectedSimulation() {
+	int row = ownerTable.getSelectedRow();
+	if (row < 0) {
+		return null;
+	}
+	Simulation simulation = getSimulationWorkspace().getSimulations(row);
+	return simulation;
 }
 }

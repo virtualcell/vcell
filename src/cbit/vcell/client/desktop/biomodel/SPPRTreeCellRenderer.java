@@ -34,12 +34,12 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	
 	public SPPRTreeCellRenderer() {
 		super();
+		setPreferredSize(new Dimension(170,30));
 		initializeIcons();
-		setPreferredSize(new Dimension(150,30));
 	}
 
 
-    public void initializeIcons() {
+    private void initializeIcons() {
 	    speciesIcon = new ImageIcon(getClass().getResource("/images/speciesItem.gif"));
 	    gParamIcon = new ImageIcon(getClass().getResource("/images/gparamItem.gif"));
 	    aParamIcon = new ImageIcon(getClass().getResource("/images/aparamItem.gif"));

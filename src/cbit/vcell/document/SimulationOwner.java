@@ -36,5 +36,7 @@ public interface SimulationOwner {
 	void refreshMathDescription();
 	
 	Geometry getGeometry();
+	
+	String getName();
 }
 

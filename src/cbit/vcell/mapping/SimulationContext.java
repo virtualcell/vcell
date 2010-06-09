@@ -28,6 +28,7 @@ import org.vcell.util.document.Versionable;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
@@ -1229,10 +1230,10 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 	if (event.getSource() == getGeometryContext() && event.getPropertyName().equals("model")){
 		firePropertyChange("model", event.getOldValue(), event.getNewValue());
 	}
-	if (event.getSource() == getBioModel() && event.getPropertyName().equals("simulations")){
+	if (event.getSource() == getBioModel() && event.getPropertyName().equals(GuiConstants.PROPERTY_SIMULATIONS)){
 		Simulation oldSimulations[] = extractLocalSimulations((Simulation[])event.getOldValue());
 		Simulation newSimulations[] = extractLocalSimulations((Simulation[])event.getNewValue());
-		firePropertyChange("simulations",oldSimulations,newSimulations);
+		firePropertyChange(GuiConstants.PROPERTY_SIMULATIONS,oldSimulations,newSimulations);
 	}
 }
 

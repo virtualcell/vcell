@@ -152,12 +152,15 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 			if (!rootNode.isNodeChild(folderNodes[nodeId])) {
 				return;
 			}
-			BioModelNode selectedNode = (BioModelNode)spprTree.getSelectionPath().getLastPathComponent();
-			for (int i = 0; i < folderNodes.length; i ++) {
-				if (selectedNode.getUserObject() == folderNodes[i].getUserObject() 
-						|| ((BioModelNode)selectedNode.getParent()).getUserObject() == folderNodes[i].getUserObject()) {
-					toBeSelectedNode = folderNodes[i];
-					break;
+			TreePath selectionPath = spprTree.getSelectionPath();
+			if (selectionPath != null) {
+				BioModelNode selectedNode = (BioModelNode)selectionPath.getLastPathComponent();
+				for (int i = 0; i < folderNodes.length; i ++) {
+					if (selectedNode.getUserObject() == folderNodes[i].getUserObject() 
+							|| ((BioModelNode)selectedNode.getParent()).getUserObject() == folderNodes[i].getUserObject()) {
+						toBeSelectedNode = folderNodes[i];
+						break;
+					}
 				}
 			}
 		}
@@ -241,11 +244,11 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		} else {
 			nodeStructureChanged(folderNodes[nodeId]); 
 			restoreTreeExpansion();
-			if (toBeSelectedNode != null && rootNode.isNodeChild(toBeSelectedNode)) {
-				spprTree.setSelectionPath(new TreePath(new Object[] {rootNode, toBeSelectedNode}));
-			} else {
-				spprTree.setSelectionRow(STRUCTURE_MAPPING_NODE + 1);
-			}
+		}
+		if (toBeSelectedNode != null && rootNode.isNodeChild(toBeSelectedNode)) {
+			spprTree.setSelectionPath(new TreePath(new Object[] {rootNode, toBeSelectedNode}));
+		} else {
+			spprTree.setSelectionRow(STRUCTURE_MAPPING_NODE + 1);
 		}
 	}
 
@@ -447,7 +450,10 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		BioModelNode folder = null;
 		if (newValue instanceof BioEvent) {
 			folder = folderNodes[EVENTS_NODE];
-		}		
+		}
+		if (folder == null) {
+			return;
+		}
 		BioModelNode leaf = folder.findNodeByUserObject(newValue);
 		if (leaf == null) {
 			return;

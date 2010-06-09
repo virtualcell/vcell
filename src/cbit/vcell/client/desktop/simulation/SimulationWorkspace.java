@@ -18,6 +18,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.document.SimulationOwner;
@@ -782,7 +783,7 @@ public void setSimulationOwner(SimulationOwner newSimulationOwner) {
 	}
 	simulationOwner = newSimulationOwner;
 	setSimulations(getSimulationOwner() == null ? null : getSimulationOwner().getSimulations());
-	firePropertyChange(new java.beans.PropertyChangeEvent(this, "simulationOwner", oldSimulationOwner, newSimulationOwner));
+	firePropertyChange(new java.beans.PropertyChangeEvent(this, GuiConstants.PROPERTY_SIMULATION_OWNER, oldSimulationOwner, newSimulationOwner));
 }
 
 

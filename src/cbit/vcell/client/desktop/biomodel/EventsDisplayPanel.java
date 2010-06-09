@@ -13,8 +13,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.vcell.util.BeanUtils;
-
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
