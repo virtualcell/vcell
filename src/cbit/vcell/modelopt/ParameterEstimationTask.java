@@ -202,7 +202,8 @@ public void refreshMappings() throws MappingException, MathException {
 	ReferenceDataMappingSpec[] refDataMappingSpecs = fieldModelOptimizationSpec.getReferenceDataMappingSpecs();
 	for (int i = 0; i < refDataMappingSpecs.length; i++){
 		if (refDataMappingSpecs[i].getModelObject()==null){
-			throw new RuntimeException("data column '"+refDataMappingSpecs[i].getReferenceDataColumnName()+"' not mapped to model");
+			throw new RuntimeException("In your reference data, '"+refDataMappingSpecs[i].getReferenceDataColumnName()+"' has not been assigned a Model Association. " +
+					"Go to \"Reference Data\" to assign model associations to all reference data.");
 		}
 	}
 	fieldMathSymbolMapping = getModelOptimizationMapping().computeOptimizationSpec();

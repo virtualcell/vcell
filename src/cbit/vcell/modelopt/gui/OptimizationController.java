@@ -17,6 +17,7 @@ import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.opt.OdeObjectiveFunction;
+import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
@@ -225,7 +226,6 @@ public void solve() {
 	AsynchClientTask task1 = new AsynchClientTask("update gui", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			optTestPanel.updateInterface(true);
 			parameterEstimationTask.setOptimizationResultSet(null);
 			parameterEstimationTask.setSolverMessageText("");
 			parameterEstimationTask.appendSolverMessageText("generating optimization specification...\n");
@@ -250,21 +250,16 @@ public void solve() {
 			}
 			if (bFailed){
 				issueText.append("fatal error, stopped.\n");
+				parameterEstimationTask.appendSolverMessageText(issueText.toString());
+				throw new OptimizationException(parameterEstimationTask.getSolverMessageText());
 			}
-			hashTable.put("issueText", issueText.toString());
-			hashTable.put("bFailed", bFailed);
 		}
 	};
 	
 	AsynchClientTask task3 = new AsynchClientTask("set message", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			String issueText = (String)hashTable.get("issueText");
-			parameterEstimationTask.appendSolverMessageText(issueText);
-			boolean bFailed = (Boolean)hashTable.get("bFailed");
-			if (bFailed) {
-				return;
-			}
+			optTestPanel.updateInterface(true);
 			parameterEstimationTask.appendSolverMessageText("working...\n");
 			OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
 			parameterEstimationTask.setOptSolverCallbacks(optSolverCallbacks);
@@ -274,11 +269,6 @@ public void solve() {
 	AsynchClientTask task4 = new AsynchClientTask("solving", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			boolean bFailed = (Boolean)hashTable.get("bFailed");
-			if (bFailed) {
-				return;
-			}
-
 			final OptimizationSpec optSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();			
 			final OptimizationSolverSpec optSolverSpec = parameterEstimationTask.getOptimizationSolverSpec();
 			final OptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
