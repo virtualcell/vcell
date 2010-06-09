@@ -1091,7 +1091,7 @@ private javax.swing.JMenuItem getCloseMenuItem() {
  */
 private JDialog getCompareDialog() {
 	if (compareDialog == null) {
-		compareDialog = new JDialog(this,  "Comparison with Saved Edition", false);
+		compareDialog = new JDialog(this,  "Comparison with Saved Version", false);
 		compareDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		WindowAdapter listener = new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -2161,7 +2161,7 @@ private javax.swing.JMenuItem getSave_VersionMenuItem() {
 		try {
 			ivjSave_VersionMenuItem = new javax.swing.JMenuItem();
 			ivjSave_VersionMenuItem.setName("Save_VersionMenuItem");
-			ivjSave_VersionMenuItem.setText("Save New Edition");
+			ivjSave_VersionMenuItem.setText("Save New Version");
 			ivjSave_VersionMenuItem.setEnabled(false);
 			// user code begin {1}
 			// user code end

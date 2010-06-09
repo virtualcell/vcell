@@ -1,33 +1,35 @@
 package cbit.vcell.client.desktop.simulation;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.TableCellEditor;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultTableCellRendererEnhanced;
 import org.vcell.util.gui.JTableFixed;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.simulation.SimulationListTreeModel.SimulationListTreeFolderNode;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
@@ -62,8 +64,11 @@ public class SimulationListPanel extends JPanel {
 	private DefaultCellEditor ivjcellEditor1 = null;
 	private java.awt.Component ivjComponent1 = null;
 	private JButton ivjStatusDetailsButton = null;
+	private JTree simulationListTree = null;
+	private SimulationListTreeModel simulationListTreeModel = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, javax.swing.event.TableModelListener {
+class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, 
+	java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, javax.swing.event.TableModelListener, TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == SimulationListPanel.this.getNewButton()) 
 				connEtoC2(e);
@@ -94,6 +99,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connPtoP2SetTarget();
 			if (evt.getSource() == SimulationListPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("cellEditor"))) 
 				connEtoM4(evt);
+			if (evt.getSource() == getOutputFunctionsPanel() && evt.getPropertyName().equals(OutputFunctionsPanel.PROPERTY_SELECTED_OUTPUT_FUNCTION)) {
+				simulationListTreeModel.setSelectedValue(evt.getNewValue());
+			}
 		};
 		public void tableChanged(javax.swing.event.TableModelEvent e) {
 			if (e.getSource() == SimulationListPanel.this.getSimulationListTableModel1()) 
@@ -105,20 +113,21 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 			}
 			if (e.getSource() == SimulationListPanel.this.getselectionModel1()) 
 				connEtoC9(e);
-		};
+			
+			if (e.getSource() == getScrollPaneTable().getSelectionModel()) {
+				simulationListTreeModel.setSelectedValue(getSimulationListTableModel1().getSelectedSimulation());
+			}
+		}
+		public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
+			if (e.getSource() == simulationListTree) {
+				treeValueChanged(e);
+			}
+		}
 	};
 
 public SimulationListPanel() {
 	super();
-	setLayout(new GridBagLayout());
 	initialize();
-	final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-	gridBagConstraints.weighty = 1;
-	gridBagConstraints.weightx = 1;
-	gridBagConstraints.fill = GridBagConstraints.BOTH;
-	gridBagConstraints.gridx = 0;
-	gridBagConstraints.gridy = 0;
-	add(getOuterSplitPane(), gridBagConstraints);
 }
 
 /**
@@ -298,6 +307,8 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 	try {
 		getSimulationListTableModel1().setSimulationWorkspace(this.getSimulationWorkspace());
 		getOutputFunctionsPanel().setSimulationWorkspace(this.getSimulationWorkspace());
+		simulationListTreeModel.setSimulationWorkspace(getSimulationWorkspace());
+		simulationListTree.setSelectionRow(SimulationListTreeModel.SIMULATIONS_NODE + 1);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -609,10 +620,10 @@ private javax.swing.JScrollPane getJScrollPane1() {
 		try {
 			ivjJScrollPane1 = new javax.swing.JScrollPane();
 			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			ivjJScrollPane1.setPreferredSize(new java.awt.Dimension(750, 100));
-			ivjJScrollPane1.setMinimumSize(new java.awt.Dimension(100, 100));
+			//ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			//ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			//ivjJScrollPane1.setPreferredSize(new java.awt.Dimension(750, 100));
+			//ivjJScrollPane1.setMinimumSize(new java.awt.Dimension(100, 100));
 			getJScrollPane1().setViewportView(getScrollPaneTable());
 			// user code begin {1}
 			// user code end
@@ -701,7 +712,6 @@ private javax.swing.JButton getRunButton() {
  * Return the ScrollPaneTable property value.
  * @return cbit.gui.JTableFixed
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private JTableFixed getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
@@ -709,14 +719,8 @@ private JTableFixed getScrollPaneTable() {
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
-			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			ivjScrollPaneTable.setPreferredScrollableViewportSize(new java.awt.Dimension(450, 100));
 			ivjScrollPaneTable.setAutoCreateColumnsFromModel(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -740,8 +744,6 @@ public int[] getSelectedRows() {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.ListSelectionModel getselectionModel1() {
-	// user code begin {1}
-	// user code end
 	return ivjselectionModel1;
 }
 
@@ -755,11 +757,7 @@ private SimulationListTableModel getSimulationListTableModel1() {
 	if (ivjSimulationListTableModel1 == null) {
 		try {
 			ivjSimulationListTableModel1 = new SimulationListTableModel(ivjScrollPaneTable);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -775,13 +773,8 @@ private SimulationSummaryPanel getSimulationSummaryPanel1() {
 	if (ivjSimulationSummaryPanel1 == null) {
 		try {
 			ivjSimulationSummaryPanel1 = new SimulationSummaryPanel();
-			ivjSimulationSummaryPanel1.setPreferredSize(new Dimension(750, 390));
 			ivjSimulationSummaryPanel1.setName("SimulationSummaryPanel1");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -792,8 +785,8 @@ private OutputFunctionsPanel getOutputFunctionsPanel() {
 	if (outputFunctionsPanel == null) {
 		try {
 			outputFunctionsPanel = new OutputFunctionsPanel();
-			outputFunctionsPanel.setPreferredSize(new Dimension(750, 150));
 			outputFunctionsPanel.setName("ObservablesPanel");
+			addPropertyChangeListener(ivjEventHandler);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -823,11 +816,7 @@ private javax.swing.JButton getStatusDetailsButton() {
 			ivjStatusDetailsButton.setName("StatusDetailsButton");
 			ivjStatusDetailsButton.setText("Status Details...");
 			ivjStatusDetailsButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -846,11 +835,7 @@ private javax.swing.JButton getStopButton() {
 			ivjStopButton.setName("StopButton");
 			ivjStopButton.setText("Stop");
 			ivjStopButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -891,25 +876,49 @@ private void initConnections() throws java.lang.Exception {
 	getStatusDetailsButton().addActionListener(ivjEventHandler);
 	connPtoP2SetTarget();
 	connPtoP1SetTarget();
+	
+	getOutputFunctionsPanel().addPropertyChangeListener(ivjEventHandler);
+	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
+	simulationListTree.addTreeSelectionListener(ivjEventHandler);
+	simulationListTree.addTreeExpansionListener(simulationListTreeModel);
 }
 
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
 		setName("SimulationListPanel");
 		setSize(750, 560);
+				
+		simulationListTree = new JTree();
+		simulationListTree.setCellRenderer(new SimulationListTreeCellRenderer());				
+		simulationListTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		simulationListTreeModel = new SimulationListTreeModel(simulationListTree);
+		simulationListTree.setModel(simulationListTreeModel);
+		JScrollPane jScrollPane = new JScrollPane(simulationListTree);
+		
+		outerSplitPane = new JSplitPane();
+		outerSplitPane.setLeftComponent(jScrollPane);
+		outerSplitPane.setRightComponent(getInnerSplitPane());
+		outerSplitPane.setDividerLocation(200);
+		
+		setLayout(new GridBagLayout());
+		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.weighty = 1;
+		gridBagConstraints.weightx = 1;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		add(outerSplitPane, gridBagConstraints);		
+		
 		initConnections();
 		connEtoC1();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**
@@ -1063,22 +1072,15 @@ public void scrollPaneTable_FocusLost(java.awt.event.FocusEvent focusEvent) {
  * Set the cellEditor1 to a new value.
  * @param newValue javax.swing.table.TableCellEditor
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setcellEditor1(javax.swing.DefaultCellEditor newValue) {
 	if (ivjcellEditor1 != newValue) {
 		try {
 			ivjcellEditor1 = newValue;
 			connEtoM2(ivjcellEditor1);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 /**
@@ -1133,7 +1135,6 @@ public void setSelectedRows(int[] indices) {
  * Set the selectionModel1 to a new value.
  * @param newValue javax.swing.ListSelectionModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setselectionModel1(javax.swing.ListSelectionModel newValue) {
 	if (ivjselectionModel1 != newValue) {
 		try {
@@ -1148,16 +1149,10 @@ private void setselectionModel1(javax.swing.ListSelectionModel newValue) {
 				ivjselectionModel1.addListSelectionListener(ivjEventHandler);
 			}
 			connPtoP2SetSource();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 
@@ -1224,26 +1219,9 @@ private void stopSimulations() {
 			innerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 			innerSplitPane.setLeftComponent(getJScrollPane1());
 			innerSplitPane.setRightComponent(getButtonsAndSimSummarypanel());
+			innerSplitPane.setDividerLocation(180);
 		}
 		return innerSplitPane;
-	}
-
-	protected JSplitPane getOuterSplitPane() {
-		if (outerSplitPane == null) {
-			outerSplitPane = new JSplitPane();
-			outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-			outerSplitPane.setLeftComponent(getOutputFunctionsPanel());
-			JPanel simPanel = new JPanel();
-			simPanel.setLayout(new BoxLayout(simPanel, BoxLayout.Y_AXIS));
-			JLabel simLabel = new JLabel("  Simulations:");
-			simLabel.setFont(simLabel.getFont().deriveFont(Font.BOLD));
-			simPanel.add(Box.createRigidArea(new Dimension(5,10)));
-			simPanel.add(simLabel);
-			simPanel.add(Box.createRigidArea(new Dimension(5,5)));
-			simPanel.add(getInnerSplitPane());
-			outerSplitPane.setRightComponent(simPanel);
-		}
-		return outerSplitPane;
 	}
 
 	/**
@@ -1252,7 +1230,6 @@ private void stopSimulations() {
 	protected JScrollPane getScrollPane() {
 		if (scrollPane == null) {
 			scrollPane = new JScrollPane();
-			scrollPane.setPreferredSize(new Dimension(750, 450));
 			scrollPane.setViewportView(getSimulationSummaryPanel1());
 		}
 		return scrollPane;
@@ -1263,11 +1240,79 @@ private void stopSimulations() {
 	protected JPanel getButtonsAndSimSummarypanel() {
 		if (buttonsAndSimSummarypanel == null) {
 			buttonsAndSimSummarypanel = new JPanel();
-			buttonsAndSimSummarypanel.setLayout(new BorderLayout());
-			buttonsAndSimSummarypanel.setPreferredSize(new Dimension(730, 400));
-			buttonsAndSimSummarypanel.add(getButtonPanel(), BorderLayout.NORTH);
-			buttonsAndSimSummarypanel.add(getScrollPane());
+			buttonsAndSimSummarypanel.setLayout(new GridBagLayout());
+			
+			GridBagConstraints gridBagConstraints = new GridBagConstraints();
+			gridBagConstraints.fill = GridBagConstraints.BOTH;
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = 0;
+			gridBagConstraints.weightx = 1.0;
+			buttonsAndSimSummarypanel.add(getButtonPanel(), gridBagConstraints);
+			
+			gridBagConstraints = new GridBagConstraints();
+			gridBagConstraints.fill = GridBagConstraints.BOTH;
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = 1;
+			gridBagConstraints.weightx = 1.0;
+			gridBagConstraints.weighty = 1.0;
+			buttonsAndSimSummarypanel.add(getScrollPane(), gridBagConstraints);
 		}
 		return buttonsAndSimSummarypanel;
+	}
+	
+	public void treeValueChanged(TreeSelectionEvent e) {
+		try {
+			Object node = simulationListTree.getLastSelectedPathComponent();
+			if (!(node instanceof BioModelNode)) {
+				return;
+			}
+			BioModelNode selectedNode = (BioModelNode)node;
+		    Object userObject = selectedNode.getUserObject();
+		    if (userObject instanceof SimulationListTreeFolderNode) { // it's a folder
+		    	setupRightComponent((SimulationListTreeFolderNode)userObject, null);
+		    } else if (userObject instanceof SimulationWorkspace){
+		    	outerSplitPane.setRightComponent(new JPanel());
+		    	outerSplitPane.setDividerLocation(200);
+		    } else {
+		        Object leaf = userObject;
+				BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
+				userObject =  parentNode.getUserObject();
+				SimulationListTreeFolderNode parent = (SimulationListTreeFolderNode)userObject;
+		        setupRightComponent(parent, leaf);
+		    }
+		}catch (Exception ex){
+			ex.printStackTrace(System.out);
+		}
+	}
+
+	private void setupRightComponent(SimulationListTreeFolderNode parent, Object leaf) {
+		int folderId = parent.getId();
+		if(folderId == SimulationListTreeModel.SIMULATIONS_NODE) {
+			if(outerSplitPane.getRightComponent() != getInnerSplitPane()) {
+				outerSplitPane.setRightComponent(getInnerSplitPane());
+			}
+			setScrollPaneTableCurrentRow((Simulation)leaf);
+		} else if(folderId == SimulationListTreeModel.OUTPUT_FUNCTIONS_NODE) {
+			//  replace right-side panel only if the correct one is not there already
+			if(outerSplitPane.getRightComponent() != getOutputFunctionsPanel()) {
+				outerSplitPane.setRightComponent(getOutputFunctionsPanel());
+			}
+			getOutputFunctionsPanel().setScrollPaneTableCurrentRow((AnnotatedFunction)leaf);
+		}
+		outerSplitPane.setDividerLocation(200);
+	}
+	
+	public void setScrollPaneTableCurrentRow(Simulation selection) {
+		if (selection == null) {
+			return;
+		}
+		int numRows = getScrollPaneTable().getRowCount();
+		for(int i=0; i<numRows; i++) {
+			String valueAt = (String)getScrollPaneTable().getValueAt(i, SimulationListTableModel.COLUMN_NAME);
+			if(selection.getName().equals(valueAt)) {
+				getScrollPaneTable().changeSelection(i, 0, false, false);
+				return;
+			}
+		}
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"

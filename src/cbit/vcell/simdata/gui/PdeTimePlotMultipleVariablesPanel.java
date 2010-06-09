@@ -5,15 +5,19 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -30,6 +34,7 @@ import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.SampledCurve;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -49,7 +54,11 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	private Simulation simulation = null;
 	private PDEDataViewer pdeDataViewer = null;
 	private JList pointJList = new JList();
+	private ListCellRenderer listCellRenderer = null;
 	
+	private static ImageIcon function_icon = null;
+	private static ImageIcon old_function_icon = null;
+
 	private class EventHandler implements ListSelectionListener {
 
 		public void valueChanged(ListSelectionEvent e) {
@@ -59,8 +68,9 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		}
 		
 	}
-	public PdeTimePlotMultipleVariablesPanel(PDEDataViewer pdv, Simulation sim, Vector<SpatialSelection> pv, Vector<SpatialSelection> pv2, TSJobResultsNoStats tsjr) {
+	public PdeTimePlotMultipleVariablesPanel(PDEDataViewer pdv, ListCellRenderer lcr, Simulation sim, Vector<SpatialSelection> pv, Vector<SpatialSelection> pv2, TSJobResultsNoStats tsjr) {
 		pdeDataViewer = pdv;
+		listCellRenderer = lcr;
 		simulation = sim;
 		pdeDataContext = pdeDataViewer.getPdeDataContext();
 		pointVector = pv;
@@ -202,17 +212,18 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		plotPane.setPlot2D(plot2D);
 		
 		DataIdentifier[] dis = VariableType.collectSimilarDataTypes(pdeDataContext.getDataIdentifier(), pdeDataContext.getDataIdentifiers());
-		variableJList.setListData(dis);
-		variableJList.setSelectedValue(pdeDataContext.getDataIdentifier(), true);
-		variableJList.setCellRenderer(new DefaultListCellRenderer() {
-			
-			public Component getListCellRendererComponent(JList list, Object value,
-					int index, boolean isSelected, boolean cellHasFocus) {
-				JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); 
-				label.setText(((DataIdentifier)value).getName());
-				return this;
+		Arrays.sort(dis, new Comparator<DataIdentifier>(){
+			public int compare(DataIdentifier o1, DataIdentifier o2) {
+				int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+				if (bEqualIgnoreCase == 0){
+					return o1.getDisplayName().compareTo(o2.getDisplayName());
+				}
+				return bEqualIgnoreCase;
 			}
 		});
+		variableJList.setListData(dis);
+		variableJList.setSelectedValue(pdeDataContext.getDataIdentifier(), true);
+		variableJList.setCellRenderer(listCellRenderer);
 		
 		setLayout(new GridBagLayout());		
 		

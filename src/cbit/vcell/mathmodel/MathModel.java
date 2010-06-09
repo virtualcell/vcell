@@ -15,6 +15,7 @@ import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
@@ -465,7 +466,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	//
 	// make sure that simulations and simulationContexts are listened to
 	//
-	if (evt.getSource() == this && evt.getPropertyName().equals("simulations") && evt.getNewValue()!=null){
+	if (evt.getSource() == this && evt.getPropertyName().equals(GuiConstants.PROPERTY_SIMULATIONS) && evt.getNewValue()!=null){
 		//
 		// unregister for old
 		//
@@ -598,9 +599,9 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  */
 public void setSimulations(Simulation[] simulations) throws java.beans.PropertyVetoException {
 	Simulation[] oldValue = fieldSimulations;
-	fireVetoableChange("simulations", oldValue, simulations);
+	fireVetoableChange(GuiConstants.PROPERTY_SIMULATIONS, oldValue, simulations);
 	fieldSimulations = simulations;
-	firePropertyChange("simulations", oldValue, simulations);
+	firePropertyChange(GuiConstants.PROPERTY_SIMULATIONS, oldValue, simulations);
 }
 
 
@@ -637,7 +638,7 @@ public String toString() {
 	 *              change to be rolled back.
 	 */
 public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	if (evt.getSource() == this && evt.getPropertyName().equals("simulations") && evt.getNewValue()!=null){
+	if (evt.getSource() == this && evt.getPropertyName().equals(GuiConstants.PROPERTY_SIMULATIONS) && evt.getNewValue()!=null){
 		//
 		// check for name duplication
 		//

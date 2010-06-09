@@ -424,7 +424,7 @@ private void initializeInternalFrames() {
 	simsPanel.setSimulationWorkspace(new SimulationWorkspace(MathModelWindowManager.this, getMathModel()));
 	simsListEditorFrame = new JInternalFrameEnhanced(simsListTitle, true, true, true, true);
 	simsListEditorFrame.setContentPane(simsPanel);
-	simsListEditorFrame.setSize(750, 600);
+	simsListEditorFrame.setSize(800, 600);
 	simsListEditorFrame.setLocation(500, 300);
 	simsListEditorFrame.setMinimumSize(new Dimension(500, 500));
 	simsListEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {

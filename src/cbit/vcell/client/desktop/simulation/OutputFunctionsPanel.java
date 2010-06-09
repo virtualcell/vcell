@@ -2,16 +2,11 @@ package cbit.vcell.client.desktop.simulation;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
@@ -20,18 +15,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.gui.DialogUtils;
@@ -50,15 +44,14 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
-import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.VariableType;
 
 public class OutputFunctionsPanel extends JPanel {
+	public static final String PROPERTY_SELECTED_OUTPUT_FUNCTION = "selectedOutputFunction";
 	private JPanel buttons_n_label_Panel = null;
-	private javax.swing.JLabel outputFnsLabel = null;
 	private JButton addButton = null;
 	private JButton addVolVarButton = null;
 	private JButton addMemVarButton = null;
@@ -73,10 +66,9 @@ public class OutputFunctionsPanel extends JPanel {
 	private OutputFunctionsListTableModel outputFnsListTableModel1 = null;
 	private OutputFunctionContext outputFunctionContext = null;
 	private SimulationWorkspace simulationWorkspace = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();	
 
-	class IvjEventHandler implements ActionListener, MouseListener, PropertyChangeListener {
+	private class IvjEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
 				if (e.getSource() == OutputFunctionsPanel.this.getAddFnButton()) 
@@ -136,31 +128,24 @@ public class OutputFunctionsPanel extends JPanel {
 			}
 		};
 
-		public void mouseClicked(MouseEvent e) {
-			if (e.getSource() == OutputFunctionsPanel.this.getFnScrollPaneTable()) {
-				enableDeleteFnButton();
+		public void valueChanged(ListSelectionEvent e) {
+			if (e.getValueIsAdjusting()) {
+				return;
 			}
-		}
-		public void mouseEntered(MouseEvent e) {
-		}
-		public void mouseExited(MouseEvent e) {
-		}
-		public void mousePressed(MouseEvent e) {
-		}
-		public void mouseReleased(MouseEvent e) {
+			if (e.getSource() == OutputFunctionsPanel.this.getFnScrollPaneTable().getSelectionModel()) {
+				int row = getFnScrollPaneTable().getSelectedRow();
+				if (row < 0) {
+					return;
+				}
+				enableDeleteFnButton();
+				tableSelectionChanged();
+			}
 		};
 	};
 	
 	public OutputFunctionsPanel() {
 		super();
-		setLayout(new GridBagLayout());
 		initialize();
-		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.weighty = 1;
-		gridBagConstraints.weightx = 1;
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
 	}
 
 	private javax.swing.JButton getAddFnButton() {
@@ -219,37 +204,17 @@ public class OutputFunctionsPanel extends JPanel {
 		return deleteButton;
 	}
 
-	private javax.swing.JLabel getOutputFnsLabel() {
-		if (outputFnsLabel == null) {
-			try {
-				outputFnsLabel = new javax.swing.JLabel();
-				outputFnsLabel.setName("OutputFnsLabel");
-				outputFnsLabel.setFont(outputFnsLabel.getFont().deriveFont(Font.BOLD));
-				outputFnsLabel.setText("  Output Functions: ");
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace(System.out);
-			}
-		}
-		return outputFnsLabel;
-	}
-
-	private javax.swing.JPanel getButtonLabelPanel() {
+	private javax.swing.JPanel getButtonPanel() {
 		if (buttons_n_label_Panel == null) {
 			try {
 				buttons_n_label_Panel = new javax.swing.JPanel();
 				buttons_n_label_Panel.setAlignmentX(Component.RIGHT_ALIGNMENT);
 				buttons_n_label_Panel.setAlignmentY(Component.TOP_ALIGNMENT);
-				buttons_n_label_Panel.setPreferredSize(new Dimension(750, 40));
 				buttons_n_label_Panel.setName("ButtonPanel");
-				buttons_n_label_Panel.setLayout(new BoxLayout(buttons_n_label_Panel, BoxLayout.X_AXIS));
-				buttons_n_label_Panel.add(getOutputFnsLabel());
-				buttons_n_label_Panel.add(Box.createHorizontalGlue());
+				buttons_n_label_Panel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
 				buttons_n_label_Panel.add(getAddFnButton());
-				buttons_n_label_Panel.add(Box.createRigidArea(new Dimension(5,5)));
 				buttons_n_label_Panel.add(getAddVolVarFnButton());
-				buttons_n_label_Panel.add(Box.createRigidArea(new Dimension(5,5)));
 				buttons_n_label_Panel.add(getAddMemVarFnButton());
-				buttons_n_label_Panel.add(Box.createRigidArea(new Dimension(5,5)));
 				buttons_n_label_Panel.add(getDeleteFnButton());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
@@ -263,10 +228,6 @@ public class OutputFunctionsPanel extends JPanel {
 			try {
 				fnTableScrollPane = new javax.swing.JScrollPane();
 				fnTableScrollPane.setName("JScrollPane1");
-				fnTableScrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-				fnTableScrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-				fnTableScrollPane.setPreferredSize(new java.awt.Dimension(750, 100));
-				fnTableScrollPane.setMinimumSize(new java.awt.Dimension(100, 100));
 				getFnTableScrollPane().setViewportView(getFnScrollPaneTable());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
@@ -415,7 +376,7 @@ public class OutputFunctionsPanel extends JPanel {
 		getAddVolVarFnButton().addActionListener(ivjEventHandler);
 		getAddMemVarFnButton().addActionListener(ivjEventHandler);
 		getDeleteFnButton().addActionListener(ivjEventHandler);
-		getFnScrollPaneTable().addMouseListener(ivjEventHandler);
+		getFnScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 		this.addPropertyChangeListener(ivjEventHandler);
 		
 		getFnTableScrollPane().addComponentListener(new ComponentAdapter() {
@@ -436,8 +397,8 @@ public class OutputFunctionsPanel extends JPanel {
 			setName("OutputFunctionsListPanel");
 			setSize(750, 100);
 			setLayout(new BorderLayout());
-			// setPreferredSize(new Dimension(730, 400));
-			add(getButtonLabelPanel(), BorderLayout.NORTH);
+			
+			add(getButtonPanel(), BorderLayout.NORTH);
 			add(getFnTableScrollPane(), BorderLayout.CENTER);
 			initConnections();
 			getFnScrollPaneTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -555,6 +516,7 @@ public class OutputFunctionsPanel extends JPanel {
 			try {
 				outputFunctionContext.validateExpression(newFunction, varType, funcExp);	
 				outputFunctionContext.addOutputFunction(newFunction);
+				outputFnsListTableModel1.selectOutputFunction(newFunction);
 			} catch (Exception e1) {
 				e1.printStackTrace(System.out);
 				DialogUtils.showErrorDialog(this, "Function '" + newFunction.getName() + "' cannot be added. " + e1.getMessage(), e1);
@@ -635,4 +597,22 @@ public class OutputFunctionsPanel extends JPanel {
 		}
 	}
 
+	public void setScrollPaneTableCurrentRow(AnnotatedFunction selection) {
+		if (selection == null) {
+			return;
+		}
+		int numRows = getFnScrollPaneTable().getRowCount();
+		for(int i=0; i<numRows; i++) {
+			String valueAt = (String)getFnScrollPaneTable().getValueAt(i, OutputFunctionsListTableModel.COLUMN_OUTPUTFN_NAME);
+			if(selection.getName().equals(valueAt)) {
+				getFnScrollPaneTable().changeSelection(i, 0, false, false);
+				return;
+			}
+		}
+	}
+	
+	public void tableSelectionChanged() {
+		AnnotatedFunction af = getOutputFnsListTableModel1().getSelectedOutputFunction();
+		firePropertyChange(PROPERTY_SELECTED_OUTPUT_FUNCTION, null, af);		
+	}
 }

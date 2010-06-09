@@ -16,7 +16,6 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.Variable;
-import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -263,4 +262,20 @@ public void sortColumn(int col, boolean ascending)
   fireTableDataChanged();
 }
 
+public AnnotatedFunction getSelectedOutputFunction() {
+	int row = ownerTable.getSelectedRow();
+	if (row < 0) {
+		return null;
+	}
+	return (AnnotatedFunction)getData().get(row);
+}
+
+public void selectOutputFunction(AnnotatedFunction annotatedFunction) {
+	for (int i = 0; i < getRowCount(); i ++) {
+		if (getValueAt(i, COLUMN_OUTPUTFN_NAME).equals(annotatedFunction.getName())) {
+			ownerTable.changeSelection(i, 0, false, false);
+			break;
+		}
+	}
+}
 }

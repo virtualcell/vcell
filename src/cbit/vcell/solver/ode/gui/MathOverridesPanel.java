@@ -1,9 +1,13 @@
 package cbit.vcell.solver.ode.gui;
 
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -13,13 +17,16 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.EmptyBorderBean;
+import org.vcell.util.gui.JTableFixed;
 
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.MathOverrides;
@@ -227,25 +234,6 @@ private void connEtoC5(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-/**
- * connEtoC7:  (MathOverridesPanel.initialize() --> MathOverridesPanel.makeBold()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.makeBold();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC8:  (JTableFixed.mouse.mouseReleased(java.awt.event.MouseEvent) --> MathOverridesPanel.jTableFixed_MouseReleased(Ljava.awt.event.MouseEvent;)V)
@@ -508,14 +496,12 @@ public boolean getEditable() {
 private javax.swing.JLabel getJLabelTitle() {
 	if (ivjJLabelTitle == null) {
 		try {
-			EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new EmptyBorderBean();
-			ivjLocalBorder.setInsets(new java.awt.Insets(10, 0, 10, 0));
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
-			ivjJLabelTitle.setBorder(ivjLocalBorder);
+			ivjJLabelTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 			ivjJLabelTitle.setText("Specify non-default parameter values or scan over a range of values:");
 			ivjJLabelTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+			ivjJLabelTitle.setFont(ivjJLabelTitle.getFont().deriveFont(java.awt.Font.BOLD));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -652,16 +638,13 @@ private javax.swing.JPopupMenu getJPopupMenu1() {
 private JTable getJTableFixed() {
 	if (ivjJTableFixed == null) {
 		try {
-			ivjJTableFixed = new org.vcell.util.gui.JTableFixed();
+			ivjJTableFixed = new JTableFixed();
 			ivjJTableFixed.setName("JTableFixed");
 			getScrollPane().setColumnHeaderView(ivjJTableFixed.getTableHeader());
-			ivjJTableFixed.setBounds(0, 0, 200, 200);
+//			ivjJTableFixed.setBounds(0, 0, 200, 200);
+			ivjJTableFixed.setPreferredScrollableViewportSize(new Dimension(200,100));
 			getJTableFixed().setRowHeight(getJTableFixed().getRowHeight() + 2);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -673,7 +656,7 @@ private JTable getJTableFixed() {
  * @return The mathOverrides property value.
  * @see #setMathOverrides
  */
-public cbit.vcell.solver.MathOverrides getMathOverrides() {
+public MathOverrides getMathOverrides() {
 	return fieldMathOverrides;
 }
 
@@ -686,10 +669,9 @@ public cbit.vcell.solver.MathOverrides getMathOverrides() {
 private MathOverridesTableCellRenderer getMathOverridesTableCellRenderer1() {
 	if (ivjMathOverridesTableCellRenderer1 == null) {
 		try {
-			ivjMathOverridesTableCellRenderer1 = new cbit.vcell.solver.ode.gui.MathOverridesTableCellRenderer();
+			ivjMathOverridesTableCellRenderer1 = new MathOverridesTableCellRenderer();
 			ivjMathOverridesTableCellRenderer1.setName("MathOverridesTableCellRenderer1");
 			ivjMathOverridesTableCellRenderer1.setText("MathOverridesTableCellRenderer1");
-			ivjMathOverridesTableCellRenderer1.setBounds(531, 168, 200, 16);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -733,8 +715,6 @@ private javax.swing.JScrollPane getScrollPane() {
 		try {
 			ivjScrollPane = new javax.swing.JScrollPane();
 			ivjScrollPane.setName("ScrollPane");
-			ivjScrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			ivjScrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			getScrollPane().setViewportView(getJTableFixed());
 			// user code begin {1}
 			// user code end
@@ -789,14 +769,27 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("MathOverridesPanel");
-		setLayout(new java.awt.BorderLayout());
+		setLayout(new GridBagLayout());
 		setSize(404, 262);
-		add(getScrollPane(), "Center");
-		add(getJLabelTitle(), "North");
+		
+		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.weightx = 1.0;
+		add(getJLabelTitle(), gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		add(getScrollPane(), gridBagConstraints);
+
 		initConnections();
 		connEtoM1();
 		connEtoC2();
-		connEtoC7();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -814,218 +807,61 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 	java.util.Vector<Expression> newConstantsV = new java.util.Vector<Expression>();
 	java.util.Vector<String> changedParameterNamesV = new java.util.Vector<String>();
 	try{
-	//
-	//
-//cbit.vcell.math.MathDescription md = getMathOverrides().getSimulation().getMathDescription();
-	//
-	//
 
-	if(actionEvent.getSource().equals(getJMenuItemPaste()) || actionEvent.getSource().equals(getJMenuItemPasteAll())){
-		int[] rows = null;
-		if(actionEvent.getSource() == getJMenuItemPasteAll()){
-			rows = new int[getJTableFixed().getRowCount()];
+		if(actionEvent.getSource().equals(getJMenuItemPaste()) || actionEvent.getSource().equals(getJMenuItemPasteAll())){
+			int[] rows = null;
+			if(actionEvent.getSource() == getJMenuItemPasteAll()){
+				rows = new int[getJTableFixed().getRowCount()];
+				for(int i=0;i<rows.length;i+= 1){
+					rows[i] = i;
+				}
+			}else{
+				rows = getJTableFixed().getSelectedRows();
+			}	
+	
+			Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 			for(int i=0;i<rows.length;i+= 1){
-				rows[i] = i;
-			}
-		}else{
-			rows = getJTableFixed().getSelectedRows();
-		}
-
-
-		Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
-		for(int i=0;i<rows.length;i+= 1){
-			if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
-				VCellTransferable.ResolvedValuesSelection rvs =
-					(VCellTransferable.ResolvedValuesSelection)pasteThis;
-
-				for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
-					cbit.vcell.math.Constant pastedConstant = null;
-					if(rvs.getPrimarySymbolTableEntries()[j] instanceof cbit.vcell.math.Constant){
-						pastedConstant = (cbit.vcell.math.Constant)rvs.getPrimarySymbolTableEntries()[j];
-					}else if(rvs.getAlternateSymbolTableEntries() != null && rvs.getAlternateSymbolTableEntries()[j] instanceof cbit.vcell.math.Constant){
-						pastedConstant = (cbit.vcell.math.Constant)rvs.getAlternateSymbolTableEntries()[j];
-					}
-					if(pastedConstant == null && (
-						(rvs.getPrimarySymbolTableEntries()[j] instanceof cbit.vcell.math.VolVariable) ||
-						(rvs.getPrimarySymbolTableEntries()[j] instanceof cbit.vcell.math.Function)
-					)){
-						pastedConstant = new cbit.vcell.math.Constant(rvs.getPrimarySymbolTableEntries()[j].getName()+"_init",rvs.getExpressionValues()[j]);
-					}
-					String rowName = (String)getJTableFixed().getValueAt(rows[i],MathOverridesTableModel.COLUMN_PARAMETER);
-					if(pastedConstant != null && pastedConstant.getName().equals(rowName)){
-						changedParameterNamesV.add(rowName);
-						newConstantsV.add(rvs.getExpressionValues()[j]);
-						String originalValueDescription = null;
-						if(getMathOverrides().getConstantArraySpec(rowName) != null){
-							originalValueDescription = getMathOverrides().getConstantArraySpec(rowName).toString();
-						}else if(getMathOverrides().getActualExpression(rowName,0) != null){
-							originalValueDescription = getMathOverrides().getActualExpression(rowName,0).infix();
-						}else{
-							throw new Exception("MathOverridesPanel can't find value for '"+rowName+"'");
+				if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
+					VCellTransferable.ResolvedValuesSelection rvs =
+						(VCellTransferable.ResolvedValuesSelection)pasteThis;
+	
+					for(int j=0;j<rvs.getPrimarySymbolTableEntries().length;j+= 1){
+						Constant pastedConstant = null;
+						if(rvs.getPrimarySymbolTableEntries()[j] instanceof Constant){
+							pastedConstant = (Constant)rvs.getPrimarySymbolTableEntries()[j];
+						}else if(rvs.getAlternateSymbolTableEntries() != null && rvs.getAlternateSymbolTableEntries()[j] instanceof Constant){
+							pastedConstant = (Constant)rvs.getAlternateSymbolTableEntries()[j];
 						}
-						pasteDescriptionsV.add(
-							VCellCopyPasteHelper.formatPasteList(
-								rowName,
-								pastedConstant.getName(),
-								originalValueDescription,
-								rvs.getExpressionValues()[j].infix()+"")
-						);
+						if(pastedConstant == null && (
+							(rvs.getPrimarySymbolTableEntries()[j] instanceof VolVariable) ||
+							(rvs.getPrimarySymbolTableEntries()[j] instanceof Function)
+						)){
+							pastedConstant = new Constant(rvs.getPrimarySymbolTableEntries()[j].getName()+"_init",rvs.getExpressionValues()[j]);
+						}
+						String rowName = (String)getJTableFixed().getValueAt(rows[i],MathOverridesTableModel.COLUMN_PARAMETER);
+						if(pastedConstant != null && pastedConstant.getName().equals(rowName)){
+							changedParameterNamesV.add(rowName);
+							newConstantsV.add(rvs.getExpressionValues()[j]);
+							String originalValueDescription = null;
+							if(getMathOverrides().getConstantArraySpec(rowName) != null){
+								originalValueDescription = getMathOverrides().getConstantArraySpec(rowName).toString();
+							}else if(getMathOverrides().getActualExpression(rowName,0) != null){
+								originalValueDescription = getMathOverrides().getActualExpression(rowName,0).infix();
+							}else{
+								throw new Exception("MathOverridesPanel can't find value for '"+rowName+"'");
+							}
+							pasteDescriptionsV.add(
+								VCellCopyPasteHelper.formatPasteList(
+									rowName,
+									pastedConstant.getName(),
+									originalValueDescription,
+									rvs.getExpressionValues()[j].infix()+"")
+							);
+						}
 					}
 				}
 			}
 		}
-
-
-
-
-
-
-
-
-
-		
-		////int[] rows = getJTableFixed().getSelectedRows();// Paste to selected only
-		////if(rows == null || rows.length == 0){// Try Paste by searching  All
-			////rows = new int[getJTableFixed().getRowCount()];
-			////for(int i=0;i<rows.length;i+= 1){
-				////rows[i] = i;
-			////}
-		////}
-		//Object obj = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
-			////obj instanceof cbit.vcell.desktop.VCellTransferable.SimulationParameterSelection
-			////obj instanceof cbit.vcell.desktop.VCellTransferable.InitialConditionsSelection
-			////obj instanceof cbit.vcell.desktop.VCellTransferable.SimulationResultsSelection
-		//for(int i=0;i<rows.length;i+= 1){
-			//String moParameterName = (String)getJTableFixed().getValueAt(rows[i],0);
-			//String originalValueDescription = null;
-			//if(getMathOverrides().getConstantArraySpec(moParameterName) != null){
-				//originalValueDescription = getMathOverrides().getConstantArraySpec(moParameterName).toString();
-			//}else if(getMathOverrides().getActualExpression(moParameterName,0) != null){
-				//originalValueDescription = getMathOverrides().getActualExpression(moParameterName,0).infix();
-			//}else{
-				//throw new Exception("MathOverridesPanel can't find value for '"+moParameterName+"'");
-			//}
-			//cbit.vcell.solver.ConstantArraySpec oldCAS = getMathOverrides().getConstantArraySpec(moParameterName);
-////System.out.println("row="+i+" "+moParameterName/*+" md-var="+md.getVariable(moParameterName)*/);
-			//if(obj instanceof cbit.gui.SimpleTransferable.PlotDataSelection){
-				//cbit.gui.SimpleTransferable.PlotDataSelection pds =
-					//(cbit.gui.SimpleTransferable.PlotDataSelection)obj;
-				////Match Sim results names to InitalConditons parameters by name
-				//for(int j=0;j<pds.getSymbolTableEntries().length;j+= 1){
-					//if((srs.getDataNames()[j]+"_"+cbit.vcell.mapping.SpeciesContextSpec.RoleNames[
-							//cbit.vcell.mapping.SpeciesContextSpec.ROLE_InitialConcentration]).equals(moParameterName)){
-						////cbit.vcell.parser.Expression exp = getMathOverrides().getActualExpression(moParameterName,0);
-						////if(exp != null){
-							////System.out.println(rows[i]+" "+moParameterName+" "+exp.infix());
-							//changedParameterNamesV.add(moParameterName);
-							//cbit.vcell.math.Constant newConstant = new cbit.vcell.math.Constant(moParameterName,new cbit.vcell.parser.Expression(srs.getDataValues()[0][j]));
-							//newConstantsV.add(newConstant);
-							//pasteDescriptionsV.add(
-								//cbit.vcell.desktop.VCellCopyPasteHelper.formatPasteList(
-									//moParameterName,
-									//srs.getDataNames()[j],
-									//originalValueDescription,
-									////(oldCAS.getNumValues() == 1?oldCAS.getConstants()[0].getExpression().infix():
-										////oldCAS.getMinValue()+"..."+oldCAS.getMaxValue()),
-									//newConstant.getExpression().infix())
-									////srs.getDataValues()[0][j]+""/*000(bPastedEqualCurrentParameter?"":" (from "+srs.getDataNames()[j]+")")*/)
-							//);
-
-						////}
-					//}
-				//}
-				
-			//}else if(obj instanceof cbit.vcell.desktop.VCellTransferable.SimulationParameterSelection){
-				//cbit.vcell.desktop.VCellTransferable.SimulationParameterSelection sps =
-					//(cbit.vcell.desktop.VCellTransferable.SimulationParameterSelection)obj;
-				////Match parameter names directly
-				//cbit.vcell.solver.ConstantArraySpec newCAS = sps.getConstantArraySpec(moParameterName);
-				//cbit.vcell.math.Constant newConstant = null;
-				//if(sps.getActualExpression(moParameterName) != null){
-					//newConstant = new cbit.vcell.math.Constant(moParameterName,sps.getActualExpression(moParameterName));
-				//}
-				////if(newCAS != null && newConstant != null && newCAS.getNumValues() != 1){
-					////throw new Exception("Pasting SimulationParameterSelection has values for both ConstantArraySpec and Constant, expected only 1 value.");
-				////}
-				////cbit.vcell.parser.Expression newExpression = sps.getActualExpression(moParameterName);
-				//if(newCAS != null || newConstant != null){
-					////cbit.vcell.solver.ConstantArraySpec newCAS = cbit.vcell.solver.ConstantArraySpec.clone(sps.getConstantArraySpec(moParameterName));
-					////cbit.vcell.math.Constant newConstant = new cbit.vcell.math.Constant(moParameterName,sps.getActualExpression(moParameterName));
-					////if(newConstant != null){
-						////System.out.println(rows[i]+" "+moParameterName+" "+exp.infix());
-						//changedParameterNamesV.add(moParameterName);
-						//newConstantsV.add((newCAS != null?(Object)newCAS:(Object)newConstant));
-						//pasteDescriptionsV.add(
-							//cbit.vcell.desktop.VCellCopyPasteHelper.formatPasteList(
-								//moParameterName,
-								//moParameterName,
-								//originalValueDescription,
-								////(oldCAS.getNumValues() == 1?oldCAS.getConstants()[0].getExpression().infix():
-									////oldCAS.getMinValue()+"..."+oldCAS.getMaxValue()),
-								//(newCAS != null?newCAS.toString():newConstant.getExpression().infix())
-								////(newCAS.getNumValues() == 1?newCAS.getConstants()[0].getExpression().infix():
-									////newCAS.getMinValue()+"..."+newCAS.getMaxValue())
-							//)
-								////srs.getDataValues()[0][j]+""/*000(bPastedEqualCurrentParameter?"":" (from "+srs.getDataNames()[j]+")")*/)
-						//);
-					////}
-				//}
-			//}else if(obj instanceof cbit.vcell.desktop.VCellTransferable.InitialConditionsSelection){
-				//cbit.vcell.desktop.VCellTransferable.InitialConditionsSelection ics =
-					//(cbit.vcell.desktop.VCellTransferable.InitialConditionsSelection)obj;
-					
-				////cbit.vcell.parser.SymbolTableEntry ste = ics.getMathSymbolMapping().getBiologicalSymbol(md.getVariable(moParameterName));
-				////if(ste != null){
-					////System.out.println("ste "+ste.getName());
-				////}else{
-					////System.out.println("ste Not Found");
-				////}
-
-				////cbit.vcell.math.Variable var = ics.getMathSymbolMapping().getVariable(md.getVariable(moParameterName));
-				////if(var != null){
-					////System.out.println("var "+var.getName());
-				////}else{
-					////System.out.println("var Not Found");
-				////}
-
-				
-				//cbit.vcell.mapping.SpeciesContextSpec[] scsArr = ics.getSpeciesContextSpecs();
-				//for(int k=0;k<scsArr.length;k+= 1){
-					////System.out.println("--- "+scsArr[k].getClass().getName()+" "+scsArr[k].toString());
-					//cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter[] scspArr =
-						//(cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter[])scsArr[k].getParameters();
-					//for(int l = 0;l<scspArr.length;l+= 1){
-						////if(ics.hasValuesForSCSRole(scspArr[l].getRole())){
-						//if((scsArr[k].getSpeciesContext().getName()+"_"+scspArr[l].getName()).equals(moParameterName)){
-							////String pastedFullParamName = scsArr[k].getSpeciesContext().getName()+"_"+cbit.vcell.mapping.SpeciesContextSpec.RoleNames[scspArr[l].getRole()];
-							////if(moParameterName.startsWith(scsArr[k].getSpeciesContext().getName()+"_")){
-								////System.out.println("--- "+scsArr[k].getSpeciesContext().getName()+" "+scspArr[l].getName());
-							////}
-							////cbit.vcell.math.Variable var = ics.getMathSymbolMapping().getVariable(scspArr[l]);
-							////if(var == null){
-								////System.out.println(scspArr[l]+" not found in math ");
-							////}else if(var.getName().equals(moParameterName)){
-								////System.out.println("Match Found -- var "+var.getName());
-							////}
-							//cbit.vcell.math.Constant newConstant = new cbit.vcell.math.Constant(moParameterName,scspArr[l].getExpression());
-							//changedParameterNamesV.add(moParameterName);
-							//newConstantsV.add(newConstant);
-							//pasteDescriptionsV.add(
-								//cbit.vcell.desktop.VCellCopyPasteHelper.formatPasteList(
-									//moParameterName,
-									//moParameterName,
-									//originalValueDescription,
-									////(oldCAS.getNumValues() == 1?oldCAS.getConstants()[0].getExpression().infix():
-										////oldCAS.getMinValue()+"..."+oldCAS.getMaxValue()),
-									//newConstant.getExpression().infix())
-									////srs.getDataValues()[0][j]+""/*000(bPastedEqualCurrentParameter?"":" (from "+srs.getDataNames()[j]+")")*/)
-							//);
-						//}
-					//}
-				//}
-			//}
-		//}
-	}
 	}catch(Throwable e){
 		PopupGenerator.showErrorDialog(this, "Paste failed during pre-check (no changes made).\n"+e.getClass().getName()+" "+e.getMessage(), e);
 		return;
@@ -1038,8 +874,6 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			pasteDescriptionsV.copyInto(pasteDescriptionArr);
 			String[] changedParameterNamesArr = new String[changedParameterNamesV.size()];
 			changedParameterNamesV.copyInto(changedParameterNamesArr);
-			//cbit.vcell.math.Constant[] newConstantsArr = new cbit.vcell.math.Constant[newConstantsV.size()];
-			//newConstantsV.copyInto(newConstantsArr);
 			VCellCopyPasteHelper.chooseApplyPaste(this, pasteDescriptionArr,getMathOverrides(),changedParameterNamesArr,newConstantsV);
 		}else{
 			PopupGenerator.showInfoDialog(this, "No paste items match the destination (no changes made).");
@@ -1091,22 +925,6 @@ public static void main(java.lang.String[] args) {
 	}
 }
 
-
-/**
- * Comment
- */
-private void makeBold() {
-	getJLabelTitle().setFont(getJLabelTitle().getFont().deriveFont(java.awt.Font.BOLD));
-}
-
-
-/**
- * Comment
- */
-public void newSimulation(cbit.vcell.solver.Simulation simulation) {
-	getMathOverridesTableModel().setMathOverrides(simulation == null ? null : simulation.getMathOverrides());
-}
-
 /**
  * Sets the editable property (boolean) value.
  * @param editable The new value for the property.
@@ -1124,8 +942,8 @@ public void setEditable(boolean editable) {
  * @param mathOverrides The new value for the property.
  * @see #getMathOverrides
  */
-public void setMathOverrides(cbit.vcell.solver.MathOverrides mathOverrides) {
-	cbit.vcell.solver.MathOverrides oldValue = fieldMathOverrides;
+public void setMathOverrides(MathOverrides mathOverrides) {
+	MathOverrides oldValue = fieldMathOverrides;
 	fieldMathOverrides = mathOverrides;
 	firePropertyChange("mathOverrides", oldValue, mathOverrides);
 }

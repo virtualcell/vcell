@@ -30,6 +30,8 @@ import cbit.vcell.solver.SimulationSymbolTable;
 
 public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
 	
+	public static final String PROPERTY_OUTPUT_FUNCTIONS = "outputFunctions";
+
 	public class OutputFunctionNameScope extends AbstractNameScope  {
 		public OutputFunctionNameScope(){
 			super();
@@ -204,9 +206,9 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	
 	private void setOutputFunctions0(ArrayList<AnnotatedFunction> outputFunctions) throws java.beans.PropertyVetoException {
 		ArrayList<AnnotatedFunction> oldValue = outputFunctionsList;
-		fireVetoableChange("outputFunctions", oldValue, outputFunctions);
+		fireVetoableChange(PROPERTY_OUTPUT_FUNCTIONS, oldValue, outputFunctions);
 		outputFunctionsList = outputFunctions;
-		firePropertyChange("outputFunctions", oldValue, outputFunctions);
+		firePropertyChange(PROPERTY_OUTPUT_FUNCTIONS, oldValue, outputFunctions);
 	}
 	
 	public void setOutputFunctions(ArrayList<AnnotatedFunction> outputFunctions) throws java.beans.PropertyVetoException {
@@ -285,7 +287,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	}
 
 	public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-		if (evt.getSource() == this && evt.getPropertyName().equals("outputFunctions")){
+		if (evt.getSource() == this && evt.getPropertyName().equals(PROPERTY_OUTPUT_FUNCTIONS)){
 			ArrayList<AnnotatedFunction> newOutputFnsList = (ArrayList<AnnotatedFunction>)evt.getNewValue();
 			if(newOutputFnsList == null){
 				throw new IllegalArgumentException("outputFunctions cannot be null");

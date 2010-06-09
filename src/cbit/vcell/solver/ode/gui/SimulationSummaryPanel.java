@@ -21,7 +21,6 @@ import javax.swing.JTextArea;
 
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
-import org.vcell.util.gui.EmptyBorderBean;
 
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.Constant;
@@ -52,7 +51,6 @@ public class SimulationSummaryPanel extends JPanel {
 	private JLabel ivjJLabel6 = null;
 	private JLabel ivjJLabel7 = null;
 	private JLabel ivjJLabel8 = null;
-	private JPanel ivjJPanel1 = null;
 	private JScrollPane ivjJScrollPane1 = null;
 	private MathOverridesPanel ivjMathOverridesPanel1 = null;
 	private JLabel ivjJLabelEndTime = null;
@@ -558,11 +556,7 @@ private javax.swing.JLabel getJLabelRelTol() {
 			labelRelTol = new javax.swing.JLabel("rel tol");
 			labelRelTol.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			labelRelTol.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -575,11 +569,7 @@ private javax.swing.JLabel getJLabelAbsTol() {
 			labelAbsTol = new javax.swing.JLabel("abs tol");
 			labelAbsTol.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			labelAbsTol.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1004,30 +994,6 @@ private javax.swing.JLabel getJLabelTimestep() {
 	return ivjJLabelTimestep;
 }
 
-
-/**
- * Return the JPanel1 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel1() {
-	if (ivjJPanel1 == null) {
-		try {
-			ivjJPanel1 = new javax.swing.JPanel();
-			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setLayout(null);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel1;
-}
-
-
 /**
  * Return the JScrollPane1 property value.
  * @return javax.swing.JScrollPane
@@ -1061,8 +1027,8 @@ private javax.swing.JTextArea getJTextAreaDescription() {
 		try {
 			ivjJTextAreaDescription = new javax.swing.JTextArea();
 			ivjJTextAreaDescription.setName("JTextAreaDescription");
-			ivjJTextAreaDescription.setBorder(new EmptyBorderBean());
 			ivjJTextAreaDescription.setForeground(java.awt.Color.blue);
+			ivjJTextAreaDescription.setRows(3);
 			ivjJTextAreaDescription.setLineWrap(true);
 			ivjJTextAreaDescription.setWrapStyleWord(true);
 			ivjJTextAreaDescription.setEditable(false);
@@ -1141,12 +1107,11 @@ private void initialize() {
 	try {
 		setName("SimulationSummaryPanel");
 		setLayout(new java.awt.GridBagLayout());
-
 		
 		// 0
 		java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 		constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
-		constraintsJLabel1.gridwidth = 8;
+		constraintsJLabel1.gridwidth = 7;
 		constraintsJLabel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabel1(), constraintsJLabel1);
@@ -1160,10 +1125,10 @@ private void initialize() {
 
 		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 		constraintsJScrollPane1.gridx = 1; constraintsJScrollPane1.gridy = 1;
-		constraintsJScrollPane1.gridwidth = 7;
+		constraintsJScrollPane1.gridwidth = 6;
 		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJScrollPane1.weightx = 1.0;
-		constraintsJScrollPane1.weighty = 0.2;
+		constraintsJScrollPane1.weighty = 0.1;
 		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJScrollPane1(), constraintsJScrollPane1);
 
@@ -1204,25 +1169,20 @@ private void initialize() {
 		add(getJLabel13(), constraintsJLabel13); // output
 		
 		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 5; gbc.gridy = 3;
+		gbc.gridx = 5; 
+		gbc.gridy = 3;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelRelTol(), gbc); // rel tol
 
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 6; gbc.gridy = 3;
+		gbc.gridx = 6; 
+		gbc.gridy = 3;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelAbsTol(), gbc); // abs tol
-		
-		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 7; constraintsJPanel1.gridy = 3;
-		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel1.weightx = 8.0;
-		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel1(), constraintsJPanel1); // empty panel to make things closer
 	
 		// 4
 		java.awt.GridBagConstraints constraintsJLabelStartTime = new java.awt.GridBagConstraints();
@@ -1251,15 +1211,11 @@ private void initialize() {
 
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 5; gbc.gridy = 4;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelRelTolValue(), gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 6; gbc.gridy = 4;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelAbsTolValue(), gbc);
 		
@@ -1285,7 +1241,7 @@ private void initialize() {
 
 		java.awt.GridBagConstraints constraintsJLabelMesh = new java.awt.GridBagConstraints();
 		constraintsJLabelMesh.gridx = 1; constraintsJLabelMesh.gridy = 6;
-		constraintsJLabelMesh.gridwidth = 5;
+		constraintsJLabelMesh.gridwidth = 3;
 		constraintsJLabelMesh.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelMesh.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelMesh(), constraintsJLabelMesh);
@@ -1298,7 +1254,7 @@ private void initialize() {
 
 		java.awt.GridBagConstraints constraintsJLabelGeometrySize = new java.awt.GridBagConstraints();
 		constraintsJLabelGeometrySize.gridx = 5; constraintsJLabelGeometrySize.gridy = 6;
-		constraintsJLabelGeometrySize.gridwidth = 5;
+		constraintsJLabelGeometrySize.gridwidth = 2;
 		constraintsJLabelGeometrySize.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelGeometrySize.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelGeometrySize(), constraintsJLabelGeometrySize);
@@ -1312,7 +1268,7 @@ private void initialize() {
 		
 		java.awt.GridBagConstraints constraintsJLabelSolver = new java.awt.GridBagConstraints();
 		constraintsJLabelSolver.gridx = 1; constraintsJLabelSolver.gridy = 7;
-		constraintsJLabelSolver.gridwidth = 5;
+		constraintsJLabelSolver.gridwidth = 6;
 		constraintsJLabelSolver.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelSolver.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelSolver(), constraintsJLabelSolver);		
@@ -1320,15 +1276,16 @@ private void initialize() {
 		// 8
 		java.awt.GridBagConstraints constraintsJLabel9 = new java.awt.GridBagConstraints();
 		constraintsJLabel9.gridx = 0; constraintsJLabel9.gridy = 8;
-		constraintsJLabel9.gridwidth = 8;
+		constraintsJLabel9.gridwidth = 7;
 		constraintsJLabel9.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJLabel9.weightx = 1.0;
 		constraintsJLabel9.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabel9(), constraintsJLabel9);
 
 		// 9
 		java.awt.GridBagConstraints constraintsMathOverridesPanel1 = new java.awt.GridBagConstraints();
 		constraintsMathOverridesPanel1.gridx = 0; constraintsMathOverridesPanel1.gridy = 9;
-		constraintsMathOverridesPanel1.gridwidth = 8;
+		constraintsMathOverridesPanel1.gridwidth = 7;
 		constraintsMathOverridesPanel1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsMathOverridesPanel1.weightx = 1.0;
 		constraintsMathOverridesPanel1.weighty = 1.0;

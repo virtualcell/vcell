@@ -9,10 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.BoundedRangeModel;
@@ -29,6 +27,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -45,7 +44,6 @@ import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.MathFunctionDefinitions;
-import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionPrintFormatter;
 import cbit.vcell.simdata.DataIdentifier;
@@ -1726,5 +1724,7 @@ private AnnotatedFunction findFunction(DataIdentifier identifier) {
 	return f;
 }
 
-
+public ListCellRenderer getVariableListCellRenderer() {
+	return getJList1().getCellRenderer();
+}
 }
