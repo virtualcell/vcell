@@ -71,7 +71,7 @@ public class SubdomainInfo implements Serializable {
 				return insideHandle;
 			}
 		}
-		throw new MathException("Unexpected membrane between subvolumes " + handle0 + " and " + handle1 + "."); 			
+		throw new MathException("Unexpected membrane between subdomains " + handle0 + " and " + handle1 + "."); 			
 	}
 	
 	public static void write(File file, MathDescription mathDesc) throws IOException, MathException {
