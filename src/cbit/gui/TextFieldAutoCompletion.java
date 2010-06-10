@@ -84,6 +84,7 @@ public class TextFieldAutoCompletion extends JTextField {
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private ArrayList<String> functList = new ArrayList<String>();
+	private Rectangle highlightRectangle = null;
 		
 	private class InternalEventHandler implements DocumentListener, MouseListener, KeyListener, FocusListener {
 		public void changedUpdate(DocumentEvent e) {
@@ -105,9 +106,8 @@ public class TextFieldAutoCompletion extends JTextField {
 					SwingUtilities.invokeLater(new CompletionTask());
 				}
 			} else if (e.getSource() == TextFieldAutoCompletion.this) {
-				highlightParenthesis();
+				repaint();
 			}
-			
 		}
 
 		public void mouseEntered(MouseEvent e) {
@@ -131,7 +131,7 @@ public class TextFieldAutoCompletion extends JTextField {
 
 		public void keyReleased(KeyEvent e) {
 			if (e.getSource() == TextFieldAutoCompletion.this) {
-				highlightParenthesis();
+				repaint();
 				if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
 					if (e.getModifiersEx() != 0) {
 						autoCompJPopupMenu.setVisible(false);
@@ -597,12 +597,11 @@ public class TextFieldAutoCompletion extends JTextField {
 		return -1;
 	}
 	
-	private boolean bMatchParenthesisFound = false;
-	private void highlightParenthesis(){
-		if (bMatchParenthesisFound) {
-			repaint();
-			bMatchParenthesisFound = false;
-		}
+	
+	private void highlightParenthesis(final Graphics g){
+		FontMetrics fm = g.getFontMetrics();
+		final int charWidth = fm.getWidths()['('];
+		
 		String text = getText();		
 		int txtLen = text.length();
 		if (txtLen == 0) {
@@ -612,7 +611,7 @@ public class TextFieldAutoCompletion extends JTextField {
 		boolean bRight = false;
 		int pos1 = -1;
 		int caretPos = getCaretPosition();
-		if (caretPos == 0) {
+		if (caretPos <= 0) {
 			return;
 		}
 		pos1 = caretPos -1;
@@ -656,27 +655,30 @@ public class TextFieldAutoCompletion extends JTextField {
 			return;
 		}
 		
-		bMatchParenthesisFound = true;
-		final Graphics g = getGraphics();
-		if (g instanceof Graphics2D) {
-//			((Graphics2D)g).setStroke(new BasicStroke(1.3f));
-		}
-		g.setColor(new Color(0xff, 0x99, 0x33));
-		
-		FontMetrics fm=g.getFontMetrics();
-		final int charWidth = fm.getWidths()['('];
 		try {
-			final Rectangle rect2 = modelToView(pos2);
-			
-			Timer t = new Timer(10, new ActionListener() {				
-				public void actionPerformed(ActionEvent e) {
-					g.drawRect(rect2.x, rect2.y, charWidth, rect2.height);					
-				}
-			});
-			t.setRepeats(false);
-			t.start();
+			highlightRectangle = modelToView(pos2);
+			Color c = g.getColor();
+			g.setColor(new Color(0xff, 0x99, 0x33));
+			g.drawRect(highlightRectangle.x, highlightRectangle.y, charWidth, highlightRectangle.height);
+			g.setColor(c);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+	@Override
+	protected void paintComponent(Graphics g) {
+		if (highlightRectangle != null) {
+			FontMetrics fm = g.getFontMetrics();
+			int charWidth = fm.getWidths()['('];
+			Color c = g.getColor();
+			g.setColor(getBackground());
+			g.drawRect(highlightRectangle.x, highlightRectangle.y, charWidth, highlightRectangle.height);
+			g.setColor(c);
+		}
+		super.paintComponent(g);
+		if (hasFocus()) {			
+			highlightParenthesis(g);
 		}
 	}	 
 }
