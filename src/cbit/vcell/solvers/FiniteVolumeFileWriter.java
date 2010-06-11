@@ -582,17 +582,18 @@ private void writeBoundaryConditions(BoundaryConditionType[] bctypes) {
 }
 
 private String replaceVolumeVariable(MembraneSubDomain msd, Expression exp) throws MathException, ExpressionException {
-	String flux = exp.infix();
-	// for old models
-	flux = flux.replaceAll("_INSIDE", "_" + msd.getInsideCompartment().getName() + "_membrane");
-	flux = flux.replaceAll("_OUTSIDE", "_" + msd.getOutsideCompartment().getName() + "_membrane");
+	Expression fluxExpr = new Expression(exp);
 	Enumeration<Variable> varEnum = simulationJob.getSimulationSymbolTable().getRequiredVariables(exp);
 	while (varEnum.hasMoreElements()) {
 		Variable var = varEnum.nextElement();
 		if (var instanceof VolVariable || var instanceof VolumeRegionVariable) {
-			flux = flux.replaceAll(var.getName(), var.getName() + "_" + var.getDomain().getName() + "_membrane");
+			fluxExpr.substituteInPlace(new Expression(var.getName()), new Expression(var.getName() + "_" + var.getDomain().getName() + "_membrane"));
 		}
 	}
+	// for old models
+	String flux = fluxExpr.infix();
+	flux = flux.replaceAll("_INSIDE", "_" + msd.getInsideCompartment().getName() + "_membrane");
+	flux = flux.replaceAll("_OUTSIDE", "_" + msd.getOutsideCompartment().getName() + "_membrane");
 	return flux;
 	
 }
