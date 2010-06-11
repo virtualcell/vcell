@@ -39,4 +39,5 @@ public class GuiConstants {
 	public static final Border ProblematicTextFieldBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.red), BorderFactory.createEmptyBorder(2, 2, 2, 2));
 	public static final String PROPERTY_SIMULATIONS = "simulations";
 	public static final String PROPERTY_SIMULATION_OWNER = "simulationOwner";
+	public static final String PROPERTY_NAME = "name";
 }

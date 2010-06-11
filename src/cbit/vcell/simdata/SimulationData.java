@@ -11,7 +11,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -30,7 +29,6 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.GradientFunctionDefinition;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -42,7 +40,6 @@ import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
@@ -50,6 +47,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.FunctionFileGenerator;
 import cbit.vcell.solvers.LocalSolverController;
 /**
@@ -662,6 +660,20 @@ private synchronized File getMembraneMeshMetricsFile() throws FileNotFoundExcept
 		return meshMetricsFile;
 	}
 
+	return null;
+}
+/**
+ * This method was created in VisualAge.
+ * @return java.io.File
+ * @param user cbit.vcell.server.User
+ * @param simID java.lang.String
+ */
+private synchronized File getSubdomainFile() throws FileNotFoundException {
+	File subdomainFile = new File(userDirectory,vcDataId.getID()+FVSolver.SUBDOMAINS_FILE_SUFFIX);
+	if (subdomainFile.exists()){
+		return subdomainFile;
+	}
+	
 	return null;
 }
 
@@ -1442,7 +1454,7 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 	//
 	// read meshFile,MembraneMeshMetrics and parse into 'mesh' object
 	//
-	mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile);
+	mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile, getSubdomainFile());
 }
 
 

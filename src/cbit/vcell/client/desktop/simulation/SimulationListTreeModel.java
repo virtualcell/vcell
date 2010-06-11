@@ -112,7 +112,7 @@ public class SimulationListTreeModel extends DefaultTreeModel  implements java.b
 		
 		if (nodeId == ROOT_NODE || nodeId == SIMULATIONS_NODE) {
 			folderNodes[SIMULATIONS_NODE].removeAllChildren();
-		    Simulation[] simulations = simulationWorkspace.getSimulations();
+		    Simulation[] simulations = simulationWorkspace.getSimulations().clone();
 		    if(simulations.length > 0) {
 		    	Arrays.sort(simulations, new Comparator<Simulation>() {
 					public int compare(Simulation o1, Simulation o2) {
@@ -128,7 +128,7 @@ public class SimulationListTreeModel extends DefaultTreeModel  implements java.b
 		
 		if (nodeId == ROOT_NODE || nodeId == OUTPUT_FUNCTIONS_NODE) {
 			folderNodes[OUTPUT_FUNCTIONS_NODE].removeAllChildren();
-		    ArrayList<AnnotatedFunction> outputFunctions = simulationWorkspace.getSimulationOwner().getOutputFunctionContext().getOutputFunctionsList();
+		    ArrayList<AnnotatedFunction> outputFunctions = new ArrayList<AnnotatedFunction>(simulationWorkspace.getSimulationOwner().getOutputFunctionContext().getOutputFunctionsList());
 		    if(outputFunctions.size() != 0) {
 		    	Collections.sort(outputFunctions, new Comparator<AnnotatedFunction>() {
 					public int compare(AnnotatedFunction o1, AnnotatedFunction o2) {
@@ -182,7 +182,11 @@ public class SimulationListTreeModel extends DefaultTreeModel  implements java.b
 		simulationOwner.getOutputFunctionContext().removePropertyChangeListener(this);
 		simulationOwner.getOutputFunctionContext().addPropertyChangeListener(this);
 		simulationOwner.addPropertyChangeListener(this);
-		simulationOwner.removePropertyChangeListener(this);		
+		simulationOwner.removePropertyChangeListener(this);
+		for (Simulation sim : simulationOwner.getSimulations()) {
+			sim.removePropertyChangeListener(this);
+			sim.addPropertyChangeListener(this);
+		}
 	}
 	
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -196,6 +200,9 @@ public class SimulationListTreeModel extends DefaultTreeModel  implements java.b
 			if (evt.getPropertyName().equals(GuiConstants.PROPERTY_SIMULATION_OWNER)) {
 				refreshListeners();
 				populateTree(ROOT_NODE);
+			}
+			if (evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME) && evt.getSource() instanceof Simulation) {
+				populateTree(SIMULATIONS_NODE);
 			}
 		} catch (Exception e){
 			e.printStackTrace(System.out);

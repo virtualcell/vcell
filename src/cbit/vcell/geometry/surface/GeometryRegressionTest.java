@@ -156,7 +156,7 @@ public void compareMesh(String startKey) {
  * @param meshfile java.io.File
  */
 public static cbit.vcell.solvers.CartesianMesh loadMesh(File meshFile, File meshmetricsFile) throws Exception {
-	CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile,meshmetricsFile);
+	CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile,meshmetricsFile, null);
 	return mesh;	
 }
 
