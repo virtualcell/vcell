@@ -208,7 +208,7 @@ public static DataManagerTest getPDEExample1() {
 
 		// read the mesh file into this string .... DO A FILE READ
 		java.io.File meshFile = new java.io.File("\\\\fs2\\RAID\\vcell\\users\\vcelltestaccount\\size10241024.mesh");
-		cbit.vcell.solvers.CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile, null);
+		cbit.vcell.solvers.CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile, null, null);
 		org.vcell.util.document.VCDataIdentifier vcDataIdentifier = new org.vcell.util.document.VCDataIdentifier() {
 										public org.vcell.util.document.User getOwner() {
 											return new org.vcell.util.document.User("anu",new org.vcell.util.document.KeyValue("123"));
@@ -246,7 +246,7 @@ public static DataManagerTest getPDEExample2() {
 
 		// read the mesh file into this string .... DO A FILE READ
 		java.io.File meshFile = new java.io.File("\\\\fs2\\RAID\\vcell\\users\\vcelltestaccount\\size44.mesh");
-		cbit.vcell.solvers.CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile, null);
+		cbit.vcell.solvers.CartesianMesh mesh = CartesianMesh.readFromFiles(meshFile, null, null);
 		org.vcell.util.document.VCDataIdentifier vcDataIdentifier = new org.vcell.util.document.VCDataIdentifier() {
 										public org.vcell.util.document.User getOwner() {
 											return new org.vcell.util.document.User("anu",new org.vcell.util.document.KeyValue("123"));

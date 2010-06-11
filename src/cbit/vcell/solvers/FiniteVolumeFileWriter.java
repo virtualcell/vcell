@@ -84,7 +84,6 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
  * @author: Fei Gao
  */
 public class FiniteVolumeFileWriter extends SolverFileWriter {
-	private static final String VCG_FILE_EXTENSION = ".vcg";
 	private static final String RANDOM_VARIABLE_FILE_EXTENSION = ".rv";
 	private File userDirectory = null;
 	private boolean bInlineVCG = false;
@@ -584,6 +583,9 @@ private void writeBoundaryConditions(BoundaryConditionType[] bctypes) {
 
 private String replaceVolumeVariable(MembraneSubDomain msd, Expression exp) throws MathException, ExpressionException {
 	String flux = exp.infix();
+	// for old models
+	flux = flux.replaceAll("_INSIDE", "_" + msd.getInsideCompartment().getName() + "_membrane");
+	flux = flux.replaceAll("_OUTSIDE", "_" + msd.getOutsideCompartment().getName() + "_membrane");
 	Enumeration<Variable> varEnum = simulationJob.getSimulationSymbolTable().getRequiredVariables(exp);
 	while (varEnum.hasMoreElements()) {
 		Variable var = varEnum.nextElement();
@@ -914,7 +916,7 @@ private void writeMeshFile() throws IOException {
 	if (bInlineVCG) {
 		GeometryFileWriter.write(printWriter, resampledGeometry);
 	} else {
-		printWriter.println("VCG_FILE " + new File(userDirectory, simulationJob.getSimulationJobID() + VCG_FILE_EXTENSION).getAbsolutePath());
+		printWriter.println("VCG_FILE " + new File(userDirectory, simulationJob.getSimulationJobID() + FVSolver.VCG_FILE_EXTENSION).getAbsolutePath());
 	}	
 	printWriter.println("MESH_END");
 	printWriter.println();
