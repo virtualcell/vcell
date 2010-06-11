@@ -14,6 +14,8 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
+import com.hp.hpl.jena.sparql.util.StrUtils;
+
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -122,7 +124,6 @@ public class MathMapping implements ScopedSymbolTable {
 	protected Vector<Issue> localIssueList = new Vector<Issue>();
 
 	private MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
-	private Hashtable<ModelParameter, Hashtable<String, Expression>> globalParamVariantsHash = new Hashtable<ModelParameter, Hashtable<String,Expression>>();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private NameScope nameScope = new MathMappingNameScope();
@@ -1412,20 +1413,20 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}
 		}
 		for (int j=0;j<modelParameters.length;j++){
-			GeometryClass geometryClass = null; //TODO domain ... compute domain from where they are used.
-			Expression modelParamExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), geometryClass);
-			Domain domain = null; //TODO add domain
+			Expression modelParamExpr = modelParameters[j].getExpression();
+			GeometryClass geometryClass = getDefaultGeometryClass(modelParamExpr);
+			modelParamExpr = getIdentifierSubstitutions(modelParamExpr, modelParameters[j].getUnitDefinition(), geometryClass);
 			if (eventAssignTargets.contains(modelParameters[j])) {
 				EventAssignmentInitParameter eap = null;
 				try {
-					eap = addEventAssignmentInitParameter(modelParameters[j].getName(), modelParameters[j].getExpression(), 
+					eap = addEventAssignmentInitParameter(modelParameters[j].getName(), modelParamExpr, 
 							PARAMETER_ROLE_EVENTASSIGN_INITCONDN, modelParameters[j].getUnitDefinition());
 				} catch (PropertyVetoException e) {
 					e.printStackTrace(System.out);
 					throw new MappingException(e.getMessage());
 				}
 				// varHash.addVariable(newFunctionOrConstant(getMathSymbol(eap, null), modelParamExpr));
-				VolVariable volVar = new VolVariable(modelParameters[j].getName(),domain);
+				VolVariable volVar = new VolVariable(modelParameters[j].getName(),null);
 				varHash.addVariable(volVar);
 				eventVolVarHash.put(volVar, eap);
 			} else {
@@ -1435,87 +1436,10 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	} else {
 		// populate in globalParameterVariants hashtable
 		for (int j = 0; j < modelParameters.length; j++){
-			Hashtable<String, Expression> structMappingVariantsHash = new Hashtable<String, Expression>();
-			for (int k = 0; k < structureMappings.length; k++) {
-				String paramVariantName = null;
-				Expression paramVariantExpr = null;
-				if (modelParameters[j].getExpression().getSymbols() == null) {
-					paramVariantName = modelParameters[j].getName();
-					paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), null);
-				} else {
-					paramVariantName = modelParameters[j].getName()+"_"+TokenMangler.fixTokenStrict(structureMappings[k].getStructure().getName());
-					// if the expression has symbols that do not belong in that structureMapping, do not create the variant.
-					Expression exp1 = modelParameters[j].getExpression();
-					Expression modelParamExpr = substituteGlobalParameters(exp1); 
-					String[] symbols = modelParamExpr.getSymbols();
-					boolean bValid = true;
-					Structure sm_struct = structureMappings[k].getStructure();
-					if (symbols != null) {
-						for (int ii = 0; ii < symbols.length; ii++) {
-							SpeciesContext sc = simContext.getModel().getSpeciesContext(symbols[ii]); 
-							if (sc != null) {
-								// symbol[ii] is a speciesContext, check its structure with structureMapping[k].structure. If they are the same or
-								// if it is the adjacent membrane(s), allow variant expression to be created. Else, continue.
-								Structure sp_struct = sc.getStructure();
-								if (sp_struct.compareEqual(sm_struct)) {
-									bValid = bValid && true;
-								} else {
-									// if the 2 structures are not the same, are they adjacent? then 'bValid' is true, else false.
-									if ((sm_struct instanceof Feature) && (sp_struct instanceof Membrane)) {
-										Feature sm_feature = (Feature)sm_struct;
-										Membrane sp_mem = (Membrane)sp_struct;
-										if (sp_mem.compareEqual(sm_feature.getParentStructure()) || (sp_mem.getInsideFeature().compareEqual(sm_feature) || 
-												sp_mem.getOutsideFeature().compareEqual(sm_feature))) {
-											bValid = bValid && true;
-										} else {
-											bValid = bValid && false;
-											break;
-										}
-									} else if ((sm_struct instanceof Membrane) && (sp_struct instanceof Feature)) {
-										Feature sp_feature = (Feature)sp_struct;
-										Membrane sm_mem = (Membrane)sm_struct;
-										if (sm_mem.compareEqual(sp_feature.getParentStructure()) || (sm_mem.getInsideFeature().compareEqual(sp_feature) || 
-												sm_mem.getOutsideFeature().compareEqual(sp_feature))) {
-											bValid = bValid && true;
-										} else {
-											bValid = bValid && false;
-											break;
-										}
-									} else {
-										bValid = bValid && false;
-										break;
-									}
-								}
-							} 
-						}
-					}
-					if (bValid) {
-						paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), structureMappings[k].getGeometryClass());
-					}
-				}
-				if (paramVariantExpr != null) {
-					structMappingVariantsHash.put(paramVariantName, paramVariantExpr);
-				}
-			}
-			globalParamVariantsHash.put(modelParameters[j], structMappingVariantsHash);
-		}
-		//
-		// global parameters from model add all variants (due to different structureMappings)
-		//
-		for (int j=0;j<modelParameters.length;j++){
-			GeometryClass geometryClass = null; //TODO geometryClass
-			if (modelParameters[j].getExpression().getSymbols() == null) {
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], geometryClass), getIdentifierSubstitutions(modelParameters[j].getExpression(),modelParameters[j].getUnitDefinition(),geometryClass),geometryClass));
-			} else {
-				Hashtable<String, Expression> smVariantsHash = globalParamVariantsHash.get(modelParameters[j]);
-				for (int k = 0; k < structureMappings.length; k++) {
-					String variantName = modelParameters[j].getName()+"_"+TokenMangler.fixTokenStrict(structureMappings[k].getStructure().getName());
-					Expression variantExpr = smVariantsHash.get(variantName);
-					if (variantExpr != null) {
-						varHash.addVariable(newFunctionOrConstant(variantName, variantExpr,geometryClass));
-					}
-				}
-			}
+			Expression modelParamExpr = modelParameters[j].getExpression();
+			GeometryClass geometryClass = getDefaultGeometryClass(modelParamExpr);
+			modelParamExpr = getIdentifierSubstitutions(modelParamExpr, modelParameters[j].getUnitDefinition(), geometryClass);
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], geometryClass), modelParamExpr,geometryClass));
 		}
 	}
 	//
@@ -2427,6 +2351,74 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //System.out.println(mathDesc.getVCML());
 //System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 }
+
+private GeometryClass getDefaultGeometryClass(Expression expr) throws ExpressionException, MappingException {
+	GeometryClass geometryClass = null;
+	if (simContext.getGeometry().getDimension() == 0) {
+		return null;
+	}
+	
+	String[] symbols = expr.getSymbols();
+	// if expr has no symbols, model param cannot be localized to a domain (its a const).
+	if (symbols == null) {
+		return null;
+	} else {
+		Expression modelParamExpr = substituteGlobalParameters(expr); 
+		symbols = modelParamExpr.getSymbols();
+		for (int k = 0; symbols != null && k < symbols.length; k++) {
+			Structure symbolStructure = null;
+			SymbolTableEntry ste = modelParamExpr.getSymbolBinding(symbols[k]);
+			if (ste instanceof SpeciesContext) {
+				symbolStructure = ((SpeciesContext)ste).getStructure();
+			} else if (ste instanceof StructureSize) {
+				symbolStructure = ((StructureSize)ste).getStructure();
+			} else if (ste instanceof MembraneVoltage) {
+				symbolStructure = ((MembraneVoltage)ste).getMembrane();
+			}
+			if (symbolStructure != null) {
+				StructureMapping sm = simContext.getGeometryContext().getStructureMapping(symbolStructure);
+				GeometryClass symbolGeomClass = sm.getGeometryClass();
+				
+				if (geometryClass == null) {
+					geometryClass = symbolGeomClass;
+				} else {
+					if (geometryClass != symbolGeomClass) {
+						if (geometryClass instanceof SurfaceClass) {
+							if (symbolGeomClass instanceof SurfaceClass) {
+								throw new MappingException("The expression '" + expr.infix() + "' references variables in surface domain '" + geometryClass.getName() + "' & surface domain '" + symbolGeomClass.getName() + "' that cannot be evaluated.");
+							} else {
+								// geomClass : surfaceClass; symbolGeomClass : subVol 
+								if (symbolGeomClass != ((SurfaceClass)geometryClass).getSubvolume1() &&
+									symbolGeomClass != ((SurfaceClass)geometryClass).getSubvolume2() ) {
+									throw new MappingException("The expression '" + expr.infix() + "' references variables in surface domain '" + geometryClass.getName() + "' & volume domain '" + symbolGeomClass.getName() + "' that cannot be evaluated.");
+								}
+							}
+						} else {	// geometryClass is a SubVolume
+							if (symbolGeomClass instanceof SubVolume) {
+								// check if adjacent; if so, choose separating membrane.
+								SurfaceClass surfaceClass = simContext.getGeometry().getGeometrySurfaceDescription().getSurfaceClass((SubVolume)symbolGeomClass, (SubVolume)geometryClass);
+								if (surfaceClass != null) {
+									geometryClass = surfaceClass;
+								} else {
+									throw new MappingException("The expression '" + expr.infix() + "' references variables in volume domain '" + geometryClass.getName() + "' & volume domain '" + symbolGeomClass.getName() + "' that cannot be evaluated.");
+								}
+							} else {
+								// geomClass : subVol; symbolGeomClass = surfaceClass
+								SurfaceClass surfaceSymbolGeomClass = (SurfaceClass)symbolGeomClass;
+								if (geometryClass != surfaceSymbolGeomClass.getSubvolume1() &&
+									geometryClass != surfaceSymbolGeomClass.getSubvolume2() ) {
+									throw new MappingException("The expression '" + expr.infix() + "' references variables in surface domain '" + surfaceSymbolGeomClass.getName() + "' & volume domain '" + geometryClass.getName() + "' that cannot be evaluated.");
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return geometryClass;
+}
+
 
 private VCUnitDefinition getEventVarUnit(SymbolTableEntry var) {
 	VCUnitDefinition varUnit = VCUnitDefinition.UNIT_DIMENSIONLESS; 
