@@ -896,6 +896,26 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			initImage = temp;
 		}
 		
+		//Check if we added a border and don't have a VCPixelClass for background
+		boolean bHasBackgroundVCPixel = false;
+		for (int j = 0; j < vcPixelClassesFromROINames.length; j++) {
+			if(vcPixelClassesFromROINames[j].getPixel() == 0){
+				bHasBackgroundVCPixel = true;
+				break;
+			}
+		}
+		if(!bHasBackgroundVCPixel){
+			for (int i = 0; i < initImage.getPixels().length; i++) {
+				if(initImage.getPixels()[i] == 0){
+					VCPixelClass[] tempvcp = new VCPixelClass[vcPixelClassesFromROINames.length+1];
+					tempvcp[0] = new VCPixelClass(null, RESERVED_NAME_BACKGROUND, 0);
+					System.arraycopy(vcPixelClassesFromROINames, 0, tempvcp, 1, vcPixelClassesFromROINames.length);
+					vcPixelClassesFromROINames = tempvcp;
+					break;
+				}
+			}
+		}
+
 		initImage.setPixelClasses(vcPixelClassesFromROINames);
 		updateExtent(initImage,originalExtent,originalISize);
 		return initImage;
