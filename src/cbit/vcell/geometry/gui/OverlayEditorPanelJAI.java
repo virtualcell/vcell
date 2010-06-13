@@ -333,6 +333,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 	
 	//properties
 	public static final String FRAP_DATA_INIT_PROPERTY = "FRAP_DATA_INIT_PROPERTY";
+	public static final String FRAP_DATA_DUPLICATE_PROPERTY = "FRAP_DATA_DUPLICATE_PROPERTY";
+	public static final String FRAP_DATA_PAD_PROPERTY = "FRAP_DATA_PAD_PROPERTY";
 	public static final String FRAP_DATA_CHANNEL_PROPERTY = "FRAP_DATA_CHANNEL_PROPERTY";
 	public static final String FRAP_DATA_ADDALLDISTINCT_PROPERTY = "FRAP_DATA_ADDALLDISTINCT_PROPERTY";
 	public static final String FRAP_DATA_END_PROPERTY = "FRAP_DATA_END_PROPERTY";
@@ -948,6 +950,23 @@ public class OverlayEditorPanelJAI extends JPanel{
 					}
 				});
 				jp.add(addAllDistinctJMenuItem);
+
+				JMenuItem padJMenuItem = new JMenuItem("Add Borders...");
+				padJMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						firePropertyChange(FRAP_DATA_PAD_PROPERTY, null, null);
+					}
+				});
+				jp.add(padJMenuItem);
+
+				JMenuItem extrudeJMenuItem = new JMenuItem("Convert 2D to 3D...");
+				extrudeJMenuItem.setEnabled(imageDataset!= null && imageDataset.getSizeZ() == 1);
+				extrudeJMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						firePropertyChange(FRAP_DATA_DUPLICATE_PROPERTY, null, null);
+					}
+				});
+				jp.add(extrudeJMenuItem);
 
 				jp.show((Component)e.getSource(), 0, ((Component)e.getSource()).getHeight());
 			}
