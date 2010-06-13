@@ -1190,7 +1190,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 		public void run(final Hashtable<String, Object> hashTable) throws Exception {
 			getClientTaskStatusSupport().setMessage("Initializing...");
 			final ROIMultiPaintManager roiMultiPaintManager = new ROIMultiPaintManager();
-			roiMultiPaintManager.initROIData(null,null,(FieldDataFileOperationSpec)hashTable.get(FDFOS));
+			roiMultiPaintManager.initROIData((FieldDataFileOperationSpec)hashTable.get(FDFOS));
 			new Thread(new Runnable() {
 				public void run() {
 					final Geometry[] geomHolder = new Geometry[1];
