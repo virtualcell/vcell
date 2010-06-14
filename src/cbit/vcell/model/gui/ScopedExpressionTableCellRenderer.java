@@ -6,17 +6,19 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.util.Hashtable;
 
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 
 import org.vcell.util.gui.DefaultTableCellRendererEnhanced;
 
 import cbit.gui.ScopedExpression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionPrintFormatter;
 
 /**
@@ -228,35 +230,30 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 			}
 		}
 
-		templateJLabel.setText(null);
-		templateJLabel.setIcon(null);
 		if(value == null){
+			templateJLabel.setText(null);
+			templateJLabel.setIcon(null);
 			return templateJLabel;
 		}
 		
-		if (value instanceof String){
-			String color = "gray";
-			if (isSelected){
-				color = "white";
-			}
-			String str = "<html><em><font color='"+color+"'>"+((String)value)+"</font></em></html>";
+		if (!(value instanceof ScopedExpression)){
+			String color = isSelected ?  "white" : "gray";
+			String str = "<html><em><font color=\""+color+"\">" + value + "</font></em></html>";
 			return stringRenderer.getTableCellRendererComponent(theTable, str, isSelected, hasFocus, row, column);
 		}
-		String scopedExpressInfix = ((ScopedExpression)value).infix();
-		if(scopedExpressionImageIconHash.containsKey(scopedExpressInfix) && 
+		
+		JLabel renderer = imageRenderer;
+		ScopedExpression scopedExpression = (ScopedExpression)value;
+		String scopedExpressInfix = scopedExpression.infix();
+		if (scopedExpressionImageIconHash.containsKey(scopedExpressInfix) && 
 			scopedExpressionSelectedHash.containsKey(scopedExpressInfix) &&
 			((Boolean)scopedExpressionSelectedHash.get(scopedExpressInfix)).booleanValue() == isSelected){
 			//Re-use existing ImageIcon is it exists and is same select state
-
-			
 			imageRenderer.setIcon((javax.swing.ImageIcon)scopedExpressionImageIconHash.get(scopedExpressInfix));
-			return imageRenderer;
-
-		
 		}else{
 			//Create new ImageIcon
 			try{
-				ExpressionPrintFormatter epf = new ExpressionPrintFormatter(((ScopedExpression)value).getRenamedExpression());
+				ExpressionPrintFormatter epf = new ExpressionPrintFormatter(scopedExpression.getRenamedExpression());
 				//
 				//Use graphicsContextProvider BufferedImage to get started because
 				//theTable may have a null GC and epf needs a non-null GC
@@ -292,16 +289,24 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 				}
 				templateJLabel.setIcon(newImageIcon);
 				imageRenderer.setIcon(newImageIcon);
-				return imageRenderer;
 			}catch(Exception e){
 				//Fallback to String
 				e.printStackTrace();
-				templateJLabel.setText(((ScopedExpression)value).infix());
-				return templateJLabel;
+				templateJLabel.setText(scopedExpression.infix());
+				renderer = templateJLabel;
 			}
 
 		}
-	}catch(Exception e){
+		ExpressionBindingException expressionBindingException = scopedExpression.getExpressionBindingException();
+		if (expressionBindingException != null) {
+			renderer.setBorder(BorderFactory.createLineBorder(Color.red));
+			renderer.setToolTipText(expressionBindingException.getMessage());
+		} else {
+			renderer.setBorder(BorderFactory.createEmptyBorder());
+			renderer.setToolTipText(null);
+		}
+		return renderer;
+	} catch(Exception e) {
 		e.printStackTrace();
 		templateJLabel.setText("ScopedExpressionTableCellRenderer Error - "+e.getMessage()+" "+value);
 		return templateJLabel;

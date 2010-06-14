@@ -191,6 +191,39 @@ public GeometryClass[] getGeometryClasses() {
 	return gcList.toArray(new GeometryClass[gcList.size()]);
 }
 
+
+public GeometryClass getGeometryClass(String name) {
+	for (SubVolume sv : fieldGeometrySpec.getSubVolumes()) {
+		if (sv.getName().equals(name)) {
+			return sv;
+		}
+	}
+	if (fieldGeometrySurfaceDescription!=null){
+		SurfaceClass[] surfaceClasses = fieldGeometrySurfaceDescription.getSurfaceClasses();
+		if (surfaceClasses==null){
+			try {
+				fieldGeometrySurfaceDescription.updateAll();
+			} catch (GeometryException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
+			} catch (ImageException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+		surfaceClasses = fieldGeometrySurfaceDescription.getSurfaceClasses();
+		for (SurfaceClass sc : fieldGeometrySurfaceDescription.getSurfaceClasses()) {
+			if (sc.getName().equals(name)) {
+				return sc;
+			}
+		}
+	}
+	return null;
+}
+
 /**
  * This method was created in VisualAge.
  * @return boolean

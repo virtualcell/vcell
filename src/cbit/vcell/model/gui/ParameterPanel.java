@@ -46,9 +46,9 @@ public void cleanupOnClose() {
  */
 private void connEtoM1(Kinetics value) {
 	try {
-		if ((getkinetics1() != null)) {
+		//if ((getkinetics1() != null)) {
 			getParameterTableModel().setKinetics(getkinetics1());
-		}
+		//}
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

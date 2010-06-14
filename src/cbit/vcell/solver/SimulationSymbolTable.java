@@ -3,6 +3,7 @@ package cbit.vcell.solver;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,7 @@ import cbit.vcell.math.Equation;
 import cbit.vcell.math.FilamentRegionVariable;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.Function;
+import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -465,7 +467,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		}
 	}
 
-	public Vector<AnnotatedFunction> createAnnotatedFunctionsList(MathDescription mathDescription) {	
+	public Vector<AnnotatedFunction> createAnnotatedFunctionsList(MathDescription mathDescription) throws InconsistentDomainException {	
 		// Get the list of (volVariables) in the simulation. Needed to determine 'type' of  functions
 		boolean bSpatial = getSimulation().isSpatial();
 		String[] variableNames = null;
@@ -542,117 +544,128 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	 * @param variableNames java.lang.String[]
 	 * @param variableTypes cbit.vcell.simdata.VariableType[]
 	 */
-	public static VariableType getFunctionVariableType(Function function, MathDescription mathDescription, String[] variableNames, VariableType[] variableTypes, boolean isSpatial) {
+	public static VariableType getFunctionVariableType(Function function, MathDescription mathDescription, 
+			String[] variableNames, VariableType[] variableTypes, boolean isSpatial) throws InconsistentDomainException {
 		if (!isSpatial) {
 			return VariableType.NONSPATIAL;
 		}
-		VariableType funcType = null;
-		Expression exp = function.getExpression();
-		String symbols[] = exp.getSymbols();
-		if (symbols != null) {
-			for (int j = 0; j < symbols.length; j++){
-				boolean bFound = false;
-				for (int k = 0; !bFound && k < variableNames.length; k++){
-					if (symbols[j].equals(variableNames[k])) {
-						bFound = true;
-						if (funcType == null){
-							funcType = variableTypes[k];
-						}else{
-							//
-							// example: if VOLUME_REGION and VOLUME data are used in same function,
-							// then function must be evaluated at each volume index (hence VOLUME wins).
-							//
-							if (variableTypes[k].isExpansionOf(funcType)){
-								funcType = variableTypes[k];
-							}
-						}
-					}
-					if (symbols[j].equals(variableNames[k]+InsideVariable.INSIDE_VARIABLE_SUFFIX) || symbols[j].equals(variableNames[k]+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){
-						bFound=true;
-						if (variableTypes[k].equals(VariableType.VOLUME)){
-							funcType = VariableType.MEMBRANE;
-						}else if (funcType == null && variableTypes[k].equals(VariableType.VOLUME_REGION)){
-							funcType = VariableType.MEMBRANE_REGION;
-						}
-					}
-				}
-			}
-		}
-		//
-		// if determined to be a volume region or membrane region function, 
-		// then if it is an explicit function of space, promote type to corresponding non-region type (e.g. volRegion --> volume)
-		//
-		boolean bExplicitFunctionOfSpace = false;
-		if (symbols != null) {
-			for (int i = 0; i < symbols.length; i++){
-				if (symbols[i].equals(ReservedVariable.X.getName()) ||
-					symbols[i].equals(ReservedVariable.Y.getName()) ||
-					symbols[i].equals(ReservedVariable.Z.getName())){
-					bExplicitFunctionOfSpace = true;
-					break;
-				}
-			}
-		}
-	
-			
-		if (funcType == null){
-			//
-			// set default VariableType's for functions that have no variables (best guess).
-			//
-			if (!isSpatial) {
-				funcType = VariableType.NONSPATIAL;
-			} else {	
-				FieldFunctionArguments[] fieldFuncArgs = FieldUtilities.getFieldFunctionArguments(function.getExpression());
-				if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
-					funcType = fieldFuncArgs[0].getVariableType();
-				} else {
-					// for size functions, membrane region takes precedence.
-					Set<FunctionInvocation> fiSet = FieldUtilities.getSizeFunctionInvocations(function.getExpression());
-					for (FunctionInvocation fi : fiSet) {
-						String functionName = fi.getFunctionName();
-						if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())) {
-							funcType = VariableType.MEMBRANE_REGION;
-						} else if (functionName.equals(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
-							// if funcType is already membrane region, don't change
-							if (funcType == null) {								
-								funcType = VariableType.VOLUME_REGION;
-							}
-						}
-					}
-				}
-			}
-		}else{
-			if (funcType.equals(VariableType.MEMBRANE_REGION) && bExplicitFunctionOfSpace){
-				funcType = VariableType.MEMBRANE;
-			}else if (funcType.equals(VariableType.VOLUME_REGION) && bExplicitFunctionOfSpace){
-				funcType = VariableType.VOLUME;
-			}else if (funcType.equals(VariableType.CONTOUR_REGION) && bExplicitFunctionOfSpace){
-				funcType = VariableType.CONTOUR;
-			}
-		}
-		if (funcType == null) {
-			return VariableType.VOLUME; // no knowledge from expression, default variable type
-		}
-		
+		VariableType domainFuncType = null;
+		// initial guess, restrict variable type to be consistent with domain.
 		if (function.getDomain() != null) {
-			VariableType funcTypeFromDomain = null;
 			String domainName = function.getDomain().getName();
 			if (mathDescription != null) {
 				SubDomain subdomain = mathDescription.getSubDomain(domainName);
 				if (subdomain instanceof MembraneSubDomain) {
-					funcTypeFromDomain = VariableType.MEMBRANE;
+					domainFuncType = VariableType.MEMBRANE_REGION;
 				} else {
-					funcTypeFromDomain = VariableType.VOLUME;							
-				}
-			}
-			
-			if (funcTypeFromDomain != null) {
-				if (!funcTypeFromDomain.getVariableDomain().equals(funcType.getVariableDomain())) {
-					funcType = funcTypeFromDomain;
+					domainFuncType = VariableType.VOLUME_REGION;
 				}
 			}
 		}
-
+		
+		Expression exp = function.getExpression();
+		String symbols[] = exp.getSymbols();
+		ArrayList<VariableType> varTypeList = new ArrayList<VariableType>();
+		boolean bExplicitFunctionOfSpace = false;
+		if (symbols != null) {
+			for (int j = 0; j < symbols.length; j ++){
+				if (symbols[j].equals(ReservedVariable.X.getName()) ||
+					symbols[j].equals(ReservedVariable.Y.getName()) ||
+					symbols[j].equals(ReservedVariable.Z.getName())) {
+					bExplicitFunctionOfSpace = true;
+					continue;
+				}				
+				for (int k = 0; k < variableNames.length; k ++){
+					if (symbols[j].equals(variableNames[k])) {
+						varTypeList.add(variableTypes[k]);
+						break;
+					} else if (symbols[j].equals(variableNames[k]+InsideVariable.INSIDE_VARIABLE_SUFFIX) 
+							|| symbols[j].equals(variableNames[k]+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){						
+						if (variableTypes[k].equals(VariableType.VOLUME)){
+							varTypeList.add(VariableType.MEMBRANE);
+						}else if (variableTypes[k].equals(VariableType.VOLUME_REGION)){
+							varTypeList.add(VariableType.MEMBRANE_REGION);
+						}
+						break;
+					}
+				}
+			}
+		}
+		
+		// Size Functions
+		Set<FunctionInvocation> fiSet = FieldUtilities.getSizeFunctionInvocations(function.getExpression());
+		for (FunctionInvocation fi : fiSet) {
+			String functionName = fi.getFunctionName();
+			if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())) {
+				varTypeList.add(VariableType.MEMBRANE_REGION);
+			} else if (functionName.equals(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
+				varTypeList.add(VariableType.VOLUME_REGION);
+			}
+		}	
+			
+		FieldFunctionArguments[] fieldFuncArgs = FieldUtilities.getFieldFunctionArguments(function.getExpression());
+		if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
+			varTypeList.add(fieldFuncArgs[0].getVariableType());
+		}
+		
+		VariableType funcType = domainFuncType;
+		for (VariableType vt : varTypeList) {
+			if (funcType == null){
+				funcType = vt;
+			} else {
+				//
+				// example: if VOLUME_REGION and VOLUME data are used in same function,
+				// then function must be evaluated at each volume index (hence VOLUME wins).
+				//
+				if (vt.isExpansionOf(funcType)){
+					funcType = vt;
+				} else if (vt.equals(VariableType.VOLUME)) {
+					if (funcType.equals(VariableType.MEMBRANE_REGION)) {
+						funcType = VariableType.MEMBRANE;
+					}
+				} else if (vt.equals(VariableType.VOLUME_REGION)) {
+					
+				} else if (vt.equals(VariableType.MEMBRANE)) {
+					if (domainFuncType != null && domainFuncType.getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME)) {
+						throw new InconsistentDomainException("Function '" + function.getName() + "' defined on a volume subdomain '" + function.getDomain().getName() 
+							+ "' references a variable or a function defined on a membrane subdomain");
+					}
+				} else if (vt.equals(VariableType.MEMBRANE_REGION)) {
+					if (funcType.equals(VariableType.VOLUME)) {
+						if (domainFuncType != null && domainFuncType.getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME)) {
+							throw new InconsistentDomainException("Function '" + function.getName() + "' defined on '" + function.getDomain().getName() 
+								+ "' references a size function defined on a membrane");
+						}
+						funcType = VariableType.MEMBRANE;
+					} else if (funcType.equals(VariableType.VOLUME_REGION)) {
+						if (domainFuncType != null && domainFuncType.getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME)) {
+							throw new InconsistentDomainException("Function '" + function.getName() + "' defined on '" + function.getDomain().getName() 
+								+ "' references a size function defined on a membrane");
+						}
+						funcType = VariableType.MEMBRANE_REGION;
+					}
+				}
+			}
+		}
+		
+		//
+		// if determined to be a volume region or membrane region function, 
+		// then if it is an explicit function of space, promote type to corresponding non-region type (e.g. volRegion --> volume)
+		//	
+		if (funcType != null && bExplicitFunctionOfSpace) {
+			if (funcType.equals(VariableType.MEMBRANE_REGION)){
+				funcType = VariableType.MEMBRANE;
+			}else if (funcType.equals(VariableType.VOLUME_REGION)){
+				funcType = VariableType.VOLUME;
+			}else if (funcType.equals(VariableType.CONTOUR_REGION)){
+				funcType = VariableType.CONTOUR;
+			}
+		}
+		
+		if (funcType == null) {
+			return VariableType.VOLUME; // no knowledge from expression, default variable type
+		}
+		
 		return funcType;
 	}
 }

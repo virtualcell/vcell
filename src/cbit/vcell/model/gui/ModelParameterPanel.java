@@ -252,7 +252,7 @@ private void connPtoP5SetTarget() {
 private void connEtoM3(javax.swing.event.ListSelectionEvent arg1) {
 	try {
 //		System.out.println("Model Parameter selection changed");
-		int row = getselectionModel1().getLeadSelectionIndex();
+		int row = getScrollPaneTable().getSelectedRow();
 		if((row >= 0) && (getSPPRPanel() != null)) {
 			getSPPRPanel().setScrollPaneTreeCurrentRow(getmodelParameterTableModel().getValueAt(row));
 		}
@@ -590,6 +590,7 @@ private void initialize() {
 
 public void setScrollPaneTableCurrentRow(ModelParameter selection) {
 	if (selection == null) {
+		getScrollPaneTable().clearSelection();
 		return;
 	}
 

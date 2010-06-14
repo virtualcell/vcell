@@ -627,7 +627,7 @@ public static void showErrorDialog(final Component requester, final String messa
 					bSER = true;
 				}
 			} 
-			if (exception instanceof ClassCastException || exception instanceof ArrayIndexOutOfBoundsException) {
+			if (exception instanceof ClassCastException || exception instanceof ArrayIndexOutOfBoundsException || exception instanceof NullPointerException) {
 				bSER = true;
 //				String stackTrace = BeanUtils.getStackTrace(exception);
 //

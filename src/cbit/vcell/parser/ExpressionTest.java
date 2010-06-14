@@ -70,7 +70,7 @@ public static void main(java.lang.String[] args) {
 			
 			pw2.println("void main() {");
 			for (int k = 0; k < 10; k ++) {
-				pw2.println("\tdouble vcell_localvar_id_" + k + " = " + k + ";");
+				pw2.println("\tdouble id_" + k + " = " + k + ";");
 			}
 
 			pw2.println("\tdouble r = 0;");

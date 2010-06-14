@@ -277,10 +277,10 @@ public void cleanup() {
  */
 @Override
 public Vector<AnnotatedFunction> createFunctionList() {
-	Vector<AnnotatedFunction> annotatedFunctionVector = simulationJob.getSimulationSymbolTable().createAnnotatedFunctionsList(simulationJob.getSimulation().getMathDescription());
 	//Try to save existing user defined functions
-	
+	Vector<AnnotatedFunction> annotatedFunctionVector = new Vector<AnnotatedFunction>();
 	try{
+		annotatedFunctionVector = simulationJob.getSimulationSymbolTable().createAnnotatedFunctionsList(simulationJob.getSimulation().getMathDescription());
 		String functionFileName = getBaseName() + FUNCTIONFILE_EXTENSION;
 		File existingFunctionFile = new File(functionFileName);
 		if(existingFunctionFile.exists()){
@@ -288,7 +288,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 				new Vector<AnnotatedFunction>();
 			Vector<AnnotatedFunction> allOldFunctionV =
 				FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simulationJob.getSimulationJobID());
-			for(int i=0;i<allOldFunctionV.size();i+= 1){
+			for(int i = 0; i < allOldFunctionV.size(); i += 1){
 				if(allOldFunctionV.elementAt(i).isOldUserDefined()){
 					oldUserDefinedFunctions.add(allOldFunctionV.elementAt(i));
 				}

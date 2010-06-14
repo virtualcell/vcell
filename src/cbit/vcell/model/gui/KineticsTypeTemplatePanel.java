@@ -64,9 +64,9 @@ private void connEtoM1(Kinetics value) {
 	try {
 		// user code begin {1}
 		// user code end
-		if ((getkinetics1() != null)) {
+		//if ((getkinetics1() != null)) {
 			getParameterPanel().setKinetics(getkinetics1());
-		}
+		//}
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
