@@ -19,6 +19,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 
@@ -171,25 +172,6 @@ private void connEtoC4(javax.swing.event.DocumentEvent evt) {
 
 
 /**
- * connEtoM1:  (SimulationSummaryPanel.initialize() --> JTextAreaDescription.background)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1() {
-	try {
-		// user code begin {1}
-		// user code end
-		getJTextAreaDescription().setBackground(this.getBackground());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connPtoP1SetSource:  (JTextAreaDescription.document <--> document1.this)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -245,11 +227,12 @@ private void connPtoP1SetTarget() {
  * Comment
  */
 private void displayAnnotation() {
-	if(org.vcell.util.Compare.isEqualOrNull(getJTextAreaDescription().getText(),getSimulation().getDescription())){
+	if(Compare.isEqualOrNull(getJTextAreaDescription().getText(),getSimulation().getDescription())){
 		return;
 	}
 	try {
 		getJTextAreaDescription().setText(getSimulation().getDescription());
+		getJTextAreaDescription().setCaretPosition(0);
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJTextAreaDescription().setText("");
@@ -1293,7 +1276,6 @@ private void initialize() {
 		add(getMathOverridesPanel1(), constraintsMathOverridesPanel1);
 
 		initConnections();
-		connEtoM1();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

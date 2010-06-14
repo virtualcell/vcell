@@ -2,7 +2,6 @@ package cbit.gui;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 
 /**
@@ -16,6 +15,7 @@ public class ScopedExpression {
 	private boolean fieldIsUserEditable = true;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	final private String fieldRenamedExpressionInfix;
+	private ExpressionBindingException expressionBindingException = null;
 	
 /**
  * ContextualExpression constructor comment.
@@ -31,7 +31,7 @@ public ScopedExpression(Expression argExpression, NameScope argNameScope, boolea
  * ContextualExpression constructor comment.
  * @throws ExpressionBindingException 
  */
-public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable, AutoCompleteSymbolFilter stef) throws ExpressionBindingException {
+public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable, AutoCompleteSymbolFilter stef) {
 	super();
 	if (argExpression == null) {
 		throw new RuntimeException("Expression cannot be null");
@@ -39,10 +39,14 @@ public ScopedExpression(Expression argExpression, NameScope argNameScope, boolea
 	this.fieldNameScope = argNameScope;
 	this.fieldIsUserEditable = argIsUserEditable;
 	autoCompleteSymbolFilter = stef;
-	if (fieldNameScope == null) {
-		this.fieldRenamedExpression = argExpression;
-	} else {
-		this.fieldRenamedExpression = argExpression.renameBoundSymbols(fieldNameScope);
+	this.fieldRenamedExpression = argExpression;
+	if (fieldNameScope != null) {
+		try {
+			this.fieldRenamedExpression = argExpression.renameBoundSymbols(fieldNameScope);
+		} catch (ExpressionBindingException e) {
+			expressionBindingException = e;
+			e.printStackTrace(System.out);
+		}
 	}
 	fieldRenamedExpressionInfix = fieldRenamedExpression.infix();
 }
@@ -89,5 +93,8 @@ public String toString() {
 }
 public final AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
 	return autoCompleteSymbolFilter;
+}
+public final ExpressionBindingException getExpressionBindingException() {
+	return expressionBindingException;
 }
 }

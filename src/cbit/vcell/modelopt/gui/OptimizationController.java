@@ -12,6 +12,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.Variable;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
@@ -145,6 +146,8 @@ public void plot() {
 		
 		DialogUtils.showComponentCloseDialog(optTestPanel,multisourcePlotPane,"Data Plotter");
 	}catch (ExpressionException e){
+		e.printStackTrace(System.out);
+	} catch (InconsistentDomainException e) {
 		e.printStackTrace(System.out);
 	}
 }

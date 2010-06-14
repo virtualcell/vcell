@@ -11,6 +11,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ParameterVariable;
@@ -238,8 +239,9 @@ public ModelOptimizationSpec getModelOptimizationSpec() {
  * Creation date: (8/30/2005 3:16:33 PM)
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param optResultSet cbit.vcell.opt.OptimizationResultSet
+ * @throws InconsistentDomainException 
  */
-public static ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, OptimizationResultSet optResultSet) throws ExpressionException {
+public static ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, OptimizationResultSet optResultSet) throws ExpressionException, InconsistentDomainException {
 	if (optResultSet==null || optResultSet.getParameterNames()==null || optResultSet.getSolutionNames()==null){
 		return null;
 	}

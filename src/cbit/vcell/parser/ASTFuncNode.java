@@ -2102,6 +2102,7 @@ public Node flatten() throws ExpressionException {
 	ASTFuncNode funcNode = new ASTFuncNode();
 	funcNode.funcType = funcType;
 	funcNode.funcName = funcName;
+	funcNode.symbolTableFunctionEntry = symbolTableFunctionEntry;
 	java.util.Vector<Node> tempChildren = new java.util.Vector<Node>();
 
 	for (int i=0;i<jjtGetNumChildren();i++){

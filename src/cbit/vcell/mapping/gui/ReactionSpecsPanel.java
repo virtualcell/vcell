@@ -5,6 +5,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -152,7 +153,7 @@ private SimpleReactionPanel getSimpleReactionPanel() {
 			handleException(ivjExc);
 		}
 	}
-	BeanUtils.enableComponents(simpleReactionPanel, false);
+	//BeanUtils.enableComponents(simpleReactionPanel, false);
 	return simpleReactionPanel;
 }
 private FluxReactionPanel getFluxReactionPanel() {
@@ -164,7 +165,7 @@ private FluxReactionPanel getFluxReactionPanel() {
 			handleException(ivjExc);
 		}
 	}
-	BeanUtils.enableComponents(fluxReactionPanel, false);
+	//BeanUtils.enableComponents(fluxReactionPanel, false);
 	return fluxReactionPanel;
 }
 
@@ -302,7 +303,7 @@ private void connPtoP5SetTarget() {
  */
 private void connEtoM3(javax.swing.event.ListSelectionEvent arg1) {
 	try {
-		int row = getselectionModel1().getLeadSelectionIndex();
+		int row = getScrollPaneTable().getSelectedRow();
 		if((row >= 0) && (getSPPRPanel() != null)) {
 			getSPPRPanel().setScrollPaneTreeCurrentRow(getReactionSpecsTableModel().getValueAt(row, 0));
 		}
@@ -451,6 +452,13 @@ private void initConnections() throws java.lang.Exception {
 
 public void setScrollPaneTableCurrentRow(ReactionStep selection) {
 	if (selection == null) {
+		getScrollPaneTable().clearSelection();
+		if (outerSplitPane.getBottomComponent() == getSimpleReactionPanel()) {
+			getSimpleReactionPanel().reset();
+		} else {
+			getFluxReactionPanel().reset();
+		}
+		outerSplitPane.setDividerLocation(300);
 		return;
 	}
 

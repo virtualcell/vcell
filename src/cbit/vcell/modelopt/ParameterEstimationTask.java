@@ -1,8 +1,10 @@
 package cbit.vcell.modelopt;
-import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.MathException;
+import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2006 4:35:50 PM)
@@ -133,8 +135,9 @@ public ModelOptimizationSpec getModelOptimizationSpec() {
  * Insert the method's description here.
  * Creation date: (5/2/2006 11:10:40 PM)
  * @return cbit.vcell.solver.ode.ODESolverResultSet
+ * @throws InconsistentDomainException 
  */
-public cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet() throws ExpressionException {
+public ODESolverResultSet getOdeSolverResultSet() throws ExpressionException, InconsistentDomainException {
 	return ModelOptimizationMapping.getOdeSolverResultSet(getModelOptimizationMapping().getOptimizationSpec(),getOptimizationResultSet());
 }
 

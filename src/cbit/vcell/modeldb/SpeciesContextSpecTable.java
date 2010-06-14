@@ -35,9 +35,9 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 	public final Field boundaryZmExp	= new Field("boundaryZmExp","varchar(255)",	"");
 	public final Field boundaryZpExp	= new Field("boundaryZpExp","varchar(255)",	"");
 	public final Field initCondCountExp	= new Field("initCondCountExp",	"varchar(1024)","");
-	public final Field velocityXExp	= new Field("velocityXExp",	"varchar(255)",	"");
-	public final Field velocityYExp	= new Field("velocityYExp",	"varchar(255)",	"");
-	public final Field velocityZExp	= new Field("velocityZExp",	"varchar(255)",	"");
+	public final Field velocityXExp	= new Field("velocityXExp",	"varchar(1024)",	"");
+	public final Field velocityYExp	= new Field("velocityYExp",	"varchar(1024)",	"");
+	public final Field velocityZExp	= new Field("velocityZExp",	"varchar(1024)",	"");
 	
 	private final Field fields[] = {specContextRef,simContextRef,bEnableDif,bForceConst,bForceIndep,initCondExp,diffRateExp,
 											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp,initCondCountExp,

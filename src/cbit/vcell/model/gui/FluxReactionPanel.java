@@ -3,24 +3,22 @@ package cbit.vcell.model.gui;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyVetoException;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
@@ -205,7 +203,7 @@ private void connEtoM1(FluxReaction value) {
 	try {
 		// user code begin {1}
 		// user code end
-		if ((getFluxReaction1() != null)) {
+		if (!subset && (getFluxReaction1() != null)) {
 			getReactionCanvas1().setReactionStep(getFluxReaction1());
 		}
 		// user code begin {2}
@@ -292,6 +290,8 @@ private void connEtoM8(FluxReaction value) {
 		// user code end
 		if ((getFluxReaction1() != null)) {
 			setKinetics(getFluxReaction1().getKinetics());
+		} else {
+			setKinetics(null);
 		}
 		// user code begin {2}
 		// user code end
@@ -746,92 +746,92 @@ private void initialize() {
 //		ivjJDialogContentPane.setLayout(new java.awt.GridBagLayout());
 
 		if(!subset) {
-		// stoichiometry
-		java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
-		constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = gridy;
-		constraintsJLabel1.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel1.insets = new java.awt.Insets(4, 10, 4, 4);
-		add(getJLabel1(), constraintsJLabel1);
-
-		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
-		constraintsJScrollPane1.gridx = 1; constraintsJScrollPane1.gridy = gridy;
-		constraintsJScrollPane1.gridwidth = 2;
-		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJScrollPane1.weightx = 1.0;
-		constraintsJScrollPane1.weighty = 0.5;
-		constraintsJScrollPane1.insets = new java.awt.Insets(10, 5, 10, 10);
-		add(getJScrollPane1(), constraintsJScrollPane1);
-		gridy++;
-
-		// Name
-		java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
-		constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = gridy;
-		constraintsJLabel2.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel2.insets = new java.awt.Insets(4, 10, 4, 4);
-		add(getJLabel2(), constraintsJLabel2);
-
-		java.awt.GridBagConstraints constraintsJLabel4 = new java.awt.GridBagConstraints();
-		constraintsJLabel4.gridx = 1; constraintsJLabel4.gridy = gridy;
-		constraintsJLabel4.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabel4.weightx = 1.0;
-		constraintsJLabel4.insets = new java.awt.Insets(4, 5, 4, 5);
-		add(getFluxReactionNameTextField(), constraintsJLabel4);
-		gridy++;
-
-			// Flux carrier
-		java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
-		constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = gridy;
-		constraintsJLabel3.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel3.insets = new java.awt.Insets(4, 10, 4, 4);
-		add(getJLabel3(), constraintsJLabel3);
-
-		java.awt.GridBagConstraints constraintsJLabel5 = new java.awt.GridBagConstraints();
-		constraintsJLabel5.gridx = 1; constraintsJLabel5.gridy = gridy;
-		constraintsJLabel5.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabel5.insets = new java.awt.Insets(4, 5, 4, 5);
-		add(getCarrierComboBox(), constraintsJLabel5);
-		gridy++;
-
-		// Electrical Properties
-		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = gridy;
-		gbc.anchor = java.awt.GridBagConstraints.EAST;
-		gbc.insets = new java.awt.Insets(4, 10, 4, 4);
-		JLabel label1 = new JLabel("<html>&nbsp;&nbsp;Electrical<br>properties</html>");
-		label1.setFont(label1.getFont().deriveFont(Font.BOLD));
-		add(label1, gbc);
-			
-		java.awt.GridBagConstraints constraintsReactionElectricalPropertiesPanel1 = new java.awt.GridBagConstraints();
-		constraintsReactionElectricalPropertiesPanel1.gridx = 1; constraintsReactionElectricalPropertiesPanel1.gridy = gridy;
-		constraintsReactionElectricalPropertiesPanel1.gridwidth = 2;
-		constraintsReactionElectricalPropertiesPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsReactionElectricalPropertiesPanel1.weightx = 1.0;
-		constraintsReactionElectricalPropertiesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getReactionElectricalPropertiesPanel1(), constraintsReactionElectricalPropertiesPanel1);
-		gridy++;
-
-		// Annotation
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = gridy;
-		gbc.insets = new java.awt.Insets(4, 10, 4, 4);
-		gbc.anchor = GridBagConstraints.NORTHEAST;
-		JLabel label = new JLabel("Annotatation");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		add(label, gbc);
-			
-		annotationTextArea = new javax.swing.JTextArea();
-		annotationTextArea.setLineWrap(true);
-		annotationTextArea.setWrapStyleWord(true);
-		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 1; gbc.gridy = gridy;
-		gbc.gridwidth = 2;
-		gbc.weightx = 1.0;
-		gbc.weighty = 0.1;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new java.awt.Insets(5, 5, 5, 10);
-		add(jsp, gbc);
-		gridy++;
+			// stoichiometry
+			java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
+			constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = gridy;
+			constraintsJLabel1.anchor = java.awt.GridBagConstraints.EAST;
+			constraintsJLabel1.insets = new java.awt.Insets(4, 10, 4, 4);
+			add(getJLabel1(), constraintsJLabel1);
+	
+			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
+			constraintsJScrollPane1.gridx = 1; constraintsJScrollPane1.gridy = gridy;
+			constraintsJScrollPane1.gridwidth = 2;
+			constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsJScrollPane1.weightx = 1.0;
+			constraintsJScrollPane1.weighty = 0.5;
+			constraintsJScrollPane1.insets = new java.awt.Insets(10, 5, 10, 10);
+			add(getJScrollPane1(), constraintsJScrollPane1);
+			gridy++;
+	
+			// Name
+			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
+			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = gridy;
+			constraintsJLabel2.anchor = java.awt.GridBagConstraints.EAST;
+			constraintsJLabel2.insets = new java.awt.Insets(4, 10, 4, 4);
+			add(getJLabel2(), constraintsJLabel2);
+	
+			java.awt.GridBagConstraints constraintsJLabel4 = new java.awt.GridBagConstraints();
+			constraintsJLabel4.gridx = 1; constraintsJLabel4.gridy = gridy;
+			constraintsJLabel4.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			constraintsJLabel4.weightx = 1.0;
+			constraintsJLabel4.insets = new java.awt.Insets(4, 5, 4, 5);
+			add(getFluxReactionNameTextField(), constraintsJLabel4);
+			gridy++;
+	
+				// Flux carrier
+			java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
+			constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = gridy;
+			constraintsJLabel3.anchor = java.awt.GridBagConstraints.EAST;
+			constraintsJLabel3.insets = new java.awt.Insets(4, 10, 4, 4);
+			add(getJLabel3(), constraintsJLabel3);
+	
+			java.awt.GridBagConstraints constraintsJLabel5 = new java.awt.GridBagConstraints();
+			constraintsJLabel5.gridx = 1; constraintsJLabel5.gridy = gridy;
+			constraintsJLabel5.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			constraintsJLabel5.insets = new java.awt.Insets(4, 5, 4, 5);
+			add(getCarrierComboBox(), constraintsJLabel5);
+			gridy++;
+	
+			// Electrical Properties
+			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = gridy;
+			gbc.anchor = java.awt.GridBagConstraints.EAST;
+			gbc.insets = new java.awt.Insets(4, 10, 4, 4);
+			JLabel label1 = new JLabel("<html>&nbsp;&nbsp;Electrical<br>properties</html>");
+			label1.setFont(label1.getFont().deriveFont(Font.BOLD));
+			add(label1, gbc);
+				
+			java.awt.GridBagConstraints constraintsReactionElectricalPropertiesPanel1 = new java.awt.GridBagConstraints();
+			constraintsReactionElectricalPropertiesPanel1.gridx = 1; constraintsReactionElectricalPropertiesPanel1.gridy = gridy;
+			constraintsReactionElectricalPropertiesPanel1.gridwidth = 2;
+			constraintsReactionElectricalPropertiesPanel1.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsReactionElectricalPropertiesPanel1.weightx = 1.0;
+			constraintsReactionElectricalPropertiesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+			add(getReactionElectricalPropertiesPanel1(), constraintsReactionElectricalPropertiesPanel1);
+			gridy++;
+	
+			// Annotation
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; gbc.gridy = gridy;
+			gbc.insets = new java.awt.Insets(4, 10, 4, 4);
+			gbc.anchor = GridBagConstraints.NORTHEAST;
+			JLabel label = new JLabel("Annotatation");
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			add(label, gbc);
+				
+			annotationTextArea = new javax.swing.JTextArea();
+			annotationTextArea.setLineWrap(true);
+			annotationTextArea.setWrapStyleWord(true);
+			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 1; gbc.gridy = gridy;
+			gbc.gridwidth = 2;
+			gbc.weightx = 1.0;
+			gbc.weighty = 0.1;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			gbc.insets = new java.awt.Insets(5, 5, 5, 10);
+			add(jsp, gbc);
+			gridy++;
 		}
 		
 		// Kinetic type
@@ -848,12 +848,18 @@ private void initialize() {
 		constraintsJComboBox1.weightx = 1.0;
 		constraintsJComboBox1.insets = new java.awt.Insets(0, 5, 0, 5);
 		add(getJComboBox1(), constraintsJComboBox1);
+		if (subset) {
+			getJComboBox1().setEnabled(false);
+		}
 
 		java.awt.GridBagConstraints constraintsToggleButton = new java.awt.GridBagConstraints();
 		constraintsToggleButton.gridx = 2; constraintsToggleButton.gridy = gridy;
 		constraintsToggleButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsToggleButton.insets = new java.awt.Insets(5, 5, 5, 10);
 		add(getToggleButton(), constraintsToggleButton);
+		if (subset) {
+			getToggleButton().setVisible(false);
+		}
 		gridy++;
 
 		// Kinetics Parameters
@@ -866,6 +872,9 @@ private void initialize() {
 		constraintsKineticsTypeTemplatePanel.weighty = 1.0;
 		constraintsKineticsTypeTemplatePanel.insets = new java.awt.Insets(4, 10, 4, 10);
 		add(getKineticsTypeTemplatePanel(), constraintsKineticsTypeTemplatePanel);
+		if (subset) {
+			BeanUtils.enableComponents(getKineticsTypeTemplatePanel(), false);
+		}
 		gridy++;
 			
 		initConnections();
@@ -1129,5 +1138,11 @@ private void refreshCarrierComboBox() {
 		carrierComboBox.setSelectedIndex(-1);
 		carrierComboBox.setToolTipText("Please select flux carrier");
 	}
+}
+
+public void reset() {
+	setFluxReaction1(null);
+	getJComboBox1().setSelectedIndex(-1);
+	getKineticsTypeTemplatePanel().setKinetics(null);
 }
 }

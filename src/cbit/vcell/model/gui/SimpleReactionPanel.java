@@ -13,7 +13,9 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
@@ -97,9 +99,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
  * SimpleReactionPanel constructor comment.
  */
 	public SimpleReactionPanel() {
-		super();
-		subset = false;
-		initialize();
+		this(false);
 	}
 
 	public SimpleReactionPanel(boolean pSubset) {
@@ -164,7 +164,7 @@ private void connEtoM1(SimpleReaction value) {
 	try {
 		// user code begin {1}
 		// user code end
-		if ((getTornOffSimpleReaction() != null)) {
+		if (!subset && (getTornOffSimpleReaction() != null)) {
 			getReactionCanvas().setReactionStep(getTornOffSimpleReaction());
 		}
 		// user code begin {2}
@@ -269,6 +269,8 @@ private void connEtoM6(java.beans.PropertyChangeEvent arg1) {
 		// user code end
 		if ((getTornOffSimpleReaction() != null)) {
 			setKinetics(getTornOffSimpleReaction().getKinetics());
+		} else {
+			setKinetics(null);
 		}
 		// user code begin {2}
 		// user code end
@@ -291,6 +293,8 @@ private void connEtoM7(SimpleReaction value) {
 		// user code end
 		if ((getTornOffSimpleReaction() != null)) {
 			setKinetics(getTornOffSimpleReaction().getKinetics());
+		} else {
+			setKinetics(null);
 		}
 		// user code begin {2}
 		// user code end
@@ -413,7 +417,7 @@ private void connPtoP2SetTarget() {
 			// user code begin {1}
 			// user code end
 			ivjConnPtoP2Aligning = true;
-			if ((getTornOffSimpleReaction() != null)) {
+			if (!subset && (getTornOffSimpleReaction() != null)) {
 				getSimpleReactionNameTextField().setText(getTornOffSimpleReaction().getName());
 			}
 			// user code begin {2}
@@ -870,12 +874,18 @@ private void initialize() {
 		constraintsJComboBox1.weightx = 1.0;
 		constraintsJComboBox1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJComboBox1(), constraintsJComboBox1);
+		if (subset) {
+			getJComboBox1().setEnabled(false);
+		}
 		
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 2;
 		gridBagConstraints.gridy = gridy;
 		gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 10);
 		this.add(getJToggleButton(), gridBagConstraints);
+		if (subset) {
+			getJToggleButton().setVisible(false);
+		}
 		gridy ++;
 		
 		// Kinetic Parameters
@@ -888,6 +898,9 @@ private void initialize() {
 		constraintsKineticsTypeTemplatePanel.weighty = 1.0;
 		constraintsKineticsTypeTemplatePanel.insets = new java.awt.Insets(5, 10, 5, 10);
 		add(getKineticsTypeTemplatePanel(), constraintsKineticsTypeTemplatePanel);
+		if (subset) {
+			BeanUtils.enableComponents(getKineticsTypeTemplatePanel(), false);
+		}
 		gridy ++;
 
 		initConnections();
@@ -1144,5 +1157,11 @@ private void refreshNameTextField() {
 		return;
 	}
 	getSimpleReactionNameTextField().setText(getSimpleReaction().getName());	
+}
+
+public void reset() {
+	setSimpleReaction(null);
+	getJComboBox1().setSelectedIndex(-1);
+	getKineticsTypeTemplatePanel().setKinetics(null);
 }
 }

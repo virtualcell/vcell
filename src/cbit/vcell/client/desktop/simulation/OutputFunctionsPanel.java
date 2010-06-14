@@ -3,7 +3,7 @@ package cbit.vcell.client.desktop.simulation;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
+import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -12,18 +12,21 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -31,16 +34,16 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.gui.TextFieldAutoCompletion;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutputFunctionContext;
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
@@ -53,8 +56,6 @@ public class OutputFunctionsPanel extends JPanel {
 	public static final String PROPERTY_SELECTED_OUTPUT_FUNCTION = "selectedOutputFunction";
 	private JPanel buttons_n_label_Panel = null;
 	private JButton addButton = null;
-	private JButton addVolVarButton = null;
-	private JButton addMemVarButton = null;
 	private JButton deleteButton = null;
 	private JScrollPane fnTableScrollPane = null;
 	private JSortTable outputFnsScrollPaneTable = null;
@@ -66,19 +67,20 @@ public class OutputFunctionsPanel extends JPanel {
 	private OutputFunctionsListTableModel outputFnsListTableModel1 = null;
 	private OutputFunctionContext outputFunctionContext = null;
 	private SimulationWorkspace simulationWorkspace = null;
-	private IvjEventHandler ivjEventHandler = new IvjEventHandler();	
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private JComboBox subdomainComboBox = null;
+	private JLabel subdomainLabel = null;
 
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
 				if (e.getSource() == OutputFunctionsPanel.this.getAddFnButton()) 
-					addOutputFunction(VariableType.NONSPATIAL);
-				if (e.getSource() == OutputFunctionsPanel.this.getAddVolVarFnButton()) 
-					addOutputFunction(VariableType.VOLUME);
-				if (e.getSource() == OutputFunctionsPanel.this.getAddMemVarFnButton()) 
-					addOutputFunction(VariableType.MEMBRANE);
+					addOutputFunction();
 				if (e.getSource() == OutputFunctionsPanel.this.getDeleteFnButton()) 
-					deleteOutputFunction();
+					deleteOutputFunction();	
+				if (e.getSource() == getSubdomainComboBox()) {
+					getFunctionExpressionTextField().setAutoCompleteSymbolFilter(outputFunctionContext.getAutoCompleteSymbolFilter(getNewFunctionDomain()));
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace(System.out);
 				DialogUtils.showErrorDialog(OutputFunctionsPanel.this, ex.getMessage(), ex);
@@ -109,10 +111,8 @@ public class OutputFunctionsPanel extends JPanel {
 				} else {
 					setOutputFunctionContext(null);
 				}
-				enableAddbuttons();
-			} 
+			}
 			if (getSimulationWorkspace() != null && (evt.getPropertyName().equals("geometry"))) {
-				enableAddbuttons();
 			}
 			if (evt.getSource() == getSimulationWorkspace() && (evt.getPropertyName().equals("simulationOwner"))) {
 				SimulationOwner so_new = (SimulationOwner)evt.getNewValue();
@@ -140,7 +140,7 @@ public class OutputFunctionsPanel extends JPanel {
 				enableDeleteFnButton();
 				tableSelectionChanged();
 			}
-		};
+		}
 	};
 	
 	public OutputFunctionsPanel() {
@@ -162,34 +162,6 @@ public class OutputFunctionsPanel extends JPanel {
 		return addButton;
 	}
 
-	private javax.swing.JButton getAddVolVarFnButton() {
-		if (addVolVarButton == null) {
-			try {
-				addVolVarButton = new javax.swing.JButton();
-				addVolVarButton.setName("AddVolVarButton");
-				addVolVarButton.setText("Add Volume Function");
-				addVolVarButton.setEnabled(true);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace(System.out);
-			}
-		}
-		return addVolVarButton;
-	}
-
-	private javax.swing.JButton getAddMemVarFnButton() {
-		if (addMemVarButton == null) {
-			try {
-				addMemVarButton = new javax.swing.JButton();
-				addMemVarButton.setName("AddMemVarFnButton");
-				addMemVarButton.setText("Add Membrane Function");
-				addMemVarButton.setEnabled(true);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace(System.out);
-			}
-		}
-		return addMemVarButton;
-	}
-
 	private javax.swing.JButton getDeleteFnButton() {
 		if (deleteButton == null) {
 			try {
@@ -208,13 +180,9 @@ public class OutputFunctionsPanel extends JPanel {
 		if (buttons_n_label_Panel == null) {
 			try {
 				buttons_n_label_Panel = new javax.swing.JPanel();
-				buttons_n_label_Panel.setAlignmentX(Component.RIGHT_ALIGNMENT);
-				buttons_n_label_Panel.setAlignmentY(Component.TOP_ALIGNMENT);
 				buttons_n_label_Panel.setName("ButtonPanel");
 				buttons_n_label_Panel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
 				buttons_n_label_Panel.add(getAddFnButton());
-				buttons_n_label_Panel.add(getAddVolVarFnButton());
-				buttons_n_label_Panel.add(getAddMemVarFnButton());
 				buttons_n_label_Panel.add(getDeleteFnButton());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
@@ -254,14 +222,37 @@ public class OutputFunctionsPanel extends JPanel {
 			try {
 				functionExpressionTextField = new TextFieldAutoCompletion();
 				functionExpressionTextField.setName("FunctionExpressionTextField");
-				functionExpressionTextField.setPreferredSize(new java.awt.Dimension(200, 30));
-				functionExpressionTextField.setMaximumSize(new java.awt.Dimension(200, 30));
-				functionExpressionTextField.setMinimumSize(new java.awt.Dimension(200, 30));
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
 			}
 		}
 		return functionExpressionTextField;
+	}
+
+	private JComboBox getSubdomainComboBox() {
+		if (subdomainComboBox == null) {
+			try {
+				subdomainComboBox = new JComboBox();
+				subdomainComboBox.setRenderer(new DefaultListCellRenderer() {
+
+					@Override
+					public Component getListCellRendererComponent(JList list,
+							Object value, int index, boolean isSelected,
+							boolean cellHasFocus) {
+						super.getListCellRendererComponent(list, value, index, isSelected,
+								cellHasFocus);
+						if (value instanceof GeometryClass) {
+							setText(((GeometryClass)value).getName());
+						}
+						return this;
+					}
+					
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace(System.out);
+			}
+		}
+		return subdomainComboBox;
 	}
 
 	/**
@@ -292,8 +283,6 @@ public class OutputFunctionsPanel extends JPanel {
 				functionNameLabel = new javax.swing.JLabel();
 				functionNameLabel.setName("FunctionNameLabel");
 				functionNameLabel.setText("Function Name");
-				functionNameLabel.setMinimumSize(new java.awt.Dimension(45, 14));
-				functionNameLabel.setMaximumSize(new java.awt.Dimension(45, 14));
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
 			}
@@ -311,10 +300,7 @@ public class OutputFunctionsPanel extends JPanel {
 			try {
 				functionNameTextField = new javax.swing.JTextField();
 				functionNameTextField.setName("FunctionNameTextField");
-				functionNameTextField.setSize(new java.awt.Dimension(600, 30));
-				functionNameTextField.setPreferredSize(new java.awt.Dimension(600, 30));
-				functionNameTextField.setMaximumSize(new java.awt.Dimension(600, 30));
-				functionNameTextField.setMinimumSize(new java.awt.Dimension(600, 30));			
+				functionNameTextField.setColumns(40);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
 			}
@@ -322,42 +308,68 @@ public class OutputFunctionsPanel extends JPanel {
 		return functionNameTextField;
 	}
 
-	private javax.swing.JPanel getFunctionPanel() {
+	private javax.swing.JPanel getAddFunctionPanel() {
 		if (functionPanel == null) {
 			try {
 				functionPanel = new javax.swing.JPanel();
 				functionPanel.setName("FunctionPanel");
 				functionPanel.setLayout(new java.awt.GridBagLayout());
-				functionPanel.setBounds(401, 308, 407, 85);
 
+				int gridy = 0;
+				
+				java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+				gbc.gridx = 0; gbc.gridy = gridy;
+				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+				gbc.anchor = GridBagConstraints.LINE_END;
+				functionPanel.add(getSubdomainLabel(), gbc);
+
+				gbc = new java.awt.GridBagConstraints();
+				gbc.gridx = 1; gbc.gridy = gridy;
+				gbc.anchor = GridBagConstraints.LINE_START;
+				gbc.weightx = 1.0;
+				gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+				gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+				functionPanel.add(getSubdomainComboBox(), gbc);
+				
+				gridy ++;
 				java.awt.GridBagConstraints constraintsFunctionNameLabel = new java.awt.GridBagConstraints();
-				constraintsFunctionNameLabel.gridx = 0; constraintsFunctionNameLabel.gridy = 0;
+				constraintsFunctionNameLabel.gridx = 0; constraintsFunctionNameLabel.gridy = gridy;
 				constraintsFunctionNameLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-				getFunctionPanel().add(getFunctionNameLabel(), constraintsFunctionNameLabel);
+				constraintsFunctionNameLabel.anchor = GridBagConstraints.LINE_END;
+				functionPanel.add(getFunctionNameLabel(), constraintsFunctionNameLabel);
 
 				java.awt.GridBagConstraints constraintsFunctionNameTextField = new java.awt.GridBagConstraints();
-				constraintsFunctionNameTextField.gridx = 1; constraintsFunctionNameTextField.gridy = 0;
+				constraintsFunctionNameTextField.gridx = 1; constraintsFunctionNameTextField.gridy = gridy;
 				constraintsFunctionNameTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 				constraintsFunctionNameTextField.weightx = 1.0;
 				constraintsFunctionNameTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-				getFunctionPanel().add(getFunctionNameTextField(), constraintsFunctionNameTextField);
+				functionPanel.add(getFunctionNameTextField(), constraintsFunctionNameTextField);
 
+				gridy ++;
 				java.awt.GridBagConstraints constraintsFunctionExprLabel = new java.awt.GridBagConstraints();
-				constraintsFunctionExprLabel.gridx = 0; constraintsFunctionExprLabel.gridy = 1;
+				constraintsFunctionExprLabel.gridx = 0; constraintsFunctionExprLabel.gridy = gridy;
 				constraintsFunctionExprLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-				getFunctionPanel().add(getFunctionExprLabel(), constraintsFunctionExprLabel);
+				constraintsFunctionExprLabel.anchor = GridBagConstraints.LINE_END;
+				functionPanel.add(getFunctionExprLabel(), constraintsFunctionExprLabel);
 
 				java.awt.GridBagConstraints constraintsFunctionExpressionTextField = new java.awt.GridBagConstraints();
-				constraintsFunctionExpressionTextField.gridx = 1; constraintsFunctionExpressionTextField.gridy = 1;
+				constraintsFunctionExpressionTextField.gridx = 1; constraintsFunctionExpressionTextField.gridy = gridy;
 				constraintsFunctionExpressionTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 				constraintsFunctionExpressionTextField.weightx = 1.0;
 				constraintsFunctionExpressionTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-				getFunctionPanel().add(getFunctionExpressionTextField(), constraintsFunctionExpressionTextField);
+				functionPanel.add(getFunctionExpressionTextField(), constraintsFunctionExpressionTextField);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
 			}
 		}
 		return functionPanel;
+	}
+
+	private JLabel getSubdomainLabel() {
+		if (subdomainLabel == null) {
+			subdomainLabel  = new JLabel("Subdomain");
+		}
+		return subdomainLabel;
 	}
 
 	private OutputFunctionsListTableModel getOutputFnsListTableModel1() {
@@ -373,11 +385,10 @@ public class OutputFunctionsPanel extends JPanel {
 	
 	private void initConnections() {
 		getAddFnButton().addActionListener(ivjEventHandler);
-		getAddVolVarFnButton().addActionListener(ivjEventHandler);
-		getAddMemVarFnButton().addActionListener(ivjEventHandler);
 		getDeleteFnButton().addActionListener(ivjEventHandler);
 		getFnScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 		this.addPropertyChangeListener(ivjEventHandler);
+		getSubdomainComboBox().addActionListener(ivjEventHandler);
 		
 		getFnTableScrollPane().addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
@@ -397,7 +408,6 @@ public class OutputFunctionsPanel extends JPanel {
 			setName("OutputFunctionsListPanel");
 			setSize(750, 100);
 			setLayout(new BorderLayout());
-			
 			add(getButtonPanel(), BorderLayout.NORTH);
 			add(getFnTableScrollPane(), BorderLayout.CENTER);
 			initConnections();
@@ -409,18 +419,6 @@ public class OutputFunctionsPanel extends JPanel {
 				new javax.swing.event.TableModelListener(){
 					public void tableChanged(javax.swing.event.TableModelEvent e){
 						ScopedExpressionTableCellRenderer.formatTableCellSizes(getFnScrollPaneTable(),null,null);
-							
-						getFnScrollPaneTable().getColumnModel().getColumn(OutputFunctionsListTableModel.COLUMN_OUTPUTFN_NAME).setCellRenderer(new DefaultTableCellRenderer(){
-		
-								@Override
-							protected void setValue(Object value) {
-								super.setValue(value);
-								if (function_icon == null) {
-									function_icon = new ImageIcon(getClass().getResource("/icons/function_icon.png"));
-								}
-								setIcon(function_icon);
-							}
-						});
 					}
 				}
 			);
@@ -429,101 +427,102 @@ public class OutputFunctionsPanel extends JPanel {
 		}
 	}
 
-	private void addOutputFunction(final VariableType varType) {
-		simulationWorkspace.getSimulationOwner().refreshMathDescription();
-		ArrayList<AnnotatedFunction> outputFunctionList = outputFunctionContext.getOutputFunctionsList();
-		String defaultName = null;
-		int count = 0;
-		while (true) {
-			boolean nameUsed = false;
-			count++;
-			defaultName = "func" + count;
-			for (AnnotatedFunction function : outputFunctionList){
-				if (function.getName().equals(defaultName)) {
-					nameUsed = true;
-				}
+	private void addOutputFunction() {
+		AsynchClientTask task1 = new AsynchClientTask("refresh math description", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				simulationWorkspace.getSimulationOwner().refreshMathDescription();
 			}
-			if (!nameUsed) {
-				break;
-			}
-		}
-
-		javax.swing.JPanel FnPanel = getFunctionPanel();
-		getFunctionNameTextField().setText(defaultName);
-		getFunctionExpressionTextField().setText("0.0");
-		Set<String> autoCompList = new HashSet<String>();
-		Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
-		outputFunctionContext.getEntries(entryMap);
-		autoCompList = entryMap.keySet();
-		getFunctionExpressionTextField().setAutoCompletionWords(autoCompList);
-		getFunctionExpressionTextField().setSymbolTable(outputFunctionContext);
-		final MathDescription mathDescription = simulationWorkspace.getSimulationOwner().getMathDescription();
-		getFunctionExpressionTextField().setAutoCompleteSymbolFilter(new AutoCompleteSymbolFilter() {
-			public boolean accept(SymbolTableEntry ste) {
-				if (mathDescription.isSpatial()) {
-					if (ste instanceof AnnotatedFunction) {
-						return varType.getVariableDomain().equals(((AnnotatedFunction)ste).getFunctionType().getVariableDomain());
-					}			
-					if (ste instanceof Function) {
-						Function f = (Function)ste;
-						try {
-							outputFunctionContext.validateExpression(f, varType, f.getExpression());
-							return true;
-						} catch (Exception e) {
-							return false;
+		};
+		AsynchClientTask task2 = new AsynchClientTask("show dialog", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				ArrayList<AnnotatedFunction> outputFunctionList = outputFunctionContext.getOutputFunctionsList();
+				String defaultName = null;
+				int count = 0;
+				while (true) {
+					boolean nameUsed = false;
+					count++;
+					defaultName = "func" + count;
+					for (AnnotatedFunction function : outputFunctionList){
+						if (function.getName().equals(defaultName)) {
+							nameUsed = true;
 						}
 					}
-					
-					// must be Variables(Volume, Membrane, VolumeRegion, MembraneRegion)					
-					VariableType vt = VariableType.getVariableType((Variable)ste);
-					if (!varType.getVariableDomain().equals(vt.getVariableDomain())) {
-						return false;
+					if (!nameUsed) {
+						break;
 					}
 				}
 		
-				return true;
-			}
-			public boolean acceptFunction(String funcName) {
-				return true;
-			}
-		});
+				boolean bSpatial = simulationWorkspace.getSimulationOwner().getGeometry().getDimension() > 0;
+				getSubdomainComboBox().setVisible(bSpatial);
+				getSubdomainLabel().setVisible(bSpatial);
+				
+				if (bSpatial) {
+					DefaultComboBoxModel aModel = new DefaultComboBoxModel();
+					GeometryClass[] geometryClasses = simulationWorkspace.getSimulationOwner().getGeometry().getGeometryClasses();
+					for (GeometryClass gc : geometryClasses){
+						aModel.addElement(gc);
+					}
+					getSubdomainComboBox().setModel(aModel);
+					getSubdomainComboBox().setSelectedIndex(0);
+				}
 
-		Timer timer = new Timer(100, new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				getFunctionExpressionTextField().requestFocusInWindow();			
-				getFunctionExpressionTextField().selectAll();
+				getFunctionNameTextField().setText(defaultName);
+				getFunctionExpressionTextField().setText("0.0");
+				Set<String> autoCompList = new HashSet<String>();
+				Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+				outputFunctionContext.getEntries(entryMap);
+				autoCompList = entryMap.keySet();
+				getFunctionExpressionTextField().setAutoCompletionWords(autoCompList);
+				getFunctionExpressionTextField().setSymbolTable(outputFunctionContext);
+				//
+				// Show the editor with a default name and default expression for the function
+				// If the OK option is chosen, get the new name and expression for the function and create a new
+				// function, add it to the list of output functions in simulationOwner 
+				// Else, pop-up an error dialog indicating that function cannot be added.
+				//
+				int ok = DialogUtils.showComponentOKCancelDialog(OutputFunctionsPanel.this, getAddFunctionPanel(), "Add Function");
+				if (ok == javax.swing.JOptionPane.OK_OPTION) {
+					String funcName = getFunctionNameTextField().getText();
+					Expression funcExp = null;
+					try {
+						funcExp = new Expression(getFunctionExpressionTextField().getText());
+					} catch (ExpressionException e) {
+						e.printStackTrace(System.out);
+					}
+					Domain domain = null;
+					VariableType newFunctionVariableType = null;
+					if (bSpatial) {
+						GeometryClass geoClass = (GeometryClass)getSubdomainComboBox().getSelectedItem();
+						domain = new Domain(geoClass);
+						if (getSubdomainComboBox().getSelectedItem() instanceof SubVolume) {
+							newFunctionVariableType = VariableType.VOLUME;
+						} else {
+							newFunctionVariableType = VariableType.MEMBRANE;
+						}
+					} else {
+						newFunctionVariableType = VariableType.NONSPATIAL;
+					}
+					AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, domain, null, newFunctionVariableType, FunctionCategory.OUTPUTFUNCTION);
+					try {
+						VariableType vt = outputFunctionContext.computeFunctionTypeWRTExpression(newFunction, funcExp);
+						if (!vt.compareEqual(newFunctionVariableType)) {
+							newFunction = new AnnotatedFunction(funcName, funcExp, domain, null, vt, FunctionCategory.OUTPUTFUNCTION);
+						}
+						outputFunctionContext.addOutputFunction(newFunction);
+						outputFnsListTableModel1.selectOutputFunction(newFunction);
+					} catch (Exception e1) {
+						e1.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(OutputFunctionsPanel.this, "Function '" + newFunction.getName() + "' cannot be added. " + e1.getMessage(), e1);
+					}
+				}		
+				enableDeleteFnButton();
 			}
-		});
-		timer.setRepeats(false);
-		timer.start();
-		//
-		// Show the editor with a default name and default expression for the function
-		// If the OK option is chosen, get the new name and expression for the function and create a new
-		// function, add it to the list of output functions in simulationOwner 
-		// Else, pop-up an error dialog indicating that function cannot be added.
-		//
-		int ok = JOptionPane.showOptionDialog(this, FnPanel, "Add Function" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
-		if (ok == javax.swing.JOptionPane.OK_OPTION) {
-			String funcName = getFunctionNameTextField().getText();
-			Expression funcExp = null;
-			try {
-				funcExp = new Expression(getFunctionExpressionTextField().getText());
-			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
-			}
-			Domain domain = null; //TODO domain
-			AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, domain, null, varType, FunctionCategory.OUTPUTFUNCTION);
-			try {
-				outputFunctionContext.validateExpression(newFunction, varType, funcExp);	
-				outputFunctionContext.addOutputFunction(newFunction);
-				outputFnsListTableModel1.selectOutputFunction(newFunction);
-			} catch (Exception e1) {
-				e1.printStackTrace(System.out);
-				DialogUtils.showErrorDialog(this, "Function '" + newFunction.getName() + "' cannot be added. " + e1.getMessage(), e1);
-			}
-		}
-
-		enableDeleteFnButton();
+		};
+		ClientTaskDispatcher.dispatch(OutputFunctionsPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });
 	}
 
 	private void deleteOutputFunction() {
@@ -584,17 +583,9 @@ public class OutputFunctionsPanel extends JPanel {
 		this.simulationWorkspace = argSimulationWorkspace;
 		firePropertyChange("simulationWorkspace", oldValue, argSimulationWorkspace);
 	}
-
-	private void enableAddbuttons() {
-		if (simulationWorkspace.getSimulationOwner().getGeometry().getDimension() > 0) {
-			getAddMemVarFnButton().setVisible(true);
-			getAddVolVarFnButton().setVisible(true);
-			getAddFnButton().setVisible(false);
-		} else {
-			getAddMemVarFnButton().setVisible(false);
-			getAddVolVarFnButton().setVisible(false);
-			getAddFnButton().setVisible(true);
-		}
+	
+	private Domain getNewFunctionDomain() {
+		return new Domain((GeometryClass)(getSubdomainComboBox().getSelectedItem()));
 	}
 
 	public void setScrollPaneTableCurrentRow(AnnotatedFunction selection) {

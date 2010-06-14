@@ -885,6 +885,7 @@ private void initialize() {
 
 public void setScrollPaneTableCurrentRow(SpeciesContext selection) {
 	if (selection == null) {
+		getScrollPaneTable().clearSelection();
 		return;
 	}
 	int numRows = getScrollPaneTable().getRowCount();

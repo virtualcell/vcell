@@ -12,13 +12,10 @@ import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.OutputFunctionContext;
-import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.VariableType;
 /**
  * Insert the type's description here.
@@ -115,43 +112,15 @@ public Object getValueAt(int row, int column) {
 					if (obsFunction.getExpression() == null) {
 						return null; 
 					} else {
-						final MathDescription mathDescription = outputFunctionContext.getSimulationOwner().getMathDescription();
-						final VariableType varType = obsFunction.getFunctionType();
-						AutoCompleteSymbolFilter autoCompleteSymbolFilter = new AutoCompleteSymbolFilter() {
-							public boolean accept(SymbolTableEntry ste) {
-								if (mathDescription.isSpatial()) {
-									if (ste instanceof AnnotatedFunction) {
-										return varType.getVariableDomain().equals(((AnnotatedFunction)ste).getFunctionType().getVariableDomain());
-									}			
-									if (ste instanceof Function) {
-										Function f = (Function)ste;
-										try {
-											outputFunctionContext.validateExpression(f, varType, f.getExpression());
-											return true;
-										} catch (Exception e) {
-											return false;
-										}
-									}
-									
-									// must be Variables(Volume, Membrane, VolumeRegion, MembraneRegion)
-									VariableType vt = VariableType.getVariableType((Variable)ste);
-									if (!varType.getVariableDomain().equals(vt.getVariableDomain())) {
-										return false;
-									}
-								}
-						
-								return true;
-							}
-							public boolean acceptFunction(String funcName) {
-								return true;
-							}
-						};
-						
+						AutoCompleteSymbolFilter autoCompleteSymbolFilter = outputFunctionContext.getAutoCompleteSymbolFilter(obsFunction.getDomain());
 						return new ScopedExpression(obsFunction.getExpression(),outputFunctionContext.getNameScope(), true, autoCompleteSymbolFilter);
 					}
 				}
 				case COLUMN_OUTPUTFN_VARIABLETYPE: {
-					return obsFunction.getFunctionType().getVariableDomain().getName();
+					if (obsFunction.getDomain() == null) {
+						return obsFunction.getFunctionType().getVariableDomain().getName();
+					}
+					return obsFunction.getDomain().getName();
 				}
 				default: {
 					return null;
@@ -219,7 +188,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			try {
 				Expression exp = new Expression((String)aValue);
 				exp.bindExpression(outputFunctionContext);
-				getOutputFunctionContext().validateExpression(outputFunction, outputFunction.getFunctionType(), exp);
+				VariableType vt = outputFunctionContext.computeFunctionTypeWRTExpression(outputFunction, exp);
+				if (!vt.compareEqual(outputFunction.getFunctionType())) {
+				}
 				outputFunction.setExpression(exp);
 				
 				// both the 'fire's are being used so that the scopedExpressionRenderer renders the exprs properly, esp with num/dem exprs.
@@ -227,6 +198,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				fireTableRowsUpdated(rowIndex,rowIndex);
 				outputFunctionContext.firePropertyChange("outputFunctions", null, outputFunctionContext.getOutputFunctionsList());
 			} catch (ExpressionException e){
+				e.printStackTrace(System.out);
+				PopupGenerator.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());
+			} catch (InconsistentDomainException e) {
 				e.printStackTrace(System.out);
 				PopupGenerator.showErrorDialog(ownerTable, "Expression error:\n"+e.getMessage());
 			}
