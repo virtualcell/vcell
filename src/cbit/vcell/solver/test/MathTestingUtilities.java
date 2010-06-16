@@ -7,7 +7,10 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.VCDocument;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.SubVolume;
@@ -39,6 +42,7 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.numericstest.ConstructedSolutionTemplate;
 import cbit.vcell.numericstest.SolutionTemplate;
 import cbit.vcell.numericstest.TestCaseNew;
@@ -124,14 +128,15 @@ public static double calcWeightedSquaredError(ODESolverResultSet testResultSet, 
 	}
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
 public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTable testSimSymbolTable, 
-		PDEDataManager testDataManager, SimulationSymbolTable refSimSymbolTable, PDEDataManager refDataManager, String varsToCompare[],
-		double absErrorThreshold, double relErrorThreshold) throws DataAccessException, ExpressionException {
+		PDEDataManager testDataManager,SimulationSymbolTable refSimSymbolTable, PDEDataManager refDataManager, String varsToCompare[],
+		double absErrorThreshold, double relErrorThreshold,
+		VCDocument refDocument,PDEDataViewer.DataInfoProvider refDataInfoProvider,
+		VCDocument testDocument,PDEDataViewer.DataInfoProvider testDataInfoProvider) throws DataAccessException, ExpressionException {
 
 	java.util.Hashtable<String, DataErrorSummary> tempVarHash = new java.util.Hashtable<String, DataErrorSummary>();
 	boolean bTimesEqual = true;
@@ -228,8 +233,64 @@ public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTabl
 				break;
 			}
 		}
+		//
+		//Find REFERENCE variable
+		//
 		Variable refVar = getSimVar(refSimSymbolTable, varsToCompare[i]);
+		if(refVar == null){//Should only happen if TEST sims were generated 'post-domains' and REFERENCE sims were generated 'pre-domains'
+			if(refDataID != null){
+				throw new RuntimeException("Unexpected reference condition: '"+varsToCompare[i]+"' not found in symboltable but was found in dataidentifiers");
+			}
+			if(testDocument instanceof BioModel){//Only BioModels need to be checked
+				//Look in TEST for a speciescontext with matching species name
+				System.out.println("ReferenceVariable: using alternate method to find '"+varsToCompare[i]+"'");
+				BioModel refBioModel = (BioModel)refDocument;
+				BioModel testBioModel = (BioModel)testDocument;
+				SpeciesContext testSpeciesContext = testBioModel.getModel().getSpeciesContext(varsToCompare[i]);
+				if(testSpeciesContext != null){
+					refVar = refSimSymbolTable.getVariable(testSpeciesContext.getSpecies().getCommonName());
+					for (int j = 0; j < refDataIDs.length; j++){
+						if (refDataIDs[j].getName().equals(testSpeciesContext.getSpecies().getCommonName())){
+							refDataID = refDataIDs[j];
+							break;
+						}
+					}
+				}
+			}
+			if(refVar == null || refDataID == null){
+				Simulation refSim = refSimSymbolTable.getSimulation();
+				throw new RuntimeException("The variable "+varsToCompare[i]+" was not found in Simulation ("+refSim.getName()+" "+refSim.getVersion().getDate()+")\n");
+			}
+		}
+		//
+		//Find TEST variable (assumed to have sims generated with a software version later than REFERENCE)
+		//
 		Variable testVar = getSimVar(testSimSymbolTable, varsToCompare[i]);
+		if(testVar == null){//Should only happen if TEST sims were generated 'post-domains' and REFERENCE sims were generated 'pre-domains'
+			System.out.println("TestVariable: using alternate method to find '"+varsToCompare[i]+"'");
+			BioModel testBioModel = (BioModel)testDocument;
+			SpeciesContext[] speciesContexts = testBioModel.getModel().getSpeciesContexts();
+			boolean bSkip = false;
+			for (int j = 0; j < speciesContexts.length; j++) {
+				if(speciesContexts[j].getSpecies().getCommonName().equals(varsToCompare[i])){
+					testVar = testSimSymbolTable.getVariable(speciesContexts[j].getName());
+					if(testVar == null){
+						throw new RuntimeException("Speciescontext name '"+speciesContexts[j].getName()+"' not found in testsimsymboltable");
+					}
+					//If we got here it means at least one matching speciescontext was found in TEST with
+					//a species name matching varsToCompare[i].  We can skip because the matching speciesconetext
+					//will be used to do a comparison at some point.
+					bSkip = true;
+					break;
+				}
+			}
+			if(bSkip){//these are tested already using full simcontext names
+				System.out.println("Skipping '"+varsToCompare[i]+"' as lookup in testSimSymbolTable");
+				continue;
+			}
+			Simulation refSim = refSimSymbolTable.getSimulation();
+			throw new RuntimeException("The variable "+varsToCompare[i]+" was not found in Simulation ("+refSim.getName()+" "+refSim.getVersion().getDate()+")\n");
+		}
 		// for each time in timeArray. ('t' is used to index the testTimeArray, for interpolation purposes.)
 		int t = 0;
 		for (int j = 0; j < refTimeArray.length; j++){
@@ -303,7 +364,11 @@ public static SimulationComparisonSummary comparePDEResults(SimulationSymbolTabl
 			}
 
 			// for each point in data block ...
+			testDataInfoProvider.getPDEDataContext().setVariableName(testVar.getName());
 			for (int k = 0; k < refData.length; k++) {
+				if(!testDataInfoProvider.isDefined(k)){
+					continue;
+				}
 				// Determine maxRef, minRef, maxAbsErr for variable
 				//SubDomain testSubDomain = null;
 				String sn = null;
@@ -1492,8 +1557,7 @@ private static Variable getSimVar(SimulationSymbolTable refSimSymbolTable, Strin
 			return refSimVars[i];
 		}
 	}
-	Simulation refSim = refSimSymbolTable.getSimulation();
-	throw new RuntimeException("The variable "+testSimVarName+" was not found in Simulation ("+refSim.getName()+" "+refSim.getVersion().getDate()+")\n");
+	return null;
 }
 
 

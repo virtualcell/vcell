@@ -1,29 +1,6 @@
 package cbit.vcell.client.desktop;
-import cbit.vcell.modeldb.MathVerifier;
-import cbit.vcell.numericstest.LoadTestInfoOP;
-import cbit.vcell.numericstest.LoadTestInfoOpResults;
-import cbit.vcell.numericstest.TestCaseNewBioModel;
-import cbit.vcell.numericstest.TestCaseNewMathModel;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
-import cbit.vcell.numericstest.TestCaseNew;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.TestingFrameworkWindowManager;
-import cbit.vcell.client.VCellClient;
-import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
-import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel;
-import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.LoadTestTreeInfo;
-import cbit.vcell.numericstest.TestCriteriaNew;
-import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
-import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
-
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-
-import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.client.task.TFRefresh;
-import cbit.vcell.client.task.TFAddTestSuite;
 import java.math.BigDecimal;
 import java.util.Hashtable;
 import java.util.TreeSet;
@@ -38,27 +15,43 @@ import javax.swing.SwingConstants;
 import javax.swing.tree.TreePath;
 
 import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.UtilCancelException;
 
-import cbit.vcell.client.task.TFUpdateRunningStatus;
-import cbit.vcell.client.task.TFRunSims;
-import cbit.vcell.client.task.TFDuplicateTestSuite;
-import cbit.vcell.client.task.TFRemove;
-import cbit.vcell.client.task.TFGenerateReport;
-import cbit.vcell.client.task.TFUpdateTestCriteria;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
+import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel;
+import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.LoadTestTreeInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.test.VCellClientTest;
+import cbit.vcell.client.task.TFAddTestSuite;
+import cbit.vcell.client.task.TFDuplicateTestSuite;
+import cbit.vcell.client.task.TFGenerateReport;
+import cbit.vcell.client.task.TFRefresh;
+import cbit.vcell.client.task.TFRemove;
+import cbit.vcell.client.task.TFRunSims;
+import cbit.vcell.client.task.TFUpdateRunningStatus;
+import cbit.vcell.client.task.TFUpdateTestCriteria;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.modeldb.MathVerifier;
+import cbit.vcell.numericstest.LoadTestInfoOP;
+import cbit.vcell.numericstest.LoadTestInfoOpResults;
+import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.numericstest.TestCaseNewBioModel;
+import cbit.vcell.numericstest.TestCaseNewMathModel;
+import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
+import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
+import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (7/15/2004 2:36:18 PM)
@@ -425,7 +418,7 @@ public void setTestingFrameworkWindowManager(cbit.vcell.client.TestingFrameworkW
 }
 
 
-private SimulationInfo getUserSelectedSimulationInfo() throws Exception{
+private TFGenerateReport.VCDocumentAndSimInfo getUserSelectedSimulationInfo() throws Exception{
 	final String CANCEL_STRING =  "Cancel";
 	final String BM_STRING = "BioModel";
 	final String MM_STRING = "MathModel";
@@ -434,13 +427,18 @@ private SimulationInfo getUserSelectedSimulationInfo() throws Exception{
 		throw UserCancelException.CANCEL_GENERIC;
 	}
 	VCDocumentInfo userDefinedRegrRefModel = null;
+	VCDocument vcDocument = null;
 	if(result.equals(BM_STRING)){
 		userDefinedRegrRefModel = getTestingFrameworkWindowManager().getRequestManager().selectBioModelInfo(getTestingFrameworkWindowManager());
+		vcDocument = getTestingFrameworkWindowManager().getRequestManager().getDocumentManager().getBioModel(userDefinedRegrRefModel.getVersion().getVersionKey());
 	}else{
 		userDefinedRegrRefModel = getTestingFrameworkWindowManager().getRequestManager().selectMathModelInfo(getTestingFrameworkWindowManager());					
+		vcDocument = getTestingFrameworkWindowManager().getRequestManager().getDocumentManager().getMathModel(userDefinedRegrRefModel.getVersion().getVersionKey());
 	}
-	return getTestingFrameworkWindowManager().getUserSelectedRefSimInfo(getTestingFrameworkWindowManager().getRequestManager(), userDefinedRegrRefModel);
-
+	SimulationInfo simInfo =
+		getTestingFrameworkWindowManager().getUserSelectedRefSimInfo(getTestingFrameworkWindowManager().getRequestManager(), userDefinedRegrRefModel);
+	TFGenerateReport.VCDocumentAndSimInfo vcDocumentAndsimInfo = new TFGenerateReport.VCDocumentAndSimInfo(simInfo,vcDocument);
+	return vcDocumentAndsimInfo;
 }
 
 private class EnterDBAndSoftwareVersPanel extends JPanel {
@@ -884,7 +882,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 					PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Selected simulation is still running!");
 					return;
 				}
-				SimulationInfo userDefinedRegrRef = null;
+				TFGenerateReport.VCDocumentAndSimInfo userDefinedRegrRef = null;
 				if(e.getActionCommand().equals(TestingFrameworkPanel.COMPARERREGR_USERDEFREF_TESTCRITERIA)){
 					try{
 						userDefinedRegrRef = getUserSelectedSimulationInfo();
@@ -896,7 +894,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 					PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Either the selected simulation does not belong to a REGRESSION test or the regression simInfo is not set!");
 					return;
 				}
-				getTestingFrameworkWindowManager().compare(tCriteria,userDefinedRegrRef);			
+				getTestingFrameworkWindowManager().compare(tCriteria,userDefinedRegrRef.getSimInfo());			
 			} else {
 				PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Selected Object is not a TestCriteria!");
 			}
@@ -1032,7 +1030,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 			tasksV.add(tfRefreshTreeTask);
 		}else if (e.getActionCommand().equals(TestingFrameworkPanel.GENTCRITREPORT_INTERNALREF_TESTCRITERIA) ||
 				e.getActionCommand().equals(TestingFrameworkPanel.GENTCRITREPORT_USERDEFREF_TESTCRITERIA)) {
-			SimulationInfo userDefinedRegrRef = null;
+			TFGenerateReport.VCDocumentAndSimInfo userDefinedRegrRef = null;
 			if(e.getActionCommand().equals(TestingFrameworkPanel.GENTCRITREPORT_USERDEFREF_TESTCRITERIA)){
 				try{
 					userDefinedRegrRef = getUserSelectedSimulationInfo();
@@ -1125,6 +1123,7 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 		ClientTaskDispatcher.dispatch(this, hash, tasksArr, true);
 		
 	}catch(Throwable exc){
+		exc.printStackTrace();
 		if(!(exc instanceof UserCancelException) && !(exc instanceof UtilCancelException)){
 			PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, exc.getMessage(), exc);
 		}
