@@ -369,6 +369,9 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 		public final SimulationModelInfo getSimulationModelInfo() {
 			return simulationModelInfo;
 		}
+		public PDEDataContext getPDEDataContext(){
+			return pdeDataContext;
+		}
 	}
 
 	private JButton ivjJButtonStatistics = null;

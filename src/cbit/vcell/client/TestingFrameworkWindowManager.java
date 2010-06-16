@@ -30,12 +30,14 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
@@ -47,6 +49,8 @@ import cbit.rmi.event.ExportEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.client.data.PDEDataViewer;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.client.desktop.simulation.SimulationCompareWindow;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
@@ -83,6 +87,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.numericstest.AddTestCasesOP;
 import cbit.vcell.numericstest.AddTestCasesOPBioModel;
@@ -98,8 +103,8 @@ import cbit.vcell.numericstest.EditTestCriteriaOPBioModel;
 import cbit.vcell.numericstest.EditTestCriteriaOPMathModel;
 import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
 import cbit.vcell.numericstest.EditTestSuiteOP;
-import cbit.vcell.numericstest.LoadTestInfoOpResults;
 import cbit.vcell.numericstest.LoadTestInfoOP;
+import cbit.vcell.numericstest.LoadTestInfoOpResults;
 import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
 import cbit.vcell.numericstest.RemoveTestCasesOP;
 import cbit.vcell.numericstest.RemoveTestResultsOP;
@@ -115,11 +120,11 @@ import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
-import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
 import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults.CrossRefData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
@@ -1013,7 +1018,7 @@ public SimulationInfo getUserSelectedRefSimInfo(RequestManager currentRequstMana
  * Insert the method's description here.
  * Creation date: (8/18/2003 5:36:47 PM)
  */
-public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,ClientTaskStatusSupport pp,SimulationInfo userDefinedRefSimInfo) {
+public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,ClientTaskStatusSupport pp,TFGenerateReport.VCDocumentAndSimInfo userDefinedRefSimInfo) {
 
 	StringBuffer reportTCBuffer = new StringBuffer();
 	if (testCase == null) {
@@ -1110,12 +1115,40 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 }
 
 
+private PDEDataViewer.DataInfoProvider getDataInfoProvider(VCDocument document,PDEDataContext pdeDataContext,String refSimName) throws ObjectNotFoundException{
+
+	SimulationWorkspaceModelInfo simulationWorkspaceModelInfo = null;
+	if(document instanceof MathModel){
+		MathModel mathModel = (MathModel)document;
+		Simulation[] sims = mathModel.getSimulations();
+		for (int i = 0; i < sims.length; i++) {
+			if(refSimName.equals(sims[i].getName())){
+				simulationWorkspaceModelInfo =
+					new SimulationWorkspaceModelInfo(mathModel,sims[i].getName());
+				break;
+			}
+		}
+	}else{
+		BioModel bioModel = (BioModel)document;
+		Simulation[] sims = bioModel.getSimulations();
+		for (int i = 0; i < sims.length; i++) {
+			if(refSimName.equals(sims[i].getName())){
+				simulationWorkspaceModelInfo =
+					new SimulationWorkspaceModelInfo(bioModel.getSimulationContext(sims[i]),sims[i].getName());
+				break;
+			}
+		}
+	}
+	PDEDataViewer.DataInfoProvider dataInfoProvider =
+		new PDEDataViewer.DataInfoProvider(pdeDataContext, simulationWorkspaceModelInfo);
+	return dataInfoProvider;
+}
 /**
  * Insert the method's description here.
  * Creation date: (8/18/2003 5:36:47 PM)
  * 
  */
-private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew testCriteria,Simulation sim,SimulationInfo userSelectedRefSimInfo) {
+private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew testCriteria,Simulation sim,TFGenerateReport.VCDocumentAndSimInfo userSelectedRefSimInfo/*,VCDocument refDoc,VCDocument testDocument*/) {
 
 	if (sim.getScanCount() != 1) {
 		throw new RuntimeException("paramater scan is not supported in Math Testing Framework");
@@ -1136,15 +1169,41 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 	}
 	
 	try {
-		SimulationInfo refSimInfo = null;
-		if(userSelectedRefSimInfo == null){
-			refSimInfo = testCriteria.getRegressionSimInfo();
-			reportTCBuffer.append("\t\t"+sim.getName() + (refSimInfo != null?" (Using TestCrit RegrRefSim)":"")+" : "+"\n");
-		}else{
-			refSimInfo = userSelectedRefSimInfo;
-			reportTCBuffer.append("\t\t"+sim.getName() + " (Using UserDefined RegrRefSim '"+userSelectedRefSimInfo.getAuthoritativeVCSimulationIdentifier()+"') : "+"\n");
+		VCDocument testDoc = null;
+		if(testCase instanceof TestCaseNewMathModel){
+			MathModelInfo mmInfo = ((TestCaseNewMathModel)testCase).getMathModelInfo();
+			MathModel mathModel = getRequestManager().getDocumentManager().getMathModel(mmInfo);
+			testDoc = mathModel;
+		}else if(testCase instanceof TestCaseNewBioModel){
+			TestCaseNewBioModel bioTestCase = (TestCaseNewBioModel)testCase;
+			//bioTestCase.
+			BioModelInfo bmInfo = bioTestCase.getBioModelInfo();
+			BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
+			testDoc = bioModel;
 		}
-		if (testCase.getType().equals(TestCaseNew.REGRESSION) && refSimInfo == null) {
+
+		TFGenerateReport.VCDocumentAndSimInfo refVCDocumentAndSimInfo = null;
+		if(userSelectedRefSimInfo == null){
+			SimulationInfo refSimInfo = testCriteria.getRegressionSimInfo();
+			if(refSimInfo != null){
+				VCDocument refDoc = null;
+				if(testCriteria instanceof TestCriteriaNewMathModel){
+					MathModelInfo mmInfo = ((TestCriteriaNewMathModel)testCriteria).getRegressionMathModelInfo();
+					MathModel mathModel = getRequestManager().getDocumentManager().getMathModel(mmInfo);
+					refDoc = mathModel;
+				}else if(testCriteria instanceof TestCriteriaNewBioModel){
+					BioModelInfo bmInfo = ((TestCriteriaNewBioModel)testCriteria).getRegressionBioModelInfo();
+					BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
+					refDoc = bioModel;
+				}
+				refVCDocumentAndSimInfo = new TFGenerateReport.VCDocumentAndSimInfo(refSimInfo, refDoc);
+			}
+			reportTCBuffer.append("\t\t"+sim.getName() + (refVCDocumentAndSimInfo != null?" (Using TestCrit RegrRefSim)":"")+" : "+"\n");
+		}else{
+			refVCDocumentAndSimInfo = userSelectedRefSimInfo;
+			reportTCBuffer.append("\t\t"+sim.getName() + " (Using UserDefined RegrRefSim '"+userSelectedRefSimInfo.getSimInfo().getAuthoritativeVCSimulationIdentifier()+"') : "+"\n");
+		}
+		if (testCase.getType().equals(TestCaseNew.REGRESSION) && refVCDocumentAndSimInfo == null) {
 			reportTCBuffer.append("\t\t\tNo reference SimInfo, SimInfoKey="+testCriteria.getSimInfo().getVersion().getName()+". Cannot perform Regression Test!\n");
 			simReportStatus = TestCriteriaNew.TCRIT_STATUS_NOREFREGR;
 		}else{
@@ -1219,8 +1278,8 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 							}
 						}
 					} else if (testCase.getType().equals(TestCaseNew.REGRESSION)) {
-						Simulation refSim = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(refSimInfo);
-						VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
+						Simulation refSim = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(refVCDocumentAndSimInfo.getSimInfo());
+						VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refVCDocumentAndSimInfo.getSimInfo().getAuthoritativeVCSimulationIdentifier(), 0);
 						PDEDataManager refDataManager = (PDEDataManager)getRequestManager().getDataManager(null,refVcdID, refSim.isSpatial());
 						
 						if (refSim.getScanCount() != 1) {
@@ -1229,7 +1288,10 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						SimulationSymbolTable refSimSymbolTable = new SimulationSymbolTable(refSim, 0);
 						
 						String varsToCompare[] = getVariableNamesToCompare(simSymbolTable,refSimSymbolTable);
-						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResults(simSymbolTable, pdeDataManager, refSimSymbolTable, refDataManager, varsToCompare,testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
+						SimulationComparisonSummary simCompSummary =
+							MathTestingUtilities.comparePDEResults(simSymbolTable, pdeDataManager, refSimSymbolTable, refDataManager, varsToCompare,testCriteria.getMaxAbsError(),testCriteria.getMaxRelError(),
+									refVCDocumentAndSimInfo.getVCDocument(),getDataInfoProvider(refVCDocumentAndSimInfo.getVCDocument(), refDataManager.getPDEDataContext(), refSim.getName()),
+									testDoc,getDataInfoProvider(testDoc, pdeDataManager.getPDEDataContext(), refSim.getName()));
 						// Failed var summaries
 						failVarSummaries = simCompSummary.getFailingVariableComparisonSummaries(absErr, relErr);
 						allVarSummaries = simCompSummary.getVariableComparisonSummaries();
@@ -1324,7 +1386,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						
 						String varsToTest[] = getVariableNamesToCompare(simSymbolTable,refSimSymbolTable);
 						
-						VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
+						VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refVCDocumentAndSimInfo.getSimInfo().getAuthoritativeVCSimulationIdentifier(), 0);
 						ODEDataManager refDataManager = (ODEDataManager)getRequestManager().getDataManager(null,refVcdID, refSim.isSpatial());
 						ODESolverResultSet referenceResultSet = refDataManager.getODESolverResultSet();
 						SimulationComparisonSummary simCompSummary_regr = null;							
@@ -1661,6 +1723,126 @@ public TestingFrameworkWindowPanel getTestingFrameworkWindowPanel() {
 	return testingFrameworkWindowPanel;
 }
 
+
+public static class VariablePair{
+	public Variable refVariable;
+	public Variable testVariable;
+	public Domain domain;
+}
+///**
+// * Insert the method's description here.
+// * Creation date: (11/23/2004 1:53:11 PM)
+// * @return java.lang.String[]
+// * @param sim1 cbit.vcell.solver.Simulation
+// * @param sim2 cbit.vcell.solver.Simulation
+// */
+//private VariablePair[] getVariableNamesToCompare(BioModel testBioModel,SimulationSymbolTable testSymboltable, SimulationSymbolTable refSymbolTable){	
+//	Vector<VariablePair> variablePairs = new Vector<VariablePair>();
+//
+//	//
+//	// get Variables from Simulation 1
+//	//	
+//	Variable refVars[] = refSymbolTable.getVariables();
+//	for (int i = 0;refVars!=null && i < refVars.length; i++){
+//		if (refVars[i] instanceof VolVariable ||
+//			refVars[i] instanceof StochVolVariable ||
+//			refVars[i] instanceof MemVariable ||
+//			refVars[i] instanceof VolumeRegionVariable ||
+//			refVars[i] instanceof MembraneRegionVariable ||
+//			refVars[i] instanceof FilamentVariable ||
+//			refVars[i] instanceof FilamentRegionVariable){
+//
+//			VariablePair varPair = new VariablePair();
+//			varPair.refVariable = refVars[i];
+//			varPair.domain = refVars[i].getDomain();
+//			varPair.testVariable = null;
+//			variablePairs.add(varPair);
+//		}
+////		Constant sensitivityParameter = simSymbolTable1.getSimulation().getSolverTaskDescription().getSensitivityParameter();
+////		if (sensitivityParameter != null) {
+////			if (simVars[i] instanceof VolVariable) {
+////				hashSet.add(SensVariable.getSensName((VolVariable)simVars[i], sensitivityParameter));
+////			}
+////		}
+//	}
+//
+//	//
+//	// add Variables from Simulation 2
+//	//	
+//	Variable[] testVars = testSymboltable.getVariables();
+//	for (int i = 0;testVars!=null && i < testVars.length; i++){
+//		if (testVars[i] instanceof VolVariable ||
+//			testVars[i] instanceof MemVariable ||
+//			testVars[i] instanceof VolumeRegionVariable ||
+//			testVars[i] instanceof MembraneRegionVariable ||
+//			testVars[i] instanceof FilamentVariable ||
+//			testVars[i] instanceof FilamentRegionVariable){
+//
+//			if(testVars[i].getDomain() == null){
+//				boolean BFoundMatchingName = false;
+//				for (int j = 0; j < variablePairs.size(); j++) {
+//					VariablePair varPair = variablePairs.elementAt(j);
+//					if(varPair.refVariable.getName().equals(testVars[i].getName())){
+//						varPair.testVariable = testVars[i];
+//						BFoundMatchingName = true;
+//						break;
+//					}
+//				}
+//				if(!BFoundMatchingName){
+//					//Try to find other matching variable types (e.g. functions)
+//					Variable dataSet1Match = refSymbolTable.getVariable(testVars[i].getName());
+//					if(dataSet1Match != null){
+//						VariablePair varPair = new VariablePair();
+//						varPair.refVariable = dataSet1Match;
+//						varPair.testVariable = testVars[i];
+//						varPair.domain = varPair.refVariable.getDomain();
+//						variablePairs.add(varPair);
+//					}else{
+//						SpeciesContext testSpeciescontext0 = testBioModel.getModel().getSpeciesContext(testVars[i].getName());
+//						if(testSpeciescontext0 != null){
+//							Species refspecies = testSpeciescontext0.getSpecies();
+//							Variable refVariable = refSymbolTable.getVariable(refspecies.getCommonName());
+//							if(refVariable != null){
+//								VariablePair varPair = new VariablePair();
+//								varPair.refVariable = refVariable;
+//								varPair.testVariable = testVars[i];
+//								varPair.domain = varPair.refVariable.getDomain();
+//								variablePairs.add(varPair);
+//							}
+//						}else{
+//							Species testSpecies = testBioModel.getModel().getSpecies(testVars[i].getName());
+//							if(testSpecies != null){
+//								for (int j = 0; j < testBioModel.getModel().getSpeciesContexts().length; j++) {
+//									if(testBioModel.getModel().getSpeciesContexts()[j].getSpecies() == testSpecies){
+//										Variable refVar = refSymbolTable.getVariable(testBioModel.getModel().getSpeciesContexts()[j].getName());
+//										if(refVar != null){
+//											VariablePair varPair = new VariablePair();
+//											varPair.refVariable = refVar;
+//											varPair.testVariable = testVars[i];
+//											varPair.domain = varPair.refVariable.getDomain();
+//											variablePairs.add(varPair);
+//										}
+//									}
+//								}
+//							}
+//						}
+//					}
+//				}
+//			}else{
+//				
+//			}
+//			hashSet.add(simVars[i].getName());
+//		}
+//		Constant sensitivityParameter = refSymbolTable.getSimulation().getSolverTaskDescription().getSensitivityParameter();
+//		if (sensitivityParameter != null) {
+//			if (simVars[i] instanceof VolVariable) {
+//				hashSet.add(SensVariable.getSensName((VolVariable)simVars[i], sensitivityParameter));
+//			}
+//		}			
+//	}
+//	
+//	return (String[])hashSet.toArray(new String[hashSet.size()]);
+//}
 
 /**
  * Insert the method's description here.

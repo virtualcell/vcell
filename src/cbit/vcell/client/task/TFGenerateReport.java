@@ -2,13 +2,13 @@ package cbit.vcell.client.task;
 
 import java.util.Hashtable;
 
-import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.document.VCDocument;
 
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.client.TestingFrameworkWindowManager;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
+import cbit.vcell.solver.SimulationInfo;
 /**
  * Insert the type's description here.
  * Creation date: (11/17/2004 2:08:09 PM)
@@ -16,11 +16,27 @@ import cbit.vcell.numericstest.TestCriteriaNew;
  */
 public class TFGenerateReport extends AsynchClientTask {
 
+	public static class VCDocumentAndSimInfo {
+		private SimulationInfo simInfo;
+		private VCDocument vcDocument;
+		public VCDocumentAndSimInfo(SimulationInfo simInfo,VCDocument vcDocument) {
+			super();
+			this.simInfo = simInfo;
+			this.vcDocument = vcDocument;
+		}
+		public SimulationInfo getSimInfo() {
+			return simInfo;
+		}
+		public VCDocument getVCDocument() {
+			return vcDocument;
+		}
+	}
 	private TestingFrameworkWindowManager tfwm;
 	private TestCriteriaNew tcrit = null;
 	private TestCaseNew tcn = null;
 	private TestSuiteInfoNew tsin = null;
-	private SimulationInfo userDefinedRegrRef = null;
+	private VCDocumentAndSimInfo userDefinedRegrRef = null;
+
 /**
  * Insert the method's description here.
  * Creation date: (11/17/2004 3:06:56 PM)
@@ -38,7 +54,7 @@ public TFGenerateReport(TestingFrameworkWindowManager argtfwm,TestCaseNew argtcn
  * Insert the method's description here.
  * Creation date: (11/17/2004 3:06:56 PM)
  */
-public TFGenerateReport(TestingFrameworkWindowManager argtfwm,TestCaseNew argtcn,TestCriteriaNew argtcrit,SimulationInfo userDefinedRegrRef) {
+public TFGenerateReport(TestingFrameworkWindowManager argtfwm,TestCaseNew argtcn,TestCriteriaNew argtcrit,VCDocumentAndSimInfo userDefinedRegrRef) {
 	this();
 	tfwm = argtfwm;
 	tcrit = argtcrit;
