@@ -1,5 +1,27 @@
 package cbit.vcell.client.desktop.testingframework;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.math.BigDecimal;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
+
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
+
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.LoadTestTreeInfo;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -8,35 +30,12 @@ import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.tree.TreeNode;
-
 import cbit.vcell.modeldb.TFTestSuiteTable;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaNew;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.gui.NumericsTestCellRenderer;
-
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.math.BigDecimal;
-import java.util.Hashtable;
-import java.util.Vector;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeSelectionModel;
-import javax.swing.tree.TreePath;
-
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
 
 /**
  * Insert the type's description here.
@@ -2094,13 +2093,13 @@ public void selectInTreeView(final BigDecimal testSuiteKey,final BigDecimal test
 					if((System.currentTimeMillis()-startTime) >= WAIT_TIME_MILLISEC){
 						return;
 					}
-					final BioModelNode rootNode = (BioModelNode) getJTree1().getModel().getRoot();
-					for (int i = 0; i < rootNode.getChildCount(); i++) {
+					final BioModelNode testSuiteRootNode = TestingFrmwkTreeModel.getTestSuiteRoot((DefaultTreeModel)getJTree1().getModel());
+					for (int i = 0; i < testSuiteRootNode.getChildCount(); i++) {
 						final int finalI = i;
-						TestSuiteInfoNew tsInfo = (TestSuiteInfoNew) ((BioModelNode) rootNode.getChildAt(i)).getUserObject();
+						TestSuiteInfoNew tsInfo = (TestSuiteInfoNew) ((BioModelNode) testSuiteRootNode.getChildAt(i)).getUserObject();
 						if (tsInfo.getTSKey().equals(testSuiteKey)) {
 							if (testCaseKey != null) {
-								if (TestingFrameworkPanel.hasNullChild((BioModelNode) rootNode.getChildAt(i))) {
+								if (TestingFrameworkPanel.hasNullChild((BioModelNode) testSuiteRootNode.getChildAt(i))) {
 									if(UPDATE_IN_PROGRESS){
 										break;
 									}
@@ -2113,14 +2112,14 @@ public void selectInTreeView(final BigDecimal testSuiteKey,final BigDecimal test
 									break;
 								}
 								UPDATE_IN_PROGRESS = false;
-								for (int j = 0; j < rootNode.getChildAt(i).getChildCount(); j++) {
+								for (int j = 0; j < testSuiteRootNode.getChildAt(i).getChildCount(); j++) {
 									final int finalJ = j;
-									TestCaseNew tcase = (TestCaseNew) ((BioModelNode) rootNode.getChildAt(i).getChildAt(j)).getUserObject();
+									TestCaseNew tcase = (TestCaseNew) ((BioModelNode) testSuiteRootNode.getChildAt(i).getChildAt(j)).getUserObject();
 									if (tcase.getTCKey().equals(testCaseKey)) {
 										if (testCriteriaKey != null) {
-											for (int k = 0; k < rootNode.getChildAt(i).getChildAt(j).getChildCount(); k++) {
+											for (int k = 0; k < testSuiteRootNode.getChildAt(i).getChildAt(j).getChildCount(); k++) {
 												final int finalK = k;
-												TestCriteriaNew tcrit = (TestCriteriaNew) ((BioModelNode) rootNode
+												TestCriteriaNew tcrit = (TestCriteriaNew) ((BioModelNode) testSuiteRootNode
 														.getChildAt(i)
 														.getChildAt(j)
 														.getChildAt(k))
@@ -2129,7 +2128,7 @@ public void selectInTreeView(final BigDecimal testSuiteKey,final BigDecimal test
 													SwingUtilities.invokeLater(new Runnable() {
 														public void run() {TreePath treePath = new TreePath(
 															((DefaultTreeModel) getJTree1().getModel())
-																.getPathToRoot(rootNode.getChildAt(
+																.getPathToRoot(testSuiteRootNode.getChildAt(
 																				finalI).getChildAt(
 																				finalJ).getChildAt(finalK)));
 															getJTree1().setSelectionPath(treePath);
@@ -2144,7 +2143,7 @@ public void selectInTreeView(final BigDecimal testSuiteKey,final BigDecimal test
 											SwingUtilities.invokeLater(new Runnable() {
 												public void run() {
 													TreePath treePath = new TreePath(
-															((DefaultTreeModel) getJTree1().getModel()).getPathToRoot(rootNode
+															((DefaultTreeModel) getJTree1().getModel()).getPathToRoot(testSuiteRootNode
 																	.getChildAt(finalI).getChildAt(finalJ)));
 													getJTree1().setSelectionPath(treePath);
 													getJTree1().scrollPathToVisible(treePath);
@@ -2159,7 +2158,7 @@ public void selectInTreeView(final BigDecimal testSuiteKey,final BigDecimal test
 								new Runnable() {
 									public void run() {
 										TreePath treePath = new TreePath(
-												((DefaultTreeModel) getJTree1().getModel()).getPathToRoot(rootNode.getChildAt(finalI)));
+												((DefaultTreeModel) getJTree1().getModel()).getPathToRoot(testSuiteRootNode.getChildAt(finalI)));
 										getJTree1().setSelectionPath(treePath);
 										getJTree1().scrollPathToVisible(treePath);
 									}

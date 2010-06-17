@@ -2,11 +2,11 @@ package cbit.vcell.client.desktop.testingframework;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 
 import org.vcell.util.DataAccessException;
@@ -511,7 +511,7 @@ public void refreshTree(LoadTestInfoOpResults loadTestInfoOpResults) {
 
 	}
 	//Add versionTimestamp nodes to LoadTest tree
-	BioModelNode loadXMLTestRoot = (BioModelNode)getLoadTestRoot();
+	BioModelNode loadXMLTestRoot = (BioModelNode)getLoadTestRoot(TestingFrmwkTreeModel.this);
 	while(loadXMLTestRoot.getChildCount() != 0){
 		removeNodeFromParent((MutableTreeNode)loadXMLTestRoot.getLastChild());
 	}
@@ -740,7 +740,7 @@ private void updateTree(final TestSuiteGroup tsg,boolean bRemove) throws Excepti
 
 		}else if(tsg.latestTestSuite != null && !bRemove){
 			BioModelNode finalNode = null;
-			BioModelNode rootNode = getTestSuiteRoot();
+			BioModelNode rootNode = getTestSuiteRoot(TestingFrmwkTreeModel.this);
 				
 
 			finalNode = createTestSuiteSubTree(tsg.latestTestSuite);
@@ -759,7 +759,7 @@ private void updateTree(final TestSuiteGroup tsg,boolean bRemove) throws Excepti
 			
 			insertNodeInto(finalNode, rootNode, rootNode.getChildCount());
 		}else if(tsg.latestTestSuiteInfos != null && bRemove){//Remove tree nodes that aren't in DB
-			BioModelNode rootNode = getTestSuiteRoot();
+			BioModelNode rootNode = getTestSuiteRoot(TestingFrmwkTreeModel.this);
 			for (int j = 0; j < tsg.latestTestSuiteInfos.length; j++) {
 				for (int i = 0; i < rootNode.getChildCount(); i++) {
 					BioModelNode childNode = (BioModelNode)rootNode.getChildAt(i);
@@ -773,15 +773,15 @@ private void updateTree(final TestSuiteGroup tsg,boolean bRemove) throws Excepti
 		}
 	}
 }
-private BioModelNode getTestSuiteRoot(){
-	return ((BioModelNode)getRoot()).findMatchingNode(new BioModelNode.NodeMatcher() {
+public static BioModelNode getTestSuiteRoot(DefaultTreeModel defaultTreeModel){
+	return ((BioModelNode)defaultTreeModel.getRoot()).findMatchingNode(new BioModelNode.NodeMatcher() {
 		public boolean match(Object obj) {
 			return obj.equals(TestingFrmwkTreeModel.TEST_SUITE_SUBTREE_NAME);
 		}
 	});
 }
-private BioModelNode getLoadTestRoot(){
-	return ((BioModelNode)getRoot()).findMatchingNode(new BioModelNode.NodeMatcher() {
+private static BioModelNode getLoadTestRoot(DefaultTreeModel defaultTreeModel){
+	return ((BioModelNode)defaultTreeModel.getRoot()).findMatchingNode(new BioModelNode.NodeMatcher() {
 		public boolean match(Object obj) {
 			return obj.equals(TestingFrmwkTreeModel.LOAD_TEST_SUBTREE_NAME);
 		}
