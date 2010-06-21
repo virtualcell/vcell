@@ -44,6 +44,7 @@ import cbit.vcell.geometry.ControlPointCurve;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.Filament;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.Line;
 import cbit.vcell.geometry.SampledCurve;
@@ -167,7 +168,7 @@ public class Xmlproducer extends XmlBase{
 /**
  * this is the default constructor.
  */
-	public Xmlproducer(boolean printkeys) {
+public Xmlproducer(boolean printkeys) {
 	super();
 	this.printKeysFlag = printkeys;
 }
@@ -987,11 +988,13 @@ private org.jdom.Element getXML(FeatureMapping param) {
 	
 	//Add atributes
 	feature.setAttribute(XMLTags.FeatureAttrTag, mangle(param.getFeature().getName()));
-	SubVolume subvol = param.getSubVolume();
-	if (subvol != null) {
-		feature.setAttribute(XMLTags.SubVolumeAttrTag, mangle(subvol.getName()));
+	GeometryClass geometryClass = param.getGeometryClass();
+	if (geometryClass != null) {
+		feature.setAttribute(XMLTags.GeometryClassAttrTag, this.mangle(geometryClass.getName()));
+		if (geometryClass instanceof SubVolume){
+			feature.setAttribute(XMLTags.SubVolumeAttrTag, this.mangle(geometryClass.getName()));
+		}
 	}
-	feature.setAttribute(XMLTags.ResolvedAttrTag, String.valueOf(param.getResolved()));
 	//Add size
 	if(param.getSizeParameter().getExpression() != null)
 		feature.setAttribute(XMLTags.SizeTag, mangleExpression(param.getSizeParameter().getExpression()));
@@ -1092,6 +1095,11 @@ private org.jdom.Element getXML(MembraneMapping param) {
 	membrane.setAttribute(XMLTags.SpecificCapacitanceTag, mangleExpression(param.getSpecificCapacitanceParameter().getExpression()));
 	membrane.setAttribute(XMLTags.InitialVoltageTag,mangleExpression(param.getInitialVoltageParameter().getExpression()));
 
+	GeometryClass geometryClass = param.getGeometryClass();
+	if (geometryClass != null) {
+		membrane.setAttribute(XMLTags.GeometryClassAttrTag, mangle(geometryClass.getName()));
+	}
+	
 	return membrane;
 }
 
@@ -1289,7 +1297,10 @@ private org.jdom.Element getXML(SpeciesContextSpec param) {
 	//Add Attributes
 	speciesContextSpecElement.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getSpeciesContext().getName()));
 	speciesContextSpecElement.setAttribute(XMLTags.ForceConstantAttrTag, String.valueOf(param.isConstant()));
-	speciesContextSpecElement.setAttribute(XMLTags.EnableDiffusionAttrTag, String.valueOf(param.isEnableDiffusing()));
+	//speciesContextSpecElement.setAttribute(XMLTags.EnableDiffusionAttrTag, String.valueOf(param.isEnableDiffusing()));
+	if (param.isSpatial()!=null){
+		speciesContextSpecElement.setAttribute(XMLTags.SpatialAttrTag, String.valueOf(param.isSpatial()));
+	}
 
 	//Add initial
 	Expression initCon = param.getInitialConcentrationParameter().getExpression();
@@ -1844,7 +1855,7 @@ private Element getXML(RandomVariable var) {
 	
 	return randomVariableElement;
 }
-
+	
 
 private Element getXML(UniformDistribution uniDist) {	
 	Element element = new Element(XMLTags.UniformDistributionTag);
@@ -3035,7 +3046,7 @@ private org.jdom.Element getXML(Structure structure) throws XmlParseException {
 	    structureElement = new org.jdom.Element(XMLTags.MembraneTag);
 	    //add specific attributes
 	    structureElement.setAttribute(XMLTags.InsideFeatureTag, mangle(((Membrane)structure).getInsideFeature().getName()));
-		structureElement.setAttribute(XMLTags.OutsideFeatureTag, mangle(((Membrane)structure).getOutsideFeature().getName()));
+	    structureElement.setAttribute(XMLTags.OutsideFeatureTag, mangle(((Membrane)structure).getOutsideFeature().getName()));
 		structureElement.setAttribute(XMLTags.MemVoltNameTag, mangle(((Membrane)structure).getMembraneVoltage().getName()));
     } else {
 	    throw new XmlParseException("An unknown type of structure was found:"+structure.getClass().getName());
@@ -3399,24 +3410,24 @@ public org.jdom.Element getXML(BioEvent[] bioEvents) throws XmlParseException{
 		org.jdom.Element eventElement = new org.jdom.Element(XMLTags.BioEventTag);
 		eventElement.setAttribute(XMLTags.NameAttrTag, mangle(bioEvents[i].getName()));
 
-		Element element = new org.jdom.Element(XMLTags.TriggerTag);
+	Element element = new org.jdom.Element(XMLTags.TriggerTag);
 		element.addContent(mangleExpression(bioEvents[i].getTriggerExpression()));
-		eventElement.addContent(element);
+	eventElement.addContent(element);
 
 		BioEvent.Delay delay = bioEvents[i].getDelay();
-		if (delay != null) {
-			element = new org.jdom.Element(XMLTags.DelayTag);		
-			element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
+	if (delay != null) {
+		element = new org.jdom.Element(XMLTags.DelayTag);
+		element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
 			element.addContent(mangleExpression(delay.getDurationExpression()));
-			eventElement.addContent(element);
-		}
+		eventElement.addContent(element);
+	}
 		ArrayList<BioEvent.EventAssignment> eventAssignmentsList = bioEvents[i].getEventAssignments();
-		for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
-			element = new org.jdom.Element(XMLTags.EventAssignmentTag);
-			element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
+	for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
+		element = new org.jdom.Element(XMLTags.EventAssignmentTag);
+		element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
 			element.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
-			eventElement.addContent(element);
-		}
+		eventElement.addContent(element);
+	}
 		bioEventsElement.addContent(eventElement);
 	}
 

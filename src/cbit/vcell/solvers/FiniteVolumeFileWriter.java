@@ -583,9 +583,10 @@ private void writeBoundaryConditions(BoundaryConditionType[] bctypes) {
 
 private String replaceVolumeVariable(MembraneSubDomain msd, Expression exp) throws MathException, ExpressionException {
 	Expression fluxExpr = new Expression(exp);
-	Enumeration<Variable> varEnum = simulationJob.getSimulationSymbolTable().getRequiredVariables(exp);
-	while (varEnum.hasMoreElements()) {
-		Variable var = varEnum.nextElement();
+	String symbols[] = exp.getSymbols();
+	// size function may be in the expression, they are not variables
+	for (String symbol : symbols) {
+		Variable var = simulationJob.getSimulationSymbolTable().getVariable(symbol);
 		if (var instanceof VolVariable || var instanceof VolumeRegionVariable) {
 			fluxExpr.substituteInPlace(new Expression(var.getName()), new Expression(var.getName() + "_" + var.getDomain().getName() + "_membrane"));
 		}
@@ -611,15 +612,20 @@ private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Expressi
 		JumpCondition jc = enum1.nextElement();
 		printWriter.println("JUMP_CONDITION_BEGIN " + jc.getVariable().getName());
 		// influx
-		Expression flux = subsituteExpression(jc.getInFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
-		String infix = replaceVolumeVariable(msd, flux);
-		printWriter.println("FLUX " + msd.getInsideCompartment().getName() + " " + infix + ";");
+		if (jc.getVariable().getDomain() == null || jc.getVariable().getDomain().getName().equals(msd.getInsideCompartment().getName())) 
+		{
+			Expression flux = subsituteExpression(jc.getInFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
+			String infix = replaceVolumeVariable(msd, flux);
+			printWriter.println("FLUX " + msd.getInsideCompartment().getName() + " " + infix + ";");
+		}
 		
-		// outflux
-		flux = subsituteExpression(jc.getOutFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
-		infix = replaceVolumeVariable(msd, flux);
-		printWriter.println("FLUX " + msd.getOutsideCompartment().getName() + " " + infix + ";");
-		
+		if (jc.getVariable().getDomain() == null || jc.getVariable().getDomain().getName().equals(msd.getOutsideCompartment().getName())) 
+		{
+			// outflux
+			Expression flux = subsituteExpression(jc.getOutFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
+			String infix = replaceVolumeVariable(msd, flux);
+			printWriter.println("FLUX " + msd.getOutsideCompartment().getName() + " " + infix + ";");
+		}		
 		printWriter.println("JUMP_CONDITION_END");
 		printWriter.println();
 	}		

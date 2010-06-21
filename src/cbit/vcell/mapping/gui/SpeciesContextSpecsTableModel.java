@@ -31,14 +31,14 @@ import cbit.vcell.parser.ExpressionException;
  * @author: 
  */
 public class SpeciesContextSpecsTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
-	public static final int NUM_COLUMNS = 6;
 	public static final int COLUMN_SPECIESCONTEXT = 1;
 	public static final int COLUMN_SPECIES = 0;
 	public static final int COLUMN_STRUCTURE = 2;
-	public static final int COLUMN_FIXED = 3;
+	public static final int COLUMN_CLAMPED = 3;
 	public static final int COLUMN_INITIAL = 4;
-	public static final int COLUMN_DIFFUSION = 5;
-	private String LABELS[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Condition", "Diffusion Constant"};
+	public static final int COLUMN_WELLMIXED = 5;
+	public static final int COLUMN_DIFFUSION = 6;
+	private String LABELS[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Condition", "Well Mixed", "Diffusion Constant"};
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
@@ -86,7 +86,8 @@ public Class<?> getColumnClass(int column) {
 		case COLUMN_STRUCTURE:{
 			return Structure.class;
 		}
-		case COLUMN_FIXED:{
+		case COLUMN_CLAMPED:
+		case COLUMN_WELLMIXED:{
 			return Boolean.class;
 		}
 		case COLUMN_INITIAL:
@@ -105,9 +106,9 @@ public Class<?> getColumnClass(int column) {
  */
 public int getColumnCount() {
 	if (getSimulationContext() != null && getSimulationContext().getGeometry().getDimension() > 0) {
-		return NUM_COLUMNS;
+		return LABELS.length;
 	} else {
-		return NUM_COLUMNS - 1;
+		return LABELS.length - 2;
 	}
 }
 
@@ -176,10 +177,9 @@ public Object getValueAt(int row, int col) {
 		if (row<0 || row>=getRowCount()){
 			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		if (col<0 || col>=NUM_COLUMNS){
-			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+		if (col<0 || col>=getColumnCount()){
+			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(getColumnCount()-1)+"]");
 		}
-		
 		if (getData().size() <= row){
 			refreshData();
 		}	
@@ -194,8 +194,11 @@ public Object getValueAt(int row, int col) {
 			case COLUMN_STRUCTURE:{
 				return scSpec.getSpeciesContext().getStructure();
 			}
-			case COLUMN_FIXED:{
+			case COLUMN_CLAMPED:{
 				return new Boolean(scSpec.isConstant());
+			}
+			case COLUMN_WELLMIXED:{
+				return (scSpec.isConstant() || !scSpec.isSpatial());
 			}
 			case COLUMN_INITIAL:{
 				SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
@@ -208,11 +211,11 @@ public Object getValueAt(int row, int col) {
 			}
 			case COLUMN_DIFFUSION:{
 				SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
-				if(diffusionParameter != null) 	{
+				if(diffusionParameter != null && !scSpec.isConstant() && scSpec.isSpatial()!=null && scSpec.isSpatial()) 	{
 					return new ScopedExpression(diffusionParameter.getExpression(),diffusionParameter.getNameScope(), true, autoCompleteSymbolFilter);
 				} else {
 					return null;
-				}			
+				}
 			}
 			default:{
 				return null;
@@ -243,8 +246,8 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	if (rowIndex<0 || rowIndex>=getRowCount()){
 		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (columnIndex<0 || columnIndex>=getColumnCount()){
+		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
 	switch (columnIndex){
 		case COLUMN_SPECIESCONTEXT:{
@@ -256,14 +259,21 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		case COLUMN_STRUCTURE:{
 			return false;
 		}
-		case COLUMN_FIXED:{
+		case COLUMN_CLAMPED:{
 			return true;
 		}
-		case COLUMN_INITIAL:
-		case COLUMN_DIFFUSION: {
-			// editing in place is impractical for expression
-			// this way, we can pop-up a custom dialog to enter a new value (GUI has to take care of this)
+		case COLUMN_WELLMIXED:{
+			return !getSpeciesContextSpec(rowIndex).isConstant();
+		}
+		case COLUMN_INITIAL:{
 			return true;
+		}
+		case COLUMN_DIFFUSION: {
+			if (getSpeciesContextSpec(rowIndex).isSpatial() && !getSpeciesContextSpec(rowIndex).isConstant()){
+				return true;
+			}else{
+				return false;
+			}
 		}
 		default:{
 			return false;
@@ -340,18 +350,24 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (rowIndex<0 || rowIndex>=getRowCount()){
 		throw new RuntimeException("SpeciesContextSpecsTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("SpeciesContextSpecsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (columnIndex<0 || columnIndex>=getColumnCount()){
+		throw new RuntimeException("SpeciesContextSpecsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
 	SpeciesContextSpec scSpec = getSpeciesContextSpec(rowIndex);
 	switch (columnIndex){
-		case COLUMN_FIXED:{
+		case COLUMN_CLAMPED:{
 			boolean bFixed = ((Boolean)aValue).booleanValue();
 			if (bFixed){
 				scSpec.setConstant(true);
 			}else{
 				scSpec.setConstant(false);
 			}
+			fireTableRowsUpdated(rowIndex,rowIndex);
+			break;
+		}
+		case COLUMN_WELLMIXED:{
+			boolean bWellMixed = ((Boolean)aValue).booleanValue();
+			scSpec.setSpatial(!bWellMixed);
 			fireTableRowsUpdated(rowIndex,rowIndex);
 			break;
 		}
@@ -485,13 +501,22 @@ public void sortColumn(final int col, final boolean ascending) {
 						return name2.compareToIgnoreCase(name1);
 					}
 				}
-				case COLUMN_FIXED : {
+				case COLUMN_CLAMPED : {
 					Boolean bClamped1 = new Boolean(speciesContextSpec1.isConstant());
 					Boolean bClamped2 = new Boolean(speciesContextSpec2.isConstant());
 					if (ascending){
 						return bClamped1.compareTo(bClamped2);
 					}else{
 						return bClamped2.compareTo(bClamped1);
+					}
+				}
+				case COLUMN_WELLMIXED : {
+					Boolean bSpatial1 = new Boolean(speciesContextSpec1.isSpatial());
+					Boolean bSpatial2 = new Boolean(speciesContextSpec2.isSpatial());
+					if (ascending){
+						return bSpatial1.compareTo(bSpatial2);
+					}else{
+						return bSpatial2.compareTo(bSpatial1);
 					}
 				}
 				case COLUMN_INITIAL: {

@@ -448,26 +448,32 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		if (symbols != null && symbols.length > 0) {
 			// making sure that new expression is defined in the same domain
 			varTypes = new VariableType[symbols.length];
-			GeometryClass funcGeoClass = simulationOwner.getGeometry().getGeometryClass(funcDomain.getName());
 			for (int i = 0; i < symbols.length; i++) {
 				if (ReservedMathSymbolEntries.getReservedVariableEntry(symbols[i]) != null) {
 					varTypes[i] = functionType;
 				} else {
 					Variable var = mathDescription.getVariable(symbols[i]);
 					varTypes[i] = VariableType.getVariableType(var);
-					GeometryClass varGeoClass = simulationOwner.getGeometry().getGeometryClass(var.getDomain().getName());
-					if (varGeoClass instanceof SubVolume && funcGeoClass instanceof SurfaceClass) {
-						// seems ok if membrane refereces volume
-						if (!((SurfaceClass)funcGeoClass).getSubvolume1().compareEqual(varGeoClass) && !((SurfaceClass)funcGeoClass).getSubvolume2().compareEqual(varGeoClass)) {
-							// but has to be adjacent
-							String errMsg = "'" + funcName + "' defined on Membrane '" + funcDomain.getName() + "' directly or indirectly references "
-								+  " variable '" + symbols[i] + "' defined on Volume '" + var.getDomain().getName() + " which is not adjacent to Membrane '" + funcDomain.getName() + "'."; 
+					if (funcDomain != null) {
+						if (var.getDomain() == null) {
+							continue; // OK
+						}
+						GeometryClass funcGeoClass = simulationOwner.getGeometry().getGeometryClass(funcDomain.getName());
+						GeometryClass varGeoClass = simulationOwner.getGeometry().getGeometryClass(var.getDomain().getName());
+				
+						if (varGeoClass instanceof SubVolume && funcGeoClass instanceof SurfaceClass) {
+							// seems ok if membrane refereces volume
+							if (!((SurfaceClass)funcGeoClass).getSubvolume1().compareEqual(varGeoClass) && !((SurfaceClass)funcGeoClass).getSubvolume2().compareEqual(varGeoClass)) {
+								// but has to be adjacent
+								String errMsg = "'" + funcName + "' defined on Membrane '" + funcDomain.getName() + "' directly or indirectly references "
+									+  " variable '" + symbols[i] + "' defined on Volume '" + var.getDomain().getName() + " which is not adjacent to Membrane '" + funcDomain.getName() + "'."; 
+								throw new ExpressionException(errMsg);
+							}
+						} else if (!var.getDomain().compareEqual(funcDomain)) {
+							String errMsg = "'" + funcName + "' defined on '" + funcDomain.getName() + "' directly or indirectly references "
+								+  " variable '" + symbols[i] + "' defined on '" + var.getDomain().getName() + "."; 
 							throw new ExpressionException(errMsg);
 						}
-					} else if (var.getDomain() != null && !var.getDomain().compareEqual(funcDomain)) {
-						String errMsg = "'" + funcName + "' defined on '" + funcDomain.getName() + "' directly or indirectly references "
-							+  " variable '" + symbols[i] + "' defined on '" + var.getDomain().getName() + "."; 
-						throw new ExpressionException(errMsg);
 					}
 				}
 			}

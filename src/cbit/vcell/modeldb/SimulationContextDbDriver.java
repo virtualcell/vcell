@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
@@ -25,6 +26,8 @@ import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
@@ -241,13 +244,18 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 				velocityZString = null;
 			}
 
+			String spatialString = rset.getString(speciesContextSpecTable.bSpatial.toString());
+			if (rset.wasNull()){
+				spatialString = null;
+			}
+
 			//
 			SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 			for (int i=0;i<speciesContextSpecs.length;i++){
 				SpeciesContextSpec scs = speciesContextSpecs[i];
 				if (scs.getSpeciesContext().getKey().compareEqual(speciesContextRef)) {
 					try {
-						scs.setEnableDiffusing(bEnableDiffusing);
+						//scs.setEnableDiffusing(bEnableDiffusing);
 						scs.setConstant(bForceConstant);
 						if(initCondConcExpS != null){
 							scs.getInitialConcentrationParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(initCondConcExpS)));	
@@ -301,6 +309,14 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 							scs.getVelocityZParameter().setExpression(new Expression(TokenMangler.getSQLRestoredString(velocityZString)));
 						}else{
 							scs.getVelocityZParameter().setExpression(null);
+						}
+						if (spatialString!=null){
+							int value = Integer.parseInt(spatialString);
+							if (value!=0 && value!=1){
+								throw new DataAccessException("unexpected value for bSpatial column in SimulationCOntextDbDriver: \""+spatialString+"\", expecting 0 or 1");
+							}
+							boolean bSpatial = (value==1)?true:false;
+							scs.setSpatial(bSpatial);
 						}
 					} catch (Exception e) {
 						throw new DataAccessException("Error setting SpeciesContextSpec info for SimulationContext:"+simContext.getVersion().getName()+" id="+simContextKey);
@@ -429,7 +445,6 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 //log.print(sql);
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
-			boolean bResolved = rset.getBoolean(structureMappingTable.bResolved.toString());
 			KeyValue subVolumeRef = new KeyValue(rset.getBigDecimal(structureMappingTable.subVolumeRef.toString()));
 			KeyValue structureRef = new KeyValue(rset.getBigDecimal(structureMappingTable.structRef.toString()));			
 
@@ -448,8 +463,8 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					break;
 				}
 			}
-			cbit.vcell.geometry.SubVolume theSubVolume = null;
-			cbit.vcell.geometry.SubVolume subVolumes[] = simContext.getGeometry().getGeometrySpec().getSubVolumes();
+			SubVolume theSubVolume = null;
+			SubVolume subVolumes[] = simContext.getGeometry().getGeometrySpec().getSubVolumes();
 			for (int i=0;i<subVolumes.length;i++){
 				if (subVolumes[i].getKey().compareEqual(subVolumeRef)){
 					theSubVolume = subVolumes[i];
@@ -487,8 +502,7 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 			if (sm instanceof FeatureMapping) {
 				FeatureMapping fm = (FeatureMapping) sm;
 				try {
-					fm.setSubVolume(theSubVolume);
-					fm.setResolved(bResolved);
+					fm.setGeometryClass(theSubVolume);
 				}catch (PropertyVetoException e){
 					log.exception(e);
 					throw new DataAccessException(e.getMessage());
@@ -716,6 +730,9 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 		simContext.setBioEvents(bioEvents);
 	}
 	
+	for (GeometryClass gc : simContext.getGeometry().getGeometryClasses()) {
+		StructureSizeSolver.updateUnitStructureSizes(simContext, gc);
+	}
 	simContext.getModel().refreshDependencies();
 	simContext.refreshDependencies();  // really needed to calculate MembraneMapping parameters that are not stored (inside/outside flux correction factors).
 	
@@ -889,7 +906,7 @@ private void insertSimulationContext(InsertHashtable hash, Connection con, User 
 	insertReactionSpecsSQL(con, newVersion.getVersionKey(), simContext, updatedModel); // links to reactionSteps
 	insertAnalysisTasksSQL(con, newVersion.getVersionKey(), simContext); // inserts AnalysisTasks
 	ApplicationMathTable.table.saveOutputFunctionsSimContext(con, newVersion.getVersionKey(), simContext.getOutputFunctionContext().getOutputFunctionsList());
-
+	
 	hash.put(simContext,newVersion.getVersionKey());
 }
 
@@ -902,7 +919,7 @@ private void insertSimulationContextSQL(Connection con, User user,SimulationCont
 									throws SQLException,DataAccessException {
 										
 	String sql = null;
-	String appComponentXmlStr = SimContextTable.table.getXMLStringForDatabase(simContext);
+	String appComponentXmlStr = SimContextTable.getXMLStringForDatabase(simContext);
 	Object[] o = {simContext,mathDescKey,modelKey,geomKey, appComponentXmlStr};
 	sql = DatabasePolicySQL.enforceOwnershipInsert(user,simContextTable,o,version);
 //System.out.println(sql);
@@ -997,12 +1014,12 @@ private void insertStructureMappingsSQL(InsertHashtable hash, Connection con, Ke
 		cbit.vcell.geometry.SubVolume mappedSubVolume = null;
 		boolean isResolved = false;
 		if (structureMapping instanceof FeatureMapping){
-			mappedSubVolume = ((FeatureMapping)structureMapping).getSubVolume();
-			isResolved = ((FeatureMapping)structureMapping).getResolved();
+			mappedSubVolume = (SubVolume)((FeatureMapping)structureMapping).getGeometryClass();
+			//isResolved = ((FeatureMapping)structureMapping).getResolved();
 		}else if (structureMapping instanceof MembraneMapping){
 			FeatureMapping insideFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(((MembraneMapping)structureMapping).getMembrane().getInsideFeature());
-			mappedSubVolume = insideFeatureMapping.getSubVolume();
-			isResolved = insideFeatureMapping.getResolved();
+			mappedSubVolume = (SubVolume)insideFeatureMapping.getGeometryClass();
+			//isResolved = insideFeatureMapping.getResolved();
 		}
 		if (mappedSubVolume!=null){
 			//

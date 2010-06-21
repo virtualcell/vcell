@@ -537,10 +537,10 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 			//
 			// bug compatability mode off
 			//
-			cbit.vcell.mapping.MembraneStructureAnalyzer.bResolvedFluxCorrectionBug = false;
-			cbit.vcell.mapping.MembraneMapping.bFluxCorrectionBugMode = false;
-			cbit.vcell.mapping.FeatureMapping.bTotalVolumeCorrectionBug = false;
-			cbit.vcell.mapping.MembraneStructureAnalyzer.bNoFluxIfFixed = false;
+//			cbit.vcell.mapping.MembraneStructureAnalyzer.bResolvedFluxCorrectionBug = false;
+//			cbit.vcell.mapping.MembraneMapping.bFluxCorrectionBugMode = false;
+//			cbit.vcell.mapping.FeatureMapping.bTotalVolumeCorrectionBug = false;
+//			cbit.vcell.mapping.MembraneStructureAnalyzer.bNoFluxIfFixed = false;
 
 			//
 			// make sure geometry is up to date on "simContextNewMath"
@@ -1012,10 +1012,10 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 					//
 					// bug compatability mode off
 					//
-					cbit.vcell.mapping.MembraneStructureAnalyzer.bResolvedFluxCorrectionBug = false;
-					cbit.vcell.mapping.MembraneMapping.bFluxCorrectionBugMode = false;
-					cbit.vcell.mapping.FeatureMapping.bTotalVolumeCorrectionBug = false;
-					cbit.vcell.mapping.MembraneStructureAnalyzer.bNoFluxIfFixed = false;
+//					cbit.vcell.mapping.MembraneStructureAnalyzer.bResolvedFluxCorrectionBug = false;
+//					cbit.vcell.mapping.MembraneMapping.bFluxCorrectionBugMode = false;
+//					cbit.vcell.mapping.FeatureMapping.bTotalVolumeCorrectionBug = false;
+//					cbit.vcell.mapping.MembraneStructureAnalyzer.bNoFluxIfFixed = false;
 
 					//
 					// make sure geometry is up to date on "simContextNewMath"
@@ -1294,10 +1294,10 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                     //
                     // bug compatability mode off
                     //
-                    cbit.vcell.mapping.MembraneStructureAnalyzer.bResolvedFluxCorrectionBug = false;
-                    cbit.vcell.mapping.MembraneMapping.bFluxCorrectionBugMode = false;
-                    cbit.vcell.mapping.FeatureMapping.bTotalVolumeCorrectionBug = false;
-                    cbit.vcell.mapping.MembraneStructureAnalyzer.bNoFluxIfFixed = false;
+//                    cbit.vcell.mapping.MembraneStructureAnalyzer.bResolvedFluxCorrectionBug = false;
+//                    cbit.vcell.mapping.MembraneMapping.bFluxCorrectionBugMode = false;
+//                    cbit.vcell.mapping.FeatureMapping.bTotalVolumeCorrectionBug = false;
+//                    cbit.vcell.mapping.MembraneStructureAnalyzer.bNoFluxIfFixed = false;
 
                     //
                     // make sure geometry is up to date on "simContextNewMath"

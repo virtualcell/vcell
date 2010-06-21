@@ -20,6 +20,7 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReservedBioSymbolEntries;
@@ -28,6 +29,7 @@ import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
+import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -144,6 +146,13 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			Expression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
+			try {
+				SpeciesContextSpec.this.cleanupParameters();
+			} catch (ModelException e) {
+				e.printStackTrace();
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+			}
 			super.firePropertyChange("expression", oldValue, expression);
 		}
 		
@@ -245,7 +254,14 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 							newParameters[i].getExpression().bindExpression(SpeciesContextSpec.this);
 						}
 					}
-					
+
+					//
+					// clean up dangling parameters (those not reachable from the 'required' parameters).
+					//
+					cleanupParameters();
+
+				}catch (ModelException e1){
+					e1.printStackTrace(System.out);
 				}catch (ExpressionException e2){
 					e2.printStackTrace(System.out);
 				}catch (PropertyVetoException e3){
@@ -259,9 +275,11 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 	
 	private SpeciesContext speciesContext = null;
 	private static final boolean DEFAULT_CONSTANT = false;
-	private static final boolean DEFAULT_ENABLE_DIFFUSING = true;
+//	private static final boolean DEFAULT_ENABLE_DIFFUSING = true;
+	private static final Boolean DEFAULT_SPATIAL = true;
 	private boolean        bConstant = DEFAULT_CONSTANT;
-	private boolean        bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
+//	private boolean        bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
+	private Boolean        bSpatial = DEFAULT_SPATIAL;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private SpeciesContextSpecParameter[] fieldParameters = null;
 	private SpeciesContextSpecProxyParameter[] fieldProxyParameters = new SpeciesContextSpecProxyParameter[0];
@@ -342,7 +360,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationContext argSimulationContext) {
 	this.speciesContext = speciesContextSpec.speciesContext;
 	this.bConstant = speciesContextSpec.bConstant;
-	this.bEnableDiffusing = speciesContextSpec.bEnableDiffusing;
+//	this.bEnableDiffusing = speciesContextSpec.bEnableDiffusing;
+	this.bSpatial = speciesContextSpec.bSpatial;
 	fieldParameters = new SpeciesContextSpecParameter[speciesContextSpec.fieldParameters.length];
 	for (int i = 0; i < speciesContextSpec.fieldParameters.length; i++){
 		SpeciesContextSpecParameter otherParm = speciesContextSpec.fieldParameters[i];
@@ -474,8 +493,6 @@ public SpeciesContextSpecProxyParameter addProxyParameter(SymbolTableEntry symbo
 	return newProxyParameter;
 }
 
-
-
 /**
  * @return boolean
  * @param object java.lang.Object
@@ -496,8 +513,16 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 	
-	if (bEnableDiffusing != scs.bEnableDiffusing){
-		return false;
+//	if (bEnableDiffusing != scs.bEnableDiffusing){
+//		return false;
+//	}
+
+	if (bSpatial!=null && scs.bSpatial!=null){
+		if (!bSpatial.equals(scs.bSpatial)){
+			return false;
+		}
+	}else if (bSpatial!=null || scs.bSpatial!=null){
+		return false; // one is specified and one isn't ... 
 	}
 
 	if (!Compare.isEqual(fieldParameters,scs.fieldParameters)){
@@ -732,6 +757,7 @@ public NameScope getNameScope() {
 	return nameScope;
 }
 
+
 /**
  * Insert the method's description here.
  * Creation date: (4/3/2004 10:48:38 AM)
@@ -787,8 +813,10 @@ public Parameter getParameter(int index) {
 	{
 		param = getInitialConditionParameter();
 		
-	}else{
+	}else if (index < getParameters().length){
 		param = getParameters()[index]; //using iniAmount || other parameters now is one index greater than previous index(since iniAmount has added) 
+	}else{
+		param = getProxyParameters()[index-getParameters().length];
 	}
 	return param;
 }
@@ -950,6 +978,10 @@ public boolean isDiffusing() {
 		return false;
 	}
 	
+	if (bSpatial==false){
+		return false;
+	}
+	
 	try {
 		double constantDiffRate = getDiffusionParameter().getExpression().evaluateConstant();
 		return (constantDiffRate>0.0);
@@ -963,6 +995,9 @@ public boolean isDiffusing() {
 }
 
 public boolean isAdvecting() {
+	if (bSpatial==false || bConstant==true){
+		return false;
+	}
 	// If all 3 velocity (x,y,z) parameters are null, there is no advection; return <FALSE>, else return <TRUE>
 	Expression eX = getVelocityXParameter().getExpression();
 	Expression eY = getVelocityYParameter().getExpression();
@@ -973,85 +1008,71 @@ public boolean isAdvecting() {
 	return true;
 }
 
+///**
+// * @return boolean
+// * @deprecated (no longer used)
+// */
+//public final boolean isEnableDiffusing() {
+//	return bEnableDiffusing;
+//}
 
-/**
- * @return boolean
- * @deprecated (no longer used)
- */
-public final boolean isEnableDiffusing() {
-	return bEnableDiffusing;
+public final Boolean isSpatial(){
+	return bSpatial;
 }
 
+/**
+ * This method was created in VisualAge.
+ * @return boolean
+ * @param parm cbit.vcell.model.Parameter
+ */
+private boolean isReferenced(Parameter parm) throws ModelException, ExpressionException {
+
+	if (fieldParameters==null){
+		return false;
+	}
+	
+	if (parm instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
+		SpeciesContextSpecParameter scsParm = (SpeciesContextSpecParameter)parm;
+		for (int i = 0; i < fieldParameters.length; i++) {
+			if (fieldParameters[i] == parm){
+				return true;
+			}
+		}
+		return false;
+	} else if (parm instanceof SpeciesContextSpecProxyParameter){
+		if (fieldParameters != null){
+			for (int i=0;i<fieldParameters.length;i++){
+				Expression exp = fieldParameters[i].getExpression();
+				if (exp!=null){
+					String[] symbols = exp.getSymbols();
+					for (int j=0;symbols!=null && j<symbols.length;j++){
+						if (AbstractNameScope.getStrippedIdentifier(symbols[j]).equals(parm.getName())){
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
 
 /**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
+ * This method was created in VisualAge.
  */
-public void read(CommentStringTokenizer tokens) throws ExpressionException, MappingException, DataAccessException, java.beans.PropertyVetoException {
-	resetDefaults();
-	
-	String token = null;
-	token = tokens.nextToken();
-	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-		throw new DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-	}			
-	while (tokens.hasMoreTokens()){
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCML.EndBlock)){
-			break;
-		}		
-		if (token.equalsIgnoreCase(VCMODL.ForceConstant)){
-			setConstant(new Boolean(tokens.nextToken()).booleanValue());
-			continue;
-		}		
-		if (token.equalsIgnoreCase(VCMODL.EnableDiffusion)){
-			setEnableDiffusing(new Boolean(tokens.nextToken()).booleanValue());
-			continue;
-		}		
-		if (token.equalsIgnoreCase(VCMODL.InitialConcentration)){
-			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-			getInitialConditionParameter().setExpression(exp);
-			continue;
-		}		
-		if (token.equalsIgnoreCase(VCMODL.DiffusionRate)){
-			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-			getDiffusionParameter().setExpression(exp);
-			continue;
-		}		
-		//
-		// read boundaryCondition Expressions
-		//	
-		if (token.equalsIgnoreCase(VCMODL.BoundaryCondition)){
-			BoundaryLocation bl = BoundaryLocation.fromString(tokens.nextToken());
-			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-			getParameterFromRole(getRole(bl)).setExpression(exp);
-			continue;
+private final void cleanupParameters() throws ModelException, ExpressionException, PropertyVetoException {
+	//
+	// for each parameter, see if it is used, if not delete it
+	//
+	if (fieldProxyParameters != null){
+		for (int i=0;i<fieldProxyParameters.length;i++){
+			if (!isReferenced(fieldProxyParameters[i])){
+				removeProxyParameter(fieldProxyParameters[i]);
+				i--;
+			}
 		}
-
-		//
-		// read Velocity Expressions
-		//	
-		if (token.equalsIgnoreCase(VCMODL.VelocityX)){
-			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-			getVelocityXParameter().setExpression(exp);
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCMODL.VelocityY)){
-			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-			getVelocityYParameter().setExpression(exp);
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCMODL.VelocityZ)){
-			Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-			getVelocityZParameter().setExpression(exp);
-			continue;
-		}
-
-		throw new DataAccessException("unexpected identifier "+token);
 	}
 }
-
 
 /**
  */
@@ -1115,11 +1136,12 @@ public synchronized void removeVetoableChangeListener(java.lang.String propertyN
  */
 private void resetDefaults() {
 	bConstant = DEFAULT_CONSTANT;
-	if (getSpeciesContext().getStructure() instanceof Feature || getSpeciesContext().getStructure() instanceof Membrane){
-		bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
-	}else{
-		bEnableDiffusing = false;
-	}
+//	if (getSpeciesContext().getStructure() instanceof Feature || getSpeciesContext().getStructure() instanceof Membrane){
+//		bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
+//	}else{
+//		bEnableDiffusing = false;
+//	}
+	bSpatial = DEFAULT_SPATIAL;
 }
 
 
@@ -1134,17 +1156,25 @@ public void setConstant(boolean isConstant) {
 	firePropertyChange("diffusing", new Boolean(oldDiffusing), new Boolean(isDiffusing()));
 }
 
+///**
+// * @param isDiffusing boolean
+// * @deprecated
+// */
+//public void setEnableDiffusing(boolean isEnableDiffusing) throws MappingException {
+//	boolean oldEnableDiffusing = bEnableDiffusing;
+//
+//	this.bEnableDiffusing = isEnableDiffusing;
+//
+//	firePropertyChange("enableDiffusing",new Boolean(oldEnableDiffusing), new Boolean(isEnableDiffusing));
+//}
 
-/**
- * @param isDiffusing boolean
- * @deprecated
- */
-public void setEnableDiffusing(boolean isEnableDiffusing) throws MappingException {
-	boolean oldEnableDiffusing = bEnableDiffusing;
 
-	this.bEnableDiffusing = isEnableDiffusing;
+public void setSpatial(boolean isSpatial) {
+	Boolean oldSpatial = this.bSpatial;
 
-	firePropertyChange("enableDiffusing",new Boolean(oldEnableDiffusing), new Boolean(isEnableDiffusing));
+	this.bSpatial = isSpatial;
+
+	firePropertyChange("spatial",oldSpatial, bSpatial);
 }
 
 
@@ -1158,6 +1188,13 @@ private void setParameters(SpeciesContextSpecParameter[] parameters) throws java
 	SpeciesContextSpecParameter[] oldValue = fieldParameters;
 	fireVetoableChange("parameters", oldValue, parameters);
 	fieldParameters = parameters;
+	try {
+		cleanupParameters();
+	} catch (ModelException e) {
+		e.printStackTrace();
+	} catch (ExpressionException e) {
+		e.printStackTrace();
+	}
 	firePropertyChange("parameters", oldValue, parameters);
 }
 

@@ -697,9 +697,11 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 	// add DiffusionReactionStep for each diffusing species and EventReactionStep for each speciesContext that has 
 	// event assignment(s) [that is a target variable in event assignment(s)] to eliminate those species from conserved moieties
 	//
+	// include RegionVariables ... (they diffuse/move also ... just instantaneously).
+	//
 	for (int i=0;i<scmList.size();i++){
 		SpeciesContextMapping scm = (SpeciesContextMapping)scmList.elementAt(i);
-		if (scm.isPDERequired()){
+		if (scm.isPDERequired() || !mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext()).isSpatial()){
 			rsList.addElement(new DiffusionReactionStep("DiffusionReactionStep"+i,scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
 		}
 		if (scm.hasEventAssignment()){

@@ -46,6 +46,6 @@ public void setExpression(Expression expression) throws java.beans.PropertyVetoE
  * @return java.lang.String
  */
 public String toString() {
-	return super.toString() + " : "+getExpression().toString();
+	return super.toString() + " : "+getExpression().infix();
 }
 }

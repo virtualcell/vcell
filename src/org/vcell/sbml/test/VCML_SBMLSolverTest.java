@@ -60,8 +60,7 @@ public class VCML_SBMLSolverTest {
 								Structure topStructure = simContext.getModel().getTopFeature();
 								StructureMapping.StructureMappingParameter sizeParm = simContext.getGeometryContext().getStructureMapping(topStructure).getSizeParameter();
 								if (sizeParm==null || sizeParm.getExpression()==null || sizeParm.getExpression().isZero()){
-									StructureSizeSolver structureSizeSolver = new StructureSizeSolver();
-									structureSizeSolver.updateAbsoluteStructureSizes(simContext, topStructure, 1000.0, VCUnitDefinition.UNIT_um3);
+									StructureSizeSolver.updateAbsoluteStructureSizes(simContext, topStructure, 1000.0, VCUnitDefinition.UNIT_um3);
 								}
 								SBMLExporter sbmlExporter = new SBMLExporter(bioModel);
 //								sbmlExporter.setVcPreferredSimContextName(simContext.getName());

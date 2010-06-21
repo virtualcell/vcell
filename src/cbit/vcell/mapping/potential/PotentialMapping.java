@@ -3,8 +3,8 @@ import java.math.BigInteger;
 
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
-import cbit.util.graph.Node;
 import cbit.util.graph.Path;
+import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
@@ -30,6 +30,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
+import cbit.util.graph.Node;
 
 /**
  * Insert the type's description here.
@@ -688,7 +689,7 @@ private static Graph getCircuitGraph(SimulationContext simContext, MathMapping m
 			graph.addEdge(edge);
 		}else if (stimulus instanceof TotalCurrentClampStimulus){
 			TotalCurrentClampStimulus ccStimulus = (TotalCurrentClampStimulus)stimulus;
-			ElectricalDevice device = new CurrentClampElectricalDevice(ccStimulus, mathMapping);
+			ElectricalDevice device = new CurrentClampElectricalDevice(ccStimulus,mathMapping);
 			Edge edge = new Edge(probeNode,groundNode,device);
 			graph.addEdge(edge);
 		}
@@ -819,6 +820,7 @@ public ElectricalDevice[] getElectricalDevices(Membrane membrane) {
 	return devices;
 }
 
+
 /**
  * Insert the method's description here.
  * Creation date: (4/24/2002 10:45:35 AM)
@@ -887,7 +889,7 @@ private static Expression getTotalMembraneCurrent(SimulationContext simContext, 
 					//
 					// change sign convension from inward current to outward current (which is consistent with voltage convension)
 					//
-					if (membraneMapping.getResolved(mathMapping.getSimulationContext())){
+					if (!(membraneMapping.getGeometryClass() instanceof CompartmentSubVolume)){
 						throw new RuntimeException("math generation for total currents within spatial electrophysiology not yet implemented");
 					}
 					Expression lumpedCurrentSymbolExp = new Expression(lumpedKinetics.getLumpedCurrentParameter(), mathMapping.getNameScope());

@@ -256,10 +256,9 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 						throw UserCancelException.CANCEL_XML_TRANSLATION;
 					} 
 					if (!geoContext.isAllSizeSpecifiedPositive() && geoContext.isAllVolFracAndSurfVolSpecified()) {
-						StructureSizeSolver ssEvaluator = new StructureSizeSolver();
 						Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
 						StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
-						ssEvaluator.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
+						StructureSizeSolver.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
 					} 
 
 					// Select simulation whose overrides need to be exported

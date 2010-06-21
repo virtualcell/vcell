@@ -68,14 +68,6 @@ public cbit.vcell.mapping.MembraneMapping getMembraneMapping() {
 }
 /**
  * Insert the method's description here.
- * Creation date: (4/7/2004 11:19:13 AM)
- * @return boolean
- */
-public boolean getResolved() {
-	return membraneMapping.getResolved(mathMapping.getSimulationContext());
-}
-/**
- * Insert the method's description here.
  * Creation date: (4/7/2004 2:55:34 PM)
  * @return java.lang.String
  */

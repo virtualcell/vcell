@@ -11,8 +11,13 @@ import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.model.Structure;
@@ -52,7 +57,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 			return StructureMapping.this;
 		}
 	}
-
+	
 	public class StructureMappingParameter extends Parameter implements ExpressionContainer {
 
 		private int fieldParameterRole = -1;
@@ -91,7 +96,67 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 			
 			return true;
 		}
-		
+
+//		public static final String Descriptions[] = {
+//			"surface/enclosed volume",
+//			"enclosed volume/parent volume",
+//			"specific capacitance",
+//			"initial voltage",
+//			"absolute size (volume/area)",
+//			"volume/unit volume",
+//			"volume/unit area",
+//			"area/unit area",
+//			"area/unit volume"
+//		};
+		@Override
+		public String getDescription() {
+			switch (fieldParameterRole){
+			case ROLE_AreaPerUnitArea:{
+				if (getStructure() instanceof Membrane && geometryClass instanceof SurfaceClass){
+					return "Area(\""+structure.getName()+"\") per Unit Area of \""+geometryClass.getName()+"\"";
+				}
+				break;
+			}
+			case ROLE_AreaPerUnitVolume:{
+				if (getStructure() instanceof Membrane && geometryClass instanceof SubVolume){
+					return "Area(\""+structure.getName()+"\") per Unit Volume of \""+geometryClass.getName()+"\"";
+				}
+				break;
+			}
+			case ROLE_InitialVoltage:{
+				return "initial voltage";
+			}
+			case ROLE_Size:{
+				return "size";
+			}
+			case ROLE_SpecificCapacitance:{
+				return "specific capacitance";
+			}
+			case ROLE_SurfaceToVolumeRatio:{
+				return "surface to volume ratio (including children)";
+			}
+			case ROLE_VolumeFraction:{
+				return "volume fraction (including children)";
+			}
+			case ROLE_VolumePerUnitArea:{
+				if (getStructure() instanceof Feature && geometryClass instanceof SurfaceClass){
+					return "Volume(\""+structure.getName()+"\") per Unit Area of \""+geometryClass.getName()+"\"";
+				}
+				break;
+			}
+			case ROLE_VolumePerUnitVolume:{
+				if (getStructure() instanceof Feature && geometryClass instanceof SubVolume){
+					return "Volume(\""+structure.getName()+"\") per Unit Volume of \""+geometryClass.getName()+"\"";
+				}
+				break;
+			}
+			default:{
+				break;
+			}
+			}
+			return "??";
+		}
+
 		public boolean isExpressionEditable(){
 			return true;
 		}
@@ -156,37 +221,57 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		}
 	}
 	private Structure structure = null;
+	private GeometryClass geometryClass = null;
 	private StructureMappingNameScope nameScope = new StructureMappingNameScope();
 	protected SimulationContext simulationContext = null; // for determining NameScope parent only
+	private BoundaryConditionType boundaryConditionTypes[] = new BoundaryConditionType[6];
+	private boolean boundaryConditionValid[] = new boolean[6];
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
+	private transient NameScope parentNameScope = null;
 	public static final int ROLE_SurfaceToVolumeRatio	= 0;
 	public static final int ROLE_VolumeFraction			= 1;
 	public static final int ROLE_SpecificCapacitance	= 2;
 	public static final int ROLE_InitialVoltage			= 3;
 	public static final int ROLE_Size					= 4;
-	public static final int NUM_ROLES		= 5;	//surface area for membrane or volume for feature
+	public static final int ROLE_VolumePerUnitVolume	= 5;
+	public static final int ROLE_VolumePerUnitArea		= 6;
+	public static final int ROLE_AreaPerUnitArea		= 7;
+	public static final int ROLE_AreaPerUnitVolume		= 8;
+	public static final int NUM_ROLES		= 9;	//surface area for membrane or volume for feature
 	public static final String RoleTags[] = {
 		VCMODL.SurfaceToVolume,
 		VCMODL.VolumeFraction,
 		VCMODL.SpecificCapacitance,
 		VCMODL.InitialVoltage,
-		VCMODL.StructureSize
+		VCMODL.StructureSize,
+		VCMODL.VolumePerUnitVolume,
+		VCMODL.VolumePerUnitArea,
+		VCMODL.AreaPerUnitArea,
+		VCMODL.AreaPerUnitVolume
 	};
 	public static final String DefaultNames[] = {
 		"SurfToVolRatio",
 		"VolFract",
 		"SpecCapacitance",
 		"InitialVoltage",
-		"Size"
+		"Size",
+		"VolumePerUnitVolume",
+		"VolumePerUnitArea",
+		"AreaPerUnitArea",
+		"AreaPerUnitVolume"
 	};
 	private static final RealInterval[] parameterBounds = {
 		new RealInterval(1.0E-3, 1.0E4),	// s/v ratio
 		new RealInterval(1.0E-3, 0.999),							// volFract
 		new RealInterval(0.0, Double.POSITIVE_INFINITY),	// Capacitance
 		new RealInterval(-120, 60),	// init voltage
-		new RealInterval(0.0, Double.POSITIVE_INFINITY)		// area/volume
+		new RealInterval(0.0, Double.POSITIVE_INFINITY),		// size
+		new RealInterval(0.0, 1.0),								// volume/volume
+		new RealInterval(0.0, 100),								// volume/area
+		new RealInterval(0.0, 1.0),								// area/area
+		new RealInterval(0.0, 100)								// area/volume
 	};
 	private StructureMapping.StructureMappingParameter[] fieldParameters = null;
 
@@ -200,6 +285,11 @@ protected StructureMapping(StructureMapping structureMapping, SimulationContext 
 	for (int i = 0; i < fieldParameters.length; i++){
 		fieldParameters[i] = new StructureMappingParameter((StructureMappingParameter)structureMapping.getParameters(i));
 	}
+	for (int i=0;i<6;i++){
+		boundaryConditionTypes[i]=structureMapping.boundaryConditionTypes[i];
+		boundaryConditionValid[i]=structureMapping.boundaryConditionValid[i];
+	}
+	this.geometryClass = structureMapping.getGeometryClass();
 }      
 
 
@@ -209,6 +299,10 @@ protected StructureMapping(Structure structure, SimulationContext argSimulationC
 	}
 	this.structure = structure;
 	this.simulationContext = argSimulationContext;
+	for (int i=0;i<6;i++){
+		boundaryConditionTypes[i]=BoundaryConditionType.getNEUMANN();
+		boundaryConditionValid[i]=false;
+	}
 }      
 
 
@@ -246,6 +340,15 @@ protected boolean compareEqual0(StructureMapping sm) {
 	if (!Compare.isEqual(fieldParameters,sm.fieldParameters)){
 		return false;
 	}
+	if (!Compare.isEqual(geometryClass,sm.geometryClass)){
+		return false;
+	}
+	for (int i=0;i<boundaryConditionTypes.length;i++){
+		if (!boundaryConditionTypes[i].compareEqual(sm.boundaryConditionTypes[i])){
+			return false;
+		}
+	}
+	
 
 	return true;
 }
@@ -263,9 +366,6 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 public void fireVetoableChange(String propertyName, Object oldValue, Object newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
-
-public abstract GeometryClass getGeometryClass();
-
 
 /**
  * Insert the method's description here.
@@ -303,16 +403,67 @@ public void gatherIssues(Vector<Issue> issueVector) {
 	}
 }
 
-
 /**
- * Since we don't have the absolute volume in vcell, a defult (fixed) volume is set to 1e-15L (1e-18 cubic meter)
- * Creation date: (9/15/2006 3:09:34 PM)
- * @return double
+ * This method was created by a SmartGuide.
+ * @return java.lang.String
  */
-public static double getDefaultAbsoluteSize() {
-	return 1e-15;
+public cbit.vcell.math.BoundaryConditionType getBoundaryCondition(BoundaryLocation boundaryLocation) {
+	return boundaryConditionTypes[boundaryLocation.getNum()];
 }
 
+
+/**
+ * This method was created by a SmartGuide.
+ * @return java.lang.String
+ */
+public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeXm() {
+	return getBoundaryCondition(BoundaryLocation.getXM());
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @return java.lang.String
+ */
+public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeXp() {
+	return getBoundaryCondition(BoundaryLocation.getXP());
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @return java.lang.String
+ */
+public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeYm() {
+	return getBoundaryCondition(BoundaryLocation.getYM());
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @return java.lang.String
+ */
+public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeYp() {
+	return getBoundaryCondition(BoundaryLocation.getYP());
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @return java.lang.String
+ */
+public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeZm() {
+	return getBoundaryCondition(BoundaryLocation.getZM());
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @return java.lang.String
+ */
+public cbit.vcell.math.BoundaryConditionType getBoundaryConditionTypeZp() {
+	return getBoundaryCondition(BoundaryLocation.getZP());
+}
 
 /**
  * getEntry method comment.
@@ -386,6 +537,7 @@ public StructureMappingParameter getParameterFromRole(int role) {
 	return null;
 }
 
+public abstract StructureMappingParameter getUnitSizeParameter();
 
 /**
  * Gets the parameters property (cbit.vcell.model.Parameter[]) value.
@@ -456,13 +608,6 @@ abstract Expression getStructureSizeCorrection(SimulationContext simulationConte
 
 
 /**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public abstract String getVCML() throws Exception;
-
-
-/**
  * Accessor for the vetoPropertyChange field.
  */
 protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
@@ -479,6 +624,15 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 public synchronized boolean hasListeners(String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
+
+/**
+ * This method was created by a SmartGuide.
+ * @return boolean
+ */
+public boolean isBoundaryConditionValid(BoundaryLocation boundaryLocation) {
+	return boundaryConditionValid[boundaryLocation.getNum()];
+}
+
 
 
 /**
@@ -511,6 +665,102 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
  */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
+}
+
+
+/**
+ * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
+ */
+public synchronized void removeVetoableChangeListener(String propertyName, java.beans.VetoableChangeListener listener) {
+	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
+}
+
+/**
+ * This method was created by a SmartGuide.
+ * @param bct java.lang.String
+ * @exception java.lang.Exception The exception description.
+ */
+public void setBoundaryCondition(BoundaryLocation boundaryLocation, BoundaryConditionType bc) {
+	boundaryConditionTypes[boundaryLocation.getNum()] = bc;
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @param bct java.lang.String
+ * @exception java.lang.Exception The exception description.
+ */
+public void setBoundaryConditionTypeXm(BoundaryConditionType bc) {
+	BoundaryConditionType oldBCType = getBoundaryConditionTypeXm();
+	setBoundaryCondition(BoundaryLocation.getXM(), bc);
+	BoundaryConditionType newBCType = getBoundaryConditionTypeXm();
+	firePropertyChange("boundaryConditionTypeXm",oldBCType,newBCType);
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @param bct java.lang.String
+ * @exception java.lang.Exception The exception description.
+ */
+public void setBoundaryConditionTypeXp(BoundaryConditionType bc) {
+	BoundaryConditionType oldBCType = getBoundaryConditionTypeXp();
+	setBoundaryCondition(BoundaryLocation.getXP(), bc);
+	BoundaryConditionType newBCType = getBoundaryConditionTypeXp();
+	firePropertyChange("boundaryConditionTypeXp",oldBCType,newBCType);
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @param bct java.lang.String
+ * @exception java.lang.Exception The exception description.
+ */
+public void setBoundaryConditionTypeYm(BoundaryConditionType bc) {
+	BoundaryConditionType oldBCType = getBoundaryConditionTypeYm();
+	setBoundaryCondition(BoundaryLocation.getYM(), bc);
+	BoundaryConditionType newBCType = getBoundaryConditionTypeYm();
+	firePropertyChange("boundaryConditionTypeYm",oldBCType,newBCType);
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @param bct java.lang.String
+ * @exception java.lang.Exception The exception description.
+ */
+public void setBoundaryConditionTypeYp(BoundaryConditionType bc) {
+	BoundaryConditionType oldBCType = getBoundaryConditionTypeYp();
+	setBoundaryCondition(BoundaryLocation.getYP(), bc);
+	BoundaryConditionType newBCType = getBoundaryConditionTypeYp();
+	firePropertyChange("boundaryConditionTypeYp",oldBCType,newBCType);
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @param bct java.lang.String
+ * @exception java.lang.Exception The exception description.
+ */
+public void setBoundaryConditionTypeZm(BoundaryConditionType bc) {
+	BoundaryConditionType oldBCType = getBoundaryConditionTypeZm();
+	setBoundaryCondition(BoundaryLocation.getZM(), bc);
+	BoundaryConditionType newBCType = getBoundaryConditionTypeZm();
+	firePropertyChange("boundaryConditionTypeZm",oldBCType,newBCType);
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @param bct java.lang.String
+ * @exception java.lang.Exception The exception description.
+ */
+public void setBoundaryConditionTypeZp(BoundaryConditionType bc) {
+	BoundaryConditionType oldBCType = getBoundaryConditionTypeZp();
+	setBoundaryCondition(BoundaryLocation.getZP(), bc);
+	BoundaryConditionType newBCType = getBoundaryConditionTypeZp();
+	firePropertyChange("boundaryConditionTypeZp",oldBCType,newBCType);
+
 }
 
 
@@ -556,5 +806,18 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	getNameScope().getExternalEntries(entryMap);		
 }
+
+public GeometryClass getGeometryClass() {
+	return geometryClass;
+}
+
+
+public void setGeometryClass(GeometryClass argGeometryClass) throws PropertyVetoException {
+	GeometryClass oldValue = this.geometryClass;
+	fireVetoableChange("geometryClass", oldValue, argGeometryClass);
+	this.geometryClass = argGeometryClass;
+	firePropertyChange("geometryClass", oldValue, argGeometryClass);
+}
+
 
 }

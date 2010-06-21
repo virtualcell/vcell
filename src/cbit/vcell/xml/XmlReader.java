@@ -10,6 +10,7 @@ import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
@@ -51,6 +52,7 @@ import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.ControlPointCurve;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.Line;
 import cbit.vcell.geometry.SampledCurve;
@@ -1046,10 +1048,15 @@ private Structure getFeature(Element param) throws XmlParseException {
 private FeatureMapping getFeatureMapping(Element param, SimulationContext simulationContext) throws XmlParseException{
 	//Retrieve attributes
 	String featurename = unMangle( param.getAttributeValue(XMLTags.FeatureAttrTag) );
-	String subvolumename = param.getAttributeValue(XMLTags.SubVolumeAttrTag);
-	if (subvolumename != null)
-		subvolumename = unMangle(subvolumename);
-	boolean resolved = Boolean.valueOf(param.getAttributeValue(XMLTags.ResolvedAttrTag)).booleanValue();
+	String geometryClassName = param.getAttributeValue(XMLTags.SubVolumeAttrTag);
+	if (geometryClassName != null){
+		geometryClassName = unMangle(geometryClassName);
+	}else{
+		geometryClassName = param.getAttributeValue(XMLTags.GeometryClassAttrTag);
+		if (geometryClassName != null){
+			geometryClassName = unMangle(geometryClassName);
+		}
+	}
 	
 	Feature featureref = (Feature)simulationContext.getModel().getStructure(featurename);
 	if (featureref == null) {
@@ -1072,26 +1079,20 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 			e.printStackTrace();
 		}	
 	}
-	//Retrieve subvolumeref, allow subvolumes to be 'null'
-	if (subvolumename != null) {
-		SubVolume subvolumeref = simulationContext.getGeometry().getGeometrySpec().getSubVolume(subvolumename);
-		if (subvolumeref == null) {
-			throw new XmlParseException("The SubVolume "+ subvolumename + " could not be resolved!");
-		}
-		//Set attributes to the featuremapping
-		try {
-			feamap.setSubVolume( subvolumeref );
-		}catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
-			throw new XmlParseException("A propertyVetoException was fired when trying to set the subvolume " + subvolumename + " to a FeatureMapping!"+" : "+e.getMessage());
+	if (geometryClassName != null) {
+		GeometryClass[] geometryClasses = simulationContext.getGeometry().getGeometryClasses();
+		for (int i = 0; i < geometryClasses.length; i++) {
+			if (geometryClasses[i].getName().equals(geometryClassName)){
+				try {
+					feamap.setGeometryClass(geometryClasses[i]);
+				} catch (PropertyVetoException e) {
+					e.printStackTrace();
+					throw new XmlParseException("A propertyVetoException was fired when trying to set the subvolume or surface " + geometryClassName + " to a MembraneMapping!"+" : "+e.getMessage());
+				}
+			}
 		}
 	}
-	try {
-		feamap.setResolved( resolved );
-	}catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
-		throw new XmlParseException("A propertyVetoException was fired when setting to a FeatureMapping if it is resolved!"+" : "+e.getMessage());
-	}
+	
 	//Set Boundary conditions
 	Element tempElement = param.getChild(XMLTags.BoundariesTypesTag, vcNamespace);
 	
@@ -2711,6 +2712,25 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		throw new XmlParseException(e.getMessage());
 	}
 	
+	String geometryClassName = param.getAttributeValue(XMLTags.GeometryClassAttrTag);
+	if (geometryClassName != null){
+		geometryClassName = unMangle(geometryClassName);
+	}
+	//Retrieve subvolumeref, allow subvolumes to be 'null'
+	if (geometryClassName != null) {
+		GeometryClass[] geometryClasses = simulationContext.getGeometry().getGeometryClasses();
+		for (int i = 0; i < geometryClasses.length; i++) {
+			if (geometryClasses[i].getName().equals(geometryClassName)){
+				try {
+					memmap.setGeometryClass(geometryClasses[i]);
+				} catch (PropertyVetoException e) {
+					e.printStackTrace();
+					throw new XmlParseException("A propertyVetoException was fired when trying to set the subvolume or surface " + geometryClassName + " to a MembraneMapping!"+" : "+e.getMessage());
+				}
+			}
+		}
+	}
+	
 	return memmap;
 }
 
@@ -3514,6 +3534,7 @@ private ArrayList<String> getReservedVars() {
 	reservedVars.add(ReservedSymbol.TEMPERATURE.getName());
 	reservedVars.add(ReservedSymbol.K_GHK.getName());
 	reservedVars.add(ReservedSymbol.TIME.getName());
+	//reservedVars.add(ReservedSymbol.PI.getName());
 	
 	return reservedVars;
 }
@@ -3838,6 +3859,10 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	maplist.toArray(structarray);
 	try {
 		newsimcontext.getGeometryContext().setStructureMappings(structarray);
+		newsimcontext.getGeometryContext().refreshStructureMappings();
+	} catch (MappingException e) {
+		e.printStackTrace();
+		throw new XmlParseException("A MappingException was fired when trying to set the StructureMappings array to the Geometrycontext of the SimContext "+ name+" : "+e.getMessage());
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace(System.out);
 		throw new XmlParseException("A PopertyVetoException was fired when trying to set the StructureMappings array to the Geometrycontext of the SimContext "+ name+" : "+e.getMessage());
@@ -3967,6 +3992,10 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			throw new XmlParseException("A PropertyVetoException occurred when adding a Simulation entity to the BioModel in the SimContext " + name+" : "+e.getMessage());
 		}
 	}*/
+	
+	for (GeometryClass gc : newsimcontext.getGeometry().getGeometryClasses()) {
+		StructureSizeSolver.updateUnitStructureSizes(newsimcontext, gc);
+	}
 	
 	return newsimcontext;
 }
@@ -4290,7 +4319,12 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 		//Get Atributes
 		String speccontname = unMangle( scsElement.getAttributeValue(XMLTags.SpeciesContextRefAttrTag) );
 		boolean constant = Boolean.valueOf(scsElement.getAttributeValue(XMLTags.ForceConstantAttrTag)).booleanValue();
-		boolean enabledif = Boolean.valueOf(scsElement.getAttributeValue(XMLTags.EnableDiffusionAttrTag)).booleanValue();
+		//boolean enabledif = Boolean.valueOf(scsElement.getAttributeValue(XMLTags.EnableDiffusionAttrTag)).booleanValue();
+		String spatialStr = scsElement.getAttributeValue(XMLTags.SpatialAttrTag);
+		Boolean spatial = null;
+		if (spatialStr!=null){
+			spatial = Boolean.valueOf(spatialStr);
+		}
 		
 		//Retrieve reference
 		SpeciesContext specref = model.getSpeciesContext(speccontname);
@@ -4302,11 +4336,14 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 	 	specspec = rxnContext.getSpeciesContextSpec(specref);
 		//set attributes
 		specspec.setConstant( constant);
-		try {
-			specspec.setEnableDiffusing( enabledif );
-		} catch (MappingException e) {
-			e.printStackTrace();
-			throw new XmlParseException("error setting the 'enableDiffusing' property of a SpeciesContext: "+e.getMessage());
+//	try {
+//		specspec.setEnableDiffusing( enabledif );
+//	} catch (MappingException e) {
+//		e.printStackTrace();
+//		throw new XmlParseException("error setting the 'enableDiffusing' property of a SpeciesContext: "+e.getMessage());
+//	}
+		if (spatial!=null){
+			specspec.setSpatial( spatial );
 		}
 		//set expressions
 		//Initial
@@ -4609,6 +4646,7 @@ private void addResevedSymbols(VariableHash varHash) throws XmlParseException {
 		varHash.addVariable(new Constant(ReservedSymbol.TEMPERATURE.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.TIME.getName(), new Expression(0.0)));
+		//varHash.addVariable(new Constant(ReservedSymbol.PI.getName(), new Expression(0.0)));
 	} catch (MappingException e){
 		e.printStackTrace(System.out);
 		throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());

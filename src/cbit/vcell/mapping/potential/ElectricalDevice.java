@@ -327,14 +327,6 @@ public ElectricalDevice.ElectricalDeviceParameter getParameters(int index) {
 
 /**
  * Insert the method's description here.
- * Creation date: (4/7/2004 11:31:15 AM)
- * @return boolean
- */
-public abstract boolean getResolved();
-
-
-/**
- * Insert the method's description here.
  * Creation date: (4/7/2004 3:00:30 PM)
  * @return java.lang.String
  */

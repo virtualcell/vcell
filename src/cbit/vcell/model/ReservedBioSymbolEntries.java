@@ -127,6 +127,7 @@ public class ReservedBioSymbolEntries {
 			symbolTableEntries.put(ReservedSymbol.X.getName(),ReservedSymbol.X);
 			symbolTableEntries.put(ReservedSymbol.Y.getName(),ReservedSymbol.Y);
 			symbolTableEntries.put(ReservedSymbol.Z.getName(),ReservedSymbol.Z);
+			//symbolTableEntries.put(ReservedSymbol.PI.getName(),ReservedSymbol.PI);
 		}
 		return symbolTableEntries;
 	}

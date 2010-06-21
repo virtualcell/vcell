@@ -14,14 +14,16 @@ import cbit.gui.graph.Shape;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.graph.FeatureMappingShape;
 import cbit.vcell.graph.FeatureShape;
+import cbit.vcell.graph.GeometryClassLegendShape;
 import cbit.vcell.graph.GeometryContextContainerShape;
 import cbit.vcell.graph.GeometryContextGeometryShape;
 import cbit.vcell.graph.GeometryContextStructureShape;
 import cbit.vcell.graph.StructureMappingFeatureShape;
 import cbit.vcell.graph.SubVolumeContainerShape;
-import cbit.vcell.graph.SubvolumeLegendShape;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
@@ -126,12 +128,20 @@ public void refreshAll() {
 	GeometrySpec geometrySpec = getGeometryContext().getGeometry().getGeometrySpec();
 	SubVolume subVolumes[] = geometrySpec.getSubVolumes();
 	for (int i=0;i<subVolumes.length;i++){
-		SubVolume subvolume = subVolumes[i];
-		SubvolumeLegendShape subvolumeLegendShape = new SubvolumeLegendShape(subvolume,getGeometryContext().getGeometry(),this,10);
-		addShape(subvolumeLegendShape);
-		geometryShape.addChildShape(subvolumeLegendShape);
+		GeometryClassLegendShape geometryClassLegendShape = new GeometryClassLegendShape(subVolumes[i],getGeometryContext().getGeometry(),this,10);
+		addShape(geometryClassLegendShape);
+		geometryShape.addChildShape(geometryClassLegendShape);
 	}	
-
+	GeometrySurfaceDescription geometrySurfaceDescription = getGeometryContext().getGeometry().getGeometrySurfaceDescription();
+	if (geometrySurfaceDescription!=null){
+		SurfaceClass[] surfaceClasses = geometrySurfaceDescription.getSurfaceClasses();
+		for (int i=0;i<surfaceClasses.length;i++){
+			GeometryClassLegendShape geometryClassLegendShape = new GeometryClassLegendShape(surfaceClasses[i],getGeometryContext().getGeometry(),this,10);
+			addShape(geometryClassLegendShape);
+			geometryShape.addChildShape(geometryClassLegendShape);
+		}	
+	}
+	
 	//--------------------------------------------------
 	if((subVolumeContainerShape == null) || (subVolumeContainerShape.getModelObject() != getGeometryContext().getGeometry())){
 		subVolumeContainerShape = new SubVolumeContainerShape(getGeometryContext().getGeometry(), this);			
@@ -161,10 +171,10 @@ public void refreshAll() {
 			FeatureMapping featureMapping = (FeatureMapping)structureMapping;
 			structureMapping.removePropertyChangeListener(this);
 			structureMapping.addPropertyChangeListener(this);
-			if (featureMapping.getSubVolume()!=null){
+			if (featureMapping.getGeometryClass()!=null){
 				FeatureShape featureShape = (FeatureShape)getShapeFromModelObject(featureMapping.getFeature());
-				SubvolumeLegendShape subvolumeLegendShape = (SubvolumeLegendShape)getShapeFromModelObject(featureMapping.getSubVolume());
-				FeatureMappingShape fmShape = new FeatureMappingShape(featureMapping,featureShape,subvolumeLegendShape,this);
+				GeometryClassLegendShape geometryClassLegendShape = (GeometryClassLegendShape)getShapeFromModelObject(featureMapping.getGeometryClass());
+				FeatureMappingShape fmShape = new FeatureMappingShape(featureMapping,featureShape,geometryClassLegendShape,this);
 //FeatureMappingShape fmShape = new FeatureMappingShape(featureMapping,featureShape,featureMapping.getSubVolume(),imageShape,this);
 				addShape(fmShape);
 				containerShape.addChildShape(fmShape);

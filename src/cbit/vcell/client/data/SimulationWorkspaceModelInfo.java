@@ -1,10 +1,12 @@
 package cbit.vcell.client.data;
 
 import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
@@ -76,18 +78,21 @@ public String getMembraneName(int subVolumeIdIn, int subVolumeIdOut, boolean bFr
 			results = membrane.getName();
 		} else {
 			if(svIn != null && svOut != null){
-				Feature featureIn = simContext.getGeometryContext().getResolvedFeature(svIn);
-				Feature featureOut = simContext.getGeometryContext().getResolvedFeature(svOut);
-				if(featureIn != null && featureOut != null){
-					Structure[] structArr = simContext.getModel().getStructures();
-					for(int i=0;i<structArr.length;i+= 1){
-						if(structArr[i] instanceof Membrane){
-							Membrane mem = (Membrane)structArr[i];
-							if((mem.getOutsideFeature() == featureOut && mem.getInsideFeature() == featureIn)||
-								(mem.getOutsideFeature() == featureIn && mem.getInsideFeature() == featureOut)){
-									results = mem.getName();
-									break;
+				GeometryClass[] geometryClasses = simContext.getGeometry().getGeometryClasses();
+				for (int i = 0; i < geometryClasses.length; i++) {
+					if (geometryClasses[i] instanceof SurfaceClass){
+						SurfaceClass surface = (SurfaceClass)geometryClasses[i];
+						if ((surface.getSubvolume1()==svIn && surface.getSubvolume2()==svOut) ||
+							(surface.getSubvolume1()==svOut && surface.getSubvolume2()==svIn)){
+							StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings(surface);
+							if (structureMappings!=null && structureMappings.length>0){
+								results = surface.getName()+"(";
+								for (int j = 0; j < structureMappings.length; j++) {
+									results += structureMappings[j].getStructure().getName()+" ";
 								}
+								results += ")";
+								return results;
+							}
 						}
 					}
 				}
@@ -116,7 +121,7 @@ public java.lang.String getSimulationName() {
  * @param subVolumeID int
  */
 public String getVolumeNamePhysiology(int subVolumeID) {
-	String results = null;
+	String results = "";
 	if(simulationOwner instanceof MathModel){
 		MathModel mathModel = (MathModel)simulationOwner;
 		if(mathModel.getMathDescription().getGeometry().getGeometrySpec().getSubVolume(subVolumeID) != null){
@@ -126,9 +131,11 @@ public String getVolumeNamePhysiology(int subVolumeID) {
 		SimulationContext simContext = (SimulationContext)simulationOwner;
 		SubVolume sv = simContext.getGeometry().getGeometrySpec().getSubVolume(subVolumeID);
 		if(sv != null){
-			Feature volFeature = simContext.getGeometryContext().getResolvedFeature(sv);
-			if(volFeature != null){
-				results = volFeature.getName();
+			Structure[] structures = simContext.getGeometryContext().getStructuresFromGeometryClass(sv);
+			if (structures!=null && structures.length>0){
+				for (Structure structure : structures){
+					results += structure.getName()+" ";
+				}
 			}
 		}
 	}
