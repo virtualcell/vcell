@@ -1867,9 +1867,8 @@ public void checkValidity() throws MappingException
 		// ODE- where sizes are set, but relative sizes are not: 
 		if (!isStoch() && !getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().isAllSizeSpecifiedPositive()){
 			// the sizes are specified, but not the volFractions and surface-to-vol ratios, so run the structureSizeSolver to get the relative sizes
-			StructureSizeSolver ssSolver = new StructureSizeSolver();
 			try {
-				ssSolver.updateRelativeStructureSizes(this);
+				StructureSizeSolver.updateRelativeStructureSizes(this);
 			} catch (Exception e) {
 				throw new MappingException(e.getMessage());
 			}
@@ -2074,4 +2073,5 @@ public void addGeometryPropertyChangeListener(PropertyChangeListener listener) {
 public void removeGeometryPropertyChangeListener(PropertyChangeListener listener) {
 	getGeometryContext().removePropertyChangeListener(listener);
 }
+
 }

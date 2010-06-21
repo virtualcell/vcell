@@ -17,8 +17,8 @@ public class FeatureMappingShape extends EdgeShape {
  * @param graphModel cbit.vcell.graph.GraphModel
  */
 public FeatureMappingShape(FeatureMapping featureMapping, FeatureShape featureShape,
-	                            SubvolumeLegendShape subvolumeShape, GraphModel graphModel) {
-	super(featureShape, subvolumeShape, graphModel);
+	                            GeometryClassLegendShape geometryClassShape, GraphModel graphModel) {
+	super(featureShape, geometryClassShape, graphModel);
 	this.featureMapping = featureMapping;
 }
 
@@ -39,16 +39,6 @@ public FeatureShape getFeatureShape() {
 public Object getModelObject() {
 	return featureMapping;
 }
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.graph.ReactionStepShape
- */
-public SubvolumeLegendShape getSubvolumeLegendShape() {
-	return (SubvolumeLegendShape)endShape;
-}
-
 
 /**
  * This method was created in VisualAge.

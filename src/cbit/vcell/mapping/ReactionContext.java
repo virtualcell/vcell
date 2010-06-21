@@ -391,50 +391,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public void read(org.vcell.util.CommentStringTokenizer tokens) throws Exception {
-	refreshSpeciesContextSpecs();
-	
-	String token = null;
-	token = tokens.nextToken();
-	if (token.equalsIgnoreCase(VCMODL.ReactionContext)){
-		token = tokens.nextToken();
-	}			
-	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-		throw new Exception("unexpected token "+token+" expecting "+VCML.BeginBlock);
-	}			
-	while (tokens.hasMoreTokens()){
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCML.EndBlock)){
-			break;
-		}		
-		//
-		// read speciesMapping
-		//	
-		if (token.equalsIgnoreCase(VCMODL.SpeciesContextSpec)){
-			SpeciesContextSpec scs = (SpeciesContextSpec)getSpeciesContextSpec(getModel().getSpeciesContext(tokens.nextToken()));
-			scs.read(tokens);
-			continue;
-		}
-		//
-		// read reactionSpec
-		//	
-		if (token.equalsIgnoreCase(VCML.ReactionSpec)){
-			ReactionSpec rs = getReactionSpec(getModel().getReactionStep(tokens.nextToken()));
-			rs.read(tokens);
-			continue;
-		}
-		throw new Exception("unexpected identifier "+token);
-	}
-	refreshSpeciesContextSpecs();
-}
-
-
 /**
  * This method was created by a SmartGuide.
  * @param o java.util.Observable

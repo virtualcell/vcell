@@ -374,7 +374,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 		Structure structures[] = simContext.getGeometryContext().getModel().getStructures();
 		for (int i = 0; i < structures.length; i++){
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(structures[i]);
-			if (sm==null || (sm instanceof FeatureMapping && ((FeatureMapping)sm).getSubVolume() == null)){
+			if (sm==null || (sm instanceof FeatureMapping && ((FeatureMapping)sm).getGeometryClass() == null)){
 				throw new MappingException("model structure '"+structures[i].getName()+"' not mapped to a geometry subVolume");
 			}
 			if (sm!=null && (sm instanceof MembraneMapping) && ((MembraneMapping)sm).getVolumeFractionParameter()!=null){
@@ -459,6 +459,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT_NMOLE,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getExpression(),ReservedSymbol.FARADAY_CONSTANT_NMOLE.getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.GAS_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.GAS_CONSTANT.getExpression(),ReservedSymbol.GAS_CONSTANT.getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
+		//varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.PI,null),getIdentifierSubstitutions(ReservedSymbol.PI.getExpression(),ReservedSymbol.PI.getUnitDefinition(),null)));
 		
 		Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 		while (enum1.hasMoreElements()){
@@ -655,17 +656,14 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 			// get priority of subDomain
 			//
 			int priority;
-			Feature spatialFeature = simContext.getGeometryContext().getResolvedFeature(subVolume);
-			if (spatialFeature==null){
-				if (simContext.getGeometryContext().getGeometry().getDimension()>0){
-					throw new MappingException("no compartment (in Physiology) is mapped to subdomain '"+subVolume.getName()+"' (in Geometry)");
-				}else{
-					priority = CompartmentSubDomain.NON_SPATIAL_PRIORITY;
-				}
+			if (simContext.getGeometryContext().getGeometry().getDimension()==0){
+				priority = CompartmentSubDomain.NON_SPATIAL_PRIORITY;
 			}else{
-				priority = spatialFeature.getPriority() * 100 + j; // now does not have to match spatial feature, *BUT* needs to be unique
+				priority = j; // now does not have to match spatial feature, *BUT* needs to be unique
 			}
-			
+			//
+			// create subDomain
+			//
 			subDomain = new CompartmentSubDomain(subVolume.getName(),priority);
 			mathDesc.addSubDomain(subDomain);
 		}

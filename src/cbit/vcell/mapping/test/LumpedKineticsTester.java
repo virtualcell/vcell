@@ -78,9 +78,8 @@ public class LumpedKineticsTester implements VCDatabaseVisitor {
 			// translate distributed Kinetics into Lumped Kinetics
 			//
 			if (nonspatialSimContext.getGeometryContext().isAllSizeSpecifiedNull()){
-				StructureSizeSolver structureSizeSolver = new StructureSizeSolver();
 				try {
-					structureSizeSolver.updateAbsoluteStructureSizes(nonspatialSimContext, nonspatialSimContext.getModel().getTopFeature(), 1.0, VCUnitDefinition.UNIT_um3);
+					StructureSizeSolver.updateAbsoluteStructureSizes(nonspatialSimContext, nonspatialSimContext.getModel().getTopFeature(), 1.0, VCUnitDefinition.UNIT_um3);
 				} catch (Exception e) {
 					e.printStackTrace(System.out);
 				}

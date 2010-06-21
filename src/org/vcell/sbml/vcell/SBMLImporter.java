@@ -314,8 +314,7 @@ protected void addCompartments(VCMetaData metaData) {
 
 		// Handle the absolute size to surface_vol/volFraction conversion if size is set
 		if (allSizesSet) {
-			StructureSizeSolver structSizeSolver = new StructureSizeSolver();
-			structSizeSolver.updateRelativeStructureSizes(simContext);
+			StructureSizeSolver.updateRelativeStructureSizes(simContext);
 		}
 		simContext.getModel().getTopFeature();
 	} catch (Exception e) {
@@ -564,6 +563,7 @@ protected void addParameters() throws PropertyVetoException {
 	reservedSymbolHash.add(ReservedSymbol.TEMPERATURE.getName());
 	reservedSymbolHash.add(ReservedSymbol.K_GHK.getName());
 	reservedSymbolHash.add(ReservedSymbol.TIME.getName());
+	//reservedSymbolHash.add(ReservedSymbol.PI.getName());
 
 	for (int i = 0; i < sbmlModel.getNumParameters(); i++){
 		Parameter sbmlGlobalParam = (Parameter)listofGlobalParams.get(i);

@@ -12,10 +12,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import javax.swing.SwingUtilities;
-
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
@@ -23,23 +22,30 @@ import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 /**
  * GeometryContext handles the mapping of the Structures (Feature,Membrane) to the Geometry
  * (subVolumes).  This should be an observer for Geometry and for Model.
  * 
  */
 public  class GeometryContext implements Serializable, Matchable, PropertyChangeListener {
-
+	public static final String PROPERTY_STRUCTURE_MAPPINGS = "structureMappings";
+	public static final String PROPERTY_GEOMETRY = "geometry";
+	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.model.Model fieldModel = null;
-	private cbit.vcell.geometry.Geometry fieldGeometry = null;
+	private Model fieldModel = null;
+	private Geometry fieldGeometry = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
-	private cbit.vcell.mapping.StructureMapping[] fieldStructureMappings = new StructureMapping[0];
+	private StructureMapping[] fieldStructureMappings = new StructureMapping[0];
 	private SimulationContext fieldSimulationContext = null;
 /**
  * This method was created by a SmartGuide.
@@ -102,102 +108,64 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
 /**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
-}
-/**
  * This method was created in VisualAge.
  * @param feature cbit.vcell.model.Feature
- * @param subVolume cbit.vcell.geometry.SubVolume
+ * @param geometryClass cbit.vcell.geometry.SubVolume
+ * @throws MappingException 
  */
-public void assignFeature(Feature feature, SubVolume subVolume) throws IllegalMappingException, PropertyVetoException {
+public void assignFeature(Feature feature, GeometryClass geometryClass) throws IllegalMappingException, PropertyVetoException, MappingException {
 	
 	FeatureMapping featureMapping = (FeatureMapping)getStructureMapping(feature);
-	SubVolume currentlyMappedSubvolume = featureMapping.getSubVolume();
+	GeometryClass currentlyMappedSubvolume = featureMapping.getGeometryClass();
+	//
+	// already mapped here, done.
+	//
+	if (currentlyMappedSubvolume==geometryClass){
+		return;
+	}
 
 	//
 	// check if deleting mapping
 	//
-	if (subVolume==null){
-		featureMapping.setSubVolume(null);
-		featureMapping.setResolved(false);
-		unmapBadMappings();
-		return;
-	}
-	//
-	// already mapped here, done.
-	//
-	if (currentlyMappedSubvolume==subVolume){
-		return;
-	}
+	if (geometryClass==null){
+		featureMapping.setGeometryClass(null);
+	} else {
 	
-	//
-	// if any parent is distributed within another subVolume, mapping not allowed, throw an exception
-	//
-	Feature parent = (feature.getMembrane()!=null)?feature.getMembrane().getOutsideFeature():null;
-	while (parent!=null){
-		FeatureMapping parentFM = (FeatureMapping)getStructureMapping(parent);
-		if (parentFM.getSubVolume()!=null && parentFM.getSubVolume()!=subVolume && !parentFM.getResolved()){
-			throw new IllegalMappingException("parent structure ("+parentFM.getFeature().getName()+") is distributed within another subDomain");
-		}
-		parent = (parent.getMembrane()!=null)?parent.getMembrane().getOutsideFeature():null;
-	}
-
-	Feature currResolvedFeature = getResolvedFeature(subVolume);
-	if (currResolvedFeature==null){
+//		//
+//		// if any parent is mapped within another subVolume, mapping not allowed, throw an exception
+//		//
+//		Feature parent = (feature.getMembrane()!=null)?feature.getMembrane().getOutsideFeature():null;
+//		while (parent!=null){
+//			FeatureMapping parentFM = (FeatureMapping)getStructureMapping(parent);
+//			if (parentFM.getGeometryClass()!=null && parentFM.getGeometryClass()!=geometryClass){
+//				throw new IllegalMappingException("parent structure ("+parentFM.getFeature().getName()+") is distributed within another subDomain");
+//			}
+//			parent = (parent.getMembrane()!=null)?parent.getMembrane().getOutsideFeature():null;
+//		}
+	
+		featureMapping.setGeometryClass(geometryClass);
 		//
-		// no current mappings, map as resolved
+		// if there are encapsulated features and membranes, then map them too
 		//
-		featureMapping.setSubVolume(subVolume);
-		featureMapping.setResolved(true);
-		unmapBadMappings();
-		return;
-	}else{
-		parent = (feature.getMembrane()!=null)?feature.getMembrane().getOutsideFeature():null;
-		if (parent!=null){
-			//
-			// if this feature's parent is mapped to this subvolume, then make distributed
-			//
-			if (((FeatureMapping)getStructureMapping(parent)).getSubVolume()==subVolume){
-				//
-				// but first check if any child is mapped spatially
-				//
-				Enumeration childEnum = getChildFeatureMappings(feature);
-				while (childEnum.hasMoreElements()) {
-					FeatureMapping childFM = (FeatureMapping) childEnum.nextElement();
-					if (childFM.getResolved() && childFM.getSubVolume()!=null) {
-						throw new IllegalMappingException("child structure ("+childFM.getFeature().getName()+") is spatially mapped, cannot map '"+feature.getName()+"' as distributed");
-					}
+		Structure[] structures = getSimulationContext().getModel().getStructures();
+		for (int i = 0; i < structures.length; i++) {
+			if (structures[i] instanceof Feature){
+				if (((Feature)structures[i]).enclosedBy(feature)){
+					getStructureMapping(structures[i]).setGeometryClass(geometryClass);
 				}
-
-				//
-				// map as Distributed
-				//
-				featureMapping.setSubVolume(subVolume);
-				featureMapping.setResolved(false);
-				unmapBadMappings();
-				return;
+			}else if (structures[i] instanceof Membrane){
+				Membrane membrane = (Membrane)structures[i];
+				if (membrane.getInsideFeature()!=null && membrane.getInsideFeature().enclosedBy(feature) &&
+					membrane.getOutsideFeature()!=null && membrane.getOutsideFeature().enclosedBy(feature)){
+					getStructureMapping(membrane).setGeometryClass(geometryClass);
+				}
 			}
 		}
-		//
-		// map as Resolved, force out old Resolved FeatureMapping
-		//
-		//     if its a direct child, make Distributed,
-		//     if its not a child, Remove
-		//
-		if (currResolvedFeature.getMembrane()!=null && currResolvedFeature.getMembrane().getOutsideFeature()==feature){
-			((FeatureMapping)getStructureMapping(currResolvedFeature)).setResolved(false);
-		}else{
-			((FeatureMapping)getStructureMapping(currResolvedFeature)).setSubVolume(null);
-			((FeatureMapping)getStructureMapping(currResolvedFeature)).setResolved(false);
-		}
-		featureMapping.setSubVolume(subVolume);
-		featureMapping.setResolved(true);
-		unmapBadMappings();
 	}
+	refreshStructureMappings();
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return boolean
@@ -234,25 +202,7 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 /**
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
-public void fireVetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(evt);
-}
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, int oldValue, int newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
 public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 /**
@@ -260,7 +210,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (11/1/2005 9:48:55 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(Vector issueVector) {
+public void gatherIssues(Vector<Issue> issueVector) {
 	for (int i = 0; fieldStructureMappings!=null && i < fieldStructureMappings.length; i++){
 		fieldStructureMappings[i].gatherIssues(issueVector);
 	}
@@ -270,11 +220,11 @@ public void gatherIssues(Vector issueVector) {
  * @return java.util.Enumeration
  * @param feature cbit.vcell.model.Feature
  */
-public Enumeration getChildFeatureMappings(Feature feature) {
+public Enumeration<FeatureMapping> getChildFeatureMappings(Feature feature) {
 	//
 	// preload list with the featureMapping of the parent
 	//
-	Vector childList = new Vector();
+	Vector<FeatureMapping> childList = new Vector<FeatureMapping>();
 	FeatureMapping parentFM = (FeatureMapping)getStructureMapping(feature);
 	childList.addElement(parentFM);
 
@@ -321,7 +271,7 @@ public Enumeration getChildFeatureMappings(Feature feature) {
  * @return The geometry property value.
  * @see #setGeometry
  */
-public cbit.vcell.geometry.Geometry getGeometry() {
+public Geometry getGeometry() {
 	return fieldGeometry;
 }
 /**
@@ -329,7 +279,7 @@ public cbit.vcell.geometry.Geometry getGeometry() {
  * @return The model property value.
  * @see #setModel
  */
-public cbit.vcell.model.Model getModel() {
+public Model getModel() {
 	return fieldModel;
 }
 /**
@@ -340,23 +290,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
 	};
 	return propertyChange;
-}
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.model.Feature
- * @param subVolume cbit.vcell.geometry.SubVolume
- */
-public Feature getResolvedFeature(SubVolume subVolume) {
-	StructureMapping structureMappings[] = getStructureMappings();
-	for (int i=0;i<structureMappings.length;i++){
-		StructureMapping sm = structureMappings[i];
-		if (sm instanceof FeatureMapping && ((FeatureMapping)sm).getSubVolume() == subVolume){
-			if (sm instanceof FeatureMapping && ((FeatureMapping)sm).getResolved()){
-				return ((FeatureMapping)sm).getFeature();
-			}
-		}
-	}
-	return null;
 }
 /**
  * Insert the method's description here.
@@ -397,7 +330,7 @@ public StructureMapping[] getStructureMappings(GeometryClass geometryClass){
  * @return The structureMappings property value.
  * @see #setStructureMappings
  */
-public cbit.vcell.mapping.StructureMapping[] getStructureMappings() {
+public StructureMapping[] getStructureMappings() {
 	return fieldStructureMappings;
 }
 /**
@@ -406,7 +339,7 @@ public cbit.vcell.mapping.StructureMapping[] getStructureMappings() {
  * @param index The index value into the property array.
  * @see #setStructureMappings
  */
-public StructureMapping getStructureMappings(int index) {
+public StructureMapping getStructureMapping(int index) {
 	return getStructureMappings()[index];
 }
 
@@ -422,7 +355,6 @@ public Structure[] getStructuresFromGeometryClass(GeometryClass geometryClass) {
 	}
 	return list.toArray(new Structure[list.size()]);
 }
-
 /**
  * This method was created by a SmartGuide.
  * @return java.lang.String
@@ -430,25 +362,25 @@ public Structure[] getStructuresFromGeometryClass(GeometryClass geometryClass) {
 public String getVCML() throws Exception {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append(VCMODL.GeometryContext+" {\n");
-
-	//
-	// write FeatureMappings
-	//
-	for (int i=0;i<fieldStructureMappings.length;i++){
-		StructureMapping sm = fieldStructureMappings[i];
-		if (sm instanceof FeatureMapping){
-			buffer.append(sm.getVCML());
-		}
-	}
-	//
-	// write MembraneMappings
-	//
-	for (int i=0;i<fieldStructureMappings.length;i++){
-		StructureMapping sm = fieldStructureMappings[i];
-		if (sm instanceof MembraneMapping){
-			buffer.append(sm.getVCML());
-		}
-	}
+//
+//	//
+//	// write FeatureMappings
+//	//
+//	for (int i=0;i<fieldStructureMappings.length;i++){
+//		StructureMapping sm = fieldStructureMappings[i];
+//		if (sm instanceof FeatureMapping){
+//			buffer.append(sm.getVCML());
+//		}
+//	}
+//	//
+//	// write MembraneMappings
+//	//
+//	for (int i=0;i<fieldStructureMappings.length;i++){
+//		StructureMapping sm = fieldStructureMappings[i];
+//		if (sm instanceof MembraneMapping){
+//			buffer.append(sm.getVCML());
+//		}
+//	}
 	buffer.append("}\n");
 	return buffer.toString();		
 }
@@ -501,7 +433,7 @@ public boolean isAllSizeSpecifiedPositive()
 				if (size <=0)
 					return false;
 			}
-			catch (cbit.vcell.parser.ExpressionException e)
+			catch (ExpressionException e)
 			{
 				e.printStackTrace();
 				throw new RuntimeException("Size of structure "+structureMappings[i].getStructure().getName()+ "cannot be evaluated to a constant.");
@@ -523,7 +455,7 @@ public boolean isAllVolFracAndSurfVolSpecified()
 		if(structureMappings[i] instanceof FeatureMapping)
 		{
 			FeatureMapping featureMapping = (FeatureMapping)structureMappings[i];
-			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null)
+			if (featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null)
 			{
 				Membrane membrane = featureMapping.getFeature().getMembrane();
 				MembraneMapping membraneMapping = (MembraneMapping)getStructureMapping(membrane);
@@ -549,7 +481,7 @@ public boolean isAllVolFracAndSurfVolSpecifiedNull()
 		if(structureMappings[i] instanceof FeatureMapping)
 		{
 			FeatureMapping featureMapping = (FeatureMapping)structureMappings[i];
-			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null)
+			if (featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null)
 			{
 				Membrane membrane = featureMapping.getFeature().getMembrane();
 				MembraneMapping membraneMapping = (MembraneMapping)getStructureMapping(membrane);
@@ -565,7 +497,7 @@ public boolean isAllVolFracAndSurfVolSpecifiedNull()
 /**
  * 
  */
-public boolean isAllFeatureResolved()
+public boolean isAllFeatureMapped()
 {
 	StructureMapping structureMappings[] = getStructureMappings();
 	for (int i=0;i<structureMappings.length;i++)
@@ -573,88 +505,8 @@ public boolean isAllFeatureResolved()
 		if(structureMappings[i] instanceof FeatureMapping)
 		{
 			FeatureMapping featureMapping = (FeatureMapping)structureMappings[i];
-			if (featureMapping.getResolved() == false)
-			{
+			if (featureMapping.getGeometryClass()==null){
 				return false;
-			}
-		}
-	}
-	return true;
-}
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param feature cbit.vcell.model.Feature
- * @param subVolume cbit.vcell.geometry.SubVolume
- * @exception java.lang.Exception The exception description.
- */
-public boolean isDistributedAllowed(Feature feature, SubVolume subVolume) {
-	//
-	// for compartmental mappings, all features are distributed
-	//
-	if (getGeometry().getDimension() == 0){
-		return true;
-	}
-
-	
-	Feature parent = (feature.getMembrane() != null) ? feature.getMembrane().getOutsideFeature() : null;
-	if (parent != null) {
-		FeatureMapping parentFeatureMapping = (FeatureMapping) getStructureMapping(parent);
-		//
-		// if parent exists and is mapped to this subvolume and not spatially mapped children, then distributed
-		//
-		if (parentFeatureMapping.getSubVolume() == subVolume) {
-			//
-			// if any child is mapped spatially, mapping not allowed, throw an exception
-			//
-			Enumeration childEnum = getChildFeatureMappings(feature);
-			while (childEnum.hasMoreElements()) {
-				FeatureMapping childFM = (FeatureMapping) childEnum.nextElement();
-				if (childFM.getResolved() && childFM.getSubVolume()!=null) {
-					return false;
-				}
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
-	return true;
-}
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param feature cbit.vcell.model.Feature
- * @param subVolume cbit.vcell.geometry.SubVolume
- * @exception java.lang.Exception The exception description.
- */
-public boolean isResolvedAllowed(Feature feature, SubVolume subVolume) {
-	if (getGeometry().getDimension() == 0){
-		return false;
-	}
-	if (subVolume==null){
-		return false;
-	}
-	
-	Feature parent = (feature.getMembrane() != null) ? feature.getMembrane().getOutsideFeature() : null;
-	if (parent != null) {
-		FeatureMapping parentFeatureMapping = (FeatureMapping) getStructureMapping(parent);
-		//
-		// if parent exists and is mapped to this subvolume, then distributed
-		//
-		if (parentFeatureMapping.getSubVolume() == subVolume) {
-			return false;
-		} else {
-			//
-			// if any parent is distributed within another subVolume, mapping not allowed
-			//
-			parent = (feature.getMembrane() != null) ? feature.getMembrane().getOutsideFeature() : null;
-			while (parent != null) {
-				FeatureMapping parentFM = (FeatureMapping) getStructureMapping(parent);
-				if (parentFM.getSubVolume()!=null && parentFM.getSubVolume() != subVolume && !parentFM.getResolved()) {
-					return false;
-				}
-				parent = (parent.getMembrane() != null) ? parent.getMembrane().getOutsideFeature() : null;
 			}
 		}
 	}
@@ -688,7 +540,7 @@ public void propertyChange(PropertyChangeEvent event) {
 			e.printStackTrace(System.out);
 		}
 	}
-	if (event.getSource() == this && event.getPropertyName().equals("structureMappings")){
+	if (event.getSource() == this && event.getPropertyName().equals(PROPERTY_STRUCTURE_MAPPINGS)){
 		try {
 			fieldSimulationContext.getReactionContext().refreshSpeciesContextSpecBoundaryUnits(getStructureMappings());
 		}catch (Exception e){
@@ -726,21 +578,43 @@ public void refreshDependencies() {
 }
 /**
  * This method was created by a SmartGuide.
+ * @throws ExpressionBindingException 
  */
-private void refreshStructureMappings() throws MappingException, PropertyVetoException {
+public void refreshStructureMappings() throws MappingException, PropertyVetoException {
 	//
 	// step through all structure mappings
 	//
 	StructureMapping newStructureMappings[] = (StructureMapping[])fieldStructureMappings.clone();
+	
+	// fill in geometryClass for those MembraneMappings that were not mapped explicitly
 	for (int j=0;j<newStructureMappings.length;j++){
 		StructureMapping structureMapping = newStructureMappings[j];
+		if (structureMapping instanceof MembraneMapping && structureMapping.getGeometryClass()==null){
+			MembraneMapping membraneMapping = (MembraneMapping)structureMapping;
+			FeatureMapping insideFeatureMapping = (FeatureMapping)getStructureMapping(membraneMapping.getMembrane().getInsideFeature());
+			FeatureMapping outsideFeatureMapping = (FeatureMapping)getStructureMapping(membraneMapping.getMembrane().getOutsideFeature());
+			if (insideFeatureMapping.getGeometryClass()==outsideFeatureMapping.getGeometryClass()){
+				membraneMapping.setGeometryClass(insideFeatureMapping.getGeometryClass());
+			}else if (insideFeatureMapping.getGeometryClass() instanceof SubVolume && outsideFeatureMapping.getGeometryClass() instanceof SubVolume){
+				SubVolume insideSubVolume = (SubVolume)insideFeatureMapping.getGeometryClass();
+				SubVolume outsideSubVolume = (SubVolume)outsideFeatureMapping.getGeometryClass();
+				SurfaceClass surfaceClass = getGeometry().getGeometrySurfaceDescription().getSurfaceClass(insideSubVolume, outsideSubVolume);
+				if (surfaceClass!=null){
+					membraneMapping.setGeometryClass(surfaceClass);
+				}
+			}
+		}
+	}
+		
+	for (int j=0;j<newStructureMappings.length;j++){
+			StructureMapping structureMapping = newStructureMappings[j];
 		
 		Structure mappedStructure = structureMapping.getStructure();
 		//SubVolume mappedSubvolume = structureMapping.getSubVolume();
 		Structure newStructure = null;
-		SubVolume newSubvolume = null;
+		GeometryClass newGeometryClass = null;
 		boolean structureFound = false;
-		boolean subvolumeFound = false;
+		boolean geometryClassFound = false;
 		//
 		// match up with structures defined within model
 		//
@@ -754,43 +628,39 @@ private void refreshStructureMappings() throws MappingException, PropertyVetoExc
 			}
 		}
 		//
-		// match up with subvolumes defined within geometry
+		// match up with geometryClasses defined within geometry
 		//
-		if (structureMapping instanceof FeatureMapping){
-			FeatureMapping featureMapping = (FeatureMapping)structureMapping;
-			SubVolume geometrySubVolumes[] = getGeometry().getGeometrySpec().getSubVolumes();
-			for (int i=0;i<geometrySubVolumes.length;i++){
-				SubVolume geometrySubVolume = (SubVolume)geometrySubVolumes[i];
-				if (geometrySubVolume.compareEqual(featureMapping.getSubVolume())){
-					subvolumeFound = true;
-					newSubvolume = geometrySubVolume;
-					break;
-				}
+		GeometryClass[] geometryClasses = getGeometry().getGeometryClasses();
+		for (int i=0;i<geometryClasses.length;i++){
+			if (geometryClasses[i].compareEqual(structureMapping.getGeometryClass())){
+				geometryClassFound = true;
+				newGeometryClass = geometryClasses[i];
+				break;
 			}
+		}
+		//
+		// delete this feature mapping if not referenced in both the model and the geometry
+		//
+		if (!(structureFound && geometryClassFound)){
+			newStructureMappings = (StructureMapping[])BeanUtils.removeElement(newStructureMappings,structureMapping);
+			j--;
 			//
-			// delete this feature mapping if not referenced in both the model and the geometry
+			// delete accompanied membrane mapping if exists 
 			//
-			if (!(structureFound && subvolumeFound)){
-				newStructureMappings = (StructureMapping[])BeanUtils.removeElement(newStructureMappings,structureMapping);
-				j--;
-				//
-				// delete accompanied membrane mapping if exists 
-				//
-				for (int i = 0; i < newStructureMappings.length; i++){
-					if (newStructureMappings[i] instanceof MembraneMapping){
-						MembraneMapping membraneMapping = (MembraneMapping)newStructureMappings[i];
-						if (membraneMapping.getMembrane()==null ||
-							membraneMapping.getMembrane().getInsideFeature() == structureMapping.getStructure() ||
-							membraneMapping.getMembrane().getOutsideFeature() == structureMapping.getStructure()){
-							newStructureMappings = (StructureMapping[])BeanUtils.removeElement(newStructureMappings,membraneMapping);
-							break;
-						}
+			for (int i = 0; i < newStructureMappings.length; i++){
+				if (newStructureMappings[i] instanceof MembraneMapping){
+					MembraneMapping membraneMapping = (MembraneMapping)newStructureMappings[i];
+					if (membraneMapping.getMembrane()==null ||
+						membraneMapping.getMembrane().getInsideFeature() == structureMapping.getStructure() ||
+						membraneMapping.getMembrane().getOutsideFeature() == structureMapping.getStructure()){
+						newStructureMappings = (StructureMapping[])BeanUtils.removeElement(newStructureMappings,membraneMapping);
+						break;
 					}
 				}
-			}else{
-				// update references to Structure and SubVolume to correspond to those of Model and Geometry
-				((FeatureMapping)structureMapping).setSubVolume(newSubvolume);
 			}
+		}else{
+			// update references to Structure and SubVolume to correspond to those of Model and Geometry
+			structureMapping.setGeometryClass(newGeometryClass);
 		}
 		if(structureFound){
 			structureMapping.setStructure(newStructure);
@@ -814,12 +684,15 @@ private void refreshStructureMappings() throws MappingException, PropertyVetoExc
 				fm.setSimulationContext(this.fieldSimulationContext);
 				newStructureMappings = (StructureMapping[])BeanUtils.addElement(newStructureMappings,fm);
 				if (getGeometry().getDimension()==0){
-					fm.setSubVolume((CompartmentSubVolume)getGeometry().getGeometrySpec().getSubVolumes()[0]);
+					fm.setGeometryClass((CompartmentSubVolume)getGeometry().getGeometrySpec().getSubVolumes()[0]);
 				}
 			}else if (structure instanceof Membrane){
 				MembraneMapping mm = new MembraneMapping((Membrane)structure,fieldSimulationContext);
 				mm.setSimulationContext(fieldSimulationContext);
 				newStructureMappings = (StructureMapping[])BeanUtils.addElement(newStructureMappings,mm);
+				if (getGeometry().getDimension()==0){
+					mm.setGeometryClass((CompartmentSubVolume)getGeometry().getGeometrySpec().getSubVolumes()[0]);
+				}
 			}else{
 				throw new MappingException("unsupported Structure Mapping for structure "+structure.getClass().toString());
 			}
@@ -833,7 +706,113 @@ private void refreshStructureMappings() throws MappingException, PropertyVetoExc
 			throw new MappingException(e.getMessage());
 		}
 	}
+	
+	fixMembraneMappings();
+	if (getGeometry().getDimension() > 0) {
+		for (StructureMapping sm : fieldStructureMappings){
+			StructureMapping[] sms = getStructureMappings(sm.getGeometryClass());
+			StructureMappingParameter unitSizeParameter = sm.getUnitSizeParameter();
+			if (unitSizeParameter == null) {
+				continue;
+			}
+			Expression exp = unitSizeParameter.getExpression();
+			
+			if (sm instanceof MembraneMapping) {
+				// Membrane mapped to surface or subdomain, default to 1.0
+				if (exp == null) {
+					try {
+						unitSizeParameter.setExpression(new Expression(1.0));
+					} catch (ExpressionBindingException e) {
+						e.printStackTrace();
+					}
+				}
+			} else if (sm instanceof FeatureMapping) {
+				// Feature mapped to subdomain
+				if (sm.getGeometryClass() instanceof SubVolume) {
+					if (sms != null && sms.length == 1) {
+						try {
+							unitSizeParameter.setExpression(new Expression(1.0));
+						} catch (ExpressionBindingException e) {
+							e.printStackTrace();
+						}
+					}
+				} else {
+					// Feature mapped to Surface, no default
+				}
+			}
+		}
+	}
 }
+
+private void fixMembraneMappings() throws PropertyVetoException {
+	for (int j=0;j<fieldStructureMappings.length;j++){
+		if (fieldStructureMappings[j] instanceof MembraneMapping){
+			MembraneMapping membraneMapping = (MembraneMapping)fieldStructureMappings[j];
+			Membrane membrane = membraneMapping.getMembrane();
+			Feature insideFeature = membrane.getInsideFeature();
+			Feature outsideFeature = membrane.getOutsideFeature();
+			if (insideFeature!=null && outsideFeature!=null){
+				FeatureMapping insideFM = (FeatureMapping)getStructureMapping(membrane.getInsideFeature());
+				FeatureMapping outsideFM = (FeatureMapping)getStructureMapping(membrane.getOutsideFeature());
+				GeometryClass insideGeometryClass = insideFM.getGeometryClass();
+				GeometryClass outsideGeometryClass = outsideFM.getGeometryClass();
+				
+				//
+				// try to map membrane to subdomain automatically if both inside/outside features also mapped
+				//
+				if (insideFM!=null && insideGeometryClass!=null && outsideFM!=null && outsideGeometryClass!=null){
+					// inside/outside both mapped to same domain ... membrane must be there too.
+					if (insideGeometryClass==outsideGeometryClass){
+						membraneMapping.setGeometryClass(insideGeometryClass);
+
+					// inside/outside mapped to different subvolumes (try to map membrane to adjacent surfaceClass)
+					}else if (insideGeometryClass instanceof SubVolume && outsideGeometryClass instanceof SubVolume){
+						GeometryClass[] geometryClasses = getGeometry().getGeometryClasses();
+						boolean bFound = false;
+						for (int i = 0; i < geometryClasses.length; i++) {
+							if (geometryClasses[i] instanceof SurfaceClass){
+								SurfaceClass surfaceClass = (SurfaceClass)geometryClasses[i];
+								if ((surfaceClass.getSubvolume1()==insideGeometryClass && surfaceClass.getSubvolume2() == outsideGeometryClass) ||
+									(surfaceClass.getSubvolume2()==insideGeometryClass && surfaceClass.getSubvolume1() == outsideGeometryClass)){
+									membraneMapping.setGeometryClass(surfaceClass);
+									bFound=true;
+								}
+							}
+						}
+						if (!bFound){
+							membraneMapping.setGeometryClass(null);
+						}
+						
+					// inside/outside mapped to different membranes (membrane cannot be mapped ... must be cleared).
+					}else if (insideGeometryClass instanceof SurfaceClass && outsideGeometryClass instanceof SurfaceClass){
+						membraneMapping.setGeometryClass(null);
+						
+					// inside mapped to surface and outside mapped to subvolume (if adjacent, map membrane to surface ... else clear).
+					}else if (insideGeometryClass instanceof SurfaceClass && outsideGeometryClass instanceof SubVolume){
+						SurfaceClass surface = (SurfaceClass)insideGeometryClass;
+						SubVolume subVolume = (SubVolume)outsideGeometryClass;
+						if (surface.getSubvolume1()==subVolume || surface.getSubvolume2()==subVolume){
+							membraneMapping.setGeometryClass(surface);
+						}else{
+							membraneMapping.setGeometryClass(null);
+						}
+					
+					// inside mapped to subvolume and outside mapped to surface (if adjacent, map membrane to surface ... else clear).
+					}else if (insideGeometryClass instanceof SubVolume && outsideGeometryClass instanceof SurfaceClass){
+						SurfaceClass surface = (SurfaceClass)outsideGeometryClass;
+						SubVolume subVolume = (SubVolume)insideGeometryClass;
+						if (surface.getSubvolume1()==subVolume || surface.getSubvolume2()==subVolume){
+							membraneMapping.setGeometryClass(surface);
+						}else{
+							membraneMapping.setGeometryClass(null);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
@@ -848,17 +827,11 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
 }
 /**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
-}
-/**
  * Sets the geometry property (cbit.vcell.geometry.Geometry) value.
  * @param geometry The new value for the property.
  * @see #getGeometry
  */
-public void setGeometry(cbit.vcell.geometry.Geometry geometry) throws MappingException {
+public void setGeometry(Geometry geometry) throws MappingException {
 	
 	Geometry oldValue = fieldGeometry;
 	fieldGeometry = geometry;
@@ -869,15 +842,15 @@ public void setGeometry(cbit.vcell.geometry.Geometry geometry) throws MappingExc
 		e.printStackTrace(System.out);
 		throw new MappingException(e.getMessage());
 	}
-	firePropertyChange("geometry", oldValue, geometry);
+	firePropertyChange(PROPERTY_GEOMETRY, oldValue, geometry);
 }
 /**
  * Sets the model property (cbit.vcell.model.Model) value.
  * @param model The new value for the property.
  * @see #getModel
  */
-public void setModel(cbit.vcell.model.Model model) throws MappingException {
-	cbit.vcell.model.Model oldValue = fieldModel;
+public void setModel(Model model) throws MappingException {
+	Model oldValue = fieldModel;
 	fieldModel = model;
 	try {
 		refreshStructureMappings();
@@ -894,60 +867,21 @@ public void setModel(cbit.vcell.model.Model model) throws MappingException {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getStructureMappings
  */
-public void setStructureMappings(cbit.vcell.mapping.StructureMapping[] structureMappings) throws java.beans.PropertyVetoException {
-	cbit.vcell.mapping.StructureMapping[] oldValue = fieldStructureMappings;
+public void setStructureMappings(StructureMapping[] structureMappings) throws java.beans.PropertyVetoException {
+	StructureMapping[] oldValue = fieldStructureMappings;
 	if (oldValue!=null){
 		for (int i = 0; i < oldValue.length; i++){
 			oldValue[i].removePropertyChangeListener(this);
 		}
 	}
-	fireVetoableChange("structureMappings", oldValue, structureMappings);
+	fireVetoableChange(PROPERTY_STRUCTURE_MAPPINGS, oldValue, structureMappings);
 	fieldStructureMappings = structureMappings;
 	if (fieldStructureMappings!=null){
 		for (int i = 0; i < fieldStructureMappings.length; i++){
 			fieldStructureMappings[i].addPropertyChangeListener(this);
 		}
 	}
-	firePropertyChange("structureMappings", oldValue, structureMappings);
+	firePropertyChange(PROPERTY_STRUCTURE_MAPPINGS, oldValue, structureMappings);
 }
-/**
- * This method was created in VisualAge.
- */
-private void unmapBadMappings() throws PropertyVetoException {
-	//
-	// kill mapping of any distributed children of feature
-	//
-	StructureMapping newStructureMappings[] = fieldStructureMappings;
-	for (int j=0;j<newStructureMappings.length;j++){
-		StructureMapping sm = newStructureMappings[j];
-		if (sm instanceof FeatureMapping){
-			FeatureMapping fm = (FeatureMapping)sm;
-			Feature f = (Feature)fm.getStructure();
-			if (!fm.getResolved()){
-				SubVolume subVolume = fm.getSubVolume();
-				if (subVolume==null){
-					continue;
-				}
-				//
-				// make sure parent feature is either distributed in the same 
-				//
-				Feature fParent = (f.getMembrane()!=null)?f.getMembrane().getOutsideFeature():null;
-				if (fParent==null){
-					if (getGeometry().getDimension()>0){
-						fm.setSubVolume(null);
-						fm.setResolved(false);
-						unmapBadMappings();
-					}
-				}else{
-					FeatureMapping fmParent = (FeatureMapping)getStructureMapping(fParent);
-					if (fmParent.getSubVolume()!=subVolume){
-						fm.setSubVolume(null);
-						fm.setResolved(false);
-						unmapBadMappings();
-					}
-				}
-			}
-		}
-	}
-}
+
 }

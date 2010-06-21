@@ -193,9 +193,8 @@ public static void main(String[] args) {
 						if (!simContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
 							Structure structure = simContext.getModel().getStructures(0);
 							double structureSize = 1.0;
-							StructureSizeSolver ssEvaluator = new StructureSizeSolver();
 							StructureMapping structMapping = simContext.getGeometryContext().getStructureMapping(structure); 
-							ssEvaluator.updateAbsoluteStructureSizes(simContext, structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());
+							StructureSizeSolver.updateAbsoluteStructureSizes(simContext, structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());
 						}
 						
 //						String sbmlString = XmlHelper.exportSBML(bioModel, 2, 1, simContext.getName());

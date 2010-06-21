@@ -1334,7 +1334,12 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case ATAN2: {
 		if (jjtGetNumChildren()!=2) throw new Error("atan2() expects 2 arguments");
-		result = Math.atan2(jjtGetChild(0).evaluateConstant(),jjtGetChild(1).evaluateConstant());
+		double arg1 = jjtGetChild(0).evaluateConstant();
+		double arg2 = jjtGetChild(1).evaluateConstant();
+		if (arg1 == 0 && arg2 == 0) {
+			throw new FunctionDomainException("atan2(u, v) where u=0 and v=0 is undefined, expression='"+infixString(LANGUAGE_DEFAULT)+"'");
+		}
+		result = Math.atan2(arg1,arg2);
 		break;
 	}
 	case MAX: {
@@ -1916,7 +1921,12 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	}
 	case ATAN2: {
 		if (jjtGetNumChildren()!=2) throw new Error("atan2() expects 2 arguments");
-		result = Math.atan2(jjtGetChild(0).evaluateVector(values),jjtGetChild(1).evaluateVector(values));
+		double arg1 = jjtGetChild(0).evaluateVector(values);
+		double arg2 = jjtGetChild(1).evaluateVector(values);
+		if (arg1 == 0 && arg2 == 0) {
+			throw new FunctionDomainException("atan2(u, v) where u=0 and v=0 is undefined, expression='"+infixString(LANGUAGE_DEFAULT)+"'");
+		}
+		result = Math.atan2(arg1, arg2);
 		break;
 	}
 	case MAX: {

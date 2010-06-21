@@ -3,50 +3,25 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumn;
-
-import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.Expression;
 
-import com.ibm.icu.util.StringTokenizer;
-import com.lowagie.text.Font;
 /**
  * This type was created in VisualAge.
  */
-public class StructureMappingPanel extends javax.swing.JPanel implements PropertyChangeListener {
-	private Geometry ivjGeometry = null;
+public class StructureMappingPanel extends javax.swing.JPanel {
+	private static final String PROPERTY_GEOMETRY_CONTEXT = "geometryContext";
 	private GeometryContext ivjgeometryContext1 = null;  
 	private GeometryContext fieldGeometryContext = null;  
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
@@ -56,151 +31,24 @@ public class StructureMappingPanel extends javax.swing.JPanel implements Propert
 	private StructureMappingTableModel ivjStructureMappingTableModel1 = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP3Aligning = false;
-	private JComboBox subdomainComboBoxCellEditor = null;
-	private JLabel volumeSurfaceCalculatorLabel = null; 
-	private JPanel volumeSurfaceCalculatorPanel = null;
-	private JComboBox shapeComboBox = null;
-	private JLabel attrLabel = null;
-	private JTextField attrTextField = null;
-	private JButton calculateButton = null;
-	private JTextField volumeTextField = null;
-	private JTextField surfaceTextField = null;
-	private JLabel volumeFormulaLabel = null;
-	private JLabel surfaceFormulaLabel = null;
-	
-	private static final String SHAPE_SPHERE = "Sphere";
-	private static final String SHAPE_HEMISPHERE = "Hemisphere";
-	private static final String SHAPE_CYLINDER = "Cylinder";
-	private static final String SHAPE_CONE = "Cone";
-	private static final String SHAPE_CUBE = "Cube";
-	private static final String SHAPE_BOX = "Box";
+	private VolumeSurfaceCalculatorPanel volumeSurfaceCalculatorPanel = null;
 
-class IvjEventHandler implements java.awt.event.FocusListener, java.beans.PropertyChangeListener, MouseListener, ActionListener, ItemListener {		
+class IvjEventHandler implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {		
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
 			if (e.getSource() == StructureMappingPanel.this.getComponent1()) 
 				connEtoC2(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == StructureMappingPanel.this && (evt.getPropertyName().equals("geometryContext"))) 
+			if (evt.getSource() == StructureMappingPanel.this && (evt.getPropertyName().equals(PROPERTY_GEOMETRY_CONTEXT))) 
 				connPtoP3SetTarget();
-			if (evt.getSource() == StructureMappingPanel.this.getgeometryContext1() && (evt.getPropertyName().equals("geometry"))) 
-				connEtoM3(evt);
+			if (evt.getSource() == StructureMappingPanel.this.getgeometryContext1() && (evt.getPropertyName().equals(GeometryContext.PROPERTY_GEOMETRY))) {
+				getVolumeSurfaceCalculatorPanel().setVisible(getGeometryContext().getGeometry().getDimension() == 0);
+			}
 			if (evt.getSource() == StructureMappingPanel.this.getScrollPaneTable1() && (evt.getPropertyName().equals("cellEditor"))) 
 				connEtoM7(evt);
-			if (evt.getSource() == StructureMappingPanel.this && (evt.getPropertyName().equals("geometryContext"))) 
-				connEtoC3(evt);
 		}
-		public void mouseClicked(MouseEvent e) {
-			if (e.getSource() == getVolumeSurfaceCalculatorLabel()) {
-				if (getVolumeSurfaceCalculatorPanel().isVisible()) {
-					getVolumeSurfaceCalculatorLabel().setText("<html><font color=blue><u>Volume and Surface Calculator &gt;&gt;</u></font></html>");
-					getVolumeSurfaceCalculatorPanel().setVisible(false);
-				} else {
-					getVolumeSurfaceCalculatorLabel().setText("<html><font color=blue><u>Volume and Surface Calculator &lt;&lt;</u></font></html>");
-					getVolumeSurfaceCalculatorPanel().setVisible(true);
-					shapeComboBox.setSelectedIndex(0);
-				}
-			}
-		}
-		public void mouseEntered(MouseEvent e) {
-		}
-		public void mouseExited(MouseEvent e) {
-		}
-		public void mousePressed(MouseEvent e) {
-		}
-		public void mouseReleased(MouseEvent e) {
-		}
-		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == calculateButton) {
-				Object selectedItem = shapeComboBox.getSelectedItem();
-				String rtext = attrTextField.getText();
-				volumeTextField.setFont(volumeTextField.getFont().deriveFont(Font.NORMAL));
-				surfaceTextField.setFont(volumeTextField.getFont().deriveFont(Font.NORMAL));				
-				double v = 0, s = 0;
-				try {
-					if (selectedItem.equals(SHAPE_SPHERE)) {
-						double r = Double.parseDouble(rtext);
-						v = 4.0 * Math.PI * r * r * r / 3.0;
-						s = 4.0 * Math.PI * r * r;
-					} else if (selectedItem.equals(SHAPE_HEMISPHERE)) {
-						double r = Double.parseDouble(rtext);
-						v = 2.0 * Math.PI * r * r * r / 3.0;
-						s = 3.0 * Math.PI * r * r;
-					} else if (selectedItem.equals(SHAPE_CYLINDER)) {
-						StringTokenizer st = new StringTokenizer(rtext," ,;");
-						double r = Double.parseDouble(st.nextToken());
-						double h = Double.parseDouble(st.nextToken());
-						v = Math.PI * r * r * h;
-						s = 2 * Math.PI * r * (r + h);
-					} else if (selectedItem.equals(SHAPE_CONE)) {
-						StringTokenizer st = new StringTokenizer(rtext," ,;");
-						double r = Double.parseDouble(st.nextToken());
-						double h = Double.parseDouble(st.nextToken());
-						v = Math.PI * r * r * h / 3.0;
-						s = Math.PI * r * (r + Math.sqrt(r * r + h * h));
-					} else if (selectedItem.equals(SHAPE_CUBE)) {
-						double a = Double.parseDouble(rtext);
-						v = a * a * a;
-						s = 6 * a * a;
-					} else if (selectedItem.equals(SHAPE_BOX)) {
-						StringTokenizer st = new StringTokenizer(rtext," ,;");
-						double l = Double.parseDouble(st.nextToken());
-						double w = Double.parseDouble(st.nextToken());
-						double h = Double.parseDouble(st.nextToken());
-						v = l * w * h;
-						s = 2 * (l * w + l * h + w * h);
-					}
-				} catch (Exception ex) {
-					DialogUtils.showErrorDialog(StructureMappingPanel.this, "Wrong input for selected shape " + selectedItem + "!", ex);
-				}
-				volumeTextField.setText(v + "");
-				surfaceTextField.setText(s + "");
-			}
-			
-		}
-		public void itemStateChanged(ItemEvent e) {
-			if (e.getStateChange() != ItemEvent.SELECTED || shapeComboBox.getSelectedIndex() < 0) {
-				return;
-			}
-			if (e.getSource() == shapeComboBox) {
-				volumeTextField.setText(null);
-				surfaceTextField.setText(null);
-				attrTextField.setText(null);
-				volumeTextField.setFont(volumeTextField.getFont().deriveFont(Font.ITALIC));
-				surfaceTextField.setFont(volumeTextField.getFont().deriveFont(Font.ITALIC));
-				Object selectedItem = shapeComboBox.getSelectedItem();
-				String piStr = "<font face=Symbol>&pi;</font>";
-				if (selectedItem.equals(SHAPE_SPHERE)) {
-					attrLabel.setText("r ");
-					volumeFormulaLabel.setText("<html><i>4 " + piStr + " r <sup>3</sup> / 3</i></html>");//4 " + multChar + " " + piChar + " " + multChar + " r " + multChar + " r " + multChar + " r / 3");
-					surfaceFormulaLabel.setText("<html><i>4 " + piStr + " r <sup>2</sup></i></html");//4 " + multChar + " " + piChar + " " + multChar + " r " + multChar + " r");
-				} else if (selectedItem.equals(SHAPE_HEMISPHERE)) {
-					attrLabel.setText("r ");
-					volumeFormulaLabel.setText("<html><i>2 " + piStr + " r <sup>3</sup> / 3</i></html>");//4 " + multChar + " " + piChar + " " + multChar + " r " + multChar + " r " + multChar + " r / 3");
-					surfaceFormulaLabel.setText("<html><i>3 " + piStr + " r <sup>2</sup></i></html");//4 " + multChar + " " + piChar + " " + multChar + " r " + multChar + " r");
-				} else if (selectedItem.equals(SHAPE_CYLINDER)) {
-					attrLabel.setText("r, h ");
-					volumeFormulaLabel.setText("<html><i>" + piStr + " r <sup>2</sup> h</i></html>");//piChar + " " + multChar + " r " + multChar + " r " + multChar + " h");
-					surfaceFormulaLabel.setText("<html><i>2 " + piStr + " r <sup>2</sup> + 2 " + piStr + " r h</i></html>");//"2 " + multChar + " " + piChar + " " + multChar + " r " + multChar + " r + 2 " + multChar + " " + piChar + " " + multChar + " r " + multChar + " h");
-				} else if (selectedItem.equals(SHAPE_CONE)) {
-					attrLabel.setText("r, h ");
-					volumeFormulaLabel.setText("<html><i>" + piStr +" r <sup>2</sup> h / 3<i></html>");//piChar + " " + multChar + " r " + multChar + " r " + multChar + " h / 3");
-					surfaceFormulaLabel.setText("<html><table cellspacing=0 cellpadding=0 border=0>" +
-							"<tr><td>&nbsp;</td><td>_________</td>" +
-							"</tr><tr><td><i>" + piStr + " r <sup>2</sup> + " + piStr +" r</i>&nbsp;&radic;</td><td><i>&nbsp;r <sup>2</sup> + h <sup>2</sup></i></td></tr></table></html>");//piChar + " " + multChar + " r " + multChar + " r + " + piChar + " " + multChar + " r " + multChar + " sqrt ( r " + multChar + " r + h " + multChar + " h )");
-				} else if (selectedItem.equals(SHAPE_CUBE)) {
-					attrLabel.setText("a ");
-					volumeFormulaLabel.setText("<html><i> a <sup>3</sup> <i></html>");//piChar + " " + multChar + " r " + multChar + " r " + multChar + " h / 3");
-					surfaceFormulaLabel.setText("<html><i>6 a <sup>2</sup></i></html>");//piChar + " " + multChar + " r " + multChar + " r + " + piChar + " " + multChar + " r " + multChar + " sqrt ( r " + multChar + " r + h " + multChar + " h )");
-				} else if (selectedItem.equals(SHAPE_BOX)) {
-					attrLabel.setText("l, w, h ");
-					volumeFormulaLabel.setText("<html><i>l w h</i></html>");
-					surfaceFormulaLabel.setText("<html><i>2 * ( l w + l h + w h )</i></html>");
-				}
-			} 			
-		};
-	};
+	}
 
 /**
  * Constructor
@@ -221,26 +69,6 @@ private void component1_FocusLost(java.awt.event.FocusEvent focusEvent) {
 	}
 }
 
-
-/**
- * connEtoC1:  (StructureMappingPanel.initialize() --> StructureMappingPanel.structureMappingPanel_Initialize()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.structureMappingPanel_Initialize();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connEtoC2:  (Component1.focus.focusLost(java.awt.event.FocusEvent) --> StructureMappingPanel.component1_FocusLost(Ljava.awt.event.FocusEvent;)V)
  * @param arg1 java.awt.event.FocusEvent
@@ -251,89 +79,6 @@ private void connEtoC2(java.awt.event.FocusEvent arg1) {
 		// user code begin {1}
 		// user code end
 		this.component1_FocusLost(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC3:  (StructureMappingPanel.geometryContext --> StructureMappingPanel.structureMappingPanel_GeometryContext(Lcbit.vcell.mapping.GeometryContext;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.structureMappingPanel_GeometryContext(this.getGeometryContext());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM2:  (geometryContext1.this --> Geometry.this)
- * @param value cbit.vcell.mapping.GeometryContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(GeometryContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getgeometryContext1() != null)) {
-			setGeometry(getgeometryContext1().getGeometry());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM3:  (geometryContext1.geometry --> Geometry.this)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getgeometryContext1() != null)) {
-			setGeometry(getgeometryContext1().getGeometry());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM4:  (geometryContext1.this --> StructureMappingTableModel1.geometryContext)
- * @param value cbit.vcell.mapping.GeometryContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM4(GeometryContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getStructureMappingTableModel1().setGeometryContext(getgeometryContext1());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -507,8 +252,6 @@ private javax.swing.JScrollPane getJScrollPane1() {
 		try {
 			ivjJScrollPane1 = new javax.swing.JScrollPane();
 			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			getJScrollPane1().setViewportView(getScrollPaneTable1());
 			// user code begin {1}
 			// user code end
@@ -531,8 +274,8 @@ private JTable getScrollPaneTable1() {
 		try {
 			ivjScrollPaneTable1 = new JTable();
 			ivjScrollPaneTable1.setName("ScrollPaneTable1");
+//			ivjScrollPaneTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable1.getTableHeader());
-			ivjScrollPaneTable1.setBounds(0, 0, 450, 400);
 			ivjScrollPaneTable1.setRowHeight(ivjScrollPaneTable1.getRowHeight() + 2);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -541,147 +284,13 @@ private JTable getScrollPaneTable1() {
 	return ivjScrollPaneTable1;
 }
 
-private JLabel getVolumeSurfaceCalculatorLabel() {
-	if (volumeSurfaceCalculatorLabel == null) {
-		try {
-			volumeSurfaceCalculatorLabel = new JLabel("<html><font color=blue><u>Volume and Surface Calculator &gt;&gt;</u></font></html>");
-			volumeSurfaceCalculatorLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return volumeSurfaceCalculatorLabel;
-}
 
-private JPanel getVolumeSurfaceCalculatorPanel() {
+
+private VolumeSurfaceCalculatorPanel getVolumeSurfaceCalculatorPanel() {
 	if (volumeSurfaceCalculatorPanel == null) {
 		try {
-			volumeSurfaceCalculatorPanel = new JPanel();
-			volumeSurfaceCalculatorPanel.setBorder(getJScrollPane1().getBorder());			
-			volumeSurfaceCalculatorPanel.setLayout(new GridBagLayout());
-			
-			int gridy = 0;			
-			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 0; 
-			gbc.gridy = gridy;
-			gbc.anchor = GridBagConstraints.LINE_END;
-			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-			volumeSurfaceCalculatorPanel.add(new JLabel("Shape"), gbc);
-			
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 1; 
-			gbc.gridy = gridy;
-			gbc.weightx = 0.5;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-			shapeComboBox = new JComboBox();
-			DefaultComboBoxModel dcb = new DefaultComboBoxModel();
-			dcb.addElement(SHAPE_SPHERE);
-			dcb.addElement(SHAPE_HEMISPHERE);
-			dcb.addElement(SHAPE_CYLINDER);
-			dcb.addElement(SHAPE_CONE);
-			dcb.addElement(SHAPE_CUBE);
-			dcb.addElement(SHAPE_BOX);
-			shapeComboBox.setModel(dcb);
-			volumeSurfaceCalculatorPanel.add(shapeComboBox, gbc);
-
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 2; 
-			gbc.gridy = gridy;
-			gbc.gridheight = 3;
-			gbc.fill = GridBagConstraints.VERTICAL;
-			JPanel panel = new JPanel();
-			panel.setLayout(new GridBagLayout());
-			GridBagConstraints gbc1 = new GridBagConstraints();
-			gbc1.gridx = 0; 
-			gbc1.gridy = 0;
-			gbc1.weighty = 1.0;
-			calculateButton = new JButton("Go >>");
-			calculateButton.setBorder(BorderFactory.createEmptyBorder(4,4,4,4));
-			panel.add(calculateButton, gbc1);
-			volumeSurfaceCalculatorPanel.add(panel, gbc);
-			
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 3; 
-			gbc.gridy = gridy;
-			gbc.anchor = GridBagConstraints.LINE_END;
-			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-			volumeSurfaceCalculatorPanel.add(new JLabel("Volume"), gbc);
-			
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 4; 
-			gbc.gridy = gridy;
-			gbc.weightx = 0.5;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new java.awt.Insets(4, 4, 0, 4);
-			volumeTextField = new JTextField(20);
-			volumeTextField.setEditable(false);
-			volumeTextField.setBackground(Color.WHITE);
-			volumeSurfaceCalculatorPanel.add(volumeTextField, gbc);
-
-			//
-			gridy ++;
-			volumeFormulaLabel = new JLabel();
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 4; 
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0; 
-			gbc.anchor = GridBagConstraints.PAGE_START;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
-			volumeSurfaceCalculatorPanel.add(volumeFormulaLabel, gbc);
-			
-			//
-			gridy ++;
-			attrLabel = new JLabel("r ");
-			java.awt.Font font = attrLabel.getFont();
-			attrLabel.setFont(font.deriveFont(Font.ITALIC + Font.BOLD));
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 0; gbc.gridy = gridy;
-			gbc.anchor = GridBagConstraints.LINE_END;
-			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-			volumeSurfaceCalculatorPanel.add(attrLabel, gbc);
-			
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 1; 
-			gbc.gridy = gridy;
-			gbc.weightx = 0.5;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-			attrTextField = new JTextField(20);
-			volumeSurfaceCalculatorPanel.add(attrTextField, gbc);
-			
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 3; 
-			gbc.gridy = gridy;
-			gbc.anchor = GridBagConstraints.LINE_END;
-			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-			volumeSurfaceCalculatorPanel.add(new JLabel("Surface"), gbc);
-			
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 4; 
-			gbc.gridy = gridy;
-			gbc.weightx = 0.5;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new java.awt.Insets(4, 4, 0, 4);
-			surfaceTextField = new JTextField(20);
-			surfaceTextField.setEditable(false);
-			surfaceTextField.setBackground(Color.WHITE);
-			volumeSurfaceCalculatorPanel.add(surfaceTextField, gbc);
-			
-			//
-			gridy ++;
-			surfaceFormulaLabel = new JLabel();
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 4; 
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
-			volumeSurfaceCalculatorPanel.add(surfaceFormulaLabel, gbc);
-			
+			volumeSurfaceCalculatorPanel = new VolumeSurfaceCalculatorPanel();
 			volumeSurfaceCalculatorPanel.setVisible(false);
-			shapeComboBox.setSelectedIndex(-1);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -693,16 +302,11 @@ private JPanel getVolumeSurfaceCalculatorPanel() {
  * Return the StructureMappingTableModel1 property value.
  * @return cbit.vcell.mapping.gui.StructureMappingTableModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private StructureMappingTableModel getStructureMappingTableModel1() {
 	if (ivjStructureMappingTableModel1 == null) {
 		try {
 			ivjStructureMappingTableModel1 = new StructureMappingTableModel(getScrollPaneTable1());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -725,17 +329,26 @@ private void handleException(Throwable exception) {
 /**
  * Initializes connections
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable1().addPropertyChangeListener(ivjEventHandler);
 	connPtoP3SetTarget();
 	connPtoP1SetTarget();
-	getVolumeSurfaceCalculatorLabel().addMouseListener(ivjEventHandler);
-	calculateButton.addActionListener(ivjEventHandler);
-	shapeComboBox.addItemListener(ivjEventHandler);
+	
+	getScrollPaneTable1().addPropertyChangeListener(//This listener is to ensure table is formated properly when first initialized
+		new java.beans.PropertyChangeListener(){
+			public void propertyChange(java.beans.PropertyChangeEvent evt){
+				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
+			}
+		}
+	);
+	getStructureMappingTableModel1().addTableModelListener(//This listener formats formats table cells after an edit
+		new javax.swing.event.TableModelListener(){
+			public void tableChanged(javax.swing.event.TableModelEvent e){
+				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
+			}
+		}
+	);
 }
 
 /**
@@ -751,14 +364,6 @@ private void initialize() {
 		gbc.gridx = 0; gbc.gridy = 0;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getVolumeSurfaceCalculatorLabel(), gbc);
-
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = 1;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getVolumeSurfaceCalculatorPanel(), gbc);
 		
@@ -771,7 +376,6 @@ private void initialize() {
 		add(getJScrollPane1(), constraintsJScrollPane1);
 	
  		initConnections();
-		connEtoC1();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -860,57 +464,14 @@ private void setDefaultCellEditor1(javax.swing.DefaultCellEditor newValue) {
 }
 
 /**
- * Set the Geometry to a new value.
- * @param newValue java.lang.Object
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setGeometry(Geometry newValue) {
-	if (ivjGeometry != newValue) {
-		try {
-			ivjGeometry = newValue;			
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-/**
  * Sets the geometryContext property (cbit.vcell.mapping.GeometryContext) value.
  * @param geometryContext The new value for the property.
  * @see #getGeometryContext
  */
 public void setGeometryContext(GeometryContext geometryContext) {
 	GeometryContext oldValue = fieldGeometryContext;
-	if (oldValue != null){
-		oldValue.removePropertyChangeListener(this);
-		StructureMapping oldStructureMappings[] = oldValue.getStructureMappings();
-		for (int i=0;i<oldStructureMappings.length;i++){
-			oldStructureMappings[i].removePropertyChangeListener(this);
-		}
-		SubVolume[] subvols = oldValue.getGeometry().getGeometrySpec().getSubVolumes();
-		for (int i = 0; i < subvols.length; i++) {
-			subvols[i].removePropertyChangeListener(this);
-		}
-	}
 	fieldGeometryContext = geometryContext;
-	if (fieldGeometryContext!=null){
-		fieldGeometryContext.addPropertyChangeListener(this);
-		StructureMapping newStructureMappings[] = fieldGeometryContext.getStructureMappings();
-		for (int i=0;i<newStructureMappings.length;i++){
-			newStructureMappings[i].addPropertyChangeListener(this);
-		}
-		SubVolume[] subvols = fieldGeometryContext.getGeometry().getGeometrySpec().getSubVolumes();
-		for (int i = 0; i < subvols.length; i++) {
-			subvols[i].addPropertyChangeListener(this);
-		}
-	}
-	firePropertyChange("geometryContext", oldValue, geometryContext);
+	firePropertyChange(PROPERTY_GEOMETRY_CONTEXT, oldValue, geometryContext);
 }
 
 
@@ -934,9 +495,9 @@ private void setgeometryContext1(GeometryContext newValue) {
 				ivjgeometryContext1.addPropertyChangeListener(ivjEventHandler);
 			}
 			connPtoP3SetSource();
-			connEtoM2(ivjgeometryContext1);
-			connEtoM4(ivjgeometryContext1);
-			firePropertyChange("geometryContext", oldValue, newValue);
+			getVolumeSurfaceCalculatorPanel().setVisible(ivjgeometryContext1.getGeometry().getDimension() == 0);
+			getStructureMappingTableModel1().setGeometryContext(ivjgeometryContext1);
+			firePropertyChange(PROPERTY_GEOMETRY_CONTEXT, oldValue, newValue);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -947,216 +508,6 @@ private void setgeometryContext1(GeometryContext newValue) {
 	};
 	// user code begin {3}
 	// user code end
-}
-
-/**
- * Comment
- */
-private void structureMappingPanel_GeometryContext(GeometryContext arg1) {
-	if(arg1 != null)
-	{
-		getVolumeSurfaceCalculatorLabel().setVisible(getGeometryContext().getGeometry().getDimension() == 0);		
-		
-		//refresh table
-		getScrollPaneTable1().createDefaultColumnsFromModel();
-		updateSubdomainComboBox();
-		
-		//set column editor
-		JComboBox combo=new JComboBox(new String[]{"Flux","Value"});
-		for(int i=StructureMappingTableModel.COLUMN_X_MINUS; i<=StructureMappingTableModel.COLUMN_Z_PLUS; i++)
-		{
-			TableColumn column=getScrollPaneTable1().getColumnModel().getColumn(i);
-			column.setCellEditor(new DefaultCellEditor(combo));
-		}
-		//set column renderer
-		DefaultTableCellRenderer cellRenderer = new StructureMappingTableRenderer();
-		for(int i=0; i<getScrollPaneTable1().getModel().getColumnCount(); i++)
-		{
-			TableColumn column=getScrollPaneTable1().getColumnModel().getColumn(i);
-			column.setCellRenderer(cellRenderer);			
-		}
-		if(arg1.getGeometry().getDimension() == 0) //non-spatial
-		{
-			javax.swing.table.TableColumnModel tcm = getScrollPaneTable1().getColumnModel();
-			//Subdomain and resolved are not needed for compartmental models.
-			for(int i=StructureMappingTableModel.COLUMN_SUBDOMAIN; i<=StructureMappingTableModel.COLUMN_RESOLVED; i++)
-			{
-				javax.swing.table.TableColumn col = tcm.getColumn(i);
-				col.setMinWidth(0);
-				col.setMaxWidth(0);
-				col.setPreferredWidth(0);
-			}
-			if(arg1.getSimulationContext().isStoch())//stoch
-			{
-				for(int i=StructureMappingTableModel.COLUMN_SURFVOL; i<=StructureMappingTableModel.COLUMN_VOLFRACT; i++)
-				{
-					javax.swing.table.TableColumn col = tcm.getColumn(i);
-					col.setMinWidth(0);
-					col.setMaxWidth(0);
-					col.setPreferredWidth(0);
-				}
-			}
-			else //ode
-			{
-				//need to consider different situation for ODE applications.
-				//1. brand new ode applications.
-				//for a newly created application (or somehow the sizes are input in half way),
-				//then the volFrac and surf/vol ratio are specified null. we show the size columns only. 
-				//2. ode applications with all the sizes specified.
-				// Whatever old or new applications, if sizes are all specified, we don't show volFrac and Surf/vol.
-				if((arg1.isAllVolFracAndSurfVolSpecifiedNull())||arg1.isAllSizeSpecifiedPositive())
-				{
-					for(int i=StructureMappingTableModel.COLUMN_SURFVOL; i<=StructureMappingTableModel.COLUMN_VOLFRACT; i++)
-					{
-						javax.swing.table.TableColumn col = tcm.getColumn(i);
-						col.setMinWidth(0);
-						col.setMaxWidth(0);
-						col.setPreferredWidth(0);
-					}
-				}
-				//3. old ode applications.
-				//volFrac and surf/vol ratio are specified but sizes are not all specified.
-				//we show volFrac and suf/vol ratio and sizes.
-				
-			}
-			//Boundary conditions are not needed for compartmental models.
-			for(int i=StructureMappingTableModel.COLUMN_X_MINUS; i<=StructureMappingTableModel.COLUMN_Z_PLUS; i++)
-			{
-				javax.swing.table.TableColumn col = tcm.getColumn(i);
-				col.setMinWidth(0);
-				col.setMaxWidth(0);
-				col.setPreferredWidth(0);
-			}
-		}
-		else //spatial
-		{
-			javax.swing.table.TableColumnModel tcm = getScrollPaneTable1().getColumnModel();
-			javax.swing.table.TableColumn col = tcm.getColumn(StructureMappingTableModel.COLUMN_RESOLVED);
-			col.setMinWidth(0);
-			col.setMaxWidth(0);
-			col.setPreferredWidth(0);
-			if(getGeometryContext().isAllFeatureResolved()) //if all resolved, we don't need surf/vol and volFrac
-			{
-				for(int i=StructureMappingTableModel.COLUMN_SURFVOL; i<=StructureMappingTableModel.COLUMN_VOLFRACT; i++)
-				{
-					col = tcm.getColumn(i);
-					col.setMinWidth(0);
-					col.setMaxWidth(0);
-					col.setPreferredWidth(0);
-				}
-			}
-			for(int i=StructureMappingTableModel.COLUMN_VOLUME; i<=StructureMappingTableModel.COLUMN_SURFACE; i++)//volume and membrane sizes are not needed for spatial models
-			{
-				col = tcm.getColumn(i);
-				col.setMinWidth(0);
-				col.setMaxWidth(0);
-				col.setPreferredWidth(0);
-			}
-			if(arg1.getGeometry().getDimension() == 1) ////1D,we don't need y-,y+
-			{
-				for(int i=StructureMappingTableModel.COLUMN_Y_MINUS; i<=StructureMappingTableModel.COLUMN_Y_PLUS; i++)
-				{
-					col = tcm.getColumn(i);
-					col.setMinWidth(0);
-					col.setMaxWidth(0);
-					col.setPreferredWidth(0);
-				}
-			}
-			if(arg1.getGeometry().getDimension() == 1 || arg1.getGeometry().getDimension() == 2) //1D & 2D,we don't need z-,z+
-			{
-				for(int i=StructureMappingTableModel.COLUMN_Z_MINUS; i<=StructureMappingTableModel.COLUMN_Z_PLUS; i++)
-				{
-					col = tcm.getColumn(i);
-					col.setMinWidth(0);
-					col.setMaxWidth(0);
-					col.setPreferredWidth(0);
-				}
-			}
-		}
-	}
-	return;
-}
-
-
-private void updateSubdomainComboBox() {
-	SubVolume[] subvolumes = getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
-	DefaultComboBoxModel aModel = new DefaultComboBoxModel();
-	for (SubVolume sv : subvolumes) {
-		aModel.addElement(sv.getName());
-	}
-	subdomainComboBoxCellEditor = new JComboBox(); 
-	subdomainComboBoxCellEditor.setModel(aModel);
-	getScrollPaneTable1().getColumnModel().getColumn(StructureMappingTableModel.COLUMN_SUBDOMAIN).setCellEditor(new DefaultCellEditor(subdomainComboBoxCellEditor));
-}
-
-
-/**
- * Comment
- */
-private void structureMappingPanel_Initialize() {
-	getScrollPaneTable1().addPropertyChangeListener(//This listener is to ensure table is formated properly when first initialized
-		new java.beans.PropertyChangeListener(){
-			public void propertyChange(java.beans.PropertyChangeEvent evt){
-				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
-			}
-		}
-	);
-	getStructureMappingTableModel1().addTableModelListener(//This listener formats formats table cells after an edit
-		new javax.swing.event.TableModelListener(){
-			public void tableChanged(javax.swing.event.TableModelEvent e){
-				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
-			}
-		}
-	);
-
-}
-
-public void propertyChange(PropertyChangeEvent arg0) {
-	if(arg0.getSource() instanceof GeometryContext)
-	{
-		if (arg0.getPropertyName().equals("geometry")) {
-			SubVolume[] subvols = ((Geometry)arg0.getOldValue()).getGeometrySpec().getSubVolumes();
-			for (int i = 0; i < subvols.length; i++) {
-				subvols[i].removePropertyChangeListener(this);
-			}
-			subvols = ((Geometry)arg0.getNewValue()).getGeometrySpec().getSubVolumes();
-			for (int i = 0; i < subvols.length; i++) {
-				subvols[i].addPropertyChangeListener(this);
-			}
-		}
-
-		//this for spatial model
-		//when it is just created, all features are not resolved. we need to set volFrac and surf/vol ratio when they are null
-		if(((GeometryContext)arg0.getSource()).getGeometry().getDimension() >0 )
-			updateMembraneMappings(((GeometryContext)arg0.getSource()));
-		structureMappingPanel_GeometryContext(((GeometryContext)arg0.getSource()));
-	} else if((arg0.getSource() instanceof StructureMapping)&& getGeometryContext() != null) {
-	    structureMappingPanel_GeometryContext(getGeometryContext());
-	} else if (arg0.getSource() instanceof SubVolume) {
-		updateSubdomainComboBox();
-	}
-}
-
-//to give default volFrac and surf/vol values for spatial models. otherwise there are null point exceptions in XmlProducer for these two paras.
-//we need to decently fix this later.
-private void updateMembraneMappings(GeometryContext gc)
-{
-	StructureMapping[] sms=gc.getStructureMappings();
-	for(int i=0;i<sms.length;i++)
-	{
-		if(sms[i] instanceof MembraneMapping)
-		{
-			try{
-				if(((MembraneMapping)sms[i]).getSurfaceToVolumeParameter().getExpression() == null)
-					((MembraneMapping)sms[i]).getSurfaceToVolumeParameter().setExpression(new Expression(1.0));
-				if(((MembraneMapping)sms[i]).getVolumeFractionParameter().getExpression() == null)
-					((MembraneMapping)sms[i]).getVolumeFractionParameter().setExpression(new Expression(0.2));
-			}catch(Exception e)
-			{
-				e.printStackTrace(System.err);
-			}
-		}
-	}
 }
 
 }

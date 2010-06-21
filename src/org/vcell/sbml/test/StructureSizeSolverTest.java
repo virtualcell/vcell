@@ -49,8 +49,7 @@ public static void main(java.lang.String[] args) {
 		simContext.getGeometryContext().getStructureMapping(mito).getSizeParameter().setExpression(new Expression(8.0));
 		simContext.getGeometryContext().getStructureMapping(mitoMem).getSizeParameter().setExpression(new Expression(9.0));
 
-		StructureSizeSolver structSizeSolver = new StructureSizeSolver();
-		structSizeSolver.updateRelativeStructureSizes(simContext);
+		StructureSizeSolver.updateRelativeStructureSizes(simContext);
 
 		cbit.vcell.mapping.StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings();
 		for (int i = 0; i < structureMappings.length; i++){
@@ -76,7 +75,7 @@ public static void main(java.lang.String[] args) {
 		}
 
 
-		structSizeSolver.updateAbsoluteStructureSizes(simContext,ec,1.0,cbit.vcell.units.VCUnitDefinition.UNIT_um3);
+		StructureSizeSolver.updateAbsoluteStructureSizes(simContext,ec,1.0,cbit.vcell.units.VCUnitDefinition.UNIT_um3);
 		System.out.println("\n\nsolution:\n");
 		for (int i = 0; i < structureMappings.length; i++){
 			System.out.println("\""+structureMappings[i].getStructure().getName()+"\" size = "+ 

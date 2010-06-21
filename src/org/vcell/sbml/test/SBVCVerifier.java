@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.util.Calendar;
 
 import org.vcell.sbml.SBMLUtils;
+import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.BioModelInfo;
@@ -286,9 +287,8 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				// invoke the structureSizeEvaluator to compute and set the sizes of the remaining structures.
 				Structure structure = simContexts[k].getModel().getStructures(0);
 				double structureSize = 1.0;
-				org.vcell.sbml.vcell.StructureSizeSolver ssEvaluator = new org.vcell.sbml.vcell.StructureSizeSolver();
 				StructureMapping structMapping = simContexts[k].getGeometryContext().getStructureMapping(structure); 
-				ssEvaluator.updateAbsoluteStructureSizes(simContexts[k], structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());
+				StructureSizeSolver.updateAbsoluteStructureSizes(simContexts[k], structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());
 
 				// now export to SBML
 				logFilePrintStream.println("User : " + bioModel_1.getVersion().getOwner().getName() + ";\tBiomodel : " + bioModel_1.getName() + ";\tDate : " + bioModel_1.getVersion().getDate().toString() + ";\tAppln : " + simContexts[k].getName());

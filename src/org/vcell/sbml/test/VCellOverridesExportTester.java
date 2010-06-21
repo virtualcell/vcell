@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Vector;
 
+import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
@@ -217,9 +218,8 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				if (simContexts[k].getGeometryContext().isAllSizeSpecifiedNull() && simContexts[k].getGeometryContext().isAllVolFracAndSurfVolSpecified()) {
 					Structure structure = simContexts[k].getModel().getStructures(0);
 					double structureSize = 1.0;
-					org.vcell.sbml.vcell.StructureSizeSolver ssEvaluator = new org.vcell.sbml.vcell.StructureSizeSolver();
 					StructureMapping structMapping = simContexts[k].getGeometryContext().getStructureMapping(structure); 
-					ssEvaluator.updateAbsoluteStructureSizes(simContexts[k], structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());
+					StructureSizeSolver.updateAbsoluteStructureSizes(simContexts[k], structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());
 				}
 				// Generate math and create a single simulation for the original simContext and for the model that was exported to SBML
 		        // and imported back into the VCell. Use the NativeIDA solver.

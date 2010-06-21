@@ -2371,12 +2371,12 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 				structMapTable.endHeaders();
 			}
 			String structName = structMap[i].getStructure().getName();
-			SubVolume subVol = ((FeatureMapping)structMap[i]).getSubVolume();
+			SubVolume subVol = (SubVolume)((FeatureMapping)structMap[i]).getGeometryClass();
 			String subDomain = "";
 			if (subVol != null) {
 				subDomain = subVol.getName();
 			}
-			boolean isResolved = ((FeatureMapping)structMap[i]).getResolved();
+			boolean isResolved = false; // ((FeatureMapping)structMap[i]).getResolved();
 			String surfVolStr = "", volFractStr = "";
 			MembraneMapping mm = (MembraneMapping)gc.getStructureMapping(structMap[i].getStructure().getParentStructure());
 			if (mm != null) {

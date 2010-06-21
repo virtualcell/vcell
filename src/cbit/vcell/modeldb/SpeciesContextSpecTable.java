@@ -38,10 +38,11 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 	public final Field velocityXExp	= new Field("velocityXExp",	"varchar(1024)",	"");
 	public final Field velocityYExp	= new Field("velocityYExp",	"varchar(1024)",	"");
 	public final Field velocityZExp	= new Field("velocityZExp",	"varchar(1024)",	"");
+	public final Field bSpatial		= new Field("bSpatial",	"integer",	"");
 	
 	private final Field fields[] = {specContextRef,simContextRef,bEnableDif,bForceConst,bForceIndep,initCondExp,diffRateExp,
 											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp,initCondCountExp,
-											velocityXExp, velocityYExp, velocityZExp};
+											velocityXExp, velocityYExp, velocityZExp, bSpatial};
 	
 	public static final SpeciesContextSpecTable table = new SpeciesContextSpecTable();
 /**
@@ -67,7 +68,8 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 	
 	boolean bForceIndependent = false;
 
-	buffer.append((speciesContextSpec.isEnableDiffusing() ? 1 : 0) + ",");
+	boolean bEnableDiffusing = true; // speciesContextSpec.isEnableDiffusing()
+	buffer.append((bEnableDiffusing ? 1 : 0) + ",");
 	buffer.append((speciesContextSpec.isConstant() ? 1 : 0) + ",");
 	buffer.append((bForceIndependent ? 1 : 0) + ",");
 
@@ -132,9 +134,14 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getVelocityYParameter().getExpression().infix()) + "'" + ",");
 	}
 	if (speciesContextSpec.getVelocityZParameter().getExpression() == null){
+		buffer.append(" NULL " + ",");
+	}else{
+		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getVelocityZParameter().getExpression().infix()) + "'" + ",");
+	}
+	if (speciesContextSpec.isSpatial() == null){
 		buffer.append(" NULL " + ")");
 	}else{
-		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getVelocityZParameter().getExpression().infix()) + "'" + ")");
+		buffer.append((speciesContextSpec.isSpatial() ? 1 : 0) + ")");
 	}
 
 	return buffer.toString();

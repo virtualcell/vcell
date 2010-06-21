@@ -333,6 +333,7 @@ public class XMLTags {
     public final static String SpeciesRefAttrTag = "CompoundRef";
     public final static String InsideFeatureTag = "InsideFeature";
     public final static String OutsideFeatureTag = "OutsideFeature";
+    public final static String ParentFeatureTag = "ParentFeature";
     public final static String SpeciesTag = "Compound";
 	//    public final static String FormalNameAttrTag = "FormalName"; 4/21/03; specie name scheme changed
 	public final static String CommonNameAttrTag = "CommonName";
@@ -366,6 +367,7 @@ public class XMLTags {
     public final static String FeatureMappingTag = "FeatureMapping";
     public final static String FeatureAttrTag = "Feature";
     public final static String SubVolumeAttrTag = "SubVolume";
+    public final static String GeometryClassAttrTag = "GeometryClass";
     public final static String ResolvedAttrTag = "Resolved";
     public final static String MembraneMappingTag = "MembraneMapping";
     public final static String MembraneAttrTag = "Membrane";
@@ -373,7 +375,8 @@ public class XMLTags {
     public final static String VolumeFractionTag = "VolumeFraction";
     public final static String SpeciesContextSpecTag = "LocalizedCompoundSpec";
     public final static String ForceConstantAttrTag = "ForceConstant";
-    public final static String EnableDiffusionAttrTag = "EnableDiffusion";
+    // public final static String EnableDiffusionAttrTag = "EnableDiffusion";
+    public final static String SpatialAttrTag = "Spatial";
     public final static String ForceIndependentAttrTag = "ForceIndependent";
     public final static String ReactionSpecTag = "ReactionSpec";
     public final static String ReactionStepRefAttrTag = "ReactionStepRef";

@@ -1526,6 +1526,7 @@ private void setsimulationContext1(SimulationContext newValue) {
 		}
     	
 		JDialog jdialog = new JDialog(JOptionPane.getFrameForComponent(this),true);
+		jdialog.setTitle(getBtnGraphElectricalStimulus().getText());
     	jdialog.addWindowListener(new WindowAdapter() {	
     		@Override
 			public void windowClosing(WindowEvent e) {

@@ -69,6 +69,10 @@ public class VCMODL {
 	public final static String CalculateVoltage				   = "CalculateVoltage";
 	public final static String InitialVoltage				   = "InitialVoltage";
 	public final static String StructureSize				   = "StructureSize";
+	public final static String VolumePerUnitVolume			   = "VolumePerUnitVolume";
+	public final static String VolumePerUnitArea			   = "VolumePerUnitArea";
+	public final static String AreaPerUnitVolume			   = "AreaPerUnitVolume";
+	public final static String AreaPerUnitArea				   = "AreaPerUnitArea";
 	public final static String SpecificCapacitance			   = "SpecificCapacitance";	
 	public final static String Permeability					   = "Permeability";
 	public final static String Conductivity					   = "Conductivity";

@@ -232,6 +232,7 @@ public Object getValueAt(int row, int column) {
 					if(actualExpression == null) {
 						return null;
 					}
+					actualExpression.bindExpression(simSymbolTable);
 					
 					AutoCompleteSymbolFilter symbolTableEntryFilter = new AutoCompleteSymbolFilter() {
 

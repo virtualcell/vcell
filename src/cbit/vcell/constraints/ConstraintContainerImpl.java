@@ -442,4 +442,13 @@ public String toECLiPSe() {
 	}
 	return buffer.toString();
 }
+
+public void show() {
+	for (GeneralConstraint gc : fieldGeneralConstraints) {
+		System.out.println(gc.toString());
+	}
+	for (SimpleBounds sb : fieldSimpleBounds) {
+		System.out.println(sb.toString());
+	}
+}
 }
