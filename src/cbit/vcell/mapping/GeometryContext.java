@@ -163,6 +163,7 @@ public void assignFeature(Feature feature, GeometryClass geometryClass) throws I
 		}
 	}
 	refreshStructureMappings();
+	setDefaultUnitSizes();
 }
 
 
@@ -708,6 +709,9 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 	}
 	
 	fixMembraneMappings();
+}
+
+private void setDefaultUnitSizes() throws PropertyVetoException {
 	if (getGeometry().getDimension() > 0) {
 		for (StructureMapping sm : fieldStructureMappings){
 			StructureMapping[] sms = getStructureMappings(sm.getGeometryClass());
