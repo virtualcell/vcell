@@ -14,8 +14,6 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
-import com.hp.hpl.jena.sparql.util.StrUtils;
-
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.GeometryClass;
@@ -634,9 +632,25 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
  */
 public Expression getFluxCorrectionExpression(MembraneMapping membraneMapping, FeatureMapping featureMapping) throws ExpressionException {
 	if (membraneMapping.getGeometryClass() instanceof CompartmentSubVolume){ // non-spatial
-		Expression exp = Expression.div(new Expression(membraneMapping.getSizeParameter(),simContext.getNameScope()),
+		if (simContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
+			Expression exp = Expression.div(new Expression(membraneMapping.getSizeParameter(),simContext.getNameScope()),
 										new Expression(featureMapping.getSizeParameter(),simContext.getNameScope()));
-		return exp;
+			return exp;
+		} else {
+			//
+			//
+			// use surfaceToVolumeRatio to get from membrane to total inside volume
+			// then divide by 1-Sum(child volume fractions)
+			//
+			//
+			FeatureMapping insideFeatureMapping = (FeatureMapping) simContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getInsideFeature());
+			Expression insideResidualVolFraction = insideFeatureMapping.getResidualVolumeFraction(simContext);
+			Expression exp = new Expression(membraneMapping.getSurfaceToVolumeParameter(), simContext.getNameScope());
+			exp = Expression.mult(exp,Expression.invert(insideResidualVolFraction));
+			exp = exp.flatten();
+	//		exp.bindExpression(simulationContext);
+			return exp;
+		}		
 	}else if (membraneMapping.getGeometryClass() instanceof SubVolume){
 		Expression exp = Expression.div(new Expression(membraneMapping.getAreaPerUnitVolumeParameter(),simContext.getNameScope()),
 										new Expression(featureMapping.getVolumePerUnitVolumeParameter(),simContext.getNameScope()));
@@ -1873,6 +1887,22 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			StructureMappingParameter sizeParm = sm.getSizeParameter();
 			if (sizeParm!=null && sizeParm.getExpression()!=null){
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm.getGeometryClass()),getIdentifierSubstitutions(sizeParm.getExpression(), sizeParm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+			} else {
+				if (sm instanceof MembraneMapping) {
+					MembraneMapping mm = (MembraneMapping)sm;
+					StructureMappingParameter volFrac = mm.getVolumeFractionParameter();
+					if (volFrac!=null && volFrac.getExpression()!=null){
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(volFrac,sm.getGeometryClass()),
+								getIdentifierSubstitutions(volFrac.getExpression(), volFrac.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+					}
+					StructureMappingParameter surfToVol = mm.getSurfaceToVolumeParameter();
+					if (surfToVol!=null && surfToVol.getExpression()!=null){
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(surfToVol,sm.getGeometryClass()),
+								getIdentifierSubstitutions(surfToVol.getExpression(), surfToVol.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+					}
+				}				
 			}
 		}else{
 			Parameter parm = sm.getParameterFromRole(StructureMapping.ROLE_AreaPerUnitArea);

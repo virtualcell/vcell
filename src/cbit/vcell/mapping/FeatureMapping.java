@@ -9,7 +9,9 @@ import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
@@ -98,17 +100,67 @@ public StructureMappingParameter getVolumePerUnitAreaParameter() {
 	return getParameterFromRole(ROLE_VolumePerUnitArea);
 }
 
+public Expression getResidualVolumeFraction(SimulationContext simulationContext) throws ExpressionException {
+	Expression exp = new Expression(1.0);
+	if (simulationContext==null){
+		throw new RuntimeException("FeatureMapping.getResidualVolumeFraction()");
+	}
+	Structure structures[] = simulationContext.getGeometryContext().getModel().getStructures();
+	for (int i=0;i<structures.length;i++){
+		//
+		// for each membrane that is distributed within this feature, subtract that volume fraction
+		// ????? beware, 1 - v1 - v2 ... can result in a negative number if we're not carefull.
+		//
+		Structure struct = structures[i];
+		if (struct instanceof Membrane) {
+			if (((Membrane) struct).getOutsideFeature() == getFeature()) {
+				MembraneMapping mm = (MembraneMapping) simulationContext.getGeometryContext().getStructureMapping(struct);
+				StructureMapping parentStructureMapping = simulationContext.getGeometryContext().getStructureMapping(mm.getStructure().getParentStructure());
+				boolean bResolved = parentStructureMapping.getGeometryClass() != getGeometryClass();
+				if (!bResolved) {
+					exp = Expression.add(exp, Expression.negate(new Expression(mm.getVolumeFractionParameter(), simulationContext.getNameScope())));
+				}
+			}
+		}
+	}
+	return exp;
+}
+
 /**
  * TotalConservationCorrection is the term that takes local units (micro-molar) to either volume normalized micro-molar or area normalized molecules/sq-um
  * @return cbit.vcell.parser.Expression
  */
 Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext) throws ExpressionException {
 	if (getGeometryClass() instanceof CompartmentSubVolume){
-		//
-		// everything mapped to micro-molar : just need size
-		//
-		Expression exp = new Expression(getSizeParameter(),simulationContext.getNameScope());
-		return exp;
+		if (simulationContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
+			//
+			// everything mapped to micro-molar : just need size
+			//
+			Expression exp = new Expression(getSizeParameter(),simulationContext.getNameScope());
+			return exp;
+		} else {
+			if (getFeature().getMembrane()==null) {
+				return getResidualVolumeFraction(simulationContext);
+			} else {
+				//
+				// for all distributed parent volumes (that have membranes), multiply each volume fraction
+				//
+				Membrane membrane = getFeature().getMembrane();
+				Expression exp = getResidualVolumeFraction(simulationContext);
+				while (membrane!=null){
+					MembraneMapping memMapping = (MembraneMapping)simulationContext.getGeometryContext().getStructureMapping(membrane);
+					StructureMapping parentStructureMapping = simulationContext.getGeometryContext().getStructureMapping(memMapping.getStructure().getParentStructure());
+					boolean bResolved = parentStructureMapping.getGeometryClass() != getGeometryClass();
+					if (!bResolved) {
+						exp = Expression.mult(exp,new Expression(memMapping.getVolumeFractionParameter(), simulationContext.getNameScope()));
+					}else{
+						break;
+					}
+					membrane = membrane.getOutsideFeature().getMembrane();
+				}
+				return exp;
+			}	
+		}
 	}else if (getGeometryClass() instanceof SubVolume){
 		//
 		// everything mapped to micro-molar : just need volume fraction
@@ -171,6 +223,5 @@ public StructureMappingParameter getUnitSizeParameter() {
 	}
 	return null;
 }
-
 
 }
