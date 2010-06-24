@@ -584,17 +584,23 @@ private void writeBoundaryConditions(BoundaryConditionType[] bctypes) {
 private String replaceVolumeVariable(MembraneSubDomain msd, Expression exp) throws MathException, ExpressionException {
 	Expression fluxExpr = new Expression(exp);
 	String symbols[] = exp.getSymbols();
+	String flux = null;
 	// size function may be in the expression, they are not variables
-	for (String symbol : symbols) {
-		Variable var = simulationJob.getSimulationSymbolTable().getVariable(symbol);
-		if (var instanceof VolVariable || var instanceof VolumeRegionVariable) {
-			fluxExpr.substituteInPlace(new Expression(var.getName()), new Expression(var.getName() + "_" + var.getDomain().getName() + "_membrane"));
+	if (symbols == null) {
+		flux = exp.infix();
+	} else {
+		for (String symbol : symbols) {
+			Variable var = simulationJob.getSimulationSymbolTable().getVariable(symbol);
+			if (var instanceof VolVariable || var instanceof VolumeRegionVariable) {
+				fluxExpr.substituteInPlace(new Expression(var.getName()), new Expression(var.getName() + "_" + var.getDomain().getName() + "_membrane"));
+			}
 		}
+	
+		// for old models
+		flux = fluxExpr.infix();
+		flux = flux.replaceAll("_INSIDE", "_" + msd.getInsideCompartment().getName() + "_membrane");
+		flux = flux.replaceAll("_OUTSIDE", "_" + msd.getOutsideCompartment().getName() + "_membrane");
 	}
-	// for old models
-	String flux = fluxExpr.infix();
-	flux = flux.replaceAll("_INSIDE", "_" + msd.getInsideCompartment().getName() + "_membrane");
-	flux = flux.replaceAll("_OUTSIDE", "_" + msd.getOutsideCompartment().getName() + "_membrane");
 	return flux;
 	
 }
