@@ -27,6 +27,10 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+
+import loci.formats.gui.AWTImageTools;
+import loci.formats.gui.BufferedImageReader;
+
 import org.jdom.Element;
 import org.jdom.filter.Filter;
 import org.vcell.util.BeanUtils;
@@ -36,7 +40,6 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.Preference;
-import loci.formats.AWTImageTools;
 import cbit.util.xml.JDOMTreeWalker;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.server.UserPreferences;
@@ -223,7 +226,7 @@ public class PSLIDPanel extends JPanel{
 //			for (int i = 0; i < compartmentShorts.length; i++) {
 //				proteinShorts[i] = proteinBytes[i];
 //			}
-			short[] proteinShorts = AWTImageTools.getShorts(proteinFormatReader.openImage(0))[0];
+			short[] proteinShorts = AWTImageTools.getShorts(BufferedImageReader.makeBufferedImageReader(proteinFormatReader).openImage(0))[0];
 
 			int xsize_uncrop = compartmentFormatReader.getSizeX();
 			int ysize_uncrop = compartmentFormatReader.getSizeY();
@@ -649,7 +652,7 @@ public class PSLIDPanel extends JPanel{
 					loci.formats.ImageReader generatedImageReader = new loci.formats.ImageReader();
 					loci.formats.IFormatReader generatedFormatReader = generatedImageReader.getReader(generatedImageFile.getAbsolutePath());
 					generatedFormatReader.setId(generatedImageFile.getAbsolutePath());
-					short[][] generatedChannels = AWTImageTools.getShorts(generatedFormatReader.openImage(0));
+					short[][] generatedChannels = AWTImageTools.getShorts(BufferedImageReader.makeBufferedImageReader(generatedFormatReader).openImage(0));
 					final int PROTEIN_CHANNEL = 1;
 					final int CELL_CHANNEL = 2;
 					final int NUCLEUS_CHANNEL = 0;
