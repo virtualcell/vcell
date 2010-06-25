@@ -882,19 +882,19 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 					PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Selected simulation is still running!");
 					return;
 				}
-				TFGenerateReport.VCDocumentAndSimInfo userDefinedRegrRef = null;
+				SimulationInfo simulationInfo = tCriteria.getRegressionSimInfo();
 				if(e.getActionCommand().equals(TestingFrameworkPanel.COMPARERREGR_USERDEFREF_TESTCRITERIA)){
 					try{
-						userDefinedRegrRef = getUserSelectedSimulationInfo();
+						simulationInfo = getUserSelectedSimulationInfo().getSimInfo();
 					}catch(UserCancelException e2){
 						return;
 					}
 				}
-				if (tCriteria.getRegressionSimInfo() == null) {
+				if (simulationInfo == null) {
 					PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Either the selected simulation does not belong to a REGRESSION test or the regression simInfo is not set!");
 					return;
 				}
-				getTestingFrameworkWindowManager().compare(tCriteria,userDefinedRegrRef.getSimInfo());			
+				getTestingFrameworkWindowManager().compare(tCriteria,simulationInfo);			
 			} else {
 				PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, "Selected Object is not a TestCriteria!");
 			}
