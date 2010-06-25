@@ -536,134 +536,133 @@ public void checkNewTestSuiteInfo(TestSuiteInfoNew newTestSuiteInfo) throws Data
  * @param mathDesc cbit.vcell.math.MathDescription
  * 
  */
-public void compare(TestCriteriaNew testCriteria,SimulationInfo userDefinedRegrSimInfo){
-	
-	// create the merged data for the simulationInfo in testCriteria and the regression simInfo
-	SimulationInfo simInfo = testCriteria.getSimInfo();
-	SimulationInfo regrSimInfo = null;
-	if(userDefinedRegrSimInfo != null){
-		regrSimInfo = userDefinedRegrSimInfo;
-	}else{
-		regrSimInfo = testCriteria.getRegressionSimInfo();
-	}
+public void compare(final TestCriteriaNew testCriteria,final SimulationInfo userDefinedRegrSimInfo){
+	final String KEY_MERGEDDATAINFO	 = "KEY_MERGEDDATAINFO";
+	final String KEY_MERGEDDATASETVIEWERCNTRLR = "KEY_MERGEDDATASETVIEWERCNTRLR";
+	AsynchClientTask gatherDataTask = new AsynchClientTask("Gathering compare Dta...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			// create the merged data for the simulationInfo in testCriteria and the regression simInfo
+			SimulationInfo simInfo = testCriteria.getSimInfo();
+			SimulationInfo regrSimInfo = null;
+			if(userDefinedRegrSimInfo != null){
+				regrSimInfo = userDefinedRegrSimInfo;
+			}else{
+				regrSimInfo = testCriteria.getRegressionSimInfo();
+			}
 
-	if (regrSimInfo == null) {
-		return;
-	}
-	
-	VCDataIdentifier vcSimId1 = new VCSimulationDataIdentifier(simInfo.getAuthoritativeVCSimulationIdentifier(), 0); 
-	VCDataIdentifier vcSimId2 = new VCSimulationDataIdentifier(regrSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
-	User user = simInfo.getOwner();
-	VCDataIdentifier[] vcIdentifierArray = new VCDataIdentifier[] {vcSimId2,vcSimId1};
-	MergedDataInfo mergedDataInfo = new MergedDataInfo(user, vcIdentifierArray, MergedDataInfo.createDefaultPrefixNames(vcIdentifierArray.length));
-
-	// get the data manager and wire it up
-	try {
-
-		//
-		// get all "Data1.XXX" data identifiers ... and remove those which are functions
-		// add functions of the form DIFF_XXX = (Data1.XXX - Data2.XXX) for convenience in comparing results.
-		//
-		Simulation sim1 = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(simInfo);
-		Simulation sim2 = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(regrSimInfo);
-		boolean isSpatial = sim1.isSpatial();
-		if (sim2.isSpatial() != isSpatial) {
-			throw new RuntimeException("Cannot compare spatial and non-spatial data sets : " + simInfo + "& " + regrSimInfo);
-		}
-		DataManager mergedDataManager = getRequestManager().getDataManager(null,mergedDataInfo, isSpatial);
-		DataManager data1Manager = getRequestManager().getDataManager(null,vcSimId1, isSpatial);
-		DataManager data2Manager = getRequestManager().getDataManager(null,vcSimId2, isSpatial);
-		
-		Vector<AnnotatedFunction> functionList = new Vector<AnnotatedFunction>();
-		AnnotatedFunction data1Functions[] = data1Manager.getFunctions();
-		AnnotatedFunction existingFunctions[] = mergedDataManager.getFunctions();
-		DataIdentifier data1Identifiers[] = data1Manager.getDataIdentifiers();
-		DataIdentifier data2Identifiers[] = data2Manager.getDataIdentifiers();
-		for (int i = 0; i < data1Identifiers.length; i++){
+			if (regrSimInfo == null) {
+				return;
+			}
+			
+			VCDataIdentifier vcSimId1 = new VCSimulationDataIdentifier(simInfo.getAuthoritativeVCSimulationIdentifier(), 0); 
+			VCDataIdentifier vcSimId2 = new VCSimulationDataIdentifier(regrSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
+			User user = simInfo.getOwner();
+			VCDataIdentifier[] vcIdentifierArray = new VCDataIdentifier[] {vcSimId2,vcSimId1};
+			MergedDataInfo mergedDataInfo = new MergedDataInfo(user, vcIdentifierArray, MergedDataInfo.createDefaultPrefixNames(vcIdentifierArray.length));
+			hashTable.put(KEY_MERGEDDATAINFO, mergedDataInfo);
+			// get the data manager and wire it up
 			//
-			// make sure dataIdentifier is not already a function
+			// get all "Data1.XXX" data identifiers ... and remove those which are functions
+			// add functions of the form DIFF_XXX = (Data1.XXX - Data2.XXX) for convenience in comparing results.
 			//
-			boolean bIsFunction = false;
-			for (int j = 0; j < data1Functions.length; j++){
-				if (data1Identifiers[i].getName().equals(data1Functions[j].getName())){
-					bIsFunction = true;
+			Simulation sim1 = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(simInfo);
+			Simulation sim2 = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(regrSimInfo);
+			boolean isSpatial = sim1.isSpatial();
+			if (sim2.isSpatial() != isSpatial) {
+				throw new RuntimeException("Cannot compare spatial and non-spatial data sets : " + simInfo + "& " + regrSimInfo);
+			}
+			DataManager mergedDataManager = getRequestManager().getDataManager(null,mergedDataInfo, isSpatial);
+			DataManager data1Manager = getRequestManager().getDataManager(null,vcSimId1, isSpatial);
+			DataManager data2Manager = getRequestManager().getDataManager(null,vcSimId2, isSpatial);
+			
+			Vector<AnnotatedFunction> functionList = new Vector<AnnotatedFunction>();
+			AnnotatedFunction data1Functions[] = data1Manager.getFunctions();
+			AnnotatedFunction existingFunctions[] = mergedDataManager.getFunctions();
+			DataIdentifier data1Identifiers[] = data1Manager.getDataIdentifiers();
+			DataIdentifier data2Identifiers[] = data2Manager.getDataIdentifiers();
+			for (int i = 0; i < data1Identifiers.length; i++){
+				//
+				// make sure dataIdentifier is not already a function
+				//
+				boolean bIsFunction = false;
+				for (int j = 0; j < data1Functions.length; j++){
+					if (data1Identifiers[i].getName().equals(data1Functions[j].getName())){
+						bIsFunction = true;
+					}
 				}
-			}
-			if (bIsFunction){
-				continue;
-			}
-			//
-			// make sure corresponding identifier exists in "Data2"
-			//
-			boolean bIsInData2 = false;
-			for (int j = 0; j < data2Identifiers.length; j++){
-				if (data2Identifiers[j].getName().equals(data1Identifiers[i].getName())){
-					bIsInData2 = true;
+				if (bIsFunction){
+					continue;
 				}
-			}
-			if (!bIsInData2){
-				continue;
-			}
-			
-			//
-			// create "Diff" function
-			//
-			String data1Name = "Data1."+data1Identifiers[i].getName();
-			String data2Name = "Data2."+data1Identifiers[i].getName();
-			String functionName = "DIFF_"+data1Identifiers[i].getName();
-			VariableType varType = data1Identifiers[i].getVariableType();
-			Expression exp = new Expression(data1Name+"-"+data2Name);
-			AnnotatedFunction newFunction = new AnnotatedFunction(functionName,exp,data1Identifiers[i].getDomain(),"",varType,FunctionCategory.OUTPUTFUNCTION);
-			
-			//
-			// make sure new "Diff" function isn't already in existing function list.
-			//
-			boolean bDiffFunctionAlreadyHere = false;
-			for (int j = 0; j < existingFunctions.length; j++){
-				if (newFunction.getName().equals(existingFunctions[j].getName())){
-					bDiffFunctionAlreadyHere = true;
+				//
+				// make sure corresponding identifier exists in "Data2"
+				//
+				boolean bIsInData2 = false;
+				for (int j = 0; j < data2Identifiers.length; j++){
+					if (data2Identifiers[j].getName().equals(data1Identifiers[i].getName())){
+						bIsInData2 = true;
+					}
 				}
-			}
-			if (bDiffFunctionAlreadyHere){
-				continue;
+				if (!bIsInData2){
+					continue;
+				}
+				
+				//
+				// create "Diff" function
+				//
+				String data1Name = "Data1."+data1Identifiers[i].getName();
+				String data2Name = "Data2."+data1Identifiers[i].getName();
+				String functionName = "DIFF_"+data1Identifiers[i].getName();
+				VariableType varType = data1Identifiers[i].getVariableType();
+				Expression exp = new Expression(data1Name+"-"+data2Name);
+				AnnotatedFunction newFunction = new AnnotatedFunction(functionName,exp,data1Identifiers[i].getDomain(),"",varType,FunctionCategory.OUTPUTFUNCTION);
+				
+				//
+				// make sure new "Diff" function isn't already in existing function list.
+				//
+				boolean bDiffFunctionAlreadyHere = false;
+				for (int j = 0; j < existingFunctions.length; j++){
+					if (newFunction.getName().equals(existingFunctions[j].getName())){
+						bDiffFunctionAlreadyHere = true;
+					}
+				}
+				if (bDiffFunctionAlreadyHere){
+					continue;
+				}
+				
+				functionList.add(newFunction);
 			}
 			
-			functionList.add(newFunction);
+			OutputContext outputContext = null;
+			if (functionList.size()>0){
+				AnnotatedFunction[] newDiffFunctions = (AnnotatedFunction[])BeanUtils.getArray(functionList,AnnotatedFunction.class);
+				outputContext = new OutputContext(newDiffFunctions);
+			}
+			MergedDatasetViewerController mergedDatasetViewerCtr = getRequestManager().getMergedDatasetViewerController(outputContext,mergedDataInfo, !isSpatial);
+			hashTable.put(KEY_MERGEDDATASETVIEWERCNTRLR, mergedDatasetViewerCtr);
 		}
-		
-		OutputContext outputContext = null;
-		if (functionList.size()>0){
-			AnnotatedFunction[] newDiffFunctions = (AnnotatedFunction[])BeanUtils.getArray(functionList,AnnotatedFunction.class);
-			outputContext = new OutputContext(newDiffFunctions);
-		}
-
-		
-		// make the viewer
-		MergedDatasetViewerController mergedDatasetViewerCtr = getRequestManager().getMergedDatasetViewerController(outputContext,mergedDataInfo, !isSpatial);
-		addDataListener(mergedDatasetViewerCtr);
-		DataViewer viewer = mergedDatasetViewerCtr.createViewer();
-		viewer.setDataViewerManager(this);
-		addExportListener(viewer);
-		
-		// create the simCompareWindow - this is just a lightweight window to display the simResults. 
-		// It was created originally to compare 2 sims, it can also be used here instead of creating the more heavy-weight SimWindow.
-		SimulationCompareWindow simCompareWindow = new SimulationCompareWindow(mergedDataInfo, viewer);
-		if (simCompareWindow != null) {
-			// just show it right now...
-			final JInternalFrame existingFrame = simCompareWindow.getFrame();
-			DocumentWindowManager.showFrame(existingFrame, getTestingFrameworkWindowPanel().getJDesktopPane1());
+	};
+	AsynchClientTask showResultsTask = new AsynchClientTask("Showing Compare Results",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			// make the viewer
+			MergedDatasetViewerController mergedDatasetViewerCtr = (MergedDatasetViewerController)hashTable.get(KEY_MERGEDDATASETVIEWERCNTRLR);
+			addDataListener(mergedDatasetViewerCtr);
+			DataViewer viewer = mergedDatasetViewerCtr.createViewer();
+			viewer.setDataViewerManager(TestingFrameworkWindowManager.this);
+			addExportListener(viewer);
 			
-			//SwingUtilities.invokeLater(new Runnable() {
-				//public void run() {
-					//DocumentWindowManager.showFrame(existingFrame, desktopPane);
-				//}
-			//});
+			// create the simCompareWindow - this is just a lightweight window to display the simResults. 
+			// It was created originally to compare 2 sims, it can also be used here instead of creating the more heavy-weight SimWindow.
+			SimulationCompareWindow simCompareWindow = new SimulationCompareWindow((MergedDataInfo)hashTable.get(KEY_MERGEDDATAINFO), viewer);
+			if (simCompareWindow != null) {
+				// just show it right now...
+				final JInternalFrame existingFrame = simCompareWindow.getFrame();
+				DocumentWindowManager.showFrame(existingFrame, getTestingFrameworkWindowPanel().getJDesktopPane1());
+			}
 		}
-
-	} catch (Throwable e) {
-		PopupGenerator.showErrorDialog(this, e.getMessage(), e);
-	}
-	
+	};
+	ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {gatherDataTask,showResultsTask}, false);
 }
 
 
