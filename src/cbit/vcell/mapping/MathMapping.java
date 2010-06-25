@@ -625,6 +625,25 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 	return newExp;
 }
 
+/**
+ * This method was created in VisualAge.
+ * @return cbit.vcell.math.Function
+ */
+private static Expression getInsideFluxCorrectionExpression(SimulationContext simulationContext, MembraneMapping membraneMapping) throws ExpressionException {
+	//
+	//
+	// use surfaceToVolumeRatio to get from membrane to total inside volume
+	// then divide by 1-Sum(child volume fractions)
+	//
+	//
+	FeatureMapping insideFeatureMapping = (FeatureMapping) simulationContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getInsideFeature());
+	Expression insideResidualVolFraction = insideFeatureMapping.getResidualVolumeFraction(simulationContext);
+	Expression exp = new Expression(membraneMapping.getSurfaceToVolumeParameter(), simulationContext.getNameScope());
+	exp = Expression.mult(exp,Expression.invert(insideResidualVolFraction));
+	exp = exp.flatten();
+//	exp.bindExpression(simulationContext);
+	return exp;
+}
 
 /**
  * This method was created in VisualAge.
@@ -637,19 +656,11 @@ public Expression getFluxCorrectionExpression(MembraneMapping membraneMapping, F
 										new Expression(featureMapping.getSizeParameter(),simContext.getNameScope()));
 			return exp;
 		} else {
-			//
-			//
-			// use surfaceToVolumeRatio to get from membrane to total inside volume
-			// then divide by 1-Sum(child volume fractions)
-			//
-			//
-			FeatureMapping insideFeatureMapping = (FeatureMapping) simContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getInsideFeature());
-			Expression insideResidualVolFraction = insideFeatureMapping.getResidualVolumeFraction(simContext);
-			Expression exp = new Expression(membraneMapping.getSurfaceToVolumeParameter(), simContext.getNameScope());
-			exp = Expression.mult(exp,Expression.invert(insideResidualVolFraction));
-			exp = exp.flatten();
-	//		exp.bindExpression(simulationContext);
-			return exp;
+			if (membraneMapping.getMembrane().getInsideFeature() == featureMapping.getFeature()) {
+				return getInsideFluxCorrectionExpression(simContext, membraneMapping);
+			} else {
+				return getOutsideFluxCorrectionExpression(simContext, membraneMapping);
+			}
 		}		
 	}else if (membraneMapping.getGeometryClass() instanceof SubVolume){
 		Expression exp = Expression.div(new Expression(membraneMapping.getAreaPerUnitVolumeParameter(),simContext.getNameScope()),
@@ -1106,6 +1117,24 @@ protected MembraneStructureAnalyzer getMembraneStructureAnalyzer(SurfaceClass su
  */
 public NameScope getNameScope() {
 	return nameScope;
+}
+
+
+/**
+ * This method was created in VisualAge.
+ * @return cbit.vcell.math.Function
+ */
+private static Expression getOutsideFluxCorrectionExpression(SimulationContext simulationContext, MembraneMapping membraneMapping) throws ExpressionException {
+	//
+	// ?????? only works for 1 distributed organelle
+	//
+	FeatureMapping outsideFeatureMapping = (FeatureMapping) simulationContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getOutsideFeature());
+	Expression outsideVolFraction = outsideFeatureMapping.getResidualVolumeFraction(simulationContext);
+	Expression surfaceToVolumeParameter = new Expression(membraneMapping.getSurfaceToVolumeParameter(), simulationContext.getNameScope());
+	Expression volumeFractionParameter = new Expression(membraneMapping.getVolumeFractionParameter(), simulationContext.getNameScope());	
+	Expression exp = Expression.div(Expression.mult(surfaceToVolumeParameter, volumeFractionParameter), outsideVolFraction);
+		
+	return exp;
 }
 
 
