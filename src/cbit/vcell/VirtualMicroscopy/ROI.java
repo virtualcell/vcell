@@ -11,8 +11,8 @@ import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 
-import loci.formats.AWTImageTools;
 import loci.formats.ImageTools;
+import loci.formats.gui.AWTImageTools;
 
 import cbit.image.ImageException;
 import cbit.vcell.VirtualMicroscopy.Image;

@@ -15,12 +15,13 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import loci.formats.AWTImageTools;
 import loci.formats.FormatException;
 import loci.formats.FormatReader;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.MetadataTools;
+import loci.formats.gui.AWTImageTools;
+import loci.formats.gui.BufferedImageReader;
 import loci.formats.meta.MetadataRetrieve;
 import loci.formats.meta.MetadataStore;
 
@@ -55,7 +56,7 @@ public class ImageDatasetReader {
 //		MetadataRetrieve meta = (MetadataRetrieve) store;
 		store.createRoot();
 		imageReader.setMetadataStore(store);
-		FormatReader.debug = true;
+//		FormatReader.debug = true;
 		imageReader.setId(imageID);
 		return imageReader;
 
@@ -185,7 +186,7 @@ public class ImageDatasetReader {
 			Origin origin = new Origin(0,0,0);
 //			int tzcIndex = 0;
 			for (int i = 0; i < numImages; i++) {
-				BufferedImage origBufferedImage = formatReader.openImage(i);
+				BufferedImage origBufferedImage = BufferedImageReader.makeBufferedImageReader(formatReader).openImage(i);
 				formatReader.close(true);
 //				System.out.println("original image is type "+AWTImageTools.getPixelType(origBufferedImage));
 				short[][] pixels = null;
@@ -366,14 +367,14 @@ public class ImageDatasetReader {
 			MetadataRetrieve meta = (MetadataRetrieve) store;
 		    store.createRoot();
 		    imageReader.setMetadataStore(store);
-		    FormatReader.debug = true;
+//		    FormatReader.debug = true;
 		    String imageID = files[i].getAbsolutePath();
 		    imageReader.setId(imageID);
 			IFormatReader formatReader = imageReader.getReader(imageID);
 			formatReader.setId(imageID);
 			
 			try{
-				BufferedImage origBufferedImage = formatReader.openImage(0);//only one image each loop
+				BufferedImage origBufferedImage = BufferedImageReader.makeBufferedImageReader(formatReader).openImage(0);//only one image each loop
 				short[][] pixels = AWTImageTools.getShorts(origBufferedImage);
 				int minValue = ((int)pixels[0][0])&0xffff;
 				int maxValue = ((int)pixels[0][0])&0xffff;

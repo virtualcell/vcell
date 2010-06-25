@@ -48,7 +48,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
-import loci.formats.AWTImageTools;
+import loci.formats.gui.AWTImageTools;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;

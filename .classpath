@@ -19,9 +19,7 @@
 	<classpathentry kind="lib" path="stax-api-1.0.1.jar"/>
 	<classpathentry kind="lib" path="wstx-asl-3.2.9.jar"/>
 	<classpathentry kind="lib" path="xml-apis.jar"/>
-	<classpathentry exported="true" kind="lib" path="ome-xml_2009March15.zip"/>
-	<classpathentry exported="true" kind="lib" path="loci-common_2009March15.jar"/>
-	<classpathentry exported="true" kind="lib" path="bio-formats_2009March15.jar" sourcepath="/bio-formats"/>
+	<classpathentry exported="true" kind="lib" path="bioformats_omexml_locicommon_brnch41.jar"/>
 	<classpathentry kind="lib" path="sbmlj.jar"/>
 	<classpathentry kind="lib" path="JLink.jar"/>
 	<classpathentry kind="lib" path="new_activation.jar"/>
@@ -35,7 +33,7 @@
 	<classpathentry kind="lib" path="sonic_Selector.jar"/>
 	<classpathentry exported="true" kind="lib" path="jai_codec.jar"/>
 	<classpathentry exported="true" kind="lib" path="jai_core.jar"/>
-	<classpathentry kind="lib" path="jdom_1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="jdom_1.0.jar"/>
 	<classpathentry kind="lib" path="oracle_classes12.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
