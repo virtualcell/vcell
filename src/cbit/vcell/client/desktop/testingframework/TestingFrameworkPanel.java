@@ -524,7 +524,7 @@ private void actionsOnMouseClick(MouseEvent mouseEvent) {
 			if(getJTree1().getSelectionCount() == 1){
 				isLocked = ((TestSuiteInfoNew)getTreeSelection()).isLocked();			}
 			//Disable if TestSuite locked
-			getDuplicateTSMenuItem().setEnabled(bMenuValid && !isLocked);
+			getDuplicateTSMenuItem().setEnabled(bMenuValid/* && !isLocked*/);
 			getRunAllMenuItem().setEnabled(bMenuValid && !isLocked);
 			getGenTSReportMenuItem().setEnabled(!checkAnyLocked()/* && checkAllSameType()*/);
 			getAddTestCaseMenuItem().setEnabled(bMenuValid && !isLocked);
