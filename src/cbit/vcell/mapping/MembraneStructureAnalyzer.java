@@ -113,7 +113,7 @@ private void refreshResolvedFluxes() throws Exception {
 	// for each FluxReaction, add fluxes to "flux" if these fluxes are resolved
 	//
 	for (int i=0;i<fluxList.size();i++){
-		FluxReaction fr = (FluxReaction)fluxList.elementAt(i);
+		FluxReaction fr = fluxList.elementAt(i);
 		Flux[] fluxes = fr.getFluxes();
 		for (int j = 0; j < fluxes.length; j++) {
 			ResolvedFlux rf = null;
@@ -147,16 +147,16 @@ private void refreshResolvedFluxes() throws Exception {
 					if (fr.getKinetics() instanceof DistributedKinetics){
 						KineticsParameter reactionRateParameter = ((DistributedKinetics)fr.getKinetics()).getReactionRateParameter();
 						Expression correctedReactionRate = Expression.mult(new Expression(reactionRateParameter, mathMapping.getNameScope()),insideFluxCorrection);
-						if (structureMapping.getGeometryClass()==surfaceClass.getSubvolume1()){
+						if (((Membrane)fr.getStructure()).getInsideFeature() == fluxes[j].getStructure()) {
 							if (rf.getFlux().isZero()){
 								rf.setFlux(correctedReactionRate.flatten());
 							}else{
 								rf.setFlux(Expression.add(rf.getFlux(),correctedReactionRate.flatten()));
 							}
-						}else{
+						} else {
 							if (rf.getFlux().isZero()){
 								rf.setFlux(Expression.negate(correctedReactionRate).flatten());
-							}else{
+							} else {
 								rf.setFlux(Expression.add(rf.getFlux(),Expression.negate(correctedReactionRate).flatten()));
 							}
 						}
