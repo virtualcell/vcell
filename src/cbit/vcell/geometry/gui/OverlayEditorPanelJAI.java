@@ -1414,6 +1414,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 			imagePane.addMouseListener(new java.awt.event.MouseAdapter() {
 				public void mouseExited(MouseEvent e){
 					updateLabel(-1, -1);
+					if(histogramPanel.isVisible()){
+						histogramPanel.setSpecialValue(null);
+					}
 				}
 				public void mousePressed(MouseEvent e){
 					updateLabel(e.getX(), e.getY());
@@ -1600,7 +1603,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	/** Updates cursor probe label. * @param x int
 	 * @param y int
 	 */
-	protected void updateLabel(int inx, int iny) {
+	private void updateLabel(int inx, int iny) {
 		if (imageDataset == null) {
 			return;
 		}
@@ -1660,6 +1663,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 				}
 				sb.append("; value"+(isOriginalValueScaled()?"(scld)":""));
 				if(pix != null){
+					if(histogramPanel.isVisible()){
+						histogramPanel.setSpecialValue((int)(pix[0]&0x0000FFFF));
+					}
 					sb.append(pix.length > 1 ? "s=(" : "=");
 					for (int i=0; i<pix.length; i++) {
 						if (i > 0) sb.append(", ");
@@ -1689,8 +1695,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 				}
 			}
 		}else{
-			sb.append("; zoom("+NumberUtils.formatNumber(imagePane.getZoom(), 3)+")");
+			sb.append((sb.length() != 0?"; ":"")+"zoom("+NumberUtils.formatNumber(imagePane.getZoom(), 3)+")");
 			sb.append("; contr("+imagePane.getContrastDescription()+")");
+			if(histogramPanel.isVisible()){
+				histogramPanel.setSpecialValue(null);
+			}
 		}
 		sb.append(" ");
 		textLabel.setText(sb.toString());
