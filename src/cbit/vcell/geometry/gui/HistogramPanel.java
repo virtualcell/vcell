@@ -48,7 +48,7 @@ public class HistogramPanel extends JPanel {
 	private Point mouseStartPoint;
 	private boolean dragStartUnselect;
 	private String mouseSelectDescr;
-
+	private Integer specialValue;
 
 	private JSlider vertScaleSlider;
 	private JSlider horzScaleSlider;
@@ -59,7 +59,7 @@ public class HistogramPanel extends JPanel {
 	private JLabel stretchJLabel = new JLabel("zoom");
 	private JLabel moveJLabel = new JLabel("scroll");
 	private JLabel titleJLabel = new JLabel("Histogram Tool");
-	private JButton applyButton = new JButton("Apply");
+	private JButton applyButton = new JButton("ROI...");
 	private JButton hideButton = new JButton("Hide");
 //	private JScrollBar moveScrollBar = new JScrollBar();
 		
@@ -544,6 +544,10 @@ public class HistogramPanel extends JPanel {
 							y1=VERT_EDGE_OFFSET;
 						}
 						g.drawLine(xPoint,y0,xPoint,y1);
+						if(getSpecialValue() != null && getSpecialValue() >= histoPixelVals[index0] && getSpecialValue() <= histoPixelVals[index1]){
+							g.setColor(Color.red);
+							g.drawLine(xPoint,y0,xPoint,(int)(y0-((this.getHeight()-2*VERT_EDGE_OFFSET))));
+						}
 					}
 				}
 				
@@ -606,6 +610,15 @@ public class HistogramPanel extends JPanel {
 	public Dimension getPreferredSize() {
 		// TODO Auto-generated method stub
 		return new Dimension(super.getPreferredSize().width, height);
+	}
+
+	public Integer getSpecialValue() {
+		return specialValue;
+	}
+
+	public void setSpecialValue(Integer specialValue) {
+		this.specialValue = specialValue;
+		repaint();
 	}
 
 }

@@ -1457,7 +1457,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 
 	}
-	public ImageDataset[] smoothImageDataset(ImageDataset[] origImageDatasetChannels,String smoothType,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
+	private ImageDataset[] smoothImageDataset(ImageDataset[] origImageDatasetChannels,String smoothType,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
 		if(smoothType.equals(ROIMultiPaintManager.ENHANCE_NONE)){
 			return null;
 		}
