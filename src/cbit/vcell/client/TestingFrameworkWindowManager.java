@@ -1147,12 +1147,12 @@ private PDEDataViewer.DataInfoProvider getDataInfoProvider(VCDocument document,P
  * Creation date: (8/18/2003 5:36:47 PM)
  * 
  */
-private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew testCriteria,Simulation sim,TFGenerateReport.VCDocumentAndSimInfo userSelectedRefSimInfo/*,VCDocument refDoc,VCDocument testDocument*/) {
+private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew testCriteria,Simulation testSim,TFGenerateReport.VCDocumentAndSimInfo userSelectedRefSimInfo/*,VCDocument refDoc,VCDocument testDocument*/) {
 
-	if (sim.getScanCount() != 1) {
+	if (testSim.getScanCount() != 1) {
 		throw new RuntimeException("paramater scan is not supported in Math Testing Framework");
 	}
-	SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, 0);
+	SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(testSim, 0);
 	
 	String simReportStatus = null;
 	String simReportStatusMessage = null;
@@ -1197,17 +1197,17 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 				}
 				refVCDocumentAndSimInfo = new TFGenerateReport.VCDocumentAndSimInfo(refSimInfo, refDoc);
 			}
-			reportTCBuffer.append("\t\t"+sim.getName() + (refVCDocumentAndSimInfo != null?" (Using TestCrit RegrRefSim)":"")+" : "+"\n");
+			reportTCBuffer.append("\t\t"+testSim.getName() + (refVCDocumentAndSimInfo != null?" (Using TestCrit RegrRefSim)":"")+" : "+"\n");
 		}else{
 			refVCDocumentAndSimInfo = userSelectedRefSimInfo;
-			reportTCBuffer.append("\t\t"+sim.getName() + " (Using UserDefined RegrRefSim '"+userSelectedRefSimInfo.getSimInfo().getAuthoritativeVCSimulationIdentifier()+"') : "+"\n");
+			reportTCBuffer.append("\t\t"+testSim.getName() + " (Using UserDefined RegrRefSim '"+userSelectedRefSimInfo.getSimInfo().getAuthoritativeVCSimulationIdentifier()+"') : "+"\n");
 		}
 		if (testCase.getType().equals(TestCaseNew.REGRESSION) && refVCDocumentAndSimInfo == null) {
 			reportTCBuffer.append("\t\t\tNo reference SimInfo, SimInfoKey="+testCriteria.getSimInfo().getVersion().getName()+". Cannot perform Regression Test!\n");
 			simReportStatus = TestCriteriaNew.TCRIT_STATUS_NOREFREGR;
 		}else{
-			VCDataIdentifier vcdID = new VCSimulationDataIdentifier(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), 0);
-			DataManager simDataManager = getRequestManager().getDataManager(null,vcdID, sim.isSpatial());
+			VCDataIdentifier vcdID = new VCSimulationDataIdentifier(testSim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), 0);
+			DataManager simDataManager = getRequestManager().getDataManager(null,vcdID, testSim.isSpatial());
 			
 			double timeArray[] = null;
 			// can be histogram, so there won't be time array
@@ -1216,13 +1216,13 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 			} catch (Exception ex) {
 				ex.printStackTrace(System.out);
 			}
-			StochSimOptions stochOpt = sim.getSolverTaskDescription().getStochOpt();
+			StochSimOptions stochOpt = testSim.getSolverTaskDescription().getStochOpt();
 			if ((stochOpt == null || stochOpt.getNumOfTrials() == 1)  && (timeArray == null || timeArray.length == 0)) {
 				reportTCBuffer.append("\t\t\tNO DATA : Simulation not run yet.\n");
 				simReportStatus = TestCriteriaNew.TCRIT_STATUS_NODATA;
 			} else {
 				// SPATIAL simulation
-				if (sim.getMathDescription().isSpatial()){
+				if (testSim.getMathDescription().isSpatial()){
 					PDEDataManager pdeDataManager = (PDEDataManager)simDataManager;
 					// Get EXACT solution if test case type is EXACT, Compare with numerical
 					if (testCase.getType().equals(TestCaseNew.EXACT) || testCase.getType().equals(TestCaseNew.EXACT_STEADY)) {
@@ -1290,7 +1290,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						SimulationComparisonSummary simCompSummary =
 							MathTestingUtilities.comparePDEResults(simSymbolTable, pdeDataManager, refSimSymbolTable, refDataManager, varsToCompare,testCriteria.getMaxAbsError(),testCriteria.getMaxRelError(),
 									refVCDocumentAndSimInfo.getVCDocument(),getDataInfoProvider(refVCDocumentAndSimInfo.getVCDocument(), refDataManager.getPDEDataContext(), refSim.getName()),
-									testDoc,getDataInfoProvider(testDoc, pdeDataManager.getPDEDataContext(), refSim.getName()));
+									testDoc,getDataInfoProvider(testDoc, pdeDataManager.getPDEDataContext(), testSim.getName()));
 						// Failed var summaries
 						failVarSummaries = simCompSummary.getFailingVariableComparisonSummaries(absErr, relErr);
 						allVarSummaries = simCompSummary.getVariableComparisonSummaries();
@@ -1320,7 +1320,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 					ODESolverResultSet numericalResultSet = odeDataManager.getODESolverResultSet();
 					// Get EXACT result set if test case type is EXACT, Compare with numerical
 					if (testCase.getType().equals(TestCaseNew.EXACT) || testCase.getType().equals(TestCaseNew.EXACT_STEADY)) {
-						ODESolverResultSet exactResultSet = MathTestingUtilities.getExactResultSet(sim.getMathDescription(), timeArray, sim.getSolverTaskDescription().getSensitivityParameter());
+						ODESolverResultSet exactResultSet = MathTestingUtilities.getExactResultSet(testSim.getMathDescription(), timeArray, testSim.getSolverTaskDescription().getSensitivityParameter());
 						String varsToCompare[] = getVariableNamesToCompare(simSymbolTable,simSymbolTable);
 						SimulationComparisonSummary simCompSummary_exact = MathTestingUtilities.compareResultSets(numericalResultSet,exactResultSet,varsToCompare,testCase.getType(),testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 
@@ -1349,7 +1349,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						}
 					// Get CONSTRUCTED result set if test case type is CONSTRUCTED , compare with numerical
 					} else if (testCase.getType().equals(TestCaseNew.CONSTRUCTED)) {
-						ODESolverResultSet constructedResultSet = MathTestingUtilities.getConstructedResultSet(sim.getMathDescription(), timeArray);
+						ODESolverResultSet constructedResultSet = MathTestingUtilities.getConstructedResultSet(testSim.getMathDescription(), timeArray);
 						String varsToCompare[] = getVariableNamesToCompare(simSymbolTable,simSymbolTable);
 						SimulationComparisonSummary simCompSummary_constr = MathTestingUtilities.compareResultSets(numericalResultSet,constructedResultSet,varsToCompare,testCase.getType(),testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 
