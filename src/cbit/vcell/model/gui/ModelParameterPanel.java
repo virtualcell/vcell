@@ -1,6 +1,5 @@
 package cbit.vcell.model.gui;
 
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
@@ -10,11 +9,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
-import javax.swing.DefaultCellEditor;
 import javax.swing.JDesktopPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
@@ -28,7 +24,6 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.SPPRPanel;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelQuantity;
@@ -450,22 +445,7 @@ private javax.swing.JPopupMenu getJPopupMenuICP() {
  * @return javax.swing.JScrollPane
  */
 private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			if (ivjJScrollPane1 != null) {
-				ivjJScrollPane1.removeMouseListener(ivjEventHandler);
-				ivjJScrollPane1.addMouseListener(ivjEventHandler);
-			}
-			getJScrollPane1().setViewportView(getScrollPaneTable());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
+	return getScrollPaneTable().getEnclosingScrollPane();
 }
 
 
@@ -513,9 +493,6 @@ private JSortTable getScrollPaneTable() {
 		try {
 			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -582,7 +559,6 @@ private void initialize() {
 		if ((getmodel1() != null)) {
 			getmodelParameterTableModel().setModel(getmodel1());
 		}
-		this.modelParameterPanel_Initialize();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -1030,43 +1006,6 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
-
-
-/**
- * Comment
- */
-private void modelParameterPanel_Initialize() {
-	
-	getScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), false));
-	
-//	getmodelParameterTableModel().addPropertyChangeListener(
-//		new java.beans.PropertyChangeListener(){
-//			public void propertyChange(java.beans.PropertyChangeEvent evt){
-//				if(evt.getPropertyName().equals("model")){
-//					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-//				}
-//			}
-//		}
-//	);
-	getmodelParameterTableModel().addTableModelListener(
-		new javax.swing.event.TableModelListener(){
-			public void tableChanged(javax.swing.event.TableModelEvent e){
-				try {
-					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-				} catch (Exception e1) {
-					e1.printStackTrace(System.out);
-				}
-			}
-		}
-	);
-	getJScrollPane1().addComponentListener(new ComponentAdapter() {		
-		public void componentResized(ComponentEvent e) {
-			ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-		}		
-	});
-}
-
 
 /**
  * Comment

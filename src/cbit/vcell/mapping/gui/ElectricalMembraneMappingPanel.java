@@ -3,7 +3,7 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import org.vcell.util.gui.JTableFixed;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
@@ -18,8 +18,8 @@ public class ElectricalMembraneMappingPanel extends javax.swing.JPanel {
 	private Geometry ivjGeometry = null;
 	private GeometryContext ivjgeometryContext1 = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
-	private JTableFixed ivjScrollPaneTable1 = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private ScrollTable ivjScrollPaneTable1 = null;
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ElectricalMembraneMappingTableModel ivjElectricalMembraneMappingTableModel1 = null;
 	private ElectricalStimulusPanel ivjElectricalStimuliPanel = null;
 	private SimulationContext ivjsimulationContext1 = null;
@@ -44,24 +44,6 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 public ElectricalMembraneMappingPanel() {
 	super();
 	initialize();
-}
-
-/**
- * connEtoC1:  (ElectricalMembraneMappingPanel.initialize() --> ElectricalMembraneMappingPanel.electricalMembraneMappingPanel_Initialize()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.electricalMembraneMappingPanel_Initialize();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
 }
 
 /**
@@ -238,28 +220,6 @@ private void connPtoP2SetTarget() {
 }
 
 /**
- * Comment
- */
-private void electricalMembraneMappingPanel_Initialize() {
-	
-	getScrollPaneTable1().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-
-	getElectricalMembraneMappingTableModel1().addTableModelListener(
-		new javax.swing.event.TableModelListener(){
-			public void tableChanged(javax.swing.event.TableModelEvent e){
-				//System.out.println((
-					//e.getType() == javax.swing.event.TableModelEvent.INSERT?"INSERT":"")+
-					//(e.getType() == javax.swing.event.TableModelEvent.UPDATE?"UPDATE":"")+
-					//(e.getType() == javax.swing.event.TableModelEvent.DELETE?"DELETE":""));
-				//if(e.getType() == javax.swing.event.TableModelEvent.UPDATE){
-					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
-				//}
-			}
-		}
-	);
-}
-
-/**
  * Return the StructureMappingTableModel1 property value.
  * @return cbit.vcell.mapping.gui.ElectricalMembraneMappingTableModel
  */
@@ -356,49 +316,16 @@ private javax.swing.JLabel getJLabel2() {
 	return ivjJLabel2;
 }
 
-
-/**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			ivjJScrollPane1.setMinimumSize(new java.awt.Dimension(22, 40));
-			getJScrollPane1().setViewportView(getScrollPaneTable1());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
-
 /**
  * Return the ScrollPaneTable1 property value.
  * @return cbit.gui.JTableFixed
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private JTableFixed getScrollPaneTable1() {
+private ScrollTable getScrollPaneTable1() {
 	if (ivjScrollPaneTable1 == null) {
 		try {
-			ivjScrollPaneTable1 = new JTableFixed();
+			ivjScrollPaneTable1 = new ScrollTable();
 			ivjScrollPaneTable1.setName("ScrollPaneTable1");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable1.getTableHeader());
-			ivjScrollPaneTable1.setBounds(0, 0, 450, 400);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -473,7 +400,7 @@ private void initialize() {
 		constraintsJScrollPane1.weightx = 1.0;
 		constraintsJScrollPane1.weighty = 0.2;
 		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJScrollPane1(), constraintsJScrollPane1);
+		add(getScrollPaneTable1().getEnclosingScrollPane(), constraintsJScrollPane1);
 
 		java.awt.GridBagConstraints constraintsElectricalStimuliPanel = new java.awt.GridBagConstraints();
 		constraintsElectricalStimuliPanel.gridx = 0; constraintsElectricalStimuliPanel.gridy = 3;
@@ -492,8 +419,8 @@ private void initialize() {
 		constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 2;
 		constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabel2(), constraintsJLabel2);
+		
 		initConnections();
-		connEtoC1();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -508,10 +435,10 @@ private void initialize() {
 public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
-		StructureMappingPanel aStructureMappingPanel;
-		aStructureMappingPanel = new StructureMappingPanel();
-		frame.setContentPane(aStructureMappingPanel);
-		frame.setSize(aStructureMappingPanel.getSize());
+		ElectricalMembraneMappingPanel aElectricalMembraneMappingPanel;
+		aElectricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
+		frame.add(aElectricalMembraneMappingPanel);
+		frame.setSize(aElectricalMembraneMappingPanel.getSize());
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
 				System.exit(0);

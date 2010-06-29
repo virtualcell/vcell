@@ -1,6 +1,11 @@
 package cbit.vcell.modelopt.gui;
 
+import java.awt.Component;
+
+import javax.swing.JTable;
+
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -23,12 +28,10 @@ import cbit.vcell.parser.SymbolTableEntry;
  * @author: Jim Schaff
  */
 public class ParameterMappingPanel extends javax.swing.JPanel {
-	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private org.vcell.util.gui.sorttable.JSortTable ivjScrollPaneTable = null;
 	private ParameterMappingTableModel ivjparameterMappingTableModel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private cbit.vcell.modelopt.ParameterEstimationTask fieldParameterEstimationTask = null;
-	private ParameterMappingTableCellRenderer ivjParameterMappingTableCellRenderer1 = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopy = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopyAll = null;
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
@@ -202,18 +205,6 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 
-
-/**
- * connEtoM2:  (ParameterMappingPanel.initialize() --> ScrollPaneTable.setDefaultRenderer(Ljava.lang.Class;Ljavax.swing.table.TableCellRenderer;)V)
- */
-private void connEtoM2() {
-	try {
-		getScrollPaneTable().setDefaultRenderer(Double.class, getParameterMappingTableCellRenderer1());
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
 /**
  * connPtoP1SetTarget:  (modelParameterTableModel.this <--> ScrollPaneTable.model)
  */
@@ -331,27 +322,6 @@ private javax.swing.JPopupMenu getJPopupMenuCopyPaste() {
 	return ivjJPopupMenuCopyPaste;
 }
 
-
-/**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			getJScrollPane1().setViewportView(getScrollPaneTable());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
-
-
 /**
  * Return the this12 property value.
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
@@ -367,25 +337,6 @@ private JSortTable getJSortTableThis() {
  */
 public ParameterEstimationTask getParameterEstimationTask() {
 	return fieldParameterEstimationTask;
-}
-
-
-/**
- * Return the ParameterMappingTableCellRenderer1 property value.
- * @return cbit.vcell.modelopt.gui.ParameterMappingTableCellRenderer
- */
-private ParameterMappingTableCellRenderer getParameterMappingTableCellRenderer1() {
-	if (ivjParameterMappingTableCellRenderer1 == null) {
-		try {
-			ivjParameterMappingTableCellRenderer1 = new ParameterMappingTableCellRenderer();
-			ivjParameterMappingTableCellRenderer1.setName("ParameterMappingTableCellRenderer1");
-			ivjParameterMappingTableCellRenderer1.setText("ParameterMappingTableCellRenderer1");
-			ivjParameterMappingTableCellRenderer1.setBounds(78, 491, 225, 16);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjParameterMappingTableCellRenderer1;
 }
 
 /**
@@ -413,8 +364,6 @@ private JSortTable getScrollPaneTable() {
 		try {
 			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -456,9 +405,8 @@ private void initialize() {
 		setName("ModelParameterPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(655, 226);
-		add(getJScrollPane1(), "Center");
+		add(getScrollPaneTable().getEnclosingScrollPane(), "Center");
 		initConnections();
-		connEtoM2();
 		connEtoC7();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -494,7 +442,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 				DialogUtils.showWarningDialog(this, "current math not valid, some paste operations will be limited\n\nreason: "+e.getMessage());
 			}
 			boolean bInitialGuess = (getScrollPaneTable().getSelectedColumn() == ParameterMappingTableModel.COLUMN_CURRENTVALUE);
-			cbit.vcell.modelopt.ParameterMappingSpec[] parameterMappingSpecs = new cbit.vcell.modelopt.ParameterMappingSpec[rows.length];
+			ParameterMappingSpec[] parameterMappingSpecs = new ParameterMappingSpec[rows.length];
 			java.util.Vector<SymbolTableEntry> primarySymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
 			java.util.Vector<SymbolTableEntry> alternateSymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
 			java.util.Vector<Expression> resolvedValuesV = new java.util.Vector<Expression>();
@@ -721,15 +669,19 @@ public static void main(java.lang.String[] args) {
  */
 private void parameterMappingPanel_Initialize() {
 	
-	getScrollPaneTable().setDefaultRenderer(cbit.gui.ScopedExpression.class,new cbit.vcell.model.gui.ScopedExpressionTableCellRenderer());
-	
-	getparameterMappingTableModel().addTableModelListener(
-		new javax.swing.event.TableModelListener(){
-			public void tableChanged(javax.swing.event.TableModelEvent e){
-				cbit.vcell.model.gui.ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-			}
+	getScrollPaneTable().setDefaultRenderer(Double.class,new DefaultScrollTableCellRenderer() {
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			setHorizontalAlignment(RIGHT);
+			return this;			
 		}
-	);
+		
+	});
+	
 }
 
 

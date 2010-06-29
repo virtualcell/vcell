@@ -2,11 +2,10 @@ package cbit.vcell.model.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
-
-import cbit.vcell.model.gui.TransformMassActions.TransformedReaction;
 
 public class ParameterTableCellRenderer extends DefaultTableCellRenderer {
 	

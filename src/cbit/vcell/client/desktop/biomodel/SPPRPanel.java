@@ -523,7 +523,9 @@ public class SPPRPanel extends JPanel {
 	private void addEvent() {
 		String eventName = fieldSimulationContext.getFreeEventName();
 		try {
-			fieldSimulationContext.addBioEvent(new BioEvent(eventName, fieldSimulationContext));
+			BioEvent bioEvent = new BioEvent(eventName, fieldSimulationContext);
+			fieldSimulationContext.addBioEvent(bioEvent);
+			getEventsDisplayPanel().selectEvent(bioEvent);
 		} catch (PropertyVetoException e) {
 			e.printStackTrace(System.out);
 			DialogUtils.showErrorDialog(this, "Error adding Event : " + e.getMessage());

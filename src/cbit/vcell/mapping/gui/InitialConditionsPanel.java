@@ -22,17 +22,15 @@ import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.gui.ScopedExpression;
-import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.SPPRPanel;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -59,7 +57,6 @@ public class InitialConditionsPanel extends javax.swing.JPanel {
 	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private SimulationContext ivjsimulationContext1 = null;
-	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private SPPRPanel spprPanel = null;
 	private JPanel scrollPanel = null; // added in July, 2008. Used to accommodate the radio buttons and the ivjJScrollPane1. 
 	private JRadioButton conRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
@@ -336,7 +333,6 @@ private void connPtoP4SetTarget() {
 	try {
 		getScrollPaneTable().setModel(getSpeciesContextSpecsTableModel());
 		getScrollPaneTable().createDefaultColumnsFromModel();
-		getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), true));
 		// user code begin {1}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -516,30 +512,6 @@ private javax.swing.JPopupMenu getJPopupMenuICP() {
 }
 
 /**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			getJScrollPane1().setViewportView(getScrollPaneTable());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
-
-/**
  * Return the JSplitPane1 property value.
  * @return javax.swing.JSplitPane
  */
@@ -569,7 +541,7 @@ private JPanel getScrollPanel()
 	if(scrollPanel == null)
 	{
 		scrollPanel = new JPanel(new BorderLayout());
-		scrollPanel.add(getJScrollPane1(), BorderLayout.CENTER);
+		scrollPanel.add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 	}
 	
 	return scrollPanel;
@@ -716,9 +688,6 @@ private JSortTable getScrollPaneTable() {
 		try {
 			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			ivjScrollPaneTable.setAutoCreateColumnsFromModel(true);
 			ivjScrollPaneTable.setRowHeight(ivjScrollPaneTable.getRowHeight() + 2);
 			// user code begin {1}
 			// user code end
@@ -837,7 +806,9 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP4SetTarget();
 	connPtoP5SetTarget();
 	
-	DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+	getScrollPaneTable().setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+	
+	DefaultTableCellRenderer renderer = new DefaultScrollTableCellRenderer() {
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
 		{
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

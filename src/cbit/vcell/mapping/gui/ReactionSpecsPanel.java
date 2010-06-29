@@ -12,6 +12,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.desktop.biomodel.SPPRPanel;
@@ -35,7 +36,6 @@ import cbit.vcell.model.gui.SimpleReactionPanel;
 public class ReactionSpecsPanel extends javax.swing.JPanel {
 	private SPPRPanel spprPanel = null;
 	private JSplitPane outerSplitPane;
-	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private SimpleReactionPanel simpleReactionPanel = null;
 	private FluxReactionPanel fluxReactionPanel = null;
 	private JSortTable ivjScrollPaneTable = null;
@@ -116,7 +116,7 @@ private JSplitPane getOuterSplitPane(boolean expanded) {
 		outerSplitPane = new JSplitPane();
 		outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		outerSplitPane.setDividerLocation(300);
-		outerSplitPane.setTopComponent(getJScrollPane1());
+		outerSplitPane.setTopComponent(getScrollPaneTable().getEnclosingScrollPane());
 		if(expanded) {
 			outerSplitPane.setBottomComponent(getSimpleReactionPanel());	// reaction kinetics editor
 		} else {
@@ -126,24 +126,6 @@ private JSplitPane getOuterSplitPane(boolean expanded) {
 	return outerSplitPane;
 }
 
-/**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			ivjJScrollPane1.setViewportView(getScrollPaneTable());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
 private SimpleReactionPanel getSimpleReactionPanel() {
 	if (simpleReactionPanel == null) {
 		try {
@@ -373,19 +355,12 @@ private ReactionSpecsTableModel getReactionSpecsTableModel() {
  * Return the ScrollPaneTable property value.
  * @return javax.swing.JTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -437,7 +412,7 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
-	getScrollPaneTable().setDefaultRenderer(ReactionStep.class, new DefaultTableCellRenderer() {
+	getScrollPaneTable().setDefaultRenderer(ReactionStep.class, new DefaultScrollTableCellRenderer() {
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
 		{
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

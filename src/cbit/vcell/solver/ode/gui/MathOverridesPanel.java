@@ -12,12 +12,11 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.JTableFixed;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
@@ -40,11 +39,10 @@ import cbit.vcell.solver.MathOverrides;
  * @author: 
  */
 public class MathOverridesPanel extends JPanel {
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private JScrollPane ivjScrollPane = null;
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private MathOverridesTableModel ivjMathOverridesTableModel = null;
 	private boolean fieldEditable = true;
-	private JTable ivjJTableFixed = null;
+	private ScrollTable ivjJTableFixed = null;
 	private MathOverrides fieldMathOverrides = null;
 	private boolean ivjConnPtoP6Aligning = false;
 	private MathOverridesTableCellRenderer ivjMathOverridesTableCellRenderer1 = null;
@@ -283,7 +281,8 @@ private void connEtoM1() {
 	try {
 		// user code begin {1}
 		// user code end
-		getJTableFixed().setDefaultRenderer(Object.class, getMathOverridesTableCellRenderer1());
+		getJTableFixed().setDefaultRenderer(String.class, getMathOverridesTableCellRenderer1());
+		getJTableFixed().setDefaultRenderer(ScopedExpression.class, getMathOverridesTableCellRenderer1());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -635,15 +634,12 @@ private javax.swing.JPopupMenu getJPopupMenu1() {
  * @return cbit.gui.JTableFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private JTable getJTableFixed() {
+private ScrollTable getJTableFixed() {
 	if (ivjJTableFixed == null) {
 		try {
-			ivjJTableFixed = new JTableFixed();
+			ivjJTableFixed = new ScrollTable();
+			ivjJTableFixed.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 			ivjJTableFixed.setName("JTableFixed");
-			getScrollPane().setColumnHeaderView(ivjJTableFixed.getTableHeader());
-//			ivjJTableFixed.setBounds(0, 0, 200, 200);
-			ivjJTableFixed.setPreferredScrollableViewportSize(new Dimension(200,100));
-			getJTableFixed().setRowHeight(getJTableFixed().getRowHeight() + 2);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -706,28 +702,6 @@ private MathOverridesTableModel getMathOverridesTableModel() {
 }
 
 /**
- * Return the JScrollPane2 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getScrollPane() {
-	if (ivjScrollPane == null) {
-		try {
-			ivjScrollPane = new javax.swing.JScrollPane();
-			ivjScrollPane.setName("ScrollPane");
-			getScrollPane().setViewportView(getJTableFixed());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjScrollPane;
-}
-
-/**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
  */
@@ -785,7 +759,7 @@ private void initialize() {
 		gridBagConstraints.gridy = 1;
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 1.0;
-		add(getScrollPane(), gridBagConstraints);
+		add(getJTableFixed().getEnclosingScrollPane(), gridBagConstraints);
 
 		initConnections();
 		connEtoM1();

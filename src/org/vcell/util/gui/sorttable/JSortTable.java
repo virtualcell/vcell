@@ -16,9 +16,9 @@ import java.awt.event.MouseListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
-import org.vcell.util.gui.JTableFixed;
+import org.vcell.util.gui.ScrollTable;
 
-public class JSortTable extends JTableFixed
+public class JSortTable extends ScrollTable
   implements MouseListener
 {
   
@@ -26,11 +26,6 @@ public class JSortTable extends JTableFixed
 
 public JSortTable() {
 	super();
-}
-
-public JSortTable(SortTableModel model) {
-	super(model);
-	initSortHeader();
 }
 
 /**

@@ -4,15 +4,18 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import javax.swing.table.*;
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Component;
+
+import javax.swing.JTable;
+
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 /**
  * Insert the type's description here.
  * Creation date: (8/7/2001 1:10:01 PM)
  * @author: Ion Moraru
  */
-public class MathOverridesTableCellRenderer extends DefaultTableCellRenderer {
+public class MathOverridesTableCellRenderer extends DefaultScrollTableCellRenderer {
 	private MathOverridesTableModel fieldMathOverridesTableModel = null;
 /**
  * MathOverridesTableCellRenderer constructor comment.
@@ -41,15 +44,10 @@ public MathOverridesTableModel getMathOverridesTableModel() {
  */
 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 	super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-	if (!getMathOverridesTableModel().isDefaultValue(row) && column != getMathOverridesTableModel().COLUMN_DEFAULT) {
+	if (!getMathOverridesTableModel().isDefaultValue(row) && column != MathOverridesTableModel.COLUMN_DEFAULT) {
 		setForeground(Color.red);
 	} else {
-		if (getBackground().equals(table.getSelectionBackground())){
-			setForeground(table.getSelectionForeground());
-		}else{
-			setForeground(table.getForeground());
-		}
-		if (column == getMathOverridesTableModel().COLUMN_ACTUAL) {
+		if (column == MathOverridesTableModel.COLUMN_ACTUAL) {
 			setText("");
 		}
 	}

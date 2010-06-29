@@ -209,7 +209,6 @@ public class OutputFunctionsPanel extends JPanel {
 			try {
 				outputFnsScrollPaneTable = new JSortTable();
 				outputFnsScrollPaneTable.setName("ScrollPaneTable");
-				outputFnsScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
 			}
@@ -590,6 +589,7 @@ public class OutputFunctionsPanel extends JPanel {
 
 	public void setScrollPaneTableCurrentRow(AnnotatedFunction selection) {
 		if (selection == null) {
+			getFnScrollPaneTable().clearSelection();
 			return;
 		}
 		int numRows = getFnScrollPaneTable().getRowCount();

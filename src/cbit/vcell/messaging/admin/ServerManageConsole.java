@@ -33,6 +33,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.gui.DateRenderer;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -854,11 +855,7 @@ private javax.swing.JSplitPane getJSplitPane1() {
 			panel.add(getRemoveFromListButton());
 			panel8.add(panel, "East");			
 			panel7.add(panel8, "North");			
-			JScrollPane scrollPane2 = new javax.swing.JScrollPane();
-			scrollPane2.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			scrollPane2.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			scrollPane2.setViewportView(getQueryResultTable());			
-			panel7.add(scrollPane2, "Center");			
+			panel7.add(getQueryResultTable().getEnclosingScrollPane(), "Center");			
 			getJSplitPane1().add(panel7, "right");
 			// user code begin {1}
 			// user code end
@@ -1307,7 +1304,6 @@ private JSortTable getQueryResultTable() {
 		try {
 			ivjQueryResultTable = new JSortTable();
 			ivjQueryResultTable.setName("QueryResultTable");
-			//getJScrollPane2().setColumnHeaderView(ivjQueryResultTable.getTableHeader());
 			ivjQueryResultTable.setModel(new JobTableModel());
 			ivjQueryResultTable.setBounds(0, 0, 200, 200);
 			// user code begin {1}
@@ -1814,12 +1810,7 @@ private javax.swing.JPanel getServiceStatusPage() {
 			panel.add(getFilterServiceGoButton());			
 			ivjServiceStatusPage.add(panel, "North");
 			
-			JScrollPane scrollPane = new javax.swing.JScrollPane();
-			scrollPane.setName("JScrollPane1");
-			scrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			scrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			scrollPane.setViewportView(getServiceStatusTable());			
-			ivjServiceStatusPage.add(scrollPane, "Center");
+			ivjServiceStatusPage.add(getServiceStatusTable().getEnclosingScrollPane(), "Center");
 			
 			JPanel panel6 = new javax.swing.JPanel();
 			panel6.setLayout(new java.awt.FlowLayout());
@@ -1842,19 +1833,12 @@ private javax.swing.JPanel getServiceStatusPage() {
  * Return the ServiceStatusTable property value.
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private JSortTable getConfigTable() {
 	if (ivjConfigTable == null) {
 		try {
 			ivjConfigTable = new JSortTable();
-			//getConfigScrollPane().setColumnHeaderView(ivjConfigTable.getTableHeader());
 			ivjConfigTable.setModel(new ServiceStatusTableModel());
-			//ivjConfigTable.setBounds(0, 0, 200, 200);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1997,11 +1981,7 @@ private javax.swing.JPanel getConfigPage() {
 			panel.add(getNumConfigsLabel());			
 			ivjConfigPage.add(panel, "North");
 			
-			JScrollPane scrollPane = new javax.swing.JScrollPane();
-			scrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			scrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			scrollPane.setViewportView(getConfigTable());			
-			ivjConfigPage.add(scrollPane, "Center");
+			ivjConfigPage.add(getConfigTable().getEnclosingScrollPane(), "Center");
 			
 			Box box = Box.createHorizontalBox();
 			box.add(Box.createHorizontalGlue());
@@ -2096,11 +2076,7 @@ private javax.swing.JPanel getUserConnectionPage() {
 			panel.add(getNumUserConnectionLabel(), getNumUserConnectionLabel().getName());			
 			getUserConnectionPage().add(panel, "North");
 			
-			JScrollPane scrollPane4 = new javax.swing.JScrollPane();
-			scrollPane4.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			scrollPane4.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			scrollPane4.setViewportView(getUserConnectionTable());			
-			getUserConnectionPage().add(scrollPane4, "Center");
+			getUserConnectionPage().add(getUserConnectionTable().getEnclosingScrollPane(), "Center");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2116,20 +2092,12 @@ private javax.swing.JPanel getUserConnectionPage() {
  * Return the UserConnectionTable property value.
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private JSortTable getUserConnectionTable() {
 	if (ivjUserConnectionTable == null) {
 		try {
 			ivjUserConnectionTable = new JSortTable();
-			//getJScrollPane4().setColumnHeaderView(ivjUserConnectionTable.getTableHeader());
-			//ivjUserConnectionTable.setBounds(0, 0, 200, 200);
 			getUserConnectionTable().setModel(new UserConnectionTableModel());
-			//getUserConnectionTable().createDefaultColumnsFromModel();			
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -2251,6 +2219,9 @@ private void initialize() {
 
 		getQueryResultTable().setDefaultRenderer(Date.class, new DateRenderer());
 		getQueryResultTable().setDefaultRenderer(Long.class, new DateRenderer());
+		
+		getConfigTable().setDefaultRenderer(Date.class, new DateRenderer());
+		
 		getServiceStatusTable().setDefaultRenderer(Date.class, new DateRenderer());
 		
 		initConnections();

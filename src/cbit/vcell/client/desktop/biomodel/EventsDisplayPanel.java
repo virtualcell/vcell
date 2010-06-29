@@ -5,13 +5,15 @@ import java.awt.GridBagLayout;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
+
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.BioEvent;
@@ -20,8 +22,7 @@ import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 
 public class EventsDisplayPanel extends JPanel {
 	private JSplitPane outerSplitPane = null;
-	private JScrollPane scrollPane = null;
-	private JTable scrollPaneTable = null;
+	private ScrollTable scrollPaneTable = null;
 	private EventsSummaryTableModel eventsSummaryTableModel = null;
 	private EventPanel eventPanel = null;
 	private SimulationContext fieldSimContext = null;
@@ -64,7 +65,7 @@ public class EventsDisplayPanel extends JPanel {
 		getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 		
 		// cellRenderer for table (name column)
-		getScrollPaneTable().setDefaultRenderer(BioEvent.class, new DefaultTableCellRenderer() {
+		getScrollPaneTable().setDefaultRenderer(BioEvent.class, new DefaultScrollTableCellRenderer() {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
 			{
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -92,7 +93,6 @@ public class EventsDisplayPanel extends JPanel {
 			initConnections();
 			
 			getScrollPaneTable().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-			getScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
 			
 			getEventSummaryTableModel().addTableModelListener(
 					new javax.swing.event.TableModelListener(){
@@ -110,29 +110,12 @@ public class EventsDisplayPanel extends JPanel {
 			e.printStackTrace(System.out);
 		}
 	}
-
-	private javax.swing.JScrollPane getJScrollPane1() {
-		if (scrollPane == null) {
-			try {
-				scrollPane = new javax.swing.JScrollPane();
-				scrollPane.setName("JScrollPane1");
-				scrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-				scrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-				scrollPane.setViewportView(getScrollPaneTable());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace(System.out);
-			}
-		}
-		return scrollPane;
-	}
 	
-	private javax.swing.JTable getScrollPaneTable() {
+	private ScrollTable getScrollPaneTable() {
 		if (scrollPaneTable == null) {
 			try {
-				scrollPaneTable = new javax.swing.JTable();
+				scrollPaneTable = new ScrollTable();
 				scrollPaneTable.setName("ScrollPaneTable");
-				getJScrollPane1().setColumnHeaderView(scrollPaneTable.getTableHeader());
-				scrollPaneTable.setBounds(0, 0, 200, 200);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
 			}
@@ -169,7 +152,7 @@ public class EventsDisplayPanel extends JPanel {
 			outerSplitPane = new JSplitPane();
 			outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 			outerSplitPane.setDividerLocation(300);
-			outerSplitPane.setTopComponent(getJScrollPane1());
+			outerSplitPane.setTopComponent(getScrollPaneTable().getEnclosingScrollPane());
 			if(expanded) {
 				outerSplitPane.setBottomComponent(getEventPanel());	// reaction kinetics editor
 			} else {
@@ -220,5 +203,9 @@ public class EventsDisplayPanel extends JPanel {
 		firePropertyChange("selectedBioEvent", oldValue, selectedBioEvent);   		
    		getEventPanel().setBioEvent(selectedBioEvent);
    	}
+
+	public void selectEvent(BioEvent bioEvent) {
+		getEventSummaryTableModel().selectEvent(bioEvent);		
+	}
 	
 }

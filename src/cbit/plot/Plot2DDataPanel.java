@@ -3,15 +3,25 @@ package cbit.plot;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.util.Vector;
+
+import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.NonEditableDefaultTableModel;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.ReservedSymbol;
-
-import java.util.Vector;
 /**
  * Insert the type's description here.
  * Creation date: (4/19/2001 12:33:58 PM)
@@ -45,10 +55,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 	}
 	private Plot2D fieldPlot2D = new Plot2D(null,null, null);
 	private boolean ivjConnPtoP2Aligning = false;
-	private JScrollPane ivjJScrollPane1 = null;
 	private Plot2D ivjplot2D1 = null;
-	private JTable ivjScrollPaneTable = null;
-	private org.vcell.util.gui.NonEditableDefaultTableModel ivjNonEditableDefaultTableModel1 = null;
+	private ScrollTable ivjScrollPaneTable = null;
+	private NonEditableDefaultTableModel ivjNonEditableDefaultTableModel1 = null;
 	private JMenuItem ivjJMenuItemCopy = null;
 	private JPopupMenu ivjJPopupMenu1 = null;
 	private JMenuItem ivjJMenuItemCopyAll = null;
@@ -447,30 +456,6 @@ private javax.swing.JPopupMenu getJPopupMenu1() {
 }
 
 /**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			getJScrollPane1().setViewportView(getScrollPaneTable());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
-
-/**
  * Return the NonEditableDefaultTableModel1 property value.
  * @return cbit.gui.NonEditableDefaultTableModel
  */
@@ -518,12 +503,11 @@ private Plot2D getplot2D1() {
  * @return javax.swing.JTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTable getScrollPaneTable() {
+private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new javax.swing.JTable();
+			ivjScrollPaneTable = new ScrollTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setCellSelectionEnabled(true);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			// user code begin {1}
@@ -576,7 +560,7 @@ private void initialize() {
 		setName("Plot2DDataPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(541, 348);
-		add(getJScrollPane1(), "Center");
+		add(getScrollPaneTable().getEnclosingScrollPane(), "Center");
 		initConnections();
 		connEtoC3();
 	} catch (java.lang.Throwable ivjExc) {
@@ -602,7 +586,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

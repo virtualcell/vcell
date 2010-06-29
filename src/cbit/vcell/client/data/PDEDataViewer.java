@@ -67,6 +67,7 @@ import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.LineBorderBean;
+import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.TitledBorderBean;
 import org.vcell.util.gui.VCFileChooser;
 
@@ -791,12 +792,10 @@ private void roiAction(){
 			auxInfoV.add(sortedGeomROIObjArr[1]);
 		}
 		
-		final JTable roiTable = new JTable(tableModel);
+		final ScrollTable roiTable = new ScrollTable();
+		roiTable.setModel(tableModel);
 		roiTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-	
-		ScopedExpressionTableCellRenderer.formatTableCellSizes(roiTable, null, null);
 		
-		JScrollPane scrollPane = new JScrollPane(roiTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		roiTable.setPreferredScrollableViewportSize(new Dimension(500, 250));
 	
 		final JPanel mainJPanel = new JPanel();
@@ -911,7 +910,7 @@ private void roiAction(){
 		okCancelJPanel.add(cancelButton);
 	
 		mainJPanel.add(timeJPanel);
-		mainJPanel.add(scrollPane);
+		mainJPanel.add(roiTable.getEnclosingScrollPane());
 		mainJPanel.add(okCancelJPanel);
 	
 		showComponentInFrame(mainJPanel,

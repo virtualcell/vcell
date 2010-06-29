@@ -4,22 +4,26 @@ package cbit.vcell.export;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-import javax.swing.table.*;
-import javax.swing.*;
-import cbit.rmi.event.*;
+import java.util.Enumeration;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.table.TableColumn;
+
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.ScrollTable;
+
+import cbit.rmi.event.ExportEvent;
 /**
  * Insert the type's description here.
  * Creation date: (4/4/2001 2:38:28 AM)
  * @author: Ion Moraru
  */
 public class ExportMonitorPanel extends JPanel {
-	private JScrollPane ivjJScrollPane1 = null;
-	private JTable ivjScrollPaneTable = null;
+	private ScrollTable ivjScrollPaneTable = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ExportMonitorTableModel ivjExportMonitorTableModel1 = null;
-	private org.vcell.util.gui.DefaultTableCellRendererEnhanced ivjDefaultTableCellRendererEnhanced1 = null;
 	private boolean fieldHasJobs = false;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
@@ -47,7 +51,7 @@ public void addExportEvent(ExportEvent event, String resultSetID) {
 	setHasJobs(true);
 	ExportMonitorTableModel etm = (ExportMonitorTableModel)getScrollPaneTable().getModel();
 	int r = etm.addExportEvent(resultSetID, event);
-	Enumeration en = getScrollPaneTable().getColumnModel().getColumns();
+	Enumeration<TableColumn> en = getScrollPaneTable().getColumnModel().getColumns();
 	int c = 0;
 	while (en.hasMoreElements()) {
 		TableColumn column = (TableColumn)en.nextElement();
@@ -56,23 +60,7 @@ public void addExportEvent(ExportEvent event, String resultSetID) {
 	}
 	getScrollPaneTable().setPreferredScrollableViewportSize(getScrollPaneTable().getPreferredSize());
 }
-/**
- * connEtoM1:  (ExportMonitorPanel.initialize() --> ScrollPaneTable.setDefaultRenderer(Ljava.lang.Class;Ljavax.swing.table.TableCellRenderer;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1() {
-	try {
-		// user code begin {1}
-		// user code end
-		getScrollPaneTable().setDefaultRenderer(Object.class, getDefaultTableCellRendererEnhanced1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+
 /**
  * connPtoP1SetSource:  (ScrollPaneTable.model <--> ExportMonitorTableModel1.this)
  */
@@ -140,28 +128,7 @@ private void connPtoP2SetTarget() {
 		handleException(ivjExc);
 	}
 }
-/**
- * Return the DefaultTableCellRendererEnhanced1 property value.
- * @return cbit.gui.DefaultTableCellRendererEnhanced
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.DefaultTableCellRendererEnhanced getDefaultTableCellRendererEnhanced1() {
-	if (ivjDefaultTableCellRendererEnhanced1 == null) {
-		try {
-			ivjDefaultTableCellRendererEnhanced1 = new org.vcell.util.gui.DefaultTableCellRendererEnhanced();
-			ivjDefaultTableCellRendererEnhanced1.setName("DefaultTableCellRendererEnhanced1");
-			ivjDefaultTableCellRendererEnhanced1.setText("DefaultTableCellRendererEnhanced1");
-			ivjDefaultTableCellRendererEnhanced1.setBounds(29, 336, 212, 16);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjDefaultTableCellRendererEnhanced1;
-}
+
 /**
  * Return the ExportMonitorTableModel1 property value.
  * @return cbit.vcell.export.ExportMonitorTableModel
@@ -180,43 +147,18 @@ private ExportMonitorTableModel getExportMonitorTableModel1() {
 public boolean getHasJobs() {
 	return fieldHasJobs;
 }
-/**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			getJScrollPane1().setViewportView(getScrollPaneTable());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
+
 /**
  * Return the ScrollPaneTable property value.
  * @return javax.swing.JTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTable getScrollPaneTable() {
+private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new javax.swing.JTable();
+			ivjScrollPaneTable = new ScrollTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
-			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
-			ivjScrollPaneTable.setModel(new cbit.vcell.export.ExportMonitorTableModel());
+			ivjScrollPaneTable.setModel(new ExportMonitorTableModel());
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			// user code begin {1}
 			// user code end
@@ -268,9 +210,9 @@ private void initialize() {
 		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJScrollPane1.weightx = 1.0;
 		constraintsJScrollPane1.weighty = 1.0;
-		add(getJScrollPane1(), constraintsJScrollPane1);
+		add(getScrollPaneTable().getEnclosingScrollPane(), constraintsJScrollPane1);
+
 		initConnections();
-		connEtoM1();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

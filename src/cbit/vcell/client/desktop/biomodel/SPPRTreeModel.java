@@ -337,6 +337,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 			if (evt.getPropertyName().equals("geometry")) {
 				if (((Geometry)evt.getNewValue()).getDimension() > 0) {
 					((SPPRTreeFolderNode)folderNodes[EVENTS_NODE].getUserObject()).setSupported(false);
+					populateTree(EVENTS_NODE);
 				} 
 			}
 			if (evt.getPropertyName().equals("bioevents")) {

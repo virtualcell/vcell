@@ -1,4 +1,9 @@
 package cbit.vcell.client.desktop.simulation;
+
+import javax.swing.Scrollable;
+
+import org.vcell.util.gui.ScrollTable;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/18/2006 3:38:00 PM)
@@ -6,8 +11,7 @@ package cbit.vcell.client.desktop.simulation;
  */
 public class SimulationStatusDetailsPanel extends javax.swing.JPanel {
 	private javax.swing.JPanel ivjJPanel1 = null;
-	private javax.swing.JScrollPane ivjJScrollPane1 = null;
-	private javax.swing.JTable ivjScrollPaneTable = null;
+	private ScrollTable ivjScrollPaneTable = null;
 	private SimulationStatusDetails fieldSimulationStatusDetails = null;
 	private SimulationStatusDetailsTableModel ivjSimulationStatusDetailsTableModel1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -295,31 +299,6 @@ private javax.swing.JPanel getJPanel1() {
 }
 
 /**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			getJScrollPane1().setViewportView(getScrollPaneTable());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
-
-
-/**
  * Return the JTextField1 property value.
  * @return javax.swing.JTextField
  */
@@ -346,12 +325,11 @@ private javax.swing.JTextField getNameTextField() {
  * @return javax.swing.JTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTable getScrollPaneTable() {
+private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new javax.swing.JTable();
+			ivjScrollPaneTable = new ScrollTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			// user code begin {1}
 			// user code end
@@ -452,7 +430,7 @@ private void initialize() {
 		setName("SimulationStatusDetailsPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(692, 609);
-		add(getJScrollPane1(), "Center");
+		add(getScrollPaneTable().getEnclosingScrollPane(), "Center");
 		add(getJPanel1(), "North");
 		initConnections();
 		connEtoC2();
@@ -507,7 +485,6 @@ public void setSimulationStatusDetails(SimulationStatusDetails simulationStatusD
  */
 public void simulationStatusDetailsPanel_Initialize() {
 	getScrollPaneTable().setDefaultRenderer(java.util.Date.class, new org.vcell.util.gui.DateRenderer());
-	getScrollPaneTable().setDefaultRenderer(Object.class, new org.vcell.util.gui.DefaultTableCellRendererEnhanced());
 	return;
 }
 

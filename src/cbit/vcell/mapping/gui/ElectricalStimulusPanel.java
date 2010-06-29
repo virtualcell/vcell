@@ -15,6 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.table.TableColumn;
 
 import org.vcell.util.Coordinate;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -546,26 +547,7 @@ private void connEtoM6(ElectricalStimulus value) {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM7() {
 	try {
-		getScrollPaneTable().setModel(getelectricalStimulusParameterTableModel());
-		getScrollPaneTable().createDefaultColumnsFromModel();
-		getScrollPaneTable().setDefaultEditor(ScopedExpression.class, new TableCellEditorAutoCompletion(getScrollPaneTable(), false));		
-		
-		for(int i=0; i<getScrollPaneTable().getModel().getColumnCount(); i++) {
-			TableColumn column=getScrollPaneTable().getColumnModel().getColumn(i);
-			if (i == ElectricalStimulusParameterTableModel.COLUMN_VALUE) {
-				column.setCellRenderer(new ScopedExpressionTableCellRenderer());
-			} else {
-				column.setCellRenderer(new ParameterTableCellRenderer(getScrollPaneTable().getDefaultRenderer(Boolean.class)));	
-			}
-		}
-		
-		getelectricalStimulusParameterTableModel().addTableModelListener(
-			new javax.swing.event.TableModelListener(){
-				public void tableChanged(javax.swing.event.TableModelEvent e){
-					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-				}
-			}
-		);
+		getScrollPaneTable().setModel(getelectricalStimulusParameterTableModel());	
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -927,7 +909,7 @@ private javax.swing.JPanel getJPanel2() {
 			constraintsparameterTable.weightx = 1.0;
 			constraintsparameterTable.weighty = 1.0;
 			constraintsparameterTable.insets = new java.awt.Insets(0, 4, 4, 4);
-			getJPanel2().add(getparameterTable(), constraintsparameterTable);
+			getJPanel2().add(getScrollPaneTable().getEnclosingScrollPane(), constraintsparameterTable);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -962,29 +944,29 @@ private javax.swing.JRadioButton getNoClampRadioButton() {
 }
 
 
-/**
- * Return the parameterTable property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getparameterTable() {
-	if (ivjparameterTable == null) {
-		try {
-			ivjparameterTable = new javax.swing.JScrollPane();
-			ivjparameterTable.setName("parameterTable");
-			ivjparameterTable.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			ivjparameterTable.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			getparameterTable().setViewportView(getScrollPaneTable());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjparameterTable;
-}
+///**
+// * Return the parameterTable property value.
+// * @return javax.swing.JScrollPane
+// */
+///* WARNING: THIS METHOD WILL BE REGENERATED. */
+//private javax.swing.JScrollPane getparameterTable() {
+//	if (ivjparameterTable == null) {
+//		try {
+//			ivjparameterTable = new javax.swing.JScrollPane();
+//			ivjparameterTable.setName("parameterTable");
+//			ivjparameterTable.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+//			ivjparameterTable.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+//			getparameterTable().setViewportView(getScrollPaneTable());
+//			// user code begin {1}
+//			// user code end
+//		} catch (java.lang.Throwable ivjExc) {
+//			// user code begin {2}
+//			// user code end
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjparameterTable;
+//}
 
 
 /**
@@ -1043,14 +1025,7 @@ private JSortTable getScrollPaneTable() {
 		try {
 			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getparameterTable().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			ivjScrollPaneTable.setRowHeight(ivjScrollPaneTable.getRowHeight() + 2);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1130,12 +1105,6 @@ private void initConnections() throws java.lang.Exception {
 	getCurrentDensityClampRadioButton().addItemListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
-	
-	getparameterTable().addComponentListener(new ComponentAdapter() {
-		public void componentResized(ComponentEvent e) {
-			ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-		}
-	});
 }
 
 /**
@@ -1408,7 +1377,7 @@ private void setPanelsVisible() {
 	getpatchElectrodePanel().setVisible(bHasStimulus);
 	getgroundElectrodePanel().setVisible(bHasStimulus);
 	getBtnGraphElectricalStimulus().setVisible(bHasStimulus);
-	getparameterTable().setVisible(bHasStimulus);
+	getScrollPaneTable().setVisible(bHasStimulus);
 	getpatchElectrodeLabel().setVisible(bHasStimulus);
 	getgroundElectrodeLabel().setVisible(bHasStimulus);
 	return;

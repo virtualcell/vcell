@@ -17,7 +17,7 @@ public class SimulationListTableModel extends AbstractTableModel implements Prop
 	private final static int COLUMN_STATUS = 2;
 	private final static int COLUMN_RESULTS = 3;
 	
-	private String[] columnNames = new String[] {"Name", "Last saved", "Running status", "Results"};
+	private String[] columnNames = new String[] {"Name", "Last Saved", "Running Status", "Results"};
 	private SimulationWorkspace simulationWorkspace = null;
 	private JTable ownerTable = null;
 
