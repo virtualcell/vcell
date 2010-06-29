@@ -4,18 +4,15 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
-import javax.swing.JTable;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
 import javax.swing.UIManager;
 
-import cbit.vcell.geometry.Geometry;
+import org.vcell.util.gui.ScrollTable;
+
 import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
-import cbit.vcell.parser.Expression;
+import cbit.vcell.math.BoundaryConditionType;
 
 /**
  * This type was created in VisualAge.
@@ -23,15 +20,15 @@ import cbit.vcell.parser.Expression;
 public class StructureMappingPanel extends javax.swing.JPanel {
 	private static final String PROPERTY_GEOMETRY_CONTEXT = "geometryContext";
 	private GeometryContext ivjgeometryContext1 = null;  
-	private GeometryContext fieldGeometryContext = null;  
-	private javax.swing.JScrollPane ivjJScrollPane1 = null;
+	private GeometryContext fieldGeometryContext = null;
 	private Component ivjComponent1 = null;
 	private javax.swing.DefaultCellEditor ivjDefaultCellEditor1 = null;  //  @jve:decl-index=0:
-	private JTable ivjScrollPaneTable1 = null;
+	private ScrollTable ivjScrollPaneTable1 = null;
 	private StructureMappingTableModel ivjStructureMappingTableModel1 = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP3Aligning = false;
 	private VolumeSurfaceCalculatorPanel volumeSurfaceCalculatorPanel = null;
+	private JComboBox boundaryConditionComboBox = new JComboBox(new String[]{BoundaryConditionType.NEUMANN_STRING,BoundaryConditionType.DIRICHLET_STRING});
 
 class IvjEventHandler implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {		
 		public void focusGained(java.awt.event.FocusEvent e) {};
@@ -243,40 +240,15 @@ private GeometryContext getgeometryContext1() {
 }
 
 /**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			getJScrollPane1().setViewportView(getScrollPaneTable1());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
-
-/**
  * Return the ScrollPaneTable1 property value.
  * @return cbit.gui.JTableFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private JTable getScrollPaneTable1() {
+private ScrollTable getScrollPaneTable1() {
 	if (ivjScrollPaneTable1 == null) {
 		try {
-			ivjScrollPaneTable1 = new JTable();
+			ivjScrollPaneTable1 = new ScrollTable();
 			ivjScrollPaneTable1.setName("ScrollPaneTable1");
-//			ivjScrollPaneTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable1.getTableHeader());
-			ivjScrollPaneTable1.setRowHeight(ivjScrollPaneTable1.getRowHeight() + 2);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -334,21 +306,6 @@ private void initConnections() throws java.lang.Exception {
 	getScrollPaneTable1().addPropertyChangeListener(ivjEventHandler);
 	connPtoP3SetTarget();
 	connPtoP1SetTarget();
-	
-	getScrollPaneTable1().addPropertyChangeListener(//This listener is to ensure table is formated properly when first initialized
-		new java.beans.PropertyChangeListener(){
-			public void propertyChange(java.beans.PropertyChangeEvent evt){
-				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
-			}
-		}
-	);
-	getStructureMappingTableModel1().addTableModelListener(//This listener formats formats table cells after an edit
-		new javax.swing.event.TableModelListener(){
-			public void tableChanged(javax.swing.event.TableModelEvent e){
-				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
-			}
-		}
-	);
 }
 
 /**
@@ -368,13 +325,19 @@ private void initialize() {
 		add(getVolumeSurfaceCalculatorPanel(), gbc);
 		
 		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
-		constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 2;
+		constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 1;
 		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJScrollPane1.weightx = 1.0;
 		constraintsJScrollPane1.weighty = 1.0;
 		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJScrollPane1(), constraintsJScrollPane1);
+		add(getScrollPaneTable1().getEnclosingScrollPane(), constraintsJScrollPane1);
 	
+		//set column renderer
+		getScrollPaneTable1().setDefaultEditor(BoundaryConditionType.class, new DefaultCellEditor(boundaryConditionComboBox));
+		getScrollPaneTable1().setDefaultRenderer(BoundaryConditionType.class, new StructureMappingTableRenderer());
+		getScrollPaneTable1().setDefaultRenderer(Double.class, new StructureMappingTableRenderer());
+		getScrollPaneTable1().setDefaultRenderer(String.class, new StructureMappingTableRenderer());
+		
  		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

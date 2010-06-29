@@ -247,4 +247,14 @@ public class EventsSummaryTableModel extends ManageTableModel implements Propert
 		return (BioEvent)getData().get(row);
 	}
 
+	public void selectEvent(BioEvent bioEvent) {
+		for (int i = 0; i < getRowCount(); i ++) {
+			BioEvent valueAt = (BioEvent)getValueAt(i, COLUMN_EVENT_NAME);
+			if (valueAt.getName().equals(bioEvent.getName())) {
+				ownerTable.changeSelection(i, 0, false, false);
+				break;
+			}
+		}		
+	}
+
 }

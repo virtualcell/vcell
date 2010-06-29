@@ -1,30 +1,26 @@
 package cbit.vcell.modelopt.gui;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.sorttable.ManageTableModel;
 
-import cbit.vcell.model.Model;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.*;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.parser.DivideByZeroException;
+import cbit.vcell.modelopt.ModelOptimizationSpec;
+import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.modelopt.ParameterMapping;
+import cbit.vcell.modelopt.ParameterMappingSpec;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ParameterMappingTableModel extends org.vcell.util.gui.sorttable.ManageTableModel implements java.beans.PropertyChangeListener {
+public class ParameterMappingTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
 
-	private class ParameterColumnComparator implements Comparator {
+	private class ParameterColumnComparator implements Comparator<ParameterMappingSpec> {
 		protected int index;
 		protected boolean ascending;
 
@@ -38,12 +34,10 @@ public class ParameterMappingTableModel extends org.vcell.util.gui.sorttable.Man
 		 * zero, or a positive integer as the first argument is less than, equal
 		 * to, or greater than the second.<p>
 		 */
-		public int compare(Object o1, Object o2){
+		public int compare(ParameterMappingSpec pms1, ParameterMappingSpec pms2){
 			
-			cbit.vcell.modelopt.ParameterMappingSpec pms1 = (cbit.vcell.modelopt.ParameterMappingSpec)o1;
-			cbit.vcell.modelopt.ParameterMappingSpec pms2 = (cbit.vcell.modelopt.ParameterMappingSpec)o2;
-			cbit.vcell.model.Parameter parm1 = pms1.getModelParameter();
-			cbit.vcell.model.Parameter parm2 = pms2.getModelParameter();
+			Parameter parm1 = pms1.getModelParameter();
+			Parameter parm2 = pms2.getModelParameter();
 			
 			switch (index){
 				case COLUMN_NAME:{
@@ -120,7 +114,6 @@ public class ParameterMappingTableModel extends org.vcell.util.gui.sorttable.Man
 			return 1;
 		}
 	}
-	private final static int NUM_COLUMNS = 8;
 	private final static int COLUMN_NAME = 0;
 	private final static int COLUMN_SCOPE = 1;
 	private final static int COLUMN_MODELVALUE = 2;
@@ -129,10 +122,9 @@ public class ParameterMappingTableModel extends org.vcell.util.gui.sorttable.Man
 	private final static int COLUMN_LOWVALUE = 5;
 	private final static int COLUMN_HIGHVALUE = 6;
 	public final static int COLUMN_SOLUTION = 7;
-	private final static String LABELS[] = { "parameter", "context",  "model value", "optimize", "initial guess", "lower", "upper", "solution"  };
+	private final static String LABELS[] = { "Parameter", "Context",  "Model Value", "Optimize", "Initial Guess", "Lower", "Upper", "Solution"  };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private final int indexes[] = new int[0];
-	private cbit.vcell.modelopt.ParameterEstimationTask fieldParameterEstimationTask = null;
+	private ParameterEstimationTask fieldParameterEstimationTask = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -150,43 +142,10 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
@@ -197,7 +156,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return java.lang.Class
  * @param column int
  */
-public Class getColumnClass(int column) {
+public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_NAME:{
 			return String.class;
@@ -240,7 +199,7 @@ public Class getColumnClass(int column) {
  * getColumnCount method comment.
  */
 public int getColumnCount() {
-	return NUM_COLUMNS;
+	return LABELS.length;
 }
 
 
@@ -251,8 +210,8 @@ public int getColumnCount() {
  * @param column int
  */
 public String getColumnName(int column) {
-	if (column<0 || column>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (column<0 || column>=getColumnCount()){
+		throw new RuntimeException("ParameterTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
 	return LABELS[column];
 }
@@ -263,33 +222,9 @@ public String getColumnName(int column) {
  * @return The parameterEstimationTask property value.
  * @see #setParameterEstimationTask
  */
-public cbit.vcell.modelopt.ParameterEstimationTask getParameterEstimationTask() {
+public ParameterEstimationTask getParameterEstimationTask() {
 	return fieldParameterEstimationTask;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/23/2003 1:24:52 PM)
- * @return cbit.vcell.model.Parameter
- * @param row int
- */
-private cbit.vcell.modelopt.ParameterMappingSpec getParameterMappingSpec(int row) {
-
-	if (getParameterEstimationTask()==null){
-		return null;
-	}
-	if (row<0){
-		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range");
-	}
-	int count = getParameterEstimationTask().getModelOptimizationSpec().getParameterMappingSpecs().length;
-	int index = row;
-	if (index<count){
-		return getParameterEstimationTask().getModelOptimizationSpec().getParameterMappingSpecs()[index];
-	}
-	throw new RuntimeException("rowIndex = "+row+" not found");
-}
-
 
 /**
  * Accessor for the propertyChange field.
@@ -316,17 +251,17 @@ public int getRowCount() {
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-private List getUnsortedParameters() {
+private List<ParameterMappingSpec> getUnsortedParameters() {
 
 	if (getParameterEstimationTask()==null){
 		return null;
 	}
 	
-	int count = getParameterEstimationTask().getModelOptimizationSpec().getParameterMappingSpecs().length;
+	ParameterMappingSpec[] parameterMappingSpecs = getParameterEstimationTask().getModelOptimizationSpec().getParameterMappingSpecs();
 
-	java.util.ArrayList list = new java.util.ArrayList();
-	for (int i = 0; i < count; i++){
-		list.add(getParameterMappingSpec(i));
+	java.util.ArrayList<ParameterMappingSpec> list = new java.util.ArrayList<ParameterMappingSpec>();
+	for (ParameterMappingSpec pms : parameterMappingSpecs){
+		list.add(pms);
 	}
 	return list;
 }
@@ -336,20 +271,20 @@ private List getUnsortedParameters() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	if (col<0 || col>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (col<0 || col>=getColumnCount()){
+		throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
 	if (row<0 || row>=getRowCount()){
 		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
-	cbit.vcell.modelopt.ParameterMappingSpec parameterMappingSpec = (cbit.vcell.modelopt.ParameterMappingSpec)getData().get(row);
+	ParameterMappingSpec parameterMappingSpec = (ParameterMappingSpec)getData().get(row);
 	switch (col){
 		case COLUMN_NAME:{
 			//return getBioModel().getModel().getNameScope().getSymbolName(parameter);
 			return parameterMappingSpec.getModelParameter().getName();
 		}
 		case COLUMN_SCOPE:{
-			if (parameterMappingSpec.getModelParameter() instanceof cbit.vcell.model.Kinetics.UnresolvedParameter){
+			if (parameterMappingSpec.getModelParameter() instanceof UnresolvedParameter){
 				return "unresolved";
 			}else if (parameterMappingSpec.getModelParameter().getNameScope()==null){
 				return "null";
@@ -389,7 +324,7 @@ public Object getValueAt(int row, int col) {
 				//
 				for (int i = 0; i < getParameterEstimationTask().getModelOptimizationMapping().getParameterMappings().length; i++){
 					if (getParameterEstimationTask().getModelOptimizationMapping().getParameterMappings()[i].getModelParameter() == parameterMappingSpec.getModelParameter()){
-						cbit.vcell.modelopt.ParameterMapping parameterMapping = getParameterEstimationTask().getModelOptimizationMapping().getParameterMappings()[i];
+						ParameterMapping parameterMapping = getParameterEstimationTask().getModelOptimizationMapping().getParameterMappings()[i];
 						for (int j = 0; getParameterEstimationTask().getOptimizationResultSet().getParameterNames()!=null && j < getParameterEstimationTask().getOptimizationResultSet().getParameterNames().length; j++){
 							if (getParameterEstimationTask().getOptimizationResultSet().getParameterNames()[j].equals(parameterMapping.getOptParameter().getName())){
 								return new Double(getParameterEstimationTask().getOptimizationResultSet().getParameterValues()[j]);
@@ -437,9 +372,8 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	cbit.vcell.modelopt.ParameterMappingSpec parameterMapping = (cbit.vcell.modelopt.ParameterMappingSpec)getData().get(rowIndex);
 	if (columnIndex == COLUMN_NAME){
-		return parameterMapping.getModelParameter().isNameEditable();
+		return false;
 	}else if (columnIndex == COLUMN_SCOPE){
 		return false;
 	}else if (columnIndex == COLUMN_SELECTED){
@@ -514,18 +448,18 @@ public boolean isSortable(int col) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && evt.getPropertyName().equals("parameterEstimationTask")) {
-		cbit.vcell.modelopt.ParameterEstimationTask oldValue = (cbit.vcell.modelopt.ParameterEstimationTask)evt.getOldValue();
+		ParameterEstimationTask oldValue = (ParameterEstimationTask)evt.getOldValue();
 		if (oldValue!=null){
 			oldValue.removePropertyChangeListener(this);
-			cbit.vcell.modelopt.ParameterMappingSpec[] oldPMS = oldValue.getModelOptimizationSpec().getParameterMappingSpecs();
+			ParameterMappingSpec[] oldPMS = oldValue.getModelOptimizationSpec().getParameterMappingSpecs();
 			for (int i = 0; oldPMS!=null && i < oldPMS.length; i++){
 				oldPMS[i].removePropertyChangeListener(this);
 			}
 		}
-		cbit.vcell.modelopt.ParameterEstimationTask newValue = (cbit.vcell.modelopt.ParameterEstimationTask)evt.getNewValue();
+		ParameterEstimationTask newValue = (ParameterEstimationTask)evt.getNewValue();
 		if (newValue!=null){
 			newValue.addPropertyChangeListener(this);
-			cbit.vcell.modelopt.ParameterMappingSpec[] newPMS = newValue.getModelOptimizationSpec().getParameterMappingSpecs();
+			ParameterMappingSpec[] newPMS = newValue.getModelOptimizationSpec().getParameterMappingSpecs();
 			for (int i = 0; newPMS!=null && i < newPMS.length; i++){
 				newPMS[i].addPropertyChangeListener(this);
 			}
@@ -537,12 +471,12 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
-	if (evt.getSource() instanceof cbit.vcell.modelopt.ModelOptimizationSpec && evt.getPropertyName().equals("parameterMappingSpecs")) {
+	if (evt.getSource() instanceof ModelOptimizationSpec && evt.getPropertyName().equals("parameterMappingSpecs")) {
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
 	
-	if (evt.getSource() instanceof cbit.vcell.modelopt.ParameterMappingSpec) {
+	if (evt.getSource() instanceof ParameterMappingSpec) {
 		fireTableDataChanged();
 	}
 }
@@ -569,18 +503,18 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param parameterEstimationTask The new value for the property.
  * @see #getParameterEstimationTask
  */
-public void setParameterEstimationTask(cbit.vcell.modelopt.ParameterEstimationTask parameterEstimationTask) {
-	cbit.vcell.modelopt.ParameterEstimationTask oldValue = fieldParameterEstimationTask;
+public void setParameterEstimationTask(ParameterEstimationTask parameterEstimationTask) {
+	ParameterEstimationTask oldValue = fieldParameterEstimationTask;
 	fieldParameterEstimationTask = parameterEstimationTask;
 	firePropertyChange("parameterEstimationTask", oldValue, parameterEstimationTask);
 }
 
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (columnIndex<0 || columnIndex>=getColumnCount()){
+		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
-	cbit.vcell.modelopt.ParameterMappingSpec parameterMappingSpec = (cbit.vcell.modelopt.ParameterMappingSpec)getData().get(rowIndex);
+	ParameterMappingSpec parameterMappingSpec = (ParameterMappingSpec)getData().get(rowIndex);
 	//try {
 		switch (columnIndex){
 			case COLUMN_SELECTED:{
@@ -639,7 +573,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					parameterMappingSpec.setCurrent(value);
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}else if (aValue instanceof String) {
-					String newDoubleString = (String)aValue;
 					parameterMappingSpec.setCurrent(Double.parseDouble((String)aValue));
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}

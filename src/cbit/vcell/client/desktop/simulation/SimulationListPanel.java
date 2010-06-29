@@ -21,8 +21,8 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.DefaultTableCellRendererEnhanced;
-import org.vcell.util.gui.JTableFixed;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.simulation.SimulationListTreeModel.SimulationListTreeFolderNode;
@@ -49,11 +49,10 @@ public class SimulationListPanel extends JPanel {
 	private JButton ivjCopyButton = null;
 	private JButton ivjDeleteButton = null;
 	private JButton ivjEditButton = null;
-	private JScrollPane ivjJScrollPane1 = null;
 	private JButton ivjNewButton = null;
 	private JButton ivjResultsButton = null;
 	private JButton ivjRunButton = null;
-	private JTableFixed ivjScrollPaneTable = null;
+	private ScrollTable ivjScrollPaneTable = null;
 	private JButton ivjStopButton = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
@@ -421,7 +420,6 @@ private void copySimulations() {
  */
 private void customizeTable() {
 	getScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-	getScrollPaneTable().setDefaultRenderer(Object.class, new DefaultTableCellRendererEnhanced());
 }
 
 
@@ -609,33 +607,6 @@ private javax.swing.JButton getEditButton() {
 	return ivjEditButton;
 }
 
-
-/**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			//ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			//ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			//ivjJScrollPane1.setPreferredSize(new java.awt.Dimension(750, 100));
-			//ivjJScrollPane1.setMinimumSize(new java.awt.Dimension(100, 100));
-			getJScrollPane1().setViewportView(getScrollPaneTable());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
-
 /**
  * Return the NewButton property value.
  * @return javax.swing.JButton
@@ -712,14 +683,12 @@ private javax.swing.JButton getRunButton() {
  * Return the ScrollPaneTable property value.
  * @return cbit.gui.JTableFixed
  */
-private JTableFixed getScrollPaneTable() {
+private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new JTableFixed();
+			ivjScrollPaneTable = new ScrollTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
-			ivjScrollPaneTable.setAutoCreateColumnsFromModel(false);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -1217,7 +1186,7 @@ private void stopSimulations() {
 		if (innerSplitPane == null) {
 			innerSplitPane = new JSplitPane();
 			innerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-			innerSplitPane.setLeftComponent(getJScrollPane1());
+			innerSplitPane.setLeftComponent(getScrollPaneTable().getEnclosingScrollPane());
 			innerSplitPane.setRightComponent(getButtonsAndSimSummarypanel());
 			innerSplitPane.setDividerLocation(180);
 		}
@@ -1304,6 +1273,7 @@ private void stopSimulations() {
 	
 	public void setScrollPaneTableCurrentRow(Simulation selection) {
 		if (selection == null) {
+			getScrollPaneTable().clearSelection();
 			return;
 		}
 		int numRows = getScrollPaneTable().getRowCount();

@@ -3,11 +3,11 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.table.TableColumn;
+
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
@@ -17,9 +17,8 @@ import cbit.vcell.parser.ExpressionBindingException;
  * This type was created in VisualAge.
  */
 public class ParameterPanel extends javax.swing.JPanel implements PropertyChangeListener {
-	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private ParameterTableModel ivjParameterTableModel = null;
-	private javax.swing.JTable ivjScrollPaneTable = null;
+	private ScrollTable ivjScrollPaneTable = null;
 	private Kinetics fieldKinetics = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private Kinetics ivjkinetics1 = null;
@@ -62,14 +61,6 @@ private void connEtoM2() {
 	try {
 		getScrollPaneTable().setModel(getParameterTableModel());
 		getScrollPaneTable().createDefaultColumnsFromModel();
-
-		//set column renderer, except for expression/value column.
-		for(int i=0; i<getScrollPaneTable().getModel().getColumnCount(); i++) {
-			if (i != ParameterTableModel.COLUMN_VALUE) {
-				TableColumn column=getScrollPaneTable().getColumnModel().getColumn(i);
-				column.setCellRenderer(new ParameterTableCellRenderer(getScrollPaneTable().getDefaultRenderer(Boolean.class)));
-			}
-		}
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -112,26 +103,6 @@ private void connPtoP2SetTarget() {
 	}
 }
 
-
-/**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			getJScrollPane1().setViewportView(getScrollPaneTable());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
-
 /**
  * Gets the kinetics property (cbit.vcell.model.Kinetics) value.
  * @return The kinetics property value.
@@ -170,15 +141,11 @@ private ParameterTableModel getParameterTableModel() {
  * Return the ScrollPaneTable property value.
  * @return javax.swing.JTable
  */
-private javax.swing.JTable getScrollPaneTable() {
+private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new javax.swing.JTable();
-			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			ivjScrollPaneTable.setAutoCreateColumnsFromModel(false);
+			ivjScrollPaneTable = new ScrollTable();
+			ivjScrollPaneTable.setValidateExpressionBinding(false);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -209,11 +176,6 @@ private void handleException(Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(this);
 	connPtoP2SetTarget();
-	getJScrollPane1().addComponentListener(new ComponentAdapter() {
-		public void componentResized(ComponentEvent e) {
-			ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-		}
-	});
 }
 
 /**
@@ -229,9 +191,8 @@ private void initialize() {
 		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJScrollPane1.weightx = 1.0;
 		constraintsJScrollPane1.weighty = 1.0;
-		add(getJScrollPane1(), constraintsJScrollPane1);
+		add(getScrollPaneTable().getEnclosingScrollPane(), constraintsJScrollPane1);
 		initConnections();
-		parameterPanel_Initialize();
 		connEtoM2();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -262,25 +223,6 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
-
-
-/**
- * Comment
- */
-public void parameterPanel_Initialize() {
-
-	getScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), false));
-	
-	getParameterTableModel().addTableModelListener(
-		new javax.swing.event.TableModelListener(){
-			public void tableChanged(javax.swing.event.TableModelEvent e){
-				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-			}
-		}
-	);
-}
-
 
 /**
  * Method to handle events for the PropertyChangeListener interface.

@@ -219,7 +219,6 @@ public class VolumeSurfaceCalculatorPanel extends JPanel {
 		gbc.insets = new java.awt.Insets(4, 4, 0, 4);
 		volumeTextField = new JTextField(20);
 		volumeTextField.setEditable(false);
-		volumeTextField.setBackground(Color.WHITE);
 		volumeSurfaceCalculatorPanel.add(volumeTextField, gbc);
 
 		//
@@ -269,7 +268,6 @@ public class VolumeSurfaceCalculatorPanel extends JPanel {
 		gbc.insets = new java.awt.Insets(4, 4, 0, 4);
 		surfaceTextField = new JTextField(20);
 		surfaceTextField.setEditable(false);
-		surfaceTextField.setBackground(Color.WHITE);
 		volumeSurfaceCalculatorPanel.add(surfaceTextField, gbc);
 		
 		//

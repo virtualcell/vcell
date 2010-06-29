@@ -38,9 +38,11 @@ import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.function.DefaultScalarFunctionTest;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
@@ -348,29 +350,11 @@ public class EventPanel extends JPanel {
 			return buttons_n_label_Panel;
 		}
 
-		private javax.swing.JScrollPane getEventTargetsTableScrollPane() {
-			if (eventTargetsTableScrollPane == null) {
-				try {
-					eventTargetsTableScrollPane = new javax.swing.JScrollPane();
-					eventTargetsTableScrollPane.setName("JScrollPane1");
-					eventTargetsTableScrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-					eventTargetsTableScrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-					eventTargetsTableScrollPane.setPreferredSize(new java.awt.Dimension(750, 100));
-					eventTargetsTableScrollPane.setMinimumSize(new java.awt.Dimension(100, 100));
-					getEventTargetsTableScrollPane().setViewportView(getEventTargetsScrollPaneTable());
-				} catch (java.lang.Throwable e) {
-					e.printStackTrace(System.out);
-				}
-			}
-			return eventTargetsTableScrollPane;
-		}
-
 		private JSortTable getEventTargetsScrollPaneTable() {
 			if (eventTargetsScrollPaneTable == null) {
 				try {
 					eventTargetsScrollPaneTable = new JSortTable();
 					eventTargetsScrollPaneTable.setName("ScrollPaneTable");
-					eventTargetsScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -505,18 +489,12 @@ public class EventPanel extends JPanel {
 			
 			this.addPropertyChangeListener(ivjEventHandler);
 			
-			getEventTargetsTableScrollPane().addComponentListener(new ComponentAdapter() {
-				public void componentResized(ComponentEvent e) {
-					ScopedExpressionTableCellRenderer.formatTableCellSizes(getEventTargetsScrollPaneTable(),null,null);
-				}
-			});
-
 			// for scrollPaneTable, set tableModel and create default columns
 			getEventTargetsScrollPaneTable().setModel(getEventAssignmentsTableModel());
 			getEventTargetsScrollPaneTable().createDefaultColumnsFromModel();
 			
 			// cellRenderer for table (name column)
-			getEventTargetsScrollPaneTable().setDefaultRenderer(EventAssignment.class, new DefaultTableCellRenderer() {
+			getEventTargetsScrollPaneTable().setDefaultRenderer(EventAssignment.class, new DefaultScrollTableCellRenderer() {
 				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
 				{
 					super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -568,25 +546,11 @@ public class EventPanel extends JPanel {
 				JPanel panel = new JPanel();
 				panel.setLayout(new BorderLayout());
 				panel.add(getButtonLabelPanel(), BorderLayout.NORTH);
-				panel.add(getEventTargetsTableScrollPane(), BorderLayout.CENTER);
+				panel.add(getEventTargetsScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 				add(panel, BorderLayout.CENTER);
 				initConnections();
 				getEventTargetsScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-				// getEventTargetsScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-				getEventTargetsScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getEventTargetsScrollPaneTable(), true));
 				
-				getEventAssignmentsTableModel().addTableModelListener(
-						new javax.swing.event.TableModelListener(){
-							public void tableChanged(javax.swing.event.TableModelEvent e){
-								try {
-									ScopedExpressionTableCellRenderer.formatTableCellSizes(getEventTargetsScrollPaneTable(),null,null);
-								} catch (Exception e1) {
-									e1.printStackTrace(System.out);
-								}
-							}
-						}
-					);
-
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
 			}

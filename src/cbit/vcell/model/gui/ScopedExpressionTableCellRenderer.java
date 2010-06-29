@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
@@ -15,7 +16,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-import org.vcell.util.gui.DefaultTableCellRendererEnhanced;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -31,8 +32,8 @@ public class ScopedExpressionTableCellRenderer implements javax.swing.table.Tabl
 	private Hashtable<String, Boolean> scopedExpressionSelectedHash = new Hashtable<String, Boolean>();//Cache ScopedExpression Selected
 	private int scopedExpressionCacheSize = 0;
 	private static final int CACHE_SIZE_LIMIT = 250000;
-	private DefaultTableCellRendererEnhanced stringRenderer = new DefaultTableCellRendererEnhanced();
-	private DefaultTableCellRendererEnhanced imageRenderer = new DefaultTableCellRendererEnhanced() {
+	private DefaultScrollTableCellRenderer stringRenderer = new DefaultScrollTableCellRenderer();
+	private DefaultScrollTableCellRenderer imageRenderer = new DefaultScrollTableCellRenderer() {
 		private Icon icon = null;
 		private Insets borderInsets = null;
 		
@@ -59,7 +60,7 @@ public class ScopedExpressionTableCellRenderer implements javax.swing.table.Tabl
 		}
 	};
 	
-	private javax.swing.JLabel templateJLabel = new javax.swing.JLabel();//Template componet
+	private DefaultScrollTableCellRenderer templateJLabel = new DefaultScrollTableCellRenderer();//Template componet
 	private javax.swing.border.Border BORDER = new javax.swing.border.EmptyBorder(2,2,2,2);//Template border
 	private java.awt.Font italicFont = new java.awt.Font("SansSerif", java.awt.Font.ITALIC, 11);
 	private java.awt.image.BufferedImage graphicsContextProvider = new java.awt.image.BufferedImage(10,10,java.awt.image.BufferedImage.TYPE_BYTE_GRAY);
@@ -135,36 +136,39 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 		//Set column widths to fit widest component in targetColumns
 		//without making any smaller than preferred
 		//
-		int expressionColumn = -1;
+		ArrayList<Integer> expressionColumnList = new ArrayList<Integer>();
 		for (int columnIndex : targetColumns) {
 			TableColumn column = columnModel.getColumn(columnIndex);
 			// set prefer width if it is expression since the size is computed through image.
 			int preferredWidth = maxColumnWidths[columnIndex] + columnModel.getColumnMargin();
 			if (targetTable.getColumnClass(columnIndex).equals(ScopedExpression.class)) {
-				expressionColumn = columnIndex;
+				expressionColumnList.add(columnIndex);
 				column.setPreferredWidth(preferredWidth);
 			} else if (column.getPreferredWidth() < preferredWidth){
 				column.setPreferredWidth(preferredWidth);
 			}
 		}
 		
-		// expand the table to parent width, give the extra space to expression column 		
-		if (expressionColumn >= 0 && targetTable.getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) {
-			int parentWidth = targetTable.getParent().getSize().width;
+		// expand the table to parent width, give the extra space to expression columns 		
+		if (expressionColumnList.size() > 0 && targetTable.getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) {
+			int extraWidth = targetTable.getParent().getSize().width;
 			int tableWidth = targetTable.getPreferredSize().width;
-			if (parentWidth > tableWidth) {
+			if (extraWidth > tableWidth) {
 				TableColumnModel tcm = targetTable.getColumnModel();
 				int total_columns = tcm.getColumnCount();
 				for (int i = 0; i < total_columns; i++)	{
-					if (i != expressionColumn) {
+					if (!expressionColumnList.contains(i)) {
 						TableColumn column = tcm.getColumn(i);
-						parentWidth = parentWidth - column.getPreferredWidth();
+						extraWidth = extraWidth - column.getPreferredWidth();
 					}
 				}
 	
-				TableColumn exprColumn = tcm.getColumn(expressionColumn);
-				if (parentWidth > exprColumn.getPreferredWidth()) {
-					exprColumn.setPreferredWidth(parentWidth);
+				extraWidth /= expressionColumnList.size();
+				for (int c : expressionColumnList) {
+					TableColumn exprColumn = tcm.getColumn(c);
+					if (extraWidth > exprColumn.getPreferredWidth()) {
+						exprColumn.setPreferredWidth(extraWidth);
+					}
 				}
 			}
 		}
@@ -207,40 +211,19 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 	 *				drawing the header the rowIndex is -1.
 	 * @param	column	        the column index of the cell being drawn
 	 */
-public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-
-	try{		
-		if(theTable != null){
-			Color background = isSelected ? theTable.getSelectionBackground() : theTable.getBackground();
-			Color foreground = isSelected ? theTable.getSelectionForeground() : theTable.getForeground();
-			templateJLabel.setBackground(background);
-			templateJLabel.setForeground(foreground);
-			imageRenderer.setBackground(background);
-			imageRenderer.setForeground(foreground);
-			
-			// set cell color to gray if the cell is not editable
-			if (!theTable.getModel().isCellEditable(row, column)) {
-				foreground = isSelected ? theTable.getSelectionForeground() : new Color(128,128,128);
-				templateJLabel.setBackground(background);
-				templateJLabel.setForeground(foreground);
-				stringRenderer.setBackground(background);
-				stringRenderer.setForeground(foreground);
-				imageRenderer.setBackground(background);
-				imageRenderer.setForeground(foreground);
-			}
-		}
-
+public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+	try{
 		if(value == null){
 			templateJLabel.setText(null);
 			templateJLabel.setIcon(null);
-			return templateJLabel;
+			return templateJLabel.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		}
 		
 		if (!(value instanceof ScopedExpression)){
-			String color = isSelected ?  "white" : "gray";
-			String str = "<html><em><font color=\""+color+"\">" + value + "</font></em></html>";
-			return stringRenderer.getTableCellRendererComponent(theTable, str, isSelected, hasFocus, row, column);
+			return stringRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		}
+		
+		imageRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		
 		JLabel renderer = imageRenderer;
 		ScopedExpression scopedExpression = (ScopedExpression)value;
@@ -267,9 +250,9 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 				java.awt.Graphics2D g2d = bi.createGraphics();
 				g2d.setClip(0,0,dim.width,dim.height);//epf.paint needs a non-null clipBounds
 				g2d.setFont(italicFont);//set the SAME font used in epf.getSize
-				if(theTable != null && imageRenderer != null){
-					g2d.setBackground((isSelected ? theTable.getSelectionBackground() : imageRenderer.getBackground()));
-					g2d.setColor((isSelected ? theTable.getSelectionForeground() : imageRenderer.getForeground()));
+				if(table != null && imageRenderer != null){
+					g2d.setBackground((isSelected ? table.getSelectionBackground() : imageRenderer.getBackground()));
+					g2d.setColor((isSelected ? table.getSelectionForeground() : imageRenderer.getForeground()));
 				}
 				g2d.clearRect(0,0,dim.width,dim.height);//paint background
 				epf.paint(g2d);//paint expression into image
@@ -281,13 +264,10 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 					scopedExpressionCacheSize = 0;
 				}
 				javax.swing.ImageIcon newImageIcon = new javax.swing.ImageIcon(bi);
-				if(theTable != null){//don't cache if we didn't get some color info from theTable
-					if(scopedExpressionImageIconHash.put(scopedExpressInfix,newImageIcon) == null){
-						scopedExpressionCacheSize+= dim.width*dim.height;
-					}
-					scopedExpressionSelectedHash.put(scopedExpressInfix,new Boolean(isSelected));
+				if(scopedExpressionImageIconHash.put(scopedExpressInfix,newImageIcon) == null){
+					scopedExpressionCacheSize+= dim.width*dim.height;
 				}
-				templateJLabel.setIcon(newImageIcon);
+				scopedExpressionSelectedHash.put(scopedExpressInfix,new Boolean(isSelected));
 				imageRenderer.setIcon(newImageIcon);
 			}catch(Exception e){
 				//Fallback to String

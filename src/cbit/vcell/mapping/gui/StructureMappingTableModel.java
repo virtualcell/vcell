@@ -4,7 +4,6 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 import java.beans.PropertyVetoException;
-import java.util.Hashtable;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -13,11 +12,7 @@ import javax.swing.JTable;
 
 import org.vcell.sbml.vcell.StructureSizeSolver;
 
-import ucar.nc2.ui.StructureTable;
-
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -27,7 +22,6 @@ import cbit.vcell.mapping.IllegalMappingException;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
@@ -108,7 +102,7 @@ public class StructureMappingTableModel extends javax.swing.table.AbstractTableM
 	private JTable ownerTable = null;
 	private String[] labels;
 	private String[] tooltips;
-	private JComboBox boundaryConditionComboBox = new JComboBox(new String[]{BoundaryConditionType.NEUMANN_STRING,BoundaryConditionType.DIRICHLET_STRING});
+
 /**
  * StructureMappingTableModel constructor comment.
  */
@@ -453,7 +447,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		// see if feature is distributed and has a membrane (not top)
 		//		
 		if (columnIndex == SPATIAL_COLUMN_SUBDOMAIN) {
-			return false;
+			return (sm instanceof FeatureMapping);
 		}
 //		// the VolFrac and Surf/Vol are editable for non-compartmental models
 //		if ((getGeometryContext().getGeometry().getDimension() > 0) && (sm instanceof FeatureMapping))
@@ -472,16 +466,16 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	return false;
 }
 
-//private void updateSubdomainComboBox() {
-//	GeometryClass[] geometryClasses = getGeometryContext().getGeometry().getGeometryClasses();
-//	DefaultComboBoxModel aModel = new DefaultComboBoxModel();
-//	for (GeometryClass gc : geometryClasses) {
-//		aModel.addElement(gc.getName());
-//	}
-//	JComboBox subdomainComboBoxCellEditor = new JComboBox();
-//	subdomainComboBoxCellEditor.setModel(aModel);
-//	ownerTable.getColumnModel().getColumn(SPATIAL_COLUMN_SUBDOMAIN).setCellEditor(new DefaultCellEditor(subdomainComboBoxCellEditor));
-//}
+private void updateSubdomainComboBox() {
+	GeometryClass[] geometryClasses = getGeometryContext().getGeometry().getGeometryClasses();
+	DefaultComboBoxModel aModel = new DefaultComboBoxModel();
+	for (GeometryClass gc : geometryClasses) {
+		aModel.addElement(gc.getName());
+	}
+	JComboBox subdomainComboBoxCellEditor = new JComboBox();
+	subdomainComboBoxCellEditor.setModel(aModel);
+	ownerTable.setDefaultEditor(String.class, new DefaultCellEditor(subdomainComboBoxCellEditor));
+}
 
 private void update() {
 //	AsynchClientTask task1 = new AsynchClientTask("update geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -506,13 +500,9 @@ private void update() {
 			ownerTable.createDefaultColumnsFromModel();	
 			
 			if (dimension > 0) {		
-				//updateSubdomainComboBox();
-				ownerTable.setDefaultEditor(BoundaryConditionType.class, new DefaultCellEditor(boundaryConditionComboBox));
+				updateSubdomainComboBox();
 			}		
-			//set column renderer
-			ownerTable.setDefaultRenderer(BoundaryConditionType.class, new StructureMappingTableRenderer(StructureMappingTableModel.this));
-			ownerTable.setDefaultRenderer(Double.class, new StructureMappingTableRenderer(StructureMappingTableModel.this));
-			ownerTable.setDefaultRenderer(String.class, new StructureMappingTableRenderer(StructureMappingTableModel.this));
+			
 			fireTableStructureChanged();
 //		}
 //	};

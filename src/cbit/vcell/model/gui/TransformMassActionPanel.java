@@ -9,11 +9,11 @@ import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 
-import org.vcell.util.gui.JTableFixed;
+import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.model.Model;
 
@@ -26,9 +26,8 @@ import cbit.vcell.model.Model;
 public class TransformMassActionPanel extends JPanel implements ActionListener {
 	
 	private Model fieldModel = null;
-	private JScrollPane tableScrollPane = null;
 	private TransformMassActionTableModel transMATableModel = null;
-	private JTableFixed transMATable = null;	
+	private ScrollTable transMATable = null;	
 	
 	public TransformMassActionPanel()
 	{
@@ -55,10 +54,7 @@ public class TransformMassActionPanel extends JPanel implements ActionListener {
 	    add(new JLabel(" "), BorderLayout.WEST);
 	    add(new JLabel(" "), BorderLayout.EAST);
 		//add table scrollPane
-		getTableScrollPane().setViewportView(getTable());
-		getTableScrollPane().setColumnHeaderView(transMATable.getTableHeader());
-		getTableScrollPane().getViewport().setBackingStoreEnabled(true);
-		add(getTableScrollPane(), BorderLayout.CENTER);
+		add(getTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 	}
 	
 	private void initConnections()
@@ -66,23 +62,11 @@ public class TransformMassActionPanel extends JPanel implements ActionListener {
 		
 	}
 	
-	private JScrollPane getTableScrollPane()
-	{
-		if(tableScrollPane == null)
-		{
-			tableScrollPane = new javax.swing.JScrollPane();
-			tableScrollPane.setName("transformMATableScrollPane");
-			tableScrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			tableScrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		}
-		return tableScrollPane;
-	}
-	
-	private JTableFixed getTable()
+	private ScrollTable getTable()
 	{
 		if(transMATable == null)
 		{
-			transMATable = new org.vcell.util.gui.JTableFixed()
+			transMATable = new ScrollTable()
 			{
 				//Implement table cell tool tips.
 			    public String getToolTipText(MouseEvent e) {
@@ -104,6 +88,7 @@ public class TransformMassActionPanel extends JPanel implements ActionListener {
 			      return tip;
 			    }
 			};
+			transMATable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 			transMATable.setName("ScrollPaneTable1");
 			transMATable.setBounds(0, 0, 450, 400);
 			//add table model

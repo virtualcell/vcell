@@ -2122,7 +2122,8 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 		tableModel.setData(Arrays.asList(sourceRows));
 		
 		//Create table
-		final JSortTable table = new JSortTable(tableModel);
+		final JSortTable table = new JSortTable();
+		table.setModel(tableModel);
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setPreferredScrollableViewportSize(new Dimension(500, 250));

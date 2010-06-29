@@ -31,7 +31,7 @@ public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
    public final static ReservedSymbol K_GHK = new ReservedSymbol("_K_GHK_","GHK unit scale",VCUnitDefinition.getInstance("1e9"),new Expression(1e-9));
    public final static ReservedSymbol GAS_CONSTANT = new ReservedSymbol("_R_","Gas Constant",VCUnitDefinition.UNIT_mV_C_per_K_per_mol,new Expression(8314.0));
    public final static ReservedSymbol KMILLIVOLTS = new ReservedSymbol("K_millivolts_per_volt","voltage scale",VCUnitDefinition.getInstance("1e-3"),new Expression(1000));
- //  public final static ReservedSymbol PI = new ReservedSymbol("pi","\u03C0",null,new Expression(3.14159265358979323846264338327950288));
+ //  public final static ReservedSymbol PI = new ReservedSymbol("pi","\u03C0",null,new Expression(Math.PI));
 
    public final static ReservedSymbol KMOLE;
    static {

@@ -492,7 +492,9 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 				}
 			};
 			tableModel.setData(Arrays.asList(rowData));
-			final JTable table = new JSortTable(tableModel);
+			final JTable table = new JSortTable();
+			table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+			table.setModel(tableModel);
 			if(listSelectionModel_SelectMode != null){
 				table.setSelectionMode(listSelectionModel_SelectMode);
 			}else{

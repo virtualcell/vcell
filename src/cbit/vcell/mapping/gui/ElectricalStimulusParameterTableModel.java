@@ -1,6 +1,5 @@
 package cbit.vcell.mapping.gui;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -13,9 +12,7 @@ import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.ElectricalStimulus;
-import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
-import cbit.vcell.mapping.ParameterContext.LocalProxyParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.parser.Expression;
@@ -89,7 +86,7 @@ public class ElectricalStimulusParameterTableModel extends ManageTableModel impl
 	final static int COLUMN_NAME = 1;
 	final static int COLUMN_VALUE = 2;
 	final static int COLUMN_UNIT = 3;
-	String LABELS[] = { "description", "Parameter", "Expression", "Units" };
+	String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ElectricalStimulus fieldElectricalStimulus = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;

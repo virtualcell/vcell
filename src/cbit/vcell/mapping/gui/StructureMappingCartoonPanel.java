@@ -490,14 +490,14 @@ private javax.swing.JPanel getJPanel2() {
 			constraintsMessageLabel.anchor = GridBagConstraints.CENTER;
 			constraintsMessageLabel.weightx = 1.0;
 			constraintsMessageLabel.weighty = 0;
-			getJPanel2().add(getMessageLabel(), constraintsMessageLabel);
+			ivjJPanel2.add(getMessageLabel(), constraintsMessageLabel);
 
 			java.awt.GridBagConstraints constraintsStructureMappingPanel = new java.awt.GridBagConstraints();
 			constraintsStructureMappingPanel.gridx = 0; constraintsStructureMappingPanel.gridy = 2;
 			constraintsStructureMappingPanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsStructureMappingPanel.weightx = 1.0;
 			constraintsStructureMappingPanel.weighty = 1.5;
-			getJPanel2().add(getStructureMappingPanel(), constraintsStructureMappingPanel);
+			ivjJPanel2.add(getStructureMappingPanel(), constraintsStructureMappingPanel);
 
 			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 			constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 1;
@@ -505,7 +505,7 @@ private javax.swing.JPanel getJPanel2() {
 			constraintsJScrollPane1.weightx = 1.0;
 			constraintsJScrollPane1.weighty = 5.0;
 			constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel2().add(getJScrollPane1(), constraintsJScrollPane1);
+			ivjJPanel2.add(getJScrollPane1(), constraintsJScrollPane1);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
