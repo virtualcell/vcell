@@ -19,26 +19,31 @@ public class StructureMappingTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_structmapping";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field subVolumeRef	= new Field("subVolumeRef",	"integer",	"NOT NULL "+SubVolumeTable.REF_TYPE);
-	public final Field structRef		= new Field("structRef",	"integer",	"NOT NULL "+StructTable.REF_TYPE);
-	public final Field simContextRef	= new Field("simContextRef","integer",	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field bResolved 	= new Field("bResolved",	"integer",	"NOT NULL");
-	public final Field surfToVolExp	= new Field("surfToVolExp",	"varchar(1024)",	"");
-	public final Field volFractExp	= new Field("volFractExp",	"varchar(1024)",	"");
-	public final Field boundaryTypeXm = new Field("boundaryTypeXm", "varchar(10)", "");
-	public final Field boundaryTypeXp = new Field("boundaryTypeXp", "varchar(10)", "");
-	public final Field boundaryTypeYm = new Field("boundaryTypeYm", "varchar(10)", "");
-	public final Field boundaryTypeYp = new Field("boundaryTypeYp", "varchar(10)", "");
-	public final Field boundaryTypeZm = new Field("boundaryTypeZm", "varchar(10)", "");
-	public final Field boundaryTypeZp = new Field("boundaryTypeZp", "varchar(10)", "");
-	public final Field bCalculateVoltage = new Field("bCalculateV",	"integer", "");
-	public final Field specificCap     = new Field("specificCap",	"number", "");
-	public final Field initialVoltage  = new Field("initialV",		"varchar(1024)", "");
-	public final Field sizeExp	= new Field("sizeExp",	"varchar(1024)",	""); //added Dec 23, 2006
+	public final Field subVolumeRef			= new Field("subVolumeRef",	"integer",	"NOT NULL "+SubVolumeTable.REF_TYPE);
+	public final Field structRef			= new Field("structRef",	"integer",	"NOT NULL "+StructTable.REF_TYPE);
+	public final Field simContextRef		= new Field("simContextRef","integer",	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field bResolved 			= new Field("bResolved",	"integer",	"NOT NULL");
+	public final Field surfToVolExp			= new Field("surfToVolExp",	"varchar(1024)",	"");
+	public final Field volFractExp			= new Field("volFractExp",	"varchar(1024)",	"");
+	public final Field boundaryTypeXm 		= new Field("boundaryTypeXm", "varchar(10)", "");
+	public final Field boundaryTypeXp 		= new Field("boundaryTypeXp", "varchar(10)", "");
+	public final Field boundaryTypeYm		= new Field("boundaryTypeYm", "varchar(10)", "");
+	public final Field boundaryTypeYp 		= new Field("boundaryTypeYp", "varchar(10)", "");
+	public final Field boundaryTypeZm 		= new Field("boundaryTypeZm", "varchar(10)", "");
+	public final Field boundaryTypeZp 		= new Field("boundaryTypeZp", "varchar(10)", "");
+	public final Field bCalculateVoltage 	= new Field("bCalculateV",	"integer", "");
+	public final Field specificCap     		= new Field("specificCap",	"number", "");
+	public final Field initialVoltage  		= new Field("initialV",		"varchar(1024)", "");
+	public final Field sizeExp				= new Field("sizeExp",	"varchar(1024)",	""); //added Dec 23, 2006
+	public final Field volPerUnitAreaExp	= new Field("volPerUnitAreaExp",	"varchar(1024)",	"");
+	public final Field volPerUnitVolExp		= new Field("volPerUnitVolExp",	"varchar(1024)",	"");
+	public final Field areaPerUnitAreaExp	= new Field("areaPerUnitAreaExp",	"varchar(1024)",	"");
+	public final Field areaPerUnitVolExp	= new Field("areaPerUnitVolExp",	"varchar(1024)",	"");
 
 	private final Field fields[] = {subVolumeRef,structRef,simContextRef,bResolved,surfToVolExp,volFractExp,
 					boundaryTypeXm,boundaryTypeXp,boundaryTypeYm,boundaryTypeYp,boundaryTypeZm,boundaryTypeZp,
-					bCalculateVoltage,specificCap,initialVoltage, sizeExp};
+					bCalculateVoltage,specificCap,initialVoltage, sizeExp, volPerUnitAreaExp, volPerUnitVolExp, 
+					areaPerUnitAreaExp, areaPerUnitVolExp};
 	
 	public static final StructureMappingTable table = new StructureMappingTable();
 
@@ -132,7 +137,38 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 	if(structureMapping.getSizeParameter().getExpression() != null)
 		buffer.append("'"+TokenMangler.getSQLEscapedString(structureMapping.getSizeParameter().getExpression().infix())+ "')");
 	else
-		buffer.append("'"+ "')");
+		buffer.append("'',");
+	
+	if (structureMapping instanceof FeatureMapping) {
+		FeatureMapping fm = (FeatureMapping)structureMapping;
+		if(fm.getVolumePerUnitAreaParameter().getExpression() != null) {
+			buffer.append("'"+TokenMangler.getSQLEscapedString(fm.getVolumePerUnitAreaParameter().getExpression().infix()) + "',");
+		} else {
+			buffer.append("null" + ",");
+		}
+		if(fm.getVolumePerUnitVolumeParameter().getExpression() != null) {
+			buffer.append("'"+TokenMangler.getSQLEscapedString(fm.getVolumePerUnitVolumeParameter().getExpression().infix()) + "',");
+		} else {
+			buffer.append("null" + ",");
+		}
+		// if structureMapping is a featureMapping, 'areaPerUnitArea' and 'areaPerUnitVol' params are null, so fill those in here
+		buffer.append("null,null");
+	} else if (structureMapping instanceof MembraneMapping) {
+		// if structureMapping is a featureMapping, 'volPerUnitArea' and 'volPerUnitVol' params are null, so fill those in here; then memMapping params
+		buffer.append("null,null,");
+		MembraneMapping mm = (MembraneMapping)structureMapping;
+		if(mm.getAreaPerUnitAreaParameter().getExpression() != null) {
+			buffer.append("'"+TokenMangler.getSQLEscapedString(mm.getAreaPerUnitAreaParameter().getExpression().infix()) + "',");
+		} else {
+			buffer.append("null" + ",");
+		}
+		if(mm.getAreaPerUnitVolumeParameter().getExpression() != null) {
+			buffer.append("'"+TokenMangler.getSQLEscapedString(mm.getAreaPerUnitVolumeParameter().getExpression().infix()) + "'");
+		} else {
+			buffer.append("null");
+		}
+	}
+	buffer.append(")");
 	return buffer.toString();
 }
 }

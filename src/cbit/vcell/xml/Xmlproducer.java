@@ -999,6 +999,14 @@ private org.jdom.Element getXML(FeatureMapping param) {
 	if(param.getSizeParameter().getExpression() != null)
 		feature.setAttribute(XMLTags.SizeTag, mangleExpression(param.getSizeParameter().getExpression()));
 	
+	// Add volume/unit_Area and volume/unit_vol if they exist
+	if(param.getVolumePerUnitAreaParameter().getExpression() != null) {
+		feature.setAttribute(XMLTags.VolumePerUnitAreaTag, mangleExpression(param.getVolumePerUnitAreaParameter().getExpression()));
+	}
+	if(param.getVolumePerUnitVolumeParameter().getExpression() != null) {
+		feature.setAttribute(XMLTags.VolumePerUnitVolumeTag, mangleExpression(param.getVolumePerUnitVolumeParameter().getExpression()));
+	}
+	
 	// write BoundariesyConditions
 	org.jdom.Element boundariestypes = new org.jdom.Element(XMLTags.BoundariesTypesTag);
 	
@@ -1075,7 +1083,7 @@ private org.jdom.Element getXML(MembraneMapping param) {
 	{
 		membrane.setAttribute(XMLTags.SurfaceToVolumeRatioTag, mangleExpression(param.getSurfaceToVolumeParameter().getExpression()) );
 	}
-/*	org.jdom.Element surface = new org.jdom.Element(XMLTags.SurfaceToVolumeRatioTag);
+	/*	org.jdom.Element surface = new org.jdom.Element(XMLTags.SurfaceToVolumeRatioTag);
 	surface.addContent( this.mangleExpression(param.getSurfaceToVolumeExpression()) );
 	membrane.addContent( surface );*/
 	
@@ -1084,12 +1092,20 @@ private org.jdom.Element getXML(MembraneMapping param) {
 	{
 		membrane.setAttribute(XMLTags.VolumeFractionTag, mangleExpression(param.getVolumeFractionParameter().getExpression()));
 	}
-/*	org.jdom.Element volume = new org.jdom.Element(XMLTags.VolumeFractionTag);
+	/*	org.jdom.Element volume = new org.jdom.Element(XMLTags.VolumeFractionTag);
 	volume.addContent( this.mangleExpression(param.getVolumeFractionExpression()) );
 	membrane.addContent( volume );*/
 	//Add size
 	if(param.getSizeParameter().getExpression() != null)
  		membrane.setAttribute(XMLTags.SizeTag, mangleExpression(param.getSizeParameter().getExpression()));
+	
+	// Add area/unit_area and area/unit_vol if they exist
+	if(param.getAreaPerUnitAreaParameter().getExpression() != null) {
+		membrane.setAttribute(XMLTags.AreaPerUnitAreaTag, mangleExpression(param.getAreaPerUnitAreaParameter().getExpression()));
+	}
+	if(param.getAreaPerUnitVolumeParameter().getExpression() != null) {
+		membrane.setAttribute(XMLTags.AreaPerUnitVolumeTag, mangleExpression(param.getAreaPerUnitVolumeParameter().getExpression()));
+	}
 	//Add the electrical properties
 	membrane.setAttribute(XMLTags.CalculateVoltageTag, String.valueOf(param.getCalculateVoltage()));
 	membrane.setAttribute(XMLTags.SpecificCapacitanceTag, mangleExpression(param.getSpecificCapacitanceParameter().getExpression()));

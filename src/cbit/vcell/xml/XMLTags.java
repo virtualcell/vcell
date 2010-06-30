@@ -368,11 +368,16 @@ public class XMLTags {
     public final static String FeatureAttrTag = "Feature";
     public final static String SubVolumeAttrTag = "SubVolume";
     public final static String GeometryClassAttrTag = "GeometryClass";
+    public final static String VolumePerUnitAreaTag = "VolumePerUnitArea";
+    public final static String VolumePerUnitVolumeTag = "VolumePerUnitVolume";
     public final static String ResolvedAttrTag = "Resolved";
     public final static String MembraneMappingTag = "MembraneMapping";
     public final static String MembraneAttrTag = "Membrane";
     public final static String SurfaceToVolumeRatioTag = "SurfaceToVolumeRatio";
     public final static String VolumeFractionTag = "VolumeFraction";
+    public final static String AreaPerUnitAreaTag = "AreaPerUnitArea";
+    public final static String AreaPerUnitVolumeTag = "AreaPerUnitVolume";
+    
     public final static String SpeciesContextSpecTag = "LocalizedCompoundSpec";
     public final static String ForceConstantAttrTag = "ForceConstant";
     // public final static String EnableDiffusionAttrTag = "EnableDiffusion";
