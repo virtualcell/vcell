@@ -2,23 +2,18 @@ package cbit.vcell.model.gui;
 
 import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
 import javax.swing.JDesktopPane;
-import javax.swing.JTable;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.gui.ScopedExpression;
-import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.SPPRPanel;
@@ -97,11 +92,11 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
 		public void mousePressed(java.awt.event.MouseEvent e) {
-			if (e.getSource() == ModelParameterPanel.this.getthis12() || e.getSource() == ModelParameterPanel.this.getJScrollPane1()) 
+			if (e.getSource() == ModelParameterPanel.this.getthis12()) 
 				popupCopyPaste(e);
 		};
 		public void mouseReleased(java.awt.event.MouseEvent e) {
-			if (e.getSource() == ModelParameterPanel.this.getthis12() || e.getSource() == ModelParameterPanel.this.getJScrollPane1()) 
+			if (e.getSource() == ModelParameterPanel.this.getthis12()) 
 				popupCopyPaste(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -120,9 +115,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 				if (evt.getSource() instanceof Model && evt.getPropertyName().equals(Model.MODEL_PARAMETERS_PROPERTY_NAME)) {
 					ModelParameterTableModel modelparamTableModel = (ModelParameterTableModel)getScrollPaneTable().getModel();
 					modelparamTableModel.setData(modelparamTableModel.getUnsortedParameters());
-					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(), null, null);
-					getScrollPaneTable().invalidate();
-					getJScrollPane1().repaint();
 				}
 			}
 		};
@@ -439,16 +431,6 @@ private javax.swing.JPopupMenu getJPopupMenuICP() {
 	return ivjJPopupMenuICP;
 }
 
-
-/**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-private javax.swing.JScrollPane getJScrollPane1() {
-	return getScrollPaneTable().getEnclosingScrollPane();
-}
-
-
 /**
  * Gets the model property (cbit.vcell.model.Model) value.
  * @return The model property value.
@@ -554,7 +536,7 @@ private void initialize() {
 		setName("ModelParameterPanel");
 		setLayout(new java.awt.BorderLayout());
 		//setSize(655, 226);
-		add(getJScrollPane1(), "Center");
+		add(getScrollPaneTable().getEnclosingScrollPane(), "Center");
 		initConnections();
 		if ((getmodel1() != null)) {
 			getmodelParameterTableModel().setModel(getmodel1());
@@ -584,8 +566,8 @@ private void jMenuItemAdd_ActionPerformed(ActionEvent actionEvent) throws Except
 	if(actionEvent.getSource() == getJMenuItemAdd()){
 		AddModelParamDialog createGlobalParamDialog = new AddModelParamDialog();
 		createGlobalParamDialog.initAddModelParam(fieldModel);
-		createGlobalParamDialog.setLocation(getJScrollPane1().getLocation());
-		Container container = (Container)BeanUtils.findTypeParentOfComponent(getJScrollPane1(), JDesktopPane.class);
+		createGlobalParamDialog.setLocation(getScrollPaneTable().getLocation());
+		Container container = (Container)BeanUtils.findTypeParentOfComponent(getScrollPaneTable(), JDesktopPane.class);
 		container.remove(createGlobalParamDialog);
 		container.add(createGlobalParamDialog, JDesktopPane.MODAL_LAYER);
 		BeanUtils.centerOnComponent(createGlobalParamDialog, this);
@@ -1049,7 +1031,7 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
 		}
 		getJMenuItemPromoteToGlobal().setEnabled(bIsUserDefinedKinParam);
 
-		getJPopupMenuICP().show(getJScrollPane1(),mouseEvent.getX(),mouseEvent.getY());
+		getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
 	}
 }
 
