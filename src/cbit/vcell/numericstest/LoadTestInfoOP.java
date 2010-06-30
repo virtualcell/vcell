@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 
-import java.math.BigDecimal;
+import java.util.Date;
 
 import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
 
@@ -10,6 +10,8 @@ public class LoadTestInfoOP extends TestSuiteOP {
 	private LoadTestSoftwareVersionTimeStamp[] loadTestSoftwareVersionTimeStamp;
 	private Integer slowLoadThresholdMilliSec;
 	private String sql;
+	private Date beginDate;
+	private Date endDate;
 	
 	public LoadTestInfoOP(LoadTestOpFlag opFlag,Integer slowLoadThresholdMilliSec,String sql){
 		super(null);
@@ -17,6 +19,13 @@ public class LoadTestInfoOP extends TestSuiteOP {
 		this.slowLoadThresholdMilliSec = slowLoadThresholdMilliSec;
 		this.sql = sql;
 	}
+	public LoadTestInfoOP(Date beginDate, Date endDate){
+		super(null);
+		this.opFlag = LoadTestOpFlag.info;
+		this.beginDate = beginDate;
+		this.endDate = endDate;
+	}
+
 	public LoadTestOpFlag getLoadTestOpFlag(){
 		return opFlag;
 	}
@@ -34,5 +43,11 @@ public class LoadTestInfoOP extends TestSuiteOP {
 	}
 	public String getUserQueryCondition(){
 		return sql;
+	}
+	public Date getBeginDate() {
+		return beginDate;
+	}
+	public Date getEndDate() {
+		return endDate;
 	}
 }
