@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 
-import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -90,7 +90,6 @@ public class LoadTestInfoOpResults extends TestSuiteOPResults {
 	private Integer[] loadTestInfoCounts;
 	private Integer[] loadTestInfoEmptyCounts;
 	private Integer slowLoadThresholdMillisec;
-	
 	public LoadTestInfoOpResults(
 			Integer[] loadTestInfoCounts,
 			Integer[] loadTestInfoEmptyCounts,
@@ -137,5 +136,30 @@ public class LoadTestInfoOpResults extends TestSuiteOPResults {
 
 	public LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp[] getLoadTestSoftwareVersionTimeStamps(){
 		return loadTestSoftwareVersionTimeStamps;
+	}
+	
+	
+	private Date beginDate;
+	private Date endDate;
+	private KeyValue[] keyValuesBetweenDates;
+	private String[] uniqueUserIDsBetweenDates;
+	public LoadTestInfoOpResults(Date beginDate,Date endDate,KeyValue[] keyValuesBetweenDates,String[] uniqueUserIDsBetweenDates){
+		super(null);
+		this.beginDate = beginDate;
+		this.endDate = endDate;
+		this.keyValuesBetweenDates = keyValuesBetweenDates;
+		this.uniqueUserIDsBetweenDates = uniqueUserIDsBetweenDates;
+	}
+	public Date getBeginDate() {
+		return beginDate;
+	}
+	public Date getEndDate() {
+		return endDate;
+	}
+	public KeyValue[] getKeyValuesBetweenDates() {
+		return keyValuesBetweenDates;
+	}
+	public String[] getUniqueUserIDsBetweenDates() {
+		return uniqueUserIDsBetweenDates;
 	}
 }

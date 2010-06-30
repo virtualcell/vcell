@@ -5,6 +5,7 @@ package cbit.vcell.modeldb;
 ©*/
 import java.math.BigDecimal;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 
 import cbit.image.VCImageInfo;
 import cbit.sql.*;
@@ -56,6 +57,7 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
 
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.Hashtable;
 
@@ -2982,6 +2984,56 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				}
 				return null;
 			}
+			//Check if Date info is requested
+			if(((LoadTestInfoOP)tsop).getLoadTestOpFlag() == LoadTestOpFlag.info &&
+					((LoadTestInfoOP)tsop).getBeginDate() != null){
+				final String YMD_FORMAT_STRING = "yyyy-MM-dd";
+				SimpleDateFormat simpleDateFormat = new SimpleDateFormat(YMD_FORMAT_STRING);
+				final String BETWEEN_CONDITION = 
+					" BETWEEN "+
+					" TO_DATE('" + simpleDateFormat.format(((LoadTestInfoOP)tsop).getBeginDate()) + " 00:00:00', '"+YMD_FORMAT_STRING+" HH24:MI:SS') "+
+					" AND "+
+					" TO_DATE('" + simpleDateFormat.format(((LoadTestInfoOP)tsop).getEndDate()) +   " 23:59:59', '"+YMD_FORMAT_STRING+" HH24:MI:SS') ";
+
+				sql = 
+					"SELECT "+
+						BioModelTable.table.id.getQualifiedColName()+","+
+						UserTable.table.userid.getUnqualifiedColName()+
+					" FROM "+
+						BioModelTable.table.getTableName()+","+
+						UserTable.table.getTableName()+
+					" WHERE "+
+						UserTable.table.id.getQualifiedColName()+" = "+BioModelTable.table.ownerRef.getQualifiedColName()+
+						" AND " +
+						BioModelTable.table.versionDate.getQualifiedColName() + BETWEEN_CONDITION +
+					" UNION "+
+					"SELECT "+
+						MathModelTable.table.id.getQualifiedColName()+","+
+						UserTable.table.userid.getUnqualifiedColName()+
+					" FROM "+
+						MathModelTable.table.getTableName()+","+
+						UserTable.table.getTableName()+
+					" WHERE "+
+						UserTable.table.id.getQualifiedColName()+" = "+MathModelTable.table.ownerRef.getQualifiedColName()+
+						" AND " +
+						MathModelTable.table.versionDate.getQualifiedColName() + BETWEEN_CONDITION;
+				stmt = con.createStatement();
+				ResultSet rset = stmt.executeQuery(sql);
+				TreeSet<String> uniqueUserIDTreeSet = new TreeSet<String>();
+				Vector<KeyValue> keyValuesBetweenDatesV = new Vector<KeyValue>();
+				while(rset.next()){
+					uniqueUserIDTreeSet.add(rset.getString(UserTable.table.userid.getUnqualifiedColName()));
+					keyValuesBetweenDatesV.add(new KeyValue(rset.getBigDecimal(1)));
+				}
+				rset.close();
+				stmt.close();
+				return new LoadTestInfoOpResults(
+					((LoadTestInfoOP)tsop).getBeginDate(), ((LoadTestInfoOP)tsop).getEndDate(),
+					keyValuesBetweenDatesV.toArray(new KeyValue[0]), uniqueUserIDTreeSet.toArray(new String[0]));
+				
+			}
+			//
+			//Get LoadTest Info
 			//
 			//Get existing SoftwareVersion-Timestamp  count
 			//

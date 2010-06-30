@@ -2,6 +2,9 @@ package cbit.vcell.client.desktop;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -570,10 +573,13 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_MODELS) ||
 				e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_USERS)){
 
-			final Vector<String> userIDV = new Vector<String>();
+			final Date[] beginDate = new Date[1];
+			final Date[] endDate = new Date[1];
+
+			final TreeSet<String> uniqueUserIDTreeSet = new TreeSet<String>();
 			final Vector<KeyValue> bioAndMathModelKeyValueV = new Vector<KeyValue>();
+			String typeMsg = "All";
 			if(!e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_All)){
-				TreeSet<String> uniqueUserIDTreeSet = new TreeSet<String>();
 				if(selectedTreePaths != null && selectedTreePaths.length > 0){
 					Object refObj = ((BioModelNode)selectedTreePaths[0].getLastPathComponent()).getUserObject();
 					if(refObj instanceof TestingFrmwkTreeModel.LoadTestTreeInfo){
@@ -584,16 +590,68 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 								bioAndMathModelKeyValueV.add(((TestingFrmwkTreeModel.LoadTestTreeInfo)refObj).bioOrMathModelKey);								
 							}
 						}
-						userIDV.addAll(uniqueUserIDTreeSet);
 					}
+				}
+			}else{
+//				TreeSet<VCDocumentInfo> dateRangeDocInfoTreeSet =
+//					new TreeSet<VCDocumentInfo>(new Comparator<VCDocumentInfo>() {
+//						public int compare(VCDocumentInfo o1, VCDocumentInfo o2) {
+//							return o1.getVersion().getDate().compareTo(o2.getVersion().getDate());
+//						}
+//					});
+//				BioModelInfo[] allBioModelInfos = getDocumentManager().getBioModelInfos();
+//				dateRangeDocInfoTreeSet.addAll(Arrays.asList(allBioModelInfos));
+//				MathModelInfo[] allMathModelInfos = getDocumentManager().getMathModelInfos();
+//				dateRangeDocInfoTreeSet.addAll(Arrays.asList(allMathModelInfos));
+				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//				Date firstDate = simpleDateFormat.parse(simpleDateFormat.format(dateRangeDocInfoTreeSet.first().getVersion().getDate()));
+//				Date lastDate = simpleDateFormat.parse(simpleDateFormat.format(dateRangeDocInfoTreeSet.last().getVersion().getDate()));
+				Date firstDate = simpleDateFormat.parse("2000-01-01");
+				Date lastDate = simpleDateFormat.parse(simpleDateFormat.format(Calendar.getInstance().getTime()));
+				String allDateRangeString =
+					simpleDateFormat.format(firstDate)+
+					","+
+					simpleDateFormat.format(lastDate);
+				while(beginDate[0]==null || endDate[0] == null){
+					try{
+						String dateRangeString =
+							DialogUtils.showInputDialog0(this,
+								"Enter Date Range (begin,end) to include (e.g. '"+allDateRangeString+"')",
+								allDateRangeString);
+						beginDate[0] = simpleDateFormat.parse(dateRangeString.substring(0, dateRangeString.indexOf(",")));
+						endDate[0] = simpleDateFormat.parse(dateRangeString.substring(dateRangeString.indexOf(",")+1));
+//						if(beginDate.compareTo(firstDate) != 0 ||
+//							endDate.compareTo(lastDate) != 0){
+//							Iterator<VCDocumentInfo> vcDocIter = dateRangeDocInfoTreeSet.iterator();
+//							while(vcDocIter.hasNext()){
+//								VCDocumentInfo vcDocInfo = vcDocIter.next();
+//								Date docDate = simpleDateFormat.parse(simpleDateFormat.format(vcDocInfo.getVersion().getDate()));
+//								if(docDate.compareTo(beginDate) < 0 ||
+//										docDate.compareTo(endDate) > 0){
+//									continue;
+//								}
+//								uniqueUserIDTreeSet.add(vcDocInfo.getVersion().getOwner().getName());
+//								bioAndMathModelKeyValueV.add(vcDocInfo.getVersion().getVersionKey());
+//							}
+//						}
+					}catch(UtilCancelException uce){
+						return;
+					}catch(Exception e2){
+						DialogUtils.showErrorDialog(this, e2.getMessage());
+					}
+				}
+				if(beginDate[0].compareTo(firstDate) == 0 && endDate[0].compareTo(lastDate) == 0){
+					beginDate[0] = null;
+					endDate[0] = null;
+				}else{
+					typeMsg = "between "+simpleDateFormat.format(beginDate[0])+","+simpleDateFormat.format(endDate[0]);					
 				}
 			}
 
-			String typeMsg = "All";
 			if(e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_MODELS)){
 				typeMsg = "Models ("+bioAndMathModelKeyValueV.size()+")";
 			}else if(e.getActionCommand().equals(TestingFrameworkPanel.RUN_XML_LOAD_TEST_USERS)){
-				typeMsg = "Users ("+userIDV.size()+")";
+				typeMsg = "Users ("+uniqueUserIDTreeSet.size()+")";
 			}
 
 			int result =
@@ -610,14 +668,25 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 
+					String[] uniqueUserIDArr = null;
+					KeyValue[] bioAndMathModelKeyValueArr = null;
+					if(beginDate[0] != null && endDate[0] != null){
+						LoadTestInfoOpResults loadTestInfoOpResults =
+							getTestingFrameworkWindowManager().getLoadTestInfoBetweenDates(beginDate[0], endDate[0]);
+						uniqueUserIDArr = loadTestInfoOpResults.getUniqueUserIDsBetweenDates();
+						bioAndMathModelKeyValueArr = loadTestInfoOpResults.getKeyValuesBetweenDates();
+					}else{
+						uniqueUserIDArr = (uniqueUserIDTreeSet.size()==0?null:uniqueUserIDTreeSet.toArray(new String[0]));
+						bioAndMathModelKeyValueArr = (bioAndMathModelKeyValueV.size()==0?null:bioAndMathModelKeyValueV.toArray(new KeyValue[0]));
+					}
 					MathVerifier mathVerifier = MathVerifier.createMathVerifier(
 							enterDBAndSoftwareVersPanel.getDBHost(),
 							enterDBAndSoftwareVersPanel.getDBName(),
 							enterDBAndSoftwareVersPanel.getDBSchema(),
 							enterDBAndSoftwareVersPanel.getDBPassword());
 					mathVerifier.runLoadTest(
-							(userIDV.size()==0?null:userIDV.toArray(new String[0])),
-							(bioAndMathModelKeyValueV.size()==0?null:bioAndMathModelKeyValueV.toArray(new KeyValue[0])),
+							uniqueUserIDArr,
+							bioAndMathModelKeyValueArr,
 							enterDBAndSoftwareVersPanel.getSoftwareVersion(),
 							(enterDBAndSoftwareVersPanel.getSoftwareVersion().length()==0?false:true),
 							(enterDBAndSoftwareVersPanel.getSoftwareVersion().length()==0?Compare.DEFAULT_COMPARE_LOGGER:null));

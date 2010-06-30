@@ -2476,6 +2476,16 @@ public void removeTestCase(TestCaseNew testCase) throws DataAccessException{
 public void refreshLoadTest(LoadTestInfoOpResults loadTestInfoOpResults){
 	getTestingFrameworkWindowPanel().refreshTree(loadTestInfoOpResults);
 }
+public LoadTestInfoOpResults getLoadTestInfoBetweenDates(Date beginDate,Date endDate) throws DataAccessException{
+	LoadTestInfoOP loadTestInfoOP = new LoadTestInfoOP(beginDate,endDate);
+	TestSuiteOPResults testSuiteOPResults = getRequestManager().getDocumentManager().doTestSuiteOP(loadTestInfoOP);
+	if(testSuiteOPResults instanceof LoadTestInfoOpResults){
+		LoadTestInfoOpResults loadTestInfoOpResults =
+			(LoadTestInfoOpResults)testSuiteOPResults;
+		return loadTestInfoOpResults;
+	}
+	throw new IllegalArgumentException("getLoadTestDetails Expecting LoadTestInfoOpResults");
+}
 public LoadTestInfoOpResults getLoadTestDetails(Integer slowLoadThreshold,String loadTestSQLCondition) throws DataAccessException{
 	LoadTestInfoOP loadTestInfoOP = new LoadTestInfoOP(LoadTestOpFlag.info,slowLoadThreshold,loadTestSQLCondition);
 	TestSuiteOPResults testSuiteOPResults = getRequestManager().getDocumentManager().doTestSuiteOP(loadTestInfoOP);
