@@ -943,7 +943,7 @@ private ErrorTolerance getErrorTolerance(Element param) {
 }
 
 
-Extent getExtent(Element parsed) {
+public Extent getExtent(Element parsed) {
 	double x = Double.parseDouble( parsed.getAttributeValue(XMLTags.XAttrTag) );
 	double y = Double.parseDouble( parsed.getAttributeValue(XMLTags.YAttrTag) );
 	double z = Double.parseDouble( parsed.getAttributeValue(XMLTags.ZAttrTag) );
@@ -1073,12 +1073,41 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 		try {
 			feamap.getSizeParameter().setExpression(unMangleExpression(size));
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the size Expression " + size + " to a featureMapping!"+" : "+e.getMessage());
 		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 		}	
 	}
+	
+	//Set Volume/unit_area if it exists
+	if(param.getAttributeValue(XMLTags.VolumePerUnitAreaTag) != null)
+	{
+		String volPerUnitArea = unMangle( param.getAttributeValue(XMLTags.VolumePerUnitAreaTag) );
+		try {
+			feamap.getVolumePerUnitAreaParameter().setExpression(unMangleExpression(volPerUnitArea));
+		} catch (ExpressionException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException("An expressionException was fired when setting the VolumePerUnitArea Expression " + volPerUnitArea + " to a featureMapping!"+" : "+e.getMessage());
+		} catch (java.beans.PropertyVetoException e) {
+			e.printStackTrace(System.out);
+		}	
+	}
+
+	//Set Volume/unitVol if it exists
+	if(param.getAttributeValue(XMLTags.VolumePerUnitVolumeTag) != null)
+	{
+		String volPerUnitVol = unMangle( param.getAttributeValue(XMLTags.VolumePerUnitVolumeTag) );
+		try {
+			feamap.getVolumePerUnitVolumeParameter().setExpression(unMangleExpression(volPerUnitVol));
+		} catch (ExpressionException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException("An expressionException was fired when setting the size Expression " + volPerUnitVol + " to a featureMapping!"+" : "+e.getMessage());
+		} catch (java.beans.PropertyVetoException e) {
+			e.printStackTrace(System.out);
+		}	
+	}
+
 	if (geometryClassName != null) {
 		GeometryClass[] geometryClasses = simulationContext.getGeometry().getGeometryClasses();
 		for (int i = 0; i < geometryClasses.length; i++) {
@@ -1086,7 +1115,7 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 				try {
 					feamap.setGeometryClass(geometryClasses[i]);
 				} catch (PropertyVetoException e) {
-					e.printStackTrace();
+					e.printStackTrace(System.out);
 					throw new XmlParseException("A propertyVetoException was fired when trying to set the subvolume or surface " + geometryClassName + " to a MembraneMapping!"+" : "+e.getMessage());
 				}
 			}
@@ -1173,7 +1202,7 @@ private FilamentSubDomain getFilamentSubDomain(Element param, MathDescription ma
 		try {
 			filDomain.addEquation( getOdeEquation(tempElement, mathDesc) );
 		} catch (MathException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new XmlParseException("A MathException was fired when adding an OdeEquation to the FilamentSubDomain " + name+" : "+e.getMessage());
 		}
 	}
@@ -2645,10 +2674,10 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		try {
 			memmap.getSurfaceToVolumeParameter().setExpression(unMangleExpression(ratio));
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the SurfacetoVolumeRatio Expression " + ratio + " to a membraneMapping!"+" : "+e.getMessage());
 		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new XmlParseException(e.getMessage());
 		}
 	}
@@ -2660,14 +2689,44 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		try {
 			memmap.getVolumeFractionParameter().setExpression(unMangleExpression(fraction));
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the VolumeFraction Expression " + fraction + " to a membraneMapping!"+" : "+e.getMessage());
 		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new XmlParseException(e.getMessage());
 		}
 	}
 	
+	//Set Area/unit_area if it exists, amended Sept. 27th, 2007
+	if(param.getAttributeValue(XMLTags.AreaPerUnitAreaTag)!= null)
+	{
+		String ratio = unMangle( param.getAttributeValue(XMLTags.AreaPerUnitAreaTag) );
+		try {
+			memmap.getAreaPerUnitAreaParameter().setExpression(unMangleExpression(ratio));
+		} catch (ExpressionException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException("An expressionException was fired when setting the AreaPerUnitArea Expression " + ratio + " to a membraneMapping!"+" : "+e.getMessage());
+		} catch (java.beans.PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+	
+	//Set SurfacetoVolumeRatio when it exists, amended Sept. 27th, 2007
+	if(param.getAttributeValue(XMLTags.AreaPerUnitVolumeTag)!= null)
+	{
+		String ratio = unMangle( param.getAttributeValue(XMLTags.AreaPerUnitVolumeTag) );
+		try {
+			memmap.getAreaPerUnitVolumeParameter().setExpression(unMangleExpression(ratio));
+		} catch (ExpressionException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException("An expressionException was fired when setting the AreaPerUnitVolume Expression " + ratio + " to a membraneMapping!"+" : "+e.getMessage());
+		} catch (java.beans.PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+
 	//Set Size
 	if(param.getAttributeValue(XMLTags.SizeTag) != null)
 	{
@@ -2675,10 +2734,10 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		try {
 			memmap.getSizeParameter().setExpression(unMangleExpression(size));
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the size Expression " + size + " to a membraneMapping!"+" : "+e.getMessage());
 		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new XmlParseException(e.getMessage());
 		}
 	}	
@@ -2688,10 +2747,10 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 	try {
 		memmap.getSpecificCapacitanceParameter().setExpression(new Expression(specificCap));		
 	} catch (ExpressionException e) {
-		e.printStackTrace();
+		e.printStackTrace(System.out);
 		throw new XmlParseException(e.getMessage());
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
+		e.printStackTrace(System.out);
 		throw new XmlParseException(e.getMessage());
 	}
 	
@@ -2705,10 +2764,10 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		Expression initialExpr = unMangleExpression(initialVoltString);
 		memmap.getInitialVoltageParameter().setExpression(initialExpr);
 	} catch (ExpressionException e) {
-		e.printStackTrace();
+		e.printStackTrace(System.out);
 		throw new XmlParseException(e.getMessage());
 	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
+		e.printStackTrace(System.out);
 		throw new XmlParseException(e.getMessage());
 	}
 	
@@ -3185,7 +3244,7 @@ private OdeEquation getOdeEquation(Element param, MathDescription mathDesc) thro
 }
 
 
-private Origin getOrigin(Element parsed){
+public Origin getOrigin(Element parsed){
 	double x = Double.parseDouble( parsed.getAttributeValue(XMLTags.XAttrTag) );
 	double y = Double.parseDouble( parsed.getAttributeValue(XMLTags.YAttrTag) );
 	double z = Double.parseDouble( parsed.getAttributeValue(XMLTags.ZAttrTag) );
