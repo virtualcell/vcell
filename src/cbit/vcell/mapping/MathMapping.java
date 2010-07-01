@@ -1023,6 +1023,10 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 			return "VolumePerUnitArea_"+nameWithScope;
 		} else if (role==StructureMapping.ROLE_VolumePerUnitVolume){
 			return "VolumePerUnitVolume_"+nameWithScope;
+		} else if (role==StructureMapping.ROLE_VolumeFraction){
+			return PARAMETER_VOL_FRACT_PREFIX+((Membrane)structure).getInsideFeature().getNameScope().getName();
+		} else if (role==StructureMapping.ROLE_SurfaceToVolumeRatio){
+			return PARAMETER_SURF_TO_VOL_PREFIX+nameWithScope;
 		}
 	}
 	//
