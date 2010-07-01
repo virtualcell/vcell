@@ -1,18 +1,14 @@
 package cbit.vcell.math.gui;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
 import javax.swing.InputVerifier;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -273,7 +269,7 @@ private javax.swing.JLabel getMeshSizeLabel() {
  * @return The meshSpecification property value.
  * @see #setMeshSpecification
  */
-public cbit.vcell.solver.MeshSpecification getMeshSpecification() {
+private MeshSpecification getMeshSpecification() {
 	return fieldMeshSpecification;
 }
 
@@ -367,7 +363,7 @@ private javax.swing.JCheckBox getAutoMeshSizeCheckBox() {
 	if (autoMeshSizeCheckBox == null) {
 		try {
 			autoMeshSizeCheckBox = new javax.swing.JCheckBox("Lock aspect ratio");
-			autoMeshSizeCheckBox.setSelected(true);
+			autoMeshSizeCheckBox.setSelected(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -763,9 +759,6 @@ public void autoUpdateSizes(ItemEvent e) {
 
 private void autoUpdateSizes(DocumentEvent e) {
 	if (bInProgress) {
-		return;
-	}
-	if (e.getLength() != 1) {
 		return;
 	}
 	final int dimension = getMeshSpecification().getGeometry().getDimension();
