@@ -135,7 +135,7 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 		buffer.append("'"+TokenMangler.getSQLEscapedString(mm.getInitialVoltageParameter().getExpression().infix())+"',");
 	}
 	if(structureMapping.getSizeParameter().getExpression() != null)
-		buffer.append("'"+TokenMangler.getSQLEscapedString(structureMapping.getSizeParameter().getExpression().infix())+ "')");
+		buffer.append("'"+TokenMangler.getSQLEscapedString(structureMapping.getSizeParameter().getExpression().infix())+ "',");
 	else
 		buffer.append("'',");
 	
