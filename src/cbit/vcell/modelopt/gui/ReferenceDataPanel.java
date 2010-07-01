@@ -817,10 +817,13 @@ public void setParameterEstimationTask(ParameterEstimationTask parameterEstimati
 				refDataMappingSpec.addPropertyChangeListener(ivjEventHandler);
 			}
 		}
+		timeIndex = fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceDataTimeColumnIndex();
+		setReferenceData(fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceData());
+	} else {
+		// fieldParameterEstimationTask is null, so referenceData cannot have any data, should be null too?
+		timeIndex = 0;
+		setReferenceData(null);
 	}
-	
-	timeIndex = fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceDataTimeColumnIndex();
-	setReferenceData(fieldParameterEstimationTask.getModelOptimizationSpec().getReferenceData());
 	updatePlot();
 }
 
