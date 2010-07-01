@@ -112,7 +112,7 @@ public class SingleFileDescriptor extends WizardPanelDescriptor {
    							}
     					}else //.lsm or other image formatss
     					{
-    							newFRAPStudy = getBatchRunWorkspace().loadFRAPDataFromImageFile(inFile, this.getClientTaskStatusSupport());
+    							newFRAPStudy = FRAPWorkspace.loadFRAPDataFromImageFile(inFile, this.getClientTaskStatusSupport());
     							isFileLoaded = true;
     					}
     					//check if there is results, if so, if the loaded frapStudy has the same model type and paramters then proceed

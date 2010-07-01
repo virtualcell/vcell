@@ -7,6 +7,7 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.SimStatusEvent;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
@@ -145,7 +146,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 //		}
 	}
 	
-	public void startExport(ExportSpecs exportSpecs){
+	public void startExport(OutputContext outContext, ExportSpecs exportSpecs){
 		try {
 			SessionLog log = new StdoutSessionLog("export");
 			ExportServiceImpl exportServiceImpl = new ExportServiceImpl(new StdoutSessionLog("export"));
@@ -155,7 +156,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 					System.out.println(event.toString());
 				}
 			});
-			exportServiceImpl.makeRemoteFile(LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs);
+			exportServiceImpl.makeRemoteFile(null, LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs);
 		}catch (DataAccessException e){
 			e.printStackTrace(System.out);
 		} catch (FileNotFoundException e) {
@@ -176,7 +177,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 				}
 			});
 			//the last parameter denotes whether the saved file is comporessed or not.
-			exportEvt = exportServiceImpl.makeRemoteFile(LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs, false);
+			exportEvt = exportServiceImpl.makeRemoteFile(null, LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs, false);
 		}catch (DataAccessException e){
 			e.printStackTrace(System.out);
 		} catch (FileNotFoundException e) {

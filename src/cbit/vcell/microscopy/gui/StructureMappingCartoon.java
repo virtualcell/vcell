@@ -11,9 +11,9 @@ import cbit.gui.graph.GraphModel;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.graph.GeometryClassLegendShape;
 import cbit.vcell.graph.GeometryContextGeometryShape;
 import cbit.vcell.graph.SubVolumeContainerShape;
-import cbit.vcell.graph.SubvolumeLegendShape;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 /**
@@ -111,7 +111,7 @@ public void refreshAll() {
 	SubVolume subVolumes[] = geometrySpec.getSubVolumes();
 	for (int i=0;i<subVolumes.length;i++){
 		cbit.vcell.geometry.SubVolume subvolume = subVolumes[i];
-		SubvolumeLegendShape subvolumeLegendShape = new SubvolumeLegendShape(subvolume,getGeometryContext().getGeometry(),this,10);
+		GeometryClassLegendShape subvolumeLegendShape = new GeometryClassLegendShape(subvolume,getGeometryContext().getGeometry(),this,10);
 		addShape(subvolumeLegendShape);
 		geometryShape.addChildShape(subvolumeLegendShape);
 	}	
