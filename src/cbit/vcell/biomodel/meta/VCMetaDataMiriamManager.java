@@ -1,13 +1,10 @@
 package cbit.vcell.biomodel.meta;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -22,28 +19,22 @@ import org.vcell.sybil.models.miriam.MIRIAMizer;
 import org.vcell.sybil.models.miriam.RefGroup;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.models.miriam.imp.MIRIAMizerImp;
-import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.sybil.models.miriam.imp.RefGroupImp;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
-import org.vcell.sybil.rdf.RDFBox;
 import org.vcell.sybil.rdf.RDFBox.RDFThing;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.registry.Registry;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.biomodel.meta.registry.Registry.Entry;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.Structure;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.sun.xml.internal.stream.events.NamedEvent;
 
-public class VCMetaDataMiriamManager implements MiriamManager {
+public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	
 	public static class VCMetaDataDataType implements DataType {
 		
@@ -294,10 +285,26 @@ public class VCMetaDataMiriamManager implements MiriamManager {
 		return wrappedRefGroups;
 	}
 
-	public void remove(Identifiable identifiable,
-			MIRIAMQualifier miriamQualifier, MiriamRefGroup miriamRefGroup) {
-		throw new RuntimeException("not yet implemented");
-		//vcMetaData.fireAnnotationEventListener(new VCMetaData.AnnotationEvent(identifiable));
+	public void remove(Identifiable identifiable, MIRIAMQualifier miriamQualifier, MiriamRefGroup miriamRefGroup) throws URNParseFailureException {
+		OpenEntry openEntry = vcMetaData.getRegistry().getEntry(identifiable);
+		NamedThing namedThing = openEntry.getNamedThing();
+//		if (entry.getNamedThing() == null){
+//			String newURI = vcMetaData.getRegistry().generateFreeURI(identifiable);
+//			namedThing = entry.setNamedThingFromURI(newURI);
+//		}
+		MIRIAMizer miriamizer = new MIRIAMizerImp();
+		RefGroup sybilRefGroup = miriamizer.newRefGroup(namedThing, miriamQualifier);
+		Set<MIRIAMRef> sybilMiriamRefs = new HashSet<MIRIAMRef>();
+		Set<MiriamResource> miriamResources = miriamRefGroup.getMiriamRefs();
+		for(MiriamResource miriamResource : miriamResources) {
+			sybilMiriamRefs.add(MIRIAMRef.createFromURN(miriamResource.getMiriamURN()));
+		}
+		for(MIRIAMRef sybilMiriamRef : sybilMiriamRefs) {
+			sybilRefGroup.add(sybilMiriamRef);			
+		}
+		miriamizer.deleteRefGroup(namedThing, sybilRefGroup);
+		invalidateCache(identifiable);
+		vcMetaData.fireAnnotationEventListener(new VCMetaData.AnnotationEvent(identifiable));
 	}
 
 	public Set<URL> getStoredCrossReferencedLinks(MiriamResource miriamResource) {
