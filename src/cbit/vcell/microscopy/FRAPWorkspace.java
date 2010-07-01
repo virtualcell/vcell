@@ -14,7 +14,7 @@ import cbit.vcell.simdata.SimDataConstants;
 
 public abstract class FRAPWorkspace 
 {
-	public FRAPStudy loadFRAPDataFromImageFile(File inputFile, ClientTaskStatusSupport clientTaskStatusSupport) throws ImageException, IOException, FormatException
+	public static FRAPStudy loadFRAPDataFromImageFile(File inputFile, ClientTaskStatusSupport clientTaskStatusSupport) throws ImageException, IOException, FormatException
 	{
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		FRAPData newFrapData = null;
@@ -37,7 +37,7 @@ public abstract class FRAPWorkspace
 		return newFrapStudy;
 	}
 	
-	public FRAPStudy loadFRAPDataFromVcellLogFile(File inputFile, String identifierName, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
+	public static FRAPStudy loadFRAPDataFromVcellLogFile(File inputFile, String identifierName, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
 	{
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		FRAPData newFrapData = null;
@@ -52,7 +52,7 @@ public abstract class FRAPWorkspace
 		return newFrapStudy;
 	}
 	
-	public FRAPStudy loadFRAPDataFromMultipleFiles(File[] inputFiles, ClientTaskStatusSupport clientTaskStatusSupport, boolean isTimeSeries, double timeInterval) throws ImageException, IOException, FormatException
+	public static FRAPStudy loadFRAPDataFromMultipleFiles(File[] inputFiles, ClientTaskStatusSupport clientTaskStatusSupport, boolean isTimeSeries, double timeInterval) throws ImageException, IOException, FormatException
 	{
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		FRAPData newFrapData = null;

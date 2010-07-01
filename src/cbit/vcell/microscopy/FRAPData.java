@@ -21,30 +21,27 @@ import javax.media.jai.operator.ErodeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.LookupDescriptor;
 
-import loci.formats.AWTImageTools;
+import loci.formats.gui.AWTImageTools;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
+import org.vcell.util.Matchable;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.TSJobResultsSpaceStats;
+import org.vcell.util.document.TimeSeriesJobSpec;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataJobID;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.ImageException;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.TSJobResultsSpaceStats;
-import org.vcell.util.document.TimeSeriesJobSpec;
-import org.vcell.util.Matchable;
-import org.vcell.util.document.VCDataJobID;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
-
-import org.vcell.util.document.User;
-import org.vcell.util.gui.DialogUtils;
-
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -114,7 +111,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 	}
 	public static DataIdentifier[] getDataIdentiferListFromVCellSimulationData(File vcellSimLogFile,int jobIndex) throws Exception{
 		return
-			getDataSetControllerImplFromVCellSimulationData(vcellSimLogFile).getDataIdentifiers(
+			getDataSetControllerImplFromVCellSimulationData(vcellSimLogFile).getDataIdentifiers(null,
 				new VCSimulationDataIdentifier(
 					getVCSimulationIdentifierFromVCellSimulationData(vcellSimLogFile),jobIndex)
 			);
@@ -190,8 +187,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 					true,false,VCDataJobID.createVCDataJobID(getDotUser(), true)
 					);
 		TSJobResultsSpaceStats tsJobResultsSpaceStats =
-			(TSJobResultsSpaceStats)dataSetControllerImpl.getTimeSeriesValues(
-				vcSimulationDataIdentifier, timeSeriesJobSpec);
+			(TSJobResultsSpaceStats)dataSetControllerImpl.getTimeSeriesValues(null, vcSimulationDataIdentifier, timeSeriesJobSpec);
 		//wait for job to finish
 		while(bStatus[0] == null || bStatus[0].getEventTypeID() != DataJobEvent.DATA_COMPLETE){
 			Thread.sleep(100);
@@ -211,10 +207,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		UShortImage[] scaledDataImages = new UShortImage[times.length];
 		for (int i = 0; i < times.length; i++) {
 			double[] rawData =
-				dataSetControllerImpl.getSimDataBlock(
-						vcSimulationDataIdentifier,
-						variableName,
-						times[i]).getData();
+				dataSetControllerImpl.getSimDataBlock(null,vcSimulationDataIdentifier,variableName,times[i]).getData();
 			short[] scaledDataShort = new short[rawData.length];
 //			if(allTimesMax> SCALE_MAX){
 			for (int j = 0; j < scaledDataShort.length; j++) {

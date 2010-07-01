@@ -52,9 +52,10 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.ZEnforcer;
 
-import loci.formats.AWTImageTools;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
+import loci.formats.gui.AWTImageTools;
+import loci.formats.gui.BufferedImageReader;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -389,7 +390,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 								getImagePane().getHighlightImage().getWidth()+","+
 								getImagePane().getHighlightImage().getHeight()+")");
 						}
-						BufferedImage roiMaskImage = iFormatReader.openImage(0);
+						BufferedImage roiMaskImage = BufferedImageReader.makeBufferedImageReader(iFormatReader).openImage(0);
 						int maskColor = highlightColor.getRGB();
 						for (int y = 0; y < iFormatReader.getSizeY(); y++) {
 							for (int x = 0; x < iFormatReader.getSizeX(); x++) {

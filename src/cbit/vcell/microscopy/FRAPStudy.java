@@ -26,6 +26,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 
 import cbit.image.ImageException;
@@ -42,21 +43,27 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
@@ -80,6 +87,7 @@ import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
+import cbit.vcell.units.VCUnitDefinition;
 
 public class FRAPStudy implements Matchable{
 	public static final String EXTRACELLULAR_NAME = "extracellular";
@@ -295,17 +303,32 @@ public class FRAPStudy implements Matchable{
 				new Species(SPECIES_NAME_PREFIX_MOBILE, "Mobile bleachable species");
 		speciesContexts[MOBILE_SPECIES_INDEX] = 
 				new SpeciesContext(null,species[MOBILE_SPECIES_INDEX].getCommonName(),species[MOBILE_SPECIES_INDEX],cytosol,true);
-		initialConditions[MOBILE_SPECIES_INDEX] =
-				new Expression("(field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0))");
+		FieldFunctionArguments postBleach_first = new FieldFunctionArguments(roiDataName,"postbleach_first", new Expression(0), VariableType.VOLUME);
+		FieldFunctionArguments prebleach_avg = new FieldFunctionArguments(roiDataName,"prebleach_avg", new Expression(0), VariableType.VOLUME);
+		Expression expPostBleach_first = new Expression(postBleach_first.infix());
+		Expression expPreBleach_avg = new Expression(prebleach_avg.infix());
+		initialConditions[MOBILE_SPECIES_INDEX] = Expression.div(expPostBleach_first, expPreBleach_avg);
 		
 		SimulationContext simContext = new SimulationContext(bioModel.getModel(),geometry);
+		
 		bioModel.addSimulationContext(simContext);
 		FeatureMapping cytosolFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(cytosol);
-		cytosolFeatureMapping.setSubVolume(geometry.getGeometrySpec().getSubVolume(CYTOSOL_NAME));
-		cytosolFeatureMapping.setResolved(true);
 		FeatureMapping extracellularFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(extracellular);
-		extracellularFeatureMapping.setSubVolume(geometry.getGeometrySpec().getSubVolume(EXTRACELLULAR_NAME));
-		extracellularFeatureMapping.setResolved(true);
+		Membrane plasmaMembrane = model.getMembrane(cytosol, extracellular);
+		MembraneMapping plasmaMembraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(plasmaMembrane);
+		
+		SubVolume cytSubVolume = geometry.getGeometrySpec().getSubVolume(CYTOSOL_NAME);
+		SubVolume exSubVolume = geometry.getGeometrySpec().getSubVolume(EXTRACELLULAR_NAME);
+		SurfaceClass pmSurfaceClass = geometry.getGeometrySurfaceDescription().getSurfaceClass(exSubVolume, cytSubVolume);
+		
+		cytosolFeatureMapping.setGeometryClass(cytSubVolume);
+		extracellularFeatureMapping.setGeometryClass(exSubVolume);
+		plasmaMembraneMapping.setGeometryClass(pmSurfaceClass);
+		
+		cytosolFeatureMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
+		extracellularFeatureMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
+		plasmaMembraneMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
+		
 		
 		for (int i = 0; i < initialConditions.length; i++) {
 			model.addSpecies(species[i]);
@@ -322,8 +345,7 @@ public class FRAPStudy implements Matchable{
 		
 		//Add PSF function
 		
-		mathDesc.addVariable(new Function(SimDataConstants.PSF_FUNCTION_NAME,
-					new Expression(psfFDIS.getFieldFuncArgs().infix())));
+		mathDesc.addVariable(new Function(SimDataConstants.PSF_FUNCTION_NAME, new Expression(psfFDIS.getFieldFuncArgs().infix()), null));
 		
 		simContext.setMathDescription(mathDesc);
 				
@@ -390,20 +412,6 @@ public class FRAPStudy implements Matchable{
 		double[] timeStamps = sourceFrapStudy.getFrapData().getImageDataset().getImageTimeStamps();
 		TimeBounds timeBounds = new TimeBounds(0.0,timeStamps[timeStamps.length-1]-timeStamps[startingIndexForRecovery]);
 		double timeStepVal = timeStamps[startingIndexForRecovery+1] - timeStamps[startingIndexForRecovery];
-//		double defaultReacDiffTimeStep = 0.001;
-//		TimeStep timeStep = new TimeStep(defaultReacDiffTimeStep, defaultReacDiffTimeStep, defaultReacDiffTimeStep);//not used, too small that run very slowly
-//		int keepEvery =1;
-//		DefaultOutputTimeSpec timeSpec = new DefaultOutputTimeSpec(keepEvery, 1000);//not used until we use smaller time step
-
-//		TimeStep timeStep = null;
-//		if(tStep != null)
-//		{
-//			timeStep = tStep;
-//		}
-//		else
-//		{
-//			timeStep = new TimeStep(timeStepVal, timeStepVal, timeStepVal);
-//		}
 		
 		int numX = cellROI_2D.getRoiImages()[0].getNumX();
 		int numY = cellROI_2D.getRoiImages()[0].getNumY();
@@ -462,45 +470,38 @@ public class FRAPStudy implements Matchable{
 		speciesContexts = new SpeciesContext[SPECIES_COUNT];
 		initialConditions = new Expression[SPECIES_COUNT];
 				
+		//total initial condition
+		FieldFunctionArguments postBleach_first = new FieldFunctionArguments(roiDataName,"postbleach_first", new Expression(0), VariableType.VOLUME);
+		FieldFunctionArguments prebleach_avg = new FieldFunctionArguments(roiDataName,"prebleach_avg", new Expression(0), VariableType.VOLUME);
+		Expression expPostBleach_first = new Expression(postBleach_first.infix());
+		Expression expPreBleach_avg = new Expression(prebleach_avg.infix());
+		Expression totalIniCondition = Expression.div(expPostBleach_first, expPreBleach_avg);
 		//Free Species
 		diffusionConstants[FREE_SPECIES_INDEX] = new Expression(df);
-		species[FREE_SPECIES_INDEX] =
-				new Species(FRAPStudy.SPECIES_NAME_PREFIX_MOBILE,	"Mobile bleachable species");
-		speciesContexts[FREE_SPECIES_INDEX] = 
-				new SpeciesContext(null,species[FREE_SPECIES_INDEX].getCommonName(),species[FREE_SPECIES_INDEX],cytosol,true);
-		initialConditions[FREE_SPECIES_INDEX] =
-				new Expression(ff+"*(field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0))");
+		species[FREE_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_MOBILE,	"Mobile bleachable species");
+		speciesContexts[FREE_SPECIES_INDEX] = new SpeciesContext(null,species[FREE_SPECIES_INDEX].getCommonName(),species[FREE_SPECIES_INDEX],cytosol,true);
+		initialConditions[FREE_SPECIES_INDEX] = Expression.mult(new Expression(ff), totalIniCondition);
 		
 		//Immobile Species (No diffusion)
 		//Set very small diffusion rate on immobile to force evaluation as state variable (instead of FieldData function)
 		//If left as a function errors occur because functions involving FieldData require a database connection
 		final String IMMOBILE_DIFFUSION_KLUDGE = "1e-14";
 		diffusionConstants[IMMOBILE_SPECIES_INDEX] = new Expression(IMMOBILE_DIFFUSION_KLUDGE);
-		species[IMMOBILE_SPECIES_INDEX] =
-				new Species(FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE,"Immobile bleachable species");
-		speciesContexts[IMMOBILE_SPECIES_INDEX] = 
-				new SpeciesContext(null,species[IMMOBILE_SPECIES_INDEX].getCommonName(),species[IMMOBILE_SPECIES_INDEX],cytosol,true);
-		initialConditions[IMMOBILE_SPECIES_INDEX] =
-				new Expression(fimm+"*(field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0))");
+		species[IMMOBILE_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE,"Immobile bleachable species");
+		speciesContexts[IMMOBILE_SPECIES_INDEX] = new SpeciesContext(null,species[IMMOBILE_SPECIES_INDEX].getCommonName(),species[IMMOBILE_SPECIES_INDEX],cytosol,true);
+		initialConditions[IMMOBILE_SPECIES_INDEX] = Expression.mult(new Expression(fimm), totalIniCondition);
 
 		//BS Species
 		diffusionConstants[BS_SPECIES_INDEX] = new Expression(IMMOBILE_DIFFUSION_KLUDGE);
-		species[BS_SPECIES_INDEX] =
-				new Species(FRAPStudy.SPECIES_NAME_PREFIX_BINDING_SITE,"Binding Site species");
-		speciesContexts[BS_SPECIES_INDEX] = 
-				new SpeciesContext(null,species[BS_SPECIES_INDEX].getCommonName(),species[BS_SPECIES_INDEX],cytosol,true);
-		initialConditions[BS_SPECIES_INDEX] =
-				new Expression(bs+"* field("+roiDataName+",prebleach_avg,0)");
+		species[BS_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_BINDING_SITE,"Binding Site species");
+		speciesContexts[BS_SPECIES_INDEX] = new SpeciesContext(null,species[BS_SPECIES_INDEX].getCommonName(),species[BS_SPECIES_INDEX],cytosol,true);
+		initialConditions[BS_SPECIES_INDEX] = Expression.mult(new Expression(bs), totalIniCondition);
 	
 		//Complex species
 		diffusionConstants[COMPLEX_SPECIES_INDEX] = new Expression(dc);
-		species[COMPLEX_SPECIES_INDEX] =
-				new Species(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE, "Slower mobile bleachable species");
-		speciesContexts[COMPLEX_SPECIES_INDEX] = 
-				new SpeciesContext(null,species[COMPLEX_SPECIES_INDEX].getCommonName(),species[COMPLEX_SPECIES_INDEX],cytosol,true);
-		initialConditions[COMPLEX_SPECIES_INDEX] =
-				new Expression(fc+"*(field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0))");
-				
+		species[COMPLEX_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE, "Slower mobile bleachable species");
+		speciesContexts[COMPLEX_SPECIES_INDEX] = new SpeciesContext(null,species[COMPLEX_SPECIES_INDEX].getCommonName(),species[COMPLEX_SPECIES_INDEX],cytosol,true);
+		initialConditions[COMPLEX_SPECIES_INDEX] = Expression.mult(new Expression(fc), totalIniCondition);
 	
 		// add reactions to species if there is bleachWhileMonitoring rate.
 		for (int i = 0; i < initialConditions.length; i++) {
@@ -534,13 +535,24 @@ public class FRAPStudy implements Matchable{
 		
 		//create simulation context		
 		SimulationContext simContext = new SimulationContext(bioModel.getModel(),geometry);
+		
 		bioModel.addSimulationContext(simContext);
 		FeatureMapping cytosolFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(cytosol);
-		cytosolFeatureMapping.setSubVolume(geometry.getGeometrySpec().getSubVolume(FRAPStudy.CYTOSOL_NAME));
-		cytosolFeatureMapping.setResolved(true);
 		FeatureMapping extracellularFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(extracellular);
-		extracellularFeatureMapping.setSubVolume(geometry.getGeometrySpec().getSubVolume(FRAPStudy.EXTRACELLULAR_NAME));
-		extracellularFeatureMapping.setResolved(true);
+		Membrane plasmaMembrane = model.getMembrane(cytosol, extracellular);
+		MembraneMapping plasmaMembraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(plasmaMembrane);
+		
+		SubVolume cytSubVolume = geometry.getGeometrySpec().getSubVolume(CYTOSOL_NAME);
+		SubVolume exSubVolume = geometry.getGeometrySpec().getSubVolume(EXTRACELLULAR_NAME);
+		SurfaceClass pmSurfaceClass = geometry.getGeometrySurfaceDescription().getSurfaceClass(exSubVolume, cytSubVolume);
+		
+		cytosolFeatureMapping.setGeometryClass(cytSubVolume);
+		extracellularFeatureMapping.setGeometryClass(exSubVolume);
+		plasmaMembraneMapping.setGeometryClass(pmSurfaceClass);
+		
+		cytosolFeatureMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
+		extracellularFeatureMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
+		plasmaMembraneMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
 		
 		for (int i = 0; i < speciesContexts.length; i++) {
 			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(speciesContexts[i]);
@@ -551,9 +563,8 @@ public class FRAPStudy implements Matchable{
 		MathMapping mathMapping = new MathMapping(simContext);
 		MathDescription mathDesc = mathMapping.getMathDescription();
 		//Add total fluorescence as function of mobile(optional: and slower mobile) and immobile fractions
-		mathDesc.addVariable(
-				new Function(FRAPStudy.SPECIES_NAME_PREFIX_COMBINED,
-					new Expression(species[FREE_SPECIES_INDEX].getCommonName()+"+"+species[COMPLEX_SPECIES_INDEX].getCommonName()+"+"+species[IMMOBILE_SPECIES_INDEX].getCommonName())));
+		mathDesc.addVariable(new Function(FRAPStudy.SPECIES_NAME_PREFIX_COMBINED,
+					             new Expression(species[FREE_SPECIES_INDEX].getCommonName()+"+"+species[COMPLEX_SPECIES_INDEX].getCommonName()+"+"+species[IMMOBILE_SPECIES_INDEX].getCommonName()), null));
 		simContext.setMathDescription(mathDesc);
 
 		SimulationVersion simVersion = new SimulationVersion(simKey,"sim1",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
@@ -740,7 +751,7 @@ public class FRAPStudy implements Matchable{
 //			FileUtils.copyFile(simMeshFile, imgMeshFile);
 		}
 		else{
-			throw new Exception("Sover did not finish normally." + status.toString());
+			throw new Exception("Sover did not finish normally." + status);
 		}
 	}
 	

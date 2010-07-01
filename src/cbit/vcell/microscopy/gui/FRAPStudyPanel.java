@@ -82,6 +82,7 @@ import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
@@ -1476,7 +1477,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
 				VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, VFRAP_DS_PREFIX);
 								
-				PDEDataManager dataManager = new PDEDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
+				PDEDataManager dataManager = new PDEDataManager(null, getLocalWorkspace().getVCDataManager(),vcDataId);
 				PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 						
 				int format = ExportConstants.FORMAT_QUICKTIME;
@@ -1546,14 +1547,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
 			fieldDataIdentifierSpecs[i] = new FieldDataIdentifierSpec(fieldFunctionArgs[i],fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier());
 		}
-		PDEDataViewer flourViewer = getFlourDataViewer();/*, getFlourDataViewer2()*/
+		PDEDataViewer flourViewer = getFlourDataViewer();
 		PDEDataManager dataManager = null;
 
-		if (choice == DisplayChoice.EXTTIMEDATA){
-			
+		if (choice == DisplayChoice.EXTTIMEDATA)
+		{
 				flourViewer.setSimulation(null);
 				flourViewer.setPdeDataContext(null);
-				
 				flourViewer.setDataIdentifierFilter(
 				new PDEPlotControlPanel.DataIdentifierFilter(){
 					private String ALL_DATAIDENTIFIERS = "All";
@@ -1603,30 +1603,30 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
 			VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, VFRAP_DS_PREFIX);
 							
-			dataManager = new PDEDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
+			dataManager = new PDEDataManager(null,getLocalWorkspace().getVCDataManager(),vcDataId);
 			PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 			// add function to display normalized fluorence data 
 			Norm_Exp_Fluor = new Expression(Norm_Exp_Fluor_Str);
 			SimulationSymbolTable simSymbolTable = simJob.getSimulationSymbolTable();
-			if(simSymbolTable.getVariable(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE) == null)//one diffusing component
-			{
-				Norm_Sim = new Expression(Norm_Sim_One_Diff_Str);
-			}
-			else // two diffusing components
-			{
-				Norm_Sim = new Expression(Norm_Sim_Two_Diff_Str);
-			}
-			AnnotatedFunction[] func = {new AnnotatedFunction(NORM_FLUOR_VAR, Norm_Exp_Fluor, null, VariableType.VOLUME, false),
-										new AnnotatedFunction(NORM_SIM_VAR, Norm_Sim, null, VariableType.VOLUME, false)};
-			
-			
-			VCData mergeData = localWorkspace.getDataSetControllerImpl().getVCData(vcDataId);			
-			
-			for(int k=0; k<func.length; k++)
-			{
-				mergeData.addFunction(func[k], true);
-
-			}
+//			if(simSymbolTable.getVariable(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE) == null)//one diffusing component
+//			{
+//				Norm_Sim = new Expression(Norm_Sim_One_Diff_Str);
+//			}
+//			else // two diffusing components
+//			{
+//				Norm_Sim = new Expression(Norm_Sim_Two_Diff_Str);
+//			}
+//			AnnotatedFunction[] func = {new AnnotatedFunction(NORM_FLUOR_VAR, Norm_Exp_Fluor, null, VariableType.VOLUME, false),
+//										new AnnotatedFunction(NORM_SIM_VAR, Norm_Sim, null, VariableType.VOLUME, false)};
+//			
+//			
+//			VCData mergeData = localWorkspace.getDataSetControllerImpl().getVCData(vcDataId);			
+//			
+//			for(int k=0; k<func.length; k++)
+//			{
+//				mergeData.addFunction(func[k], true);
+//
+//			}
 			pdeDataContext.refreshIdentifiers();
 			flourViewer.setSimulation(sim);
 			flourViewer.setPdeDataContext(pdeDataContext);
@@ -1823,7 +1823,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}		
 		int jobIndex = 0;
 		SimulationJob simJob = new SimulationJob(sim,jobIndex,fieldDataIdentifierSpecs);
-		PDEDataManager dataManager = new PDEDataManager(getLocalWorkspace().getVCDataManager(), simJob.getVCDataIdentifier());
+		PDEDataManager dataManager = new PDEDataManager(null,getLocalWorkspace().getVCDataManager(), simJob.getVCDataIdentifier());
 		return dataManager;
 	}
 	

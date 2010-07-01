@@ -16,7 +16,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.util.StdoutSessionLog;
 
-import loci.formats.AWTImageTools;
+import loci.formats.gui.AWTImageTools;
 import loci.formats.out.TiffWriter;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -256,7 +256,7 @@ public class NonGUIFRAPTest {
 		tifWriter.setCompression("Uncompressed");
 		BufferedImage timePointBufferedImage =
 			AWTImageTools.makeImage(shortPixels, width, height,false);
-		tifWriter.saveImage(timePointBufferedImage, true);
+//		tifWriter.saveImage(timePointBufferedImage, true);
 		tifWriter.close();
 		return tempF;
 	
@@ -410,12 +410,11 @@ public class NonGUIFRAPTest {
 				bioModel.getSimulations()[0].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),
 				FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
 		PDEDataManager simulationDataManager =
-			new PDEDataManager(localWorkspace.getVCDataManager(),vcSimulationDataIdentifier);
+			new PDEDataManager(null, localWorkspace.getVCDataManager(),vcSimulationDataIdentifier);
 		double[] frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
 		//
 		VCDataManager testVCDataManager = localWorkspace.getVCDataManager();
-		double[] prebleachAverage = testVCDataManager.getSimDataBlock(
-				frapStudy.getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
+		double[] prebleachAverage = testVCDataManager.getSimDataBlock(null,frapStudy.getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
 		//TODO: need to create parameters here.
 		Parameter[] parameters = null;
 		SpatialAnalysisResults spatialAnalysisResults =

@@ -68,7 +68,7 @@ public class FRAPOptimization {
 		if(isRefSim)
 		{
 			for (int j = 0; j < simTimes.length; j++) {
-				simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_MOBILE,simTimes[j]).getData();
+				simData = vcDataManager.getSimDataBlock(null,vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_MOBILE,simTimes[j]).getData();
 				for(int i = 0; i < roiLen; i++){
 					newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), null,0.0);
 				}
@@ -80,7 +80,7 @@ public class FRAPOptimization {
 		else
 		{
 			for (int j = 0; j < simTimes.length; j++) {
-				simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_COMBINED,simTimes[j]).getData();
+				simData = vcDataManager.getSimDataBlock(null,vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_COMBINED,simTimes[j]).getData();
 				for(int i = 0; i < roiLen; i++){
 					newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), null,0.0);
 				}
@@ -119,19 +119,45 @@ public class FRAPOptimization {
 		return result;
 	}
 	
-	public static double getErrorByNewParameters_oneDiffRate(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, /*double refTimeInterval,*/ boolean[] errorOfInterest) throws Exception
+	public static double getErrorByNewParameters_oneDiffRate(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, boolean[] errorOfInterest, Parameter fixedParam) throws Exception
 	{
-		// trying 3 parameters
 		double error = 0;
+		// trying 3 parameters
 		double diffRate = 0;
-		double[][] diffData = null;
 		double mobileFrac = 1;
 		double bleachWhileMonitoringRate = 0;
+		
+		double[][] diffData = null;
+		
 		if(newParams != null && newParams.length > 0)
 		{
-			diffRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
-			mobileFrac = Math.min(newParams[FRAPModel.INDEX_PRIMARY_FRACTION], 1);
-			bleachWhileMonitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
+			if(fixedParam == null)
+			{
+				diffRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+				mobileFrac = newParams[FRAPModel.INDEX_PRIMARY_FRACTION];
+				bleachWhileMonitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
+			}
+			else // there is a fixedParameter
+			{
+				if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE]))
+				{
+					diffRate = fixedParam.getInitialGuess();
+					mobileFrac = newParams[FRAPModel.INDEX_PRIMARY_FRACTION - 1];
+					bleachWhileMonitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE - 1];
+				}
+				else if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION]))
+				{
+					diffRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+					mobileFrac = fixedParam.getInitialGuess();
+					bleachWhileMonitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE - 1];
+				}
+				else if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
+				{
+					diffRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+					mobileFrac = newParams[FRAPModel.INDEX_PRIMARY_FRACTION];
+					bleachWhileMonitoringRate = fixedParam.getInitialGuess(); 
+				} 
+			}
 						
 			diffData = FRAPOptimization.getValueByDiffRate(refDiffRate,
                     diffRate,
@@ -172,22 +198,72 @@ public class FRAPOptimization {
 		}
 	}
 	
-	public static double getErrorByNewParameters_twoDiffRates(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, /*double refTimeInterval,*/ boolean[] errorOfInterest) throws Exception
+	public static double getErrorByNewParameters_twoDiffRates(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, boolean[] errorOfInterest, Parameter fixedParam) throws Exception
 	{
 		double error = 0;
 		// trying 5 parameters
-		double diffFastRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
-		double mFracFast = newParams[FRAPModel.INDEX_PRIMARY_FRACTION];
-		double monitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
-		double diffSlowRate = newParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE];
-		double mFracSlow = newParams[FRAPModel.INDEX_SECONDARY_FRACTION];
-		
+		double diffFastRate = 0;
+		double mFracFast = 1;
+		double monitoringRate = 0;
+		double diffSlowRate = 0;
+		double mFracSlow = 1;
 		
 		double[][] fastData = null;
 		double[][] slowData = null;
-				
 		if(newParams != null && newParams.length > 0)
 		{
+			if(fixedParam == null)
+			{
+				diffFastRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+				mFracFast = newParams[FRAPModel.INDEX_PRIMARY_FRACTION];
+				monitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
+				diffSlowRate = newParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE];
+				mFracSlow = newParams[FRAPModel.INDEX_SECONDARY_FRACTION];
+			}
+			else // there is a fixedParameter
+			{
+				if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE]))
+				{
+					diffFastRate = fixedParam.getInitialGuess();
+					mFracFast = newParams[FRAPModel.INDEX_PRIMARY_FRACTION - 1];
+					monitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE - 1];
+					diffSlowRate = newParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE - 1];
+					mFracSlow = newParams[FRAPModel.INDEX_SECONDARY_FRACTION - 1];
+				}
+				else if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION]))
+				{
+					diffFastRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+					mFracFast = fixedParam.getInitialGuess();
+					monitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE - 1];
+					diffSlowRate = newParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE - 1];
+					mFracSlow = newParams[FRAPModel.INDEX_SECONDARY_FRACTION - 1];
+				}
+				else if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
+				{
+					diffFastRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+					mFracFast = newParams[FRAPModel.INDEX_PRIMARY_FRACTION];
+					monitoringRate = fixedParam.getInitialGuess(); 
+					diffSlowRate = newParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE - 1];
+					mFracSlow = newParams[FRAPModel.INDEX_SECONDARY_FRACTION - 1];
+				} 
+				else if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE]))
+				{
+					diffFastRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+					mFracFast = newParams[FRAPModel.INDEX_PRIMARY_FRACTION];
+					monitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
+					diffSlowRate = fixedParam.getInitialGuess();
+					mFracSlow = newParams[FRAPModel.INDEX_SECONDARY_FRACTION - 1];
+				}
+				else if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION]))
+				{
+					diffFastRate = newParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+					mFracFast = newParams[FRAPModel.INDEX_PRIMARY_FRACTION];
+					monitoringRate = newParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
+					diffSlowRate = newParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE];
+					mFracSlow = fixedParam.getInitialGuess();
+				}
+			}
+			
 			fastData = FRAPOptimization.getValueByDiffRate(refDiffRate,
                     diffFastRate,
                     refData,
@@ -313,7 +389,8 @@ public class FRAPOptimization {
 		return result;
 	}
 	
-	public static void estimate(FRAPOptData argOptData, Parameter[] inParams, String[] outParaNames, double[] outParaVals, boolean[] eoi) throws Exception
+	//estimate best parameters and return the least error
+	public static double estimate(FRAPOptData argOptData, Parameter[] inParams, String[] outParaNames, double[] outParaVals, boolean[] eoi) throws Exception
 	{
 		/*PowellSolver  solver = new PowellSolver();
 		LookupTableObjectiveFunction func = new LookupTableObjectiveFunction(argOptData);
@@ -376,32 +453,34 @@ public class FRAPOptimization {
 			outParaNames[i] = names[i];
 			outParaVals[i] = values[i];
 		}
+		
+		return  optResultSet.getObjectiveFunctionValue();
 	}
-	
+	//for second run of optimization for diffusion with two diffusing components
 	private static Parameter[] generateInParamSet(Parameter[] inputParams, double newValues[])
 	{
 		Parameter[] result = new Parameter[inputParams.length];
-		Parameter fastRate = inputParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
-		Parameter fastMobileFrac = inputParams[FRAPModel.INDEX_PRIMARY_FRACTION];
+		Parameter primaryRate = inputParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
+		Parameter primaryFrac = inputParams[FRAPModel.INDEX_PRIMARY_FRACTION];
 		Parameter bwmRate = inputParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
-		Parameter slowRate = inputParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE];
-		Parameter slowMobileFrac = inputParams[FRAPModel.INDEX_SECONDARY_FRACTION];
+		Parameter secondaryRate = inputParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE];
+		Parameter secondaryFrac = inputParams[FRAPModel.INDEX_SECONDARY_FRACTION];
 		
-		if(newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] < fastRate.getLowerBound())
+		if(newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] < primaryRate.getLowerBound())
 		{
-			newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = fastRate.getLowerBound();
+			newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = primaryRate.getLowerBound();
 		}
-		if(newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] > fastRate.getUpperBound())
+		if(newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] > primaryRate.getUpperBound())
 		{
-			newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = fastRate.getUpperBound();
+			newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = primaryRate.getUpperBound();
 		}
-		if(newValues[FRAPModel.INDEX_PRIMARY_FRACTION] < fastMobileFrac.getLowerBound())
+		if(newValues[FRAPModel.INDEX_PRIMARY_FRACTION] < primaryFrac.getLowerBound())
 		{
-			newValues[FRAPModel.INDEX_PRIMARY_FRACTION] = fastMobileFrac.getLowerBound();
+			newValues[FRAPModel.INDEX_PRIMARY_FRACTION] = primaryFrac.getLowerBound();
 		}
-		if(newValues[FRAPModel.INDEX_PRIMARY_FRACTION] > fastMobileFrac.getUpperBound())
+		if(newValues[FRAPModel.INDEX_PRIMARY_FRACTION] > primaryFrac.getUpperBound())
 		{
-			newValues[FRAPModel.INDEX_PRIMARY_FRACTION] = fastMobileFrac.getUpperBound();
+			newValues[FRAPModel.INDEX_PRIMARY_FRACTION] = primaryFrac.getUpperBound();
 		}
 		if(newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE] < bwmRate.getLowerBound())
 		{
@@ -411,49 +490,49 @@ public class FRAPOptimization {
 		{
 			newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = bwmRate.getUpperBound();
 		}
-		if(newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] < slowRate.getLowerBound())
+		if(newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] < secondaryRate.getLowerBound())
 		{
-			newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = slowRate.getLowerBound();
+			newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = secondaryRate.getLowerBound();
 		}
-		if(newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] > slowRate.getUpperBound())
+		if(newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] > secondaryRate.getUpperBound())
 		{
-			newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = slowRate.getUpperBound();
+			newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = secondaryRate.getUpperBound();
 		}
-		if(newValues[FRAPModel.INDEX_SECONDARY_FRACTION] < slowMobileFrac.getLowerBound())
+		if(newValues[FRAPModel.INDEX_SECONDARY_FRACTION] < secondaryFrac.getLowerBound())
 		{
-			newValues[FRAPModel.INDEX_SECONDARY_FRACTION] = slowMobileFrac.getLowerBound();
+			newValues[FRAPModel.INDEX_SECONDARY_FRACTION] = secondaryFrac.getLowerBound();
 		}
-		if(newValues[FRAPModel.INDEX_SECONDARY_FRACTION] > slowMobileFrac.getUpperBound())
+		if(newValues[FRAPModel.INDEX_SECONDARY_FRACTION] > secondaryFrac.getUpperBound())
 		{
-			newValues[FRAPModel.INDEX_SECONDARY_FRACTION] = slowMobileFrac.getUpperBound();
+			newValues[FRAPModel.INDEX_SECONDARY_FRACTION] = secondaryFrac.getUpperBound();
 		}
 		
 		
-		result[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(fastRate.getName(), 
-                                                    fastRate.getLowerBound(), 
-                                                    fastRate.getUpperBound(),
-                                                    fastRate.getScale(),
+		result[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(primaryRate.getName(), 
+                                                    primaryRate.getLowerBound(), 
+                                                    primaryRate.getUpperBound(),
+                                                    primaryRate.getScale(),
                                                     newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE]);
 		
-		result[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(fastMobileFrac.getName(), 
-													fastMobileFrac.getLowerBound(), 
-													fastMobileFrac.getUpperBound(),
-													fastMobileFrac.getScale(),
+		result[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(primaryFrac.getName(), 
+													primaryFrac.getLowerBound(), 
+													primaryFrac.getUpperBound(),
+													primaryFrac.getScale(),
 													newValues[FRAPModel.INDEX_PRIMARY_FRACTION]);
 		result[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(bwmRate.getName(),
 												    bwmRate.getLowerBound(),
 												    bwmRate.getUpperBound(),
 												    bwmRate.getScale(),
 												    newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE]);
-		result[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = new Parameter(slowRate.getName(), 
-													slowRate.getLowerBound(), 
-													slowRate.getUpperBound(),
-													slowRate.getScale(),
+		result[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = new Parameter(secondaryRate.getName(), 
+													secondaryRate.getLowerBound(), 
+													secondaryRate.getUpperBound(),
+													secondaryRate.getScale(),
 													newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE]);
-		result[FRAPModel.INDEX_SECONDARY_FRACTION] = new Parameter(slowMobileFrac.getName(), 
-													slowMobileFrac.getLowerBound(), 
-													slowMobileFrac.getUpperBound(),
-													slowMobileFrac.getScale(),
+		result[FRAPModel.INDEX_SECONDARY_FRACTION] = new Parameter(secondaryFrac.getName(), 
+													secondaryFrac.getLowerBound(), 
+													secondaryFrac.getUpperBound(),
+													secondaryFrac.getScale(),
 													newValues[FRAPModel.INDEX_SECONDARY_FRACTION]);
        
  		return result;

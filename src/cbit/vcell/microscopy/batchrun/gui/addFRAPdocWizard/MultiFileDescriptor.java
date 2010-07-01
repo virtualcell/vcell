@@ -16,6 +16,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
@@ -84,7 +85,7 @@ public class MultiFileDescriptor extends WizardPanelDescriptor {
     			{
 					FRAPStudy newFRAPStudy = null;
 
-					newFRAPStudy = getFrapWorkspace().loadFRAPDataFromMultipleFiles(files, this.getClientTaskStatusSupport(), multiFilePanel.isTimeSeries(), multiFilePanel.getTimeInterval());
+					newFRAPStudy = FRAPWorkspace.loadFRAPDataFromMultipleFiles(files, this.getClientTaskStatusSupport(), multiFilePanel.isTimeSeries(), multiFilePanel.getTimeInterval());
 					isFileLoaded = true;
 					
 					//for all loaded files

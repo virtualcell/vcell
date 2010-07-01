@@ -18,6 +18,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
@@ -92,14 +93,14 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 									rowData, ListSelectionModel.SINGLE_SELECTION);
 							if(selectedIndexArr != null && selectedIndexArr.length > 0)
 							{
-								newFRAPStudy = getFrapWorkspace().loadFRAPDataFromVcellLogFile(inFile, dataIdentifiers[selectedIndexArr[0]].getName(), this.getClientTaskStatusSupport());
+								newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, dataIdentifiers[selectedIndexArr[0]].getName(), this.getClientTaskStatusSupport());
 								isFileLoaded = true;
 							}else{
 								throw UserCancelException.CANCEL_GENERIC;
 							}
     					}else //.lsm or other image formatss
     					{
-    							newFRAPStudy = getFrapWorkspace().loadFRAPDataFromImageFile(inFile, this.getClientTaskStatusSupport());
+    							newFRAPStudy = FRAPWorkspace.loadFRAPDataFromImageFile(inFile, this.getClientTaskStatusSupport());
     							isFileLoaded = true;
     					}
     					

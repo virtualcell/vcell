@@ -5,8 +5,6 @@ import javax.swing.table.*;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 
-import sun.org.mozilla.javascript.internal.JavaScriptException;
-
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.AdvancedTablePanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
