@@ -741,7 +741,7 @@ public int getReferenceDataTimeColumnIndex() {
 	return timeIndex;
 }
 
-@Override
+
 public void propertyChange(PropertyChangeEvent event) {
 	// remove ModelOptSpec as listener to model (and reactions, kinetic params, etc)
 	updateListenersList(fieldSimulationContext.getModel(), false);

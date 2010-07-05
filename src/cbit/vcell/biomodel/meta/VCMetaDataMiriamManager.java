@@ -32,7 +32,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.sun.xml.internal.stream.events.NamedEvent;
 
 public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	
