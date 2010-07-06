@@ -39,7 +39,7 @@ public interface MiriamManager {
 	
 	void addMiriamRefGroup(Identifiable identifiable, MIRIAMQualifier miriamQualifier, Set<MiriamResource> miriamResources) throws URNParseFailureException;
 	
-	void remove(Identifiable identifiable, MIRIAMQualifier miriamQualifier, MiriamRefGroup miriamRefGroup);
+	void remove(Identifiable identifiable, MIRIAMQualifier miriamQualifier, MiriamRefGroup miriamRefGroup) throws URNParseFailureException;
 
 	Set<URL> getStoredCrossReferencedLinks(MiriamResource miriamResource);
 	

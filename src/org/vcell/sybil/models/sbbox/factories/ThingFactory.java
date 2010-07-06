@@ -4,6 +4,7 @@ package org.vcell.sybil.models.sbbox.factories;
  *   A factory for NamedThings
  */
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,7 +20,7 @@ import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 
-public abstract class ThingFactory<T extends NamedThing> {
+public abstract class ThingFactory<T extends NamedThing> implements Serializable{
 
 	protected SBBox box;
 	protected Resource ontClass;

@@ -4,6 +4,8 @@ package org.vcell.sybil.models.sbbox.imp;
  *   Organizes the RDF data and structures to edit it
  */
 
+import java.io.Serializable;
+
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.factories.Factories;
 import org.vcell.sybil.models.sbbox.factories.InteractionFactory;
@@ -22,7 +24,7 @@ import org.vcell.sybil.models.sbbox.factories.TypeFactory;
 import org.vcell.sybil.models.sbbox.factories.USTAssumptionFactory;
 import org.vcell.sybil.models.sbbox.factories.UnitFactory;
 
-public class FactoriesImp implements Factories {
+public class FactoriesImp implements Factories, Serializable {
 	
 	protected SBBox box;
 	protected TypeFactory typeFac;

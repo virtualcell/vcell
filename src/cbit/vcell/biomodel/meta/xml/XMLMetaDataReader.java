@@ -75,27 +75,30 @@ public class XMLMetaDataReader extends XMLMetaData {
 					throw new XmlParseException(e.getMessage());
 				}
 				Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
-				
-				// populate the annotation
-				Element freeTextAnnotationElement = nonRDFAnnotationElement.getChild(XMLMetaData.FREETEXT_TAG, VCMetaData.nsVCML);
-				if (freeTextAnnotationElement!=null){
-					String freeText = freeTextAnnotationElement.getText();
-					metaData.setFreeTextAnnotation(identifiable, freeText);
-				}
-				Element xhtmlNotesElement = nonRDFAnnotationElement.getChild(XMLMetaData.NOTES_TAG, VCMetaData.nsVCML);
-				if (xhtmlNotesElement!=null){
-					metaData.setXhtmlNotes(identifiable, xhtmlNotesElement);
-				}
-				Element annotationListElement = nonRDFAnnotationElement.getChild(XMLMetaData.ANNOTATION_LIST_TAG, VCMetaData.nsVCML);
-				if (annotationListElement!=null){
-					List<?> annotationContents = annotationListElement.getContent();
-					List<Element> annotationElements = new ArrayList<Element>();
-					for (int i = 0; i < annotationContents.size(); i++) {
-						if (annotationContents.get(i) instanceof Element){
-							annotationElements.add((Element)annotationContents.get(i));
-						}
+				if (identifiable!=null){
+					// populate the annotation
+					Element freeTextAnnotationElement = nonRDFAnnotationElement.getChild(XMLMetaData.FREETEXT_TAG, VCMetaData.nsVCML);
+					if (freeTextAnnotationElement!=null){
+						String freeText = freeTextAnnotationElement.getText();
+						metaData.setFreeTextAnnotation(identifiable, freeText);
 					}
-					metaData.setXmlAnnotations(identifiable, annotationElements.toArray(new Element[annotationElements.size()]));
+					Element xhtmlNotesElement = nonRDFAnnotationElement.getChild(XMLMetaData.NOTES_TAG, VCMetaData.nsVCML);
+					if (xhtmlNotesElement!=null){
+						metaData.setXhtmlNotes(identifiable, xhtmlNotesElement);
+					}
+					Element annotationListElement = nonRDFAnnotationElement.getChild(XMLMetaData.ANNOTATION_LIST_TAG, VCMetaData.nsVCML);
+					if (annotationListElement!=null){
+						List<?> annotationContents = annotationListElement.getContent();
+						List<Element> annotationElements = new ArrayList<Element>();
+						for (int i = 0; i < annotationContents.size(); i++) {
+							if (annotationContents.get(i) instanceof Element){
+								annotationElements.add((Element)annotationContents.get(i));
+							}
+						}
+						metaData.setXmlAnnotations(identifiable, annotationElements.toArray(new Element[annotationElements.size()]));
+					}
+				}else{
+					System.err.println("Cannot find identifiable for vcid : " + vcidString);
 				}
 			}
 		}

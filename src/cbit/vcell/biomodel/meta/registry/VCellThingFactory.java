@@ -6,6 +6,8 @@ package cbit.vcell.biomodel.meta.registry;
  *
  */
 
+import java.io.Serializable;
+
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.models.sbbox.factories.Factories;
@@ -20,7 +22,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.Structure;
 
-public class VCellThingFactory implements Registry.IdentifiableSBThingFactory {
+public class VCellThingFactory implements Registry.IdentifiableSBThingFactory, Serializable {
 
 	protected SBBox box;
 	

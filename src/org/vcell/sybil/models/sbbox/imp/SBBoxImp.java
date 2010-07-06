@@ -4,6 +4,8 @@ package org.vcell.sybil.models.sbbox.imp;
  *   Organizes the RDF data and structures to edit it
  */
 
+import java.io.Serializable;
+
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.factories.Factories;
 import org.vcell.sybil.models.sbbox.factories.LocationFactory;
@@ -11,7 +13,7 @@ import org.vcell.sybil.models.sbbox.factories.SubstanceFactory;
 import org.vcell.sybil.util.label.LabelMan;
 import com.hp.hpl.jena.rdf.model.Model;
 
-public class SBBoxImp extends InfBoxImp implements SBBox {
+public class SBBoxImp extends InfBoxImp implements SBBox, Serializable {
 	
 	protected String baseURI;
 	protected LabelMan<SBBox.NamedThing> labelMan;

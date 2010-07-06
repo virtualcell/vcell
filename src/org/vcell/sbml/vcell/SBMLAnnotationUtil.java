@@ -81,11 +81,13 @@ public class SBMLAnnotationUtil {
 	}
 	
 	public void readMetaID(Identifiable identifiable, SBase sBase) {
-		String metaID = sBase.getMetaId();
-		// TODO this does not work - separator missing - fix
-		String uri = nsSBML + metaID;
-		System.out.println("SBMLAnnotationUtil.readMetaID("+identifiable+" --> "+uri);
-		metaData.getRegistry().getEntry(identifiable).setNamedThingFromURI(uri);
+		 if (sBase.isSetMetaId()) {
+			String metaID = sBase.getMetaId();
+			// TODO this does not work - separator missing - fix
+			String uri = nsSBML + metaID;
+			// System.out.println("SBMLAnnotationUtil.readMetaID("+identifiable+" --> "+uri);
+			metaData.getRegistry().getEntry(identifiable).setNamedThingFromURI(uri);
+		 } 
 	}
 	
 	public void writeAnnotation(Identifiable identifiable, SBase sBase, 
