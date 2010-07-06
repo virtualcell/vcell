@@ -209,6 +209,15 @@ private javax.swing.JList getJList1() {
 	return ivjJList1;
 }
 
+public int[] getSelectedIndices()
+{
+	return getJList1().getSelectedIndices();
+}
+
+public void setSelectedIndices(int[] selectedIndices)
+{
+	getJList1().setSelectedIndices(selectedIndices);
+}
 /**
  * Method generated to support the promotion of the listVisible attribute.
  * @return boolean
@@ -471,11 +480,24 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
  * @see #getDataSources
  */
 public void setDataSources(DataSource[] dataSources) {
-	DataSource[] oldValue = fieldDataSources;
-	fieldDataSources = dataSources;
-	firePropertyChange("dataSources", oldValue, dataSources);
+	setDataSources(dataSources, null);
 }
 
+public void setDataSources(DataSource[] dataSources, Color[] colorArray) {
+	DataSource[] oldValue = fieldDataSources;
+	fieldDataSources = dataSources;
+	
+	firePropertyChange("dataSources", oldValue, dataSources);
+	if(colorArray != null)
+	{
+		if(dataSources != null && colorArray.length != getmultisourcePlotListModel().getSize())
+		{
+			throw new IllegalArgumentException("Length of color arry doesn't match the size of MultiSoucePlotList.");
+		}
+		autoContrastColors = colorArray;
+	}
+	
+}
 
 /**
  * Sets the dataSources index property (cbit.vcell.modelopt.gui.DataSource[]) value.
