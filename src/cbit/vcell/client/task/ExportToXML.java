@@ -127,6 +127,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				}
 			} else {
 				// if format is VCML, get it from biomodel.
+				bioModel.getVCMetaData().cleanupMetadata();
 				resultString = XmlHelper.bioModelToXML(bioModel);
 				XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
 				return;

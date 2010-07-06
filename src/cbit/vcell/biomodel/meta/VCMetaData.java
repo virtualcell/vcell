@@ -1,20 +1,26 @@
 package cbit.vcell.biomodel.meta;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
 import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
 
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry;
+import cbit.vcell.biomodel.meta.registry.Registry;
 import cbit.vcell.biomodel.meta.registry.VCellThingFactory;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.xml.XMLTags;
@@ -28,7 +34,7 @@ import com.hp.hpl.jena.rdf.model.Model;
  *
  */
 
-public class VCMetaData {
+public class VCMetaData implements Serializable {
 	public interface AnnotationEventListener {
 		void annotationChanged(AnnotationEvent annotationEvent);
 	}
@@ -123,6 +129,36 @@ public class VCMetaData {
 		return nonRDFAnnotation;
 	}
 		
+	public void cleanupMetadata() {
+		Set<Registry.Entry> entries = registry.getAllEntries();
+		for (Registry.Entry entry : entries) {
+			Identifiable entryIdentifiable = entry.getIdentifiable();
+			VCID vcid = identifiableProvider.getVCID(entryIdentifiable);
+			Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
+			if (identifiable == null) {
+				// use miriamManager to remove RDF statements from resource for identifiable
+				try {
+					Map<MiriamRefGroup, MIRIAMQualifier> miriamRefGps = getMiriamManager().getAllMiriamRefGroups(entryIdentifiable);
+					if (miriamRefGps != null) {
+						for (Entry<MiriamRefGroup, MIRIAMQualifier> groupEntry :  miriamRefGps.entrySet()) {
+							MiriamRefGroup refGroup = groupEntry.getKey();
+							MIRIAMQualifier qualifier = groupEntry.getValue();
+							getMiriamManager().remove(entryIdentifiable, qualifier, refGroup);
+						}
+					}
+				} catch (URNParseFailureException e) {
+					e.printStackTrace(System.out);
+				}
+				// set nonRDF annotatoins to null
+				NonRDFAnnotation nonRDFAnnotation = getNonRDFAnnotation(entryIdentifiable);
+				nonRDFAnnotation.setFreeTextAnnotation(null);
+				nonRDFAnnotation.setXhtmlNotes(null);
+				nonRDFAnnotation.setXmlAnnotations(null);
+				System.err.println("Deleting resource for identifiable '" + entryIdentifiable.toString() + "' since it is not foind in " + identifiableProvider.getClass().getName());
+			}
+		}
+	}
+	
 	public Set<Entry<OpenEntry, NonRDFAnnotation>> getAllNonRDFAnnotations(){
 		Set<Entry<OpenEntry, NonRDFAnnotation>> entrySet = nonRDFAnnotationMap.entrySet();
 		return Collections.unmodifiableSet(entrySet);

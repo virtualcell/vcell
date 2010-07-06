@@ -43,6 +43,7 @@ import org.vcell.sybil.models.AnnotationQualifiers;
 import org.vcell.sybil.models.dublincore.DublinCoreDate;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
@@ -487,7 +488,11 @@ public class MIRIAMAnnotationEditor extends JPanel{
 			Map<MiriamRefGroup, MIRIAMQualifier> refGroupsToRemove = vcMetaData.getMiriamManager().getAllMiriamRefGroups(identifiable);
 			for (MiriamRefGroup refGroup : refGroupsToRemove.keySet()){
 				MIRIAMQualifier qualifier = refGroupsToRemove.get(refGroup);
-				vcMetaData.getMiriamManager().remove(identifiable, qualifier, refGroup);
+				try {
+					vcMetaData.getMiriamManager().remove(identifiable, qualifier, refGroup);
+				} catch (URNParseFailureException e) {
+					e.printStackTrace(System.out);
+				}
 			}
 		}
 	}

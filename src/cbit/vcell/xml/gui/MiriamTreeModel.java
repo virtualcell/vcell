@@ -1,5 +1,6 @@
 package cbit.vcell.xml.gui;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +30,7 @@ import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelNode;
 
 public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEventListener {
-	public static final class IdentifiableComparator implements Comparator<Identifiable> {
+	public static final class IdentifiableComparator implements Comparator<Identifiable>, Serializable {
 		private final IdentifiableProvider identifiableProvider;
 
 		public IdentifiableComparator(IdentifiableProvider identifiableProvider) {

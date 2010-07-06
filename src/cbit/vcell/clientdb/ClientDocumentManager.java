@@ -2378,6 +2378,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 	try {
 		String bioModelXML = null;
 		try {
+			bioModel.getVCMetaData().cleanupMetadata();
 			bioModelXML = XmlHelper.bioModelToXML(bioModel);
 		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
@@ -2578,6 +2579,7 @@ public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String in
 
 		String bioModelXML = null;
 		try {
+			bioModel.getVCMetaData().cleanupMetadata();
 			bioModelXML = XmlHelper.bioModelToXML(bioModel);
 		}catch (XmlParseException e){
 			e.printStackTrace(System.out);

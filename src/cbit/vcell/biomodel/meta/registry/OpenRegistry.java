@@ -1,7 +1,7 @@
 package cbit.vcell.biomodel.meta.registry;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -11,24 +11,22 @@ import java.util.Random;
 import java.util.Set;
 
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
-import org.vcell.sybil.rdf.RDFBox.RDFThing;
-import org.vcell.sybil.util.keys.KeyOfTwo;
 
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
+
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
 /*   OpenRegistry  --- May 2009
  *   Maintains resources and their relationships to objects
  *   @author: Oliver Ruebenacker
  */
 
-public class OpenRegistry implements Registry {
+public class OpenRegistry implements Registry, Serializable {
 
-	public class OpenEntry implements Entry {
+	public class OpenEntry implements Entry, Serializable {
 		private final Identifiable identifiable;
 		private NamedThing namedThing = null;
 		

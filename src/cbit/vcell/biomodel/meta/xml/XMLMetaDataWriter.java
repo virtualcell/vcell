@@ -37,51 +37,18 @@ public class XMLMetaDataWriter extends XMLMetaData {
 		Element elementNonRDFList = createNonRDFAnnotationElement(metaData,identifiableProvider);
 		element.addContent(elementNonRDFList);
 
-/*		Set<Entry<OpenEntry, NonRDFAnnotation>> allNonRdfAnnotations = metaData.getAllNonRDFAnnotations();
-		Element nonRDFAnnotationListElement = new Element(XMLMetaData.NONRDF_ANNOTATION_LIST_TAG);
-		Iterator<Entry<OpenEntry, NonRDFAnnotation>> iter = allNonRdfAnnotations.iterator();
-		while (iter.hasNext()){
-			Entry<OpenEntry, NonRDFAnnotation> entry = iter.next();
-			OpenEntry openEntry = entry.getKey();
-			NonRDFAnnotation nonRDFAnnotation = entry.getValue();
-			if (!nonRDFAnnotation.isEmpty()){
-				Element nonRDFAnnotationElement = new Element(XMLMetaData.NONRDF_ANNOTATION_TAG);
-				nonRDFAnnotationElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, VCID.getVCID(bioModel, (Identifiable)openEntry.object()).toASCIIString(), XMLMetaData.nsVCML);
-				nonRDFAnnotationListElement.addContent(nonRDFAnnotationElement);
-				String freeTextAnnotation = nonRDFAnnotation.getFreeTextAnnotation();
-				if (freeTextAnnotation!=null && freeTextAnnotation.length()>0){
-					Element freeTextAnnotationElement = new Element(XMLMetaData.FREETEXT_TAG);
-					freeTextAnnotationElement.addContent(new Text(freeTextAnnotation));
-					nonRDFAnnotationElement.addContent(freeTextAnnotationElement);
-				}
-				Element xhtmlNotes = nonRDFAnnotation.getXhtmlNotes();
-				if (xhtmlNotes!=null){
-					Element notesElement = new Element(XMLMetaData.NOTES_TAG);
-					notesElement.addContent(new Text(freeTextAnnotation));
-					nonRDFAnnotationElement.addContent(notesElement);
-				}
-				Element[] otherAnnotations = nonRDFAnnotation.getXmlAnnotations();
-				if (otherAnnotations!=null && otherAnnotations.length>0){
-					Element annotationListElement = new Element(XMLMetaData.ANNOTATION_LIST_TAG);
-					nonRDFAnnotationElement.addContent(annotationListElement);
-					for (int i = 0; i < otherAnnotations.length; i++) {
-						annotationListElement.addContent(otherAnnotations[i]);
-					}
-				}
-			}
-		}
-*/			
 		// add resource binding table
 		Element bindingListElement = new Element(XMLMetaData.URI_BINDING_LIST_TAG);
 		Set<Registry.Entry> resources = metaData.getRegistry().getAllEntries();
 		for (Registry.Entry entry : resources) {
-			if (entry.getNamedThing()!=null){
+			VCID vcid = identifiableProvider.getVCID((Identifiable)entry.getIdentifiable());
+			Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
+			if (identifiable != null && entry.getNamedThing()!=null){
 				Element entryElement = new Element(XMLMetaData.URI_BINDING_TAG);
 				Resource resource = entry.getNamedThing().resource();
 				if (resource!=null){
 					entryElement.setAttribute(XMLMetaData.URI_ATTR_TAG, resource.getURI());				
 				}
-				VCID vcid = identifiableProvider.getVCID((Identifiable)entry.getIdentifiable());
 				entryElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, vcid.toASCIIString());
 				bindingListElement.addContent(entryElement);
 			}
@@ -101,31 +68,36 @@ public class XMLMetaDataWriter extends XMLMetaData {
 		Element nonRDFAnnotationListElement = new Element(XMLMetaData.NONRDF_ANNOTATION_LIST_TAG);
 		Iterator<Entry<OpenEntry, NonRDFAnnotation>> iter = allNonRdfAnnotations.iterator();
 		while (iter.hasNext()){
-			Entry<OpenEntry, NonRDFAnnotation> entry = iter.next();
-			OpenEntry openEntry = entry.getKey();
-			NonRDFAnnotation nonRDFAnnotation = entry.getValue();
-			if (!nonRDFAnnotation.isEmpty()){
-				Element nonRDFAnnotationElement = new Element(XMLMetaData.NONRDF_ANNOTATION_TAG);
-				nonRDFAnnotationElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, identifiableProvider.getVCID((Identifiable)openEntry.getIdentifiable()).toASCIIString());
-				nonRDFAnnotationListElement.addContent(nonRDFAnnotationElement);
-				String freeTextAnnotation = nonRDFAnnotation.getFreeTextAnnotation();
-				if (freeTextAnnotation!=null && freeTextAnnotation.length()>0){
-					Element freeTextAnnotationElement = new Element(XMLMetaData.FREETEXT_TAG);
-					freeTextAnnotationElement.addContent(new Text(freeTextAnnotation));
-					nonRDFAnnotationElement.addContent(freeTextAnnotationElement);
-				}
-				Element xhtmlNotes = nonRDFAnnotation.getXhtmlNotes();
-				if (xhtmlNotes!=null){
-					Element notesElement = new Element(XMLMetaData.NOTES_TAG);
-					notesElement.addContent(new Text(freeTextAnnotation));
-					nonRDFAnnotationElement.addContent(notesElement);
-				}
-				Element[] otherAnnotations = nonRDFAnnotation.getXmlAnnotations();
-				if (otherAnnotations!=null && otherAnnotations.length>0){
-					Element annotationListElement = new Element(XMLMetaData.ANNOTATION_LIST_TAG);
-					nonRDFAnnotationElement.addContent(annotationListElement);
-					for (int i = 0; i < otherAnnotations.length; i++) {
-						annotationListElement.addContent(otherAnnotations[i]);
+			Entry<OpenEntry, NonRDFAnnotation> mapEntry = iter.next();
+			OpenEntry openEntry = mapEntry.getKey();
+			NonRDFAnnotation nonRDFAnnotation = mapEntry.getValue();
+			VCID vcid = identifiableProvider.getVCID((Identifiable)openEntry.getIdentifiable());
+			Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
+			// only write out nonRDF annotation if identifiable in identifiableProvider is not null
+			if (identifiable != null) {
+				if (!nonRDFAnnotation.isEmpty()){
+					Element nonRDFAnnotationElement = new Element(XMLMetaData.NONRDF_ANNOTATION_TAG);
+					nonRDFAnnotationElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, vcid.toASCIIString());
+					nonRDFAnnotationListElement.addContent(nonRDFAnnotationElement);
+					String freeTextAnnotation = nonRDFAnnotation.getFreeTextAnnotation();
+					if (freeTextAnnotation!=null && freeTextAnnotation.length()>0){
+						Element freeTextAnnotationElement = new Element(XMLMetaData.FREETEXT_TAG);
+						freeTextAnnotationElement.addContent(new Text(freeTextAnnotation));
+						nonRDFAnnotationElement.addContent(freeTextAnnotationElement);
+					}
+					Element xhtmlNotes = nonRDFAnnotation.getXhtmlNotes();
+					if (xhtmlNotes!=null){
+						// Element notesElement = new Element(XMLMetaData.NOTES_TAG);
+						// notesElement.addContent(xhtmlNotes));
+						nonRDFAnnotationElement.addContent(xhtmlNotes.detach());
+					}
+					Element[] otherAnnotations = nonRDFAnnotation.getXmlAnnotations();
+					if (otherAnnotations!=null && otherAnnotations.length>0){
+						Element annotationListElement = new Element(XMLMetaData.ANNOTATION_LIST_TAG);
+						nonRDFAnnotationElement.addContent(annotationListElement);
+						for (int i = 0; i < otherAnnotations.length; i++) {
+							annotationListElement.addContent(otherAnnotations[i]);
+						}
 					}
 				}
 			}

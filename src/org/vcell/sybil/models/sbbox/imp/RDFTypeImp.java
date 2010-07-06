@@ -4,6 +4,7 @@ package org.vcell.sybil.models.sbbox.imp;
  *   A view of a resource representing an OWL class
  */
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
-public class RDFTypeImp extends SBWrapper implements SBBox.MutableRDFType {
+public class RDFTypeImp extends SBWrapper implements SBBox.MutableRDFType, Serializable {
 
 	public RDFTypeImp(SBBox box, Resource resource) { super(box, resource); }
 
