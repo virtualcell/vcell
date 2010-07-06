@@ -177,11 +177,11 @@ public Xmlproducer(boolean printkeys) {
 /**
  * Insert the method's description here.
  * Creation date: (5/5/2006 9:25:06 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param analysisTasks cbit.vcell.modelopt.AnalysisTask[]
  */
 private Element getXML(AnalysisTask[] analysisTasks) {
-	org.jdom.Element analysisTaskListElement = new org.jdom.Element(XMLTags.AnalysisTaskListTag);
+	Element analysisTaskListElement = new Element(XMLTags.AnalysisTaskListTag);
 
 	for (int i = 0; i < analysisTasks.length; i++){
 		Element analysisTaskElement = null;
@@ -200,11 +200,11 @@ private Element getXML(AnalysisTask[] analysisTasks) {
 /**
  * This methods returns a XML represnetation of a VCImage object.
  * Creation date: (3/1/2001 3:02:37 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.image.VCImage
  */
-org.jdom.Element getXML(VCImage param) throws XmlParseException{
-		org.jdom.Element image = new org.jdom.Element(XMLTags.ImageTag);
+Element getXML(VCImage param) throws XmlParseException{
+		Element image = new Element(XMLTags.ImageTag);
 
 		//add atributes
 		image.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -212,7 +212,7 @@ org.jdom.Element getXML(VCImage param) throws XmlParseException{
 
 		//Add annotation
 		if (param.getDescription()!=null && param.getDescription().length()>0) {
-			org.jdom.Element annotationElement = new org.jdom.Element(XMLTags.AnnotationTag);
+			Element annotationElement = new Element(XMLTags.AnnotationTag);
 			annotationElement.setText( mangle(param.getDescription()) );
 			image.addContent(annotationElement);
 		}
@@ -225,7 +225,7 @@ org.jdom.Element getXML(VCImage param) throws XmlParseException{
 			e.printStackTrace();
 			throw new XmlParseException("An ImageParseException occurred when tring to retrieving the compressed Pixels"+" : "+e.getMessage());
 		}
-		org.jdom.Element imagedata = new org.jdom.Element(XMLTags.ImageDataTag);
+		Element imagedata = new Element(XMLTags.ImageDataTag);
 		
 		//Get imagedata attributes
 		imagedata.setAttribute(XMLTags.XAttrTag, String.valueOf(param.getNumX()));
@@ -254,13 +254,13 @@ org.jdom.Element getXML(VCImage param) throws XmlParseException{
 /**
  * This method returns a XML version from a PixelClass object.
  * Creation date: (5/2/2001 3:10:35 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.image.VCImageRegion
  */
-private org.jdom.Element getXML(VCPixelClass param) {
+private Element getXML(VCPixelClass param) {
 	
 	//Create PixelClass subelement
-	org.jdom.Element pixelclass = new org.jdom.Element(XMLTags.PixelClassTag);
+	Element pixelclass = new Element(XMLTags.PixelClassTag);
 	//add attributes
 	pixelclass.setAttribute( XMLTags.NameAttrTag, param.getPixelClassName() );
 	pixelclass.setAttribute( XMLTags.ImagePixelValueTag, String.valueOf(param.getPixel()));
@@ -277,10 +277,10 @@ private org.jdom.Element getXML(VCPixelClass param) {
 /**
  * This method returns a XML representation of a Version java object.
  * Creation date: (3/13/2001 6:00:59 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.sql.Version
  */
-private org.jdom.Element getXML(Version version, Versionable versionable) {
+private Element getXML(Version version, Versionable versionable) {
 	return getXML(version, versionable.getName(), versionable.getDescription());
 }
 
@@ -288,12 +288,12 @@ private org.jdom.Element getXML(Version version, Versionable versionable) {
 /**
  * This method returns a XML representation of a Version java object.
  * Creation date: (3/13/2001 6:00:59 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.sql.Version
  */
-private org.jdom.Element getXML(Version version, String nameParam, String descriptionParam) {
+private Element getXML(Version version, String nameParam, String descriptionParam) {
 	//** Dump the content to the 'Version' object **
-	org.jdom.Element versionElement = new org.jdom.Element(XMLTags.VersionTag);
+	Element versionElement = new Element(XMLTags.VersionTag);
 	
 	//if empty just return null
 	if (version == null || this.printKeysFlag == false) {
@@ -304,7 +304,7 @@ private org.jdom.Element getXML(Version version, String nameParam, String descri
 		versionElement.setAttribute(XMLTags.FromVersionableTag, "true");
 		//*Annotation
 		if (descriptionParam!=null && descriptionParam.length()>0) {
-			org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+			Element annotationElem = new Element(XMLTags.AnnotationTag);
 			annotationElem.setText(mangle(descriptionParam));
 			versionElement.addContent(annotationElem);
 		}		
@@ -315,7 +315,7 @@ private org.jdom.Element getXML(Version version, String nameParam, String descri
 		//*Key
 		versionElement.setAttribute(XMLTags.KeyValueAttrTag, version.getVersionKey().toString());
 		//*Owner
-		org.jdom.Element owner = new org.jdom.Element(XMLTags.OwnerTag);
+		Element owner = new Element(XMLTags.OwnerTag);
 		owner.setAttribute(XMLTags.NameAttrTag, mangle(version.getOwner().getName()));
 		owner.setAttribute(XMLTags.IdentifierAttrTag, version.getOwner().getID().toString());
 		versionElement.addContent(owner);
@@ -338,14 +338,14 @@ private org.jdom.Element getXML(Version version, String nameParam, String descri
 		versionElement.setAttribute(XMLTags.FromVersionableTag, "false");
 		//*Annotation
 		if (version.getAnnot()!=null && version.getAnnot().length()>0) {
-			org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+			Element annotationElem = new Element(XMLTags.AnnotationTag);
 			annotationElem.setText(mangle(version.getAnnot()));
 			versionElement.addContent(annotationElem);
 		}
 		if (version instanceof org.vcell.util.document.SimulationVersion){
 			org.vcell.util.document.SimulationVersion simVersion = (org.vcell.util.document.SimulationVersion)version;
 			if (simVersion.getParentSimulationReference()!=null){
-				org.jdom.Element parentSimRefElem = new org.jdom.Element(XMLTags.ParentSimRefTag);
+				Element parentSimRefElem = new Element(XMLTags.ParentSimRefTag);
 				parentSimRefElem.setAttribute(XMLTags.KeyValueAttrTag, simVersion.getParentSimulationReference().toString());
 				versionElement.addContent(parentSimRefElem);
 			}
@@ -359,12 +359,12 @@ private org.jdom.Element getXML(Version version, String nameParam, String descri
 /**
  * This method returns a XML representation of a Extent object.
  * Creation date: (2/28/2001 5:51:36 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param Extent
  */
-org.jdom.Element getXML(Extent param) throws XmlParseException{
+public Element getXML(Extent param) throws XmlParseException{
 
-	org.jdom.Element extent = new org.jdom.Element(XMLTags.ExtentTag);
+	Element extent = new Element(XMLTags.ExtentTag);
 	//Add extent attributes
 	extent.setAttribute(XMLTags.XAttrTag, String.valueOf(param.getX()));
 	extent.setAttribute(XMLTags.YAttrTag, String.valueOf(param.getY()));
@@ -373,9 +373,9 @@ org.jdom.Element getXML(Extent param) throws XmlParseException{
 	return extent;
 }
 
-private org.jdom.Element getXML(Origin param) throws XmlParseException{
+public Element getXML(Origin param) throws XmlParseException{
 
-	org.jdom.Element origin = new org.jdom.Element(XMLTags.OriginTag);
+	Element origin = new Element(XMLTags.OriginTag);
 	//Add extent attributes
 	origin.setAttribute(XMLTags.XAttrTag, String.valueOf(param.getX()));
 	origin.setAttribute(XMLTags.YAttrTag, String.valueOf(param.getY()));
@@ -387,12 +387,12 @@ private org.jdom.Element getXML(Origin param) throws XmlParseException{
 /**
  * This method returns a XML representation for a Biomodel object.
  * Creation date: (2/14/2001 3:41:13 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.biomodel.BioModel
  */
-public org.jdom.Element getXML(BioModel param) throws XmlParseException, ExpressionException {
+public Element getXML(BioModel param) throws XmlParseException, ExpressionException {
 	//Creation of BioModel Node
-	org.jdom.Element biomodelnode = new org.jdom.Element(XMLTags.BioModelTag);
+	Element biomodelnode = new Element(XMLTags.BioModelTag);
 	String name = param.getName();
 
 	//Add attributes
@@ -400,7 +400,7 @@ public org.jdom.Element getXML(BioModel param) throws XmlParseException, Express
 	//biomodelnode.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//Add annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
-		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+		Element annotationElem = new Element(XMLTags.AnnotationTag);
 		annotationElem.setText(mangle(param.getDescription()));
 		biomodelnode.addContent(annotationElem);
 	}
@@ -431,12 +431,12 @@ public org.jdom.Element getXML(BioModel param) throws XmlParseException, Express
 /**
  * This method returns a XML representation for a DBFormalSpecies.
  * Creation date: (6/3/2003 4:50:15 PM)
- * @return org.jdom.Element
+ * @return Element
  * @dbformalSpecies param cbit.vcell.dictionary.DBFormalSpecies
  */
-private org.jdom.Element getXML(DBFormalSpecies dbformalSpecies) throws XmlParseException {
+private Element getXML(DBFormalSpecies dbformalSpecies) throws XmlParseException {
 	//create XML object
-	org.jdom.Element dbSpeciesElement = new org.jdom.Element(XMLTags.DBFormalSpeciesTag);
+	Element dbSpeciesElement = new Element(XMLTags.DBFormalSpeciesTag);
 	//add FormalSpeciesKey
 	dbSpeciesElement.setAttribute(XMLTags.KeyValueAttrTag, dbformalSpecies.getDBFormalSpeciesKey().toString());
 	
@@ -460,12 +460,12 @@ private org.jdom.Element getXML(DBFormalSpecies dbformalSpecies) throws XmlParse
 /**
  * This method returns the XML representation of a DBSpecies.
  * Creation date: (6/3/2003 4:36:40 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param dbSpecies cbit.vcell.dictionary.DBSpecies
  */
-private org.jdom.Element getXML(DBSpecies dbSpecies) throws XmlParseException {
+private Element getXML(DBSpecies dbSpecies) throws XmlParseException {
 	//create xml node
-	org.jdom.Element dbSpeciesElement = new org.jdom.Element(XMLTags.DBSpeciesTag);
+	Element dbSpeciesElement = new Element(XMLTags.DBSpeciesTag);
 
 	if (this.printKeysFlag){
 		//add the DBSpecieKey (IT ALWAYS NEED THE KEY!)
@@ -498,13 +498,13 @@ private org.jdom.Element getXML(DBSpecies dbSpecies) throws XmlParseException {
 /**
  * This method returns a XML representation for a FormalSpeciesInfo.
  * Creation date: (6/3/2003 5:14:09 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param speciesInfo cbit.vcell.dictionary.FormalSpeciesInfo
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-private org.jdom.Element getXML(FormalSpeciesInfo speciesInfo) throws XmlParseException {
+private Element getXML(FormalSpeciesInfo speciesInfo) throws XmlParseException {
 	//Create XML object
-	org.jdom.Element speciesInfoElement = new org.jdom.Element(XMLTags.FormalSpeciesInfoTag);
+	Element speciesInfoElement = new Element(XMLTags.FormalSpeciesInfoTag);
 
 	//add formalID
 	speciesInfoElement.setAttribute(XMLTags.FormalIDTag, mangle(speciesInfo.getFormalID()));
@@ -513,7 +513,7 @@ private org.jdom.Element getXML(FormalSpeciesInfo speciesInfo) throws XmlParseEx
 	String[] namesArray = speciesInfo.getNames();
 
 	for (int i = 0; i < namesArray.length; i++){
-		org.jdom.Element nameElement = new org.jdom.Element(XMLTags.NameTag);
+		Element nameElement = new Element(XMLTags.NameTag);
 		nameElement.addContent(mangle(namesArray[i]));
 		speciesInfoElement.addContent(nameElement);
 	}
@@ -537,7 +537,7 @@ private org.jdom.Element getXML(FormalSpeciesInfo speciesInfo) throws XmlParseEx
 		//add enzymes
 		if (info.getEnzymes()!=null) {
 			for (int i = 0; i < info.getEnzymes().length; i++){
-				org.jdom.Element enzymeElement = new org.jdom.Element(XMLTags.EnzymeTag);
+				Element enzymeElement = new Element(XMLTags.EnzymeTag);
 				EnzymeRef ref = info.getEnzymes()[i];
 				//add ECNumber
 				enzymeElement.setAttribute(XMLTags.ECNumberTag, mangle(ref.getEcNumber()));
@@ -606,11 +606,11 @@ private org.jdom.Element getXML(FormalSpeciesInfo speciesInfo) throws XmlParseEx
 /**
  * This method returns a XML representation of a AnalyticSubVolume object.
  * Creation date: (3/1/2001 3:50:41 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.geometry.AnalyticSubVolume
  */
-private org.jdom.Element getXML(AnalyticSubVolume param) {
-	org.jdom.Element analytic = new org.jdom.Element(XMLTags.SubVolumeTag);
+private Element getXML(AnalyticSubVolume param) {
+	Element analytic = new Element(XMLTags.SubVolumeTag);
 
 	//Add Attributes
 	analytic.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -618,7 +618,7 @@ private org.jdom.Element getXML(AnalyticSubVolume param) {
 	analytic.setAttribute(XMLTags.TypeAttrTag, XMLTags.AnalyticBasedTypeTag);
 
 	//Create Analytic Expression subelement
-	org.jdom.Element expression = new org.jdom.Element(XMLTags.AnalyticExpressionTag);
+	Element expression = new Element(XMLTags.AnalyticExpressionTag);
 	//Add expression Content
 	expression.addContent(mangleExpression(param.getExpression()));
 	analytic.addContent(expression);
@@ -635,11 +635,11 @@ private org.jdom.Element getXML(AnalyticSubVolume param) {
 /**
  * This method returns a XML representation of a CompartmentSubVolume.
  * Creation date: (3/1/2001 4:01:59 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.geometry.CompartmentSubVolume
  */
-private org.jdom.Element getXML(CompartmentSubVolume param) {
-	org.jdom.Element subvolume = new org.jdom.Element(XMLTags.SubVolumeTag);
+private Element getXML(CompartmentSubVolume param) {
+	Element subvolume = new Element(XMLTags.SubVolumeTag);
 	//Add Atributes
 	subvolume.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	subvolume.setAttribute(XMLTags.HandleAttrTag, String.valueOf(param.getHandle()));
@@ -657,11 +657,11 @@ private org.jdom.Element getXML(CompartmentSubVolume param) {
 /**
  * This method retruns a XML ELement from a ControlPointCurve object.
  * Creation date: (5/22/2001 4:11:37 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.geometry.ControlPointCurve
  */
-private org.jdom.Element getXML(ControlPointCurve param) {
-	org.jdom.Element curve = new org.jdom.Element(XMLTags.CurveTag);
+private Element getXML(ControlPointCurve param) {
+	Element curve = new Element(XMLTags.CurveTag);
 
 	//Add attributes
 	String type = null;
@@ -687,11 +687,11 @@ private org.jdom.Element getXML(ControlPointCurve param) {
 /**
  * This method returns a XML Element from a Coordinate object.
  * Creation date: (5/22/2001 4:43:29 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.geometry.Coordinate
  */
-private org.jdom.Element getXML(Coordinate param) {
-	org.jdom.Element coord = new org.jdom.Element(XMLTags.CoordinateTag);
+private Element getXML(Coordinate param) {
+	Element coord = new Element(XMLTags.CoordinateTag);
 
 	//X
 	coord.setAttribute(XMLTags.XAttrTag, String.valueOf(param.getX()));
@@ -707,12 +707,12 @@ private org.jdom.Element getXML(Coordinate param) {
 /**
  * This method returns a XML Element from a Filament object.
  * Creation date: (5/22/2001 4:03:13 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.geometry.Filament
  */
-private org.jdom.Element getXML(Filament param) {
+private Element getXML(Filament param) {
 	//--- create Element
-	org.jdom.Element filament = new org.jdom.Element(XMLTags.FilamentTag);
+	Element filament = new Element(XMLTags.FilamentTag);
 	//Add atributes
 	filament.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()) );
 
@@ -729,11 +729,11 @@ private org.jdom.Element getXML(Filament param) {
 /**
  * This method returns a XML representation of a Geometry object.
  * Creation date: (2/28/2001 5:51:36 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.geometry.Geometry
  */
-org.jdom.Element getXML(Geometry param) throws XmlParseException{
-	org.jdom.Element geometry = new org.jdom.Element(XMLTags.GeometryTag);
+Element getXML(Geometry param) throws XmlParseException{
+	Element geometry = new Element(XMLTags.GeometryTag);
 
 	// Add attributes
 	String name = param.getName();
@@ -742,7 +742,7 @@ org.jdom.Element getXML(Geometry param) throws XmlParseException{
 	//geometry.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add Annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
-		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+		Element annotationElem = new Element(XMLTags.AnnotationTag);
 		annotationElem.setText(mangle(param.getDescription()));
 		geometry.addContent(annotationElem);
 	}
@@ -751,7 +751,7 @@ org.jdom.Element getXML(Geometry param) throws XmlParseException{
 	//Create extent subelement
 	geometry.addContent(getXML(param.getExtent()));
 	//Add Origin subelement
-	org.jdom.Element origin = new org.jdom.Element(XMLTags.OriginTag);
+	Element origin = new Element(XMLTags.OriginTag);
 	//Add Origin attributes
 	origin.setAttribute(XMLTags.XAttrTag, String.valueOf(param.getOrigin().getX()));
 	origin.setAttribute(XMLTags.YAttrTag, String.valueOf(param.getOrigin().getY()));
@@ -797,11 +797,11 @@ org.jdom.Element getXML(Geometry param) throws XmlParseException{
 /**
  * This method returns a XML representation of a ImageSubVolume object.
  * Creation date: (3/1/2001 4:06:20 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.geometry.ImageSubVolume
  */
-private org.jdom.Element getXML(ImageSubVolume param) {
-	org.jdom.Element subvolume = new org.jdom.Element(XMLTags.SubVolumeTag);
+private Element getXML(ImageSubVolume param) {
+	Element subvolume = new Element(XMLTags.SubVolumeTag);
 
 	//add atributes
 	subvolume.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -821,10 +821,10 @@ private org.jdom.Element getXML(ImageSubVolume param) {
 /**
  * This method returns a XML representation of a Subvolume object.
  * Creation date: (3/1/2001 3:27:08 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.geometry.SubVolume
  */
-private org.jdom.Element getXML(SubVolume param) {
+private Element getXML(SubVolume param) {
 	if (param instanceof AnalyticSubVolume) {
 		return getXML((AnalyticSubVolume)param);
 	} else if (param instanceof CompartmentSubVolume) {
@@ -907,10 +907,10 @@ private org.jdom.Element getXML(SubVolume param) {
 /**
  * This method returns a XML representation of an Electrode.
  * Creation date: (6/6/2002 2:32:56 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.mapping.Electrode
  */
-private org.jdom.Element getXML(ElectricalStimulus param) {
+private Element getXML(ElectricalStimulus param) {
 	String electricalStimulusType = null;
 
 	if (param instanceof VoltageClampStimulus) {
@@ -924,7 +924,7 @@ private org.jdom.Element getXML(ElectricalStimulus param) {
 		electricalStimulusType = XMLTags.TotalCurrentClampTag;
 	}
 
-	org.jdom.Element electricalStimulus = new org.jdom.Element(XMLTags.ClampTag);
+	Element electricalStimulus = new Element(XMLTags.ClampTag);
 	
 	// Need to add electrode ??
 	Element electrode = getXML(param.getElectrode());
@@ -937,7 +937,7 @@ private org.jdom.Element getXML(ElectricalStimulus param) {
 	LocalParameter parameters[] = param.getLocalParameters();
 	for (int i=0;i<parameters.length;i++){
 		LocalParameter parm = parameters[i];
-		org.jdom.Element tempparameter = new org.jdom.Element(XMLTags.ParameterTag);
+		Element tempparameter = new Element(XMLTags.ParameterTag);
 		//Get parameter attributes
 		tempparameter.setAttribute(XMLTags.NameAttrTag, mangle(parm.getName()));
 		tempparameter.setAttribute(XMLTags.ParamRoleAttrTag, ElectricalStimulus.RoleDescs[parm.getRole()]);
@@ -957,11 +957,11 @@ private org.jdom.Element getXML(ElectricalStimulus param) {
 /**
  * This method returns a XML representation of an Electrode.
  * Creation date: (6/6/2002 2:32:56 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.mapping.Electrode
  */
-private org.jdom.Element getXML(Electrode param) {
-	org.jdom.Element electrodeElem = new org.jdom.Element(XMLTags.ElectrodeTag);
+private Element getXML(Electrode param) {
+	Element electrodeElem = new Element(XMLTags.ElectrodeTag);
 	//add feature name
 	electrodeElem.setAttribute( XMLTags.FeatureAttrTag, mangle(param.getFeature().getName()) );
 
@@ -975,16 +975,16 @@ private org.jdom.Element getXML(Electrode param) {
 /**
  * This method returns a XML representation of a featureMapping object.
  * Creation date: (3/1/2001 8:16:57 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.mapping.FeatureMapping
  */
-private org.jdom.Element getXML(FeatureMapping param) {
+private Element getXML(FeatureMapping param) {
 	//Allow null subvolumes
 	//if (param.getSubVolume()==null) {	//5/92001
 		//return null;
 	//}
 	
-	org.jdom.Element feature = new org.jdom.Element(XMLTags.FeatureMappingTag);
+	Element feature = new Element(XMLTags.FeatureMappingTag);
 	
 	//Add atributes
 	feature.setAttribute(XMLTags.FeatureAttrTag, mangle(param.getFeature().getName()));
@@ -1008,7 +1008,7 @@ private org.jdom.Element getXML(FeatureMapping param) {
 	}
 	
 	// write BoundariesyConditions
-	org.jdom.Element boundariestypes = new org.jdom.Element(XMLTags.BoundariesTypesTag);
+	Element boundariestypes = new Element(XMLTags.BoundariesTypesTag);
 	
 	//Xm
 	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueXm, param.getBoundaryConditionTypeXm().toString());
@@ -1032,11 +1032,11 @@ private org.jdom.Element getXML(FeatureMapping param) {
 /**
  * This method returns a XML representation of a GeometryContext object.
  * Creation date: (3/1/2001 6:50:24 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.mapping.GeometryContext
  */
-private org.jdom.Element getXML(GeometryContext param) {
-	org.jdom.Element geometrycontent = new org.jdom.Element(XMLTags.GeometryContextTag);
+private Element getXML(GeometryContext param) {
+	Element geometrycontent = new Element(XMLTags.GeometryContextTag);
 
 	// write Structure Mappings, separate membrane from feature mappings.
 	StructureMapping[] array = param.getStructureMappings();
@@ -1064,15 +1064,15 @@ private org.jdom.Element getXML(GeometryContext param) {
 /**
  * This method returns a XML representation of a MembraneMapping.
  * Creation date: (3/1/2001 8:48:14 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.mapping.MembraneMapping
  */
-private org.jdom.Element getXML(MembraneMapping param) {
+private Element getXML(MembraneMapping param) {
 	//Allow 'null' subvolumes
 	//if (param.getSubVolume() == null) {
 		//return null;
 	//}
-	org.jdom.Element membrane = new org.jdom.Element(XMLTags.MembraneMappingTag);
+	Element membrane = new Element(XMLTags.MembraneMappingTag);
 	
 	//Add atributes
 	membrane.setAttribute(XMLTags.MembraneAttrTag, mangle(param.getMembrane().getName()));
@@ -1083,7 +1083,7 @@ private org.jdom.Element getXML(MembraneMapping param) {
 	{
 		membrane.setAttribute(XMLTags.SurfaceToVolumeRatioTag, mangleExpression(param.getSurfaceToVolumeParameter().getExpression()) );
 	}
-	/*	org.jdom.Element surface = new org.jdom.Element(XMLTags.SurfaceToVolumeRatioTag);
+	/*	Element surface = new Element(XMLTags.SurfaceToVolumeRatioTag);
 	surface.addContent( this.mangleExpression(param.getSurfaceToVolumeExpression()) );
 	membrane.addContent( surface );*/
 	
@@ -1092,7 +1092,7 @@ private org.jdom.Element getXML(MembraneMapping param) {
 	{
 		membrane.setAttribute(XMLTags.VolumeFractionTag, mangleExpression(param.getVolumeFractionParameter().getExpression()));
 	}
-	/*	org.jdom.Element volume = new org.jdom.Element(XMLTags.VolumeFractionTag);
+	/*	Element volume = new Element(XMLTags.VolumeFractionTag);
 	volume.addContent( this.mangleExpression(param.getVolumeFractionExpression()) );
 	membrane.addContent( volume );*/
 	//Add size
@@ -1123,11 +1123,11 @@ private org.jdom.Element getXML(MembraneMapping param) {
 /**
  * This method returns a XML representation of a ReactionContext object.
  * Creation date: (3/1/2001 9:03:52 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.mapping.ReactionContext
  */
-private org.jdom.Element getXML(ReactionContext param) {
-	org.jdom.Element reactioncontext = new 	org.jdom.Element(XMLTags.ReactionContextTag);
+private Element getXML(ReactionContext param) {
+	Element reactioncontext = new 	Element(XMLTags.ReactionContextTag);
 
 	//Add SpeciesContextSpecs
 	SpeciesContextSpec[] array = param.getSpeciesContextSpecs();
@@ -1147,11 +1147,11 @@ private org.jdom.Element getXML(ReactionContext param) {
 /**
  * This method returns a XML representation of a ReactionSpec object.
  * Creation date: (4/26/2001 3:07:29 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.mapping.ReactionSpec
  */
-private org.jdom.Element getXML(ReactionSpec param) {
-	org.jdom.Element reactionSpec = new org.jdom.Element(XMLTags.ReactionSpecTag);
+private Element getXML(ReactionSpec param) {
+	Element reactionSpec = new Element(XMLTags.ReactionSpecTag);
 
 	//Add Atributes
 	reactionSpec.setAttribute( XMLTags.ReactionStepRefAttrTag, mangle(param.getReactionStep().getName()) );
@@ -1164,11 +1164,11 @@ private org.jdom.Element getXML(ReactionSpec param) {
 /**
  * This method returns a XML representation of a SimulationContext object.
  * Creation date: (2/22/2001 2:15:14 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.mapping.SimulationContext
  */
-private org.jdom.Element getXML(SimulationContext param, BioModel bioModel) throws XmlParseException{
-	org.jdom.Element simulationcontext = new org.jdom.Element(XMLTags.SimulationSpecTag);
+private Element getXML(SimulationContext param, BioModel bioModel) throws XmlParseException{
+	Element simulationcontext = new Element(XMLTags.SimulationSpecTag);
 
 	//add attributes
 	String name = mangle(param.getName());
@@ -1194,7 +1194,7 @@ private org.jdom.Element getXML(SimulationContext param, BioModel bioModel) thro
 	//simulationcontext.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
-		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+		Element annotationElem = new Element(XMLTags.AnnotationTag);
 		annotationElem.setText(mangle(param.getDescription()));
 		simulationcontext.addContent(annotationElem);
 	}
@@ -1218,14 +1218,14 @@ private org.jdom.Element getXML(SimulationContext param, BioModel bioModel) thro
 	//chech if there is anything to write first for the electricla context
 	if (param.getElectricalStimuli().length==1 || param.getGroundElectrode()!=null) {
 		//create ElectricalContext
-		org.jdom.Element electricalElement = new org.jdom.Element(XMLTags.ElectricalContextTag);
+		Element electricalElement = new Element(XMLTags.ElectricalContextTag);
 
 		//Write the electrical stimuli
 		if (param.getElectricalStimuli().length==1) {
 			//write clamp
 			electricalElement.addContent(getXML(param.getElectricalStimuli(0)));
 
-			//org.jdom.Element clampElem = new org.jdom.Element(XMLTags.ClampTag);
+			//Element clampElem = new Element(XMLTags.ClampTag);
 			//clampElem.addContent(getXML(param.getElectricalStimuli(0)));
 			//if (param.getElectricalStimuli()[0] instanceof VoltageClampStimulus) {
 				////this is a VOLTAGE clamp
@@ -1304,11 +1304,11 @@ private org.jdom.Element getXML(SimulationContext param, BioModel bioModel) thro
 /**
  * This method returns a XML representation of a SpeciesContextSpec object.
  * Creation date: (3/1/2001 9:13:56 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.mapping.SpeciesContextSpec
  */
-private org.jdom.Element getXML(SpeciesContextSpec param) {
-	org.jdom.Element speciesContextSpecElement = new org.jdom.Element(XMLTags.SpeciesContextSpecTag);
+private Element getXML(SpeciesContextSpec param) {
+	Element speciesContextSpecElement = new Element(XMLTags.SpeciesContextSpecTag);
 
 	//Add Attributes
 	speciesContextSpecElement.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getSpeciesContext().getName()));
@@ -1323,26 +1323,26 @@ private org.jdom.Element getXML(SpeciesContextSpec param) {
 	Expression initAmt = param.getInitialCountParameter().getExpression();
 	if (initCon != null)
 	{
-		org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialConcentrationTag);
+		Element initial = new Element(XMLTags.InitialConcentrationTag);
 		initial.addContent(mangleExpression(initCon));
 		speciesContextSpecElement.addContent( initial );
 	}
 	else if(initAmt != null)
 	{
-		org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialAmountTag);
+		Element initial = new Element(XMLTags.InitialAmountTag);
 		initial.addContent(mangleExpression(initAmt));
 		speciesContextSpecElement.addContent( initial );
 	}
 	//Add diffusion
 	cbit.vcell.parser.Expression diffRate = param.getDiffusionParameter().getExpression();
 	if (diffRate!=null){
-		org.jdom.Element diffusion = new org.jdom.Element(XMLTags.DiffusionTag);
+		Element diffusion = new Element(XMLTags.DiffusionTag);
 		diffusion.addContent(mangleExpression(diffRate));
 		speciesContextSpecElement.addContent(diffusion);
 	}
 	// write BoundaryConditions
 	cbit.vcell.parser.Expression exp;
-	org.jdom.Element boundaries = new org.jdom.Element(XMLTags.BoundariesTag);
+	Element boundaries = new Element(XMLTags.BoundariesTag);
 
 	//XM
 	exp = param.getBoundaryXmParameter().getExpression();
@@ -1410,12 +1410,12 @@ private org.jdom.Element getXML(SpeciesContextSpec param) {
 /**
  * Get a XML element for the action taken in stochasitc process.
  * Creation date: (7/21/2006 11:46:04 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.Action
  */
 private Element getXML(Action param) 
 {
-	org.jdom.Element action = new org.jdom.Element(XMLTags.ActionTag);
+	Element action = new Element(XMLTags.ActionTag);
 
 	//Add atributes
 	action.setAttribute(XMLTags.VarNameAttrTag, mangle(param.getVar().getName()));
@@ -1428,45 +1428,45 @@ private Element getXML(Action param)
 /**
  * This method returns a XML representation of a CompartmentSubDomain object.
  * Creation date: (3/2/2001 1:18:55 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.CompartmentSubDomain
  */
-private org.jdom.Element getXML(CompartmentSubDomain param) throws XmlParseException{
-	org.jdom.Element compartment = new org.jdom.Element(XMLTags.CompartmentSubDomainTag);
+private Element getXML(CompartmentSubDomain param) throws XmlParseException{
+	Element compartment = new Element(XMLTags.CompartmentSubDomainTag);
 
 	compartment.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	if (param.getPriority() != -1){
 			compartment.setAttribute(XMLTags.PriorityAttrTag, String.valueOf(param.getPriority()));
 	}
 	//Add boundatyType subelements
-	org.jdom.Element boundary;
+	Element boundary;
 	//Xm
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueXm);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXm().toString());
 	compartment.addContent(boundary);
 	//Xp
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueXp);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXp().toString());
 	compartment.addContent(boundary);
 	//Ym
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueYm);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYm().toString());
 	compartment.addContent(boundary);
 	//Yp
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueYp);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYp().toString());
 	compartment.addContent(boundary);
 	//Zm
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueZm);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZm().toString());
 	compartment.addContent(boundary);
 	//Zp
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueZp);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZp().toString());
 	compartment.addContent(boundary);
@@ -1501,11 +1501,11 @@ private org.jdom.Element getXML(CompartmentSubDomain param) throws XmlParseExcep
 /**
  * This method returns a XML representation of a Constant object.
  * Creation date: (3/2/2001 11:46:46 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.Constant
  */
-private org.jdom.Element getXML(Constant param) {
-	org.jdom.Element constant = new org.jdom.Element(XMLTags.ConstantTag);
+private Element getXML(Constant param) {
+	Element constant = new Element(XMLTags.ConstantTag);
 
 	//Add atributes
 	constant.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -1518,10 +1518,10 @@ private org.jdom.Element getXML(Constant param) {
 /**
  * This method returns a XML representation of a Equation object.
  * Creation date: (3/2/2001 1:56:34 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.Equation
  */
-private org.jdom.Element getXML(Equation param) throws XmlParseException{
+private Element getXML(Equation param) throws XmlParseException{
 	if (param instanceof JumpCondition) {
 		return getXML((JumpCondition)param);
 	}
@@ -1545,27 +1545,27 @@ private org.jdom.Element getXML(Equation param) throws XmlParseException{
 /**
  * This method returns a XML representation of a FastSystemImplicit object.
  * Creation date: (3/2/2001 4:05:28 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.FastSystemImplicit
  */
-private org.jdom.Element getXML(FastSystem param) {
-	org.jdom.Element fastsystem = new org.jdom.Element(XMLTags.FastSystemTag);
+private Element getXML(FastSystem param) {
+	Element fastsystem = new Element(XMLTags.FastSystemTag);
 
 	//Add Fast Invariant subelements
-	org.jdom.Element fastinvariant;
+	Element fastinvariant;
 	Enumeration<FastInvariant> enum_fi = param.getFastInvariants();
 	while (enum_fi.hasMoreElements()){
-		fastinvariant = new org.jdom.Element(XMLTags.FastInvariantTag);
+		fastinvariant = new Element(XMLTags.FastInvariantTag);
 		FastInvariant fi = enum_fi.nextElement();
 		fastinvariant.addContent(mangleExpression(fi.getFunction()));
 		fastsystem.addContent(fastinvariant);
 	}	
 	//Add FastRate subelements
-	org.jdom.Element fastrate;
+	Element fastrate;
 	Enumeration<FastRate> enum_fr = param.getFastRates();
 	while (enum_fr.hasMoreElements()){
 		FastRate fr = (FastRate)enum_fr.nextElement();
-		fastrate = new org.jdom.Element(XMLTags.FastRateTag);
+		fastrate = new Element(XMLTags.FastRateTag);
 		fastrate.addContent(mangleExpression(fr.getFunction()));
 		fastsystem.addContent(fastrate);
 	}
@@ -1577,11 +1577,11 @@ private org.jdom.Element getXML(FastSystem param) {
 /**
  * This method returns a XML representation of a FilamentRegionVariable object.
  * Creation date: (3/2/2001 11:46:46 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.FilamentRegionVariable
  */
-private org.jdom.Element getXML(FilamentRegionVariable param) {
-	org.jdom.Element filregvar = new org.jdom.Element(XMLTags.FilamentRegionVariableTag);
+private Element getXML(FilamentRegionVariable param) {
+	Element filregvar = new Element(XMLTags.FilamentRegionVariableTag);
 
 	//Add atributes
 	filregvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -1596,11 +1596,11 @@ private org.jdom.Element getXML(FilamentRegionVariable param) {
 /**
  * This method returns a XML representation of a FilamentSubDomain object.
  * Creation date: (3/2/2001 5:49:07 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.FilamentSubDomain
  */
-private org.jdom.Element getXML(FilamentSubDomain param) throws XmlParseException{
-	org.jdom.Element filament = new org.jdom.Element(XMLTags.FilamentSubDomainTag);
+private Element getXML(FilamentSubDomain param) throws XmlParseException{
+	Element filament = new Element(XMLTags.FilamentSubDomainTag);
 	
 	filament.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	filament.setAttribute(XMLTags.OutsideCompartmentTag, mangle(param.getOutsideCompartment().getName()));
@@ -1622,11 +1622,11 @@ private org.jdom.Element getXML(FilamentSubDomain param) throws XmlParseExceptio
 /**
  * This method returns a XML representation of a FilamentVariable object.
  * Creation date: (3/2/2001 11:46:46 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.FilamentVariable
  */
-private org.jdom.Element getXML(FilamentVariable param) {
-	org.jdom.Element filvar = new org.jdom.Element(XMLTags.FilamentVariableTag);
+private Element getXML(FilamentVariable param) {
+	Element filvar = new Element(XMLTags.FilamentVariableTag);
 
 	//Add atributes
 	filvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -1641,11 +1641,11 @@ private org.jdom.Element getXML(FilamentVariable param) {
 /**
  * This method returns a XML declaration of a Function object.
  * Creation date: (3/2/2001 1:08:13 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.Function
  */
-private org.jdom.Element getXML(Function param) {
-	org.jdom.Element function = new org.jdom.Element(XMLTags.FunctionTag);
+private Element getXML(Function param) {
+	Element function = new Element(XMLTags.FunctionTag);
 
 	//Add atributes
 	function.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -1657,8 +1657,8 @@ private org.jdom.Element getXML(Function param) {
 	return function;
 }
 
-private org.jdom.Element getXML(AnnotatedFunction param) {
-	org.jdom.Element function = new org.jdom.Element(XMLTags.AnnotatedFunctionTag);
+private Element getXML(AnnotatedFunction param) {
+	Element function = new Element(XMLTags.AnnotatedFunctionTag);
 
 	//Add atributes
 	function.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -1679,16 +1679,16 @@ private org.jdom.Element getXML(AnnotatedFunction param) {
 /**
  * This method returns a XML representation of a JumpCondition object.
  * Creation date: (3/2/2001 2:05:17 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.JumpCondition
  */
-private org.jdom.Element getXML(JumpCondition param) {
-	org.jdom.Element jump = new org.jdom.Element(XMLTags.JumpConditionTag);
+private Element getXML(JumpCondition param) {
+	Element jump = new Element(XMLTags.JumpConditionTag);
 
 	//add Atributes
 	jump.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
 	//add Influx subelement
-	org.jdom.Element influx = new org.jdom.Element(XMLTags.InFluxTag);
+	Element influx = new Element(XMLTags.InFluxTag);
 	if (param.getInFluxExpression() != null) {
 		influx.addContent(mangleExpression(param.getInFluxExpression()) );
 	} else {
@@ -1696,7 +1696,7 @@ private org.jdom.Element getXML(JumpCondition param) {
 	}
 	jump.addContent(influx);
 	//Add OutFlux subelement
-	 org.jdom.Element outflux = new  org.jdom.Element(XMLTags.OutFluxTag);
+	 Element outflux = new  Element(XMLTags.OutFluxTag);
 	if (param.getOutFluxExpression() != null) {
 		outflux.addContent(mangleExpression(param.getOutFluxExpression()));
 	} else {
@@ -1711,16 +1711,16 @@ private org.jdom.Element getXML(JumpCondition param) {
 /**
  * Insert the method's description here.
  * Creation date: (7/24/2006 11:43:19 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.JumpProcess
  */
 private Element getXML(JumpProcess param) 
 {
-	org.jdom.Element jump = new org.jdom.Element(XMLTags.JumpProcessTag);
+	Element jump = new Element(XMLTags.JumpProcessTag);
 	//name
 	jump.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	//probability rate
-	org.jdom.Element prob = new org.jdom.Element(XMLTags.ProbabilityRateTag);
+	Element prob = new Element(XMLTags.ProbabilityRateTag);
 	prob.addContent(mangleExpression(param.getProbabilityRate()) );
 	jump.addContent(prob);
 	//Actions
@@ -1738,18 +1738,18 @@ private Element getXML(JumpProcess param)
 /**
  * This methos returns a XML representation of a MathDescription object.
  * Creation date: (3/2/2001 10:57:25 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param mathdes cbit.vcell.math.MathDescription
  */
-org.jdom.Element getXML(MathDescription mathdes) throws XmlParseException {
-    org.jdom.Element math = new org.jdom.Element(XMLTags.MathDescriptionTag);
+Element getXML(MathDescription mathdes) throws XmlParseException {
+    Element math = new Element(XMLTags.MathDescriptionTag);
 
     //Add atributes
     math.setAttribute(XMLTags.NameAttrTag, mangle(mathdes.getName()));
     //math.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(mathdes.getDescription()));
     //Add annotation
     if (mathdes.getDescription()!=null && mathdes.getDescription().length()>0) {
-    	org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+    	Element annotationElem = new Element(XMLTags.AnnotationTag);
     	annotationElem.setText(mangle(mathdes.getDescription()));
     	math.addContent(annotationElem);
     }
@@ -1844,11 +1844,11 @@ org.jdom.Element getXML(MathDescription mathdes) throws XmlParseException {
 
 
 private Element getXML(RandomVariable var) {
-	org.jdom.Element randomVariableElement = null;
+	Element randomVariableElement = null;
 	if (var instanceof VolumeRandomVariable) {
-		randomVariableElement = new org.jdom.Element(XMLTags.VolumeRandomVariableTag);
+		randomVariableElement = new Element(XMLTags.VolumeRandomVariableTag);
 	} else {
-		randomVariableElement = new org.jdom.Element(XMLTags.MembraneRandomVariableTag);
+		randomVariableElement = new Element(XMLTags.MembraneRandomVariableTag);
 	}
 
 	randomVariableElement.setAttribute(XMLTags.NameAttrTag, mangle(var.getName()));
@@ -1904,17 +1904,17 @@ private Element getXML(GaussianDistribution gauDist) {
 /**
  * This method returns a XML representation of a MembraneRegionEquation object.
  * Creation date: (3/2/2001 2:05:17 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.MembraneRegionEquation
  */
-private org.jdom.Element getXML(MembraneRegionEquation param) {
-	org.jdom.Element memregeq = new org.jdom.Element(XMLTags.MembraneRegionEquationTag);
+private Element getXML(MembraneRegionEquation param) {
+	Element memregeq = new Element(XMLTags.MembraneRegionEquationTag);
 
 	//add name
 	memregeq.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
 	
 	//add uniform rate
-	org.jdom.Element tempElem = null;
+	Element tempElem = null;
 	String tempString;
 	
 	if (param.getUniformRateExpression() != null){
@@ -1924,7 +1924,7 @@ private org.jdom.Element getXML(MembraneRegionEquation param) {
 		tempString = "0.0";
 		//buffer.append("\t\t"+VCML.UniformRate+" "+"0.0;\n");
 	}
-	tempElem = new org.jdom.Element(XMLTags.UniformRateTag);
+	tempElem = new Element(XMLTags.UniformRateTag);
 	tempElem.setText(tempString);
 	memregeq.addContent(tempElem);
 	
@@ -1936,20 +1936,20 @@ private org.jdom.Element getXML(MembraneRegionEquation param) {
 		tempString = "0.0";
 //		buffer.append("\t\t"+VCML.MembraneRate+" "+"0.0;\n");
 	}
-	tempElem = new org.jdom.Element(XMLTags.MembraneRateTag);
+	tempElem = new Element(XMLTags.MembraneRateTag);
 	tempElem.setText(tempString);
 	memregeq.addContent(tempElem);
 	
 	//add initial
 	if (param.getInitialExpression() != null){
-		tempElem = new org.jdom.Element( XMLTags.InitialTag );
+		tempElem = new Element( XMLTags.InitialTag );
 		tempElem.setText(mangleExpression(param.getInitialExpression()) );
 		memregeq.addContent(tempElem);
 //		buffer.append("\t\t"+VCML.Initial+"\t "+initialExp.infix()+";\n");
 	}
 	
 	//add solutionType
-	tempElem = new org.jdom.Element(XMLTags.SolutionTypeTag);
+	tempElem = new Element(XMLTags.SolutionTypeTag);
 	switch (param.getSolutionType()){
 		case MembraneRegionEquation.UNKNOWN_SOLUTION:{
 			tempElem.setAttribute(XMLTags.TypeAttrTag, "unknown");	
@@ -1976,11 +1976,11 @@ private org.jdom.Element getXML(MembraneRegionEquation param) {
 /**
  * This method returns a XML representation of a MembraneRegionVariable object.
  * Creation date: (3/2/2001 1:03:35 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.MembraneRegionVariable
  */
-private org.jdom.Element getXML(MembraneRegionVariable param) {
-	org.jdom.Element memregvar = new org.jdom.Element(XMLTags.MembraneRegionVariableTag);
+private Element getXML(MembraneRegionVariable param) {
+	Element memregvar = new Element(XMLTags.MembraneRegionVariableTag);
 
 	//Add atributes
 	memregvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -1995,45 +1995,45 @@ private org.jdom.Element getXML(MembraneRegionVariable param) {
 /**
  * This method returns a XML representation of a MembraneSubDomain object.
  * Creation date: (3/2/2001 5:40:17 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.MembraneSubDomain
  */
-private org.jdom.Element getXML(MembraneSubDomain param) throws XmlParseException{
-	org.jdom.Element membrane = new org.jdom.Element(XMLTags.MembraneSubDomainTag);
+private Element getXML(MembraneSubDomain param) throws XmlParseException{
+	Element membrane = new Element(XMLTags.MembraneSubDomainTag);
 	
 	//Add attributes
 	membrane.setAttribute(XMLTags.InsideCompartmentTag, mangle(param.getInsideCompartment().getName()));
 	membrane.setAttribute(XMLTags.OutsideCompartmentTag, mangle(param.getOutsideCompartment().getName()));
 	
 	//Add boundatyType subelements
-	org.jdom.Element boundary;
+	Element boundary;
 	//Xm
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueXm);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXm().toString());
 	membrane.addContent(boundary);
 	//Xp
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueXp);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXp().toString());
 	membrane.addContent(boundary);
 	//Ym
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueYm);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYm().toString());
 	membrane.addContent(boundary);
 	//Yp
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueYp);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYp().toString());
 	membrane.addContent(boundary);
 	//Zm
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueZm);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZm().toString());
 	membrane.addContent(boundary);
 	//Zp
-	boundary = new org.jdom.Element(XMLTags.BoundaryTypeTag);
+	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueZp);
 	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZp().toString());
 	membrane.addContent(boundary);
@@ -2062,11 +2062,11 @@ private org.jdom.Element getXML(MembraneSubDomain param) throws XmlParseExceptio
 /**
  * This method returns a XML representation of a MemVariable object.
  * Creation date: (3/2/2001 1:03:35 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.MemVariable
  */
-private org.jdom.Element getXML(MemVariable param) {
-	org.jdom.Element memvariable = new org.jdom.Element(XMLTags.MembraneVariableTag);
+private Element getXML(MemVariable param) {
+	Element memvariable = new Element(XMLTags.MembraneVariableTag);
 
 	//Add atributes
 	memvariable.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -2081,16 +2081,16 @@ private org.jdom.Element getXML(MemVariable param) {
 /**
  * This method returns a XML representation of a OdeEquation object.
  * Creation date: (3/2/2001 2:52:14 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.OdeEquation
  */
-private org.jdom.Element getXML(OdeEquation param) throws XmlParseException {
-	org.jdom.Element ode = new org.jdom.Element(XMLTags.OdeEquationTag);
+private Element getXML(OdeEquation param) throws XmlParseException {
+	Element ode = new Element(XMLTags.OdeEquationTag);
 
 	//Add atribute
 	ode.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
 	//Add Rate subelement
-	org.jdom.Element rate = new org.jdom.Element(XMLTags.RateTag);
+	Element rate = new Element(XMLTags.RateTag);
 	if (param.getRateExpression() != null) {
 		rate.addContent(mangleExpression(param.getRateExpression()));
 	} else {
@@ -2098,7 +2098,7 @@ private org.jdom.Element getXML(OdeEquation param) throws XmlParseException {
 	}
 	ode.addContent(rate);
 	//Add Initial
-	org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialTag);
+	Element initial = new Element(XMLTags.InitialTag);
 	if (param.getInitialExpression() != null) {
 		initial.addContent(mangleExpression(param.getInitialExpression()));
 		ode.addContent(initial);
@@ -2118,7 +2118,7 @@ private org.jdom.Element getXML(OdeEquation param) throws XmlParseException {
 		}
 		case Equation.EXACT_SOLUTION: {
 			ode.setAttribute(XMLTags.SolutionTypeTag, XMLTags.ExactTypeTag);			
-			org.jdom.Element solution = new org.jdom.Element(XMLTags.SolutionExpressionTag);
+			Element solution = new Element(XMLTags.SolutionExpressionTag);
 			solution.setText(mangle(param.getExactSolution().infix()) );
 			ode.addContent(solution);
 
@@ -2137,11 +2137,11 @@ private org.jdom.Element getXML(OdeEquation param) throws XmlParseException {
 /**
  * This methos returns a XML representation of a PdeEquation object.
  * Creation date: (3/2/2001 3:21:20 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.PdeEquation
  */
-private org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
-	org.jdom.Element pde = new org.jdom.Element(XMLTags.PdeEquationTag);
+private Element getXML(PdeEquation param) throws XmlParseException {
+	Element pde = new Element(XMLTags.PdeEquationTag);
 
 	//Add Atribute
 	pde.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
@@ -2149,7 +2149,7 @@ private org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 		pde.setAttribute(XMLTags.SteadyTag, "1");
 	}
 	//Add Boundary subelements
-	org.jdom.Element boundaries = new org.jdom.Element(XMLTags.BoundariesTag);
+	Element boundaries = new Element(XMLTags.BoundariesTag);
 	//Xm
 	if (param.getBoundaryXm() != null) {
 		boundaries.setAttribute(XMLTags.BoundaryAttrValueXm, mangleExpression(param.getBoundaryXm()));
@@ -2179,7 +2179,7 @@ private org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 		pde.addContent(boundaries);
 	}
 	//add Rate
-	org.jdom.Element rate = new org.jdom.Element(XMLTags.RateTag);
+	Element rate = new Element(XMLTags.RateTag);
 	if (param.getRateExpression() != null) {
 		rate.addContent(mangleExpression(param.getRateExpression()));
 	} else {
@@ -2187,7 +2187,7 @@ private org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 	}
 	pde.addContent(rate);
 	//Diffusion
-	org.jdom.Element diffusion = new org.jdom.Element(XMLTags.DiffusionTag);
+	Element diffusion = new Element(XMLTags.DiffusionTag);
 	if (param.getDiffusionExpression() != null) {
 		diffusion.addContent(mangleExpression(param.getDiffusionExpression()));
 	} else {
@@ -2195,7 +2195,7 @@ private org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 	}
 	pde.addContent(diffusion);
 	//Initial
-	org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialTag);
+	Element initial = new Element(XMLTags.InitialTag);
 	if (param.getInitialExpression() != null) {
 		initial.addContent(mangleExpression(param.getInitialExpression()));
 		pde.addContent(initial);
@@ -2215,7 +2215,7 @@ private org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 		}
 		case Equation.EXACT_SOLUTION: {
 			pde.setAttribute(XMLTags.SolutionTypeTag, XMLTags.ExactTypeTag);			
-			org.jdom.Element solution = new org.jdom.Element(XMLTags.SolutionExpressionTag);
+			Element solution = new Element(XMLTags.SolutionExpressionTag);
 			solution.setText( mangle(param.getExactSolution().infix()) );
 			pde.addContent(solution);
 
@@ -2258,11 +2258,11 @@ private org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 /**
  * Get a XML element for this stochastic volumn variable.
  * Creation date: (7/19/2006 5:53:15 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.StochVolVariable
  */
 private Element getXML(StochVolVariable param) {
-	org.jdom.Element stochVar = new org.jdom.Element(XMLTags.StochVolVariableTag);
+	Element stochVar = new Element(XMLTags.StochVolVariableTag);
 
 	//Add atribute
 	stochVar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -2273,10 +2273,10 @@ private Element getXML(StochVolVariable param) {
 /**
  * This method returns a XML representation of a SubDomain object type.
  * Creation date: (3/2/2001 1:13:30 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.SubDomain
  */
-private org.jdom.Element getXML(SubDomain param) throws XmlParseException{
+private Element getXML(SubDomain param) throws XmlParseException{
 	if (param instanceof CompartmentSubDomain) {
 		return getXML((CompartmentSubDomain)param);
 	} else if (param instanceof FilamentSubDomain) {
@@ -2292,12 +2292,12 @@ private org.jdom.Element getXML(SubDomain param) throws XmlParseException{
 /**
  * Get a XML element for the initial condition of a stochastic variable.
  * Creation date: (7/21/2006 10:54:51 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.VarIniCondition
  */
 private Element getXML(VarIniCondition param) 
 {
-	org.jdom.Element varIni = new org.jdom.Element(XMLTags.VarIniConditionTag);
+	Element varIni = new Element(XMLTags.VarIniConditionTag);
 
 	//Add atribute
 	varIni.setAttribute(XMLTags.NameAttrTag, mangle(param.getVar().getName()));
@@ -2308,12 +2308,12 @@ private Element getXML(VarIniCondition param)
 /**
  * This method returns a XML representation of a VolumeRegionEquation object.
  * Creation date: (3/2/2001 2:05:17 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.VolumeRegionEquation
  */
-private org.jdom.Element getXML(VolumeRegionEquation param) {
-	org.jdom.Element memregeq = new org.jdom.Element(XMLTags.VolumeRegionEquationTag);
-	org.jdom.Element tempElem = null;
+private Element getXML(VolumeRegionEquation param) {
+	Element memregeq = new Element(XMLTags.VolumeRegionEquationTag);
+	Element tempElem = null;
 	String tempString;
 	
 	//add name
@@ -2327,7 +2327,7 @@ private org.jdom.Element getXML(VolumeRegionEquation param) {
 		tempString = "0.0";
 		//buffer.append("\t\t"+VCML.UniformRate+" "+"0.0;\n");
 	}
-	tempElem = new org.jdom.Element(XMLTags.UniformRateTag);
+	tempElem = new Element(XMLTags.UniformRateTag);
 	tempElem.setText(tempString);
 	memregeq.addContent(tempElem);
 
@@ -2339,20 +2339,20 @@ private org.jdom.Element getXML(VolumeRegionEquation param) {
 		tempString = "0.0";
 //		buffer.append("\t\t"+VCML.VolumeRate+" "+"0.0;\n");
 	}
-	tempElem = new org.jdom.Element(XMLTags.VolumeRateTag);
+	tempElem = new Element(XMLTags.VolumeRateTag);
 	tempElem.setText(tempString);
 	memregeq.addContent(tempElem);
 	
 	//add Initial
 	if (param.getInitialExpression() != null){
-		tempElem = new org.jdom.Element( XMLTags.InitialTag );
+		tempElem = new Element( XMLTags.InitialTag );
 		tempElem.setText(mangleExpression(param.getInitialExpression()) );
 		memregeq.addContent(tempElem);
 //		buffer.append("\t\t"+VCML.Initial+"\t "+initialExp.infix()+";\n");
 	}
 
 	//add solutionType
-	tempElem = new org.jdom.Element(XMLTags.SolutionTypeTag);
+	tempElem = new Element(XMLTags.SolutionTypeTag);
 	switch (param.getSolutionType()){
 		case MembraneRegionEquation.UNKNOWN_SOLUTION:{
 			tempElem.setAttribute(XMLTags.TypeAttrTag, "unknown");	
@@ -2378,11 +2378,11 @@ private org.jdom.Element getXML(VolumeRegionEquation param) {
 /**
  * This method returns a XML representation of a VolumeRegionVariable object.
  * Creation date: (3/2/2001 11:56:48 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.VolumeRegionVariable
  */
-private org.jdom.Element getXML(VolumeRegionVariable param) {
-	org.jdom.Element volregvar = new org.jdom.Element(XMLTags.VolumeRegionVariableTag);
+private Element getXML(VolumeRegionVariable param) {
+	Element volregvar = new Element(XMLTags.VolumeRegionVariableTag);
 
 	//Add atribute
 	volregvar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -2397,11 +2397,11 @@ private org.jdom.Element getXML(VolumeRegionVariable param) {
 /**
  * This method returns a XML representation of a VolVariable object.
  * Creation date: (3/2/2001 11:56:48 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.math.VolVariable
  */
-private org.jdom.Element getXML(VolVariable param) {
-	org.jdom.Element volvariable = new org.jdom.Element(XMLTags.VolumeVariableTag);
+private Element getXML(VolVariable param) {
+	Element volvariable = new Element(XMLTags.VolumeVariableTag);
 
 	//Add atribute
 	volvariable.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -2416,18 +2416,18 @@ private org.jdom.Element getXML(VolVariable param) {
 /**
  * This method returns the XML representation of a MathModel.
  * Creation date: (3/28/2001 12:27:28 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.mathmodel.MathModel
  */
-public org.jdom.Element getXML(MathModel param) throws XmlParseException{
-	org.jdom.Element mathmodel = new org.jdom.Element(XMLTags.MathModelTag);
+public Element getXML(MathModel param) throws XmlParseException{
+	Element mathmodel = new Element(XMLTags.MathModelTag);
 	//Add Attributes
 	String name = param.getName();
 	mathmodel.setAttribute(XMLTags.NameAttrTag, mangle(name));
 	//mathmodel.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add Annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
-		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+		Element annotationElem = new Element(XMLTags.AnnotationTag);
 		annotationElem.setText(mangle(param.getDescription()));
 		mathmodel.addContent(annotationElem);
 	}
@@ -2471,11 +2471,11 @@ public org.jdom.Element getXML(MathModel param) throws XmlParseException{
 /**
  * This method returns a XML representation of a Catalyst object.
  * Creation date: (2/26/2001 6:44:05 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.Catalyst
  */
-private org.jdom.Element getXML(Catalyst param) {
-	org.jdom.Element catalyst = new org.jdom.Element(XMLTags.CatalystTag);
+private Element getXML(Catalyst param) {
+	Element catalyst = new Element(XMLTags.CatalystTag);
 
 	//Add attribute
 	catalyst.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getSpeciesContext().getName()));
@@ -2492,11 +2492,11 @@ private org.jdom.Element getXML(Catalyst param) {
 /**
  * This method returns a XML representation of a diagram object type.
  * Creation date: (2/27/2001 5:13:26 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.Diagram
  */
-private org.jdom.Element getXML(Diagram param) {
-	org.jdom.Element diagram = new org.jdom.Element(XMLTags.DiagramTag);
+private Element getXML(Diagram param) {
+	Element diagram = new Element(XMLTags.DiagramTag);
 
 	//add attributes
 	diagram.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -2518,13 +2518,13 @@ private org.jdom.Element getXML(Diagram param) {
 /**
  * This method returns a XML version of a Feature.
  * Creation date: (2/22/2001 7:05:40 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.Feature
  * @param model cbit.vcell.model.Model
  * @deprecated This methos is no longer in use. Functionnality moved to the get-Structures.
  */
-private org.jdom.Element getXML(Feature param/*, Model model*/) {
-	org.jdom.Element feature = new org.jdom.Element(XMLTags.FeatureTag);
+private Element getXML(Feature param/*, Model model*/) {
+	Element feature = new Element(XMLTags.FeatureTag);
 	
 	//Get parameters
 	feature.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -2542,11 +2542,11 @@ private org.jdom.Element getXML(Feature param/*, Model model*/) {
 /**
  * This method returns a XML representation of a Flux Reaction object.
  * Creation date: (2/26/2001 12:30:13 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.FluxReaction
  */
-private org.jdom.Element getXML(FluxReaction param) throws XmlParseException {
-	org.jdom.Element fluxreaction = new org.jdom.Element(XMLTags.FluxStepTag);
+private Element getXML(FluxReaction param) throws XmlParseException {
+	Element fluxreaction = new Element(XMLTags.FluxStepTag);
 	//get Attributes
 	String versionName = (param.getName() != null) ? mangle(param.getName()) : "unnamed_fluxReaction";
 	fluxreaction.setAttribute(XMLTags.NameAttrTag, versionName);
@@ -2606,10 +2606,10 @@ private org.jdom.Element getXML(FluxReaction param) throws XmlParseException {
 /**
  * This method returns a XML representation of a Kinetics object type.
  * Creation date: (2/26/2001 7:31:43 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.Kinetics
  */
-private org.jdom.Element getXML(Kinetics param) throws XmlParseException {
+private Element getXML(Kinetics param) throws XmlParseException {
 
 	String kineticsType = null;
 
@@ -2641,14 +2641,14 @@ private org.jdom.Element getXML(Kinetics param) throws XmlParseException {
 		//Process a GeneralCurrentLumpedKinetics
 		kineticsType = XMLTags.KineticsTypeGeneralCurrentLumped;
 	} 
-	org.jdom.Element kinetics = new org.jdom.Element(XMLTags.KineticsTag);
+	Element kinetics = new Element(XMLTags.KineticsTag);
 	//Add atributes
 	kinetics.setAttribute(XMLTags.KineticsTypeAttrTag, kineticsType);
 	//Add Kinetics Parameters
 	Kinetics.KineticsParameter parameters[] = param.getKineticsParameters();
 	for (int i=0;i<parameters.length;i++){
 		Kinetics.KineticsParameter parm = parameters[i];
-		org.jdom.Element tempparameter = new org.jdom.Element(XMLTags.ParameterTag);
+		Element tempparameter = new Element(XMLTags.ParameterTag);
 		//Get parameter attributes
 		tempparameter.setAttribute(XMLTags.NameAttrTag, mangle(parm.getName()));
 		tempparameter.setAttribute(XMLTags.ParamRoleAttrTag, param.getDefaultParameterDesc(parm.getRole()));
@@ -2668,13 +2668,13 @@ private org.jdom.Element getXML(Kinetics param) throws XmlParseException {
 /**
  * This method returns a XMl representation of a Membrane object.
  * Creation date: (2/26/2001 11:56:13 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.Membrane
  * @param model cbit.vcell.model.Model
  * @deprecated This method is no longer in use.
  */
-private org.jdom.Element getXML(Membrane param/*, Model model*/) {
-	org.jdom.Element membrane = new org.jdom.Element(XMLTags.MembraneTag);
+private Element getXML(Membrane param/*, Model model*/) {
+	Element membrane = new Element(XMLTags.MembraneTag);
 	//Add Atributes
 	membrane.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	membrane.setAttribute(XMLTags.InsideFeatureTag, mangle(param.getInsideFeature().getName()));
@@ -2689,7 +2689,7 @@ private org.jdom.Element getXML(Membrane param/*, Model model*/) {
 	return membrane;
 }
 
-public org.jdom.Element getXML(ArrayList<AnnotatedFunction> outputFunctions) {
+public Element getXML(ArrayList<AnnotatedFunction> outputFunctions) {
 	Element outputFunctionsElement = new Element(XMLTags.OutputFunctionsTag);
 	for (AnnotatedFunction outputfunction : outputFunctions) {
 		Element functionElement = getXML(outputfunction);
@@ -2698,7 +2698,7 @@ public org.jdom.Element getXML(ArrayList<AnnotatedFunction> outputFunctions) {
 
 	return outputFunctionsElement;
 }
-public org.jdom.Element getXML(ModelParameter[] modelParams) {
+public Element getXML(ModelParameter[] modelParams) {
 	Element globalsElement = new Element(XMLTags.ModelParametersTag);
 	for (int i = 0; i < modelParams.length; i++) {
 		Element glParamElement = new Element(XMLTags.ParameterTag);
@@ -2732,18 +2732,18 @@ public org.jdom.Element getXML(ModelParameter[] modelParams) {
 /**
  * Outputs a XML version of a Model object
  * Creation date: (2/15/2001 11:39:27 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.Model
  */
-private org.jdom.Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parser.ExpressionException */{
-	org.jdom.Element modelnode = new org.jdom.Element(XMLTags.ModelTag);
+private Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parser.ExpressionException */{
+	Element modelnode = new Element(XMLTags.ModelTag);
 	String versionName = (param.getName()!=null)?mangle(param.getName()):"unnamed_model";
 
 	//get Attributes
 	modelnode.setAttribute(XMLTags.NameAttrTag, versionName);
 	//modelnode.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
-		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+		Element annotationElem = new Element(XMLTags.AnnotationTag);
 		annotationElem.setText(mangle(param.getDescription()));
 		modelnode.addContent(annotationElem);
 	}
@@ -2805,13 +2805,13 @@ private org.jdom.Element getXML(Model param) throws XmlParseException/*, cbit.vc
 /**
  * This method returns the XML representation of a NodeReference type object.
  * Creation date: (2/27/2001 5:32:32 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.NodeReference
  */
-private org.jdom.Element getXML(NodeReference param) {
+private Element getXML(NodeReference param) {
 	switch (param.nodeType){
 		case NodeReference.SIMPLE_REACTION_NODE:{
-			org.jdom.Element simplereaction = new org.jdom.Element(XMLTags.SimpleReactionShapeTag);
+			Element simplereaction = new Element(XMLTags.SimpleReactionShapeTag);
 			//add Attributes
 			simplereaction.setAttribute(XMLTags.SimpleReactionRefAttrTag, mangle(param.getName()));
 			simplereaction.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
@@ -2820,7 +2820,7 @@ private org.jdom.Element getXML(NodeReference param) {
 			return simplereaction;
 		}
 		case NodeReference.FLUX_REACTION_NODE:{
-			org.jdom.Element fluxreaction = new org.jdom.Element(XMLTags.FluxReactionShapeTag);
+			Element fluxreaction = new Element(XMLTags.FluxReactionShapeTag);
 			//add Attributes
 			fluxreaction.setAttribute(XMLTags.FluxReactionRefAttrTag, mangle(param.getName()));
 			fluxreaction.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
@@ -2829,7 +2829,7 @@ private org.jdom.Element getXML(NodeReference param) {
 			return fluxreaction;
 		}
 		case NodeReference.SPECIES_CONTEXT_NODE:{
-			org.jdom.Element speciecontext = new org.jdom.Element(XMLTags.SpeciesContextShapeTag);
+			Element speciecontext = new Element(XMLTags.SpeciesContextShapeTag);
 			//add Attributes
 			speciecontext.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getName()));
 			speciecontext.setAttribute(XMLTags.LocationXAttrTag, String.valueOf(param.location.x));
@@ -2846,11 +2846,11 @@ private org.jdom.Element getXML(NodeReference param) {
 /**
  * this method returns a XML representation of a Product object.
  * Creation date: (2/27/2001 3:00:56 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.Product
  */
-private org.jdom.Element getXML(Product param) {
-	org.jdom.Element product = new org.jdom.Element(XMLTags.ProductTag);
+private Element getXML(Product param) {
+	Element product = new Element(XMLTags.ProductTag);
 	//Add attributes
 	product.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getSpeciesContext().getName()));
 	product.setAttribute(XMLTags.StoichiometryAttrTag, String.valueOf(param.getStoichiometry()));
@@ -2867,11 +2867,11 @@ private org.jdom.Element getXML(Product param) {
 /**
  * This method returns a XML representation of a Reactant object.
  * Creation date: (2/27/2001 2:54:47 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.Reactant
  */
-private org.jdom.Element getXML(Reactant param) {
-	org.jdom.Element reactant = new org.jdom.Element(XMLTags.ReactantTag);
+private Element getXML(Reactant param) {
+	Element reactant = new Element(XMLTags.ReactantTag);
 	//Add attributes
 	reactant.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getSpeciesContext().getName()));
 	reactant.setAttribute(XMLTags.StoichiometryAttrTag, String.valueOf(param.getStoichiometry()));
@@ -2888,10 +2888,10 @@ private org.jdom.Element getXML(Reactant param) {
 /**
  * This method returns a XML representation of a ReactionParticipant object.
  * Creation date: (2/27/2001 2:41:45 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.ReactionParticipant
  */
-private org.jdom.Element getXML(ReactionParticipant param) {
+private Element getXML(ReactionParticipant param) {
 	if (param instanceof Reactant) {
 		//Process a reactant
 		return getXML((Reactant)param);
@@ -2909,11 +2909,11 @@ private org.jdom.Element getXML(ReactionParticipant param) {
 /**
  * This method returns a XML representation of a Reaction Step.
  * Creation date: (2/26/2001 12:12:55 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.ReactionStep
  */
-private org.jdom.Element getXML(ReactionStep param) throws XmlParseException {
-	org.jdom.Element rsElement = null;
+private Element getXML(ReactionStep param) throws XmlParseException {
+	Element rsElement = null;
 	if (param instanceof FluxReaction) {
 		rsElement = getXML((FluxReaction)param);
 	} else if (param instanceof SimpleReaction) {
@@ -2926,11 +2926,11 @@ private org.jdom.Element getXML(ReactionStep param) throws XmlParseException {
 /**
  * This method returns the XML represntation of a Simple reaction object.
  * Creation date: (2/27/2001 2:27:28 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.SimpleReaction
  */
-private org.jdom.Element getXML(SimpleReaction param) throws XmlParseException {
-	org.jdom.Element simplereaction = new org.jdom.Element(XMLTags.SimpleReactionTag);
+private Element getXML(SimpleReaction param) throws XmlParseException {
+	Element simplereaction = new Element(XMLTags.SimpleReactionTag);
 	//Add attribute
 	String nameStr = (param.getName()!=null)?(mangle(param.getName())):"unnamed_SimpleReaction";
 	simplereaction.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
@@ -2994,11 +2994,11 @@ private org.jdom.Element getXML(SimpleReaction param) throws XmlParseException {
 /**
  * This method returns a XML version of a Specie.
  * Creation date: (2/22/2001 2:37:45 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.Species
  */
-private org.jdom.Element getXML(Species species) throws XmlParseException {
-	org.jdom.Element speciesElement = new org.jdom.Element(XMLTags.SpeciesTag);
+private Element getXML(Species species) throws XmlParseException {
+	Element speciesElement = new Element(XMLTags.SpeciesTag);
 
 	//add name
 	speciesElement.setAttribute(XMLTags.NameAttrTag, mangle(species.getCommonName()) );
@@ -3006,7 +3006,7 @@ private org.jdom.Element getXML(Species species) throws XmlParseException {
 	//add annotation (if there is any)
 	if (species.getAnnotation()!=null && species.getAnnotation().length()!=0) {
 		//speciesElement.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(species.getAnnotation()) );
-		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+		Element annotationElem = new Element(XMLTags.AnnotationTag);
 		annotationElem.setText(mangle(species.getAnnotation()));
 		speciesElement.addContent(annotationElem);
 	}
@@ -3024,11 +3024,11 @@ private org.jdom.Element getXML(Species species) throws XmlParseException {
 /**
  * This method returns a XML representation of a SpeciesContext object.
  * Creation date: (2/26/2001 11:26:37 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.SpeciesContext
  */
-private org.jdom.Element getXML(SpeciesContext param) {
-	org.jdom.Element speciecontext = new org.jdom.Element( XMLTags.SpeciesContextTag);
+private Element getXML(SpeciesContext param) {
+	Element speciecontext = new Element( XMLTags.SpeciesContextTag);
 	//Add atributes
 	speciecontext.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	speciecontext.setAttribute(XMLTags.SpeciesRefAttrTag, mangle(param.getSpecies().getCommonName()));
@@ -3047,19 +3047,19 @@ private org.jdom.Element getXML(SpeciesContext param) {
 /**
  * This method identifies if the structure as a parameter is a Feature or a Membrane, and then calls the respective getXML method.
  * Creation date: (2/22/2001 6:31:04 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.model.Structure
  * @param model cbit.vcell.model.Model
  */
-private org.jdom.Element getXML(Structure structure) throws XmlParseException {
-	org.jdom.Element structureElement = null;
+private Element getXML(Structure structure) throws XmlParseException {
+	Element structureElement = null;
 	
     if (structure instanceof Feature) {
         //This is a Feature
-        structureElement = new org.jdom.Element(XMLTags.FeatureTag);
+        structureElement = new Element(XMLTags.FeatureTag);
     } else if (structure instanceof Membrane) {
 	    //process a Membrane
-	    structureElement = new org.jdom.Element(XMLTags.MembraneTag);
+	    structureElement = new Element(XMLTags.MembraneTag);
 	    //add specific attributes
 	    structureElement.setAttribute(XMLTags.InsideFeatureTag, mangle(((Membrane)structure).getInsideFeature().getName()));
 	    structureElement.setAttribute(XMLTags.OutsideFeatureTag, mangle(((Membrane)structure).getOutsideFeature().getName()));
@@ -3083,11 +3083,11 @@ private org.jdom.Element getXML(Structure structure) throws XmlParseException {
 /**
  * This method returns a XML version of a GroupAccess object.
  * Creation date: (5/23/2003 3:53:50 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param groupAccess cbit.vcell.server.GroupAccess
  */
-private org.jdom.Element getXML(GroupAccess groupAccess) {
-	org.jdom.Element groupElement = new org.jdom.Element(XMLTags.GroupAccessTag);
+private Element getXML(GroupAccess groupAccess) {
+	Element groupElement = new Element(XMLTags.GroupAccessTag);
 	
 	if (groupAccess instanceof GroupAccessAll) {
 		//case: ALL
@@ -3105,7 +3105,7 @@ private org.jdom.Element getXML(GroupAccess groupAccess) {
 		//get normal users
 		org.vcell.util.document.User[] users = ((GroupAccessSome)groupAccess).getNormalGroupMembers();
 		for (int i = 0; i < users.length; i++){
-			org.jdom.Element userElement = new org.jdom.Element(XMLTags.UserTag);
+			Element userElement = new Element(XMLTags.UserTag);
 			//add name
 			userElement.setAttribute(XMLTags.NameAttrTag, mangle(users[i].getName()));
 			//add key
@@ -3121,7 +3121,7 @@ private org.jdom.Element getXML(GroupAccess groupAccess) {
 		
 		if (users != null) {
 			for (int i = 0; i < users.length; i++){
-				org.jdom.Element userElement = new org.jdom.Element(XMLTags.UserTag);
+				Element userElement = new Element(XMLTags.UserTag);
 				//add name
 				userElement.setAttribute(XMLTags.NameAttrTag, mangle(users[i].getName()));
 				//add key
@@ -3139,11 +3139,11 @@ private org.jdom.Element getXML(GroupAccess groupAccess) {
 /**
  * This methos returns a XML representation of a ErrorTolerance.
  * Creation date: (3/3/2001 12:02:33 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.solver.ErrorTolerance
  */
-private org.jdom.Element getXML(ErrorTolerance param) {
-	org.jdom.Element errortol = new org.jdom.Element(XMLTags.ErrorToleranceTag);
+private Element getXML(ErrorTolerance param) {
+	Element errortol = new Element(XMLTags.ErrorToleranceTag);
 
 	//Add Atributes
 	errortol.setAttribute(XMLTags.AbsolutErrorToleranceTag, String.valueOf(param.getAbsoluteErrorTolerance()));
@@ -3156,18 +3156,18 @@ private org.jdom.Element getXML(ErrorTolerance param) {
 /**
  * returns a XML representation of a MathOverrides.
  * Creation date: (3/3/2001 12:15:17 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.solver.MathOverrides
  */
-private org.jdom.Element getXML(MathOverrides param) {
-	org.jdom.Element overrides = new org.jdom.Element(XMLTags.MathOverridesTag);
+private Element getXML(MathOverrides param) {
+	Element overrides = new Element(XMLTags.MathOverridesTag);
 
 	//Add Constant subelements
 	//Get names
 	String[] constantNames = param.getOverridenConstantNames();
 	//get the expressions
 	for (int i = 0; i < constantNames.length; i++){
-		org.jdom.Element constant = new org.jdom.Element(XMLTags.ConstantTag);
+		Element constant = new Element(XMLTags.ConstantTag);
 		constant.setAttribute( XMLTags.NameAttrTag, mangle(constantNames[i]) );
 		if (param.isScan(constantNames[i])) {
 			cbit.vcell.solver.ConstantArraySpec cas = param.getConstantArraySpec(constantNames[i]);
@@ -3187,13 +3187,13 @@ private org.jdom.Element getXML(MathOverrides param) {
 /**
  * Insert the method's description here.
  * Creation date: (3/3/2001 12:24:59 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.mesh.MeshSpecification
  */
-private org.jdom.Element getXML(MeshSpecification param) {
-	org.jdom.Element meshspec = new org.jdom.Element(XMLTags.MeshSpecTag);
+private Element getXML(MeshSpecification param) {
+	Element meshspec = new Element(XMLTags.MeshSpecTag);
 
-	org.jdom.Element size = new org.jdom.Element(XMLTags.SizeTag);
+	Element size = new Element(XMLTags.SizeTag);
 	//Add extent attributes
 	ISize sampling = param.getSamplingSize();
 
@@ -3209,11 +3209,11 @@ private org.jdom.Element getXML(MeshSpecification param) {
 /**
  * This methos returns a XML representation of a ErrorTolerance.
  * Creation date: (3/3/2001 12:02:33 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.solver.ErrorTolerance
  */
-private org.jdom.Element getXML(OutputTimeSpec param) {
-	org.jdom.Element outputOptions = new org.jdom.Element(XMLTags.OutputOptionsTag);
+private Element getXML(OutputTimeSpec param) {
+	Element outputOptions = new Element(XMLTags.OutputOptionsTag);
 
 	//Add Atributes
 	if (param.isDefault()){
@@ -3234,11 +3234,11 @@ private org.jdom.Element getXML(OutputTimeSpec param) {
 /**
  * This method returns a XML representation of a stochSimOption object.
  * Creation date: (5/2/2007 09:47:20 AM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.solver.StochSimOption
  */
-private org.jdom.Element getXML(StochSimOptions param, boolean isHybrid) {
-	org.jdom.Element stochSimOptions = new org.jdom.Element(XMLTags.StochSimOptionsTag);
+private Element getXML(StochSimOptions param, boolean isHybrid) {
+	Element stochSimOptions = new Element(XMLTags.StochSimOptionsTag);
 	if(param != null)
 	{
 		stochSimOptions.setAttribute(XMLTags.UseCustomSeedAttrTag, String.valueOf(param.isUseCustomSeed()));
@@ -3259,11 +3259,11 @@ private org.jdom.Element getXML(StochSimOptions param, boolean isHybrid) {
 /**
  * This method returns a XML representation of a Simulation object.
  * Creation date: (3/2/2001 10:42:35 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.solver.Simulation
  */
-org.jdom.Element getXML(Simulation param) {
-	org.jdom.Element simulationElement = new org.jdom.Element(XMLTags.SimulationTag);
+Element getXML(Simulation param) {
+	Element simulationElement = new Element(XMLTags.SimulationTag);
 
 	//Add Atributes
 	String name = mangle(param.getName());
@@ -3271,7 +3271,7 @@ org.jdom.Element getXML(Simulation param) {
 	//simulation.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//Add annotation
 	if (param.getDescription()!=null && param.getDescription().trim().length()>0) {
-		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+		Element annotationElem = new Element(XMLTags.AnnotationTag);
 		annotationElem.setText(mangle(param.getDescription()));
 		simulationElement.addContent(annotationElem);
 	}
@@ -3302,11 +3302,11 @@ org.jdom.Element getXML(Simulation param) {
 /**
  * This method returns a XML representation of a SolverTaskDescription object.
  * Creation date: (3/2/2001 10:59:55 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.solver.SolverTaskDescription
  */
-private org.jdom.Element getXML(SolverTaskDescription param) {
-	org.jdom.Element solvertask = new org.jdom.Element(XMLTags.SolverTaskDescriptionTag);
+private Element getXML(SolverTaskDescription param) {
+	Element solvertask = new Element(XMLTags.SolverTaskDescriptionTag);
 
 	//Add Atributes
 	if (param.getTaskType() == SolverTaskDescription.TASK_UNSTEADY){
@@ -3362,11 +3362,11 @@ private org.jdom.Element getXML(SolverTaskDescription param) {
 /**
  * This method returns a XML representation of a timebounds object.
  * Creation date: (3/2/2001 11:39:20 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.solver.TimeBounds
  */
-private org.jdom.Element getXML(TimeBounds param) {
-	org.jdom.Element timebounds = new org.jdom.Element(XMLTags.TimeBoundTag);
+private Element getXML(TimeBounds param) {
+	Element timebounds = new Element(XMLTags.TimeBoundTag);
 
 	timebounds.setAttribute(XMLTags.StartTimeAttrTag, String.valueOf(param.getStartingTime()));
 	timebounds.setAttribute(XMLTags.EndTimeAttrTag, String.valueOf(param.getEndingTime()));
@@ -3378,11 +3378,11 @@ private org.jdom.Element getXML(TimeBounds param) {
 /**
  * This method returns a XML representation of a timeStep object.
  * Creation date: (3/2/2001 11:53:17 PM)
- * @return org.jdom.Element
+ * @return Element
  * @param param cbit.vcell.solver.TimeStep
  */
-private org.jdom.Element getXML(TimeStep param) {
-	org.jdom.Element timestep = new org.jdom.Element(XMLTags.TimeStepTag);
+private Element getXML(TimeStep param) {
+	Element timestep = new Element(XMLTags.TimeStepTag);
 
 	timestep.setAttribute(XMLTags.DefaultTimeAttrTag, String.valueOf(param.getDefaultTimeStep()));
 	timestep.setAttribute(XMLTags.MinTimeAttrTag, String.valueOf(param.getMinimumTimeStep()));
@@ -3392,17 +3392,17 @@ private org.jdom.Element getXML(TimeStep param) {
 }
 
 
-private org.jdom.Element getXML(Event event) throws XmlParseException{
-	org.jdom.Element eventElement = new org.jdom.Element(XMLTags.EventTag);
+private Element getXML(Event event) throws XmlParseException{
+	Element eventElement = new Element(XMLTags.EventTag);
 	eventElement.setAttribute(XMLTags.NameAttrTag, mangle(event.getName()));
 
-	Element element = new org.jdom.Element(XMLTags.TriggerTag);
+	Element element = new Element(XMLTags.TriggerTag);
 	element.addContent(mangleExpression(event.getTriggerExpression()));
 	eventElement.addContent(element);
 
 	Delay delay = event.getDelay();
 	if (delay != null) {
-		element = new org.jdom.Element(XMLTags.DelayTag);		
+		element = new Element(XMLTags.DelayTag);		
 		element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
 		element.addContent(mangleExpression(delay.getDurationExpression()));
 		eventElement.addContent(element);
@@ -3410,7 +3410,7 @@ private org.jdom.Element getXML(Event event) throws XmlParseException{
 	Iterator<EventAssignment> iter = event.getEventAssignments();
 	while (iter.hasNext()) {
 		EventAssignment eventAssignment = iter.next();
-		element = new org.jdom.Element(XMLTags.EventAssignmentTag);
+		element = new Element(XMLTags.EventAssignmentTag);
 		element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getVariable().getName());
 		element.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
 		eventElement.addContent(element);
@@ -3420,26 +3420,26 @@ private org.jdom.Element getXML(Event event) throws XmlParseException{
 }
 
 // For events in SimulationContext - XML is very similar to math events
-public org.jdom.Element getXML(BioEvent[] bioEvents) throws XmlParseException{
+public Element getXML(BioEvent[] bioEvents) throws XmlParseException{
 	Element bioEventsElement = new Element(XMLTags.BioEventsTag);
 	for (int i = 0; i < bioEvents.length; i++) {
-		org.jdom.Element eventElement = new org.jdom.Element(XMLTags.BioEventTag);
+		Element eventElement = new Element(XMLTags.BioEventTag);
 		eventElement.setAttribute(XMLTags.NameAttrTag, mangle(bioEvents[i].getName()));
 
-	Element element = new org.jdom.Element(XMLTags.TriggerTag);
+	Element element = new Element(XMLTags.TriggerTag);
 		element.addContent(mangleExpression(bioEvents[i].getTriggerExpression()));
 	eventElement.addContent(element);
 
 		BioEvent.Delay delay = bioEvents[i].getDelay();
 	if (delay != null) {
-		element = new org.jdom.Element(XMLTags.DelayTag);
+		element = new Element(XMLTags.DelayTag);
 		element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
 			element.addContent(mangleExpression(delay.getDurationExpression()));
 		eventElement.addContent(element);
 	}
 		ArrayList<BioEvent.EventAssignment> eventAssignmentsList = bioEvents[i].getEventAssignments();
 	for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
-		element = new org.jdom.Element(XMLTags.EventAssignmentTag);
+		element = new Element(XMLTags.EventAssignmentTag);
 		element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
 			element.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
 		eventElement.addContent(element);
