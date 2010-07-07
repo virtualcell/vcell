@@ -1,4 +1,6 @@
 package cbit.vcell.modelopt.gui;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -18,7 +20,7 @@ import cbit.vcell.parser.ExpressionException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ParameterMappingTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
+public class ParameterMappingTableModel extends ManageTableModel implements PropertyChangeListener {
 
 	private class ParameterColumnComparator implements Comparator<ParameterMappingSpec> {
 		protected int index;
@@ -259,7 +261,7 @@ private List<ParameterMappingSpec> getUnsortedParameters() {
 	
 	ParameterMappingSpec[] parameterMappingSpecs = getParameterEstimationTask().getModelOptimizationSpec().getParameterMappingSpecs();
 
-	java.util.ArrayList<ParameterMappingSpec> list = new java.util.ArrayList<ParameterMappingSpec>();
+	ArrayList<ParameterMappingSpec> list = new ArrayList<ParameterMappingSpec>();
 	for (ParameterMappingSpec pms : parameterMappingSpecs){
 		list.add(pms);
 	}
@@ -451,6 +453,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		ParameterEstimationTask oldValue = (ParameterEstimationTask)evt.getOldValue();
 		if (oldValue!=null){
 			oldValue.removePropertyChangeListener(this);
+			oldValue.getModelOptimizationSpec().removePropertyChangeListener(this);
 			ParameterMappingSpec[] oldPMS = oldValue.getModelOptimizationSpec().getParameterMappingSpecs();
 			for (int i = 0; oldPMS!=null && i < oldPMS.length; i++){
 				oldPMS[i].removePropertyChangeListener(this);
@@ -459,6 +462,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		ParameterEstimationTask newValue = (ParameterEstimationTask)evt.getNewValue();
 		if (newValue!=null){
 			newValue.addPropertyChangeListener(this);
+			newValue.getModelOptimizationSpec().addPropertyChangeListener(this);
 			ParameterMappingSpec[] newPMS = newValue.getModelOptimizationSpec().getParameterMappingSpecs();
 			for (int i = 0; newPMS!=null && i < newPMS.length; i++){
 				newPMS[i].addPropertyChangeListener(this);
@@ -472,11 +476,24 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		fireTableDataChanged();
 	}
 	if (evt.getSource() instanceof ModelOptimizationSpec && evt.getPropertyName().equals("parameterMappingSpecs")) {
+		ParameterMappingSpec[] oldValues = (ParameterMappingSpec[])evt.getOldValue();
+		if (oldValues!=null){
+			for (int i = 0; i < oldValues.length; i++){
+				oldValues[i].removePropertyChangeListener(this);
+			}
+		}
+		ParameterMappingSpec[] newValues = (ParameterMappingSpec[])evt.getNewValue();
+		if (newValues!=null){
+			for (int i = 0; i < newValues.length; i++){
+				newValues[i].addPropertyChangeListener(this);
+			}
+		}
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
 	
 	if (evt.getSource() instanceof ParameterMappingSpec) {
+		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
 }

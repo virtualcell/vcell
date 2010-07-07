@@ -1,4 +1,7 @@
 package cbit.vcell.modelopt;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -33,6 +36,8 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleBoundsIssue;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
@@ -44,7 +49,7 @@ import cbit.vcell.parser.SymbolTableEntry;
  * Creation date: (8/22/2005 9:21:42 AM)
  * @author: Jim Schaff
  */
-public class ModelOptimizationSpec implements java.io.Serializable, Matchable {
+public class ModelOptimizationSpec implements java.io.Serializable, Matchable, PropertyChangeListener {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -58,6 +63,11 @@ public class ModelOptimizationSpec implements java.io.Serializable, Matchable {
 public ModelOptimizationSpec(SimulationContext argSimulationContext) throws ExpressionException {
 	super();
 	this.fieldSimulationContext = argSimulationContext;
+	// ModelOptSpec should listen to changes in model (addition/deletion of model params, species, reaction params, etc.)
+	// ModelOptSpec should listen to changes in simContext MathDesc
+	if (fieldSimulationContext != null) {
+		updateListenersList(fieldSimulationContext.getModel(), true);
+	}
 	initializeParameterMappingSpecs();
 }
 
@@ -139,7 +149,45 @@ public SymbolTableEntry[] calculateTimeDependentModelObjects() {
 	}
 
 	//
-	// add all parameters that are not simple constants
+	// add all model (global) parameters that are not simple constants
+	//
+	ModelParameter[] modelParams = getSimulationContext().getModel().getModelParameters();
+	for (int i = 0; modelParams!=null && i < modelParams.length; i++){
+		Expression exp = modelParams[i].getExpression();
+		if (exp!=null){
+			String symbols[] = exp.getSymbols();
+			if (symbols!=null && symbols.length>0){
+				//
+				// add parameter to graph as a node (if not already there).
+				//
+				String parameterScopedName = modelParams[i].getNameScope().getAbsoluteScopePrefix()+modelParams[i].getName();
+				Node parameterNode = digraph.getNode(parameterScopedName);
+				if (parameterNode==null){
+					parameterNode = new Node(parameterScopedName,modelParams[i]);
+					digraph.addNode(parameterNode);
+				}
+				//
+				// add all dependencies to graph also (if not already there).
+				//
+				for (int k = 0; symbols!=null && k < symbols.length; k++){
+					SymbolTableEntry ste = exp.getSymbolBinding(symbols[k]);
+					if (ste==null){
+						throw new RuntimeException("Error, symbol '"+symbols[k]+"' not bound in parameter '"+modelParams[i].getName()+"'");
+					}
+					String symbolScopedName = ste.getNameScope().getAbsoluteScopePrefix()+ste.getName();
+					Node symbolNode = digraph.getNode(symbolScopedName);
+					if (symbolNode==null){
+						symbolNode = new Node(symbolScopedName,ste);
+						digraph.addNode(symbolNode);
+					}
+					digraph.addEdge(new Edge(parameterNode,symbolNode));
+				}
+			}
+		}
+	}
+	
+	//
+	// add all reaction parameters that are not simple constants
 	//
 	ReactionStep[] reactionSteps = getSimulationContext().getModel().getReactionSteps();
 	for (int i = 0; reactionSteps!=null && i < reactionSteps.length; i++){
@@ -164,7 +212,7 @@ public SymbolTableEntry[] calculateTimeDependentModelObjects() {
 					for (int k = 0; symbols!=null && k < symbols.length; k++){
 						SymbolTableEntry ste = exp.getSymbolBinding(symbols[k]);
 						if (ste==null){
-							throw new RuntimeException("Error, symbol '"+symbols[k]+"' not bound in parameter '"+parameters[j]+"'");
+							throw new RuntimeException("Error, symbol '"+symbols[k]+"' not bound in parameter '"+parameters[j].getName()+"'");
 						}
 						String symbolScopedName = ste.getNameScope().getAbsoluteScopePrefix()+ste.getName();
 						Node symbolNode = digraph.getNode(symbolScopedName);
@@ -523,8 +571,12 @@ private void initializeParameterMappingSpecs() throws ExpressionException {
 			}
 		}
 	}
-
-	this.fieldParameterMappingSpecs = parameterMappingSpecs;
+	try {
+		setParameterMappingSpecs(parameterMappingSpecs);
+//		removeUncoupledParameters();
+	} catch (PropertyVetoException e) {
+		e.printStackTrace(System.out);
+	}
 }
 
 
@@ -533,6 +585,15 @@ private void initializeParameterMappingSpecs() throws ExpressionException {
  * Creation date: (12/19/2005 3:20:34 PM)
  */
 public void refreshDependencies() {
+	if (fieldSimulationContext != null) {
+		//remove listeners - simContext, mathDesc, model, spContextSpec, reactionSteps & kinetics
+		fieldSimulationContext.removePropertyChangeListener(this);
+		Model model = fieldSimulationContext.getModel();
+		updateListenersList(model, false);
+		// add listeners - simContext, mathDesc, model, spContextSpec, reactionSteps & kinetics
+		fieldSimulationContext.addPropertyChangeListener(this);
+		updateListenersList(model, true);
+	}
 	removeUncoupledParameters();
 }
 
@@ -673,5 +734,76 @@ public int getReferenceDataTimeColumnIndex() {
 		}
 	}
 	return timeIndex;
+}
+
+
+public void propertyChange(PropertyChangeEvent event) {
+	// remove ModelOptSpec as listener to model (and reactions, kinetic params, etc)
+	updateListenersList(fieldSimulationContext.getModel(), false);
+	// re-add modelOptSpec as listener to model (and reactions, kinetic params, etc); since changes in added/deleted reactions need to be listened to.
+	updateListenersList(fieldSimulationContext.getModel(), true);
+
+	// for all propChangeEvents, initialize ParamMapppingSpecs only then changes in params (expr or numeric) will be recorded properly
+	try {
+		initializeParameterMappingSpecs();
+	} catch (ExpressionException e) {
+		e.printStackTrace(System.out);
+	}
+}
+
+/**
+ * If bAdd is <false>, method removes ModelOptSpec as PropertyChangeListener to object. If bAdd is <true>, 
+ * ModelOptSpec is added as PropertyChangeListener to object
+ * @param model
+ * @param bAdd
+ */
+private void updateListenersList(Model model, boolean bAdd) {
+	// remove listeners - simContext, mathDesc, model, spContextSpecs, reactionSteps & kinetics (since kinetic parameters are paramMappingSpecs)
+	ReactionStep[] reactionSteps = model.getReactionSteps();
+	SpeciesContextSpec[] scsArray = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
+	ModelParameter[] modelParams = model.getModelParameters();
+	if (!bAdd) {
+		model.removePropertyChangeListener(this);
+		for (int i = 0; i < modelParams.length; i++) {
+			modelParams[i].removePropertyChangeListener(this);
+		}
+		// since only spContextSpec initCondition Param is being added to paramMappingSpecs, only remove/add listener for initCondnParam?
+		for (int i = 0; i < scsArray.length; i++) {
+			scsArray[i].getInitialConditionParameter().removePropertyChangeListener(this);
+		}
+		for (int i = 0; reactionSteps != null && i < reactionSteps.length; i++) {
+			reactionSteps[i].removePropertyChangeListener(this);
+			reactionSteps[i].getKinetics().removePropertyChangeListener(this);
+			KineticsParameter[] kps = reactionSteps[i].getKinetics().getKineticsParameters();
+			for (int j = 0; kps != null && j < kps.length; j++) {
+				kps[j].removePropertyChangeListener(this);
+			}
+			KineticsProxyParameter[] kpps = reactionSteps[i].getKinetics().getProxyParameters();
+			for (int j = 0; kpps != null && j < kpps.length; j++) {
+				kpps[j].removePropertyChangeListener(this);
+			}
+		}
+	} else {
+	// add listeners - simContext, mathDesc, model, spContextSpecs, reactionSteps & kinetics & its params
+		model.addPropertyChangeListener(this);
+		for (int i = 0; i < modelParams.length; i++) {
+			modelParams[i].addPropertyChangeListener(this);
+		}
+		for (int i = 0; i < scsArray.length; i++) {
+			scsArray[i].getInitialConditionParameter().addPropertyChangeListener(this);
+		}
+		for (int i = 0; i < reactionSteps.length; i++) {
+			reactionSteps[i].addPropertyChangeListener(this);
+			reactionSteps[i].getKinetics().addPropertyChangeListener(this);
+			KineticsParameter[] kps = reactionSteps[i].getKinetics().getKineticsParameters();
+			for (int j = 0; j < kps.length; j++) {
+				kps[j].addPropertyChangeListener(this);
+			}
+			KineticsProxyParameter[] kpps = reactionSteps[i].getKinetics().getProxyParameters();
+			for (int j = 0; j < kpps.length; j++) {
+				kpps[j].addPropertyChangeListener(this);
+			}
+		}
+	}
 }
 }
