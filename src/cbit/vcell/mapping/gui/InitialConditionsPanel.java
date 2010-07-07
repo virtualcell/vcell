@@ -3,17 +3,11 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -23,7 +17,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
@@ -91,6 +84,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
 		public void mousePressed(java.awt.event.MouseEvent e) {
+			if (e.getSource() == InitialConditionsPanel.this.getScrollPaneTable()) 
+				connEtoC4(e);
 		};
 		public void mouseReleased(java.awt.event.MouseEvent e) {
 			if (e.getSource() == InitialConditionsPanel.this.getScrollPaneTable()) 
@@ -688,7 +683,7 @@ private JSortTable getScrollPaneTable() {
 		try {
 			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			ivjScrollPaneTable.setRowHeight(ivjScrollPaneTable.getRowHeight() + 2);
+			ivjScrollPaneTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -805,8 +800,6 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
 	connPtoP5SetTarget();
-	
-	getScrollPaneTable().setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 	
 	DefaultTableCellRenderer renderer = new DefaultScrollTableCellRenderer() {
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
@@ -1135,33 +1128,6 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 private void scrollPaneTable_MouseButton(final java.awt.event.MouseEvent mouseEvent) {
-	if (!getScrollPaneTable().hasFocus()) {
-		SwingUtilities.invokeLater(new Runnable() {
-			
-			public void run() {
-				if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
-					getScrollPaneTable().addFocusListener(new FocusListener() {
-						
-						public void focusLost(FocusEvent e) {
-						}
-						
-						public void focusGained(FocusEvent e) {
-							getScrollPaneTable().removeFocusListener(this);
-							Robot robot;
-							try {
-								robot = new Robot();
-								robot.mousePress(InputEvent.BUTTON1_MASK);
-								robot.mouseRelease(InputEvent.BUTTON1_MASK);
-							} catch (AWTException ex) {
-								ex.printStackTrace();
-							}													
-						}
-					});
-				}
-				getScrollPaneTable().requestFocus();
-			}
-		});	
-	}
 	if(mouseEvent.isPopupTrigger()){
 		Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 

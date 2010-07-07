@@ -23,7 +23,6 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 		textFieldAutoCompletion = (TextFieldAutoCompletion)getComponent();
 		thisTable = table;	
 		bValidateBinding = arg_bValidateBinding;
-		thisTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 	}
 	
 	@Override
