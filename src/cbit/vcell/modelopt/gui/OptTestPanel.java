@@ -4,6 +4,7 @@ import org.vcell.util.gui.TitledBorderBean;
 
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
@@ -2030,7 +2031,7 @@ private void mapButton_ActionPerformed() {
 	SymbolTableEntry symbolTableEntries[] = getParameterEstimationTask().getModelOptimizationSpec().calculateTimeDependentModelObjects();
 
 	java.util.Comparator<SymbolTableEntry> steComparator = new java.util.Comparator<SymbolTableEntry>() {
-		private Class<?>[] classOrder = new Class<?>[] { ReservedSymbol.class, SpeciesContext.class, Kinetics.KineticsParameter.class };
+		private Class<?>[] classOrder = new Class<?>[] { ReservedSymbol.class, SpeciesContext.class, Model.ModelParameter.class, Kinetics.KineticsParameter.class };
 		public int compare(SymbolTableEntry ste1, SymbolTableEntry ste2){
 			int ste1Category = 100;
 			int ste2Category = 100;

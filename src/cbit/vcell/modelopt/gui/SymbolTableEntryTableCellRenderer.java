@@ -1,4 +1,5 @@
 package cbit.vcell.modelopt.gui;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
@@ -27,6 +28,8 @@ public SymbolTableEntryTableCellRenderer() {
 				setText("["+ste.getName()+"]");
 			}else if (ste instanceof cbit.vcell.model.Kinetics.KineticsParameter){
 				setText(ste.getNameScope().getName()+":"+ste.getName());
+			}else if (ste instanceof ModelParameter){
+				setText(ste.getName());
 			}else{
 				setText(ste.getNameScope().getAbsoluteScopePrefix()+ste.getName());
 			}

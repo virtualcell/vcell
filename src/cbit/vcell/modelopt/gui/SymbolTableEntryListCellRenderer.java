@@ -1,4 +1,7 @@
 package cbit.vcell.modelopt.gui;
+
+import cbit.vcell.model.Model.ModelParameter;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/30/2005 2:22:31 PM)
@@ -27,6 +30,8 @@ public java.awt.Component getListCellRendererComponent(javax.swing.JList list, O
 				setText(ste.getName());
 			}else if (ste instanceof cbit.vcell.model.SpeciesContext){
 				setText("["+ste.getName()+"]");
+			}else if (ste instanceof ModelParameter){
+				setText(ste.getName());
 			}else if (ste instanceof cbit.vcell.model.Kinetics.KineticsParameter){
 				setText(ste.getNameScope().getName()+":"+ste.getName());
 			}else{
