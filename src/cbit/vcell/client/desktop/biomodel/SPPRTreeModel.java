@@ -9,6 +9,7 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.BioEvent;
@@ -23,6 +24,8 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.ModelParameter;
 
 public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.PropertyChangeListener, TreeExpansionListener {
+
+	private static final long serialVersionUID = -6280772776132424997L;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext simulationContext = null;
 	private BioModelNode rootNode = null;
@@ -65,6 +68,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 	static final int REACTIONS_NODE = 4;
 	static final int EVENTS_NODE = 5;
 	static final int ELECTRICAL_MAPPING_NODE = 6 ;
+	static final int DATA_SYMBOLS_NODE = 7;
 //	static final int RATE_RULES_NODE = 6 ;			// not implemented
 //	static final int APP_PARAMETERS_NODE = 7;		// not functional
 //	static final int APP_FUNCTIONS_NODE = 8;		// not yet implemented
@@ -79,6 +83,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		REACTIONS_NODE,
 		EVENTS_NODE,
 		ELECTRICAL_MAPPING_NODE,
+		DATA_SYMBOLS_NODE,
 //		RATE_RULES_NODE,
 //		APP_PARAMETERS_NODE,
 //		APP_FUNCTIONS_NODE,
@@ -92,6 +97,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		"Reactions",
 		"Events",
 		"Electrical",
+		"Data Symbols",
 //		"Rate Rules",
 //		"Application Parameters",
 //		"Application Functions",
@@ -106,6 +112,22 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		true,
 		true,
 		true,
+		true,
+//		false,
+//		false,
+//		false,
+//		false
+	};
+	
+	static final boolean FOLDER_NO_CHILDREN[] = {	// true if a folder CANNOT have children
+		true,
+		true,
+		false,
+		false,
+		false,
+		false,
+		true,
+		false,
 //		false,
 //		false,
 //		false,
@@ -145,7 +167,8 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 			rootNode.removeAllChildren();
 			folderNodes = new BioModelNode[FOLDER_NODE_NAMES.length];
 			for (int i = 0; i < folderNodes.length; i ++) {
-				folderNodes[i] = new BioModelNode(new SPPRTreeFolderNode(FOLDER_NODE_IDS[i], FOLDER_NODE_NAMES[i]), true);
+				folderNodes[i] = new BioModelNode(new SPPRTreeFolderNode(FOLDER_NODE_IDS[i], FOLDER_NODE_NAMES[i]), 
+						!FOLDER_NO_CHILDREN[i]);
 				rootNode.add(folderNodes[i]);
 			}
 		} else {
@@ -177,6 +200,22 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		    	for (SpeciesContext sc : speciesContexts) {
 		    		BioModelNode node = new BioModelNode(sc, false);
 		    		folderNodes[INITIAL_CONDITIONS_NODE].add(node);
+		    	}
+		    }
+		}
+		
+		if (nodeId == ROOT_NODE || nodeId == DATA_SYMBOLS_NODE) {
+			folderNodes[DATA_SYMBOLS_NODE].removeAllChildren();
+		    DataSymbol[] dataSymbol = getSimulationContext().getDataContext().getDataSymbols().clone();
+		    if(dataSymbol.length > 0) {
+		    	Arrays.sort(dataSymbol, new Comparator<DataSymbol>() {
+					public int compare(DataSymbol o1, DataSymbol o2) {
+						return o1.getName().compareToIgnoreCase(o2.getName());
+					}
+				});
+		    	for (DataSymbol sc : dataSymbol) {
+		    		BioModelNode node = new BioModelNode(sc, false);
+		    		folderNodes[DATA_SYMBOLS_NODE].add(node);
 		    	}
 		    }
 		}
@@ -278,6 +317,8 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 		getSimulationContext().addPropertyChangeListener(this);
 		getSimulationContext().getGeometryContext().removePropertyChangeListener(this);
 		getSimulationContext().getGeometryContext().addPropertyChangeListener(this);
+		getSimulationContext().getDataContext().removePropertyChangeListener(this);
+		getSimulationContext().getDataContext().addPropertyChangeListener(this);
 		model.removePropertyChangeListener(this);
 		model.addPropertyChangeListener(this);
 		
@@ -366,6 +407,20 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 					}
 				}
 				SpeciesContext newValue[] = (SpeciesContext[])evt.getNewValue();
+				if (newValue!=null){
+					for (int i = 0; i < newValue.length; i++){
+						newValue[i].addPropertyChangeListener(this);
+					}
+				}
+			} else if (evt.getPropertyName().equals("dataSymbols")){
+				populateTree(DATA_SYMBOLS_NODE);
+				DataSymbol oldValue[] = (DataSymbol[])evt.getOldValue();
+				if (oldValue!=null){
+					for (int i = 0; i < oldValue.length; i++){
+						oldValue[i].removePropertyChangeListener(this);
+					}
+				}
+				DataSymbol newValue[] = (DataSymbol[])evt.getNewValue();
 				if (newValue!=null){
 					for (int i = 0; i < newValue.length; i++){
 						newValue[i].addPropertyChangeListener(this);
