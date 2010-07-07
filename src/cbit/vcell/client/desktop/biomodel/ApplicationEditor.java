@@ -45,6 +45,7 @@ import cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel;
 import cbit.vcell.modelopt.gui.OptTestPanel;
 import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.mapping.gui.DataSymbolsPanel;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:16:22 PM)
@@ -63,12 +64,14 @@ public class ApplicationEditor extends JPanel {
     protected transient ActionListener actionListener = null;
 	private SimulationWorkspace ivjsimulationWorkspace1 = null;
 	private InitialConditionsPanel ivjInitialConditionsPanel = null;
+	private DataSymbolsPanel ivjDataSymbolsPanel = null;
 	private JTabbedPane ivjJTabbedPane1 = null;
 	private ReactionSpecsPanel ivjReactionSpecsPanel = null;
 	private SimulationListPanel ivjSimulationListPanel = null;
 	private SPPRPanel ivjSPPRPanel = null;
 //	private boolean ivjConnPtoP3Aligning = false;
 	private boolean ivjConnPtoP4Aligning = false;
+	private boolean ivjConnPtoP44Aligning = false;
 	private boolean ivjConnPtoP5Aligning = false;
 //	private boolean ivjConnPtoP6Aligning = false;
 	private SimulationContext ivjsimulationContext = null;
@@ -140,6 +143,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			if (evt.getSource() == ApplicationEditor.this.getInitialConditionsPanel() && (evt.getPropertyName().equals("simulationContext"))) 
 			{
 				connPtoP4SetSource();
+			}
+			if (evt.getSource() == ApplicationEditor.this.getDataSymbolsPanel() && (evt.getPropertyName().equals("simulationContext"))) 
+			{
+				connPtoP44SetSource();
 			}
 			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) 
 				connPtoP5SetTarget();
@@ -687,7 +694,19 @@ private void connPtoP2SetSource() {
 		handleException(ivjExc);
 	}
 }
-
+private void connPtoP22SetSource() {
+	/* Set the source from the target */
+	try {
+		if (ivjConnPtoP2Aligning == false) {
+			ivjConnPtoP2Aligning = true;
+			setsimulationWorkspace1(getSimulationListPanel().getSimulationWorkspace());
+			ivjConnPtoP2Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP2Aligning = false;
+		handleException(ivjExc);
+	}
+}
 /**
  * connPtoP2SetTarget:  (ApplicationEditor.simulationContext <--> SimulationListPanel1.simulationContext)
  */
@@ -739,6 +758,21 @@ private void connPtoP4SetSource() {
 		handleException(ivjExc);
 	}
 }
+private void connPtoP44SetSource() {
+	/* Set the source from the target */
+	try {
+		if (ivjConnPtoP44Aligning == false) {
+			ivjConnPtoP44Aligning = true;
+			if ((getsimulationWorkspace1() != null)) {
+				getsimulationWorkspace1().setSimulationOwner(getDataSymbolsPanel().getSimulationContext());
+			}
+			ivjConnPtoP44Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP44Aligning = false;
+		handleException(ivjExc);
+	}
+}
 
 
 /**
@@ -763,6 +797,21 @@ private void connPtoP4SetTarget() {
 		ivjConnPtoP4Aligning = false;
 		// user code begin {3}
 		// user code end
+		handleException(ivjExc);
+	}
+}
+private void connPtoP44SetTarget() {
+	/* Set the target from the source */
+	try {
+		if (ivjConnPtoP44Aligning == false) {
+			ivjConnPtoP44Aligning = true;
+			if ((getsimulationWorkspace1() != null)) {
+				getDataSymbolsPanel().setSimulationContext((SimulationContext)getsimulationWorkspace1().getSimulationOwner());
+			}
+			ivjConnPtoP44Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP44Aligning = false;
 		handleException(ivjExc);
 	}
 }
@@ -1201,6 +1250,17 @@ private InitialConditionsPanel getInitialConditionsPanel() {
 	}
 	return ivjInitialConditionsPanel;
 }
+private DataSymbolsPanel getDataSymbolsPanel() {
+	if (ivjDataSymbolsPanel == null) {
+		try {
+			ivjDataSymbolsPanel = new DataSymbolsPanel(getSPPRPanel());
+			ivjDataSymbolsPanel.setName("DataSymbolsPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjDataSymbolsPanel;
+}
 
 
 /**
@@ -1529,10 +1589,8 @@ public SimulationWorkspace getSimulationWorkspace() {
  * Return the simulationWorkspace1 property value.
  * @return cbit.vcell.client.desktop.simulation.SimulationWorkspace
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
+
 private SimulationWorkspace getsimulationWorkspace1() {
-	// user code begin {1}
-	// user code end
 	return ivjsimulationWorkspace1;
 }
 
@@ -1704,6 +1762,7 @@ private void initConnections() throws java.lang.Exception {
 	getSPPRPanel().addPropertyChangeListener(ivjEventHandler);
 	getSPPRPanel().addCommandActionListener(ivjEventHandler);
 	getInitialConditionsPanel().addPropertyChangeListener(ivjEventHandler);
+	getDataSymbolsPanel().addPropertyChangeListener(ivjEventHandler);
 	getReactionSpecsPanel().addPropertyChangeListener(ivjEventHandler);
 	getViewEqunsRadioButton().addItemListener(ivjEventHandler);
 	getViewVCMDLRadioButton().addItemListener(ivjEventHandler);

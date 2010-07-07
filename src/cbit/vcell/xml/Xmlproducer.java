@@ -28,6 +28,9 @@ import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
+import cbit.vcell.data.DataContext;
+import cbit.vcell.data.DataSymbol;
+import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.dictionary.BoundCompound;
 import cbit.vcell.dictionary.BoundEnzyme;
 import cbit.vcell.dictionary.BoundProtein;
@@ -38,6 +41,7 @@ import cbit.vcell.dictionary.EnzymeInfo;
 import cbit.vcell.dictionary.EnzymeRef;
 import cbit.vcell.dictionary.FormalSpeciesInfo;
 import cbit.vcell.dictionary.ProteinInfo;
+import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.ControlPointCurve;
@@ -1292,12 +1296,49 @@ private Element getXML(SimulationContext param, BioModel bioModel) throws XmlPar
 		simulationcontext.addContent( getXML(param.getBioEvents()) );
 	}
 	
+	// Add Datacontext
+	if (param.getDataContext()!=null && param.getDataContext().getDataSymbols().length>0){
+		simulationcontext.addContent( getXML(param.getDataContext()) );
+	}
+	
 	//Add Metadata (if any)
 	if ( param.getVersion() != null) {
 		simulationcontext.addContent( getXML(param.getVersion(), param) );
 	}
 		
 	return simulationcontext;
+}
+
+
+private Element getXML(DataContext dataContext) {
+	Element dataContextElement = new Element(XMLTags.DataContextTag);
+	Element dataSymbolElement = null;
+	
+	for(int i=0; i<dataContext.getDataSymbols().length; i++) {
+		DataSymbol ds = dataContext.getDataSymbols()[i];
+		if (ds instanceof FieldDataSymbol){
+			dataSymbolElement = getXML((FieldDataSymbol)ds);
+		}else{
+			throw new RuntimeException("XML persistence not supported for analysis type "+ds.getClass().getName());
+		}
+		dataContextElement.addContent(dataSymbolElement);
+	}
+	return dataContextElement;
+}
+
+
+private Element getXML(FieldDataSymbol fds) {
+	Element fieldDataSymbolElement = new Element(XMLTags.FieldDataSymbolTag);
+	fieldDataSymbolElement.setAttribute(XMLTags.NameAttrTag, fds.getName());
+	fieldDataSymbolElement.setAttribute(XMLTags.VCUnitDefinitionAttrTag, fds.getUnitDefinition().getSymbol());
+	Element fieldFnArgsElement = new Element(XMLTags.FieldFunctionArgumentsTag);
+	FieldFunctionArguments ffa = fds.getFieldFunctionArguments();
+	fieldFnArgsElement.setAttribute(XMLTags.FieldNameTag, ffa.getFieldName());
+	fieldFnArgsElement.setAttribute(XMLTags.VariableNameTag, ffa.getVariableName());
+	fieldFnArgsElement.setAttribute(XMLTags.FunctionTypeTag, ffa.getVariableType().getTypeName());
+	fieldFnArgsElement.addContent(mangleExpression(ffa.getTime()));
+	fieldDataSymbolElement.addContent(fieldFnArgsElement);
+	return fieldDataSymbolElement;
 }
 
 

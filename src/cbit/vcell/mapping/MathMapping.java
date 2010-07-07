@@ -15,6 +15,9 @@ import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.client.server.VCellThreadChecker;
+import cbit.vcell.data.DataSymbol;
+import cbit.vcell.data.FieldDataSymbol;
+import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -1485,6 +1488,19 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		}
 	}
 	
+	//
+	// add functions for field data symbols
+	//
+	for (DataSymbol dataSymbol : simContext.getDataContext().getDataSymbols()){
+		if (dataSymbol instanceof FieldDataSymbol){
+			FieldDataSymbol fieldDataSymbol = (FieldDataSymbol)dataSymbol;
+			GeometryClass geometryClass = null;
+			Expression exp = new Expression(fieldDataSymbol.getFieldFunctionArguments().infix());
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(dataSymbol, geometryClass),getIdentifierSubstitutions(exp,dataSymbol.getUnitDefinition(),geometryClass),geometryClass));
+		}else{
+			throw new RuntimeException("dataSymbol type '"+dataSymbol.getClass().getName()+"' not yet supported for math generation");
+		}
+	}
 	//
 	// gather only those reactionSteps that are not "excluded"
 	//

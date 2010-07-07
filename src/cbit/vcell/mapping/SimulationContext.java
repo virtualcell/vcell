@@ -28,6 +28,7 @@ import org.vcell.util.document.Versionable;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.data.DataContext;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -240,6 +241,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private AnalysisTask[] fieldAnalysisTasks = null;
 	private boolean isStoch;
 	private boolean bConcentration = true;
+	private DataContext dataContext = new DataContext(getNameScope());
 
 /**
  * Construct a new SimulationContext from an old SimulationContext.
@@ -345,7 +347,7 @@ public SimulationContext(Model argModel, Geometry argGeometry, MathDescription a
 
 /**
  * SimulationContext constructor.
- * This constructor differs with the previos one with one more boolean input parameter, which specifies whether
+ * This constructor differs with the previous one with one more boolean input parameter, which specifies whether
  * the new application is a stochastic application or not.
  */
 public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion, boolean bStoch) throws PropertyVetoException {
@@ -369,7 +371,7 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
 
 /**
  * SimulationContext constructor.
- * This constructor differs with the previos one with one more boolean input parameter, which specifies whether
+ * This constructor differs with the previous one with one more boolean input parameter, which specifies whether
  * the new application is a stochastic application or not.
  */
 public SimulationContext(Model model, Geometry geometry, boolean bStoch) throws PropertyVetoException {
@@ -990,6 +992,12 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) throws Expres
 	
 	// if simulationContext parameter exists, then return it
 	ste = getSimulationContextParameter(identifier);
+	if (ste != null){
+		return ste;
+	}
+
+	// if dataContext parameter exists, then return it
+	ste = getDataContext().getDataSymbol(identifier);
 	if (ste != null){
 		return ste;
 	}
@@ -1952,6 +1960,9 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (SymbolTableEntry ste : fieldSimulationContextParameters) {
 		entryMap.put(ste.getName(), ste);
 	}
+	for (SymbolTableEntry ste : dataContext.getDataSymbols()){
+		entryMap.put(ste.getName(), ste);
+	}
 	ReservedBioSymbolEntries.getAll(entryMap);
 }
 
@@ -2064,6 +2075,10 @@ public String getFreeEventName() {
 		}
 		count++;
 	}
+}
+
+public DataContext getDataContext() {
+	return dataContext;
 }
 
 public void addGeometryPropertyChangeListener(PropertyChangeListener listener) {

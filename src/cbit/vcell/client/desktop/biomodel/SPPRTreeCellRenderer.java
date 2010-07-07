@@ -13,6 +13,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
+import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
@@ -30,7 +31,11 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	private Icon reactionsIcon;
 	private Icon fluxIcon;
 	private Icon eventIcon;
-	
+	private Icon fieldDataItemIcon;
+
+	private Icon geometryFolderIcon;
+	private Icon electricFolderIcon;
+	private Icon structureMappingFolderIcon;
 	
 	public SPPRTreeCellRenderer() {
 		super();
@@ -46,13 +51,21 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	    reactionsIcon = new ImageIcon(getClass().getResource("/images/reactionsItem.gif"));
 	    fluxIcon = new ImageIcon(getClass().getResource("/images/fluxItem.gif"));
 	    eventIcon = new ImageIcon(getClass().getResource("/images/eventItem.gif"));
-    	
-	    if((speciesIcon == null) || (gParamIcon == null) || (aParamIcon == null) || 
-	       (reactionsIcon == null) || (fluxIcon == null) || (eventIcon == null)) {
+    	fieldDataItemIcon = new ImageIcon(getClass().getResource("/images/fieldDataItem.gif"));
+//    	fieldDataItemIcon = new ImageIcon("C:/dan/work images/icons/fieldDataItem.gif");
+
+    	geometryFolderIcon = new ImageIcon(getClass().getResource("/images/geometryFolder2D.gif"));
+	    electricFolderIcon = new ImageIcon(getClass().getResource("/images/electricFolder.gif"));
+	    structureMappingFolderIcon = new ImageIcon(getClass().getResource("/images/structureMappingFolder.gif"));
+
+	    if((electricFolderIcon == null) || (structureMappingFolderIcon == null) || 
+	    		(geometryFolderIcon == null) ||
+	    		(fieldDataItemIcon == null) || 
+		    	(speciesIcon == null) || (gParamIcon == null) || (aParamIcon == null) || 
+		    	(reactionsIcon == null) || (fluxIcon == null) || (eventIcon == null)) {
             System.err.println("At least one icon is missing.");
 	    }
     }
-
 
 	public Component getTreeCellRendererComponent(
                         JTree tree,
@@ -70,17 +83,37 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	    	String labelText = null;
 	    	String toolTipPrefix = "";
 	    	Icon icon = null;
-	    	if (userObj instanceof SimulationContext) { // --- species context	
+			if (userObj instanceof SimulationContext) { 			// --- root: application name	
 	    		labelText = ((SimulationContext)userObj).getName();
 	        	toolTipPrefix = "Application : ";
-	    	} else if (userObj instanceof SPPRTreeFolderNode) {
-	        	SPPRTreeFolderNode folder = (SPPRTreeFolderNode)userObj; 
+	    	} else if (userObj instanceof SPPRTreeFolderNode) {		// --- 1st level folders
+	        	SPPRTreeFolderNode folder = (SPPRTreeFolderNode)userObj;
+	        	if (SPPRTreeModel.FOLDER_NO_CHILDREN[folder.getId()]) {
+	        	switch(folder.getId())
+	        	{
+	        		case SPPRTreeModel.GEOMETRY_NODE:
+	        			icon = geometryFolderIcon;
+	        			break;
+	        		case SPPRTreeModel.STRUCTURE_MAPPING_NODE:
+	        			icon = structureMappingFolderIcon;
+	        			break;
+	        		case SPPRTreeModel.ELECTRICAL_MAPPING_NODE:
+	        			icon = electricFolderIcon;
+	        			break;
+	        		case SPPRTreeModel.DATA_SYMBOLS_NODE:
+	    	        	toolTipPrefix = "Data Symbols : ";
+	        			break;
+	        		default:
+	        			icon = closedIcon;						// icon from DefaultTreeCellRenderer
+		        		break;
+	        		}
+	        	}
 	        	labelText = folder.getName();
 	        	if (!SPPRTreeModel.FOLDER_NODE_IMPLEMENTED[folder.getId()] || !folder.isSupported()) {
 		        	setEnabled(false);
 		        	setDisabledIcon(this.getClosedIcon());
 	    		}
-	    	} else if (userObj instanceof SpeciesContext) { // --- species context
+	    	} else if (userObj instanceof SpeciesContext) { 	// --- species context
 	    		icon = speciesIcon;
 	        	labelText = ((SpeciesContext)userObj).getName();
 	        	toolTipPrefix = "SpeciesContext : ";
@@ -88,14 +121,18 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	        	icon = gParamIcon;
 	        	labelText = ((ModelParameter)userObj).getName();
 	        	toolTipPrefix = "Global Parameter : ";
-	        } else if (userObj instanceof SimpleReaction) {			// --- simple reaction
+	        } else if (userObj instanceof SimpleReaction) {		// --- simple reaction
 	        	icon = reactionsIcon;
 	        	labelText = ((ReactionStep)userObj).getName();
 	        	toolTipPrefix = "Simple Reaction : ";
-	        } else if (userObj instanceof FluxReaction) {			// --- flux reaction
+	        } else if (userObj instanceof FluxReaction) {		// --- flux reaction
 	        	icon = fluxIcon;
 	        	labelText = ((ReactionStep)userObj).getName();
 	        	toolTipPrefix = "Flux Reaction : ";
+	        } else if (userObj instanceof DataSymbol) {			// --- field data
+	        	icon = fieldDataItemIcon;
+	        	labelText = ((DataSymbol)userObj).getName();
+	        	toolTipPrefix = "Field Data : ";
 	        } else if (userObj instanceof BioEvent) {			// --- event
 	        	BioEvent bioEvent = (BioEvent)userObj;
 	        	SimulationContext simulationContext = bioEvent.getSimulationContext();
@@ -108,7 +145,6 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 					labelText = bioEvent.getName();
 					toolTipPrefix = "Event : ";
 				}
-				
 	//        } else if (isApplicationParam(value)) {	// --- not implemented
 	//        	icon = aParamIcon;
 	//        	labelText = (String)((BioModelNode)value).getUserObject();

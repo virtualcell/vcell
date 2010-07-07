@@ -33,6 +33,7 @@ public class GuiConstants {
 	public static final String ACTIONCMD_CREATE_GEOMETRY = "Create Geometry";
 
 	public static final String ACTIONCMD_ADD_EVENT = "Add Event";
+	public static final String ACTIONCMD_ADD_DATA = "Add DataSymbol";
 	
 	public static final String VCELL_SUPPORT_ACCOUNT_ID = "VCellSupport";
 	

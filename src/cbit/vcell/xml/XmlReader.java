@@ -35,6 +35,9 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
+import cbit.vcell.data.DataContext;
+import cbit.vcell.data.DataSymbol;
+import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.dictionary.BoundCompound;
 import cbit.vcell.dictionary.BoundEnzyme;
 import cbit.vcell.dictionary.BoundProtein;
@@ -48,6 +51,7 @@ import cbit.vcell.dictionary.FormalEnzyme;
 import cbit.vcell.dictionary.FormalProtein;
 import cbit.vcell.dictionary.FormalSpeciesInfo;
 import cbit.vcell.dictionary.ProteinInfo;
+import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.ControlPointCurve;
@@ -3970,6 +3974,17 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		}
 	}
 
+	// Retrieve DataContext
+	Element dataContextElement = param.getChild(XMLTags.DataContextTag, vcNamespace);
+	if (dataContextElement != null) {
+		DataContext dataContext = newsimcontext.getDataContext();
+		ArrayList<DataSymbol> dataSymbols = getDataSymbols(dataContextElement, dataContext);
+		for (int i = 0; i < dataSymbols.size(); i++) {
+			dataContext.addDataSymbol(dataSymbols.get(i));
+		}
+	}
+	
+	
 	//Retrieve Electrical context
 	org.jdom.Element electElem = param.getChild(XMLTags.ElectricalContextTag, vcNamespace);
 	//this information is optional!
@@ -4059,6 +4074,41 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	return newsimcontext;
 }
 
+
+private ArrayList<DataSymbol> getDataSymbols(Element dataContextElement, DataContext dataContext) {
+	ArrayList<DataSymbol> dataSymbolsList = new ArrayList<DataSymbol>();
+	// iterate over fieldDatasymbols. When other dataSymbol types are implemented, repeat this loop.
+	Iterator dataSybolsElementIter = dataContextElement.getChildren(XMLTags.FieldDataSymbolTag, vcNamespace).iterator();
+	while (dataSybolsElementIter.hasNext()) {
+		// dataSymbol attributes
+		Element dataSymbolElement = (Element)dataSybolsElementIter.next();
+		String name = unMangle(dataSymbolElement.getAttributeValue(XMLTags.NameAttrTag));
+		String symbol = dataSymbolElement.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
+		VCUnitDefinition unit = null;
+		if (symbol != null) {
+			unit = VCUnitDefinition.getInstance(symbol);
+		}
+		// fieldFunctionArgs in dataSymbol
+		Element ffaElement = dataSymbolElement.getChild(XMLTags.FieldFunctionArgumentsTag, vcNamespace);
+		String fieldName = unMangle(ffaElement.getAttributeValue(XMLTags.FieldNameTag));
+		String varName = unMangle(ffaElement.getAttributeValue(XMLTags.VariableNameTag));
+		VariableType funcType = VariableType.UNKNOWN;
+		String funcTypeAttr = ffaElement.getAttributeValue(XMLTags.FunctionTypeTag);
+		String expStr = ffaElement.getText();
+		Expression timeExpr = unMangleExpression(expStr);
+		if (funcTypeAttr != null) {
+			String funcTypeStr = unMangle( funcTypeAttr );
+			funcType = VariableType.getVariableTypeFromVariableTypeName(funcTypeStr);
+		}
+		FieldFunctionArguments ffa = new FieldFunctionArguments(fieldName, varName, timeExpr, funcType);
+		FieldDataSymbol fds = new FieldDataSymbol(name, dataContext, unit, ffa);
+		dataSymbolsList.add(fds);
+	}
+	// other while loops for other dataSymbol types; then return cumulative list
+	// ...
+	
+	return dataSymbolsList;
+}
 
 /**
  * This method returns a Version object from an XML representation.

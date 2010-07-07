@@ -450,4 +450,11 @@ public class XMLTags {
 	public final static String UniformDistributionMinimumTag = "Minimum";
 	public final static String UniformDistributionMaximumTag = "Maximum";
 	
+	// For DataSymbols/DataContext
+	public static final String DataContextTag = "DataContext";
+	public static final String FieldDataSymbolTag = "FieldDataSymbol";
+	public static final String FieldFunctionArgumentsTag = "FieldFunctionArguments";
+	public static final String FieldNameTag = "FieldName";
+	public static final String VariableNameTag = "VariableName";
+	
 }
