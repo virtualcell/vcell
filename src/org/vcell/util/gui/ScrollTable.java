@@ -1,15 +1,25 @@
 package org.vcell.util.gui;
 
+import java.awt.AWTException;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Robot;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
@@ -86,7 +96,9 @@ public class ScrollTable extends JTable {
 	
 	private void initialize() {		
 		autoResizeMode = AUTO_RESIZE_OFF;
+		// make it bigger on Mac
 		setRowHeight(getRowHeight() + 2);
+		putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 		
 		enclosingScrollPane = new JScrollPane(this);
 		setPreferredScrollableViewportSize(new Dimension(200,100));
@@ -96,6 +108,34 @@ public class ScrollTable extends JTable {
 		setDefaultRenderer(Double.class, new DefaultScrollTableCellRenderer());		
 		setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
 		setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
+		
+		// to gain focus if being clicked.
+		MouseAdapter mouseListener = new MouseAdapter() {
+			public void mouseClicked(final MouseEvent e) {
+				if (!hasFocus()) {
+					requestFocusInWindow();
+						
+					if (e.getButton() == MouseEvent.BUTTON1) {
+						addFocusListener(new FocusListener() {
+							public void focusLost(FocusEvent e) {
+							}									
+							public void focusGained(FocusEvent e) {
+								removeFocusListener(this);
+								Robot robot;
+								try {
+									robot = new Robot();
+									robot.mousePress(InputEvent.BUTTON1_MASK);
+									robot.mouseRelease(InputEvent.BUTTON1_MASK);
+								} catch (AWTException ex) {
+									ex.printStackTrace();
+								}											
+							}
+						});
+					}
+				}
+			}
+		};
+		addMouseListener(mouseListener);
 	}
 	
 	public final JScrollPane getEnclosingScrollPane() {
