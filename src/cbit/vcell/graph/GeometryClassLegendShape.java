@@ -8,6 +8,9 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
 
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
@@ -143,8 +146,20 @@ public void paint ( java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY 
 		g.draw3DRect(absPosX,absPosY,2*radius,2*radius,true);
 	}else if (geometryClass instanceof SurfaceClass){
 		SurfaceClass surfaceClass = (SurfaceClass)geometryClass;
-		java.awt.Color fillColor1 = getSubvolumeColor(surfaceClass.getSubvolume1());
-		java.awt.Color fillColor2 = getSubvolumeColor(surfaceClass.getSubvolume2());
+		Set<SubVolume> adjacentSubVolumes = surfaceClass.getAdjacentSubvolumes();
+		Iterator<SubVolume> iterator = adjacentSubVolumes.iterator();
+		SubVolume subVolume1 = iterator.next();
+		SubVolume subVolume2 = iterator.next();
+		java.awt.Color fillColor1 = null;
+		java.awt.Color fillColor2 = null;
+		// make same choice each time so that repaint don't flicker
+		if (subVolume1.getName().compareTo(subVolume2.getName()) > 0) {
+			fillColor1 = getSubvolumeColor(subVolume1);
+			fillColor2 = getSubvolumeColor(subVolume2);	
+		} else {
+			fillColor1 = getSubvolumeColor(subVolume2);
+			fillColor2 = getSubvolumeColor(subVolume1);
+		}
 		g.setColor(fillColor1);
 		g.fill3DRect(absPosX+1,absPosY+1,radius,2*radius-1,true);
 		g.setColor(fillColor2);

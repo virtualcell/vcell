@@ -3,6 +3,8 @@ package cbit.vcell.geometry;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -18,7 +20,7 @@ public class SurfaceClass implements GeometryClass {
 
 		public void propertyChange(PropertyChangeEvent event) {
 			if (event.getPropertyName().equals("name")){
-				setName(createName(subvolume1,subvolume2));
+				setName(createName(subvolume1.getName(),subvolume2.getName()));
 			}
 		}
 		
@@ -31,21 +33,27 @@ public class SurfaceClass implements GeometryClass {
 		}
 		this.subvolume1 = subvolume1;
 		this.subvolume2 = subvolume2;
-		this.name = createName(subvolume1, subvolume2);
+		this.name = createName(subvolume1.getName(), subvolume2.getName());
 		subvolume1.addPropertyChangeListener(listener);
 		subvolume2.addPropertyChangeListener(listener);
 	}
 	
-	private static String createName(SubVolume subvolume1, SubVolume subvolume2){
-		return TokenMangler.fixTokenStrict(subvolume1.getName()+"_"+subvolume2.getName()+"_membrane");
+	public static String createName(String subvolume1, String subvolume2){
+		boolean bLess = subvolume1.compareTo(subvolume2) < 0;
+		String name1 = bLess ? subvolume1 : subvolume2;
+		String name2 = bLess ? subvolume2 : subvolume1;
+		return TokenMangler.fixTokenStrict(name1 + "_" + name2 + "_membrane");
 	}
 
-	public SubVolume getSubvolume1() {
-		return subvolume1;
+	public Set<SubVolume> getAdjacentSubvolumes() {
+		Set<SubVolume> set = new HashSet<SubVolume>();
+		set.add(subvolume1);
+		set.add(subvolume2);
+		return set;
 	}
-
-	public SubVolume getSubvolume2() {
-		return subvolume2;
+	
+	public boolean isAdjacentTo(SubVolume subVolume) {
+		return (subvolume1 == subVolume || subvolume2 == subVolume);
 	}
 	
 	private PropertyChangeSupport getPropertyChangeSupport(){

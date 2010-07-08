@@ -154,7 +154,7 @@ public SurfaceClass[] getAdjacentSurfaceClasses(SubVolume subVolume) {
 	SurfaceClass[] surfaceClasses = getSurfaceClasses();
 	ArrayList<SurfaceClass> adjacentSurfaceClassList = new ArrayList<SurfaceClass>();
 	for (int i = 0; i < surfaceClasses.length; i++) {
-		if (surfaceClasses[i].getSubvolume1()==subVolume || surfaceClasses[i].getSubvolume2()==subVolume){
+		if (surfaceClasses[i].isAdjacentTo(subVolume)){
 			adjacentSurfaceClassList.add(surfaceClasses[i]);
 		}
 	}
@@ -239,10 +239,7 @@ public GeometryClass getGeometryClass(GeometricRegion geometricRegion){
 public SurfaceClass getSurfaceClass(SubVolume subvolume1, SubVolume subvolume2) {
 	SurfaceClass[] surfaceClasses = getSurfaceClasses();
 	for (int i = 0; i < surfaceClasses.length; i++) {
-		if (surfaceClasses[i].getSubvolume1()==subvolume1 && surfaceClasses[i].getSubvolume2()==subvolume2){
-			return surfaceClasses[i];
-		}
-		if (surfaceClasses[i].getSubvolume1()==subvolume2 && surfaceClasses[i].getSubvolume2()==subvolume1){
+		if (surfaceClasses[i].isAdjacentTo(subvolume1) && surfaceClasses[i].isAdjacentTo(subvolume2)) {
 			return surfaceClasses[i];
 		}
 	}
@@ -263,12 +260,7 @@ private SurfaceClass[] computeSurfaceClasses(GeometricRegion[] geometricRegions)
 				SubVolume subVolume0 = volumeRegion0.getSubVolume();
 				VolumeGeometricRegion volumeRegion1 = (VolumeGeometricRegion)adjacentRegions[1];
 				SubVolume subVolume1 = volumeRegion1.getSubVolume();
-				SurfaceClass surfaceClass = null;
-				if (subVolume0.getHandle() < subVolume1.getHandle()){
-					surfaceClass = new SurfaceClass(subVolume0,subVolume1);
-				}else{
-					surfaceClass = new SurfaceClass(subVolume1,subVolume0);
-				}
+				SurfaceClass surfaceClass = new SurfaceClass(subVolume0,subVolume1);
 				
 				boolean bFound = false;
 				for (int j = 0; j < surfaceClasses.size(); j++) {
