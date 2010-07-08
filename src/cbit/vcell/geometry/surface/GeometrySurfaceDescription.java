@@ -1,6 +1,8 @@
 package cbit.vcell.geometry.surface;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.vcell.util.Compare;
 import org.vcell.util.ISize;
@@ -260,7 +262,10 @@ private SurfaceClass[] computeSurfaceClasses(GeometricRegion[] geometricRegions)
 				SubVolume subVolume0 = volumeRegion0.getSubVolume();
 				VolumeGeometricRegion volumeRegion1 = (VolumeGeometricRegion)adjacentRegions[1];
 				SubVolume subVolume1 = volumeRegion1.getSubVolume();
-				SurfaceClass surfaceClass = new SurfaceClass(subVolume0,subVolume1);
+				Set<SubVolume> subvolumes = new HashSet<SubVolume>();
+				subvolumes.add(subVolume0);
+				subvolumes.add(subVolume1);
+				SurfaceClass surfaceClass = new SurfaceClass(subvolumes);
 				
 				boolean bFound = false;
 				for (int j = 0; j < surfaceClasses.size(); j++) {
