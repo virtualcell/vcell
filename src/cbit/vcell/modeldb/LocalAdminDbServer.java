@@ -15,8 +15,10 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.sql.*;
+import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.messaging.admin.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.server.UserLoginInfo;
 
 /**
  * This type was created in VisualAge.
@@ -234,12 +236,12 @@ public UserInfo updateUserInfo(UserInfo newUserInfo) throws DataAccessException 
 	}
 }
 
-public void updateUserStat(String userID) throws DataAccessException {
+public void updateUserStat(UserLoginInfo userLoginInfo) throws DataAccessException {
 	try {
-		adminDbTop.updateUserStat(userID,true);
+		adminDbTop.updateUserStat(userLoginInfo,true);
 	}catch (Throwable e){
 		log.exception(e);
-		throw new DataAccessException("failure updating user stat '"+userID+"'\n"+e.getMessage());
+		throw new DataAccessException("failure updating user stat '"+userLoginInfo.getUserName()+"'\n"+e.getMessage());
 	}
 }
 

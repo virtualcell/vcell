@@ -1,4 +1,7 @@
 package cbit.vcell.client.server;
+
+import cbit.vcell.server.UserLoginInfo;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2004 4:07:23 PM)
@@ -13,8 +16,7 @@ public class ClientServerInfo {
 	private int serverType = -1;
 	private String[] hosts = null;
 	private String activeHost = null;
-	private String username = null;
-	private String password = null;
+	private UserLoginInfo userLoginInfo = null;
 
 /**
  * Insert the method's description here.
@@ -23,10 +25,9 @@ public class ClientServerInfo {
  * @param username java.lang.String
  * @param password java.lang.String
  */
-private ClientServerInfo(String[] hosts, String username, String password) {
+private ClientServerInfo(String[] hosts,UserLoginInfo userLoginInfo) {
 	this.hosts = hosts;
-	this.username = username;
-	this.password = password;
+	this.userLoginInfo = userLoginInfo;
 }
 
 
@@ -36,7 +37,7 @@ private ClientServerInfo(String[] hosts, String username, String password) {
  * @return cbit.vcell.client.server.ClientServerInfo
  */
 public static ClientServerInfo createFileBasedServerInfo() {
-	ClientServerInfo csi = new ClientServerInfo(null, null, null);
+	ClientServerInfo csi = new ClientServerInfo(null,null);
 	csi.setServerType(SERVER_FILE);
 	return csi;
 }
@@ -50,13 +51,17 @@ public static ClientServerInfo createFileBasedServerInfo() {
  * @param username java.lang.String
  * @param password java.lang.String
  */
-public static ClientServerInfo createLocalServerInfo(String username, String password) {
-	ClientServerInfo csi = new ClientServerInfo(new String[] {LOCAL_SERVER}, username, password);
+public static ClientServerInfo createLocalServerInfo(String userName, String password) {
+	ClientServerInfo csi = new ClientServerInfo(new String[] {LOCAL_SERVER},new UserLoginInfo(userName, password));
 	csi.setServerType(SERVER_LOCAL);
 	return csi;
 }
 
 
+
+public UserLoginInfo getUserLoginInfo(){
+	return userLoginInfo;
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/1/2004 11:18:42 PM)
@@ -65,8 +70,8 @@ public static ClientServerInfo createLocalServerInfo(String username, String pas
  * @param username java.lang.String
  * @param password java.lang.String
  */
-public static ClientServerInfo createRemoteServerInfo(String[] host, String username, String password) {
-	ClientServerInfo csi = new ClientServerInfo(host, username, password);
+public static ClientServerInfo createRemoteServerInfo(String[] host, String userName, String password) {
+	ClientServerInfo csi = new ClientServerInfo(host,new UserLoginInfo(userName, password));
 	csi.setServerType(SERVER_REMOTE);
 	return csi;
 }
@@ -103,7 +108,7 @@ public String[] getHosts() {
  * @return java.lang.String
  */
 public java.lang.String getPassword() {
-	return password;
+	return userLoginInfo.getPassword();
 }
 
 
@@ -123,7 +128,7 @@ public int getServerType() {
  * @return java.lang.String
  */
 public java.lang.String getUsername() {
-	return username;
+	return userLoginInfo.getUserName();
 }
 
 
