@@ -13,6 +13,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.sql.*;
+import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.messaging.admin.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 
@@ -110,5 +111,5 @@ SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJ
 org.vcell.util.document.UserInfo updateUserInfo(org.vcell.util.document.UserInfo newUserInfo) throws RemoteException, DataAccessException;
 
 void sendLostPassword(String userid) throws RemoteException,DataAccessException;
-void updateUserStat(String userID) throws RemoteException,DataAccessException;
+void updateUserStat(UserLoginInfo userLoginInfo) throws RemoteException,DataAccessException;
 }

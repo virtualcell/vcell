@@ -19,14 +19,8 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 	private SessionLog sessionLog = null;
 	private ConnectionFactory connectionFactory = null;
 	private boolean bLocal = false;
-/**
- * LocalVCellConnectionFactory constructor comment.
- */
-public LocalVCellConnectionFactory(String userID, String password, SessionLog sessionLog) {
-	this.userID = userID;
-	this.password = password;
-	this.sessionLog = sessionLog;
-}
+
+
 /**
  * LocalVCellConnectionFactory constructor comment.
  */
@@ -63,7 +57,7 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 			jmsConnFactory = new cbit.vcell.messaging.JmsConnectionFactoryImpl();
 		}
 		LocalVCellServer vcServer = (LocalVCellServer)(new LocalVCellServerFactory(null,null,"<<local>>",jmsConnFactory,connectionFactory, keyFactory, sessionLog)).getVCellServer();
-		return vcServer.getVCellConnection(userID, password);
+		return vcServer.getVCellConnection(new UserLoginInfo(userID, password));
 	} catch (AuthenticationException exc) {
 		sessionLog.exception(exc);
 		throw exc;

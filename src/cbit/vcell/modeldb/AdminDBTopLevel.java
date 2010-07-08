@@ -619,12 +619,12 @@ KeyValue updateUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
 	}
 }
 
-void updateUserStat(String userID, boolean bEnableRetry) throws SQLException {
+void updateUserStat(UserLoginInfo userLoginInfo,boolean bEnableRetry) throws SQLException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		userDB.updateUserStat(con,userID);
+		userDB.updateUserStat(con,userLoginInfo);
 		con.commit();
 	} catch (Throwable e) {
 		log.exception(e);
@@ -636,7 +636,7 @@ void updateUserStat(String userID, boolean bEnableRetry) throws SQLException {
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			updateUserStat(userID,false);
+			updateUserStat(userLoginInfo,false);
 		}else{
 			handle_SQLException(e);
 		}

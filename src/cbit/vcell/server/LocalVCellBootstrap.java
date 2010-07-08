@@ -48,7 +48,7 @@ private LocalVCellBootstrap(boolean bPrimaryServer, String hostName, AdminDataba
  */
 public VCellConnection getVCellConnection(String userid, String password) throws DataAccessException, AuthenticationException {
 	try {
-		VCellConnection vcConn = localVCellServer.getVCellConnection(userid,password);
+		VCellConnection vcConn = localVCellServer.getVCellConnection(new UserLoginInfo(userid, password));
 		if (vcConn!=null){
 			sessionLog.print("LocalVCellBootstrap.getVCellConnection(" + userid + "," + password + ") <<<<SUCCESS>>>>");
 		}else{
@@ -132,7 +132,7 @@ public static void main(java.lang.String[] args) {
 		//
 		// Create and install a security manager
 		//
-		System.setSecurityManager(new RMISecurityManager());
+		//System.setSecurityManager(new RMISecurityManager());
 
 		
 		Thread.currentThread().setName("Application");

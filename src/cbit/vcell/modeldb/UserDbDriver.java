@@ -5,6 +5,7 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.*;
 
 
@@ -18,6 +19,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.sql.*;
+import cbit.vcell.server.UserLoginInfo;
 /**
  * This type was created in VisualAge.
  */
@@ -279,11 +281,8 @@ private void updateUserInfoSQL(Connection con, UserInfo userInfo) throws SQLExce
 	DbDriver.updateCleanSQL(con,sql);
 }
 
-public void updateUserStat(Connection con, String userID) throws SQLException {
-	if (userID == null){
-		throw new SQLException("Improper parameters for insertModel");
-	}
-	User user = getUserFromUserid(con, userID);
+public void updateUserStat(Connection con,UserLoginInfo userLoginInfo) throws SQLException {
+	User user = getUserFromUserid(con, userLoginInfo.getUserName());
 	String sql;
 	sql =	"UPDATE " + UserStatTable.table.getTableName() +
 			" SET "   +
@@ -292,7 +291,33 @@ public void updateUserStat(Connection con, String userID) throws SQLException {
 				UserStatTable.table.lastLogin + " = SYSDATE"+
 			" WHERE " + UserStatTable.table.userRef + " = " + user.getID();
 	DbDriver.updateCleanSQL(con,sql);
+	//
+	//Find if we have UserLoginInfo entry
+	//
+	sql = 	" SELECT " + UserLoginInfoTable.table.id.getUnqualifiedColName()+ 
+			" FROM " + UserLoginInfoTable.table.getTableName() + 
+			" WHERE " + UserLoginInfoTable.getSQLWhereCondition(user.getID(), userLoginInfo);
 
+	Statement stmt = null;
+	BigDecimal userLoginInfoID = null;
+	try {
+		stmt = con.createStatement();
+		ResultSet rset = stmt.executeQuery(sql);
+		if (rset.next()){
+			userLoginInfoID = rset.getBigDecimal(UserLoginInfoTable.table.id.getUnqualifiedColName());
+		}
+	} finally {
+		if(stmt != null){stmt.close();} // Release resources include resultset
+	}
+	if(userLoginInfoID == null){
+		sql = 
+			"INSERT INTO " + UserLoginInfoTable.table.getTableName() + " " +
+			UserLoginInfoTable.table.getSQLColumnList() + " VALUES " +
+			UserLoginInfoTable.getSQLValueList(user.getID(), 1,userLoginInfo);
+		DbDriver.updateCleanSQL(con, sql);
+	}else{
+		DbDriver.updateCleanSQL(con, UserLoginInfoTable.getSQLUpdateLoginCount(user.getID(), userLoginInfo));
+	}
 }
 
 }
