@@ -28,9 +28,6 @@ public class SurfaceClass implements GeometryClass {
 
 	public SurfaceClass(SubVolume subvolume1, SubVolume subvolume2) {
 		super();
-		if (subvolume1.getHandle()>=subvolume2.getHandle()){
-			throw new RuntimeException("SurfaceClass: handle of subVolume1 should be less than handle of subvolume2");
-		}
 		this.subvolume1 = subvolume1;
 		this.subvolume2 = subvolume2;
 		this.name = createName(subvolume1.getName(), subvolume2.getName());
