@@ -82,8 +82,7 @@ public String getMembraneName(int subVolumeIdIn, int subVolumeIdOut, boolean bFr
 				for (int i = 0; i < geometryClasses.length; i++) {
 					if (geometryClasses[i] instanceof SurfaceClass){
 						SurfaceClass surface = (SurfaceClass)geometryClasses[i];
-						if ((surface.getSubvolume1()==svIn && surface.getSubvolume2()==svOut) ||
-							(surface.getSubvolume1()==svOut && surface.getSubvolume2()==svIn)){
+						if (surface.isAdjacentTo(svIn) && surface.isAdjacentTo(svOut)){
 							StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings(surface);
 							if (structureMappings!=null && structureMappings.length>0){
 								results = surface.getName()+"(";

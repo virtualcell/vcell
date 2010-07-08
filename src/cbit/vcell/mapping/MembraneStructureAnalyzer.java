@@ -27,8 +27,6 @@ import cbit.vcell.parser.Expression;
  * This type was created in VisualAge.
  */
 public class MembraneStructureAnalyzer extends StructureAnalyzer {
-	private SubVolume innerSubVolume = null;
-	private SubVolume outerSubVolume = null;
 	private SurfaceClass surfaceClass = null;
 	private ResolvedFlux resolvedFluxes[] = null;
 /**
@@ -36,19 +34,11 @@ public class MembraneStructureAnalyzer extends StructureAnalyzer {
  * @param mathMapping cbit.vcell.mapping.MathMapping
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
-public MembraneStructureAnalyzer(MathMapping mathMapping, SurfaceClass surfaceClass, SubVolume innerSubVolume, SubVolume outerSubVolume) {
+public MembraneStructureAnalyzer(MathMapping mathMapping, SurfaceClass surfaceClass) {
 	super(mathMapping);
-	this.innerSubVolume = innerSubVolume;
-	this.outerSubVolume = outerSubVolume;
 	this.surfaceClass = surfaceClass;
 }
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.geometry.SubVolume
- */
-public SubVolume getInnerSubVolume() {
-	return innerSubVolume;
-}
+
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.model.Membrane
@@ -56,13 +46,7 @@ public SubVolume getInnerSubVolume() {
 public SurfaceClass getSurfaceClass() {
 	return surfaceClass;
 }
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.geometry.SubVolume
- */
-public SubVolume getOuterSubVolume() {
-	return outerSubVolume;
-}
+
 /**
  * This method was created in VisualAge.
  * @return UndefinedObject[]
@@ -132,7 +116,7 @@ private void refreshResolvedFluxes() throws Exception {
 				// flux within surface
 				continue;
 			}
-			if (structureMapping.getGeometryClass()==surfaceClass.getSubvolume1() || structureMapping.getGeometryClass()==surfaceClass.getSubvolume2()){
+			if (structureMapping.getGeometryClass() instanceof SubVolume && surfaceClass.isAdjacentTo((SubVolume)structureMapping.getGeometryClass())){
 				SpeciesContextSpec speciesContextSpec = mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(speciesContext);
 				if (!speciesContextSpec.isConstant()){
 					if (rf == null){
@@ -211,7 +195,7 @@ private void refreshResolvedFluxes() throws Exception {
 									resolvedFluxList.addElement(rf);
 								}
 								
-								if (sm.getGeometryClass() == getInnerSubVolume() || sm.getGeometryClass() == getOuterSubVolume()){
+								if (sm.getGeometryClass() instanceof SubVolume && surfaceClass.isAdjacentTo((SubVolume)sm.getGeometryClass())) {
 									//
 									// for binding on inside or outside, add to ResolvedFlux.flux
 									//

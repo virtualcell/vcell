@@ -463,7 +463,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 				
 						if (varGeoClass instanceof SubVolume && funcGeoClass instanceof SurfaceClass) {
 							// seems ok if membrane refereces volume
-							if (!((SurfaceClass)funcGeoClass).getSubvolume1().compareEqual(varGeoClass) && !((SurfaceClass)funcGeoClass).getSubvolume2().compareEqual(varGeoClass)) {
+							if (!((SurfaceClass)funcGeoClass).isAdjacentTo((SubVolume)varGeoClass)) {
 								// but has to be adjacent
 								String errMsg = "'" + funcName + "' defined on Membrane '" + funcDomain.getName() + "' directly or indirectly references "
 									+  " variable '" + symbols[i] + "' defined on Volume '" + var.getDomain().getName() + " which is not adjacent to Membrane '" + funcDomain.getName() + "'."; 
@@ -516,7 +516,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 						GeometryClass gc = simulationOwner.getGeometry().getGeometryClass(functionDomain.getName());
 						GeometryClass vargc = simulationOwner.getGeometry().getGeometryClass(var.getDomain().getName());						
 						if (gc instanceof SurfaceClass && vargc instanceof SubVolume) {
-							if (((SurfaceClass)gc).getSubvolume1().compareEqual(vargc) || ((SurfaceClass)gc).getSubvolume2().compareEqual(vargc)) {
+							if (((SurfaceClass)gc).isAdjacentTo((SubVolume)vargc)) {
 								return true;
 							} else {
 								return false;

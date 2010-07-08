@@ -776,8 +776,7 @@ private void fixMembraneMappings() throws PropertyVetoException {
 						for (int i = 0; i < geometryClasses.length; i++) {
 							if (geometryClasses[i] instanceof SurfaceClass){
 								SurfaceClass surfaceClass = (SurfaceClass)geometryClasses[i];
-								if ((surfaceClass.getSubvolume1()==insideGeometryClass && surfaceClass.getSubvolume2() == outsideGeometryClass) ||
-									(surfaceClass.getSubvolume2()==insideGeometryClass && surfaceClass.getSubvolume1() == outsideGeometryClass)){
+								if (surfaceClass.isAdjacentTo((SubVolume)insideGeometryClass) && surfaceClass.isAdjacentTo((SubVolume)outsideGeometryClass)){
 									membraneMapping.setGeometryClass(surfaceClass);
 									bFound=true;
 								}
@@ -795,7 +794,7 @@ private void fixMembraneMappings() throws PropertyVetoException {
 					}else if (insideGeometryClass instanceof SurfaceClass && outsideGeometryClass instanceof SubVolume){
 						SurfaceClass surface = (SurfaceClass)insideGeometryClass;
 						SubVolume subVolume = (SubVolume)outsideGeometryClass;
-						if (surface.getSubvolume1()==subVolume || surface.getSubvolume2()==subVolume){
+						if (surface.isAdjacentTo(subVolume)) {
 							membraneMapping.setGeometryClass(surface);
 						}else{
 							membraneMapping.setGeometryClass(null);
@@ -805,7 +804,7 @@ private void fixMembraneMappings() throws PropertyVetoException {
 					}else if (insideGeometryClass instanceof SubVolume && outsideGeometryClass instanceof SurfaceClass){
 						SurfaceClass surface = (SurfaceClass)outsideGeometryClass;
 						SubVolume subVolume = (SubVolume)insideGeometryClass;
-						if (surface.getSubvolume1()==subVolume || surface.getSubvolume2()==subVolume){
+						if (surface.isAdjacentTo(subVolume)){
 							membraneMapping.setGeometryClass(surface);
 						}else{
 							membraneMapping.setGeometryClass(null);

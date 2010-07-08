@@ -1063,7 +1063,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 			//
 			// if the speciesContext is "inside" or "outside" the membrane
 			//
-			} else if (sm.getGeometryClass() == ((SurfaceClass)geometryClass).getSubvolume1() || sm.getGeometryClass() == ((SurfaceClass)geometryClass).getSubvolume2() ){
+			} else if (sm.getGeometryClass() instanceof SubVolume && ((SurfaceClass)geometryClass).isAdjacentTo((SubVolume)sm.getGeometryClass())) {
 				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 				if (!scs.isConstant()){
 					if (!scs.isDiffusing() && scs.isSpatial()){
@@ -1075,7 +1075,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 				}else{
 					return scm.getSpeciesContext().getName();
 				}
-			}else{
+			} else {
 				throw new MappingException("species '"+sc.getName()+"' interacts with surface '"+geometryClass.getName()+"', but is not mapped spatially adjacent");
 			}
 		}
@@ -2228,13 +2228,42 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if (!(geometryClasses[k] instanceof SurfaceClass)){
 			continue;
 		}
+		
 		SurfaceClass surfaceClass = (SurfaceClass)geometryClasses[k];
-		//
-		// if there is a spatially resolved membrane surrounding this subVolume, then create a membraneSubDomain
-		//
-		structures = simContext.getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
-		SubVolume outerSubVolume = surfaceClass.getSubvolume2();
-		SubVolume innerSubVolume = surfaceClass.getSubvolume1();
+		// determine membrane inside and outside subvolume
+		// this preserves backward compatibility so that membrane subdomain
+		// inside and outside correspond to structure hierarchy when present
+		SubVolume outerSubVolume = null;
+		SubVolume innerSubVolume = null;
+		Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
+		for (Structure s : mappedStructures) {
+			if (s instanceof Membrane) {
+				Membrane m = (Membrane)s;
+				Feature infeature = m.getInsideFeature();
+				Feature outfeature = m.getOutsideFeature();
+				FeatureMapping insm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(infeature);
+				FeatureMapping outsm = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(outfeature);
+				if (insm.getGeometryClass() instanceof SubVolume) {
+					innerSubVolume = (SubVolume)insm.getGeometryClass();
+				}
+				if (outsm.getGeometryClass() instanceof SubVolume) {
+					outerSubVolume = (SubVolume)outsm.getGeometryClass();
+				}
+			}
+		}
+		// if structure hierarchy not present, alphabetically choose inside and outside
+		// make the choice deterministic
+		if (innerSubVolume == null || outerSubVolume == null || innerSubVolume == outerSubVolume){
+			Set<SubVolume> sv = surfaceClass.getAdjacentSubvolumes();
+			Iterator<SubVolume> iterator = sv.iterator();
+			innerSubVolume = iterator.next();
+			outerSubVolume = iterator.next();
+			if (innerSubVolume.getName().compareTo(outerSubVolume.getName()) > 0) {
+				SubVolume temp = innerSubVolume;
+				innerSubVolume = outerSubVolume;
+				outerSubVolume = temp;
+			}
+		}
 
 		//
 		// create subDomain
@@ -2353,9 +2382,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						memSubDomain.addJumpCondition(jc);
 					}
 					Expression flux = getIdentifierSubstitutions(resolvedFluxes[i].getFlux(),VCUnitDefinition.UNIT_uM_um_per_s,membraneStructureAnalyzer.getSurfaceClass());
-					if (surfaceClass.getSubvolume1() == sm.getGeometryClass()){
+					if (memSubDomain.getInsideCompartment().getName().equals(sm.getGeometryClass().getName())) {
 						jc.setInFlux(flux);
-					}else if (surfaceClass.getSubvolume2() == sm.getGeometryClass()){
+					}else if (memSubDomain.getOutsideCompartment().getName().equals(sm.getGeometryClass().getName())){
 						jc.setOutFlux(flux);
 					}else{
 						throw new RuntimeException("APPLICATION  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+" with a non-local flux species "+scm.getSpeciesContext().getName());
@@ -2368,9 +2397,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						memSubDomain.addJumpCondition(jc);
 					}
 					Expression flux = getIdentifierSubstitutions(resolvedFluxes[i].getFlux(),VCUnitDefinition.UNIT_uM_um_per_s,membraneStructureAnalyzer.getSurfaceClass());
-					if (surfaceClass.getSubvolume1() == sm.getGeometryClass()){
+					if (memSubDomain.getInsideCompartment().getName().equals(sm.getGeometryClass().getName())){
 						jc.setInFlux(flux);
-					}else if (surfaceClass.getSubvolume2() == sm.getGeometryClass()){
+					}else if (memSubDomain.getOutsideCompartment().getName().equals(sm.getGeometryClass().getName())){
 						jc.setOutFlux(flux);
 					}else{
 						throw new RuntimeException("APPLICATION  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+" with a non-local flux species "+scm.getSpeciesContext().getName());
@@ -2529,14 +2558,15 @@ private GeometryClass getDefaultGeometryClass(Expression expr) throws Expression
 						if (geometryClass instanceof SurfaceClass) {
 							if (symbolGeomClass instanceof SurfaceClass) {
 								throw new MappingException("The expression '" + expr.infix() + "' references variables in surface domain '" + geometryClass.getName() + "' & surface domain '" + symbolGeomClass.getName() + "' that cannot be evaluated.");
-							} else {
+							} else if (symbolGeomClass instanceof SubVolume){
 								// geomClass : surfaceClass; symbolGeomClass : subVol 
-								if (symbolGeomClass != ((SurfaceClass)geometryClass).getSubvolume1() &&
-									symbolGeomClass != ((SurfaceClass)geometryClass).getSubvolume2() ) {
+								if (!((SurfaceClass)geometryClass).isAdjacentTo((SubVolume)symbolGeomClass)) {
 									throw new MappingException("The expression '" + expr.infix() + "' references variables in surface domain '" + geometryClass.getName() + "' & volume domain '" + symbolGeomClass.getName() + "' that cannot be evaluated.");
 								}
+							} else {
+								throw new MappingException("unexpected geometry class : " + symbolGeomClass.getClass());
 							}
-						} else {	// geometryClass is a SubVolume
+						} else if (geometryClass instanceof SubVolume){	// geometryClass is a SubVolume
 							if (symbolGeomClass instanceof SubVolume) {
 								// check if adjacent; if so, choose separating membrane.
 								SurfaceClass surfaceClass = simContext.getGeometry().getGeometrySurfaceDescription().getSurfaceClass((SubVolume)symbolGeomClass, (SubVolume)geometryClass);
@@ -2548,11 +2578,12 @@ private GeometryClass getDefaultGeometryClass(Expression expr) throws Expression
 							} else {
 								// geomClass : subVol; symbolGeomClass = surfaceClass
 								SurfaceClass surfaceSymbolGeomClass = (SurfaceClass)symbolGeomClass;
-								if (geometryClass != surfaceSymbolGeomClass.getSubvolume1() &&
-									geometryClass != surfaceSymbolGeomClass.getSubvolume2() ) {
+								if (!surfaceSymbolGeomClass.isAdjacentTo((SubVolume)geometryClass)) {
 									throw new MappingException("The expression '" + expr.infix() + "' references variables in surface domain '" + surfaceSymbolGeomClass.getName() + "' & volume domain '" + geometryClass.getName() + "' that cannot be evaluated.");
 								}
 							}
+						} else {
+							throw new MappingException("unexpected geometry class : " + geometryClass.getClass());
 						}
 					}
 				}
@@ -2658,7 +2689,7 @@ protected void refreshStructureAnalyzers() {
 		}else if (geometryClasses[j] instanceof SurfaceClass){
 			SurfaceClass surfaceClass = (SurfaceClass)geometryClasses[j];
 			if (getMembraneStructureAnalyzer(surfaceClass)==null){
-				structureAnalyzerList.addElement(new MembraneStructureAnalyzer(this,surfaceClass,surfaceClass.getSubvolume1(),surfaceClass.getSubvolume2()));
+				structureAnalyzerList.addElement(new MembraneStructureAnalyzer(this,surfaceClass));
 			}		
 		}
 	}
