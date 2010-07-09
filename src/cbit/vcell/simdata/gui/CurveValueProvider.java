@@ -1,6 +1,9 @@
 package cbit.vcell.simdata.gui;
 
+import org.vcell.util.Coordinate;
+
 import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.CurveSelectionInfo;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -33,22 +36,24 @@ void curveRemoved(Curve curve);
  * @return java.lang.String
  * @param csi cbit.vcell.geometry.CurveSelectionInfo
  */
-String getCurveValue(cbit.vcell.geometry.CurveSelectionInfo csi);
+String getCurveValue(CurveSelectionInfo csi);
 /**
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:04:41 PM)
  */
-cbit.vcell.geometry.CurveSelectionInfo getInitalCurveSelection(int tool,org.vcell.util.Coordinate wc);
+CurveSelectionInfo getInitalCurveSelection(int tool,Coordinate wc);
 /**
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:08:33 PM)
  */
-boolean isAddControlPointOK(int tool,org.vcell.util.Coordinate wc,Curve addedToThisCurve);
+boolean isAddControlPointOK(int tool,Coordinate wc,Curve addedToThisCurve);
 /**
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:09:38 PM)
  */
-boolean providesInitalCurve(int tool,org.vcell.util.Coordinate wc);
+boolean providesInitalCurve(int tool,Coordinate wc);
 
 void setDescription(Curve curve);
+
+boolean isDefined(int memIndex);
 }

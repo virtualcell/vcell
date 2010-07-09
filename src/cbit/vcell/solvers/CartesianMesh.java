@@ -1217,8 +1217,15 @@ public int getVolumeRegionIndex(int volumeIndex) {
 	return getMeshRegionInfo().getVolumeElementMapVolumeRegion(volumeIndex);
 }
 
-public String getSubdomainNamefromVolIndex(int volIndex) {
+public String getCompartmentSubdomainNamefromVolIndex(int volIndex) {
 	return getMeshRegionInfo().getSubdomainNamefromVolIndex(volIndex);
+}
+
+public String getMembraneSubdomainNamefromMemIndex(int memIndex) throws MathException {
+	int memRegIndex = getMembraneRegionIndex(memIndex);
+	HashMap<Integer, int[]> memRegSubVolumeInOut = getMembraneRegionMapSubvolumesInOut();
+	int[] subVolumeInOut = memRegSubVolumeInOut.get(memRegIndex);
+	return subdomainInfo.getMembraneSubdomainName(subVolumeInOut[0], subVolumeInOut[1]);
 }
 
 /**
