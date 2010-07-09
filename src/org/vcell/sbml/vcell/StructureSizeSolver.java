@@ -197,6 +197,20 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 	if (simContext.getGeometryContext().getGeometry().getDimension() == 0) {
 		return;
 	}
+	
+	StructureMapping[] myStructMappings = simContext.getGeometryContext().getStructureMappings(geometryClass);
+	if (myStructMappings != null && myStructMappings.length == 1) {
+		try {
+			myStructMappings[0].getUnitSizeParameter().setExpression(new Expression(1.0));
+			return;
+		}catch (ExpressionException e){
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		}catch (java.beans.PropertyVetoException e){
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		}
+	}
 	StructureMapping[] structMappings = simContext.getGeometryContext().getStructureMappings();
 	try {
 		ConstraintContainerImpl ccImpl = new ConstraintContainerImpl();
