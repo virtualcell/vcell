@@ -51,6 +51,9 @@ public class SubdomainInfo implements Serializable {
 		}
 		public final CompartmentSubdomainInfo getOutsideCompartmentSubdomainInfo() {
 			return outsideCompartmentSubdomainInfo;
+		}
+		public final String getName() {
+			return name;
 		}		
 	}
 	
@@ -71,6 +74,17 @@ public class SubdomainInfo implements Serializable {
 			}
 		}
 		throw new MathException("Unexpected compartment subdomain " + handle + ".");
+	}
+	
+	public String getMembraneSubdomainName(int handle0, int handle1) throws MathException {
+		for (MembraneSubdomainInfo msi : membraneSubdomainInfos) {
+			int in = msi.getInsideCompartmentSubdomainInfo().getHandle();
+			int out = msi.getOutsideCompartmentSubdomainInfo().getHandle();
+			if (in == handle0 && out == handle1 || in == handle1 && out == handle0) {
+				return msi.getName();
+			}
+		}
+		throw new MathException("Unexpected membrane subdomain between subdomains " + handle0 + " and " + handle1 + "."); 
 	}
 	
 	public int getInside(int handle0, int handle1) throws MathException {

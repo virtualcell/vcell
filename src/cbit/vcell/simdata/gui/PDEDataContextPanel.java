@@ -1,5 +1,6 @@
 package cbit.vcell.simdata.gui;
 
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.vcell.util.Coordinate;
@@ -22,6 +23,7 @@ import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.Spline;
 import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveRenderer;
+import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
@@ -831,6 +833,17 @@ private void fireDataSamplers() {
 public Curve[] getAllUserCurves() {
 	return getImagePlaneManagerPanel().getCurveRenderer().getAllUserCurves();
 }
+
+public boolean isDefined(int memIndex) {
+	try {
+		final Domain varDomain = getPdeDataContext().getDataIdentifier().getDomain();
+		String memSubdomainName = getPdeDataContext().getCartesianMesh().getMembraneSubdomainNamefromMemIndex(memIndex);
+		return (varDomain == null || varDomain.getName().equals(memSubdomainName));
+	} catch (MathException e) {
+		e.printStackTrace(System.out);
+	}
+	return true; 
+}
 /**
  * Insert the method's description here.
  * Creation date: (3/13/2001 12:53:10 PM)
@@ -859,7 +872,7 @@ public String getCurveValue(CurveSelectionInfo csi) {
 							String zCoordString = NumberUtils.formatNumber(segmentWC.getZ());
 							infoS = "("+xCoordString+","+yCoordString+","+zCoordString+")  ["+
 										membraneIndexes[csi.getSegment()]+"]  Value = " +
-										membraneValues[csi.getSegment()];
+										(isDefined(membraneIndexes[csi.getSegment()]) ? membraneValues[csi.getSegment()] : "Undefined");
 							if(getDataInfoProvider() != null){
 								PDEDataViewer.MembraneDataInfo membraneDataInfo =
 									getDataInfoProvider().getMembraneDataInfo(membraneIndexes[csi.getSegment()]);

@@ -619,7 +619,7 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 private double interpolateVolDataValToMemb(CartesianMesh mesh, Domain domain, int membraneIndex, SimDataHolder simDataHolder, boolean IsRegion){
 	boolean bInside = true;
 	int volIndexNear = mesh.getMembraneElements()[membraneIndex].getInsideVolumeIndex();
-	if (!mesh.getSubdomainNamefromVolIndex(volIndexNear).equals(domain.getName())) {
+	if (!mesh.getCompartmentSubdomainNamefromVolIndex(volIndexNear).equals(domain.getName())) {
 		bInside = false;
 	}
 	return interpolateVolDataValToMemb(mesh, membraneIndex, simDataHolder, bInside, IsRegion);
