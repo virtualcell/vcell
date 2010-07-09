@@ -82,8 +82,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
 		public void mousePressed(java.awt.event.MouseEvent e) {
-//			if (e.getSource() == InitialConditionsPanel.this.getScrollPaneTable()) 
-//				connEtoC3(e);
+			if (e.getSource() == InitialConditionsPanel.this.getScrollPaneTable()) 
+				connEtoC4(e);
 		};
 		public void mouseReleased(java.awt.event.MouseEvent e) {
 			if (e.getSource() == InitialConditionsPanel.this.getScrollPaneTable()) 
