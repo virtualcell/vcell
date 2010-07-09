@@ -62,8 +62,8 @@ public class FRAPOptData {
 	private Parameter fixedParam = null;
 	private double leastError = 0;
 	
-	private static final String REFERENCE_DIFF_DELTAT = "0.1";
-	private static final String REFERENCE_DIFF_RATE_COEFFICIENT = "1";
+	public static final double REFERENCE_DIFF_DELTAT = 0.05;
+	private static final double REFERENCE_DIFF_RATE_COEFFICIENT = 1;
 	private static final String REFERENCE_DIFF_RATE_STR = REFERENCE_DIFF_RATE_COEFFICIENT +"*(t+"+ REFERENCE_DIFF_DELTAT +")";
 		
 	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace,
@@ -72,7 +72,6 @@ public class FRAPOptData {
 		expFrapStudy = argExpFrapStudy;
 		setNumEstimatedParams(numberOfEstimatedParams);
 		localWorkspace = argLocalWorkSpace;
-//		bRunRefSim = new Boolean(bRefSim); 
 		if(progressListener != null){
 			progressListener.setMessage("Getting experimental data ROI averages...");
 		}
@@ -125,7 +124,7 @@ public class FRAPOptData {
 //			refTimeStep = new TimeStep(timeStep, timeStep, timeStep);
 //		}
 //		return refTimeStep;
-		double timeStep = Double.parseDouble(REFERENCE_DIFF_DELTAT); 
+		double timeStep = REFERENCE_DIFF_DELTAT; 
 		return new TimeStep(timeStep, timeStep, timeStep);
 	}
 	
@@ -199,7 +198,7 @@ public class FRAPOptData {
 		//get ref sim time points
 		double[] rawRefDataTimePoints = refDataReader.getTimePoints();
 		//get shifted time points
-		refDataTimePoints = timeShiftForBaseDiffRate(rawRefDataTimePoints);
+		refDataTimePoints = shiftTimeForBaseDiffRate(rawRefDataTimePoints);
 		//get summarized raw ref data
 		double[][] rawData = refDataReader.getRegionVar(); //contains only 8rois +1(the area that beyond 8 rois)
 		//extend to whole roi data
@@ -219,10 +218,10 @@ public class FRAPOptData {
 //				                      getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), getLocalWorkspace());
 	}
 	
-	private double[] timeShiftForBaseDiffRate(double[] timePoints)
+	private double[] shiftTimeForBaseDiffRate(double[] timePoints)
 	{ 
-		double delT = Double.parseDouble(REFERENCE_DIFF_DELTAT);
-		double s = Double.parseDouble(REFERENCE_DIFF_RATE_COEFFICIENT);
+		double delT = REFERENCE_DIFF_DELTAT;
+		double s = REFERENCE_DIFF_RATE_COEFFICIENT;
 		double[] shiftedTimePoints = new double[timePoints.length];
 		shiftedTimePoints[0] = 0;
 		for(int i=1; i< timePoints.length; i++)
@@ -250,9 +249,6 @@ public class FRAPOptData {
 			
 			//change time bound and time step
 			Simulation sim = bioModel.getSimulations()[0];
-			sim.getSolverTaskDescription().setTimeBounds(getRefTimeBounds());
-			sim.getSolverTaskDescription().setTimeStep(getRefTimeStep());
-			sim.getSolverTaskDescription().setOutputTimeSpec(getRefTimeSpec());
 			
 			DataProcessingInstructions dpi = getExpFrapStudy().getDataProcessInstructions(getLocalWorkspace());
 			sim.setDataProcessingInstructions(dpi);

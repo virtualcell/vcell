@@ -308,6 +308,19 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setRoiExternalDataInfo(null);
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setFrapOptData(null);
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setStoredRefData(null);
+	  	   						//clear model parameters
+	  	   						FRAPModel[] models = getFrapWorkspace().getWorkingFrapStudy().getModels();
+	  	   						if(models != null)
+	  	   						{
+		  	   						for(int i = 0; i < models.length; i++)
+		  	   						{
+		  	   							if(models[i] != null)
+		  	   							{
+			  	   							models[i].setModelParameters(null);
+			  	   							models[i].setData(null);
+		  	   							}
+		  	   						}
+	  	   						}
 	  	   						//reset best model and updateUI
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setBestModelIndex(null);
 	  	   						updateAnalysisResult(getFrapWorkspace().getWorkingFrapStudy());
