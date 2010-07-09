@@ -80,11 +80,15 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
     					if(inFile.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)) //.log (vcell log file) 
     					{
 							DataIdentifier[] dataIdentifiers = FRAPData.getDataIdentiferListFromVCellSimulationData(inFile, 0);
-							String[][] rowData = new String[dataIdentifiers.length][1];
+							ArrayList<String> selectedIdentifiers = new ArrayList<String> ();
 							for (int i = 0; i < dataIdentifiers.length; i++) {
 								if(dataIdentifiers[i].getVariableType().equals(VariableType.VOLUME)){
-									rowData[i][0] = dataIdentifiers[i].getName();
+									selectedIdentifiers.add(dataIdentifiers[i].getName());
 								}
+							}
+							String[][] rowData = new String[selectedIdentifiers.size()][1];
+							for (int i = 0; i < selectedIdentifiers.size(); i++) {
+								rowData[i][0] = selectedIdentifiers.get(i);
 							}
 							int[] selectedIndexArr = DialogUtils.showComponentOKCancelTableList(
 									LoadFRAPData_SingleFileDescriptor.this.getPanelComponent(),
@@ -93,7 +97,7 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 									rowData, ListSelectionModel.SINGLE_SELECTION);
 							if(selectedIndexArr != null && selectedIndexArr.length > 0)
 							{
-								newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, dataIdentifiers[selectedIndexArr[0]].getName(), this.getClientTaskStatusSupport());
+								newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, selectedIdentifiers.get(selectedIndexArr[0]), this.getClientTaskStatusSupport());
 								isFileLoaded = true;
 							}else{
 								throw UserCancelException.CANCEL_GENERIC;
