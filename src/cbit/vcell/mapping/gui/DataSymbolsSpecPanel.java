@@ -32,25 +32,6 @@ public DataSymbolsSpecPanel() {
 }
 
 /**
- * Return the jsortTable property value.
- * @return javax.swing.JScrollPane
- */
-private javax.swing.JScrollPane getJScrollPane() {
-	if (ivjScrollPanel == null) {
-		try {
-			ivjScrollPanel = new javax.swing.JScrollPane();
-			ivjScrollPanel.setName("jsortTable");
-			ivjScrollPanel.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			ivjScrollPanel.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			getJScrollPane().setViewportView(getScrollPaneTable());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjScrollPanel;
-}
-
-/**
  * Return the ScrollPaneTable property value.
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
@@ -59,11 +40,6 @@ private JSortTable getScrollPaneTable() {
 		try {
 			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			ivjScrollPaneTable.setRowHeight(ivjScrollPaneTable.getRowHeight() + 2);
-			ivjScrollPaneTable.setAutoCreateColumnsFromModel(false);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -107,21 +83,6 @@ private void handleException(Throwable exception) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {	
-	getJScrollPane().addComponentListener(new ComponentAdapter() {
-		public void componentResized(ComponentEvent e) {
-			ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-		}
-	});
-	
-	getScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-	
-	getSpeciesContextSpecParameterTableModel1().addTableModelListener(
-		new javax.swing.event.TableModelListener(){
-			public void tableChanged(javax.swing.event.TableModelEvent e){
-				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-			}
-		}
-	);
 }
 
 /**
@@ -133,12 +94,10 @@ private void initialize() {
 		setLayout(new java.awt.BorderLayout());
 		setSize(572, 196);
 
-		add(getJScrollPane(), BorderLayout.CENTER);
+		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 		initConnections();
 		
 		getScrollPaneTable().setModel(getSpeciesContextSpecParameterTableModel1());
-		getScrollPaneTable().createDefaultColumnsFromModel();
-		getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), false));
 
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

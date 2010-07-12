@@ -1,27 +1,27 @@
 package cbit.vcell.mapping.gui;
 
+import java.awt.Font;
 import java.awt.GridBagConstraints;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.table.TableColumn;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.gui.ScopedExpression;
-import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.plot.TimeFunctionPanel;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -36,8 +36,6 @@ import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.gui.ParameterTableCellRenderer;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -47,7 +45,6 @@ import cbit.vcell.parser.SymbolTableEntry;
  * @author: Jim Schaff
  */
 public class ElectricalStimulusPanel extends javax.swing.JPanel {
-	private javax.swing.JScrollPane ivjparameterTable = null;
 	private JSortTable ivjScrollPaneTable = null;
 	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
@@ -69,6 +66,7 @@ public class ElectricalStimulusPanel extends javax.swing.JPanel {
 	private javax.swing.JPanel ivjJPanel2 = null;
 	private JButton btnGraphElectricalStimulus;
 	private TimeFunctionPanel timeFunctionPanel = null;
+	private javax.swing.JLabel ivjJLabel2 = null;
 
 class IvjEventHandler implements java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -783,7 +781,9 @@ private javax.swing.JLabel getgroundElectrodeLabel() {
 		try {
 			ivjgroundElectrodeLabel = new javax.swing.JLabel();
 			ivjgroundElectrodeLabel.setName("groundElectrodeLabel");
-			ivjgroundElectrodeLabel.setText("ground electrode");
+			ivjgroundElectrodeLabel.setText("Ground Electrode");
+			ivjgroundElectrodeLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			ivjgroundElectrodeLabel.setFont(ivjgroundElectrodeLabel.getFont().deriveFont(Font.BOLD));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -805,9 +805,6 @@ private ElectrodePanel getgroundElectrodePanel() {
 		try {
 			ivjgroundElectrodePanel = new ElectrodePanel();
 			ivjgroundElectrodePanel.setName("groundElectrodePanel");
-			ivjgroundElectrodePanel.setPreferredSize(new java.awt.Dimension(545, 20));
-			ivjgroundElectrodePanel.setMinimumSize(new java.awt.Dimension(287, 20));
-			ivjgroundElectrodePanel.setMaximumSize(new java.awt.Dimension(2147483647, 20));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -833,10 +830,12 @@ private javax.swing.JPanel getJPanel1() {
 
 			java.awt.GridBagConstraints constraintsNoClampRadioButton = new java.awt.GridBagConstraints();
 			constraintsNoClampRadioButton.gridx = 1; constraintsNoClampRadioButton.gridy = 1;
+			constraintsNoClampRadioButton.insets = new java.awt.Insets(0, 2, 0, 2);
 			getJPanel1().add(getNoClampRadioButton(), constraintsNoClampRadioButton);
 
 			java.awt.GridBagConstraints constraintsVoltageClampRadioButton = new java.awt.GridBagConstraints();
 			constraintsVoltageClampRadioButton.gridx = 2; constraintsVoltageClampRadioButton.gridy = 1;
+			constraintsVoltageClampRadioButton.insets = new java.awt.Insets(0, 0, 0, 2);
 			getJPanel1().add(getVoltageClampRadioButton(), constraintsVoltageClampRadioButton);
 
 			java.awt.GridBagConstraints constraintsTotalCurrentClampRadioButton = new java.awt.GridBagConstraints();
@@ -864,7 +863,6 @@ private javax.swing.JPanel getJPanel1() {
  * Return the JPanel2 property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getJPanel2() {
 	if (ivjJPanel2 == null) {
 		try {
@@ -872,49 +870,48 @@ private javax.swing.JPanel getJPanel2() {
 			ivjJPanel2.setName("JPanel2");
 			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
 
-			java.awt.GridBagConstraints constraintspatchElectrodeLabel = new java.awt.GridBagConstraints();
-			constraintspatchElectrodeLabel.insets = new Insets(0, 0, 5, 0);
-			constraintspatchElectrodeLabel.gridx = 0; constraintspatchElectrodeLabel.gridy = 0;
-			getJPanel2().add(getpatchElectrodeLabel(), constraintspatchElectrodeLabel);
+			JPanel panel1 = new JPanel();
+			panel1.setLayout(new GridLayout(2,1));
+			panel1.add(getpatchElectrodeLabel());
+			panel1.add(getpatchElectrodePanel());
+			panel1.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4), getScrollPaneTable().getEnclosingScrollPane().getBorder()));
 
-			java.awt.GridBagConstraints constraintspatchElectrodePanel = new java.awt.GridBagConstraints();
-			constraintspatchElectrodePanel.gridx = 0; constraintspatchElectrodePanel.gridy = 1;
-			constraintspatchElectrodePanel.fill = java.awt.GridBagConstraints.BOTH;
-			constraintspatchElectrodePanel.weightx = 1.0;
-			constraintspatchElectrodePanel.weighty = 1.0;
-			constraintspatchElectrodePanel.insets = new Insets(0, 4, 5, 4);
-			getJPanel2().add(getpatchElectrodePanel(), constraintspatchElectrodePanel);
+			JPanel panel2 = new JPanel();
+			panel2.setLayout(new GridLayout(2,1));
+			panel2.add(getgroundElectrodeLabel());
+			panel2.add(getgroundElectrodePanel());
+			panel2.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4), getScrollPaneTable().getEnclosingScrollPane().getBorder()));
+			
+			java.awt.GridBagConstraints constraintspatchElectrodeLabel = new java.awt.GridBagConstraints();
+			constraintspatchElectrodeLabel.gridx = 0; constraintspatchElectrodeLabel.gridy = 0;
+			constraintspatchElectrodeLabel.fill = GridBagConstraints.BOTH;
+			constraintspatchElectrodeLabel.weightx = 1.0;
+			constraintspatchElectrodeLabel.weighty = 0.5;
+			ivjJPanel2.add(panel1, constraintspatchElectrodeLabel);
 
 			java.awt.GridBagConstraints constraintsgroundElectrodeLabel = new java.awt.GridBagConstraints();
-			constraintsgroundElectrodeLabel.gridx = 0; constraintsgroundElectrodeLabel.gridy = 2;
-			constraintsgroundElectrodeLabel.insets = new Insets(4, 4, 5, 4);
-			getJPanel2().add(getgroundElectrodeLabel(), constraintsgroundElectrodeLabel);
-
-			java.awt.GridBagConstraints constraintsgroundElectrodePanel = new java.awt.GridBagConstraints();
-			constraintsgroundElectrodePanel.gridx = 0; constraintsgroundElectrodePanel.gridy = 3;
-			constraintsgroundElectrodePanel.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsgroundElectrodePanel.weightx = 1.0;
-			constraintsgroundElectrodePanel.weighty = 1.0;
-			constraintsgroundElectrodePanel.insets = new Insets(0, 4, 5, 4);
-			getJPanel2().add(getgroundElectrodePanel(), constraintsgroundElectrodePanel);
+			constraintsgroundElectrodeLabel.gridx = 1; constraintsgroundElectrodeLabel.gridy = 0;
+			constraintsgroundElectrodeLabel.fill = GridBagConstraints.BOTH;
+			constraintsgroundElectrodeLabel.weightx = 1.0;
+			constraintsgroundElectrodeLabel.weighty = 0.5;
+			ivjJPanel2.add(panel2, constraintsgroundElectrodeLabel);
+			 
 			GridBagConstraints gbc_btnGraphElectricalStimulus = new GridBagConstraints();
-			gbc_btnGraphElectricalStimulus.insets = new Insets(4, 4, 4, 4);
+			gbc_btnGraphElectricalStimulus.insets = new Insets(20, 4, 4, 4);
 			gbc_btnGraphElectricalStimulus.gridx = 0;
-			gbc_btnGraphElectricalStimulus.gridy = 4;
+			gbc_btnGraphElectricalStimulus.gridy = 3;
+			gbc_btnGraphElectricalStimulus.gridwidth = 2;
 			ivjJPanel2.add(getBtnGraphElectricalStimulus(), gbc_btnGraphElectricalStimulus);
 
 			java.awt.GridBagConstraints constraintsparameterTable = new java.awt.GridBagConstraints();
-			constraintsparameterTable.gridx = 0; constraintsparameterTable.gridy = 5;
+			constraintsparameterTable.gridx = 0; constraintsparameterTable.gridy = 4;
 			constraintsparameterTable.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsparameterTable.gridwidth = 2;
 			constraintsparameterTable.weightx = 1.0;
 			constraintsparameterTable.weighty = 1.0;
 			constraintsparameterTable.insets = new java.awt.Insets(0, 4, 4, 4);
-			getJPanel2().add(getScrollPaneTable().getEnclosingScrollPane(), constraintsparameterTable);
-			// user code begin {1}
-			// user code end
+			ivjJPanel2.add(getScrollPaneTable().getEnclosingScrollPane(), constraintsparameterTable);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -979,7 +976,9 @@ private javax.swing.JLabel getpatchElectrodeLabel() {
 		try {
 			ivjpatchElectrodeLabel = new javax.swing.JLabel();
 			ivjpatchElectrodeLabel.setName("patchElectrodeLabel");
-			ivjpatchElectrodeLabel.setText("patch electrode");
+			ivjpatchElectrodeLabel.setText("Patch Electrode");
+			ivjpatchElectrodeLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			ivjpatchElectrodeLabel.setFont(ivjpatchElectrodeLabel.getFont().deriveFont(Font.BOLD));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1001,9 +1000,6 @@ private ElectrodePanel getpatchElectrodePanel() {
 		try {
 			ivjpatchElectrodePanel = new ElectrodePanel();
 			ivjpatchElectrodePanel.setName("patchElectrodePanel");
-			ivjpatchElectrodePanel.setPreferredSize(new java.awt.Dimension(545, 20));
-			ivjpatchElectrodePanel.setMinimumSize(new java.awt.Dimension(287, 20));
-			ivjpatchElectrodePanel.setMaximumSize(new java.awt.Dimension(2147483647, 20));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1108,6 +1104,24 @@ private void initConnections() throws java.lang.Exception {
 }
 
 /**
+ * Return the JLabel2 property value.
+ * @return javax.swing.JLabel
+ */
+private javax.swing.JLabel getJLabel2() {
+	if (ivjJLabel2 == null) {
+		try {
+			ivjJLabel2 = new javax.swing.JLabel();
+			ivjJLabel2.setName("JLabel2");
+			ivjJLabel2.setText("Electrical Stimulus");
+			ivjJLabel2.setFont(ivjJLabel2.getFont().deriveFont(Font.BOLD));
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJLabel2;
+}
+
+/**
  * Initialize the class.
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -1119,15 +1133,20 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		setSize(567, 430);
 
+		java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
+		constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 0;
+		constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabel2(), constraintsJLabel2);
+		
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 0;
+		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 1;
 		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel1.weightx = 1.0;
 		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 8, 4);
 		add(getJPanel1(), constraintsJPanel1);
 
 		java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
-		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 1;
+		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 2;
 		constraintsJPanel2.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel2.weightx = 1.0;
 		constraintsJPanel2.weighty = 1.0;
@@ -1374,12 +1393,8 @@ private void setgeometryContext(GeometryContext newValue) {
  */
 private void setPanelsVisible() {
 	boolean bHasStimulus = (getElectricalStimulus(getSimulationContext()) != null);
-	getpatchElectrodePanel().setVisible(bHasStimulus);
-	getgroundElectrodePanel().setVisible(bHasStimulus);
-	getBtnGraphElectricalStimulus().setVisible(bHasStimulus);
-	getScrollPaneTable().setVisible(bHasStimulus);
-	getpatchElectrodeLabel().setVisible(bHasStimulus);
-	getgroundElectrodeLabel().setVisible(bHasStimulus);
+	getJPanel2().setEnabled(bHasStimulus);
+	BeanUtils.enableComponents(getJPanel2(), bHasStimulus);
 	return;
 }
 

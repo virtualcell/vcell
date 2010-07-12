@@ -3,6 +3,8 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Font;
+
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
@@ -24,7 +26,6 @@ public class ElectricalMembraneMappingPanel extends javax.swing.JPanel {
 	private ElectricalStimulusPanel ivjElectricalStimuliPanel = null;
 	private SimulationContext ivjsimulationContext1 = null;
 	private javax.swing.JLabel ivjJLabel1 = null;
-	private javax.swing.JLabel ivjJLabel2 = null;
 	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP2Aligning = false;
 
@@ -153,18 +154,12 @@ private void connEtoM6(SimulationContext value) {
 /**
  * connPtoP1SetTarget:  (ScrollPaneTable.model <--> StructureMappingTableModel.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	try {
 		getScrollPaneTable1().setModel(getElectricalMembraneMappingTableModel1());
 		getScrollPaneTable1().createDefaultColumnsFromModel();
-		getScrollPaneTable1().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable1(), true));
-		// user code begin {1}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -282,38 +277,12 @@ private javax.swing.JLabel getJLabel1() {
 			ivjJLabel1 = new javax.swing.JLabel();
 			ivjJLabel1.setName("JLabel1");
 			ivjJLabel1.setText("Membrane Potential Options");
-			// user code begin {1}
-			// user code end
+			ivjJLabel1.setFont(ivjJLabel1.getFont().deriveFont(Font.BOLD));
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
 	return ivjJLabel1;
-}
-
-
-/**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel2() {
-	if (ivjJLabel2 == null) {
-		try {
-			ivjJLabel2 = new javax.swing.JLabel();
-			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Electrical Stimulus");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel2;
 }
 
 /**
@@ -374,7 +343,6 @@ private void handleException(Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
-	getScrollPaneTable1().addPropertyChangeListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
@@ -389,16 +357,13 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("ElectricalMembraneMappingPanel");
-		//setPreferredSize(new java.awt.Dimension(677, 700));
 		setLayout(new java.awt.GridBagLayout());
-		//setSize(528, 532);
-		//setMinimumSize(new java.awt.Dimension(419, 700));
 
 		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 		constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 1;
 		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJScrollPane1.weightx = 1.0;
-		constraintsJScrollPane1.weighty = 0.2;
+		constraintsJScrollPane1.weighty = 0.5;
 		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getScrollPaneTable1().getEnclosingScrollPane(), constraintsJScrollPane1);
 
@@ -415,17 +380,10 @@ private void initialize() {
 		constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabel1(), constraintsJLabel1);
 
-		java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
-		constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 2;
-		constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel2(), constraintsJLabel2);
-		
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**
@@ -515,8 +473,6 @@ public void setSimulationContext(SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
-
-	ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
 }
 
 
@@ -534,16 +490,10 @@ private void setsimulationContext1(SimulationContext newValue) {
 			connEtoM1(ivjsimulationContext1);
 			connEtoM6(ivjsimulationContext1);
 			firePropertyChange("simulationContext", oldValue, newValue);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 }
