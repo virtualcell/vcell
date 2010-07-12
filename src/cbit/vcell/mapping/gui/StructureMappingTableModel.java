@@ -3,12 +3,20 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Component;
+import java.awt.GridLayout;
 import java.beans.PropertyVetoException;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.table.TableCellRenderer;
 
 import org.vcell.sbml.vcell.StructureSizeSolver;
 
@@ -25,6 +33,7 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -41,18 +50,16 @@ public class StructureMappingTableModel extends javax.swing.table.AbstractTableM
 	public final static int SPATIAL_COLUMN_STRUCTURE = 0;
 	public final static int SPATIAL_COLUMN_SUBDOMAIN = 1;
 	public final static int SPATIAL_COLUMN_SIZERATIO = 2;
-	public final static int SPATIAL_COLUMN_SIZEDESCRIPTION = 3;
-	public final static int SPATIAL_COLUMN_X_MINUS = 4;
-	public final static int SPATIAL_COLUMN_X_PLUS = 5;
-	public final static int SPATIAL_COLUMN_Y_MINUS = 6;
-	public final static int SPATIAL_COLUMN_Y_PLUS = 7;
-	public final static int SPATIAL_COLUMN_Z_MINUS = 8;
-	public final static int SPATIAL_COLUMN_Z_PLUS = 9;
+	public final static int SPATIAL_COLUMN_X_MINUS = 3;
+	public final static int SPATIAL_COLUMN_X_PLUS = 4;
+	public final static int SPATIAL_COLUMN_Y_MINUS = 5;
+	public final static int SPATIAL_COLUMN_Y_PLUS = 6;
+	public final static int SPATIAL_COLUMN_Z_MINUS = 7;
+	public final static int SPATIAL_COLUMN_Z_PLUS = 8;
 		
 	public final static String SPATIAL_LABEL_STRUCTURE = "Structure";
 	public final static String SPATIAL_LABEL_SUBDOMAIN = "Subdomain";
-	public final static String SPATIAL_LABEL_SIZERATIO = "Size Ratio";
-	public final static String SPATIAL_LABEL_SIZEDESCRIPTION = "Description";
+	public final static String SPATIAL_LABEL_SIZERATIO = "Size Ratio(Structure : Subdomain)";
 	public final static String SPATIAL_LABEL_X_MINUS = "X-";
 	public final static String SPATIAL_LABEL_X_PLUS = "X+";
 	public final static String SPATIAL_LABEL_Y_MINUS = "Y-";
@@ -62,18 +69,15 @@ public class StructureMappingTableModel extends javax.swing.table.AbstractTableM
 	
 	public final static int NONSPATIAL_COLUMN_STRUCTURE = 0;
 	public final static int NONSPATIAL_COLUMN_SIZE = 1;
-	public final static int NONSPATIAL_COLUMN_SIZEDESCRIPTION = 2;
-	public final static int NONSPATIAL_COLUMN_SURFVOL = 3;
-	public final static int NONSPATIAL_COLUMN_VOLFRACT = 4;
+	public final static int NONSPATIAL_COLUMN_SURFVOL = 2;
+	public final static int NONSPATIAL_COLUMN_VOLFRACT = 3;
 
 	public final static String NONSPATIAL_LABEL_STRUCTURE = "Structure";
 	public final static String NONSPATIAL_LABEL_SIZE = "Size";
-	public final static String NONSPATIAL_LABEL_SIZEDESCRIPTION = "DESCRIPTION";
-	public final static String NONSPATIAL_LABEL_SURFVOL = "Surface/Volume";
-	public final static String NONSPATIAL_LABEL_VOLFRACT = "Volume Fraction";
+	public final static String NONSPATIAL_LABEL_SURFVOL = "Surface : Volume";
+	public final static String NONSPATIAL_LABEL_VOLFRACT = "Volume : Volume";
 	
 	public final static String[] SPATIAL_COLUMN_TOOLTIPS = {
-		null,
 		null,
 		null,
 		null,
@@ -87,21 +91,19 @@ public class StructureMappingTableModel extends javax.swing.table.AbstractTableM
 	
 	public final static String[] NONSPATIAL_COLUMN_TOOLTIPS = {
 		null,
-		"The volume of a compartment does <b>NOT</b> include the volumes of <br> any other compartments residing within that compartment.", 
-		"membrane surface area",
+		"<html>The volume of a compartment which does <b>NOT</b> include the volumes of <br> any other compartments residing within that compartment OR the area of a membrane surface</html>",
 		"ratio of membrane area to total enclosed volume",
 		"ratio of total enclosed volume to parent's total enclosed volume",
 	};
 		
-	private final String NONSPATIAL_LABELS[] = { NONSPATIAL_LABEL_STRUCTURE, NONSPATIAL_LABEL_SIZE, NONSPATIAL_LABEL_SIZEDESCRIPTION, NONSPATIAL_LABEL_SURFVOL, NONSPATIAL_LABEL_VOLFRACT};
-	private final String SPATIAL_LABELS[] = { SPATIAL_LABEL_STRUCTURE, SPATIAL_LABEL_SUBDOMAIN, SPATIAL_LABEL_SIZERATIO, SPATIAL_LABEL_SIZEDESCRIPTION, 
+	private final String NONSPATIAL_LABELS[] = { NONSPATIAL_LABEL_STRUCTURE, NONSPATIAL_LABEL_SIZE, NONSPATIAL_LABEL_SURFVOL, NONSPATIAL_LABEL_VOLFRACT};
+	private final String SPATIAL_LABELS[] = { SPATIAL_LABEL_STRUCTURE, SPATIAL_LABEL_SUBDOMAIN, SPATIAL_LABEL_SIZERATIO, 
 			SPATIAL_LABEL_X_MINUS, SPATIAL_LABEL_X_PLUS, SPATIAL_LABEL_Y_MINUS, SPATIAL_LABEL_Y_PLUS, SPATIAL_LABEL_Z_MINUS, SPATIAL_LABEL_Z_PLUS };
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private GeometryContext fieldGeometryContext = null;
 	private JTable ownerTable = null;
-	private String[] labels;
-	private String[] tooltips;
+	private boolean bNonSpatial = true;
 
 /**
  * StructureMappingTableModel constructor comment.
@@ -109,8 +111,7 @@ public class StructureMappingTableModel extends javax.swing.table.AbstractTableM
 public StructureMappingTableModel(JTable table) {
 	super();
 	ownerTable = table;
-	labels = NONSPATIAL_LABELS;
-	tooltips = NONSPATIAL_COLUMN_TOOLTIPS;
+	bNonSpatial = true;
 	addPropertyChangeListener(this);
 }
 
@@ -138,42 +139,30 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
  * @param column int
  */
 public Class<?> getColumnClass(int column) {
-	if (labels == NONSPATIAL_LABELS) {
+	if (bNonSpatial) {
 		switch (column){
 			case NONSPATIAL_COLUMN_STRUCTURE:{
-				return String.class;
+				return Structure.class;
 			}
 			case NONSPATIAL_COLUMN_SIZE:{
 				return Double.class;
-			}
-			case NONSPATIAL_COLUMN_SIZEDESCRIPTION:{
-				return String.class;
 			}
 			case NONSPATIAL_COLUMN_SURFVOL:
 			case NONSPATIAL_COLUMN_VOLFRACT: {
 				return Double.class;
 			}
 		}
-	} else if (labels == SPATIAL_LABELS) {
+	} else {
 		switch (column){
 			case SPATIAL_COLUMN_STRUCTURE:{
-				return String.class;
+				return Structure.class;
 			}
 			case SPATIAL_COLUMN_SUBDOMAIN:{
-				return String.class;
+				return GeometryClass.class;
 			}
 			case SPATIAL_COLUMN_SIZERATIO:{
 				return Double.class;
 			}
-			case SPATIAL_COLUMN_SIZEDESCRIPTION:{
-				return String.class;
-			}
-//			case COLUMN_SURFVOL:{
-//				return Double.class;
-//			}
-//			case COLUMN_VOLFRACT:{
-//				return Double.class;
-//			}
 			case SPATIAL_COLUMN_X_MINUS:
 			case SPATIAL_COLUMN_X_PLUS:
 			case SPATIAL_COLUMN_Y_MINUS:
@@ -192,19 +181,36 @@ public Class<?> getColumnClass(int column) {
  * getColumnCount method comment.
  */
 public int getColumnCount() {
-	if (labels == NONSPATIAL_LABELS) {
-		return labels.length;
-	} else if (labels == SPATIAL_LABELS) {
+	if (getGeometryContext() == null) {
+		return 0;
+	}
+	if (bNonSpatial) {
+		StructureMapping[] sms = getGeometryContext().getStructureMappings();
+		boolean bHasOldSizeRatio = false;
+		for (StructureMapping sm : sms) {
+			Parameter volFrac = sm.getParameterFromRole(StructureMapping.ROLE_VolumeFraction);
+			if (volFrac != null && volFrac.getExpression() != null) {
+				bHasOldSizeRatio = true;
+				break;
+			}
+			Parameter surfVolFrac = sm.getParameterFromRole(StructureMapping.ROLE_SurfaceToVolumeRatio);
+			if (surfVolFrac != null && surfVolFrac.getExpression() != null) {
+				bHasOldSizeRatio = true;
+				break;
+			}
+		}		
+		return bHasOldSizeRatio ? NONSPATIAL_LABELS.length : NONSPATIAL_LABELS.length - 2;
+	} else {
 		int dimension = getGeometryContext().getGeometry().getDimension();
+		int count = SPATIAL_LABELS.length;
 		if (dimension == 1) {
-			return labels.length - 4;
+			return count - 4;
 		} 
 		if (dimension == 2) {
-			return labels.length - 2;
+			return count - 2;
 		}
-		return labels.length;
+		return count;
 	}
-	return 0;
 }
 
 
@@ -212,7 +218,7 @@ public String getColumnName(int column) {
 	if (column<0 || column>=getColumnCount()){
 		throw new RuntimeException("StructureMappingTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
-	return labels[column];
+	return bNonSpatial ? NONSPATIAL_LABELS[column] : SPATIAL_LABELS[column];
 }
 
 
@@ -265,11 +271,11 @@ public Object getValueAt(int row, int col) {
 		return null;
 	}
 	StructureMapping structureMapping = getGeometryContext().getStructureMapping(row);
-	if (labels == NONSPATIAL_LABELS) {
+	if (bNonSpatial) {
 		switch (col){
 			case NONSPATIAL_COLUMN_STRUCTURE:{
 				if (structureMapping.getStructure()!=null){
-					return structureMapping.getStructure().getName();
+					return structureMapping.getStructure();
 				}else{
 					return null;
 				}
@@ -284,13 +290,6 @@ public Object getValueAt(int row, int col) {
 					e.printStackTrace(System.out);
 				}
 				return null;
-			}
-			case NONSPATIAL_COLUMN_SIZEDESCRIPTION:{
-				if (structureMapping instanceof FeatureMapping) {
-					return "<html>Volume [ \u03BCm<sup>3</sup> ]</html>";
-				} else if (structureMapping instanceof MembraneMapping) {
-					return "<html>Area [ \u03BCm<sup>2</sup> ]</html>";
-				}
 			}
 			case NONSPATIAL_COLUMN_SURFVOL:{
 				if (structureMapping instanceof MembraneMapping){
@@ -325,17 +324,17 @@ public Object getValueAt(int row, int col) {
 				return null;
 			}			
 		}
-	} else if (labels == SPATIAL_LABELS) {
+	} else {
 		switch (col){
 			case SPATIAL_COLUMN_STRUCTURE:{
 				if (structureMapping.getStructure()!=null){
-					return structureMapping.getStructure().getName();
+					return structureMapping.getStructure();
 				}else{
 					return null;
 				}
 			}
 			case SPATIAL_COLUMN_SUBDOMAIN:{
-				return structureMapping.getGeometryClass() == null ? null : structureMapping.getGeometryClass().getName();
+				return structureMapping.getGeometryClass();
 			}
 			case SPATIAL_COLUMN_SIZERATIO:{
 				try {
@@ -350,22 +349,6 @@ public Object getValueAt(int row, int col) {
 				} catch (ExpressionException e) {
 					e.printStackTrace();
 					return -1;
-				}
-			}
-			case SPATIAL_COLUMN_SIZEDESCRIPTION:{
-				if (structureMapping.getUnitSizeParameter()!=null){
-					int role = structureMapping.getUnitSizeParameter().getRole();
-					if (role == StructureMapping.ROLE_VolumePerUnitVolume) {
-						return "Volume Fraction";						
-					} else if (role == StructureMapping.ROLE_VolumePerUnitArea) {
-						return "Volume to Surface Fraction [ \u03BCm ]";
-					} else if (role == StructureMapping.ROLE_AreaPerUnitArea) {
-						return "Surface Fraction";
-					} else if (role == StructureMapping.ROLE_AreaPerUnitVolume) {						
-						return "<html>Surface to Volume Fraction [ \u03BCm<sup>-1</sup> ]</html>";
-					}
-				}else{
-					return null;
 				}
 			}
 			case SPATIAL_COLUMN_X_MINUS:{
@@ -437,23 +420,18 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	}
 	
 	StructureMapping sm = getGeometryContext().getStructureMapping(rowIndex);
-	if (labels == NONSPATIAL_LABELS) {
+	if (bNonSpatial) {
 		if (columnIndex == NONSPATIAL_COLUMN_SIZE){ // feature size are editable  
 			return true;
 		}
 		return false;
-	} else if (labels == SPATIAL_LABELS){
+	} else {
 		//
 		// see if feature is distributed and has a membrane (not top)
 		//		
 		if (columnIndex == SPATIAL_COLUMN_SUBDOMAIN) {
 			return (sm instanceof FeatureMapping);
 		}
-//		// the VolFrac and Surf/Vol are editable for non-compartmental models
-//		if ((getGeometryContext().getGeometry().getDimension() > 0) && (sm instanceof FeatureMapping))
-//		{
-//			if((((FeatureMapping)sm).getFeature().getMembrane() != null) && ((columnIndex == COLUMN_VOLFRACT)||(columnIndex == COLUMN_SURFVOL))) return false;
-//		}
 		if (columnIndex == SPATIAL_COLUMN_SIZERATIO){
 			GeometryClass gc = sm.getGeometryClass();
 			StructureMapping[] structureMappings = getGeometryContext().getStructureMappings(gc);
@@ -470,11 +448,25 @@ private void updateSubdomainComboBox() {
 	GeometryClass[] geometryClasses = getGeometryContext().getGeometry().getGeometryClasses();
 	DefaultComboBoxModel aModel = new DefaultComboBoxModel();
 	for (GeometryClass gc : geometryClasses) {
-		aModel.addElement(gc.getName());
+		aModel.addElement(gc);
 	}
 	JComboBox subdomainComboBoxCellEditor = new JComboBox();
+	subdomainComboBoxCellEditor.setRenderer(new DefaultListCellRenderer() {
+		
+		public Component getListCellRendererComponent(JList list, Object value,
+				int index, boolean isSelected, boolean cellHasFocus) {
+			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			setHorizontalTextPosition(SwingConstants.LEFT);
+			if (value instanceof GeometryClass) {
+				GeometryClass gc = (GeometryClass)value;
+				setText(gc.getName());
+				setIcon(gc instanceof SubVolume ? StructureMappingTableRenderer.volumeIcon : StructureMappingTableRenderer.surfaceIcon);
+			}
+			return this;
+		}
+	});
 	subdomainComboBoxCellEditor.setModel(aModel);
-	ownerTable.setDefaultEditor(String.class, new DefaultCellEditor(subdomainComboBoxCellEditor));
+	ownerTable.getColumnModel().getColumn(SPATIAL_COLUMN_SUBDOMAIN).setCellEditor(new DefaultCellEditor(subdomainComboBoxCellEditor));
 }
 
 private void update() {
@@ -490,20 +482,35 @@ private void update() {
 //		@Override
 //		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			int dimension = getGeometryContext().getGeometry().getDimension();
-			if (dimension == 0) {
-				labels = NONSPATIAL_LABELS;
-				tooltips = NONSPATIAL_COLUMN_TOOLTIPS;
-			} else {
-				labels = SPATIAL_LABELS;
-				tooltips = SPATIAL_COLUMN_TOOLTIPS;
-			}
-			ownerTable.createDefaultColumnsFromModel();	
+			bNonSpatial = (dimension == 0);
+			fireTableStructureChanged();
 			
-			if (dimension > 0) {		
+			if (!bNonSpatial) {
+				class MultiLineHeaderRenderer extends JPanel implements TableCellRenderer {
+					public Component getTableCellRendererComponent(
+							JTable table, Object value, boolean isSelected,
+							boolean hasFocus, int row, int column) {
+						removeAll();
+						JLabel label1 = new JLabel("Size Ratio");
+						label1.setHorizontalAlignment(SwingConstants.CENTER);
+						JLabel label2 = new JLabel("(Structure : Subdomain)");
+						label2.setFont(label2.getFont().deriveFont(label2.getFont().getSize2D() - 2f));
+						label2.setHorizontalAlignment(SwingConstants.CENTER);
+						setLayout(new GridLayout(2, 1));
+						add(label1);
+						add(label2);
+						return this;
+					}
+				}
+				
+				ownerTable.getColumnModel().getColumn(SPATIAL_COLUMN_SIZERATIO).setHeaderRenderer(new MultiLineHeaderRenderer());
 				updateSubdomainComboBox();
+				
+				for (int col = SPATIAL_COLUMN_X_MINUS; col < getColumnCount(); col ++) {
+					ownerTable.getColumnModel().getColumn(col).setPreferredWidth(8);
+				}
 			}		
 			
-			fireTableStructureChanged();
 //		}
 //	};
 //	ClientTaskDispatcher.dispatch(ownerTable, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
@@ -603,7 +610,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 	}	
 	StructureMapping structureMapping = getGeometryContext().getStructureMapping(rowIndex);
 	Structure structure = structureMapping.getStructure();
-	if (labels == NONSPATIAL_LABELS) {
+	if (bNonSpatial) {
 		switch (columnIndex){
 			case NONSPATIAL_COLUMN_SIZE:{
 				try {
@@ -665,16 +672,15 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 				break;
 			}			
 		}
-	} else if (labels == SPATIAL_LABELS) {
+	} else {
 		switch (columnIndex){
 			case SPATIAL_COLUMN_SUBDOMAIN: {
-				String svname = (String)aValue;
-				GeometryClass[] geometryClasses = getGeometryContext().getGeometry().getGeometryClasses();
 				GeometryClass geometryClass = null;
-				for (int i = 0; i < geometryClasses.length; i++) {
-					if (geometryClasses[i].getName().equals(svname)){
-						geometryClass = geometryClasses[i];
-					}
+				if (aValue instanceof String) {
+					String svname = (String)aValue;
+					geometryClass = getGeometryContext().getGeometry().getGeometryClass(svname);
+				} else if (aValue instanceof GeometryClass) {
+					geometryClass = (GeometryClass)aValue;
 				}
 				if (geometryClass!=null && (structure instanceof Feature)){
 					try {
@@ -755,19 +761,32 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 }
 
 public String getToolTip(int row, int column) {	
-	if (labels == SPATIAL_LABELS) {
+	if (!bNonSpatial) {
 		StructureMapping structureMapping = getGeometryContext().getStructureMapping(row);
-		if (column == SPATIAL_COLUMN_SIZEDESCRIPTION || column == SPATIAL_COLUMN_SIZEDESCRIPTION) {
+		if (column == SPATIAL_COLUMN_SIZERATIO) {
 			if (structureMapping.getUnitSizeParameter()!=null && structureMapping.getUnitSizeParameter().getExpression()!=null){
 				return structureMapping.getUnitSizeParameter().getDescription();
 			}
 		}
+		return SPATIAL_COLUMN_TOOLTIPS[column];
 	}
-	return tooltips[column];
+	return NONSPATIAL_COLUMN_TOOLTIPS[column];
 	
 }
 
 public boolean isSubdomainColumn(int column) {
-	return (labels == SPATIAL_LABELS && column == SPATIAL_COLUMN_SUBDOMAIN);
+	return (!bNonSpatial && column == SPATIAL_COLUMN_SUBDOMAIN);
+}
+
+public boolean isNewSizeColumn(int column) {
+	return (bNonSpatial && column == NONSPATIAL_COLUMN_SIZE || !bNonSpatial && column == SPATIAL_COLUMN_SIZERATIO);
+}
+
+public StructureMapping getStructureMapping(int row) {
+	return getGeometryContext().getStructureMapping(row);
+}
+
+public boolean isNonSpatial() {
+	return bNonSpatial;
 }
 }

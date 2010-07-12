@@ -3,16 +3,17 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.Component;
-
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JTable;
 import javax.swing.UIManager;
 
 import org.vcell.util.gui.ScrollTable;
 
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.model.Structure;
 
 /**
  * This type was created in VisualAge.
@@ -21,8 +22,6 @@ public class StructureMappingPanel extends javax.swing.JPanel {
 	private static final String PROPERTY_GEOMETRY_CONTEXT = "geometryContext";
 	private GeometryContext ivjgeometryContext1 = null;  
 	private GeometryContext fieldGeometryContext = null;
-	private Component ivjComponent1 = null;
-	private javax.swing.DefaultCellEditor ivjDefaultCellEditor1 = null;  //  @jve:decl-index=0:
 	private ScrollTable ivjScrollPaneTable1 = null;
 	private StructureMappingTableModel ivjStructureMappingTableModel1 = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -30,20 +29,13 @@ public class StructureMappingPanel extends javax.swing.JPanel {
 	private VolumeSurfaceCalculatorPanel volumeSurfaceCalculatorPanel = null;
 	private JComboBox boundaryConditionComboBox = new JComboBox(new String[]{BoundaryConditionType.NEUMANN_STRING,BoundaryConditionType.DIRICHLET_STRING});
 
-class IvjEventHandler implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {		
-		public void focusGained(java.awt.event.FocusEvent e) {};
-		public void focusLost(java.awt.event.FocusEvent e) {
-			if (e.getSource() == StructureMappingPanel.this.getComponent1()) 
-				connEtoC2(e);
-		};
+class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == StructureMappingPanel.this && (evt.getPropertyName().equals(PROPERTY_GEOMETRY_CONTEXT))) 
 				connPtoP3SetTarget();
 			if (evt.getSource() == StructureMappingPanel.this.getgeometryContext1() && (evt.getPropertyName().equals(GeometryContext.PROPERTY_GEOMETRY))) {
 				getVolumeSurfaceCalculatorPanel().setVisible(getGeometryContext().getGeometry().getDimension() == 0);
 			}
-			if (evt.getSource() == StructureMappingPanel.this.getScrollPaneTable1() && (evt.getPropertyName().equals("cellEditor"))) 
-				connEtoM7(evt);
 		}
 	}
 
@@ -56,77 +48,6 @@ public StructureMappingPanel() {
 	initialize();
 }
 
-
-/**
- * Comment
- */
-private void component1_FocusLost(java.awt.event.FocusEvent focusEvent) {
-	if(getDefaultCellEditor1() != null){
-		getDefaultCellEditor1().stopCellEditing();
-	}
-}
-
-/**
- * connEtoC2:  (Component1.focus.focusLost(java.awt.event.FocusEvent) --> StructureMappingPanel.component1_FocusLost(Ljava.awt.event.FocusEvent;)V)
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.FocusEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.component1_FocusLost(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM7:  (ScrollPaneTable1.cellEditor --> DefaultCellEditor1.this)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		setDefaultCellEditor1((javax.swing.DefaultCellEditor)getScrollPaneTable1().getCellEditor());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM8:  (DefaultCellEditor1.this --> Component1.this)
- * @param value javax.swing.DefaultCellEditor
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(javax.swing.DefaultCellEditor value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getDefaultCellEditor1() != null)) {
-			setComponent1(getDefaultCellEditor1().getComponent());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connPtoP1SetTarget:  (ScrollPaneTable.model <--> StructureMappingTableModel.this)
  */
@@ -135,7 +56,6 @@ private void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	try {
 		getScrollPaneTable1().setModel(getStructureMappingTableModel1());
-		getScrollPaneTable1().createDefaultColumnsFromModel();
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
 		// user code end
@@ -193,30 +113,6 @@ private void connPtoP3SetTarget() {
 		handleException(ivjExc);
 	}
 }
-
-/**
- * Return the Component1 property value.
- * @return java.awt.Component
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private java.awt.Component getComponent1() {
-	// user code begin {1}
-	// user code end
-	return ivjComponent1;
-}
-
-
-/**
- * Return the DefaultCellEditor1 property value.
- * @return javax.swing.DefaultCellEditor
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.DefaultCellEditor getDefaultCellEditor1() {
-	// user code begin {1}
-	// user code end
-	return ivjDefaultCellEditor1;
-}
-
 
 /**
  * Gets the geometryContext property (cbit.vcell.mapping.GeometryContext) value.
@@ -335,8 +231,10 @@ private void initialize() {
 		//set column renderer
 		getScrollPaneTable1().setDefaultEditor(BoundaryConditionType.class, new DefaultCellEditor(boundaryConditionComboBox));
 		getScrollPaneTable1().setDefaultRenderer(BoundaryConditionType.class, new StructureMappingTableRenderer());
+		getScrollPaneTable1().setDefaultRenderer(GeometryClass.class, new StructureMappingTableRenderer());
 		getScrollPaneTable1().setDefaultRenderer(Double.class, new StructureMappingTableRenderer());
 		getScrollPaneTable1().setDefaultRenderer(String.class, new StructureMappingTableRenderer());
+		getScrollPaneTable1().setDefaultRenderer(Structure.class, new StructureMappingTableRenderer());
 		
  		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
@@ -372,58 +270,6 @@ public static void main(java.lang.String[] args) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");
 		exception.printStackTrace(System.out);
 	}
-}
-
-/**
- * Set the Component1 to a new value.
- * @param newValue java.awt.Component
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setComponent1(java.awt.Component newValue) {
-	if (ivjComponent1 != newValue) {
-		try {
-			/* Stop listening for events from the current object */
-			if (ivjComponent1 != null) {
-				ivjComponent1.removeFocusListener(ivjEventHandler);
-			}
-			ivjComponent1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjComponent1 != null) {
-				ivjComponent1.addFocusListener(ivjEventHandler);
-			}
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-/**
- * Set the DefaultCellEditor1 to a new value.
- * @param newValue javax.swing.DefaultCellEditor
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setDefaultCellEditor1(javax.swing.DefaultCellEditor newValue) {
-	if (ivjDefaultCellEditor1 != newValue) {
-		try {
-			ivjDefaultCellEditor1 = newValue;
-			connEtoM8(ivjDefaultCellEditor1);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
 }
 
 /**

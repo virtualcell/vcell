@@ -155,7 +155,7 @@ public class ScrollTable extends JTable {
 			setAutoResizeMode(autoResizeMode);
 		} else {
 			if (autoResizeMode == AUTO_RESIZE_OFF) {
-				autoResizeMode = AUTO_RESIZE_ALL_COLUMNS;
+				autoResizeMode = AUTO_RESIZE_SUBSEQUENT_COLUMNS;
 			}
 			setAutoResizeMode(autoResizeMode);
 		}

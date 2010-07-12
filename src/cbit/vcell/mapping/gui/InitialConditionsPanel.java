@@ -683,7 +683,7 @@ private JSortTable getScrollPaneTable() {
 		try {
 			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			ivjScrollPaneTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+			ivjScrollPaneTable.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

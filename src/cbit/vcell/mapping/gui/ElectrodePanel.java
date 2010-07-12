@@ -1,5 +1,6 @@
 package cbit.vcell.mapping.gui;
 
+import java.awt.Font;
 import java.util.Vector;
 
 import org.vcell.util.Coordinate;
@@ -19,32 +20,20 @@ public class ElectrodePanel extends javax.swing.JPanel {
 	private Feature ivjFeature = null;
 	private javax.swing.JLabel ivjFeatureLabel = null;
 	private javax.swing.JLabel ivjFeatureValueLabel = null;
-	private javax.swing.JLabel ivjLabelX = null;
-	private javax.swing.JLabel ivjLabelY = null;
-	private javax.swing.JLabel ivjLabelZ = null;
-	private javax.swing.JLabel ivjPositionLabel = null;
-	private javax.swing.JButton ivjSetCoordButton = null;
 	private javax.swing.JButton ivjSetFeatureButton = null;
-	private javax.swing.JTextField ivjTextFieldX = null;
-	private javax.swing.JTextField ivjTextFieldY = null;
-	private javax.swing.JTextField ivjTextFieldZ = null;
 	private Electrode fieldElectrode = null;
 	private boolean ivjConnPtoP1Aligning = false;
-	private Coordinate ivjCoordinateFactory = null;
 	private Electrode ivjelectrode1 = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private Geometry fieldGeometry = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private Geometry ivjgeometry1 = null;
 	private Model fieldModel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private Model ivjmodel1 = null;
-	private Coordinate ivjCoordinate = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == ElectrodePanel.this.getSetCoordButton()) 
-				connEtoM6(e);
 			if (e.getSource() == ElectrodePanel.this.getSetFeatureButton()) 
 				connEtoC1(e);
 		};
@@ -59,8 +48,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connPtoP2SetTarget();
 			if (evt.getSource() == ElectrodePanel.this && (evt.getPropertyName().equals("model"))) 
 				connPtoP3SetTarget();
-			if (evt.getSource() == ElectrodePanel.this.getelectrode1() && (evt.getPropertyName().equals("position"))) 
-				connEtoM11(evt);
 		};
 	};
 /**
@@ -144,36 +131,7 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-/**
- * connEtoM10:  (Coordinate.this --> TextFieldZ.text)
- * @param value cbit.vcell.geometry.Coordinate
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10(Coordinate value) {
-	try {
-		getTextFieldZ().setText(this.getZString());
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoM11:  (electrode1.position --> Coordinate.this)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM11(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		setCoordinate(getelectrode1().getPosition());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+
 /**
  * connEtoM2:  (Feature.this --> FeatureValueLabel.text)
  * @param value cbit.vcell.model.Feature
@@ -250,86 +208,7 @@ private void connEtoM5(Electrode value) {
 		handleException(ivjExc);
 	}
 }
-/**
- * connEtoM6:  (SetCoordButton.action.actionPerformed(java.awt.event.ActionEvent) --> electrode1.position)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(java.awt.event.ActionEvent arg1) {
-	Coordinate localValue = null;
-	try {
-		// user code begin {1}
-		// user code end
-		getelectrode1().setPosition(localValue = new Coordinate(new Double(getTextFieldX().getText()).doubleValue(), new Double(getTextFieldY().getText()).doubleValue(), new Double(getTextFieldZ().getText()).doubleValue()));
-		
-		// user code begin {2}
-		System.out.println("Feature : "+ivjelectrode1.getFeature().toString());
-		System.out.println("Co-ord : x="+ ivjelectrode1.getPosition().getX()+", y="+ivjelectrode1.getPosition().getY()+", z="+ivjelectrode1.getPosition().getZ());
 
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-	setCoordinateFactory(localValue);
-}
-/**
- * connEtoM7:  (electrode1.this --> Coordinate.this)
- * @param value cbit.vcell.mapping.Electrode
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(Electrode value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getelectrode1() != null)) {
-			setCoordinate(getelectrode1().getPosition());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoM8:  (Coordinate.this --> TextFieldX.text)
- * @param value cbit.vcell.geometry.Coordinate
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(Coordinate value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getTextFieldX().setText(this.getXString());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoM9:  (Coordinate.this --> TextFieldY.text)
- * @param value cbit.vcell.geometry.Coordinate
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM9(Coordinate value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getTextFieldY().setText(this.getYString());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 /**
  * connPtoP1SetSource:  (ElectrodePanel.electrode <--> electrode1.this)
  */
@@ -476,32 +355,6 @@ private void enableComponents() {
 	//
 	Geometry geometry = getGeometry();
 	boolean enable = (geometry!=null);
-	boolean enableX = enable;
-	boolean enableY = enable;
-	boolean enableZ = enable;
-
-	if (geometry!=null){
-		if (geometry.getDimension()<1){
-			enableX = false;
-		}
-		if (geometry.getDimension()<2){
-			enableY = false;
-		}
-		if (geometry.getDimension()<3){
-			enableZ = false;
-		}
-	}
-	enableX = false;
-	enableY = false;
-	enableZ = false;
-	getLabelX().setEnabled(enableX);
-	getTextFieldX().setEnabled(enableX);
-	getLabelY().setEnabled(enableY);
-	getTextFieldY().setEnabled(enableY);
-	getLabelZ().setEnabled(enableZ);
-	getTextFieldZ().setEnabled(enableZ);
-	getPositionLabel().setEnabled(enableX);
-	getSetCoordButton().setEnabled(enableX);
 
 	//
 	// rest of the widgets.
@@ -511,13 +364,6 @@ private void enableComponents() {
 	getSetFeatureButton().setEnabled(enable);
 	
 	return;
-}
-/**
- * Return the Coordinate property value.
- * @return cbit.vcell.geometry.Coordinate
- */
-private Coordinate getCoordinate() {
-	return ivjCoordinate;
 }
 
 /**
@@ -551,7 +397,7 @@ private javax.swing.JLabel getFeatureLabel() {
 		try {
 			ivjFeatureLabel = new javax.swing.JLabel();
 			ivjFeatureLabel.setName("FeatureLabel");
-			ivjFeatureLabel.setText("Feature");
+			ivjFeatureLabel.setText("Feature : ");
 			ivjFeatureLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
 			ivjFeatureLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
 		} catch (java.lang.Throwable ivjExc) {
@@ -589,8 +435,8 @@ private javax.swing.JLabel getFeatureValueLabel() {
 		try {
 			ivjFeatureValueLabel = new javax.swing.JLabel();
 			ivjFeatureValueLabel.setName("FeatureValueLabel");
-			ivjFeatureValueLabel.setText("Please Select a Feature");
-			ivjFeatureValueLabel.setForeground(java.awt.Color.black);
+			ivjFeatureValueLabel.setText("not set");
+			ivjFeatureValueLabel.setForeground(java.awt.Color.blue);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -612,54 +458,7 @@ public Geometry getGeometry() {
 private Geometry getgeometry1() {
 	return ivjgeometry1;
 }
-/**
- * Return the LabelX property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getLabelX() {
-	if (ivjLabelX == null) {
-		try {
-			ivjLabelX = new javax.swing.JLabel();
-			ivjLabelX.setName("LabelX");
-			ivjLabelX.setText("X");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjLabelX;
-}
-/**
- * Return the LabelY property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getLabelY() {
-	if (ivjLabelY == null) {
-		try {
-			ivjLabelY = new javax.swing.JLabel();
-			ivjLabelY.setName("LabelY");
-			ivjLabelY.setText("Y");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjLabelY;
-}
-/**
- * Return the LabelZ property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getLabelZ() {
-	if (ivjLabelZ == null) {
-		try {
-			ivjLabelZ = new javax.swing.JLabel();
-			ivjLabelZ.setName("LabelZ");
-			ivjLabelZ.setText("Z");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjLabelZ;
-}
+
 /**
  * Gets the model property (cbit.vcell.model.Model) value.
  * @return The model property value.
@@ -675,40 +474,7 @@ public Model getModel() {
 private Model getmodel1() {
 	return ivjmodel1;
 }
-/**
- * Return the PositionLabel property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getPositionLabel() {
-	if (ivjPositionLabel == null) {
-		try {
-			ivjPositionLabel = new javax.swing.JLabel();
-			ivjPositionLabel.setName("PositionLabel");
-			ivjPositionLabel.setText("Tip Position");
-			ivjPositionLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-			ivjPositionLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjPositionLabel;
-}
-/**
- * Return the SetCoordButton property value.
- * @return javax.swing.JButton
- */
-private javax.swing.JButton getSetCoordButton() {
-	if (ivjSetCoordButton == null) {
-		try {
-			ivjSetCoordButton = new javax.swing.JButton();
-			ivjSetCoordButton.setName("SetCoordButton");
-			ivjSetCoordButton.setText("Set");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSetCoordButton;
-}
+
 /**
  * Return the SetFeatureButton property value.
  * @return javax.swing.JButton
@@ -727,84 +493,7 @@ private javax.swing.JButton getSetFeatureButton() {
 	}
 	return ivjSetFeatureButton;
 }
-/**
- * Return the TextFieldX property value.
- * @return javax.swing.JTextField
- */
-private javax.swing.JTextField getTextFieldX() {
-	if (ivjTextFieldX == null) {
-		try {
-			ivjTextFieldX = new javax.swing.JTextField();
-			ivjTextFieldX.setName("TextFieldX");
-			ivjTextFieldX.setColumns(10);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjTextFieldX;
-}
-/**
- * Return the TextFieldY property value.
- * @return javax.swing.JTextField
- */
-private javax.swing.JTextField getTextFieldY() {
-	if (ivjTextFieldY == null) {
-		try {
-			ivjTextFieldY = new javax.swing.JTextField();
-			ivjTextFieldY.setName("TextFieldY");
-			ivjTextFieldY.setColumns(10);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjTextFieldY;
-}
-/**
- * Return the TextFieldZ property value.
- * @return javax.swing.JTextField
- */
-private javax.swing.JTextField getTextFieldZ() {
-	if (ivjTextFieldZ == null) {
-		try {
-			ivjTextFieldZ = new javax.swing.JTextField();
-			ivjTextFieldZ.setName("TextFieldZ");
-			ivjTextFieldZ.setColumns(10);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjTextFieldZ;
-}
-/**
- * Comment
- */
-private java.lang.String getXString() {
-	if (getCoordinate() == null) {
-		return "";
-	} else {
-		return (Double.toString(getCoordinate().getX()));
-	}
-}
-/**
- * Comment
- */
-private java.lang.String getYString() {
-	if (getCoordinate() == null) {
-		return "";
-	} else {
-		return (Double.toString(getCoordinate().getY()));
-	}
-}
-/**
- * Comment
- */
-private java.lang.String getZString() {
-	if (getCoordinate() == null) {
-		return "";
-	} else {
-		return (Double.toString(getCoordinate().getZ()));
-	}
-}
+
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -821,7 +510,6 @@ private void handleException(java.lang.Throwable exception) {
  */
 private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
-	getSetCoordButton().addActionListener(ivjEventHandler);
 	getSetFeatureButton().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
@@ -835,12 +523,6 @@ private void initialize() {
 		setName("ElectrodePanel");
 		setLayout(new java.awt.GridBagLayout());
 		setSize(391, 70);
-
-		java.awt.GridBagConstraints constraintsPositionLabel = new java.awt.GridBagConstraints();
-		constraintsPositionLabel.gridx = 0; constraintsPositionLabel.gridy = 1;
-		constraintsPositionLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsPositionLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getPositionLabel(), constraintsPositionLabel);
 
 		java.awt.GridBagConstraints constraintsFeatureLabel = new java.awt.GridBagConstraints();
 		constraintsFeatureLabel.gridx = 0; constraintsFeatureLabel.gridy = 0;
@@ -861,47 +543,6 @@ private void initialize() {
 		constraintsSetFeatureButton.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSetFeatureButton(), constraintsSetFeatureButton);
 
-		java.awt.GridBagConstraints constraintsTextFieldX = new java.awt.GridBagConstraints();
-		constraintsTextFieldX.gridx = 3; constraintsTextFieldX.gridy = 1;
-		constraintsTextFieldX.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsTextFieldX.weightx = 1.0;
-		constraintsTextFieldX.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getTextFieldX(), constraintsTextFieldX);
-
-		java.awt.GridBagConstraints constraintsLabelX = new java.awt.GridBagConstraints();
-		constraintsLabelX.gridx = 1; constraintsLabelX.gridy = 1;
-		constraintsLabelX.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getLabelX(), constraintsLabelX);
-
-		java.awt.GridBagConstraints constraintsLabelY = new java.awt.GridBagConstraints();
-		constraintsLabelY.gridx = 4; constraintsLabelY.gridy = 1;
-		constraintsLabelY.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getLabelY(), constraintsLabelY);
-
-		java.awt.GridBagConstraints constraintsTextFieldY = new java.awt.GridBagConstraints();
-		constraintsTextFieldY.gridx = 5; constraintsTextFieldY.gridy = 1;
-		constraintsTextFieldY.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsTextFieldY.weightx = 1.0;
-		constraintsTextFieldY.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getTextFieldY(), constraintsTextFieldY);
-
-		java.awt.GridBagConstraints constraintsLabelZ = new java.awt.GridBagConstraints();
-		constraintsLabelZ.gridx = 6; constraintsLabelZ.gridy = 1;
-		constraintsLabelZ.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getLabelZ(), constraintsLabelZ);
-
-		java.awt.GridBagConstraints constraintsSetCoordButton = new java.awt.GridBagConstraints();
-		constraintsSetCoordButton.gridx = 8; constraintsSetCoordButton.gridy = 1;
-		constraintsSetCoordButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsSetCoordButton.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getSetCoordButton(), constraintsSetCoordButton);
-
-		java.awt.GridBagConstraints constraintsTextFieldZ = new java.awt.GridBagConstraints();
-		constraintsTextFieldZ.gridx = 7; constraintsTextFieldZ.gridy = 1;
-		constraintsTextFieldZ.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsTextFieldZ.weightx = 1.0;
-		constraintsTextFieldZ.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getTextFieldZ(), constraintsTextFieldZ);
 		initConnections();
 		connEtoC3();
 	} catch (java.lang.Throwable ivjExc) {
@@ -953,35 +594,7 @@ private void selectFeature(Model model) {
 		PopupGenerator.showErrorDialog(this,"Error changing feature for electrode", e);
 	}
 }
-/**
- * Set the Coordinate to a new value.
- * @param newValue cbit.vcell.geometry.Coordinate
- */
-private void setCoordinate(Coordinate newValue) {
-	if (ivjCoordinate != newValue) {
-		try {
-			ivjCoordinate = newValue;
-			connEtoM8(ivjCoordinate);
-			connEtoM9(ivjCoordinate);
-			connEtoM10(ivjCoordinate);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	};
-}
-/**
- * Set the CoordinateFactory to a new value.
- * @param newValue cbit.vcell.geometry.Coordinate
- */
-private void setCoordinateFactory(Coordinate newValue) {
-	if (ivjCoordinateFactory != newValue) {
-		try {
-			ivjCoordinateFactory = newValue;
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	};
-}
+
 /**
  * Sets the electrode property (cbit.vcell.mapping.Electrode) value.
  * @param electrode The new value for the property.
@@ -1012,7 +625,6 @@ private void setelectrode1(Electrode newValue) {
 			}
 			connPtoP1SetSource();
 			connEtoM5(ivjelectrode1);
-			connEtoM7(ivjelectrode1);
 			firePropertyChange("electrode", oldValue, newValue);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
