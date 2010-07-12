@@ -477,6 +477,7 @@ public void refreshMathDescription() {
 				setMathDescription((new MathMapping(this)).getMathDescription());
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(
 				"Application "+getName()+" has no generated Math\n"+
 				"Failed to generate new Math\n"+
