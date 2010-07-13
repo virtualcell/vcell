@@ -105,6 +105,7 @@ import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
+import cbit.vcell.math.MathException;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
@@ -359,11 +360,24 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 		public MembraneDataInfo getMembraneDataInfo(int membraneIndex){
 			return new MembraneDataInfo(membraneIndex,pdeDataContext.getCartesianMesh(),simulationModelInfo);
 		}
-		public boolean isDefined(int volumeIndex) {
-			int subvol = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(volumeIndex);
-			final Domain varDomain = pdeDataContext.getDataIdentifier().getDomain();
-			if (varDomain == null || simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
-				return true;
+		public boolean isDefined(int dataIndex){
+			try {
+				Domain varDomain = pdeDataContext.getDataIdentifier().getDomain();
+				if(pdeDataContext.getDataIdentifier().getVariableType() == VariableType.VOLUME ||
+						pdeDataContext.getDataIdentifier().getVariableType() == VariableType.VOLUME_REGION){
+					int subvol = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(dataIndex);
+					if (varDomain == null || simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+						return true;
+					}				
+				}else if(pdeDataContext.getDataIdentifier().getVariableType() == VariableType.MEMBRANE ||
+						pdeDataContext.getDataIdentifier().getVariableType() == VariableType.MEMBRANE_REGION){
+					String memSubdomainName = pdeDataContext.getCartesianMesh().getMembraneSubdomainNamefromMemIndex(dataIndex);
+					if (varDomain == null || varDomain.getName().equals(memSubdomainName)){
+						return true;
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			return false;
 		}
