@@ -2,12 +2,15 @@ package cbit.vcell.server;
 
 import java.io.Serializable;
 
+import org.vcell.util.PropertyLoader;
+
 public class UserLoginInfo implements Serializable {
 	private String userName;
 	private String password;
 	private String os_name;//os.name Operating system name 
 	private String os_arch;// os.arch Operating system architecture 
 	private String os_version;// os.version Operating system version
+	private String client;//VCell client logging in from
 	public UserLoginInfo(String userName,String password) {
 		super();
 		this.userName = userName;
@@ -15,6 +18,7 @@ public class UserLoginInfo implements Serializable {
 		os_name = System.getProperty("os.name");
 		os_arch = System.getProperty("os.arch");
 		os_version = System.getProperty("os.version");
+		client = System.getProperty(PropertyLoader.vcellSoftwareVersion);
 	}
 	public String getOs_name() {
 		return os_name;
@@ -30,5 +34,8 @@ public class UserLoginInfo implements Serializable {
 	}
 	public String getPassword() {
 		return password;
+	}
+	public String getClient(){
+		return client;
 	}
 }
