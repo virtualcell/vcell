@@ -1211,7 +1211,6 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						//Create default name for image
 						geomHolder[0].getGeometrySpec().getImage().setName("img_"+ClientRequestManager.generateDateTimeString());
 						//cause update in this thread so later swing threads won't be delayed
-						geomHolder[0].getGeometrySurfaceDescription().updateAll();
 						geomHolder[0].getGeometrySpec().getSampledImage();
 						hashTable.put("doc", geomHolder[0]);
 						//Process Geometry (save, display, replace, etc...)
