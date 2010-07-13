@@ -1,6 +1,5 @@
 package cbit.vcell.simdata.gui;
 
-import java.util.HashMap;
 import java.util.Vector;
 
 import org.vcell.util.Coordinate;
@@ -23,7 +22,6 @@ import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.Spline;
 import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveRenderer;
-import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
@@ -113,7 +111,10 @@ private void colorMembraneCurvesPrivate(java.util.Hashtable<SampledCurve, int[]>
 			int[] membraneIndexes = curvesAndMembraneIndexes.get(curve);
 			double[] membraneValues = null;
 			if(membraneIndexes != null && getPdeDataContext().getDataValues() != null && getPdeDataContext().getDataIdentifier() != null){
-				membraneValues = meshDisplayAdapter.getDataValuesForMembraneIndexes(membraneIndexes,getPdeDataContext().getDataValues(),getPdeDataContext().getDataIdentifier().getVariableType());
+				membraneValues =
+					meshDisplayAdapter.getDataValuesForMembraneIndexes(membraneIndexes,
+						(recodeDataForDomainInfo.isRecoded?recodeDataForDomainInfo.getRecodedDataForDomain():getPdeDataContext().getDataValues()),
+						getPdeDataContext().getDataIdentifier().getVariableType());
 			}
 			if (membraneValues != null) {
 				int[] valueColors = new int[membraneValues.length];
@@ -312,49 +313,88 @@ private void connEtoM5(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 
+private static class RecodeDataForDomainInfo{
+	private double[] recodedDataForDomain;
+	private Range recodedDataRange;
+	boolean isRecoded;
+	public RecodeDataForDomainInfo(boolean isRecoded,double[] recodedDataForDomain,Range recodedDataRange) {
+		super();
+		this.isRecoded = isRecoded;
+		this.recodedDataForDomain = recodedDataForDomain;
+		this.recodedDataRange = recodedDataRange;
+	}
+	public double[] getRecodedDataForDomain() {
+		return recodedDataForDomain;
+	}
+	public Range getRecodedDataRange() {
+		return recodedDataRange;
+	}
+	public boolean isRecoded() {
+		return isRecoded;
+	}
+
+}
 private double[] originalData = null;
-private SourceDataInfo recodedSourceDataInfo = null;
+private RecodeDataForDomainInfo recodeDataForDomainInfo = null;
 
 private void recodeDataForDomain() {
+	//This method recodes data (out of domain data is set to 'out of range' value that is displayed differently)
+	// and calculates a domain aware min,max range for variables that have a domain
+	//Volume display data is set here
+	//Membrane BACKGROUND display data is set here
+	//Membrane ELEMENT display data is set in colorMmebraneCurvesPrivate(...)
+	//
 	if (getPdeDataContext() == null) {
 		return;
 	}
-	
+	recodeDataForDomain0();
+	VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();
+	//This creates an appropriate volume data data holder for volume data types
+	//or creates a dummy background for membrane data types
+		SourceDataInfo recodedSourceDataInfo =
+			calculateSourceDataInfo(getPdeDataContext().getCartesianMesh(),
+					recodeDataForDomainInfo.getRecodedDataForDomain(), 
+					getPdeDataContext().getDataIdentifier().getVariableType(),
+					recodeDataForDomainInfo.getRecodedDataRange());
+		getImagePlaneManagerPanel().setSourceDataInfo(recodedSourceDataInfo);
+}
+private void recodeDataForDomain0() {
 	Domain varDomain = getPdeDataContext().getDataIdentifier().getDomain();
-	double[] data = null;
+	double[] tempRecodedData = null;
+	Range dataRange = null;
 	VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();
 	boolean bRecoding = getDataInfoProvider() != null && varDomain != null;	
 	
-	if (getpdeDataContext1().getDataValues() != originalData || recodedSourceDataInfo == null) {
+	if (getpdeDataContext1().getDataValues() != originalData || recodeDataForDomainInfo == null) {
 		originalData = getpdeDataContext1().getDataValues();
-		data = originalData;
+		tempRecodedData = originalData;
 		
-		double min = Double.POSITIVE_INFINITY;
+		double illegalNumber = Double.POSITIVE_INFINITY;
 		if (bRecoding) {
-			data = new double[originalData.length];
-			System.arraycopy(originalData, 0, data, 0, data.length);
+			tempRecodedData = new double[originalData.length];
+			System.arraycopy(originalData, 0, tempRecodedData, 0, tempRecodedData.length);
 			for(int i = 0; i < originalData.length; i++){
 				if(!Double.isNaN(originalData[i])){
-					min = Math.min(min, originalData[i]);
+					illegalNumber = Math.min(illegalNumber, originalData[i]);
 				}
 			}
 		}
+		illegalNumber-=1;//
 		
-		double illegalNumber = min - 1;
 		final CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
-		min = Double.POSITIVE_INFINITY;
+		double min = Double.POSITIVE_INFINITY;
 		double max = Double.NEGATIVE_INFINITY;
-		for (int i = 0; i < data.length; i ++) {
+		for (int i = 0; i < tempRecodedData.length; i ++) {
 			if (bRecoding) {
 				if (vt.equals(VariableType.VOLUME)) {
 					int subvol = cartesianMesh.getSubVolumeFromVolumeIndex(i);
 					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
-						data[i] = illegalNumber;
+						tempRecodedData[i] = illegalNumber;
 					}
 				} else if (vt.equals(VariableType.VOLUME_REGION)) {
 					int subvol = cartesianMesh.getVolumeRegionMapSubvolume().get(i);
 					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
-						data[i] = illegalNumber;
+						tempRecodedData[i] = illegalNumber;
 					}
 				} else if (vt.equals(VariableType.MEMBRANE)) {
 					int insideVolumeIndex = cartesianMesh.getMembraneElements()[i].getInsideVolumeIndex();
@@ -362,29 +402,26 @@ private void recodeDataForDomain() {
 					int outsideVolumeIndex = cartesianMesh.getMembraneElements()[i].getOutsideVolumeIndex();
 					int subvol2 =  cartesianMesh.getSubVolumeFromVolumeIndex(outsideVolumeIndex);
 					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getMembraneName(subvol1, subvol2, true).equals(varDomain.getName())) {
-						data[i] = illegalNumber;
+						tempRecodedData[i] = illegalNumber;
 					}
 				} else if (vt.equals(VariableType.MEMBRANE_REGION)) {
 					int[] subvols = cartesianMesh.getMembraneRegionMapSubvolumesInOut().get(i);
 					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true).equals(varDomain.getName())) {
-						data[i] = illegalNumber;
+						tempRecodedData[i] = illegalNumber;
 					}
 				}
 			}
-			if(!Double.isNaN(data[i]) && data[i] != illegalNumber){
-				min = Math.min(min, data[i]);
-				max = Math.max(max, data[i]);
+			if(!Double.isNaN(tempRecodedData[i]) && tempRecodedData[i] != illegalNumber){
+				min = Math.min(min, tempRecodedData[i]);
+				max = Math.max(max, tempRecodedData[i]);
 			}
 		}
-		Range newRange = new Range(min,max);
-		recodedSourceDataInfo = calculateSourceDataInfo(cartesianMesh, data, vt, newRange);
+		dataRange = new Range(min,max);
 	}
-	getImagePlaneManagerPanel().setSourceDataInfo(recodedSourceDataInfo);
-	if (!bRecoding) {
-		// reset recodedSourceDataInfo to null because if we are unable to 
-		// recode (no dataInfoProvider or no domain), recodedSourceDataInfo 
-		// is only a holder for original data.
-		recodedSourceDataInfo = null;
+	if (bRecoding) {
+		recodeDataForDomainInfo = new RecodeDataForDomainInfo(true, tempRecodedData, dataRange);
+	}else{
+		recodeDataForDomainInfo = new RecodeDataForDomainInfo(false, tempRecodedData, dataRange);		
 	}
 }
 /**
@@ -834,16 +871,6 @@ public Curve[] getAllUserCurves() {
 	return getImagePlaneManagerPanel().getCurveRenderer().getAllUserCurves();
 }
 
-public boolean isDefined(int memIndex) {
-	try {
-		final Domain varDomain = getPdeDataContext().getDataIdentifier().getDomain();
-		String memSubdomainName = getPdeDataContext().getCartesianMesh().getMembraneSubdomainNamefromMemIndex(memIndex);
-		return (varDomain == null || varDomain.getName().equals(memSubdomainName));
-	} catch (MathException e) {
-		e.printStackTrace(System.out);
-	}
-	return true; 
-}
 /**
  * Insert the method's description here.
  * Creation date: (3/13/2001 12:53:10 PM)
@@ -872,7 +899,7 @@ public String getCurveValue(CurveSelectionInfo csi) {
 							String zCoordString = NumberUtils.formatNumber(segmentWC.getZ());
 							infoS = "("+xCoordString+","+yCoordString+","+zCoordString+")  ["+
 										membraneIndexes[csi.getSegment()]+"]  Value = " +
-										(isDefined(membraneIndexes[csi.getSegment()]) ? membraneValues[csi.getSegment()] : "Undefined");
+										(getDataInfoProvider().isDefined(membraneIndexes[csi.getSegment()]) ? membraneValues[csi.getSegment()] : "Undefined");
 							if(getDataInfoProvider() != null){
 								PDEDataViewer.MembraneDataInfo membraneDataInfo =
 									getDataInfoProvider().getMembraneDataInfo(membraneIndexes[csi.getSegment()]);

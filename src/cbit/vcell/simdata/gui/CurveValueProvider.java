@@ -54,6 +54,4 @@ boolean isAddControlPointOK(int tool,Coordinate wc,Curve addedToThisCurve);
 boolean providesInitalCurve(int tool,Coordinate wc);
 
 void setDescription(Curve curve);
-
-boolean isDefined(int memIndex);
 }
