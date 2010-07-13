@@ -58,7 +58,7 @@ public int getRowCount() {
 /**
  * getValueAt method comment.
  */
-public Object getValueAt(int row) {
+public T getValueAt(int row) {
 	return rows.get(row);
 }
 
