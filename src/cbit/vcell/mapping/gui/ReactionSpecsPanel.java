@@ -1,24 +1,29 @@
 package cbit.vcell.mapping.gui;
 
 import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyVetoException;
 
 import javax.swing.DefaultListSelectionModel;
-import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ScrollTable.CheckOption;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.desktop.biomodel.SPPRPanel;
+import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.gui.FluxReactionPanel;
@@ -42,13 +47,18 @@ public class ReactionSpecsPanel extends javax.swing.JPanel {
 	private ReactionSpecsTableModel ivjReactionSpecsTableModel = null;
 	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP2Aligning = false;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationContext ivjsimulationContext1 = null;
 	private boolean ivjConnPtoP5Aligning = false;
 	private javax.swing.ListSelectionModel ivjselectionModel1 = null;
-
-class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
-// java.awt.event.ActionListener, java.awt.event.MouseListener
+	private javax.swing.JMenuItem ivjJMenuItemCheckSelected = null;
+	private javax.swing.JMenuItem ivjJMenuItemUncheckSelected = null;
+	private JLabel fastLabel;
+	private JLabel enabledLabel;
+	private int selectedColumn = -1;
+	private JPopupMenu ivjJPopupMenu;
+	
+class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, java.awt.event.ActionListener, java.awt.event.MouseListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ReactionSpecsPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
 				connPtoP2SetTarget();
@@ -61,28 +71,32 @@ class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.
 //				System.out.println("ReactionSpecsPanel:  valueChanged()");
 				connEtoM3(e);
 			}
+		}
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == getJMenuItemCheckSelected()) 
+				checkBooleanTableColumn(CheckOption.CheckSelected);
+			if (e.getSource() == getJMenuItemUncheckSelected()) 
+				checkBooleanTableColumn(CheckOption.UncheckSelected);			
+		}
+		public void mouseClicked(MouseEvent e) {
+			if (e.getSource() == getScrollPaneTable()) {
+				scrollPaneTable_MouseButton(e);
+			}			
+		}
+		public void mouseEntered(MouseEvent e) {
+		}
+		public void mouseExited(MouseEvent e) {
+		}
+		public void mousePressed(MouseEvent e) {
+		}
+		public void mouseReleased(MouseEvent e) {
 		};
 	};
-
-/**
- * ReactionSpecsPanel constructor comment.
- */
-public ReactionSpecsPanel() {
-	super();
-	spprPanel = null;
-	initialize(false);
-}
-
-public ReactionSpecsPanel(boolean expanded) {
-	super();
-	spprPanel = null;
-	initialize(expanded);
-}
-
+	
 public ReactionSpecsPanel(SPPRPanel aPanel) {
 	super();
 	spprPanel = aPanel;
-	initialize(true);
+	initialize();
 }
 
 private SPPRPanel getSPPRPanel() {
@@ -92,7 +106,7 @@ private SPPRPanel getSPPRPanel() {
 /**
  * Initialize the class.
  */
-private void initialize(boolean expanded) {
+private void initialize() {
 	try {
 		setName("ReactionSpecsPanel");
 		setLayout(new java.awt.GridBagLayout());
@@ -104,20 +118,123 @@ private void initialize(boolean expanded) {
 		constraintsJSplitPane1.weightx = 1.0;
 		constraintsJSplitPane1.weighty = 1.0;
 		constraintsJSplitPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getOuterSplitPane(expanded), constraintsJSplitPane1);
+		add(getOuterSplitPane(), constraintsJSplitPane1);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
 }
 
-private JSplitPane getOuterSplitPane(boolean expanded) {
+/**
+ * Return the JPopupMenu1 property value.
+ * @return javax.swing.JPopupMenu
+ */
+private javax.swing.JPopupMenu getJPopupMenu() {
+	if (ivjJPopupMenu == null) {
+		try {
+			ivjJPopupMenu = new javax.swing.JPopupMenu();
+			ivjJPopupMenu.setName("JPopupMenu");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJPopupMenu;
+}
+
+private javax.swing.JMenuItem getJMenuItemCheckSelected() {
+	if (ivjJMenuItemCheckSelected == null) {
+		try {
+			ivjJMenuItemCheckSelected = new javax.swing.JMenuItem();
+			ivjJMenuItemCheckSelected.setText(CheckOption.CheckSelected.getText());
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemCheckSelected;
+}
+
+private javax.swing.JMenuItem getJMenuItemUncheckSelected() {
+	if (ivjJMenuItemUncheckSelected == null) {
+		try {
+			ivjJMenuItemUncheckSelected = new javax.swing.JMenuItem();
+			ivjJMenuItemUncheckSelected.setText(CheckOption.UncheckSelected.getText());
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemUncheckSelected;
+}
+
+private void scrollPaneTable_MouseButton(final java.awt.event.MouseEvent mouseEvent) {
+	if (!SwingUtilities.isRightMouseButton(mouseEvent)) {
+		return;
+	}
+	selectedColumn = -1;
+	selectedColumn = getScrollPaneTable().columnAtPoint(mouseEvent.getPoint());
+	if (selectedColumn != ReactionSpecsTableModel.COLUMN_ENABLED && selectedColumn != ReactionSpecsTableModel.COLUMN_FAST) {
+		return;
+	}
+	boolean bRowSelected = getScrollPaneTable().getSelectedRow() != -1; 
+	getJMenuItemCheckSelected().setEnabled(bRowSelected);
+	getJMenuItemUncheckSelected().setEnabled(bRowSelected);
+	if (selectedColumn == ReactionSpecsTableModel.COLUMN_ENABLED) {
+		getJPopupMenu().removeAll();
+		getJPopupMenu().add(getEnabledLabel());
+		getJPopupMenu().add(new JSeparator());
+		getJPopupMenu().add(getJMenuItemCheckSelected());
+		getJPopupMenu().add(getJMenuItemUncheckSelected());
+		getJPopupMenu().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
+	} else if (selectedColumn == ReactionSpecsTableModel.COLUMN_FAST) {
+		getJPopupMenu().removeAll();
+		getJPopupMenu().add(getFastLabel());
+		getJPopupMenu().add(new JSeparator());
+		getJPopupMenu().add(getJMenuItemCheckSelected());
+		getJPopupMenu().add(getJMenuItemUncheckSelected());
+		getJPopupMenu().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
+	}
+}
+
+public void checkBooleanTableColumn(CheckOption b) {
+	boolean bCheck = CheckOption.CheckSelected.equals(b);
+	int[] selectedRows = getScrollPaneTable().getSelectedRows();
+	for (int r = 0; r < selectedRows.length; r ++) {
+		ReactionSpec rs = getReactionSpecsTableModel().getReactionSpec(selectedRows[r]);
+		try {
+			if (selectedColumn == ReactionSpecsTableModel.COLUMN_ENABLED) {
+				rs.setReactionMapping(bCheck ? ReactionSpec.INCLUDED : ReactionSpec.EXCLUDED);
+			} else if (selectedColumn == ReactionSpecsTableModel.COLUMN_FAST) {
+				rs.setReactionMapping(bCheck ? ReactionSpec.FAST : ReactionSpec.INCLUDED);
+			}
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, e.getMessage());
+		}
+	}
+}
+
+private JLabel getFastLabel() {
+	if (fastLabel == null) {
+		fastLabel = new JLabel(" Fast");
+		fastLabel.setFont(fastLabel.getFont().deriveFont(Font.BOLD));
+	}
+	return fastLabel;
+}
+private JLabel getEnabledLabel() {
+	if (enabledLabel == null) {
+		enabledLabel = new JLabel(" Enabled");
+		enabledLabel.setFont(enabledLabel.getFont().deriveFont(Font.BOLD));
+	}
+	return enabledLabel;
+}
+
+
+private JSplitPane getOuterSplitPane() {
 	if (outerSplitPane == null) {
 		outerSplitPane = new JSplitPane();
 		outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		outerSplitPane.setDividerLocation(300);
 		outerSplitPane.setTopComponent(getScrollPaneTable().getEnclosingScrollPane());
-		if(expanded) {
+		if(spprPanel != null) {
 			outerSplitPane.setBottomComponent(getSimpleReactionPanel());	// reaction kinetics editor
 		} else {
 			outerSplitPane.setBottomComponent(null);
@@ -324,16 +441,6 @@ private void setselectionModel1(javax.swing.ListSelectionModel newValue) {
 	};
 }
 
-
-
-private void notifyRelatedPanels(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		System.out.println("Reaction Spec selection changed");
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
 /*
  * Return the ReactionSpecsTableModel property value.
  * @return cbit.vcell.mapping.gui.ReactionSpecsTableModel
@@ -342,7 +449,7 @@ private void notifyRelatedPanels(javax.swing.event.ListSelectionEvent arg1) {
 private ReactionSpecsTableModel getReactionSpecsTableModel() {
 	if (ivjReactionSpecsTableModel == null) {
 		try {
-			ivjReactionSpecsTableModel = new ReactionSpecsTableModel(getScrollPaneTable(), false);
+			ivjReactionSpecsTableModel = new ReactionSpecsTableModel(getScrollPaneTable());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -412,6 +519,9 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
+	getScrollPaneTable().addMouseListener(ivjEventHandler);
+	getJMenuItemCheckSelected().addActionListener(ivjEventHandler);
+	getJMenuItemUncheckSelected().addActionListener(ivjEventHandler);
 	getScrollPaneTable().setDefaultRenderer(ReactionStep.class, new DefaultScrollTableCellRenderer() {
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
 		{
@@ -478,7 +588,7 @@ public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
 		ReactionSpecsPanel aReactionSpecsPanel;
-		aReactionSpecsPanel = new ReactionSpecsPanel(true);
+		aReactionSpecsPanel = new ReactionSpecsPanel(null);
 		frame.setContentPane(aReactionSpecsPanel);
 		frame.setSize(aReactionSpecsPanel.getSize());
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {

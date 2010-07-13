@@ -24,7 +24,7 @@ public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
 		ReactionSpecsPanel aReactionSpecsPanel;
-		aReactionSpecsPanel = new ReactionSpecsPanel();
+		aReactionSpecsPanel = new ReactionSpecsPanel(null);
 		frame.setContentPane(aReactionSpecsPanel);
 		frame.setSize(aReactionSpecsPanel.getSize());
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -32,7 +32,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

@@ -30,7 +30,7 @@ import cbit.vcell.parser.ExpressionException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class SpeciesContextSpecsTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
+public class SpeciesContextSpecsTableModel extends ManageTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_SPECIESCONTEXT = 1;
 	public static final int COLUMN_SPECIES = 0;
 	public static final int COLUMN_STRUCTURE = 2;
@@ -40,7 +40,6 @@ public class SpeciesContextSpecsTableModel extends ManageTableModel implements j
 	public static final int COLUMN_DIFFUSION = 6;
 	private String LABELS[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Condition", "Well Mixed", "Diffusion Constant"};
 	
-	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	private JTable ownerTable = null;
@@ -51,22 +50,6 @@ public class SpeciesContextSpecsTableModel extends ManageTableModel implements j
 public SpeciesContextSpecsTableModel(JTable table) {
 	super();
 	ownerTable = table;
-}
-
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
 /**
@@ -122,18 +105,6 @@ public String getColumnName(int column) {
 		return null;
 	}
 }
-
-
-/**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-
 
 /**
  * getRowCount method comment.
@@ -228,14 +199,6 @@ public Object getValueAt(int row, int col) {
 }
 
 /**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:27:46 AM)
  * @return boolean
@@ -249,6 +212,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=getColumnCount()){
 		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
+	SpeciesContextSpec speciesContextSpec = getSpeciesContextSpec(rowIndex);
 	switch (columnIndex){
 		case COLUMN_SPECIESCONTEXT:{
 			return false;
@@ -263,13 +227,13 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return true;
 		}
 		case COLUMN_WELLMIXED:{
-			return !getSpeciesContextSpec(rowIndex).isConstant();
+			return !speciesContextSpec.isConstant();
 		}
 		case COLUMN_INITIAL:{
 			return true;
 		}
 		case COLUMN_DIFFUSION: {
-			if (getSpeciesContextSpec(rowIndex).isSpatial() && !getSpeciesContextSpec(rowIndex).isConstant()){
+			if (speciesContextSpec.isSpatial() && !speciesContextSpec.isConstant()){
 				return true;
 			}else{
 				return false;
@@ -309,14 +273,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof GeometryContext) {
 		fireTableStructureChanged();
 	}
-}
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
 }
 
 /**
@@ -549,7 +505,7 @@ public void sortColumn(final int col, final boolean ascending) {
 }
 
 public SpeciesContextSpec getSpeciesContextSpec(int row) {
-return (SpeciesContextSpec)getData().get(row);
+	return (SpeciesContextSpec)getData().get(row);
 }
 
 }

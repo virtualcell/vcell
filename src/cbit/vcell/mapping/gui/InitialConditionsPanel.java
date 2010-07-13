@@ -6,22 +6,27 @@ package cbit.vcell.mapping.gui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ScrollTable.CheckOption;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
@@ -40,6 +45,7 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 
 /**
@@ -60,13 +66,22 @@ public class InitialConditionsPanel extends javax.swing.JPanel {
 	private SpeciesContextSpecsTableModel ivjSpeciesContextSpecsTableModel = null;
 	private boolean ivjConnPtoP5Aligning = false;
 	private javax.swing.ListSelectionModel ivjselectionModel1 = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JSplitPane ivjJSplitPane1 = null;
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
 	private javax.swing.JPopupMenu ivjJPopupMenuICP = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopy = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopyAll = null;
 	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
+	private javax.swing.JMenuItem ivjJMenuItemCheckSelected = null;
+	private javax.swing.JMenuItem ivjJMenuItemUncheckSelected = null;
+	private javax.swing.JTextField ivjSetDiffConstantTextField = null;
+	private JLabel initialConditionLabel;
+	private JLabel clampedLabel;
+	private JLabel wellMixedLabel;
+	private JLabel diffConstantLabel;
+	private int selectedColumn = -1;
+	private JLabel setDiffConstantLabel;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -78,6 +93,12 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 				connEtoC7(e);
 			if (e.getSource() == InitialConditionsPanel.this.getJMenuItemPasteAll()) 
 				connEtoC8(e);
+			if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCheckSelected()) 
+				checkBooleanTableColumn(CheckOption.CheckSelected);
+			if (e.getSource() == InitialConditionsPanel.this.getJMenuItemUncheckSelected()) 
+				checkBooleanTableColumn(CheckOption.UncheckSelected);
+			if (e.getSource() == InitialConditionsPanel.this.getSetDiffConstantTextField()) 
+				setDiffusionConstant();
 		};
 		public void mouseClicked(java.awt.event.MouseEvent e) {
 		};
@@ -399,17 +420,48 @@ private javax.swing.JMenuItem getJMenuItemCopy() {
 			ivjJMenuItemCopy = new javax.swing.JMenuItem();
 			ivjJMenuItemCopy.setName("JMenuItemCopy");
 			ivjJMenuItemCopy.setText("Copy");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
 	return ivjJMenuItemCopy;
 }
+private javax.swing.JMenuItem getJMenuItemCheckSelected() {
+	if (ivjJMenuItemCheckSelected == null) {
+		try {
+			ivjJMenuItemCheckSelected = new javax.swing.JMenuItem();
+			ivjJMenuItemCheckSelected.setText(CheckOption.CheckSelected.getText());
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemCheckSelected;
+}
 
+private javax.swing.JMenuItem getJMenuItemUncheckSelected() {
+	if (ivjJMenuItemUncheckSelected == null) {
+		try {
+			ivjJMenuItemUncheckSelected = new javax.swing.JMenuItem();
+			ivjJMenuItemUncheckSelected.setText(CheckOption.UncheckSelected.getText());
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemUncheckSelected;
+}
+
+private javax.swing.JTextField getSetDiffConstantTextField() {
+	if (ivjSetDiffConstantTextField == null) {
+		try {
+			ivjSetDiffConstantTextField = new javax.swing.JTextField();
+			ivjSetDiffConstantTextField.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(4, 4, 4, 4), ivjSetDiffConstantTextField.getBorder()));
+			ivjSetDiffConstantTextField.setColumns(5);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjSetDiffConstantTextField;
+}
 
 /**
  * Return the JMenuItemCopyAll property value.
@@ -484,22 +536,13 @@ private javax.swing.JMenuItem getJMenuItemPasteAll() {
  * Return the JPopupMenu1 property value.
  * @return javax.swing.JPopupMenu
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPopupMenu getJPopupMenuICP() {
 	if (ivjJPopupMenuICP == null) {
 		try {
 			ivjJPopupMenuICP = new javax.swing.JPopupMenu();
 			ivjJPopupMenuICP.setName("JPopupMenuICP");
 			ivjJPopupMenuICP.setLabel("Initial Conditions");
-			ivjJPopupMenuICP.add(getJMenuItemCopy());
-			ivjJPopupMenuICP.add(getJMenuItemCopyAll());
-			ivjJPopupMenuICP.add(getJMenuItemPaste());
-			ivjJPopupMenuICP.add(getJMenuItemPasteAll());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -797,6 +840,9 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemCopy().addActionListener(ivjEventHandler);
 	getJMenuItemCopyAll().addActionListener(ivjEventHandler);
 	getJMenuItemPasteAll().addActionListener(ivjEventHandler);
+	getJMenuItemCheckSelected().addActionListener(ivjEventHandler);
+	getJMenuItemUncheckSelected().addActionListener(ivjEventHandler);
+	getSetDiffConstantTextField().addActionListener(ivjEventHandler);
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
 	connPtoP5SetTarget();
@@ -1129,19 +1175,91 @@ public static void main(java.lang.String[] args) {
  */
 private void scrollPaneTable_MouseButton(final java.awt.event.MouseEvent mouseEvent) {
 	if(mouseEvent.isPopupTrigger()){
-		Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
-
-		boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
+		selectedColumn = getScrollPaneTable().columnAtPoint(mouseEvent.getPoint());
+		if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_INITIAL) {
+			getJPopupMenuICP().removeAll();
+			getJPopupMenuICP().add(getInitialConditionLabel());
+			getJPopupMenuICP().add(new JSeparator());
+			getJPopupMenuICP().add(getJMenuItemCopy());
+			getJPopupMenuICP().add(getJMenuItemCopyAll());
+			getJPopupMenuICP().add(getJMenuItemPaste());
+			getJPopupMenuICP().add(getJMenuItemPasteAll());
 			
-		boolean bSomethingSelected = getScrollPaneTable().getSelectedRows() != null && getScrollPaneTable().getSelectedRows().length > 0;
-		getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
-		getJMenuItemPasteAll().setEnabled(bPastable);
-		getJMenuItemCopy().setEnabled(bSomethingSelected);
-		getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
+			Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);	
+			boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
+			boolean bSomethingSelected = getScrollPaneTable().getSelectedRows() != null && getScrollPaneTable().getSelectedRows().length > 0;
+			getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
+			getJMenuItemPasteAll().setEnabled(bPastable);
+			getJMenuItemCopy().setEnabled(bSomethingSelected);
+			getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
+		} else {
+			boolean bRowSelected = getScrollPaneTable().getSelectedRow() != -1; 
+			getJMenuItemCheckSelected().setEnabled(bRowSelected);
+			getJMenuItemUncheckSelected().setEnabled(bRowSelected);
+			getSetDiffConstantTextField().setEditable(bRowSelected);
+			if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_CLAMPED) {
+				getJPopupMenuICP().removeAll();
+				getJPopupMenuICP().add(getClampedLabel());
+				getJPopupMenuICP().add(new JSeparator());
+				getJPopupMenuICP().add(getJMenuItemCheckSelected());
+				getJPopupMenuICP().add(getJMenuItemUncheckSelected());
+				getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
+			} else if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_WELLMIXED) {
+				getJPopupMenuICP().removeAll();
+				getJPopupMenuICP().add(getWellMixedLabel());
+				getJPopupMenuICP().add(new JSeparator());
+				getJPopupMenuICP().add(getJMenuItemCheckSelected());
+				getJPopupMenuICP().add(getJMenuItemUncheckSelected());
+				getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
+			} else if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_DIFFUSION) {
+				getJPopupMenuICP().removeAll();
+				getJPopupMenuICP().add(getDiffusionConstantLabel());
+				getJPopupMenuICP().add(new JSeparator());
+				getJPopupMenuICP().add(getSetDiffusionConstantLabel());
+				getJPopupMenuICP().add(getSetDiffConstantTextField());
+				getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
+			}
+		}
 	}
 }
 
+private JLabel getSetDiffusionConstantLabel() {
+	if (setDiffConstantLabel == null) {
+		setDiffConstantLabel = new javax.swing.JLabel("Set Selected to");		
+	}	
+	return setDiffConstantLabel;
+}
 
+private JLabel getInitialConditionLabel() {
+	if (initialConditionLabel == null) {
+		initialConditionLabel = new JLabel(" Initial Condition");
+		initialConditionLabel.setFont(initialConditionLabel.getFont().deriveFont(Font.BOLD));
+	}
+	return initialConditionLabel;
+}
+private JLabel getClampedLabel() {
+	if (clampedLabel == null) {
+		clampedLabel = new JLabel(" Clamped");
+		clampedLabel.setFont(clampedLabel.getFont().deriveFont(Font.BOLD));
+	}
+	return clampedLabel;
+}
+
+private JLabel getWellMixedLabel() {
+	if (wellMixedLabel == null) {
+		wellMixedLabel = new JLabel(" Well Mixed");
+		wellMixedLabel.setFont(wellMixedLabel.getFont().deriveFont(Font.BOLD));
+	}
+	return wellMixedLabel;
+}
+
+private JLabel getDiffusionConstantLabel() {
+	if (diffConstantLabel == null) {
+		diffConstantLabel = new JLabel("Diffusion Constant");
+		diffConstantLabel.setFont(diffConstantLabel.getFont().deriveFont(Font.BOLD));
+	}
+	return diffConstantLabel;
+}
 /**
  * Set the selectionModel1 to a new value.
  * @param newValue javax.swing.ListSelectionModel
@@ -1210,4 +1328,33 @@ private void setsimulationContext1(SimulationContext newValue) {
 	// user code end
 }
 
+public void checkBooleanTableColumn(CheckOption b) {
+	boolean bCheck = CheckOption.CheckSelected.equals(b);
+	int[] selectedRows = getScrollPaneTable().getSelectedRows();
+	for (int r = 0; r < selectedRows.length; r ++) {
+		SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(selectedRows[r]);
+		if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_CLAMPED) {
+			scs.setConstant(bCheck);
+		} else if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_WELLMIXED) {
+			scs.setSpatial(!bCheck);
+		}
+	}
+}
+
+public void setDiffusionConstant() {
+	getJPopupMenuICP().setVisible(false);
+	int[] selectedRows = getScrollPaneTable().getSelectedRows();
+	for (int r = 0; r < selectedRows.length; r ++) {
+		SpeciesContextSpec scs= getSpeciesContextSpecsTableModel().getSpeciesContextSpec(selectedRows[r]);
+		try {
+			scs.getDiffusionParameter().setExpression(new Expression(getSetDiffConstantTextField().getText()));
+		} catch (ExpressionException e) {
+			e.printStackTrace(System.out);
+			PopupGenerator.showErrorDialog(this, "Wrong Expression:\n" + e.getMessage());
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			PopupGenerator.showErrorDialog(this, "Wrong Expression:\n" + e.getMessage());
+		}
+	}
+}
 }
