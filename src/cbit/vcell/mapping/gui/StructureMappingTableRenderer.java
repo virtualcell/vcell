@@ -48,7 +48,7 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
             font = font.deriveFont(font.getSize2D() - 1);
             g2d.setFont(font);
             
-            int yoffset = 15;
+            int yoffset = 13;
             if (superScriptStartIndex >= 0 && superScriptEndIndex >= 0) {
             	AttributedString as = new AttributedString(text);
             	as.addAttribute(TextAttribute.SIZE, font.getSize2D());
