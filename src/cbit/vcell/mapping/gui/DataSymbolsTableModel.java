@@ -12,22 +12,10 @@ import javax.swing.JTable;
 import org.vcell.util.gui.sorttable.ManageTableModel;
 
 import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.gui.ScopedExpression;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
-import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * @author: 

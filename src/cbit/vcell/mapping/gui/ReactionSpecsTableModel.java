@@ -25,7 +25,7 @@ import cbit.vcell.model.SimpleReaction;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ReactionSpecsTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
+public class ReactionSpecsTableModel extends ManageTableModel<ReactionSpec> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_NAME = 0;
 	public static final int COLUMN_TYPE = 1;
 	public static final int COLUMN_ENABLED = 2;
@@ -33,32 +33,18 @@ public class ReactionSpecsTableModel extends ManageTableModel implements java.be
 	private String LABELS[] = { "Name", "Type", "Enabled", "Fast" };
 	
 	private JTable ownerTable = null;
-	private boolean filterFlag;
 	
-	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
 	
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public ReactionSpecsTableModel(JTable table, boolean flag) {
+public ReactionSpecsTableModel(JTable table) {
 	super();
 	ownerTable = table;
-	filterFlag = flag;
 	addPropertyChangeListener(this);
 }
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:24:35 AM)
@@ -100,15 +86,6 @@ public String getColumnName(int column) {
  */
 public int getColumnCount() {
 	return LABELS.length;
-}
-/**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
 }
 
 /**
@@ -152,12 +129,7 @@ public Object getValueAt(int row, int col) {
 		}
 	}
 }
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:27:46 AM)
@@ -169,7 +141,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	if (columnIndex == COLUMN_ENABLED){
 		return true;
 	}else if (columnIndex == COLUMN_FAST && getSimulationContext()!=null){
-		ReactionSpec reactionSpec = getSimulationContext().getReactionContext().getReactionSpecs(rowIndex);
+		ReactionSpec reactionSpec = rows.get(rowIndex);
 		//
 		// the "fast" column is only editable if not FluxReaction
 		//
@@ -196,12 +168,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof ReactionSpec) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
-}
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
 }
 
 /**
@@ -236,16 +202,15 @@ public void setSimulationContext(SimulationContext simulationContext) {
 }
 
 private void populateData() {
-	if (getSimulationContext() == null) {
-		setData(new ArrayList<ReactionSpec>());
-	} else {
+	rows.clear();
+	if (getSimulationContext() != null) {
 		List<ReactionSpec> rslist = Arrays.asList(getSimulationContext().getReactionContext().getReactionSpecs());
 		setData(rslist);
 	}
 }
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	ReactionSpec reactionSpec = (ReactionSpec)rows.get(rowIndex);
+	ReactionSpec reactionSpec = rows.get(rowIndex);
 	try {
 		switch (columnIndex){
 			case COLUMN_ENABLED:{
@@ -277,6 +242,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 public void sortColumn(int col, boolean ascending) {
 	  Collections.sort(rows, new ReactionSpecComparator(col, ascending));
 	  fireTableDataChanged();
+}
+
+public ReactionSpec getReactionSpec(int row) {
+	return rows.get(row);
 }
 
 private class ReactionSpecComparator implements Comparator<ReactionSpec> {

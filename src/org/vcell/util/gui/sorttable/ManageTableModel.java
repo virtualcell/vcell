@@ -1,13 +1,15 @@
 package org.vcell.util.gui.sorttable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Insert the type's description here.
  * Creation date: (9/2/2003 8:54:09 AM)
  * @author: Fei Gao
  */
-public abstract class ManageTableModel extends org.vcell.util.gui.sorttable.DefaultSortTableModel  {
-	protected List rows = Collections.synchronizedList(new ArrayList());
+public abstract class ManageTableModel<T> extends DefaultSortTableModel  {
+	protected List<T> rows = Collections.synchronizedList(new ArrayList<T>());
 	protected String columns[] = null;		
 
 /**
@@ -40,7 +42,7 @@ public String getColumnName(int column) {
  * Creation date: (8/19/2003 10:50:18 AM)
  * @param list java.util.List
  */
-public List getData() {
+public List<T> getData() {
 	return rows;
 }
 
@@ -66,8 +68,8 @@ public Object getValueAt(int row) {
  * Creation date: (8/18/2003 8:24:43 AM)
  * @param status cbit.vcell.messaging.admin.PerformanceStatus
  */
-public synchronized int indexOf(Object service) {
-	return rows.indexOf(service);
+public synchronized int indexOf(T value) {
+	return rows.indexOf(value);
 }
 
 
@@ -76,9 +78,9 @@ public synchronized int indexOf(Object service) {
  * Creation date: (8/18/2003 8:24:43 AM)
  * @param status cbit.vcell.messaging.admin.PerformanceStatus
  */
-public synchronized void insert(Object service) {
-	if (!rows.contains(service)) {
-		rows.add(service);
+public synchronized void insert(T value) {
+	if (!rows.contains(value)) {
+		rows.add(value);
 		fireTableDataChanged();
 	}
 }
@@ -89,7 +91,7 @@ public synchronized void insert(Object service) {
  * Creation date: (8/19/2003 10:50:18 AM)
  * @param list java.util.List
  */
-public void setData(List list) {
+public void setData(List<T> list) {
 	rows.clear();	
 	if (list != null) {
 		rows.addAll(list);
@@ -105,8 +107,8 @@ public void setData(List list) {
  * Creation date: (8/18/2003 8:24:43 AM)
  * @param status cbit.vcell.messaging.admin.PerformanceStatus
  */
-public synchronized void setValueAt(int row, Object server) {
-	rows.set(row, server);
+public synchronized void setValueAt(int row, T value) {
+	rows.set(row, value);
 	fireTableDataChanged();
 }
 

@@ -45,6 +45,21 @@ import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
  *
  */
 public class ScrollTable extends JTable {
+	public enum CheckOption {
+		CheckAll("Check All"),
+		CheckSelected("Check Selected"),
+		UncheckAll("Uncheck All"),
+		UncheckSelected("Uncheck Selected");
+		
+		private String text = null;
+		CheckOption(String text) {
+			this.text = text;
+		}
+		public final String getText() {
+			return text;
+		}		
+	}
+	
 	static class ScrollTableBooleanCellRenderer extends JCheckBox implements TableCellRenderer {
 		public ScrollTableBooleanCellRenderer() {
 			super();
