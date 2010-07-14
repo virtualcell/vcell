@@ -8,6 +8,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 import java.util.Enumeration;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.vcell.util.Compare;
@@ -220,8 +221,14 @@ public void addSubVolume(AnalyticSubVolume subVolume,boolean bFront) throws Prop
 	//
 		int newIndex = 0;
 		for (int i=0;i<fieldSubVolumes.length;i++){
-			if (i == firstImageIndex){
-				newArray[newIndex++] = subVolume;
+			if(bFront){
+				if (i == 0){
+					newArray[newIndex++] = subVolume;
+				}				
+			}else{
+				if (i == firstImageIndex){
+					newArray[newIndex++] = subVolume;
+				}				
 			}
 			newArray[newIndex++] = fieldSubVolumes[i];
 		}
@@ -1263,7 +1270,7 @@ public void setImage(VCImage image) throws PropertyVetoException {
 		}
 		this.vcImage = image;
 
-		SubVolume newArray[] = new SubVolume[vcImage.getNumPixelClasses()];
+		SubVolume newImageSubVolumes[] = new SubVolume[vcImage.getNumPixelClasses()];
 		int svCount = 0;
 		cbit.image.VCPixelClass vcPixelClasses[] = vcImage.getPixelClasses();
 		for (int i = 0; i < vcPixelClasses.length; i++){
@@ -1277,10 +1284,29 @@ public void setImage(VCImage image) throws PropertyVetoException {
 			}else{
 				isv.setHandle(svCount);
 			}
-			newArray[svCount++] = isv;
+			newImageSubVolumes[svCount++] = isv;
 		}
-
-		setSubVolumes(newArray);
+		//
+		//merge existing analytic subvolumes with the new image subvolumes
+		//
+		SubVolume[] allSubVolumes = new SubVolume[newImageSubVolumes.length+getNumAnalyticSubVolumes()];
+		Enumeration<AnalyticSubVolume> analyticSubVolumeEnum = getAnalyticSubVolumes();
+		svCount = 0;
+		TreeSet<Integer> analyticSubVolHandlesTreeSet = new TreeSet<Integer>();
+		while(analyticSubVolumeEnum.hasMoreElements()){
+			allSubVolumes[svCount] = analyticSubVolumeEnum.nextElement();
+			analyticSubVolHandlesTreeSet.add(allSubVolumes[svCount].getHandle());
+			svCount++;
+		}
+		for (int i = 0; i < newImageSubVolumes.length; i++) {
+			allSubVolumes[svCount] = newImageSubVolumes[i];
+			if(analyticSubVolHandlesTreeSet.contains(allSubVolumes[svCount].getHandle())){
+				throw new RuntimeException("Duplicate Subvolume handles found while setting new Image");
+			}
+			svCount++;
+		}
+		
+		setSubVolumes(allSubVolumes);
 	}
 	firePropertyChange("image",oldImage,image);
 }
