@@ -1037,7 +1037,7 @@ private AsynchClientTask[] fdFromFile() {
 				}
 				initFDName = imageFile.getName();
 				try {
-					fdos = ClientRequestManager.createFDOSFromImageFile(imageFile,true,null);
+					fdos = ClientRequestManager.createFDOSFromImageFile(imageFile,false,null);
 				} catch (DataFormatException ex) {
 					throw new Exception("Cannot read image " + imageFile.getAbsolutePath()+"\n"+ex.getMessage());
 				}
