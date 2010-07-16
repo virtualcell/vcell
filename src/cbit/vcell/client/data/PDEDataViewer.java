@@ -363,14 +363,14 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 		public boolean isDefined(int dataIndex){
 			try {
 				Domain varDomain = pdeDataContext.getDataIdentifier().getDomain();
-				if(pdeDataContext.getDataIdentifier().getVariableType() == VariableType.VOLUME ||
-						pdeDataContext.getDataIdentifier().getVariableType() == VariableType.VOLUME_REGION){
+				if(pdeDataContext.getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
+						pdeDataContext.getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION)){
 					int subvol = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(dataIndex);
 					if (varDomain == null || simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
 						return true;
 					}				
-				}else if(pdeDataContext.getDataIdentifier().getVariableType() == VariableType.MEMBRANE ||
-						pdeDataContext.getDataIdentifier().getVariableType() == VariableType.MEMBRANE_REGION){
+				}else if(pdeDataContext.getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
+						pdeDataContext.getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION)){
 					String memSubdomainName = pdeDataContext.getCartesianMesh().getMembraneSubdomainNamefromMemIndex(dataIndex);
 					if (varDomain == null || varDomain.getName().equals(memSubdomainName)){
 						return true;
