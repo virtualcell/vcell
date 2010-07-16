@@ -45,25 +45,20 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 
 
     private void initializeIcons() {
-	    speciesIcon = new ImageIcon(getClass().getResource("/images/speciesItem.gif"));
-	    gParamIcon = new ImageIcon(getClass().getResource("/images/gparamItem.gif"));
-	    aParamIcon = new ImageIcon(getClass().getResource("/images/aparamItem.gif"));
-	    reactionsIcon = new ImageIcon(getClass().getResource("/images/reactionsItem.gif"));
-	    fluxIcon = new ImageIcon(getClass().getResource("/images/fluxItem.gif"));
-	    eventIcon = new ImageIcon(getClass().getResource("/images/eventItem.gif"));
-    	fieldDataItemIcon = new ImageIcon(getClass().getResource("/images/fieldDataItem.gif"));
-//    	fieldDataItemIcon = new ImageIcon("C:/dan/work images/icons/fieldDataItem.gif");
-
-    	geometryFolderIcon = new ImageIcon(getClass().getResource("/images/geometryFolder2D.gif"));
-	    electricFolderIcon = new ImageIcon(getClass().getResource("/images/electricFolder.gif"));
-	    structureMappingFolderIcon = new ImageIcon(getClass().getResource("/images/structureMappingFolder.gif"));
-
-	    if((electricFolderIcon == null) || (structureMappingFolderIcon == null) || 
-	    		(geometryFolderIcon == null) ||
-	    		(fieldDataItemIcon == null) || 
-		    	(speciesIcon == null) || (gParamIcon == null) || (aParamIcon == null) || 
-		    	(reactionsIcon == null) || (fluxIcon == null) || (eventIcon == null)) {
-            System.err.println("At least one icon is missing.");
+    	try {
+		    speciesIcon = new ImageIcon(getClass().getResource("/images/speciesItem.gif"));
+		    gParamIcon = new ImageIcon(getClass().getResource("/images/gparamItem.gif"));
+		    aParamIcon = new ImageIcon(getClass().getResource("/images/aparamItem.gif"));
+		    reactionsIcon = new ImageIcon(getClass().getResource("/images/reactionsItem.gif"));
+		    fluxIcon = new ImageIcon(getClass().getResource("/images/fluxItem.gif"));
+		    eventIcon = new ImageIcon(getClass().getResource("/images/eventItem.gif"));
+	    	fieldDataItemIcon = new ImageIcon(getClass().getResource("/images/fieldDataItem.gif"));
+	
+	    	geometryFolderIcon = new ImageIcon(getClass().getResource("/images/geometryFolder2D.gif"));
+		    electricFolderIcon = new ImageIcon(getClass().getResource("/images/electricFolder.gif"));
+		    structureMappingFolderIcon = new ImageIcon(getClass().getResource("/images/structureMappingFolder.gif"));
+    	} catch (Exception ex) {
+    		ex.printStackTrace(System.out);
 	    }
     }
 

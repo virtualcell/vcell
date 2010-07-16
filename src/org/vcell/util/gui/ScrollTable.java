@@ -83,7 +83,7 @@ public class ScrollTable extends JTable {
 					setBackground(table.getSelectionBackground());
 					setForeground(table.getSelectionForeground());
 				} else {
-					setBackground(DefaultScrollTableCellRenderer.uneditableBackGround);
+					setBackground(DefaultScrollTableCellRenderer.uneditableBackground);
 					setForeground(table.getForeground());
 				}
 			}

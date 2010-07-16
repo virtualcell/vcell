@@ -82,6 +82,7 @@ public class InitialConditionsPanel extends javax.swing.JPanel {
 	private JLabel diffConstantLabel;
 	private int selectedColumn = -1;
 	private JLabel setDiffConstantLabel;
+	private JLabel pressEnterLabel;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -1217,6 +1218,7 @@ private void scrollPaneTable_MouseButton(final java.awt.event.MouseEvent mouseEv
 				getJPopupMenuICP().add(new JSeparator());
 				getJPopupMenuICP().add(getSetDiffusionConstantLabel());
 				getJPopupMenuICP().add(getSetDiffConstantTextField());
+				getJPopupMenuICP().add(getPressEnterLabel());
 				getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
 			}
 		}
@@ -1225,21 +1227,28 @@ private void scrollPaneTable_MouseButton(final java.awt.event.MouseEvent mouseEv
 
 private JLabel getSetDiffusionConstantLabel() {
 	if (setDiffConstantLabel == null) {
-		setDiffConstantLabel = new javax.swing.JLabel("Set Selected to");		
+		setDiffConstantLabel = new javax.swing.JLabel("Set Selected to ");		
 	}	
 	return setDiffConstantLabel;
 }
 
 private JLabel getInitialConditionLabel() {
 	if (initialConditionLabel == null) {
-		initialConditionLabel = new JLabel(" Initial Condition");
+		initialConditionLabel = new JLabel(" Initial Condition ");
 		initialConditionLabel.setFont(initialConditionLabel.getFont().deriveFont(Font.BOLD));
 	}
 	return initialConditionLabel;
 }
+private JLabel getPressEnterLabel() {
+	if (pressEnterLabel == null) {
+		pressEnterLabel = new JLabel(" (Press Enter or Return) ");
+		pressEnterLabel.setFont(pressEnterLabel.getFont().deriveFont(pressEnterLabel.getFont().getSize2D() - 1));
+	}
+	return pressEnterLabel;
+}
 private JLabel getClampedLabel() {
 	if (clampedLabel == null) {
-		clampedLabel = new JLabel(" Clamped");
+		clampedLabel = new JLabel(" Clamped ");
 		clampedLabel.setFont(clampedLabel.getFont().deriveFont(Font.BOLD));
 	}
 	return clampedLabel;
@@ -1247,7 +1256,7 @@ private JLabel getClampedLabel() {
 
 private JLabel getWellMixedLabel() {
 	if (wellMixedLabel == null) {
-		wellMixedLabel = new JLabel(" Well Mixed");
+		wellMixedLabel = new JLabel(" Well Mixed ");
 		wellMixedLabel.setFont(wellMixedLabel.getFont().deriveFont(Font.BOLD));
 	}
 	return wellMixedLabel;
@@ -1255,7 +1264,7 @@ private JLabel getWellMixedLabel() {
 
 private JLabel getDiffusionConstantLabel() {
 	if (diffConstantLabel == null) {
-		diffConstantLabel = new JLabel("Diffusion Constant");
+		diffConstantLabel = new JLabel("Diffusion Constant ");
 		diffConstantLabel.setFont(diffConstantLabel.getFont().deriveFont(Font.BOLD));
 	}
 	return diffConstantLabel;

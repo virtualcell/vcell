@@ -14,7 +14,8 @@ import org.vcell.util.NumberUtils;
 
 public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	static final Border focusHighlightBorder = UIManager.getBorder("Table.focusCellHighlightBorder");
-	static final Color uneditableBackGround = UIManager.getColor("TextField.inactiveBackground");
+	static final Color uneditableBackground = UIManager.getColor("TextField.inactiveBackground");
+	static final Color uneditableForeground = UIManager.getColor("TextField.inactiveForeground");
 	static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
 	
 	/**
@@ -50,8 +51,8 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 				setBackground(table.getSelectionBackground());
 				setForeground(table.getSelectionForeground());
 			} else {
-				setBackground(uneditableBackGround);
-				setForeground(table.getForeground());
+				setBackground(uneditableBackground);
+				setForeground(uneditableBackground.equals(table.getBackground()) ? uneditableForeground : table.getForeground());
 			}
 		}
 		if (value instanceof Double) {
