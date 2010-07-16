@@ -5,6 +5,7 @@ package cbit.vcell.mapping.gui;
 ©*/
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.beans.PropertyVetoException;
 
 import javax.swing.DefaultCellEditor;
@@ -493,10 +494,10 @@ private void update() {
 					public MultiLineHeaderRenderer(TableCellRenderer dr) {
 						defaultRenderer = dr;
 					}
-					public Component getTableCellRendererComponent(
-							JTable table, Object value, boolean isSelected,
+					public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 							boolean hasFocus, int row, int column) {
 						Component c = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+						c.setPreferredSize(new Dimension(20,45));
 						JLabel label = null;
 						if (c instanceof JLabel) {
 							label = (JLabel)c;
@@ -508,8 +509,7 @@ private void update() {
 							}
 							if (border == null) {
 								border = UIManager.getBorder("TableHeader.cellBorder");
-							}
-							
+							}							
 							if (table != null) { 
 								JTableHeader header = table.getTableHeader(); 
 								if (header != null) { 
@@ -531,16 +531,21 @@ private void update() {
 								} 
 							} 
 						}
-						label.setHorizontalTextPosition(JLabel.CENTER);
-						label.setVerticalTextPosition(JLabel.TOP);
-						label.setText("Size Ratio");
-						label.setIconTextGap(0);
-						label.setIcon(new StructureMappingTableRenderer.TextIcon("(Structure : Subdomain)"));
+						if (column == SPATIAL_COLUMN_SIZERATIO) {
+							label.setHorizontalTextPosition(JLabel.CENTER);
+							label.setVerticalTextPosition(JLabel.TOP);
+							label.setText("Size Ratio");
+							label.setIconTextGap(0);
+							label.setIcon(new StructureMappingTableRenderer.TextIcon("(Structure : Subdomain)"));
+						} else {
+							label.setText(value.toString());
+							label.setIcon(null);
+						}
 						return label;
 					}
 				}
 				
-				ownerTable.getColumnModel().getColumn(SPATIAL_COLUMN_SIZERATIO).setHeaderRenderer(new MultiLineHeaderRenderer(ownerTable.getTableHeader().getDefaultRenderer()));				
+				ownerTable.getTableHeader().setDefaultRenderer(new MultiLineHeaderRenderer(ownerTable.getTableHeader().getDefaultRenderer()));				
 				ownerTable.getColumnModel().getColumn(SPATIAL_COLUMN_SIZERATIO).setPreferredWidth(100);
 				for (int col = SPATIAL_COLUMN_X_MINUS; col < getColumnCount(); col ++) {
 					ownerTable.getColumnModel().getColumn(col).setPreferredWidth(8);
