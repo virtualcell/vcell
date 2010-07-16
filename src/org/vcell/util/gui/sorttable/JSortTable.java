@@ -20,8 +20,7 @@ import org.vcell.util.gui.ScrollTable;
 
 public class JSortTable extends ScrollTable
   implements MouseListener
-{
-  
+{  
 	private int pressedXPoint = -1;
 
 public JSortTable() {
@@ -44,7 +43,7 @@ private void initSortHeader() {
 		header.removeMouseListener(this);
 		header.addMouseListener(this);
 		for (int i = 0; i < getColumnCount(); i++) {
-			header.getColumnModel().getColumn(i).setHeaderRenderer(new SortHeaderRenderer());
+			header.getColumnModel().getColumn(i).setHeaderRenderer(new SortHeaderRenderer(getTableHeader().getDefaultRenderer()));
 		}
 	}
 }

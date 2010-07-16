@@ -3,8 +3,8 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Color;
 import java.awt.Component;
-import java.awt.GridLayout;
 import java.beans.PropertyVetoException;
 
 import javax.swing.DefaultCellEditor;
@@ -13,9 +13,11 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 
 import org.vcell.sbml.vcell.StructureSizeSolver;
@@ -486,29 +488,64 @@ private void update() {
 			fireTableStructureChanged();
 			
 			if (!bNonSpatial) {
-				class MultiLineHeaderRenderer extends JPanel implements TableCellRenderer {
+				class MultiLineHeaderRenderer implements TableCellRenderer {
+					TableCellRenderer defaultRenderer = null;
+					public MultiLineHeaderRenderer(TableCellRenderer dr) {
+						defaultRenderer = dr;
+					}
 					public Component getTableCellRendererComponent(
 							JTable table, Object value, boolean isSelected,
 							boolean hasFocus, int row, int column) {
-						removeAll();
-						JLabel label1 = new JLabel("Size Ratio");
-						label1.setHorizontalAlignment(SwingConstants.CENTER);
-						JLabel label2 = new JLabel("(Structure : Subdomain)");
-						label2.setFont(label2.getFont().deriveFont(label2.getFont().getSize2D() - 2f));
-						label2.setHorizontalAlignment(SwingConstants.CENTER);
-						setLayout(new GridLayout(2, 1));
-						add(label1);
-						add(label2);
-						return this;
+						Component c = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+						JLabel label = null;
+						if (c instanceof JLabel) {
+							label = (JLabel)c;
+						} else {
+							label = new JLabel();
+							Border border = null;
+							if (hasFocus) {
+								border = UIManager.getBorder("TableHeader.focusCellBorder");
+							}
+							if (border == null) {
+								border = UIManager.getBorder("TableHeader.cellBorder");
+							}
+							
+							if (table != null) { 
+								JTableHeader header = table.getTableHeader(); 
+								if (header != null) { 
+									Color fgColor = null;
+									Color bgColor = null;
+									if (hasFocus) {
+										fgColor = UIManager.getColor("TableHeader.focusCellForeground");
+										bgColor = UIManager.getColor("TableHeader.focusCellBackground");
+									}
+									if (fgColor == null) {
+										fgColor = header.getForeground();
+									}
+									if (bgColor == null) {
+										bgColor = header.getBackground();
+									}
+									label.setForeground(fgColor);
+									label.setBackground(bgColor);
+									label.setFont(header.getFont()); 
+								} 
+							} 
+						}
+						label.setHorizontalTextPosition(JLabel.CENTER);
+						label.setVerticalTextPosition(JLabel.TOP);
+						label.setText("Size Ratio");
+						label.setIconTextGap(0);
+						label.setIcon(new StructureMappingTableRenderer.TextIcon("(Structure : Subdomain)"));
+						return label;
 					}
 				}
 				
-				ownerTable.getColumnModel().getColumn(SPATIAL_COLUMN_SIZERATIO).setHeaderRenderer(new MultiLineHeaderRenderer());
-				updateSubdomainComboBox();
-				
+				ownerTable.getColumnModel().getColumn(SPATIAL_COLUMN_SIZERATIO).setHeaderRenderer(new MultiLineHeaderRenderer(ownerTable.getTableHeader().getDefaultRenderer()));				
+				ownerTable.getColumnModel().getColumn(SPATIAL_COLUMN_SIZERATIO).setPreferredWidth(100);
 				for (int col = SPATIAL_COLUMN_X_MINUS; col < getColumnCount(); col ++) {
 					ownerTable.getColumnModel().getColumn(col).setPreferredWidth(8);
 				}
+				updateSubdomainComboBox();
 			}		
 			
 //		}
