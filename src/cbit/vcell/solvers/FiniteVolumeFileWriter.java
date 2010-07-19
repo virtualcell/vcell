@@ -1019,7 +1019,8 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 				printWriter.print("VOLUME_ODE " + volVar.getName());
 			}
 
-			if (totalNumCompartments == listOfSubDomains.size()) {
+			if (totalNumCompartments == listOfSubDomains.size() 
+					|| listOfSubDomains.size() == 0 && simulationJob.getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
 				printWriter.print(" true");
 			} else {
 				printWriter.print(" false");
