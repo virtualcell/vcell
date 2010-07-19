@@ -249,15 +249,13 @@ public class SBMLAnnotationUtil {
 						// other (tool-specific, non-RDF, XML) annotations 
 						Element elementXML = xmlNodeToElement(annotationBranch);
 						Element[] xmlAnnotations = metaData.getXmlAnnotations(identifiable);
-						Vector<Element> xmlAnnotList = null;
+						Vector<Element> xmlAnnotList = new Vector<Element>();
 						if (xmlAnnotations != null && xmlAnnotations.length > 0) {
-							xmlAnnotList = new Vector<Element>(Arrays.asList(xmlAnnotations));
-						} else {
-							xmlAnnotList = new Vector<Element>();
-						}
+							xmlAnnotList.addAll(Arrays.asList(xmlAnnotations));
+						} 
 						if (elementXML != null) {
 							xmlAnnotList.add(elementXML);
-							metaData.setXmlAnnotations(identifiable, xmlAnnotList.toArray(xmlAnnotations));
+							metaData.setXmlAnnotations(identifiable, xmlAnnotList.toArray(new Element[0]));
 						}
 					}
 				}
