@@ -1013,26 +1013,6 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 		if (vars[i] instanceof VolumeRandomVariable || vars[i] instanceof MembraneRandomVariable) {
 			rvList.add((RandomVariable)vars[i]);		
 		} else if (vars[i] instanceof VolVariable) {
-			Vector<SubDomain> listOfSubDomains = new Vector<SubDomain>();
-			int totalNumCompartments = 0;
-			StringBuffer compartmentNames = new StringBuffer();
-			Enumeration<SubDomain> subDomainEnum = mathDesc.getSubDomains();
-			while (subDomainEnum.hasMoreElements()){
-		  		SubDomain subDomain = subDomainEnum.nextElement();
-		 		if (subDomain instanceof CompartmentSubDomain){
-			  		CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)subDomain;
-			  		totalNumCompartments++;
-			  		Equation varEquation = subDomain.getEquation(vars[i]);
-			  		if (varEquation != null) {
-				  		if (!(varEquation instanceof PdeEquation) || !((PdeEquation)varEquation).isDummy(simSymbolTable, compartmentSubDomain)){
-							listOfSubDomains.add(compartmentSubDomain);
-							int handle = mathDesc.getHandle(compartmentSubDomain);
-							compartmentNames.append(compartmentSubDomain.getName()+"("+handle+") ");					
-				  		}
-			  		}
-		 		}
-		  	}
-			
 			VolVariable volVar = (VolVariable)vars[i];
 			if (mathDesc.isPDE(volVar)) {
 				boolean hasTimeVaryingDiffusionOrAdvection = simSymbolTable.hasTimeVaryingDiffusionOrAdvection(volVar);
@@ -1047,17 +1027,38 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 				printWriter.print("VOLUME_ODE " + varName + " " + domainName);
 			}
 
-			if (totalNumCompartments == listOfSubDomains.size()) {
-				printWriter.print(" true");
-			} else {
-				printWriter.print(" false");
-			  	for (int j = 0; j < listOfSubDomains.size(); j++){
-					CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)listOfSubDomains.elementAt(j);				  	
-				  	printWriter.print(" " + compartmentSubDomain.getName());
+			if (domainName == null) {
+				Vector<SubDomain> listOfSubDomains = new Vector<SubDomain>();
+				int totalNumCompartments = 0;
+				Enumeration<SubDomain> subDomainEnum = mathDesc.getSubDomains();
+				while (subDomainEnum.hasMoreElements()){
+			  		SubDomain subDomain = subDomainEnum.nextElement();
+			 		if (subDomain instanceof CompartmentSubDomain){
+				  		CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)subDomain;
+				  		totalNumCompartments++;
+				  		Equation varEquation = subDomain.getEquation(vars[i]);
+				  		if (varEquation != null) {
+					  		if (!(varEquation instanceof PdeEquation) || !((PdeEquation)varEquation).isDummy(simSymbolTable, compartmentSubDomain)){
+								listOfSubDomains.add(compartmentSubDomain);
+					  		}
+				  		}
+			 		}
 			  	}
-				
+				if (totalNumCompartments == listOfSubDomains.size()
+						|| listOfSubDomains.size() == 0 && simulationJob.getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+					printWriter.print(" true");
+				} else {
+					printWriter.print(" false");
+					for (int j = 0; j < listOfSubDomains.size(); j++){
+						CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)listOfSubDomains.elementAt(j);				  	
+						printWriter.print(" " + compartmentSubDomain.getName());
+					}
+					
+				}
+				printWriter.println();
+			} else {
+				printWriter.println(" false " + domainName);
 			}
-			printWriter.println();
 		} else if (vars[i] instanceof VolumeRegionVariable) {
 			printWriter.println("VOLUME_REGION " + varName + " " + domainName);
 		} else if (vars[i] instanceof MemVariable) {
