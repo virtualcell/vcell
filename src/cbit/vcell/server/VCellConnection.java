@@ -44,7 +44,7 @@ URLFinder getURLFinder() throws java.rmi.RemoteException;
  * This method was created in VisualAge.
  * @return java.lang.String
  */
-public User getUser() throws RemoteException;
+public UserLoginInfo getUserLoginInfo() throws RemoteException;
 /**
  * This method was created by a SmartGuide.
  * @return DBManager

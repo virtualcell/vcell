@@ -14,8 +14,7 @@ import cbit.vcell.simdata.*;
  * This type was created in VisualAge.
  */
 public class LocalVCellConnectionFactory implements VCellConnectionFactory {
-	private String userID = null;
-	private String password = null;
+	private UserLoginInfo userLoginInfo;
 	private SessionLog sessionLog = null;
 	private ConnectionFactory connectionFactory = null;
 	private boolean bLocal = false;
@@ -24,9 +23,8 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 /**
  * LocalVCellConnectionFactory constructor comment.
  */
-public LocalVCellConnectionFactory(String userID, String password, SessionLog sessionLog, boolean bLocal0) {
-	this.userID = userID;
-	this.password = password;
+public LocalVCellConnectionFactory(UserLoginInfo userLoginInfo, SessionLog sessionLog, boolean bLocal0) {
+	this.userLoginInfo = userLoginInfo;
 	this.sessionLog = sessionLog;
 	bLocal = bLocal0;
 }
@@ -36,9 +34,8 @@ public LocalVCellConnectionFactory(String userID, String password, SessionLog se
  * @param userID java.lang.String
  * @param password java.lang.String
  */
-public void changeUser(java.lang.String userID, java.lang.String password) {
-	this.userID = userID;
-	this.password = password;
+public void changeUser(UserLoginInfo userLoginInfo) {
+	this.userLoginInfo = userLoginInfo;
 }
 /**
  * This method was created in VisualAge.
@@ -57,7 +54,7 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 			jmsConnFactory = new cbit.vcell.messaging.JmsConnectionFactoryImpl();
 		}
 		LocalVCellServer vcServer = (LocalVCellServer)(new LocalVCellServerFactory(null,null,"<<local>>",jmsConnFactory,connectionFactory, keyFactory, sessionLog)).getVCellServer();
-		return vcServer.getVCellConnection(new UserLoginInfo(userID, password));
+		return vcServer.getVCellConnection(userLoginInfo);
 	} catch (AuthenticationException exc) {
 		sessionLog.exception(exc);
 		throw exc;

@@ -21,6 +21,7 @@ import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.RMIVCellConnectionFactory;
 import cbit.vcell.server.SimulationController;
+import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
@@ -326,7 +327,7 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 						getClientServerInfo().setActiveHost(hosts[i]);
 						
 						badConnStr += hosts[i] + ";";
-						vcConnFactory = new RMIVCellConnectionFactory(hosts[i], getClientServerInfo().getUsername(), getClientServerInfo().getPassword());
+						vcConnFactory = new RMIVCellConnectionFactory(hosts[i], getClientServerInfo().getUserLoginInfo());
 						setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), hosts[i], ConnectionStatus.INITIALIZING));
 						newVCellConnection = vcConnFactory.createVCellConnection();
 						break;
@@ -346,8 +347,8 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 				getClientServerInfo().setActiveHost(ClientServerInfo.LOCAL_SERVER);				
 				SessionLog log = new StdoutSessionLog(getClientServerInfo().getUsername());
 				Class localVCConnFactoryClass = Class.forName("cbit.vcell.server.LocalVCellConnectionFactory");
-				Constructor constructor = localVCConnFactoryClass.getConstructor(new Class[] {String.class, String.class, SessionLog.class, boolean.class});
-				vcConnFactory = (VCellConnectionFactory)constructor.newInstance(new Object[] {getClientServerInfo().getUsername(), getClientServerInfo().getPassword(), log, Boolean.TRUE});				
+				Constructor constructor = localVCConnFactoryClass.getConstructor(new Class[] {UserLoginInfo.class, SessionLog.class, boolean.class});
+				vcConnFactory = (VCellConnectionFactory)constructor.newInstance(new Object[] {getClientServerInfo().getUserLoginInfo(), log, Boolean.TRUE});				
 				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), ClientServerInfo.LOCAL_SERVER, ConnectionStatus.INITIALIZING));
 				newVCellConnection = vcConnFactory.createVCellConnection();
 				break;
@@ -590,7 +591,7 @@ public synchronized User getUser() {
 	}else{
 		VCellThreadChecker.checkRemoteInvocation();
 		try {
-			user = getVcellConnection().getUser();
+			user = getVcellConnection().getUserLoginInfo().getUser();
 			return user;
 		} catch (java.rmi.RemoteException rexc) {
 			rexc.printStackTrace(System.out);
