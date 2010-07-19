@@ -363,16 +363,18 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 		public boolean isDefined(int dataIndex){
 			try {
 				Domain varDomain = pdeDataContext.getDataIdentifier().getDomain();
-				if(pdeDataContext.getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
-						pdeDataContext.getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION)){
+				if (varDomain == null) {
+					return true;
+				}
+				VariableType varType = pdeDataContext.getDataIdentifier().getVariableType();
+				if(varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
 					int subvol = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(dataIndex);
-					if (varDomain == null || simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+					if (simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
 						return true;
 					}				
-				}else if(pdeDataContext.getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
-						pdeDataContext.getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION)){
+				}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
 					String memSubdomainName = pdeDataContext.getCartesianMesh().getMembraneSubdomainNamefromMemIndex(dataIndex);
-					if (varDomain == null || varDomain.getName().equals(memSubdomainName)){
+					if (varDomain.getName().equals(memSubdomainName)){
 						return true;
 					}
 				}
