@@ -23,7 +23,7 @@ public interface VCellBootstrap extends java.rmi.Remote {
  * @return cbit.vcell.server.VCellConnection
  * @exception java.rmi.RemoteException The exception description.
  */
-public VCellConnection getVCellConnection(String userid,String password) throws RemoteException, DataAccessException, AuthenticationException;
+public VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, DataAccessException, AuthenticationException;
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.server.VCellConnection

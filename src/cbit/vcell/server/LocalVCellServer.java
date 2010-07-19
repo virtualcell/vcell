@@ -97,13 +97,13 @@ public LocalVCellServer(boolean bPrimaryServer, String argHostName, AdminDatabas
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-private synchronized void addVCellConnection(User user, String password) throws RemoteException, java.sql.SQLException, FileNotFoundException, javax.jms.JMSException {
-	if (getVCellConnection0(user) == null) {
+private synchronized void addVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, java.sql.SQLException, FileNotFoundException, javax.jms.JMSException {
+	if (getVCellConnection0(userLoginInfo.getUser()) == null) {
 		VCellConnection localConn = null;
 		if (fieldJmsConnFactory == null){
-			localConn = new LocalVCellConnection(user, password, hostName, new StdoutSessionLog(user.getName()), this);
+			localConn = new LocalVCellConnection(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), this);
 		} else {
-			localConn = new cbit.vcell.messaging.server.LocalVCellConnectionMessaging(user, password, hostName, new StdoutSessionLog(user.getName()), fieldJmsConnFactory, this);
+			localConn = new cbit.vcell.messaging.server.LocalVCellConnectionMessaging(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), fieldJmsConnFactory, this);
 		}
 		vcellConnectionList.addElement(localConn);
 	}
@@ -139,7 +139,7 @@ public void cleanupConnections() {
 							vcellConnectionList.remove(messagingConnection);
 							messagingConnection.close();							
 						}
-						sessionLog.print("Removed connection from " + messagingConnection.getUser());						
+						sessionLog.print("Removed connection from " + messagingConnection.getUserLoginInfo().getUser());						
 					}
 
 				}
@@ -204,8 +204,8 @@ public User[] getConnectedUsers() {
 	try {
 		Vector<User> userList = new Vector<User>();
 		for (VCellConnection vcConn : vcellConnectionList) {
-			if (!userList.contains(vcConn.getUser())){
-				userList.addElement(vcConn.getUser());
+			if (!userList.contains(vcConn.getUserLoginInfo().getUser())){
+				userList.addElement(vcConn.getUserLoginInfo().getUser());
 			}
 		}
 		return (User[])org.vcell.util.BeanUtils.getArray(userList,User.class);
@@ -432,13 +432,14 @@ VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws RemoteExc
 	User user = null;
 	try{
 		synchronized (adminDbServer) {
-			user = adminDbServer.getUser(userLoginInfo.getUserName(), userLoginInfo.getPassword());
+			user = adminDbServer.getUser(userLoginInfo.getUserName(),userLoginInfo.getPassword());
 			if (user == null){
 				throw new AuthenticationException("The userid (" + userLoginInfo.getUserName() + ") or password you entered is not correct. Please go to Server->Change User... to reenter your userid and password or click \"Forgot Login Password\"");
 			}
+			userLoginInfo.setUser(user);
 		}
-	}catch(DataAccessException e){
-		throw new DataAccessException("getVcellConnection User Authentication Database Access SQL Error " + e.getMessage());
+	}catch(Exception e){
+		throw new DataAccessException("getVcellConnection User Authentication Database Access SQL Error " + e.getMessage(),e);
 	}
 	//
 	// get existing VCellConnection
@@ -449,7 +450,7 @@ VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws RemoteExc
 	// if doesn't exist, create new one
 	//
 	if (localConnection == null) {
-		addVCellConnection(user,userLoginInfo.getPassword());
+		addVCellConnection(userLoginInfo);
 		localConnection = getVCellConnection0(user);
 		if (localConnection==null){
 			sessionLog.print("LocalVCellServer.getVCellConnecytion("+user.getName()+") unable to create VCellConnection");
@@ -487,12 +488,12 @@ private synchronized VCellConnection getVCellConnection0(User user) {
 	for (VCellConnection vcc : vcellConnectionList) {
 		if (vcc instanceof LocalVCellConnection){
 			LocalVCellConnection lvcc = (LocalVCellConnection)vcc;
-			if (lvcc.getUser().compareEqual(user)) {
+			if (lvcc.getUserLoginInfo().getUser().compareEqual(user)) {
 				return lvcc;
 			}
 		}else if (vcc instanceof cbit.vcell.messaging.server.LocalVCellConnectionMessaging){
 			cbit.vcell.messaging.server.LocalVCellConnectionMessaging lvccm = (cbit.vcell.messaging.server.LocalVCellConnectionMessaging)vcc;
-			if (lvccm.getUser().compareEqual(user)) {
+			if (lvccm.getUserLoginInfo().getUser().compareEqual(user)) {
 				return lvccm;
 			}
 		}
