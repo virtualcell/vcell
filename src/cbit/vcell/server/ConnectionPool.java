@@ -73,19 +73,19 @@ private synchronized ComputeHost[] getSimComputeServerHostsProperty() {
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-public synchronized VCellConnection getSimDataServerVCellConnection(String userid, String password) throws AuthenticationException {
-log.print("ConnectionPool.getSimDataServerVCellConnection("+userid+","+password+")");
+public synchronized VCellConnection getSimDataServerVCellConnection(UserLoginInfo userLoginInfo) throws AuthenticationException {
+log.print("ConnectionPool.getSimDataServerVCellConnection("+userLoginInfo.getUserName()+")");
 	String dataHost = System.getProperty(PropertyLoader.simDataServerHost);
 	if (dataHost==null || dataHost.length()==0){
 		return null;
 	}
 	VCellConnection vcConn = null;
 	try {
-		VCellConnectionFactory vcConnFactory = new RMIVCellConnectionFactory(dataHost,userid,password);
+		VCellConnectionFactory vcConnFactory = new RMIVCellConnectionFactory(dataHost,userLoginInfo);
 		vcConn = vcConnFactory.createVCellConnection();
-log.print("ConnectionPool.getSimDataServerVCellConnection("+userid+","+password+")  .. returning host "+dataHost);
+log.print("ConnectionPool.getSimDataServerVCellConnection("+userLoginInfo.getUserName()+")  .. returning host "+dataHost);
 	}catch (ConnectionException e){
-log.print("ConnectionPool.getSimDataServerVCellConnection("+userid+","+password+")  .. failed to connect to host "+dataHost);
+log.print("ConnectionPool.getSimDataServerVCellConnection("+userLoginInfo.getUserName()+")  .. failed to connect to host "+dataHost);
 		vcConn = null;
 	}
 	return vcConn;

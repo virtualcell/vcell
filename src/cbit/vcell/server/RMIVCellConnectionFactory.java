@@ -12,17 +12,15 @@ public class RMIVCellConnectionFactory implements VCellConnectionFactory {
 	public static final String SERVICE_NAME = "VCellBootstrapServer";
 
 	private String connectString = null;
-	private String userid = null;
-	private String password = null;
+	UserLoginInfo userLoginInfo;
 	private String host = null;
 
 /**
  * RMIVCellConnectionFactory constructor comment.
  */
-public RMIVCellConnectionFactory(String argHost, String argUserid, String argPassword) {
+public RMIVCellConnectionFactory(String argHost,UserLoginInfo userLoginInfo) {
 	this.host = argHost;
-	this.userid = argUserid;
-	this.password = argPassword;	
+	this.userLoginInfo = userLoginInfo;	
 	this.connectString = "//"+host+"/"+SERVICE_NAME;
 }
 /**
@@ -31,9 +29,8 @@ public RMIVCellConnectionFactory(String argHost, String argUserid, String argPas
  * @param userID java.lang.String
  * @param password java.lang.String
  */
-public void changeUser(java.lang.String userID, java.lang.String password) {
-	this.userid = userID;
-	this.password = password;
+public void changeUser(UserLoginInfo userLoginInfo) {
+	this.userLoginInfo = userLoginInfo;	
 }
 /**
  * This method was created in VisualAge.
@@ -50,7 +47,7 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 		throw new ConnectionException(e.getMessage());
 	}
 	try {
-		vcellConnection = vcellBootstrap.getVCellConnection(userid,password);
+		vcellConnection = vcellBootstrap.getVCellConnection(userLoginInfo);
 		if (vcellConnection==null){
 			throw new AuthenticationException("cannot login to server, check userid and password");
 		}

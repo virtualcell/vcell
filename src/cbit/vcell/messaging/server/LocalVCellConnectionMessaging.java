@@ -27,6 +27,7 @@ import cbit.vcell.server.LocalVCellServer;
 import cbit.vcell.server.PerformanceMonitoringFacility;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.URLFinder;
+import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
 
@@ -45,8 +46,7 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 
 	private JmsConnection jmsConn = null;
 	
-	private User fieldUser = null;
-	private String fieldPassword = null;
+	private UserLoginInfo userLoginInfo;
 	
 	private SessionLog fieldSessionLog = null;
 	private LocalVCellServer fieldLocalVCellServer = null;
@@ -56,23 +56,22 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	private JmsClientMessaging dataClientMessaging = null;
 	private JmsClientMessaging simClientMessaging = null;
 
-	public LocalVCellConnectionMessaging(User user, String password, String host, 
+	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, String host, 
 		SessionLog sessionLog, JmsConnectionFactory jmsConnFactory, LocalVCellServer aLocalVCellServer) 
 		throws RemoteException, java.sql.SQLException, FileNotFoundException, javax.jms.JMSException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellConnection,0));
-	this.fieldUser = user;
-	this.fieldPassword = password;
+	this.userLoginInfo = userLoginInfo;
 	this.fieldHost = host;
 	this.fieldSessionLog = sessionLog;
 	this.fieldLocalVCellServer = aLocalVCellServer;
 	jmsConn = jmsConnFactory.createConnection();
 	
-	messageService = new SimpleMessageServiceMessaging(jmsConn, user, sessionLog);	
-	sessionLog.print("new LocalVCellConnectionMessaging(" + user.getName() + ")");	
+	messageService = new SimpleMessageServiceMessaging(jmsConn, userLoginInfo.getUser(), sessionLog);	
+	sessionLog.print("new LocalVCellConnectionMessaging(" + userLoginInfo.getUser().getName() + ")");	
 	fieldLocalVCellServer.getExportServiceImpl().addExportListener(this);
 	fieldLocalVCellServer.getDataSetControllerImpl().addDataJobListener(this);
 	
-	PerformanceMonitoringFacility pmf = new PerformanceMonitoringFacility(user, sessionLog);
+	PerformanceMonitoringFacility pmf = new PerformanceMonitoringFacility(userLoginInfo.getUser(), sessionLog);
 	getMessageService().getMessageDispatcher().addPerformanceMonitorListener(pmf);
 	
 }
@@ -99,7 +98,7 @@ public void close() throws java.rmi.RemoteException {
  */
 public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 	// if it's from one of our jobs, pass it along so it will reach the client
-	if (getUser().equals(event.getUser())) {
+	if (getUserLoginInfo().getUser().equals(event.getUser())) {
 		messageService.getMessageCollector().dataJobMessage(event);
 	}
 }
@@ -112,7 +111,7 @@ public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
  */
 public void exportMessage(ExportEvent event) {
 	// if it's from one of our jobs, pass it along so it will reach the client
-	if (getUser().equals(event.getUser())) {
+	if (getUserLoginInfo().getUser().equals(event.getUser())) {
 		messageService.getMessageCollector().exportMessage(event);
 	}
 }
@@ -127,7 +126,7 @@ public DataSetController getDataSetController() throws RemoteException, DataAcce
 	if (dataSetControllerMessaging == null) {
 		try {
 			dataClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog);
-			dataSetControllerMessaging = new LocalDataSetControllerMessaging(fieldSessionLog, getUser(), dataClientMessaging);
+			dataSetControllerMessaging = new LocalDataSetControllerMessaging(fieldSessionLog, getUserLoginInfo().getUser(), dataClientMessaging);
 			fieldSessionLog.print("new dataClientMessaging=" + dataClientMessaging);
 		} catch (javax.jms.JMSException ex) {
 			fieldSessionLog.exception(ex);
@@ -169,7 +168,7 @@ public SimulationController getSimulationController() throws RemoteException {
 	if (simulationControllerMessaging == null){
 		try {
 			simClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog);
-			simulationControllerMessaging = new LocalSimulationControllerMessaging(getUser(), simClientMessaging, fieldSessionLog);
+			simulationControllerMessaging = new LocalSimulationControllerMessaging(getUserLoginInfo().getUser(), simClientMessaging, fieldSessionLog);
 			fieldSessionLog.print("new simClientMessaging=" + simClientMessaging);
 		} catch (DataAccessException ex) {
 			fieldSessionLog.exception(ex);
@@ -205,8 +204,8 @@ public URLFinder getURLFinder() {
  * This method was created by a SmartGuide.
  * @return java.lang.String
  */
-public User getUser() {
-	return (fieldUser);
+public UserLoginInfo getUserLoginInfo() {
+	return userLoginInfo;
 }
 
 
@@ -217,11 +216,11 @@ public User getUser() {
  * @exception java.rmi.RemoteException The exception description.
  */
 public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccessException {
-	fieldSessionLog.print("LocalVCellConnectionMessaging.getUserMetaDbServer(" + getUser() + ")");
+	fieldSessionLog.print("LocalVCellConnectionMessaging.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
 	if (userMetaDbServerMessaging == null) {
 		try {
 			dbClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog);
-			userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(dbClientMessaging, getUser(), fieldSessionLog);
+			userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(dbClientMessaging, getUserLoginInfo().getUser(), fieldSessionLog);
 			fieldSessionLog.print("new dbClientMessaging=" + dbClientMessaging);
 		} catch (javax.jms.JMSException ex) {
 			fieldSessionLog.exception(ex);

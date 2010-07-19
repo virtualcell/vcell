@@ -113,8 +113,7 @@ private SolverController createNewSolverController(User user, SimulationJob simu
 				// try to connection MessageHandlers to VCellConnection on this host
 				//
 				LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(user);
-				String password = localVCellConnection.getPassword();
-				VCellConnectionFactory vcConnFactory = new RMIVCellConnectionFactory(activeHosts[i].getHostName(),user.getName(),password);
+				VCellConnectionFactory vcConnFactory = new RMIVCellConnectionFactory(activeHosts[i].getHostName(),localVCellConnection.getUserLoginInfo());
 				VCellConnection remoteVCellConnection = vcConnFactory.createVCellConnection();
 				if (remoteVCellConnection!=null && !localVCellConnection.getRemoteMessageHandler().isConnected(remoteVCellConnection.getRemoteMessageHandler())){
 					RemoteMessageHandler localMessageHandler = localVCellConnection.getRemoteMessageHandler();

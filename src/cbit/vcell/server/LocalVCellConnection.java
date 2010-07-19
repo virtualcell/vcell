@@ -39,8 +39,7 @@ public class LocalVCellConnection extends UnicastRemoteObject implements VCellCo
 	private UserMetaDbServer userMetaDbServer = null;
 	private SimpleMessageService messageService = new SimpleMessageService();
 	//
-	private User fieldUser = null;
-	private String fieldPassword = null;
+	private UserLoginInfo userLoginInfo;
 
 	//
 	// database resources
@@ -57,19 +56,18 @@ public class LocalVCellConnection extends UnicastRemoteObject implements VCellCo
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalVCellConnection(User user, String password, String host, SessionLog sessionLog, LocalVCellServer aLocalVCellServer) throws RemoteException, java.sql.SQLException, FileNotFoundException {
+public LocalVCellConnection(UserLoginInfo userLoginInfo, String host, SessionLog sessionLog, LocalVCellServer aLocalVCellServer) throws RemoteException, java.sql.SQLException, FileNotFoundException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellConnection,0));
-	this.fieldUser = user;
-	this.fieldPassword = password;
+	this.userLoginInfo = userLoginInfo;
 	this.fieldHost = host;
 	this.fieldSessionLog = sessionLog;
 	this.fieldLocalVCellServer = aLocalVCellServer;
-	sessionLog.print("new LocalVCellConnection(" + user.getName() + ")");
+	sessionLog.print("new LocalVCellConnection(" + userLoginInfo.getUserName() + ")");
 	
 	getLocalVCellServer().getExportServiceImpl().addExportListener(this);
 	getLocalVCellServer().getDataSetControllerImpl().addDataJobListener(this);
 
-	PerformanceMonitoringFacility pmf = new PerformanceMonitoringFacility(user, sessionLog);
+	PerformanceMonitoringFacility pmf = new PerformanceMonitoringFacility(this.userLoginInfo.getUser(), sessionLog);
 	getMessageService().getMessageDispatcher().addPerformanceMonitorListener(pmf);
 	
 }
@@ -82,7 +80,7 @@ public LocalVCellConnection(User user, String password, String host, SessionLog 
  */
 public void exportMessage(ExportEvent event) {
 	// if it's from one of our jobs, pass it along so it will reach the client
-	if (getUser().equals(event.getUser())) {
+	if (getUserLoginInfo().getUser().equals(event.getUser())) {
 		messageService.getMessageCollector().exportMessage(event);
 	}
 }
@@ -120,8 +118,8 @@ public DataSetController getDataSetController() throws RemoteException, DataAcce
 			remoteDataSetControllerFactory = null;
 		}
 
-		getSessionLog().print("getDataSetController() creating LocalDataSetController(" + getUser().getName() + ")");
-		LocalDataSetController localDataSetController = new LocalDataSetController(this, getSessionLog(), getLocalVCellServer().getDataSetControllerImpl(), getLocalVCellServer().getExportServiceImpl(), getUser());
+		getSessionLog().print("getDataSetController() creating LocalDataSetController(" + getUserLoginInfo().getUser().getName() + ")");
+		LocalDataSetController localDataSetController = new LocalDataSetController(this, getSessionLog(), getLocalVCellServer().getDataSetControllerImpl(), getLocalVCellServer().getExportServiceImpl(), getUserLoginInfo().getUser());
 		dataSetControllerProxy = new LocalDataSetControllerProxy(getSessionLog(), remoteDataSetControllerFactory, localDataSetController);
 	}
 
@@ -158,17 +156,6 @@ private LocalVCellServer getLocalVCellServer() {
 cbit.rmi.event.SimpleMessageService getMessageService() {
 	return messageService;
 }
-
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- * @param simIdentifier java.lang.String
- */
-String getPassword() {
-	return (fieldPassword);
-}
-
 
 /**
  * This method was created in VisualAge.
@@ -223,7 +210,7 @@ private VCellConnection getSimDataServerRemoteConnection() {
 	ConnectionPool connectionPool = getLocalVCellServer().getConnectionPool();
 	if (connectionPool != null) {
 		try {
-			VCellConnection vcConn = connectionPool.getSimDataServerVCellConnection(getUser().getName(), getPassword());
+			VCellConnection vcConn = connectionPool.getSimDataServerVCellConnection(userLoginInfo);
 			//
 			// connect() establishes a two way connection, so this is sufficient for receiving data events.
 			//
@@ -251,7 +238,7 @@ private VCellConnection getSimDataServerRemoteConnection() {
 public SimulationController getSimulationController() throws RemoteException {
 	if (simulationController == null){
 		try {
-			simulationController = new LocalSimulationController(getUser(),getSessionLog(),getLocalVCellServer().getAdminDatabaseServer(), getLocalVCellServer().getSimulationControllerImpl(),getUserMetaDbServer());
+			simulationController = new LocalSimulationController(getUserLoginInfo().getUser(),getSessionLog(),getLocalVCellServer().getAdminDatabaseServer(), getLocalVCellServer().getSimulationControllerImpl(),getUserMetaDbServer());
 		}catch (DataAccessException e){
 			throw new RuntimeException("DataAccessException creating LocalSimulationController, :"+e.getMessage());
 		}
@@ -281,8 +268,8 @@ public URLFinder getURLFinder() throws java.rmi.RemoteException {
  * This method was created by a SmartGuide.
  * @return java.lang.String
  */
-public User getUser() {
-	return (fieldUser);
+public UserLoginInfo getUserLoginInfo() {
+	return userLoginInfo;
 }
 
 
@@ -293,9 +280,9 @@ public User getUser() {
  * @exception java.rmi.RemoteException The exception description.
  */
 public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccessException {
-	getSessionLog().print("LocalVCellConnection.getUserMetaDbServer(" + getUser() + ")");
+	getSessionLog().print("LocalVCellConnection.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
 	if (userMetaDbServer == null) {
-		userMetaDbServer = new cbit.vcell.modeldb.LocalUserMetaDbServer(conFactory, keyFactory, getUser(), getSessionLog());
+		userMetaDbServer = new cbit.vcell.modeldb.LocalUserMetaDbServer(conFactory, keyFactory, getUserLoginInfo().getUser(), getSessionLog());
 	}
 	return userMetaDbServer;
 }
@@ -312,7 +299,7 @@ static void setDatabaseResources(cbit.sql.ConnectionFactory argConFactory, KeyFa
 
 
 public void dataJobMessage(DataJobEvent event) {
-	if (getUser().equals(event.getUser())) {
+	if (getUserLoginInfo().getUser().equals(event.getUser())) {
 		messageService.getMessageCollector().dataJobMessage(event);
 	}
 }

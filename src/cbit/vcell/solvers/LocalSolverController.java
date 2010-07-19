@@ -82,7 +82,7 @@ public void dataMoved(double timepoint, Double progress, SimulationMessage simul
 		if (!resultSetSavedSet.contains(vcSimDataID)){
 			try {
 				ResultSetCrawler rsCrawler = vcConn.getResultSetCrawler();
-				rsCrawler.updateSimResults(vcConn.getUser(),vcSimDataID);
+				rsCrawler.updateSimResults(vcConn.getUserLoginInfo().getUser(),vcSimDataID);
 				resultSetSavedSet.add(vcSimDataID);
 			} catch (Throwable exc) {
 				log.exception(exc);

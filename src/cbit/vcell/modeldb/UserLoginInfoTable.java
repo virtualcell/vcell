@@ -1,5 +1,6 @@
 package cbit.vcell.modeldb;
 
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
@@ -13,20 +14,23 @@ public class UserLoginInfoTable extends Table {
 
     private static final String[] userLoginInfoTableUniqueConstraint =
 		new String[] {
-		"ulinfo_unique UNIQUE(userRef,osarch,osname,osvers,client)"};
+		"ulinfo_unique UNIQUE(userRef,osarch,osname,osvers,clientVers,serverVers)"};
 
     private static final int MAX_FIELD_LENGTH = 32;
     
 	public final Field userRef		= new Field("userRef",		"integer",		"NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
 	public final Field loginCount	= new Field("loginCount",	"number",		"NOT NULL");
+	public final Field lastLogin	= new Field("lastLogin",	"date",			"NOT NULL");
 	public final Field osarch		= new Field("osarch",		"varchar2("+MAX_FIELD_LENGTH+")","NOT NULL");
 	public final Field osname		= new Field("osname",		"varchar2("+MAX_FIELD_LENGTH+")","NOT NULL");
 	public final Field osvers		= new Field("osvers",		"varchar2("+MAX_FIELD_LENGTH+")","NOT NULL");
-	public final Field client		= new Field("client",		"varchar2("+MAX_FIELD_LENGTH+")","NOT NULL");
+	public final Field clientVers	= new Field("clientVers",	"varchar2("+MAX_FIELD_LENGTH+")","NOT NULL");
+	public final Field serverVers	= new Field("serverVers",	"varchar2("+MAX_FIELD_LENGTH+")","NOT NULL");
 
-	private final Field fields[] = {userRef,loginCount,osarch,osname,osvers,client};
+	private final Field fields[] = {userRef,loginCount,lastLogin,osarch,osname,osvers,clientVers,serverVers};
 	
 	public static final UserLoginInfoTable table = new UserLoginInfoTable();
+
 /**
  * ModelTable constructor comment.
  */
@@ -41,10 +45,12 @@ public static String getSQLValueList(KeyValue userRef,int logincount,UserLoginIn
 	buffer.append(Table.NewSEQ+",");
 	buffer.append(userRef.toString()+",");
 	buffer.append(logincount+",");
+	buffer.append("SYSDATE"+",");
 	buffer.append("'"+TokenMangler.getSQLEscapedString(userLoginInfo.getOs_arch(), MAX_FIELD_LENGTH)+"'"+",");
 	buffer.append("'"+TokenMangler.getSQLEscapedString(userLoginInfo.getOs_name(), MAX_FIELD_LENGTH)+"'"+",");
 	buffer.append("'"+TokenMangler.getSQLEscapedString(userLoginInfo.getOs_version(), MAX_FIELD_LENGTH)+"'"+",");
-	buffer.append("'"+TokenMangler.getSQLEscapedString(userLoginInfo.getClient(), MAX_FIELD_LENGTH)+"'");
+	buffer.append("'"+TokenMangler.getSQLEscapedString(getVCellSoftwareVersionClient(userLoginInfo), MAX_FIELD_LENGTH)+"'"+",");
+	buffer.append("'"+TokenMangler.getSQLEscapedString(getVCellSoftwareVersionServer(), MAX_FIELD_LENGTH)+"'");
 	buffer.append(")");
 	return buffer.toString();
 }
@@ -52,7 +58,8 @@ public static String getSQLUpdateLoginCount(KeyValue userRef,UserLoginInfo userL
 	return
 		"UPDATE "+UserLoginInfoTable.table.getTableName()+
 		" SET "+
-			UserLoginInfoTable.table.loginCount + " = "+ UserLoginInfoTable.table.loginCount+" + 1"+
+			UserLoginInfoTable.table.loginCount + " = "+ UserLoginInfoTable.table.loginCount+" + 1"+","+
+			UserLoginInfoTable.table.lastLogin + " = SYSDATE" +
 		" WHERE "+
 			getSQLWhereCondition(userRef,userLoginInfo);
 }
@@ -66,7 +73,19 @@ public static String getSQLWhereCondition(KeyValue userRef,UserLoginInfo userLog
 	" AND "+
 	UserLoginInfoTable.table.osvers.getUnqualifiedColName()+ " = "+"'"+TokenMangler.getSQLEscapedString(userLoginInfo.getOs_version(), MAX_FIELD_LENGTH)+"'"+
 	" AND "+
-	UserLoginInfoTable.table.client.getUnqualifiedColName()+ " = "+"'"+TokenMangler.getSQLEscapedString(userLoginInfo.getClient(), MAX_FIELD_LENGTH)+"'";
+	UserLoginInfoTable.table.clientVers.getUnqualifiedColName()+ " = "+"'"+TokenMangler.getSQLEscapedString(getVCellSoftwareVersionClient(userLoginInfo), MAX_FIELD_LENGTH)+"'"+
+	" AND "+
+	UserLoginInfoTable.table.serverVers.getUnqualifiedColName()+ " = "+"'"+TokenMangler.getSQLEscapedString(getVCellSoftwareVersionServer(), MAX_FIELD_LENGTH)+"'";
 
+}
+private static String getVCellSoftwareVersionServer(){
+	//Whatever loaded this class is assumed to have loaded required VCell properties
+	String vcellSoftwareVersionServer = System.getProperty(PropertyLoader.vcellSoftwareVersion);;
+	return (vcellSoftwareVersionServer==null?"unknown":vcellSoftwareVersionServer);
+}
+private static String getVCellSoftwareVersionClient(UserLoginInfo userLoginInfo){
+	//This information is sent over from client during login
+	String vcellSoftwareVersionClient = userLoginInfo.getVCellSoftwareVersion();
+	return (vcellSoftwareVersionClient==null?"unknown":vcellSoftwareVersionClient);
 }
 }

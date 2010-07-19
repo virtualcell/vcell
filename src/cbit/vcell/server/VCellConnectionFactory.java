@@ -14,7 +14,7 @@ public interface VCellConnectionFactory {
  * @param userID java.lang.String
  * @param password java.lang.String
  */
-void changeUser(String userID, String password);
+void changeUser(UserLoginInfo userLoginInfo);
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.VCellConnection

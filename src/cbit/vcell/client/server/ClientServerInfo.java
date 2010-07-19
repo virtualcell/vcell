@@ -101,17 +101,6 @@ public String[] getHosts() {
 	return hosts;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/12/2004 4:09:30 PM)
- * @return java.lang.String
- */
-public java.lang.String getPassword() {
-	return userLoginInfo.getPassword();
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (6/1/2004 11:20:12 PM)
@@ -161,11 +150,11 @@ public String toString() {
 	String details = null;
 	switch (getServerType()) {
 		case SERVER_LOCAL: {
-			details = "SERVER_LOCAL, user:" + getUsername() + ", password:" + getPassword();
+			details = "SERVER_LOCAL, user:" + getUsername() + ", password:" + userLoginInfo.getPassword();
 			break;
 		}
 		case SERVER_REMOTE: {
-			details = "SERVER_REMOTE, host:" + activeHost + ", user:" + getUsername() + ", password:" + getPassword();
+			details = "SERVER_REMOTE, host:" + activeHost + ", user:" + getUsername() + ", password:" + userLoginInfo.getPassword();
 			break;
 		}
 		case SERVER_FILE: {

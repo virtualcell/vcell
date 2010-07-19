@@ -6,6 +6,8 @@ import cbit.sql.*;
  * All rights reserved.
 ©*/
 import java.awt.Frame;
+
+import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
 import cbit.vcell.client.server.ClientServerInfo;
@@ -109,15 +111,13 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
 	}
 	cbit.vcell.server.VCellConnectionFactory vcConnFactory = null;
 	new org.vcell.util.PropertyLoader();		
-	org.vcell.util.document.User user = null;
+	UserLoginInfo userLoginInfo = new UserLoginInfo(args[1], args[2]);
 	if (args[0].startsWith("-")) {
-		String userid = args[1];
-		String password = args[2];
-		org.vcell.util.SessionLog log = new org.vcell.util.StdoutSessionLog(userid);
+		org.vcell.util.SessionLog log = new org.vcell.util.StdoutSessionLog(userLoginInfo.getUserName());
 		if (args[0].equalsIgnoreCase("-jms")) {
-			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userid, password, log, false);
+			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userLoginInfo, log, false);
 		} else if (args[0].equalsIgnoreCase("-local")) {
-			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userid, password, log, true);
+			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userLoginInfo, log, true);
 			if (args.length == 7) {
 				ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log, args[3], args[4], args[5], args[6]);
 				((cbit.vcell.server.LocalVCellConnectionFactory)vcConnFactory).setConnectionFactory(conFactory);
@@ -125,9 +125,7 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
 		}
 	} else {
 		String host = args[0];
-		String userid = args[1];
-		String password = args[2];
-		vcConnFactory = new cbit.vcell.server.RMIVCellConnectionFactory(host, userid, password);
+		vcConnFactory = new cbit.vcell.server.RMIVCellConnectionFactory(host,userLoginInfo);
 	} 
 	return vcConnFactory;
 }

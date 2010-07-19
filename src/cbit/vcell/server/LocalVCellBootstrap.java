@@ -46,13 +46,13 @@ private LocalVCellBootstrap(boolean bPrimaryServer, String hostName, AdminDataba
  * @return cbit.vcell.server.DataSetController
  * @exception java.lang.Exception The exception description.
  */
-public VCellConnection getVCellConnection(String userid, String password) throws DataAccessException, AuthenticationException {
+public VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws DataAccessException, AuthenticationException {
 	try {
-		VCellConnection vcConn = localVCellServer.getVCellConnection(new UserLoginInfo(userid, password));
+		VCellConnection vcConn = localVCellServer.getVCellConnection(userLoginInfo);
 		if (vcConn!=null){
-			sessionLog.print("LocalVCellBootstrap.getVCellConnection(" + userid + "," + password + ") <<<<SUCCESS>>>>");
+			sessionLog.print("LocalVCellBootstrap.getVCellConnection(" + userLoginInfo.getUserName() +") <<<<SUCCESS>>>>");
 		}else{
-			sessionLog.print("LocalVCellBootstrap.getVCellConnection(" + userid + "," + password + ") <<<<RETURNED NULL>>>>");
+			sessionLog.print("LocalVCellBootstrap.getVCellConnection(" + userLoginInfo.getUserName() +") <<<<RETURNED NULL>>>>");
 		}
 		return vcConn;
 	}catch (RemoteException e){
