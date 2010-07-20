@@ -68,7 +68,6 @@ private SpeciesContextSpecParameterTableModel getSpeciesContextSpecParameterTabl
  * @param exception java.lang.Throwable
  */
 private void handleException(Throwable exception) {
-
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	if (exception instanceof ExpressionException){
 		javax.swing.JOptionPane.showMessageDialog(this, exception.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
@@ -81,7 +80,6 @@ private void handleException(Throwable exception) {
 /**
  * Initializes connections
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {	
 }
 
@@ -93,12 +91,9 @@ private void initialize() {
 		setName("DataSymbolsSpecPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(572, 196);
-
 		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 		initConnections();
-		
 		getScrollPaneTable().setModel(getSpeciesContextSpecParameterTableModel1());
-
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -133,8 +128,6 @@ public static void main(java.lang.String[] args) {
 //}
 
 public void setDataSymbol(Object object) {
-	// TODO Auto-generated method stub
-	
 }
 
 }

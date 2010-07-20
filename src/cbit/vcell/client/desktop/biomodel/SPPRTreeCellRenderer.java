@@ -46,21 +46,24 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 
     private void initializeIcons() {
     	try {
-		    speciesIcon = new ImageIcon(getClass().getResource("/images/speciesItem.gif"));
-		    gParamIcon = new ImageIcon(getClass().getResource("/images/gparamItem.gif"));
-		    aParamIcon = new ImageIcon(getClass().getResource("/images/aparamItem.gif"));
-		    reactionsIcon = new ImageIcon(getClass().getResource("/images/reactionsItem.gif"));
-		    fluxIcon = new ImageIcon(getClass().getResource("/images/fluxItem.gif"));
-		    eventIcon = new ImageIcon(getClass().getResource("/images/eventItem.gif"));
-	    	fieldDataItemIcon = new ImageIcon(getClass().getResource("/images/fieldDataItem.gif"));
-	
-	    	geometryFolderIcon = new ImageIcon(getClass().getResource("/images/geometryFolder2D.gif"));
-		    electricFolderIcon = new ImageIcon(getClass().getResource("/images/electricFolder.gif"));
-		    structureMappingFolderIcon = new ImageIcon(getClass().getResource("/images/structureMappingFolder.gif"));
-    	} catch (Exception ex) {
+    		speciesIcon = new ImageIcon(getClass().getResource("/images/speciesItem.gif"));
+    		gParamIcon = new ImageIcon(getClass().getResource("/images/gparamItem.gif"));
+    		aParamIcon = new ImageIcon(getClass().getResource("/images/aparamItem.gif"));
+    		reactionsIcon = new ImageIcon(getClass().getResource("/images/reactionsItem.gif"));
+    		fluxIcon = new ImageIcon(getClass().getResource("/images/fluxItem.gif"));
+    		eventIcon = new ImageIcon(getClass().getResource("/images/eventItem.gif"));
+    		fieldDataItemIcon = new ImageIcon(getClass().getResource("/images/fieldDataItem.gif"));
+//    		fieldDataItemIcon = new ImageIcon("C:/dan/work images/icons/fieldDataItem.gif");
+
+    		geometryFolderIcon = new ImageIcon(getClass().getResource("/images/geometryFolder2D.gif"));
+    		electricFolderIcon = new ImageIcon(getClass().getResource("/images/electricFolder.gif"));
+    		structureMappingFolderIcon = new ImageIcon(getClass().getResource("/images/structureMappingFolder.gif"));
+    	}
+    	catch (Exception ex) {
+    		// if an icon is missing we'll just display a default gray circle instead
     		ex.printStackTrace(System.out);
-	    }
-    }
+    	}
+   }
 
 	public Component getTreeCellRendererComponent(
                         JTree tree,
@@ -161,5 +164,4 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 		}
         return this;
     }
-
 }
