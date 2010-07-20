@@ -21,7 +21,8 @@ public class FieldDataSymbol extends DataSymbol {
 		this.fieldFunctionArguments = fieldFunctionArguments;
 	}
 
-	public FieldDataSymbol(String name, DataContext dataContext, VCUnitDefinition vcUnitDefinition, FieldFunctionArguments fieldFunctionArguments){
+	public FieldDataSymbol(String name, DataContext dataContext, 
+			VCUnitDefinition vcUnitDefinition, FieldFunctionArguments fieldFunctionArguments){
 		super(name,dataContext,vcUnitDefinition);
 		this.fieldFunctionArguments = fieldFunctionArguments;
 	}
