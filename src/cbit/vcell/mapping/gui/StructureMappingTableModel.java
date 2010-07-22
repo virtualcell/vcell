@@ -489,9 +489,9 @@ private void update() {
 			fireTableStructureChanged();
 			
 			if (!bNonSpatial) {
-				class MultiLineHeaderRenderer implements TableCellRenderer {
+				class StructureMappingTableHeaderRenderer implements TableCellRenderer {
 					TableCellRenderer defaultRenderer = null;
-					public MultiLineHeaderRenderer(TableCellRenderer dr) {
+					public StructureMappingTableHeaderRenderer(TableCellRenderer dr) {
 						defaultRenderer = dr;
 					}
 					public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
@@ -536,7 +536,14 @@ private void update() {
 							label.setVerticalTextPosition(JLabel.TOP);
 							label.setText("Size Ratio");
 							label.setIconTextGap(0);
-							label.setIcon(new StructureMappingTableRenderer.TextIcon("(Structure : Subdomain)"));
+							final JLabel finalLabel = label;
+							label.setIcon(new StructureMappingTableRenderer.TextIcon("(Structure : Subdomain)"){
+
+								@Override
+								public int getIconWidth() {
+									return finalLabel.getWidth();
+								}
+							});
 						} else {
 							label.setText(value.toString());
 							label.setIcon(null);
@@ -545,7 +552,7 @@ private void update() {
 					}
 				}
 				
-				ownerTable.getTableHeader().setDefaultRenderer(new MultiLineHeaderRenderer(ownerTable.getTableHeader().getDefaultRenderer()));				
+				ownerTable.getTableHeader().setDefaultRenderer(new StructureMappingTableHeaderRenderer(ownerTable.getTableHeader().getDefaultRenderer()));				
 				ownerTable.getColumnModel().getColumn(SPATIAL_COLUMN_SIZERATIO).setPreferredWidth(100);
 				for (int col = SPATIAL_COLUMN_X_MINUS; col < getColumnCount(); col ++) {
 					ownerTable.getColumnModel().getColumn(col).setPreferredWidth(8);
