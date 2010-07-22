@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -37,7 +36,7 @@ public class HistogramPanel extends JPanel {
 	public static final String HISTOGRAM_SELECT_PROPERTY = "HISTOGRAM_SELECT_PROPERTY";
 
 	private static final int VERT_EDGE_OFFSET = 25;
-	private static final int HORZ_EDGE_OFFSET = 50;
+	private static final int HORZ_EDGE_OFFSET = 75;
 	private int maxCount;
 	private TreeMap<Integer, Integer> originalTreeMap;//distinct pixel values and count
 	private Range viewPixelRange;
@@ -71,7 +70,7 @@ public class HistogramPanel extends JPanel {
 
 		public void layoutContainer(Container parent) {
 			// TODO Auto-generated method stub
-			int SIDE_BUTTON_WIDTH = 45;
+			int SIDE_BUTTON_WIDTH = 70;
 			hideButton.setBounds(getWidth()-SIDE_BUTTON_WIDTH-2,
 					2,
 					SIDE_BUTTON_WIDTH/*hideButton.getPreferredSize().width*/, VERT_EDGE_OFFSET-2);
@@ -293,7 +292,8 @@ public class HistogramPanel extends JPanel {
 
 	}
 	private void init(){
-	
+		applyButton.setFont(Font.decode("Dialog-10"));
+		hideButton.setFont(Font.decode("Dialog-10"));
 		setLayout(new HistogramLayoutManager());
 		this.add(getVertSlider());
 		this.add(getHorzScaleSlider());
@@ -310,8 +310,6 @@ public class HistogramPanel extends JPanel {
 //		moveScrollBar.setOrientation(JScrollBar.HORIZONTAL);
 		getHorzOffsetSlider().setEnabled(false);
 		titleJLabel.setFont(titleJLabel.getFont().deriveFont(Font.BOLD,16f));
-		hideButton.setMargin(new Insets(2, 4, 2, 4));
-		applyButton.setMargin(new Insets(2, 4, 2, 4));
 		
 		getVertSlider().setToolTipText("Scale pixel 'count' display");
 		getHorzScaleSlider().setToolTipText("Zoom pixel 'value' display");
