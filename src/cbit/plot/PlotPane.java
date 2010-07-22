@@ -1343,4 +1343,16 @@ public void setStepViewVisible(boolean bStoch, boolean bMultiTrialData) {
 		getJCheckBox_stepLike().setVisible(false);
 	}
 }
+
+public void setBackground(Color color)
+{
+	getPlot2DPanel1().setBackground(color);
+	getJPanelLegend().setBackground(color);
+	getJPanel1().setBackground(color);
+	getJPanelData().setBackground(color);
+	getJPanelPlotLegends().setBackground(color);
+	getJPanelBottom().setBackground(color);
+	getJPanelPlot().setBackground(color);
+	this.setBackground(color);
+}
 }
