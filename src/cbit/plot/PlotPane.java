@@ -1346,6 +1346,7 @@ public void setStepViewVisible(boolean bStoch, boolean bMultiTrialData) {
 
 public void setBackground(Color color)
 {
+	super.setBackground(color);
 	getPlot2DPanel1().setBackground(color);
 	getJPanelLegend().setBackground(color);
 	getJPanel1().setBackground(color);
@@ -1353,6 +1354,6 @@ public void setBackground(Color color)
 	getJPanelPlotLegends().setBackground(color);
 	getJPanelBottom().setBackground(color);
 	getJPanelPlot().setBackground(color);
-	this.setBackground(color);
+//	this.setBackground(color);
 }
 }
