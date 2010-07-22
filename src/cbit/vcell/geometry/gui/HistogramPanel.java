@@ -514,6 +514,7 @@ public class HistogramPanel extends JPanel {
 			applyButton.setEnabled(true);
 		}
 	}
+	private static final int MIN_MAX_BARWIDTH_COMPENSATION = 2;//add this much to width when drawing xmin bar and xmax bar
 	public void drawHistogram(Graphics2D g){
 		try{
 			if(originalTreeMap != null){
@@ -522,11 +523,12 @@ public class HistogramPanel extends JPanel {
 				
 				int y0 = this.getHeight()-VERT_EDGE_OFFSET;
 				for (int xPoint = HORZ_EDGE_OFFSET; xPoint < this.getWidth()-HORZ_EDGE_OFFSET/*-1*/; xPoint++) {
+					boolean bMaxEnd = xPoint == (this.getWidth()-HORZ_EDGE_OFFSET-1);
 					int index0 = getHorizontalIndex(xPoint,subsetTreeMap.size());
 					int index1 = getHorizontalIndex(xPoint+1,subsetTreeMap.size());
 					int pixCount = 0;
 					boolean bInSelection = false;
-					for (int pixValIndex = index0; pixValIndex < (index1==index0?index0+1:index1); pixValIndex++) {
+					for (int pixValIndex = index0; pixValIndex < (index1==index0?index0+1:index1+(bMaxEnd?1:0)); pixValIndex++) {
 						int pixelVal = histoPixelVals[pixValIndex];
 						bInSelection|= pixelListSelectionModel.isSelectedIndex(pixelVal);
 						pixCount+= subsetTreeMap.get(pixelVal);					
@@ -539,23 +541,27 @@ public class HistogramPanel extends JPanel {
 					double gammaScale = Math.pow((pixCount/((double)maxCount)), 1/(vertScaleSlider.getValue()/10.0));
 					if(pixCount != 0){
 						int y1 = (int)(y0-((this.getHeight()-2*VERT_EDGE_OFFSET)*gammaScale));
-						y1-= 0;
+//						y1-= 0;
 						if(y1 < VERT_EDGE_OFFSET){
 							y1=VERT_EDGE_OFFSET;
 						}
-						g.drawLine(xPoint,y0,xPoint,y1);
-						if(getSpecialValue() != null && getSpecialValue() >= histoPixelVals[index0] && getSpecialValue() <= histoPixelVals[index1]){
-							g.setColor(Color.red);
-							g.drawLine(xPoint,y0,xPoint,(int)(y0-((this.getHeight()-2*VERT_EDGE_OFFSET))));
+						//min max bar width filler
+						for (int i = 0; i <= ((xPoint == HORZ_EDGE_OFFSET) || bMaxEnd ?MIN_MAX_BARWIDTH_COMPENSATION:0); i++) {
+							int offset = (xPoint == HORZ_EDGE_OFFSET?-i:i);
+							g.drawLine(xPoint+offset,y0,xPoint+offset,y1);
+							if(getSpecialValue() != null && getSpecialValue() >= histoPixelVals[index0] && getSpecialValue() <= histoPixelVals[index1]){
+								g.setColor(Color.red);
+								g.drawLine(xPoint+offset,y0,xPoint+offset,(int)(y0-((this.getHeight()-2*VERT_EDGE_OFFSET))));
+							}							
 						}
 					}
 				}
 				
 				g.setColor(Color.black);
 				//X-axis base
-				g.drawLine(HORZ_EDGE_OFFSET, this.getHeight()-VERT_EDGE_OFFSET+1, this.getWidth()-HORZ_EDGE_OFFSET-1, this.getHeight()-VERT_EDGE_OFFSET+1);
+				g.drawLine(HORZ_EDGE_OFFSET-MIN_MAX_BARWIDTH_COMPENSATION, this.getHeight()-VERT_EDGE_OFFSET+1, this.getWidth()-HORZ_EDGE_OFFSET-1+MIN_MAX_BARWIDTH_COMPENSATION, this.getHeight()-VERT_EDGE_OFFSET+1);
 				//Y-axis base
-				g.drawLine(HORZ_EDGE_OFFSET-1, this.getHeight()-VERT_EDGE_OFFSET+1, HORZ_EDGE_OFFSET-1, VERT_EDGE_OFFSET);
+				g.drawLine(HORZ_EDGE_OFFSET-1-MIN_MAX_BARWIDTH_COMPENSATION, this.getHeight()-VERT_EDGE_OFFSET+1, HORZ_EDGE_OFFSET-1-MIN_MAX_BARWIDTH_COMPENSATION, VERT_EDGE_OFFSET);
 				//Y-axis 0 label
 				g.drawString("0",HORZ_EDGE_OFFSET-10,this.getHeight()-VERT_EDGE_OFFSET);
 				//Y-axis maxcount label
@@ -570,7 +576,7 @@ public class HistogramPanel extends JPanel {
 				newG.drawString("Count",
 						-VERT_EDGE_OFFSET-newG.getFontMetrics().stringWidth("Count")-
 						(height-2*VERT_EDGE_OFFSET-newG.getFontMetrics().stringWidth("Count"))/2,
-						HORZ_EDGE_OFFSET-2);
+						HORZ_EDGE_OFFSET-2-MIN_MAX_BARWIDTH_COMPENSATION);
 				newG.dispose();
 				//Mouse-over description
 				if(mouseSelectDescr != null){
