@@ -1,12 +1,16 @@
 package cbit.vcell.microscopy;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 
+import cbit.plot.Plot2D;
+import cbit.plot.PlotData;
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
@@ -60,12 +64,28 @@ public class FRAPOptData {
 	private double[][] dimensionReducedRefData = null;
 	private double[] refDataTimePoints = null;
 	private Parameter fixedParam = null;
+	private boolean bApplyMeasurementError = false;
 	private double leastError = 0;
+	//used for optimization when takeing measurement error into account.
+	//first dimension length 11, according to the order in FRAPData.VFRAP_ROI_ENUM
+	//second dimension time, total time length - starting index for recovery 
+	private double[][] measurementErrors = null;
 	
 	public static final double REFERENCE_DIFF_DELTAT = 0.05;
 	private static final double REFERENCE_DIFF_RATE_COEFFICIENT = 1;
 	private static final String REFERENCE_DIFF_RATE_STR = REFERENCE_DIFF_RATE_COEFFICIENT +"*(t+"+ REFERENCE_DIFF_DELTAT +")";
-		
+	
+	//for parameter evaluation
+	public static final double[] INCREASE_CONST = new double[]{1.01, 1.001, 1.02, 1.01, 1.001};
+	public static final double[] DECREASE_CONST = new double[]{0.99, 0.999, 0.9, 0.99, 0.999};
+	public static final int[] MAX_ITERATION = new int[]{50, 100, 70, 50, 100};
+	public static final int IDX_DELTA_ALPHA_80 = 0;
+	public static final int IDX_DELTA_ALPHA_90 = 1;
+	public static final int IDX_DELTA_ALPHA_95 = 2;
+	public static final int IDX_DELTA_ALPHA_99 = 3;
+	public static final String[] CONFIDENCE_LEVEL_NAME = new String[]{"80% confidence", "90%confidence", "95%confidence", "99%confidence"};
+	public static final double[] DELTA_ALPHA_VALUE = new double[]{1.642, 2.706, 3.841, 6.635};
+ 	
 	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace,
 			ClientTaskStatusSupport progressListener) throws Exception
 	{
@@ -291,7 +311,9 @@ public class FRAPOptData {
 					                                              getReducedExpTimePoints(),
 					                                              getExpFrapStudy().getFrapData().getROILength(), 
 					                                              eoi,
-					                                              fixedParam);
+					                                              measurementErrors,
+					                                              fixedParam,
+					                                              bApplyMeasurementError);
 		}
 		else if((getNumEstimatedParams() + numberFixedParam) == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
 		{
@@ -303,7 +325,9 @@ public class FRAPOptData {
 																  getReducedExpTimePoints(),
 																  getExpFrapStudy().getFrapData().getROILength(),
 																  eoi,
-																  fixedParam);
+																  measurementErrors,
+																  fixedParam,
+																  bApplyMeasurementError);
 		}
 		else
 		{
@@ -319,6 +343,64 @@ public class FRAPOptData {
 		return error;
 	}
 
+	/*
+	 * Calculate Measurement error for data that is normalized 
+	 * and averaged at each ROI ring.
+	 * The first dimension is ROI rings(according to the Enum in FRAPData)
+	 * The second dimension is time points (from starting index to the end) 
+	 */
+	public void refreshNormalizedMeasurementError() throws Exception
+	{
+		FRAPData fData = getExpFrapStudy().getFrapData();
+		ImageDataset imgDataset = fData.getImageDataset();
+		double[] timeStamp = imgDataset.getImageTimeStamps();
+		int startIndexRecovery = getExpFrapStudy().getStartingIndexForRecovery();
+		int roiLen = FRAPData.VFRAP_ROI_ENUM.values().length;
+		double[][] sigma = new double[roiLen][timeStamp.length - startIndexRecovery];
+		double[] prebleachAvg = FRAPStudy.calculatePreBleachAverageXYZ(fData, startIndexRecovery);
+		for(int roiIdx =0; roiIdx<roiLen; roiIdx++)
+		{
+			ROI roi = fData.getRoi((FRAPData.VFRAP_ROI_ENUM.values()[roiIdx]).name());
+			if(roi != null)
+			{
+				short[] roiData = roi.getPixelsXYZ();
+				int roiCount = roi.getNonzeroPixelsCount();
+				for(int timeIdx = startIndexRecovery; timeIdx < timeStamp.length; timeIdx++)
+				{
+					short[] rawTimeData = AnnotatedImageDataset.collectAllZAtOneTimepointIntoOneArray(imgDataset, timeIdx);
+					if(roiData.length != rawTimeData.length || roiData.length != prebleachAvg.length || rawTimeData.length != prebleachAvg.length)
+					{
+						throw new Exception("ROI data and image data are not in the same length.");
+					}
+					else
+					{
+						//loop through ROI
+						int roiPixelCounter = 0;
+						double sigmaVal = 0;
+						for(int i = 0 ; i<roiData.length; i++)
+						{
+							if(roiData[i] != 0)
+							{
+								sigmaVal = sigmaVal + ((int)(rawTimeData[i] & 0x0000FFFF))/(prebleachAvg[i]*prebleachAvg[i]);
+								roiPixelCounter ++;
+							}
+						}
+						if(roiPixelCounter == 0)
+						{
+							sigmaVal = 0;
+						}
+						else
+						{
+							sigmaVal = Math.sqrt(sigmaVal)/roiPixelCounter;
+						}
+						sigma[roiIdx][timeIdx-startIndexRecovery] = sigmaVal;
+					}
+				}
+			}
+		}
+		measurementErrors = sigma;
+	}
+	
 	public double[][] getFitData(Parameter[] newParams) throws Exception
 	{
 		double[][] result = null;
@@ -518,18 +600,25 @@ public class FRAPOptData {
 	
 	public Parameter[] getBestParamters(Parameter[] inParams, boolean[] errorOfInterest) throws Exception
 	{
-		return getBestParamters(inParams, errorOfInterest, null);
+		return getBestParamters(inParams, errorOfInterest, null, false);
 	}
 	
 	//The best parameters will return a whole set for one diffusing component or two diffusing components (including the fixed parameter)
-	public Parameter[] getBestParamters(Parameter[] inParams, boolean[] errorOfInterest, Parameter fixedParam) throws Exception
+	public Parameter[] getBestParamters(Parameter[] inParams, boolean[] errorOfInterest, Parameter fixedParam, boolean bApplyMeasurementError) throws Exception
 	{
+		//refresh number of pixels in each roi 
+		if(measurementErrors == null)
+		{
+			refreshNormalizedMeasurementError();
+		}
 		int numFixedParam = (fixedParam == null)? 0:1;
 		Parameter[] outputParams = new Parameter[inParams.length + numFixedParam];//return to the caller, parameter should be a whole set including the fixed parameter
-		String[] outParaNames = new String[inParams.length];//send to opitimizer
+		String[] outParaNames = new String[inParams.length];//send to optimizer
 		double[] outParaVals = new double[inParams.length];//send to optimizer
 		//set fixed parameter
 		setFixedParameter(fixedParam);
+		//set if apply measurement error
+		setbApplyMeasurementError(bApplyMeasurementError);
 		//optimization
 		double lestError = FRAPOptimization.estimate(this, inParams, outParaNames, outParaVals, errorOfInterest);
 		setLeastError(lestError);
@@ -807,6 +896,104 @@ public class FRAPOptData {
 
 	}
 
+	public ProfileData[] evaluateParameters(Parameter[] currentParams, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
+	{
+		int totalParamLen = currentParams.length;
+		ProfileData[] resultData = new ProfileData[totalParamLen];
+		FRAPStudy frapStudy = getExpFrapStudy();
+		for(int j=0; j<totalParamLen; j++)
+		{
+			ProfileData profileData = new ProfileData();
+			//add the fixed parameter to profileData, output exp data and opt results
+			setNumEstimatedParams(totalParamLen);
+			Parameter[] newBestParameters = getBestParamters(currentParams, frapStudy.getSelectedROIsForErrorCalculation(), null, true);
+			double totalErr = getLeastError();
+			//fixed parameter
+			Parameter fixedParam = newBestParameters[j];
+			clientTaskStatusSupport.setMessage("Evaluating parameter: " + fixedParam.getName());
+			ProfileDataElement pde = new ProfileDataElement(fixedParam.getName(), Math.log10(fixedParam.getInitialGuess()), totalErr, newBestParameters);
+			profileData.addElement(pde);
+			
+			Parameter[] unFixedParams = new Parameter[totalParamLen - 1];
+			int indexCounter = 0;
+			for(int i=0; i<totalParamLen; i++)
+			{
+				if(!newBestParameters[i].getName().equals(fixedParam.getName()))
+				{
+					unFixedParams[indexCounter] = newBestParameters[i];
+					indexCounter++;
+				}
+				else continue;
+			}
+			//increase
+			int iterationCount = 0;
+			double paramVal = fixedParam.getInitialGuess();
+			while(true)
+			{
+				if(iterationCount > MAX_ITERATION[j])
+				{
+					break;
+				}
+				//if satisfies condition break;
+				paramVal = paramVal * INCREASE_CONST[j];
+				if(paramVal > fixedParam.getUpperBound()|| paramVal < fixedParam.getLowerBound())
+				{
+					break;
+				}
+				Parameter increasedParam = new Parameter (fixedParam.getName(),
+	                                                      fixedParam.getLowerBound(),
+	                                                      fixedParam.getUpperBound(),
+	                                                      fixedParam.getScale(),
+	                                                      paramVal);
+				//getBestParameters returns the whole set of parameters including the fixed parameters
+				setNumEstimatedParams(totalParamLen-1);
+				Parameter[] newParameters = getBestParamters(unFixedParams, frapStudy.getSelectedROIsForErrorCalculation(), increasedParam, true);
+				totalErr = getLeastError();
+				pde = new ProfileDataElement(increasedParam.getName(), Math.log10(increasedParam.getInitialGuess()), totalErr, newParameters);
+				profileData.addElement(pde);
+				//output opt data
+//				dataFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY +increasedParam.getName()+ increasedParam.getInitialGuess() + ".txt";
+//				outputData(dataFileName, frapStudy.getReducedExpTimePoints(), optData.getFitData(newParameters));
+				
+				iterationCount++;
+			}
+			//decrease
+			iterationCount = 0;
+			paramVal = fixedParam.getInitialGuess();
+			while(true)
+			{
+				if(iterationCount > MAX_ITERATION[j])
+				{
+					break;
+				}
+				//if satisfies condition break;
+				paramVal = paramVal * DECREASE_CONST[j];
+				if(paramVal > fixedParam.getUpperBound() || paramVal < fixedParam.getLowerBound())
+				{
+					break;
+				}
+				Parameter decreasedParam = new Parameter (fixedParam.getName(),
+	                                            fixedParam.getLowerBound(),
+	                                            fixedParam.getUpperBound(),
+	                                            fixedParam.getScale(),
+	                                            paramVal);
+				//getBestParameters returns the whole set of parameters including the fixed parameters
+				setNumEstimatedParams(totalParamLen-1);
+				Parameter[] newParameters = getBestParamters(unFixedParams, frapStudy.getSelectedROIsForErrorCalculation(), decreasedParam, true);
+				totalErr = getLeastError();
+				pde = new ProfileDataElement(decreasedParam.getName(), Math.log10(decreasedParam.getInitialGuess()), totalErr, newParameters);
+				profileData.addElement(0,pde);
+				//output opt data
+//				dataFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + decreasedParam.getName()+ decreasedParam.getInitialGuess() + ".txt";
+//				outputData(dataFileName, frapStudy.getReducedExpTimePoints(), optData.getFitData(newParameters));
+				
+				iterationCount++;
+			}
+			resultData[j] = profileData;
+		}
+		return resultData;
+	}
+	
 	public int getNumEstimatedParams() {
 		return numEstimatedParams;
 	}
@@ -823,6 +1010,13 @@ public class FRAPOptData {
 		this.leastError = leastError;
 	}
 
+	public boolean isApplyMeasurementError() {
+		return bApplyMeasurementError;
+	}
+
+	public void setbApplyMeasurementError(boolean bApplyMeasurementError) {
+		this.bApplyMeasurementError = bApplyMeasurementError;
+	}
 	
 	public void getFromStoredRefData(SimpleReferenceData argSimRefData)
 	{
@@ -838,5 +1032,77 @@ public class FRAPOptData {
 			}
 			dimensionReducedRefData = result;
 		}
+	}
+
+	public Plot2D getPlot2DFromProfileData(ProfileData profileData) 
+	{
+		ArrayList<ProfileDataElement> profileElements = profileData.getProfileDataElements();
+		int dataSize = profileElements.size();
+		double[] paramValArray = new double[dataSize];
+		double[] errorArray = new double[dataSize];
+		if(dataSize >0)
+		{
+			//profile likelihood curve
+			String paramName = profileElements.get(0).getParamName();
+			//find the parameter to locate the upper and lower bounds
+			Parameter parameter = null;
+			Parameter[] bestParameters = profileElements.get(0).getBestParameters();
+			for(int i=0; i<bestParameters.length; i++)
+			{
+				if(bestParameters[i].getName().equals(paramName))
+				{
+					parameter = bestParameters[i];
+				}
+			}
+			double upperBound = (parameter == null)? 100 : parameter.getUpperBound();
+			double lowerBound = (parameter == null)? 0 : parameter.getLowerBound();
+			upperBound = (upperBound == 0)? 0: Math.log10(upperBound);
+			lowerBound = (lowerBound == 0)? 0: Math.log10(lowerBound);
+			for(int i=0; i<dataSize; i++)
+			{
+				paramValArray[i] = profileElements.get(i).getParameterValue();
+				errorArray[i] = profileElements.get(i).getLikelihood();
+			}
+			PlotData dataPlot = new PlotData(paramValArray, errorArray);
+			//get confidence interval line
+			//make array copy in order to not change the data orders afte sort
+			double[] paramValArrayCopy = new double[paramValArray.length];
+			System.arraycopy(paramValArray, 0, paramValArrayCopy, 0, paramValArray.length);
+			double[] errorArrayCopy = new double[errorArray.length];
+			System.arraycopy(errorArray, 0, errorArrayCopy, 0, errorArray.length);
+			DescriptiveStatistics paramValStat = DescriptiveStatistics.CreateBasicStatistics(paramValArrayCopy);
+			DescriptiveStatistics errorStat = DescriptiveStatistics.CreateBasicStatistics(errorArrayCopy);
+			double[] xArray = new double[2];
+			double[] yArray_80 = new double[2];
+			double[] yArray_90 = new double[2];
+			double[] yArray_95 = new double[2];
+			double[] yArray_99 = new double[2];
+			//80%confidence level
+			xArray[0] = paramValStat.getMin() -  (Math.abs(paramValStat.getMin()) * 0.2);
+			xArray[1] = paramValStat.getMax() + (Math.abs(paramValStat.getMax()) * 0.2) ;
+			yArray_80[0] = errorStat.getMin() + DELTA_ALPHA_VALUE[IDX_DELTA_ALPHA_80];
+			yArray_80[1] = yArray_80[0];
+			PlotData confidence80Plot = new PlotData(xArray, yArray_80);
+			//90% confidence level
+			yArray_90[0] = errorStat.getMin() + DELTA_ALPHA_VALUE[IDX_DELTA_ALPHA_90];
+			yArray_90[1] = yArray_90[0];
+			PlotData confidence90Plot = new PlotData(xArray, yArray_90);
+			//95% confidence level
+			yArray_95[0] = errorStat.getMin() + DELTA_ALPHA_VALUE[IDX_DELTA_ALPHA_95];
+			yArray_95[1] = yArray_95[0];
+			PlotData confidence95Plot = new PlotData(xArray, yArray_95);
+			//99% confidence level
+			yArray_99[0] = errorStat.getMin() + DELTA_ALPHA_VALUE[IDX_DELTA_ALPHA_99];
+			yArray_99[1] = yArray_99[0];
+			PlotData confidence99Plot = new PlotData(xArray, yArray_99);
+			
+			//generate plot2D data
+			Plot2D plots = new Plot2D(null,new String[] {"profile Likelihood Data", "80% confidence", "90% confidence", "95% confidence", "99% confidence"}, 
+					                  new PlotData[] {dataPlot, confidence80Plot, confidence90Plot, confidence95Plot, confidence99Plot},
+					                  new String[] {"Profile likelihood of " + paramName, "Log base 10 of "+paramName, "Profile Likelihood"}, 
+					                  new boolean[] {true, true, true, true, true});
+			return plots;
+		}
+		return null;
 	}
 }

@@ -19,7 +19,7 @@ public class ModelTypesPanel extends JPanel
 {
 	private JCheckBox diffOneCheckBox = null;
 	private JCheckBox diffTwoCheckBox = null;
-	private JCheckBox diffBindingCheckBox = null;
+//	private JCheckBox diffBindingCheckBox = null;
 	
 	public ModelTypesPanel() {
 		super();
@@ -78,13 +78,12 @@ public class ModelTypesPanel extends JPanel
 		gridBagConstraints_6.gridx = 0;
 		add(diffTwoCheckBox, gridBagConstraints_6);
 
-		diffBindingCheckBox = new JCheckBox();
-		diffBindingCheckBox.setText("Diffusion plus Binding");
-		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
-		gridBagConstraints_7.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_7.gridy = 15;
-		gridBagConstraints_7.gridx = 0;
-//		add(diffBindingCheckBox, gridBagConstraints_7);
+//		diffBindingCheckBox = new JCheckBox();
+//		diffBindingCheckBox.setText("Diffusion plus Binding");
+//		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
+//		gridBagConstraints_7.anchor = GridBagConstraints.WEST;
+//		gridBagConstraints_7.gridy = 15;
+//		gridBagConstraints_7.gridx = 0;
 		
 		//put checkboxes into a button group
 		ButtonGroup bg = new ButtonGroup();
@@ -104,10 +103,10 @@ public class ModelTypesPanel extends JPanel
 		{
 			result[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] = true;
 		}
-		if(diffBindingCheckBox.isSelected())
-		{
-			result[FRAPModel.IDX_MODEL_DIFF_BINDING] = true;
-		}
+//		if(diffBindingCheckBox.isSelected())
+//		{
+//			result[FRAPModel.IDX_MODEL_DIFF_BINDING] = true;
+//		}
 		return result;
 	}
 	
@@ -115,7 +114,7 @@ public class ModelTypesPanel extends JPanel
 	{
 		diffOneCheckBox.setSelected(false);
 		diffTwoCheckBox.setSelected(false);
-		diffBindingCheckBox.setSelected(false);
+//		diffBindingCheckBox.setSelected(false);
 	}
 	
 	public void setDiffOneSelected(boolean bSelected)
@@ -128,8 +127,8 @@ public class ModelTypesPanel extends JPanel
 		diffTwoCheckBox.setSelected(bSelected);
 	}
 	
-	public void setDiffBindingSelected(boolean bSelected)
-	{
-		diffBindingCheckBox.setSelected(bSelected);
-	}
+//	public void setDiffBindingSelected(boolean bSelected)
+//	{
+//		diffBindingCheckBox.setSelected(bSelected);
+//	}
 }

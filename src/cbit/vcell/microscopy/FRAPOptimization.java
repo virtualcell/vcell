@@ -27,7 +27,7 @@ public class FRAPOptimization {
 	public static double largeNumber = 1E8; 
 		
 	//This function generates average intensity under different ROIs according to each time points for EXPERIMENTAL data.
-	//the results returns double[roi length][time points with prebleach removed]. 
+	//the results returns double[roi length][time points with prebleach time points removed]. 
 	public static double[][] dataReduction(FRAPData argFrapData,int argStartRecoveryIndex, ROI[] expRois, double[] normFactor) 
 	{ 
 		int roiLen = expRois.length;
@@ -119,7 +119,10 @@ public class FRAPOptimization {
 		return result;
 	}
 	
-	public static double getErrorByNewParameters_oneDiffRate(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, boolean[] errorOfInterest, Parameter fixedParam) throws Exception
+	public static double getErrorByNewParameters_oneDiffRate(double refDiffRate, double[] newParams, double[][] refData,
+			                                                 double[][] expData, double[] refTimePoints, double[] expTimePoints, 
+			                                                 int roiLen, boolean[] errorOfInterest, double[][] measurementErrors,
+			                                                 Parameter fixedParam, boolean bApplyMeasurementError) throws Exception
 	{
 		double error = 0;
 		// trying 3 parameters
@@ -184,6 +187,10 @@ public class FRAPOptimization {
 						for(int j=0; j<expTimePoints.length; j++)
 						{
 							double difference = expData[i][j] - FRAPOptimization.getValueFromParameters_oneDiffRate(diffData[i][j], mobileFrac, bleachWhileMonitoringRate, firstPostBleach[i], expTimePoints[j]);
+							if(bApplyMeasurementError)
+							{
+								difference = difference/measurementErrors[i][j];
+							}
 //							double difference = expData[i][j]- (mobileFrac * diffData[i][j] + imMobileFrac * firstPostBleach[i]) * Math.exp(-(bleachWhileMonitoringRate*expTimePoints[j]));
 							error = error + difference * difference;
 						}
@@ -198,7 +205,10 @@ public class FRAPOptimization {
 		}
 	}
 	
-	public static double getErrorByNewParameters_twoDiffRates(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, boolean[] errorOfInterest, Parameter fixedParam) throws Exception
+	public static double getErrorByNewParameters_twoDiffRates(double refDiffRate, double[] newParams, double[][] refData, 
+			                                                  double[][] expData, double[] refTimePoints, double[] expTimePoints,
+			                                                  int roiLen, boolean[] errorOfInterest, double[][] measurementErrors, 
+			                                                  Parameter fixedParam, boolean bApplyMeasurementError) throws Exception
 	{
 		double error = 0;
 		// trying 5 parameters
@@ -297,6 +307,10 @@ public class FRAPOptimization {
 						double newValue = getValueFromParameters_twoDiffRates(mFracFast, fastData[i][j], mFracSlow, slowData[i][j], monitoringRate, firstPostBleach[i], expTimePoints[j]);
 //						double newValue = (mFracFast * fastData[i][j] + mFracSlow * slowData[i][j] + immobileFrac * firstPostBleach[i]) * Math.exp(-(monitoringRate * expTimePoints[j]));
 						double difference = expData[i][j] - newValue;
+						if(bApplyMeasurementError)
+						{
+							difference = difference/measurementErrors[i][j];
+						}
 						error = error + difference * difference;
 					}
 				}

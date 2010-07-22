@@ -287,7 +287,7 @@ public class FRAPStudy implements Matchable{
 		model.addFeature(CYTOSOL_NAME, extracellular, "plasmaMembrane");
 		Feature cytosol = (Feature)model.getStructure(CYTOSOL_NAME);
 
-		String roiDataName = "roiData";
+		String roiDataName = FRAPStudy.ROI_EXTDATA_NAME;
 		
 		final int ONE_DIFFUSION_SPECIES_COUNT = 1;
 		final int MOBILE_SPECIES_INDEX = 0;
@@ -450,7 +450,7 @@ public class FRAPStudy implements Matchable{
 		model.addFeature(CYTOSOL_NAME, extracellular, "plasmaMembrane");
 		Feature cytosol = (Feature)model.getStructure(CYTOSOL_NAME);
 
-		String roiDataName = "roiData";
+		String roiDataName = FRAPStudy.ROI_EXTDATA_NAME;
 		
 		final int SPECIES_COUNT = 4;
 		final int FREE_SPECIES_INDEX = 0;
@@ -1038,7 +1038,7 @@ public class FRAPStudy implements Matchable{
 					accumAvgBkGround += backGround[timeIndex];
 				}
 				for (int i = 0; i < avgPrebleachDouble.length; i++) {
-					avgPrebleachDouble[i] = ((double)accumPrebleachImage[i] - accumAvgBkGround)/(double)startingIndexForRecovery;
+					avgPrebleachDouble[i] = ((double)accumPrebleachImage[i] - accumAvgBkGround)/startingIndexForRecovery;
 				}
 			}
 			else //don't subtract background
@@ -1238,8 +1238,8 @@ public class FRAPStudy implements Matchable{
 					                                               new int[0]/* membranePoints*/,
 					                                               regionCounter /*numRegions*/, 
 					                                               0 /*zSlice*/, 
-					                                               newROIExtDataID.getKey()/* fieldDataKey*/, 
-					                                               new FieldFunctionArguments(FRAPStudy.ROI_SUMDATA_NAME, "roiSumDataVar", new Expression(0), VariableType.VOLUME)/*FieldFunctionArguments*/, 
+					                                               newROIExtDataID.getKey()/* fieldDataKey, sample image*/, 
+					                                               new FieldFunctionArguments(FRAPStudy.ROI_SUMDATA_NAME, "roiSumDataVar", new Expression(0), VariableType.VOLUME)/*FieldFunctionArguments, sample image*/,
 					                                               false/* bStoreEnabled*/); 
 					                                               
 		}

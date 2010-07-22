@@ -32,7 +32,9 @@ public abstract class BoxPanel extends JPanel {
     protected JPanel contentPane;
 
     private boolean isSelected = false;
-
+    final static private Insets borderInset = new Insets(5, 5, 5, 5);
+    final static private Color borderColor = new Color(166, 166, 255);
+    
     public BoxPanel(String title) {
         this.title = title;
         setOpaque(false);
@@ -109,6 +111,4 @@ public abstract class BoxPanel extends JPanel {
         }
 
     }
-    final static private Insets borderInset = new Insets(5, 5, 5, 5);
-    final static private Color borderColor = new Color(166, 166, 255);
 }

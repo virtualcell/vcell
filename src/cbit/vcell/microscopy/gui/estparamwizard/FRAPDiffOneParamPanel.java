@@ -1,28 +1,39 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.plot.Plot2DPanel;
+import cbit.plot.PlotPane;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.microscopy.FRAPData;
@@ -31,6 +42,8 @@ import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.ProfileData;
+import cbit.vcell.microscopy.ProfileDataElement;
 import cbit.vcell.opt.Parameter;
 
 public class FRAPDiffOneParamPanel extends JPanel
@@ -272,26 +285,37 @@ public class FRAPDiffOneParamPanel extends JPanel
 		gridBagLayout.rowHeights = new int[] {7,7,7,7};
 		setLayout(gridBagLayout);
 
-		JPanel buttonPanel = new JPanel();
-		final JButton getOptimalButton = new JButton();
+		JPanel buttonPanel = new JPanel(new FlowLayout());
+		JButton optimalButton = new JButton();
+		optimalButton.setText("Estimate Parameters");
+		optimalButton.setToolTipText("Set best parameters through optimization with experimental data");
+		optimalButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				runAndSetBestParameters();
+			}
+		});
+		JButton evaluationButton = new JButton();
+		evaluationButton.setText("Evaluate Confidence Intervals");
+		evaluationButton.setToolTipText("Get confidence intervals for each parameter based on confidence level");
+		evaluationButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				evaluateParameters();
+			}
+		});
+		
+		buttonPanel.add(optimalButton);
+		buttonPanel.add(new JLabel("   "));
+		buttonPanel.add(evaluationButton);
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.weightx = 1;
 		gridBagConstraints_8.weighty = 1;
 		gridBagConstraints_8.ipadx = -105;
 		gridBagConstraints_8.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_8.insets = new Insets(2, 2, 2, 2);
-		gridBagConstraints_8.fill = GridBagConstraints.BOTH;
+		gridBagConstraints_8.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_8.gridy = 3;
 		gridBagConstraints_8.gridx = 3;
-		buttonPanel.add(getOptimalButton);
 		add(buttonPanel, gridBagConstraints_8);
-		getOptimalButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				runAndSetBestParameters();
-			}
-		});
-		getOptimalButton.setText("Estimate");
-		getOptimalButton.setToolTipText("Set best parameters through optimization with experimental data");
 
 		final JLabel diffusionRateLabel = new JLabel();
 		diffusionRateLabel.setText("Primary  Diff.  Rate(um2/s):");
@@ -502,6 +526,64 @@ public class FRAPDiffOneParamPanel extends JPanel
 			errMsg = "Some of the editable parameters are empty or in illegal forms!";
 		}
 		return errMsg;
+	}
+	
+	public void evaluateParameters()
+	{
+		
+		AsynchClientTask evaluateTask = new AsynchClientTask("Prepare to evaluate parameters ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				String errorStr = checkParameters();
+				if(errorStr.equals(""))
+				{
+					Parameter[] currentParams = getCurrentParameters();
+					frapOptData.setNumEstimatedParams(currentParams.length);
+					ProfileData[] profileData = frapOptData.evaluateParameters(currentParams, this.getClientTaskStatusSupport());
+					hashTable.put("ProfileData", profileData);
+				}
+				else
+				{
+					throw new IllegalArgumentException(errorStr);
+				}
+			}
+		};
+		
+		AsynchClientTask showResultTask = new AsynchClientTask("Showing profile likelihood and confidence intervals ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				ProfileData[] profileData = (ProfileData[])hashTable.get("ProfileData");
+				//put plotpanes of different parameters' profile likelihoods into a base panel
+				JPanel basePanel= new JPanel();
+		    	basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
+				for(int i=0; i<profileData.length; i++)
+				{
+					PlotPane plotPane = new PlotPane();
+					plotPane.setBorder(new EtchedBorder());
+					plotPane.setBackground(Color.white);
+					plotPane.setPlot2D(frapOptData.getPlot2DFromProfileData(profileData[i]));
+//					plotPane.setShowNodes(false);
+					String paramName = "";
+					if(profileData[i].getProfileDataElements().size() > 0)
+					{
+						paramName = profileData[i].getProfileDataElements().get(0).getParamName();
+					}
+					ProfileDataPanel profileDataPanel = new ProfileDataPanel(plotPane, paramName);
+					basePanel.add(profileDataPanel);
+				}
+				JScrollPane scrollPane = new JScrollPane(basePanel);
+		    	scrollPane.setAutoscrolls(true);
+		    	scrollPane.setPreferredSize(new Dimension(560, 600));
+		    	scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		    	scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		    	//show plots in a dialog
+		    	DialogUtils.showComponentCloseDialog(FRAPDiffOneParamPanel.this, scrollPane, "Profile Likelihood of Parameters");
+			}
+		};
+		//dispatch
+		ClientTaskDispatcher.dispatch(FRAPDiffOneParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{evaluateTask, showResultTask}, false, false, null, true); 
 	}
 	
 	public void runAndSetBestParameters()

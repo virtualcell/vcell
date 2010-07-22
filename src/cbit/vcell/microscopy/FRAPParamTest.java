@@ -1,61 +1,31 @@
 package cbit.vcell.microscopy;
 
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-
-import org.vcell.util.FileUtils;
-import org.vcell.util.PropertyLoader;
-import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
 
 import loci.formats.FormatException;
 import cbit.image.ImageException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
-import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.math.Constant;
-import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.ConstantArraySpec;
-import cbit.vcell.solver.DataProcessingInstructions;
-import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SolverStatus;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solvers.FVSolverStandalone;
-import cbit.vcell.xml.XmlParseException;
 /**
  * 
  */
 
 public class FRAPParamTest
 {
-	private static final double stepIncrease = 1.01; //increase 0.1 based on last step value
-	private static final double stepDecrease = 0.99; //decrease 0.1 based on last step value
-	private static final String SUB_DIRECTORY = "paramTest\\test2_bwm\\";
-	private static final int maxIteration = 50; 
+	private static final double stepIncrease = 1.001; //increase 0.01 based on last step value
+	private static final double stepDecrease = 0.999; //decrease 0.1 based on last step value
+	private static final String SUB_DIRECTORY = "paramTest\\test2_mobileFrac0.1%\\";
+	private static final int maxIteration = 100; 
+	private static final int NUM_MODEL_PARAMRTERS = FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF;
 	private static final int IDX_FIXED_MODEL_PARAMETER = FRAPModel.INDEX_PRIMARY_FRACTION;
-	private ArrayList<ProfileData> profileData = new ArrayList<ProfileData>();
+	private ArrayList<ProfileDataElement> profileData = new ArrayList<ProfileDataElement>();
 		
 	private LocalWorkspace localWorkspace = null;
 	private FRAPStudy frapStudy = null;
@@ -174,23 +144,16 @@ public class FRAPParamTest
 		{
 			try{
 				//try diffusion with one diffusing compoent model
-				Parameter[] bestParameters = frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters();
+				Parameter[] bestParameters = frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters();//######
 				//get frap opt class
 				FRAPOptData optData = frapStudy.getFrapOptData();
 				//add the fixed parameter to profileData, output exp data and opt results
-				optData.setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF);//redo optimization in order to get least error;
-				Parameter[] newBestParameters = optData.getBestParamters(bestParameters, frapStudy.getSelectedROIsForErrorCalculation());
+				optData.setNumEstimatedParams(NUM_MODEL_PARAMRTERS);//redo optimization in order to get least error;
+				Parameter[] newBestParameters = optData.getBestParamters(bestParameters, frapStudy.getSelectedROIsForErrorCalculation(), null, true);
 				double totalErr = optData.getLeastError();
 				//fixed parameter
 				Parameter fixedParam = newBestParameters[IDX_FIXED_MODEL_PARAMETER];
-				//fixed diffusion rate, increase upper bound to 1000.
-//				Parameter diffRateParam = newBestParameters[IDX_FIXED_MODEL_PARAMETER];
-//				Parameter fixedParam = new Parameter(diffRateParam.getName(),
-//													diffRateParam.getLowerBound(),
-//							                        1000,//upper bound
-//							                        diffRateParam.getScale(),
-//							                        diffRateParam.getInitialGuess());
-				ProfileData pd = new ProfileData(fixedParam.getInitialGuess(), totalErr);
+				ProfileDataElement pd = new ProfileDataElement(fixedParam.getInitialGuess(), totalErr, newBestParameters);
 				profileData.add(pd);
 				//output exp data
 				String expFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY +"exp.txt";
@@ -221,7 +184,7 @@ public class FRAPParamTest
 					}
 					//if satisfies condition break;
 					paramVal = paramVal * stepIncrease;
-					if(paramVal > fixedParam.getUpperBound() || paramVal < fixedParam.getLowerBound())
+					if(paramVal > fixedParam.getUpperBound()|| paramVal < fixedParam.getLowerBound())
 					{
 						break;
 					}
@@ -231,10 +194,10 @@ public class FRAPParamTest
                                                               fixedParam.getScale(),
                                                               paramVal);
 					//getBestParameters returns the whole set of parameters including the fixed parameters
-					optData.setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF-1);
-					Parameter[] newParameters = optData.getBestParamters(unFixedParam, frapStudy.getSelectedROIsForErrorCalculation(), increasedParam);
+					optData.setNumEstimatedParams(NUM_MODEL_PARAMRTERS-1);
+					Parameter[] newParameters = optData.getBestParamters(unFixedParam, frapStudy.getSelectedROIsForErrorCalculation(), increasedParam, true);
 					totalErr = optData.getLeastError();
-					pd = new ProfileData(increasedParam.getInitialGuess(), totalErr);
+					pd = new ProfileDataElement(increasedParam.getInitialGuess(), totalErr, newParameters);
 					profileData.add(pd);
 					//output opt data
 					dataFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY +increasedParam.getName()+ increasedParam.getInitialGuess() + ".txt";
@@ -263,10 +226,10 @@ public class FRAPParamTest
                                                     fixedParam.getScale(),
                                                     paramVal);
 					//getBestParameters returns the whole set of parameters including the fixed parameters
-					optData.setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF-1);
-					Parameter[] newParameters = optData.getBestParamters(unFixedParam, frapStudy.getSelectedROIsForErrorCalculation(), decreasedParam);
+					optData.setNumEstimatedParams(NUM_MODEL_PARAMRTERS-1);
+					Parameter[] newParameters = optData.getBestParamters(unFixedParam, frapStudy.getSelectedROIsForErrorCalculation(), decreasedParam, true);
 					totalErr = optData.getLeastError();
-					pd = new ProfileData(decreasedParam.getInitialGuess(), totalErr);
+					pd = new ProfileDataElement(decreasedParam.getInitialGuess(), totalErr, newParameters);
 					profileData.add(0,pd);
 					//output opt data
 					dataFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + decreasedParam.getName()+ decreasedParam.getInitialGuess() + ".txt";
@@ -284,7 +247,7 @@ public class FRAPParamTest
 		}
 	}
 	
-	private void outputProfileLikelihood(ArrayList<ProfileData> arg_profileData, Parameter arg_fixedParam) 
+	private void outputProfileLikelihood(ArrayList<ProfileDataElement> arg_profileData, Parameter arg_fixedParam) 
 	{
 		try{
 			System.out.println("Writing profile likelihood...");
@@ -298,6 +261,12 @@ public class FRAPParamTest
 	        {
 	        	out.newLine();
 	        	String rowStr = Math.log10(arg_profileData.get(i).getParameterValue()) + "\t" + arg_profileData.get(i).getLikelihood();
+	        	Parameter[] params = arg_profileData.get(i).getBestParameters();
+	        	rowStr = rowStr + "\t";
+	        	for(int j=0; j < params.length; j++)
+	        	{
+	        		rowStr = rowStr + "\t" + params[j].getInitialGuess();
+	        	}
 	        	out.write(rowStr);
 	        }
 		    out.close();
@@ -353,27 +322,6 @@ public class FRAPParamTest
 			out.newLine();
         }
 		out.close();
-	}
-	
-	class ProfileData
-	{
-		private double paramVal = 0;
-		private double likelihood = 0;
-		
-		public ProfileData(double arg_paramValue, double arg_likelihood)
-		{
-			paramVal = arg_paramValue;
-			likelihood = arg_likelihood;
-		}
-		
-		public double getParameterValue()
-		{
-			return paramVal;
-		}
-		public double getLikelihood()
-		{
-			return likelihood;
-		}
 	}
 	
 	public static void main(String[] args) {
