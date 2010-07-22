@@ -55,10 +55,10 @@ public class ModelTypesDescriptor extends WizardPanelDescriptor {
 			{
 				modelTypesPanel.setDiffTwoSelected(true);
 			}
-			if(models[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
-			{
-				modelTypesPanel.setDiffBindingSelected(true);
-			}
+//			if(models[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
+//			{
+//				modelTypesPanel.setDiffBindingSelected(true);
+//			}
     	}
     	else //new frap document
     	{
