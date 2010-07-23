@@ -271,6 +271,10 @@ public class HistogramPanel extends JPanel {
 	private void calcSelectedPixelRanges(MouseEvent e){
 		if(mouseStartPoint != null){
 			Range dragRange = getDragRange(e.getPoint());
+			if(calcRangeBinCount(dragRange) == 0){//selected bin range on histogram with no pixels
+				pixelListSelectionModel.clearSelection();
+				return;
+			}
 			if((e.getModifiersEx() & (InputEvent.SHIFT_DOWN_MASK)) != 0){
 				if(!pixelListSelectionModel.isSelectionEmpty() &&
 						pixelListSelectionModel.getAnchorSelectionIndex() == pixelListSelectionModel.getLeadSelectionIndex()){
@@ -289,7 +293,6 @@ public class HistogramPanel extends JPanel {
 				pixelListSelectionModel.setSelectionInterval((int)dragRange.getMin(), (int)dragRange.getMax());
 			}
 		}
-
 	}
 	private void init(){
 		applyButton.setFont(Font.decode("Dialog-10"));
@@ -417,22 +420,25 @@ public class HistogramPanel extends JPanel {
 		return forceThis;
 	}
 
+	private int calcRangeBinCount(Range dragRange){
+		int count = 0;
+		for (int rangePixVal = (int)dragRange.getMin(); rangePixVal <= (int)dragRange.getMax(); rangePixVal++) {
+			count+= originalTreeMap.get(rangePixVal/*+subsetTreeMap.firstKey()*/);
+		}
+		return count;
+	}
 	private String calculateDescription(Point point){
 		if(mouseStartPoint == null){
 			return null;
 		}
 		String rangeDescr = null;
 		Range dragRange = getDragRange(point);
-		int count = 0;
-		for (int rangePixVal = (int)dragRange.getMin(); rangePixVal <= (int)dragRange.getMax(); rangePixVal++) {
-			count+= originalTreeMap.get(rangePixVal/*+subsetTreeMap.firstKey()*/);
-		}
 		if(dragRange.getMax()-dragRange.getMin() > 0){
 			rangeDescr = ((int)dragRange.getMin()/*+subsetTreeMap.firstKey()*/)+" to "+((int)dragRange.getMax()/*+subsetTreeMap.firstKey()*/);
 		}else{
 			rangeDescr = ((int)dragRange.getMin()/*+subsetTreeMap.firstKey()*/)+"";
 		}
-		return "pix("+rangeDescr+") cnt="+count;
+		return "pix("+rangeDescr+") cnt="+calcRangeBinCount(dragRange);
 	}
 	
 	@Override
@@ -494,7 +500,7 @@ public class HistogramPanel extends JPanel {
 		xPoint = forceInBounds(xPoint);
 		return (int)Math.round(((xPoint-HORZ_EDGE_OFFSET)*getIncrement(mapSize)));
 	}
-	private SortedMap getTreeMapView(){
+	private SortedMap<Integer, Integer> getTreeMapView(){
 		SortedMap<Integer, Integer> subsetTreeMap = originalTreeMap;
 		if(viewPixelRange != null){
 			subsetTreeMap = originalTreeMap.subMap((int)viewPixelRange.getMin(), (int)viewPixelRange.getMax()+1);
@@ -509,7 +515,7 @@ public class HistogramPanel extends JPanel {
 				repaint();
 			}
 		}else{
-			applyButton.setEnabled(true);
+			applyButton.setEnabled(!pixelListSelectionModel.isSelectionEmpty());
 		}
 	}
 	private static final int MIN_MAX_BARWIDTH_COMPENSATION = 2;//add this much to width when drawing xmin bar and xmax bar
