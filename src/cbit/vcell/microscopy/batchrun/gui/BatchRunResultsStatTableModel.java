@@ -55,7 +55,7 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
     		throw new RuntimeException("AnalysisTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
     	}
     	    	
-    	frapStudys = batchRunWorkspace.getFrapStudyList();
+    	frapStudys = batchRunWorkspace.getFrapStudies();
     	double stat[][] = getBatchRunWorkspace().getStatisticsData();
     	
     	if (frapStudys == null)//no frap studies, then no statisttics

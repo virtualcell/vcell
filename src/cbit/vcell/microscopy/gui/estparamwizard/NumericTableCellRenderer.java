@@ -14,11 +14,11 @@ import java.text.NumberFormat;
 
 /**
  */
-public class AnalysisTableRenderer  extends DefaultTableCellRenderer {
+public class NumericTableCellRenderer  extends DefaultTableCellRenderer {
 	
 	private NumberFormat format;
     
-    public AnalysisTableRenderer(int precision) {
+    public NumericTableCellRenderer(int precision) {
         super();
         setFont(new Font("Arial", Font.PLAIN, 11));
         //set double precision
@@ -56,15 +56,13 @@ public class AnalysisTableRenderer  extends DefaultTableCellRenderer {
 			setForeground(Color.black);
 		}
     	
+    	//the following code is to highlight the entire row of the statistics in batchrun parameters table
     	Object nameObj = table.getValueAt(row, BatchRunResultsParamTableModel.COLUMN_FILE_NAME); //first column should be name of the parameter
 		if(nameObj instanceof String)
 		{
 			String name = (String)nameObj;
 			if(name.equals(DescriptiveStatistics.MEAN_NAME) ||
-			   name.equals(DescriptiveStatistics.STANDARD_DEVIATION_NAME)/* ||
-			   name.equals(DescriptiveStatistics.MEDIAN_NAME) ||
-			   name.equals(DescriptiveStatistics.MIN_NAME) ||
-			   name.equals(DescriptiveStatistics.MAX_NAME)*/)
+			   name.equals(DescriptiveStatistics.STANDARD_DEVIATION_NAME))
 			{
 				
 				if (isSelected) {
@@ -84,6 +82,7 @@ public class AnalysisTableRenderer  extends DefaultTableCellRenderer {
 				setForeground(Color.black);
 			}
 		}
+    	
         return this;
     }
 }

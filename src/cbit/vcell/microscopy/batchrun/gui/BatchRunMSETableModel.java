@@ -48,12 +48,12 @@ public class BatchRunMSETableModel extends AbstractTableModel{
 		{
 			return 0;
 		}
-		return batchRunWorkspace.getFrapStudyList().size();
+		return batchRunWorkspace.getFrapStudies().size();
 	}
 	
 	public Object getValueAt(int row, int col) 
 	{
-		ArrayList<FRAPStudy> fStudyList = batchRunWorkspace.getFrapStudyList(); 
+		ArrayList<FRAPStudy> fStudyList = batchRunWorkspace.getFrapStudies(); 
 		mseSummaryData = batchRunWorkspace.getAnalysisMSESummaryData();
 	
 		if (col<0 || col>=NUM_COLUMNS){
@@ -68,7 +68,7 @@ public class BatchRunMSETableModel extends AbstractTableModel{
 		}
 		if(col == COLUMN_FILE_NAME)
 		{
-			return new File(fStudyList.get(row).getXmlFilename()).getName();
+			return new File(fStudyList.get(row).getXmlFilename());
 		}
 		else
 		{
@@ -88,7 +88,7 @@ public class BatchRunMSETableModel extends AbstractTableModel{
 	public Class<?> getColumnClass(int column) {
 		if(column == COLUMN_FILE_NAME)
 		{
-			return String.class;
+			return File.class;
 		}
 		else
 		{

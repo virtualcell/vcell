@@ -45,7 +45,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	//key string to pass variable values among client tasks
 	public static final String BATCH_RUN_WORKSPACE_KEY = "Batch Run Workspace";
 	
-	private ArrayList<FRAPStudy> frapStudyList = null;
+	private ArrayList<FRAPStudy> frapStudies = null;
 	private PropertyChangeSupport propertyChangeSupport;
 	private FRAPSingleWorkspace workingSingleWorkspace = null;
 	private Object displaySelection = null;
@@ -65,7 +65,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		//initialize the working workspace
 		workingSingleWorkspace = new FRAPSingleWorkspace();
 		FRAPStudy fStudy = new FRAPStudy();
-		frapStudyList = new ArrayList<FRAPStudy>();
+		frapStudies = new ArrayList<FRAPStudy>();
 		workingSingleWorkspace.setFrapStudy(fStudy, true);
 		
 		propertyChangeSupport = new PropertyChangeSupport(this);
@@ -87,17 +87,17 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		return workingSingleWorkspace;
 	}
 	
-	public  ArrayList<FRAPStudy> getFrapStudyList() {
-		return frapStudyList;
+	public  ArrayList<FRAPStudy> getFrapStudies() {
+		return frapStudies;
 	}
 	
 	public FRAPStudy getFRAPStudy(String fileName) //file name(with full path info.)
 	{
-		for(int i=0; i<frapStudyList.size(); i++)
+		for(int i=0; i<frapStudies.size(); i++)
 		{
-			if(Compare.isEqual(frapStudyList.get(i).getXmlFilename(), fileName))
+			if(Compare.isEqual(frapStudies.get(i).getXmlFilename(), fileName))
 			{
-				return frapStudyList.get(i);
+				return frapStudies.get(i);
 			}
 		}
 		return null;
@@ -117,17 +117,45 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		getWorkingSingleWorkspace().setFrapStudy(fStudy, true, true);
 	}
 	
-	public void addFrapStudy(FRAPStudy newFrapStudy)
+	public void addFrapStudy(FRAPStudy newFrapStudy) 
 	{
-		frapStudyList.add(newFrapStudy);
+		File newFile = new File(newFrapStudy.getXmlFilename());
+		ArrayList<FRAPStudy> frapStudies = getFrapStudies();
+		int size = frapStudies.size();
+		int insertIdx = size;
+		for(int i=0; i<size; i++)
+		{
+			File xmlFile = new File(frapStudies.get(i).getXmlFilename());
+			if(newFile.getName().compareTo(xmlFile.getName())==0)
+			{
+				if(newFile.getAbsolutePath().compareTo(xmlFile.getAbsolutePath())<0)
+				{
+					insertIdx = i;
+					break;
+				}
+			}
+			else if(newFile.getName().compareTo(xmlFile.getName())<0)
+			{
+				insertIdx = i;
+				break;
+			}
+		}
+		if(insertIdx == size)
+		{
+			frapStudies.add(newFrapStudy);
+		}
+		else
+		{
+			frapStudies.add(insertIdx, newFrapStudy);
+		}
 		//enable save button
-		VirtualFrapBatchRunFrame.enableSave(frapStudyList != null && frapStudyList.size() > 0);
+		VirtualFrapBatchRunFrame.enableSave(frapStudies != null && frapStudies.size() > 0);
 	}
 	
 	public void removeFrapStudy(FRAPStudy frapStudy)
 	{
-		frapStudyList.remove(frapStudy);
-		if(frapStudyList.size() < 1)
+		frapStudies.remove(frapStudy);
+		if(frapStudies.size() < 1)
 		{
 			clearResultData();
 			//disable save button
@@ -144,7 +172,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	
 	public void removeAllFrapStudies()
 	{
-		frapStudyList.clear();
+		frapStudies.clear();
 		clearResultData();
 		//disable save button
 		VirtualFrapBatchRunFrame.enableSave(false);
@@ -204,19 +232,19 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 			}
 		}
 		//update FRAPModels of FrapStudies in the BatchRun
-		for(int i=0; i<getFrapStudyList().size(); i++)
+		for(int i=0; i<getFrapStudies().size(); i++)
 		{
-			getFrapStudyList().get(i).refreshModels(modelBooleans);
+			getFrapStudies().get(i).refreshModels(modelBooleans);
 		}
 	}
 	
 	public void refreshMSESummaryData()
 	{
-		int studySize = getFrapStudyList().size();
+		int studySize = getFrapStudies().size();
 		analysisMSESummaryData = new double[studySize][FRAPData.VFRAP_ROI_ENUM.values().length-2+1];
 		for(int i=0; i<studySize; i++)
 		{
-			FRAPStudy fStudy = getFrapStudyList().get(i);
+			FRAPStudy fStudy = getFrapStudies().get(i);
 			fStudy.createAnalysisMSESummaryData();
 			analysisMSESummaryData[i] = fStudy.getAnalysisMSESummaryData()[getSelectedModel()];
 		}
@@ -237,7 +265,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	
 	public void refreshStatisticsData()
 	{
-		int studySize = getFrapStudyList().size();
+		int studySize = getFrapStudies().size();
 		//get parameters array (column-name and column-details should be excluded)
 		//parameterVals[0] primaryDiffRates, parameterVals[1] primaryMobiles,parameterVals[2]bwmRates
 		//parameterVals[3] secDiffRates,parameterVals[4] secMobiles,parameterVals[5]immobiles
@@ -245,7 +273,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		
 		for(int i=0; i<studySize; i++)
 		{
-			FRAPStudy fStudy = getFrapStudyList().get(i);
+			FRAPStudy fStudy = getFrapStudies().get(i);
 			if(selectedModel == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
 			{
 				FRAPModel fModel = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT];
@@ -413,7 +441,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	public void update(FRAPBatchRunWorkspace tempBatchRunWorkspace)
 	{
 		//frapStudyList
-		this.frapStudyList = tempBatchRunWorkspace.getFrapStudyList();
+		this.frapStudies = tempBatchRunWorkspace.getFrapStudies();
 		
 		this.displaySelection = null;
 		this.selectedModel = tempBatchRunWorkspace.getSelectedModel();
@@ -432,9 +460,9 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				for(int i=0; i < getFrapStudyList().size(); i++)
+				for(int i=0; i < getFrapStudies().size(); i++)
 				{
-					FRAPStudy fStudy = getFrapStudyList().get(i);
+					FRAPStudy fStudy = getFrapStudies().get(i);
 					File outFile = new File(fStudy.getXmlFilename());
 					this.getClientTaskStatusSupport().setMessage("Saving file: " + outFile.getAbsolutePath()+" ...");
 					saveProcedure(outFile, fStudy, this.getClientTaskStatusSupport());
@@ -501,7 +529,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 				FRAPBatchRunWorkspace tempBatchRunWorkspace = (FRAPBatchRunWorkspace)hashTable.get(BATCH_RUN_WORKSPACE_KEY);
 				if(tempBatchRunWorkspace != null)
 				{
-					ArrayList<FRAPStudy> fStudyList = tempBatchRunWorkspace.getFrapStudyList();
+					ArrayList<FRAPStudy> fStudyList = tempBatchRunWorkspace.getFrapStudies();
 					int size = fStudyList.size();
 					for(int i=0; i < size; i++)
 					{
@@ -531,8 +559,8 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 								frapModel.setData(optData.getFitData(frapModel.getModelParameters()));
 							}
 	
-							tempBatchRunWorkspace.getFrapStudyList().remove(i);
-							tempBatchRunWorkspace.getFrapStudyList().add(i, newFRAPStudy);
+							tempBatchRunWorkspace.getFrapStudies().remove(i);
+							tempBatchRunWorkspace.getFrapStudies().add(i, newFRAPStudy);
 						}
 					}
 					//save loaded tempBatchRunWorkspace to hashtable

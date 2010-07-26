@@ -87,11 +87,11 @@ public class BatchRunXmlProducer
 		batchRunNode.addContent(parametersNode);
 		
 		//Get frap study file lists
-		if(param.getFrapStudyList() != null && param.getFrapStudyList().size() > 0)
+		if(param.getFrapStudies() != null && param.getFrapStudies().size() > 0)
 		{
 			Element frapStudyListNode = new Element(MicroscopyXMLTags.FrapStudyListTag);
-			frapStudyListNode.setAttribute(MicroscopyXMLTags.NumFrapStudyListAttrTag,Integer.toString(param.getFrapStudyList().size()));
-			ArrayList<FRAPStudy> frapList = param.getFrapStudyList();
+			frapStudyListNode.setAttribute(MicroscopyXMLTags.NumFrapStudyListAttrTag,Integer.toString(param.getFrapStudies().size()));
+			ArrayList<FRAPStudy> frapList = param.getFrapStudies();
 			for(int i = 0; i < frapList.size(); i++)
 			{
 				if(frapList.get(i).getXmlFilename() != null)

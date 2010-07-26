@@ -29,6 +29,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
@@ -268,15 +269,15 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 						Parameter[] parameters = fStudy.getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
 						double[][] fitData = null;
 						try {
-							FRAPOptData optData= fStudy.getFrapOptData();
-							if(optData == null)
-							{
+						    FRAPOptData optData= fStudy.getFrapOptData();
+						    if(optData == null)
+						    {
 								optData = new FRAPOptData(fStudy, parameters.length, getLocalWorkspace(), fStudy.getStoredRefData());
+								fitData = optData.getFitData(parameters);
 							}
-							fitData = optData.getFitData(parameters);
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+						} catch (Exception ex) {
+								ex.printStackTrace(System.out);
+								DialogUtils.showErrorDialog(BatchRunDetailsPanel.this, ex.getMessage());
 						}
 						fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setData(fitData);
 						//refresh the results
@@ -286,6 +287,8 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 					}
 					//update tree
 					DefaultMutableTreeNode newNode = frapBatchRunViewTree.addBatchRunDocNode(new File(getBatchRunWorkspace().getWorkingFrapStudy().getXmlFilename()));
+					//get the new tree node after sorting
+					newNode = frapBatchRunViewTree.orderFRAPDocChildren(newNode);
 					frapBatchRunViewTree.setSelectionPath(new TreePath(newNode.getPath()));
    				}
 				else
@@ -317,7 +320,7 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
         	getBatchRunWorkspace().clearWorkingSingleWorkspace();
         	//clear tree selection
 			frapBatchRunViewTree.clearSelection();
-			if(batchRunWorkspace.getFrapStudyList() == null || batchRunWorkspace.getFrapStudyList().size() < 1)
+			if(batchRunWorkspace.getFrapStudies() == null || batchRunWorkspace.getFrapStudies().size() < 1)
 			{
 				frapBatchRunViewTree.clearAll();
 			}
@@ -515,7 +518,7 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 	public void updateViewTreeForNewBatchRunFile(FRAPBatchRunWorkspace batchRunWorkspace)
 	{
 		frapBatchRunViewTree.clearAll();
-		ArrayList<FRAPStudy> fStudyList = batchRunWorkspace.getFrapStudyList();
+		ArrayList<FRAPStudy> fStudyList = batchRunWorkspace.getFrapStudies();
 		DefaultMutableTreeNode firstDocNode = null; 
 		for(int i=0; i< fStudyList.size(); i++)
 		{

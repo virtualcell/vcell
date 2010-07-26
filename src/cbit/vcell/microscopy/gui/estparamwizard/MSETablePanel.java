@@ -123,11 +123,10 @@ public class MSETablePanel extends AdvancedTablePanel
         table.setAutoCreateColumnsFromModel(false);
         table.setModel(mseTableModel);
 
-        DefaultCellEditor  mseEditor = new DefaultCellEditor(new JTextField());
-        TableCellRenderer mseRenderer = new  AnalysisTableRenderer(8);//double precision 8 digits
+        TableCellRenderer mseRenderer = new  NumericTableCellRenderer(8);//double precision 8 digits
         TableColumn[] columns = new TableColumn[MSETableModel.NUM_COLUMNS];
         for (int i = 0; i < mseTableModel.getColumnCount(); i++) {
-            columns[i] = new TableColumn(i, 0, mseRenderer, mseEditor);
+            columns[i] = new TableColumn(i, 0, mseRenderer, null);
             table.addColumn(columns[i]);
         }
         

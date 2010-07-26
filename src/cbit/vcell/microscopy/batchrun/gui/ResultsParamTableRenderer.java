@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.io.File;
@@ -57,6 +58,35 @@ public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 			{
 				button.setBorderPainted(false);
 				return button;
+			}
+		}
+		
+		Object nameObj = table.getValueAt(row, BatchRunResultsParamTableModel.COLUMN_FILE_NAME); //first column should be name of the parameter
+		if(nameObj instanceof String)
+		{
+			String name = (String)nameObj;
+			if(name.equals(DescriptiveStatistics.MEAN_NAME) ||
+			   name.equals(DescriptiveStatistics.STANDARD_DEVIATION_NAME)/* ||
+			   name.equals(DescriptiveStatistics.MEDIAN_NAME) ||
+			   name.equals(DescriptiveStatistics.MIN_NAME) ||
+			   name.equals(DescriptiveStatistics.MAX_NAME)*/)
+			{
+				
+				if (isSelected) {
+	    			setBackground(table.getSelectionBackground());
+	    		} else {
+	    			setBackground( new Color(255,255,128));//yellow
+	    		}
+				setForeground(Color.black);
+			}
+			else
+			{
+				if (isSelected) {
+	    			setBackground(table.getSelectionBackground());
+	    		} else {
+	    			setBackground(table.getBackground());
+	    		}
+				setForeground(Color.black);
 			}
 		}
 		
