@@ -133,13 +133,11 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel
         table.setAutoCreateColumnsFromModel(false);
         table.setModel(anaTableModel);
 
-        DefaultCellEditor  anaEditor = new DefaultCellEditor(new JTextField());
-        TableCellRenderer anaRenderer = new  AnalysisTableRenderer(8); //double precision 8 digits
+        TableCellRenderer anaRenderer = new  NumericTableCellRenderer(8); //double precision 8 digits
         TableColumn[] columns = new TableColumn[AnalysisTableModel.NUM_COLUMNS];
         for (int i = 0; i < anaTableModel.getColumnCount(); i++) {
-            columns[i] = new TableColumn(i, 0, anaRenderer, anaEditor);
+            columns[i] = new TableColumn(i, 0, anaRenderer, null);
             table.addColumn(columns[i]);
-            if (i > 4) table.removeColumn(columns[i]);
         }
         table.addMouseListener(evtHandler);
         scrTable = new JScrollPane(table);

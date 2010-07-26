@@ -34,7 +34,7 @@ import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.AdvancedTablePanel;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.microscopy.gui.estparamwizard.AnalysisTableRenderer;
+import cbit.vcell.microscopy.gui.estparamwizard.NumericTableCellRenderer;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentPanel;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_TwoDiffComponentPanel;
 import cbit.vcell.microscopy.gui.estparamwizard.HyperLinkLabel;
@@ -167,7 +167,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
             gc.fill = GridBagConstraints.HORIZONTAL;
             if(batchRunWorkspace != null)
             {
-            	modelLable.setText(batchRunWorkspace.getFrapStudyList().size() + " Documents");
+            	modelLable.setText(batchRunWorkspace.getFrapStudies().size() + " Documents");
             }
             add(modelLable, gc);
         }
@@ -182,20 +182,20 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         table_param.setCellSelectionEnabled(true);
         sorter.setTableHeader(table_param.getTableHeader());
         
-        DefaultCellEditor  resultsEditor = new DefaultCellEditor(new JTextField());
-        TableCellRenderer resultsRanderer = new  AnalysisTableRenderer(8); //double precision 8 digits
-        for (int i = 0; i < table_param.getColumnCount(); i++) {
+        //apply table renderer for name column
+        TableColumn nameCol = table_param.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_FILE_NAME);
+        nameCol.setCellRenderer(new ResultsParamTableRenderer());
+        //apply table renderer and table editor for details column
+        TableColumn detailsCol = table_param.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_DETAILS);
+        detailsCol.setCellRenderer(new ResultsParamTableRenderer());
+        //apply table renderer to the rest numeric columns
+        TableCellRenderer resultsRanderer = new NumericTableCellRenderer(8); //double precision 8 digits
+        for (int i = 1; i < table_param.getColumnCount()-1; i++) {
         	TableColumn col = table_param.getColumnModel().getColumn(i);
         	col.setPreferredWidth(0);
         	col.setCellRenderer(resultsRanderer);
-        	col.setCellEditor(resultsEditor);
         }
-        //apply table renderer for name column(override the previous one)
-        TableColumn nameCol = table_param.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_FILE_NAME);
-        nameCol.setCellRenderer(new ResultsParamTableRenderer());
-        //apply table renderer and table editor for details column(override the previous ones)
-        TableColumn detailsCol = table_param.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_DETAILS);
-        detailsCol.setCellRenderer(new ResultsParamTableRenderer());
+        
         ResultsParamTableEditor tableEditor = new ResultsParamTableEditor(table_param);
         tableEditor.addPropertyChangeListener(this);
         detailsCol.setCellEditor(tableEditor);
@@ -221,14 +221,15 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         table_stat.setModel(statTableModel);
         table_stat.setCellSelectionEnabled(true);
         
-        DefaultCellEditor statEditor = new DefaultCellEditor(new JTextField());
-        TableCellRenderer statRenderer = new  AnalysisTableRenderer(8);//double precision 8 digits
+        TableColumn nameCol = table_stat.getColumnModel().getColumn(BatchRunResultsParamTableModel.COLUMN_FILE_NAME);
+        nameCol.setCellRenderer(new ResultsParamTableRenderer());
+        //set the numeric columns' renders
+        TableCellRenderer statRenderer = new  NumericTableCellRenderer(8);//double precision 8 digits
         TableColumn[] columns = new TableColumn[statTableModel.NUM_COLUMNS];
-        for (int i = 0; i < table_stat.getColumnCount(); i++) {
+        for (int i = 1; i < table_stat.getColumnCount(); i++) {
         	TableColumn col = table_stat.getColumnModel().getColumn(i);
         	col.setPreferredWidth(0);
         	col.setCellRenderer(statRenderer);
-        	col.setCellEditor(statEditor);
         }
         //add table to panel.By default, if you don't place a table in a scroll pane, the table  header  is not  shown. You need to explicitly display it.
         statTablePanel.setTable(table_stat);

@@ -19,8 +19,7 @@ public class StyleTable extends JTable {
         setGridColor(color);
         setBorder(BorderFactory.createLineBorder(color, 2));
         setRowHeight(getRowHeight()+5);
-//        setRowSelectionAllowed(false);
-        setDefaultRenderer(("").getClass(), new AnalysisTableRenderer(8));//double precision 8 digits
+        setDefaultRenderer(("").getClass(), new NumericTableCellRenderer(8));//double precision 8 digits
         JTableHeader header = getTableHeader();
         header.setDefaultRenderer(createPlainTableHeaderRenderer(color));
     }
@@ -29,8 +28,7 @@ public class StyleTable extends JTable {
         setGridColor(color);
         setBorder(BorderFactory.createLineBorder(color, 2));
         setRowHeight(getRowHeight()+5);
-//        setRowSelectionAllowed(false);
-        setDefaultRenderer(("").getClass(), new AnalysisTableRenderer(8));//double precision 8 digits
+        setDefaultRenderer(("").getClass(), new NumericTableCellRenderer(8));//double precision 8 digits
         JTableHeader header = getTableHeader();
         header.setDefaultRenderer(createPlainTableHeaderRenderer(color));
 
@@ -49,7 +47,6 @@ public class StyleTable extends JTable {
                 comp.setBackground(color);
                 comp.setOpaque(true);
                 comp.setBorder( new EmptyBorder(1, 5, 1, 1));
-                // comp.setBorder(BorderFactory.createLineBorder(color, 2));
                 return comp;
             }
 

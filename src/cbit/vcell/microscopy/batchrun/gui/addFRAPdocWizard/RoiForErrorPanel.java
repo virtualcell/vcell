@@ -476,7 +476,7 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 	
 	public void refreshROIImageForDisplay()
 	{
-		FRAPData frapData = batchRunWorkspace.getFrapStudyList().get(0).getFrapData();
+		FRAPData frapData = batchRunWorkspace.getFrapStudies().get(0).getFrapData();
 		ROI[] allROIs = getAllROIs();
 		Color[] allColors = getAllROIColors();
 		ArrayList<ROI> plottedROIs = new ArrayList<ROI>();

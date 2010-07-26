@@ -4,6 +4,9 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -64,7 +67,7 @@ public class BatchRunTree extends JTree {
     public DefaultMutableTreeNode removeCurrentNode() {
         TreePath currentSelection = getSelectionPath();
         if (currentSelection != null) {
-            DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode)(currentSelection.getLastPathComponent());
+        	DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode)(currentSelection.getLastPathComponent());
             DefaultMutableTreeNode parent = (DefaultMutableTreeNode)(currentNode.getParent());
             if (parent != null && parent != FRAP_BATCHRUN_NODE) 
             {
@@ -84,7 +87,8 @@ public class BatchRunTree extends JTree {
             parentNode = FRAP_BATCHRUN_NODE;
         } 
 
-        return addTreeNode(parentNode, child, true);
+        DefaultMutableTreeNode newNode = addTreeNode(parentNode, child, true);
+        return newNode;
     }
     
     public DefaultMutableTreeNode addBatchRunResultNode(Object child) {
@@ -115,9 +119,67 @@ public class BatchRunTree extends JTree {
         return childNode;
     }
     
-	
-	
-	/*// for initating cellWareViewTree
+    public DefaultMutableTreeNode orderFRAPDocChildren(DefaultMutableTreeNode newNode) {
+    	DefaultMutableTreeNode orderedNode = newNode;
+		if(FRAP_BATCHRUN_DOC_NODE.getChildCount() > 1)
+		{
+			ArrayList<DefaultMutableTreeNode> children = new ArrayList<DefaultMutableTreeNode>();
+			for(int i=0; i<FRAP_BATCHRUN_DOC_NODE.getChildCount(); i++)
+			{
+				children.add(new DefaultMutableTreeNode(((DefaultMutableTreeNode)FRAP_BATCHRUN_DOC_NODE.getChildAt(i)).getUserObject()));
+			}
+			Collections.sort(children, nodeComparator);
+			FRAP_BATCHRUN_DOC_NODE.removeAllChildren();
+			int size = children.size();
+			for(int i=0; i < children.size(); i++ )
+			{
+				if(((File)newNode.getUserObject()).getAbsolutePath().equals(((File)children.get(i).getUserObject()).getAbsolutePath()))
+				{
+					orderedNode = addBatchRunDocNode(children.get(i).getUserObject());
+				}
+				else
+				{
+					addBatchRunDocNode(children.get(i).getUserObject());
+				}
+			}
+			treeModel.nodeStructureChanged(FRAP_BATCHRUN_DOC_NODE);
+		}
+		return orderedNode;
+    }
+
+    private Comparator<DefaultMutableTreeNode> nodeComparator = new Comparator<DefaultMutableTreeNode> () {
+        //Override
+        public int compare(DefaultMutableTreeNode o1, DefaultMutableTreeNode o2) {
+        	Object o1UserObject = o1.getUserObject();
+    		Object o2UserObject = o2.getUserObject();
+        	if(o1UserObject instanceof File && o2UserObject  instanceof File)
+        	{
+        		
+        		if(((File)o1UserObject).getName().compareTo(((File)o2UserObject).getName())==0)
+        		{
+        			return ((File)o1UserObject).getAbsolutePath().compareTo(((File)o2UserObject).getAbsolutePath());
+        		}
+        		else
+        		{
+        			return ((File)o1UserObject).getName().compareTo(((File)o2UserObject).getName());
+        		}
+        	}
+            return o1UserObject.toString().compareTo(o2UserObject.toString());
+        }
+     
+        //Override
+        public boolean equals(Object obj)    {
+            return false;
+        }
+     
+        //Override
+        public int hashCode() {
+            int hash = 7;
+            return hash;
+        }
+    };
+    
+	/*
 	public void initiateFrapViewTree(FRAPBatchRunWorkspace brWorkSpace)
 	{
 		if(true)//TODO: put condition

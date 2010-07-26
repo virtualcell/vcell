@@ -35,7 +35,7 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.ResultPanelButtonHandler;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.WorkFlowButtonHandler;
-import cbit.vcell.microscopy.gui.estparamwizard.AnalysisTableRenderer;
+import cbit.vcell.microscopy.gui.estparamwizard.NumericTableCellRenderer;
 
 
 public class ResultDisplayPanel extends AdvancedTablePanel
@@ -284,7 +284,7 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 			table.setCellSelectionEnabled(true);
 			table.addMouseListener(evtHandler);
 			//set table renderer
-			TableCellRenderer tableRenderer = new AnalysisTableRenderer(8); //double precision 8 digits
+			TableCellRenderer tableRenderer = new NumericTableCellRenderer(8); //double precision 8 digits
 			for(int i=0; i<tableModel.getColumnCount(); i++)
 			{
 				TableColumn column=table.getColumnModel().getColumn(i);

@@ -42,7 +42,7 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     }
 
     public int getRowCount() {
-       return (getBatchRunWorkspace() == null)? 0:getBatchRunWorkspace().getFrapStudyList().size();
+       return (getBatchRunWorkspace() == null)? 0:getBatchRunWorkspace().getFrapStudies().size();
     }
 
     public Object getValueAt(int row, int col) 
@@ -51,7 +51,7 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     		throw new RuntimeException("AnalysisTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
     	}
     	    	
-    	frapStudys = batchRunWorkspace.getFrapStudyList();
+    	frapStudys = batchRunWorkspace.getFrapStudies();
     	
     	if (frapStudys == null)
     	{

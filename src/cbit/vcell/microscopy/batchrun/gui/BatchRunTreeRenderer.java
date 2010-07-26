@@ -46,13 +46,13 @@ public class BatchRunTreeRenderer extends DefaultTreeCellRenderer
         	{
         		setIcon(treeDocLeafIcon);
         		setText(((File)(((DefaultMutableTreeNode)value).getUserObject())).getName());
+        		setToolTipText(((File)((DefaultMutableTreeNode)value).getUserObject()).getAbsolutePath());
         	}
         	else
         	{
         		setIcon(treeReLeafIcon);
         		setText(((DefaultMutableTreeNode)value).toString());
         	}	
-        	setToolTipText(((DefaultMutableTreeNode)value).toString());
         }
         else
         {

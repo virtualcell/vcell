@@ -80,7 +80,7 @@ public static ExternalDataAndSimulationInfo getExternalDataAndSimulationInfo(Fil
 	Element bioModelElement = param.getChild(XMLTags.BioModelTag);
 	if (bioModelElement!=null){
 		BioModel bioModel  = xmlReader.vcellXMLReader.getBioModel(bioModelElement);
-		if(bioModel != null){
+		if(bioModel != null && bioModel.getSimulations()!=null && bioModel.getSimulations().length > 0){
 			simulationKeyValue = bioModel.getSimulations()[0].getKey();
 		}
 	}

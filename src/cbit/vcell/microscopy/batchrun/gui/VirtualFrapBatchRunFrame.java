@@ -203,7 +203,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		  	   			menuHandler.actionPerformed(new ActionEvent(mHelpTopics,0,HELPTOPICS_ACTION_COMMAND));
 		  	   			break;
 			  	   	case ToolBar.BUT_RUN:
-			  	   		if(batchRunWorkspace.getFrapStudyList().size() > 0)
+			  	   		if(batchRunWorkspace.getFrapStudies().size() > 0)
 			  	   		{
 					  	   	final Wizard typeWizard = getChooseModelTypeWizard();
 				   			if(typeWizard != null)
@@ -437,14 +437,14 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	  {
 		  //to run batch files
 			ArrayList<AsynchClientTask> batchRunTaskList = new ArrayList<AsynchClientTask>();
-			for(int i=0; i<batchRunWorkspace.getFrapStudyList().size(); i++)
+			for(int i=0; i<batchRunWorkspace.getFrapStudies().size(); i++)
 			{
 				final int finalIdx = i;
 				AsynchClientTask message1Task = new AsynchClientTask("Preparing for parameter estimation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						appendJobStatus("Running "+((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx)).getXmlFilename(), false);
+						appendJobStatus("Running "+((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx)).getXmlFilename(), false);
 					}
 				};
 				
@@ -452,7 +452,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
+						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx));
 //						
 						//reference data is null, it is not stored, we have to run ref simulation then
 						//check external data info
@@ -480,7 +480,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
+						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx));
 						MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
 						//run ref sim
 						if(fStudy.getStoredRefData() != null)//if ref data is stored ,we don't have to re-run
@@ -511,7 +511,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudyList().get(finalIdx));
+						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx));
 						
 						ArrayList<Integer> models = fStudy.getSelectedModels();
 						if(models.size() == 1)
@@ -587,7 +587,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				if(batchRunWorkspace.getFrapStudyList() == null || batchRunWorkspace.getFrapStudyList().size() < 1)
+				if(batchRunWorkspace.getFrapStudies() == null || batchRunWorkspace.getFrapStudies().size() < 1)
 				{
 					throw new Exception("No Data exists to save");
 				}else{

@@ -21,7 +21,7 @@ import javax.swing.table.TableColumn;
 
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.AdvancedTablePanel;
-import cbit.vcell.microscopy.gui.estparamwizard.AnalysisTableRenderer;
+import cbit.vcell.microscopy.gui.estparamwizard.NumericTableCellRenderer;
 import cbit.vcell.microscopy.gui.estparamwizard.HyperLinkLabel;
 import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
 
@@ -122,7 +122,7 @@ public class BatchRunMSETablePanel extends AdvancedTablePanel
             gc.fill = GridBagConstraints.HORIZONTAL;
             if(batchRunWorkspace != null)
             {
-            	modelLable.setText(batchRunWorkspace.getFrapStudyList().size() + " Documents");
+            	modelLable.setText(batchRunWorkspace.getFrapStudies().size() + " Documents");
             }
             add(modelLable, gc);
         }
@@ -136,14 +136,15 @@ public class BatchRunMSETablePanel extends AdvancedTablePanel
         table.setCellSelectionEnabled(true);
         sorter.setTableHeader(table.getTableHeader());
 
-        DefaultCellEditor  mseEditor = new DefaultCellEditor(new JTextField());
-        TableCellRenderer mseRenderer = new  AnalysisTableRenderer(8);//double precision 8 digits
-        for (int i = 0; i < table.getColumnCount(); i++) {
+        TableColumn nameCol = table.getColumnModel().getColumn(BatchRunMSETableModel.COLUMN_FILE_NAME);
+        nameCol.setCellRenderer(new ResultsParamTableRenderer());
+        TableCellRenderer mseRenderer = new  NumericTableCellRenderer(8);//double precision 8 digits
+        for (int i = 1; i < table.getColumnCount(); i++) {
         	TableColumn col = table.getColumnModel().getColumn(i);
         	col.setPreferredWidth(0);
         	col.setCellRenderer(mseRenderer);
-        	col.setCellEditor(mseEditor);
         }
+        
         table.addMouseListener(evtHandler);
     }
 
