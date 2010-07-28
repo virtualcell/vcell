@@ -19,7 +19,7 @@ public class StructureMappingTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_structmapping";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field subVolumeRef			= new Field("subVolumeRef",	"integer",	"NOT NULL "+SubVolumeTable.REF_TYPE);
+	public final Field subVolumeRef			= new Field("subVolumeRef",	"integer",	SubVolumeTable.REF_TYPE);
 	public final Field structRef			= new Field("structRef",	"integer",	"NOT NULL "+StructTable.REF_TYPE);
 	public final Field simContextRef		= new Field("simContextRef","integer",	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
 	public final Field bResolved 			= new Field("bResolved",	"integer",	"NOT NULL");
@@ -39,11 +39,12 @@ public class StructureMappingTable extends cbit.sql.Table {
 	public final Field volPerUnitVolExp		= new Field("volPerUnitVolExp",	"varchar(1024)",	"");
 	public final Field areaPerUnitAreaExp	= new Field("areaPerUnitAreaExp",	"varchar(1024)",	"");
 	public final Field areaPerUnitVolExp	= new Field("areaPerUnitVolExp",	"varchar(1024)",	"");
+	public final Field surfaceClassRef		= new Field("surfaceClassRef",	"integer",	SurfaceClassTable.REF_TYPE);
 
 	private final Field fields[] = {subVolumeRef,structRef,simContextRef,bResolved,surfToVolExp,volFractExp,
 					boundaryTypeXm,boundaryTypeXp,boundaryTypeYm,boundaryTypeYp,boundaryTypeZm,boundaryTypeZp,
 					bCalculateVoltage,specificCap,initialVoltage, sizeExp, volPerUnitAreaExp, volPerUnitVolExp, 
-					areaPerUnitAreaExp, areaPerUnitVolExp};
+					areaPerUnitAreaExp, areaPerUnitVolExp,surfaceClassRef};
 	
 	public static final StructureMappingTable table = new StructureMappingTable();
 
