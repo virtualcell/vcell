@@ -979,22 +979,20 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		    	basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
 				for(int i=0; i<profileData.length; i++)
 				{
-					PlotPane plotPane = new PlotPane();
-					plotPane.setBorder(new EtchedBorder());
-					plotPane.setBackground(Color.white);
-					plotPane.setPlot2D(frapOptData.getPlot2DFromProfileData(profileData[i]));
-//					plotPane.setsetShowNodes(false);
+					ConfidenceIntervalPlotPanel plotPanel = new ConfidenceIntervalPlotPanel();
+					plotPanel.setProfileSummaryData(frapOptData.getSummaryFromProfileData(profileData[i]));
+					plotPanel.setBorder(new EtchedBorder());
 					String paramName = "";
 					if(profileData[i].getProfileDataElements().size() > 0)
 					{
 						paramName = profileData[i].getProfileDataElements().get(0).getParamName();
 					}
-					ProfileDataPanel profileDataPanel = new ProfileDataPanel(plotPane, paramName);
+					ProfileDataPanel profileDataPanel = new ProfileDataPanel(plotPanel, paramName);
 					basePanel.add(profileDataPanel);
 				}
 				JScrollPane scrollPane = new JScrollPane(basePanel);
 		    	scrollPane.setAutoscrolls(true);
-		    	scrollPane.setPreferredSize(new Dimension(560, 600));
+		    	scrollPane.setPreferredSize(new Dimension(620, 600));
 		    	scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		    	scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		    	//show plots in a dialog

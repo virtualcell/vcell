@@ -101,7 +101,7 @@ public class SubPlotPanel extends JPanel
 
     public void setDetail(boolean isDetail) {
         if (isDetail) {
-            remove(modelLable);
+            modelLable.setVisible(false);
             if(plotPane != null)
             {
             	plotPane.setVisible(true);
@@ -112,12 +112,7 @@ public class SubPlotPanel extends JPanel
         	{
         		plotPane.setVisible(false);
         	}
-            GridBagConstraints gc = new GridBagConstraints();
-            gc.gridy = 1;
-            gc.gridwidth = 2;
-            gc.weightx = 1.0;
-            gc.fill = GridBagConstraints.HORIZONTAL;
-            add(modelLable, gc);
+            modelLable.setVisible(true);
         }
         parent.repaint();
     }

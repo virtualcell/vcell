@@ -149,7 +149,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 
     public void setDetail(boolean isDetail) {
         if (isDetail) {
-            remove(modelLable);
+            modelLable.setVisible(false);
             statTablePanel.setVisible(true);
             paramTablePanel.setVisible(true);
         }
@@ -160,16 +160,11 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
             if (table_stat != null) {
             	statTablePanel.setVisible(false);
             }
-            GridBagConstraints gc = new GridBagConstraints();
-            gc.gridy = 1;//1;
-            gc.gridwidth = 2;
-            gc.weightx = 1.0;
-            gc.fill = GridBagConstraints.HORIZONTAL;
             if(batchRunWorkspace != null)
             {
             	modelLable.setText(batchRunWorkspace.getFrapStudies().size() + " Documents");
             }
-            add(modelLable, gc);
+            modelLable.setVisible(true);
         }
         parent.repaint();
     }
