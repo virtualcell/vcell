@@ -12,11 +12,11 @@ public class ProfileDataPanel extends BoxPanel
 	private ProfileDataPlotPanel profileDataPlotPanel;
 	FRAPSingleWorkspace frapWorkspace = null; 
 	
-	public ProfileDataPanel(PlotPane plotPane, String paramName) 
+	public ProfileDataPanel(ConfidenceIntervalPlotPanel plotPanel, String paramName) 
 	{
 		super("Profile Likelihood of " + paramName);
 		setName("");
-		profileDataPlotPanel = new ProfileDataPlotPanel(this, plotPane, paramName);
+		profileDataPlotPanel = new ProfileDataPlotPanel(this, plotPanel, paramName);
         contentPane.setLayout(new BorderLayout());
         contentPane.add(profileDataPlotPanel, BorderLayout.CENTER);
 	}

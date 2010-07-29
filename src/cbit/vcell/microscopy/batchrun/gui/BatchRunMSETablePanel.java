@@ -103,7 +103,7 @@ public class BatchRunMSETablePanel extends AdvancedTablePanel
 
     public void setDetail(boolean isDetail) {
         if (isDetail) {
-            remove(modelLable);
+            modelLable.setVisible(false);
             if(table != null)
             {
             	table.getTableHeader().setVisible(true);
@@ -115,16 +115,11 @@ public class BatchRunMSETablePanel extends AdvancedTablePanel
             	table.getTableHeader().setVisible(false);
             	table.setVisible(false);
             }
-            GridBagConstraints gc = new GridBagConstraints();
-            gc.gridy = 1;
-            gc.gridwidth = 2;
-            gc.weightx = 1.0;
-            gc.fill = GridBagConstraints.HORIZONTAL;
             if(batchRunWorkspace != null)
             {
             	modelLable.setText(batchRunWorkspace.getFrapStudies().size() + " Documents");
             }
-            add(modelLable, gc);
+            modelLable.setVisible(true);
         }
         parent.repaint();
     }

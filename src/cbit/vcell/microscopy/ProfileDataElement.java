@@ -16,10 +16,10 @@ public class ProfileDataElement
 	
 	public ProfileDataElement(String arg_paramName, double arg_paramValue, double arg_likelihood, Parameter[] arg_bestParams)
 	{
-		paramName = arg_paramName;
-		paramVal = arg_paramValue;
-		likelihood = arg_likelihood;
-		bestParams = arg_bestParams;
+		this.paramName = arg_paramName;
+		this.paramVal = arg_paramValue;
+		this.likelihood = arg_likelihood;
+		this.bestParams = arg_bestParams;
 	}
 	
 	public String getParamName() {

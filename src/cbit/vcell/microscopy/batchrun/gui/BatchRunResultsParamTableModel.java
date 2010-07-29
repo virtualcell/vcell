@@ -31,7 +31,7 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
 												"Secondary Diff Rate", "Immobile Fraction", "Show Details"};
 	
 	private FRAPBatchRunWorkspace batchRunWorkspace = null;
-	private ArrayList<FRAPStudy> frapStudys = null;
+	private ArrayList<FRAPStudy> frapStudies = null;
 	
     public BatchRunResultsParamTableModel() {
     	super();
@@ -51,19 +51,19 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     		throw new RuntimeException("AnalysisTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
     	}
     	    	
-    	frapStudys = batchRunWorkspace.getFrapStudies();
+    	frapStudies = batchRunWorkspace.getFrapStudies();
     	
-    	if (frapStudys == null)
+    	if (frapStudies == null)
     	{
     		return null;
     	}
     	if(col == COLUMN_FILE_NAME)
     	{
-   			return new File(frapStudys.get(row).getXmlFilename());
+   			return new File(frapStudies.get(row).getXmlFilename());
     	}
     	else if(col == COLUMN_PRI_DIFF_RATE)
     	{
-			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
+			Parameter[] modelParams = frapStudies.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
 			if(modelParams != null)
 			{
 				return modelParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess();
@@ -71,7 +71,7 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     	}
     	else if(col == COLUMN_PRI_MOBILE_FRACTION)
     	{
-			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
+			Parameter[] modelParams = frapStudies.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
 			if(modelParams != null)
 			{
 				return modelParams[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
@@ -81,7 +81,7 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     	{
     		if(getBatchRunWorkspace().getSelectedModel() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
     		{
-    			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
+    			Parameter[] modelParams = frapStudies.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
     			if(modelParams != null)
     			{
     				return modelParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess();
@@ -92,7 +92,7 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     	{
     		if(getBatchRunWorkspace().getSelectedModel() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
     		{
-    			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
+    			Parameter[] modelParams = frapStudies.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
     			if(modelParams != null)
     			{
     				return modelParams[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
@@ -101,7 +101,7 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     	}
     	else if(col == COLUMN_BMR)
     	{
-			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
+			Parameter[] modelParams = frapStudies.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
 			if(modelParams != null)
 			{
 				return modelParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess();
@@ -109,7 +109,7 @@ public class BatchRunResultsParamTableModel extends AbstractTableModel
     	}
     	else if(col == COLUMN_IMMOBILE_FRACTION)
     	{
-			Parameter[] modelParams = frapStudys.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
+			Parameter[] modelParams = frapStudies.get(row).getFrapModel(getBatchRunWorkspace().getSelectedModel()).getModelParameters();
 			if(modelParams != null)
 			{
     			double primaryFrac = modelParams[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();

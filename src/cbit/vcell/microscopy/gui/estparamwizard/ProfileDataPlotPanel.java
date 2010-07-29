@@ -29,14 +29,14 @@ public class ProfileDataPlotPanel extends JPanel
 {
     private JPanel parent;
     private JLabel profileLable;
-    private PlotPane plotPane;
+    private ConfidenceIntervalPlotPanel plotPanel;//put plotpane and confidence panel together
     private HyperLinkLabel hypDetail;
 
-    public ProfileDataPlotPanel(JPanel parent, PlotPane plotPane, String paramName) 
+    public ProfileDataPlotPanel(JPanel parent, ConfidenceIntervalPlotPanel plotPanel, String paramName) 
     {
     	super();
     	this.parent = parent;
-    	this.plotPane = plotPane;
+    	this.plotPanel = plotPanel;
         final GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[] {0,0};
         setLayout(gridBagLayout);
@@ -82,7 +82,7 @@ public class ProfileDataPlotPanel extends JPanel
         gc.gridwidth = 2;
         gc.weightx = 1.0;
         gc.fill = GridBagConstraints.HORIZONTAL;
-        add(plotPane,gc);
+        add(plotPanel,gc);
         if(paramName.equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE]))
         {
         	setDetail(true);
@@ -107,23 +107,18 @@ public class ProfileDataPlotPanel extends JPanel
 
     public void setDetail(boolean isDetail) {
     	if (isDetail) {
-            remove(profileLable);
-            if(plotPane != null)
+            profileLable.setVisible(false);
+            if(plotPanel != null)
             {
-            	plotPane.setVisible(true);
+            	plotPanel.setVisible(true);
             }
         }
         else {
-            if (plotPane != null) {
-            	plotPane.setVisible(false);
+            if (plotPanel != null) {
+            	plotPanel.setVisible(false);
             }
-            GridBagConstraints gc = new GridBagConstraints();
-            gc.gridy = 1;
-            gc.gridwidth = 2;
-            gc.weightx = 1.0;
-            gc.fill = GridBagConstraints.HORIZONTAL;
-            
-            add(profileLable, gc);
+
+            profileLable.setVisible(true);
         }
         parent.repaint();
     }

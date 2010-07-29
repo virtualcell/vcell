@@ -79,6 +79,7 @@ public class FRAPOptData {
 	public static final double[] INCREASE_CONST = new double[]{1.01, 1.001, 1.02, 1.01, 1.001};
 	public static final double[] DECREASE_CONST = new double[]{0.99, 0.999, 0.9, 0.99, 0.999};
 	public static final int[] MAX_ITERATION = new int[]{50, 100, 70, 50, 100};
+	public static final int NUM_CONFIDENCE_LEVELS = 4;
 	public static final int IDX_DELTA_ALPHA_80 = 0;
 	public static final int IDX_DELTA_ALPHA_90 = 1;
 	public static final int IDX_DELTA_ALPHA_95 = 2;
@@ -1034,7 +1035,7 @@ public class FRAPOptData {
 		}
 	}
 
-	public Plot2D getPlot2DFromProfileData(ProfileData profileData) 
+	public ProfileSummaryData getSummaryFromProfileData(ProfileData profileData) 
 	{
 		ArrayList<ProfileDataElement> profileElements = profileData.getProfileDataElements();
 		int dataSize = profileElements.size();
@@ -1054,10 +1055,10 @@ public class FRAPOptData {
 					parameter = bestParameters[i];
 				}
 			}
-			double upperBound = (parameter == null)? 100 : parameter.getUpperBound();
-			double lowerBound = (parameter == null)? 0 : parameter.getLowerBound();
-			upperBound = (upperBound == 0)? 0: Math.log10(upperBound);
-			lowerBound = (lowerBound == 0)? 0: Math.log10(lowerBound);
+//			double upperBound = (parameter == null)? 100 : parameter.getUpperBound();
+//			double lowerBound = (parameter == null)? 0 : parameter.getLowerBound();
+//			double logUpperBound = (upperBound == 0)? 0: Math.log10(upperBound);
+//			double logLowerBound = (lowerBound == 0)? 0: Math.log10(lowerBound);
 			for(int i=0; i<dataSize; i++)
 			{
 				paramValArray[i] = profileElements.get(i).getParameterValue();
@@ -1065,7 +1066,7 @@ public class FRAPOptData {
 			}
 			PlotData dataPlot = new PlotData(paramValArray, errorArray);
 			//get confidence interval line
-			//make array copy in order to not change the data orders afte sort
+			//make array copy in order to not change the data orders afte the sorting
 			double[] paramValArrayCopy = new double[paramValArray.length];
 			System.arraycopy(paramValArray, 0, paramValArrayCopy, 0, paramValArray.length);
 			double[] errorArrayCopy = new double[errorArray.length];
@@ -1073,35 +1074,127 @@ public class FRAPOptData {
 			DescriptiveStatistics paramValStat = DescriptiveStatistics.CreateBasicStatistics(paramValArrayCopy);
 			DescriptiveStatistics errorStat = DescriptiveStatistics.CreateBasicStatistics(errorArrayCopy);
 			double[] xArray = new double[2];
-			double[] yArray_80 = new double[2];
-			double[] yArray_90 = new double[2];
-			double[] yArray_95 = new double[2];
-			double[] yArray_99 = new double[2];
-			//80%confidence level
+			double[][] yArray = new double[NUM_CONFIDENCE_LEVELS][2];
+			//get confidence level plot lines
 			xArray[0] = paramValStat.getMin() -  (Math.abs(paramValStat.getMin()) * 0.2);
 			xArray[1] = paramValStat.getMax() + (Math.abs(paramValStat.getMax()) * 0.2) ;
-			yArray_80[0] = errorStat.getMin() + DELTA_ALPHA_VALUE[IDX_DELTA_ALPHA_80];
-			yArray_80[1] = yArray_80[0];
-			PlotData confidence80Plot = new PlotData(xArray, yArray_80);
-			//90% confidence level
-			yArray_90[0] = errorStat.getMin() + DELTA_ALPHA_VALUE[IDX_DELTA_ALPHA_90];
-			yArray_90[1] = yArray_90[0];
-			PlotData confidence90Plot = new PlotData(xArray, yArray_90);
-			//95% confidence level
-			yArray_95[0] = errorStat.getMin() + DELTA_ALPHA_VALUE[IDX_DELTA_ALPHA_95];
-			yArray_95[1] = yArray_95[0];
-			PlotData confidence95Plot = new PlotData(xArray, yArray_95);
-			//99% confidence level
-			yArray_99[0] = errorStat.getMin() + DELTA_ALPHA_VALUE[IDX_DELTA_ALPHA_99];
-			yArray_99[1] = yArray_99[0];
-			PlotData confidence99Plot = new PlotData(xArray, yArray_99);
-			
+			for(int i=0; i<NUM_CONFIDENCE_LEVELS; i++)
+			{
+				yArray[i][0] = errorStat.getMin() + DELTA_ALPHA_VALUE[i];
+				yArray[i][1] = yArray[i][0];
+			}
+			PlotData confidence80Plot = new PlotData(xArray, yArray[IDX_DELTA_ALPHA_80]);
+			PlotData confidence90Plot = new PlotData(xArray, yArray[IDX_DELTA_ALPHA_90]);
+			PlotData confidence95Plot = new PlotData(xArray, yArray[IDX_DELTA_ALPHA_95]);
+			PlotData confidence99Plot = new PlotData(xArray, yArray[IDX_DELTA_ALPHA_99]);
 			//generate plot2D data
 			Plot2D plots = new Plot2D(null,new String[] {"profile Likelihood Data", "80% confidence", "90% confidence", "95% confidence", "99% confidence"}, 
 					                  new PlotData[] {dataPlot, confidence80Plot, confidence90Plot, confidence95Plot, confidence99Plot},
 					                  new String[] {"Profile likelihood of " + paramName, "Log base 10 of "+paramName, "Profile Likelihood"}, 
 					                  new boolean[] {true, true, true, true, true});
-			return plots;
+			//get the best parameter for the minimal error
+			int minErrIndex = -1;
+			for(int i=0; i<errorArray.length; i++)
+			{
+				if(errorArray[i] == errorStat.getMin())
+				{
+					minErrIndex = i;
+					break;
+				}
+			}
+			double bestParamVal = Math.pow(10,paramValArray[minErrIndex]);
+			//find confidence interval points
+			ConfidenceInterval[] intervals = new ConfidenceInterval[NUM_CONFIDENCE_LEVELS];
+			//half loop through the errors(left side curve)
+			int[] smallLeftIdx = new int[NUM_CONFIDENCE_LEVELS]; 
+			int[] bigLeftIdx = new int[NUM_CONFIDENCE_LEVELS];
+			for(int i=0; i<NUM_CONFIDENCE_LEVELS; i++)
+			{
+				smallLeftIdx[i] = -1;
+				bigLeftIdx[i] = -1;
+				for(int j=1; j < minErrIndex+1 ; j++)//loop from bigger error to smaller error
+				{
+					if((errorArray[j] < (errorStat.getMin()+DELTA_ALPHA_VALUE[i])) &&
+					   (errorArray[j-1] > (errorStat.getMin()+DELTA_ALPHA_VALUE[i])))
+					{
+						smallLeftIdx[i]= j-1;
+						bigLeftIdx[i]=j;
+						break;
+					}
+				}
+			}
+			//another half loop through the errors(right side curve)
+			int[] smallRightIdx = new int[NUM_CONFIDENCE_LEVELS]; 
+			int[] bigRightIdx = new int[NUM_CONFIDENCE_LEVELS];
+			for(int i=0; i<NUM_CONFIDENCE_LEVELS; i++)
+			{
+				smallRightIdx[i] = -1;
+				bigRightIdx[i] = -1;
+				for(int j=(minErrIndex+1); j<errorArray.length; j++)//loop from bigger error to smaller error
+				{
+					if((errorStat.getMin()+DELTA_ALPHA_VALUE[i]) < errorArray[j] &&
+					   (errorStat.getMin()+DELTA_ALPHA_VALUE[i]) > errorArray[j-1])
+					{
+						smallRightIdx[i]= j-1;
+						bigRightIdx[i]=j;
+						break;
+					}
+				}
+			}
+			//calculate intervals
+			for(int i=0; i<NUM_CONFIDENCE_LEVELS; i++)
+			{
+				double lowerBound = Double.NEGATIVE_INFINITY;
+				boolean bLowerBoundOpen = true;
+				double upperBound = Double.POSITIVE_INFINITY;
+				boolean bUpperBoundOpen = true;
+				if(smallLeftIdx[i] == -1 && bigLeftIdx[i] == -1)//no lower bound
+				{
+					//if not diffustion rates the lower bound is 0
+					if(!parameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE]) &&
+					   !parameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE]))
+					{
+						lowerBound = 0;
+						bLowerBoundOpen = false;
+					}
+				}
+				else if(smallLeftIdx[i] != -1 && bigLeftIdx[i] != -1)//there is a lower bound
+				{
+					//x=x1+(x2-x1)*(y-y1)/(y2-y1);
+					double x1 = paramValArray[smallLeftIdx[i]];
+					double x2 = paramValArray[bigLeftIdx[i]];
+					double y = errorStat.getMin()+DELTA_ALPHA_VALUE[i];
+					double y1 = errorArray[smallLeftIdx[i]];
+					double y2 = errorArray[bigLeftIdx[i]];
+					lowerBound = x1+(x2-x1)*(y-y1)/(y2-y1);
+					lowerBound = Math.pow(10,lowerBound);
+					bLowerBoundOpen = false;
+				}
+				if(smallRightIdx[i] == -1 && bigRightIdx[i] == -1)//no upper bound
+				{
+					//if not diffustion rates the upper bound is 1
+					if(!parameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE]) &&
+					   !parameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE]))
+					{
+						upperBound = 1;
+						bUpperBoundOpen = false;
+					}
+				}
+				else if(smallRightIdx[i] != -1 && bigRightIdx[i] != -1)//there is a upper bound
+				{
+					//x=x1+(x2-x1)*(y-y1)/(y2-y1);
+					double x1 = paramValArray[smallRightIdx[i]];
+					double x2 = paramValArray[bigRightIdx[i]];
+					double y = errorStat.getMin()+DELTA_ALPHA_VALUE[i];
+					double y1 = errorArray[smallRightIdx[i]];
+					double y2 = errorArray[bigRightIdx[i]];
+					upperBound = x1+(x2-x1)*(y-y1)/(y2-y1);
+					upperBound = Math.pow(10,upperBound);
+					bUpperBoundOpen = false;
+				}
+				intervals[i] = new ConfidenceInterval(lowerBound, bLowerBoundOpen, upperBound, bUpperBoundOpen);
+			}
+			return new ProfileSummaryData(plots, bestParamVal, intervals);
 		}
 		return null;
 	}
