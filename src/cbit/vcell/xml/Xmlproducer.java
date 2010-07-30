@@ -6,6 +6,8 @@
 package cbit.vcell.xml;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -833,6 +835,13 @@ private Element getXML(SurfaceClass param) {
 	//add atributes
 	surfaceClassElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	SubVolume[] subvolArr = param.getAdjacentSubvolumes().toArray(new SubVolume[0]);
+	Arrays.sort(subvolArr, new Comparator<SubVolume>() {
+
+		public int compare(SubVolume o1, SubVolume o2) {
+			return o1.getName().compareTo(o2.getName());
+		}
+	});
+	
 	if(subvolArr.length>0){
 		surfaceClassElement.setAttribute(XMLTags.SubVolume1RefAttrTag, subvolArr[0].getName());
 	}
