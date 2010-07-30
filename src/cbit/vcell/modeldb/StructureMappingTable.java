@@ -11,6 +11,9 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.*;
+import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.*;
 /**
  * This type was created in VisualAge.
@@ -63,13 +66,15 @@ private StructureMappingTable() {
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simContextKey, StructureMapping structureMapping, cbit.vcell.geometry.SubVolume subVolume, boolean isResolved) throws DataAccessException {
+public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simContextKey, StructureMapping structureMapping) throws DataAccessException {
 
-	KeyValue subVolumeKey = hash.getDatabaseKey(subVolume);
-	if (subVolumeKey==null){
-		subVolumeKey = subVolume.getKey();
-		if (subVolumeKey==null){
-			throw new DataAccessException("no key for subvolume "+subVolume);
+	GeometryClass geometryClass = structureMapping.getGeometryClass();
+	KeyValue geometryClassKey = (geometryClass==null?null:hash.getDatabaseKey(geometryClass));
+
+	if (geometryClass != null && geometryClassKey==null){
+		geometryClassKey = geometryClass.getKey();
+		if (geometryClassKey==null){
+			throw new DataAccessException("no key for GeometryClass '"+geometryClass.getName()+"' "+geometryClass.getClass().getName());
 		}
 	}
 	KeyValue structureKey = hash.getDatabaseKey(structureMapping.getStructure());
@@ -83,10 +88,10 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
 	buffer.append(Key + ",");
-	buffer.append(subVolumeKey + ",");
+	buffer.append((geometryClass instanceof SubVolume?geometryClassKey:null) + ",");
 	buffer.append(structureKey + ",");
 	buffer.append(simContextKey + ",");
-	buffer.append((isResolved ? 1 : 0) + ",");
+	buffer.append((/*isResolved*/false ? 1 : 0) + ",");
 	if (structureMapping instanceof FeatureMapping) {
 		FeatureMapping fm = (FeatureMapping)structureMapping;
 		buffer.append("null" + ",");
@@ -169,6 +174,8 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 			buffer.append("null");
 		}
 	}
+	buffer.append(","+(geometryClass instanceof SurfaceClass?geometryClassKey:null));
+
 	buffer.append(")");
 	return buffer.toString();
 }

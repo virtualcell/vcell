@@ -27,6 +27,8 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 12:53:14 AM)
@@ -370,7 +372,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					Geometry copiedGeom = null;
 					if(geometrySelectionInfo.bFromCurrentGeom()){
-						copiedGeom = new Geometry(currentGeometry);
+						copiedGeom = XmlHelper.XMLToGeometry(new XMLSource(XmlHelper.geometryToXML(currentGeometry)));
 					}else{
 						copiedGeom =
 							((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(

@@ -54,6 +54,7 @@ import cbit.vcell.geometry.Line;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.Spline;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
@@ -774,7 +775,12 @@ Element getXML(Geometry param) throws XmlParseException{
 	for (int i=0;i<param.getGeometrySpec().getSubVolumes().length;i++){
 		geometry.addContent( getXML(param.getGeometrySpec().getSubVolumes(i)) );
 	}
-	
+	if(param.getDimension() > 0){
+		//Add SurfaceClass elements 
+		for (int i=0;i<param.getGeometrySurfaceDescription().getSurfaceClasses().length;i++){
+			geometry.addContent( getXML(param.getGeometrySurfaceDescription().getSurfaceClasses()[i]) );
+		}
+	}
 	//Add Filaments
 	if (param.getDimension() > 0)
 	{
@@ -819,6 +825,27 @@ private Element getXML(ImageSubVolume param) {
 	}
 	
 	return subvolume;
+}
+
+private Element getXML(SurfaceClass param) {
+	Element surfaceClassElement = new Element(XMLTags.SurfaceClassTag);
+
+	//add atributes
+	surfaceClassElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	SubVolume[] subvolArr = param.getAdjacentSubvolumes().toArray(new SubVolume[0]);
+	if(subvolArr.length>0){
+		surfaceClassElement.setAttribute(XMLTags.SubVolume1RefAttrTag, subvolArr[0].getName());
+	}
+	if(subvolArr.length>1){
+		surfaceClassElement.setAttribute(XMLTags.SubVolume2RefAttrTag, subvolArr[1].getName());
+	}
+
+	//If keyFlag is on print the Keyvalue
+	if (param.getKey() !=null && this.printKeysFlag) {
+		surfaceClassElement.setAttribute(XMLTags.KeyValueAttrTag, param.getKey().toString());
+	}
+	
+	return surfaceClassElement;
 }
 
 

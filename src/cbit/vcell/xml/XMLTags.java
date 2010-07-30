@@ -354,6 +354,9 @@ public class XMLTags {
     public final static String OriginTag = "Origin";
     public final static String ImageTag = "Image";
     public final static String SubVolumeTag = "SubVolume";
+    public final static String SurfaceClassTag = "SurfaceClass";
+    public final static String SubVolume1RefAttrTag = "SubVolume1Ref";
+    public final static String SubVolume2RefAttrTag = "SubVolume2Ref";
     public final static String HandleAttrTag = "Handle";
     public final static String AnalyticExpressionTag = "AnalyticExpression";
     public final static String ImagePixelValueTag = "ImagePixelValue";

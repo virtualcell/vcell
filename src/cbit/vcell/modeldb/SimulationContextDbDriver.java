@@ -1,5 +1,6 @@
 package cbit.vcell.modeldb;
 import java.beans.PropertyVetoException;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -445,8 +446,11 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 //log.print(sql);
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
-			KeyValue subVolumeRef = new KeyValue(rset.getBigDecimal(structureMappingTable.subVolumeRef.toString()));
-			KeyValue structureRef = new KeyValue(rset.getBigDecimal(structureMappingTable.structRef.toString()));			
+			BigDecimal subvolumeRefBigDecimal = rset.getBigDecimal(structureMappingTable.subVolumeRef.toString());
+			KeyValue subVolumeRef = (subvolumeRefBigDecimal==null?null:new KeyValue(subvolumeRefBigDecimal));
+			BigDecimal surfaceClassRefBigDecimal = rset.getBigDecimal(structureMappingTable.surfaceClassRef.toString());
+			KeyValue surfaceClassRef = (surfaceClassRefBigDecimal==null?null:new KeyValue(surfaceClassRefBigDecimal));
+			KeyValue structureRef = new KeyValue(rset.getBigDecimal(structureMappingTable.structRef.toString()));
 
 			//
 			// lookup structure and subVolume from SimulationContext by their keys
@@ -463,25 +467,24 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					break;
 				}
 			}
-			SubVolume theSubVolume = null;
-			SubVolume subVolumes[] = simContext.getGeometry().getGeometrySpec().getSubVolumes();
-			for (int i=0;i<subVolumes.length;i++){
-				if (subVolumes[i].getKey().compareEqual(subVolumeRef)){
-					theSubVolume = subVolumes[i];
-					break;
-				}
-			}
 			if (theStructure == null) {
 				throw new DataAccessException("Can't match structure and subvolume");
 			}
-			
-			if (theSubVolume == null) {
-				log.alert("Can't match structure and subvolume, inserting Kludge and let reference resolver fix it later ...<<<<<<BAD>>>>>");
-				theSubVolume = geomDB.getSubVolume(dbc, con,subVolumeRef);
-				if (theSubVolume == null){
-					throw new DataAccessException("Can't match structure and subvolume, 'even with subvolume fix'");
+			GeometryClass theGeometryClass = null;
+			KeyValue geometryClassKey = (subVolumeRef==null?surfaceClassRef:subVolumeRef);
+			if(geometryClassKey != null){
+				GeometryClass[] geometryClasses = simContext.getGeometry().getGeometryClasses();
+				for (int i=0;i<geometryClasses.length;i++){
+					if (geometryClasses[i].getKey().compareEqual(geometryClassKey)){
+						theGeometryClass = geometryClasses[i];
+						break;
+					}
+				}
+				if (theGeometryClass == null) {
+					throw new DataAccessException("Can't find Geometryclass");
 				}
 			}
+			
 			Expression sizeExpression = null;
 			String sizeExpressionS = rset.getString(StructureMappingTable.table.sizeExp.getUnqualifiedColName());
 			if(!rset.wasNull()){
@@ -499,14 +502,14 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 			} catch (Exception e1) {
 				throw new DataAccessException("SimulationContextDbDriver.assignStructureMappingSQL : Couldn't set size expression '"+sizeExpressionS+"'for Structure "+theStructure.getName());
 			}
+			try {
+				sm.setGeometryClass(theGeometryClass);
+			}catch (PropertyVetoException e){
+				log.exception(e);
+				throw new DataAccessException(e.getMessage());
+			}
 			if (sm instanceof FeatureMapping) {
 				FeatureMapping fm = (FeatureMapping) sm;
-				try {
-					fm.setGeometryClass(theSubVolume);
-				}catch (PropertyVetoException e){
-					log.exception(e);
-					throw new DataAccessException(e.getMessage());
-				}
 				String boundaryTypeXmString = rset.getString(structureMappingTable.boundaryTypeXm.toString());
 				if (!rset.wasNull()){
 					fm.setBoundaryConditionTypeXm(new BoundaryConditionType(boundaryTypeXmString));
@@ -1059,25 +1062,13 @@ private void insertStructureMappingsSQL(InsertHashtable hash, Connection con, Ke
 		// check for incomplete StructureMappings, this allows partially mapped SimContext to be saved without Exceptions.
 		// it's ok to have missing StructureMappings in the database, assignStructureMappingsSQL() is tolerant of this.
 		//
-		cbit.vcell.geometry.SubVolume mappedSubVolume = null;
-		boolean isResolved = false;
-		if (structureMapping instanceof FeatureMapping){
-			mappedSubVolume = (SubVolume)((FeatureMapping)structureMapping).getGeometryClass();
-			//isResolved = ((FeatureMapping)structureMapping).getResolved();
-		}else if (structureMapping instanceof MembraneMapping){
-			FeatureMapping insideFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(((MembraneMapping)structureMapping).getMembrane().getInsideFeature());
-			mappedSubVolume = (SubVolume)insideFeatureMapping.getGeometryClass();
-			//isResolved = insideFeatureMapping.getResolved();
-		}
-		if (mappedSubVolume!=null){
-			//
-			KeyValue newStuctureMappingKey = getNewKey(con);
-			//
-			sql = 	"INSERT INTO " + structureMappingTable.getTableName() + " " + structureMappingTable.getSQLColumnList() +
-					" VALUES " + structureMappingTable.getSQLValueList(hash, newStuctureMappingKey, simContextKey, structureMapping, mappedSubVolume, isResolved);
+		//
+		KeyValue newStuctureMappingKey = getNewKey(con);
+		//
+		sql = 	"INSERT INTO " + structureMappingTable.getTableName() + " " + structureMappingTable.getSQLColumnList() +
+				" VALUES " + structureMappingTable.getSQLValueList(hash, newStuctureMappingKey, simContextKey, structureMapping);
 //System.out.println(sql);
-			updateCleanSQL(con, sql);
-		}
+		updateCleanSQL(con, sql);
 	}
 }
 

@@ -4,10 +4,12 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import java.beans.PropertyVetoException;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
@@ -38,6 +40,7 @@ import cbit.vcell.geometry.Filament;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
@@ -349,6 +352,19 @@ private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, Resu
 		getFilaments(con,geom);
 	}
 	
+	//
+	// get SurfaceClasses for this geometry
+	//
+	SurfaceClass[] surfaceClasses = getSurfaceClassesFromGeometry(dbc, con, geom.getVersion().getVersionKey());
+	if (surfaceClasses!=null){
+		try {
+			geom.getGeometrySurfaceDescription().setSurfaceClasses(surfaceClasses);
+		}catch (java.beans.PropertyVetoException e){
+			log.exception(e);
+			throw new DataAccessException(e.getMessage());
+		}
+	}
+
 	return geom;
 }
 
@@ -488,47 +504,6 @@ private VCPixelClass getPixelClass(QueryHashtable dbc, Connection con, KeyValue 
 	}
 }
 
-
-/**
- * getModel method comment.
- */
-public SubVolume getSubVolume(QueryHashtable dbc, Connection con, KeyValue svKey) throws SQLException, DataAccessException, ObjectNotFoundException {
-	//
-	// try to get the subvolume from the object cache
-	//
-	SubVolume sv = (SubVolume)dbc.get(svKey);
-	if (sv!=null){
-		return sv;
-	}
-	
-	//log.print("GeomDbDriver.getSubVolume(id="+svKey+")");
-	String sql;
-	
-	sql = 	" SELECT * " + 
-			" FROM " + subVolumeTable.getTableName() +
-			" WHERE " + subVolumeTable.id + " = " + svKey;
-
-//System.out.println(sql);
-	
-	//Connection con = conFact.getConnection();
-	Statement stmt = con.createStatement();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-	
-//showMetaData(rset);
-		SubVolume subVolume = null;
-		if (rset.next()) {			
-			subVolume = getSubVolume(dbc, con,rset);
-		}
-		return subVolume;
-	}catch (ExpressionException e){
-		throw new DataAccessException(e.getMessage());
-	}finally{
-		stmt.close(); // Release resources include resultset		
-	}
-}
-
-
 /**
  * getModel method comment.
  */
@@ -562,6 +537,52 @@ private SubVolume getSubVolume(QueryHashtable dbc, Connection con, ResultSet rse
 	//
 	dbc.put(svKey,subVolume);
 	return subVolume;
+}
+
+private SurfaceClass getSurfaceClass(QueryHashtable dbc, Connection con, ResultSet rset) throws SQLException, DataAccessException, ExpressionException {
+
+	//showMetaData(rset);
+
+	//
+	// if already in cache, then return that instance instead of a new one
+	//
+	KeyValue surfaceClassKey = new KeyValue(rset.getBigDecimal(SurfaceClassTable.table.id.toString()));
+	SurfaceClass surfaceClass = (SurfaceClass) dbc.get(surfaceClassKey);
+	if (surfaceClass != null) {
+		return surfaceClass;
+	}
+
+	String surfaceClassName = rset.getString(SurfaceClassTable.table.name.toString());
+	BigDecimal subVolumeRef1 = rset.getBigDecimal(SurfaceClassTable.table.subVolumeRef1.toString());
+	BigDecimal subVolumeRef2 = rset.getBigDecimal(SurfaceClassTable.table.subVolumeRef2.toString());
+	KeyValue subVolumeref1Key = null;
+	KeyValue subVolumeref2Key = null;
+	HashSet<SubVolume> subVolumeSet = new HashSet<SubVolume>();
+	if(subVolumeRef1 != null){
+		subVolumeref1Key = new KeyValue(subVolumeRef1);
+		SubVolume subvolume = (SubVolume)dbc.get(subVolumeref1Key);
+		if(subvolume != null){
+			subVolumeSet.add(subvolume);
+		}else{
+			throw new DataAccessException("Subvolume key="+subVolumeref1Key+" not found in cache");
+		}
+	}
+	if(subVolumeRef2 != null){
+		subVolumeref2Key = new KeyValue(subVolumeRef2);
+		SubVolume subvolume = (SubVolume)dbc.get(subVolumeref2Key);
+		if(subvolume != null){
+			subVolumeSet.add(subvolume);
+		}else{
+			throw new DataAccessException("Subvolume key="+subVolumeref1Key+" not found in cache");
+		}
+	}
+
+	SurfaceClass surfaceclass = new SurfaceClass(subVolumeSet, surfaceClassKey, surfaceClassName);
+	//
+	// put newly read SumVolume into object cache
+	//
+	dbc.put(surfaceClassKey,surfaceclass);
+	return surfaceclass;
 }
 
 
@@ -607,6 +628,41 @@ private SubVolume[] getSubVolumesFromGeometry(QueryHashtable dbc, Connection con
 	}
 }
 
+private SurfaceClass[] getSurfaceClassesFromGeometry(QueryHashtable dbc, Connection con, KeyValue geomKey) throws SQLException, DataAccessException {
+	//log.print("GeomDbDriver.getSubVolumesFromGeometry(geometryKey="+geomKey+")");
+	String sql;
+	
+	sql = 	" SELECT * " +
+			" FROM " + SurfaceClassTable.table.getTableName() +
+			" WHERE " + SurfaceClassTable.table.geometryRef + " = " + geomKey;
+
+//System.out.println(sql);
+	
+	Statement stmt = con.createStatement();
+	Vector<SurfaceClass> surfaceClassV = new Vector<SurfaceClass>();
+	try {
+		ResultSet rset = stmt.executeQuery(sql);
+	
+//showMetaData(rset);
+		SurfaceClass surfaceClass = null;
+		while (rset.next()) {
+			
+			surfaceClass = getSurfaceClass(dbc, con,rset);
+
+			surfaceClassV.addElement(surfaceClass);
+			
+		}
+		if (surfaceClassV.size()>0){
+			return surfaceClassV.toArray(new SurfaceClass[0]);
+		}else{
+			return null;
+		}
+	}catch (ExpressionException e){
+		throw new DataAccessException(e.getMessage());
+	}finally{
+		stmt.close(); // Release resources include resultset		
+	}
+}
 
 /**
  * Insert the method's description here.
@@ -910,8 +966,8 @@ private void insertGeometry(InsertHashtable hash, QueryHashtable dbc, Connection
 		}
 	}
 	
-	insertSubVolumeSQL(hash, con, geom, newVersion.getVersionKey());
-
+	insertSubVolumesSQL(hash, con, geom, newVersion.getVersionKey());
+	insertSurfaceClassesSQL(hash, con, geom, newVersion.getVersionKey());
 
 	if (geom.getDimension()>0){
 		insertGeometrySurfaceDescriptionSQL(hash, con, geom, newVersion.getVersionKey());
@@ -920,6 +976,21 @@ private void insertGeometry(InsertHashtable hash, QueryHashtable dbc, Connection
 	}
 }
 
+private void insertSurfaceClassesSQL(InsertHashtable hash, Connection con, Geometry geom,KeyValue geomKey) throws SQLException, cbit.image.ImageException, DataAccessException, ObjectNotFoundException {
+	String sql;
+	SurfaceClass surfaceClasses[] = geom.getGeometrySurfaceDescription().getSurfaceClasses();
+	for (int i=0;i<surfaceClasses.length;i++){
+		SurfaceClass surfaceClass = surfaceClasses[i];
+		if (hash.getDatabaseKey(surfaceClass)==null){
+			KeyValue newSurfaceClassKey = getNewKey(con);
+			sql = "INSERT INTO " + SurfaceClassTable.table.getTableName() + " " + SurfaceClassTable.table.getSQLColumnList() + 
+				" VALUES " + SurfaceClassTable.table.getSQLValueList(hash,newSurfaceClassKey, geom, surfaceClass,geomKey);
+	//System.out.println(sql);
+			updateCleanSQL(con,sql);
+			hash.put(surfaceClass,newSurfaceClassKey);
+		}
+	}
+}
 
 /**
  * This method was created in VisualAge.
@@ -1078,7 +1149,7 @@ private void insertPixelClassSQL(Connection con, KeyValue key, KeyValue imageKey
  * @param userid java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-private void insertSubVolumeSQL(InsertHashtable hash, Connection con, Geometry geom,KeyValue geomKey) throws SQLException, cbit.image.ImageException, DataAccessException, ObjectNotFoundException {
+private void insertSubVolumesSQL(InsertHashtable hash, Connection con, Geometry geom,KeyValue geomKey) throws SQLException, cbit.image.ImageException, DataAccessException, ObjectNotFoundException {
 	String sql;
 	SubVolume subVolumes[] = geom.getGeometrySpec().getSubVolumes();
 	int ordinal = 0;

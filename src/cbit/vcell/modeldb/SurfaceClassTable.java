@@ -1,7 +1,20 @@
 package cbit.vcell.modeldb;
 
+import java.util.Iterator;
+import java.util.Set;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.ImageSubVolume;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 
 public class SurfaceClassTable extends Table {
 	private static final String TABLE_NAME = "vc_surfaceclass";
@@ -21,5 +34,38 @@ public class SurfaceClassTable extends Table {
 private SurfaceClassTable() {
 	super(TABLE_NAME);
 	addFields(fields);
+}
+
+public String getSQLValueList(InsertHashtable hash, KeyValue key, Geometry geom, SurfaceClass surfaceClass,KeyValue geomKey) throws DataAccessException {
+
+	StringBuffer buffer = new StringBuffer();
+	buffer.append("(");
+	buffer.append(key + ",");
+	buffer.append("'" + surfaceClass.getName() + "',");
+	buffer.append(geomKey + ",");
+	Set<SubVolume> subvolumeSet = surfaceClass.getAdjacentSubvolumes();
+	Iterator<SubVolume> subvolIter = subvolumeSet.iterator();
+	KeyValue subVolRef1 = null;
+	KeyValue subVolRef2 = null;
+	if(subvolIter.hasNext()){
+		SubVolume subVolume = subvolIter.next();
+		subVolRef1 = hash.getDatabaseKey(subVolume);
+		if(subVolRef1 == null){
+			subVolRef1= subVolume.getKey();
+		}
+	}
+	if(subvolIter.hasNext()){
+		SubVolume subVolume = subvolIter.next();
+		subVolRef2 = hash.getDatabaseKey(subVolume);
+		if(subVolRef2 == null){
+			subVolRef2= subVolume.getKey();
+		}
+	}
+	buffer.append(subVolRef1 + ",");
+	buffer.append(subVolRef2);
+
+	buffer.append(")");
+	
+	return buffer.toString();
 }
 }

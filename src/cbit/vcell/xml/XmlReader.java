@@ -1,9 +1,11 @@
 package cbit.vcell.xml;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import org.jdom.Attribute;
@@ -62,6 +64,7 @@ import cbit.vcell.geometry.Line;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.Spline;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
@@ -1578,6 +1581,20 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException was generated when ading the subvolumes to the Geometry " + name+" : "+e.getMessage());
+	}
+	if(newgeometry.getDimension()>0){
+		//Add SurfaceClasses
+		List<Element> surfaceClassChildren = param.getChildren(XMLTags.SurfaceClassTag, vcNamespace);
+		SurfaceClass[] newSurfaceClassArr = new SurfaceClass[surfaceClassChildren.size()];
+		for (int i=0 ; i<surfaceClassChildren.size() ; i++) {
+			newSurfaceClassArr[i] = getSurfaceClass(surfaceClassChildren.get(i),newgeometry);
+		}
+		try {
+			newgeometry.getGeometrySurfaceDescription().setSurfaceClasses(newSurfaceClassArr);
+		} catch (java.beans.PropertyVetoException e) {
+			e.printStackTrace();
+			throw new XmlParseException("A PropertyVetoException was generated when ading the subvolumes to the Geometry " + name+" : "+e.getMessage());
+		}
 	}
 	//read Filaments (if any)
 	Iterator<Element> iterator = param.getChildren(XMLTags.FilamentTag, vcNamespace).iterator();
@@ -4680,7 +4697,34 @@ private SubVolume getSubVolume(Element param) throws XmlParseException{
 	return newsubvolume;
 }
 
-
+private SurfaceClass getSurfaceClass(Element param,Geometry geom) throws XmlParseException{
+		
+	Set<SubVolume> surfaceClassSubVolumeSet = new HashSet<SubVolume>();
+	KeyValue surfaceClassKey = null;
+	String surfaceClassName = null;
+	
+	surfaceClassName = unMangle( param.getAttributeValue(XMLTags.NameAttrTag));
+	String surfaceClassKeyStr = param.getAttributeValue(XMLTags.KeyValueAttrTag);
+	surfaceClassKey = (surfaceClassKeyStr==null?null:new KeyValue(surfaceClassKeyStr));
+	String subVol1Ref = param.getAttributeValue(XMLTags.SubVolume1RefAttrTag);
+	String subVol2Ref = param.getAttributeValue(XMLTags.SubVolume2RefAttrTag);
+	if(subVol1Ref != null){
+		SubVolume subVolume = geom.getGeometrySpec().getSubVolume(subVol1Ref);
+		if(subVolume == null){
+			throw new XmlParseException("SurfaceClass missing subvolume '"+subVol1Ref+"'");
+		}
+		surfaceClassSubVolumeSet.add(subVolume);
+	}
+	if(subVol2Ref != null){
+		SubVolume subVolume = geom.getGeometrySpec().getSubVolume(subVol2Ref);
+		if(subVolume == null){
+			throw new XmlParseException("SurfaceClass missing subvolume '"+subVol2Ref+"'");
+		}
+		surfaceClassSubVolumeSet.add(subVolume);
+	}
+		
+	return new SurfaceClass(surfaceClassSubVolumeSet, surfaceClassKey, surfaceClassName);
+}
 /**
  * This method returns a TimeBounds object from a XML Element.
  * Creation date: (5/22/2001 11:41:04 AM)
