@@ -10,11 +10,13 @@ import java.util.Set;
 
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.KeyValue;
 
 public class SurfaceClass implements GeometryClass {
 	private Set<SubVolume> subvolumes = null;
 	private String name = null;
 	private transient PropertyChangeSupport propertyChangeSupport = null;
+	private KeyValue surfaceClassKey;
 	
 	private transient PropertyChangeListener listener = new PropertyChangeListener() {
 
@@ -25,22 +27,26 @@ public class SurfaceClass implements GeometryClass {
 		}
 	};
 
-	public SurfaceClass(Set<SubVolume> arg_subvolumes) {
+	public SurfaceClass(Set<SubVolume> arg_subvolumes,KeyValue surfaceClassKey,String name) {
 		super();
 		if (arg_subvolumes.size() != 2) {
 			throw new RuntimeException("SurfaceClass should have only 2 adjacent subvolumes");
 		}
 		subvolumes = new HashSet<SubVolume>();
 		subvolumes.addAll(arg_subvolumes);
-		this.name = createName();
+		this.name = name;
 		for (SubVolume sv : subvolumes) {
 			if (sv == null) {
 				throw new RuntimeException("SurfaceClass has a null adjacent subvolume");
 			}
 			sv.addPropertyChangeListener(listener);
 		}
+		this.surfaceClassKey = surfaceClassKey;
 	}
 	
+	public KeyValue getKey(){
+		return this.surfaceClassKey;
+	}
 	private String createName() {
 		Iterator<SubVolume> iter = subvolumes.iterator();
 		return createName(iter.next().getName(), iter.next().getName());

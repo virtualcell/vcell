@@ -1084,4 +1084,27 @@ public static void sendErrorReport(Throwable exception) throws RemoteException {
 		throw new RemoteException(e.getMessage());
 	}
 }
+
+//public static boolean isEqualOrNullInstance(Matchable[] oldMatchables,Matchable[] newMatchables){
+//	if(oldMatchables == null && newMatchables == null){
+//		return true;
+//	}
+//	boolean bCheckSucceeded = true;
+//	if(Compare.isEqualOrNull(oldMatchables, newMatchables)){
+//		for (int i = 0; i < oldMatchables.length; i++) {
+//			boolean bFoundInstance = false;
+//			for (int j = 0; j < newMatchables.length; j++) {
+//				if(oldMatchables[i] == newMatchables[j]){
+//					bFoundInstance = true;
+//					break;
+//				}
+//			}
+//			if(!bFoundInstance){
+//				bCheckSucceeded = false;
+//				break;
+//			}
+//		}
+//	}
+//	return bCheckSucceeded;
+//}
 }

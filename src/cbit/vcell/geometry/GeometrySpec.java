@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
@@ -1309,6 +1310,10 @@ public void setImage(VCImage image) throws PropertyVetoException {
 			if (getSubVolumes()!=null && getSubVolumes().length>i && getSubVolumes().length == vcPixelClasses.length){
 				isv.setName(getSubVolumes()[i].getName());
 				isv.setHandle(getSubVolumes()[i].getHandle());
+				if(isv.compareEqual(getSubVolumes()[i])){
+					isv = (ImageSubVolume)getSubVolumes()[i];
+					isv.setPixelClass(vcPixelClasses[i]);
+				}
 			}else{
 				isv.setHandle(svCount);
 			}
@@ -1353,7 +1358,6 @@ public void setOrigin(Origin aOrigin) {
 	return;
 }
 
-
 /**
  * Sets the subVolumes property (cbit.vcell.geometry.SubVolume[]) value.
  * @param subVolumes The new value for the property.
@@ -1362,6 +1366,10 @@ public void setOrigin(Origin aOrigin) {
  */
 public void setSubVolumes(cbit.vcell.geometry.SubVolume[] subVolumes) throws java.beans.PropertyVetoException {
 	cbit.vcell.geometry.SubVolume[] oldSubVolumes = fieldSubVolumes;
+	//Check instance change
+//	if(!BeanUtils.checkFullyEqual(oldSubVolumes, subVolumes)){
+//		System.out.println("GeometrySpec.setSubVolumes has different instances of same old and new subvolumes");
+//	}
 	fireVetoableChange("subVolumes", oldSubVolumes, subVolumes);
 	fieldSubVolumes = subVolumes;
 	for (int i=0;i<oldSubVolumes.length;i++){

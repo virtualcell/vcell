@@ -35,16 +35,6 @@ public AnalyticSubVolume(KeyValue key, String subDomainName, Expression exp, int
 	setExpression(exp);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param subDomainName java.lang.String
- */
-public AnalyticSubVolume(String subDomainName) throws ExpressionException {
-	this(null,subDomainName,new Expression(1.0),-1);
-}
-
-
 /**
  * MathDescription constructor comment.
  */

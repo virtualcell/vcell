@@ -60,6 +60,12 @@ public VCPixelClass getPixelClass() {
 	return vcPixelClass;
 }
 
+void setPixelClass(VCPixelClass vcPixelClass){
+	//During incremental saves the vcImage is saved first and populated with keys
+	//and we want to replace the geometry's unsaved image with the saved image from the database
+	//and we want to point to the right (new) pixelClasses (because pixelclasses have db keys).
+	this.vcPixelClass = vcPixelClass;
+}
 
 /**
  * This method was created in VisualAge.

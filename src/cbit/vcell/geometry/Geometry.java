@@ -64,22 +64,6 @@ public Geometry(Version aVersion, VCImage aVCImage) {
 	fieldGeometrySurfaceDescription = new GeometrySurfaceDescription(this);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param name java.lang.String
- */
-public Geometry(Geometry geometry) {
-	this.version = geometry.version;
-	this.fieldName = geometry.fieldName;
-	this.fieldDescription = geometry.fieldDescription;
-	fieldGeometrySpec = new GeometrySpec(geometry.getGeometrySpec());
-	if (geometry.getGeometrySurfaceDescription()!=null){
-		fieldGeometrySurfaceDescription = new GeometrySurfaceDescription(this,geometry.getGeometrySurfaceDescription());
-	}
-}
-
-
 /**
  * This method was created in VisualAge.
  * @param name java.lang.String

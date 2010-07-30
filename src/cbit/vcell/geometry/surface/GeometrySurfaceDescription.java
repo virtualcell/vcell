@@ -1,9 +1,12 @@
 package cbit.vcell.geometry.surface;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
@@ -201,7 +204,7 @@ public GeometricRegion[] getGeometricRegions() {
 
 public SurfaceClass[] getSurfaceClasses() {
 	if (fieldSurfaceClasses==null && fieldGeometricRegions!=null){
-		setSurfaceClasses(computeSurfaceClasses(fieldGeometricRegions));
+		refreshSurfaceClasses();
 	}
 	return fieldSurfaceClasses;
 }
@@ -248,11 +251,15 @@ public SurfaceClass getSurfaceClass(SubVolume subvolume1, SubVolume subvolume2) 
 	return null;
 }
 
-private SurfaceClass[] computeSurfaceClasses(GeometricRegion[] geometricRegions) {
+private void refreshSurfaceClasses() {
+	if(getGeometricRegions() == null){
+		return;
+	}
+	boolean bChanged = false;
 	ArrayList<SurfaceClass> surfaceClasses = new ArrayList<SurfaceClass>();
-	for (int i = 0; i < geometricRegions.length; i++) {
-		if (geometricRegions[i] instanceof SurfaceGeometricRegion){
-			SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)geometricRegions[i];
+	for (int i = 0; i < getGeometricRegions().length; i++) {
+		if (getGeometricRegions()[i] instanceof SurfaceGeometricRegion){
+			SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)getGeometricRegions()[i];
 			GeometricRegion[] adjacentRegions = surfaceRegion.getAdjacentGeometricRegions();
 			if (adjacentRegions.length!=2){
 				throw new RuntimeException("found a Surface Region with "+adjacentRegions.length+" adjacent regions, expected 2");
@@ -265,7 +272,11 @@ private SurfaceClass[] computeSurfaceClasses(GeometricRegion[] geometricRegions)
 				Set<SubVolume> subvolumes = new HashSet<SubVolume>();
 				subvolumes.add(subVolume0);
 				subvolumes.add(subVolume1);
-				SurfaceClass surfaceClass = new SurfaceClass(subvolumes);
+				SurfaceClass surfaceClass = (fieldSurfaceClasses==null?null:getSurfaceClass(subVolume0, subVolume1));
+				if(surfaceClass == null){
+					bChanged = true;
+					surfaceClass = new SurfaceClass(subvolumes,null,SurfaceClass.createName(subVolume0.getName(), subVolume1.getName()));
+				}
 				
 				boolean bFound = false;
 				for (int j = 0; j < surfaceClasses.size(); j++) {
@@ -281,7 +292,14 @@ private SurfaceClass[] computeSurfaceClasses(GeometricRegion[] geometricRegions)
 			}
 		}
 	}
-	return surfaceClasses.toArray(new SurfaceClass[surfaceClasses.size()]);
+	if(bChanged){
+		try{
+			setSurfaceClasses(surfaceClasses.toArray(new SurfaceClass[surfaceClasses.size()]));
+		}catch(PropertyVetoException e){
+			e.printStackTrace();
+			throw new RuntimeException("SurfaceClass refresh error: "+e.getMessage(), e);
+		}
+	}
 }
 
 
@@ -398,15 +416,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 	}
 	if (evt.getSource()==this && evt.getPropertyName().equals("geometricRegions")){
-		GeometricRegion[] oldValue = (GeometricRegion[])evt.getOldValue();
-		GeometricRegion[] newValue = (GeometricRegion[])evt.getNewValue();
-		if (oldValue==null || newValue==null || !Compare.isEqual(oldValue,newValue)){
-			if (newValue==null){
-				setSurfaceClasses(null);
-			}else{
-				setSurfaceClasses(computeSurfaceClasses((GeometricRegion[])newValue));
-			}
-		}
+		refreshSurfaceClasses();
 	}
 	if (evt.getSource() == getGeometry().getGeometrySpec() && (evt.getPropertyName().equals("extent") || evt.getPropertyName().equals("origin"))){
 		org.vcell.util.Matchable oldExtentOrOrigin = (org.vcell.util.Matchable)evt.getOldValue();
@@ -579,12 +589,25 @@ public void setGeometricRegions(GeometricRegion[] geometricRegions) throws java.
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getGeometricRegions
  */
-private void setSurfaceClasses(SurfaceClass[] surfaceClasses) {
+public void setSurfaceClasses(SurfaceClass[] surfaceClasses) throws PropertyVetoException{
 	if (fieldSurfaceClasses == surfaceClasses) {
 		return;
 	}
-//	cbit.vcell.geometry.surface.GeometricRegion[] oldValue = fieldGeometricRegions;
 	SurfaceClass[] oldValue = fieldSurfaceClasses;
+//	if(oldValue != null && surfaceClasses != null && oldValue.length == surfaceClasses.length){
+//		HashSet<SubVolume> oldSurfClassSubVolumeHash = new HashSet<SubVolume>();
+//		HashSet<SubVolume> newSurfClassSubVolumeHash = new HashSet<SubVolume>();
+//		for (int i = 0; i < oldValue.length; i++) {
+//			oldSurfClassSubVolumeHash.addAll(oldValue[i].getAdjacentSubvolumes());
+//			newSurfClassSubVolumeHash.addAll(surfaceClasses[i].getAdjacentSubvolumes());
+//		}
+//		Matchable[] oldMatchables = oldSurfClassSubVolumeHash.toArray(new Matchable[0]);
+//		Matchable[] newMatchables = newSurfClassSubVolumeHash.toArray(new Matchable[0]);
+//		if(!BeanUtils.checkFullyEqual(oldMatchables, newMatchables)){
+//			System.out.println("GeometrySurfaceDescription.setSurfaceclasses has different instances of same old and new subvolumes");
+//		}
+//	}
+	fireVetoableChange("surfaceClasses", oldValue, surfaceClasses);
 	fieldSurfaceClasses = surfaceClasses;
 	firePropertyChange("surfaceClasses", oldValue, surfaceClasses);
 }
@@ -700,7 +723,7 @@ public void updateAll() throws GeometryException, ImageException, ExpressionExce
 	// identify classes of surfaces within this geometry with same adjacent subVolumes.
 	//
 	if (getSurfaceClasses()==null || bChanged){
-		setSurfaceClasses(computeSurfaceClasses(getGeometricRegions()));
+		refreshSurfaceClasses();
 	}
 }
 
@@ -732,6 +755,16 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		Double cutoffFrequency = (Double)evt.getNewValue();
 		if (cutoffFrequency.doubleValue() <= 0.0 || cutoffFrequency.doubleValue() >= 2.0){
 			throw new java.beans.PropertyVetoException("filterCutoffFrequency ("+cutoffFrequency+") must be between [0,2]",evt);
+		}
+	}
+	if(evt.getSource()==this && evt.getPropertyName().equals("surfaceClasses")){
+		List<SubVolume> geomsubVolumeList = Arrays.asList(getGeometry().getGeometrySpec().getSubVolumes());
+		SurfaceClass[] newSurfaceClassArr = (SurfaceClass[])evt.getNewValue();
+		for (int i = 0;newSurfaceClassArr != null && i < newSurfaceClassArr.length; i++) {
+			Set<SubVolume> subVolumeSet = newSurfaceClassArr[i].getAdjacentSubvolumes();
+			if(!geomsubVolumeList.containsAll(subVolumeSet)){
+				throw new java.beans.PropertyVetoException("Subvolumes not found in geometry",evt);
+			}
 		}
 	}
 }
