@@ -977,13 +977,15 @@ private void insertGeometry(InsertHashtable hash, QueryHashtable dbc, Connection
 }
 
 private void insertSurfaceClassesSQL(InsertHashtable hash, Connection con, Geometry geom,KeyValue geomKey) throws SQLException, cbit.image.ImageException, DataAccessException, ObjectNotFoundException {
-	String sql;
+	if (geom.getGeometrySurfaceDescription() == null) {
+		return;
+	}
 	SurfaceClass surfaceClasses[] = geom.getGeometrySurfaceDescription().getSurfaceClasses();
 	for (int i=0;i<surfaceClasses.length;i++){
 		SurfaceClass surfaceClass = surfaceClasses[i];
 		if (hash.getDatabaseKey(surfaceClass)==null){
 			KeyValue newSurfaceClassKey = getNewKey(con);
-			sql = "INSERT INTO " + SurfaceClassTable.table.getTableName() + " " + SurfaceClassTable.table.getSQLColumnList() + 
+			String sql = "INSERT INTO " + SurfaceClassTable.table.getTableName() + " " + SurfaceClassTable.table.getSQLColumnList() + 
 				" VALUES " + SurfaceClassTable.table.getSQLValueList(hash,newSurfaceClassKey, geom, surfaceClass,geomKey);
 	//System.out.println(sql);
 			updateCleanSQL(con,sql);
