@@ -174,7 +174,7 @@ public class DatabaseSearchPanel extends JPanel {
 		endDatePanel = new DatePanel();
 		advancedOptions.add(endDatePanel);
 		
-		searchButton = new JButton("Search " + Search_Doc_Type[docType] + "s Now");		
+		searchButton = new JButton("Search " + Search_Doc_Type[docType] + "s");		
 		searchButton.setActionCommand(SEARCH_Command);
 		cancelButton = new JButton("Show All");
 		cancelButton.setActionCommand(SEARCH_SHOW_ALL_COMMAND);
@@ -186,6 +186,7 @@ public class DatabaseSearchPanel extends JPanel {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
+		gbc.insets = new Insets(0, 5, 0, 0);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		mainPanel.add(nameLabel, gbc);
 		
@@ -208,7 +209,7 @@ public class DatabaseSearchPanel extends JPanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 1;
-		gbc.insets = new Insets(2, 0, 0, 0);
+		gbc.insets = new Insets(2, 5, 0, 0);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		mainPanel.add(dateLabel, gbc);
 
@@ -232,13 +233,14 @@ public class DatabaseSearchPanel extends JPanel {
 		
 		// 2
 		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
+		gbc.gridx = 0;
 		gbc.gridy = 2;
-		gbc.insets = new Insets(10, 0, 0, 0);
+		gbc.gridwidth = 2;
+		gbc.insets = new Insets(10, 5, 0, 0);
 		mainPanel.add(searchButton, gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
+		gbc.gridx = 2;
 		gbc.gridy = 2;
 		gbc.insets = new Insets(10, 5, 0, 0);
 		mainPanel.add(cancelButton, gbc);
