@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
@@ -83,7 +84,7 @@ public class SurfaceClass implements GeometryClass {
 	public boolean compareEqual(Matchable obj) {
 		if (obj instanceof SurfaceClass){
 			SurfaceClass sc = (SurfaceClass)obj;
-			if (subvolumes.containsAll(sc.subvolumes) && sc.subvolumes.containsAll(subvolumes)) {
+			if(Compare.isEqualOrNull(sc.subvolumes.toArray(new SubVolume[0]), subvolumes.toArray(new SubVolume[0]))){
 				return true;
 			}
 		}
