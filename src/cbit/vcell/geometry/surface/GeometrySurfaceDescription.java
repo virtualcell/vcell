@@ -155,16 +155,19 @@ public boolean compareEqual(Matchable obj) {
 	}
 }
 
-public SurfaceClass[] getAdjacentSurfaceClasses(SubVolume subVolume) {
-	SurfaceClass[] surfaceClasses = getSurfaceClasses();
-	ArrayList<SurfaceClass> adjacentSurfaceClassList = new ArrayList<SurfaceClass>();
-	for (int i = 0; i < surfaceClasses.length; i++) {
-		if (surfaceClasses[i].isAdjacentTo(subVolume)){
-			adjacentSurfaceClassList.add(surfaceClasses[i]);
-		}
-	}
-	return adjacentSurfaceClassList.toArray(new SurfaceClass[adjacentSurfaceClassList.size()]);
-}
+//public SurfaceClass[] getAdjacentSurfaceClasses(SubVolume subVolume) {
+//	SurfaceClass[] surfaceClasses = getSurfaceClasses();
+//	if(surfaceClasses == null){
+//		return null;
+//	}
+//	ArrayList<SurfaceClass> adjacentSurfaceClassList = new ArrayList<SurfaceClass>();
+//	for (int i = 0; i < surfaceClasses.length; i++) {
+//		if (surfaceClasses[i].isAdjacentTo(subVolume)){
+//			adjacentSurfaceClassList.add(surfaceClasses[i]);
+//		}
+//	}
+//	return adjacentSurfaceClassList.toArray(new SurfaceClass[adjacentSurfaceClassList.size()]);
+//}
 
 
 /**
@@ -243,6 +246,9 @@ public GeometryClass getGeometryClass(GeometricRegion geometricRegion){
 
 public SurfaceClass getSurfaceClass(SubVolume subvolume1, SubVolume subvolume2) {
 	SurfaceClass[] surfaceClasses = getSurfaceClasses();
+	if(surfaceClasses == null){
+		return null;
+	}
 	for (int i = 0; i < surfaceClasses.length; i++) {
 		if (surfaceClasses[i].isAdjacentTo(subvolume1) && surfaceClasses[i].isAdjacentTo(subvolume2)) {
 			return surfaceClasses[i];

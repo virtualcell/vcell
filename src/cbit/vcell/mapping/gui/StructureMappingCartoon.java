@@ -135,7 +135,7 @@ public void refreshAll() {
 	GeometrySurfaceDescription geometrySurfaceDescription = getGeometryContext().getGeometry().getGeometrySurfaceDescription();
 	if (geometrySurfaceDescription!=null){
 		SurfaceClass[] surfaceClasses = geometrySurfaceDescription.getSurfaceClasses();
-		for (int i=0;i<surfaceClasses.length;i++){
+		for (int i=0;surfaceClasses != null && i<surfaceClasses.length;i++){
 			GeometryClassLegendShape geometryClassLegendShape = new GeometryClassLegendShape(surfaceClasses[i],getGeometryContext().getGeometry(),this,10);
 			addShape(geometryClassLegendShape);
 			geometryShape.addChildShape(geometryClassLegendShape);

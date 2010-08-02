@@ -977,7 +977,8 @@ private void insertGeometry(InsertHashtable hash, QueryHashtable dbc, Connection
 }
 
 private void insertSurfaceClassesSQL(InsertHashtable hash, Connection con, Geometry geom,KeyValue geomKey) throws SQLException, cbit.image.ImageException, DataAccessException, ObjectNotFoundException {
-	if (geom.getGeometrySurfaceDescription() == null) {
+	if (geom.getGeometrySurfaceDescription() == null ||
+			geom.getGeometrySurfaceDescription().getSurfaceClasses() == null) {
 		return;
 	}
 	SurfaceClass surfaceClasses[] = geom.getGeometrySurfaceDescription().getSurfaceClasses();
