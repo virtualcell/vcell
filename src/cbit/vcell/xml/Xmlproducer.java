@@ -777,7 +777,9 @@ Element getXML(Geometry param) throws XmlParseException{
 	for (int i=0;i<param.getGeometrySpec().getSubVolumes().length;i++){
 		geometry.addContent( getXML(param.getGeometrySpec().getSubVolumes(i)) );
 	}
-	if(param.getDimension() > 0){
+	if(param.getDimension() > 0 &&
+			param.getGeometrySurfaceDescription() != null &&
+			param.getGeometrySurfaceDescription().getSurfaceClasses() != null){
 		//Add SurfaceClass elements 
 		for (int i=0;i<param.getGeometrySurfaceDescription().getSurfaceClasses().length;i++){
 			geometry.addContent( getXML(param.getGeometrySurfaceDescription().getSurfaceClasses()[i]) );
