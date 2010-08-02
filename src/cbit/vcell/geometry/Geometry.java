@@ -168,7 +168,7 @@ public GeometryClass[] getGeometryClasses() {
 			}
 		}
 		surfaceClasses = fieldGeometrySurfaceDescription.getSurfaceClasses();
-		for (int i = 0; i < surfaceClasses.length; i++) {
+		for (int i = 0;surfaceClasses != null &&  i < surfaceClasses.length; i++) {
 			gcList.add(surfaceClasses[i]);
 		}
 	}
