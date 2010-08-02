@@ -27,6 +27,8 @@ import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.AnnotatedFunction;
@@ -919,6 +921,16 @@ roundtripTimer += l2 - l1;
 					}
 					if (databaseGeometry!=null && !databaseGeometry.compareEqual(memoryGeometry)){
 						bMustSaveGeometry = true;
+					}
+					if(!bMustSaveGeometry && memoryGeometry.getDimension() > 0){
+						GeometrySurfaceDescription geomSurfDescr = memoryGeometry.getGeometrySurfaceDescription();
+						SurfaceClass[] surfClassArr = geomSurfDescr.getSurfaceClasses();
+						for (int j = 0; surfClassArr != null && j < surfClassArr.length; j++) {
+							if(surfClassArr[j].getKey() == null){
+								bMustSaveGeometry = true;
+								break;
+							}
+						}
 					}
 				}
 				if (bMustSaveGeometry){
