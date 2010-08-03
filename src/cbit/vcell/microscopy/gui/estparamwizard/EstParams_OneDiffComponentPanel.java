@@ -45,7 +45,7 @@ import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.ROIImagePanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
-import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_RoiForErrorPanel;
+import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
@@ -65,7 +65,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 	private FRAPSingleWorkspace frapWorkspace;
 	
 	private MultisourcePlotPane multisourcePlotPane;
-	private ChooseModel_RoiForErrorPanel roiPanel;
+	private DefineROI_RoiForErrorPanel roiPanel;
 	private Hashtable<AnalysisParameters, DataSource[]> allDataHash;
 	private double[][] currentEstimationResults = null; //a data structure used to store results according to the current params. 
 	
@@ -206,11 +206,11 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		panel.add(multisourcePlotPane, gridBagConstraints_2);
 	}
 
-	private ChooseModel_RoiForErrorPanel getROIPanel()
+	private DefineROI_RoiForErrorPanel getROIPanel()
 	{
 		if(roiPanel == null)
 		{
-			roiPanel = new ChooseModel_RoiForErrorPanel();
+			roiPanel = new DefineROI_RoiForErrorPanel();
 		}
 		return roiPanel;
 	}

@@ -72,15 +72,6 @@ public class NumericTableCellRenderer  extends DefaultTableCellRenderer {
 	    		}
 				setForeground(Color.black);
 			}
-			else
-			{
-				if (isSelected) {
-	    			setBackground(table.getSelectionBackground());
-	    		} else {
-	    			setBackground(table.getBackground());
-	    		}
-				setForeground(Color.black);
-			}
 		}
     	
         return this;

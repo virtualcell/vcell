@@ -128,28 +128,15 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 			gridBagConstraints1.insets = new Insets(0, 0, 0, 0);
 			gridBagConstraints1.gridx = 1;
 			gridBagConstraints1.gridy = 0;
-//			gridBagConstraints1.ipady = 0;
-//			gridBagConstraints1.ipadx = 0;
 			gridBagConstraints1.anchor = GridBagConstraints.WEST;
 			
 			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
 			gridBagConstraints2.gridx = 1;
 			gridBagConstraints2.gridy = 2;
-//			gridBagConstraints2.ipady = 0;
-//			gridBagConstraints2.ipadx = 0;
 			gridBagConstraints2.anchor = GridBagConstraints.WEST;
 					
-//			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
-//			gridBagConstraints3.gridwidth = 2;
-//			gridBagConstraints3.gridx = 19;
-//			gridBagConstraints3.gridy = 0;
-////			gridBagConstraints3.ipady = 0;
-////			gridBagConstraints3.ipadx = 0;
-//			gridBagConstraints3.anchor = GridBagConstraints.CENTER;
-			
 			modelPanel.add(getOneDiffComLabel(), gridBagConstraints1);
 			modelPanel.add(getTwoDiffComLabel(), gridBagConstraints2);
-//			modelPanel.add(getReacBindingLabel(), gridBagConstraints3);
 		}	
 		return modelPanel;
 	}

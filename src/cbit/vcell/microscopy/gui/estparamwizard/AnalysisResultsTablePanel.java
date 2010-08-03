@@ -30,6 +30,7 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel
     private JLabel modelLable;
     private HyperLinkLabel hypDetail;
     private JScrollPane scrTable;
+    private FRAPSingleWorkspace frapWorkspace;
 
     public AnalysisResultsTablePanel(AnalysisResultsPanel arg_parent/*may need to pass in frapstudy as parameter*/) 
     {
@@ -116,6 +117,10 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel
             	table.getTableHeader().setVisible(false);
             	table.setVisible(false);
             }
+            if(frapWorkspace != null)
+            {
+            	modelLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
+            }
             modelLable.setVisible(true);
         }
         parent.repaint();
@@ -140,8 +145,8 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel
 
     public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
 	{
+    	this.frapWorkspace = frapWorkspace;
 		anaTableModel.setFrapWorkspace(frapWorkspace);
-		modelLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
 	}
 }
 

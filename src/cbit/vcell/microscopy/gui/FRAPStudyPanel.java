@@ -66,6 +66,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.data.NewClientPDEDataContext;
+import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationModelInfo;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
@@ -81,6 +82,7 @@ import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.microscopy.FRAPData;
@@ -93,7 +95,7 @@ import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
 import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_ModelTypesDescriptor;
-import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_RoiForErrorDescriptor;
+import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BackgroundROIDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BleachedROIDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_CellROIDescriptor;
@@ -113,6 +115,7 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.MergedData;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VCData;
@@ -1552,9 +1555,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 		if (fStudy==null || fStudy.getBioModel()==null || fStudy.getBioModel().getSimulations()==null || fStudy.getBioModel().getSimulations().length < 1){
 			return;
-		}else{
-			sim = fStudy.getBioModel().getSimulations()[0];
 		}
+		
+		sim = fStudy.getBioModel().getSimulations()[0];
+		
 		FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
 		for (int i = 0; i < fieldDataIdentifierSpecs.length; i++) {
@@ -1612,34 +1616,28 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			//add sim
 			int jobIndex = 0;
 			SimulationJob simJob = new SimulationJob(sim,jobIndex,fieldDataIdentifierSpecs);
-							
-			VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
-			VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, VFRAP_DS_PREFIX);
-							
-			dataManager = new PDEDataManager(null,getLocalWorkspace().getVCDataManager(),vcDataId);
-			PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
+			SimulationContext localSC = fStudy.getBioModel().getSimulationContexts(0);
 			// add function to display normalized fluorence data 
 			Norm_Exp_Fluor = new Expression(Norm_Exp_Fluor_Str);
 			SimulationSymbolTable simSymbolTable = simJob.getSimulationSymbolTable();
-//			if(simSymbolTable.getVariable(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE) == null)//one diffusing component
-//			{
-//				Norm_Sim = new Expression(Norm_Sim_One_Diff_Str);
-//			}
-//			else // two diffusing components
-//			{
-//				Norm_Sim = new Expression(Norm_Sim_Two_Diff_Str);
-//			}
-//			AnnotatedFunction[] func = {new AnnotatedFunction(NORM_FLUOR_VAR, Norm_Exp_Fluor, null, VariableType.VOLUME, false),
-//										new AnnotatedFunction(NORM_SIM_VAR, Norm_Sim, null, VariableType.VOLUME, false)};
-//			
-//			
-//			VCData mergeData = localWorkspace.getDataSetControllerImpl().getVCData(vcDataId);			
-//			
-//			for(int k=0; k<func.length; k++)
-//			{
-//				mergeData.addFunction(func[k], true);
-//
-//			}
+			if(simSymbolTable.getVariable(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE) == null)//one diffusing component
+			{
+				Norm_Sim = new Expression(Norm_Sim_One_Diff_Str);
+			}
+			else // two diffusing components
+			{
+				Norm_Sim = new Expression(Norm_Sim_Two_Diff_Str);
+			}
+			AnnotatedFunction[] func = {new AnnotatedFunction(NORM_FLUOR_VAR, Norm_Exp_Fluor, null, null, VariableType.VOLUME, FunctionCategory.OLDUSERDEFINED),
+					new AnnotatedFunction(NORM_SIM_VAR, Norm_Sim, null, null, VariableType.VOLUME, FunctionCategory.OLDUSERDEFINED)};
+							
+			VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
+			VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, VFRAP_DS_PREFIX);
+			OutputContext outputContext = new OutputContext(func);
+							
+			dataManager = new PDEDataManager(outputContext,getLocalWorkspace().getVCDataManager(),vcDataId);
+			PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
+			
 			pdeDataContext.refreshIdentifiers();
 			flourViewer.setSimulation(sim);
 			flourViewer.setPdeDataContext(pdeDataContext);
@@ -2108,15 +2106,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			loadFRAPDataWizard = new Wizard(JOptionPane.getFrameForComponent(this));
 			loadFRAPDataWizard.getDialog().setTitle("Load FRAP Data");
 	        
-	        WizardPanelDescriptor fTypeDescriptor = new LoadFRAPData_FileTypeDescriptor();
+			LoadFRAPData_FileTypeDescriptor fTypeDescriptor = new LoadFRAPData_FileTypeDescriptor();
 	        fTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER); //goes next to single file input by default
 	        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_FileTypeDescriptor.IDENTIFIER, fTypeDescriptor);
 	        
-	        WizardPanelDescriptor singleFileDescriptor = new LoadFRAPData_SingleFileDescriptor();
+	        LoadFRAPData_SingleFileDescriptor singleFileDescriptor = new LoadFRAPData_SingleFileDescriptor();
 	        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_SingleFileDescriptor.IDENTIFIER, singleFileDescriptor);
 	        ((LoadFRAPData_SingleFileDescriptor)singleFileDescriptor).setFrapWorkspace(getFrapWorkspace());
 	
-	        WizardPanelDescriptor multiFileDescriptor = new LoadFRAPData_MultiFileDescriptor();
+	        LoadFRAPData_MultiFileDescriptor multiFileDescriptor = new LoadFRAPData_MultiFileDescriptor();
 	        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_MultiFileDescriptor.IDENTIFIER, multiFileDescriptor);
 	        ((LoadFRAPData_MultiFileDescriptor)multiFileDescriptor).setFrapWorkspace(getFrapWorkspace());
 	        
@@ -2200,6 +2198,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	        DefineROI_SummaryDescriptor ROISummaryDescriptor = new DefineROI_SummaryDescriptor(imgPanel);
 	        defineROIWizard.registerWizardPanel(DefineROI_SummaryDescriptor.IDENTIFIER, ROISummaryDescriptor);
 	        ROISummaryDescriptor.setFrapWorkspace(getFrapWorkspace());
+	        
+	        DefineROI_RoiForErrorDescriptor roiForErrorDescriptor = new DefineROI_RoiForErrorDescriptor();
+	        defineROIWizard.registerWizardPanel(DefineROI_RoiForErrorDescriptor.IDENTIFIER, roiForErrorDescriptor);
+	        ((DefineROI_RoiForErrorDescriptor)roiForErrorDescriptor).setFrapWorkspace(getFrapWorkspace());
 		}
 		//always start from the first page
 		defineROIWizard.setCurrentPanel(DefineROI_CropDescriptor.IDENTIFIER);
@@ -2215,13 +2217,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			modelTypeWizard = new Wizard(JOptionPane.getFrameForComponent(this));
 			modelTypeWizard.getDialog().setTitle("Choose Model Type");
 	        
-	        WizardPanelDescriptor modelTypesDescriptor = new ChooseModel_ModelTypesDescriptor();
+			ChooseModel_ModelTypesDescriptor modelTypesDescriptor = new ChooseModel_ModelTypesDescriptor();
 	        modelTypeWizard.registerWizardPanel(ChooseModel_ModelTypesDescriptor.IDENTIFIER, modelTypesDescriptor);
 	        ((ChooseModel_ModelTypesDescriptor)modelTypesDescriptor).setFrapWorkspace(getFrapWorkspace());
-	        
-	        WizardPanelDescriptor roiForErrorDescriptor = new ChooseModel_RoiForErrorDescriptor();
-	        modelTypeWizard.registerWizardPanel(ChooseModel_RoiForErrorDescriptor.IDENTIFIER, roiForErrorDescriptor);
-	        ((ChooseModel_RoiForErrorDescriptor)roiForErrorDescriptor).setFrapWorkspace(getFrapWorkspace());
 		}
 		//always start from the first page
 		modelTypeWizard.setCurrentPanel(ChooseModel_ModelTypesDescriptor.IDENTIFIER);

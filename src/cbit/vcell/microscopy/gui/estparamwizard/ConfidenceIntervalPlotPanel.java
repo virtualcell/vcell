@@ -15,6 +15,7 @@ import javax.swing.table.TableModel;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotPane;
 import cbit.vcell.microscopy.ProfileSummaryData;
+import cbit.vcell.microscopy.gui.AdvancedTablePanel;
 
 public class ConfidenceIntervalPlotPanel extends JPanel
 {
@@ -22,18 +23,16 @@ public class ConfidenceIntervalPlotPanel extends JPanel
 	PlotPane plotPane = null;
 	StyleTable intervalTable = null;	
 	ConfidenceIntervalTableModel tableModel = null;
+	AdvancedTablePanel tablePanel = null;
 	
 	public ConfidenceIntervalPlotPanel()
 	{
 		setLayout(new BorderLayout());
 		add(getPlotPane(), BorderLayout.CENTER);
-		JPanel tablePanel = new JPanel(new BorderLayout());
-		tablePanel.add(getIntervalTable().getTableHeader(),BorderLayout.NORTH);
-		tablePanel.add(getIntervalTable(),BorderLayout.SOUTH);
-		add(tablePanel, BorderLayout.SOUTH);
+		add(getTablePanel(), BorderLayout.SOUTH);
 	}
 	
-	public PlotPane getPlotPane()
+	private PlotPane getPlotPane()
 	{
 		if(plotPane == null)
 		{
@@ -43,7 +42,7 @@ public class ConfidenceIntervalPlotPanel extends JPanel
 		return plotPane;
 	}
 	
-	public StyleTable getIntervalTable()
+	private StyleTable getIntervalTable()
 	{
 		if(intervalTable == null)
 		{
@@ -51,6 +50,19 @@ public class ConfidenceIntervalPlotPanel extends JPanel
 			intervalTable = new StyleTable(tableModel);
 		}
 		return intervalTable;
+	}
+	
+	private AdvancedTablePanel getTablePanel()
+	{
+		if(tablePanel == null)
+		{
+			tablePanel = new AdvancedTablePanel();
+			tablePanel.setLayout(new BorderLayout());
+			tablePanel.setTable(getIntervalTable());
+			tablePanel.add(getIntervalTable().getTableHeader(),BorderLayout.NORTH);
+			tablePanel.add(getIntervalTable(),BorderLayout.SOUTH);
+		}
+		return tablePanel;
 	}
 	
 	public void setProfileSummaryData(ProfileSummaryData summaryData)

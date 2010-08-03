@@ -1,17 +1,14 @@
-package cbit.vcell.microscopy.gui.choosemodelwizard;
+package cbit.vcell.microscopy.gui.defineROIwizard;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 
 import javax.swing.ImageIcon;
@@ -24,9 +21,8 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.ROIImagePanel;
-import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 
-public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListener
+public class DefineROI_RoiForErrorPanel extends JPanel implements ActionListener
 {
 	private JTable table;
 	JPanel centerPanel = null;
@@ -69,7 +65,7 @@ public class ChooseModel_RoiForErrorPanel extends JPanel implements ActionListen
 	boolean[] selectedROIs = null;
 	
 	
-	public ChooseModel_RoiForErrorPanel() {
+	public DefineROI_RoiForErrorPanel() {
 		super();
 		setLayout(new BorderLayout());
 

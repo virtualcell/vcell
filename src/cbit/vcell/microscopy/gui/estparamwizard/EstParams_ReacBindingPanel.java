@@ -53,7 +53,7 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_RoiForErrorPanel;
+import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
@@ -79,7 +79,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 	
 	private FRAPStudy fStudy = null;
 	private MultisourcePlotPane multisourcePlotPane;
-	private ChooseModel_RoiForErrorPanel roiPanel;
+	private DefineROI_RoiForErrorPanel roiPanel;
 	private Hashtable<AnalysisParameters, DataSource[]> allDataHash;
 	private double[][] currentSimResults = null; //a data structure used to store results according to the current params.
 	private double[] currentSimTimePoints = null; //used to store simulation time points according to the current params.
@@ -199,11 +199,11 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		panel.add(multisourcePlotPane, gridBagConstraints_2);
 	}
 
-	private ChooseModel_RoiForErrorPanel getROIPanel()
+	private DefineROI_RoiForErrorPanel getROIPanel()
 	{
 		if(roiPanel == null)
 		{
-			roiPanel = new ChooseModel_RoiForErrorPanel();
+			roiPanel = new DefineROI_RoiForErrorPanel();
 		}
 		return roiPanel;
 	}

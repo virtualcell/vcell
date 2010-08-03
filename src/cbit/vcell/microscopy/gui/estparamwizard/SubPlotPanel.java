@@ -112,6 +112,10 @@ public class SubPlotPanel extends JPanel
         	{
         		plotPane.setVisible(false);
         	}
+        	if(frapWorkspace != null)
+            {
+            	modelLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
+            }
             modelLable.setVisible(true);
         }
         parent.repaint();

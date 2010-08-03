@@ -38,7 +38,7 @@ public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
     }
     
     public String getNextPanelDescriptorID() {
-        return Wizard.FINISH.getPanelDescriptorIdentifier();
+        return DefineROI_RoiForErrorDescriptor.IDENTIFIER;
     }
     
     public String getBackPanelDescriptorID() {

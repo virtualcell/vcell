@@ -36,7 +36,6 @@ public class BatchRunTree extends JTree {
 	    FRAP_BATCHRUN_NODE.add(FRAP_BATCHRUN_DOC_NODE);
 	    FRAP_BATCHRUN_NODE.add(FRAP_BATCHRUN_RESULT_NODE);
 	    treeModel = new DefaultTreeModel(FRAP_BATCHRUN_NODE);
-//	    treeModel.addTreeModelListener(new MyTreeModelListener());
 	    setModel(treeModel);
 	    //selection model
 	    getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -178,55 +177,4 @@ public class BatchRunTree extends JTree {
             return hash;
         }
     };
-    
-	/*
-	public void initiateFrapViewTree(FRAPBatchRunWorkspace brWorkSpace)
-	{
-		if(true)//TODO: put condition
-		{
-			batchRunDocNode.removeAllChildren();
-//	    	  frapDocTreeNode.add  //TODO: add children
-
-			expendFRAPViewTree();
-			frapBatchRunViewTree.updateUI();
-		}
-	}// end of method initiateCellWareViewTree
-
-	protected void expendFRAPViewTree()
-	{
-		DefaultMutableTreeNode node=batchRunDocNode.getFirstLeaf();
-		while (node != null)
-		{
-	        DefaultMutableTreeNode parentNode=(DefaultMutableTreeNode)node.getParent();
-	         if (parentNode == null) return; 
-	        TreeNode[] treeNodeArray = parentNode.getPath();
-	        TreePath path = new TreePath(treeNodeArray);
-
-	        if (path != null)
-	            frapBatchRunViewTree.expandPath(path);
-	        // and get the next sibling
-	        node = node.getNextLeaf();
-		}
-	}
-
-	// for updating cellWareViewTree
-	public void updateFRAPViewTree(FRAPBatchRunWorkspace brWorkSpace)
-	{
-		if(brWorkSpace!=null)
-		{
-			initiateFrapViewTree(brWorkSpace);
-
-			//TODO: add tree nodes
-			
-			expendFRAPViewTree();
-		}
-		else
-		{
-			batchRunDocNode.removeAllChildren();
-		}
-		frapBatchRunViewTree.updateUI();
-	}// end of method initiateCellWareViewTree
-*/
-
-   
 }
