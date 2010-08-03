@@ -2,6 +2,8 @@ package org.vcell.sbml.vcell;
 
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.jdom.Element;
@@ -10,6 +12,7 @@ import org.sbml.libsbml.XMLAttributes;
 import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.XMLNode;
 import org.sbml.libsbml.XMLTriple;
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.rdf.JenaIOUtil;
 import org.vcell.sybil.rdf.NameSpace;
@@ -21,9 +24,13 @@ import org.vcell.sybil.rdf.smelt.SameAsCrystalizer;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.biomodel.meta.MiriamManager;
+import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -57,19 +64,21 @@ public class SBMLAnnotationUtil {
 	public SBMLAnnotationUtil(VCMetaData metaData, Identifiable root, String nsSBML) { 
 		this(metaData, nsSBML);
 		this.root = root;
-		this.nsSBML = nsSBML;
 	}
 	
 	public SBMLAnnotationUtil(VCMetaData metaData, String nsSBML) { 
 		this.metaData = metaData; 
+		nsSBML = nsSBML + "/";
+		this.nsSBML = nsSBML;
+
 		tripleAnnotation = new XMLTriple("annotation", nsSBML, "");
+		Set<Resource> resources = metaData.getRegistry().getResources();
 		namespaceAssimilator = 
-			new NamespaceAssimilator(metaData.getRegistry().getResources(), nsSBML, 
-					localNamer);
-		rdfSmelted = namespaceAssimilator.smelt(metaData.getRdfData());
+			new NamespaceAssimilator(resources, nsSBML, localNamer);
+		rdfSmelted = namespaceAssimilator.smelt(metaData.getRdfDataCopy());
 		SameAsCrystalizer sameAsCrystalizer = new SameAsCrystalizer(nsSBML);
 		rdfSmelted = sameAsCrystalizer.smelt(rdfSmelted);
-		chopper = new RDFChopper(rdfSmelted, metaData.getRegistry().getResources());
+		chopper = new RDFChopper(rdfSmelted, resources);
 	}
 	
 	public void writeMetaID(Identifiable identifiable, SBase sBase) {
@@ -83,9 +92,11 @@ public class SBMLAnnotationUtil {
 	public void readMetaID(Identifiable identifiable, SBase sBase) {
 		 if (sBase.isSetMetaId()) {
 			String metaID = sBase.getMetaId();
+			if (metaID.startsWith("#")) {
+				metaID = metaID.substring(1);
+			}
 			// TODO this does not work - separator missing - fix
 			String uri = nsSBML + metaID;
-			// System.out.println("SBMLAnnotationUtil.readMetaID("+identifiable+" --> "+uri);
 			metaData.getRegistry().getEntry(identifiable).setNamedThingFromURI(uri);
 		 } 
 	}
@@ -216,7 +227,6 @@ public class SBMLAnnotationUtil {
 	public void readAnnotation(Identifiable identifiable, SBase sBase) {
 		readMetaID(identifiable, sBase);
 		XMLNode annotationRoot = sBase.getAnnotation();
-//		System.err.println(annotationRoot.toXMLString());
 		if (annotationRoot != null) {
 			long childCount = annotationRoot.getNumChildren();
 			for(long i = 0; i < childCount; ++i) {
@@ -229,9 +239,13 @@ public class SBMLAnnotationUtil {
 						
 						// TODO this is a hack to be replaced by proper URI management.
 						text = text.replace("about=\"#","about=\"");
-						
 						Model rdfNew = JenaIOUtil.modelFromText(text, nsSBML);
-						metaData.getRdfData().add(rdfNew);
+//						System.out.println("SBML NS :\n" + MIRIAMAnnotationViewer.prettyPrintJenaModel(rdfNew, nsSBML));
+						metaData.add(rdfNew);
+//						System.out.println("VCML NS :\n" + MIRIAMAnnotationViewer.prettyPrintJenaModel(metaData.getRdfData(), XMLTags.VCML_NS));
+//						System.out.println("SBBox Data :\n" + MIRIAMAnnotationViewer.prettyPrintJenaModel(metaData.getSBbox().getData(), XMLTags.VCML_NS));
+//						System.out.println(MIRIAMAnnotationViewer.printResourceMappings(metaData));
+						
 					} else if(namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD) ||
 							namespace.equals(XMLTags.VCML_NS)) {
 						int numChildren = (int)annotationBranch.getNumChildren();
@@ -249,15 +263,13 @@ public class SBMLAnnotationUtil {
 						// other (tool-specific, non-RDF, XML) annotations 
 						Element elementXML = xmlNodeToElement(annotationBranch);
 						Element[] xmlAnnotations = metaData.getXmlAnnotations(identifiable);
-						Vector<Element> xmlAnnotList = null;
+						Vector<Element> xmlAnnotList = new Vector<Element>();
 						if (xmlAnnotations != null && xmlAnnotations.length > 0) {
-							xmlAnnotList = new Vector<Element>(Arrays.asList(xmlAnnotations));
-						} else {
-							xmlAnnotList = new Vector<Element>();
-						}
+							xmlAnnotList.addAll(Arrays.asList(xmlAnnotations));
+						} 
 						if (elementXML != null) {
 							xmlAnnotList.add(elementXML);
-							metaData.setXmlAnnotations(identifiable, xmlAnnotList.toArray(xmlAnnotations));
+							metaData.setXmlAnnotations(identifiable, xmlAnnotList.toArray(new Element[0]));
 						}
 					}
 				}

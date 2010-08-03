@@ -1,8 +1,10 @@
 package cbit.vcell.biomodel.meta;
 
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -10,22 +12,32 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.jdom.Namespace;
+import org.vcell.sbml.SBMLUtils;
+import org.vcell.sybil.models.annotate.JDOM2Model;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.factories.SBBoxFactory;
 import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
+import org.xml.sax.SAXParseException;
 
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry;
 import cbit.vcell.biomodel.meta.registry.Registry;
 import cbit.vcell.biomodel.meta.registry.VCellThingFactory;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
+import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFWriter;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 /**
  * manager for Notes, Annotations, SBOTerms, and all other meta data regarding 
@@ -66,7 +78,20 @@ public class VCMetaData implements Serializable {
 
 	public SBBox getSBbox() { return rdfBox; }
 	
-	public Model getRdfData() { return rdfBox.getData(); }
+	Model getRdfData() { return rdfBox.getData(); }
+	
+	public Model getRdfDataCopy() {
+		Model rdfModelCopy = ModelFactory.createDefaultModel();
+		// add statements
+		rdfModelCopy.add(getRdfData());
+		// add prefix mappings
+		Map<String,String> prefixMap = new HashMap<String,String>();
+		prefixMap.putAll(getRdfData().getNsPrefixMap());
+		rdfModelCopy.setNsPrefixes(prefixMap);
+		
+		return rdfModelCopy;
+	}
+	
 	public String getBaseURI() { return XMLTags.METADATA_NS; }
 	public String getBaseURIExtended() { return XMLTags.METADATA_NS_EXTENDED; }
 	public OpenRegistry getRegistry() { return registry; }
@@ -74,7 +99,7 @@ public class VCMetaData implements Serializable {
 	public VCMetaDataMiriamManager miriamManager = new VCMetaDataMiriamManager(this);
 	
 	public boolean compareEquals(VCMetaData vcMetaData) {
-		if (!getRdfData().isIsomorphicWith(vcMetaData.getRdfData())) {
+		if (!rdfBox.getData().isIsomorphicWith(vcMetaData.rdfBox.getData())) {
 			return false; 
 		}
 		if (!registry.compareEquals(vcMetaData.registry)) {
@@ -129,6 +154,11 @@ public class VCMetaData implements Serializable {
 		return nonRDFAnnotation;
 	}
 		
+	public void add(Model jenaModel){
+		rdfBox.getData().add(jenaModel);
+		miriamManager.invalidateCache();
+	}
+	
 	public void cleanupMetadata() {
 		Set<Registry.Entry> entries = registry.getAllEntries();
 		for (Registry.Entry entry : entries) {
@@ -234,5 +264,32 @@ public class VCMetaData implements Serializable {
 	public MiriamManager getMiriamManager(){
 		return miriamManager;
 	}
+
+	public Element createElement() {
+		return XMLRDFWriter.createElement(getRdfData(), getBaseURI());
+	}
+
+	public void addToModelFromElement(Element element) 
+	throws SAXParseException, JDOMException {
+		JDOM2Model jdom2model = new JDOM2Model(getRdfData());
+		jdom2model.addJDOM(element, getBaseURI());
+	}
 	
+	public String printRdfStatements(){
+		StringBuffer strBuffer = new StringBuffer();
+		StmtIterator statementIterator = rdfBox.getData().listStatements();
+		while (statementIterator.hasNext()) {
+			Statement st = statementIterator.nextStatement();
+			strBuffer.append(st.getSubject()+";\t" + st.getPredicate()+";\t" + st.getObject()+"\n");
+		}
+		return strBuffer.toString();
+	}
+	
+	public String printRdfPretty(){
+		RDFWriter writer = rdfBox.getData().getWriter("N3");
+		StringWriter sw = new StringWriter();
+		writer.write(rdfBox.getData(), sw, getBaseURI());
+		return sw.getBuffer().toString();
+	}
+
 }

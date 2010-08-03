@@ -14,12 +14,10 @@ package org.vcell.sbml.vcell;
  */
 
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -34,7 +32,6 @@ import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.KineticLaw;
 import org.sbml.libsbml.ListOf;
 import org.sbml.libsbml.ListOfEvents;
-import org.sbml.libsbml.ListOfRules;
 import org.sbml.libsbml.ModifierSpeciesReference;
 import org.sbml.libsbml.Parameter;
 import org.sbml.libsbml.RateRule;
@@ -42,10 +39,11 @@ import org.sbml.libsbml.Reaction;
 import org.sbml.libsbml.Rule;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLReader;
-import org.sbml.libsbml.SBMLWriter;
+import org.sbml.libsbml.SBasePlugin;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.Unit;
 import org.sbml.libsbml.UnitDefinition;
+import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.libsbml;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
@@ -54,7 +52,6 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
 
 import cbit.util.xml.VCLogger;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
@@ -94,8 +91,8 @@ import cbit.vcell.xml.XMLTags;
 
 public class SBMLImporter {
 
-	private static int level = 2;
-	private static int version = 3;
+	private long level = 2;
+	private long version = 3;
 	
 	private String sbmlFileName = null;
 	private org.sbml.libsbml.Model sbmlModel = null;
@@ -104,7 +101,6 @@ public class SBMLImporter {
 	private HashMap<String, Expression> assignmentRulesHash = new HashMap<String, Expression>();
 	private TreeMap<String, VCUnitDefinition> vcUnitsHash = new TreeMap<String, VCUnitDefinition>();
 	private Hashtable<String, SBVCConcentrationUnits> speciesUnitsHash = new Hashtable<String, SBVCConcentrationUnits>();
-	private HashMap<String, Boolean> spConcFactorInGlobalParamsList = new HashMap<String, Boolean>();	// Boolean=false => NOT modified
 
 	private VCLogger logger = null;
 	 
@@ -1814,7 +1810,22 @@ public BioModel getBioModel() {
 		modelName = "newModel";
 	} 
 	BioModel bioModel = new BioModel(null);
-	sbmlAnnotationUtil = new SBMLAnnotationUtil(bioModel.getVCMetaData(), bioModel, SBMLUtils.SBML_NS_2);
+	// get namespace based on SBML model level and version to use in SBMLAnnotationUtil
+	this.level = sbmlModel.getLevel();
+	this.version = sbmlModel.getVersion();
+	XMLNamespaces nss = document.getNamespaces();
+	String namespaceStr = nss.getURI();
+//	if (!nss.isEmpty()) {
+//		int length = nss.getLength();
+//		for (int i = 0; i < length; i++) {
+//			String prefix = nss.getPrefix(i);
+//			if (prefix == null || prefix.length() == 0) {
+//				namespaceStr = nss.getURI();
+//				break;
+//			}
+//		}
+//	}
+	sbmlAnnotationUtil = new SBMLAnnotationUtil(bioModel.getVCMetaData(), bioModel, namespaceStr);
 	Model vcModel = new Model(modelName);
 
 	Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);

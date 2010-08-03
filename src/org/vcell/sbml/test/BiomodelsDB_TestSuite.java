@@ -117,6 +117,14 @@ public class BiomodelsDB_TestSuite {
 			try {
 				printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error (VC/COP)(VC/MSBML)(COP/MSBML)* | *Exception* | ");
 				for (String modelID : modelIDs){
+					
+//					// TEMP - SKIP MODELS WITH ID < 160 
+//					String id = modelID.substring(modelID.length()-3);
+//					if (Integer.parseInt(id) < 251) {
+//						continue;
+//					}
+//					// END - TEMP BLOCK
+					
 					String modelName = service.getModelNameById(modelID);
 					String modelSBML = service.getModelById(modelID);
 					
@@ -238,7 +246,7 @@ public class BiomodelsDB_TestSuite {
 							ODESolverResultSet vcellResults_RT = null;
 							try {
 								VCellSBMLSolver vcellSBMLSolver_RT = new VCellSBMLSolver();
-								vcellSBMLSolver_RT.setRoundTrip(false);
+								vcellSBMLSolver_RT.setRoundTrip(true);
 								// TODO try with round-trip later.
 								String columnDelimiter = vcellSBMLSolver_RT.getResultsFileColumnDelimiter();
 								File resultFile = vcellSBMLSolver_RT.solve(filePrefix, outDir, sbmlFile.getAbsolutePath(), simSpec);
@@ -412,9 +420,6 @@ public class BiomodelsDB_TestSuite {
 		System.exit(0);
 	}
 	
-	
-	
-	
 	public static ODESolverResultSet readResultFile(File resultFile, String delimiter) throws IOException{
 		String reportText = XmlUtil.getXMLString(resultFile.getAbsolutePath());
 		//System.out.println(reportText);
@@ -472,8 +477,8 @@ public class BiomodelsDB_TestSuite {
 			dis.close();
 			Document document = XmlUtil.stringToXML(new String(xmlBytes), null);
 			Element bioModelElement = document.getRootElement().getChild(BIOMODELINFO_ELEMENT_NAME);
-//			Attribute supportedAttribute = bioModelElement.getAttribute(SUPPORTED_ATTRIBUTE_NAME);
-//			if(supportedAttribute.getBooleanValue()){
+			Attribute supportedAttribute = bioModelElement.getAttribute(SUPPORTED_ATTRIBUTE_NAME);
+			if(supportedAttribute.getBooleanValue()){
 				Element newBioModelElement = new Element(BIOMODELINFO_ELEMENT_NAME);
 				List<Attribute> attrList = bioModelElement.getAttributes();
 				Iterator<Attribute> iterAttr = attrList.iterator();
@@ -482,7 +487,7 @@ public class BiomodelsDB_TestSuite {
 				}
 				supportedDocument.getRootElement().addContent(newBioModelElement);
 			}
-//		}
+		}
 		if(saveSupportedXMLPathname != null){
 			String supportedXML = XmlUtil.xmlToString(supportedDocument, true);
 			XmlUtil.writeXMLStringToFile(supportedXML, saveSupportedXMLPathname.getAbsolutePath(), true);

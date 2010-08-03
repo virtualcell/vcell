@@ -76,7 +76,7 @@ public class MIRIAMizerDemo {
 			BioModel biomodel = importer.getBioModel();
 			MiriamManager miriamManager = biomodel.getVCMetaData().getMiriamManager();
 			Species species[] = biomodel.getModel().getSpecies();
-			printSubjects(biomodel.getVCMetaData().getRdfData());
+			biomodel.getVCMetaData().printRdfPretty();
 			printRegistry(biomodel.getVCMetaData().getRegistry());
 			for (int i = 0; i < species.length; i++) {
 				Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamManager.getAllMiriamRefGroups(species[i]);

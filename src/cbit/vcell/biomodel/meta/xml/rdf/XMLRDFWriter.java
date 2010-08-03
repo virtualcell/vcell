@@ -5,7 +5,6 @@ import org.vcell.sybil.models.annotate.Model2JDOM;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
-import cbit.vcell.biomodel.meta.VCMetaData;
 
 /**
  * Turns a Jena Model into a JDOM Element
@@ -14,10 +13,6 @@ import cbit.vcell.biomodel.meta.VCMetaData;
  */
 
 public class XMLRDFWriter extends XMLRDF {
-	
-	public static Element createElement(VCMetaData metaData) {
-		return createElement(metaData.getRdfData(), metaData.getBaseURI());
-	}
 	
 	public static Element createElement(Model rdf, String baseURI) {
 		Model2JDOM model2jdom = new Model2JDOM();

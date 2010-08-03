@@ -18,9 +18,12 @@ public interface FileFilters {
 	public static final FileFilter FILE_FILTER_ZIP 		= new ExtensionFilter(".zip", 	"ZIP Files (*.zip)");
 	public static final FileFilter FILE_FILTER_XML 		= new ExtensionFilter(new String[] {".xml",".vcml",".sbml", ".cellml"}, "XML Files (.xml .vcml .sbml .cellml)");
 	public static final FileFilter FILE_FILTER_VCML		= new ExtensionFilter(new String[] {".vcml"},"VCML format (.vcml)");
-	public static final FileFilter FILE_FILTER_SBML		= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level1,Version2>  (.xml .sbml)");
+	public static final FileFilter FILE_FILTER_SBML_12	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level1,Version2>  (.xml .sbml)");
 	public static final FileFilter FILE_FILTER_SBML_21	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version1>  (.xml .sbml)");
+	public static final FileFilter FILE_FILTER_SBML_22	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version2>  (.xml .sbml)");
 	public static final FileFilter FILE_FILTER_SBML_23	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version3>  (.xml .sbml)");
+	public static final FileFilter FILE_FILTER_SBML_24	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version4>  (.xml .sbml)");
+	public static final FileFilter FILE_FILTER_SBML_31_CORE = new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level3,Version1> Core (.xml .sbml)");
 	public static final FileFilter FILE_FILTER_CELLML	= new ExtensionFilter(new String[] {".xml",".cellml"},	"CELLML format (*.xml .cellml)");
 	public static final FileFilter FILE_FILTER_AVS		= new ExtensionFilter(".avs", 	"AVS Unstructured Cell Data (*.avs)");
 	public static final FileFilter FILE_FILTER_STL		= new ExtensionFilter(".stl", 	"Stereolithography (STL) file (*.stl)");

@@ -15,7 +15,6 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.VCID.InvalidVCIDException;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDF;
-import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFReader;
 import cbit.vcell.xml.XmlParseException;
 
 /**
@@ -53,7 +52,7 @@ public class XMLMetaDataReader extends XMLMetaData {
 		if (rdfElement!=null){
 			// read RDF
 			try { 
-				XMLRDFReader.addToModelFromElement(metaData, rdfElement);
+				metaData.addToModelFromElement(rdfElement);
 			}catch (SAXParseException e) {
 				e.printStackTrace();
 				throw new XmlParseException(e.getMessage());

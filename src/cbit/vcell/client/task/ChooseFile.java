@@ -81,9 +81,12 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_12);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_22);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_24);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_CORE);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
@@ -119,11 +122,10 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				selectedFileName = selectedFileName.substring(0, selectedFileName.lastIndexOf("."));
 			}
 			String n = selectedFile.getPath().toLowerCase();
-			if (fileFilter == FileFilters.FILE_FILTER_SBML && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFileName + ".xml");
-			} else if (fileFilter == FileFilters.FILE_FILTER_SBML_21 && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFileName + ".xml");
-			} else if (fileFilter == FileFilters.FILE_FILTER_SBML_23 && !n.endsWith(".xml")) {
+			if (((fileFilter == FileFilters.FILE_FILTER_SBML_12) || (fileFilter == FileFilters.FILE_FILTER_SBML_21) ||
+				(fileFilter == FileFilters.FILE_FILTER_SBML_22) || (fileFilter == FileFilters.FILE_FILTER_SBML_23) ||
+				(fileFilter == FileFilters.FILE_FILTER_SBML_24) || (fileFilter == FileFilters.FILE_FILTER_SBML_31_CORE)) 
+				&& !n.endsWith(".xml")) {
 				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_CELLML && !n.endsWith(".xml")) {
 				selectedFile = new File(selectedFileName + ".xml");
@@ -150,8 +152,9 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 			}				
 			Vector<String> applicableAppNameList = new Vector<String>();
 			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV5.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription()) || 
-				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) ||
-				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription())) {
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_12.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) ||
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_22.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) || 
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_24.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription()) ) {
 				// only non-spatial apps
 				for (int i=0;i<simContexts.length;i++){
 					if (simContexts[i].getGeometryContext().getGeometry().getDimension()==0 && !simContexts[i].isStoch()){
@@ -172,9 +175,12 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 			if (applicableAppNameList.size() == 1){
 				chosenSimContextName = (String)applicableAppNameList.get(0);
 			} else if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_PDF.getDescription()) && 
-					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) &&
+					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_12.getDescription()) &&
 					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) &&
-					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription())) {
+					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_22.getDescription()) &&
+					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) &&
+					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_24.getDescription()) &&
+					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription())) {
 				String[] applicationNames = (String[])org.vcell.util.BeanUtils.getArray(applicableAppNameList,String.class);
 				Object choice = PopupGenerator.showListDialog(topLevelWindowManager, applicationNames, "Please select Application");
 				if (choice == null) {
@@ -184,9 +190,12 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				chosenSimContextName = (String)choice;
 			}
 			// identify it and store index in the hash for next task (for non-SBML formats)
-			if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) && 
+			if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_12.getDescription()) && 
 				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) &&
-				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription())) {
+				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_22.getDescription()) &&
+				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) &&
+				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_24.getDescription()) &&
+				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription()) ) {
 				for (int i=0;i<simContexts.length;i++){
 					if (simContexts[i].getName().equals(chosenSimContextName)){
 						hashTable.put("chosenSimContextIndex", new Integer(i));
@@ -196,9 +205,12 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 			}
 
 			// Select a structure and set its size only for SBML models
-			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) || 
+			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_12.getDescription()) || 
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) || 
-				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) ) {
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_22.getDescription()) ||
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) ||
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_24.getDescription()) ||
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription()) ) {
 				// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
 				Structure[] structures = bioModel.getModel().getStructures();
 				// get the nonspatial simulationContexts corresponding to names in applicableAppNameList 

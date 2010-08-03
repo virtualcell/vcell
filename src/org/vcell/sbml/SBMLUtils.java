@@ -29,8 +29,12 @@ import cbit.vcell.xml.XMLTags;
 
 public abstract class SBMLUtils {
 
-	public static final String SBML_NS_1 = "http://www.sbml.org/sbml/level1/";
-	public static final String SBML_NS_2 = "http://www.sbml.org/sbml/level2/";
+	public static final String SBML_NS_1 = "http://www.sbml.org/sbml/level1";
+	public static final String SBML_NS_2 = "http://www.sbml.org/sbml/level2";
+	public static final String SBML_NS_2_2 = "http://www.sbml.org/sbml/level2/version2";
+	public static final String SBML_NS_2_3 = "http://www.sbml.org/sbml/level2/version3";
+	public static final String SBML_NS_2_4 = "http://www.sbml.org/sbml/level2/version4";
+	public static final String SBML_NS_3_1 = "http://www.sbml.org/sbml/level3/version1/core";
 	public static final String SBML_VCELL_NS = XMLTags.SBML_VCELL_NS;
 
 	public static class SBMLUnitParameter implements SymbolTableEntry {
@@ -361,5 +365,27 @@ public static SBMLUnitParameter getConcUnitFactor(String name, VCUnitDefinition 
 	}
 	return sbmlUnitsParam;
 }	
+
+public static String getNamespaceFromLevelAndVersion(long level, long version) {
+	String namespaceStr = SBMLUtils.SBML_NS_2;
+	if ((level == 1) && version == 2) {
+		namespaceStr = SBMLUtils.SBML_NS_1;
+	} 
+	if (level == 2) {
+		if (version == 1) {
+			namespaceStr = SBMLUtils.SBML_NS_2;
+		} else if (version == 2) {
+			namespaceStr = SBMLUtils.SBML_NS_2_2;
+		} else if (version == 3) {
+			namespaceStr = SBMLUtils.SBML_NS_2_3;
+		} else if (version == 4) {
+			namespaceStr = SBMLUtils.SBML_NS_2_4;
+		} 
+	}
+	if (level == 3) {
+		namespaceStr = SBMLUtils.SBML_NS_3_1;
+	}
+	return namespaceStr;
+}
 
 }
