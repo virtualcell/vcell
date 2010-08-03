@@ -1,48 +1,16 @@
 package cbit.vcell.microscopy.batchrun;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.zip.InflaterInputStream;
 
 import org.jdom.Element;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Extent;
-import org.vcell.util.Origin;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 
-import cbit.image.ImageException;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
-import cbit.vcell.microscopy.AnnotatedImageDataset;
-import cbit.vcell.microscopy.ExternalDataInfo;
-import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.MicroscopyXMLTags;
-import cbit.vcell.microscopy.MicroscopyXmlReader;
-import cbit.vcell.microscopy.MicroscopyXmlReader.ExternalDataAndSimulationInfo;
-import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.xml.XMLTags;
-import cbit.vcell.xml.XmlBase;
 import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.xml.XmlReader;
 
 public class BatchRunXmlReader {
 	

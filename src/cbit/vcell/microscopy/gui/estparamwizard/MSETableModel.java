@@ -57,7 +57,7 @@ public class MSETableModel extends AbstractTableModel {
     	}
     	if(col == COLUMN_MODEL_NAME)
     	{
-   			return FRAPModel.MODEL_TYPE_ARRAY[row];
+    		return FRAPModel.MODEL_TYPE_ARRAY[row];
     	}
     	else
     	{

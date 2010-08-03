@@ -6,6 +6,7 @@ import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.AdvancedTablePanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 
@@ -21,7 +22,8 @@ public class MSETablePanel extends AdvancedTablePanel
     private JScrollPane scrTable;
     MSETableModel mseTableModel;
     JPopupMenu popupMenu;
-
+    private FRAPSingleWorkspace frapWorkspace;
+    
     public MSETablePanel(MSEPanel arg_parent/*may need to pass in frapstudy as parameter*/) 
     {
     	super();
@@ -106,6 +108,10 @@ public class MSETablePanel extends AdvancedTablePanel
             	table.getTableHeader().setVisible(false);
             	table.setVisible(false);
             }
+            if(frapWorkspace != null)
+            {
+            	modelLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
+            }
             modelLable.setVisible(true);
         }
         parent.repaint();
@@ -131,8 +137,8 @@ public class MSETablePanel extends AdvancedTablePanel
 
     public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace)
 	{
+    	this.frapWorkspace = frapWorkspace;
 		mseTableModel.setFrapWorkspace(frapWorkspace);
-		modelLable.setText(frapWorkspace.getWorkingFrapStudy().getSelectedModels().size() + " Models");
 	}
 }
 

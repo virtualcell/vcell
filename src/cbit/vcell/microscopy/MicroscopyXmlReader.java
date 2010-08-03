@@ -11,14 +11,14 @@ import java.util.Vector;
 import java.util.zip.InflaterInputStream;
 
 import org.jdom.Element;
-
-import cbit.image.ImageException;
-
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
+import cbit.image.ImageException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -28,8 +28,6 @@ import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
-import org.vcell.util.document.User;
-import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlBase;
 import cbit.vcell.xml.XmlParseException;
