@@ -149,8 +149,7 @@ public class SBMLExporter {
 		sbmlLevel = argSbmlLevel;
 		sbmlVersion = argSbmlVersion;
 		if (vcBioModel != null) {
-			sbmlAnnotationUtil = 
-				new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLUtils.SBML_NS_2);
+			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLUtils.getNamespaceFromLevelAndVersion(sbmlLevel, sbmlVersion));
 		}
 	}
 	
@@ -161,8 +160,7 @@ public class SBMLExporter {
 		super();
 		vcBioModel = argBioModel;
 		if (vcBioModel != null) {
-			sbmlAnnotationUtil = 
-				new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLUtils.SBML_NS_2);
+			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLUtils.SBML_NS_2);
 		}
 	}
 

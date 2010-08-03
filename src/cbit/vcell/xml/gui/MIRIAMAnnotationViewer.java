@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Set;
 
 import javax.swing.JPanel;
@@ -107,46 +108,34 @@ public class MIRIAMAnnotationViewer extends JPanel {
 		miriamAnnotationEditor.setBioModel(biomodel);
 		
 		// Pretty Print
-		Model rdfModel = biomodel.getVCMetaData().getRdfData();
-		RDFWriter writer = rdfModel.getWriter("N3");
 		StringWriter sw = new StringWriter();
-		writer.write(rdfModel, sw, biomodel.getVCMetaData().getBaseURI());
-		sw.append("\n\n ResourceMappings : \n");
-		Set<Registry.Entry> entrySet = biomodel.getVCMetaData().getRegistry().getAllEntries();
-		for (Registry.Entry entry : entrySet) {
-			NamedThing namedThing = entry.getNamedThing();
-			if (namedThing!=null){
-				sw.append(namedThing.resource().getURI());
-				Identifiable identifiable = entry.getIdentifiable();
-				sw.append(" ============= " + biomodel.getVCID(identifiable).toASCIIString());
-				sw.append("\n");
-			}
-		}
+		sw.append(biomodel.getVCMetaData().printRdfPretty());
+		sw.append(printResourceMappings(biomodel.getVCMetaData()));
 
 //		Element root = XmlUtil.stringToXML(sw.getBuffer().toString(), null);
 		PPtextArea.setText(sw.getBuffer().toString());
 		
 		// List of Statements View
 		StringBuffer strBuffer = new StringBuffer();
-		StmtIterator statementIterator = rdfModel.listStatements();
-		while (statementIterator.hasNext()) {
-			Statement st = statementIterator.nextStatement();
-			strBuffer.append(st.getSubject()+";\t" + st.getPredicate()+";\t" + st.getObject()+"\n");
-		}
-		strBuffer.append("\n\n ResourceMappings : \n");
-		entrySet = biomodel.getVCMetaData().getRegistry().getAllEntries();
-		for (Registry.Entry entry : entrySet) {
-			NamedThing namedThing = entry.getNamedThing();
-			if (namedThing!=null){
-				strBuffer.append(namedThing.resource().getURI());
-				Identifiable identifiable = entry.getIdentifiable();
-				strBuffer.append(" ============= " + biomodel.getVCID(identifiable).toASCIIString());
-				strBuffer.append("\n");				
-			}
-		}
+		strBuffer.append(biomodel.getVCMetaData().printRdfStatements());
+		strBuffer.append(printResourceMappings(biomodel.getVCMetaData()));
 		LoStextArea.setText(strBuffer.toString());
 	}
 
-	
+public static String printResourceMappings(VCMetaData metaData) {
+	StringBuffer strBuffer = new StringBuffer();
+	strBuffer.append("\n\n ResourceMappings : \n");
+	Set<Registry.Entry> entrySet = metaData.getRegistry().getAllEntries();
+	for (Registry.Entry entry : entrySet) {
+		NamedThing namedThing = entry.getNamedThing();
+		if (namedThing!=null){
+			strBuffer.append(namedThing.resource().getURI());
+			Identifiable identifiable = entry.getIdentifiable();
+			strBuffer.append(" ============= " + metaData.getIdentifiableProvider().getVCID(identifiable).toASCIIString());
+			strBuffer.append("\n");				
+		}
+	}
+	return strBuffer.toString();
+}
 	
 }

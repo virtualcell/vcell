@@ -308,7 +308,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		return new VCMetaDataMiriamResource(MIRIAMRef.createFromURN(urnString));
 	}
 
-	private void invalidateCache() {
+	void invalidateCache() {
 		miriamTreeMap = null;
 	}
 

@@ -16,7 +16,6 @@ import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.registry.Registry;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
-import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 
 /**
  * Turns meta data into a JDOM Element
@@ -28,7 +27,7 @@ public class XMLMetaDataWriter extends XMLMetaData {
 	
 	public static Element getElement(VCMetaData metaData, IdentifiableProvider identifiableProvider) {
 		Element element = new Element(XMLMetaData.VCMETADATA_TAG);
-		Element elementRDF = XMLRDFWriter.createElement(metaData);
+		Element elementRDF = metaData.createElement();
 		// add RDF data
 		if(elementRDF != null) {
 			element.addContent(elementRDF);
@@ -96,7 +95,7 @@ public class XMLMetaDataWriter extends XMLMetaData {
 						Element annotationListElement = new Element(XMLMetaData.ANNOTATION_LIST_TAG);
 						nonRDFAnnotationElement.addContent(annotationListElement);
 						for (int i = 0; i < otherAnnotations.length; i++) {
-							annotationListElement.addContent(otherAnnotations[i]);
+							annotationListElement.addContent(otherAnnotations[i].detach());
 						}
 					}
 				}
