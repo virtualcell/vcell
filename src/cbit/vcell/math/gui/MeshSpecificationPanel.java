@@ -658,6 +658,7 @@ private void updateDisplay() {
 	if (samplingSize == null) {
 		return;
 	}
+	bInProgress = true;
 	int dim = getMeshSpecification().getGeometry().getDimension();
 	long numX = samplingSize.getX();
 	long numY = samplingSize.getY();
@@ -695,7 +696,8 @@ private void updateDisplay() {
 	
 	if (getMeshSpecification().isAspectRatioOK()) {
 		getAutoMeshSizeCheckBox().setSelected(true);
-	}	
+	}
+	bInProgress = false;
 }
 
 
