@@ -232,7 +232,7 @@ public class VCMetaData implements Serializable {
 	public Element[] getXmlAnnotations(Identifiable identifiable) {
 		NonRDFAnnotation nonRDFAnnotation = getNonRDFAnnotation(identifiable);
 		if (nonRDFAnnotation != null){
-			nonRDFAnnotation.getXmlAnnotations();
+			return nonRDFAnnotation.getXmlAnnotations();
 		}
 		return null;
 	}
