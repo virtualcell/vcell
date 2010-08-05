@@ -253,6 +253,9 @@ public static void continueAfterMathModelGeomChangeWarning(MathModelWindowManage
 	MathModel mathModel = mathModelWindowManager.getMathModel();
 	if(mathModel != null && mathModel.getMathDescription() != null){
 		Geometry oldGeometry = mathModel.getMathDescription().getGeometry();
+		if(oldGeometry != null && oldGeometry.getDimension() == 0){
+			return;
+		}
 		boolean bMeshResolutionChange = true;
 		if(oldGeometry == null){
 			bMeshResolutionChange = false;
