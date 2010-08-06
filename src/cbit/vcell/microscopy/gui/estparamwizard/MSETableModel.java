@@ -11,7 +11,7 @@ import cbit.vcell.microscopy.FRAPSingleWorkspace;
 public class MSETableModel extends AbstractTableModel {
 
 	public final static String COL_LABELS[] = { "Model Name", "ROI_Bleached", "ROI_Ring1", "ROI_Ring2", "ROI_Ring3",
-												"ROI_Ring4", "ROI_Ring5", "ROI_Ring6", "ROI_Ring7", "ROI_Ring8", "Sum Of Error"};
+												"ROI_Ring4", "ROI_Ring5", "ROI_Ring6", "ROI_Ring7", "ROI_Ring8", "Average Error"};
 	public final static int NUM_ROWS = FRAPModel.NUM_MODEL_TYPES-1;//removed reaction binding
 	public final static int NUM_COLUMNS = COL_LABELS.length;
 	public final static int COLUMN_MODEL_NAME = 0;

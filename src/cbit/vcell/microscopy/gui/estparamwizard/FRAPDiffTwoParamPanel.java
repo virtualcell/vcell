@@ -688,7 +688,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		buttonPanel.add(optimalButton);
 		JButton evaluationButton = new JButton();
 		evaluationButton.setMargin(new Insets(2, 6, 2, 6));
-		evaluationButton.setText("Evaluate");
+		evaluationButton.setText("Evaluate CI");
 		evaluationButton.setToolTipText("Get confidence intervals for each parameter based on confidence level");
 		evaluationButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -959,7 +959,16 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 				{
 					Parameter[] currentParams = getCurrentParameters();
 					frapOptData.setNumEstimatedParams(currentParams.length);
-					ProfileData[] profileData = frapOptData.evaluateParameters(currentParams, this.getClientTaskStatusSupport());
+					ProfileData[] profileData = null;
+					if(frapOptData.getExpFrapStudy().getProfileData_twoDiffComponents() !=null )
+					{
+						profileData = frapOptData.getExpFrapStudy().getProfileData_twoDiffComponents();
+					}
+					else
+					{
+					    profileData = frapOptData.evaluateParameters(currentParams, this.getClientTaskStatusSupport());
+					    frapOptData.getExpFrapStudy().setProfileData_twoDiffComponents(profileData);
+					}
 					hashTable.put("ProfileData", profileData);
 				}
 				else
@@ -1002,33 +1011,6 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		//dispatch
 		ClientTaskDispatcher.dispatch(FRAPDiffTwoParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{evaluateTask, showResultTask}, false, false, null, true); 
 	}
-	
-	private static boolean[] getErrorOfInterest()
-	{
-		boolean[] errorOfInterest = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
-		
-		for(int i=0; i<FRAPData.VFRAP_ROI_ENUM.values().length; i++)
-		{
-			if(FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED) || 
-			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1) ||
-			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2) ||
-			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3) ||
-			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4) ||
-			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5) ||
-			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6) ||
-			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7) ||
-			   FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8))
-			{
-				errorOfInterest[i] = true;
-			}
-			else
-			{
-				errorOfInterest[i] = false;
-			}
-		}
-		return errorOfInterest;
-	}
-	
 	
 	public double[][] getCurrentFitData() throws Exception{
 		return getFitData(getCurrentParameters());

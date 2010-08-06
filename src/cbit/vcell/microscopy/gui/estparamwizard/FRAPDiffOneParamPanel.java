@@ -540,7 +540,16 @@ public class FRAPDiffOneParamPanel extends JPanel
 				{
 					Parameter[] currentParams = getCurrentParameters();
 					frapOptData.setNumEstimatedParams(currentParams.length);
-					ProfileData[] profileData = frapOptData.evaluateParameters(currentParams, this.getClientTaskStatusSupport());
+					ProfileData[] profileData = null;
+					if(frapOptData.getExpFrapStudy().getProfileData_oneDiffComponent() !=null )
+					{
+						profileData = frapOptData.getExpFrapStudy().getProfileData_oneDiffComponent();
+					}
+					else
+					{
+					    profileData = frapOptData.evaluateParameters(currentParams, this.getClientTaskStatusSupport());
+					    frapOptData.getExpFrapStudy().setProfileData_oneDiffComponent(profileData);
+					}
 					hashTable.put("ProfileData", profileData);
 				}
 				else

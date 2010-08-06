@@ -76,9 +76,10 @@ public class FRAPOptData {
 	private static final String REFERENCE_DIFF_RATE_STR = REFERENCE_DIFF_RATE_COEFFICIENT +"*(t+"+ REFERENCE_DIFF_DELTAT +")";
 	
 	//for parameter evaluation
-	public static final double[] INCREASE_CONST = new double[]{1.01, 1.001, 1.02, 1.01, 1.001};
-	public static final double[] DECREASE_CONST = new double[]{0.99, 0.999, 0.9, 0.99, 0.999};
-	public static final int[] MAX_ITERATION = new int[]{50, 100, 70, 50, 100};
+	public static final double[] INCREASE_PERCENT_CONST = new double[]{0.01, 0.001, 0.02, 0.01, 0.001};
+	public static final double[] DECREASE_PERCENT_CONST = new double[]{0.01, 0.001, 0.1, 0.01, 0.001};
+	public static final int MAX_ITERATION = 200;
+	public static final int MIN_ITERATION = 50;
 	public static final int NUM_CONFIDENCE_LEVELS = 4;
 	public static final int IDX_DELTA_ALPHA_80 = 0;
 	public static final int IDX_DELTA_ALPHA_90 = 1;
@@ -86,7 +87,8 @@ public class FRAPOptData {
 	public static final int IDX_DELTA_ALPHA_99 = 3;
 	public static final String[] CONFIDENCE_LEVEL_NAME = new String[]{"80% confidence", "90%confidence", "95%confidence", "99%confidence"};
 	public static final double[] DELTA_ALPHA_VALUE = new double[]{1.642, 2.706, 3.841, 6.635};
- 	
+	
+
 	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace,
 			ClientTaskStatusSupport progressListener) throws Exception
 	{
@@ -233,10 +235,10 @@ public class FRAPOptData {
 		getExpFrapStudy().setStoredRefData(FRAPOptimization.doubleArrayToSimpleRefData(dimensionReducedRefData, getRefDataTimePoints(), 0, selectedROIs));
 
 		//remove reference simulation files
-//		FRAPStudy.removeSimulationFiles(referenceSimKeyValue, getLocalWorkspace()); 
+		FRAPStudy.removeSimulationFiles(referenceSimKeyValue, getLocalWorkspace()); 
 		//remove experimental and roi external files
-//		FRAPStudy.removeExternalFiles(getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(), 
-//				                      getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), getLocalWorkspace());
+		FRAPStudy.removeExternalFiles(getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(), 
+				                      getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), getLocalWorkspace());
 	}
 	
 	private double[] shiftTimeForBaseDiffRate(double[] timePoints)
@@ -581,7 +583,7 @@ public class FRAPOptData {
 							                                              monitoringRate,
 							                                              firstPostBleach[i],
 							                                              reducedExpTimePoints[j]);
-//						double newValue = (mFracFast * fastData[i][j] + mFracSlow * slowData[i][j] + immobileFrac * firstPostBleach[i]) * Math.exp(-(monitoringRate * expTimePoints[j]));
+//					double newValue = (mFracFast * fastData[i][j] + mFracSlow * slowData[i][j] + immobileFrac * firstPostBleach[i]) * Math.exp(-(monitoringRate * expTimePoints[j]));
 				}
 				
 			}
@@ -908,11 +910,19 @@ public class FRAPOptData {
 			//add the fixed parameter to profileData, output exp data and opt results
 			setNumEstimatedParams(totalParamLen);
 			Parameter[] newBestParameters = getBestParamters(currentParams, frapStudy.getSelectedROIsForErrorCalculation(), null, true);
-			double totalErr = getLeastError();
+			double iniTotalErr = getLeastError();
 			//fixed parameter
 			Parameter fixedParam = newBestParameters[j];
+			if(fixedParam.getInitialGuess() == 0)//log function cannot take 0 as parameter
+			{
+				fixedParam = new Parameter (fixedParam.getName(),
+	                        fixedParam.getLowerBound(),
+	                        fixedParam.getUpperBound(),
+	                        fixedParam.getScale(),
+	                        FRAPOptimization.epsilon);
+			}
 			clientTaskStatusSupport.setMessage("Evaluating parameter: " + fixedParam.getName());
-			ProfileDataElement pde = new ProfileDataElement(fixedParam.getName(), Math.log10(fixedParam.getInitialGuess()), totalErr, newBestParameters);
+			ProfileDataElement pde = new ProfileDataElement(fixedParam.getName(), Math.log10(fixedParam.getInitialGuess()), iniTotalErr, newBestParameters);
 			profileData.addElement(pde);
 			
 			Parameter[] unFixedParams = new Parameter[totalParamLen - 1];
@@ -929,14 +939,14 @@ public class FRAPOptData {
 			//increase
 			int iterationCount = 0;
 			double paramVal = fixedParam.getInitialGuess();
+			double increment = 1 + INCREASE_PERCENT_CONST[j];
 			while(true)
 			{
-				if(iterationCount > MAX_ITERATION[j])
+				if(iterationCount > MAX_ITERATION)//if exceeds the maximum iterations, break;
 				{
 					break;
 				}
-				//if satisfies condition break;
-				paramVal = paramVal * INCREASE_CONST[j];
+				paramVal = paramVal * increment;
 				if(paramVal > fixedParam.getUpperBound()|| paramVal < fixedParam.getLowerBound())
 				{
 					break;
@@ -949,9 +959,47 @@ public class FRAPOptData {
 				//getBestParameters returns the whole set of parameters including the fixed parameters
 				setNumEstimatedParams(totalParamLen-1);
 				Parameter[] newParameters = getBestParamters(unFixedParams, frapStudy.getSelectedROIsForErrorCalculation(), increasedParam, true);
-				totalErr = getLeastError();
+				for(int i=0; i < newParameters.length; i++)//use last step unfixed parameter values to optimize
+				{
+					for(int k=0; k<unFixedParams.length; k++)
+					{
+						if(newParameters[i].getName().equals(unFixedParams[k].getName()))
+						{
+							Parameter tempParameter = new Parameter(unFixedParams[k].getName(),
+																	unFixedParams[k].getLowerBound(),
+																	unFixedParams[k].getUpperBound(),
+																	unFixedParams[k].getScale(),
+									                                newParameters[i].getInitialGuess());
+							unFixedParams[k] = tempParameter;
+						}
+					}
+				}
+				double totalErr = getLeastError();
 				pde = new ProfileDataElement(increasedParam.getName(), Math.log10(increasedParam.getInitialGuess()), totalErr, newParameters);
 				profileData.addElement(pde);
+				//check if the we run enough to get confidence intervals(99% @6.635, we plus 10 over the min error)
+				if(iterationCount >= MIN_ITERATION)
+				{
+					if(totalErr > (iniTotalErr+10))
+					{
+						break;
+					}
+					else
+					{
+						if(iterationCount == MIN_ITERATION + 1)
+						{
+							increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
+						}
+						else if(iterationCount == 2*MIN_ITERATION + 1)
+						{
+							increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
+						}
+						else if(iterationCount == 3*MIN_ITERATION + 1)
+						{
+							increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
+						}
+					}
+				}
 				//output opt data
 //				dataFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY +increasedParam.getName()+ increasedParam.getInitialGuess() + ".txt";
 //				outputData(dataFileName, frapStudy.getReducedExpTimePoints(), optData.getFitData(newParameters));
@@ -961,14 +1009,14 @@ public class FRAPOptData {
 			//decrease
 			iterationCount = 0;
 			paramVal = fixedParam.getInitialGuess();
+			double decrement = 1 - DECREASE_PERCENT_CONST[j];
 			while(true)
 			{
-				if(iterationCount > MAX_ITERATION[j])
+				if(iterationCount > MAX_ITERATION)//if exceeds the maximum iterations, break;
 				{
 					break;
 				}
-				//if satisfies condition break;
-				paramVal = paramVal * DECREASE_CONST[j];
+				paramVal = paramVal * decrement;
 				if(paramVal > fixedParam.getUpperBound() || paramVal < fixedParam.getLowerBound())
 				{
 					break;
@@ -981,9 +1029,46 @@ public class FRAPOptData {
 				//getBestParameters returns the whole set of parameters including the fixed parameters
 				setNumEstimatedParams(totalParamLen-1);
 				Parameter[] newParameters = getBestParamters(unFixedParams, frapStudy.getSelectedROIsForErrorCalculation(), decreasedParam, true);
-				totalErr = getLeastError();
+				for(int i=0; i < newParameters.length; i++)//use last step unfixed parameter values to optimize
+				{
+					for(int k=0; k<unFixedParams.length; k++)
+					{
+						if(newParameters[i].getName().equals(unFixedParams[k].getName()))
+						{
+							Parameter tempParameter = new Parameter(unFixedParams[k].getName(),
+																	unFixedParams[k].getLowerBound(),
+																	unFixedParams[k].getUpperBound(),
+																	unFixedParams[k].getScale(),
+									                                newParameters[i].getInitialGuess());
+							unFixedParams[k] = tempParameter;
+						}
+					}
+				}
+				double totalErr = getLeastError();
 				pde = new ProfileDataElement(decreasedParam.getName(), Math.log10(decreasedParam.getInitialGuess()), totalErr, newParameters);
 				profileData.addElement(0,pde);
+				if(iterationCount >= MIN_ITERATION)
+				{
+					if(totalErr > (iniTotalErr+10))
+					{
+						break;
+					}
+					else
+					{
+						if(iterationCount == MIN_ITERATION + 1)
+						{
+							decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
+						}
+						else if(iterationCount == 2*MIN_ITERATION + 1)
+						{
+							decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
+						}
+						else if(iterationCount == 3*MIN_ITERATION + 1)
+						{
+							decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
+						}
+					}
+				}
 				//output opt data
 //				dataFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + decreasedParam.getName()+ decreasedParam.getInitialGuess() + ".txt";
 //				outputData(dataFileName, frapStudy.getReducedExpTimePoints(), optData.getFitData(newParameters));

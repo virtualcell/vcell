@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.zip.DeflaterOutputStream;
 
 import org.jdom.Element;
+import org.vcell.optimization.OptXmlTags;
 import org.vcell.util.document.ExternalDataIdentifier;
 
 import cbit.util.xml.XmlUtil;
@@ -444,6 +446,15 @@ private static Element getXML(FRAPStudy param,Xmlproducer vcellXMLProducer, Clie
 	if (param.getStoredRefData()!=null){
 		frapStudyNode.addContent( getXML(param.getStoredRefData(), MicroscopyXMLTags.ReferenceDataTag) );
 	}
+	//Get profile data for one diffusing component (list of profile data, one for each parameter)
+	if(param.getProfileData_oneDiffComponent()!= null)
+	{
+		frapStudyNode.addContent(getXML(param.getProfileData_oneDiffComponent(), true));
+	}
+	if(param.getProfileData_twoDiffComponents()!= null)
+	{
+		frapStudyNode.addContent(getXML(param.getProfileData_twoDiffComponents(), false));
+	}	
 	//Get BioModel
 	if (param.getBioModel()!=null){
 		frapStudyNode.addContent( vcellXMLProducer.getXML(param.getBioModel()) );
@@ -551,6 +562,59 @@ private static Element getXML(double[] timePoints)
 	return timePointsNode;
 }
 
+private static Element getXML(ProfileData[] profileData, boolean bDiffOne)
+{
+	Element listProfileData = null;
+	if(bDiffOne)
+	{
+		listProfileData = new Element(MicroscopyXMLTags.ListOfProfileData_OneDiffTag);
+	}
+	else
+	{
+		listProfileData = new Element(MicroscopyXMLTags.ListOfProfileData_TwoDiffTag);
+	}
+	for(int i=0; i<profileData.length; i++)
+	{
+		listProfileData.addContent(getXML(profileData[i]));
+	}
+	return listProfileData;
+}
+
+private static Element getXML(ProfileData profileData)
+{
+	Element profileDataNode = new Element(MicroscopyXMLTags.ProfileDataTag);
+	ArrayList<ProfileDataElement> profileDataElements = profileData.getProfileDataElements();
+	for(int i=0; i<profileDataElements.size(); i++)
+	{
+		profileDataNode.addContent(getXML(profileDataElements.get(i)));
+	}
+	return profileDataNode;
+}
+
+private static Element getXML(ProfileDataElement profileDataElement)
+{
+	Element profileDataElementNode = new Element(MicroscopyXMLTags.ProfieDataElementTag);
+	profileDataElementNode.setAttribute(MicroscopyXMLTags.profileDataElementParameterNameAttrTag, profileDataElement.getParamName());
+	profileDataElementNode.setAttribute(MicroscopyXMLTags.profileDataElementParameterValueAttrTag, profileDataElement.getParameterValue()+"");
+	profileDataElementNode.setAttribute(MicroscopyXMLTags.profileDataElementLikelihoodAttrTag, profileDataElement.getLikelihood()+"");
+	Parameter[] parameters = profileDataElement.getBestParameters();
+	for(int i = 0; i < parameters.length; i++)
+	{
+		profileDataElementNode.addContent(getXML(parameters[i]));
+	}
+	return profileDataElementNode;
+}
+
+private static Element getXML(Parameter parameter)
+{
+	Element parameterNode = new Element(OptXmlTags.Parameter_Tag);
+	parameterNode.setAttribute(OptXmlTags.ParameterName_Attr, parameter.getName());
+	parameterNode.setAttribute(OptXmlTags.ParameterLow_Attr, parameter.getLowerBound()+"");
+	parameterNode.setAttribute(OptXmlTags.ParameterHigh_Attr, parameter.getUpperBound()+"");
+	parameterNode.setAttribute(OptXmlTags.ParameterInit_Attr, parameter.getInitialGuess()+"");
+	parameterNode.setAttribute(OptXmlTags.ParameterScale_Attr, parameter.getScale()+"");
+	return parameterNode;
+}
 
 private static Element getXML(SimpleReferenceData referenceData, String referenDataTag)
 {
