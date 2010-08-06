@@ -311,6 +311,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setRoiExternalDataInfo(null);
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setFrapOptData(null);
 	  	   						getFrapWorkspace().getWorkingFrapStudy().setStoredRefData(null);
+	  	   						//reset data for confidence intervals
+	  	   						getFrapWorkspace().getWorkingFrapStudy().setProfileData_oneDiffComponent(null);
+	  	   						getFrapWorkspace().getWorkingFrapStudy().setProfileData_twoDiffComponents(null);
 	  	   						//clear model parameters
 	  	   						FRAPModel[] models = getFrapWorkspace().getWorkingFrapStudy().getModels();
 	  	   						if(models != null)
@@ -1261,26 +1264,28 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		{ 
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-
-					
-					FRAPStudy newFRAPStudy = null;
-					String newVFRAPFileName = null;
-					
-					if(inFile.getName().endsWith("."+VirtualFrapLoader.VFRAP_EXTENSION) || inFile.getName().endsWith(".xml")) //.vfrap
+				FRAPStudy newFRAPStudy = null;
+				String newVFRAPFileName = null;
+				
+				if(inFile.getName().endsWith("."+VirtualFrapLoader.VFRAP_EXTENSION) || inFile.getName().endsWith(".xml")) //.vfrap
+				{
+					String xmlString = XmlUtil.getXMLString(inFile.getAbsolutePath());
+					MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+					newFRAPStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),this.getClientTaskStatusSupport());
+					if(!FRAPWorkspace.areExternalDataOK(getLocalWorkspace(),newFRAPStudy.getFrapDataExternalDataInfo(),newFRAPStudy.getRoiExternalDataInfo()))
 					{
-						String xmlString = XmlUtil.getXMLString(inFile.getAbsolutePath());
-						MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
-						newFRAPStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),this.getClientTaskStatusSupport());
-						if(!FRAPWorkspace.areExternalDataOK(getLocalWorkspace(),newFRAPStudy.getFrapDataExternalDataInfo(),newFRAPStudy.getRoiExternalDataInfo()))
-						{
-							newFRAPStudy.setFrapDataExternalDataInfo(null);
-							newFRAPStudy.setRoiExternalDataInfo(null);
-						}
-						newVFRAPFileName = inFile.getAbsolutePath();
+						newFRAPStudy.setFrapDataExternalDataInfo(null);
+						newFRAPStudy.setRoiExternalDataInfo(null);
 					}
+					newVFRAPFileName = inFile.getAbsolutePath();
 					//for loaded file
 					newFRAPStudy.setXmlFilename(newVFRAPFileName);
 					hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
+				}
+				else
+				{
+					throw new Exception("Invalid Virtual Frap file name!");
+				}
 			}
 		};
 		totalTasks.add(loadTask);
@@ -1295,9 +1300,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				if(fStudy != null && fStudy.getXmlFilename() != null && fStudy.getXmlFilename().length() > 0)
 				{
 					fName = fStudy.getXmlFilename();
+					VirtualFrapLoader.mf.setMainFrameTitle(fName);
+					VirtualFrapMainFrame.updateStatus("Loaded " + fName);
 				}
-				VirtualFrapLoader.mf.setMainFrameTitle(fName);
-				VirtualFrapMainFrame.updateStatus("Loaded " + fName);
+				else
+				{
+					VirtualFrapMainFrame.updateStatus(LOADING_MESSAGE + " Failed.");
+				}
 	            VirtualFrapMainFrame.updateProgress(0);
 	            //clear movie buffer
  				clearMovieBuffer();

@@ -48,6 +48,9 @@ public class ConfidenceIntervalPlotPanel extends JPanel
 		{
 			tableModel = new ConfidenceIntervalTableModel();
 			intervalTable = new StyleTable(tableModel);
+			//set numeic renderer to numeric table cell 
+			intervalTable.getColumnModel().getColumn(ConfidenceIntervalTableModel.COLUMN_PARAMETER_VAL).setCellRenderer(new NumericTableCellRenderer(5));
+			
 		}
 		return intervalTable;
 	}

@@ -65,6 +65,15 @@ public class MicroscopyXMLTags {
 	public static final String NumFrapStudyListAttrTag = "NumOfFrapStudies";
 	public static final String FrapFileNameTag = "FrapFileName";
 	public static final String BatchRunSelectedModelTypeTag = "BatchRunSelectedModelType";
+	
+	//profie data
+	public static final String ListOfProfileData_OneDiffTag = "ListOfProfileData_oneDiffusingComponent";
+	public static final String ListOfProfileData_TwoDiffTag = "ListOfProfileData_twoDiffusingComponents";
+	public static final String ProfileDataTag = "ProfileData";
+	public static final String ProfieDataElementTag = "ProfileDataElement";
+	public static final String profileDataElementParameterNameAttrTag = "ParamName";
+	public static final String profileDataElementParameterValueAttrTag = "ParamVal";
+	public static final String profileDataElementLikelihoodAttrTag = "Likelihood";
     
 	/**
 	 * XMLTags default constructor.

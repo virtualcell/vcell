@@ -11,6 +11,7 @@ import java.util.Vector;
 import java.util.zip.InflaterInputStream;
 
 import org.jdom.Element;
+import org.vcell.optimization.OptXmlTags;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
@@ -57,686 +58,663 @@ public class MicroscopyXmlReader {
 		}
 	};
     	
-/**
- * This constructor takes a parameter to specify if the KeyValue should be ignored
- * Creation date: (3/13/2001 12:16:30 PM)
- * @param readKeys boolean
- */
-public MicroscopyXmlReader(boolean readKeys) {
-	super();
-	this.vcellXMLReader = new XmlReader(readKeys);
-}
-
-public static ExternalDataAndSimulationInfo getExternalDataAndSimulationInfo(File vfrapDocument) throws Exception{
-	String xmlString = XmlUtil.getXMLString(vfrapDocument.getAbsolutePath());
-	Element param  = XmlUtil.stringToXML(xmlString, null).getRootElement();
-	MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+	/**
+	 * This constructor takes a parameter to specify if the KeyValue should be ignored
+	 * Creation date: (3/13/2001 12:16:30 PM)
+	 * @param readKeys boolean
+	 */
+	public MicroscopyXmlReader(boolean readKeys) {
+		super();
+		this.vcellXMLReader = new XmlReader(readKeys);
+	}
 	
-	KeyValue simulationKeyValue = null;
-	ExternalDataInfo frapDataExtDatInfo = null;
-	ExternalDataInfo roiExtDataInfo = null;
-	Element bioModelElement = param.getChild(XMLTags.BioModelTag);
-	if (bioModelElement!=null){
-		BioModel bioModel  = xmlReader.vcellXMLReader.getBioModel(bioModelElement);
-		if(bioModel != null && bioModel.getSimulations()!=null && bioModel.getSimulations().length > 0){
-			simulationKeyValue = bioModel.getSimulations()[0].getKey();
+	public static ExternalDataAndSimulationInfo getExternalDataAndSimulationInfo(File vfrapDocument) throws Exception{
+		String xmlString = XmlUtil.getXMLString(vfrapDocument.getAbsolutePath());
+		Element param  = XmlUtil.stringToXML(xmlString, null).getRootElement();
+		MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+		
+		KeyValue simulationKeyValue = null;
+		ExternalDataInfo frapDataExtDatInfo = null;
+		ExternalDataInfo roiExtDataInfo = null;
+		Element bioModelElement = param.getChild(XMLTags.BioModelTag);
+		if (bioModelElement!=null){
+			BioModel bioModel  = xmlReader.vcellXMLReader.getBioModel(bioModelElement);
+			if(bioModel != null && bioModel.getSimulations()!=null && bioModel.getSimulations().length > 0){
+				simulationKeyValue = bioModel.getSimulations()[0].getKey();
+			}
 		}
-	}
-	Element timeSeriesExternalDataElement = param.getChild(MicroscopyXMLTags.ImageDatasetExternalDataInfoTag);
-	if (timeSeriesExternalDataElement!=null){
-		frapDataExtDatInfo = getExternalDataInfo(timeSeriesExternalDataElement);
-	}
-	Element roiExternalDataElement = param.getChild(MicroscopyXMLTags.ROIExternalDataInfoTag);
-	if (roiExternalDataElement!=null){
-		roiExtDataInfo = getExternalDataInfo(roiExternalDataElement);
-	}
-
-	return new ExternalDataAndSimulationInfo(simulationKeyValue,frapDataExtDatInfo,roiExtDataInfo);
-
-}
-
-
-//commented old parameters
-/*private FRAPStudy.FRAPModelParameters getFRAPModelParameters(Element param) throws XmlParseException{
-	//old saved models
-	if(param.getChildren().size() < 1)
-	{
-		String bleachWhileMonitoringStr = param.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag);
-		String diffusionRateStr = param.getAttributeValue(MicroscopyXMLTags.RecoveryDiffusionRateAttrTag);
-		String mobileFractionStr = param.getAttributeValue(MicroscopyXMLTags.MobileFractionAttrTag);
-		String startingIndexForRecoveryStr = param.getAttributeValue(MicroscopyXMLTags.StartingIndexForRecoveryAttrTag);
-		FRAPStudy.InitialModelParameters iniParameters = new FRAPStudy.InitialModelParameters(diffusionRateStr, mobileFractionStr, bleachWhileMonitoringStr, startingIndexForRecoveryStr);
+		Element timeSeriesExternalDataElement = param.getChild(MicroscopyXMLTags.ImageDatasetExternalDataInfoTag);
+		if (timeSeriesExternalDataElement!=null){
+			frapDataExtDatInfo = getExternalDataInfo(timeSeriesExternalDataElement);
+		}
+		Element roiExternalDataElement = param.getChild(MicroscopyXMLTags.ROIExternalDataInfoTag);
+		if (roiExternalDataElement!=null){
+			roiExtDataInfo = getExternalDataInfo(roiExternalDataElement);
+		}
 	
-		FRAPStudy.PureDiffusionModelParameters pureDiffParameters = null;
-		String secondRateStr = param.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag);
-		String secondFractionStr = param.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag);
-		if(secondRateStr != null && secondFractionStr != null)
-		{
-			pureDiffParameters = new FRAPStudy.PureDiffusionModelParameters(diffusionRateStr, mobileFractionStr, secondRateStr, secondFractionStr, bleachWhileMonitoringStr, new Boolean(true));
+		return new ExternalDataAndSimulationInfo(simulationKeyValue,frapDataExtDatInfo,roiExtDataInfo);
+	
+	}
+	
+	/**
+	 * This method returns a VCIMage object from a XML representation.
+	 * Creation date: (3/16/2001 3:41:24 PM)
+	 * @param param org.jdom.Element
+	 * @return VCImage
+	 * @throws XmlParseException
+	 */
+	private UShortImage getUShortImage(Element param) throws XmlParseException{
+		//get the attributes
+		Element tempelement= param.getChild(XMLTags.ImageDataTag);
+		int aNumX = Integer.parseInt( tempelement.getAttributeValue(XMLTags.XAttrTag) );
+		int aNumY = Integer.parseInt( tempelement.getAttributeValue(XMLTags.YAttrTag) );
+		int aNumZ = Integer.parseInt( tempelement.getAttributeValue(XMLTags.ZAttrTag) );
+		int compressSize =
+			Integer.parseInt( tempelement.getAttributeValue(XMLTags.CompressedSizeTag) );
+		final int BYTES_PER_SHORT = 2;
+		int UNCOMPRESSED_SIZE_BYTES = aNumX*aNumY*aNumZ*BYTES_PER_SHORT;
+		//getpixels
+		String hexEncodedBytes = tempelement.getText();
+		byte[] rawBytes = org.vcell.util.Hex.toBytes(hexEncodedBytes);
+		ByteArrayInputStream rawByteArrayInputStream = new ByteArrayInputStream(rawBytes);
+		InputStream rawInputStream = rawByteArrayInputStream;
+		if(compressSize != UNCOMPRESSED_SIZE_BYTES){
+			rawInputStream  = new InflaterInputStream(rawByteArrayInputStream);
 		}
-		else
-		{
-			pureDiffParameters = new FRAPStudy.PureDiffusionModelParameters(diffusionRateStr, mobileFractionStr, null, null, bleachWhileMonitoringStr, new Boolean(false));
+		byte[] shortsAsBytes = new byte[UNCOMPRESSED_SIZE_BYTES];
+		int readCount = 0;
+		try{
+			while((readCount+= rawInputStream.read(shortsAsBytes, readCount, shortsAsBytes.length-readCount)) != shortsAsBytes.length){}
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new XmlParseException("error reading image pixels: "+e.getMessage());
+		}finally{
+			if(rawInputStream != null){try{rawInputStream.close();}catch(Exception e2){e2.printStackTrace();}}
+		}
+	
+		ByteBuffer byteBuffer = ByteBuffer.wrap(shortsAsBytes);
+		short[] shortPixels = new short[aNumX*aNumY*aNumZ];
+		for (int i = 0; i < shortPixels.length; i++) {
+			shortPixels[i] = byteBuffer.getShort();
+		}	
+		Element extentElement = param.getChild(XMLTags.ExtentTag);
+		Extent extent = null;
+		if (extentElement!=null){
+			extent = vcellXMLReader.getExtent(extentElement);
 		}
 		
-		FRAPStudy.ReactionDiffusionModelParameters reacDiffParameters = null;
-		return 	new FRAPStudy.FRAPModelParameters(iniParameters, pureDiffParameters, reacDiffParameters);
-	}
-	else // new models
-	{
-		FRAPStudy.InitialModelParameters iniParameters = null;
-		FRAPStudy.PureDiffusionModelParameters pureDiffParameters = null;
-		FRAPStudy.ReactionDiffusionModelParameters reacDiffParameters = null;
+		Element originElement = param.getChild(XMLTags.OriginTag);
+		Origin origin = null;
+		if (originElement!=null){
+			origin = vcellXMLReader.getOrigin(originElement);
+		}
+	
 		
-		Element iniParamElement = param.getChild(MicroscopyXMLTags.FRAPInitialParametersTag);
-		if(iniParamElement != null)
+	//	//set attributes
+	//	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	//	String annotation = param.getChildText(XMLTags.AnnotationTag);
+	
+		UShortImage newimage;
+		try {
+			newimage = new UShortImage(shortPixels,origin,extent,aNumX,aNumY,aNumZ);
+		} catch (ImageException e) {
+			e.printStackTrace();
+			throw new XmlParseException("error reading image: "+e.getMessage());
+		}
+		return newimage;
+	}
+	
+	
+	/**
+	 * This method returns a Biomodel object from a XML Element.
+	 * Creation date: (3/13/2001 12:35:00 PM)
+	 * @param param org.jdom.Element
+	 * @return cbit.vcell.biomodel.BioModel
+	 * @throws XmlParseException
+	 */
+	private ImageDataset getImageDataset(Element param, ClientTaskStatusSupport progressListener) throws XmlParseException{
+	
+		
+		List<Element> ushortImageElementList = param.getChildren(MicroscopyXMLTags.UShortImageTag);
+		Iterator<Element> imageElementIter = ushortImageElementList.iterator();
+		UShortImage[] images = new UShortImage[ushortImageElementList.size()];
+		//added in Feb 2008, for counting loading progress
+		int imageSize = ushortImageElementList.size();
+		int imageCount = 0;
+		while (imageElementIter.hasNext()){
+			images[imageCount++] = getUShortImage(imageElementIter.next());
+			if(progressListener != null){progressListener.setProgress((int)((imageCount*100.0)/imageSize));}
+		}
+		Element timeStampListElement = param.getChild(MicroscopyXMLTags.TimeStampListTag);
+		double[] timestamps = null;
+		if (timeStampListElement!=null){
+			String timeStampListText = timeStampListElement.getTextTrim();
+			StringTokenizer tokens = new StringTokenizer(timeStampListText,",\n\r\t ",false);
+			ArrayList<Double> times = new ArrayList<Double>();
+			while (tokens.hasMoreTokens()){
+				String token = tokens.nextToken();
+				times.add(Double.parseDouble(token));
+			}
+			timestamps = new double[times.size()];
+			for (int i = 0; i < timestamps.length; i++) {
+				timestamps[i] = times.get(i);
+			}
+		}
+		int numTimeSteps = (timestamps!=null)?(timestamps.length):(1);
+		int numZ = images.length/numTimeSteps;
+		ImageDataset imageDataset = new ImageDataset(images, timestamps, numZ);
+		return imageDataset;
+	}
+	
+	/**
+	 * This method returns a Biomodel object from a XML Element.
+	 * Creation date: (3/13/2001 12:35:00 PM)
+	 * @param param org.jdom.Element
+	 * @return cbit.vcell.biomodel.BioModel
+	 * @throws XmlParseException
+	 */
+	private ROI getROI(Element param) throws XmlParseException{
+	
+		String roiName = param.getAttributeValue(MicroscopyXMLTags.ROITypeAttrTag);
+		
+		List<Element> ushortImageElementList = param.getChildren(MicroscopyXMLTags.UShortImageTag);
+		Iterator<Element> imageElementIter = ushortImageElementList.iterator();
+		UShortImage[] images = new UShortImage[ushortImageElementList.size()];
+		int imageIndex = 0;
+		while (imageElementIter.hasNext()){
+			images[imageIndex++] = getUShortImage(imageElementIter.next());
+		}
+		
+		ROI roi = new ROI(images,roiName);
+	
+		return roi;
+	}
+	
+	/**
+	 * This method returns a Biomodel object from a XML Element.
+	 * Creation date: (3/13/2001 12:35:00 PM)
+	 * @param param org.jdom.Element
+	 * @return cbit.vcell.biomodel.BioModel
+	 * @throws XmlParseException
+	 */
+	private FRAPData getFrapData(Element param, ClientTaskStatusSupport progressListener) throws XmlParseException{
+	
+		
+		Element imageDatasetElement = param.getChild(MicroscopyXMLTags.ImageDatasetTag);
+		ImageDataset imageDataset = null;
+		if (imageDatasetElement!=null){
+			imageDataset = getImageDataset(imageDatasetElement,progressListener);
+		}
+		List<Element> roiList = param.getChildren(MicroscopyXMLTags.ROITag);
+		ROI[] rois = null;
+		int numROIs = roiList.size();
+		if (numROIs>0){
+			rois = new ROI[numROIs];
+			Iterator<Element> roiIter = roiList.iterator();
+			int index = 0;
+			while (roiIter.hasNext()){
+				Element roiElement = roiIter.next();
+				rois[index++] = getROI(roiElement);
+			}
+		}
+		//reorder ROIs according to the order of FRAPData.VFRAP_ROI_ENUM
+		ROI[] reorderedROIs = AnnotatedImageDataset.reorderROIs(rois);
+		FRAPData frapData = new FRAPData(imageDataset, reorderedROIs);
+		//Read pixel value scaling info
+		Element originalGlobalScaleInfoElement = param.getChild(MicroscopyXMLTags.OriginalGlobalScaleInfoTag);
+		if(originalGlobalScaleInfoElement != null){
+			frapData.setOriginalGlobalScaleInfo(
+				new FRAPData.OriginalGlobalScaleInfo(
+					Integer.parseInt(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoMinTag)),
+					Integer.parseInt(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoMaxTag)),
+					Double.parseDouble(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoScaleTag)),
+					Double.parseDouble(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoOffsetTag))
+				)
+			);
+		}
+		//After loading all the ROI rings, the progress should set to 100.
+		if(progressListener != null){progressListener.setProgress(100);}
+		return frapData;
+	}
+	
+	/**
+	 * Method getExternalDataIdentifier.
+	 * @param externalDataIDElement Element
+	 * @return ExternalDataIdentifier
+	 */
+	private static ExternalDataIdentifier getExternalDataIdentifier(Element externalDataIDElement){
+		String name = externalDataIDElement.getAttributeValue(XMLTags.NameAttrTag);
+		String keyValueStr = externalDataIDElement.getAttributeValue(XMLTags.KeyValueAttrTag);
+		String ownerName = externalDataIDElement.getAttributeValue(MicroscopyXMLTags.OwnerNameAttrTag);
+		String ownerKey = externalDataIDElement.getAttributeValue(XMLTags.OwnerKeyAttrTag);
+		
+		return new ExternalDataIdentifier(new KeyValue(keyValueStr), new User(ownerName,new KeyValue(ownerKey)), name);
+	}
+	
+	/**
+	 * This method returns a Biomodel object from a XML Element.
+	 * Creation date: (3/13/2001 12:35:00 PM)
+	 * @param param org.jdom.Element
+	 * @return cbit.vcell.biomodel.BioModel
+	 * @throws XmlParseException
+	 */
+	public FRAPStudy getFrapStudy(Element param, ClientTaskStatusSupport progressListener) throws XmlParseException{
+	
+		FRAPStudy frapStudy = new FRAPStudy();
+		
+		//set name
+		frapStudy.setName(this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag)));
+		//original image path
+		frapStudy.setOriginalImageFilePath(this.unMangle(param.getAttributeValue(MicroscopyXMLTags.OriginalImagePathAttrTag)));
+		//description
+		frapStudy.setDescription(param.getChildText(XMLTags.AnnotationTag));
+		//starting index for recovery
+		String startIndexStr = param.getChildText(MicroscopyXMLTags.StartingIndexForRecoveryTag); 
+		if(startIndexStr != null && startIndexStr.length() > 0)
 		{
-			iniParameters = getInitialParameters(iniParamElement);
+			frapStudy.setStartingIndexForRecovery(new Integer(startIndexStr));
 		}
-		
-		Element pureDiffParamElement = param.getChild(MicroscopyXMLTags.FRAPPureDiffusionParametersTag);
-		if(pureDiffParamElement != null)
+		//best model index
+		String bestModexIndexStr = param.getChildText(MicroscopyXMLTags.BestModelIndexTag);
+		if(bestModexIndexStr != null && bestModexIndexStr.length() > 0)
 		{
-			pureDiffParameters = getPureDiffModelParameters(pureDiffParamElement);
+			frapStudy.setBestModelIndex(new Integer(bestModexIndexStr));
 		}
-		
-		Element reacDiffParamElement = param.getChild(MicroscopyXMLTags.FRAPReactionDiffusionParametersTag);
-		if(reacDiffParamElement != null)
+		//selected ROIs
+		Element selectedROIsElement = param.getChild(MicroscopyXMLTags.SelectedROIsTag);
+		if(selectedROIsElement != null)
 		{
-			reacDiffParameters = getReacDiffModelParameters(reacDiffParamElement);
+		    String roiBooleanText = selectedROIsElement.getText();
+		    if(roiBooleanText != null)
+		    {
+			    CommentStringTokenizer tokens = new CommentStringTokenizer(roiBooleanText);
+			    int arrayLen = FRAPData.VFRAP_ROI_ENUM.values().length;
+			    boolean[] selectedROIsBooleanArray = new boolean[arrayLen];
+			    for (int i = 0; i < arrayLen; i++)
+			    {
+			        if (tokens.hasMoreTokens())
+			        {
+			            String token = tokens.nextToken();
+			            selectedROIsBooleanArray[i] = Boolean.parseBoolean(token);
+			        }else{
+			            throw new RuntimeException("failed to read boolean value for selected ROIs for error calculation.");
+			        }
+			    }
+			    frapStudy.setSelectedROIsForErrorCalculation(selectedROIsBooleanArray);
+		    }
 		}
-		
-		return new FRAPStudy.FRAPModelParameters(iniParameters, pureDiffParameters, reacDiffParameters); 
-	}
-}
-
-private FRAPStudy.InitialModelParameters getInitialParameters(Element param)
-{
-	String bleachWhileMonitoringStr = param.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag);
-	String diffusionRateStr = param.getAttributeValue(MicroscopyXMLTags.RecoveryDiffusionRateAttrTag);
-	String mobileFractionStr = param.getAttributeValue(MicroscopyXMLTags.MobileFractionAttrTag);
-	String startingIndexForRecoveryStr = param.getAttributeValue(MicroscopyXMLTags.StartingIndexForRecoveryAttrTag);
-	FRAPStudy.InitialModelParameters iniParameters = new FRAPStudy.InitialModelParameters(diffusionRateStr, mobileFractionStr, bleachWhileMonitoringStr, startingIndexForRecoveryStr);
-	return iniParameters;
-}
-
-private FRAPStudy.PureDiffusionModelParameters getPureDiffModelParameters(Element param)
-{
-	FRAPStudy.PureDiffusionModelParameters pureDiffParameters = null;
-	
-	String bleachWhileMonitoringStr = param.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag);
-	String primaryDiffRateStr = param.getAttributeValue(MicroscopyXMLTags.PrimaryRateAttrTag);
-	String primaryMFStr = param.getAttributeValue(MicroscopyXMLTags.PrimaryFractionAttTag);
-	Boolean isSecDiffApplied = new Boolean(param.getAttributeValue(MicroscopyXMLTags.isSecondDiffAppliedAttTag));
-	if(isSecDiffApplied.booleanValue())
-	{
-		String secondRateStr = param.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag);
-		String secondFractionStr = param.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag);
-		pureDiffParameters = new FRAPStudy.PureDiffusionModelParameters(primaryDiffRateStr, primaryMFStr, secondRateStr, secondFractionStr, bleachWhileMonitoringStr, new Boolean(true));
-	}
-	else
-	{
-		pureDiffParameters = new FRAPStudy.PureDiffusionModelParameters(primaryDiffRateStr, primaryMFStr, null, null, bleachWhileMonitoringStr, new Boolean(false));
-	}
-	return pureDiffParameters;
-}
-
-private FRAPStudy.ReactionDiffusionModelParameters getReacDiffModelParameters(Element param)
-{
-	FRAPStudy.ReactionDiffusionModelParameters reacDiffParameters = null;
-	
-	String bleachWhileMonitoringStr = param.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag);
-	String freeDiffusionRate = param.getAttributeValue(MicroscopyXMLTags.FreeDiffusionRateAttTag);
-	String freeMobileFraction = param.getAttributeValue(MicroscopyXMLTags.FreeMobileFractionAttTag);
-	String complexDiffusionRate = param.getAttributeValue(MicroscopyXMLTags.ComplexDiffusionRateAttTag);
-	String complexMobileFraction = param.getAttributeValue(MicroscopyXMLTags.ComplexMobileFractionAttTag);
-	String bsConcentration = param.getAttributeValue(MicroscopyXMLTags.BindingSiteConcentrationAttTag);
-	String onRateStr = param.getAttributeValue(MicroscopyXMLTags.ReactionOnRateAttTag);
-	String offRateStr = param.getAttributeValue(MicroscopyXMLTags.ReactionOffRateAttTag);
-	reacDiffParameters = new FRAPStudy.ReactionDiffusionModelParameters(freeDiffusionRate, freeMobileFraction, complexDiffusionRate, complexMobileFraction, bleachWhileMonitoringStr, bsConcentration, onRateStr, offRateStr);
-	
-	return reacDiffParameters;
-}*/
-
-/**
- * This method returns a VCIMage object from a XML representation.
- * Creation date: (3/16/2001 3:41:24 PM)
- * @param param org.jdom.Element
- * @return VCImage
- * @throws XmlParseException
- */
-private UShortImage getUShortImage(Element param) throws XmlParseException{
-	//get the attributes
-	Element tempelement= param.getChild(XMLTags.ImageDataTag);
-	int aNumX = Integer.parseInt( tempelement.getAttributeValue(XMLTags.XAttrTag) );
-	int aNumY = Integer.parseInt( tempelement.getAttributeValue(XMLTags.YAttrTag) );
-	int aNumZ = Integer.parseInt( tempelement.getAttributeValue(XMLTags.ZAttrTag) );
-	int compressSize =
-		Integer.parseInt( tempelement.getAttributeValue(XMLTags.CompressedSizeTag) );
-	final int BYTES_PER_SHORT = 2;
-	int UNCOMPRESSED_SIZE_BYTES = aNumX*aNumY*aNumZ*BYTES_PER_SHORT;
-	//getpixels
-	String hexEncodedBytes = tempelement.getText();
-	byte[] rawBytes = org.vcell.util.Hex.toBytes(hexEncodedBytes);
-	ByteArrayInputStream rawByteArrayInputStream = new ByteArrayInputStream(rawBytes);
-	InputStream rawInputStream = rawByteArrayInputStream;
-	if(compressSize != UNCOMPRESSED_SIZE_BYTES){
-		rawInputStream  = new InflaterInputStream(rawByteArrayInputStream);
-	}
-	byte[] shortsAsBytes = new byte[UNCOMPRESSED_SIZE_BYTES];
-	int readCount = 0;
-	try{
-		while((readCount+= rawInputStream.read(shortsAsBytes, readCount, shortsAsBytes.length-readCount)) != shortsAsBytes.length){}
-	}catch(Exception e){
-		e.printStackTrace();
-		throw new XmlParseException("error reading image pixels: "+e.getMessage());
-	}finally{
-		if(rawInputStream != null){try{rawInputStream.close();}catch(Exception e2){e2.printStackTrace();}}
-	}
-
-	ByteBuffer byteBuffer = ByteBuffer.wrap(shortsAsBytes);
-	short[] shortPixels = new short[aNumX*aNumY*aNumZ];
-	for (int i = 0; i < shortPixels.length; i++) {
-		shortPixels[i] = byteBuffer.getShort();
-	}	
-	Element extentElement = param.getChild(XMLTags.ExtentTag);
-	Extent extent = null;
-	if (extentElement!=null){
-		extent = vcellXMLReader.getExtent(extentElement);
-	}
-	
-	Element originElement = param.getChild(XMLTags.OriginTag);
-	Origin origin = null;
-	if (originElement!=null){
-		origin = vcellXMLReader.getOrigin(originElement);
-	}
-
-	
-//	//set attributes
-//	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
-//	String annotation = param.getChildText(XMLTags.AnnotationTag);
-
-	UShortImage newimage;
-	try {
-		newimage = new UShortImage(shortPixels,origin,extent,aNumX,aNumY,aNumZ);
-	} catch (ImageException e) {
-		e.printStackTrace();
-		throw new XmlParseException("error reading image: "+e.getMessage());
-	}
-	return newimage;
-}
-
-
-/**
- * This method returns a Biomodel object from a XML Element.
- * Creation date: (3/13/2001 12:35:00 PM)
- * @param param org.jdom.Element
- * @return cbit.vcell.biomodel.BioModel
- * @throws XmlParseException
- */
-private ImageDataset getImageDataset(Element param, ClientTaskStatusSupport progressListener) throws XmlParseException{
-
-	
-	List<Element> ushortImageElementList = param.getChildren(MicroscopyXMLTags.UShortImageTag);
-	Iterator<Element> imageElementIter = ushortImageElementList.iterator();
-	UShortImage[] images = new UShortImage[ushortImageElementList.size()];
-	//added in Feb 2008, for counting loading progress
-	int imageSize = ushortImageElementList.size();
-	int imageCount = 0;
-	while (imageElementIter.hasNext()){
-		images[imageCount++] = getUShortImage(imageElementIter.next());
-		if(progressListener != null){progressListener.setProgress((int)((imageCount*100.0)/imageSize));}
-	}
-	Element timeStampListElement = param.getChild(MicroscopyXMLTags.TimeStampListTag);
-	double[] timestamps = null;
-	if (timeStampListElement!=null){
-		String timeStampListText = timeStampListElement.getTextTrim();
-		StringTokenizer tokens = new StringTokenizer(timeStampListText,",\n\r\t ",false);
-		ArrayList<Double> times = new ArrayList<Double>();
-		while (tokens.hasMoreTokens()){
-			String token = tokens.nextToken();
-			times.add(Double.parseDouble(token));
+		//frap models
+	    Element frapModelElement = param.getChild(MicroscopyXMLTags.FrapModelsTag);
+		if(frapModelElement != null)
+		{
+			frapStudy.setModels(getFrapModels(frapModelElement));
 		}
-		timestamps = new double[times.size()];
-		for (int i = 0; i < timestamps.length; i++) {
-			timestamps[i] = times.get(i);
+		else //try to read old model parameters
+		{
+			
 		}
-	}
-	int numTimeSteps = (timestamps!=null)?(timestamps.length):(1);
-	int numZ = images.length/numTimeSteps;
-	ImageDataset imageDataset = new ImageDataset(images, timestamps, numZ);
-	return imageDataset;
-}
-
-/**
- * This method returns a Biomodel object from a XML Element.
- * Creation date: (3/13/2001 12:35:00 PM)
- * @param param org.jdom.Element
- * @return cbit.vcell.biomodel.BioModel
- * @throws XmlParseException
- */
-private ROI getROI(Element param) throws XmlParseException{
-
-	String roiName = param.getAttributeValue(MicroscopyXMLTags.ROITypeAttrTag);
-	
-	List<Element> ushortImageElementList = param.getChildren(MicroscopyXMLTags.UShortImageTag);
-	Iterator<Element> imageElementIter = ushortImageElementList.iterator();
-	UShortImage[] images = new UShortImage[ushortImageElementList.size()];
-	int imageIndex = 0;
-	while (imageElementIter.hasNext()){
-		images[imageIndex++] = getUShortImage(imageElementIter.next());
-	}
-	
-	ROI roi = new ROI(images,roiName);
-
-	return roi;
-}
-
-/**
- * This method returns a Biomodel object from a XML Element.
- * Creation date: (3/13/2001 12:35:00 PM)
- * @param param org.jdom.Element
- * @return cbit.vcell.biomodel.BioModel
- * @throws XmlParseException
- */
-private FRAPData getFrapData(Element param, ClientTaskStatusSupport progressListener) throws XmlParseException{
-
-	
-	Element imageDatasetElement = param.getChild(MicroscopyXMLTags.ImageDatasetTag);
-	ImageDataset imageDataset = null;
-	if (imageDatasetElement!=null){
-		imageDataset = getImageDataset(imageDatasetElement,progressListener);
-	}
-	List<Element> roiList = param.getChildren(MicroscopyXMLTags.ROITag);
-	ROI[] rois = null;
-	int numROIs = roiList.size();
-	if (numROIs>0){
-		rois = new ROI[numROIs];
-		Iterator<Element> roiIter = roiList.iterator();
-		int index = 0;
-		while (roiIter.hasNext()){
-			Element roiElement = roiIter.next();
-			rois[index++] = getROI(roiElement);
+	    //bioModel
+		Element bioModelElement = param.getChild(XMLTags.BioModelTag);
+		if (bioModelElement!=null){
+			frapStudy.setBioModel(vcellXMLReader.getBioModel(bioModelElement));
 		}
+		Element frapDataElement = param.getChild(MicroscopyXMLTags.FRAPDataTag);
+		if (frapDataElement!=null){
+			frapStudy.setFrapData(getFrapData(frapDataElement,progressListener));
+		}
+		Element timeSeriesExternalDataElement = param.getChild(MicroscopyXMLTags.ImageDatasetExternalDataInfoTag);
+		if (timeSeriesExternalDataElement!=null){
+			frapStudy.setFrapDataExternalDataInfo(getExternalDataInfo(timeSeriesExternalDataElement));
+		}
+		Element roiExternalDataElement = param.getChild(MicroscopyXMLTags.ROIExternalDataInfoTag);
+		if (roiExternalDataElement!=null){
+			frapStudy.setRoiExternalDataInfo(getExternalDataInfo(roiExternalDataElement));
+		}
+		//stored reference data
+		Element refDataElement = param.getChild(MicroscopyXMLTags.ReferenceDataTag);
+		if (refDataElement!=null){
+			frapStudy.setStoredRefData(getSimpleReferenceData(refDataElement));
+		}
+		//stored confidence intervals
+		Element profileData_oneDiffElement = param.getChild(MicroscopyXMLTags.ListOfProfileData_OneDiffTag);
+		if(profileData_oneDiffElement != null)
+		{
+			frapStudy.setProfileData_oneDiffComponent(getProfileDataList(profileData_oneDiffElement));
+		}
+		Element profileData_twoDiffElement = param.getChild(MicroscopyXMLTags.ListOfProfileData_TwoDiffTag);
+		if(profileData_twoDiffElement != null)
+		{
+			frapStudy.setProfileData_twoDiffComponents(getProfileDataList(profileData_twoDiffElement));
+		}
+		return frapStudy;
 	}
-	//reorder ROIs according to the order of FRAPData.VFRAP_ROI_ENUM
-	ROI[] reorderedROIs = AnnotatedImageDataset.reorderROIs(rois);
-	FRAPData frapData = new FRAPData(imageDataset, reorderedROIs);
-	//Read pixel value scaling info
-	Element originalGlobalScaleInfoElement = param.getChild(MicroscopyXMLTags.OriginalGlobalScaleInfoTag);
-	if(originalGlobalScaleInfoElement != null){
-		frapData.setOriginalGlobalScaleInfo(
-			new FRAPData.OriginalGlobalScaleInfo(
-				Integer.parseInt(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoMinTag)),
-				Integer.parseInt(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoMaxTag)),
-				Double.parseDouble(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoScaleTag)),
-				Double.parseDouble(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoOffsetTag))
-			)
-		);
-	}
-	//After loading all the ROI rings, the progress should set to 100.
-	if(progressListener != null){progressListener.setProgress(100);}
-	return frapData;
-}
-
-/**
- * Method getExternalDataIdentifier.
- * @param externalDataIDElement Element
- * @return ExternalDataIdentifier
- */
-private static ExternalDataIdentifier getExternalDataIdentifier(Element externalDataIDElement){
-	String name = externalDataIDElement.getAttributeValue(XMLTags.NameAttrTag);
-	String keyValueStr = externalDataIDElement.getAttributeValue(XMLTags.KeyValueAttrTag);
-	String ownerName = externalDataIDElement.getAttributeValue(MicroscopyXMLTags.OwnerNameAttrTag);
-	String ownerKey = externalDataIDElement.getAttributeValue(XMLTags.OwnerKeyAttrTag);
 	
-	return new ExternalDataIdentifier(new KeyValue(keyValueStr), new User(ownerName,new KeyValue(ownerKey)), name);
-}
-
-/**
- * This method returns a Biomodel object from a XML Element.
- * Creation date: (3/13/2001 12:35:00 PM)
- * @param param org.jdom.Element
- * @return cbit.vcell.biomodel.BioModel
- * @throws XmlParseException
- */
-public FRAPStudy getFrapStudy(Element param, ClientTaskStatusSupport progressListener) throws XmlParseException{
-
-	FRAPStudy frapStudy = new FRAPStudy();
+	private FRAPModel[] getFrapModels(Element frapModelElement) 
+	{
+		FRAPModel[] frapModels = new FRAPModel[FRAPModel.NUM_MODEL_TYPES];
+		Element diffOneElement = frapModelElement.getChild(MicroscopyXMLTags.DiffustionWithOneComponentModelTag);
+		if(diffOneElement != null)
+		{
+			String id = diffOneElement.getAttributeValue(MicroscopyXMLTags.ModelIdentifierAttTag);
+			frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] = new FRAPModel(id, null, null, null);
+			Element paramElement = diffOneElement.getChild(MicroscopyXMLTags.ModelParametersTag);
+			if(paramElement != null)
+			{
+				frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(getModelParameters(paramElement, FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT));
+			}
+		}
+		Element diffTwoElement = frapModelElement.getChild(MicroscopyXMLTags.DiffustionWithTwoComponentsModelTag);
+		if(diffTwoElement != null)
+		{
+			String id = diffTwoElement.getAttributeValue(MicroscopyXMLTags.ModelIdentifierAttTag);
+			frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] = new FRAPModel(id, null, null, null);
+			Element paramElement = diffTwoElement.getChild(MicroscopyXMLTags.ModelParametersTag);
+			if(paramElement != null)
+			{
+				frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(getModelParameters(paramElement, FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS));
+			}
+		}
+		Element diffReacElement = frapModelElement.getChild(MicroscopyXMLTags.DiffustionReactionModelTag);
+		if(diffReacElement != null)
+		{
+			String id = diffReacElement.getAttributeValue(MicroscopyXMLTags.ModelIdentifierAttTag);
+			frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING] = new FRAPModel(id, null, null, null);
+			Element paramElement = diffReacElement.getChild(MicroscopyXMLTags.ModelParametersTag);
+			if(paramElement != null)
+			{
+				frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setModelParameters(getModelParameters(paramElement, FRAPModel.IDX_MODEL_DIFF_BINDING));
+			}
+			Element timePointsElement = diffReacElement.getChild(MicroscopyXMLTags.ModelTimePointsTag);
+			if(timePointsElement != null)
+			{
+				frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setTimepoints(getBindingReacTimePoints(timePointsElement));
+			}
+			Element modelDataElement = diffReacElement.getChild(MicroscopyXMLTags.ModelDataTag);
+			if(modelDataElement != null)
+			{
+				SimpleReferenceData refModelData = getSimpleReferenceData(modelDataElement);
+				int roiLen = FRAPData.VFRAP_ROI_ENUM.values().length;
+				double[][] result = new double[roiLen][];
+				if(refModelData.getNumColumns() == (1+roiLen))
+				{
+					for(int i=0; i<roiLen; i++)
+					{
+						result[i]=refModelData.getColumnData(i+1); //first column is t, so the roi data starts from second column
+					}
+				}
+				frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setData(result);
+			}
+		}
+		return frapModels;
+	}
 	
-	//set name
-	frapStudy.setName(this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag)));
-	//original image path
-	frapStudy.setOriginalImageFilePath(this.unMangle(param.getAttributeValue(MicroscopyXMLTags.OriginalImagePathAttrTag)));
-	//description
-	frapStudy.setDescription(param.getChildText(XMLTags.AnnotationTag));
-	//starting index for recovery
-	String startIndexStr = param.getChildText(MicroscopyXMLTags.StartingIndexForRecoveryTag); 
-	if(startIndexStr != null && startIndexStr.length() > 0)
+	private double[] getBindingReacTimePoints(Element timePointsElement)
 	{
-		frapStudy.setStartingIndexForRecovery(new Integer(startIndexStr));
-	}
-	//best model index
-	String bestModexIndexStr = param.getChildText(MicroscopyXMLTags.BestModelIndexTag);
-	if(bestModexIndexStr != null && bestModexIndexStr.length() > 0)
-	{
-		frapStudy.setBestModelIndex(new Integer(bestModexIndexStr));
-	}
-	//selected ROIs
-	Element selectedROIsElement = param.getChild(MicroscopyXMLTags.SelectedROIsTag);
-	if(selectedROIsElement != null)
-	{
-	    String roiBooleanText = selectedROIsElement.getText();
-	    if(roiBooleanText != null)
+		int timePointsLen = Integer.parseInt(timePointsElement.getAttributeValue(MicroscopyXMLTags.ModelTimePointsLengthAttTag));
+	    double[] timePoints = new double[timePointsLen];
+	    String timePointsStr = timePointsElement.getText();
+	    if(timePointsStr != null)
 	    {
-		    CommentStringTokenizer tokens = new CommentStringTokenizer(roiBooleanText);
-		    int arrayLen = FRAPData.VFRAP_ROI_ENUM.values().length;
-		    boolean[] selectedROIsBooleanArray = new boolean[arrayLen];
-		    for (int i = 0; i < arrayLen; i++)
+		    CommentStringTokenizer tokens = new CommentStringTokenizer(timePointsStr);
+		    for (int i = 0; i < timePointsLen; i++)
 		    {
 		        if (tokens.hasMoreTokens())
 		        {
 		            String token = tokens.nextToken();
-		            selectedROIsBooleanArray[i] = Boolean.parseBoolean(token);
+		            timePoints[i] = Double.parseDouble(token);
 		        }else{
-		            throw new RuntimeException("failed to read boolean value for selected ROIs for error calculation.");
+		            throw new RuntimeException("failed to read time points value for reaction diffusion model.");
 		        }
 		    }
-		    frapStudy.setSelectedROIsForErrorCalculation(selectedROIsBooleanArray);
 	    }
+	    return timePoints;
 	}
-	//frap models
-    Element frapModelElement = param.getChild(MicroscopyXMLTags.FrapModelsTag);
-	if(frapModelElement != null)
-	{
-		frapStudy.setModels(getFrapModels(frapModelElement));
-	}
-	else //try to read old model parameters
-	{
-		
-	}
-    //bioModel
-	Element bioModelElement = param.getChild(XMLTags.BioModelTag);
-	if (bioModelElement!=null){
-		frapStudy.setBioModel(vcellXMLReader.getBioModel(bioModelElement));
-	}
-	Element frapDataElement = param.getChild(MicroscopyXMLTags.FRAPDataTag);
-	if (frapDataElement!=null){
-		frapStudy.setFrapData(getFrapData(frapDataElement,progressListener));
-	}
-	Element timeSeriesExternalDataElement = param.getChild(MicroscopyXMLTags.ImageDatasetExternalDataInfoTag);
-	if (timeSeriesExternalDataElement!=null){
-		frapStudy.setFrapDataExternalDataInfo(getExternalDataInfo(timeSeriesExternalDataElement));
-	}
-	Element roiExternalDataElement = param.getChild(MicroscopyXMLTags.ROIExternalDataInfoTag);
-	if (roiExternalDataElement!=null){
-		frapStudy.setRoiExternalDataInfo(getExternalDataInfo(roiExternalDataElement));
-	}
-	Element refDataElement = param.getChild(MicroscopyXMLTags.ReferenceDataTag);
-	if (refDataElement!=null){
-		frapStudy.setStoredRefData(getSimpleReferenceData(refDataElement));
-	}
-	return frapStudy;
-}
-
-private FRAPModel[] getFrapModels(Element frapModelElement) 
-{
-	FRAPModel[] frapModels = new FRAPModel[FRAPModel.NUM_MODEL_TYPES];
-	Element diffOneElement = frapModelElement.getChild(MicroscopyXMLTags.DiffustionWithOneComponentModelTag);
-	if(diffOneElement != null)
-	{
-		String id = diffOneElement.getAttributeValue(MicroscopyXMLTags.ModelIdentifierAttTag);
-		frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] = new FRAPModel(id, null, null, null);
-		Element paramElement = diffOneElement.getChild(MicroscopyXMLTags.ModelParametersTag);
-		if(paramElement != null)
+	
+	private Parameter[] getModelParameters(Element paramElement, int modelType) {
+		if(modelType == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
 		{
-			frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(getModelParameters(paramElement, FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT));
+			Parameter[] params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF];
+			double primaryDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryRateAttrTag));
+			params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE],
+	                									FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
+	                									FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+	                									FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
+	                									primaryDiffRate);
+			double primaryFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryFractionAttTag));
+			params[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
+														FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(), 
+														FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+														FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),
+														primaryFraction);
+			double bwmRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag));
+			params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE],
+										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
+										                bwmRate); 
+			return params;
 		}
+		else if(modelType ==FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+		{
+			Parameter[] params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF];
+			double primaryDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryRateAttrTag));
+			params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 
+										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
+										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
+										                primaryDiffRate);
+			double primaryFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryFractionAttTag));
+			params[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
+										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+										                primaryFraction);
+			double bwmRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag));
+			params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
+										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
+										                bwmRate);
+			double secDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag));
+			params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE],
+										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
+										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
+										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
+										                secDiffRate);
+			double secFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag));
+			params[FRAPModel.INDEX_SECONDARY_FRACTION]= new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
+										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
+										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
+										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
+										                secFraction);
+			
+			
+			
+			return params;
+		}
+		else if(modelType ==FRAPModel.IDX_MODEL_DIFF_BINDING)
+		{
+			Parameter[] params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_BINDING];
+			double primaryDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryRateAttrTag));
+			params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 
+										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
+										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
+										                primaryDiffRate);
+			double primaryFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryFractionAttTag));
+			params[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
+										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+										                primaryFraction);
+			double bwmRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag));
+			params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
+										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
+										                bwmRate);
+			double secDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag));
+			params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE],
+										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
+										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
+										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
+										                secDiffRate);
+			double secFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag));
+			params[FRAPModel.INDEX_SECONDARY_FRACTION]= new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
+										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
+										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
+										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
+										                secFraction);
+			double bsConcentration = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BindingSiteConcentrationAttTag));
+			params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION],
+										                0,
+										                1,
+										                1, 
+										                bsConcentration);
+			double onRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.ReactionOnRateAttTag));
+			params[FRAPModel.INDEX_ON_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_ON_RATE], 
+										                0,
+										                1e6,
+										                1, 
+										                onRate);
+			double offRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.ReactionOffRateAttTag));
+			params[FRAPModel.INDEX_OFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE], 
+										                0,
+										                1e6,
+										                1, 
+										                offRate); 
+			return params;
+		}
+		return null;
 	}
-	Element diffTwoElement = frapModelElement.getChild(MicroscopyXMLTags.DiffustionWithTwoComponentsModelTag);
-	if(diffTwoElement != null)
-	{
-		String id = diffTwoElement.getAttributeValue(MicroscopyXMLTags.ModelIdentifierAttTag);
-		frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] = new FRAPModel(id, null, null, null);
-		Element paramElement = diffTwoElement.getChild(MicroscopyXMLTags.ModelParametersTag);
-		if(paramElement != null)
-		{
-			frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(getModelParameters(paramElement, FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS));
-		}
+	
+	private static ExternalDataInfo getExternalDataInfo(Element extDataInfoElement){
+		String filename = extDataInfoElement.getAttributeValue(MicroscopyXMLTags.FilenameAttrTag);
+		Element externalDataIDElement = extDataInfoElement.getChild(MicroscopyXMLTags.ExternalDataIdentifierTag);
+		ExternalDataIdentifier externalDataID = getExternalDataIdentifier(externalDataIDElement);
+		ExternalDataInfo externalDataInfo = new ExternalDataInfo(externalDataID, filename);
+		return externalDataInfo;
+	
 	}
-	Element diffReacElement = frapModelElement.getChild(MicroscopyXMLTags.DiffustionReactionModelTag);
-	if(diffReacElement != null)
+	/**
+	 * Method unMangle.
+	 * @param str String
+	 * @return String
+	 */
+	private String unMangle(String str){
+		return XmlBase.unMangle(str);
+	}
+	
+	private SimpleReferenceData getSimpleReferenceData(Element referenceDataElement/*, Namespace ns*/){
+	    //
+	    // read ReferenceData
+	    //
+	    String numRowsText = referenceDataElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NumRowsAttribute);
+	    String numColsText = referenceDataElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NumColumnsAttribute);
+	    int numCols = Integer.parseInt(numColsText);
+	    //
+	    // read columns
+	    //    
+	    String[] columnNames = new String[numCols];
+	    double[] columnWeights = new double[numCols];
+	    Element dataColumnListElement = referenceDataElement.getChild(ParameterEstimationTaskXMLPersistence.DataColumnListTag/*, ns*/);
+	    List<Element> dataColumnList = dataColumnListElement.getChildren(ParameterEstimationTaskXMLPersistence.DataColumnTag/*, ns*/);
+	    for (int i = 0; i < dataColumnList.size(); i++){
+	          Element dataColumnElement = dataColumnList.get(i);
+	          columnNames[i] = dataColumnElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NameAttribute);
+	          columnWeights[i] = Double.parseDouble(dataColumnElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.WeightAttribute));
+	    }
+	    //
+	    // read rows
+	    //
+	    Vector<double[]> rowDataVector = new Vector<double[]>();
+	    Element dataRowListElement = referenceDataElement.getChild(ParameterEstimationTaskXMLPersistence.DataRowListTag/*, ns*/);
+	    List<Element> dataRowList = dataRowListElement.getChildren(ParameterEstimationTaskXMLPersistence.DataRowTag/*, ns*/);
+	    for (int i = 0; i < dataRowList.size(); i++){
+	          Element dataRowElement = dataRowList.get(i);
+	          String rowText = dataRowElement.getText();
+	          CommentStringTokenizer tokens = new CommentStringTokenizer(rowText);
+	          double[] rowData = new double[numCols];
+	          for (int j = 0; j < numCols; j++){
+	                if (tokens.hasMoreTokens()){
+	                      String token = tokens.nextToken();
+	                      rowData[j] = Double.parseDouble(token);
+	                }else{
+	                      throw new RuntimeException("failed to read row data for ReferenceData");
+	                }
+	          }
+	          rowDataVector.add(rowData);
+	    }
+	    SimpleReferenceData referenceData = new cbit.vcell.opt.SimpleReferenceData(columnNames, columnWeights, rowDataVector);
+	    return referenceData;
+	}
+	
+	//get a list of profile data for either diffusion with one diffusing component/or with two diffusing components
+	private ProfileData[] getProfileDataList(Element profileDataListElement)
 	{
-		String id = diffReacElement.getAttributeValue(MicroscopyXMLTags.ModelIdentifierAttTag);
-		frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING] = new FRAPModel(id, null, null, null);
-		Element paramElement = diffReacElement.getChild(MicroscopyXMLTags.ModelParametersTag);
-		if(paramElement != null)
+		ProfileData[] profileDataArray = null;
+		//read the list of profile data
+		if(profileDataListElement !=  null)
 		{
-			frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setModelParameters(getModelParameters(paramElement, FRAPModel.IDX_MODEL_DIFF_BINDING));
-		}
-		Element timePointsElement = diffReacElement.getChild(MicroscopyXMLTags.ModelTimePointsTag);
-		if(timePointsElement != null)
-		{
-			frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setTimepoints(getBindingReacTimePoints(timePointsElement));
-		}
-		Element modelDataElement = diffReacElement.getChild(MicroscopyXMLTags.ModelDataTag);
-		if(modelDataElement != null)
-		{
-			SimpleReferenceData refModelData = getSimpleReferenceData(modelDataElement);
-			int roiLen = FRAPData.VFRAP_ROI_ENUM.values().length;
-			double[][] result = new double[roiLen][];
-			if(refModelData.getNumColumns() == (1+roiLen))
+			List<Element> profileDataList = profileDataListElement.getChildren(MicroscopyXMLTags.ProfileDataTag);
+			profileDataArray = new ProfileData[profileDataList.size()];
+			for(int i=0; i < profileDataList.size(); i++)//loop through each profile data
 			{
-				for(int i=0; i<roiLen; i++)
-				{
-					result[i]=refModelData.getColumnData(i+1); //first column is t, so the roi data starts from second column
-				}
+				profileDataArray[i] = getProfileData(profileDataList.get(i));
 			}
-			frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setData(result);
 		}
-	}
-	return frapModels;
-}
-
-private double[] getBindingReacTimePoints(Element timePointsElement)
-{
-	int timePointsLen = Integer.parseInt(timePointsElement.getAttributeValue(MicroscopyXMLTags.ModelTimePointsLengthAttTag));
-    double[] timePoints = new double[timePointsLen];
-    String timePointsStr = timePointsElement.getText();
-    if(timePointsStr != null)
-    {
-	    CommentStringTokenizer tokens = new CommentStringTokenizer(timePointsStr);
-	    for (int i = 0; i < timePointsLen; i++)
-	    {
-	        if (tokens.hasMoreTokens())
-	        {
-	            String token = tokens.nextToken();
-	            timePoints[i] = Double.parseDouble(token);
-	        }else{
-	            throw new RuntimeException("failed to read time points value for reaction diffusion model.");
-	        }
-	    }
-    }
-    return timePoints;
-}
-
-private Parameter[] getModelParameters(Element paramElement, int modelType) {
-	if(modelType == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
-	{
-		Parameter[] params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF];
-		double primaryDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryRateAttrTag));
-		params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE],
-                									FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
-                									FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-                									FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
-                									primaryDiffRate);
-		double primaryFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryFractionAttTag));
-		params[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
-													FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(), 
-													FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-													FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),
-													primaryFraction);
-		double bwmRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag));
-		params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE],
-									                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-									                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-									                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
-									                bwmRate); 
-		return params;
-	}
-	else if(modelType ==FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
-	{
-		Parameter[] params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF];
-		double primaryDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryRateAttrTag));
-		params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 
-									                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-									                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-									                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
-									                primaryDiffRate);
-		double primaryFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryFractionAttTag));
-		params[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
-									                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-									                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-									                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
-									                primaryFraction);
-		double bwmRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag));
-		params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
-									                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-									                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-									                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
-									                bwmRate);
-		double secDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag));
-		params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE],
-									                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
-									                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
-									                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
-									                secDiffRate);
-		double secFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag));
-		params[FRAPModel.INDEX_SECONDARY_FRACTION]= new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
-									                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
-									                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
-									                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
-									                secFraction);
 		
-		
-		
-		return params;
+		return profileDataArray;
 	}
-	else if(modelType ==FRAPModel.IDX_MODEL_DIFF_BINDING)
+
+	private ProfileData getProfileData(Element profileDataElement) 
 	{
-		Parameter[] params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_BINDING];
-		double primaryDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryRateAttrTag));
-		params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 
-									                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-									                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-									                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
-									                primaryDiffRate);
-		double primaryFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryFractionAttTag));
-		params[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
-									                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-									                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-									                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
-									                primaryFraction);
-		double bwmRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag));
-		params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
-									                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-									                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-									                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
-									                bwmRate);
-		double secDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag));
-		params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE],
-									                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
-									                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
-									                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
-									                secDiffRate);
-		double secFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag));
-		params[FRAPModel.INDEX_SECONDARY_FRACTION]= new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
-									                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
-									                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
-									                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
-									                secFraction);
-		double bsConcentration = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BindingSiteConcentrationAttTag));
-		params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION],
-									                0,
-									                1,
-									                1, 
-									                bsConcentration);
-		double onRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.ReactionOnRateAttTag));
-		params[FRAPModel.INDEX_ON_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_ON_RATE], 
-									                0,
-									                1e6,
-									                1, 
-									                onRate);
-		double offRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.ReactionOffRateAttTag));
-		params[FRAPModel.INDEX_OFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE], 
-									                0,
-									                1e6,
-									                1, 
-									                offRate); 
-		return params;
+		ProfileData profileData = null;
+		if(profileDataElement != null)
+		{
+			profileData = new ProfileData();
+			List<Element> profileDataElementList = profileDataElement.getChildren(MicroscopyXMLTags.ProfieDataElementTag);
+			for(int i=0; i < profileDataElementList.size(); i++)//loop through each profile data element
+			{
+				profileData.addElement(getProfileDataElement(profileDataElementList.get(i)));
+			}
+		}
+		return profileData;
 	}
-	return null;
-}
 
-private static ExternalDataInfo getExternalDataInfo(Element extDataInfoElement){
-	String filename = extDataInfoElement.getAttributeValue(MicroscopyXMLTags.FilenameAttrTag);
-	Element externalDataIDElement = extDataInfoElement.getChild(MicroscopyXMLTags.ExternalDataIdentifierTag);
-	ExternalDataIdentifier externalDataID = getExternalDataIdentifier(externalDataIDElement);
-	ExternalDataInfo externalDataInfo = new ExternalDataInfo(externalDataID, filename);
-	return externalDataInfo;
+	private ProfileDataElement getProfileDataElement(Element profileDataElementElement) 
+	{
+		ProfileDataElement profileDataElement = null;
+		if(profileDataElementElement != null)
+		{
+			String paramName = unMangle(profileDataElementElement.getAttributeValue(MicroscopyXMLTags.profileDataElementParameterNameAttrTag));
+			double paramVal = new Double(unMangle(profileDataElementElement.getAttributeValue(MicroscopyXMLTags.profileDataElementParameterValueAttrTag)));
+			double likelihood = new Double(unMangle(profileDataElementElement.getAttributeValue(MicroscopyXMLTags.profileDataElementLikelihoodAttrTag)));
+			List<Element> parameterElementList = profileDataElementElement.getChildren(OptXmlTags.Parameter_Tag);
+			Parameter[] parameters = new Parameter[parameterElementList.size()];
+			for(int i = 0; i < parameters.length; i++)
+			{
+				parameters[i] = getParameter(parameterElementList.get(i));
+			}
+			
+			profileDataElement = new ProfileDataElement(paramName, paramVal, likelihood, parameters);
+		}
+		return profileDataElement;
+	}
 
-}
-/**
- * Method unMangle.
- * @param str String
- * @return String
- */
-private String unMangle(String str){
-	return XmlBase.unMangle(str);
-}
-
-private SimpleReferenceData getSimpleReferenceData(Element referenceDataElement/*, Namespace ns*/){
-    //
-    // read ReferenceData
-    //
-    String numRowsText = referenceDataElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NumRowsAttribute);
-    String numColsText = referenceDataElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NumColumnsAttribute);
-    int numCols = Integer.parseInt(numColsText);
-    //
-    // read columns
-    //    
-    String[] columnNames = new String[numCols];
-    double[] columnWeights = new double[numCols];
-    Element dataColumnListElement = referenceDataElement.getChild(ParameterEstimationTaskXMLPersistence.DataColumnListTag/*, ns*/);
-    List<Element> dataColumnList = dataColumnListElement.getChildren(ParameterEstimationTaskXMLPersistence.DataColumnTag/*, ns*/);
-    for (int i = 0; i < dataColumnList.size(); i++){
-          Element dataColumnElement = dataColumnList.get(i);
-          columnNames[i] = dataColumnElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NameAttribute);
-          columnWeights[i] = Double.parseDouble(dataColumnElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.WeightAttribute));
-    }
-    //
-    // read rows
-    //
-    Vector<double[]> rowDataVector = new Vector<double[]>();
-    Element dataRowListElement = referenceDataElement.getChild(ParameterEstimationTaskXMLPersistence.DataRowListTag/*, ns*/);
-    List<Element> dataRowList = dataRowListElement.getChildren(ParameterEstimationTaskXMLPersistence.DataRowTag/*, ns*/);
-    for (int i = 0; i < dataRowList.size(); i++){
-          Element dataRowElement = dataRowList.get(i);
-          String rowText = dataRowElement.getText();
-          CommentStringTokenizer tokens = new CommentStringTokenizer(rowText);
-          double[] rowData = new double[numCols];
-          for (int j = 0; j < numCols; j++){
-                if (tokens.hasMoreTokens()){
-                      String token = tokens.nextToken();
-                      rowData[j] = Double.parseDouble(token);
-                }else{
-                      throw new RuntimeException("failed to read row data for ReferenceData");
-                }
-          }
-          rowDataVector.add(rowData);
-    }
-    SimpleReferenceData referenceData = new cbit.vcell.opt.SimpleReferenceData(columnNames, columnWeights, rowDataVector);
-    return referenceData;
-}
-
+	private Parameter getParameter(Element paramElement) 
+	{
+		Parameter parameter = null;
+		if(paramElement != null)
+		{
+			String name = unMangle(paramElement.getAttributeValue(OptXmlTags.ParameterName_Attr));
+			double lowerBound = new Double(unMangle(paramElement.getAttributeValue(OptXmlTags.ParameterLow_Attr)));
+			double upperBound = new Double(unMangle(paramElement.getAttributeValue(OptXmlTags.ParameterHigh_Attr)));
+			double iniGuess = new Double(unMangle(paramElement.getAttributeValue(OptXmlTags.ParameterInit_Attr)));
+			double scale = new Double(unMangle(paramElement.getAttributeValue(OptXmlTags.ParameterScale_Attr)));
+			parameter = new Parameter(name, lowerBound, upperBound, scale, iniGuess);
+		}
+		return parameter;
+	}
+	
 }

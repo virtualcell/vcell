@@ -116,7 +116,10 @@ public class FRAPStudy implements Matchable{
 	private ExternalDataInfo roiExternalDataInfo = null;
 	//Added in Feb 2009, we want to store reference data together with the model in .vfrap file. 
 	private SimpleReferenceData storedRefData = null;
-		
+	//Added in August 2010, store the profile data for confidence intervals of the estimates
+	private ProfileData[] profileData_oneDiffComponent = null;
+	private ProfileData[] profileData_twoDiffComponents = null;
+	
 	//models
 	private FRAPModel[] models = new FRAPModel[FRAPModel.NUM_MODEL_TYPES];
 	private Integer bestModelIndex = null;
@@ -1461,7 +1464,25 @@ public class FRAPStudy implements Matchable{
 		return frapOptData;
 	}
 
+	public ProfileData[] getProfileData_oneDiffComponent() {
+		return profileData_oneDiffComponent;
+	}
 
+
+	public void setProfileData_oneDiffComponent(ProfileData[] profileData) {
+		this.profileData_oneDiffComponent = profileData;
+	}
+	
+	public ProfileData[] getProfileData_twoDiffComponents() {
+		return profileData_twoDiffComponents;
+	}
+
+
+	public void setProfileData_twoDiffComponents(ProfileData[] profileData) {
+		this.profileData_twoDiffComponents = profileData;
+	}
+	
+	
 	public void setFrapOptData(FRAPOptData frapOptData) {
 		this.frapOptData = frapOptData;
 	}
@@ -1591,6 +1612,7 @@ public class FRAPStudy implements Matchable{
 		Arrays.fill(result, FRAPOptimization.largeNumber);
 		
 		boolean[] selectedROIS = getSelectedROIsForErrorCalculation();
+		int noSelectedROIs = 0;
 		double sumError = 0;
 		for(int i=0; i<FRAPData.VFRAP_ROI_ENUM.values().length; i++)
 		{
@@ -1600,6 +1622,7 @@ public class FRAPStudy implements Matchable{
 				{
 					result[i] = calculateMSEForEachROI(expData[i], simData[i]);
 					sumError = sumError + result[i];
+					noSelectedROIs ++;
 				}
 			}
 			else if(FRAPData.VFRAP_ROI_ENUM.values()[i].equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1) ||
@@ -1615,11 +1638,14 @@ public class FRAPStudy implements Matchable{
 				{
 					result[i-2] = calculateMSEForEachROI(expData[i], simData[i]);
 					sumError = sumError + result[i-2];
+					noSelectedROIs ++;
 				}
 			}
 		}
-		
-		result[result.length -1] = sumError;
+		if(noSelectedROIs > 0)
+		{
+			result[result.length -1] = sumError/noSelectedROIs;
+		}
 		
 		return result;
 	}
