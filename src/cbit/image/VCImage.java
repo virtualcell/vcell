@@ -660,23 +660,6 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
 	firePropertyChange("name", oldValue, name);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return byte
- * @param x int
- * @param y int
- * @param z int
- */
-public void setPixel(int x, int y, int z, byte newValue) throws ImageException {
-	if (x<0||x>=numX||y<0||y>=numY||z<0||z>=numZ){
-		throw new IllegalArgumentException("("+x+","+y+","+z+") is not inside (0,0,0) and ("+(numX-1)+","+(numY-1)+","+(numZ-1)+")");
-	}
-	int index = x + numX*(y + z*numY); 
-	getPixels()[index] = newValue;
-}
-
-
 /**
  * Sets the pixelClasses property (cbit.image.VCPixelClass[]) value.
  * @param pixelClasses The new value for the property.
