@@ -22,6 +22,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
@@ -125,6 +126,7 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 			treeScrollPane = new JScrollPane();
 			frapBatchRunViewTree = new BatchRunTree();
 		    frapBatchRunViewTree.setCellRenderer(new BatchRunTreeRenderer());
+		    ToolTipManager.sharedInstance().registerComponent(frapBatchRunViewTree);
 		    //set action listener
 		    treeHandler = new TreeHandler();
 		    frapBatchRunViewTree.addTreeSelectionListener(treeHandler);
@@ -334,16 +336,22 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
         }
         else if(source == delAllButton)
         {
-        	//clear tree selection
-        	frapBatchRunViewTree.clearAll();
-        	batchRunWorkspace.clearStoredTreeSelection();
-        	//remove the data & displayed image
-        	getBatchRunWorkspace().removeAllFrapStudies();
-        	getBatchRunWorkspace().clearWorkingSingleWorkspace();
-        	//clear parameter display
-			clearParameterDisplay();
+        	deleteAllBatchrunDocs();
         }
 	}
+	
+	public void deleteAllBatchrunDocs()
+	{
+		//clear tree selection
+    	frapBatchRunViewTree.clearAll();
+    	batchRunWorkspace.clearStoredTreeSelection();
+    	//remove the data & displayed image
+    	getBatchRunWorkspace().removeAllFrapStudies();
+    	getBatchRunWorkspace().clearWorkingSingleWorkspace();
+    	//clear parameter display
+		clearParameterDisplay();
+	}
+	
 	
 	public Wizard getAddFRAPDataWizard()
 	{   // single/multipanel fires property change to frapstudyPanel after loaded a new exp dataset

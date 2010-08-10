@@ -13,11 +13,11 @@ import javax.swing.tree.DefaultTreeCellRenderer;
  */
 public class BatchRunTreeRenderer extends DefaultTreeCellRenderer
 {
-    protected ImageIcon rootIcon = new ImageIcon(getClass().getResource("/images/project.gif"));
-    protected ImageIcon batchRunDocIcon = new ImageIcon(getClass().getResource("/images/batchDocNode.gif"));
-    protected ImageIcon batchRunResultIcon = new ImageIcon(getClass().getResource("/images/batchResultNode.gif"));
-    protected ImageIcon treeDocLeafIcon = new ImageIcon(getClass().getResource("/images/treeLeaf_doc.gif"));
-    protected ImageIcon treeReLeafIcon = new ImageIcon(getClass().getResource("/images/treeLeaf_re.gif"));
+    private final ImageIcon rootIcon = new ImageIcon(getClass().getResource("/images/project.gif"));
+    private final ImageIcon batchRunDocIcon = new ImageIcon(getClass().getResource("/images/batchDocNode.gif"));
+    private final ImageIcon batchRunResultIcon = new ImageIcon(getClass().getResource("/images/batchResultNode.gif"));
+    private final ImageIcon treeDocLeafIcon = new ImageIcon(getClass().getResource("/images/treeLeaf_doc.gif"));
+    private final ImageIcon treeReLeafIcon = new ImageIcon(getClass().getResource("/images/treeLeaf_re.gif"));
     
     public Component getTreeCellRendererComponent(JTree tree,
                                                   Object value,

@@ -220,7 +220,6 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         nameCol.setCellRenderer(new ResultsParamTableRenderer());
         //set the numeric columns' renders
         TableCellRenderer statRenderer = new  NumericTableCellRenderer(8);//double precision 8 digits
-        TableColumn[] columns = new TableColumn[statTableModel.NUM_COLUMNS];
         for (int i = 1; i < table_stat.getColumnCount(); i++) {
         	TableColumn col = table_stat.getColumnModel().getColumn(i);
         	col.setPreferredWidth(0);

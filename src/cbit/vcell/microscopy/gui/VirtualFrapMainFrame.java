@@ -76,7 +76,7 @@ public class VirtualFrapMainFrame extends JFrame
 
 	private MenuHandler menuHandler = new MenuHandler();
 	private static final String VERSION_NUMBER = "VFrap 1.0";
-	private static final String BATCHRUN_VER_NUMBER = "VFRAP 1.0_Batch_Run";
+	public static final String BATCHRUN_VER_NUMBER = "VFRAP 1.0_Batch_Run";
 	private static final String OPEN_ACTION_COMMAND = "Open vfrap";
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
@@ -204,7 +204,7 @@ public class VirtualFrapMainFrame extends JFrame
   }
   
   //Inner class MenuHandler
-  public class MenuHandler implements ActionListener
+  private class MenuHandler implements ActionListener
   {
  		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() instanceof JMenuItem)
@@ -296,8 +296,6 @@ public class VirtualFrapMainFrame extends JFrame
 		      }
 		      else if(arg.equals(BATCH_RUN_ACTION_COMMAND))
 		      {
-		    	  System.out.println("Batch run command clicked.");
-		    	  setBatchRunFrameTitle("");
 	    		  getBatchRunFrame().setVisible(true);
 		    	  getBatchRunFrame().setState(JFrame.NORMAL);
 		    	  
@@ -440,7 +438,7 @@ public class VirtualFrapMainFrame extends JFrame
   {
 //      statusBar = new StatusBar();
       toolBar = new ToolBar();
-      toolBar.setRunButtonVisible(false);
+      toolBar.setNewAndRunButtonVisible(false);
       ToolBarHandler th = new ToolBarHandler();
       toolBar.addToolBarHandler(th);
       mb = new JMenuBar();
@@ -570,14 +568,7 @@ public class VirtualFrapMainFrame extends JFrame
 
   public void setBatchRunFrameTitle(String str)
   {
-	  if(str.equals(""))
-	  {
-		  getBatchRunFrame().setTitle(BATCHRUN_VER_NUMBER);
-	  }
-	  else
-	  {
-		  getBatchRunFrame().setTitle(str + " - " + BATCHRUN_VER_NUMBER);
-	  }
+	  getBatchRunFrame().setBatchRunFrameTitle(str);
   }
   
 } // end of class MainFrame
