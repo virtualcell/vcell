@@ -156,7 +156,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 			};
 
 		createGeometry(getMathModel().getMathDescription().getGeometry(),
-				new AsynchClientTask[] {editSelectTask,geomRegionsTask,applyGeomTask});
+				new AsynchClientTask[] {editSelectTask,geomRegionsTask,applyGeomTask}
+		,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,"Apply Geometry");
 	}
 
 	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
