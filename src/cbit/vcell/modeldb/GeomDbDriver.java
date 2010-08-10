@@ -28,6 +28,7 @@ import cbit.image.BrowseImage;
 import cbit.image.GifParsingException;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
+import cbit.image.VCImageCompressed;
 import cbit.image.VCPixelClass;
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
@@ -450,6 +451,10 @@ private void getImageRegionsForVCImage(QueryHashtable dbc, Connection con, VCIma
 		}
 		VCPixelClass vcPixelClasses[] = (VCPixelClass[])BeanUtils.getArray(vcpcVector,VCPixelClass.class);
 		vcImage.setPixelClasses(vcPixelClasses);
+		if(vcImage instanceof VCImageCompressed){
+			//Fix out of memory error when a BioModel has many apps with large geometries
+			((VCImageCompressed)vcImage).nullifyUncompressedPixels();
+		}
 		
 	} catch (PropertyVetoException e) {
 		throw new DataAccessException(e.getMessage());

@@ -34,6 +34,10 @@ public VCImageCompressed(org.vcell.util.document.Version aVersion, byte pixels[]
 	this.compressedPixels = pixels;
 	initPixelClasses();
 }
+public void nullifyUncompressedPixels(){
+	uncompressed = null;
+}
+
 /**
  * getPixels method comment.
  */
