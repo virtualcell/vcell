@@ -11,7 +11,7 @@ import cbit.vcell.parser.*;
 public class VarIniCondition implements org.vcell.util.Matchable,java.io.Serializable
 {
 	Variable var = null;
-	cbit.vcell.parser.Expression iniVal = null;
+	Expression iniVal = null;
 
 /**
  * VarIniCondition constructor comment.
@@ -88,7 +88,7 @@ public double evaluateIniVal(double[] values) throws ExpressionException
  * Creation date: (6/27/2006 9:42:50 AM)
  * @return cbit.vcell.parser.Expression
  */
-public cbit.vcell.parser.Expression getIniVal() {
+public Expression getIniVal() {
 	return iniVal;
 }
 

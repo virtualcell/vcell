@@ -48,7 +48,7 @@ private Vector<String> getDependencies(JumpProcess process, Vector<JumpProcess> 
 	String[] affectedVars = new String[process.getActions().size()];
 	for(int i=0; i<process.getActions().size(); i++)
 	{
-		affectedVars[i] = ((Action)process.getActions().elementAt(i)).getVar().getName();
+		affectedVars[i] = ((Action)process.getActions().get(i)).getVar().getName();
 	}
 	if(affectedVars.length > 0)
 	{
@@ -254,8 +254,8 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 				printWriter.println("\t"+"Effect"+"\t"+temProc.getActions().size());
 				for(int j=0; j<temProc.getActions().size(); j++)
 				{
-					printWriter.print("\t\t"+((Action)temProc.getActions().elementAt(j)).getVar().getName()+"\t"+((Action)temProc.getActions().elementAt(j)).getOperation());
-					printWriter.println("\t"+((Action)temProc.getActions().elementAt(j)).evaluateOperand());
+					printWriter.print("\t\t"+((Action)temProc.getActions().get(j)).getVar().getName()+"\t"+((Action)temProc.getActions().get(j)).getOperation());
+					printWriter.println("\t"+((Action)temProc.getActions().get(j)).evaluateOperand());
 					printWriter.println();
 				}
 				//dependencies

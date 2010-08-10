@@ -1,4 +1,5 @@
 package cbit.vcell.math;
+import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
@@ -54,7 +55,7 @@ public boolean compareEqual(Matchable object)
 	Action action=(Action) object;
 	if(!action.var.compareEqual(var)) return false;//var
 	if(action.operation.compareTo(operation)!=0) return false;//operation
-	if(!action.operand.compareEqual(operand)) return false;//operand
+	if(!Compare.isEqualOrNull(action.operand, operand)) return false;//operand
 	return true;
 }
 

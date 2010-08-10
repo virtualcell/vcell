@@ -7,8 +7,8 @@ import org.vcell.util.Compare;
 
 public class JumpProcess implements org.vcell.util.Matchable,java.io.Serializable {
 	private String processName=null;
-	private cbit.vcell.parser.Expression  probabilityRate=null;
-	private Vector<Action> listOfActions = null;
+	private Expression  probabilityRate=null;
+	private ArrayList<Action> actions = null;
 
 /**
  * JumpProcess constructor comment.
@@ -20,7 +20,7 @@ public JumpProcess(String name, cbit.vcell.parser.Expression probRate)
 {
 	processName = name;
 	probabilityRate = probRate;
-	listOfActions = new Vector<Action>();
+	actions = new ArrayList<Action>();
 }
 
 
@@ -51,7 +51,7 @@ public void addAction(Action newAction) throws MathException
 	}
 	else
 	{
-		listOfActions.add(newAction);
+		actions.add(newAction);
 	}
 }
 
@@ -74,10 +74,10 @@ public boolean compareEqual(org.vcell.util.Matchable object)
 	if(processName.compareTo(jumpProc.processName) != 0 ) return false;//processName
 	if(!probabilityRate.compareEqual(jumpProc.probabilityRate)) return false; //probabilityRate
 	//actions
-	if((listOfActions != null) && (jumpProc.listOfActions != null))
+	if((actions != null) && (jumpProc.actions != null))
 	{
-		Action actions1[] = (Action[]) listOfActions.toArray(new Action[0]);
-		Action actions2[] = (Action[]) jumpProc.listOfActions.toArray(new Action[0]);
+		Action actions1[] = (Action[]) actions.toArray(new Action[0]);
+		Action actions2[] = (Action[]) jumpProc.actions.toArray(new Action[0]);
 
 		if(!Compare.isEqualOrNull(actions1,actions2))
 		{
@@ -127,8 +127,8 @@ void flatten(cbit.vcell.solver.Simulation sim, boolean bRoundCoefficients) throw
  */
 public Action getAction(int index) 
 {
-	if(index<listOfActions.size())
- 		return (Action)listOfActions.elementAt(index);
+	if(index<actions.size())
+ 		return (Action)actions.get(index);
  	return null;
 }
 
@@ -141,10 +141,10 @@ public Action getAction(int index)
  */
 public Action getAction(String varName) //again the problem here, do we allow same variables applear in actionlist more than once.
 {
-	for(int i=0; i<listOfActions.size(); i++)
+	for(int i=0; i<actions.size(); i++)
 	{
-		if(((Action)listOfActions.elementAt(i)).getVar().getName().compareTo(varName)==0)
-			return (Action)listOfActions.elementAt(i);
+		if(((Action)actions.get(i)).getVar().getName().compareTo(varName)==0)
+			return (Action)actions.get(i);
 	}
 	return null;
 }
@@ -155,8 +155,8 @@ public Action getAction(String varName) //again the problem here, do we allow sa
  * Creation date: (6/27/2006 3:02:29 PM)
  * @return java.util.Vector
  */
-public Vector<Action> getActions() {
-	return listOfActions;
+public ArrayList<Action> getActions() {
+	return actions;
 }
 
 
@@ -192,7 +192,7 @@ public String getVCML()
 	buffer.append("\t\t"+VCML.ProbabilityRate+"\t"+getProbabilityRate().infix()+";\n");
 	for(int i=0; i<getActions().size(); i++)
 	{
-		buffer.append(((Action)getActions().elementAt(i)).getVCML());
+		buffer.append(((Action)getActions().get(i)).getVCML());
 	}
 	buffer.append("\t"+" "+VCML.EndBlock+"\n");
 	return buffer.toString();	
@@ -226,8 +226,8 @@ public void read(CommentStringTokenizer tokens) throws Exception {}
  */
 public void removeAction(int index)
 {
-	if(index<listOfActions.size())
-		listOfActions.remove(index);
+	if(index<actions.size())
+		actions.remove(index);
 }
 
 /**
