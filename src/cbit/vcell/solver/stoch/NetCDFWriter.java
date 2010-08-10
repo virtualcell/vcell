@@ -381,10 +381,10 @@ public class NetCDFWriter {
 			    idx = A8.getIndex();
 			    for(int i=0; i<numReactions.getLength(); i++)
 				{
-			    	Vector actions = reactions[i].getActions();
+			    	ArrayList<Action> actions = reactions[i].getActions();
 			    	for(int j=0; j<actions.size(); j++)
 			    	{
-			    		A8.setInt(idx.set(i, j), getVariableIndex(((Action)actions.elementAt(j)).getVar().getName(), vars));
+			    		A8.setInt(idx.set(i, j), getVariableIndex(((Action)actions.get(j)).getVar().getName(), vars));
 			    	}
 				}
 			    ncfile.write("Reaction_StoichSpecies", new int[2], A8);

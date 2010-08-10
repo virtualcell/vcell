@@ -1,4 +1,5 @@
 package cbit.vcell.math.gui;
+import java.util.Collections;
 import java.util.Enumeration;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.math.Action;
@@ -124,7 +125,7 @@ private BioModelNode createBaseTree() {
 					BioModelNode prNode = new BioModelNode("probability_rate = "+probRate,false);
 					jpNode.add(prNode);
 					//add Actions
-					Enumeration<Action> actions = jp.getActions().elements();
+					Enumeration<Action> actions = Collections.enumeration(jp.getActions());
 					while (actions.hasMoreElements())
 					{
 						Action action = actions.nextElement();

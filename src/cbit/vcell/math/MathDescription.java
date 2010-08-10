@@ -1950,8 +1950,38 @@ public boolean isValid() {
 		//distinguish ODE model and stochastic model
 		if(isStoch())
 		{
-			//Stochastic model
-			
+			if(stochVarCount == 0)
+			{
+				setWarning("Compartmental stochastic model requires at least one stochastic volume variable");
+				return false;
+			}	
+			if(subDomain.getJumpProcesses().size() == 0)
+			{
+				setWarning("Compartmental stochastic model requires at least one jump process");
+				return false;
+			}
+			//check variable initial condition
+			Enumeration<VarIniCondition> enum_iniCon = subDomain.getVarIniConditions().elements();
+			while (enum_iniCon.hasMoreElements()){
+				Expression iniExp = enum_iniCon.nextElement().getIniVal();
+				try{
+					iniExp.bindExpression(this);
+				}catch(Exception ex){
+					ex.printStackTrace(System.out);
+					setWarning(ex.getMessage());
+				}
+			}
+			//check probability rate
+			Enumeration<JumpProcess> enum_jp = subDomain.getJumpProcesses().elements();
+			while (enum_jp.hasMoreElements()){
+				Expression probExp = enum_jp.nextElement().getProbabilityRate();
+				try{
+					probExp.bindExpression(this);
+				}catch(Exception ex){
+					ex.printStackTrace(System.out);
+					setWarning(ex.getMessage());
+				}
+			}
 		}
 		else
 		{

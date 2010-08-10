@@ -328,11 +328,17 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 			if (!(var instanceof StochVolVariable)){
 				throw new MathFormatException("variable "+token+" not a Stochastic Volume Variable");
 			}
-			try {
-				Expression varIniExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-				VarIniCondition vic= new VarIniCondition(var,varIniExp);
-				addVarIniCondition(vic);
-			} catch (Exception e){e.printStackTrace();}
+			
+			Expression varIniExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+			try{
+				varIniExp.bindExpression(mathDesc);
+			}catch(Exception ex){
+				ex.printStackTrace(System.out);
+				throw new MathException(ex.getMessage());
+			}
+			VarIniCondition vic= new VarIniCondition(var,varIniExp);
+			addVarIniCondition(vic);
+			
 			continue;
 		}
 		//Jump processes 
@@ -387,12 +393,15 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 						}
 						String opera = tokens.nextToken();
 						Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-
-						try {
-							Action action = new Action(var,opera,exp);
-							jump.addAction(action);
-						} catch (Exception e){e.printStackTrace();}	
-						
+						try{
+							exp.bindExpression(mathDesc);
+						}
+						catch(Exception ex){
+							ex.printStackTrace(System.out);
+							throw new MathException(ex.getMessage());
+						}
+						Action action = new Action(var,opera,exp);
+						jump.addAction(action);
 					}
 					else throw new MathFormatException("unexpected identifier "+token);
 				}

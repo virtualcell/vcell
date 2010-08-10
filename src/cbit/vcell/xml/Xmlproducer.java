@@ -7,6 +7,7 @@ package cbit.vcell.xml;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -1803,7 +1804,7 @@ private Element getXML(JumpProcess param)
 	prob.addContent(mangleExpression(param.getProbabilityRate()) );
 	jump.addContent(prob);
 	//Actions
-	Enumeration<Action> actions = param.getActions().elements();
+	Enumeration<Action> actions = Collections.enumeration(param.getActions());
 	while (actions.hasMoreElements())
 	{
 		Action action = actions.nextElement();
