@@ -20,18 +20,20 @@ import javax.swing.JToolBar;
 
 public class ToolBar extends JToolBar {
     // the image of the shortcut button appearance
-	public final static int BUT_OPEN = 0;
-	public final static int BUT_SAVE = 1;
+	public final static int BUT_NEW = 0;
+	public final static int BUT_OPEN = 1;
+	public final static int BUT_SAVE = 2;
 //	public final static int BUT_PRINT = 2;
-	public final static int BUT_HELP = 2;
-	public final static int BUT_RUN = 3;
-    private URL[] iconFiles = {getClass().getResource("/images/open.gif"),
+	public final static int BUT_HELP = 3;
+	public final static int BUT_RUN = 4;
+    private URL[] iconFiles = {getClass().getResource("/images/new.gif"),
+    		                   getClass().getResource("/images/open.gif"),
 							   getClass().getResource("/images/save.gif"),
 //							   getClass().getResource("/images/printer.gif"),
 							   getClass().getResource("/images/help.gif"),
 							   getClass().getResource("/images/run.gif")};
 
-    private String[] buttonLabels = {"Open File", "Save File", /*"Print",*/"Help","Run batch files"};
+    private String[] buttonLabels = {"Create new batchrun","Open File", "Save File", /*"Print",*/"Help","Run batch files"};
     //icon objects for initializing the image button
     private ImageIcon[] icons = new ImageIcon[iconFiles.length];
     private JButton[] buttons = new JButton[iconFiles.length];
@@ -75,10 +77,11 @@ public class ToolBar extends JToolBar {
         return -1;
     }// end of method findIndex()
     
-    public void setRunButtonVisible(boolean bVisible)
+    public void setNewAndRunButtonVisible(boolean bVisible)
     {
     	if(buttons != null && buttons.length == buttonLabels.length)
     	{
+    		buttons[BUT_NEW].setVisible(bVisible);
     		buttons[BUT_RUN].setVisible(bVisible);
     	}
     }

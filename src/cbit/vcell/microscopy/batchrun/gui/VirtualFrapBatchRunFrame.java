@@ -75,6 +75,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 
 	private BatchRunMenuHandler menuHandler = new BatchRunMenuHandler();
 	
+	private static final String NEW_ACTION_COMMAND = "New vfbatch";
 	private static final String OPEN_ACTION_COMMAND = "Open vfbatch";
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
@@ -83,6 +84,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	private static final String ABOUT_ACTION_COMMAND = "About Virtual Frap";
 	private static final String VIEW_JOB_ACTION_COMMAND = "Job Status Panel";
 	
+	private static final JMenuItem menuNew = new JMenuItem(NEW_ACTION_COMMAND,'N');
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
 	private static final JMenuItem menuClose= new JMenuItem(CLOSE_ACTION_COMMAND,'C');
 	private static final JMenuItem msave = new JMenuItem(SAVE_ACTION_COMMAND,'S');
@@ -90,8 +92,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
 	private static final JMenuItem mabout = new JMenuItem(ABOUT_ACTION_COMMAND);
 	private static final JCheckBoxMenuItem mViewJob = new JCheckBoxMenuItem(VIEW_JOB_ACTION_COMMAND);
-//	private static final JMenuItem mMainWin = new JMenuItem(MAIN_WINDOW_ACTION_COMMAND);
-
+	
 	public static JMenuBar mb = null;
 	private static StatusBar statusBarNew = new StatusBar();
 	public static ToolBar toolBar = null;
@@ -103,7 +104,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	//modeltype wizard
 	private Wizard modelTypeWizard = null;
 	
-    public class BatchRunMenuHandler implements ActionListener
+    private class BatchRunMenuHandler implements ActionListener
 	{
 	 	public void actionPerformed(ActionEvent e) 
 	 	{
@@ -111,7 +112,14 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		    {
 				String arg=e.getActionCommand();
 				// file menu
-				if(arg.equals(OPEN_ACTION_COMMAND))
+				if(arg.equals(NEW_ACTION_COMMAND))
+			    {
+					getBatchRunDetailsPanel().deleteAllBatchrunDocs();
+					setBatchRunFrameTitle("");
+					statusBarNew.showStatus("");
+					enableSave(false);
+			    }
+				else if(arg.equals(OPEN_ACTION_COMMAND))
 			    {
 					File inputFile = null;
 		  			int option = VirtualFrapLoader.openVFRAPBatchRunChooser.showOpenDialog(VirtualFrapBatchRunFrame.this);
@@ -188,6 +196,9 @@ public class VirtualFrapBatchRunFrame extends JFrame
     			int index = toolBar.findIndex(((JButton)e.getSource()));
     			switch(index)
     			{
+    				case ToolBar.BUT_NEW:
+    					menuHandler.actionPerformed(new ActionEvent(menuNew,0,NEW_ACTION_COMMAND));
+					break;
     				case ToolBar.BUT_OPEN:
     					menuHandler.actionPerformed(new ActionEvent(menuOpen,0,OPEN_ACTION_COMMAND));
     					break;
@@ -345,6 +356,10 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	    fileMenu.setMnemonic('F');
 	    mb.add(fileMenu);
 
+	    menuNew.addActionListener(menuHandler);
+	    fileMenu.add(menuNew);
+	    menuNew.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,InputEvent.CTRL_MASK));
+	    
 	    menuOpen.addActionListener(menuHandler);
 	    fileMenu.add(menuOpen);
 	    menuOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,InputEvent.CTRL_MASK));
@@ -659,7 +674,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 			{
 				File outFile = (File)hashTable.get(FRAPStudyPanel.SAVE_FILE_NAME_KEY);
 				VirtualFrapBatchRunFrame.updateStatus("File " + outFile.getAbsolutePath()+" has been saved.");
-		        VirtualFrapLoader.mf.setMainFrameTitle(outFile.getName());
+		        VirtualFrapLoader.mf.setBatchRunFrameTitle(outFile.getName());
 			}
 		};
 		saveTasks.add(afterSaveTask);
@@ -737,7 +752,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 			{
 				File outFile = (File)hashTable.get(FRAPStudyPanel.SAVE_FILE_NAME_KEY);
 				VirtualFrapBatchRunFrame.updateStatus("File " + outFile.getAbsolutePath()+" has been saved.");
-		        VirtualFrapLoader.mf.setMainFrameTitle(outFile.getName());
+		        VirtualFrapLoader.mf.setBatchRunFrameTitle(outFile.getName());
 			}
 		};
 		saveAsTasks.add(afterSaveAsTask);
@@ -797,5 +812,17 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		totalTasks.add(updateUIAfterLoadingTask);
 		
 		return totalTasks.toArray(new AsynchClientTask[totalTasks.size()]);
+	}
+	
+	public void setBatchRunFrameTitle(String str)
+	{
+	    if(str.equals(""))
+		{
+		    setTitle(VirtualFrapMainFrame.BATCHRUN_VER_NUMBER);
+		}
+		else
+		{
+		    setTitle(str + " - " + VirtualFrapMainFrame.BATCHRUN_VER_NUMBER);
+		}
 	}
 }
