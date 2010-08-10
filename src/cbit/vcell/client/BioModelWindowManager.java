@@ -221,7 +221,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 				(ApplicationEditor)source).getAppEditor().getSimulationWorkspace().getSimulationOwner().getGeometry();
 		createGeometry(
 				currentGeometry,
-				new AsynchClientTask[] {editSelectTask});
+				new AsynchClientTask[] {editSelectTask}
+				,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,"Apply Geometry");
 	}
 	
 	if (source instanceof ApplicationEditor && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_MATH_MODEL)) {
