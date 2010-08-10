@@ -11,8 +11,9 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 		public static final int BIO_OPTION_DEFAULT = 0;
 	public static final int MATHMODEL_DOC = 1;
 		public static final int MATH_OPTION_NONSPATIAL = 0;
-		public static final int MATH_OPTION_SPATIAL = 1;
+		public static final int MATH_OPTION_SPATIAL_EXISTS = 1;
 		public static final int MATH_OPTION_FROMBIOMODELAPP = 2;
+		public static final int MATH_OPTION_SPATIAL_NEW = 3;
 
 	public static final int GEOMETRY_DOC = 2;
 		public static final int GEOM_OPTION_1D = 1;

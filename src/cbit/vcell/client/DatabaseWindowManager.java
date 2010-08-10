@@ -908,7 +908,7 @@ public void createNewGeometry(){
 			}
 		};
 
-	createGeometry(null, new AsynchClientTask[] {editSelectTask});
+	createGeometry(null, new AsynchClientTask[] {editSelectTask},TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,"Create Geometry");
 }
 /**
  * Insert the method's description here.

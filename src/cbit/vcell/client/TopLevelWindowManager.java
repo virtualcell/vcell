@@ -277,7 +277,7 @@ public void prepareDocumentToLoad(VCDocument doc, boolean bInNewWindow) throws E
 	}
 }
 
-GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice) throws Exception,UserCancelException{
+GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialogText) throws Exception,UserCancelException{
 	final int ANALYTIC_1D = 0;
 	final int ANALYTIC_2D = 1;
 	final int ANALYTIC_3D = 2;
@@ -302,7 +302,7 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice) throws Exce
 	}
 	geomType = DialogUtils.showComponentOKCancelTableList(
 			getComponent(), 
-			"Choose new geometry type to create",
+			dialogText,
 			new String[] {"Geometry Type"}, 
 			choices, ListSelectionModel.SINGLE_SELECTION);
 
@@ -342,13 +342,14 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice) throws Exce
 }
 
 public static final String B_SHOW_OLD_GEOM_EDITOR = "B_SHOW_OLD_GEOM_EDITOR";
-void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afterTasks){
+public static final String DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE = "Choose new geometry type to create";
+void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afterTasks,String selectDialogTitle,final String applyGeometryButtonText){
 	
 	try{
 		final Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		Vector<AsynchClientTask> createGeomTaskV = new Vector<AsynchClientTask>();
 		final DocumentWindowManager.GeometrySelectionInfo geometrySelectionInfo =
-			selectGeometry(currentGeometry != null && currentGeometry.getDimension() >0);
+			selectGeometry(currentGeometry != null && currentGeometry.getDimension() >0,selectDialogTitle);
 		hash.put(B_SHOW_OLD_GEOM_EDITOR, false);
 		if(geometrySelectionInfo.getDocumentCreationInfo() != null){
 			if(ClientRequestManager.isImportGeometryType(geometrySelectionInfo.getDocumentCreationInfo())){
@@ -357,7 +358,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 					((ClientRequestManager)getRequestManager()).createNewGeometryTasks(this,
 						geometrySelectionInfo.getDocumentCreationInfo(),
 						afterTasks,
-						"Apply Geometry")));
+						applyGeometryButtonText)));
 			}else{//Create Analytic Geometry
 				hash.put(B_SHOW_OLD_GEOM_EDITOR, true);
 				createGeomTaskV.addAll(Arrays.asList(((ClientRequestManager)getRequestManager()).createNewDocument(this,
@@ -384,7 +385,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 						runtimeTasksV.addAll(Arrays.asList(((ClientRequestManager)getRequestManager()).createNewGeometryTasks(TopLevelWindowManager.this,
 								new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE),
 								afterTasks,
-								"Apply Geometry")));
+								applyGeometryButtonText)));
 						hashTable.put("guiParent", (Component)getComponent());
 						hashTable.put("requestManager", getRequestManager());
 						hashTable.put(ClientRequestManager.IMAGE_FROM_DB, copiedGeom.getGeometrySpec().getImage());

@@ -124,7 +124,8 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjMathFromBioMenuItem = null;
 	private JMenu ivjMathMenu = null;
 	private JMenuItem ivjNonSpatialMenuItem = null;
-	private JMenuItem ivjSpatialMenuItem = null;
+	private JMenuItem ivjSpatialExistingMenuItem = null;
+	private JMenuItem ivjSpatialCreateNewMenuItem = null;
 	private JMenuItem ivjEdit_Annotation_JMenuItem = null;
 	private JMenuItem ivjTestingFrameworkMenuItem = null;
 	private JMenuItem ivjJMenuItemOnlineHelp = null;
@@ -186,8 +187,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC8(e);
 			if (e.getSource() == DocumentWindow.this.getMathFromBioMenuItem()) 
 				connEtoC31(e);
-			if (e.getSource() == DocumentWindow.this.getSpatialMenuItem()) 
-				connEtoC35(e);
+			if (e.getSource() == DocumentWindow.this.getSpatialExistingMenuItem()) 
+				newDocument(e);
+			if (e.getSource() == DocumentWindow.this.getSpatialCreateNewMenuItem()) 
+				newDocument(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemExport()) 
 				connEtoC17(e);
 			if (e.getSource() == DocumentWindow.this.getEdit_Annotation_JMenuItem()) 
@@ -711,26 +714,6 @@ private void connEtoC31(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-/**
- * connEtoC35:  (SpatialMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.newDocument(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC35(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newDocument(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC36:  (Edit_Annotation_JMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.showEditAnnotationWindow()V)
@@ -1956,7 +1939,8 @@ private javax.swing.JMenu getMathMenu() {
 			ivjMathMenu.setName("MathMenu");
 			ivjMathMenu.setText("MathModel");
 			ivjMathMenu.add(getNonSpatialMenuItem());
-			ivjMathMenu.add(getSpatialMenuItem());
+			ivjMathMenu.add(getSpatialExistingMenuItem());
+			ivjMathMenu.add(getSpatialCreateNewMenuItem());
 			ivjMathMenu.add(getMathFromBioMenuItem());
 			// user code begin {1}
 			// user code end
@@ -2247,12 +2231,13 @@ private javax.swing.JMenu getServerMenu() {
  * @return javax.swing.JMenuItem
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getSpatialMenuItem() {
-	if (ivjSpatialMenuItem == null) {
+private static final String MATHMODEL_SPATIAL_EXISTING = "Spatial from database geometry";
+private javax.swing.JMenuItem getSpatialExistingMenuItem() {
+	if (ivjSpatialExistingMenuItem == null) {
 		try {
-			ivjSpatialMenuItem = new javax.swing.JMenuItem();
-			ivjSpatialMenuItem.setName("SpatialMenuItem");
-			ivjSpatialMenuItem.setText("Spatial");
+			ivjSpatialExistingMenuItem = new javax.swing.JMenuItem();
+			ivjSpatialExistingMenuItem.setName("SpatialMenuItem");
+			ivjSpatialExistingMenuItem.setText(MATHMODEL_SPATIAL_EXISTING);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2261,9 +2246,26 @@ private javax.swing.JMenuItem getSpatialMenuItem() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjSpatialMenuItem;
+	return ivjSpatialExistingMenuItem;
 }
 
+private static final String MATHMODEL_SPATIAL_CREATENEW = "Spatial from new geometry";
+private javax.swing.JMenuItem getSpatialCreateNewMenuItem() {
+	if (ivjSpatialCreateNewMenuItem == null) {
+		try {
+			ivjSpatialCreateNewMenuItem = new javax.swing.JMenuItem();
+			ivjSpatialCreateNewMenuItem.setName("SpatialMenuItem");
+			ivjSpatialCreateNewMenuItem.setText(MATHMODEL_SPATIAL_CREATENEW);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjSpatialCreateNewMenuItem;
+}
 
 /**
  * Return the StatusbarMenuItem property value.
@@ -2715,7 +2717,8 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemCompare().addActionListener(ivjEventHandler);
 	getNonSpatialMenuItem().addActionListener(ivjEventHandler);
 	getMathFromBioMenuItem().addActionListener(ivjEventHandler);
-	getSpatialMenuItem().addActionListener(ivjEventHandler);
+	getSpatialExistingMenuItem().addActionListener(ivjEventHandler);
+	getSpatialCreateNewMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemExport().addActionListener(ivjEventHandler);
 	getEdit_Annotation_JMenuItem().addActionListener(ivjEventHandler);
 	getTestingFrameworkMenuItem().addActionListener(ivjEventHandler);
@@ -2809,8 +2812,11 @@ private void newDocument(java.awt.event.ActionEvent actionEvent) {
 		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.BIOMODEL_DOC, VCDocument.BIO_OPTION_DEFAULT));
 	} else if (actionEvent.getActionCommand().equals("Non-Spatial")) {
 		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_NONSPATIAL));
-	} else if (actionEvent.getActionCommand().equals("Spatial")) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL));
+	} else if (actionEvent.getActionCommand().equals(MATHMODEL_SPATIAL_EXISTING)) {
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL_EXISTS));
+	} else if (actionEvent.getActionCommand().equals(MATHMODEL_SPATIAL_CREATENEW)) {
+		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL_NEW));
+		return;
 	} else if (actionEvent.getActionCommand().equals("From BioModel")) {
 		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_FROMBIOMODELAPP));
 	}else {
