@@ -1223,6 +1223,17 @@ public class OverlayEditorPanelJAI extends JPanel{
 	
 	public void setAllowAddROI(boolean bAllowAddROI){
 		this.bAllowAddROI = bAllowAddROI;
+		roiComboBox.setVisible(bAllowAddROI);
+		addROIButton.setVisible(bAllowAddROI);
+		delROIButton.setVisible(bAllowAddROI);
+		specialActionsButton.setVisible(bAllowAddROI);
+		channelComboBox.setVisible(bAllowAddROI);
+		cropButton.setVisible(bAllowAddROI);
+		autoCropButton.setVisible(bAllowAddROI);
+		paintButton.setVisible(bAllowAddROI);
+		eraseButton.setVisible(bAllowAddROI);
+		fillButton.setVisible(bAllowAddROI);
+		clearROIbutton.setVisible(bAllowAddROI);
 	}
 
 	public void addROIName(String roiName,
@@ -1419,6 +1430,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 					}
 				}
 				public void mousePressed(MouseEvent e){
+					if(!bAllowAddROI){
+						return;
+					}
 					updateLabel(e.getX(), e.getY());
 					lastHighlightPoint = e.getPoint();
 					if(paintButton.isSelected() || eraseButton.isSelected()){
@@ -1430,7 +1444,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 					}
 				}
 				public void mouseReleased(MouseEvent e){
-					
+					if(!bAllowAddROI){
+						return;
+					}
 					if(cropButton.isSelected()){
 						ISize iSize = getISizeDataset();
 						if(iSize == null || imagePane.getCrop() == null){
@@ -1469,6 +1485,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 				}
 				@Override
 				public void mouseClicked(MouseEvent e) {
+					if(!bAllowAddROI){
+						return;
+					}
 					if(fillButton.isSelected()){
 						if(roiComboBox.getItemCount() == 0){
 							giveROIRequiredWarning("fill");
@@ -1483,6 +1502,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 				@Override
 				public void mouseDragged(java.awt.event.MouseEvent e) {
 					updateLabel(e.getX(), e.getY());
+					if(!bAllowAddROI){
+						return;
+					}
 					if(paintButton.isSelected() || eraseButton.isSelected()){
 						drawHighlight(e.getX(), e.getY(), 10, eraseButton.isSelected());
 						lastHighlightPoint = e.getPoint();
