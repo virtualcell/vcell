@@ -261,17 +261,17 @@ public class MicroscopyXmlReader {
 		ROI[] reorderedROIs = AnnotatedImageDataset.reorderROIs(rois);
 		FRAPData frapData = new FRAPData(imageDataset, reorderedROIs);
 		//Read pixel value scaling info
-		Element originalGlobalScaleInfoElement = param.getChild(MicroscopyXMLTags.OriginalGlobalScaleInfoTag);
-		if(originalGlobalScaleInfoElement != null){
-			frapData.setOriginalGlobalScaleInfo(
-				new FRAPData.OriginalGlobalScaleInfo(
-					Integer.parseInt(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoMinTag)),
-					Integer.parseInt(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoMaxTag)),
-					Double.parseDouble(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoScaleTag)),
-					Double.parseDouble(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoOffsetTag))
-				)
-			);
-		}
+//		Element originalGlobalScaleInfoElement = param.getChild(MicroscopyXMLTags.OriginalGlobalScaleInfoTag);
+//		if(originalGlobalScaleInfoElement != null){
+//			frapData.setOriginalGlobalScaleInfo(
+//				new FRAPData.OriginalGlobalScaleInfo(
+//					Integer.parseInt(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoMinTag)),
+//					Integer.parseInt(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoMaxTag)),
+//					Double.parseDouble(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoScaleTag)),
+//					Double.parseDouble(originalGlobalScaleInfoElement.getAttributeValue(MicroscopyXMLTags.OriginalGlobalScaleInfoOffsetTag))
+//				)
+//			);
+//		}
 		//After loading all the ROI rings, the progress should set to 100.
 		if(progressListener != null){progressListener.setProgress(100);}
 		return frapData;

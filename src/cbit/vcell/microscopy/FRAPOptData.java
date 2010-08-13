@@ -603,7 +603,7 @@ public class FRAPOptData {
 	
 	public Parameter[] getBestParamters(Parameter[] inParams, boolean[] errorOfInterest) throws Exception
 	{
-		return getBestParamters(inParams, errorOfInterest, null, false);
+		return getBestParamters(inParams, errorOfInterest, null, true);
 	}
 	
 	//The best parameters will return a whole set for one diffusing component or two diffusing components (including the fixed parameter)

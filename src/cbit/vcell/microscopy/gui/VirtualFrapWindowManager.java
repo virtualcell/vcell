@@ -13,13 +13,19 @@ import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.microscopy.LocalWorkspace;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
+
 import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 
 
@@ -165,7 +171,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 		}
 	}
 	
-	public ExportEvent startExportMovie(ExportSpecs exportSpecs){
+	public ExportEvent startExportMovie(ExportSpecs exportSpecs, OutputContext outputContext){
 		ExportEvent exportEvt = null;
 		try {
 			SessionLog log = new StdoutSessionLog("export");
@@ -177,7 +183,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 				}
 			});
 			//the last parameter denotes whether the saved file is comporessed or not.
-			exportEvt = exportServiceImpl.makeRemoteFile(null, LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs, false);
+			exportEvt = exportServiceImpl.makeRemoteFile(outputContext, LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs, false);
 		}catch (DataAccessException e){
 			e.printStackTrace(System.out);
 		} catch (FileNotFoundException e) {

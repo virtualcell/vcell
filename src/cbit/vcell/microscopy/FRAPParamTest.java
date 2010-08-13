@@ -69,7 +69,7 @@ public class FRAPParamTest
 		FRAPStudy newFRAPStudy = null;
 		File inFile = new File(fileName);
 		try {
-			newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, varName, null);
+			newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, varName, new Double(65535), null);
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 		}

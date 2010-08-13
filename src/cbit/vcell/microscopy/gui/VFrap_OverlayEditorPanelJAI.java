@@ -956,12 +956,12 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	}
 	/** Sets the viewer to display the given images. * @param argImageDataset ImageDataset
 	 */
-	public void setImages(ImageDataset argImageDataset,boolean bNew,double originalScaleFactor,double originalOffsetFactor) {
+	public void setImages(ImageDataset argImageDataset,boolean bNew/*,double originalScaleFactor,double originalOffsetFactor*/) {
 		imageDataset = argImageDataset;
 		BufferedImage underlyingImage = null;
 		if (imageDataset!=null){
-			this.originalScaleFactor = originalScaleFactor;
-			this.originalOffsetFactor = originalOffsetFactor;
+//			this.originalScaleFactor = originalScaleFactor;
+//			this.originalOffsetFactor = originalOffsetFactor;
 			originalISize = (bNew?imageDataset.getISize():originalISize);
 			if(!timeSlider.isEnabled()) //if the component is already enabled, don't do anything
 			{

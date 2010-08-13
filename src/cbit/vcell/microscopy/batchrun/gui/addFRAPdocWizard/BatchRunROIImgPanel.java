@@ -25,7 +25,6 @@ import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
-import cbit.vcell.microscopy.FRAPData.OriginalGlobalScaleInfo;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
@@ -80,11 +79,11 @@ public class BatchRunROIImgPanel extends JPanel implements PropertyChangeListene
 		if(workingFrapStudy != null && workingFrapStudy.getFrapData() != null)
 		{
 			FRAPData fData = workingFrapStudy.getFrapData();
-			OriginalGlobalScaleInfo originalGlobalScaleInfo = fData.getOriginalGlobalScaleInfo();
+//			OriginalGlobalScaleInfo originalGlobalScaleInfo = fData.getOriginalGlobalScaleInfo();
 			centerPanel.getOverlayEditorPanelJAI().setImages(
-					(fData==null?null:fData.getImageDataset()),true,
-					(fData==null || originalGlobalScaleInfo == null?VFrap_OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:originalGlobalScaleInfo.originalScaleFactor),
-					(fData==null || originalGlobalScaleInfo == null?VFrap_OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:originalGlobalScaleInfo.originalOffsetFactor));
+					(fData==null?null:fData.getImageDataset()),true
+					/*(fData==null || originalGlobalScaleInfo == null?VFrap_OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:originalGlobalScaleInfo.originalScaleFactor),
+					(fData==null || originalGlobalScaleInfo == null?VFrap_OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:originalGlobalScaleInfo.originalOffsetFactor)*/);
 			centerPanel.getOverlayEditorPanelJAI().setRoiSouceData(fData);
 			centerPanel.getOverlayEditorPanelJAI().setROI(workingFrapStudy.getFrapData().getCurrentlyDisplayedROI());
 		}

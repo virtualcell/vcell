@@ -163,8 +163,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public static final LineBorder TAB_LINE_BORDER = new LineBorder(new Color(153, 186,243), 3);
 	
 	private static final String REACTION_RATE_PREFIX = "J_";
-	private static final String NORM_FLUOR_VAR = "Exp_norm_fluor";
-	private static final String NORM_SIM_VAR = "Sim_norm_fluor";
+	public static final String NORM_FLUOR_VAR = "Exp_norm_fluor";
+	public static final String NORM_SIM_VAR = "Sim_norm_fluor";
 		
 	private FRAPSingleWorkspace frapWorkspace = null;
 	private FRAPDataPanel frapDataPanel = null;
@@ -199,6 +199,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private EstParams_CompareResultsDescriptor compareResultsDescriptor = null;
 	//show result dialog
 	JDialog result2DDialog = null;
+	//output context for PDEViewer and MovieViewer
+	OutputContext outputContext = null;
 	
 	public class WorkFlowButtonHandler implements ActionListener
 	{
@@ -216,8 +218,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   				//check if save is needed before loading data
 	  	   				if(getFrapWorkspace().getWorkingFrapStudy().isSaveNeeded())
 	  	   				{
-	  	   					String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "There are unsaved changes. Save current document before loading new data?", new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
-	  	   					if(choice.equals(UserMessage.OPTION_OK))
+	  	   					String choice = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "There are unsaved changes. Save current document before loading new data?", new String[]{FRAPStudyPanel.SAVE_CONTINUE_MSG, FRAPStudyPanel.NO_THANKS_MSG}, FRAPStudyPanel.SAVE_CONTINUE_MSG);
+	  	   					if(choice.equals(FRAPStudyPanel.SAVE_CONTINUE_MSG))
 	  	   					{
 	  	   						AsynchClientTask[] saveTasks = save();
 	  	   						for(int i=0; i<saveTasks.length; i++)
@@ -1535,7 +1537,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				mSpec.setViewZoom(1);
 				ExportSpecs exSpecs = new ExportSpecs(vcDataId, format, variableSpecs, timeSpecs, geometrySpecs, mSpec);
 				// pass the request
-				ExportEvent exportEvt = ((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).startExportMovie(exSpecs);
+				ExportEvent exportEvt = ((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).startExportMovie(exSpecs, outputContext);
 				hashTable.put("ExportEvt", exportEvt);
 			}
 		};
@@ -1642,7 +1644,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							
 			VCDataIdentifier[] dataIDs = new VCDataIdentifier[] {timeSeriesExtDataID, maskExtDataID, simJob.getVCDataIdentifier()};
 			VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, VFRAP_DS_PREFIX);
-			OutputContext outputContext = new OutputContext(func);
+			outputContext = new OutputContext(func);
 							
 			dataManager = new PDEDataManager(outputContext,getLocalWorkspace().getVCDataManager(),vcDataId);
 			PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);

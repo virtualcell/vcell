@@ -1,11 +1,19 @@
 package cbit.vcell.microscopy.gui.loaddatawizard;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
 import org.vcell.util.UserCancelException;
@@ -31,6 +39,7 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
     public static final String IDENTIFIER = "LoadFRAPData_SingleFile";
     //    private FRAPStudy localFrapStudy = null;
     private LoadFRAPData_SingleFilePanel singleFilePanel = new LoadFRAPData_SingleFilePanel();
+    private ScalePanel scalePanel = null;
     private boolean isFileLoaded = false;
     private FRAPSingleWorkspace frapWorkspace = null;
     
@@ -69,7 +78,7 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
     			}
     		};
 			
-			
+
     		AsynchClientTask loadTask = new AsynchClientTask(LOADING_MESSAGE, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
     		{
     			public void run(Hashtable<String, Object> hashTable) throws Exception
@@ -97,8 +106,22 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 									rowData, ListSelectionModel.SINGLE_SELECTION);
 							if(selectedIndexArr != null && selectedIndexArr.length > 0)
 							{
-								newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, selectedIdentifiers.get(selectedIndexArr[0]), this.getClientTaskStatusSupport());
-								isFileLoaded = true;
+								scalePanel = getScalePanelForLoadingLogFile();
+								int choice = DialogUtils.showComponentOKCancelDialog(LoadFRAPData_SingleFileDescriptor.this.getPanelComponent(), scalePanel, "Input image maximum intensity (max: 65535)");
+								if(choice == JOptionPane.OK_OPTION)
+								{
+									Double maxIntensity = null;
+									if(scalePanel.getInputScaleString() != null)
+									{
+										maxIntensity = new Double(scalePanel.getInputScaleString());
+									}
+									newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, selectedIdentifiers.get(selectedIndexArr[0]), maxIntensity, this.getClientTaskStatusSupport());
+									isFileLoaded = true;
+								}
+								else
+								{
+									throw UserCancelException.CANCEL_GENERIC;
+								}
 							}else{
 								throw UserCancelException.CANCEL_GENERIC;
 							}
@@ -146,11 +169,75 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 		return taskArrayList;
     } 
     
+    private ScalePanel getScalePanelForLoadingLogFile()
+    {
+    	if(scalePanel == null)
+    	{
+    		scalePanel = new ScalePanel();
+    	}
+    	return scalePanel;
+    }
+    
     public FRAPSingleWorkspace getFrapWorkspace() {
 		return frapWorkspace;
 	}
     
 	public void setFrapWorkspace(FRAPSingleWorkspace frapWorkspace) {
 		this.frapWorkspace = frapWorkspace;
+	}
+	
+	class ScalePanel extends JPanel implements ActionListener
+	{
+		JRadioButton noScaleButton = new JRadioButton("Use original intensity value");
+		JRadioButton scaleButton = new JRadioButton("Set desired maximum intersity value");
+		JTextField scaleTextField = new JTextField(8);
+		
+		public ScalePanel()
+		{
+			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+			noScaleButton.setSelected(true);
+			scaleTextField.setEnabled(false);
+			ButtonGroup bg = new ButtonGroup();
+			bg.add(noScaleButton);
+			bg.add(scaleButton);
+			
+			noScaleButton.addActionListener(this);
+			scaleButton.addActionListener(this);
+			scaleTextField.setText("65535");
+			
+			add(noScaleButton);
+			add(scaleButton);
+			add(scaleTextField);
+		}
+		
+		public String getInputScaleString()
+		{
+			if(scaleButton.isSelected())
+			{
+				return scaleTextField.getText();
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		public void actionPerformed(ActionEvent e)
+		{
+			if(e.getSource() == scaleButton)
+			{
+				if(scaleButton.isSelected())
+				{
+					scaleTextField.setEnabled(true);
+				}
+			}
+			else if(e.getSource() == noScaleButton)
+			{
+				if(noScaleButton.isSelected())
+				{
+					scaleTextField.setEnabled(false);
+				}
+			}
+		}
 	}
 }
