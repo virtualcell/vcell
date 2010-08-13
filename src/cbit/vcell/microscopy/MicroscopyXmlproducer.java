@@ -218,23 +218,23 @@ private static Element getXML(FRAPData param,Xmlproducer vcellXMLProducer, Clien
 		frapDataNode.addContent( getXML(rois[i],vcellXMLProducer,bSaveCompressed) );
 	}
 	//Write pixel value scaling info
-	if(param.getOriginalGlobalScaleInfo() != null){
-		Element originalGlobalScaleInfoNode =
-			new Element(MicroscopyXMLTags.OriginalGlobalScaleInfoTag);
-		originalGlobalScaleInfoNode.setAttribute(
-				MicroscopyXMLTags.OriginalGlobalScaleInfoMinTag,
-			String.valueOf(param.getOriginalGlobalScaleInfo().originalGlobalScaledMin));
-		originalGlobalScaleInfoNode.setAttribute(
-				MicroscopyXMLTags.OriginalGlobalScaleInfoMaxTag,
-				String.valueOf(param.getOriginalGlobalScaleInfo().originalGlobalScaledMax));
-		originalGlobalScaleInfoNode.setAttribute(
-				MicroscopyXMLTags.OriginalGlobalScaleInfoScaleTag,
-				String.valueOf(param.getOriginalGlobalScaleInfo().originalScaleFactor));
-		originalGlobalScaleInfoNode.setAttribute(
-				MicroscopyXMLTags.OriginalGlobalScaleInfoOffsetTag,
-				String.valueOf(param.getOriginalGlobalScaleInfo().originalOffsetFactor));
-		frapDataNode.addContent(originalGlobalScaleInfoNode);
-	}
+//	if(param.getOriginalGlobalScaleInfo() != null){
+//		Element originalGlobalScaleInfoNode =
+//			new Element(MicroscopyXMLTags.OriginalGlobalScaleInfoTag);
+//		originalGlobalScaleInfoNode.setAttribute(
+//				MicroscopyXMLTags.OriginalGlobalScaleInfoMinTag,
+//			String.valueOf(param.getOriginalGlobalScaleInfo().originalGlobalScaledMin));
+//		originalGlobalScaleInfoNode.setAttribute(
+//				MicroscopyXMLTags.OriginalGlobalScaleInfoMaxTag,
+//				String.valueOf(param.getOriginalGlobalScaleInfo().originalGlobalScaledMax));
+//		originalGlobalScaleInfoNode.setAttribute(
+//				MicroscopyXMLTags.OriginalGlobalScaleInfoScaleTag,
+//				String.valueOf(param.getOriginalGlobalScaleInfo().originalScaleFactor));
+//		originalGlobalScaleInfoNode.setAttribute(
+//				MicroscopyXMLTags.OriginalGlobalScaleInfoOffsetTag,
+//				String.valueOf(param.getOriginalGlobalScaleInfo().originalOffsetFactor));
+//		frapDataNode.addContent(originalGlobalScaleInfoNode);
+//	}
 	// We assume saving ROI rings takes 5% of the total progress
 	if(progressListener != null){progressListener.setProgress(100);}
 	return frapDataNode;

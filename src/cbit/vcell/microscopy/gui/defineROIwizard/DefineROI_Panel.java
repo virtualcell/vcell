@@ -76,9 +76,9 @@ public class DefineROI_Panel extends JPanel implements PropertyChangeListener
 	{
 		FRAPData fData = getFrapWorkspace().getWorkingFrapStudy().getFrapData();
 		centerPanel.getOverlayEditorPanelJAI().setImages(
-				(fData==null?null:fData.getImageDataset()),true,
-				(fData==null || fData.getOriginalGlobalScaleInfo() == null?VFrap_OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
-				(fData==null || fData.getOriginalGlobalScaleInfo() == null?VFrap_OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor));
+				(fData==null?null:fData.getImageDataset()),true
+				/*(fData==null || fData.getOriginalGlobalScaleInfo() == null?VFrap_OverlayEditorPanelJAI.DEFAULT_SCALE_FACTOR:fData.getOriginalGlobalScaleInfo().originalScaleFactor),
+				(fData==null || fData.getOriginalGlobalScaleInfo() == null?VFrap_OverlayEditorPanelJAI.DEFAULT_OFFSET_FACTOR:fData.getOriginalGlobalScaleInfo().originalOffsetFactor)*/);
 		centerPanel.getOverlayEditorPanelJAI().setRoiSouceData(fData);
 		centerPanel.getOverlayEditorPanelJAI().setROI(getFrapWorkspace().getWorkingFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 	}

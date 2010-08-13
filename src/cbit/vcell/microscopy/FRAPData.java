@@ -6,6 +6,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.BitSet;
+import java.util.Random;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.KernelJAI;
@@ -60,21 +61,21 @@ import cbit.vcell.solvers.CartesianMesh;
 
 public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_ROISourceData{
 
-	public static class OriginalGlobalScaleInfo{
-		public final int originalGlobalScaledMin;
-		public final int originalGlobalScaledMax;
-		public final double originalScaleFactor;
-		public final double originalOffsetFactor;
-		public OriginalGlobalScaleInfo(
-			int originalGlobalScaledMin,int originalGlobalScaledMax,
-			double originalScaleFactor,double originalOffsetFactor){
-			this.originalGlobalScaledMin = originalGlobalScaledMin;
-			this.originalGlobalScaledMax = originalGlobalScaledMax;
-			this.originalScaleFactor = originalScaleFactor;
-			this.originalOffsetFactor = originalOffsetFactor;
-		}
-	};
-	private OriginalGlobalScaleInfo originalGlobalScaleInfo;
+//	public static class OriginalGlobalScaleInfo{
+//		public final int originalGlobalScaledMin;
+//		public final int originalGlobalScaledMax;
+//		public final double originalScaleFactor;
+//		public final double originalOffsetFactor;
+//		public OriginalGlobalScaleInfo(
+//			int originalGlobalScaledMin,int originalGlobalScaledMax,
+//			double originalScaleFactor,double originalOffsetFactor){
+//			this.originalGlobalScaledMin = originalGlobalScaledMin;
+//			this.originalGlobalScaledMax = originalGlobalScaledMax;
+//			this.originalScaleFactor = originalScaleFactor;
+//			this.originalOffsetFactor = originalOffsetFactor;
+//		}
+//	};
+//	private OriginalGlobalScaleInfo originalGlobalScaleInfo;
 	
 	public static enum VFRAP_ROI_ENUM {
 	ROI_BLEACHED,
@@ -106,7 +107,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 			new FRAPData(imageDataSet,
 				new String[]{ FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()}
 			);
-		frapData.setOriginalGlobalScaleInfo(null);
+//		frapData.setOriginalGlobalScaleInfo(null);
 		return frapData;
 	}
 	public static DataIdentifier[] getDataIdentiferListFromVCellSimulationData(File vcellSimLogFile,int jobIndex) throws Exception{
@@ -135,18 +136,13 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		return new VCSimulationIdentifier(simulationKey,getDotUser());
 
 	}
-	public static FRAPData importFRAPDataFromVCellSimulationData(File vcellSimLogFile,String variableName,
-			final ClientTaskStatusSupport progressListener) throws Exception{
-		if(!vcellSimLogFile.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)){
-			throw new IllegalArgumentException("VCell simulation logfile with extension "+SimDataConstants.LOGFILE_EXTENSION+" expected.");
-		}
-		VCSimulationIdentifier vcSimulationIdentifier =
-			getVCSimulationIdentifierFromVCellSimulationData(vcellSimLogFile);
-		VCSimulationDataIdentifier vcSimulationDataIdentifier = 
-			new VCSimulationDataIdentifier(vcSimulationIdentifier,0);
+	public static FRAPData importFRAPDataFromVCellSimulationData(File vcellSimLogFile,String variableName, Double maxIntensity,
+			final ClientTaskStatusSupport progressListener) throws Exception
+	{
+		VCSimulationIdentifier vcSimulationIdentifier = getVCSimulationIdentifierFromVCellSimulationData(vcellSimLogFile);
+		VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier,0);
 		
-		DataSetControllerImpl dataSetControllerImpl =
-			getDataSetControllerImplFromVCellSimulationData(vcellSimLogFile);
+		DataSetControllerImpl dataSetControllerImpl = getDataSetControllerImplFromVCellSimulationData(vcellSimLogFile);
 
 		final DataJobEvent[] bStatus = new DataJobEvent[] {null};
 		DataJobListener dataJobListener =
@@ -160,8 +156,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 			};
 		dataSetControllerImpl.addDataJobListener(dataJobListener);
 		
-		DataIdentifier[] dataIdentifiers =
-			getDataIdentiferListFromVCellSimulationData(vcellSimLogFile, 0);
+		DataIdentifier[] dataIdentifiers = getDataIdentiferListFromVCellSimulationData(vcellSimLogFile, 0);
 		DataIdentifier variableNameDataIdentifier = null;
 		for (int i = 0; i < dataIdentifiers.length; i++) {
 			if(dataIdentifiers[i].getName().equals(variableName)){
@@ -201,20 +196,27 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 			allTimesMin = Math.min(allTimesMin, tsJobResultsSpaceStats.getMinimums()[0][i]);
 			allTimesMax = Math.max(allTimesMax, tsJobResultsSpaceStats.getMaximums()[0][i]);
 		}
-		double SCALE_MAX = Math.pow(2,16)-1;//Scale to 16 bits
-		double linearaScaleFactor = SCALE_MAX/allTimesMax;
-		System.out.println("alltimesMin="+allTimesMin+" allTimesMax="+allTimesMax);
+//		double SCALE_MAX = maxIntensity.doubleValue();/*Math.pow(2,16)-1;*///Scale to 16 bits
+		double linearaScaleFactor = 1;
+		if(maxIntensity != null)
+		{
+			linearaScaleFactor = maxIntensity.doubleValue()/allTimesMax;
+		}
+		System.out.println("alltimesMin="+allTimesMin+" allTimesMax="+allTimesMax + " linearScaleFactor=" + linearaScaleFactor);
 		UShortImage[] scaledDataImages = new UShortImage[times.length];
+		Random rnd = new Random();
 		for (int i = 0; i < times.length; i++) {
 			double[] rawData =
 				dataSetControllerImpl.getSimDataBlock(null,vcSimulationDataIdentifier,variableName,times[i]).getData();
 			short[] scaledDataShort = new short[rawData.length];
 //			if(allTimesMax> SCALE_MAX){
 			for (int j = 0; j < scaledDataShort.length; j++) {
-				int scaledValue = (int)(rawData[j]*linearaScaleFactor);
+//				int scaledValue = (int)(rawData[j]*linearaScaleFactor);//###uncomment it
+				double scaledRawDataJ = rawData[j]*linearaScaleFactor;
+				double scaledRawDataJ_withNoise = Math.max(0, scaledRawDataJ + rnd.nextGaussian()*Math.sqrt(scaledRawDataJ));
+				int scaledValue = (int)(scaledRawDataJ_withNoise);
 				scaledDataShort[j]&= 0x0000;
 				scaledDataShort[j]|= 0x0000FFFF & scaledValue;
-					
 			}
 //			}
 			scaledDataImages[i] =
@@ -225,15 +227,33 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
 			if(progressListener != null){progressListener.setProgress((int)(.75+(.25*(double)(i+1)/times.length)));}
 		}
+		
+//		for(int i=0; i<scaledDataImages.length; i++)
+//		{
+//			UShortImage img = scaledDataImages[i];
+//			short[] pixels = img.getPixels();
+//			for(int j=0; j<pixels.length; j++)
+//			{
+//				if(allTimesMax < pixels[j])
+//				{
+//					allTimesMax = pixels[j];
+//				}
+//			}
+//		}
+		
 		ImageDataset imageDataSet = new ImageDataset(scaledDataImages,times,cartesianMesh.getSizeZ());
+		
+		
+		
+		
 		FRAPData frapData = new FRAPData(imageDataSet,
 				new String[]{ FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()}
 		);
-		frapData.setOriginalGlobalScaleInfo(
-			new FRAPData.OriginalGlobalScaleInfo(
-				(int)(allTimesMin*linearaScaleFactor),
-				(int)(allTimesMax*linearaScaleFactor),
-				linearaScaleFactor,0));
+//		frapData.setOriginalGlobalScaleInfo(
+//			new FRAPData.OriginalGlobalScaleInfo(
+//				(int)(allTimesMin*linearaScaleFactor),
+//				(int)(allTimesMax*linearaScaleFactor),
+//				linearaScaleFactor,0));
 		
 		return frapData;
 	}
@@ -270,13 +290,13 @@ public FRAPData crop(Rectangle rect) throws ImageException {
 	return croppedFrapData;
 }
 
-public OriginalGlobalScaleInfo getOriginalGlobalScaleInfo() {
-	return originalGlobalScaleInfo;
-}
+//public OriginalGlobalScaleInfo getOriginalGlobalScaleInfo() {
+//	return originalGlobalScaleInfo;
+//}
 
-public void setOriginalGlobalScaleInfo(OriginalGlobalScaleInfo originalGlobalScaleInfo) {
-	this.originalGlobalScaleInfo = originalGlobalScaleInfo;
-}
+//public void setOriginalGlobalScaleInfo(OriginalGlobalScaleInfo originalGlobalScaleInfo) {
+//	this.originalGlobalScaleInfo = originalGlobalScaleInfo;
+//}
 
 public double[] getAvgBackGroundIntensity()
 {

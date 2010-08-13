@@ -24,11 +24,11 @@ public class MicroscopyXMLTags {
 	public static final String ExternalDataIdentifierTag = "ExternalDataIdentifier";
 	public static final String ROIExternalDataInfoTag = "ROIExternalDataInfo";
 	public static final String OriginalImagePathAttrTag = "OriginalImagePath";
-	public static final String OriginalGlobalScaleInfoTag = "OriginalGlobalScaleInfo";
-    public final static String OriginalGlobalScaleInfoMinTag = "OriginalGlobalScaleInfoMin";
-    public final static String OriginalGlobalScaleInfoMaxTag = "OriginalGlobalScaleInfoMax";
-    public final static String OriginalGlobalScaleInfoScaleTag = "OriginalGlobalScaleInfoScale";
-    public final static String OriginalGlobalScaleInfoOffsetTag = "OriginalGlobalScaleInfoOffset";
+//	public static final String OriginalGlobalScaleInfoTag = "OriginalGlobalScaleInfo";
+//    public final static String OriginalGlobalScaleInfoMinTag = "OriginalGlobalScaleInfoMin";
+//    public final static String OriginalGlobalScaleInfoMaxTag = "OriginalGlobalScaleInfoMax";
+//    public final static String OriginalGlobalScaleInfoScaleTag = "OriginalGlobalScaleInfoScale";
+//    public final static String OriginalGlobalScaleInfoOffsetTag = "OriginalGlobalScaleInfoOffset";
 	//frapstudy attribute
     public static final String StartingIndexForRecoveryTag = "StartingIndexForRecovery";
     public static final String BestModelIndexTag = "BestModelIndex";
