@@ -460,4 +460,21 @@ public class XMLTags {
 	public static final String FieldNameTag = "FieldName";
 	public static final String VariableNameTag = "VariableName";
 	
+	// Smoldyn
+	public final static String VolumeParticleVariableTag = "VolumeParticleVariable";
+	public final static String ParticleJumpProcessTag = "ParticleJumpProcess";
+	public final static String ParticleProbabilityRateTag = "ParticleProbabilityRate";
+	public final static String SelectedParticleTag = "SelectedParticle";
+	public final static String ParticlePropertiesTag 		= "ParticleProperties"; // particle
+	public final static String ParticleInitialTag			= "ParticleInitial"; // particle
+	public final static String ParticleCountTag			= "ParticleCount"; // particle
+	public final static String ParticleLocationXTag		= "ParticleLocationX"; // particle
+	public final static String ParticleLocationYTag		= "ParticleLocationY"; // particle
+	public final static String ParticleLocationZTag		= "ParticleLocationZ"; // particle
+	public final static String ParticleDiffusionTag		= "ParticleDiffusion"; // particle
+	public final static String SmoldynSimulationOptions	= "SmoldynSimulationOptions";
+	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";
+	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";
+	public final static String SmoldynSimulationOptions_gaussianTableSize	= "gaussianTableSize";
+
 }

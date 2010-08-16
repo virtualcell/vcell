@@ -1280,12 +1280,16 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 	VCellThreadChecker.checkCpuIntensiveInvocation();
 	
 	localIssueList.clear();
-	refreshKFluxParameters();
-	refreshSpeciesContextMappings();
-	refreshStructureAnalyzers();
-	refreshVariables();
-	refreshLocalNameCount();
-	refreshMathDescription();
+	if (simContext.isParticle()){
+		refreshParticleMathDescription();
+	}else{
+		refreshKFluxParameters();
+		refreshSpeciesContextMappings();
+		refreshStructureAnalyzers();
+		refreshVariables();
+		refreshLocalNameCount();
+		refreshMathDescription();
+	}
 }
 
 /**
@@ -2400,6 +2404,1097 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					if (memSubDomain.getInsideCompartment().getName().equals(sm.getGeometryClass().getName())){
 						jc.setInFlux(flux);
 					}else if (memSubDomain.getOutsideCompartment().getName().equals(sm.getGeometryClass().getName())){
+						jc.setOutFlux(flux);
+					}else{
+						throw new RuntimeException("APPLICATION  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+" with a non-local flux species "+scm.getSpeciesContext().getName());
+					}
+				}else{
+					throw new MappingException("APPLICATION  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+", but doesn't diffuse in compartment "+scm.getSpeciesContext().getStructure().getName());
+				}
+			}
+		}
+
+		//
+		// create fast system (if neccessary)
+		//
+		SpeciesContextMapping fastSpeciesContextMappings[] = membraneStructureAnalyzer.getFastSpeciesContextMappings();
+		if (fastSpeciesContextMappings!=null){
+			FastSystem fastSystem = new FastSystem(mathDesc);
+			for (int i=0;i<fastSpeciesContextMappings.length;i++){
+				SpeciesContextMapping scm = fastSpeciesContextMappings[i];
+				if (scm.getFastInvariant()==null){
+					//
+					// independant-fast variable, create a fastRate object
+					//
+					VCUnitDefinition rateUnit = scm.getSpeciesContext().getUnitDefinition().divideBy(ReservedSymbol.TIME.getUnitDefinition());
+					FastRate fastRate = new FastRate(getIdentifierSubstitutions(scm.getFastRate(),rateUnit,surfaceClass));
+					fastSystem.addFastRate(fastRate);
+				}else{
+					//
+					// dependant-fast variable, create a fastInvariant object
+					//
+					VCUnitDefinition invariantUnit = scm.getSpeciesContext().getUnitDefinition();
+					FastInvariant fastInvariant = new FastInvariant(getIdentifierSubstitutions(scm.getFastInvariant(),invariantUnit,surfaceClass));
+					fastSystem.addFastInvariant(fastInvariant);
+				}
+			}
+			memSubDomain.setFastSystem(fastSystem);
+			// constructor calls the 'refresh' method which constructs depemdency matrix, dependent/independent vars and pseudoconstants, etc. 
+			FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem, mathDesc);
+		}
+		//
+		// create Membrane-region equations for potential of this resolved membrane
+		//
+		Structure[] resolvedSurfaceStructures = membraneStructureAnalyzer.getStructures();
+		for (int m = 0; m < resolvedSurfaceStructures.length; m++) {
+			if (resolvedSurfaceStructures[m] instanceof Membrane){
+				Membrane membrane = (Membrane)resolvedSurfaceStructures[m];
+				MembraneMapping membraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(membrane);
+				if (membraneMapping.getCalculateVoltage()){
+					ElectricalDevice membraneDevices[] = potentialMapping.getElectricalDevices(membrane);
+					int numCapacitiveDevices = 0;
+					MembraneElectricalDevice capacitiveDevice = null;
+					for (int i = 0; i < membraneDevices.length; i++){
+						if (membraneDevices[i] instanceof MembraneElectricalDevice){
+							numCapacitiveDevices++;
+							capacitiveDevice = (MembraneElectricalDevice)membraneDevices[i];
+						}
+					}
+					if (numCapacitiveDevices!=1){
+						throw new MappingException("expecting 1 capacitive electrical device on graph edge for membrane "+membrane.getName()+", found '"+numCapacitiveDevices+"'");
+					}
+					if (mathDesc.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping.getGeometryClass())) instanceof MembraneRegionVariable){
+						MembraneRegionVariable vVar = (MembraneRegionVariable)mathDesc.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping.getGeometryClass()));
+						Parameter initialVoltageParm = capacitiveDevice.getMembraneMapping().getInitialVoltageParameter();
+						Expression initExp = getIdentifierSubstitutions(initialVoltageParm.getExpression(),initialVoltageParm.getUnitDefinition(),capacitiveDevice.getMembraneMapping().getGeometryClass());
+						MembraneRegionEquation vEquation = new MembraneRegionEquation(vVar,initExp);
+						vEquation.setMembraneRateExpression(getIdentifierSubstitutions(potentialMapping.getOdeRHS(capacitiveDevice,this),VCUnitDefinition.UNIT_mV_per_s,capacitiveDevice.getMembraneMapping().getGeometryClass()));
+						memSubDomain.addEquation(vEquation);
+					}
+				}
+			}
+		}
+	}
+
+	// create equations for event assign targets that are model params/strutureSize, etc.
+	Set<VolVariable> hashKeySet = eventVolVarHash.keySet();
+	Iterator<VolVariable> volVarsIter = hashKeySet.iterator();
+	// working under teh assumption that we are dealing with non-spatial math, hence only one compartment domain!
+	SubDomain subDomain = mathDesc.getSubDomains().nextElement();
+	while (volVarsIter.hasNext()) {
+		VolVariable volVar = volVarsIter.next();
+		EventAssignmentInitParameter eap = eventVolVarHash.get(volVar);
+		Expression rateExpr = new Expression(0.0);
+		Equation equation = new OdeEquation(volVar, new Expression(getMathSymbol(eap, null)), rateExpr);
+		subDomain.addEquation(equation);
+	}
+
+	// events - add events to math desc and odes for event assignments that have parameters as target variables
+
+	BioEvent[] bioevents = simContext.getBioEvents();
+	if (bioevents != null && bioevents.length > 0) {
+		for (BioEvent be : bioevents) {
+			// transform the bioEvent trigger/delay to math Event
+			Expression mathTriggerExpr = getIdentifierSubstitutions(be.getTriggerExpression(), VCUnitDefinition.UNIT_DIMENSIONLESS, null);
+			Delay mathDelay = null;
+			if (be.getDelay() != null) {
+				boolean bUseValsFromTriggerTime = be.getDelay().useValuesFromTriggerTime();
+				Expression mathDelayExpr = getIdentifierSubstitutions(be.getDelay().getDurationExpression(), VCUnitDefinition.UNIT_s, null);
+				mathDelay = new Delay(bUseValsFromTriggerTime, mathDelayExpr);
+			}
+			// now deal with (bio)event Assignment translation to math EventAssignment 
+			ArrayList<EventAssignment> eventAssignments = be.getEventAssignments();
+			ArrayList<Event.EventAssignment> mathEventAssignmentsList = new ArrayList<Event.EventAssignment>(); 
+			for (EventAssignment ea : eventAssignments) {
+				SymbolTableEntry ste = simContext.getEntry(ea.getTarget().getName());
+				VCUnitDefinition eventAssignVarUnit = getEventVarUnit(ste);
+				Variable variable = varHash.getVariable(ste.getName());
+				Event.EventAssignment mathEA = new Event.EventAssignment(variable, getIdentifierSubstitutions(ea.getAssignmentExpression(), eventAssignVarUnit, null));
+				mathEventAssignmentsList.add(mathEA);
+			}
+			// use the translated trigger, delay and event assignments to create (math) event
+			Event mathEvent = new Event(be.getName(), mathTriggerExpr, mathDelay, mathEventAssignmentsList);
+			mathDesc.addEvent(mathEvent);
+		}
+	}
+	
+	if (!mathDesc.isValid()){
+		System.out.println(mathDesc.getVCML_database());
+		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
+	}
+
+//System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+//System.out.println(mathDesc.getVCML());
+//System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+}
+
+private void refreshParticleMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
+
+	//All sizes must be set for new ODE models and ratios must be set for old ones.
+	simContext.checkValidity();
+	
+	//
+	// temporarily place all variables in a hashtable (before binding) and discarding duplicates (check for equality)
+	//
+	VariableHash varHash = new VariableHash();
+	StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
+	
+	//
+	// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
+	//
+	Structure structures[] = simContext.getGeometryContext().getModel().getStructures();
+	for (int i = 0; i < structures.length; i++){
+		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(structures[i]);
+		if (sm==null || (sm.getGeometryClass() == null)){
+			throw new MappingException("model structure '"+structures[i].getName()+"' not mapped to a geometry subdomain");
+		}
+		if (sm!=null && (sm instanceof MembraneMapping) && ((MembraneMapping)sm).getVolumeFractionParameter()!=null){
+			Expression volFractExp = ((MembraneMapping)sm).getVolumeFractionParameter().getExpression();
+			if(volFractExp != null)
+			{
+				try {
+					double volFract = volFractExp.evaluateConstant();
+					if (volFract>=1.0){
+						throw new MappingException("model structure '"+((MembraneMapping)sm).getMembrane().getInsideFeature().getName()+"' has volume fraction >= 1.0");
+					}
+				}catch (ExpressionException e){
+				}
+			}
+		}
+	}
+	SubVolume subVolumes[] = simContext.getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
+	for (int i = 0; i < subVolumes.length; i++){
+		Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(subVolumes[i]);
+		if (mappedStructures==null || mappedStructures.length==0){
+			throw new MappingException("geometry subVolume '"+subVolumes[i].getName()+"' not mapped from a model structure");
+		}
+	}
+
+	// deals with model parameters
+	Hashtable<VolVariable, EventAssignmentInitParameter> eventVolVarHash = new Hashtable<VolVariable, EventAssignmentInitParameter>();
+	ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
+	if (simContext.getGeometry().getDimension() == 0) {
+		//
+		// global parameters from model (that presently are constants)
+		//
+		BioEvent[] bioEvents = simContext.getBioEvents();
+		ArrayList<SymbolTableEntry> eventAssignTargets = new ArrayList<SymbolTableEntry>();
+		if (bioEvents != null && bioEvents.length > 0) {
+			for (BioEvent be : bioEvents) {
+				for (EventAssignment ea : be.getEventAssignments()) {
+					if (!eventAssignTargets.contains(ea.getTarget())) {
+						eventAssignTargets.add(ea.getTarget());
+					}
+				}
+			}
+		}
+		for (int j=0;j<modelParameters.length;j++){
+			Expression modelParamExpr = modelParameters[j].getExpression();
+			GeometryClass geometryClass = getDefaultGeometryClass(modelParamExpr);
+			modelParamExpr = getIdentifierSubstitutions(modelParamExpr, modelParameters[j].getUnitDefinition(), geometryClass);
+			if (eventAssignTargets.contains(modelParameters[j])) {
+				EventAssignmentInitParameter eap = null;
+				try {
+					eap = addEventAssignmentInitParameter(modelParameters[j].getName(), modelParamExpr, 
+							PARAMETER_ROLE_EVENTASSIGN_INITCONDN, modelParameters[j].getUnitDefinition());
+				} catch (PropertyVetoException e) {
+					e.printStackTrace(System.out);
+					throw new MappingException(e.getMessage());
+				}
+				// varHash.addVariable(newFunctionOrConstant(getMathSymbol(eap, null), modelParamExpr));
+				VolVariable volVar = new VolVariable(modelParameters[j].getName(),null);
+				varHash.addVariable(volVar);
+				eventVolVarHash.put(volVar, eap);
+			} else {
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], geometryClass), modelParamExpr,geometryClass));
+			}
+		}
+	} else {
+		// populate in globalParameterVariants hashtable
+		for (int j = 0; j < modelParameters.length; j++){
+			Expression modelParamExpr = modelParameters[j].getExpression();
+			GeometryClass geometryClass = getDefaultGeometryClass(modelParamExpr);
+			modelParamExpr = getIdentifierSubstitutions(modelParamExpr, modelParameters[j].getUnitDefinition(), geometryClass);
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], geometryClass), modelParamExpr,geometryClass));
+		}
+	}
+	
+	//
+	// gather only those reactionSteps that are not "excluded"
+	//
+	ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
+	Vector<ReactionStep> rsList = new Vector<ReactionStep>();
+	for (int i = 0; i < reactionSpecs.length; i++){
+		if (reactionSpecs[i].isExcluded()==false){
+			rsList.add(reactionSpecs[i].getReactionStep());
+		}
+	}
+	ReactionStep reactionSteps[] = new ReactionStep[rsList.size()];
+	rsList.copyInto(reactionSteps);
+
+	//
+	// fail if any unresolved parameters
+	//
+	for (int i = 0; i < reactionSteps.length; i++){
+		Kinetics.UnresolvedParameter unresolvedParameters[] = reactionSteps[i].getKinetics().getUnresolvedParameters();
+		if (unresolvedParameters!=null && unresolvedParameters.length>0){
+			StringBuffer buffer = new StringBuffer();
+			for (int j = 0; j < unresolvedParameters.length; j++){
+				if (j>0){
+					buffer.append(", ");
+				}
+				buffer.append(unresolvedParameters[j].getName());
+			}
+			throw new MappingException(reactionSteps[i].getTerm()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
+		}
+	}
+	
+	//
+	// create new MathDescription (based on simContext's previous MathDescription if possible)
+	//
+	MathDescription oldMathDesc = simContext.getMathDescription();
+	mathDesc = null;
+	if (oldMathDesc != null){
+		if (oldMathDesc.getVersion() != null){
+			mathDesc = new MathDescription(oldMathDesc.getVersion());
+		}else{
+			mathDesc = new MathDescription(oldMathDesc.getName());
+		}
+	}else{
+		mathDesc = new MathDescription(simContext.getName()+"_generated");
+	}
+
+	//
+	// volume variables
+	//
+	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
+	while (enum1.hasMoreElements()){
+		SpeciesContextMapping scm = enum1.nextElement();
+		if (scm.getVariable() instanceof VolVariable){
+			if (!(mathDesc.getVariable(scm.getVariable().getName()) instanceof VolVariable)){
+				varHash.addVariable(scm.getVariable());
+			}
+		}
+	}
+	//
+	// membrane variables
+	//
+	enum1 = getSpeciesContextMappings();
+	while (enum1.hasMoreElements()){
+		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		if (scm.getVariable() instanceof MemVariable){
+			varHash.addVariable(scm.getVariable());
+		}
+	}
+
+	//
+	// volume region variables
+	//
+	enum1 = getSpeciesContextMappings();
+	while (enum1.hasMoreElements()){
+		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		if (scm.getVariable() instanceof VolumeRegionVariable){
+			varHash.addVariable(scm.getVariable());
+		}
+	}
+
+	//
+	// membrane region variables
+	//
+	enum1 = getSpeciesContextMappings();
+	while (enum1.hasMoreElements()){
+		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		if (scm.getVariable() instanceof MembraneRegionVariable){
+			varHash.addVariable(scm.getVariable());
+		}
+	}
+
+//	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.PI,null),getIdentifierSubstitutions(ReservedSymbol.PI.getExpression(),ReservedSymbol.PI.getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT.getExpression(),ReservedSymbol.FARADAY_CONSTANT.getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT_NMOLE,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getExpression(),ReservedSymbol.FARADAY_CONSTANT_NMOLE.getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.GAS_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.GAS_CONSTANT.getExpression(),ReservedSymbol.GAS_CONSTANT.getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),VCUnitDefinition.UNIT_K,null)));
+
+	//
+	// only calculate potential if at least one MembraneMapping has CalculateVoltage == true
+	//
+	boolean bCalculatePotential = false;
+	for (int i = 0; i < structureMappings.length; i++){
+		if (structureMappings[i] instanceof MembraneMapping){
+			if (((MembraneMapping)structureMappings[i]).getCalculateVoltage()){
+				bCalculatePotential = true;
+			}
+		}
+		
+	}
+
+	potentialMapping = new PotentialMapping(simContext,this);
+	potentialMapping.computeMath();
+	
+	if (bCalculatePotential){
+		//
+		// copy functions for currents and constants for capacitances
+		//
+		ElectricalDevice devices[] = potentialMapping.getElectricalDevices();
+		for (int j = 0; j < devices.length; j++){
+
+			
+			if (devices[j] instanceof MembraneElectricalDevice){
+				MembraneElectricalDevice membraneElectricalDevice = (MembraneElectricalDevice)devices[j];
+				MembraneMapping memMapping = membraneElectricalDevice.getMembraneMapping();
+				Parameter specificCapacitanceParm = memMapping.getParameterFromRole(MembraneMapping.ROLE_SpecificCapacitance);
+				varHash.addVariable(new Constant(getMathSymbol(specificCapacitanceParm,memMapping.getGeometryClass()),
+						getIdentifierSubstitutions(specificCapacitanceParm.getExpression(),specificCapacitanceParm.getUnitDefinition(),memMapping.getGeometryClass())));
+
+				ElectricalDevice.ElectricalDeviceParameter transmembraneCurrentParm = membraneElectricalDevice.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrent);
+				ElectricalDevice.ElectricalDeviceParameter totalCurrentParm = membraneElectricalDevice.getParameterFromRole(ElectricalDevice.ROLE_TotalCurrent);
+				ElectricalDevice.ElectricalDeviceParameter capacitanceParm = membraneElectricalDevice.getParameterFromRole(ElectricalDevice.ROLE_Capacitance);
+
+				GeometryClass geometryClass = membraneElectricalDevice.getMembraneMapping().getGeometryClass();
+				if (totalCurrentParm!=null && /* totalCurrentDensityParm.getExpression()!=null && */ memMapping.getCalculateVoltage()){
+					Expression totalCurrentDensityExp = (totalCurrentParm.getExpression()!=null)?(totalCurrentParm.getExpression()):(new Expression(0.0));
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentParm,geometryClass),
+													getIdentifierSubstitutions(totalCurrentDensityExp,totalCurrentParm.getUnitDefinition(),geometryClass),
+													geometryClass));
+				}
+				if (transmembraneCurrentParm!=null && transmembraneCurrentParm.getExpression()!=null && memMapping.getCalculateVoltage()){
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(transmembraneCurrentParm,geometryClass),
+													getIdentifierSubstitutions(transmembraneCurrentParm.getExpression(),transmembraneCurrentParm.getUnitDefinition(),geometryClass),
+													geometryClass));
+				}
+				if (capacitanceParm!=null && capacitanceParm.getExpression()!=null && memMapping.getCalculateVoltage()){
+					StructureMappingParameter sizeParameter = membraneElectricalDevice.getMembraneMapping().getSizeParameter();
+					if (simContext.getGeometry().getDimension() == 0 && (sizeParameter.getExpression() == null || sizeParameter.getExpression().isZero())) {
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,geometryClass),
+							getIdentifierSubstitutions(Expression.mult(memMapping.getNullSizeParameterValue(), specificCapacitanceParm.getExpression()),capacitanceParm.getUnitDefinition(),geometryClass),geometryClass));						
+					} else {
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(capacitanceParm,geometryClass),
+							getIdentifierSubstitutions(capacitanceParm.getExpression(),capacitanceParm.getUnitDefinition(),geometryClass),geometryClass));
+					}
+				}
+				//		
+				//
+				// membrane ode
+				//
+				if (membraneElectricalDevice.getDependentVoltageExpression()==null){  // is Voltage Independent?
+					StructureMapping.StructureMappingParameter initialVoltageParm = memMapping.getInitialVoltageParameter();
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(initialVoltageParm,memMapping.getGeometryClass()),
+													getIdentifierSubstitutions(initialVoltageParm.getExpression(),initialVoltageParm.getUnitDefinition(),memMapping.getGeometryClass()),
+													memMapping.getGeometryClass()));
+				}
+				//
+				// membrane forced potential
+				//
+				else {
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(memMapping.getMembrane().getMembraneVoltage(),memMapping.getGeometryClass()),
+													getIdentifierSubstitutions(membraneElectricalDevice.getDependentVoltageExpression(),memMapping.getMembrane().getMembraneVoltage().getUnitDefinition(),memMapping.getGeometryClass()),
+													memMapping.getGeometryClass()));
+				}
+			}else if (devices[j] instanceof CurrentClampElectricalDevice){
+				CurrentClampElectricalDevice currentClampDevice = (CurrentClampElectricalDevice)devices[j];
+				// total current = current source (no capacitance)
+				Parameter totalCurrentParm = currentClampDevice.getParameterFromRole(CurrentClampElectricalDevice.ROLE_TotalCurrent);
+				Parameter currentParm = currentClampDevice.getParameterFromRole(CurrentClampElectricalDevice.ROLE_TransmembraneCurrent);
+				//Parameter dependentVoltage = currentClampDevice.getCurrentClampStimulus().getVoltageParameter();
+				Feature deviceElectrodeFeature = currentClampDevice.getCurrentClampStimulus().getElectrode().getFeature();
+				Feature groundElectrodeFeature = simContext.getGroundElectrode().getFeature();
+				Membrane membrane = simContext.getModel().getMembrane(deviceElectrodeFeature, groundElectrodeFeature);
+				GeometryClass geometryClass = null;
+				if (membrane!=null){
+					StructureMapping membraneStructureMapping = simContext.getGeometryContext().getStructureMapping(membrane);
+					geometryClass = membraneStructureMapping.getGeometryClass(); 
+				}
+				
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentParm,geometryClass),getIdentifierSubstitutions(totalCurrentParm.getExpression(),totalCurrentParm.getUnitDefinition(),geometryClass),geometryClass));
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(currentParm,geometryClass),getIdentifierSubstitutions(currentParm.getExpression(),currentParm.getUnitDefinition(),geometryClass),geometryClass));
+				//varHash.addVariable(newFunctionOrConstant(getMathSymbol(dependentVoltage,null),getIdentifierSubstitutions(currentClampDevice.getDependentVoltageExpression(),dependentVoltage.getUnitDefinition(),null)));
+
+				//
+				// add user-defined parameters
+				//
+				ElectricalDevice.ElectricalDeviceParameter[] parameters = currentClampDevice.getParameters();
+				for (int k = 0; k < parameters.length; k++){
+					if (parameters[k].getExpression()!=null){ // guards against voltage parameters that are "variable".
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[k],null),getIdentifierSubstitutions(parameters[k].getExpression(),parameters[k].getUnitDefinition(),geometryClass),geometryClass));
+					}
+				}
+			}else if (devices[j] instanceof VoltageClampElectricalDevice){
+				VoltageClampElectricalDevice voltageClampDevice = (VoltageClampElectricalDevice)devices[j];
+				Feature deviceElectrodeFeature = voltageClampDevice.getVoltageClampStimulus().getElectrode().getFeature();
+				Feature groundElectrodeFeature = simContext.getGroundElectrode().getFeature();
+				Membrane membrane = simContext.getModel().getMembrane(deviceElectrodeFeature, groundElectrodeFeature);
+				GeometryClass geometryClass = null;
+				if (membrane!=null){
+					StructureMapping membraneStructureMapping = simContext.getGeometryContext().getStructureMapping(membrane);
+					geometryClass = membraneStructureMapping.getGeometryClass(); 
+				}
+				// total current = current source (no capacitance)
+				Parameter totalCurrent = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_TotalCurrent);
+				Parameter totalCurrentParm = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_TotalCurrent);
+				Parameter voltageParm = voltageClampDevice.getParameterFromRole(VoltageClampElectricalDevice.ROLE_Voltage);
+
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrent,geometryClass),getIdentifierSubstitutions(totalCurrent.getExpression(),totalCurrent.getUnitDefinition(),geometryClass),geometryClass));
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentParm,geometryClass),getIdentifierSubstitutions(totalCurrentParm.getExpression(),totalCurrentParm.getUnitDefinition(),geometryClass),geometryClass));
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(voltageParm,geometryClass),getIdentifierSubstitutions(voltageParm.getExpression(),voltageParm.getUnitDefinition(),geometryClass),geometryClass));
+
+				//
+				// add user-defined parameters
+				//
+				ElectricalDevice.ElectricalDeviceParameter[] parameters = voltageClampDevice.getParameters();
+				for (int k = 0; k < parameters.length; k++){
+					if (parameters[k].getRole() == ElectricalDevice.ROLE_UserDefined){
+						varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[k],geometryClass),getIdentifierSubstitutions(parameters[k].getExpression(),parameters[k].getUnitDefinition(),geometryClass),geometryClass));
+					}
+				}
+			}
+		}
+	} else {    // (bCalculatePotential == false) ... don't solve for any potentials, but still need them
+		//
+		// copy functions for currents and constants for capacitances
+		//
+		for (int j = 0; j < structureMappings.length; j++){
+			if (structureMappings[j] instanceof MembraneMapping){
+				MembraneMapping memMapping = (MembraneMapping)structureMappings[j];
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(memMapping.getMembrane().getMembraneVoltage(),memMapping.getGeometryClass()),getIdentifierSubstitutions(memMapping.getInitialVoltageParameter().getExpression(),memMapping.getInitialVoltageParameter().getUnitDefinition(),memMapping.getGeometryClass()),memMapping.getGeometryClass()));
+			}
+		}
+	}
+		
+	//
+	// add constants for R,F,T and Initial Voltages
+	//
+	for (int j=0;j<structureMappings.length;j++){
+		if (structureMappings[j] instanceof MembraneMapping){
+			MembraneMapping membraneMapping = (MembraneMapping)structureMappings[j];
+			Membrane.MembraneVoltage membraneVoltage = membraneMapping.getMembrane().getMembraneVoltage();
+			ElectricalDevice membraneDevices[] = potentialMapping.getElectricalDevices(membraneMapping.getMembrane());
+			//ElectricalDevice membraneDevice = null;
+			for (int i = 0; i < membraneDevices.length; i++){
+				if (membraneDevices[i].hasCapacitance() && membraneDevices[i].getDependentVoltageExpression()==null){
+					GeometryClass geometryClass = membraneMapping.getGeometryClass();
+					Domain domain = new Domain(geometryClass);
+					if (membraneMapping.getCalculateVoltage() && bCalculatePotential){
+						if (geometryClass instanceof SurfaceClass){
+							//
+							// spatially resolved membrane, and must solve for potential .... 
+							//   make single MembraneRegionVariable for all resolved potentials
+							//
+							if (mathDesc.getVariable(Membrane.MEMBRANE_VOLTAGE_REGION_NAME)==null){
+								//varHash.addVariable(new MembraneRegionVariable(MembraneVoltage.MEMBRANE_VOLTAGE_REGION_NAME));
+								varHash.addVariable(new MembraneRegionVariable(getMathSymbol(membraneVoltage,geometryClass),domain));
+							}
+						}else{
+							//
+							// spatially unresolved membrane, and must solve for potential ... make VolVariable for this compartment
+							//
+							varHash.addVariable(new VolVariable(getMathSymbol(membraneVoltage,geometryClass),domain));
+						}
+						Parameter initialVoltageParm = membraneMapping.getInitialVoltageParameter();
+						Variable initVoltageFunction = newFunctionOrConstant(getMathSymbol(initialVoltageParm,geometryClass),getIdentifierSubstitutions(initialVoltageParm.getExpression(),initialVoltageParm.getUnitDefinition(),geometryClass),geometryClass);
+						varHash.addVariable(initVoltageFunction);
+					}else{
+						//
+						// don't calculate voltage, still may need it though
+						//
+						Parameter initialVoltageParm = membraneMapping.getInitialVoltageParameter();
+						Variable voltageFunction = newFunctionOrConstant(getMathSymbol(membraneMapping.getMembrane().getMembraneVoltage(),geometryClass),getIdentifierSubstitutions(initialVoltageParm.getExpression(),initialVoltageParm.getUnitDefinition(),geometryClass),geometryClass);
+						varHash.addVariable(voltageFunction);
+					}
+				}
+			}
+		}
+	}
+
+	//
+	// kinetic parameters (functions or constants)
+	//
+	for (int j=0;j<reactionSteps.length;j++){
+		ReactionStep rs = reactionSteps[j];
+		if (simContext.getReactionContext().getReactionSpec(rs).isExcluded()){
+			continue;
+		}
+		Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
+		GeometryClass geometryClass = null;
+		if (rs.getStructure()!=null){
+			geometryClass = simContext.getGeometryContext().getStructureMapping(rs.getStructure()).getGeometryClass();
+		}
+		if (parameters != null){
+			for (int i=0;i<parameters.length;i++){
+				if (((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity)||(parameters[i].getRole() == Kinetics.ROLE_LumpedCurrent)) && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
+					continue;
+				}
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[i],geometryClass), getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),geometryClass),geometryClass));
+			}
+		}
+	}
+	//
+	// initial constants (either function or constant)
+	//
+	SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
+	for (int i = 0; i < speciesContextSpecs.length; i++){
+		SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+		if (initParm!=null){
+			Expression initExpr = new Expression(initParm.getExpression());
+			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
+			String[] symbols = initExpr.getSymbols();
+			// Check if 'initExpr' has other speciesContexts in its expression, need to replace it with 'spContext_init'
+			for (int j = 0; symbols != null && j < symbols.length; j++) {
+				// if symbol is a speciesContext, replacing it with a reference to initial condition for that speciesContext.
+				SpeciesContext spC = null;
+				SymbolTableEntry ste = initExpr.getSymbolBinding(symbols[j]);
+				if (ste instanceof SpeciesContextSpecProxyParameter) {
+					SpeciesContextSpecProxyParameter spspp = (SpeciesContextSpecProxyParameter)ste;
+					if (spspp.getTarget() instanceof SpeciesContext) {
+						spC = (SpeciesContext)spspp.getTarget();
+						SpeciesContextSpec spcspec = simContext.getReactionContext().getSpeciesContextSpec(spC);
+						SpeciesContextSpecParameter spCInitParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+						// if initConc param expression is null, try initCount
+						if (spCInitParm.getExpression() == null) {
+							spCInitParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
+						}
+						// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
+						Expression scsInitExpr = new Expression(spCInitParm, getNameScope());
+//						scsInitExpr.bindExpression(this);
+						initExpr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
+					}
+				}
+			}
+			// now create the appropriate function for the current speciesContextSpec.
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParm,sm.getGeometryClass()),getIdentifierSubstitutions(initExpr,initParm.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+		}
+	}
+	
+	//
+	// diffusion constants (either function or constant)
+	//
+	for (int i = 0; i < speciesContextSpecs.length; i++){
+		SpeciesContextMapping scm = getSpeciesContextMapping(speciesContextSpecs[i].getSpeciesContext());
+		SpeciesContextSpec.SpeciesContextSpecParameter diffParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_DiffusionRate);
+		if (diffParm!=null && (scm.isPDERequired())){
+			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(diffParm,sm.getGeometryClass()),getIdentifierSubstitutions(diffParm.getExpression(),diffParm.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+		}
+	}
+
+	//
+	// Boundary conditions (either function or constant)
+	//
+	for (int i = 0; i < speciesContextSpecs.length; i++){
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_xm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueXm);
+		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
+		if (bc_xm!=null && (bc_xm.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_xm,sm.getGeometryClass()),getIdentifierSubstitutions(bc_xm.getExpression(),bc_xm.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_xp = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueXp);
+		if (bc_xp!=null && (bc_xp.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_xp,sm.getGeometryClass()),getIdentifierSubstitutions(bc_xp.getExpression(),bc_xp.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_ym = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueYm);
+		if (bc_ym!=null && (bc_ym.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_ym,sm.getGeometryClass()),getIdentifierSubstitutions(bc_ym.getExpression(),bc_ym.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_yp = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueYp);
+		if (bc_yp!=null && (bc_yp.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_yp,sm.getGeometryClass()),getIdentifierSubstitutions(bc_yp.getExpression(),bc_yp.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_zm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueZm);
+		if (bc_zm!=null && (bc_zm.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_zm,sm.getGeometryClass()),getIdentifierSubstitutions(bc_zm.getExpression(),bc_zm.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter bc_zp = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueZp);
+		if (bc_zp!=null && (bc_zp.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(bc_zp,sm.getGeometryClass()),getIdentifierSubstitutions(bc_zp.getExpression(),bc_zp.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+		}
+	}
+	
+	
+	//
+	// advection terms (either function or constant)
+	//
+	for (int i = 0; i < speciesContextSpecs.length; i++){
+		SpeciesContextSpec.SpeciesContextSpecParameter advection_velX = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_VelocityX);
+		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
+		GeometryClass geometryClass = sm.getGeometryClass();
+		if (advection_velX!=null && (advection_velX.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(advection_velX,geometryClass),getIdentifierSubstitutions(advection_velX.getExpression(),advection_velX.getUnitDefinition(),geometryClass),geometryClass));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter advection_velY = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_VelocityY);
+		if (advection_velY!=null && (advection_velY.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(advection_velY,geometryClass),getIdentifierSubstitutions(advection_velY.getExpression(),advection_velY.getUnitDefinition(),geometryClass),geometryClass));
+		}
+		SpeciesContextSpec.SpeciesContextSpecParameter advection_velZ = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_VelocityZ);
+		if (advection_velZ!=null && (advection_velZ.getExpression() != null)){
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(advection_velZ,geometryClass),getIdentifierSubstitutions(advection_velZ.getExpression(),advection_velZ.getUnitDefinition(),geometryClass),geometryClass));
+		}
+	}
+	
+	//
+	// constant species (either function or constant)
+	//
+	enum1 = getSpeciesContextMappings();
+	while (enum1.hasMoreElements()){
+		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		if (scm.getVariable() instanceof Constant){
+			varHash.addVariable(scm.getVariable());
+		}
+	}
+	//
+	// conversion factors
+	//
+	varHash.addVariable(new Constant(ReservedSymbol.KMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.KMOLE.getExpression(),ReservedSymbol.KMOLE.getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(ReservedSymbol.N_PMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.N_PMOLE.getExpression(),ReservedSymbol.N_PMOLE.getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(ReservedSymbol.KMILLIVOLTS.getName(),getIdentifierSubstitutions(ReservedSymbol.KMILLIVOLTS.getExpression(),ReservedSymbol.KMILLIVOLTS.getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(),getIdentifierSubstitutions(ReservedSymbol.K_GHK.getExpression(),ReservedSymbol.K_GHK.getUnitDefinition(),null)));
+	//
+	// geometric functions
+	//
+	for (int i=0;i<structureMappings.length;i++){
+		StructureMapping sm = structureMappings[i];
+		if (simContext.getGeometry().getDimension()==0){
+			StructureMappingParameter sizeParm = sm.getSizeParameter();
+			if (sizeParm!=null && sizeParm.getExpression()!=null){
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm.getGeometryClass()),getIdentifierSubstitutions(sizeParm.getExpression(), sizeParm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+			} else {
+				if (sm instanceof MembraneMapping) {
+					MembraneMapping mm = (MembraneMapping)sm;
+					StructureMappingParameter volFrac = mm.getVolumeFractionParameter();
+					if (volFrac!=null && volFrac.getExpression()!=null){
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(volFrac,sm.getGeometryClass()),
+								getIdentifierSubstitutions(volFrac.getExpression(), volFrac.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+					}
+					StructureMappingParameter surfToVol = mm.getSurfaceToVolumeParameter();
+					if (surfToVol!=null && surfToVol.getExpression()!=null){
+						varHash.addVariable(newFunctionOrConstant(
+								getMathSymbol(surfToVol,sm.getGeometryClass()),
+								getIdentifierSubstitutions(surfToVol.getExpression(), surfToVol.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+					}
+				}				
+			}
+		}else{
+			Parameter parm = sm.getParameterFromRole(StructureMapping.ROLE_AreaPerUnitArea);
+			if (parm!=null && parm.getExpression()!=null && sm.getGeometryClass() instanceof SurfaceClass){
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parm,sm.getGeometryClass()),getIdentifierSubstitutions(parm.getExpression(), parm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+			}
+			parm = sm.getParameterFromRole(StructureMapping.ROLE_AreaPerUnitVolume);
+			if (parm!=null && parm.getExpression()!=null && sm.getGeometryClass() instanceof SubVolume){
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parm,sm.getGeometryClass()),getIdentifierSubstitutions(parm.getExpression(), parm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+			}
+			parm = sm.getParameterFromRole(StructureMapping.ROLE_VolumePerUnitArea);
+			if (parm!=null && parm.getExpression()!=null && sm.getGeometryClass() instanceof SurfaceClass){
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parm,sm.getGeometryClass()),getIdentifierSubstitutions(parm.getExpression(), parm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+			}
+			parm = sm.getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume);
+			if (parm!=null && parm.getExpression()!=null && sm.getGeometryClass() instanceof SubVolume){
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parm,sm.getGeometryClass()),getIdentifierSubstitutions(parm.getExpression(), parm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+			}
+		}
+		StructureMappingParameter sizeParm = sm.getSizeParameter();
+		if (sizeParm!=null){
+			if (simContext.getGeometry().getDimension()==0){
+				if (sizeParm.getExpression()!=null){
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm.getGeometryClass()),getIdentifierSubstitutions(sizeParm.getExpression(), sizeParm.getUnitDefinition(), sm.getGeometryClass()),sm.getGeometryClass()));
+				}
+			}else{
+				String compartmentName = sm.getGeometryClass().getName();
+				VCUnitDefinition sizeUnit = null;
+				String sizeFunctionName = null;
+				if (sm instanceof MembraneMapping){
+					MembraneMapping mm = (MembraneMapping)sm;
+					sizeUnit = VCUnitDefinition.UNIT_um2;
+					if (mm.getGeometryClass() instanceof SurfaceClass){
+						sizeFunctionName = MathFunctionDefinitions.Function_regionArea_current.getFunctionName();
+					}else if (mm.getGeometryClass() instanceof SubVolume){
+						sizeFunctionName = MathFunctionDefinitions.Function_regionVolume_current.getFunctionName();
+					}
+				}else if (sm instanceof FeatureMapping){
+					sizeUnit = VCUnitDefinition.UNIT_um3;
+					sizeFunctionName = MathFunctionDefinitions.Function_regionVolume_current.getFunctionName();
+				}else{
+					throw new RuntimeException("structure mapping "+sm.getClass().getName()+" not yet supported");
+				}
+				Expression totalVolumeCorrection = sm.getStructureSizeCorrection(simContext);
+				Expression sizeFunctionExpression = Expression.function(sizeFunctionName, new Expression[] {new Expression("'"+compartmentName+"'")} );
+				sizeFunctionExpression.bindExpression(mathDesc);
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm.getGeometryClass()),getIdentifierSubstitutions(Expression.mult(totalVolumeCorrection,sizeFunctionExpression),sizeUnit,sm.getGeometryClass()),sm.getGeometryClass()));
+
+			}
+		}
+
+	}
+	//
+	// conserved constants  (e.g. K = A + B + C) (these are treated as functions now)
+	//
+	for (int i = 0; i < fieldMathMappingParameters.length; i++){
+		GeometryClass geometryClass = fieldMathMappingParameters[i].getGeometryClass();
+		varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
+	}
+
+	//
+	// functions
+	//
+	enum1 = getSpeciesContextMappings();
+	while (enum1.hasMoreElements()){
+		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		if (scm.getVariable()==null && scm.getDependencyExpression()!=null){
+			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
+			Variable dependentVariable = newFunctionOrConstant(getMathSymbol(scm.getSpeciesContext(),sm.getGeometryClass()),getIdentifierSubstitutions(scm.getDependencyExpression(),scm.getSpeciesContext().getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass());
+			dependentVariable.setDomain(new Domain(sm.getGeometryClass()));
+			varHash.addVariable(dependentVariable);
+		}
+	}
+
+	//
+	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
+	//
+	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+	
+	//
+	// geometry
+	//
+	if (simContext.getGeometryContext().getGeometry() != null){
+		try {
+			mathDesc.setGeometry(simContext.getGeometryContext().getGeometry());
+		}catch (java.beans.PropertyVetoException e){
+			e.printStackTrace(System.out);
+			throw new MappingException("failure setting geometry "+e.getMessage());
+		}
+	}else{
+		throw new MappingException("geometry must be defined");
+	}
+
+	//
+	// volume subdomains
+	//
+	subVolumes = simContext.getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
+	for (int j=0;j<subVolumes.length;j++){
+		SubVolume subVolume = (SubVolume)subVolumes[j];
+		//
+		// get priority of subDomain
+		//
+		int priority;
+		if (simContext.getGeometryContext().getGeometry().getDimension()==0){
+			priority = CompartmentSubDomain.NON_SPATIAL_PRIORITY;
+		}else{
+			priority = j; // now does not have to match spatial feature, *BUT* needs to be unique
+		}
+		//
+		// create subDomain
+		//
+		CompartmentSubDomain subDomain = new CompartmentSubDomain(subVolume.getName(),priority);
+		mathDesc.addSubDomain(subDomain);
+
+		//
+		// assign boundary condition types
+		//
+		StructureMapping[] mappedSMs = simContext.getGeometryContext().getStructureMappings(subVolume);
+		FeatureMapping mappedFM = null;
+		for (int i = 0; i < mappedSMs.length; i++) {
+			if (mappedSMs[i] instanceof FeatureMapping){
+				if (mappedFM!=null){
+					System.out.println("WARNING:::: MathMapping.refreshMathDescription() ... assigning boundary condition types not unique");
+				}
+				mappedFM = (FeatureMapping)mappedSMs[i];
+			}
+		}
+		if (mappedFM != null){
+			subDomain.setBoundaryConditionXm(mappedFM.getBoundaryConditionTypeXm());
+			subDomain.setBoundaryConditionXp(mappedFM.getBoundaryConditionTypeXp());
+			if (simContext.getGeometry().getDimension()>1){
+				subDomain.setBoundaryConditionYm(mappedFM.getBoundaryConditionTypeYm());
+				subDomain.setBoundaryConditionYp(mappedFM.getBoundaryConditionTypeYp());
+			}
+			if (simContext.getGeometry().getDimension()>2){
+				subDomain.setBoundaryConditionZm(mappedFM.getBoundaryConditionTypeZm());
+				subDomain.setBoundaryConditionZp(mappedFM.getBoundaryConditionTypeZp());
+			}
+		}
+
+		//
+		// create equations
+		//
+		VolumeStructureAnalyzer structureAnalyzer = getVolumeStructureAnalyzer(subVolume);
+		Enumeration<SpeciesContextMapping> enumSCM = getSpeciesContextMappings();
+		while (enumSCM.hasMoreElements()){
+			SpeciesContextMapping scm = enumSCM.nextElement();
+			SpeciesContext        sc  = scm.getSpeciesContext();
+			StructureMapping      sm  = simContext.getGeometryContext().getStructureMapping(sc.getStructure());
+			SpeciesContextSpec    scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
+			//
+			// if an independent volume variable, then create equation for it (if mapped to this subDomain)
+			//
+			if (!sm.getGeometryClass().getName().equals(subDomain.getName())){
+				continue;
+			}
+			if ((scm.getVariable() instanceof VolumeRegionVariable) && scm.getDependencyExpression()==null){
+				VolumeRegionVariable volumeRegionVariable = (VolumeRegionVariable)scm.getVariable();
+				Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),sm.getGeometryClass()));
+				Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
+				VolumeRegionEquation volumeRegionEquation = new VolumeRegionEquation(volumeRegionVariable,initial);
+				volumeRegionEquation.setVolumeRateExpression(rate);
+				subDomain.addEquation(volumeRegionEquation);
+			}else if (scm.getVariable() instanceof VolVariable && scm.getDependencyExpression()==null){
+				VolVariable variable = (VolVariable)scm.getVariable();
+				Equation equation = null;
+				if (scm.isPDERequired() && sm instanceof FeatureMapping){
+					//
+					// PDE
+					//
+					if (((FeatureMapping)sm).getGeometryClass() == subVolume){
+						//
+						// species context belongs to this subDomain
+						//
+						Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),sm.getGeometryClass()));
+						Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
+						Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),sm.getGeometryClass()));
+						equation = new PdeEquation(variable,initial,rate,diffusion);
+						((PdeEquation)equation).setBoundaryXm((scs.getBoundaryXmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXmParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setBoundaryXp((scs.getBoundaryXpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXpParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setBoundaryYm((scs.getBoundaryYmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryYmParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setBoundaryYp((scs.getBoundaryYpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryYpParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setBoundaryZm((scs.getBoundaryZmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZmParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZpParameter(),sm.getGeometryClass())));
+						
+						((PdeEquation)equation).setVelocityX((scs.getVelocityXParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityXParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setVelocityY((scs.getVelocityYParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityYParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setVelocityZ((scs.getVelocityZParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityZParameter(),sm.getGeometryClass())));
+						
+						subDomain.replaceEquation(equation);
+					}
+				}else{
+					//
+					// ODE
+					//
+					SubVolume mappedSubVolume = null;
+					if (sm instanceof FeatureMapping){
+						mappedSubVolume = (SubVolume)((FeatureMapping)sm).getGeometryClass();
+					}else if (sm instanceof MembraneMapping){
+						// membrane is mapped to that of the inside feature
+						FeatureMapping featureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(((Membrane)sm.getStructure()).getInsideFeature());
+						mappedSubVolume = (SubVolume)featureMapping.getGeometryClass();
+					}
+					if (mappedSubVolume == subVolume){
+						//
+						// species context belongs to this subDomain
+						//
+						Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),null));
+						Expression rate = (scm.getRate()==null) ? new Expression(0.0) : getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
+						equation = new OdeEquation(variable,initial,rate);
+						subDomain.replaceEquation(equation);
+					}
+				}
+			}
+		}
+		//
+		// create fast system (if neccessary)
+		//
+		SpeciesContextMapping fastSpeciesContextMappings[] = structureAnalyzer.getFastSpeciesContextMappings();
+		VCUnitDefinition subDomainUnit = VCUnitDefinition.UNIT_uM;
+		if (fastSpeciesContextMappings!=null){
+			FastSystem fastSystem = new FastSystem(mathDesc);
+			for (int i=0;i<fastSpeciesContextMappings.length;i++){
+				SpeciesContextMapping scm = fastSpeciesContextMappings[i];
+				if (scm.getFastInvariant()==null){
+					//
+					// independant-fast variable, create a fastRate object
+					//
+					Expression rate = getIdentifierSubstitutions(scm.getFastRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),subVolume);
+					FastRate fastRate = new FastRate(rate);
+					fastSystem.addFastRate(fastRate);
+				}else{
+					//
+					// dependant-fast variable, create a fastInvariant object
+					//
+					Expression rate = getIdentifierSubstitutions(scm.getFastInvariant(),subDomainUnit,subVolume);
+					FastInvariant fastInvariant = new FastInvariant(rate);
+					fastSystem.addFastInvariant(fastInvariant);
+				}
+			}
+			subDomain.setFastSystem(fastSystem);
+			// constructor calls the 'refresh' method which constructs depemdency matrix, dependent/independent vars and pseudoconstants, etc. 
+			FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem, mathDesc);
+		}
+		//
+		// create ode's for voltages to be calculated on unresolved membranes mapped to this subVolume
+		//
+		Structure localStructures[] = simContext.getGeometryContext().getStructuresFromGeometryClass(subVolume);
+		for (int sIndex = 0; sIndex < localStructures.length; sIndex++){
+			if (localStructures[sIndex] instanceof Membrane){
+				Membrane membrane = (Membrane)localStructures[sIndex];
+				MembraneMapping membraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(membrane);
+				if ((membraneMapping.getGeometryClass() instanceof SubVolume) && membraneMapping.getCalculateVoltage()){
+					MembraneElectricalDevice capacitiveDevice = potentialMapping.getCapacitiveDevice(membrane);
+					if (capacitiveDevice.getDependentVoltageExpression()==null){
+						VolVariable vVar = (VolVariable)mathDesc.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping.getGeometryClass()));
+						Expression initExp = new Expression(getMathSymbol(capacitiveDevice.getMembraneMapping().getInitialVoltageParameter(),membraneMapping.getGeometryClass()));
+						subDomain.addEquation(new OdeEquation(vVar,initExp,getIdentifierSubstitutions(potentialMapping.getOdeRHS(capacitiveDevice,this),VCUnitDefinition.UNIT_mV_per_s,membraneMapping.getGeometryClass())));
+					}else{
+						//
+						//
+						//
+					}
+				}
+			}
+		}
+	}
+
+	//
+	// membrane subdomains
+	//
+	GeometryClass[] geometryClasses = simContext.getGeometryContext().getGeometry().getGeometryClasses();
+	for (int k=0;k<geometryClasses.length;k++){
+		if (!(geometryClasses[k] instanceof SurfaceClass)){
+			continue;
+		}
+		SurfaceClass surfaceClass = (SurfaceClass)geometryClasses[k];
+		//
+		// if there is a spatially resolved membrane surrounding this subVolume, then create a membraneSubDomain
+		//
+		structures = simContext.getGeometryContext().getStructuresFromGeometryClass(surfaceClass);
+		Set<SubVolume> sv = surfaceClass.getAdjacentSubvolumes();
+		Iterator<SubVolume> iterator = sv.iterator();
+		SubVolume innerSubVolume = iterator.next();
+		SubVolume outerSubVolume = iterator.next();
+		if (innerSubVolume.getName().compareTo(outerSubVolume.getName()) > 0) {
+			SubVolume temp = innerSubVolume;
+			innerSubVolume = outerSubVolume;
+			outerSubVolume = temp;
+		}
+		//
+		// create subDomain
+		//
+		CompartmentSubDomain outerCompartment = mathDesc.getCompartmentSubDomain(outerSubVolume.getName());
+		CompartmentSubDomain innerCompartment = mathDesc.getCompartmentSubDomain(innerSubVolume.getName());
+
+		MembraneSubDomain memSubDomain = new MembraneSubDomain(innerCompartment,outerCompartment);
+		mathDesc.addSubDomain(memSubDomain);
+
+		//
+		// create equations for membrane-bound molecular species
+		//
+		MembraneStructureAnalyzer membraneStructureAnalyzer = getMembraneStructureAnalyzer(surfaceClass);
+		Enumeration<SpeciesContextMapping> enumSCM = getSpeciesContextMappings();
+		while (enumSCM.hasMoreElements()){
+			SpeciesContextMapping scm = enumSCM.nextElement();
+			SpeciesContext        sc  = scm.getSpeciesContext();
+			SpeciesContextSpec    scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
+			StructureMapping      sm  = simContext.getGeometryContext().getStructureMapping(sc.getStructure());
+			//
+			// if an independent membrane variable, then create equation for it
+			// ...even if the speciesContext is for another membraneSubDomain (e.g. BradykininReceptor in NuclearMembrane)
+			//
+			if ((scm.getVariable() instanceof MembraneRegionVariable) && scm.getDependencyExpression()==null){
+				MembraneRegionEquation equation = null;
+				MembraneRegionVariable memRegionVar = (MembraneRegionVariable)scm.getVariable();
+				if (sm.getGeometryClass() == surfaceClass){
+					//
+					// species context belongs to this subDomain
+					//
+					Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),sm.getGeometryClass()));
+					Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
+					equation = new MembraneRegionEquation(memRegionVar,initial);
+					equation.setMembraneRateExpression(rate);
+					//equation.setUniformRateExpression(newUniformRateExpression);
+					memSubDomain.replaceEquation(equation);
+				}
+			}else if ((scm.getVariable() instanceof MemVariable) && scm.getDependencyExpression()==null){
+				//
+				// independant variable, create an equation object
+				//
+				Equation equation = null;
+				MemVariable variable = (MemVariable)scm.getVariable();
+				if (scm.isPDERequired()){
+					//
+					// PDE
+					//
+					if (sm.getGeometryClass() == surfaceClass){
+						//
+						// species context belongs to this subDomain
+						//
+						Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),sm.getGeometryClass()));
+						Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
+						Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),sm.getGeometryClass()));
+						equation = new PdeEquation(variable,initial,rate,diffusion);
+						((PdeEquation)equation).setBoundaryXm((scs.getBoundaryXmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXmParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setBoundaryXp((scs.getBoundaryXpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryXpParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setBoundaryYm((scs.getBoundaryYmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryYmParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setBoundaryYp((scs.getBoundaryYpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryYpParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setBoundaryZm((scs.getBoundaryZmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZmParameter(),sm.getGeometryClass())));
+						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZpParameter(),sm.getGeometryClass())));
+						memSubDomain.replaceEquation(equation);
+					}
+				} else {
+					//
+					// ODE					
+					//
+					if (sm.getGeometryClass() == surfaceClass){
+						//
+						// species context belongs to this subDomain
+						//
+						Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),null));
+						Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
+						equation = new OdeEquation(variable,initial,rate);
+						memSubDomain.replaceEquation(equation);
+					}
+				}
+			}
+		}
+		Enumeration<SpeciesContextMapping> enum_scm = getSpeciesContextMappings();
+		while (enum_scm.hasMoreElements()){
+			SpeciesContextMapping scm = enum_scm.nextElement();
+			if (scm.isPDERequired() || scm.getVariable() instanceof VolumeRegionVariable){
+				//Species species = scm.getSpeciesContext().getSpecies();
+				Variable var = scm.getVariable();
+				if (memSubDomain.getInsideCompartment().getName().equals(var.getDomain().getName()) || 
+					memSubDomain.getOutsideCompartment().getName().equals(var.getDomain().getName())){ 
+					JumpCondition jc = memSubDomain.getJumpCondition(var);
+					if (jc==null){
+//System.out.println("MathMapping.refreshMathDescription(), adding jump condition for diffusing variable "+var.getName()+" on membrane "+membraneStructureAnalyzer.getMembrane().getName());
+						if (var instanceof VolVariable){
+							jc = new JumpCondition((VolVariable)var);
+						}else if (var instanceof VolumeRegionVariable){
+							jc = new JumpCondition((VolumeRegionVariable)var);
+						}
+						memSubDomain.addJumpCondition(jc);
+					}
+				}
+			}
+		}
+		//
+		// set jump conditions for any volume variables or volume region variables that have explicitly defined fluxes
+		//
+		ResolvedFlux resolvedFluxes[] = membraneStructureAnalyzer.getResolvedFluxes();
+		if (resolvedFluxes!=null){
+			for (int i=0;i<resolvedFluxes.length;i++){
+				SpeciesContext sc = resolvedFluxes[i].getSpeciesContext();
+				SpeciesContextMapping scm = getSpeciesContextMapping(sc);
+				StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure());
+				if (scm.getVariable() instanceof VolVariable && scm.isPDERequired()){
+					VolVariable volVar = (VolVariable)scm.getVariable();
+					JumpCondition jc = memSubDomain.getJumpCondition(volVar);
+					if (jc==null){
+						jc = new JumpCondition(volVar);
+						memSubDomain.addJumpCondition(jc);
+					}
+					Expression flux = getIdentifierSubstitutions(resolvedFluxes[i].getFlux(),VCUnitDefinition.UNIT_uM_um_per_s,membraneStructureAnalyzer.getSurfaceClass());
+					if (innerSubVolume == sm.getGeometryClass()){
+						jc.setInFlux(flux);
+					}else if (outerSubVolume == sm.getGeometryClass()){
+						jc.setOutFlux(flux);
+					}else{
+						throw new RuntimeException("APPLICATION  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+" with a non-local flux species "+scm.getSpeciesContext().getName());
+					}
+				}else if (scm.getVariable() instanceof VolumeRegionVariable){
+					VolumeRegionVariable volRegionVar = (VolumeRegionVariable)scm.getVariable();
+					JumpCondition jc = memSubDomain.getJumpCondition(volRegionVar);
+					if (jc==null){
+						jc = new JumpCondition(volRegionVar);
+						memSubDomain.addJumpCondition(jc);
+					}
+					Expression flux = getIdentifierSubstitutions(resolvedFluxes[i].getFlux(),VCUnitDefinition.UNIT_uM_um_per_s,membraneStructureAnalyzer.getSurfaceClass());
+					if (innerSubVolume == sm.getGeometryClass()){
+						jc.setInFlux(flux);
+					}else if (outerSubVolume == sm.getGeometryClass()){
 						jc.setOutFlux(flux);
 					}else{
 						throw new RuntimeException("APPLICATION  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+" with a non-local flux species "+scm.getSpeciesContext().getName());

@@ -36,5 +36,6 @@
 	<classpathentry exported="true" kind="lib" path="jdom_1.0.jar"/>
 	<classpathentry kind="lib" path="oracle_classes12.jar"/>
 	<classpathentry kind="lib" path="copasi_build30.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

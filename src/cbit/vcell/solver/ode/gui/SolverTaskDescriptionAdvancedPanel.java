@@ -8,7 +8,7 @@ import java.awt.Font;
 
 import javax.swing.BorderFactory;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.solver.smoldyn.SmoldynSimulationOptionsPanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.solver.SolverDescription;
@@ -40,6 +40,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private Object ivjSolverComboBoxModel = null;
 	private OutputOptionsPanel ivjOutputOptionsPanel = null;
 	private StochSimOptionsPanel stochSimOptionsPanel = null;
+	private SmoldynSimulationOptionsPanel smoldynSimulationOptionsPanel = null;
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	
@@ -251,12 +252,16 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 		SolverDescription[] solverDescriptions = new SolverDescription[0];
 		if (getSolverTaskDescription().getSimulation().isSpatial()) 
 		{
-			if (getSolverTaskDescription().getSimulation().getMathDescription().hasFastSystems()) { // PDE with FastSystem
-				solverDescriptions = SolverDescription.getPDEWithFastSystemSolverDescriptions();
+			if (getSolverTaskDescription().getSimulation().getMathDescription().isSpatialStoch()) {
+				solverDescriptions = SolverDescription.getSpatialStochasticSolverDescriptions();
 			} else {
-				solverDescriptions = SolverDescription.getPDESolverDescriptions();
+				if (getSolverTaskDescription().getSimulation().getMathDescription().hasFastSystems()) { // PDE with FastSystem
+					solverDescriptions = SolverDescription.getPDEWithFastSystemSolverDescriptions();
+				} else {
+					solverDescriptions = SolverDescription.getPDESolverDescriptions();
+				}
 			}
-		} else if (getSolverTaskDescription().getSimulation().getMathDescription().isStoch()) {
+		} else if (getSolverTaskDescription().getSimulation().getMathDescription().isNonSpatialStoch()) {
 			solverDescriptions = SolverDescription.getStochasticNonSpatialSolverDescriptions();
 		} else {
 			if (getSolverTaskDescription().getSimulation().getMathDescription().hasFastSystems()) { // ODE with FastSystem
@@ -358,6 +363,17 @@ private StochSimOptionsPanel getStochSimOptionsPanel() {
 		}
 	}
 	return stochSimOptionsPanel;
+}
+
+private SmoldynSimulationOptionsPanel getSmoldynSimulationOptionsPanel() {
+	if (smoldynSimulationOptionsPanel == null) {
+		try {
+			smoldynSimulationOptionsPanel = new SmoldynSimulationOptionsPanel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return smoldynSimulationOptionsPanel;
 }
 
 /**
@@ -591,8 +607,18 @@ private void initialize() {
 		add(getStochSimOptionsPanel(), constraintsJPanelStoch);
 		
 		// 4
+		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; gbc.gridy = 3;
+		gbc.gridwidth = 4;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getSmoldynSimulationOptionsPanel(), gbc);
+		
+		// 5
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 4;
+		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 5;
 		constraintsJPanel1.gridwidth = 4;
 		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel1.weightx = 1.0;
@@ -693,6 +719,7 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			getTimeStepPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getErrorTolerancePanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getStochSimOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
+			getSmoldynSimulationOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getOutputOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			connPtoP2SetTarget();
 			firePropertyChange("solverTaskDescription", oldValue, newValue);

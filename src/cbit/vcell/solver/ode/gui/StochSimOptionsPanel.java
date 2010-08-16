@@ -574,7 +574,7 @@ public class StochSimOptionsPanel extends JPanel {
 	private void refresh() {
 		
 		if (getSolverTaskDescription() != null) {
-			if (!getSolverTaskDescription().getSolverDescription().isStochasticNonSpatialSolver()) {
+			if (!getSolverTaskDescription().getSolverDescription().isNonSpatialStochasticSolver()) {
 				setVisible(false);
 				return;
 			}

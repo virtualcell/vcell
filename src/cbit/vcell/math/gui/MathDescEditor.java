@@ -12,7 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cbit.gui.MultiPurposeTextPanel;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.*;
+import cbit.vcell.parser.Expression;
 
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
@@ -283,58 +286,31 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		aMathDescEditor.getVCMLPane().setText(
-"MathDescription {\n" +
-"\n" +
-"Constant  _F_	 96480.0;\n" +
-"Constant  _F_nmol_	 9.648E-5;\n" +
-"Constant  _K_GHK_	 1.0E-9;\n" +
-"Constant  _N_pmol_	 6.02E11;\n" +
-"Constant  _R_	 8314.0;\n" +
-"Constant  _T_	 300.0;\n" +
-"Constant  a_fa	 1.0;\n" +
-"Constant  a_fa_init	 1.0;\n" +
-"Constant  b_fa_init	 1.0;\n" +
-"Constant  f_fa_init	 1.0;\n" +
-"Constant  g	 5.0;\n" +
-"Constant  g1	 6.0;\n" +
-"Constant  K_millivolts_per_volt	 1000.0;\n" +
-"Constant  Kf_reaction0	 0.1;\n" +
-"Constant  Kf_reaction1	 5.0;\n" +
-"Constant  KMOLE	 0.0016611295681063123;\n" +
-"Constant  Kr_reaction0	 0.0;\n" +
-"Constant  Kr_reaction1	 0.0;\n" +
-"Constant  Size_fa	 1.0;\n" +
-"Constant  species0_fa_init	 0.0;\n" +
-"Constant  species1_fa_init	 0.0;\n" +
-"Constant  species2_fa_init	 0.0;\n" +
-"Constant  species3_fa_init	 0.0;\n" +
-"\n" +
-"VolumeVariable   f_fa\n" +
-"\n" +
-"Function  b_fa	 K_b_fa_total;\n" +
-"Function  h	 g;\n" +
-"Function  J_reaction0	  - (Kr_reaction0 * a_fa);\n" +
-"Function  J_reaction1	 (Kf_reaction1 * f_fa);\n" +
-"Function  K_b_fa_total	 b_fa_init;\n" +
-"Function  K_species0_fa_total	 species0_fa_init;\n" +
-"Function  K_species1_fa_total	 species1_fa_init;\n" +
-"Function  K_species2_fa_total	 species2_fa_init;\n" +
-"Function  K_species3_fa_total	 species3_fa_init;\n" +
-"Function  species0_fa	 K_species0_fa_total;\n" +
-"Function  species1_fa	 K_species1_fa_total;\n" +
-"Function  species2_fa	 K_species2_fa_total;\n" +
-"Function  species3_fa	 K_species3_fa_total;\n" +
-"\n" +
-"CompartmentSubDomain Compartment {\n" +
-"	OdeEquation f_fa {\n" +
-"		Rate	 - J_reaction1;\n" +
-"		Initial	 f_fa_init;\n" +
-"	}\n" +
-"}\n" +
-"\n" +
-"}\n"
-);
+		aMathDescEditor.setMathDescription(MathDescriptionTest.getParticleExample());
+//		MathDescription mathDescription = new MathDescription("noname");
+//		Geometry geometry = new Geometry("geo",2);
+//		geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subvolume0", new Expression(1.0)));
+//		mathDescription.setGeometry(new Geometry("geo",2));
+//		aMathDescEditor.setMathDescription(mathDescription);
+//		aMathDescEditor.getVCMLPane().setText(
+//"MathDescription {\n" +
+//"\n" +
+//"Constant  c	 0.0;\n" +
+//"\n" +
+//"VolumeParticleVariable subvolume0::CCC\n" +
+//"\n" +
+//"Function  subvolume0::cc	 2*c;\n" +
+//"\n" +
+//"CompartmentSubDomain subvolume0 {\n" +
+//"   ParticleJumpProcess myproc {\n" +
+//"       SelectedParticle CCC\n" +
+//"       MacroscopicRateConstant 1.0;\n" +
+//"       Effect CCC DestroyParticle\n" +
+//"   }\n" +
+//"}\n" +
+//"\n" +
+//"}\n"
+//);
 		BeanUtils.centerOnScreen(frame);
 		frame.setVisible(true);
 	} catch (Throwable exception) {
@@ -420,6 +396,21 @@ private static List<String> getAutoCompletionWords() {
 		autoCompletionWords.add(getTemplate_GaussianDistribution());
 		autoCompletionWords.add(VCML.GaussianDistribution_Mean);
 		autoCompletionWords.add(VCML.GaussianDistribution_StandardDeviation);	
+		autoCompletionWords.add(VCML.VolumeParticleVariable);	
+		autoCompletionWords.add(VCML.MembraneParticleVariable);
+		
+		autoCompletionWords.add(VCML.ParticleJumpProcess);	
+		autoCompletionWords.add(getTemplate_ParticleJumpProcess());
+		autoCompletionWords.add(VCML.DestroyParticle);
+		autoCompletionWords.add(VCML.CreateParticle);
+		autoCompletionWords.add(VCML.SelectedParticle);		
+		autoCompletionWords.add(VCML.ParticleProperties);
+		autoCompletionWords.add(getTemplate_ParticleProperties());		
+		autoCompletionWords.add(VCML.ParticleInitial);
+		autoCompletionWords.add(VCML.ParticleCount);
+		autoCompletionWords.add(VCML.ParticleLocationX);
+		autoCompletionWords.add(VCML.ParticleLocationY);
+		autoCompletionWords.add(VCML.ParticleLocationZ);
 	}
 	
 	return autoCompletionWords;
@@ -429,7 +420,7 @@ private static String getTemplate_OdeEquation() {
 	return VCML.OdeEquation + " varName " + VCML.BeginBlock + "\n" 
 		+ "\t\t" + VCML.Rate + " 0.0;\n" 
 		+ "\t\t" + VCML.Initial + " 0.0;\n"
-		+ "\t}\n";
+		+ "\t" + VCML.EndBlock + "\n";
 }
 
 private static String getTemplate_PdeEquation() {	
@@ -439,27 +430,45 @@ private static String getTemplate_PdeEquation() {
 		+ "\t\t" + VCML.Rate + " 0.0;\n" 
 		+ "\t\t" + VCML.Diffusion + " 0.0;\n" 
 		+ "\t\t" + VCML.Initial + " 0.0;\n"
-		+ "\t}\n";
+		+ "\t" + VCML.EndBlock + "\n";
 }
 private static String getTemplate_JumpCondition() {	
 	return VCML.JumpCondition + " varName " + VCML.BeginBlock + "\n" 
 		+ "\t\t" + VCML.InFlux + " 0.0;\n" 
 		+ "\t\t" + VCML.OutFlux + " 0.0;\n" 
-		+ "\t}\n";
+		+ "\t" + VCML.EndBlock + "\n";
 }
 
 private static String getTemplate_FastSystem() {	
 	return VCML.FastSystem + " " + VCML.BeginBlock + "\n" 
 		+ "\t\t" + VCML.FastInvariant + " 0.0;\n" 
 		+ "\t\t" + VCML.FastRate + " 0.0;\n" 
-		+ "\t}\n";
+		+ "\t" + VCML.EndBlock + "\n";
 }
 
 private static String getTemplate_JumpProcess() {	
-	return VCML.JumpProcess + " varName " + VCML.BeginBlock + "\n" 
+	return VCML.JumpProcess + " processName " + VCML.BeginBlock + "\n" 
 		+ "\t\t" + VCML.ProbabilityRate + " 0.0;\n" 
 		+ "\t\t Effect 0.0;\n" 
-		+ "\t}\n";
+		+ "\t" + VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ParticleJumpProcess() {	
+	return VCML.ParticleJumpProcess + " processName " + VCML.BeginBlock + "\n" 
+		+ "\t\t" + VCML.MacroscopicRateConstant + " 0.0;\n" 
+		+ "\t\t" + VCML.Action + " Var " + VCML.DestroyParticle + "\n" 
+		+ "\t" + VCML.EndBlock + "\n";
+}
+
+private static String getTemplate_ParticleProperties() {	
+	return VCML.ParticleProperties + " varName " + VCML.BeginBlock + "\n" 
+		+ "\t\t" + VCML.ParticleInitial + " " + VCML.BeginBlock + "\n" 
+		+ "\t\t\t" + VCML.ParticleCount + " 1.0; \n"
+		+ "\t\t\t" + VCML.ParticleLocationX + " u; \n"
+		+ "\t\t\t" + VCML.ParticleLocationY + " u; \n"
+		+ "\t\t\t" + VCML.EndBlock + "\n"
+		+ "\t\t" + VCML.ParticleDiffusion + " 1.0; \n" 
+		+ "\t" + VCML.EndBlock + "\n";
 }
 
 private static String getTemplate_Event() {	
@@ -570,6 +579,21 @@ public static List<String> getkeywords() {
 		keywords.add(VCML.GaussianDistribution);
 		keywords.add(VCML.GaussianDistribution_Mean);
 		keywords.add(VCML.GaussianDistribution_StandardDeviation);
+		
+		keywords.add(VCML.VolumeParticleVariable);
+		keywords.add(VCML.MembraneParticleVariable);
+		keywords.add(VCML.ParticleJumpProcess);
+		keywords.add(VCML.MacroscopicRateConstant);
+		keywords.add(VCML.DestroyParticle);
+		keywords.add(VCML.CreateParticle);
+		keywords.add(VCML.SelectedParticle);
+		keywords.add(VCML.ParticleProperties);
+		keywords.add(VCML.ParticleInitial);
+		keywords.add(VCML.ParticleCount);
+		keywords.add(VCML.ParticleLocationX);
+		keywords.add(VCML.ParticleLocationY);
+		keywords.add(VCML.ParticleLocationZ);
+		keywords.add(VCML.ParticleDiffusion);
 	}
 	 return keywords;
 }

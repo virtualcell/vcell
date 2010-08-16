@@ -20,7 +20,6 @@ import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
-import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
@@ -790,7 +789,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Reactant)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(-stoi));
+								action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),new Expression(-stoi));
 								jp.addAction(action);
 							}
 						}
@@ -800,7 +799,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Product)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(stoi));
+								action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),new Expression(stoi));
 								jp.addAction(action);
 							}
 						}
@@ -842,7 +841,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Reactant)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(stoi));
+								action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),new Expression(stoi));
 								jp.addAction(action);
 							}
 						}
@@ -852,7 +851,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 							{
 								int stoi = ((Product)reacPart[j]).getStoichiometry();
-								action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(-stoi));
+								action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),new Expression(-stoi));
 								jp.addAction(action);
 							}
 						}
@@ -913,14 +912,14 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(-1));
+							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),new Expression(-1));
 							jp.addAction(action);
 						}	
 						
 						sc = fluxFunc.getSpeciesContextInside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(1));
+							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),new Expression(1));
 							jp.addAction(action);
 						}
 							
@@ -966,14 +965,14 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						SpeciesContext sc = fluxFunc.getSpeciesContextOutside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(1));
+							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),new Expression(1));
 							jp.addAction(action);
 						}
 							
 						sc = fluxFunc.getSpeciesContextInside();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),Action.ACTION_INC, new Expression(-1));
+							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, sm.getGeometryClass())),new Expression(-1));
 							jp.addAction(action);
 						}
 						

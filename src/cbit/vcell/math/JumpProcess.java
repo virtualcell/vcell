@@ -2,6 +2,7 @@ package cbit.vcell.math;
 import cbit.vcell.parser.Expression;
 import java.util.*;
 
+import org.vcell.sybil.util.lists.ListOfOne;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 
@@ -33,7 +34,7 @@ public void addAction(Action newAction) throws MathException
 {
 	Action action= getAction(newAction.getVar().getName());
 	
-	if( action != null )
+	if( action != null && action.getOperation().equals(action.ACTION_INC) && newAction.getOperation().equals(Action.ACTION_INC))
 	{
 		Expression orgOperand = action.getOperand();
 		Expression addOperand = newAction.getOperand();
@@ -42,12 +43,12 @@ public void addAction(Action newAction) throws MathException
 		{
 			newOperand = Expression.add(orgOperand,addOperand);
 			newOperand.flatten();
-		} catch(cbit.vcell.parser.ExpressionException ex)
-		{
-			ex.printStackTrace();
+			actions.remove(action);
+			actions.add(Action.createIncrementAction(newAction.getVar(), newOperand));
+		} catch(cbit.vcell.parser.ExpressionException ex) {
+			ex.printStackTrace(System.out);
+			throw new MathException(ex.getMessage());
 		}
-		if(newOperand != null)
-			action.setOperand(newOperand);
 	}
 	else
 	{

@@ -21,16 +21,36 @@ public class Action implements Matchable,java.io.Serializable
 	private Expression operand;
 	
 	public final static String ACTION_INC = "inc";
+	public final static String ACTION_CREATE = "create";
+	public final static String ACTION_DESTROY = "destroy";
 	
-/**
- * Action constructor comment.
- */
-public Action(Variable arg_var, String arg_operation, Expression arg_operand) 
-{
-	var=arg_var;
-	operation=arg_operation;
-	operand=arg_operand;
-}
+	public static Action createIncrementAction(Variable arg_var, Expression arg_operand) 
+	{
+		Action action = new Action(arg_var, ACTION_INC, arg_operand);
+		return action;
+	}
+
+	public static Action createCreateAction(Variable arg_var) 
+	{
+		Action action = new Action(arg_var, ACTION_CREATE, null);
+		return action;
+	}
+
+	public static Action createDestroyAction(Variable arg_var) 
+	{
+		Action action = new Action(arg_var, ACTION_DESTROY, null);
+		return action;
+	}
+
+	/**
+	 * Action constructor comment.
+	 */
+	public Action(Variable arg_var, String arg_operation, Expression arg_operand) 
+	{
+		var=arg_var;
+		operation=arg_operation;
+		operand=arg_operand;
+	}
 
 
 /**
@@ -126,25 +146,21 @@ public Variable getVar() {
 public String getVCML()
 {
 	StringBuffer buffer = new StringBuffer();
-	int value = 0;
-	try
-	{
-		value = (int)(getOperand().evaluateConstant());
-	}catch (ExpressionException e) {e.printStackTrace();}
-	buffer.append("\t\t"+VCML.Action+"\t"+getVar().getName()+"\t"+getOperation()+"\t"+value+";\n");
+	if (getOperation().equals(ACTION_INC)){
+		int value = 0;
+		try
+		{
+			value = (int)(getOperand().evaluateConstant());
+		}catch (ExpressionException e) {e.printStackTrace();}
+		
+		buffer.append("\t\t"+VCML.Action+"\t"+getVar().getName()+"\t"+getOperation()+"\t"+value+";\n");
+	}else if (getOperation().equals(ACTION_CREATE)){
+		buffer.append("\t\t"+VCML.Action+"\t"+getVar().getName()+"\t"+VCML.CreateParticle+"\n");
+	}else if (getOperation().equals(ACTION_DESTROY)){
+		buffer.append("\t\t"+VCML.Action+"\t"+getVar().getName()+"\t"+VCML.DestroyParticle+"\n");
+	}
 	return buffer.toString();	
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/5/2006 11:11:56 AM)
- */
-public void setOperand(Expression newOperand)
-{
-	operand = newOperand;		
-}
-
 
 /**
  * Insert the method's description here.

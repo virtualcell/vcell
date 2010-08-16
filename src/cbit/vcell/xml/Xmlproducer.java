@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.jdom.Element;
+import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.Hex;
@@ -94,6 +95,7 @@ import cbit.vcell.math.GaussianDistribution;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionEquation;
@@ -101,6 +103,10 @@ import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.ParticleJumpProcess;
+import cbit.vcell.math.ParticleProbabilityRate;
+import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
@@ -109,11 +115,13 @@ import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
+import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;
@@ -1500,7 +1508,9 @@ private Element getXML(Action param)
 	//Add atributes
 	action.setAttribute(XMLTags.VarNameAttrTag, mangle(param.getVar().getName()));
 	action.setAttribute(XMLTags.OperationAttrTag, mangle(param.getOperation()));
-	action.addContent( mangleExpression(param.getOperand()));
+	if (param.getOperand() != null) {
+		action.addContent( mangleExpression(param.getOperand()));
+	}
 	return action;
 }
 
@@ -1561,22 +1571,90 @@ private Element getXML(CompartmentSubDomain param) throws XmlParseException{
 		compartment.addContent( getXML(param.getFastSystem()) );
 	}
 	//Add Variable Initial Condition
-	Enumeration<VarIniCondition> varInis = param.getVarIniConditions().elements();
-	while (varInis.hasMoreElements())
-	{
-		VarIniCondition varIni = varInis.nextElement();
+	for (VarIniCondition varIni : param.getVarIniConditions()){
 		compartment.addContent(getXML(varIni));
 	}
 	//Add JumpProcesses
-	Enumeration<JumpProcess> jumps = param.getJumpProcesses().elements();
-	while (jumps.hasMoreElements())
-	{
-		JumpProcess jp = jumps.nextElement();
+	for (JumpProcess jp : param.getJumpProcesses()){
 		compartment.addContent(getXML(jp));
+	}
+	for (ParticleJumpProcess pjp : param.getParticleJumpProcesses()){
+		compartment.addContent(getXML(pjp));
+	}
+	for (ParticleProperties pp : param.getParticleProperties()){
+		compartment.addContent(getXML(pp));
 	}
 	return compartment;
 }
 
+private org.jdom.Element getXML(ParticleProperties param) throws XmlParseException {
+	org.jdom.Element particleProperties = new org.jdom.Element(XMLTags.ParticlePropertiesTag);
+
+	particleProperties.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
+	
+	for (ParticleInitialCondition pic : param.getParticleInitialConditions()) {
+		org.jdom.Element particleInitial = new org.jdom.Element(XMLTags.ParticleInitialTag);
+		
+		Element e = new Element(XMLTags.ParticleCountTag);
+		e.setText(mangleExpression(pic.getCount()));
+		particleInitial.addContent(e);
+		
+		if (pic.getLocationX() != null) {
+			e = new Element(XMLTags.ParticleLocationXTag);
+			e.setText(mangleExpression(pic.getLocationX()));
+			particleInitial.addContent(e);
+		}
+		
+		if (pic.getLocationY() != null) {
+			e = new Element(XMLTags.ParticleLocationYTag);
+			e.setText(mangleExpression(pic.getLocationY()));
+			particleInitial.addContent(e);
+		}
+		
+		if (pic.getLocationZ() != null) {
+			e = new Element(XMLTags.ParticleLocationZTag);
+			e.setText(mangleExpression(pic.getLocationZ()));
+			particleInitial.addContent(e);
+			
+		}
+		
+		particleProperties.addContent(particleInitial);
+	}
+	
+	Element diff = new Element(XMLTags.ParticleDiffusionTag);
+	diff.setText(mangleExpression(param.getDiffusion()));
+	particleProperties.addContent(diff);
+
+	return particleProperties;
+}
+
+private org.jdom.Element getXML(ParticleJumpProcess param) {
+	org.jdom.Element particleJumpProcessElement = new org.jdom.Element(XMLTags.ParticleJumpProcessTag);
+	//name
+	particleJumpProcessElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	// Selected Particle
+	for (ParticleVariable vpv : param.getParticleVariables()) {
+		Element e = new Element(XMLTags.SelectedParticleTag);
+		e.setAttribute(XMLTags.NameAttrTag, mangle(vpv.getName()));
+		particleJumpProcessElement.addContent(e);
+	}
+	//probability rate
+	org.jdom.Element prob = new org.jdom.Element(XMLTags.ParticleProbabilityRateTag);
+	ParticleProbabilityRate particleProbabilityRate = param.getParticleProbabilityRate();
+	if (particleProbabilityRate instanceof MacroscopicRateConstant) {
+		prob.addContent(mangleExpression(((MacroscopicRateConstant)particleProbabilityRate).getExpression()));
+	} else {
+		throw new RuntimeException("ParticleProbabilityRate in XmlProducer not implemented");
+	}
+	particleJumpProcessElement.addContent(prob);
+	
+	//Actions
+	for (Action action : param.getActions()) {
+		particleJumpProcessElement.addContent(getXML(action));
+	}
+
+	return particleJumpProcessElement;
+}
 
 /**
  * This method returns a XML representation of a Constant object.
@@ -1887,9 +1965,10 @@ Element getXML(MathDescription mathdes) throws XmlParseException {
         }
         else if (var instanceof VolVariable) {
             math.addContent(getXML((VolVariable) var));
-        }
-        else if (var instanceof StochVolVariable) { //added for stochastic volumn variables
+        } else if (var instanceof StochVolVariable) { //added for stochastic volumn variables
             math.addContent(getXML((StochVolVariable) var));
+        } else if (var instanceof VolumeParticleVariable) {
+        	math.addContent(getXML((VolumeParticleVariable) var));
         }
         else {
 	        throw new XmlParseException("An unknown variable type "+var.getClass().getName()+" was found when parsing the mathdescription "+ mathdes.getName() +"!");
@@ -2348,6 +2427,17 @@ private Element getXML(StochVolVariable param) {
 	stochVar.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 
 	return stochVar;
+}
+
+private Element getXML(VolumeParticleVariable param) {
+	org.jdom.Element e = new org.jdom.Element(XMLTags.VolumeParticleVariableTag);
+	
+	//Add atribute
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getDomain()!=null){
+		e.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
+	}
+	return e;
 }
 
 /**
@@ -3435,9 +3525,34 @@ private Element getXML(SolverTaskDescription param) {
 		solvertask.setAttribute(XMLTags.RunParameterScanSerially, String.valueOf(bRunParameterScanSerially));
 	}
 	
+	SmoldynSimulationOptions sso = param.getSmoldynSimulationOptions();
+	if (sso != null) {		
+		solvertask.addContent(getXML(sso));
+	}
 	return solvertask;
 }
 
+private Element getXML(SmoldynSimulationOptions sso) {
+	Element ssoElement = null;
+	if (sso != null) {
+		ssoElement = new Element(XMLTags.SmoldynSimulationOptions);
+		
+		Element element = new Element(XMLTags.SmoldynSimulationOptions_accuracy);
+		element.setText(sso.getAccuracy() + "");
+		ssoElement.addContent(element);
+		
+		if (sso.getRandomSeed() != null) {
+			element = new Element(XMLTags.SmoldynSimulationOptions_randomSeed);
+			element.setText(sso.getRandomSeed() + "");
+			ssoElement.addContent(element);			
+		}
+		
+		element = new Element(XMLTags.SmoldynSimulationOptions_gaussianTableSize);
+		element.setText(sso.getGaussianTableSize() + "");
+		ssoElement.addContent(element);			
+	}
+	return ssoElement;
+}
 
 /**
  * This method returns a XML representation of a timebounds object.

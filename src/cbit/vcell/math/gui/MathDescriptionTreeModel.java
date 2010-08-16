@@ -103,22 +103,17 @@ private BioModelNode createBaseTree() {
 		if (subDomain instanceof cbit.vcell.math.CompartmentSubDomain){
 			CompartmentSubDomain volumeSubDomain = (CompartmentSubDomain)subDomain;
 			BioModelNode volumeSubDomainNode = new BioModelNode(volumeSubDomain,true);
-			if(getMathDescription().isStoch()) //stochastic subtree
+			if(getMathDescription().isNonSpatialStoch()) //stochastic subtree
 			{
 				//add stoch variable initial conditions
 				BioModelNode varIniConditionNode = new BioModelNode("variable_initial_conditions",true);
-				Enumeration<VarIniCondition> iniConditions = volumeSubDomain.getVarIniConditions().elements();
-				while (iniConditions.hasMoreElements()){
-					VarIniCondition varIni = iniConditions.nextElement();
+				for (VarIniCondition varIni : volumeSubDomain.getVarIniConditions()){
 					BioModelNode varIniNode = new BioModelNode(varIni,false);
 					varIniConditionNode.add(varIniNode);
 				}
 				volumeSubDomainNode.add(varIniConditionNode);
 				//add jump processes
-				Enumeration<JumpProcess> jumpProcesses = volumeSubDomain.getJumpProcesses().elements();
-				while (jumpProcesses.hasMoreElements())
-				{
-					JumpProcess jp = jumpProcesses.nextElement();
+				for (JumpProcess jp : volumeSubDomain.getJumpProcesses()){
 					BioModelNode jpNode = new BioModelNode(jp,true);
 					//add probability rate.
 					String probRate = "P_"+jp.getName();

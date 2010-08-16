@@ -13,6 +13,7 @@ import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
@@ -103,6 +104,7 @@ import cbit.vcell.math.GaussianDistribution;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.JumpProcess;
+import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
@@ -114,6 +116,9 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.ParticleJumpProcess;
+import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
@@ -121,12 +126,14 @@ import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
+import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Catalyst;
@@ -221,18 +228,22 @@ private Action getAction(Element param, MathDescription md) throws XmlParseExcep
 {
 	//retrieve values
 	String operation = unMangle( param.getAttributeValue(XMLTags.OperationAttrTag) );
-	Expression exp = unMangleExpression(param.getText());
+	String operand = param.getText();
+	Expression exp = null;
+	if (operand != null && operand.length() != 0) {
+		exp = unMangleExpression(operand);
+	}
 	String name = unMangle( param.getAttributeValue(XMLTags.VarNameAttrTag) );
 	
 	Variable var = md.getVariable(name);
 	if (var == null){
 		throw new MathFormatException("variable "+name+" not defined");
 	}	
-	if (!(var instanceof StochVolVariable)){
+	if (!(var instanceof StochVolVariable) && !(var instanceof VolumeParticleVariable)){
 		throw new MathFormatException("variable "+name+" not a Stochastic Volume Variable");
 	}
 	try {
-		Action action = new Action(var,operation,exp);
+		Action action = new Action(var, operation, exp);
 		return action;
 	} catch (Exception e){e.printStackTrace();}
 	
@@ -518,6 +529,28 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 		Element tempelement = (Element)iterator.next();
 		try {
 			subDomain.addJumpProcess( getJumpProcess(tempelement, mathDesc) );
+		} catch (MathException e) {
+			e.printStackTrace();
+			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name+" : "+e.getMessage());
+		} 
+	}
+	
+	iterator = param.getChildren(XMLTags.ParticleJumpProcessTag, vcNamespace).iterator();
+	while (iterator.hasNext()) {
+		Element tempelement = (Element)iterator.next();
+		try {
+			subDomain.addParticleJumpProcess(getParticleJumpProcess(tempelement, mathDesc) );
+		} catch (MathException e) {
+			e.printStackTrace();
+			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name+" : "+e.getMessage());
+		} 
+	}
+	
+	iterator = param.getChildren(XMLTags.ParticlePropertiesTag, vcNamespace).iterator();
+	while (iterator.hasNext()) {
+		Element tempelement = (Element)iterator.next();
+		try {
+			subDomain.addParticleProperties(getParticleProperties(tempelement, mathDesc));
 		} catch (MathException e) {
 			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name+" : "+e.getMessage());
@@ -1898,6 +1931,96 @@ private JumpProcess getJumpProcess(Element param, MathDescription md) throws Xml
 	return jump;
 }
 
+private ParticleProperties getParticleProperties(Element param, MathDescription mathDesc) throws XmlParseException {
+    //Retrieve the variable reference
+    String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));    
+    Variable varref = mathDesc.getVariable(name);    
+    if (varref == null) {
+    	throw new XmlParseException( "The variable " + name + " for a PdeEquation, could not be resolved!");
+    }    
+    
+    ArrayList<ParticleInitialCondition> initialConditions = new ArrayList<ParticleInitialCondition>();
+	Iterator<Element> iterator = param.getChildren(XMLTags.ParticleInitialTag, vcNamespace).iterator();
+	while (iterator.hasNext() ) {
+		Element tempelement = (Element)iterator.next();
+		
+        String temp = tempelement.getChildText(XMLTags.ParticleCountTag, vcNamespace);
+        Expression countExp = null;
+        if (temp!=null && temp.length()>0) {
+        	countExp = unMangleExpression(temp);        	
+        }  
+        temp = tempelement.getChildText(XMLTags.ParticleLocationXTag, vcNamespace);
+        Expression locXExp = null;
+        if (temp!=null && temp.length()>0) {
+        	locXExp = unMangleExpression(temp);        	
+        }  
+        temp = tempelement.getChildText(XMLTags.ParticleLocationYTag, vcNamespace);
+        Expression locYExp = null;
+        if (temp!=null && temp.length()>0) {
+        	locYExp = unMangleExpression(temp);        	
+        }  
+        temp = tempelement.getChildText(XMLTags.ParticleLocationZTag, vcNamespace);
+        Expression locZExp = null;
+        if (temp!=null && temp.length()>0) {
+        	locZExp = unMangleExpression(temp);        	
+        }  
+        
+        initialConditions.add(new ParticleInitialCondition(countExp, locXExp, locYExp, locZExp));
+	}
+	
+	String temp = param.getChildText(XMLTags.ParticleDiffusionTag, vcNamespace);
+    Expression diffExp = null;
+    if (temp!=null && temp.length()>0) {
+    	diffExp = unMangleExpression(temp);        	
+    } 
+
+    return new ParticleProperties(varref, diffExp, initialConditions);
+}
+
+private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescription md) throws XmlParseException 
+{
+	//name
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	
+	// selected particle
+	List<ParticleVariable> varList = new ArrayList<ParticleVariable>();
+	Iterator<Element> iterator = param.getChildren(XMLTags.SelectedParticleTag, vcNamespace).iterator();
+	while (iterator.hasNext() ) {
+		Element tempelement = (Element)iterator.next();
+		String varname = unMangle(tempelement.getAttributeValue(XMLTags.NameAttrTag) );
+		Variable var = md.getVariable(varname);
+		if (!(var instanceof ParticleVariable)) {
+			throw new XmlParseException("Not a ParticleVariable in ParticleJumpProcess.");
+		}
+		varList.add((ParticleVariable)var);
+	}
+	
+	//probability rate
+	Element pb = param.getChild(XMLTags.ParticleProbabilityRateTag, vcNamespace);
+	Expression exp = unMangleExpression(pb.getText());
+	MacroscopicRateConstant mrc = new MacroscopicRateConstant(exp);
+		
+	//add actions
+	List<Action> actionList = new ArrayList<Action>();	
+	iterator = param.getChildren(XMLTags.ActionTag, vcNamespace).iterator();
+	while (iterator.hasNext() ) {
+		Element tempelement = (Element)iterator.next();
+		try {
+			actionList.add(getAction(tempelement, md));
+		} catch (MathException e) {			
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+	
+	ParticleJumpProcess jump = new ParticleJumpProcess(name, varList, mrc, actionList);
+	
+	return jump;
+}
+
 /**
  * This method returns a Kinetics object from a XML Element based on the value of the kinetics type attribute.
  * Creation date: (3/19/2001 4:42:04 PM)
@@ -2262,6 +2385,16 @@ MathDescription getMathDescription(Element param) throws XmlParseException {
 		tempelement = (Element)iterator.next();
 		try {
 			varHash.addVariable(getRandomVariable(tempelement));
+		}catch (MappingException e){
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
+	}
+	iterator = param.getChildren(XMLTags.VolumeParticleVariableTag, vcNamespace).iterator();
+	while ( iterator.hasNext() ){
+		tempelement = (Element)iterator.next();
+		try {
+			varHash.addVariable(getVolumeParticalVariable(tempelement));
 		}catch (MappingException e){
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
@@ -4261,7 +4394,7 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 		//get StochSimOptions
 		if(simulation != null && simulation.getMathDescription()!= null)
 		{
-			if( simulation.getMathDescription().isStoch() && param.getChild(XMLTags.StochSimOptionsTag, vcNamespace) != null)
+			if( simulation.getMathDescription().isNonSpatialStoch() && param.getChild(XMLTags.StochSimOptionsTag, vcNamespace) != null)
 			{   //Amended July 22nd, 2007 to read either stochSimOptions or stochHybridOptions
 				if(sd != null && sd.equals(SolverDescription.StochGibson))
 					solverTaskDesc.setStochOpt(getStochSimOptions(param.getChild(XMLTags.StochSimOptionsTag, vcNamespace),false));
@@ -4293,12 +4426,47 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 		if (runParameterScanSeriallyAttributeValue != null) {
 			solverTaskDesc.setSerialParameterScan(new Boolean(runParameterScanSeriallyAttributeValue).booleanValue());
 		}
+		
+		Element smoldySimulationOptionsElement = param.getChild(XMLTags.SmoldynSimulationOptions, vcNamespace);
+		if (smoldySimulationOptionsElement != null) {
+			SmoldynSimulationOptions sso = getSmoldySimulationOptions(smoldySimulationOptionsElement);
+			solverTaskDesc.setSmoldynSimulationOptions(sso);			
+		}
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException(e.getMessage());
 	}
 		
 	return solverTaskDesc;
+}
+
+private SmoldynSimulationOptions getSmoldySimulationOptions(Element smoldySimulationOptionsElement) throws XmlParseException {
+	
+	SmoldynSimulationOptions sso = null;	
+	if (smoldySimulationOptionsElement != null) {
+		sso = new SmoldynSimulationOptions();
+		String temp = smoldySimulationOptionsElement.getChildText(XMLTags.SmoldynSimulationOptions_accuracy, vcNamespace);
+		if (temp != null) {
+			sso.setAccuracy(Double.parseDouble(temp));
+		}
+		temp = smoldySimulationOptionsElement.getChildText(XMLTags.SmoldynSimulationOptions_randomSeed, vcNamespace);
+		if (temp != null) {
+			sso.setRandomSeed(new Integer(temp));
+		}
+		temp = smoldySimulationOptionsElement.getChildText(XMLTags.SmoldynSimulationOptions_gaussianTableSize, vcNamespace);
+		if (temp != null) {
+			try {
+				sso.setGaussianTableSize(Integer.parseInt(temp));
+			} catch (NumberFormatException e) {
+				e.printStackTrace(System.out);
+				throw new XmlParseException(e.getMessage());
+			} catch (PropertyVetoException e) {
+				e.printStackTrace(System.out);
+				throw new XmlParseException(e.getMessage());
+			}
+		}
+	}	
+	return sso;
 }
 
 public ModelParameter[] getModelParams(Element globalParams, Model model) throws XmlParseException {
@@ -5084,6 +5252,20 @@ private VolVariable getVolVariable(Element param) {
 	VolVariable volVariable = new VolVariable( name, domain );
 
 	return volVariable;
+}
+
+private VolumeParticleVariable getVolumeParticalVariable(Element param) {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
+	
+	//-- create new VolVariable object
+	VolumeParticleVariable var = new VolumeParticleVariable( name, domain );
+	
+	return var;
 }
 
 }

@@ -2,6 +2,7 @@ package cbit.vcell.solver;
 
 import java.io.File;
 
+import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.solver.ode.AdamsMoultonFiveSolver;
@@ -66,6 +67,8 @@ public static Solver createSolver(SessionLog sessionLog, File directory, Simulat
 		solver = new cbit.vcell.solver.stoch.HybridSolver(simJob, directory, sessionLog, HybridSolver.MilsteinIntegrator);
 	} else if (solverDescription.equals(SolverDescription.HybridMilAdaptive)) {
 		solver = new cbit.vcell.solver.stoch.HybridSolver(simJob, directory, sessionLog, HybridSolver.AdaptiveMilsteinIntegrator);
+	} else if (solverDescription.equals(SolverDescription.Smoldyn)) {
+		solver = new SmoldynSolver(simJob, directory, sessionLog);
 	}
 	else {
 		throw new SolverException("Unknown solver: " + solverDescription);

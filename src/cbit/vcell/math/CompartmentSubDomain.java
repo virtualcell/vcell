@@ -174,9 +174,9 @@ public String getVCML(int spatialDimension) {
 		buffer.append("\t"+VCML.BoundaryZm+"\t "+boundaryConditionTypeZm.toString()+"\n");
 		buffer.append("\t"+VCML.BoundaryZp+"\t "+boundaryConditionTypeZp.toString()+"\n");
 	}
-	Enumeration enum1 = getEquations();
+	Enumeration<Equation> enum1 = getEquations();
 	while (enum1.hasMoreElements()){
-		Equation equ = (Equation)enum1.nextElement();
+		Equation equ = enum1.nextElement();
 		buffer.append(equ.getVCML());
 	}	
 	if (getFastSystem()!=null){
@@ -186,18 +186,26 @@ public String getVCML(int spatialDimension) {
 	if(getVarIniConditions().size()>0)
 	{
 		
-		for(int i=0; i<getVarIniConditions().size(); i++)
-		{
-			buffer.append(((VarIniCondition)getVarIniConditions().elementAt(i)).getVCML());
+		for(VarIniCondition vic : getVarIniConditions()){
+			buffer.append(vic.getVCML());
 		}
+		buffer.append("\n");
+	}
+	//particle initial conditions
+	for (ParticleProperties pp : getParticleProperties()){
+		buffer.append(pp.getVCML(spatialDimension));
+		buffer.append("\n");
+	}
+	//Jump processes
+	for (ParticleJumpProcess particleJumpProcess : getParticleJumpProcesses()){
+		buffer.append(particleJumpProcess.getVCML());
 		buffer.append("\n");
 	}
 	//Jump processes
 	if(getJumpProcesses().size()>0)
 	{
-		for(int i=0; i<getJumpProcesses().size(); i++)
-		{
-			buffer.append(((JumpProcess)getJumpProcesses().elementAt(i)).getVCML());
+		for(JumpProcess jp : getJumpProcesses()){
+			buffer.append(jp.getVCML());
 		}
 	}	
 	buffer.append("}\n");
@@ -311,6 +319,24 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 			addEquation(vre);
 			continue;
 		}			
+		/**
+		 * ParticleJumpProcess name A B {
+		 *    MacroscopicRateConstant dkdkdk;
+		 *    Action destroy A
+		 *    Action destroy B
+		 *    Action create C
+		 * }
+		 */
+		if (token.equalsIgnoreCase(VCML.ParticleJumpProcess)){
+			ParticleJumpProcess particleJumpProcess = ParticleJumpProcess.fromVCML(mathDesc, tokens);
+			addParticleJumpProcess(particleJumpProcess);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.ParticleProperties)){
+			ParticleProperties pp = new ParticleProperties(mathDesc, tokens);
+			addParticleProperties(pp);
+			continue;
+		}			
 		if (token.equalsIgnoreCase(VCML.FastSystem)){
 			FastSystem fs = new FastSystem(mathDesc);
 			fs.read(tokens);
@@ -371,7 +397,9 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 				jump = new JumpProcess(name,probExp);
 				addJumpProcess(jump);
 			}
-			else throw new MathFormatException("unexpected identifier "+token);
+			else {
+				throw new MathFormatException("unexpected identifier "+token);
+			}
 
 			if(jump != null)
 			{
@@ -392,6 +420,9 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 							throw new MathFormatException("variable "+token+" not a Stochastic Volume Variable");
 						}
 						String opera = tokens.nextToken();
+						if (!opera.equals(Action.ACTION_INC)){
+							throw new MathFormatException("expected 'INC' for action, found "+opera);
+						}
 						Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 						try{
 							exp.bindExpression(mathDesc);
@@ -400,7 +431,7 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 							ex.printStackTrace(System.out);
 							throw new MathException(ex.getMessage());
 						}
-						Action action = new Action(var,opera,exp);
+						Action action = Action.createIncrementAction(var,exp);
 						jump.addAction(action);
 					}
 					else throw new MathFormatException("unexpected identifier "+token);

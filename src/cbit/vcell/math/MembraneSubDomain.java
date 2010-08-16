@@ -354,6 +354,16 @@ public void read(MathDescription mathDesc, CommentStringTokenizer tokens) throws
 			mre.read(tokens);
 			addEquation(mre);
 			continue;
+		}
+		if (token.equalsIgnoreCase(VCML.ParticleProperties)){
+			ParticleProperties pp = new ParticleProperties(mathDesc, tokens);
+			addParticleProperties(pp);
+			continue;
+		}
+		if (token.equalsIgnoreCase(VCML.ParticleJumpProcess)){
+			ParticleJumpProcess particleJumpProcess = ParticleJumpProcess.fromVCML(mathDesc, tokens);
+			addParticleJumpProcess(particleJumpProcess);
+			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.JumpCondition)){
 			token = tokens.nextToken();

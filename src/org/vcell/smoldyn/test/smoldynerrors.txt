@@ -1,0 +1,4 @@
+need to enter max_species before max_surface
+
+need to enter dim before max_mol
+

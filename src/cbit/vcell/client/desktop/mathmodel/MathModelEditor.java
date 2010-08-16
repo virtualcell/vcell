@@ -311,7 +311,7 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	getEquationsViewerToggleButton().addActionListener(ivjEventHandler);
-	if((getMathDescription() != null) && (getMathDescription().isStoch()))
+	if((getMathDescription() != null) && (getMathDescription().isNonSpatialStoch()))
 		getGeometryToggleButton().setEnabled(false);
 	else
 		getGeometryToggleButton().addActionListener(ivjEventHandler);

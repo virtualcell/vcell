@@ -407,7 +407,7 @@ private void initializeInternalFrames() {
 	// Initialize Geometry Viewer internal frame
 	geoViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
 	
-	geoViewer.setStochastic(getMathModel().getMathDescription().isStoch());
+	geoViewer.setStochastic(getMathModel().getMathDescription().isNonSpatialStoch());
 	geometryViewerEditorFrame = createDefaultFrame(geoViewer);
 	geometryViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
 		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
@@ -678,7 +678,7 @@ private void showGeometryViewer(boolean bGeoButtonSelected) {
 		setDefaultTitle(geometryViewerEditorFrame);
 		if(geoViewer != null)
 		{
-			geoViewer.setStochastic(getMathModel().getMathDescription().isStoch());
+			geoViewer.setStochastic(getMathModel().getMathDescription().isNonSpatialStoch());
 //			if(getMathModel().getMathDescription().isStoch())
 //			{
 //				geoViewer.setChangeGeometryEnabled(false);

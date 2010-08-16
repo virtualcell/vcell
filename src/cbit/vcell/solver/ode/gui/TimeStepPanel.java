@@ -400,7 +400,7 @@ private void refresh() {
 		getMinimumTimeStepTextField().setText(ts.getMinimumTimeStep()+"");
 		getMaximumTimeStepTextField().setText(ts.getMaximumTimeStep()+"");	
 		
-		if (solverDescription.hasVariableTimestep() &&  !solverDescription.isStochasticNonSpatialSolver()) {
+		if (solverDescription.hasVariableTimestep() &&  solverDescription.isNonSpatialStochasticSolver()) {
 			enableDefaultTimeStep(false);
 			enableMinTimeStep(true);
 			enableMaxTimeStep(true);

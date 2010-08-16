@@ -26,6 +26,8 @@ public class VCML {
 	public final static String Name 					= "Name";
 	public final static String VolumeVariable 			= "VolumeVariable";
 	public final static String StochVolVariable 		= "StochasticVolumeVariable"; //stoch
+	public final static String VolumeParticleVariable 		= "VolumeParticleVariable"; //stoch
+	public final static String MembraneParticleVariable 	= "MembraneParticleVariable"; //stoch
 	public final static String MembraneVariable 		= "MembraneVariable";
 	public final static String FilamentVariable 		= "FilamentVariable";
 	public final static String VolumeRegionVariable 	= "VolumeRegionVariable";
@@ -158,4 +160,23 @@ public class VCML {
 	public final static String UniformDistribution = "UniformDistribution";	
 	public final static String UniformDistribution_Minimum = "Minimum";
 	public final static String UniformDistribution_Maximum = "Maximum";
+	
+	public final static String ParticleProperties 		= "ParticleProperties"; // particle
+	public final static String ParticleInitial			= "ParticleInitial"; // particle
+	public final static String ParticleCount			= "ParticleCount"; // particle
+	public final static String ParticleLocationX		= "ParticleLocationX"; // particle
+	public final static String ParticleLocationY		= "ParticleLocationY"; // particle
+	public final static String ParticleLocationZ		= "ParticleLocationZ"; // particle
+	public final static String ParticleDiffusion		= "ParticleDiffusion"; // particle
+	public final static String ParticleJumpProcess 		= "ParticleJumpProcess"; // particle
+	public final static String MacroscopicRateConstant	= "MacroscopicRateConstant"; // particle
+	public final static String CreateParticle			= "CreateParticle"; // particle
+	public final static String DestroyParticle			= "DestroyParticle"; // particle
+	public final static String SelectedParticle			= "SelectedParticle"; // particle
+	
+	public final static String SmoldynSimulationOptions	= "SmoldynSimulationOptions";
+	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";
+	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";
+	public final static String SmoldynSimulationOptions_gaussianTableSize	= "gaussianTableSize";
+	public final static String SmoldynSimulationOptions_boxSize	= "BoxSize";	
 }

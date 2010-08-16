@@ -268,10 +268,12 @@ public static void continueAfterMathModelGeomChangeWarning(MathModelWindowManage
 		if(bHasSims && bMeshResolutionChange){
 			ISize newGeomISize = MeshSpecification.calulateResetSamplingSize(newGeometry);
 			for (int i = 0; i < mathModel.getSimulations().length; i++) {
-				String simName = mathModel.getSimulations()[i].getName();
-				ISize simMeshSize = mathModel.getSimulations()[i].getMeshSpecification().getSamplingSize();
-				meshResolutionChangeSB.append((i!=0?"\n":"")+
-					"'"+simName+"' Mesh"+simMeshSize+" will be reset to "+newGeomISize+"");
+				if (mathModel.getSimulations()[i].getMeshSpecification() != null) {
+					String simName = mathModel.getSimulations()[i].getName();
+					ISize simMeshSize = mathModel.getSimulations()[i].getMeshSpecification().getSamplingSize();
+					meshResolutionChangeSB.append((i!=0?"\n":"")+
+						"'"+simName+"' Mesh"+simMeshSize+" will be reset to "+newGeomISize+"");
+				}
 			}
 		}
 
@@ -2483,7 +2485,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 			String stochChkMsg =((BioModel)vcd).getModel().isValidForStochApp();
 			for(int i=0; i<simulations.length; i++)
 			{
-				if(simulations[i].getMathDescription().isStoch())
+				if(simulations[i].getMathDescription().isNonSpatialStoch())
 				{
 					if(!(stochChkMsg.equals("")))
 					{

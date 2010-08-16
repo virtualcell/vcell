@@ -19,8 +19,10 @@ public abstract class SubDomain implements Serializable, Matchable {
 	private String name = null;
 	private Vector<Equation> equationList = new Vector<Equation>();
 	private FastSystem fastSystem = null;
-	private Vector<JumpProcess> listOfJumpProcesses = null;
-	private Vector<VarIniCondition> listOfVarIniConditions = null;
+	private ArrayList<JumpProcess> listOfJumpProcesses = null;
+	private ArrayList<VarIniCondition> listOfVarIniConditions = null;
+	private ArrayList<ParticleJumpProcess> listOfParticleJumpProcesses = null;
+	private ArrayList<ParticleProperties> listOfParticleProperties = null;
 
 /**
  * This method was created by a SmartGuide.
@@ -28,8 +30,10 @@ public abstract class SubDomain implements Serializable, Matchable {
  */
 protected SubDomain (String name) {
 	this.name = name;
-	listOfJumpProcesses = new Vector<JumpProcess>();
-	listOfVarIniConditions = new Vector<VarIniCondition>();
+	listOfParticleJumpProcesses = new ArrayList<ParticleJumpProcess>();
+	listOfParticleProperties = new ArrayList<ParticleProperties>();
+	listOfJumpProcesses = new ArrayList<JumpProcess>();
+	listOfVarIniConditions = new ArrayList<VarIniCondition>();
 }
 
 
@@ -46,13 +50,6 @@ public void addEquation(Equation equation) throws MathException {
 
 
 /**
- * Insert the method's description here.
- * Creation date: (6/26/2006 5:28:25 PM)
- */
-public void addJumpProcess() {}
-
-
-/**
  * Append a new process to the jump process list if it is still not in the list.
  * Creation date: (6/26/2006 5:28:25 PM)
  */
@@ -61,6 +58,30 @@ public void addJumpProcess(JumpProcess newJumpProcess) throws MathException
 	if(getJumpProcess(newJumpProcess.getName())!=null)
 		throw new MathException("JumpProcess "+newJumpProcess.getName()+" already exists");
 	listOfJumpProcesses.add(newJumpProcess);
+}
+
+public void addParticleJumpProcess(ParticleJumpProcess newParticleJumpProcess) throws MathException
+{
+	if(getParticleJumpProcess(newParticleJumpProcess.getName())!=null)
+		throw new MathException("JumpProcess "+newParticleJumpProcess.getName()+" already exists");
+	listOfParticleJumpProcesses.add(newParticleJumpProcess);
+}
+
+public void addParticleProperties(ParticleProperties newParticleProperties) throws MathException
+{
+	if(getParticleProperties(newParticleProperties.getVariable())!=null)
+		throw new MathException("ParticleProperties "+newParticleProperties.getVariable().getName()+" already exists");
+	listOfParticleProperties.add(newParticleProperties);
+}
+
+
+public ParticleProperties getParticleProperties(Variable variable) {
+	for (ParticleProperties pp : listOfParticleProperties) {
+		if (pp.getVariable().getName().equals(variable.getName())) {
+			return pp;
+		}
+	}
+	return null;
 }
 
 
@@ -139,6 +160,28 @@ protected boolean compareEqual0(Object object) {
 	}
 	else return false;
 		
+	if ((listOfParticleProperties != null) && (subDomain.listOfParticleProperties != null))
+	{
+		ParticleProperties pps1[] = (ParticleProperties[]) listOfParticleProperties.toArray(new ParticleProperties[0]);
+		ParticleProperties pps2[] = (ParticleProperties[]) subDomain.listOfParticleProperties.toArray(new ParticleProperties[0]);
+		
+		if (!Compare.isEqualOrNull(pps1, pps2)){ //call isEqualOrNull(Matchable[], Matchable[]) function
+			return false;
+		}
+	} else {
+		return false;
+	}
+	if ((listOfParticleJumpProcesses != null) && (subDomain.listOfParticleJumpProcesses != null))
+	{
+		ParticleJumpProcess pjps1[] = (ParticleJumpProcess[]) listOfParticleJumpProcesses.toArray(new ParticleJumpProcess[0]);
+		ParticleJumpProcess pjps2[] = (ParticleJumpProcess[]) subDomain.listOfParticleJumpProcesses.toArray(new ParticleJumpProcess[0]);
+		
+		if (!Compare.isEqualOrNull(pjps1, pjps2)){ //call isEqualOrNull(Matchable[], Matchable[]) function
+			return false;
+		}
+	} else {
+		return false;
+	}
 	return true;
 }
 
@@ -185,7 +228,7 @@ public FastSystem getFastSystem() {
 public JumpProcess getJumpProcess(int index)
 {
 	if(index<listOfJumpProcesses.size())
-		return (JumpProcess)listOfJumpProcesses.elementAt(index);
+		return (JumpProcess)listOfJumpProcesses.get(index);
 	return null;
 }
 
@@ -197,12 +240,28 @@ public JumpProcess getJumpProcess(int index)
  * @param processName java.lang.String
  */
 public JumpProcess getJumpProcess(String processName) {
-	for(int i=0; i<listOfJumpProcesses.size(); i++)
-	{
-		if(((JumpProcess)listOfJumpProcesses.elementAt(i)).getName().compareTo(processName)==0)
-			return 	(JumpProcess)listOfJumpProcesses.elementAt(i);
+	for(JumpProcess jp : listOfJumpProcesses){
+		if(jp.getName().equals(processName)){
+			return jp;
+		}
 	}
 	return null;
+}
+
+public ParticleJumpProcess getParticleJumpProcess(String processName) {
+	for (ParticleJumpProcess pjp : listOfParticleJumpProcesses){
+		if(pjp.getName().compareTo(processName)==0)
+			return pjp;
+	}
+	return null;
+}
+
+public List<ParticleJumpProcess> getParticleJumpProcesses() {
+	return Collections.unmodifiableList(listOfParticleJumpProcesses);
+}
+
+public List<ParticleProperties> getParticleProperties() {
+	return Collections.unmodifiableList(listOfParticleProperties);
 }
 
 
@@ -211,8 +270,8 @@ public JumpProcess getJumpProcess(String processName) {
  * Creation date: (6/27/2006 3:05:52 PM)
  * @return java.util.Vector
  */
-public Vector<JumpProcess> getJumpProcesses() {
-	return listOfJumpProcesses;
+public List<JumpProcess> getJumpProcesses() {
+	return Collections.unmodifiableList(listOfJumpProcesses);
 }
 
 /**
@@ -233,7 +292,7 @@ public String getName() {
 public VarIniCondition getVarIniCondition(int index) 
 {
 	if(index<listOfVarIniConditions.size())
-		return (VarIniCondition)listOfVarIniConditions.elementAt(index);
+		return (VarIniCondition)listOfVarIniConditions.get(index);
 	return null;
 }
 
@@ -246,10 +305,10 @@ public VarIniCondition getVarIniCondition(int index)
  */
 public VarIniCondition getVarIniCondition(String varName) 
 {
-	for(int i=0; i<listOfVarIniConditions.size(); i++)
-	{
-		if(((VarIniCondition)listOfVarIniConditions.elementAt(i)).getVar().getName().compareTo(varName)==0)
-			return (VarIniCondition)listOfVarIniConditions.elementAt(i);
+	for (VarIniCondition vic : listOfVarIniConditions){
+		if (vic.getVar().getName().equals(varName)){
+			return vic;
+		}
 	}
 	return null;
 }
@@ -260,8 +319,8 @@ public VarIniCondition getVarIniCondition(String varName)
  * Creation date: (6/27/2006 3:07:26 PM)
  * @return java.util.Vector
  */
-public Vector<VarIniCondition> getVarIniConditions() {
-	return listOfVarIniConditions;
+public List<VarIniCondition> getVarIniConditions() {
+	return Collections.unmodifiableList(listOfVarIniConditions);
 }
 
 
@@ -289,10 +348,10 @@ public void removeJumpProcess(int index)
  */
 public void removeJumpProcess(String procName)
 {
-	for(int i=0; i<listOfJumpProcesses.size(); i++)
-	{
-		if(((JumpProcess)listOfJumpProcesses.elementAt(i)).getName().compareTo(procName)==0)
-			listOfJumpProcesses.remove(i) ;
+	for(JumpProcess jp : listOfJumpProcesses){
+		if (jp.getName().equals(procName)){
+			listOfJumpProcesses.remove(jp);
+		}
 	}
 }
 
@@ -303,7 +362,7 @@ public void removeJumpProcess(String procName)
  */
 public void removeJumpProcesses()
 {
-	listOfJumpProcesses.removeAllElements();
+	listOfJumpProcesses.clear();
 }
 
 
@@ -326,10 +385,10 @@ public void removeVarIniCondition(int index)
  */
 public void removeVarIniCondition(String varName)
 {
-	for (int i=0; i<listOfVarIniConditions.size(); i++)
-	{
-		if(((VarIniCondition)listOfVarIniConditions.elementAt(i)).getVar().getName().compareTo(varName)==0)
-			listOfVarIniConditions.remove(i);
+	for (VarIniCondition vic : listOfVarIniConditions){
+		if(vic.getVar().getName().equals(varName)){
+			listOfVarIniConditions.remove(vic);
+		}
 	}	
 }
 
@@ -340,7 +399,7 @@ public void removeVarIniCondition(String varName)
  */
 public void removeVarIniConditions() 
 {
-	listOfVarIniConditions.removeAllElements();
+	listOfVarIniConditions.clear();
 }
 
 

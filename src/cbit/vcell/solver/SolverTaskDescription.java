@@ -5,6 +5,7 @@ package cbit.vcell.solver;
 ©*/
 import java.beans.PropertyVetoException;
 
+import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -32,6 +33,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	public static final String PROPERTY_TIME_STEP = "timeStep";
 	public static final String PROPERTY_STOCH_SIM_OPTIONS = "StochSimOptions";
 	public static final String PROPERTY_STOP_AT_SPATIALLY_UNIFORM_ERROR_TOLERANCE = "stopAtSpatiallyUniformErrorTolerance";
+	public static final String PROPERTY_SMOLDYN_SIMULATION_OPTIONS = "smoldynSimulationOptions";
 	
 	//  Or TASK_NONE for use as a default?
 	public static final int TASK_UNSTEADY = 0;
@@ -51,6 +53,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private StochSimOptions fieldStochOpt = null; //added Dec 5th, 2006
 	private ErrorTolerance stopAtSpatiallyUniformErrorTolerance = null;
 	private boolean bSerialParameterScan = false;
+	private SmoldynSimulationOptions smoldynSimulationOptions = null;
 
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
@@ -60,18 +63,7 @@ public SolverTaskDescription(Simulation simulation, CommentStringTokenizer token
 	super();
 	addPropertyChangeListener(this);
 	try {
-		if (simulation.isSpatial()) 
-		{
-			setSolverDescription(SolverDescription.getDefaultPDESolverDescription());
-		} //amended Sept.27, 2006
-		else if (simulation.getMathDescription().isStoch()) 
-		{
-			setSolverDescription(SolverDescription.getDefaultStochSolverDescription());
-		}
-		else
-		{
-			setSolverDescription(SolverDescription.getDefaultODESolverDescription());
-		}
+		setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation));
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 	}
@@ -116,11 +108,18 @@ public SolverTaskDescription(Simulation simulation, SolverTaskDescription solver
 		stopAtSpatiallyUniformErrorTolerance = new ErrorTolerance(solverTaskDescription.stopAtSpatiallyUniformErrorTolerance);
 	}
 	bSerialParameterScan = solverTaskDescription.bSerialParameterScan;
-	if (simulation.getMathDescription().isStoch() && (solverTaskDescription.getStochOpt() != null)) 
+	if (simulation.getMathDescription().isNonSpatialStoch() && (solverTaskDescription.getStochOpt() != null)) 
 	{
 		setStochOpt(solverTaskDescription.getStochOpt());
 	}
-	else setStochOpt(null);
+	else {
+		setStochOpt(null);
+	}
+	if (simulation.getMathDescription().isSpatialStoch()) {
+		smoldynSimulationOptions = new SmoldynSimulationOptions(solverTaskDescription.smoldynSimulationOptions);
+	} else {
+		smoldynSimulationOptions = null;
+	}
 }
 
 
@@ -139,20 +138,7 @@ public SolverTaskDescription(Simulation simulation) {
 	super();
 	addPropertyChangeListener(this);
 	try {
-		if (simulation.isSpatial()) 
-		{
-			setSolverDescription(SolverDescription.getDefaultPDESolverDescription());
-		} //amended Sept.27, 2006
-		else if (simulation.getMathDescription().isStoch()) 
-		{
-			fieldStochOpt = new StochSimOptions();
-			setSolverDescription(SolverDescription.getDefaultStochSolverDescription());
-			//setOutputTimeSpec(new DefaultOutputTimeSpec(1,1000000));//amended Feb 20th,2007
-		}
-		else
-		{
-			setSolverDescription(SolverDescription.getDefaultODESolverDescription());
-		}
+		setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation));
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 	}
@@ -212,6 +198,9 @@ public boolean compareEqual(Matchable object) {
 			return false;
 		}
 		if (bSerialParameterScan != solverTaskDescription.bSerialParameterScan) {
+			return false;
+		}
+		if  (!Compare.isEqualOrNull(smoldynSimulationOptions,solverTaskDescription.smoldynSimulationOptions)) {
 			return false;
 		}
 		return true;
@@ -497,6 +486,9 @@ public String getVCML() {
 		buffer.append(VCML.RunParameterScanSerially + " " + bSerialParameterScan + "\n");
 	}
 	
+	if (smoldynSimulationOptions != null) {
+		buffer.append(smoldynSimulationOptions.getVCML());
+	}
 	buffer.append(VCML.EndBlock+"\n");
 		
 	return buffer.toString();
@@ -546,7 +538,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			} else if (!solverDescription.supports(getOutputTimeSpec())){
 				setOutputTimeSpec(solverDescription.createOutputTimeSpec(this));
 			}
-			if (solverDescription.isStochasticNonSpatialSolver()) {
+			if (solverDescription.isNonSpatialStochasticSolver()) {
 				if (solverDescription.equals(SolverDescription.StochGibson)) {
 					if (fieldStochOpt == null) {					
 						setStochOpt(new StochSimOptions());
@@ -562,7 +554,12 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 						setStochOpt(new StochHybridOptions(fieldStochOpt.isUseCustomSeed(), fieldStochOpt.getCustomSeed(), fieldStochOpt.getNumOfTrials()));
 					}
 				}
+			} else if (solverDescription.isSpatialStochasticSolver()) {
+				if (smoldynSimulationOptions == null) {
+					smoldynSimulationOptions = new SmoldynSimulationOptions();
+				}
 			}
+			
 		} catch (PropertyVetoException e) {
 			e.printStackTrace();
 		}
@@ -710,7 +707,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				temp.readVCML(tokens);
 				if (getSimulation()!=null && getSimulation().getMathDescription()!=null)
 				{
-					if(getSimulation().getMathDescription().isStoch()) setStochOpt(temp);
+					if(getSimulation().getMathDescription().isNonSpatialStoch()) setStochOpt(temp);
 					else setStochOpt(null);					
 				}
 				continue;
@@ -753,14 +750,14 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				token = tokens.nextToken();
 				stopAtSpatiallyUniformErrorTolerance = ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance();
 				stopAtSpatiallyUniformErrorTolerance.readVCML(tokens);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.RunParameterScanSerially)) {
+			} else if (token.equalsIgnoreCase(VCML.RunParameterScanSerially)) {
 				token = tokens.nextToken();
 				setSerialParameterScan((new Boolean(token)).booleanValue());
-				continue;
+			} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions)) {
+				setSmoldynSimulationOptions(new SmoldynSimulationOptions(tokens));				
+			} else { 
+				throw new DataAccessException("unexpected identifier " + token);
 			}
-			throw new DataAccessException("unexpected identifier " + token);
 		}
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);
@@ -780,6 +777,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 public void refreshDependencies() {
 	removePropertyChangeListener(this);
 	addPropertyChangeListener(this);
+	smoldynSimulationOptions.refreshDependencies();
 }
 
 /**
@@ -968,6 +966,18 @@ public final boolean isSerialParameterScan() {
 
 public final void setSerialParameterScan(boolean arg_bSerialParameterScan) {
 	this.bSerialParameterScan = arg_bSerialParameterScan;
+}
+
+
+public final SmoldynSimulationOptions getSmoldynSimulationOptions() {
+	return smoldynSimulationOptions;
+}
+
+
+public final void setSmoldynSimulationOptions(SmoldynSimulationOptions smoldynSimulationOptions) {
+	SmoldynSimulationOptions oldValue = smoldynSimulationOptions;
+	this.smoldynSimulationOptions = smoldynSimulationOptions;
+	firePropertyChange(PROPERTY_SMOLDYN_SIMULATION_OPTIONS, oldValue, smoldynSimulationOptions);
 }
 
 }

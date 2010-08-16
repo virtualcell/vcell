@@ -60,14 +60,17 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	public static SolverFeature[] PdeFastSystemFeatureSet = new SolverFeature[] {
 		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem
 	};
-	public static SolverFeature[] StochasticNonSpatialFeatureSet = new SolverFeature[] {
+	public static SolverFeature[] NonSpatialStochasticFeatureSet = new SolverFeature[] {
 		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic
 	};
 	public static SolverFeature[] DiscontinutiesFeatureSet = new SolverFeature[] {
 		SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities
 	};
+	public static SolverFeature[] SpatialStochasticFeatureSet = new SolverFeature[] {
+		SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic
+	};
 	
-	private static final int NUM_SOLVERS = 15;
+	private static final int NUM_SOLVERS = 16;
 	private static final int TYPE_FORWARD_EULER = 0;
 	private static final int TYPE_RUNGE_KUTTA2 = 1;
 	private static final int TYPE_RUNGE_KUTTA4 = 2;
@@ -83,6 +86,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	private static final int TYPE_FINITE_VOLUME_STANDALONE = 12;
 	private static final int TYPE_COMBINED_IDA_CVODE = 13;
 	private static final int TYPE_SUNDIALS_PDE = 14;
+	private static final int TYPE_SMOLDYN = 15;
 	
 	public static final SolverDescription ForwardEuler			= new SolverDescription(TYPE_FORWARD_EULER);
 	public static final SolverDescription RungeKutta2			= new SolverDescription(TYPE_RUNGE_KUTTA2);
@@ -99,6 +103,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	public static final SolverDescription FiniteVolumeStandalone = new SolverDescription(TYPE_FINITE_VOLUME_STANDALONE);
 	public static final SolverDescription CombinedSundials		= new SolverDescription(TYPE_COMBINED_IDA_CVODE);
 	public static final SolverDescription SundialsPDE			= new SolverDescription(TYPE_SUNDIALS_PDE);
+	public static final SolverDescription Smoldyn			= new SolverDescription(TYPE_SMOLDYN);
 
 	private static SolverDescription[] AllSolverDescriptions = new SolverDescription[] {
 		ForwardEuler,
@@ -115,7 +120,8 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		CVODE,
 		FiniteVolumeStandalone,
 		CombinedSundials,
-		SundialsPDE
+		SundialsPDE,
+		Smoldyn
 	};
 	
 	private static final String ALTERNATE_CVODE_Description = "LSODA (Variable Order, Variable Time Step)"; // backward compatibility
@@ -136,6 +142,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		"Finite Volume Standalone, Regular Grid",
 		"Combined Stiff Solver (IDA/CVODE)",
 		"Sundials Stiff PDE Solver (Variable Time Step)",
+		"Smoldyn (Spatial Stochastic Simulator)",
 	};
 	private static final String[] DISPLAY_LABEL = {
 		"Forward Euler (First Order, Fixed Time Step)",
@@ -153,6 +160,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		"Semi-Implicit Finite Volume, Regular Grid (Fixed Time Step)",
 		"Combined Stiff Solver (IDA/CVODE)",
 		"Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)",
+		"Smoldyn (Spatial Stochastic Simulator)",
 	};
 	
 	private static String Description_Start_Time = "<b>Starting Time</b>";
@@ -560,6 +568,15 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	     		"</ul></li>"
 	     + "</ul>"
 	     +"</html>",
+	     // Smoldyn (Spatial Stochastic Simulator)
+	     "<html>" +
+	     "Smoldyn is a computer program for cell-scale biochemical simulations. " +
+	     "It simulates each molecule of interest individually to capture natural stochasticity " +
+	     "and for nanometer-scale spatial resolution. It treats other molecules implicity, " +
+	     "so it can simulate tens of thousands of molecules over several minutes of real time. " +
+	     "Simulated molecules diffuse, react, are confined by surfaces, and bind to membranes " +
+	     "much as they would in a real biological system."
+	     + "</html>",
 	};
 	
 	// for all sundials solvers, the time order is variable from 1 to 5, we choose an intermediate order of 3
@@ -580,6 +597,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		1,	// TYPE_FINITE_VOLUME_STANDALONE
 		3,	// TYPE_COMBINED_IDA_CVODE
 		3,	// TYPE_SUNDIALS_PDE
+		1,	// TYPE_SMOLDYN
 	};
 
 /**
@@ -606,7 +624,7 @@ public boolean compareEqual(Matchable obj) {
  * @return The solver property value.
  * @see #setSolver
  */
-public static SolverDescription getDefaultODESolverDescription() {
+private static SolverDescription getDefaultODESolverDescription() {
 	return CombinedSundials;
 }
 
@@ -616,7 +634,7 @@ public static SolverDescription getDefaultODESolverDescription() {
  * @return The solver property value.
  * @see #setSolver
  */
-public static SolverDescription getDefaultPDESolverDescription() {
+private static SolverDescription getDefaultPDESolverDescription() {
 	return FiniteVolumeStandalone;
 }
 
@@ -626,8 +644,12 @@ public static SolverDescription getDefaultPDESolverDescription() {
  * Creation date: (9/27/2006 2:43:55 PM)
  * @return cbit.vcell.solver.SolverDescription
  */
-public static SolverDescription getDefaultStochSolverDescription() {
+private static SolverDescription getDefaultNonSpatialStochSolverDescription() {
 	return StochGibson;
+}
+
+private static SolverDescription getDefaultSpatialStochSolverDescription() {
+	return Smoldyn;
 }
 
 /**
@@ -772,10 +794,13 @@ public boolean isJavaSolver() {
  * Creation date: (7/18/2006 5:08:30 PM)
  * @return boolean
  */
-public boolean isStochasticNonSpatialSolver() {
-	return getSupportedFeatures().containsAll(Arrays.asList(StochasticNonSpatialFeatureSet));
+public boolean isNonSpatialStochasticSolver() {
+	return getSupportedFeatures().containsAll(Arrays.asList(NonSpatialStochasticFeatureSet));
 }
 
+public boolean isSpatialStochasticSolver() {
+	return getSupportedFeatures().containsAll(Arrays.asList(SpatialStochasticFeatureSet));
+}
 
 /**
  * Insert the method's description here.
@@ -796,6 +821,7 @@ public boolean supports(OutputTimeSpec outputTimeSpec) {
 		case TYPE_SUNDIALS_PDE: {
 			return (outputTimeSpec.isDefault() || outputTimeSpec.isUniform());
 		}
+		case TYPE_SMOLDYN:
 		case TYPE_HYBRID_EM:
 		case TYPE_HYBRID_MIL:
 		case TYPE_HYBRID_MIL_Adaptive: {
@@ -841,6 +867,10 @@ public static SolverDescription[] getPDESolverDescriptions() {
 	return getSolverDescriptions(PdeFeatureSet);
 }
 
+public static SolverDescription[] getSpatialStochasticSolverDescriptions() {
+	return getSolverDescriptions(SpatialStochasticFeatureSet);
+}
+
 
 /**
  * Get stochasic solver(s)' description(s)
@@ -848,7 +878,7 @@ public static SolverDescription[] getPDESolverDescriptions() {
  * @return java.lang.String[]
  */
 public static SolverDescription[] getStochasticNonSpatialSolverDescriptions() {
-	return getSolverDescriptions(StochasticNonSpatialFeatureSet);
+	return getSolverDescriptions(NonSpatialStochasticFeatureSet);
 }
 
 public static SolverDescription[] getSolverDescriptions(SolverFeature[] desiredSolverFeatures){
@@ -966,9 +996,30 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_VolumeRegionEquations);
 		featureSet.add(SolverFeature.Feature_RegionSizeFunctions);
 		break;
+		
+	case TYPE_SMOLDYN:
+		featureSet.add(SolverFeature.Feature_Spatial);
+		featureSet.add(SolverFeature.Feature_Stochastic);
+		break;	
 	}
-	
 	return featureSet;
+}
+
+public static SolverDescription getDefaultSolverDescription(Simulation simulation) {
+	if (simulation.isSpatial())		{		
+		if (simulation.getMathDescription().isSpatialStoch()) {
+			return SolverDescription.getDefaultSpatialStochSolverDescription();
+		} else {
+			return SolverDescription.getDefaultPDESolverDescription();				
+		}
+	} else {
+		if (simulation.getMathDescription().isNonSpatialStoch()) {
+			return SolverDescription.getDefaultNonSpatialStochSolverDescription();
+		}
+		else {
+			return SolverDescription.getDefaultODESolverDescription();
+		}
+	}
 }
 
 //public static void main(String[] args) {
