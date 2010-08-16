@@ -6,6 +6,8 @@ package cbit.vcell.math;
 ©*/
 import java.util.*;
 import java.io.*;
+
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.geometry.*;
@@ -220,6 +222,43 @@ public static MathDescription getOdeExactExample() throws Exception {
 
 	return mathDesc;
 }
+
+public static MathDescription getParticleExample() throws Exception {
+	MathDescription mathDesc = new MathDescription("particleExample");
+	Geometry geo = new Geometry("circleInSquare",2);
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0,0,0));//m: done
+	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(10.0,10.0,1.0));//m: done
+	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("cytosol",new Expression("pow(x-5,2)+pow(y-5,2)<16")));//m: maybe done??
+	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("extracellular",new Expression(1.0)));//m: maybe done??
+	geo.getGeometrySurfaceDescription().updateAll();
+	mathDesc.setGeometry(geo);
+	CompartmentSubDomain cytosol = new CompartmentSubDomain("cytosol", 1);//m: not done
+	CompartmentSubDomain extracellular = new CompartmentSubDomain("extracellular", 2);//m: may need to do smoldyn compartment logic here
+	MembraneSubDomain plasmaMembrane = new MembraneSubDomain(cytosol,extracellular);//m: how is this mapped?
+	
+	mathDesc.addSubDomain(cytosol);//m:  ??
+	mathDesc.addSubDomain(extracellular);//m:  ??
+	mathDesc.addSubDomain(plasmaMembrane);//m:  ??
+	
+	ParticleVariable v1 = new VolumeParticleVariable("v1", new Domain(cytosol));//m: done
+	ParticleVariable v2 = new VolumeParticleVariable("v2", new Domain(cytosol));//m: done
+	ParticleVariable v3 = new VolumeParticleVariable("v3", new Domain(cytosol));//m: done
+	
+	mathDesc.addVariable(v1);//m: done
+	mathDesc.addVariable(v2);//m: done
+	mathDesc.addVariable(v3);//m: done
+	
+	Action destroyV1 = Action.createDestroyAction(v1);//m: done
+	Action destroyV2 = Action.createDestroyAction(v2);//m: done
+	Action createV3 = Action.createCreateAction(v3);//m: done
+	ParticleJumpProcess reaction1 = new ParticleJumpProcess("reaction1",Arrays.asList(v1,v2),
+			new MacroscopicRateConstant(new Expression(.253)),Arrays.asList(destroyV1,destroyV2,createV3));//m: done
+	cytosol.addParticleJumpProcess(reaction1);//m: done
+	
+	System.out.println(mathDesc.getVCML_database());
+	return mathDesc;
+}
+
 /**
  * This method was created by a SmartGuide.
  */
@@ -341,7 +380,7 @@ public static MathDescription getMathDescExample_Stoch() throws Exception
 	//subDomain add variables
 	sd.addVarIniCondition(varIni); 
 
-	Action action1 = new Action(v,Action.ACTION_INC, new Expression(1));
+	Action action1 = Action.createIncrementAction(v,new Expression(1));
 	Expression exp1 = null;
 	try
 	{
@@ -350,7 +389,7 @@ public static MathDescription getMathDescExample_Stoch() throws Exception
 	JumpProcess jp1 = new JumpProcess("R1", exp1); //create jumpPorcess1
 	jp1.addAction(action1);
 
-	Action action2 = new Action(v,Action.ACTION_INC, new Expression(-1));
+	Action action2 = Action.createIncrementAction(v,new Expression(-1));
 	Expression exp2 = null;
 	try
 	{
@@ -359,7 +398,7 @@ public static MathDescription getMathDescExample_Stoch() throws Exception
 	JumpProcess jp2 = new JumpProcess("R2", exp2); //create jumpProcess2
 	jp2.addAction(action2);
 
-	Action action3 = new Action(v,Action.ACTION_INC, new Expression(1));
+	Action action3 = Action.createIncrementAction(v,new Expression(1));
 	Expression exp3 = null;
 	try
 	{
@@ -368,7 +407,7 @@ public static MathDescription getMathDescExample_Stoch() throws Exception
 	JumpProcess jp3 = new JumpProcess("R3", exp3); //create jumpProcess3
 	jp3.addAction(action3);
 
-	Action action4 = new Action(v,Action.ACTION_INC, new Expression(-1));
+	Action action4 = Action.createIncrementAction(v,new Expression(-1));
 	Expression exp4 = null;
 	try
 	{

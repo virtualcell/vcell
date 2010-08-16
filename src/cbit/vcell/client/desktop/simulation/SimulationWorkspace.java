@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JComponent;
@@ -155,7 +156,7 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 		maxTimepoints = Simulation.MAX_LIMIT_PDE_TIMEPOINTS;
 		warningTimepoints = Simulation.WARNING_PDE_TIMEPOINTS;
 	}
-	else if (simulation.getMathDescription().isStoch())
+	else if (simulation.getMathDescription().isNonSpatialStoch())
 	{
 		maxTimepoints = Simulation.MAX_LIMIT_STOCH_TIMEPOINTS;
 		warningTimepoints = Simulation.WARNING_STOCH_TIMEPOINTS;
@@ -168,14 +169,14 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 		maxSizeBytes = Simulation.MAX_LIMIT_PDE_MEGABYTES*1000000L;
 		warningSizeBytes = Simulation.WARNING_PDE_MEGABYTES*1000000L;
 	}
-	else if (simulation.getMathDescription().isStoch())
+	else if (simulation.getMathDescription().isNonSpatialStoch())
 	{
 		maxSizeBytes = Simulation.MAX_LIMIT_STOCH_MEGABYTES*1000000L;
 		warningSizeBytes = Simulation.WARNING_STOCH_MEGABYTES*1000000L;
 	}
 	
 	long expectedNumTimePoints;
-	if(simulation.getMathDescription().isStoch())
+	if(simulation.getMathDescription().isNonSpatialStoch())
 	{
 		expectedNumTimePoints = getEstimatedNumTimePointsForStoch(simSymbolTable); 
 	}
@@ -229,7 +230,7 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 						"suggested limit for number of parameter sets is: " + Simulation.WARNING_SCAN_JOBS + " \n" + 
 						"Try choosing fewer parameters or reducing the size of scan for each parameter.";
 		//not used for multiple stochastic run
-		if(simulation.getMathDescription().isStoch() && 
+		if(simulation.getMathDescription().isNonSpatialStoch() && 
 		   solverTaskDescription.getStochOpt()!= null && solverTaskDescription.getStochOpt().getNumOfTrials()>1)
 		{
 			errorMessage = null;
@@ -250,11 +251,11 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 					+ "Either adjust the parameters or choose the \"Output Interval\" option.";				
 			}
 		}
-	} else if(simulation.getMathDescription().isStoch() && !(solverDescription.isStochasticNonSpatialSolver())) {
+	} else if(simulation.getMathDescription().isNonSpatialStoch() && !(solverDescription.isNonSpatialStochasticSolver())) {
 		//to gurantee stochastic model uses stochastic methods and deterministic model uses ODE/PDE methods.
 		errorMessage = "Stochastic simulation(s) must use stochastic solver(s).\n" +
 		            solverDescription.getDisplayLabel()+" is not a stochastic solver!";
-	} else if(!simulation.getMathDescription().isStoch() && (solverDescription.isStochasticNonSpatialSolver())) {
+	} else if(!simulation.getMathDescription().isNonSpatialStoch() && (solverDescription.isNonSpatialStochasticSolver())) {
 		errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" + 
 					solverDescription.getDisplayLabel()+" is not a ODE/PDE solver!";		
 	} else {		
@@ -266,7 +267,7 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 	}else{
 		String warningMessage = null;
 		//don't check warning message for stochastic multiple trials, let it run.
-		if(simulation.getMathDescription().isStoch() && simulation.getSolverTaskDescription().getStochOpt()!=null &&
+		if(simulation.getMathDescription().isNonSpatialStoch() && simulation.getSolverTaskDescription().getStochOpt()!=null &&
 				   simulation.getSolverTaskDescription().getStochOpt().getNumOfTrials()>1)
 		{
 			return true;
@@ -488,14 +489,12 @@ private long getEstimatedNumTimePointsForStoch(SimulationSymbolTable simSymbolTa
 	
 	double maxProbability = 0;
 	SubDomain subDomain = sim.getMathDescription().getSubDomains().nextElement();
-	Vector<VarIniCondition> varInis = subDomain.getVarIniConditions();
+	List<VarIniCondition> varInis = subDomain.getVarIniConditions();
 
 	//get all the probability expressions
 	ArrayList<Expression> probList = new ArrayList<Expression>();
-	Vector<JumpProcess> jumpProcesses = subDomain.getJumpProcesses();
-	for(int i=0; i<jumpProcesses.size(); i++)
-	{
-		probList.add(jumpProcesses.elementAt(i).getProbabilityRate());
+	for (JumpProcess jp : subDomain.getJumpProcesses()){
+		probList.add(jp.getProbabilityRate());
 	}
 		
 	//loop through probability expressions
@@ -514,9 +513,9 @@ private long getEstimatedNumTimePointsForStoch(SimulationSymbolTable simSymbolTa
 				{
 					for(int k = 0; k < varInis.size(); k++)
 					{
-						if(symbols[j].equals(varInis.elementAt(k).getVar().getName()))
+						if(symbols[j].equals(varInis.get(k).getVar().getName()))
 						{
-							pExp.substituteInPlace(new Expression(symbols[j]), new Expression(varInis.elementAt(k).getIniVal()));
+							pExp.substituteInPlace(new Expression(symbols[j]), new Expression(varInis.get(k).getIniVal()));
 							break;
 						}
 					}
@@ -560,7 +559,7 @@ private long getExpectedSizeBytes(SimulationSymbolTable simSymbolTable) {
 	Simulation simulation = simSymbolTable.getSimulation();
 	
 	long numTimepoints;
-	if(simulation.getMathDescription().isStoch())
+	if(simulation.getMathDescription().isNonSpatialStoch())
 	{
 		numTimepoints = getEstimatedNumTimePointsForStoch(simSymbolTable); 
 	}

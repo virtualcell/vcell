@@ -1,0 +1,43 @@
+
+
+path to my vcell stuff:  \\cfs01.vcell.uchc.edu\raid\vcell\users\mfenwick
+
+
+
+can specify either reaction rate, or probability per collision for surface reactions
+
+use primitives?
+
+how should enums be handled?
+
+what type of exceptions should be thrown?
+
+where do 'all' qualifiers fit in?  as in, when species must be given, and 'all' is the value
+
+privacy settings on constructors:  should they all be public?
+
+should data members be set to null when declared?
+
+when should arraylists be used versus plain-old arrays?
+
+species -> state -> molecule hierarchy may be wrong.  see Reaction.java
+
+how should keywords be organized?  some words are used in two separate categories....
+	should there be an enum for each category?
+	
+domains:  what are they, and how are they modeled in Smoldyn?
+
+
+
+
+###### Smoldyn problems
+
+Smoldyn timings that don't work:  n, e, j
+
+surfaces:  Smoldyn chokes when giving a surface an epsilon or neighbor_dist value, even though the documentation says
+		that surfaces can take those values
+
+Smoldyn complains about having a jump surface only jump on one side, but it doesn't seem to be a problem when running the simulation:
+		it seems to run exactly as expected
+		
+Smoldyn's support for actions seems to be undocumented/unusable -- may have to cover these with reactions

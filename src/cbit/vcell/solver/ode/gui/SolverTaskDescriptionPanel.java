@@ -1554,7 +1554,7 @@ public void updateKeepEvery() {
  */
 private void updateSensitivityParameterDisplay(Constant sensParam) {
 	Simulation simulation = getTornOffSolverTaskDescription().getSimulation();
-	if(simulation.isSpatial() || simulation.getMathDescription().isStoch())
+	if(simulation.isSpatial() || simulation.getMathDescription().isNonSpatialStoch())
 		getPerformSensitivityAnalysisCheckbox().setEnabled(false);
 	else getPerformSensitivityAnalysisCheckbox().setEnabled(true);
 	if (sensParam == null){

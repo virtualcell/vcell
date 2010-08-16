@@ -48,7 +48,7 @@ public void getSimulationModel() throws Exception
 	//subDomain add variables
 	sd.addVarIniCondition(varIni); 
 
-	Action action1 = new Action(v,Action.ACTION_INC, new Expression(1));
+	Action action1 = Action.createIncrementAction(v,new Expression(1));
 	Expression exp1 = null;
 	try
 	{
@@ -57,7 +57,7 @@ public void getSimulationModel() throws Exception
 	JumpProcess jp1 = new JumpProcess("R1", exp1); //create jumpPorcess1
 	jp1.addAction(action1);
 
-	Action action2 = new Action(v,Action.ACTION_INC, new Expression(-1));
+	Action action2 = Action.createIncrementAction(v,new Expression(-1));
 	Expression exp2 = null;
 	try
 	{
@@ -66,7 +66,7 @@ public void getSimulationModel() throws Exception
 	JumpProcess jp2 = new JumpProcess("R2", exp2); //create jumpProcess2
 	jp2.addAction(action2);
 
-	Action action3 = new Action(v,Action.ACTION_INC, new Expression(1));
+	Action action3 = Action.createIncrementAction(v,new Expression(1));
 	Expression exp3 = null;
 	try
 	{
@@ -75,7 +75,7 @@ public void getSimulationModel() throws Exception
 	JumpProcess jp3 = new JumpProcess("R3", exp3); //create jumpProcess3
 	jp3.addAction(action3);
 
-	Action action4 = new Action(v,Action.ACTION_INC, new Expression(-1));
+	Action action4 = Action.createIncrementAction(v,new Expression(-1));
 	Expression exp4 = null;
 	try
 	{

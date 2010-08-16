@@ -40,7 +40,7 @@ public class NetCDFWriterTest {
 				//subDomain add variables
 				sd.addVarIniCondition(varIni); 
 		
-				Action action1 = new Action(v,Action.ACTION_INC, new Expression(1));
+				Action action1 = Action.createIncrementAction(v,new Expression(1));
 				Expression exp1 = null;
 				try
 				{
@@ -49,7 +49,7 @@ public class NetCDFWriterTest {
 				JumpProcess jp1 = new JumpProcess("R1", exp1); //create jumpPorcess1
 				jp1.addAction(action1);
 		
-				Action action2 = new Action(v,Action.ACTION_INC, new Expression(-1));
+				Action action2 = Action.createIncrementAction(v,new Expression(-1));
 				Expression exp2 = null;
 				try
 				{
@@ -58,7 +58,7 @@ public class NetCDFWriterTest {
 				JumpProcess jp2 = new JumpProcess("R2", exp2); //create jumpProcess2
 				jp2.addAction(action2);
 		
-				Action action3 = new Action(v,Action.ACTION_INC, new Expression(1));
+				Action action3 = Action.createIncrementAction(v,new Expression(1));
 				Expression exp3 = null;
 				try
 				{
@@ -67,7 +67,7 @@ public class NetCDFWriterTest {
 				JumpProcess jp3 = new JumpProcess("R3", exp3); //create jumpProcess3
 				jp3.addAction(action3);
 		
-				Action action4 = new Action(v,Action.ACTION_INC, new Expression(-1));
+				Action action4 = Action.createIncrementAction(v,new Expression(-1));
 				Expression exp4 = null;
 				try
 				{
@@ -144,9 +144,9 @@ public class NetCDFWriterTest {
 				sd.addVarIniCondition(varIni3);
 				sd.addVarIniCondition(varIni4);
 		
-				Action action11 = new Action(v1,Action.ACTION_INC, new Expression(-1));
-				Action action12 = new Action(v2,Action.ACTION_INC, new Expression(-1));
-				Action action13 = new Action(v3,Action.ACTION_INC, new Expression(1));
+				Action action11 = Action.createIncrementAction(v1,new Expression(-1));
+				Action action12 = Action.createIncrementAction(v2,new Expression(-1));
+				Action action13 = Action.createIncrementAction(v3,new Expression(1));
 				Expression exp1 = null;
 				try
 				{
@@ -157,9 +157,9 @@ public class NetCDFWriterTest {
 				jp1.addAction(action12);
 				jp1.addAction(action13);
 		
-				Action action21 = new Action(v3,Action.ACTION_INC, new Expression(-1));
-				Action action22 = new Action(v1,Action.ACTION_INC, new Expression(1));
-				Action action23 = new Action(v2,Action.ACTION_INC, new Expression(1));
+				Action action21 = Action.createIncrementAction(v3,new Expression(-1));
+				Action action22 = Action.createIncrementAction(v1,new Expression(1));
+				Action action23 = Action.createIncrementAction(v2,new Expression(1));
 				Expression exp2 = null;
 				try
 				{
@@ -170,9 +170,9 @@ public class NetCDFWriterTest {
 				jp2.addAction(action22);
 				jp2.addAction(action23);
 		
-				Action action31 = new Action(v3,Action.ACTION_INC, new Expression(-1));
-				Action action32 = new Action(v2,Action.ACTION_INC, new Expression(1));
-				Action action33 = new Action(v4,Action.ACTION_INC, new Expression(1));
+				Action action31 = Action.createIncrementAction(v3,new Expression(-1));
+				Action action32 = Action.createIncrementAction(v2,new Expression(1));
+				Action action33 = Action.createIncrementAction(v4,new Expression(1));
 				Expression exp3 = null;
 				try
 				{

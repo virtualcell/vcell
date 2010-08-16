@@ -50,4 +50,7 @@ public interface SimDataConstants {
 	
 	public static final String PSF_FUNCTION_NAME = "__PSF__";
 	
+	public static final String SMOLDYN_INPUT_FILE_EXTENSION = ".smoldynInput";
+	public static final String SMOLDYN_OUTPUT_FILE_EXTENSION = ".smoldynOutput";
+	
 }

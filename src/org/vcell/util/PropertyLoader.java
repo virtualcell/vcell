@@ -46,6 +46,10 @@ public class PropertyLoader {
 	public static final String hybridEMExecutableProperty	= "vcell.hybridEM.executable";
 	public static final String hybridMilExecutableProperty	= "vcell.hybridMil.executable";
 	public static final String hybridMilAdaptiveExecutableProperty = "vcell.hybridMilAdaptive.executable";
+	
+	// Smoldyn
+	public static final String smoldynExecutableProperty		= "vcell.smoldyn.executable";
+	
 	//
 	public static final String corbaEnabled					= "vcell.corbaEnabled";
 	public static final String databaseCacheSizeProperty	= "vcell.databaseCacheSize";

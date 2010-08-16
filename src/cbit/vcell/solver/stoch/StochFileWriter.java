@@ -1,6 +1,7 @@
 package cbit.vcell.solver.stoch;
 import java.io.PrintWriter;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import cbit.vcell.math.Action;
@@ -41,7 +42,7 @@ public StochFileWriter(PrintWriter pw, SimulationJob arg_simulationJob, boolean 
  * Find all the dependent processes for a given process.
  * Creation date: (6/28/2006 4:16:55 PM)
  */
-private Vector<String> getDependencies(JumpProcess process, Vector<JumpProcess> processList) throws Exception
+private Vector<String> getDependencies(JumpProcess process, List<JumpProcess> processList) throws Exception
 {
 	Vector<String> result = new Vector<String>();
 	//get affected vars in the given process.
@@ -55,15 +56,15 @@ private Vector<String> getDependencies(JumpProcess process, Vector<JumpProcess> 
 		//go through all the processes to find dependants
 		for(int i=0; i<processList.size(); i++)
 		{
-			if(!process.compareEqual(processList.elementAt(i)))//to avoid comparing with it's own
+			if(!process.compareEqual(processList.get(i)))//to avoid comparing with it's own
 			{
-				Expression probExp = processList.elementAt(i).getProbabilityRate();
+				Expression probExp = processList.get(i).getProbabilityRate();
 				probExp = simulationJob.getSimulationSymbolTable().substituteFunctions(probExp).flatten();
 				String[] vars = probExp.getSymbols();
 				if((vars != null)&&(vars.length>0))
 				{				
 					if(hasCommonElement(affectedVars,vars)) {
-						result.addElement(processList.elementAt(i).getName());
+						result.addElement(processList.get(i).getName());
 					}
 				}
 			}
@@ -188,22 +189,22 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 	  	printWriter.println("<model>");
 		//  variables
 		printWriter.println("<discreteVariables>");
-		Vector<VarIniCondition> varInis = subDomain.getVarIniConditions(); //There is only one subDomain for compartmental model
+		List<VarIniCondition> varInis = subDomain.getVarIniConditions(); //There is only one subDomain for compartmental model
 		if((varInis != null) && (varInis.size()>0))
 	    {
 		    printWriter.println("TotalVars"+"\t"+varInis.size());
 		  	for(int i=0; i<varInis.size(); i++)
 			{
 		  		try{
-		  			Expression iniExp = varInis.elementAt(i).getIniVal();
+		  			Expression iniExp = varInis.get(i).getIniVal();
 		  			iniExp.bindExpression(simSymbolTable);
 					iniExp = simSymbolTable.substituteFunctions(iniExp).flatten();
 		  			double iniValue = iniExp.evaluateConstant();
-		  			printWriter.println(((VarIniCondition)varInis.elementAt(i)).getVar().getName()+"\t"+Math.round(iniValue));
+		  			printWriter.println(((VarIniCondition)varInis.get(i)).getVar().getName()+"\t"+Math.round(iniValue));
 		  		}catch(cbit.vcell.parser.ExpressionException ex)
 		  		{
 		  			ex.printStackTrace();
-		  			throw new MathFormatException("variable "+((VarIniCondition)varInis.elementAt(i)).getVar().getName()+"'s initial condition is required to be a constant.");
+		  			throw new MathFormatException("variable "+((VarIniCondition)varInis.get(i)).getVar().getName()+"'s initial condition is required to be a constant.");
 		  		}
 			}
 		}
@@ -213,13 +214,13 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 		
 		// jump processes	
 		printWriter.println("<jumpProcesses>");
-		Vector<JumpProcess> jumpProcesses = subDomain.getJumpProcesses();
+		List<JumpProcess> jumpProcesses = subDomain.getJumpProcesses();
 		if((jumpProcesses != null) && (jumpProcesses.size()>0))
 	    {
 		    printWriter.println("TotalProcesses"+"\t"+jumpProcesses.size());
 		    for(int i=0; i<jumpProcesses.size(); i++)
 		    {
-			    printWriter.println(jumpProcesses.elementAt(i).getName());
+			    printWriter.println(jumpProcesses.get(i).getName());
 			}
 	    }
 	    else printWriter.println("TotalProcesses"+"\t"+"0");
@@ -233,7 +234,7 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 			printWriter.println("TotalDescriptions"+"\t"+jumpProcesses.size());
 			for (int i=0; i<jumpProcesses.size(); i++)
 			{
-				JumpProcess temProc = (JumpProcess)jumpProcesses.elementAt(i);
+				JumpProcess temProc = (JumpProcess)jumpProcesses.get(i);
 				printWriter.println("JumpProcess"+"\t"+temProc.getName()); //jump process name
 				Expression probExp = temProc.getProbabilityRate();
 				try {

@@ -403,7 +403,7 @@ public Set<SolverFeature> getRequiredFeatures() {
 	} else {
 		requiredFeatures.add(SolverFeature.Feature_NonSpatial);
 	}
-	if (getMathDescription().isStoch()) {
+	if (getMathDescription().isNonSpatialStoch() || getMathDescription().isSpatialStoch()) {
 		requiredFeatures.add(SolverFeature.Feature_Stochastic);
 	} else {
 		requiredFeatures.add(SolverFeature.Feature_Deterministic);

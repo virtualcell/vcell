@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
@@ -439,6 +440,14 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 						}
 					}
 					}
+					
+					{
+						ParticleProperties oldPP = subDomainsOld[i].getParticleProperties(oldVars[j]);
+						ParticleProperties newPP = subDomainsNew[i].getParticleProperties(oldVars[j]);
+						if (!Compare.isEqualOrNull(oldPP, newPP)){
+							return false;
+						}
+					}
 					//
 					// if a membrane, test jumpCondition for this subdomain and variable
 					//
@@ -616,6 +625,26 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 						//
 						if (!bSilent) System.out.println("couldn't find problem with FastSystem for compartment "+subDomainsOld[i].getName());
 						reasonForDecision.append(UNKNOWN_DIFFERENCE_IN_EQUATION);
+						return false;
+					}
+				}
+				
+				List<ParticleJumpProcess> oldPjpList = subDomainsOld[i].getParticleJumpProcesses();
+				List<ParticleJumpProcess> newPjpList = subDomainsNew[i].getParticleJumpProcesses();
+				if (oldPjpList.size() != newPjpList.size()) {
+					return false;
+				}
+				for (ParticleJumpProcess oldPjp : oldPjpList) {
+					boolean bEqual = false;
+					for (ParticleJumpProcess newPjp : newPjpList) {
+						if (oldPjp.getName().equals(newPjp.getName())) {
+							if (oldPjp.compareEqual(newPjp)) {
+								bEqual = true;
+							}
+							break;
+						}
+					}
+					if (!bEqual) {
 						return false;
 					}
 				}
@@ -1089,18 +1118,14 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 			}
 		}
 		// go through each Jump Process
-		Vector<JumpProcess> jumpconditionV = subDomain.getJumpProcesses();
-		for(int jp=0;jp<jumpconditionV.size();jp+= 1){
-			JumpProcess jumpProcess = jumpconditionV.elementAt(jp);
+		for (JumpProcess jumpProcess : subDomain.getJumpProcesses()){
 			Expression[] jpExprArr = jumpProcess.getExpressions();
 			for (int i = 0; i < jpExprArr.length; i ++) {
 				FieldUtilities.addFieldFuncArgsAndExpToCollection(fieldFuncArgsExpHash,jpExprArr[i]);
 			}
 		}
 		// go through VarInitConditions
-		Vector<VarIniCondition> varInitCondV = subDomain.getVarIniConditions();
-		for(int jp=0;jp<varInitCondV.size();jp+= 1){
-			VarIniCondition varInitCond = varInitCondV.elementAt(jp);
+		for (VarIniCondition varInitCond : subDomain.getVarIniConditions()){
 			Expression[] vicExprArr =
 				new Expression[] {varInitCond.getIniVal(),varInitCond.getVar().getExpression()};
 			for (int i = 0; i < vicExprArr.length; i ++) {
@@ -1575,6 +1600,35 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
+	// VolumeParticleVariable
+	enum1 = getVariables();
+	while (enum1.hasMoreElements()){
+		Variable var = enum1.nextElement();
+		if (var instanceof VolumeParticleVariable)
+		{
+			buffer.append(var.getVCML());
+			bSpaceNeeded = true;
+		}
+	}
+	if (bSpaceNeeded){
+		buffer.append("\n");
+		bSpaceNeeded = false;
+	}
+	
+	// MembraneParticleVariable
+	enum1 = getVariables();
+	while (enum1.hasMoreElements()){
+		Variable var = enum1.nextElement();
+		if (var instanceof MembraneParticleVariable)
+		{
+			buffer.append(var.getVCML());
+			bSpaceNeeded = true;
+		}
+	}
+	if (bSpaceNeeded){
+		buffer.append("\n");
+		bSpaceNeeded = false;
+	}
 	
 	// Function
 	enum1 = getVariables();
@@ -1809,38 +1863,40 @@ public boolean isSpatial() {
 }
 
 
-/**
- * This Method is used to check whether the math model is stochastic or not.
- * It evaluates all the variables to see if all of them are either StochVolVariables or Constants
- * Creation date: (9/22/2006 3:12:14 PM)
- * @return boolean
- */
-public boolean isStoch() {
-	Enumeration<Variable> enum1 = getVariables();
-	int stochVolVarCount = 0;
-	while (enum1.hasMoreElements())
-	{
-		Variable var = enum1.nextElement();
-		if (!( var instanceof StochVolVariable || var instanceof Constant || var instanceof Function)) {
-			return false;
-		} 
-		else
-		{
-			if(var instanceof StochVolVariable)
-			{
-				stochVolVarCount ++;
-			}
-		}
-	}			
-	if(stochVolVarCount > 0)//stochastic math description should have at least one stoch volume variable.
-	{
-		return true;
-	}
-	else
-	{
+public boolean isNonSpatialStoch() {
+	if (getGeometry().getDimension() != 0) {
 		return false;
 	}
+	Enumeration<Variable> enum1 = getVariables();
+	while (enum1.hasMoreElements()) {
+		Variable var = enum1.nextElement();
+		if (var instanceof StochVolVariable) {
+			return true;
+		}
+		if (!(var instanceof Constant || var instanceof Function)) {
+			return false;
+		} 
+	}
+	return false;	
 }
+
+public boolean isSpatialStoch() {
+	if (getGeometry().getDimension() == 0) {
+		return false;
+	}
+	Enumeration<Variable> enum1 = getVariables();
+	while (enum1.hasMoreElements()) {
+		Variable var = enum1.nextElement();
+		if (var instanceof VolumeParticleVariable) {
+			return true;
+		}
+		if (!(var instanceof Constant || var instanceof Function)) {
+			return false;
+		} 
+	}
+	return false;	
+}
+
 
 /**
  * This method was created in VisualAge.
@@ -1920,6 +1976,12 @@ public boolean isValid() {
 					fi.bind(this);
 				}
 			}
+			for (ParticleProperties pp : subDomain.getParticleProperties()) {
+				pp.bind(this);
+			}
+			for (ParticleJumpProcess pjp : subDomain.getParticleJumpProcesses()) {
+				pjp.bind(this);
+			}
 		}
 	}catch (ExpressionBindingException e){
 		setWarning("error binding identifier: "+e.getMessage());
@@ -1948,7 +2010,7 @@ public boolean isValid() {
 		}
 		CompartmentSubDomain subDomain = (CompartmentSubDomain)subDomainList.elementAt(0);
 		//distinguish ODE model and stochastic model
-		if(isStoch())
+		if(isNonSpatialStoch())
 		{
 			if(stochVarCount == 0)
 			{
@@ -1961,20 +2023,18 @@ public boolean isValid() {
 				return false;
 			}
 			//check variable initial condition
-			Enumeration<VarIniCondition> enum_iniCon = subDomain.getVarIniConditions().elements();
-			while (enum_iniCon.hasMoreElements()){
-				Expression iniExp = enum_iniCon.nextElement().getIniVal();
+			for (VarIniCondition varIniCondition : subDomain.getVarIniConditions()) {
+				Expression iniExp = varIniCondition.getIniVal();
 				try{
 					iniExp.bindExpression(this);
 				}catch(Exception ex){
 					ex.printStackTrace(System.out);
 					setWarning(ex.getMessage());
-				}
+				}				
 			}
 			//check probability rate
-			Enumeration<JumpProcess> enum_jp = subDomain.getJumpProcesses().elements();
-			while (enum_jp.hasMoreElements()){
-				Expression probExp = enum_jp.nextElement().getProbabilityRate();
+			for (JumpProcess jumpProcess : subDomain.getJumpProcesses()) {
+				Expression probExp = jumpProcess.getProbabilityRate();
 				try{
 					probExp.bindExpression(this);
 				}catch(Exception ex){
@@ -2675,6 +2735,24 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 				varHash.addVariable(var);
 				continue;
 			}
+			if (token.equalsIgnoreCase(VCML.VolumeParticleVariable))
+			{
+				token = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				VolumeParticleVariable var = new VolumeParticleVariable(name,domain);
+				varHash.addVariable(var);
+				continue;
+			}
+			if (token.equalsIgnoreCase(VCML.MembraneParticleVariable))
+			{
+				token = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
+				String name = Variable.getNameFromCombinedIdentifier(token);
+				MembraneParticleVariable var = new MembraneParticleVariable(name,domain);
+				varHash.addVariable(var);
+				continue;
+			}
 			if (token.equalsIgnoreCase(VCML.Function)){
 				token = tokens.nextToken();
 				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
@@ -3113,7 +3191,7 @@ public String toString() {
 
 public String getMathType()
 {
-	return isStoch() ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR;
+	return isNonSpatialStoch() ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR;
 }
 
 

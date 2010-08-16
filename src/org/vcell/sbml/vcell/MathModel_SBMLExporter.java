@@ -41,7 +41,7 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 		throw new RuntimeException("math models with fast systems cannot be exported to SBML");
 	}
 
-	if (mathModel.getMathDescription().isStoch()){
+	if (mathModel.getMathDescription().isNonSpatialStoch()){
 		throw new RuntimeException("stochastic math models cannot be exported to SBML");
 	}
 

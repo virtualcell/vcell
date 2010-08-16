@@ -716,7 +716,7 @@ private void refreshEquations() throws ExpressionException {
 			}
 			exp = exp.flatten();
 			//stochastic variable initial value must be an int, therefore we must make it here.
-			if(getMathDescription().isStoch() && (function.getName().indexOf("_init") >= 0)) 
+			if(getMathDescription().isNonSpatialStoch() && (function.getName().indexOf("_init") >= 0)) 
 			{
 				try{
 					double value = exp.evaluateConstant();
@@ -743,7 +743,7 @@ private void refreshEquations() throws ExpressionException {
 			}
 			exp = exp.flatten();
 			//stochastic variable initial value must be an int, therefore we must make it here.
-			if(getMathDescription().isStoch() && (constant.getName().indexOf("_init") >= 0))
+			if(getMathDescription().isNonSpatialStoch() && (constant.getName().indexOf("_init") >= 0))
 			{
 				try{
 					double value = exp.evaluateConstant();

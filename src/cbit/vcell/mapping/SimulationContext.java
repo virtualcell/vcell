@@ -239,6 +239,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private transient BioModel bioModel = null;
 	private SimulationContext.SimulationContextParameter[] fieldSimulationContextParameters = new SimulationContextParameter[0];
 	private AnalysisTask[] fieldAnalysisTasks = null;
+	private boolean isParticle=true;
 	private boolean isStoch;
 	private boolean bConcentration = true;
 	private DataContext dataContext = new DataContext(getNameScope());
@@ -1212,6 +1213,10 @@ public synchronized boolean hasListeners(String propertyName) {
  */
 public boolean isStoch() {
 	return isStoch;
+}
+
+public boolean isParticle() {
+	return isParticle;
 }
 
 

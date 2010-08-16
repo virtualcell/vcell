@@ -5,6 +5,7 @@ package org.vcell.util;
  * All rights reserved.
 ©*/
 import java.util.AbstractList;
+import java.util.List;
 
 /**
  * This type was created in VisualAge.
@@ -320,7 +321,7 @@ public static boolean isEqual(java.util.Date obj1, java.util.Date obj2) {
 	return isEqual0(obj1, obj2);
 }
 
-public static boolean isEqualOrNull(AbstractList<? extends Matchable> v1, AbstractList<? extends Matchable> v2) {
+public static boolean isEqualOrNull(List<? extends Matchable> v1, List<? extends Matchable> v2) {
 	if (v1 == null && v2 == null){
 		return true;
 	}
@@ -335,7 +336,7 @@ public static boolean isEqualOrNull(AbstractList<? extends Matchable> v1, Abstra
  * @param v1 java.util.AbstractList
  * @param v2 java.util.AbstractList
  */
-public static boolean isEqual(AbstractList<? extends Matchable> v1, AbstractList<? extends Matchable> v2) {
+public static boolean isEqual(List<? extends Matchable> v1, List<? extends Matchable> v2) {
 	if (v1==null || v2==null){
 		throw new RuntimeException("Compare.isEqual(AbstractList,AbstractList) received null argument(s)");
 	}

@@ -269,6 +269,14 @@ public Expression getBinaryExpression() {
 	return new Expression((SimpleNode)rootNode.copyTreeBinary());
 
 }
+/**
+ * 
+ * @param token
+ * @return
+ * @throws ExpressionException
+ * @throws IOException
+ * @deprecated use new Expression(tokenizer.readToSemicolon()) instead.
+ */
    public static String getExpression(StreamTokenizer token) throws ExpressionException, IOException
    {
 
