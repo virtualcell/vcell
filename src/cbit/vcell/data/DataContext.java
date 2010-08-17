@@ -22,7 +22,9 @@ import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.units.VCUnitDefinition;
 
-
+/* 
+ * Container for all data symbols
+ */
 public class DataContext{
 
 	private DataSymbol[] dataSymbols = new DataSymbol[0];

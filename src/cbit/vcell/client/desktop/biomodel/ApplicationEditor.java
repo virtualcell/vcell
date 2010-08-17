@@ -23,12 +23,14 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
 import cbit.gui.MultiPurposeTextPanel;
+import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MathMapping;
@@ -94,6 +96,7 @@ public class ApplicationEditor extends JPanel {
 	private boolean ivjConnPtoP8Aligning = false;
 	private ComboBoxModel ivjmodel1 = null;
 	private JButton ivjCopyButton = null;
+	private ClientSimManager clientSimManager = null;
 	
 	         
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
@@ -146,7 +149,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 		}
 	};
 
-public ApplicationEditor() {
+public ApplicationEditor() 
+{
 	super();
 	initialize();
 }
@@ -1389,6 +1393,7 @@ private SPPRPanel getSPPRPanel() {
 		try {
 			ivjSPPRPanel = new SPPRPanel();
 			ivjSPPRPanel.setName("SpeciesParamsReactionsPanel");
+			addPropertyChangeListener(ivjSPPRPanel.ivjEventHandler);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

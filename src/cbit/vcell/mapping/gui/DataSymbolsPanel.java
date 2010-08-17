@@ -5,6 +5,7 @@ package cbit.vcell.mapping.gui;
 ©*/
 import java.awt.AWTException;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Robot;
 import java.awt.event.FocusEvent;
@@ -12,38 +13,92 @@ import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.zip.DataFormatException;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.IndexColorModel;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
+import cbit.image.VCImageUncompressed;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.VirtualMicroscopy.importer.AnnotatedImageDataset;
+import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
+import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXmlReader;
+import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.ClientSimManager;
+import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.VCellClient;
+import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.desktop.biomodel.SPPRPanel;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
+import cbit.vcell.data.FieldDataSymbol.DataSymbolType;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.geometry.ROIMultiPaintManager;
+import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.FunctionInvocation;
+import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * This type was created in VisualAge.
  */
 public class DataSymbolsPanel extends javax.swing.JPanel {
+	
+	JFileChooser fc = null;
 //	private SpeciesContextSpecPanel ivjSpeciesContextSpecPanel = null;
 	private DataSymbolsSpecPanel ivjDataSymbolsSpecPanel = null;
 	private SimulationContext fieldSimulationContext = null;
@@ -55,14 +110,17 @@ public class DataSymbolsPanel extends javax.swing.JPanel {
 	private DataSymbolsTableModel ivjDataSymbolsTableModel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JSplitPane ivjJSplitPane1 = null;
-	private javax.swing.JMenuItem ivjJMenuItemAdd = null;
+	private javax.swing.JMenuItem ivjJMenuItemGenericAdd = null;
+	private javax.swing.JMenuItem ivjJMenuItemVFrapAdd = null;
 	private javax.swing.JPopupMenu ivjJPopupMenuICP = null;
 	private javax.swing.JMenuItem ivjJMenuItemDelete = null;
-
+	
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == DataSymbolsPanel.this.getJMenuItemAdd()) 
-				addDataSymbol();
+			if (e.getSource() == DataSymbolsPanel.this.getJMenuItemGenericAdd()) 
+				addGenericDataSymbol();
+			if (e.getSource() == DataSymbolsPanel.this.getJMenuItemVFrapAdd()) 
+				addVFrapDataSymbol();
 			if (e.getSource() == DataSymbolsPanel.this.getJMenuItemDelete()){
 				int selectedIndex = getScrollPaneTable().getSelectionModel().getMaxSelectionIndex();
 				DataSymbol dataSymbol = getDataSymbolsTableModel().getDataSymbol(selectedIndex);
@@ -113,24 +171,6 @@ private void connEtoC4(java.awt.event.MouseEvent arg1) {
 	}
 }
 
-private void addDataSymbol() {
-	String name = null;
-	try {
-		getNewDataSymbolPanel().setSymbolName("");
-		getNewDataSymbolPanel().setSymbolExpression("vcField(dataset1,var1,0.0,Volume)");
-		int newSettings = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(this, getNewDataSymbolPanel(), "New DataSymbol");
-		if (newSettings == JOptionPane.OK_OPTION) {
-			name = getNewDataSymbolPanel().getSymbolName();
-			String expression = getNewDataSymbolPanel().getSymbolExpression();
-			Expression exp = new Expression(expression);
-			FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(null);
-			DataSymbol ds = new FieldDataSymbol(name, getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD, new FieldFunctionArguments(functionInvocations[0]));
-			getSimulationContext().getDataContext().addDataSymbol(ds);
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		DialogUtils.showErrorDialog(this, "Data symbol " + name + " already exists");
-	}
-}
 public NewDataSymbolPanel getNewDataSymbolPanel() {
 	if (ivjNewDataSymbolPanel == null) {
 		try {
@@ -142,6 +182,322 @@ public NewDataSymbolPanel getNewDataSymbolPanel() {
 		}
 	}
 	return ivjNewDataSymbolPanel;
+}
+
+public void addGenericDataSymbol() {
+	String name = null;
+	try {
+		getNewDataSymbolPanel().setSymbolName("");
+		getNewDataSymbolPanel().setSymbolExpression("vcField(dataset1,var1,0.0,Volume)");
+		int newSettings = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(this, getNewDataSymbolPanel(), "New DataSymbol");
+		if (newSettings == JOptionPane.OK_OPTION) {
+			name = getNewDataSymbolPanel().getSymbolName();
+			String expression = getNewDataSymbolPanel().getSymbolExpression();
+			Expression exp = new Expression(expression);
+			FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(null);
+			DataSymbol ds = new FieldDataSymbol(DataSymbolType.GENERIC_SYMBOL, name, "",
+					getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD, 
+					new FieldFunctionArguments(functionInvocations[0]));
+			getSimulationContext().getDataContext().addDataSymbol(ds);
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		DialogUtils.showErrorDialog(this, "Data symbol " + name + " already exists");
+	}
+}
+public void addVFrapDataSymbol() {
+	
+	AsynchClientTask[] taskArray = new AsynchClientTask[5];
+
+	// select the desired vfrap file 
+	taskArray[0] = new AsynchClientTask("select a file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			int returnVal = fc.showOpenDialog(DataSymbolsPanel.this);
+
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				File imageFile = fc.getSelectedFile();
+				if (imageFile == null) {
+					return;
+				}
+				hashTable.put("imageFile", imageFile);
+			}
+		}
+	};
+	// load the images from the vfrap file and save them as field data
+	taskArray[1] = new AsynchClientTask("Import image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+		
+			File imageFile = (File)hashTable.get("imageFile");
+			if(imageFile == null) {
+				return;
+			}
+			String initFDNameEx = null;
+			initFDNameEx = imageFile.getName();
+			if(initFDNameEx.indexOf(".vfrap") > -1)
+			{
+				String initFDName = initFDNameEx.substring(0, initFDNameEx.indexOf(".vfrap"));
+				// read the image dataset from Virtual FRAP xml file
+				System.out.println("Loading " + initFDNameEx + " ...");
+	                
+				AnnotatedImageDataset annotatedImages = null;
+				String xmlString;
+				xmlString = XmlUtil.getXMLString(imageFile.getAbsolutePath());
+				// loading frap images
+				MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+				annotatedImages = xmlReader.getAnnotatedImageDataset(XmlUtil.stringToXML(xmlString, null).getRootElement(), null);
+				//loading primary ROIs
+				ROI rois[] = xmlReader.getPrimaryROIs(XmlUtil.stringToXML(xmlString, null).getRootElement(), null);
+				// loading starting index for recovery
+				int startingIndexRecovery = xmlReader.getStartindIndexForRecovery(XmlUtil.stringToXML(xmlString, null).getRootElement());
+				
+				// calculate unnormalized prebleach average
+				double[] prebleachAvg = new double[annotatedImages.getImageDataset().getImage(0, 0, startingIndexRecovery).getNumXYZ()];
+				for(int j = 0; j < prebleachAvg.length; j++)
+				{
+					double pixelTotal = 0;
+					for(int i = 0 ; i < startingIndexRecovery; i++)
+					{
+						pixelTotal = pixelTotal + (annotatedImages.getImageDataset().getImage(0, 0, i).getPixels()[j] & 0x0000FFFF);
+					}
+					prebleachAvg[j] = pixelTotal/startingIndexRecovery;
+				}
+				
+				// take unnormalized first post bleach
+				double[] firstPostBleach = new double[annotatedImages.getImageDataset().getImage(0, 0, startingIndexRecovery).getNumXYZ()];
+				short[] pixels = annotatedImages.getImageDataset().getImage(0, 0, startingIndexRecovery).getPixels();
+				for(int i = 0; i< pixels.length; i++)
+				{
+					firstPostBleach[i] = pixels[i] & 0x0000FFFF;
+				}
+				
+				//make roi composite
+				int[] cmap = new int[256];
+				for(int i=0;i<256;i+= 1){
+					cmap[i] = OverlayEditorPanelJAI.CONTRAST_COLORS[i].getRGB();
+					if(i==0){
+						cmap[i] = new Color(0, 0, 0, 0).getRGB();
+					}
+				}
+				IndexColorModel indexColorModel =
+					new java.awt.image.IndexColorModel(
+						8, cmap.length,cmap,0,
+						false /*false means NOT USE alpha*/   ,
+						-1/*NO transparent single pixel*/,
+						java.awt.image.DataBuffer.TYPE_BYTE);
+				BufferedImage[] roiComposite = new BufferedImage[annotatedImages.getImageDataset().getSizeZ()];
+				for (int i = 0; i < roiComposite.length; i++) {
+					roiComposite[i] = 
+						new BufferedImage(annotatedImages.getImageDataset().getISize().getX(), annotatedImages.getImageDataset().getISize().getY(),
+								BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
+				}
+				int xysize = annotatedImages.getImageDataset().getISize().getX()*annotatedImages.getImageDataset().getISize().getY();
+				for (int i = 0; i < rois.length; i++) {
+					short[] roiBits = rois[i].getBinaryPixelsXYZ(1);
+					for (int j = 0; j < roiBits.length; j++) {
+						int roiZindex = j/(xysize);
+						byte[] roiData = ((DataBufferByte)roiComposite[roiZindex].getRaster().getDataBuffer()).getData();
+						if(roiBits[j] != 0 && (rois[i].getROIName().equals(AnnotatedImageDataset.VFRAP_ROI_ENUM.ROI_BLEACHED) || roiData[j%xysize] == 0)){
+							roiData[j%xysize] = (byte)(i+1);
+//								if(i!= 0){
+//									System.out.println("roi="+i+" j="+j+" j%="+(j%xysize)+" z="+roiZindex+" roidata="+roiData[j%xysize]);
+//								}
+						}
+					}
+				}
+				hashTable.put("annotatedImages",annotatedImages);
+				hashTable.put("roiComposite",roiComposite);
+				hashTable.put("rois",rois);
+				hashTable.put("initialFieldDataName",initFDName);
+				hashTable.put("firstPostBleach",firstPostBleach);
+				hashTable.put("prebleachAverage",prebleachAvg);
+			}
+		}
+	};
+	// load the images from the vfrap file and save them as field data
+	taskArray[2] = new AsynchClientTask("Display images", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			
+			File imageFile = (File)hashTable.get("imageFile");
+			if(imageFile == null) {
+				return;
+			}
+			AnnotatedImageDataset annotatedImages = (AnnotatedImageDataset)hashTable.get("annotatedImages");
+			BufferedImage[] roiComposite = (BufferedImage[])hashTable.get("roiComposite");
+			
+			if (annotatedImages==null || roiComposite==null){
+				return;
+			}
+			// display the images
+			OverlayEditorPanelJAI overlayPanel = new OverlayEditorPanelJAI();
+			overlayPanel.setAllowAddROI(false);
+			ImageDataset imageDataset = annotatedImages.getImageDataset();
+			overlayPanel.setImages(imageDataset, 1, 0, new OverlayEditorPanelJAI.AllPixelValuesRange(1, 200) );
+			overlayPanel.setAllROICompositeImage(roiComposite, OverlayEditorPanelJAI.FRAP_DATA_INIT_PROPERTY);
+			int choice = DialogUtils.showComponentOKCancelDialog(DataSymbolsPanel.this, overlayPanel, "vFrap Field Data");
+			if(choice != JOptionPane.OK_OPTION)
+			{
+				throw UserCancelException.CANCEL_GENERIC;
+			}
+		}
+	};
+	// load the images from the vfrap file and save them as field data
+	taskArray[3] = new AsynchClientTask("Saving time series data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			File imageFile = (File)hashTable.get("imageFile");
+			if(imageFile == null) {
+				return;
+			}
+			AnnotatedImageDataset annotatedImages = (AnnotatedImageDataset)hashTable.get("annotatedImages");
+			String initialFieldDataName = (String)hashTable.get("initialFieldDataName");
+
+			DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(DataSymbolsPanel.this, DocumentWindow.class);
+			DocumentManager dm = documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager();
+			if(dm == null){
+				throw new RuntimeException("not connected to server");
+			}
+
+			// mesh
+			ImageDataset imageDataset = annotatedImages.getImageDataset();
+			Extent extent = imageDataset.getExtent();
+			ISize isize = imageDataset.getISize();
+			Origin origin = new Origin(0,0,0);
+			CartesianMesh cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent,isize, 
+				new RegionImage( new VCImageUncompressed(null, new byte[isize.getXYZ()], extent, 
+						isize.getX(),isize.getY(),isize.getZ()),0,null,null,RegionImage.NO_SMOOTHING));
+			// save field data
+			int NumTimePoints = imageDataset.getImageTimeStamps().length; 
+			int NumChannels = 1;
+			double[][][] pixData = new double[NumTimePoints][NumChannels][]; 
+			for(int i = 0 ; i < NumTimePoints; i++)
+			{
+				short[] originalData = imageDataset.getPixelsZ(0, i);	// images according to zIndex at specific time points(tIndex)
+				double[] doubleData = new double[originalData.length];
+				for(int j = 0; j < originalData.length; j++)
+				{
+					doubleData[j] = 0x0000ffff & originalData[j];
+				}
+				pixData[i][NumChannels-1] = doubleData;
+			}
+
+			
+			FieldDataFileOperationSpec timeSeriesFieldDataOpSpec = new FieldDataFileOperationSpec();
+			timeSeriesFieldDataOpSpec.opType = FieldDataFileOperationSpec.FDOS_ADD;
+			timeSeriesFieldDataOpSpec.cartesianMesh = cartesianMesh;
+			timeSeriesFieldDataOpSpec.doubleSpecData =  pixData;
+			timeSeriesFieldDataOpSpec.specEDI = null;
+			timeSeriesFieldDataOpSpec.varNames = new String[] {"fluor"};
+			timeSeriesFieldDataOpSpec.owner = fieldSimulationContext.getVersion().getOwner();
+			timeSeriesFieldDataOpSpec.times = imageDataset.getImageTimeStamps();
+			timeSeriesFieldDataOpSpec.variableTypes = new VariableType[] {VariableType.VOLUME};
+			timeSeriesFieldDataOpSpec.origin = origin;
+			timeSeriesFieldDataOpSpec.extent = extent;
+			timeSeriesFieldDataOpSpec.isize = isize;
+	   		//  localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+			
+			// hack for the case when first timepoint is not zero
+			timeSeriesFieldDataOpSpec.times[0] = 0;
+   	
+	   		ExternalDataIdentifier timeSeriesEDI = dm.saveFieldData(timeSeriesFieldDataOpSpec, initialFieldDataName);
+	   		// --- create the data symbols associated with the time series
+	   		for (double time : imageDataset.getImageTimeStamps()){
+	   			String fluorName = TokenMangler.fixTokenStrict("fluor_"+time+"_");
+				while (getSimulationContext().getDataContext().getDataSymbol(fluorName)!=null){
+					fluorName = TokenMangler.getNextEnumeratedToken(fluorName);
+				}
+				FieldFunctionArguments fluorFFArgs = new FieldFunctionArguments(timeSeriesEDI.getName(), fluorName, new Expression(time), VariableType.VOLUME);
+				DataSymbol fluorDataSymbol = new FieldDataSymbol(DataSymbolType.VFRAP_SYMBOL, FieldDataSymbol.VFrapImageSubtype.TIMEPOINT, 
+						fluorName, initialFieldDataName, getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD, fluorFFArgs);
+				getSimulationContext().getDataContext().addDataSymbol(fluorDataSymbol);
+	   		}
+		}
+	};
+	// save the prebleach average and the first postbleach frame
+	taskArray[4] = new AsynchClientTask("Saving roi masks, pre-bleach average and first post-bleach", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			File imageFile = (File)hashTable.get("imageFile");
+			if(imageFile == null) {
+				return;
+			}
+			AnnotatedImageDataset annotatedImages = (AnnotatedImageDataset)hashTable.get("annotatedImages");
+			String initialFieldDataName = (String)hashTable.get("initialFieldDataName");
+
+			DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(DataSymbolsPanel.this, DocumentWindow.class);
+			DocumentManager dm = documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager();
+			if(dm == null){
+				throw new RuntimeException("not connected to server");
+			}
+
+			// mesh
+			ImageDataset imageDataset = annotatedImages.getImageDataset();
+			Extent extent = imageDataset.getExtent();
+			ISize isize = imageDataset.getISize();
+			Origin origin = new Origin(0,0,0);
+			CartesianMesh cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent,isize, 
+				new RegionImage( new VCImageUncompressed(null, new byte[isize.getXYZ()], extent, 
+						isize.getX(),isize.getY(),isize.getZ()),0,null,null,RegionImage.NO_SMOOTHING));
+			double[] firstPostBleach = (double[])hashTable.get("firstPostBleach");
+			double[] prebleachAvg = (double[])hashTable.get("prebleachAverage");
+			ROI[] rois = (ROI[])hashTable.get("rois");
+			
+			int NumTimePoints = 1; 
+			int NumChannels = 2+rois.length;  // prebleach, postbleach, roi1, roi2 ... roiN
+			String[] channelNames = new String[NumChannels];
+			VariableType[] channelTypes = new VariableType[NumChannels];
+			int[] channelVFrapImageType = new int[NumChannels];
+			double[][][] pixData = new double[NumTimePoints][NumChannels][]; 
+			pixData[0][0] = firstPostBleach;
+			channelNames[0] = "firstPostBleach";
+			channelTypes[0] = VariableType.VOLUME;
+			channelVFrapImageType[0] = FieldDataSymbol.VFrapImageSubtype.FIRST_POSTBLEACH;
+			pixData[0][1] = prebleachAvg;
+			channelNames[1] = "prebleachAverage";
+			channelTypes[1] = VariableType.VOLUME;
+			channelVFrapImageType[1] = FieldDataSymbol.VFrapImageSubtype.PREBLEACH_AVERAGE;
+			int index = 0;
+			for (ROI roi : rois){
+				short[] ushortPixels = roi.getPixelsXYZ();
+				double[] doublePixels = new double[ushortPixels.length];
+				for (int i = 0; i < ushortPixels.length; i++) {
+					doublePixels[i] = ((int)ushortPixels[i])&0xffff;
+				}
+				pixData[0][index+2] = doublePixels;
+				channelNames[index+2] = "roi_"+index;
+				channelTypes[index+2] = VariableType.VOLUME;
+				channelVFrapImageType[index+2] = FieldDataSymbol.VFrapImageSubtype.ROI;
+				index++;
+			}
+			double[] times = new double[] { 0.0 };
+			
+			FieldDataFileOperationSpec vfrapMiscFieldDataOpSpec = new FieldDataFileOperationSpec();
+			vfrapMiscFieldDataOpSpec.opType = FieldDataFileOperationSpec.FDOS_ADD;
+			vfrapMiscFieldDataOpSpec.cartesianMesh = cartesianMesh;
+			vfrapMiscFieldDataOpSpec.doubleSpecData =  pixData;
+			vfrapMiscFieldDataOpSpec.specEDI = null;
+			vfrapMiscFieldDataOpSpec.varNames = channelNames;
+			vfrapMiscFieldDataOpSpec.owner = dm.getUser();
+			vfrapMiscFieldDataOpSpec.times = times;
+			vfrapMiscFieldDataOpSpec.variableTypes = channelTypes;
+			vfrapMiscFieldDataOpSpec.origin = origin;
+			vfrapMiscFieldDataOpSpec.extent = extent;
+			vfrapMiscFieldDataOpSpec.isize = isize;
+	   		//  localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+    	
+	   		ExternalDataIdentifier vfrapMisc = dm.saveFieldData(vfrapMiscFieldDataOpSpec, initialFieldDataName+"_vfrapMisc");
+
+//	   		for (String channelName : channelNames){
+	   		for (int i=0; i<channelNames.length; i++) {
+	   			String dataSymbolID = channelNames[i];
+				while (getSimulationContext().getDataContext().getDataSymbol(dataSymbolID)!=null){
+					dataSymbolID = TokenMangler.getNextEnumeratedToken(dataSymbolID);
+				}
+				FieldFunctionArguments prebleachFFArgs = new FieldFunctionArguments(vfrapMisc.getName(), channelNames[i], new Expression(0.0), VariableType.VOLUME);
+				DataSymbol dataSymbol = new FieldDataSymbol(DataSymbolType.VFRAP_SYMBOL, channelVFrapImageType[i], dataSymbolID, initialFieldDataName,
+						getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD, prebleachFFArgs);
+				getSimulationContext().getDataContext().addDataSymbol(dataSymbol);
+	   		}
+		}
+	};
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
+	ClientTaskDispatcher.dispatch(this, hash, taskArray, false, true, null);
 }
 
 private void removeDataSymbol(DataSymbol dataSymbol) {
@@ -173,17 +529,29 @@ private void handleListEvent(javax.swing.event.ListSelectionEvent arg1) {
 	}
 }
 
-private javax.swing.JMenuItem getJMenuItemAdd() {
-	if (ivjJMenuItemAdd == null) {
+private javax.swing.JMenuItem getJMenuItemGenericAdd() {
+	if (ivjJMenuItemGenericAdd == null) {
 		try {
-			ivjJMenuItemAdd = new javax.swing.JMenuItem();
-			ivjJMenuItemAdd.setName("JMenuItemAdd");
-			ivjJMenuItemAdd.setText("Add");
+			ivjJMenuItemGenericAdd = new javax.swing.JMenuItem();
+			ivjJMenuItemGenericAdd.setName("JMenuItemGenericAdd");
+			ivjJMenuItemGenericAdd.setText("Add Generic DataSymbol");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJMenuItemAdd;
+	return ivjJMenuItemGenericAdd;
+}
+private javax.swing.JMenuItem getJMenuItemVFrapAdd() {
+	if (ivjJMenuItemVFrapAdd == null) {
+		try {
+			ivjJMenuItemVFrapAdd = new javax.swing.JMenuItem();
+			ivjJMenuItemVFrapAdd.setName("JMenuItemVFrapAdd");
+			ivjJMenuItemVFrapAdd.setText("Add vFrap DataSymbols");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemVFrapAdd;
 }
 
 private javax.swing.JMenuItem getJMenuItemDelete() {
@@ -210,7 +578,8 @@ private javax.swing.JPopupMenu getJPopupMenuICP() {
 			ivjJPopupMenuICP = new javax.swing.JPopupMenu();
 			ivjJPopupMenuICP.setName("JPopupMenuICP");
 			ivjJPopupMenuICP.setLabel("DataSymbols");
-			ivjJPopupMenuICP.add(getJMenuItemAdd());
+			ivjJPopupMenuICP.add(getJMenuItemGenericAdd());
+			ivjJPopupMenuICP.add(getJMenuItemVFrapAdd());
 			ivjJPopupMenuICP.add(getJMenuItemDelete());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -360,7 +729,8 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().addMouseListener(ivjEventHandler);
-	getJMenuItemAdd().addActionListener(ivjEventHandler);
+	getJMenuItemGenericAdd().addActionListener(ivjEventHandler);
+	getJMenuItemVFrapAdd().addActionListener(ivjEventHandler);
 	getJMenuItemDelete().addActionListener(ivjEventHandler);
 	getScrollPaneTable().setModel(getDataSymbolsTableModel());
 	getScrollPaneTable().createDefaultColumnsFromModel();
@@ -395,6 +765,11 @@ private void initialize() {
 		setName("DataSymbolsPanel");
 		setLayout(new java.awt.GridBagLayout());
 		//setSize(456, 539);
+
+		//Create a file chooser
+		fc = new JFileChooser();
+		vFrapFieldDataFilter filter = new vFrapFieldDataFilter();
+		fc.setFileFilter(filter);
 
 		java.awt.GridBagConstraints constraintsJSplitPane1 = new java.awt.GridBagConstraints();
 		constraintsJSplitPane1.gridx = 0; constraintsJSplitPane1.gridy = 0;
@@ -479,7 +854,8 @@ private void scrollPaneTable_MouseButton(final java.awt.event.MouseEvent mouseEv
 	}
 	if(mouseEvent.isPopupTrigger()){		
 		boolean bSomethingSelected = getScrollPaneTable().getSelectedRows() != null && getScrollPaneTable().getSelectedRows().length > 0;
-		getJMenuItemAdd().setEnabled(true);
+		getJMenuItemGenericAdd().setEnabled(false);
+		getJMenuItemVFrapAdd().setEnabled(true);
 		getJMenuItemDelete().setEnabled(bSomethingSelected);
 		getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
 	}
@@ -497,5 +873,49 @@ public void setSimulationContext(SimulationContext simulationContext) {
 	getDataSymbolsTableModel().setSimulationContext(simulationContext);
 }
 
+public class Utils {
+    public final static String jpeg = "jpeg";
+    public final static String jpg = "jpg";
+    public final static String gif = "gif";
+    public final static String tiff = "tiff";
+    public final static String tif = "tif";
+    public final static String png = "png";
+    public final static String vfrap = "vfrap";
+    
+    public String getExtension(File f) {
+        String ext = null;
+        String s = f.getName();
+        int i = s.lastIndexOf('.');
 
+        if (i > 0 &&  i < s.length() - 1) {
+            ext = s.substring(i+1).toLowerCase();
+        }
+        return ext;
+    }
+}
+
+public class vFrapFieldDataFilter extends FileFilter {
+
+    public boolean accept(File f) {
+        if (f.isDirectory()) {
+            return true;
+        }
+
+        Utils u = new Utils();
+        String extension = u.getExtension(f);
+        if (extension != null) {
+            if (extension.equals(Utils.vfrap) ) {
+                    return true;
+            } else {
+                return false;
+            }
+        }
+
+        return false;
+    }
+    //The description of this filter
+    public String getDescription() {
+        return "File Formats accepted as Field Data from vFrap";
+    }
+}
 }

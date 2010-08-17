@@ -14,6 +14,9 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 
 import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
 import cbit.vcell.data.DataSymbol;
+import cbit.vcell.data.FieldDataSymbol;
+import cbit.vcell.data.FieldDataSymbol.DataSymbolType;
+import cbit.vcell.data.FieldDataSymbol.VFrapImageSubtype;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
@@ -32,6 +35,10 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	private Icon fluxIcon;
 	private Icon eventIcon;
 	private Icon fieldDataItemIcon;
+	private Icon vFrapPostBleachIcon;
+	private Icon vFrapAverageIcon;
+	private Icon vFrapROIIcon;
+	private Icon vFrapTimepointIcon;
 
 	private Icon geometryFolderIcon;
 	private Icon electricFolderIcon;
@@ -53,6 +60,10 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
     		fluxIcon = new ImageIcon(getClass().getResource("/images/fluxItem.gif"));
     		eventIcon = new ImageIcon(getClass().getResource("/images/eventItem.gif"));
     		fieldDataItemIcon = new ImageIcon(getClass().getResource("/images/fieldDataItem.gif"));
+    		vFrapPostBleachIcon = new ImageIcon(getClass().getResource("/images/vFrapPostBleach.gif"));
+    		vFrapAverageIcon = new ImageIcon(getClass().getResource("/images/vFrapAverage.gif"));
+    		vFrapROIIcon = new ImageIcon(getClass().getResource("/images/vFrapROI.gif"));
+    		vFrapTimepointIcon = new ImageIcon(getClass().getResource("/images/vFrapTimepoint.gif"));
 //    		fieldDataItemIcon = new ImageIcon("C:/dan/work images/icons/fieldDataItem.gif");
 
     		geometryFolderIcon = new ImageIcon(getClass().getResource("/images/geometryFolder2D.gif"));
@@ -80,10 +91,12 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	        Object userObj = node.getUserObject();
 	    	String labelText = null;
 	    	String toolTipPrefix = "";
+	    	String toolTipPostfix = "";
 	    	Icon icon = null;
 			if (userObj instanceof SimulationContext) { 			// --- root: application name	
 	    		labelText = ((SimulationContext)userObj).getName();
 	        	toolTipPrefix = "Application : ";
+				toolTipPostfix = labelText;
 	    	} else if (userObj instanceof SPPRTreeFolderNode) {		// --- 1st level folders
 	        	SPPRTreeFolderNode folder = (SPPRTreeFolderNode)userObj;
 	        	if (SPPRTreeModel.FOLDER_NO_CHILDREN[folder.getId()]) {
@@ -100,6 +113,7 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	        			break;
 	        		case SPPRTreeModel.DATA_SYMBOLS_NODE:
 	    	        	toolTipPrefix = "Data Symbols : ";
+						toolTipPostfix = labelText;
 	        			break;
 	        		default:
 	        			icon = closedIcon;						// icon from DefaultTreeCellRenderer
@@ -115,22 +129,48 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	    		icon = speciesIcon;
 	        	labelText = ((SpeciesContext)userObj).getName();
 	        	toolTipPrefix = "SpeciesContext : ";
+				toolTipPostfix = labelText;
 	        } else if (userObj instanceof ModelParameter) {		// --- global parameter
 	        	icon = gParamIcon;
 	        	labelText = ((ModelParameter)userObj).getName();
 	        	toolTipPrefix = "Global Parameter : ";
+				toolTipPostfix = labelText;
 	        } else if (userObj instanceof SimpleReaction) {		// --- simple reaction
 	        	icon = reactionsIcon;
 	        	labelText = ((ReactionStep)userObj).getName();
 	        	toolTipPrefix = "Simple Reaction : ";
+				toolTipPostfix = labelText;
 	        } else if (userObj instanceof FluxReaction) {		// --- flux reaction
 	        	icon = fluxIcon;
 	        	labelText = ((ReactionStep)userObj).getName();
 	        	toolTipPrefix = "Flux Reaction : ";
-	        } else if (userObj instanceof DataSymbol) {			// --- field data
-	        	icon = fieldDataItemIcon;
+				toolTipPostfix = labelText;
+	        } else if (userObj instanceof FieldDataSymbol) {			// --- field data
+	        	if( ((FieldDataSymbol)userObj).getDataSymbolType() == DataSymbolType.VFRAP_SYMBOL ) {
+	        		switch(((FieldDataSymbol)userObj).getDataSymbolSubtype()) {
+	        		case VFrapImageSubtype.FIRST_POSTBLEACH:
+			        	icon = vFrapPostBleachIcon;
+	        			break;
+	        		case VFrapImageSubtype.PREBLEACH_AVERAGE:
+			        	icon = vFrapAverageIcon;
+	        			break;
+	        		case VFrapImageSubtype.ROI:
+			        	icon = vFrapROIIcon;
+	        			break;
+	        		case VFrapImageSubtype.TIMEPOINT:
+			        	icon = vFrapTimepointIcon;
+			        	break;
+	        		default:
+			        	icon = vFrapTimepointIcon;
+	        			break;
+	        		}
+	        	} else {		// all non-vFrap symbols
+		        	icon = fieldDataItemIcon;
+	        	}
+//	        	labelText = ((DataSymbol)userObj).getName();
 	        	labelText = ((DataSymbol)userObj).getName();
-	        	toolTipPrefix = "Field Data : ";
+	        	toolTipPrefix = "Dataset: " + ((FieldDataSymbol)userObj).getDatasetName();
+				toolTipPostfix = "";
 	        } else if (userObj instanceof BioEvent) {			// --- event
 	        	BioEvent bioEvent = (BioEvent)userObj;
 	        	SimulationContext simulationContext = bioEvent.getSimulationContext();
@@ -142,6 +182,7 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 					icon = eventIcon;
 					labelText = bioEvent.getName();
 					toolTipPrefix = "Event : ";
+					toolTipPostfix = labelText;
 				}
 	//        } else if (isApplicationParam(value)) {	// --- not implemented
 	//        	icon = aParamIcon;
@@ -160,7 +201,7 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 		    	setIcon(icon);
 		    }
 	    	setText(labelText);
-	    	setToolTipText(toolTipPrefix + labelText);
+	    	setToolTipText(toolTipPrefix + toolTipPostfix);
 		}
         return this;
     }

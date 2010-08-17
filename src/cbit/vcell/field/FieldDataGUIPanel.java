@@ -42,6 +42,9 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 
 import cbit.image.VCImageUncompressed;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.VirtualMicroscopy.importer.AnnotatedImageDataset;
+import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXmlReader;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
@@ -53,6 +56,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
@@ -1036,10 +1040,31 @@ private AsynchClientTask[] fdFromFile() {
 					return;
 				}
 				initFDName = imageFile.getName();
-				try {
-					fdos = ClientRequestManager.createFDOSFromImageFile(imageFile,false,null);
-				} catch (DataFormatException ex) {
-					throw new Exception("Cannot read image " + imageFile.getAbsolutePath()+"\n"+ex.getMessage());
+				if(initFDName.indexOf(".vfrap") > -1)
+				{
+/*					//read the image dataset from Virtual FRAP xml file
+	                System.out.println("Loading " + initFDName + " ...");
+	                
+	                AnnotatedImageDataset annotatedImages = null;
+	                String xmlString;
+	                try {
+	                        xmlString = XmlUtil.getXMLString(imageFile.getAbsolutePath());
+	                        MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+	                        annotatedImages = xmlReader.getAnnotatedImageDataset(XmlUtil.stringToXML(xmlString, null).getRootElement(), this.getClientTaskStatusSupport());
+	                        OverlayEditorPanelJAI overlayPanel = new OverlayEditorPanelJAI();
+	                        overlayPanel.setImages(annotatedImages.getImageDataset(), 1, 0, new OverlayEditorPanelJAI.AllPixelValuesRange(1, 200) );
+	                        DialogUtils.showComponentCloseDialog(FieldDataGUIPanel.this, overlayPanel, "this is it");
+	                } catch (Exception e) {
+	                        e.printStackTrace(System.out);
+	                } */
+				}
+				else //not a .vfrap file
+				{
+					try {
+						fdos = ClientRequestManager.createFDOSFromImageFile(imageFile,false,null);
+					} catch (DataFormatException ex) {
+						throw new Exception("Cannot read image " + imageFile.getAbsolutePath()+"\n"+ex.getMessage());
+					}
 				}
 			}else{
 				fdos = argfdos;
