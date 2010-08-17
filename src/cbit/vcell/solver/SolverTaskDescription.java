@@ -777,7 +777,9 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 public void refreshDependencies() {
 	removePropertyChangeListener(this);
 	addPropertyChangeListener(this);
-	smoldynSimulationOptions.refreshDependencies();
+	if(smoldynSimulationOptions != null) {
+		smoldynSimulationOptions.refreshDependencies();
+	}
 }
 
 /**
