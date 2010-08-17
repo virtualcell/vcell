@@ -459,6 +459,9 @@ public class XMLTags {
 	public static final String FieldFunctionArgumentsTag = "FieldFunctionArguments";
 	public static final String FieldNameTag = "FieldName";
 	public static final String VariableNameTag = "VariableName";
+	public static final String DataSymbolTypeTag = "DataSymbolType";
+	public static final String VFrapImageSubtypeTag = "VFrapImageSubtype";
+	public static final String DataSetNameTag = "DataSetName";
 	
 	// Smoldyn
 	public final static String VolumeParticleVariableTag = "VolumeParticleVariable";

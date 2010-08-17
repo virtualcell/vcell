@@ -20,8 +20,8 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 
 public abstract class DataSymbol implements SymbolTableEntry {
-	private String name = null;
-	private final DataContext dataSymbols;
+	private String name = null;					// name of data symbol
+	private final DataContext dataSymbols;		// list of data symbols where we belong
 	private VCUnitDefinition vcUnitDefinition = null;
 	private transient PropertyChangeSupport propertyChangeSupport = null;
 	

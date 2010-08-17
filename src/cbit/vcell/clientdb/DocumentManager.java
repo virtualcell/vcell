@@ -4,6 +4,7 @@ import org.vcell.util.DependencyException;
 import org.vcell.util.Preference;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.ReferenceQueryResult;
@@ -148,6 +149,9 @@ void delete(MathModelInfo mathModelInfo) throws DataAccessException;
  * @exception org.vcell.util.DataAccessException The exception description.
  */
 FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException;
+
+ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, String fieldDataBaseName) throws DataAccessException;
+
 
 FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException;
 

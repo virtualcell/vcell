@@ -18,6 +18,7 @@ import org.vcell.util.ISize;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.Preference;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -521,7 +522,34 @@ public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
 	}	
 }
 
-
+public ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, String fieldDataBaseName) throws DataAccessException {
+	FieldDataDBOperationResults fieldDataResults = fieldDataDBOperation(FieldDataDBOperationSpec.createGetExtDataIDsSpec(getUser()));
+	ExternalDataIdentifier[] existingExternalIDs = fieldDataResults.extDataIDArr;
+	// find available field data name (starting from init).
+	for (ExternalDataIdentifier externalID : existingExternalIDs){
+		if (externalID.getName().equals(fieldDataBaseName)){
+			fieldDataBaseName = TokenMangler.getNextEnumeratedToken(fieldDataBaseName);
+		}
+	}
+   	FieldDataDBOperationSpec newExtDataIDSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(getUser(),fieldDataBaseName, "");
+	ExternalDataIdentifier eid = fieldDataDBOperation(newExtDataIDSpec).extDataID; 
+	fdos.specEDI = eid;
+	fdos.annotation = "";
+	try {
+		// Add to Server Disk
+		FieldDataFileOperationResults fdor = fieldDataFileOperation(fdos);
+	} catch (DataAccessException e) {
+		try{
+			// try to cleanup new ExtDataID
+			fieldDataDBOperation(FieldDataDBOperationSpec.createDeleteExtDataIDSpec(fdos.specEDI));
+		}catch(Exception e2){
+			// ignore
+		}
+		fdos.specEDI = null;
+		throw e;
+	}
+	return eid;
+}
 /**
  * Insert the method's description here.
  * Creation date: (1/9/2007 9:39:53 AM)

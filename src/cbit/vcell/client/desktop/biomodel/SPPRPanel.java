@@ -29,9 +29,11 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
+import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.desktop.BioModelNode;
@@ -77,8 +79,10 @@ public class SPPRPanel extends JPanel {
 	private JPopupMenu addDataPopupMenu = null;
 	private JPopupMenu deleteEventPopupMenu = null;
 	private JMenuItem menuItemAddEvent = null;
-	private JMenuItem menuItemAddData = null;
+	private JMenuItem menuItemAddGenericData = null;
+	private JMenuItem menuItemAddVFrapData = null;
 	private JMenuItem menuItemDeleteEvent = null;
+	private ClientSimManager clientSimManager = null;
 	
 	class IvjEventHandler implements javax.swing.event.TreeSelectionListener, MouseListener, PropertyChangeListener, ActionListener {
 		
@@ -131,6 +135,10 @@ public class SPPRPanel extends JPanel {
 			if (evt.getSource() == fieldSimulationContext && evt.getPropertyName().equals("geometry")) {
 				getGeometrySummaryViewer().setGeometry(fieldSimulationContext.getGeometry());
 			}
+			if ((evt.getPropertyName().equals("simulationWorkspace"))) 
+			{
+				setClientSimManager(((ApplicationEditor)evt.getSource()).getSimulationWorkspace().getClientSimManager());
+			}
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource().equals(getMenuItemAddEvent())) {
@@ -139,8 +147,11 @@ public class SPPRPanel extends JPanel {
 			if (e.getSource().equals(getMenuItemDeleteEvent())) {
 				deleteEvent();
 			}
-			if (e.getSource().equals(getMenuItemAddData())) {
-				addDataSymbol();
+			if (e.getSource().equals(getMenuItemAddGenericData())) {
+				addGenericDataSymbol();
+			}
+			if (e.getSource().equals(getMenuItemAddVFrapData())) {
+				addVFrapDataSymbol();
 			}
 			if (e.getSource().equals(getGeometrySummaryViewer())) {
 				refireCommandActionPerformed(e);
@@ -172,7 +183,12 @@ public class SPPRPanel extends JPanel {
 	}
 
 	public SPPRPanel() {
+		this(null);
+	}
+	
+	public SPPRPanel(ClientSimManager clientSimManager) {
 		super();
+		this.clientSimManager = clientSimManager;
 		setLayout(new GridBagLayout());
 		initialize();
 	}
@@ -215,7 +231,8 @@ public class SPPRPanel extends JPanel {
 		getEventsDisplayPanel().addPropertyChangeListener(ivjEventHandler);
 		getMenuItemAddEvent().addActionListener(ivjEventHandler);
 		getMenuItemDeleteEvent().addActionListener(ivjEventHandler);
-		getMenuItemAddData().addActionListener(ivjEventHandler);
+		getMenuItemAddGenericData().addActionListener(ivjEventHandler);
+		getMenuItemAddVFrapData().addActionListener(ivjEventHandler);
 	}	
 
 	private void initialize() {
@@ -509,19 +526,34 @@ public class SPPRPanel extends JPanel {
 		return ivjElectricalMembraneMappingPanel;
 	}
 	
-	private JMenuItem getMenuItemAddData() {
-		if (menuItemAddData == null) {
+	private JMenuItem getMenuItemAddGenericData() {
+		if (menuItemAddGenericData == null) {
 			try {
-				menuItemAddData = new javax.swing.JMenuItem();
-				menuItemAddData.setName("JMenuItemAddData");
-				menuItemAddData.setMnemonic('d');
-				menuItemAddData.setText("Add DataSymbol");
-				menuItemAddData.setActionCommand(GuiConstants.ACTIONCMD_ADD_DATA);
+				menuItemAddGenericData = new javax.swing.JMenuItem();
+				menuItemAddGenericData.setName("JMenuItemAddData");
+				menuItemAddGenericData.setMnemonic('d');
+				menuItemAddGenericData.setText("Add Generic DataSymbol");
+				menuItemAddGenericData.setEnabled(false);
+				menuItemAddGenericData.setActionCommand(GuiConstants.ACTIONCMD_ADD_GENERIC_DATA);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
-		return menuItemAddData;
+		return menuItemAddGenericData;
+	}
+	private JMenuItem getMenuItemAddVFrapData() {
+		if (menuItemAddVFrapData == null) {
+			try {
+				menuItemAddVFrapData = new javax.swing.JMenuItem();
+				menuItemAddVFrapData.setName("JMenuItemAddVFrapData");
+				menuItemAddVFrapData.setMnemonic('v');
+				menuItemAddVFrapData.setText("Add vFrap DataSymbols");
+				menuItemAddVFrapData.setActionCommand(GuiConstants.ACTIONCMD_ADD_VFRAP_DATA);
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return menuItemAddVFrapData;
 	}
 	
 	private JPopupMenu getAddDataPopupMenu() {
@@ -529,7 +561,8 @@ public class SPPRPanel extends JPanel {
 			try {
 				addDataPopupMenu = new javax.swing.JPopupMenu();
 				addDataPopupMenu.setName("DataSymbolPopupMenu");
-				addDataPopupMenu.add(getMenuItemAddData());
+				addDataPopupMenu.add(getMenuItemAddGenericData());
+				addDataPopupMenu.add(getMenuItemAddVFrapData());
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -537,7 +570,14 @@ public class SPPRPanel extends JPanel {
 		return addDataPopupMenu;
 	}
 
-	private void addDataSymbol() {
+	private void addGenericDataSymbol() {
+		getDataSymbolsPanel().addGenericDataSymbol();
+	}
+	private void addVFrapDataSymbol() {
+		getDataSymbolsPanel().addVFrapDataSymbol();
+	}
+
+/*	private void addDataSymbol() {
 		String name = null;
 		try {
 			getDataSymbolsPanel().getNewDataSymbolPanel().setSymbolName("");
@@ -554,7 +594,7 @@ public class SPPRPanel extends JPanel {
 		} catch (java.lang.Throwable ivjExc) {
 			DialogUtils.showErrorDialog(this, "Data symbol " + name + " already exists");
 		}
-	}
+	}*/
 	
 	private JMenuItem getMenuItemAddEvent() {
 		if (menuItemAddEvent == null) {
@@ -638,5 +678,14 @@ public class SPPRPanel extends JPanel {
 				DialogUtils.showErrorDialog(this, ex.getMessage());
 			}
 		}		
+	}
+	
+	public ClientSimManager getClientSimManager() {
+		return clientSimManager;
+	}
+
+	public void setClientSimManager(ClientSimManager clientSimManager)
+	{
+		this.clientSimManager = clientSimManager;
 	}
 }

@@ -1376,7 +1376,11 @@ private Element getXML(DataContext dataContext) {
 
 private Element getXML(FieldDataSymbol fds) {
 	Element fieldDataSymbolElement = new Element(XMLTags.FieldDataSymbolTag);
+
+	fieldDataSymbolElement.setAttribute(XMLTags.DataSymbolTypeTag, Integer.toString(fds.getDataSymbolType()));
+	fieldDataSymbolElement.setAttribute(XMLTags.VFrapImageSubtypeTag, Integer.toString(fds.getDataSymbolSubtype()));
 	fieldDataSymbolElement.setAttribute(XMLTags.NameAttrTag, fds.getName());
+	fieldDataSymbolElement.setAttribute(XMLTags.DataSetNameTag, fds.getDatasetName());
 	fieldDataSymbolElement.setAttribute(XMLTags.VCUnitDefinitionAttrTag, fds.getUnitDefinition().getSymbol());
 	Element fieldFnArgsElement = new Element(XMLTags.FieldFunctionArgumentsTag);
 	FieldFunctionArguments ffa = fds.getFieldFunctionArguments();

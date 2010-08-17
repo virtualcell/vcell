@@ -4232,7 +4232,10 @@ private ArrayList<DataSymbol> getDataSymbols(Element dataContextElement, DataCon
 	while (dataSybolsElementIter.hasNext()) {
 		// dataSymbol attributes
 		Element dataSymbolElement = (Element)dataSybolsElementIter.next();
+		int dataSymbolType = Integer.parseInt(unMangle(dataSymbolElement.getAttributeValue(XMLTags.DataSymbolTypeTag)));
+		int vFrapImageSubtype = Integer.parseInt(unMangle(dataSymbolElement.getAttributeValue(XMLTags.VFrapImageSubtypeTag)));
 		String name = unMangle(dataSymbolElement.getAttributeValue(XMLTags.NameAttrTag));
+		String dataSetName = unMangle(dataSymbolElement.getAttributeValue(XMLTags.DataSetNameTag));
 		String symbol = dataSymbolElement.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
 		VCUnitDefinition unit = null;
 		if (symbol != null) {
@@ -4251,7 +4254,9 @@ private ArrayList<DataSymbol> getDataSymbols(Element dataContextElement, DataCon
 			funcType = VariableType.getVariableTypeFromVariableTypeName(funcTypeStr);
 		}
 		FieldFunctionArguments ffa = new FieldFunctionArguments(fieldName, varName, timeExpr, funcType);
-		FieldDataSymbol fds = new FieldDataSymbol(name, dataContext, unit, ffa);
+		FieldDataSymbol fds = new FieldDataSymbol(dataSymbolType, vFrapImageSubtype, name, dataSetName, 
+				dataContext, unit, ffa);
+//		FieldDataSymbol fds = new FieldDataSymbol(name, "", dataContext, unit, ffa);
 		dataSymbolsList.add(fds);
 	}
 	// other while loops for other dataSymbol types; then return cumulative list
