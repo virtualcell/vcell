@@ -50,13 +50,13 @@ public class Compartment{
 
 	
 	/**
-	 * Instantiates a Compartment with the given name.
+	 * Instantiates a Smoldyn Compartment with the given name.
 	 * 
 	 * @param name -- not null
 	 * @param boundingsurfaces -- not null
 	 * @param interiorpoints -- not null
 	 */
-	public Compartment(String name, Surface [] boundingsurfaces, Point [] interiorpoints) {
+	public Compartment(String name, Surface [] boundingsurfaces, Point [] interiorpoints){
 		SimulationUtilities.checkForNull("argument to Compartment constructor", name, boundingsurfaces, interiorpoints);
 		this.name = name;
 		for(Surface surface : boundingsurfaces) {

@@ -1,5 +1,6 @@
 package org.vcell.smoldyn.simulationsettings;
 
+import org.vcell.smoldyn.simulation.SimulationUtilities;
 import org.vcell.smoldyn.simulationsettings.util.EventTiming;
 import org.vcell.smoldyn.simulationsettings.util.Filehandle;
 
@@ -109,12 +110,11 @@ import org.vcell.smoldyn.simulationsettings.util.Filehandle;
  * @author mfenwick
  *
  */
-@Deprecated
 public class ObservationEvent {
 
-	private EventTiming eventtiming;
-	private EventType eventtype;
-	private Filehandle filehandle;
+	private final EventTiming eventtiming;
+	private final EventType eventtype;
+	private final Filehandle filehandle;
 	
 	
 	/**
@@ -128,6 +128,7 @@ public class ObservationEvent {
 	 * @param filehandle
 	 */
 	public ObservationEvent(EventTiming eventtiming, EventType eventtype, Filehandle filehandle) {
+		SimulationUtilities.checkForNull("argument to observation event constructor", eventtiming, eventtype, filehandle);
 		this.eventtiming = eventtiming;
 		this.eventtype = eventtype;
 		this.filehandle = filehandle;

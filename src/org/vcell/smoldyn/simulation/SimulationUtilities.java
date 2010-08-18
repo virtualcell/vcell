@@ -1,8 +1,5 @@
 package org.vcell.smoldyn.simulation;
 
-import java.util.NoSuchElementException;
-
-
 
 
 
@@ -14,51 +11,40 @@ import java.util.NoSuchElementException;
  *
  */
 public class SimulationUtilities {
-
-	/**
-	 * Throws a NullPointerException pertaining to the argument.  Use if passed a null
-	 * argument, when a non-null argument is needed.
-	 * 
-	 * @param component String
-	 * @throws NullPointerException
-	 */
-	public static void throwNullPointerException(String component) {
-		throw new NullPointerException(component + " was null (it must not be)");
-	}
 	
 	
 	/**
-	 * Throws a {@link NoSuchElementException} to indicate that a HashMap or HashSet does not
+	 * Throws a {@link SmoldynException} to indicate that a HashMap or HashSet does not
 	 * have a corresponding key.
 	 * 
 	 * @param message
-	 * @throws NoSuchElementException
+	 * @throws SmoldynException 
 	 */
-	public static void throwNoAssociatedValueException(String message) {
-		throw new NoSuchElementException("no entry for " + message);
+	public static void throwNoAssociatedValueException(String message) throws SmoldynException {
+		throw new SmoldynException("no entry for " + message);
 	}
 	
 	/**
-	 * Throws a {@link RuntimeException} to indicate that a HashMap already
+	 * Throws a {@link SmoldynException} to indicate that a HashMap already
 	 * has a key.
 	 * 
 	 * @param message
-	 * @throws RuntimeException
+	 * @throws SmoldynException
 	 */
-	public static void throwAlreadyHasValueException(String message) {
-		throw new RuntimeException("hash map already has value (" + message + ")");
+	public static void throwAlreadyHasValueException(String message) throws SmoldynException {
+		throw new SmoldynException("hash map already has value (" + message + ")");
 	}
 	
 	
 	/**
-	 * Throws a {@link RuntimeException} to indicate that a HashMap already
+	 * Throws a {@link SmoldynException} to indicate that a HashMap already
 	 * has a value.
 	 * 
 	 * @param message
-	 * @throws RuntimeException
+	 * @throws SmoldynException
 	 */
-	public static void throwAlreadyHasKeyException(String message) {
-		throw new RuntimeException("hashmap or hashtable already has key (" + message + ")");
+	public static void throwAlreadyHasKeyException(String message) throws SmoldynException {
+		throw new SmoldynException("hashmap or hashtable already has key (" + message + ")");
 	}
 
 
@@ -73,23 +59,24 @@ public class SimulationUtilities {
 	
 	
 	/**
-	 * Throws a {@link RuntimeException} to indicate an unimplemented feature.
+	 * Throws a {@link SmoldynException} to indicate an unimplemented feature.
 	 * 
 	 * @param message
-	 * @throws RuntimeException
+	 * @throws SmoldynException
 	 */
-	public static void throwUnimplementedException(String message) {
-		throw new RuntimeException(message + " is not yet implemented");
+	public static void throwUnimplementedException(String message) throws SmoldynException {
+		throw new SmoldynException(message + " is not yet implemented");
 	}
 	
 	
 	/**
-	 * Throws a {@link RuntimeException}.
+	 * Throws a {@link SmoldynException}.
 	 * 
 	 * @param message
+	 * @throws SmoldynException 
 	 */
-	public static void throwRuntimeException(String message) {
-		throw new RuntimeException("RuntimeException requested with the following message: " + message);
+	public static void throwSmoldynException(String message) throws SmoldynException {
+		throw new SmoldynException("SmoldynException requested with the following message: " + message);
 	}
 	
 	
@@ -107,7 +94,7 @@ public class SimulationUtilities {
 	 * Throw an {@link IllegalArgumentException} with a specified message.
 	 * 
 	 * @param message 
-	 * @throws IllegalArgumentException with the specified message
+	 * @throws IllegalArgumentException 
 	 */
 	public static void throwIllegalArgumentException(String message) {
 		throw new IllegalArgumentException("illegal argument:  " + message);
@@ -115,25 +102,14 @@ public class SimulationUtilities {
 	
 	
 	/**
-	 * Throw a {@link RuntimeException} to indicate that something tried to violate
-	 * a class-invariant. 
-	 * 
-	 * @param message String
-	 * @throws RuntimeException with the specified message
-	 */
-	public static void throwInvariantConditionViolatedException(String message) {
-		throw new RuntimeException("invariant condition violated:  " + message);
-	}
-
-	
-	/**
 	 * @param message
 	 * @param d
+	 * @throws IllegalArgumentException if any of doubles is null
 	 */
 	public static void checkForNonNegative(String message, double ... doubles) {
 		for(double d : doubles) {
 			if(d < 0) {
-				throw new RuntimeException("value must be non-null: " + message);
+				throw new IllegalArgumentException("value must be non-null: " + message);
 			}
 		}
 	}
@@ -141,6 +117,7 @@ public class SimulationUtilities {
 	/**
 	 * @param message
 	 * @param objects
+	 * @throws NullPointerException if any of objects is null
 	 */
 	public static void checkForNull(String message, Object ... objects) {
 		for(Object o : objects) {
@@ -153,10 +130,25 @@ public class SimulationUtilities {
 	/**
 	 * @param message
 	 * @param d
+	 * @throws IllegalArgumentException if any of doubles is not positive
 	 */
-	public static void checkForPositive(String message, double d) {
-		if( d <= 0) {
-			throw new RuntimeException("value must be positive: " + message);
+	public static void checkForPositive(String message, double ... doubles) {
+		for(double d : doubles) {
+			if( d <= 0) {
+				throw new IllegalArgumentException("value must be positive: " + message);
+			}
+		}
+	}
+	
+	
+	/**
+	 * @param message
+	 * @param b
+	 * @throws RuntimeException if b is false
+	 */
+	public static void assertIsTrue(String message, boolean b) {
+		if(!b) {
+			throw new RuntimeException(message);
 		}
 	}
 }

@@ -16,7 +16,7 @@ import org.vcell.smoldyn.simulation.Simulation;
  * @author mfenwick
  *
  */
-public class SmoldynWriteUtilities {
+public class SmoldynWriteTestUtilities {
 	
 	
 	/**
@@ -31,7 +31,8 @@ public class SmoldynWriteUtilities {
 		PrintWriter printwriter;		
 		try {
 			File f = new File(path);
-			printwriter = new PrintWriter(new BufferedWriter(new FileWriter(f)));
+			printwriter = new PrintWriter(f);
+//			printwriter = new PrintWriter(new BufferedWriter(new FileWriter(f)));
 			System.out.println("writing a file at: " + f.getAbsolutePath());
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.vcell.smoldyn.simulation.SimulationUtilities;
+import org.vcell.smoldyn.simulation.SmoldynException;
 import org.vcell.smoldyn.simulationsettings.ObservationEvent.EventType;
 import org.vcell.smoldyn.simulationsettings.VCellObservationEvent.VCellEventType;
 import org.vcell.smoldyn.simulationsettings.util.EventTiming;
@@ -51,6 +52,7 @@ public class SimulationSettings {
 
 
 	public void addSpeciesStateGraphics(SpeciesStateGraphics speciesstategraphics) {
+		SimulationUtilities.checkForNull("species-state graphics", speciesstategraphics);
 		this.speciesstategraphics.add(speciesstategraphics);
 	}
 	
@@ -59,6 +61,7 @@ public class SimulationSettings {
 	}
 	
 	public void addSurfaceGraphics(SurfaceGraphics surfacegraphics) {
+		SimulationUtilities.checkForNull("surface graphics", surfacegraphics);
 		this.surfacegraphics.add(surfacegraphics);
 	}
 	
@@ -67,6 +70,7 @@ public class SimulationSettings {
 	}
 	
 	public void setSimulationGraphics(SimulationGraphics simulationgraphics) {
+		SimulationUtilities.checkForNull("simulation graphics", simulationgraphics);
 		this.simulationgraphics = simulationgraphics;
 	}
 	
@@ -79,7 +83,7 @@ public class SimulationSettings {
 		return observationevents.toArray(new ObservationEvent [observationevents.size()]);
 	}
 	
-	public void addObservationEvent(EventTiming eventtiming, EventType eventtype, String filehandlename) {
+	public void addObservationEvent(EventTiming eventtiming, EventType eventtype, String filehandlename) throws SmoldynException {
 		SimulationUtilities.checkForNull("argument to addObservationEvent", eventtiming, eventtype);
 		Filehandle filehandle = this.getFilehandle(filehandlename);
 		ObservationEvent observationevent = new ObservationEvent(eventtiming, eventtype, filehandle);
@@ -105,6 +109,7 @@ public class SimulationSettings {
 	
 	public void addControlEvent(ControlEvent controlevent) {
 		// TODO is s already in this.events?
+		SimulationUtilities.checkForNull("control event", controlevent);
 		this.controlevents.add(controlevent);
 	}
 	
@@ -118,17 +123,22 @@ public class SimulationSettings {
 	 * no other Filehandle with the same filename.
 	 * 
 	 * @param filehandlename
-	 * @throws RuntimeException if SimulationSettings already has a {@link Filehandle} of the given name
+	 * @throws SmoldynException if already a filehandle with the path specified by filehandlename
 	 * 
 	 */
-	public void addFilehandle(String filehandlename) {
+	public void addFilehandle(String filehandlename) throws SmoldynException {
 		if(hasFilehandle(filehandlename)) {
 			SimulationUtilities.throwAlreadyHasKeyException("filehandle name was <" + filehandlename + ">");
 		}
 		this.filehandles.put(filehandlename, new Filehandle(filehandlename));
 	}
 	
-	public Filehandle getFilehandle(String filehandlename) {
+	/**
+	 * @param filehandlename
+	 * @return
+	 * @throws SmoldynException if no filehandle with the path specified by filehandlename
+	 */
+	public Filehandle getFilehandle(String filehandlename) throws SmoldynException {
 		if(!hasFilehandle(filehandlename)) {
 			SimulationUtilities.throwNoAssociatedValueException("filehandle (name was <" + filehandlename + ">)");
 		}
@@ -147,8 +157,9 @@ public class SimulationSettings {
 		return this.internalsettings;
 	}
 	
-	public void setInternalSettings(InternalSettings simulationsettings) {
-		this.internalsettings = simulationsettings;
+	public void setInternalSettings(InternalSettings internalsettings) {
+		SimulationUtilities.checkForNull(InternalSettings.class.toString(), internalsettings);
+		this.internalsettings = internalsettings;
 	}
 
 	public SmoldynTime getSmoldyntime() {
@@ -156,14 +167,21 @@ public class SimulationSettings {
 	}
 
 	public void setSmoldyntime(SmoldynTime smoldyntime) {
+		SimulationUtilities.checkForNull(SmoldynTime.class.toString(), smoldyntime);
 		this.smoldyntime = smoldyntime;
 	}	
 	
 	
-	public void setBoxes(int x, int y, int z) {
-		this.boxes[0] = x;
-		this.boxes[1] = y;
-		this.boxes[2] = z;
+	/**
+	 * @param xboxes -- positive
+	 * @param yboxes -- positive
+	 * @param zboxes -- positive
+	 */
+	public void setBoxes(int xboxes, int yboxes, int zboxes) {
+		SimulationUtilities.checkForPositive("number of boxes", xboxes, yboxes, zboxes);
+		this.boxes[0] = xboxes;
+		this.boxes[1] = yboxes;
+		this.boxes[2] = zboxes;
 	}
 	
 	public int [] getBoxes() {

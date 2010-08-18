@@ -11,8 +11,8 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  * a rate, a name, and a location.  The reactants must be in the solution state.
  * 
  * Invariants:
- * 		name, reactants, and products are not null
- * 		name, location, reactants, and products may not be changed
+ * 		name, location, reactants, and products are not null
+ * 		rate is non-negative
  * 
  * @author mfenwick
  *
@@ -20,23 +20,24 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
 public class VolumeReaction implements SmoldynReaction {
 	private final VolumeReactionParticipants reactants;
 	private final VolumeReactionParticipants products;
-	private double rate;
+	private final double rate;
 	private final String name;
 	private final Compartment location;
 	
 	
 	/**
-	 * @param reactants
-	 * @param products
-	 * @param rate
-	 * @param reactionname
-	 * @param compartment set to null to specify the entire simulation as the reaction volume
+	 * @param reactants -- not null
+	 * @param products -- not null
+	 * @param rate -- nonnegative
+	 * @param reactionname -- not null
+	 * @param compartment -- not null
 	 */
 	public VolumeReaction(String reactionname, Compartment compartment, VolumeReactionParticipants reactants, 
 			VolumeReactionParticipants products, double rate) {
+		SimulationUtilities.checkForNull("argument to volume reaction constructor", reactionname, compartment, reactants, products);
+		SimulationUtilities.checkForNonNegative("volume reaction rate", rate);
 		this.reactants = reactants;
 		this.products = products;
-		SimulationUtilities.checkForNonNegative("volume reaction rate", rate);
 		this.rate = rate;
 		this.name = reactionname;
 		this.location = compartment;
@@ -53,11 +54,6 @@ public class VolumeReaction implements SmoldynReaction {
 	
 	public double getRate() {
 		return rate;
-	}
-	
-	public void setRate(double newrate) {
-		SimulationUtilities.checkForNonNegative("volume reaction rate", newrate);
-		this.rate = newrate;
 	}
 	
 	public String getName() {

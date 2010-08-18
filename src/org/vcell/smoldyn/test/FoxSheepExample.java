@@ -12,6 +12,7 @@ import org.vcell.smoldyn.model.util.Point;
 import org.vcell.smoldyn.model.util.Sphere;
 import org.vcell.smoldyn.model.util.Point.PointFactory;
 import org.vcell.smoldyn.simulation.Simulation;
+import org.vcell.smoldyn.simulation.SmoldynException;
 import org.vcell.smoldyn.simulationsettings.ControlEvent;
 import org.vcell.smoldyn.simulationsettings.InternalSettings;
 import org.vcell.smoldyn.simulationsettings.ObservationEvent;
@@ -61,35 +62,40 @@ public class FoxSheepExample {
 	 * @return a filled-out Simulation
 	 */
 	public Simulation getExample() {
-		this.addModelSpecies();
-		this.addModelSurfaces();
-		this.addModelSurfaceActions();
-		this.addModelCompartments();
-		this.addModelSpeciesStateDiffusion();
-		this.addModelVolumeReactions();
-		this.addModelSurfaceReactions();
-		this.addModelVolumeMolecules();
-		this.addModelSurfaceMolecules();
-		this.addModelManipulationEvents();
-		
-		this.addSimTime();
-		this.addSimFilehandles();
-		this.addSimObservationEvents();
-		this.addSimControlEvents();
-		this.addSimGraphics();
-		this.addSimInternalSettings();
+		try {
+			this.addModelSpecies();
+			this.addModelSurfaces();
+			this.addModelSurfaceActions();
+			this.addModelCompartments();
+			this.addModelSpeciesStateDiffusion();
+			this.addModelVolumeReactions();
+			this.addModelSurfaceReactions();
+			this.addModelVolumeMolecules();
+			this.addModelSurfaceMolecules();
+			this.addModelManipulationEvents();
+			
+			this.addSimTime();
+			this.addSimFilehandles();
+			this.addSimObservationEvents();
+			this.addSimControlEvents();
+			this.addSimGraphics();
+			this.addSimInternalSettings();
+		} catch (SmoldynException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		return simulation;
 	}
 	
-	private void addModelSpecies() {
+	private void addModelSpecies() throws SmoldynException {
 		String [] speciesnames = {"spec1", "spec2", "spec3", "spec4"};
 		for(String x : speciesnames) {
 			model.addSpecies(x);
 		}
 	}
 	
-	private void addModelSurfaces() {
+	private void addModelSurfaces() throws SmoldynException {
 		Geometryable geometry = model.getGeometry();
 		geometry.addSurface("surface1");
 		Surface surface = geometry.getSurface("surface1");
@@ -99,16 +105,16 @@ public class FoxSheepExample {
 		this.simulation.addSurfaceGraphics(surface, new SurfaceGraphics(new Color(.9f, .9f, .9f), Drawmode.edge, 28, 24));
 	}
 	
-	private void addModelSurfaceActions() {
+	private void addModelSurfaceActions() throws SmoldynException {
 		model.addSurfaceActions("surface1", "spec1", 1f, 1f, 1f);
 	}
 	
-	private void addModelCompartments() {
+	private void addModelCompartments() throws SmoldynException {
 		Geometryable geometry = model.getGeometry();
 		geometry.addCompartment("compartment1", new String [] {"surface1"}, new Point [] {});
 	}
 
-	private void addModelSpeciesStateDiffusion() {
+	private void addModelSpeciesStateDiffusion() throws SmoldynException {
 		int i = 0;
 		float j = 1;
 		StateType statetype = StateType.solution;
@@ -122,7 +128,7 @@ public class FoxSheepExample {
 		}
 	}
 	
-	private void addModelVolumeReactions() {
+	private void addModelVolumeReactions() throws SmoldynException {
 		model.addVolumeReaction("volumereaction1", null, null, "spec1", "spec1", "spec1", .007f);
 		model.addVolumeReaction("volumereaction2", null, "spec1", "spec3", "spec3", "spec3", 20f);
 		model.addVolumeReaction("volumereaction3", null, "spec3", null, null, null, .005f);
@@ -133,7 +139,7 @@ public class FoxSheepExample {
 		//TODO
 	}
 	
-	private void addModelVolumeMolecules() {
+	private void addModelVolumeMolecules() throws SmoldynException {
 		int number = 100;
 		PointFactory pf = model.getPointFactory();
 		model.addVolumeMolecule("compartment1", "spec1", pf.getNewPoint(50d, 50d, 50d), number);
@@ -154,14 +160,14 @@ public class FoxSheepExample {
 		simulationsettings.setSmoldyntime(new SmoldynTime(0f, 1000000f, .1f));
 	}
 	
-	private void addSimFilehandles() {
+	private void addSimFilehandles() throws SmoldynException {
 		String [] paths = {"filehandle.txt", "savesim.txt"};
 		for(String string : paths) {
 			simulationsettings.addFilehandle(string);
 		}
 	}
 	
-	private void addSimObservationEvents() {
+	private void addSimObservationEvents() throws SmoldynException {
 		simulationsettings.addObservationEvent(new EventTiming(0., 100000., 25.), 
 				ObservationEvent.EventType.TOTAL_MOLECULES_BY_TYPE, "filehandle.txt");
 		simulationsettings.addObservationEvent(new EventTiming(0., 50000., 5000.), 

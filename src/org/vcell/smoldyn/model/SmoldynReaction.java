@@ -330,6 +330,5 @@ public interface SmoldynReaction {
 	public String getName();
 	
 	public double getRate();
-	
-	public void setRate(double newrate);
+
 }

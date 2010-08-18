@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.vcell.smoldyn.model.util.Point;
 import org.vcell.smoldyn.model.util.Point.PointFactory;
+import org.vcell.smoldyn.simulation.SmoldynException;
 
 public class PointTest {
 
@@ -25,27 +26,27 @@ public class PointTest {
 	}
 
 	@Test
-	public void testPoint() {
+	public void testPoint() throws SmoldynException {
 		point = pf.getNewPoint(1d,2d,3d);
 		assertNotNull(point);
 	}
 
 	@Test
-	public void testGetX() {
+	public void testGetX() throws SmoldynException {
 		final double x = 1;
 		point = pf.getNewPoint(x,2d,3d);
 		assertEquals("problem with x: ", point.getX(), x, .000000001);
 	}
 
 	@Test
-	public void testGetY() {
+	public void testGetY() throws SmoldynException {
 		final double y = 2;
 		point = pf.getNewPoint(1d,y,3d);
 		assertEquals("whatever", point.getY(), y, .000000001);
 	}
 
 	@Test
-	public void testGetZ() {
+	public void testGetZ() throws SmoldynException {
 		final double z = 3;
 		point = pf.getNewPoint(1d,2d,z);
 		assertEquals("whatever", point.getZ(), z, .000000001);

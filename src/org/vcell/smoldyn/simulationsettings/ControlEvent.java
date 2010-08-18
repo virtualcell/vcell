@@ -1,8 +1,6 @@
-/**
- * 
- */
 package org.vcell.smoldyn.simulationsettings;
 
+import org.vcell.smoldyn.simulation.SimulationUtilities;
 import org.vcell.smoldyn.simulationsettings.util.EventTiming;
 
 /**
@@ -14,11 +12,10 @@ import org.vcell.smoldyn.simulationsettings.util.EventTiming;
  * @author mfenwick
  *
  */
-@Deprecated
 public class ControlEvent {
 
-	private EventTiming eventtiming;
-	private EventType eventtype;
+	private final EventTiming eventtiming;
+	private final EventType eventtype;
 	
 	
 	/**
@@ -30,6 +27,7 @@ public class ControlEvent {
 	 * @param eventtype
 	 */
 	public ControlEvent(EventTiming eventtiming, EventType eventtype) {
+		SimulationUtilities.checkForNull("argument to control event constructor", eventtiming, eventtype);
 		this.eventtiming = eventtiming;
 		this.eventtype = eventtype;
 	}
@@ -45,7 +43,7 @@ public class ControlEvent {
 	}
 	
 	
-	public enum EventType {
+	public static enum EventType {
 		
 		pause,
 		

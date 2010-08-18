@@ -19,16 +19,15 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  */
 public class EventTiming {
 
-	private double timestart;
-	private double timestop;
-	private double timestep;
+	private final double timestart;
+	private final double timestop;
+	private final double timestep;
 	
 	/**
 	 * 
 	 * @param start
-	 * @param stop
-	 * @param step
-	 * @throws IllegalArgumentException if stop is less than start or step is negative
+	 * @param stop -- greater than or equal to start
+	 * @param step -- non-negative
 	 */
 	public EventTiming(double start, double stop, double step) {
 		/*
@@ -37,9 +36,7 @@ public class EventTiming {
 		 * if start equals stop -> @
 		 * etc.
 		 */
-		if(stop < start) {
-			SimulationUtilities.throwIllegalArgumentException("event start time must be before stop time");
-		}
+		SimulationUtilities.assertIsTrue("event start time must not be after stop time", start <= stop);
 		SimulationUtilities.checkForNonNegative("step", step);
 		this.timestart = start;
 		this.timestop = stop;

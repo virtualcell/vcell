@@ -13,7 +13,6 @@ import org.vcell.smoldyn.simulation.Simulation;
  * @author mfenwick
  *
  */
-@Deprecated
 public class SimulationGraphics {
 
 	private GraphicsType graphicstype = null;
@@ -33,6 +32,7 @@ public class SimulationGraphics {
 	/**
 	 * Instantiates a new SimulationGraphics with default values for graphicstype and graphic_iter.
 	 * 
+	 * WARNING:  Invariants have not yet been defined for this class.
 	 */
 	public SimulationGraphics() {
 		graphicstype = GraphicsType.opengl_good;

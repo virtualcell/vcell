@@ -12,10 +12,10 @@ public class SimulationWriterTest {
 	
 	public static void main(String[] args) {
 		String name = "SmoldynTest";
-		String base = "SmoldynTest\\";//put it in the test folder
+		String base = "C:\\";//put it in the test folder
 		Simulation simulation = new SimulationExample().getExample();
 //		simulation = new FoxSheepExample().getExample();
-		SmoldynWriteUtilities.findFilesAndPrintConfigFile(name, base, simulation);
+		SmoldynWriteTestUtilities.findFilesAndPrintConfigFile(name, base, simulation);
 	}
 	
 	

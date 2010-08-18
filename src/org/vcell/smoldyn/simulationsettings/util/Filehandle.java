@@ -13,11 +13,10 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  */
 public class Filehandle {
 
-	private String path;
+	private final String path;
 	
 	/**
-	 * @param path
-	 * @throws NullPointerException if path is null
+	 * @param path -- not null
 	 */
 	public Filehandle(String path) {
 		SimulationUtilities.checkForNull("filehandle path", path);

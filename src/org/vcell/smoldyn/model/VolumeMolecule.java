@@ -21,7 +21,7 @@ public class VolumeMolecule implements SmoldynMolecule {
 	private final Compartment compartment;
 	private final Species species;
 	private final Point point;
-	private int count;
+	private final int count;
 	
 	
 	/**
@@ -31,9 +31,11 @@ public class VolumeMolecule implements SmoldynMolecule {
 	 * @param compartment null implies not localized to a compartment
 	 * @param species must not be null
 	 * @param point null implies random distribution
+	 * @throws SmoldynNullException 
 	 */
-	public VolumeMolecule(Compartment compartment, Species species, Point point, int count) {
-		SimulationUtilities.checkForNull("species and point", species, point);
+	public VolumeMolecule(Compartment compartment, Species species, Point point, int count){
+		SimulationUtilities.checkForNull("species, point or compartment", species, point, compartment);
+		SimulationUtilities.checkForPositive("count", count);
 		this.compartment = compartment;
 		this.species = species;
 		this.point = point;

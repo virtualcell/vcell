@@ -23,24 +23,21 @@ public class SurfaceMolecule implements SmoldynMolecule {
 	private final SpeciesState speciesstate;
 	private final Surface surface;
 	private final Point point;
-	private int count;
+	private final int count;
 	
 	
 	/**
 	 * 
-	 * @param speciesstate
-	 * @param surface
-	 * 
-	 * @throws NullPointerException if speciesstate or surface is null
+	 * @param speciesstate -- not null, and must not be equal to StateType.solution
+	 * @param surface -- not null
+	 * @param point -- not null
+	 * @param count -- positive
 	 * @throws RuntimeException if StateType of speciesstate is solution
 	 */
 	public SurfaceMolecule(SpeciesState speciesstate, Surface surface, Point point, int count) {
-		SimulationUtilities.checkForNull("speciesstate", speciesstate);
-		SimulationUtilities.checkForNull("surface", surface);
-		
-		if(speciesstate.getState() == StateType.solution) {
-			SimulationUtilities.throwRuntimeException("surface molecules may not be in solution");
-		}
+		SimulationUtilities.checkForNull("speciesstate or surface", speciesstate, surface);
+		SimulationUtilities.assertIsTrue("surface molecules must not be in solution", speciesstate.getState() != StateType.solution);
+		SimulationUtilities.checkForPositive("count", count);
 		this.speciesstate = speciesstate;
 		this.surface = surface;
 		this.point = point;

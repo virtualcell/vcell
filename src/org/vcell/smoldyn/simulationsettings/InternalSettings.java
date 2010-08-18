@@ -60,11 +60,19 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  * </span>
  * 
  * Invariants:
- * 		all instance variables are non-negative
+ * 		accuracy is non-negative
+ * 		gaussian table size and boxwidth are positive
+ * 		randomseed is greater than or equal to -1
+ * 
+ * Value interpretations:
+ * 		randomseed >= 0: 
+ * 			pass the value of randomseed to Smoldyn
+ * 		randomseed == -1:
+ * 			pass nothing to Smoldyn for randomseed (allowing Smoldyn to decide what the random number seed should be)
  */
 public class InternalSettings{
 
-	private final Integer randomseed;
+	private final int randomseed;
 	private final double accuracy;
 	private final double boxwidth;
 	private final int gausstablesize;
@@ -72,19 +80,11 @@ public class InternalSettings{
 //	private final double neighbordist;//defaults to three times the maximum rms step length of surface bound molecules
 	
 	/**
-	 * Default constructor, if default values are acceptable or the values can be set later.
-	 * 
-	 */
-	public InternalSettings() {
-		this(null);
-	}
-	
-	/**
 	 * Sets everything but the random number seed to the default value.
 	 * 
-	 * @param randomseed
+	 * @param randomseed 
 	 */
-	public InternalSettings(Integer randomseed) {
+	public InternalSettings(int randomseed){
 		this(randomseed, 10, 1, 4096);
 	}
 	
@@ -93,18 +93,14 @@ public class InternalSettings{
 	 * Sets the values of internal settings used by Smoldyn.
 	 * 
 	 * @param randomseed int
-	 * @param accuracy double
-	 * @param boxwidth double
-	 * @param gausstablesize int
+	 * @param accuracy double -- between 0 and 10 (inclusive)
+	 * @param boxwidth double -- positive
+	 * @param gausstablesize positive, power of 2
 	 * 
-	 * @throws IllegalArgumentException if any parameter is less than 0
 	 */
-	public InternalSettings(Integer randomseed, double accuracy, double boxwidth, int gausstablesize) {
-		if(randomseed != null) {
-			SimulationUtilities.checkForNonNegative("randomseed", randomseed);
-		}
-		SimulationUtilities.checkForNonNegative("accuracy or gaussian table size", accuracy, gausstablesize);
-		SimulationUtilities.checkForPositive("boxsize", boxwidth);
+	public InternalSettings(int randomseed, double accuracy, double boxwidth, int gausstablesize) {
+		SimulationUtilities.assertIsTrue("accuracy", accuracy >= 0 && accuracy <= 10);
+		SimulationUtilities.checkForPositive("boxsize or gaussian table size", boxwidth, gausstablesize);
 		this.randomseed = randomseed;
 		this.accuracy = accuracy;
 		this.boxwidth = boxwidth;

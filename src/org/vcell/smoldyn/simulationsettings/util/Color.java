@@ -12,55 +12,45 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  */
 public class Color {
 
-	private Float red;
-	private Float green;
-	private Float blue;
-	private Float alpha;
+	private final double red;
+	private final double green;
+	private final double blue;
+	private final double alpha;
 	
 	/**
 	 * Construct a new Color.  Alpha is set to 1, as it is currently unused by Smoldyn.
 	 * 
-	 * @param red
-	 * @param green
-	 * @param blue
-	 * @throws IllegalArgumentException if red, green, or blue is less than 0 or greater than 1
+	 * @param red -- between 0 and 1
+	 * @param green -- between 0 and 1
+	 * @param blue -- between 0 and 1
 	 */
-	public Color(Float red, Float green, Float blue) {
-		if(red < 0 || red > 1) {
-			SimulationUtilities.throwIllegalArgumentException("invalid value for color channel red -- must be between 0 and 1 (value was: <" +
-					red + ">)");
-		}
-		if(green < 0 || green > 1) {
-			SimulationUtilities.throwIllegalArgumentException("invalid value for color channel green -- must be between 0 and 1 (value was: <" +
-					green + ">)");
-		}
-		if(blue < 0 || blue > 1) {
-			SimulationUtilities.throwIllegalArgumentException("invalid value for color channel blue -- must be between 0 and 1 (value was: <" +
-					blue + ">)");
+	public Color(double red, double green, double blue) {
+		for(double d : new double [] {red, green, blue}) {
+			SimulationUtilities.assertIsTrue("color value must be between 0 and 1", d >= 0 && d <= 1);
 		}
 		this.red = red;
 		this.green = green;
 		this.blue = blue;
 		this.alpha = 1f;
 	}
-//	public Color(Float red, Float green, Float blue, Float alpha) {
+//	public Color(double red, double green, double blue, double alpha) {
 //		this(red, green, blue);
 //		this.alpha = alpha;
 //	}
 
-	public Float getRed() {
+	public double getRed() {
 		return red;
 	}
 
-	public Float getGreen() {
+	public double getGreen() {
 		return green;
 	}
 
-	public Float getBlue() {
+	public double getBlue() {
 		return blue;
 	}
 	
-	public Float getAlpha() {
+	public double getAlpha() {
 		return alpha;
 	}
 }

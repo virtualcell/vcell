@@ -15,7 +15,6 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  * @author mfenwick
  *
  */
-@Deprecated
 public class SpeciesStateGraphics {
 
 	private Color color;
@@ -23,18 +22,12 @@ public class SpeciesStateGraphics {
 
 	
 	/**
-	 * @param color
-	 * @param displaysize
-	 * @throws NullPointerException if color is null
-	 * @throws IllegalArgumentException if displaysize is less than one
+	 * @param color -- not null
+	 * @param displaysize -- positive
 	 */
 	public SpeciesStateGraphics(Color color, int displaysize) {
-		if(color == null) {
-			SimulationUtilities.throwNullPointerException("color");
-		}
-		if(displaysize < 1) {
-			SimulationUtilities.throwIllegalArgumentException("displaysize must be positive");
-		}
+		SimulationUtilities.checkForNull("color", color);
+		SimulationUtilities.checkForPositive("displaysize", displaysize);
 		this.color = color;
 		this.displaysize = displaysize;
 	}

@@ -13,15 +13,15 @@ import org.vcell.smoldyn.simulationsettings.util.EventTiming;
  */
 public class VCellObservationEvent {
 	
-	private VCellEventType eventtype;
-	private EventTiming eventtiming;
+	private final VCellEventType eventtype;
+	private final EventTiming eventtiming;
 	
 	
 	/**
 	 * @param eventtiming
 	 * @param eventtype
 	 */
-	public VCellObservationEvent(EventTiming eventtiming, VCellEventType eventtype) {
+	public VCellObservationEvent(EventTiming eventtiming, VCellEventType eventtype){
 		SimulationUtilities.checkForNull("argument to VCellObservationEvent", eventtiming, eventtype);
 		this.eventtiming = eventtiming;
 		this.eventtype = eventtype;
