@@ -1,19 +1,18 @@
 package org.vcell.sybil.rdf.smelt;
 
-/*   SameAsCrystalizer  --- by Oliver Ruebenacker, UCHC --- July 2009
+/*   SameAsCrystalizer  --- by Oliver Ruebenacker, UCHC --- July 2009 to August 2010
  *   Changes a set of resources into the same namespace
  */
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.vcell.sybil.rdf.compare.NodeComparatorByType;
 import org.vcell.sybil.rdf.compare.NodeComparatorNS;
-
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
@@ -22,9 +21,7 @@ import com.hp.hpl.jena.vocabulary.OWL;
 
 public class SameAsCrystalizer implements RDFSmelter {
 	
-	
 	protected Comparator<? super RDFNode> comparator;
-	protected Map<Resource, Resource> sameAsMap = new HashMap<Resource, Resource>();
 	
 	public SameAsCrystalizer() { comparator = new NodeComparatorByType(); }
 	
@@ -38,73 +35,68 @@ public class SameAsCrystalizer implements RDFSmelter {
 	
 	
 	public Model smelt(Model rdf) {
-		Model rdfNew = ModelFactory.createDefaultModel();
-		rdfNew.add(rdf);
-		rdfNew.setNsPrefixes(rdf);
-		boolean progressWasMade = true;
-		while(progressWasMade) {
-			progressWasMade = false;
-			StmtIterator stmtIter = rdfNew.listStatements(null, OWL.sameAs, (RDFNode) null);
-			if(stmtIter.hasNext()) {
-				progressWasMade = true;
-				Model rdfNewNext = ModelFactory.createDefaultModel();
-				rdfNewNext.setNsPrefixes(rdf);
-				Statement statementSameAs = stmtIter.nextStatement();
-				Resource resource1 = statementSameAs.getSubject();
-				RDFNode node2 = statementSameAs.getObject();
-				if(node2 instanceof Resource) {
-					rdfNew.remove(statementSameAs);
-					Resource resource2 = (Resource) node2;
-					sameAsMap.put(resource1, resource2);
-					stmtIter = rdfNew.listStatements();
-					if(comparator.compare(resource1, resource2) > 0) {
-						Resource tmp = resource1;
-						resource1 = resource2;
-						resource2 = tmp;
+		Map<Resource, Set<Resource>> sameAsSetsMap = new HashMap<Resource, Set<Resource>>();
+		StmtIterator sameAsStmtIter = rdf.listStatements(null, OWL.sameAs, (RDFNode) null);
+		while(sameAsStmtIter.hasNext()) {
+			Statement sameAsStatement = sameAsStmtIter.nextStatement();
+			RDFNode objectNode = sameAsStatement.getObject();
+			if(objectNode.isResource()) {
+				Resource subject = sameAsStatement.getSubject();
+				Resource object = (Resource) objectNode;
+				Set<Resource> subjectSameAsSet = sameAsSetsMap.get(subject);
+				Set<Resource> objectSameAsSet = sameAsSetsMap.get(object);
+				if(subjectSameAsSet != null && objectSameAsSet != null) {
+					if(!subjectSameAsSet.equals(objectSameAsSet)) {
+						Set<Resource> sameAsUnionSet = new HashSet<Resource>();
+						sameAsUnionSet.addAll(subjectSameAsSet);
+						sameAsUnionSet.addAll(objectSameAsSet);
+						sameAsSetsMap.put(subject, sameAsUnionSet);
+						sameAsSetsMap.put(object, sameAsUnionSet);
 					}
-					if(resource1.isURIResource() && resource2.isURIResource()) {
-						Property property1 = rdfNew.createProperty(resource1.getURI());
-						Property property2 = rdfNew.createProperty(resource2.getURI());
-						while(stmtIter.hasNext()) {
-							Statement statement = stmtIter.nextStatement();
-							Resource subject = statement.getSubject();
-							if(resource1.equals(subject)) { subject = resource2; }
-							Property predicate = statement.getPredicate();
-							if(property1.equals(predicate)) { predicate = property2; }
-							RDFNode object = statement.getObject();
-							if(resource1.equals(object)) { object = resource2; }
-							rdfNewNext.add(subject, predicate, object);
-						}
-					} else {
-						while(stmtIter.hasNext()) {
-							Statement statement = stmtIter.nextStatement();
-							Resource subject = statement.getSubject();
-							if(resource1.equals(subject)) { subject = resource2; }
-							Property predicate = statement.getPredicate();
-							RDFNode object = statement.getObject();
-							if(resource1.equals(object)) { object = resource2; }
-							rdfNewNext.add(subject, predicate, object);
-						}						
-					}
-					rdfNew.close();
-					rdfNew = rdfNewNext;
+				} else if(subjectSameAsSet != null) {
+					subjectSameAsSet.add(object);
+					sameAsSetsMap.put(object, subjectSameAsSet);
+				} else if(objectSameAsSet != null) {
+					objectSameAsSet.add(subject);
+					sameAsSetsMap.put(subject, objectSameAsSet);
+				} else {
+					Set<Resource> sameAsUnionSet = new HashSet<Resource>();
+					sameAsUnionSet.add(subject);
+					sameAsUnionSet.add(object);
+					sameAsSetsMap.put(subject, sameAsUnionSet);
+					sameAsSetsMap.put(object, sameAsUnionSet);
 				}
-			}			
+			}
 		}
-//		for(Map.Entry<Resource, Resource> entry : sameAsMap.entrySet()) {
-//			rdfNew.add(entry.getKey(), OWL.sameAs, entry.getValue());
-//		}
-		return rdfNew;
-	}
-	
-	public Map<Resource, Resource> sameAsMap() { return sameAsMap; }
-
-	public Model sameAsModel() { 
-		Model rdf = ModelFactory.createDefaultModel();
-		for(Map.Entry<Resource, Resource> entry : sameAsMap.entrySet()) {
-			rdf.add(entry.getKey(), OWL.sameAs, entry.getValue());
+		Set<Set<Resource>> sameAsSets = new HashSet<Set<Resource>>();
+		for(Map.Entry<Resource, Set<Resource>> sameAsSetsEntry : sameAsSetsMap.entrySet()) {
+			sameAsSets.add(sameAsSetsEntry.getValue());
 		}
-		return rdf;
+		Map<Resource, Resource> projectionMap = new HashMap<Resource, Resource>();
+		for(Set<Resource> sameAsSet : sameAsSets) {
+			Resource preferredResource = null;
+			for(Resource resource : sameAsSet) {
+				if(preferredResource == null || comparator.compare(resource, preferredResource) > 0) {
+					preferredResource = resource;
+				}
+			}
+			for(Resource resource : sameAsSet) {
+				if(resource != preferredResource) {
+					projectionMap.put(resource, preferredResource);
+				}
+			}
+		}
+		RDFResourceProjection rdfResourceProjection = new RDFResourceProjection(projectionMap);
+		Model rdfSmelted = rdfResourceProjection.smelt(rdf);
+		rdfSmelted.removeAll(null, OWL.sameAs, (RDFNode) null);
+		for(Map.Entry<Resource, Resource> projectionEntry : projectionMap.entrySet()) {
+			Resource subject = projectionEntry.getValue();
+			Resource object = projectionEntry.getKey();
+			if(!subject.equals(object)) {
+				rdfSmelted.add(subject, OWL.sameAs, object);				
+			}
+		}
+		return rdfSmelted;
 	}
 	
 }
