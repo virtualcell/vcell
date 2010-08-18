@@ -28,7 +28,6 @@ public class ManipulationEventWriter {
 		// TODO Auto-generated method stub
 //		ManipulationEvent [] manipulationevents = model.getManipulationEvents();
 		writer.println("# manipulation events");
-		Utilities.writeUnimplementedWarning("manipulation events", false);
 		writer.println();
 		writer.println();
 	}

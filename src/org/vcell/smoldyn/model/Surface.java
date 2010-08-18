@@ -3,7 +3,6 @@ package org.vcell.smoldyn.model;
 
 import org.vcell.smoldyn.model.util.Panel;
 import org.vcell.smoldyn.simulation.SimulationUtilities;
-
 import java.util.HashSet;
 
 
@@ -87,9 +86,7 @@ public class Surface {
 	/**
 	 * Instantiates a new Surface with the specified name, which must be non-null.
 	 * 
-	 * @param name
-	 * @throws NullPointerException if name is null
-	 * 
+	 * @param name -- not null
 	 */
 	public Surface(String name) {
 		SimulationUtilities.checkForNull("surface name", name);
@@ -104,7 +101,7 @@ public class Surface {
 	/**
 	 * Adds a panel to the current surface.  A panel is an interface for the six different shape types that 
 	 * Smoldyn supports.
-	 * @param panel Panel
+	 * @param panel Panel -- not null
 	 */
 	public void addPanel(Panel panel) {
 		SimulationUtilities.checkForNull("panel", panel);

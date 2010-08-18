@@ -1,5 +1,7 @@
 package org.vcell.smoldyn.simulationsettings;
 
+import org.vcell.smoldyn.simulation.SimulationUtilities;
+
 
 /**
  * Smoldyn uses a simple system for time specification.  The user must specify the start time, stop time, and step time.  Since there are
@@ -9,34 +11,28 @@ package org.vcell.smoldyn.simulationsettings;
  * elapsed), then go through its stuff at t = 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100.
  * 
  * Invariants:
- * 		start must be less than or equal to stop
- * 		step must be greater than or equal to 0
+ * 		start must be less than stop
+ * 		step must be positive
  * 
  * @author mfenwick
  *
  */
 public class SmoldynTime {
 
-	private double starttime;
-	private double stoptime;
-	private double steptime;
-//	private Float time_now;
+	private final double starttime;
+	private final double stoptime;
+	private final double steptime;
+//	private final Float time_now;
 	
 	/**
 	 * Instantiates a new SmoldynTime object. // TODO see reference manual to figure out what exactly these mean
 	 * @param start
-	 * @param stop
-	 * @param step
-	 * @throws RuntimeException if the stop time is less than the start time, or if the
-	 * step value is negative or zero.
+	 * @param stop -- greater than start
+	 * @param step -- positive
 	 */
 	public SmoldynTime(double start, double stop, double step) {
-		if (stop < start) {
-			throw new RuntimeException("Simulation stop time must be greater than start time");
-		}
-		if (step <= 0) {
-			throw new RuntimeException("Simulation time step must be positive");
-		}
+		SimulationUtilities.assertIsTrue("start time before stop time", start < stop);
+		SimulationUtilities.checkForPositive("step", step);
 		starttime = start;
 		stoptime = stop;
 		steptime = step;

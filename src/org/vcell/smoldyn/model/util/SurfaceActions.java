@@ -57,12 +57,12 @@ public class SurfaceActions {
 	/**
 	 * Initializes a {@link SurfaceActions} with the specified behavior.
 	 * 
-	 * @param reflectfront probability that a solution molecule hitting the surface from the front is reflected
-	 * @param absorbfront probability that a solution molecule hitting the surface from the front is absorbed
-	 * @param transmitfront (....) is transmitted
-	 * @param reflectback etc.
-	 * @param absorbback etc.
-	 * @param transmitback etc.
+	 * @param reflectfront -- nonnegative: probability that a solution molecule hitting the surface from the front is reflected
+	 * @param absorbfront -- nonnegative: probability that a solution molecule hitting the surface from the front is absorbed
+	 * @param transmitfront -- nonnegative: (....) is transmitted
+	 * @param reflectback -- nonnegative: etc.
+	 * @param absorbback -- nonnegative: etc.
+	 * @param transmitback -- nonnegative: etc.
 	 */
 	public SurfaceActions(double reflectfront, double absorbfront, double transmitfront, double reflectback,
 			double absorbback, double transmitback) {

@@ -25,7 +25,7 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
 public class SpeciesState {
 	private final Species species;
 	private final StateType state;
-	private double diffusionconstant;
+	private final double diffusionconstant;
 	
 	
 	/**
@@ -44,9 +44,9 @@ public class SpeciesState {
 	 * Anisotropic diffusion is not currently supported, but parameters are included as placeholders for future development.  However,
 	 * attempting to use these features will cause an exception to be thrown.
 	 * 
-	 * @param species Species must not be null
-	 * @param statetype StateType must not be null
-	 * @param isotropicdiffusionconstant must be non-negative
+	 * @param species Species -- must not be null
+	 * @param statetype StateType -- must not be null
+	 * @param isotropicdiffusionconstant -- must be non-negative
 	 */
 	public SpeciesState(Species species, StateType statetype, double isotropicdiffusionconstant) {
 		SimulationUtilities.checkForNull("species or statetype", species, statetype);
@@ -60,14 +60,6 @@ public class SpeciesState {
 
 	public double getDifc() {
 		return diffusionconstant;
-	}
-	
-	/**
-	 * @param difc new diffusions constant -- must be non-negative
-	 */
-	public void setDifc(double difc) {
-		SimulationUtilities.checkForNonNegative("diffusion constant", difc);
-		this.diffusionconstant = difc;
 	}
 
 	public StateType getState() {

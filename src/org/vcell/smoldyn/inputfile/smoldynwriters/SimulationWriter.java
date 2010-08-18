@@ -57,8 +57,8 @@ public class SimulationWriter {
 		GeometryWriter gw = new GeometryWriter(simulation, writer);
 		gw.write();//writes dim, compartments, surfaces
 		
-		BoundaryWriter bw = new BoundaryWriter(simulation, writer);
-		bw.write();
+//		BoundaryWriter bw = new BoundaryWriter(simulation, writer);
+//		bw.write();
 		
 		SpeciesStateWriter speciesstatewriter = new SpeciesStateWriter(simulation, writer);
 		speciesstatewriter.write();

@@ -30,7 +30,6 @@ public class MoleculeWriter {
 
 	public void write() {
 		writer.println("# locations of molecules");
-		Utilities.writeUncertainUsageWarning("maximum number of molecules to reserve", false);
 		int maxMolecules = 0;
 		for(VolumeMolecule vm : model.getVolumeMolecules()) {
 			maxMolecules += vm.getCount();

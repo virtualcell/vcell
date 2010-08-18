@@ -14,19 +14,18 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  */
 public class Port {
 
-	private String name;
-	Surface surface;
-	FaceType face;
+	private final String name;
+	private final Surface surface;
+	private final FaceType face;
 	
 	
 	/**
 	 * @param name
 	 * @param surface
 	 * @param face
-	 * @throws RuntimeException since Ports are not understood
 	 */
 	public Port(String name, Surface surface, FaceType face) {
-		SimulationUtilities.throwRuntimeException("ports are not understood and can not be safely used");
+		SimulationUtilities.throwIllegalArgumentException("ports are not understood and can not be safely used");
 		this.name = name;
 		this.surface = surface;
 		this.face = face;

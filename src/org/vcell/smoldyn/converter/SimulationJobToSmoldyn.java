@@ -13,6 +13,7 @@ import org.vcell.smoldyn.model.util.Point;
 import org.vcell.smoldyn.model.util.Triangle;
 import org.vcell.smoldyn.model.util.Point.PointFactory;
 import org.vcell.smoldyn.simulation.Simulation;
+import org.vcell.smoldyn.simulation.SmoldynException;
 import org.vcell.smoldyn.simulationsettings.InternalSettings;
 import org.vcell.smoldyn.simulationsettings.SimulationSettings;
 import org.vcell.smoldyn.simulationsettings.SmoldynTime;
@@ -89,7 +90,7 @@ public class SimulationJobToSmoldyn {
 	}
 	
 	
-	private void convert() {
+	private void convert() throws SmoldynException {
 		this.setSmoldynGeometry();
 		this.setSpecies();
 		this.setSpeciesStates();
@@ -115,7 +116,7 @@ public class SimulationJobToSmoldyn {
 		}
 	}
 	
-	private void setSmoldynGeometry() {
+	private void setSmoldynGeometry() throws SmoldynException {
 		Geometry origvcellgeometry = vcellSimJob.getSimulation().getMathDescription().getGeometry();
 		Geometry vcellGeometry = null;
 		// clone and resample geometry
@@ -153,7 +154,7 @@ public class SimulationJobToSmoldyn {
 		}
 	}
 
-	private void addSmoldynSurface(GeometricRegion gr, Geometry vcellgeometry, Geometryable smoldyngeometry) {
+	private void addSmoldynSurface(GeometricRegion gr, Geometry vcellgeometry, Geometryable smoldyngeometry) throws SmoldynException {
 		GeometrySurfaceDescription geoSurfaceDescription = vcellgeometry.getGeometrySurfaceDescription();
 		smoldyngeometry.addSurface(gr.getName());
 		VolumeGeometricRegion insideVolRegion = (VolumeGeometricRegion) gr.getAdjacentGeometricRegions()[0];
@@ -163,7 +164,7 @@ public class SimulationJobToSmoldyn {
 	}
 	
 	private void addPanels(org.vcell.smoldyn.model.Surface smoldynsurface, Integer volRegionID, 
-			GeometrySurfaceDescription geometrySurfaceDescription){
+			GeometrySurfaceDescription geometrySurfaceDescription) throws SmoldynException{
 		SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
 		for(int j = 0; j < surfaceCollection.getSurfaceCount(); j++) {
 			Surface surface = surfaceCollection.getSurfaces(j);
@@ -193,7 +194,7 @@ public class SimulationJobToSmoldyn {
 		}
 	}
 	
-	private void addTriangle(org.vcell.smoldyn.model.Surface smoldynsurface, Node [] nodes, Boolean interior) {
+	private void addTriangle(org.vcell.smoldyn.model.Surface smoldynsurface, Node [] nodes, Boolean interior) throws SmoldynException {
 		Point [] points = new Point [3];
 		PointFactory pf = this.smoldynmodel.getPointFactory();
 		points[0] = pf.getNewPoint(nodes[0].getX(), nodes[0].getY(), nodes[0].getZ());
@@ -202,7 +203,7 @@ public class SimulationJobToSmoldyn {
 		smoldynsurface.addPanel(new Triangle(null, points[0], points[1], points[2]));
 	}
 	
-	private void addSmoldynCompartment(VolumeGeometricRegion volumegr, Geometry vcellgeometry, Geometryable smoldyngeometry) {
+	private void addSmoldynCompartment(VolumeGeometricRegion volumegr, Geometry vcellgeometry, Geometryable smoldyngeometry) throws SmoldynException {
 		GeometrySurfaceDescription geoSurfaceDescription = vcellgeometry.getGeometrySurfaceDescription();
 		SubVolume subVolume = (SubVolume)geoSurfaceDescription.getGeometryClass(volumegr);
 		GeometricRegion[] adjacentRegions = volumegr.getAdjacentGeometricRegions();
@@ -217,14 +218,14 @@ public class SimulationJobToSmoldyn {
 				new Point [] {convertCoordinateToPoint(coord)});
 	}	
 	
-	private Point convertCoordinateToPoint(Coordinate coordinate) {
+	private Point convertCoordinateToPoint(Coordinate coordinate) throws SmoldynException {
 		PointFactory pf = this.smoldynmodel.getPointFactory();
 		Point point = pf.getNewPoint(coordinate.getX(), coordinate.getY(), coordinate.getZ());
 		return point;
 	}
 
 	
-	private void setSpecies() {
+	private void setSpecies() throws SmoldynException {
 		Enumeration<Variable> variables = mathd.getVariables();
 		while(variables.hasMoreElements()) {
 			smoldynmodel.addSpecies(variables.nextElement().getName());
@@ -237,9 +238,10 @@ public class SimulationJobToSmoldyn {
 	}
 	
 	/**
+	 * @throws SmoldynException 
 	 * 
 	 */
-	private void setParticlesInitialConditions() {
+	private void setParticlesInitialConditions() throws SmoldynException {
 		Enumeration<SubDomain> subdomains = mathd.getSubDomains();
 		while(subdomains.hasMoreElements()) {
 			SubDomain subdomain = subdomains.nextElement();
@@ -255,8 +257,9 @@ public class SimulationJobToSmoldyn {
 	 * 
 	 * @param props
 	 * @param subdomainname
+	 * @throws SmoldynException 
 	 */
-	private void setInitialConditionsDiffusion(List<ParticleProperties> props, String subdomainname) {
+	private void setInitialConditionsDiffusion(List<ParticleProperties> props, String subdomainname) throws SmoldynException {
 		for(ParticleProperties partprops : props) {
 			try {
 				this.smoldynmodel.addSpeciesState(partprops.getVariable().getName(), StateType.solution, 
@@ -273,8 +276,9 @@ public class SimulationJobToSmoldyn {
 	 * @param init
 	 * @param subdomainname
 	 * @param variablename
+	 * @throws SmoldynException 
 	 */
-	private void setInitialLocations(ArrayList<ParticleInitialCondition> init, String subdomainname, String variablename) {
+	private void setInitialLocations(ArrayList<ParticleInitialCondition> init, String subdomainname, String variablename) throws SmoldynException {
 		PointFactory pf = this.smoldynmodel.getPointFactory();
 		for(ParticleInitialCondition partinit : init) {
 			double whatever = Double.valueOf(partinit.getCount().infix());
@@ -295,7 +299,7 @@ public class SimulationJobToSmoldyn {
 	}
 	
 	
-	private void setReactions() {
+	private void setReactions() throws SmoldynException {
 		Enumeration<SubDomain> subdomains = mathd.getSubDomains();
 		while(subdomains.hasMoreElements()) {
 			SubDomain subdomain = subdomains.nextElement();
@@ -349,7 +353,7 @@ public class SimulationJobToSmoldyn {
 		smoldynsimulationsettings.setSmoldyntime(smoldynTime);
 	}
 	
-	private void setOutput() {
+	private void setOutput() throws SmoldynException {
 		TimeBounds timeBounds = vcellSimJob.getSimulation().getSolverTaskDescription().getTimeBounds();
 		double timestep = vcellSimJob.getSimulation().getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
 		OutputTimeSpec ots = vcellSimJob.getSimulation().getSolverTaskDescription().getOutputTimeSpec();

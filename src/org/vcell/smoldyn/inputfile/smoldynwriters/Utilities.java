@@ -1,5 +1,7 @@
 package org.vcell.smoldyn.inputfile.smoldynwriters;
 
+import org.vcell.smoldyn.inputfile.SmoldynWritingException;
+
 
 
 /**
@@ -18,12 +20,12 @@ public class Utilities {
 	 * 
 	 * @param feature
 	 * @param throwexception
-	 * @throws RuntimeException if requested
+	 * @throws SmoldynWritingException if requested
 	 */
-	public static void writeUnimplementedWarning(String feature, boolean throwexception) {
+	public static void writeUnimplementedWarning(String feature, boolean throwexception) throws SmoldynWritingException {
 		System.err.println("warning: writing of " + feature + " has not yet been implemented");
 		if(throwexception) {
-			throw new RuntimeException("attempting to write " + feature + " caused a RuntimeException");
+			throw new SmoldynWritingException("attempting to write " + feature + " caused a RuntimeException");
 		}
 	}
 	
@@ -34,12 +36,12 @@ public class Utilities {
 	 * 
 	 * @param warning
 	 * @param throwexception
-	 * @throws RuntimeException if requested
+	 * @throws SmoldynWritingException if requested
 	 */
-	public static void writeUncertainUsageWarning(String warning, boolean throwexception) {
+	public static void writeUncertainUsageWarning(String warning, boolean throwexception) throws SmoldynWritingException {
 		System.err.println("warning: usage of " + warning + " has not yet been fully tested");
 		if(throwexception) {
-			throw new RuntimeException("attempting to write " + warning + " caused a RuntimeException");
+			throw new SmoldynWritingException("attempting to write " + warning + " caused a RuntimeException");
 		}
 	}
 	
@@ -47,10 +49,10 @@ public class Utilities {
 	/**
 	 * 
 	 * @param message
-	 * @throws RuntimeException
+	 * @throws SmoldynWritingException 
 	 */
-	public static void throwUnexpectedException(String message) {
-		throw new RuntimeException("unexpected conditions: " + message);
+	public static void throwUnexpectedException(String message) throws SmoldynWritingException {
+		throw new SmoldynWritingException("unexpected conditions: " + message);
 	}
 	
 	

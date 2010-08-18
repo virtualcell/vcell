@@ -21,7 +21,6 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  * @author mfenwick
  *
  */
-@Deprecated
 public class SurfaceGraphics {
 
 	private Color color;//front and back
@@ -34,14 +33,13 @@ public class SurfaceGraphics {
 	/**
 	 * @param color Color
 	 * @param drawmode Drawmode
-	 * @param slices Integer--the number of longitudinal lines used to draw rounded panels on this surface
-	 * @param stacks Integer--the number of latitudinal lines that will be used to draw rounded panels on this surface
-	 * @throws NullPointerException if color or drawmode is null
+	 * @param slices int -- positive: the number of longitudinal lines used to draw rounded panels on this surface
+	 * @param stacks int -- positive: the number of latitudinal lines that will be used to draw rounded panels on this surface
+	 * 
 	 */
 	public SurfaceGraphics(Color color, Drawmode drawmode, int slices, int stacks) {
-		if(color == null || drawmode == null) {
-			SimulationUtilities.throwNullPointerException("color or drawmode in SurfaceGraphics");
-		}
+		SimulationUtilities.checkForNull("color or drawmode", color, drawmode);
+		SimulationUtilities.checkForPositive("slices or stacks", slices, stacks);
 		this.color = color;
 		this.drawmode = drawmode;
 		this.slices = slices;
@@ -89,7 +87,7 @@ public class SurfaceGraphics {
 	 * @author mfenwick
 	 *
 	 */
-	public enum Drawmode {
+	public static enum Drawmode {
 		
 		none,
 		vertex,

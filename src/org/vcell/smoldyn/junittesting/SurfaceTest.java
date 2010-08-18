@@ -14,6 +14,7 @@ import org.vcell.smoldyn.model.util.Rectangle;
 import org.vcell.smoldyn.model.util.Triangle;
 import org.vcell.smoldyn.model.util.Vector;
 import org.vcell.smoldyn.model.util.Point.PointFactory;
+import org.vcell.smoldyn.simulation.SmoldynException;
 
 public class SurfaceTest {
 
@@ -47,22 +48,22 @@ public class SurfaceTest {
 	}
 
 	@Test
-	public final void testAddPanel() {
+	public final void testAddPanel() throws SmoldynException {
 		Surface s = new Surface("surfacename");
 		PointFactory pointfactory = new PointFactory(0, 10, 0, 10, 0, 10);
 		s.addPanel(new Triangle(null, pointfactory.getNewPoint(1d,2d,3d), pointfactory.getNewPoint(4d,5d,6d), 
 				pointfactory.getNewPoint(7d, 8d, 9d)));
-		s.addPanel(new Rectangle(null, 1, pointfactory.getNewPoint(1d,2d,3d), 10, 11));
+		s.addPanel(new Rectangle(null, false, 1, pointfactory.getNewPoint(1d,2d,3d), 10, 11));
 		s.addPanel(new Disk(null, pointfactory.getNewPoint(1d,2d,3d), 5, new Vector(new float[] {1,2,3})));
 	}
 
 	@Test
-	public final void testGetPanels() {
+	public final void testGetPanels() throws SmoldynException {
 		Surface s = new Surface("surfacename");
 		PointFactory pointfactory = new PointFactory(0, 10, 0, 10, 0, 10);
 		s.addPanel(new Triangle(null, pointfactory.getNewPoint(1d,2d,3d), pointfactory.getNewPoint(4d,5d,6d), 
 				pointfactory.getNewPoint(7d, 8d, 9d)));
-		s.addPanel(new Rectangle(null, 1, pointfactory.getNewPoint(1d,2d,3d), 10, 11));
+		s.addPanel(new Rectangle(null, false, 1, pointfactory.getNewPoint(1d,2d,3d), 10, 11));
 		s.addPanel(new Disk(null, pointfactory.getNewPoint(1d,2d,3d), 5, new Vector(new float[] {1,2,3})));
 		Panel [] panels = s.getPanels();
 		assertEquals("how many panels?", 3, panels.length);

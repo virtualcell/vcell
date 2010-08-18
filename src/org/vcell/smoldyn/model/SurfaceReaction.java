@@ -24,7 +24,7 @@ public class SurfaceReaction implements SmoldynReaction {
 	private final SurfaceReactionParticipants reactants;
 	private final SurfaceReactionParticipants products;
 	private final String reactionname;
-	private double rate;
+	private final double rate;
 	private final Surface surface;
 	
 	
@@ -45,7 +45,7 @@ public class SurfaceReaction implements SmoldynReaction {
 			SurfaceReactionParticipants products, double rate) {
 		SimulationUtilities.checkForNull("surface reaction constructor argument", reactionname, surface, reactants, products);
 		if(reactants.getParticipants().length == 0 && products.getParticipants().length == 0) {
-			SimulationUtilities.throwRuntimeException("a surface reaction must have at least 1 product or reactant");
+			SimulationUtilities.throwIllegalArgumentException("a surface reaction must have at least 1 product or reactant");
 		}
 		SimulationUtilities.checkForNonNegative("reaction rate", rate);
 		this.reactionname = reactionname;
@@ -73,11 +73,6 @@ public class SurfaceReaction implements SmoldynReaction {
 	
 	public double getRate() {
 		return this.rate;
-	}
-	
-	public void setRate(double newrate) {
-		SimulationUtilities.checkForNonNegative("reaction rate", newrate);
-		this.rate = newrate;
 	}
 	
 	public Surface getSurface() {

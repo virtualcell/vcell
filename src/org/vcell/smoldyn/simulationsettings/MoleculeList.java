@@ -62,17 +62,16 @@ unassigned with the mol_list statement are automatically assigned to new a list 
  */
 public class MoleculeList {
 
-	private String name = null;
-	private ArrayList<SpeciesState> speciesstates;//can also specify 'diffusing' or 'fixed' as a species state
+	private final String name;
+	private final ArrayList<SpeciesState> speciesstates = new ArrayList<SpeciesState>();//can also specify 'diffusing' or 'fixed' as a species state
 	
 	
 	/**
 	 * @param name
+	 * @throws SmoldynNullException 
 	 */
 	public MoleculeList(String name) {
-		if(name == null) {
-			SimulationUtilities.throwNullPointerException("molecule list");
-		}
+		SimulationUtilities.checkForNull("molecule list", name);
 		this.name = name;
 	}
 	

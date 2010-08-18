@@ -26,12 +26,12 @@ public class Boundaries {
 	
 	
 	/**
-	 * Instantiates the simulation size on one dimension
-	 * 
-	 * @param low 
-	 * @param high
-	 * @throws IllegalArgumentException if the high value
-	 * is less than or equal to the low value.
+	 * @param xlow
+	 * @param xhigh -- greater than xlow
+	 * @param ylow
+	 * @param yhigh -- greater than ylow
+	 * @param zlow
+	 * @param zhigh -- greater than zlow
 	 */
 	public Boundaries(double xlow, double xhigh, double ylow, double yhigh, double zlow, double zhigh) {
 		if (xhigh <= xlow) {

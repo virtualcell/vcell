@@ -38,13 +38,13 @@ public class CompartmentWriter {
 			for(Surface surface : compartment.getSurfaces()) {
 				writer.println(SmoldynFileKeywords.Compartment.surface + " " + surface.getName());
 			}
-			Utilities.writeUnimplementedWarning("points to define compartment sides", false);
 			for(Point point : compartment.getPoints()) {
 				writer.println(SmoldynFileKeywords.Compartment.point + " " + point.getX() + " " + point.getY() + " " + point.getZ());
 			}
+			//TODO figure out how to define inside/outside with points
 			writer.println(SmoldynFileKeywords.Compartment.end_compartment);
+			writer.println();
 		}
-		writer.println();
 		writer.println();
 	}
 	

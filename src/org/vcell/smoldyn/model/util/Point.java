@@ -3,6 +3,7 @@ package org.vcell.smoldyn.model.util;
 import org.vcell.smoldyn.model.Boundaries;
 import org.vcell.smoldyn.model.Geometryable;
 import org.vcell.smoldyn.simulation.SimulationUtilities;
+import org.vcell.smoldyn.simulation.SmoldynException;
 
 
 
@@ -28,7 +29,7 @@ public class Point {
 	 * @param y
 	 * @param z
 	 */
-	private Point(Double x, Double y, Double z){
+	public Point(Double x, Double y, Double z){
 		this.X = x;
 		this.Y = y;
 		this.Z = z;
@@ -70,22 +71,16 @@ public class Point {
 		
 		/**
 		 * @param xlow
-		 * @param xhigh
+		 * @param xhigh -- greater than or equal to xlow
 		 * @param ylow
-		 * @param yhigh
+		 * @param yhigh -- greater than or equal to ylow
 		 * @param zlow
-		 * @param zhigh
+		 * @param zhigh -- greater than or equal to zlow
 		 */
 		public PointFactory(double xlow, double xhigh, double ylow, double yhigh, double zlow, double zhigh) {
-			if(xhigh < xlow) {
-				SimulationUtilities.throwInvariantConditionViolatedException("xhigh less than xlow");
-			}
-			if(yhigh < ylow) {
-				SimulationUtilities.throwInvariantConditionViolatedException("yhigh less than ylow");
-			}
-			if(zhigh < zlow) {
-				SimulationUtilities.throwInvariantConditionViolatedException("zhigh less than zlow");
-			}
+			SimulationUtilities.assertIsTrue("xlow is less than xhigh", xlow < xhigh);			
+			SimulationUtilities.assertIsTrue("xlow is less than xhigh", ylow < yhigh);
+			SimulationUtilities.assertIsTrue("xlow is less than xhigh", zlow < zhigh);
 			this.xlow = xlow;
 			this.xhigh = xhigh;
 			this.ylow = ylow;
@@ -104,15 +99,22 @@ public class Point {
 			this.zhigh = boundaries.getZhigh();
 		}
 		
-		public Point getNewPoint(Double x, Double y, Double z) {
+		/**
+		 * @param x -- >= this.xlow && <= this.xhigh
+		 * @param y -- >= this.ylow && <= this.yhigh
+		 * @param z -- >= this.zlow && <= this.zhigh
+		 * @return a new Point with the requested coordinates
+		 * @throws SmoldynException if x, y, or z is outside of the boundaries established when the PointFactory was constructed.
+		 */
+		public Point getNewPoint(Double x, Double y, Double z) throws SmoldynException {
 			if (x != null && (x < this.xlow || x > this.xhigh)) {
-				SimulationUtilities.throwInvariantConditionViolatedException("x coordinate of point");
+				SimulationUtilities.throwSmoldynException("x coordinate of point");
 			}
 			if (y != null && (y < this.ylow || y > this.yhigh)) {
-				SimulationUtilities.throwInvariantConditionViolatedException("y coordinate of point");
+				SimulationUtilities.throwSmoldynException("y coordinate of point");
 			}
 			if (z != null && (z < this.zlow || z > this.zhigh)) {
-				SimulationUtilities.throwInvariantConditionViolatedException("z coordinate of point");
+				SimulationUtilities.throwSmoldynException("z coordinate of point");
 			}
 			return new Point(x, y, z);
 		}

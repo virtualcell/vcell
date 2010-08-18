@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.vcell.smoldyn.inputfile.SmoldynFileKeywords;
+import org.vcell.smoldyn.inputfile.SmoldynWritingException;
 import org.vcell.smoldyn.model.Geometryable;
 import org.vcell.smoldyn.model.Model;
 import org.vcell.smoldyn.model.Species;
@@ -23,6 +24,7 @@ import org.vcell.smoldyn.model.util.SurfaceActions;
 import org.vcell.smoldyn.model.util.Triangle;
 import org.vcell.smoldyn.model.util.Panel.ShapeType;
 import org.vcell.smoldyn.simulation.Simulation;
+import org.vcell.smoldyn.simulation.SmoldynException;
 import org.vcell.smoldyn.simulationsettings.util.Color;
 import org.vcell.smoldyn.simulationsettings.util.SurfaceGraphics;
 
@@ -47,7 +49,7 @@ public class SurfaceWriter {
 	}
 	
 	
-	public void write() {
+	public void write() throws SmoldynWritingException {
 		writer.println("# surfaces");
 		Surface [] surfaces = geometry.getSurfaces();
 		for(Surface surface : surfaces) {
@@ -61,24 +63,27 @@ public class SurfaceWriter {
 			writeUnboundedEmitters(surface);
 
 			writer.println(SmoldynFileKeywords.Surface.end_surface);
+			writer.println();
 		}
-		writer.println();
 		writer.println();
 	}
 
 	private void writeActions(Surface surface) {
-		Utilities.writeUnimplementedWarning("surface actions", false);
-		Hashtable<Species, SurfaceActions> table = model.getSurfaceActions(surface.getName());
-		if(table == null) {
-			return;
-		}
-		Set<Map.Entry<Species, SurfaceActions>> entries = table.entrySet();
-		for(Map.Entry<Species, SurfaceActions> entry : entries) {
-			Species s = entry.getKey();
-			SurfaceActions a = entry.getValue();
-			writeReflect(a, s);
-			writeTransmit(a, s);
-			writeAbsorb(a, s);
+		try {
+			Hashtable<Species, SurfaceActions> table = model.getSurfaceActions(surface.getName());
+			if(table == null) {
+				return;
+			}
+			Set<Map.Entry<Species, SurfaceActions>> entries = table.entrySet();
+			for(Map.Entry<Species, SurfaceActions> entry : entries) {
+				Species s = entry.getKey();
+				SurfaceActions a = entry.getValue();
+				writeReflect(a, s);
+				writeTransmit(a, s);
+				writeAbsorb(a, s);
+			}
+		} catch (SmoldynException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -117,7 +122,7 @@ public class SurfaceWriter {
 		//shininess <face> <value>
 	}
 	
-	private void writePanels(Surface surface) {
+	private void writePanels(Surface surface) throws SmoldynWritingException {
 		SurfaceGraphics surfacegraphics = this.simulation.getSurfaceGraphics(surface);
 		HashMap<ShapeType, Integer> shapemaxes = new HashMap<ShapeType, Integer>();
 		for(ShapeType s : ShapeType.values()) {
@@ -149,20 +154,29 @@ public class SurfaceWriter {
 	}
 
 
-	private void writeCylinder(Cylinder cylinder, SurfaceGraphics surfacegraphics) {
+	private void writeCylinder(Cylinder cylinder, SurfaceGraphics surfacegraphics) throws SmoldynWritingException {
 		Utilities.writeUnimplementedWarning("cylinders", true);
 	}
 	
-	private void writeDisk(Disk disk, SurfaceGraphics surfacegraphics) {
+	private void writeDisk(Disk disk, SurfaceGraphics surfacegraphics) throws SmoldynWritingException {
 		Utilities.writeUnimplementedWarning("disks", true);
 	}
 
-	private void writeHemisphere(Hemisphere hemisphere, SurfaceGraphics surfacegraphics) {
+	private void writeHemisphere(Hemisphere hemisphere, SurfaceGraphics surfacegraphics) throws SmoldynWritingException {
 		Utilities.writeUnimplementedWarning("hemispheres", true);
 	}
 
-	private void writeRectangle(Rectangle rectangle, SurfaceGraphics surfacegraphics) {
-		Utilities.writeUnimplementedWarning("rectangles", true);
+	private void writeRectangle(Rectangle rectangle, SurfaceGraphics surfacegraphics) throws SmoldynWritingException {
+		final Point corner = rectangle.getCorner();
+		final String sign;
+		if(rectangle.isSign()) {
+			sign = "+";
+		} else {
+			sign = "-";
+		}
+		writer.println(SmoldynFileKeywords.Surface.panel + " " + rectangle.getShapeType() + " " + sign + 
+				rectangle.getPerpendicular_axis() + " " + corner.getX() + " " + corner.getY() + " " + corner.getZ() + " " + 
+				rectangle.getDim1() + " " + rectangle.getDim2() + " " + rectangle.getName());
 	}
 
 	
@@ -185,12 +199,11 @@ public class SurfaceWriter {
 		this.writer.println();
 	}
 	
-	private void writeUnboundedEmitters(Surface surface) {
-		Utilities.writeUnimplementedWarning("unbounded emitters", false);
+	private void writeUnboundedEmitters(Surface surface) throws SmoldynWritingException {
+		//TODO
 	}
 	
-	private void writeNeighbors(Surface surface) {
-		Utilities.writeUnimplementedWarning("neighbors", false);
-		
+	private void writeNeighbors(Surface surface) throws SmoldynWritingException {
+		//TODO
 	}
 }

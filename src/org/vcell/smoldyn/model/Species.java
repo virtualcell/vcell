@@ -4,7 +4,6 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
 
 
 
-
 /**
  * A species is a group of molecules which are treated as having a certain identity by Smoldyn, upon which the behavior of the molecule is
  * based.  A good way to think of a species is as a chemical compound.  A molecule may change state (be adsorbed or desorbed) without
