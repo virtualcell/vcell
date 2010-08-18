@@ -239,8 +239,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private transient BioModel bioModel = null;
 	private SimulationContext.SimulationContextParameter[] fieldSimulationContextParameters = new SimulationContextParameter[0];
 	private AnalysisTask[] fieldAnalysisTasks = null;
-	private boolean isParticle=true;
-	private boolean isStoch;
+	private boolean bStoch;
 	private boolean bConcentration = true;
 	private DataContext dataContext = new DataContext(getNameScope());
 
@@ -302,7 +301,7 @@ public SimulationContext(SimulationContext simulationContext, boolean arg_isStoc
 		}
 	}
 	
-	if (!isStoch) {
+	if (!bStoch) {
 		BioEvent[] bioEvents = simulationContext.getBioEvents();
 		if (bioEvents != null) {
 			fieldBioEvents = new BioEvent[bioEvents.length];
@@ -561,7 +560,7 @@ public boolean compareEqual(Matchable object) {
 	}else{
 		simContext = (SimulationContext)object;
 	}
-	if(simContext.isStoch != isStoch)
+	if(simContext.bStoch != bStoch)
 	{
 		return false;
 	}
@@ -1212,11 +1211,7 @@ public synchronized boolean hasListeners(String propertyName) {
  * @return boolean
  */
 public boolean isStoch() {
-	return isStoch;
-}
-
-public boolean isParticle() {
-	return isParticle;
+	return bStoch;
 }
 
 
@@ -1716,7 +1711,7 @@ public void setGroundElectrode(Electrode groundElectrode) throws java.beans.Prop
  * @param newIsStoch boolean
  */
 private void setIsStoch(boolean newIsStoch) {
-	isStoch = newIsStoch;
+	bStoch = newIsStoch;
 }
 
 
@@ -1958,7 +1953,7 @@ public void convertSpeciesIniCondition(boolean bUseConcentration) throws Mapping
 
 public String getMathType()
 {
-	return isStoch ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR;
+	return bStoch ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR;
 }
 
 public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
