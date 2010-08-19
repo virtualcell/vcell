@@ -39,6 +39,11 @@ public class SpeciesWriter {
 		}
 		for(Species s : species) {
 			writer.print(" " + s.getName());
+		}
+		writer.println();
+		writer.println();
+		writer.println("# diffusion properties");
+		for(Species s : species) {
 			writeDiffusion(s);
 			writeGraphics(s);
 		}
