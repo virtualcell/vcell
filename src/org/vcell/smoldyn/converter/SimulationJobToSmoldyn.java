@@ -8,8 +8,12 @@ import java.util.List;
 import org.vcell.smoldyn.model.Geometryable;
 import org.vcell.smoldyn.model.Model;
 import org.vcell.smoldyn.model.Model.Dimensionality;
-import org.vcell.smoldyn.model.SpeciesState.StateType;
+import org.vcell.smoldyn.model.Participant.Product;
+import org.vcell.smoldyn.model.Participant.Reactant;
+import org.vcell.smoldyn.model.Species;
+import org.vcell.smoldyn.model.Species.StateType;
 import org.vcell.smoldyn.model.util.Point;
+import org.vcell.smoldyn.model.util.ReactionParticipants;
 import org.vcell.smoldyn.model.util.Triangle;
 import org.vcell.smoldyn.model.util.Point.PointFactory;
 import org.vcell.smoldyn.simulation.Simulation;
@@ -262,8 +266,8 @@ public class SimulationJobToSmoldyn {
 	private void setInitialConditionsDiffusion(List<ParticleProperties> props, String subdomainname) throws SmoldynException {
 		for(ParticleProperties partprops : props) {
 			try {
-				this.smoldynmodel.addSpeciesState(partprops.getVariable().getName(), StateType.solution, 
-					Double.valueOf(partprops.getDiffusion().infix()));
+				Species species = this.smoldynmodel.getSpecies(partprops.getVariable().getName());
+				species.setSolutiondiffusion(Double.valueOf(partprops.getDiffusion().infix()));
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}
@@ -306,13 +310,13 @@ public class SimulationJobToSmoldyn {
 			for(ParticleJumpProcess pjp : subdomain.getParticleJumpProcesses().toArray(
 					new ParticleJumpProcess [subdomain.getParticleJumpProcesses().size()])) {
 				String name = pjp.getName();
-				String [] reactants = new String [2], products = new String [2];
-				int reactindex = 0, productindex = 0;
+				ArrayList<Reactant> reactants = new ArrayList<Reactant>(2);
+				ArrayList<Product> products = new ArrayList<Product>(2);
 				for(Action a : pjp.getActions().toArray(new Action [pjp.getActions().size()])) {
 					if(a.getOperation().equals(Action.ACTION_CREATE)) {
-						products[reactindex++] = a.getVar().getName();
+						products.add(new Product(this.smoldynmodel.getSpecies(a.getVar().getName())));
 					} else if(a.getOperation().equals(Action.ACTION_DESTROY)) {
-						reactants[productindex++] = a.getVar().getName();
+						reactants.add(new Reactant(this.smoldynmodel.getSpecies(a.getVar().getName())));
 					} else {
 						ConversionUtilities.printWarning("skipping action due to problem (unexpected operation): " + a.getOperation());
 					}
@@ -331,21 +335,20 @@ public class SimulationJobToSmoldyn {
 				}
 				if(subdomain instanceof CompartmentSubDomain) {
 					String compartname = subdomain.getName();
-					smoldynmodel.addVolumeReaction(name, compartname, reactants[0], reactants[1], products[0], products[1], 
-							(float) rateconstant);
+					ReactionParticipants participants = ConversionUtilities.getReactionParticipants(reactants, products);
+					smoldynmodel.addVolumeReaction(name, compartname, participants, rateconstant);
 				} else if (subdomain instanceof MembraneSubDomain){
 					String surfacename = subdomain.getName();
-					smoldynmodel.addSurfaceReaction(name, surfacename, reactants[0], StateType.back, reactants[1], StateType.back, 
-							products[0], StateType.back, products[1], StateType.back, rateconstant);
+					//TODO
 				} else {
 					ConversionUtilities.printWarning("I have something weird, it's a " + subdomain.getClass());
 				}
 			}
 		}
 	}
-	
-	
-	
+
+
+
 	private void setTime() {
 		TimeBounds timeBounds = vcellSimJob.getSimulation().getSolverTaskDescription().getTimeBounds();
 		TimeStep timeStep = vcellSimJob.getSimulation().getSolverTaskDescription().getTimeStep();		

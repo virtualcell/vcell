@@ -1,6 +1,11 @@
 package org.vcell.smoldyn.converter;
 
+import java.util.ArrayList;
+
 import org.vcell.smoldyn.model.Boundaries;
+import org.vcell.smoldyn.model.Participant.Product;
+import org.vcell.smoldyn.model.Participant.Reactant;
+import org.vcell.smoldyn.model.util.ReactionParticipants;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
@@ -27,6 +32,11 @@ class ConversionUtilities {
 		return boundaries;
 	}
 	
+	/**
+	 * What does this method do????
+	 * Maybe it's supposed to just return a point that is inside the geometric region, but then again, but it's supposed to do something
+	 * else entirely.
+	 */
 	static Coordinate getAnyCoordinate(Geometry geometry, GeometricRegion region){
 		RegionImage regionImage = geometry.getGeometrySurfaceDescription().getRegionImage();
 		int numX = regionImage.getNumX();
@@ -71,12 +81,48 @@ class ConversionUtilities {
 		}
 		return new Coordinate(totalX/count, totalY/count, totalZ/count);
 	}
-
 	
+	static ReactionParticipants getReactionParticipants(ArrayList<Reactant> reactants, ArrayList<Product> products) {
+		ReactionParticipants participants;
+		if(reactants.size() == 0) {
+			if(products.size() == 0) {
+				throw new RuntimeException("reaction problem: reaction has neither reactants nor products");
+			} else if(products.size() == 1) {
+				participants = new ReactionParticipants(products.get(0));
+			} else if(products.size() == 2) {
+				participants = new ReactionParticipants(products.get(0), products.get(1));
+			} else {
+				throw new RuntimeException("reaction problem: too many products");
+			}
+		} else if (reactants.size() == 1) {
+			if(products.size() == 0) {
+				participants = new ReactionParticipants(reactants.get(0));
+			} else if(products.size() == 1) {
+				participants = new ReactionParticipants(reactants.get(0), products.get(0));				
+			} else if(products.size() == 2) {
+				participants = new ReactionParticipants(reactants.get(0), products.get(0), products.get(1));
+			} else {
+				throw new RuntimeException("reaction problem: too many products");
+			}
+		} else if (reactants.size() == 2) {
+			if(products.size() == 0) {
+				participants = new ReactionParticipants(reactants.get(0), reactants.get(1));
+			} else if(products.size() == 1) {
+				participants = new ReactionParticipants(reactants.get(0), reactants.get(1), products.get(0));
+			} else if(products.size() == 2) {
+				participants = new ReactionParticipants(reactants.get(0), reactants.get(1), products.get(0), products.get(1));
+			} else {
+				throw new RuntimeException("reaction problem: too many products");
+			}
+		} else {
+			throw new RuntimeException("problem with reaction: too many reactants");
+		}
+		return participants;
+	}
+
 	static double getBoxsize(int numberofvcellboxes, double extent) {
 		return extent / (numberofvcellboxes - 1);//subtract 1 because vcell has two half boxes
 	}
-	
 	
 	static void throwRuntimeException(String message) {
 		throw new RuntimeException(message);

@@ -4,10 +4,10 @@ import java.io.PrintWriter;
 
 import org.vcell.smoldyn.inputfile.SmoldynFileKeywords;
 import org.vcell.smoldyn.model.Model;
+import org.vcell.smoldyn.model.Species;
 import org.vcell.smoldyn.model.SurfaceReaction;
 import org.vcell.smoldyn.model.VolumeReaction;
-import org.vcell.smoldyn.model.util.SurfaceReactionParticipants;
-import org.vcell.smoldyn.model.util.VolumeReactionParticipants;
+import org.vcell.smoldyn.model.util.ReactionParticipants;
 import org.vcell.smoldyn.simulation.Simulation;
 
 /**
@@ -37,22 +37,22 @@ public class ReactionWriter {
 	private void writeVolumeReactions() {
 		VolumeReaction [] volumereactions = model.getVolumeReactions();
 		for(VolumeReaction volumereaction : volumereactions) {
-			VolumeReactionParticipants reactants = volumereaction.getReactants();//getReactantspeciesstates();
-			VolumeReactionParticipants products = volumereaction.getProducts();
+			Species [] reactants = volumereaction.getReactants();//getReactantspeciesstates();
+			Species [] products = volumereaction.getProducts();
 			writer.println(SmoldynFileKeywords.Reaction.reaction + " " + volumereaction.getName() + " " + 
-					ReactionWriterHelp.getReactionParticipantString(reactants) + " -> " + 
-					ReactionWriterHelp.getReactionParticipantString(products) + " " + volumereaction.getRate());
+					ReactionWriterHelp.getVolumeReactionParticipantString(reactants) + " -> " + 
+					ReactionWriterHelp.getVolumeReactionParticipantString(products) + " " + volumereaction.getRate());
 		}
 	}
 	
 	private void writeSurfaceReactions() {
 		SurfaceReaction [] surfacereactions = model.getSurfaceReactions();
 		for(SurfaceReaction surfacereaction : surfacereactions) {
-			SurfaceReactionParticipants reactants = surfacereaction.getReactants();
-			SurfaceReactionParticipants products = surfacereaction.getProducts();
-			writer.println(SmoldynFileKeywords.Reaction.reaction_surface + " " + surfacereaction.getSurface().getName() + " " +
-					surfacereaction.getName() + " " + ReactionWriterHelp.getReactionParticipantString(reactants) + " -> " + 
-					ReactionWriterHelp.getReactionParticipantString(products) + " " + surfacereaction.getRate());
+//			SurfaceReactionParticipants reactants = surfacereaction.getReactants();
+//			SurfaceReactionParticipants products = surfacereaction.getProducts();
+//			writer.println(SmoldynFileKeywords.Reaction.reaction_surface + " " + surfacereaction.getSurface().getName() + " " +
+//					surfacereaction.getName() + " " + ReactionWriterHelp.getReactionParticipantString(reactants) + " -> " + 
+//					ReactionWriterHelp.getReactionParticipantString(products) + " " + surfacereaction.getRate());
 		}
 	}
 }

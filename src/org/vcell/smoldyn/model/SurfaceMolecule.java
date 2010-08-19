@@ -1,6 +1,6 @@
 package org.vcell.smoldyn.model;
 
-import org.vcell.smoldyn.model.SpeciesState.StateType;
+import org.vcell.smoldyn.model.Species.StateType;
 import org.vcell.smoldyn.model.util.Point;
 import org.vcell.smoldyn.simulation.SimulationUtilities;
 
@@ -20,7 +20,8 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  */
 public class SurfaceMolecule implements SmoldynMolecule {
 
-	private final SpeciesState speciesstate;
+	private final Species species;
+	private final StateType state;
 	private final Surface surface;
 	private final Point point;
 	private final int count;
@@ -34,19 +35,24 @@ public class SurfaceMolecule implements SmoldynMolecule {
 	 * @param count -- positive
 	 * @throws RuntimeException if StateType of speciesstate is solution
 	 */
-	public SurfaceMolecule(SpeciesState speciesstate, Surface surface, Point point, int count) {
-		SimulationUtilities.checkForNull("speciesstate or surface", speciesstate, surface);
-		SimulationUtilities.assertIsTrue("surface molecules must not be in solution", speciesstate.getState() != StateType.solution);
+	public SurfaceMolecule(Species species, StateType statetype, Surface surface, Point point, int count) {
+		SimulationUtilities.checkForNull("species, statetype, or surface", species, statetype, surface);
+		SimulationUtilities.assertIsTrue("surface molecules must not be in solution", statetype != StateType.solution);
 		SimulationUtilities.checkForPositive("count", count);
-		this.speciesstate = speciesstate;
+		this.species = species;
+		this.state = statetype;
 		this.surface = surface;
 		this.point = point;
 		this.count = count;
 	}
 	
 	
-	public SpeciesState getSpeciesStateDiffusion() {
-		return this.speciesstate;
+	public Species getSpecies() {
+		return this.species;
+	}
+	
+	public StateType getStateType() {
+		return this.state;
 	}
 	
 	public Surface getSurface() {

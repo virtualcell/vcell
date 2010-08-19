@@ -5,10 +5,10 @@ import java.util.HashMap;
 
 import org.vcell.smoldyn.model.Geometryable;
 import org.vcell.smoldyn.model.Model;
-import org.vcell.smoldyn.model.SpeciesState;
+import org.vcell.smoldyn.model.Species;
 import org.vcell.smoldyn.model.Surface;
 import org.vcell.smoldyn.simulationsettings.SimulationSettings;
-import org.vcell.smoldyn.simulationsettings.util.SpeciesStateGraphics;
+import org.vcell.smoldyn.simulationsettings.util.SpeciesGraphics;
 import org.vcell.smoldyn.simulationsettings.util.SurfaceGraphics;
 
 
@@ -55,7 +55,7 @@ public class Simulation {
 	private Model model;
 	private SimulationSettings simulationsettings;
 	private HashMap<Surface, SurfaceGraphics> surfacegraphics = new HashMap<Surface, SurfaceGraphics>();
-	private HashMap<SpeciesState, SpeciesStateGraphics> speciesstategraphics = new HashMap<SpeciesState, SpeciesStateGraphics>();
+	private HashMap<Species, SpeciesGraphics> speciesgraphics = new HashMap<Species, SpeciesGraphics>();
 	
 	
 	/**
@@ -68,17 +68,6 @@ public class Simulation {
 	public Simulation(Model model, SimulationSettings simulationsettings) {
 		this.model = model;
 		this.simulationsettings = simulationsettings;
-		this.checkSimulationIntegrity();
-	}
-	
-	
-	/**
-	 * Check whether the SimulationSettings are valid for the Model.
-	 * 
-	 * @throws Exception if violation found
-	 */
-	public void checkSimulationIntegrity() {
-		//TODO
 	}
 	
 	
@@ -105,27 +94,16 @@ public class Simulation {
 		this.surfacegraphics.put(surface, surfacegraphics);
 	}
 	
-	/**
-	 * @param speciesstate {@link SpeciesState}
-	 * @return speciesstategraphics {@link SpeciesStateGraphics} corresponding to the speciesstate
-	 */
-	public SpeciesStateGraphics getSpeciesStateGraphics(SpeciesState speciesstate) {
-		return this.speciesstategraphics.get(speciesstate);
+	
+	public SpeciesGraphics getSpeciesGraphics(Species species) {
+		return this.speciesgraphics.get(species);
 	}
 	
-	/**
-	 * Register display settings for a SpeciesState with the Simulation.  A Model has 
-	 * SpeciesStates, but they do not know anything about their display settings.  To 
-	 * give a SpeciesState display settings, a Simulation keeps a hash mapping:  the 
-	 * keys are SpeciesStates, and the values are SpeciesStateGraphics, which is also 
-	 * registered with the SimulationSettings.
-	 * @param speciesstate
-	 * @param speciesstategraphics
-	 */
-	public void addSpeciesStateGraphics(SpeciesState speciesstate, SpeciesStateGraphics speciesstategraphics) {
-		this.simulationsettings.addSpeciesStateGraphics(speciesstategraphics);
-		this.speciesstategraphics.put(speciesstate, speciesstategraphics);
+	public void addSpeciesGraphics(Species species, SpeciesGraphics speciesgraphics) {
+		this.simulationsettings.addSpeciesGraphics(speciesgraphics);
+		this.speciesgraphics.put(species, speciesgraphics);
 	}
+	
 
 	public Model getModel() {
 		return model;

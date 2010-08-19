@@ -1,6 +1,10 @@
 package org.vcell.smoldyn.model;
 
-import org.vcell.smoldyn.model.util.VolumeReactionParticipants;
+import java.util.ArrayList;
+
+import org.vcell.smoldyn.model.Participant.Product;
+import org.vcell.smoldyn.model.Participant.Reactant;
+import org.vcell.smoldyn.model.util.ReactionParticipants;
 import org.vcell.smoldyn.simulation.SimulationUtilities;
 
 
@@ -18,38 +22,43 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  *
  */
 public class VolumeReaction implements SmoldynReaction {
-	private final VolumeReactionParticipants reactants;
-	private final VolumeReactionParticipants products;
+	
+	private final ArrayList<Species> reactants =  new ArrayList<Species>();
+	private final ArrayList<Species> products = new ArrayList<Species>();
 	private final double rate;
 	private final String name;
 	private final Compartment location;
 	
 	
 	/**
-	 * @param reactants -- not null
-	 * @param products -- not null
+	 * @param reactants -- not null, no more than two, no null values
+	 * @param products -- not null, no more than two, no null values, and at least one of (reactants and products) must have more than
+	 * 		0 elements
 	 * @param rate -- nonnegative
 	 * @param reactionname -- not null
 	 * @param compartment -- not null
 	 */
-	public VolumeReaction(String reactionname, Compartment compartment, VolumeReactionParticipants reactants, 
-			VolumeReactionParticipants products, double rate) {
-		SimulationUtilities.checkForNull("argument to volume reaction constructor", reactionname, compartment, reactants, products);
+	public VolumeReaction(String reactionname, Compartment compartment, ReactionParticipants participants, double rate) {
+		SimulationUtilities.checkForNull("argument to volume reaction constructor", reactionname, compartment, participants);
 		SimulationUtilities.checkForNonNegative("volume reaction rate", rate);
-		this.reactants = reactants;
-		this.products = products;
+		for(Reactant r : participants.getReactants()) {
+			this.reactants.add(r.getSpecies());
+		}
+		for(Product p : participants.getProducts()) {
+			this.products.add(p.getSpecies());
+		}
 		this.rate = rate;
 		this.name = reactionname;
 		this.location = compartment;
 	}
 	
 	
-	public VolumeReactionParticipants getReactants() {
-		return reactants;
+	public Species [] getReactants() {
+		return reactants.toArray(new Species [reactants.size()]);
 	}
 	
-	public VolumeReactionParticipants getProducts() {
-		return products;
+	public Species [] getProducts() {
+		return products.toArray(new Species [products.size()]);
 	}
 	
 	public double getRate() {

@@ -6,13 +6,13 @@ import org.vcell.smoldyn.model.Geometry;
 import org.vcell.smoldyn.model.Geometryable;
 import org.vcell.smoldyn.model.Model;
 import org.vcell.smoldyn.model.Species;
-import org.vcell.smoldyn.model.SpeciesState;
 import org.vcell.smoldyn.model.Surface;
 import org.vcell.smoldyn.model.Model.Dimensionality;
-import org.vcell.smoldyn.model.SpeciesState.StateType;
+import org.vcell.smoldyn.model.Species.StateType;
 import org.vcell.smoldyn.model.util.Point;
 import org.vcell.smoldyn.model.util.Sphere;
 import org.vcell.smoldyn.model.util.Point.PointFactory;
+import org.vcell.smoldyn.model.util.SurfaceActions;
 import org.vcell.smoldyn.simulation.Simulation;
 import org.vcell.smoldyn.simulation.SmoldynException;
 import org.vcell.smoldyn.simulationsettings.ControlEvent;
@@ -23,7 +23,7 @@ import org.vcell.smoldyn.simulationsettings.ObservationEvent.EventType;
 import org.vcell.smoldyn.simulationsettings.util.Color;
 import org.vcell.smoldyn.simulationsettings.util.EventTiming;
 import org.vcell.smoldyn.simulationsettings.util.SimulationGraphics;
-import org.vcell.smoldyn.simulationsettings.util.SpeciesStateGraphics;
+import org.vcell.smoldyn.simulationsettings.util.SpeciesGraphics;
 import org.vcell.smoldyn.simulationsettings.util.SurfaceGraphics;
 import org.vcell.smoldyn.simulationsettings.util.SimulationGraphics.GraphicsType;
 import org.vcell.smoldyn.simulationsettings.util.SurfaceGraphics.Drawmode;
@@ -111,8 +111,8 @@ public class SimulationExample {
 	}
 	
 	private void addModelSurfaceActions() throws SmoldynException {
-		model.addSurfaceActions("surface1", "spec1", 1d, 1d, 1d);
-		model.addSurfaceActions("surface1", "spec5", .3d, .5d, .6d);
+		model.addSurfaceActions("surface1", "spec1", new SurfaceActions(1d, 1d, 1d));
+		model.addSurfaceActions("surface1", "spec5", new SurfaceActions(.3d, .5d, .6d));
 	}
 	
 	private void addModelCompartments() throws SmoldynException {
@@ -121,33 +121,33 @@ public class SimulationExample {
 	}
 
 	private void addModelSpeciesStateDiffusion() throws SmoldynException {
-		int i = 0;
-		float j = 1;
-		StateType statetype = StateType.solution;
-		Species [] modelspecies = model.getSpecies();
-		for(Species s : modelspecies) {
-			String name = s.getName();
-			model.addSpeciesState(name, statetype, 1d);
-			SpeciesState speciesstate = model.getSpeciesState(name, statetype);
-			this.simulation.addSpeciesStateGraphics(speciesstate, new SpeciesStateGraphics(
-					new Color((float) (j - .2 * i), (float) (.2 * i), (float) (j - .2 * i)), 1));
-			i = i + 1;
-		}
-		//further testing
-		Species tempspecies = modelspecies[0];
-		model.addSpeciesState(tempspecies.getName(), StateType.back, 2d);
-		model.addSpeciesState(tempspecies.getName(), StateType.front, 3d);
-		model.addSpeciesState(tempspecies.getName(), StateType.down, 4d);
-		model.addSpeciesState("spec1", StateType.up, .5d);
-		model.addSpeciesState("spec3", StateType.down, .2d);
-		model.addSpeciesState("spec4", StateType.up, .3d);
-		model.addSpeciesState("spec2", StateType.down, .8d);
+//		int i = 0;
+//		float j = 1;
+//		StateType statetype = StateType.solution;
+//		Species [] modelspecies = model.getSpecies();
+//		for(Species s : modelspecies) {
+//			String name = s.getName();
+//			model.addSpeciesState(name, statetype, 1d);
+//			SpeciesState speciesstate = model.getSpeciesState(name, statetype);
+//			this.simulation.addSpeciesStateGraphics(speciesstate, new SpeciesGraphics(
+//					new Color((float) (j - .2 * i), (float) (.2 * i), (float) (j - .2 * i)), 1));
+//			i = i + 1;
+//		}
+//		//further testing
+//		Species tempspecies = modelspecies[0];
+//		model.addSpeciesState(tempspecies.getName(), StateType.back, 2d);
+//		model.addSpeciesState(tempspecies.getName(), StateType.front, 3d);
+//		model.addSpeciesState(tempspecies.getName(), StateType.down, 4d);
+//		model.addSpeciesState("spec1", StateType.up, .5d);
+//		model.addSpeciesState("spec3", StateType.down, .2d);
+//		model.addSpeciesState("spec4", StateType.up, .3d);
+//		model.addSpeciesState("spec2", StateType.down, .8d);
 	}
 	
 	private void addModelVolumeReactions() throws SmoldynException {
-		model.addVolumeReaction("volumereaction1", Geometry.SIMULATIONENCLOSINGCOMPARTMENT, null, "spec1", "spec1", "spec1", .007f);
-		model.addVolumeReaction("volumereaction2", Geometry.SIMULATIONENCLOSINGCOMPARTMENT, "spec1", "spec3", "spec3", "spec3", 20f);
-		model.addVolumeReaction("volumereaction3", Geometry.SIMULATIONENCLOSINGCOMPARTMENT, "spec3", null, null, null, .005f);
+//		model.addVolumeReaction("volumereaction1", Geometry.SIMULATIONENCLOSINGCOMPARTMENT, null, "spec1", "spec1", "spec1", .007f);
+//		model.addVolumeReaction("volumereaction2", Geometry.SIMULATIONENCLOSINGCOMPARTMENT, "spec1", "spec3", "spec3", "spec3", 20f);
+//		model.addVolumeReaction("volumereaction3", Geometry.SIMULATIONENCLOSINGCOMPARTMENT, "spec3", null, null, null, .005f);
 //		model.addVolumeReaction("volumereaction3", null, "spec3", "spec3", "spec1", "spec4", .0001f, false);
 	}
 	

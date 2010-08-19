@@ -5,12 +5,10 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
 
 
 /**
- * A boundary limits the simulation volume in one dimension.
- * Both a high and a low value must be specified, which constrains
- * the simulation region between the given values.
+ * Boundaries set the limits of the simulation volume.
+ * Both a high and a low value must be specified for each dimension.
  * 
- * Invariants: low < high
- * 		both low and high are unchangeable
+ * Invariants: low <= high for each dimension
  * 
  * @author mfenwick
  *
@@ -27,22 +25,16 @@ public class Boundaries {
 	
 	/**
 	 * @param xlow
-	 * @param xhigh -- greater than xlow
+	 * @param xhigh -- greater than or equal to xlow
 	 * @param ylow
-	 * @param yhigh -- greater than ylow
+	 * @param yhigh -- greater than or equal to ylow
 	 * @param zlow
-	 * @param zhigh -- greater than zlow
+	 * @param zhigh -- greater than or equal to zlow
 	 */
 	public Boundaries(double xlow, double xhigh, double ylow, double yhigh, double zlow, double zhigh) {
-		if (xhigh <= xlow) {
-			SimulationUtilities.throwIllegalArgumentException("a boundary must have a high value greater than its low value");
-		}
-		if (yhigh <= ylow) {
-			SimulationUtilities.throwIllegalArgumentException("a boundary must have a high value greater than its low value");
-		}
-		if (zhigh <= zlow) {
-			SimulationUtilities.throwIllegalArgumentException("a boundary must have a high value greater than its low value");
-		}		
+		SimulationUtilities.assertIsTrue("boundary value error", xlow <= xhigh);
+		SimulationUtilities.assertIsTrue("boundary value error", ylow <= yhigh);
+		SimulationUtilities.assertIsTrue("boundary value error", zlow <= zhigh);		
 		this.xlow = xlow;
 		this.xhigh = xhigh;
 		this.yhigh = yhigh;

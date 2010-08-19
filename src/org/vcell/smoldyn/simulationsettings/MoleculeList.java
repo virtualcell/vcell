@@ -1,10 +1,5 @@
 package org.vcell.smoldyn.simulationsettings;
 
-import java.util.ArrayList;
-
-import org.vcell.smoldyn.model.SpeciesState;
-import org.vcell.smoldyn.simulation.SimulationUtilities;
-
 
 
 /**
@@ -62,31 +57,9 @@ unassigned with the mol_list statement are automatically assigned to new a list 
  */
 public class MoleculeList {
 
-	private final String name;
-	private final ArrayList<SpeciesState> speciesstates = new ArrayList<SpeciesState>();//can also specify 'diffusing' or 'fixed' as a species state
-	
-	
-	/**
-	 * @param name
-	 * @throws SmoldynNullException 
-	 */
-	public MoleculeList(String name) {
-		SimulationUtilities.checkForNull("molecule list", name);
-		this.name = name;
+	public MoleculeList() {
+		
 	}
-	
-	
-	public String getName() {
-		return name;
-	}
-	
-	public SpeciesState [] getSpeciesStates() {
-		return this.speciesstates.toArray(new SpeciesState [this.speciesstates.size()]);
-	}
-	
-	public void addSpeciesState(SpeciesState s) {
-		//TODO check if already in speciesstates
-		this.speciesstates.add(s);
-	}
+
 	
 }

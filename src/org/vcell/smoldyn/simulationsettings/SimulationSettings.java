@@ -11,7 +11,7 @@ import org.vcell.smoldyn.simulationsettings.VCellObservationEvent.VCellEventType
 import org.vcell.smoldyn.simulationsettings.util.EventTiming;
 import org.vcell.smoldyn.simulationsettings.util.Filehandle;
 import org.vcell.smoldyn.simulationsettings.util.SimulationGraphics;
-import org.vcell.smoldyn.simulationsettings.util.SpeciesStateGraphics;
+import org.vcell.smoldyn.simulationsettings.util.SpeciesGraphics;
 import org.vcell.smoldyn.simulationsettings.util.SurfaceGraphics;
 
 
@@ -34,7 +34,7 @@ public class SimulationSettings {
 	private ArrayList<ObservationEvent> observationevents = new ArrayList<ObservationEvent>();
 	private ArrayList<ControlEvent> controlevents = new ArrayList<ControlEvent>();
 	private Hashtable<String, Filehandle> filehandles = new Hashtable<String, Filehandle>();
-	private ArrayList<SpeciesStateGraphics> speciesstategraphics = new ArrayList<SpeciesStateGraphics>();
+	private ArrayList<SpeciesGraphics> speciesgraphics = new ArrayList<SpeciesGraphics>();
 	private ArrayList<SurfaceGraphics> surfacegraphics = new ArrayList<SurfaceGraphics>();	
 	private SimulationGraphics simulationgraphics;
 	private SmoldynTime smoldyntime;
@@ -51,13 +51,13 @@ public class SimulationSettings {
 	}
 
 
-	public void addSpeciesStateGraphics(SpeciesStateGraphics speciesstategraphics) {
-		SimulationUtilities.checkForNull("species-state graphics", speciesstategraphics);
-		this.speciesstategraphics.add(speciesstategraphics);
+	public void addSpeciesGraphics(SpeciesGraphics speciesgraphics) {
+		SimulationUtilities.checkForNull("species graphics", speciesgraphics);
+		this.speciesgraphics.add(speciesgraphics);
 	}
 	
-	public SpeciesStateGraphics [] getSpeciesStateGraphics() {
-		return this.speciesstategraphics.toArray(new SpeciesStateGraphics [this.speciesstategraphics.size()]);
+	public SpeciesGraphics [] getSpeciesGraphics() {
+		return this.speciesgraphics.toArray(new SpeciesGraphics [this.speciesgraphics.size()]);
 	}
 	
 	public void addSurfaceGraphics(SurfaceGraphics surfacegraphics) {

@@ -4,7 +4,6 @@ import java.io.PrintWriter;
 
 import org.vcell.smoldyn.inputfile.SmoldynFileKeywords;
 import org.vcell.smoldyn.model.Model;
-import org.vcell.smoldyn.model.SpeciesState;
 import org.vcell.smoldyn.model.SurfaceMolecule;
 import org.vcell.smoldyn.model.VolumeMolecule;
 import org.vcell.smoldyn.model.util.Point;
@@ -68,11 +67,12 @@ public class MoleculeWriter {
 	}
 	
 	private void writeSurfaceMolecules() {
-		SurfaceMolecule [] surfacemolecules = model.getSurfaceMolecules();
-		for(SurfaceMolecule surfacemolecule : surfacemolecules) {
-			SpeciesState ssd = surfacemolecule.getSpeciesStateDiffusion();
-			writer.println(SmoldynFileKeywords.Molecule.surface_mol + " " + surfacemolecule.getCount() + " " + 
-					ssd.getSpecies().getName() + "(" +  ssd.getState() + ") " + surfacemolecule.getSurface().getName() + " all all");
-		}
+		//TODO
+//		SurfaceMolecule [] surfacemolecules = model.getSurfaceMolecules();
+//		for(SurfaceMolecule surfacemolecule : surfacemolecules) {
+//			SpeciesState ssd = surfacemolecule.getSpeciesStateDiffusion();
+//			writer.println(SmoldynFileKeywords.Molecule.surface_mol + " " + surfacemolecule.getCount() + " " + 
+//					ssd.getSpecies().getName() + "(" +  ssd.getState() + ") " + surfacemolecule.getSurface().getName() + " all all");
+//		}
 	}
 }

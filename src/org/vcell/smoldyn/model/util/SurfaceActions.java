@@ -36,18 +36,11 @@ public class SurfaceActions {
 
 	
 	/**
-	 * Initializes a SurfaceActions with all rates set to 0.
-	 */
-	public SurfaceActions() {
-		this(0, 0, 0, 0, 0, 0);
-	}
-	
-	/**
 	 * Initializes a SurfaceActions with identical behavior on both sides.
 	 * 
-	 * @param reflectionrate
-	 * @param absorptionrate
-	 * @param transmissionrate
+	 * @param reflectionrate -- nonnegative double
+	 * @param absorptionrate -- nonnegative double
+	 * @param transmissionrate -- nonnegative double
 	 */
 	public SurfaceActions(double reflectionrate, double absorptionrate, double transmissionrate) {
 		this(reflectionrate, absorptionrate, transmissionrate, reflectionrate, absorptionrate, transmissionrate);
