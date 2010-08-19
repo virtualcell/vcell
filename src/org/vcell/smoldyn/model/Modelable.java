@@ -3,8 +3,9 @@ package org.vcell.smoldyn.model;
 
 import java.util.Hashtable;
 
-import org.vcell.smoldyn.model.SpeciesState.StateType;
+import org.vcell.smoldyn.model.Species.StateType;
 import org.vcell.smoldyn.model.util.Point;
+import org.vcell.smoldyn.model.util.ReactionParticipants;
 import org.vcell.smoldyn.model.util.SurfaceActions;
 import org.vcell.smoldyn.model.util.Point.PointFactory;
 import org.vcell.smoldyn.simulation.SmoldynException;
@@ -34,10 +35,6 @@ public interface Modelable {
 	public Species [] getSpecies();
 	public Species getSpecies(String name) throws SmoldynException;
 	
-	public void addSpeciesState(String speciesname, StateType statetype, Double isotropicdiffusionconstant) throws SmoldynException;
-	public SpeciesState [] getSpeciesStates();	
-	public SpeciesState getSpeciesState(String speciesname, StateType statetype) throws SmoldynException;
-	
 	public void addVolumeMolecule(String compartmentname, String speciesname, Point point, int count) throws SmoldynException;
 	public VolumeMolecule [] getVolumeMolecules();
 	public void addSurfaceMolecule(String surfacename, String speciesname, StateType statetype, Point point, int count) throws SmoldynException;
@@ -45,8 +42,7 @@ public interface Modelable {
 	
 //	public void addVolumeReaction(String compartmentname, VolumeReaction volumereaction);
 	public VolumeReaction [] getVolumeReactions();
-	public void addVolumeReaction(String name, String compartmentname, String reactant1, String reactant2, String product1,
-			String product2, double rate) throws SmoldynException;
+	public void addVolumeReaction(String name, String compartmentname, ReactionParticipants participants, double rate) throws SmoldynException;
 	public VolumeReaction getVolumeReaction(String reactionname) throws SmoldynException;
 	
 	public SurfaceReaction [] getSurfaceReactions();
@@ -61,8 +57,5 @@ public interface Modelable {
 	public ManipulationEvent [] getManipulationEvents();
 		
 	public Hashtable<Species, SurfaceActions> getSurfaceActions(String surfacename) throws SmoldynException;
-	public void addSurfaceActions(String surfacename, String speciesname) throws SmoldynException;
-	public void addSurfaceActions(String surfacename, String speciesname, double reflect, double absorb, double transmit) throws SmoldynException;	
-	public void addSurfaceActions(String surfacename, String speciesname, double frontreflect, double frontabsorb, double fronttransmit,
-			double backreflect, double backabsorb, double backtransmit) throws SmoldynException;
+	public void addSurfaceActions(String surfacename, String speciesname, SurfaceActions surfaceactions) throws SmoldynException;
 }

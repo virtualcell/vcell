@@ -1,11 +1,6 @@
 package org.vcell.smoldyn.model;
 
 
-import org.vcell.smoldyn.model.util.SurfaceReactionParticipants;
-import org.vcell.smoldyn.simulation.SimulationUtilities;
-
-
-
 /** 
  * A reaction that only occurs on a surface.  It is specified by its {@link SurfaceReactionParticipants} (reactants and products), its
  * reaction name, the {@link Surface} on which it occurs, and a rate.
@@ -21,11 +16,6 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  */
 public class SurfaceReaction implements SmoldynReaction {
 
-	private final SurfaceReactionParticipants reactants;
-	private final SurfaceReactionParticipants products;
-	private final String reactionname;
-	private final double rate;
-	private final Surface surface;
 	
 	
 	/**
@@ -41,41 +31,19 @@ public class SurfaceReaction implements SmoldynReaction {
 	 * @param rate double -- must be non-negative
 	 * 
 	 */
-	public SurfaceReaction(String reactionname, Surface surface, SurfaceReactionParticipants reactants,
-			SurfaceReactionParticipants products, double rate) {
-		SimulationUtilities.checkForNull("surface reaction constructor argument", reactionname, surface, reactants, products);
-		if(reactants.getParticipants().length == 0 && products.getParticipants().length == 0) {
-			SimulationUtilities.throwIllegalArgumentException("a surface reaction must have at least 1 product or reactant");
-		}
-		SimulationUtilities.checkForNonNegative("reaction rate", rate);
-		this.reactionname = reactionname;
-		this.surface = surface;
-		this.reactants = reactants;
-		this.products = products;
-		this.rate = rate;
+	public SurfaceReaction() {
 	}
 
-
-	public SurfaceReactionParticipants getReactants() {
-		return reactants;
-	}
-
-
-	public SurfaceReactionParticipants getProducts() {
-		return products;
-	}
-	
-	
+	@Override
 	public String getName() {
-		return this.reactionname;
+		// TODO Auto-generated method stub
+		return null;
 	}
-	
-	
+
+	@Override
 	public double getRate() {
-		return this.rate;
+		// TODO Auto-generated method stub
+		return 0;
 	}
-	
-	public Surface getSurface() {
-		return this.surface;
-	}
+
 }

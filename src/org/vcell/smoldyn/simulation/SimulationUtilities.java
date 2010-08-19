@@ -103,7 +103,7 @@ public class SimulationUtilities {
 	
 	/**
 	 * @param message
-	 * @param d
+	 * @param doubles
 	 * @throws IllegalArgumentException if any of doubles is null
 	 */
 	public static void checkForNonNegative(String message, double ... doubles) {
@@ -129,7 +129,7 @@ public class SimulationUtilities {
 	
 	/**
 	 * @param message
-	 * @param d
+	 * @param doubles
 	 * @throws IllegalArgumentException if any of doubles is not positive
 	 */
 	public static void checkForPositive(String message, double ... doubles) {

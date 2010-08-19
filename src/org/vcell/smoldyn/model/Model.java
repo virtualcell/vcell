@@ -3,11 +3,10 @@ package org.vcell.smoldyn.model;
 
 import java.util.Hashtable;
 import java.util.HashSet;
-import org.vcell.smoldyn.model.SpeciesState.StateType;
+import org.vcell.smoldyn.model.Species.StateType;
 import org.vcell.smoldyn.model.util.Point;
 import org.vcell.smoldyn.model.util.SurfaceActions;
-import org.vcell.smoldyn.model.util.SurfaceReactionParticipants;
-import org.vcell.smoldyn.model.util.VolumeReactionParticipants;
+import org.vcell.smoldyn.model.util.ReactionParticipants;
 import org.vcell.smoldyn.model.util.Point.PointFactory;
 import org.vcell.smoldyn.simulation.Simulation;
 import org.vcell.smoldyn.simulation.SimulationUtilities;
@@ -47,7 +46,6 @@ import org.vcell.smoldyn.simulation.SmoldynException;
  */
 public class Model implements Modelable {
 	private final Hashtable<String, Species> species = new Hashtable<String, Species>();
-	private final Hashtable<String, SpeciesState> speciesstates = new Hashtable<String, SpeciesState>();
 	private final HashSet<VolumeMolecule> volumemolecules = new HashSet<VolumeMolecule>();
 	private final HashSet<SurfaceMolecule> surfacemolecules = new HashSet<SurfaceMolecule>();
 	private final Hashtable<String, VolumeReaction> volumereactions = new Hashtable<String, VolumeReaction>();
@@ -93,17 +91,15 @@ public class Model implements Modelable {
 	 * Requests addition of a {@link Species} with the given name to the model.
 	 * The name must be unique and non-null.
 	 * 
-	 * @param name String
-	 * @throws SmoldynException 
-	 * @throws NullPointerException if name is null (thrown by Hashtable)
-	 * @throws RuntimeException if name is not unique
+	 * @param name String: not null, and must be unique
+	 * @throws SmoldynException if Species with the specified name already present
 	 * 
 	 */
 	public void addSpecies(String name) throws SmoldynException {
 		if (this.hasSpecies(name)) {
 			SimulationUtilities.throwAlreadyHasKeyException("species name (name was: <" + name + ">)");
 		}
-		Species species = new Species(name);
+		Species species = new Species(name, this.geometry.getCompartment(Geometry.SIMULATIONENCLOSINGCOMPARTMENT));
 		this.species.put(species.getName(), species);
 	}
 	
@@ -131,58 +127,6 @@ public class Model implements Modelable {
 	}
 	
 	
-	
-	/**
-	 * Adds a {@link SpeciesState} to the Model with the specified name and {@link StateType}.
-	 * First, it checks whether the search name and statetype are null.  Then, it checks
-	 * whether the Model has a Species with the specified name.  If it does, then it
-	 * instantiates a new SpeciesState with the given name and StateType, and puts it
-	 * into the Model's {@link Hashtable}.  A {@link RuntimeException} is thrown if there is already
-	 * an entry for the key (which is calculated from the name and statetype).
-	 * 
-	 * @param speciesname String
-	 * @param statetype StateType
-	 * @throws SmoldynException 
-	 * @throws RuntimeException if Model has no Species with the specified name
-	 * @throws RuntimeException if Model already has a SpeciesState with the specified Species and StateType
-	 */
-	public void addSpeciesState(String speciesname, StateType statetype, Double isotropicdiffusionconstant) throws SmoldynException {
-		this.validateSpeciesStateArguments(speciesname, statetype);
-		String key = getSpeciesStateHashString(speciesname, statetype);
-		if(this.speciesstates.get(key) != null) {
-			SimulationUtilities.throwAlreadyHasKeyException("species state");
-		}
-		SpeciesState speciesstate = new SpeciesState(this.getSpecies(speciesname), statetype, isotropicdiffusionconstant);
-		this.speciesstates.put(key, speciesstate);
-	}
-	
-	private static String getSpeciesStateHashString(String speciesname, StateType statetype) {
-		return speciesname + statetype.toString();
-	}
-	
-	private void validateSpeciesStateArguments(String speciesname, StateType statetype) throws SmoldynException {
-		SimulationUtilities.checkForNull("statetype", statetype);
-		if(!this.hasSpecies(speciesname)) {
-			SimulationUtilities.throwNoAssociatedValueException("species");
-		}
-	}
-	
-	public SpeciesState [] getSpeciesStates() {
-		return speciesstates.values().toArray(new SpeciesState [speciesstates.size()]);
-	}
-	
-	public SpeciesState getSpeciesState(String speciesname, StateType statetype) throws SmoldynException {
-		validateSpeciesStateArguments(speciesname, statetype);
-		String key = getSpeciesStateHashString(speciesname, statetype);
-		SpeciesState ssd = this.speciesstates.get(key);
-		if(ssd == null) {
-			SimulationUtilities.throwNoAssociatedValueException("species state (looking for <" + speciesname + "(" + statetype + ")>");
-		}
-		return ssd;
-	}
-
-	
-	
 	public void addVolumeMolecule(String compartmentname, String speciesname, Point point, int count) throws SmoldynException {
 		Compartment compartment = this.geometry.getCompartment(compartmentname);//compartmentname = null -> implicit comparment of entire sim volume ---> MAKE EXPLICIT
 		Species species = this.getSpecies(speciesname);
@@ -194,10 +138,9 @@ public class Model implements Modelable {
 	}
 
 	public void addSurfaceMolecule(String surfacename, String speciesname, StateType statetype, Point point, int count) throws SmoldynException {
-		validateSpeciesStateArguments(speciesname, statetype);
 		Surface surface = this.geometry.getSurface(surfacename);
-		SpeciesState speciesstate = getSpeciesState(speciesname, statetype);
-		this.surfacemolecules.add(new SurfaceMolecule(speciesstate, surface, null, count));
+		Species species = getSpecies(speciesname);
+		this.surfacemolecules.add(new SurfaceMolecule(species, statetype, surface, null, count));
 	}
 	
 	public SurfaceMolecule [] getSurfaceMolecules() {
@@ -210,17 +153,13 @@ public class Model implements Modelable {
 		return volumereactions.values().toArray(new VolumeReaction [volumereactions.size()]);
 	}
 	
-	public void addVolumeReaction(String volumereactionname, String compartmentname, String reactant1, String reactant2, 
-			String product1, String product2, double rate) throws SmoldynException {
+	public void addVolumeReaction(String volumereactionname, String compartmentname, ReactionParticipants participants, 
+			double rate) throws SmoldynException {
 		if(hasVolumeReaction(volumereactionname)) {
 			SimulationUtilities.throwAlreadyHasKeyException("volume reaction name");
 		}
 		Compartment compartment = this.geometry.getCompartment(compartmentname);
-		VolumeReactionParticipants vrpreact, vrpproduct;
-		vrpreact = getVolumeReactionParticipants(reactant1, reactant2);
-		vrpproduct = getVolumeReactionParticipants(product1, product2);
-		this.volumereactions.put(volumereactionname, new VolumeReaction(volumereactionname, compartment, vrpreact, 
-				vrpproduct, rate));
+		this.volumereactions.put(volumereactionname, new VolumeReaction(volumereactionname, compartment, participants, rate));
 	}
 	
 	private boolean hasVolumeReaction(String volumereactionname) {
@@ -249,11 +188,7 @@ public class Model implements Modelable {
 			SimulationUtilities.throwAlreadyHasKeyException("surface reaction name");
 		}
 		Surface surface = this.geometry.getSurface(surfacename);
-		SurfaceReactionParticipants srpreact, srpproduct;
-		srpreact = getSurfaceReactionParticipants(reactant1, reactstate1, reactant2, reactstate2);
-		srpproduct = getSurfaceReactionParticipants(product1, productstate1, product2, productstate2);
-		SurfaceReaction surfreaction = new SurfaceReaction(reactionname, surface, srpreact, srpproduct, rate);
-		this.surfacereactions.put(reactionname, surfreaction);
+		// TODO finish this
 	}
 	
 	private boolean hasSurfaceReaction(String reactionname) {
@@ -302,61 +237,26 @@ public class Model implements Modelable {
 		return surfaceactions;
 	}
 	
-	public void addSurfaceActions(String surfacename, String speciesname) throws SmoldynException {
-		this.addSurfaceActions(surfacename, speciesname, 0, 0, 0, 0, 0, 0);
-	}
-	
-	public void addSurfaceActions(String surfacename, String speciesname, double reflect, double absorb, double transmit) throws SmoldynException {
-		this.addSurfaceActions(surfacename, speciesname, reflect, transmit, absorb, reflect, transmit, absorb);
-	}
-	
 	/**
 	 * Add actions for a species at a surface.  If actions have already been specified for this Surface and Species, it will simply be
 	 * overwritten without warning.  This is due to the decision to store actions in nested hashtables, which was done so that all actions
 	 * at a specific surface may be easily grabbed.  If actions have not already been specified, then a new entry is added to the inner hash
 	 * table.  If NO actions AT ALL have been specified for the surface, then a new entry (which is itself a hashtable) is added to the 
 	 * outer hashtable, and one entry is added to the (new) inner hashtable.
+	 * 
+	 * @param surfacename String
+	 * @param speciesname String
+	 * @param surfaceactions -- not null
 	 * @throws SmoldynException 
 	 */
-	public void addSurfaceActions(String surfacename, String speciesname, double frontreflect, double frontabsorb, double fronttransmit,
-			double backreflect, double backabsorb, double backtransmit) throws SmoldynException {
+	public void addSurfaceActions(String surfacename, String speciesname, SurfaceActions surfaceactions) throws SmoldynException {
+		SimulationUtilities.checkForNull("SurfaceActions", surfaceactions);
 		Surface surface = this.geometry.getSurface(surfacename);
 		Species species = this.getSpecies(speciesname);
-		SurfaceActions surfaceactions = new SurfaceActions(frontreflect, frontabsorb, fronttransmit, backreflect,
-				backabsorb, backtransmit);
 		if(this.surfaceactions.get(surface) == null) {
 			this.surfaceactions.put(surface, new Hashtable<Species, SurfaceActions>());
-		}
+		}// else should I throw a SmoldynException?
 		this.surfaceactions.get(surface).put(species, surfaceactions);
-	}
-	
-	
-	private VolumeReactionParticipants getVolumeReactionParticipants(String speciesname1, String speciesname2) throws SmoldynException {
-//		ModelUtilities.printDebuggingStatement("volume reaction participants: " + speciesname1 + "    " + speciesname2);
-		Species species1 = null;
-		Species species2 = null;
-		if(speciesname1 != null) {
-			species1 = this.getSpecies(speciesname1);
-		}
-		if(speciesname2 != null) {
-			species2 = this.getSpecies(speciesname2);
-		}
-		VolumeReactionParticipants volumereactionparticipants = new VolumeReactionParticipants(species1, species2);
-		return volumereactionparticipants;
-	}
-	
-	private SurfaceReactionParticipants getSurfaceReactionParticipants(String species1, StateType statetype1,
-			String species2, StateType statetype2) throws SmoldynException {
-		SpeciesState participant1 = null;
-		SpeciesState participant2 = null;
-		if(species1 != null) {
-			participant1 = this.getSpeciesState(species1, statetype1);
-		}
-		if(species2 != null) {
-			participant2 = this.getSpeciesState(species2, statetype2);
-		}
-		SurfaceReactionParticipants surfacereactionparticipants = new SurfaceReactionParticipants(participant1, participant2);
-		return surfacereactionparticipants;
 	}
 	
 	

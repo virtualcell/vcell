@@ -1,10 +1,12 @@
 package org.vcell.smoldyn.model.util;
 
-import org.vcell.smoldyn.model.SpeciesState;
+import org.vcell.smoldyn.model.Species.StateType;
+
 
 
 /**
- * Specifies diffusion or drift characteristics of a {@link SpeciesState}.  Smoldyn uses an array of size equal to the square of
+ * Specifies diffusion or drift characteristics of a {@link Species} in a certain {@link StateType}.  
+ * Smoldyn uses an array of size equal to the square of
  * the number of dimensions in the system to specify anisotropic diffusion rates.  The same format is used to specify anisotropic drift
  * characteristics.  The semantics of the array are currently not understood.  Only 3-d simulations are currently supported.
  * 

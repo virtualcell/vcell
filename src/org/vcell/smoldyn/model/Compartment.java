@@ -10,6 +10,8 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
 
 
 /**
+ * A Smoldyn compartment is a volume region where reactions can occur and particles are located.
+ * 
  * <p>
  * <h2>Smoldyn Compartments</h2>
  * <ul>
