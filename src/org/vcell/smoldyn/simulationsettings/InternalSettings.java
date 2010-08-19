@@ -72,7 +72,7 @@ import org.vcell.smoldyn.simulation.SimulationUtilities;
  */
 public class InternalSettings{
 
-	private final int randomseed;
+	private final Integer randomseed;
 	private final double accuracy;
 	private final double boxwidth;
 	private final int gausstablesize;
@@ -98,7 +98,7 @@ public class InternalSettings{
 	 * @param gausstablesize positive, power of 2
 	 * 
 	 */
-	public InternalSettings(int randomseed, double accuracy, double boxwidth, int gausstablesize) {
+	public InternalSettings(Integer randomseed, double accuracy, double boxwidth, int gausstablesize) {
 		SimulationUtilities.assertIsTrue("accuracy", accuracy >= 0 && accuracy <= 10);
 		SimulationUtilities.checkForPositive("boxsize or gaussian table size", boxwidth, gausstablesize);
 		this.randomseed = randomseed;
