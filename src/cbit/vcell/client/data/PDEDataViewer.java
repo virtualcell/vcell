@@ -63,13 +63,16 @@ import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.LineBorderBean;
+import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.TitledBorderBean;
 import org.vcell.util.gui.VCFileChooser;
+import org.vcell.util.gui.ZEnforcer;
 
 import cbit.image.DisplayAdapterService;
 import cbit.plot.Plot2D;
@@ -427,8 +430,7 @@ private void calcStatistics(final ActionEvent actionEvent) {
 					new AsynchClientTask[] {waitTask,roiActionTask}, false, false, null, true);
 		}else{
 			//Not show wait dialog
-			ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
-					new AsynchClientTask[] {waitTask,roiActionTask});
+			ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(), new AsynchClientTask[] {waitTask,roiActionTask});
 		}
 
 	}catch(Throwable e){
@@ -896,8 +898,15 @@ private void roiAction(){
 								TSJobResultsSpaceStats tsJobResultsSpaceStats = (TSJobResultsSpaceStats)hashTable.get(StringKey_timeSeriesJobResults);
 								plotSpaceStats(tsJobResultsSpaceStats);
 							}
-						};		
-						ClientTaskDispatcher.dispatch(PDEDataViewer.this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+						};	
+						if((JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PDEDataViewer.this) != null)
+						{
+							ClientTaskDispatcher.dispatch(PDEDataViewer.this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+						}
+						else //this is added to show progress dialog on top for vfrap 
+						{
+							ClientTaskDispatcher.dispatch(PDEDataViewer.this,hash,new AsynchClientTask[] { task1, task2 }, true, true, true, null, true);
+						}
 					} catch (Exception e1) {
 						e1.printStackTrace();
 						PopupGenerator.showErrorDialog(PDEDataViewer.this, "ROI Error.\n"+e1.getMessage(), e1);
@@ -2234,17 +2243,18 @@ protected void showComponentInFrame(final Component comp,final String title) {
 		frame.pack();
 		BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
 		DocumentWindowManager.showFrame(frame,jDesktopPane);		
-	}else{
+	}else{//for vfrap to show dialog on top, because it has no JDeskTopPane
 		final Frame dialogOwner = (Frame)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, Frame.class);
-		final JDialog frame = new JDialog(dialogOwner,title);
-
-		frame.getContentPane().add(comp);
-		frame.pack();
-		BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
-		frame.setVisible(true);
+		JOptionPane inputDialog = new JOptionPane(comp, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[0]);
+		final JDialog d = inputDialog.createDialog(dialogOwner, title);
+		d.setResizable(true);
+		try {
+			ZEnforcer.showModalDialogOnTop(d,PDEDataViewer.this);				
+		}finally {
+			d.dispose();
+		}
 	}
 }
-
 
 /**
  * Comment
@@ -2477,10 +2487,25 @@ private void showTimePlot() {
 				frame.add(pdeTimePlotPanel);
 				frame.setSize(900, 550);
 				BeanUtils.centerOnComponent(frame,PDEDataViewer.this);
-				DocumentWindowManager.showFrame(frame, (JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PDEDataViewer.this));
+				if((JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PDEDataViewer.this) != null)
+				{
+					DocumentWindowManager.showFrame(frame, (JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PDEDataViewer.this));
+				}
+				else////for vfrap to show dialog on top, because it has no JDeskTopPane
+				{
+					DialogUtils.showComponentCloseDialog(PDEDataViewer.this, pdeTimePlotPanel, "Time Plot");
+				}
 			}						
-		};		
-		ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+		};	
+		if((JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PDEDataViewer.this) != null)
+		{//for vcell which has non-modal progress 
+			ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+		}
+		else//for vfrap to show modal progress on top
+		{
+			ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, true, null, true);
+		}
+		
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
 	}
