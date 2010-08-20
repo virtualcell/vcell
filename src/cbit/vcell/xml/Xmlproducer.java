@@ -21,6 +21,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.GroupAccessSome;
@@ -30,6 +31,7 @@ import org.vcell.util.document.Versionable;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
+import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.data.DataContext;
@@ -1377,18 +1379,23 @@ private Element getXML(DataContext dataContext) {
 private Element getXML(FieldDataSymbol fds) {
 	Element fieldDataSymbolElement = new Element(XMLTags.FieldDataSymbolTag);
 
-	fieldDataSymbolElement.setAttribute(XMLTags.DataSymbolTypeTag, Integer.toString(fds.getDataSymbolType()));
-	fieldDataSymbolElement.setAttribute(XMLTags.VFrapImageSubtypeTag, Integer.toString(fds.getDataSymbolSubtype()));
-	fieldDataSymbolElement.setAttribute(XMLTags.NameAttrTag, fds.getName());
-	fieldDataSymbolElement.setAttribute(XMLTags.DataSetNameTag, fds.getDatasetName());
+	fieldDataSymbolElement.setAttribute(XMLTags.DataSymbolNameTag, fds.getName());
+	fieldDataSymbolElement.setAttribute(XMLTags.DataSymbolTypeTag, fds.getDataSymbolType().getDatabaseName());
+	// DataContext is runtime only
 	fieldDataSymbolElement.setAttribute(XMLTags.VCUnitDefinitionAttrTag, fds.getUnitDefinition().getSymbol());
-	Element fieldFnArgsElement = new Element(XMLTags.FieldFunctionArgumentsTag);
-	FieldFunctionArguments ffa = fds.getFieldFunctionArguments();
-	fieldFnArgsElement.setAttribute(XMLTags.FieldNameTag, ffa.getFieldName());
-	fieldFnArgsElement.setAttribute(XMLTags.VariableNameTag, ffa.getVariableName());
-	fieldFnArgsElement.setAttribute(XMLTags.FunctionTypeTag, ffa.getVariableType().getTypeName());
-	fieldFnArgsElement.addContent(mangleExpression(ffa.getTime()));
-	fieldDataSymbolElement.addContent(fieldFnArgsElement);
+
+	Element dataSetIDElement = new Element(XMLTags.ExternalDataIdentifierTag);
+	ExternalDataIdentifier edi = fds.getExternalDataIdentifier();
+	dataSetIDElement.setAttribute(XMLTags.NameAttrTag, edi.getName());
+	dataSetIDElement.setAttribute(XMLTags.KeyValueAttrTag, edi.getKey().toString());
+	dataSetIDElement.setAttribute(MicroscopyXMLTags.OwnerNameAttrTag, edi.getOwner().getName());
+	dataSetIDElement.setAttribute(XMLTags.OwnerKeyAttrTag, edi.getOwner().getID().toString());
+	fieldDataSymbolElement.addContent(dataSetIDElement);
+
+	fieldDataSymbolElement.setAttribute(XMLTags.FieldItemNameTag, fds.getFieldItemName());
+	fieldDataSymbolElement.setAttribute(XMLTags.FieldItemTypeTag, fds.getFieldItemType());
+	fieldDataSymbolElement.setAttribute(XMLTags.FieldItemTimeTag, Double.toString(fds.getFieldItemTime()));
+
 	return fieldDataSymbolElement;
 }
 

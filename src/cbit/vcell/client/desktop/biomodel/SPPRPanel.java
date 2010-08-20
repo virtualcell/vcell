@@ -183,12 +183,7 @@ public class SPPRPanel extends JPanel {
 	}
 
 	public SPPRPanel() {
-		this(null);
-	}
-	
-	public SPPRPanel(ClientSimManager clientSimManager) {
 		super();
-		this.clientSimManager = clientSimManager;
 		setLayout(new GridBagLayout());
 		initialize();
 	}
@@ -401,7 +396,7 @@ public class SPPRPanel extends JPanel {
 			selectNode(leaf, selection, SPPRTreeModel.GLOBAL_PARAMETER_NODE);
 		} else if(selection instanceof ReactionStep) {
 			selectNode(leaf, selection, SPPRTreeModel.REACTIONS_NODE);
-		} else if(selection instanceof DataSymbol) {
+		} else if(selection instanceof FieldDataSymbol) {
 			selectNode(leaf, selection, SPPRTreeModel.DATA_SYMBOLS_NODE);
 		} else {
 			System.out.println(selection.getClass() + " table selection changed");
@@ -417,6 +412,7 @@ public class SPPRPanel extends JPanel {
 			}
 			TreePath treePath = new TreePath(foundNode.getPath());
 			spprTree.setSelectionPath(treePath);
+			spprTree.scrollPathToVisible(treePath);
 		}
 	}
 		
