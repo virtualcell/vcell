@@ -20,6 +20,8 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.VariableType;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JOptionPane;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Range;
@@ -27,6 +29,8 @@ import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
+
 import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.text.DecimalFormat;
@@ -2024,7 +2028,16 @@ private void initDataManagerVariable(final String finalVarName) {
 			}
 		}
 	};
-	ClientTaskDispatcher.dispatch(pdeDataViewer, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3 }, true, true, null);
+	
+	
+	if((JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(pdeDataViewer) != null)
+	{//for vcell which has non-modal progress 
+		ClientTaskDispatcher.dispatch(pdeDataViewer, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3 }, true, true, null);
+	}
+	else//for vfrap to show modal progress on top
+	{
+		ClientTaskDispatcher.dispatch(this,  new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2, task3 }, true, true, true, null, true);
+	}
 }
 
 
