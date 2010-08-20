@@ -454,14 +454,16 @@ public class XMLTags {
 	public final static String UniformDistributionMaximumTag = "Maximum";
 	
 	// For DataSymbols/DataContext
-	public static final String DataContextTag = "DataContext";
-	public static final String FieldDataSymbolTag = "FieldDataSymbol";
-	public static final String FieldFunctionArgumentsTag = "FieldFunctionArguments";
-	public static final String FieldNameTag = "FieldName";
-	public static final String VariableNameTag = "VariableName";
+	public static final String DataContextTag = "DataContext";			// array of data symbols
+	public static final String FieldDataSymbolTag = "FieldDataSymbol";	// the element
+	// members
+	public static final String DataSymbolNameTag = "DataSymbolName";
 	public static final String DataSymbolTypeTag = "DataSymbolType";
-	public static final String VFrapImageSubtypeTag = "VFrapImageSubtype";
-	public static final String DataSetNameTag = "DataSetName";
+	public static final String VCUnitDefinitionTag = "VCUnitDefinition";
+	public static final String ExternalDataIdentifierTag = "ExternalDataIdentifier";
+	public static final String FieldItemNameTag = "FieldItemName";
+	public static final String FieldItemTypeTag = "FieldItemType";
+	public static final String FieldItemTimeTag = "FieldItemTime";
 	
 	// Smoldyn
 	public final static String VolumeParticleVariableTag = "VolumeParticleVariable";

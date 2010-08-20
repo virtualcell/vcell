@@ -73,7 +73,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
-import cbit.vcell.data.FieldDataSymbol.DataSymbolType;
+import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileOperationResults;
@@ -195,9 +195,11 @@ public void addGenericDataSymbol() {
 			String expression = getNewDataSymbolPanel().getSymbolExpression();
 			Expression exp = new Expression(expression);
 			FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(null);
-			DataSymbol ds = new FieldDataSymbol(DataSymbolType.GENERIC_SYMBOL, name, "",
-					getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD, 
-					new FieldFunctionArguments(functionInvocations[0]));
+//			DataSymbol ds = new FieldDataSymbol(DataSymbolType.GENERIC_SYMBOL, name, "",
+//					getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD, 
+//					new FieldFunctionArguments(functionInvocations[0]));
+			DataSymbol ds = new FieldDataSymbol(name, DataSymbolType.GENERIC_SYMBOL,
+					getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD);
 			getSimulationContext().getDataContext().addDataSymbol(ds);
 		}
 	} catch (java.lang.Throwable ivjExc) {
@@ -206,7 +208,7 @@ public void addGenericDataSymbol() {
 }
 public void addVFrapDataSymbol() {
 	
-	AsynchClientTask[] taskArray = new AsynchClientTask[5];
+	AsynchClientTask[] taskArray = new AsynchClientTask[6];
 
 	// select the desired vfrap file 
 	taskArray[0] = new AsynchClientTask("select a file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -219,6 +221,8 @@ public void addVFrapDataSymbol() {
 					return;
 				}
 				hashTable.put("imageFile", imageFile);
+			} else {
+				throw UserCancelException.CANCEL_GENERIC;
 			}
 		}
 	};
@@ -397,19 +401,28 @@ public void addVFrapDataSymbol() {
 			timeSeriesFieldDataOpSpec.times[0] = 0;
    	
 	   		ExternalDataIdentifier timeSeriesEDI = dm.saveFieldData(timeSeriesFieldDataOpSpec, initialFieldDataName);
+	   		
+	   		
+			hashTable.put("imageDataset",imageDataset);
+			hashTable.put("timeSeriesEDI",timeSeriesEDI);
+
 	   		// --- create the data symbols associated with the time series
-	   		for (double time : imageDataset.getImageTimeStamps()){
+/*	   		for (double time : imageDataset.getImageTimeStamps()){
 	   			String fluorName = TokenMangler.fixTokenStrict("fluor_"+time+"_");
 				while (getSimulationContext().getDataContext().getDataSymbol(fluorName)!=null){
 					fluorName = TokenMangler.getNextEnumeratedToken(fluorName);
 				}
-				FieldFunctionArguments fluorFFArgs = new FieldFunctionArguments(timeSeriesEDI.getName(), fluorName, new Expression(time), VariableType.VOLUME);
-				DataSymbol fluorDataSymbol = new FieldDataSymbol(DataSymbolType.VFRAP_SYMBOL, FieldDataSymbol.VFrapImageSubtype.TIMEPOINT, 
-						fluorName, initialFieldDataName, getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD, fluorFFArgs);
+//				FieldFunctionArguments fluorFFArgs = new FieldFunctionArguments(timeSeriesEDI.getName(), fluorName, new Expression(time), VariableType.VOLUME);
+				DataSymbol fluorDataSymbol = new FieldDataSymbol( fluorName, DataSymbolType.VFRAP_TIMEPOINT, 
+						getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD,
+						timeSeriesEDI, fluorName, VariableType.VOLUME.getTypeName(), time);
 				getSimulationContext().getDataContext().addDataSymbol(fluorDataSymbol);
-	   		}
+	   		}*/
 		}
 	};
+	
+	
+	
 	// save the prebleach average and the first postbleach frame
 	taskArray[4] = new AsynchClientTask("Saving roi masks, pre-bleach average and first post-bleach", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -442,16 +455,16 @@ public void addVFrapDataSymbol() {
 			int NumChannels = 2+rois.length;  // prebleach, postbleach, roi1, roi2 ... roiN
 			String[] channelNames = new String[NumChannels];
 			VariableType[] channelTypes = new VariableType[NumChannels];
-			int[] channelVFrapImageType = new int[NumChannels];
+			DataSymbolType[] channelVFrapImageType = new DataSymbolType[NumChannels];
 			double[][][] pixData = new double[NumTimePoints][NumChannels][]; 
 			pixData[0][0] = firstPostBleach;
 			channelNames[0] = "firstPostBleach";
 			channelTypes[0] = VariableType.VOLUME;
-			channelVFrapImageType[0] = FieldDataSymbol.VFrapImageSubtype.FIRST_POSTBLEACH;
+			channelVFrapImageType[0] = DataSymbolType.VFRAP_FIRST_POSTBLEACH;
 			pixData[0][1] = prebleachAvg;
 			channelNames[1] = "prebleachAverage";
 			channelTypes[1] = VariableType.VOLUME;
-			channelVFrapImageType[1] = FieldDataSymbol.VFrapImageSubtype.PREBLEACH_AVERAGE;
+			channelVFrapImageType[1] = DataSymbolType.VFRAP_PREBLEACH_AVG;
 			int index = 0;
 			for (ROI roi : rois){
 				short[] ushortPixels = roi.getPixelsXYZ();
@@ -462,7 +475,7 @@ public void addVFrapDataSymbol() {
 				pixData[0][index+2] = doublePixels;
 				channelNames[index+2] = "roi_"+index;
 				channelTypes[index+2] = VariableType.VOLUME;
-				channelVFrapImageType[index+2] = FieldDataSymbol.VFrapImageSubtype.ROI;
+				channelVFrapImageType[index+2] = DataSymbolType.VFRAP_ROI;
 				index++;
 			}
 			double[] times = new double[] { 0.0 };
@@ -481,17 +494,48 @@ public void addVFrapDataSymbol() {
 			vfrapMiscFieldDataOpSpec.isize = isize;
 	   		//  localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
     	
-	   		ExternalDataIdentifier vfrapMisc = dm.saveFieldData(vfrapMiscFieldDataOpSpec, initialFieldDataName+"_vfrapMisc");
+			String fieldDataName = initialFieldDataName+"_vfrapMisc";
+	   		ExternalDataIdentifier vfrapMisc = dm.saveFieldData(vfrapMiscFieldDataOpSpec, fieldDataName);
 
-//	   		for (String channelName : channelNames){
-	   		for (int i=0; i<channelNames.length; i++) {
+			hashTable.put("channelNames",channelNames);
+			hashTable.put("channelVFrapImageType",channelVFrapImageType);
+			hashTable.put("vfrapMisc",vfrapMisc);
+		}
+	};
+	
+	taskArray[5] = new AsynchClientTask("Display Data Symbols", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			
+			ImageDataset imageDataset = (ImageDataset)hashTable.get("imageDataset");
+			ExternalDataIdentifier timeSeriesEDI = (ExternalDataIdentifier)hashTable.get("timeSeriesEDI");
+			
+	   		for (double time : imageDataset.getImageTimeStamps()){
+	   			String fluorName = TokenMangler.fixTokenStrict("fluor_"+time+"_");
+				while (getSimulationContext().getDataContext().getDataSymbol(fluorName)!=null){
+					fluorName = TokenMangler.getNextEnumeratedToken(fluorName);
+				}
+//				FieldFunctionArguments fluorFFArgs = new FieldFunctionArguments(timeSeriesEDI.getName(), fluorName, new Expression(time), VariableType.VOLUME);
+				DataSymbol fluorDataSymbol = new FieldDataSymbol( fluorName, DataSymbolType.VFRAP_TIMEPOINT, 
+						getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD,
+						timeSeriesEDI, fluorName, VariableType.VOLUME.getTypeName(), time);
+				getSimulationContext().getDataContext().addDataSymbol(fluorDataSymbol);
+	   		}
+
+			
+			String[] channelNames = (String[])hashTable.get("channelNames");
+			DataSymbolType[] channelVFrapImageType = (DataSymbolType[])hashTable.get("channelVFrapImageType");
+			ExternalDataIdentifier vfrapMisc = (ExternalDataIdentifier)hashTable.get("vfrapMisc");
+
+			for (int i=0; i<channelNames.length; i++) {
 	   			String dataSymbolID = channelNames[i];
 				while (getSimulationContext().getDataContext().getDataSymbol(dataSymbolID)!=null){
 					dataSymbolID = TokenMangler.getNextEnumeratedToken(dataSymbolID);
 				}
-				FieldFunctionArguments prebleachFFArgs = new FieldFunctionArguments(vfrapMisc.getName(), channelNames[i], new Expression(0.0), VariableType.VOLUME);
-				DataSymbol dataSymbol = new FieldDataSymbol(DataSymbolType.VFRAP_SYMBOL, channelVFrapImageType[i], dataSymbolID, initialFieldDataName,
-						getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD, prebleachFFArgs);
+//				FieldFunctionArguments prebleachFFArgs = new FieldFunctionArguments(vfrapMisc.getName(), channelNames[i], new Expression(0.0), VariableType.VOLUME);
+				DataSymbol dataSymbol = new FieldDataSymbol(channelNames[i], channelVFrapImageType[i],
+						getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD,
+						vfrapMisc, channelNames[i],
+						VariableType.VOLUME.getTypeName(), 0D);
 				getSimulationContext().getDataContext().addDataSymbol(dataSymbol);
 	   		}
 		}
@@ -790,7 +834,7 @@ public void setScrollPaneTableCurrentRow(DataSymbol selection) {
 	}
 	int numRows = getScrollPaneTable().getRowCount();
 	for(int i=0; i<numRows; i++) {
-		String valueAt = (String)getScrollPaneTable().getValueAt(i, DataSymbolsTableModel.COLUMN_NAME);
+		String valueAt = (String)getScrollPaneTable().getValueAt(i, DataSymbolsTableModel.COLUMN_DATA_SYMBOL_NAME);
 		DataSymbol dataSymbol = getSimulationContext().getDataContext().getDataSymbol(valueAt);
 		if(dataSymbol!=null && dataSymbol.equals(selection)) {
 			getScrollPaneTable().changeSelection(i, 0, false, false);

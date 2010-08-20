@@ -20,6 +20,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.GroupAccessNone;
@@ -34,6 +35,7 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageCompressed;
 import cbit.image.VCPixelClass;
+import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaData;
@@ -41,6 +43,7 @@ import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
+import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.dictionary.BoundCompound;
 import cbit.vcell.dictionary.BoundEnzyme;
 import cbit.vcell.dictionary.BoundProtein;
@@ -4228,35 +4231,31 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 private ArrayList<DataSymbol> getDataSymbols(Element dataContextElement, DataContext dataContext) {
 	ArrayList<DataSymbol> dataSymbolsList = new ArrayList<DataSymbol>();
 	// iterate over fieldDatasymbols. When other dataSymbol types are implemented, repeat this loop.
-	Iterator dataSybolsElementIter = dataContextElement.getChildren(XMLTags.FieldDataSymbolTag, vcNamespace).iterator();
-	while (dataSybolsElementIter.hasNext()) {
-		// dataSymbol attributes
-		Element dataSymbolElement = (Element)dataSybolsElementIter.next();
-		int dataSymbolType = Integer.parseInt(unMangle(dataSymbolElement.getAttributeValue(XMLTags.DataSymbolTypeTag)));
-		int vFrapImageSubtype = Integer.parseInt(unMangle(dataSymbolElement.getAttributeValue(XMLTags.VFrapImageSubtypeTag)));
-		String name = unMangle(dataSymbolElement.getAttributeValue(XMLTags.NameAttrTag));
-		String dataSetName = unMangle(dataSymbolElement.getAttributeValue(XMLTags.DataSetNameTag));
+	Iterator dataSymbolsElementIter = dataContextElement.getChildren(XMLTags.FieldDataSymbolTag, vcNamespace).iterator();
+	while (dataSymbolsElementIter.hasNext()) {
+		Element dataSymbolElement = (Element)dataSymbolsElementIter.next();
+		String dataSymbolName = unMangle(dataSymbolElement.getAttributeValue(XMLTags.DataSymbolNameTag));
+		DataSymbolType dataSymbolType = DataSymbolType.fromDatabaseName(unMangle(dataSymbolElement.getAttributeValue(XMLTags.DataSymbolTypeTag)));
 		String symbol = dataSymbolElement.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
-		VCUnitDefinition unit = null;
+		VCUnitDefinition vcUnitDefinition = null;
 		if (symbol != null) {
-			unit = VCUnitDefinition.getInstance(symbol);
+			vcUnitDefinition = VCUnitDefinition.getInstance(symbol);
 		}
-		// fieldFunctionArgs in dataSymbol
-		Element ffaElement = dataSymbolElement.getChild(XMLTags.FieldFunctionArgumentsTag, vcNamespace);
-		String fieldName = unMangle(ffaElement.getAttributeValue(XMLTags.FieldNameTag));
-		String varName = unMangle(ffaElement.getAttributeValue(XMLTags.VariableNameTag));
-		VariableType funcType = VariableType.UNKNOWN;
-		String funcTypeAttr = ffaElement.getAttributeValue(XMLTags.FunctionTypeTag);
-		String expStr = ffaElement.getText();
-		Expression timeExpr = unMangleExpression(expStr);
-		if (funcTypeAttr != null) {
-			String funcTypeStr = unMangle( funcTypeAttr );
-			funcType = VariableType.getVariableTypeFromVariableTypeName(funcTypeStr);
-		}
-		FieldFunctionArguments ffa = new FieldFunctionArguments(fieldName, varName, timeExpr, funcType);
-		FieldDataSymbol fds = new FieldDataSymbol(dataSymbolType, vFrapImageSubtype, name, dataSetName, 
-				dataContext, unit, ffa);
-//		FieldDataSymbol fds = new FieldDataSymbol(name, "", dataContext, unit, ffa);
+		// ExternalDataIdentifier dataSetID in FieldDataSymbol
+		Element dataSetIDElement = dataSymbolElement.getChild(XMLTags.ExternalDataIdentifierTag, vcNamespace);
+		String name = unMangle(dataSetIDElement.getAttributeValue(XMLTags.NameAttrTag));
+		String key = unMangle(dataSetIDElement.getAttributeValue(XMLTags.KeyValueAttrTag));
+		String userID = unMangle(dataSetIDElement.getAttributeValue(MicroscopyXMLTags.OwnerNameAttrTag));
+		String userKey = unMangle(dataSetIDElement.getAttributeValue(XMLTags.OwnerKeyAttrTag));
+		User owner = new User(userID, new KeyValue(userKey));
+		ExternalDataIdentifier edi = new ExternalDataIdentifier(new KeyValue(key), owner, name);
+		// ---
+		String fieldItemName = unMangle(dataSymbolElement.getAttributeValue(XMLTags.FieldItemNameTag));
+		String fieldItemType = unMangle(dataSymbolElement.getAttributeValue(XMLTags.FieldItemTypeTag));
+		double fieldItemTime = Double.parseDouble(unMangle(dataSymbolElement.getAttributeValue(XMLTags.FieldItemTimeTag)));
+	
+		FieldDataSymbol fds = new FieldDataSymbol(dataSymbolName, dataSymbolType, dataContext, vcUnitDefinition,
+				edi, fieldItemName, fieldItemType, fieldItemTime);
 		dataSymbolsList.add(fds);
 	}
 	// other while loops for other dataSymbol types; then return cumulative list

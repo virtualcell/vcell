@@ -617,6 +617,10 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 	
+	if(!Compare.isEqualOrNull(getDataContext(), simContext.getDataContext())){
+		return false;
+	}
+
 	return true;
 }
 

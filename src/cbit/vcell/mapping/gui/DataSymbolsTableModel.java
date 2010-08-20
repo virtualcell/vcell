@@ -22,9 +22,9 @@ import cbit.vcell.mapping.SimulationContext;
  */
 public class DataSymbolsTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
 	public static final int NUM_COLUMNS = 2;
-	public static final int COLUMN_NAME = 0;
-	public static final int COLUMN_TYPE = 1;
-	private String LABELS[] = { "Name", "Type"};
+	public static final int COLUMN_DATA_SYMBOL_NAME = 0;
+	public static final int COLUMN_DATA_SET_NAME = 1;
+	private String LABELS[] = { "Symbol Name", "Dataset Name"};
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
@@ -61,10 +61,10 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
  */
 public Class<?> getColumnClass(int column) {
 	switch (column){
-		case COLUMN_NAME:{
+		case COLUMN_DATA_SYMBOL_NAME:{
 			return String.class;
 		}
-		case COLUMN_TYPE:{
+		case COLUMN_DATA_SET_NAME:{
 			return String.class;
 		}
 		default:{
@@ -147,12 +147,12 @@ public Object getValueAt(int row, int col) {
 		}	
 		DataSymbol ds = getDataSymbol(row);
 		switch (col){
-			case COLUMN_NAME:{
+			case COLUMN_DATA_SYMBOL_NAME:{
 				return ds.getName();
 			}
-			case COLUMN_TYPE:{
+			case COLUMN_DATA_SET_NAME:{
 				if (ds instanceof FieldDataSymbol) {
-					return "Field Data Symbol";		// populate the column with some text for now
+					return ((FieldDataSymbol)ds).getExternalDataIdentifier().getName();
 				} else {
 					return null;
 				}
@@ -189,10 +189,10 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		throw new RuntimeException("DataSymbolsTableModel.isCellEditable(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
 	switch (columnIndex){
-		case COLUMN_NAME:{
+		case COLUMN_DATA_SYMBOL_NAME:{
 			return false;
 		}
-		case COLUMN_TYPE:{
+		case COLUMN_DATA_SET_NAME:{
 			return false;
 		}
 		default:{
@@ -262,11 +262,11 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	}
 	DataSymbol dataSymbol = getDataSymbol(rowIndex);
 	switch (columnIndex){
-		case COLUMN_NAME:{
+		case COLUMN_DATA_SYMBOL_NAME:{
 			dataSymbol.setName((String)aValue);
 			break;
 		}
-		case COLUMN_TYPE:{
+		case COLUMN_DATA_SET_NAME:{
 			break;
 		}
 	}
@@ -284,7 +284,8 @@ public void sortColumn(final int col, final boolean ascending) {
 		public int compare(DataSymbol ds1, DataSymbol ds2 ){			
 			
 			switch (col){
-				case COLUMN_NAME:{
+				case COLUMN_DATA_SYMBOL_NAME:
+				{
 					String name1 = ds1.getName();
 					String name2 = ds2.getName();
 					if (ascending){
@@ -293,8 +294,15 @@ public void sortColumn(final int col, final boolean ascending) {
 						return name2.compareToIgnoreCase(name1);
 					}
 				}
-				case COLUMN_TYPE:{
-					break;
+				case COLUMN_DATA_SET_NAME:
+				{
+					String name1 = ((FieldDataSymbol)ds1).getExternalDataIdentifier().getName();
+					String name2 = ((FieldDataSymbol)ds2).getExternalDataIdentifier().getName();
+					if (ascending){
+						return name1.compareToIgnoreCase(name2);
+					}else{
+						return name2.compareToIgnoreCase(name1);
+					}
 				}
 			}
 			return 1;

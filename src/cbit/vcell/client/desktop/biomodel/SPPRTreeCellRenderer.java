@@ -15,8 +15,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
-import cbit.vcell.data.FieldDataSymbol.DataSymbolType;
-import cbit.vcell.data.FieldDataSymbol.VFrapImageSubtype;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
@@ -145,31 +143,30 @@ public class SPPRTreeCellRenderer extends DefaultTreeCellRenderer  {
 	        	labelText = ((ReactionStep)userObj).getName();
 	        	toolTipPrefix = "Flux Reaction : ";
 				toolTipPostfix = labelText;
-	        } else if (userObj instanceof FieldDataSymbol) {			// --- field data
-	        	if( ((FieldDataSymbol)userObj).getDataSymbolType() == DataSymbolType.VFRAP_SYMBOL ) {
-	        		switch(((FieldDataSymbol)userObj).getDataSymbolSubtype()) {
-	        		case VFrapImageSubtype.FIRST_POSTBLEACH:
-			        	icon = vFrapPostBleachIcon;
-	        			break;
-	        		case VFrapImageSubtype.PREBLEACH_AVERAGE:
-			        	icon = vFrapAverageIcon;
-	        			break;
-	        		case VFrapImageSubtype.ROI:
-			        	icon = vFrapROIIcon;
-	        			break;
-	        		case VFrapImageSubtype.TIMEPOINT:
-			        	icon = vFrapTimepointIcon;
-			        	break;
-	        		default:
-			        	icon = vFrapTimepointIcon;
-	        			break;
-	        		}
-	        	} else {		// all non-vFrap symbols
+	        } else if (userObj instanceof DataSymbol) {			// --- field data
+        		switch(((FieldDataSymbol)userObj).getDataSymbolType()) {
+        		case VFRAP_FIRST_POSTBLEACH:
+		        	icon = vFrapPostBleachIcon;
+        			break;
+        		case VFRAP_PREBLEACH_AVG:
+		        	icon = vFrapAverageIcon;
+        			break;
+        		case VFRAP_ROI:
+		        	icon = vFrapROIIcon;
+        			break;
+        		case VFRAP_TIMEPOINT:
+		        	icon = vFrapTimepointIcon;
+		        	break;
+        		case GENERIC_SYMBOL:
 		        	icon = fieldDataItemIcon;
-	        	}
+		        	break;
+        		default:
+        			icon = fieldDataItemIcon;
+        			break;
+        		}
 //	        	labelText = ((DataSymbol)userObj).getName();
 	        	labelText = ((DataSymbol)userObj).getName();
-	        	toolTipPrefix = "Dataset: " + ((FieldDataSymbol)userObj).getDatasetName();
+	        	toolTipPrefix = "Dataset: " + ((FieldDataSymbol)userObj).getExternalDataIdentifier().getName();
 				toolTipPostfix = "";
 	        } else if (userObj instanceof BioEvent) {			// --- event
 	        	BioEvent bioEvent = (BioEvent)userObj;

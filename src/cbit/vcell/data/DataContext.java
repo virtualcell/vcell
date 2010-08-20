@@ -12,8 +12,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.gui.DataSymbolsTableModel;
 import cbit.vcell.parser.Expression;
@@ -25,7 +28,7 @@ import cbit.vcell.units.VCUnitDefinition;
 /* 
  * Container for all data symbols
  */
-public class DataContext{
+public class DataContext implements Matchable{
 
 	private DataSymbol[] dataSymbols = new DataSymbol[0];
 	
@@ -110,5 +113,18 @@ public class DataContext{
 	
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		getPropertyChangeSupport().addPropertyChangeListener(listener);
+	}
+
+	public boolean compareEqual(Matchable obj) {
+		DataContext dataContext = null;
+		if (!(obj instanceof DataContext)){
+			return false;
+		}else{
+			dataContext = (DataContext)obj;
+		}
+		if(!Compare.isEqualOrNull(dataSymbols, dataContext.dataSymbols)){
+			return false;
+		}
+		return true;
 	}
 }

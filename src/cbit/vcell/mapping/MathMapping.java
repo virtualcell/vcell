@@ -83,6 +83,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 /**
@@ -1495,7 +1496,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if (dataSymbol instanceof FieldDataSymbol){
 			FieldDataSymbol fieldDataSymbol = (FieldDataSymbol)dataSymbol;
 			GeometryClass geometryClass = null;
-			Expression exp = new Expression(fieldDataSymbol.getFieldFunctionArguments().infix());
+			FieldFunctionArguments ffs = new FieldFunctionArguments(fieldDataSymbol.getExternalDataIdentifier().getName(), fieldDataSymbol.getFieldItemName(),
+					new Expression(fieldDataSymbol.getFieldItemTime()), VariableType.getVariableTypeFromVariableTypeName(fieldDataSymbol.getFieldItemType()));
+			Expression exp = new Expression(ffs.infix());
 			varHash.addVariable(newFunctionOrConstant(getMathSymbol(dataSymbol, geometryClass),getIdentifierSubstitutions(exp,dataSymbol.getUnitDefinition(),geometryClass),geometryClass));
 		}else{
 			throw new RuntimeException("dataSymbol type '"+dataSymbol.getClass().getName()+"' not yet supported for math generation");
