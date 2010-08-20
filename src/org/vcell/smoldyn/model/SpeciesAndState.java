@@ -6,17 +6,17 @@ import org.vcell.smoldyn.model.Species.StateType;
  * @author mfenwick
  *
  */
-public abstract class Participant {
+public abstract class SpeciesAndState {
 	
 	private final Species species;
 	private final StateType statetype;
 	
 	
-	public Participant(Species species) {
+	public SpeciesAndState(Species species) {
 		this(species, StateType.solution);
 	}
 	
-	public Participant(Species species, StateType statetype) {
+	public SpeciesAndState(Species species, StateType statetype) {
 		this.species = species;
 		this.statetype = statetype;
 	}
@@ -35,7 +35,7 @@ public abstract class Participant {
 	 * @author mfenwick
 	 *
 	 */
-	public static class Product extends Participant {
+	public static class Product extends SpeciesAndState {
 		
 		public Product(Species species) {
 			super(species);
@@ -52,7 +52,7 @@ public abstract class Participant {
 	 * @author mfenwick
 	 *
 	 */
-	public static class Reactant extends Participant {
+	public static class Reactant extends SpeciesAndState {
 		
 		public Reactant(Species species) {
 			super(species);

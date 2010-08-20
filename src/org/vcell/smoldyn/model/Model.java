@@ -181,14 +181,13 @@ public class Model implements Modelable {
 		return surfacereactions.values().toArray(new SurfaceReaction [surfacereactions.size()]);
 	}
 	
-	public void addSurfaceReaction(String reactionname, String surfacename, String reactant1, StateType reactstate1, 
-			String reactant2, StateType reactstate2, String product1, StateType productstate1,
-			String product2, StateType productstate2, double rate) throws SmoldynException {
+	public void addSurfaceReaction(String reactionname, String surfacename, ReactionParticipants participants, double rate) 
+			throws SmoldynException {
 		if(hasSurfaceReaction(reactionname)) {
 			SimulationUtilities.throwAlreadyHasKeyException("surface reaction name");
 		}
 		Surface surface = this.geometry.getSurface(surfacename);
-		// TODO finish this
+		this.surfacereactions.put(reactionname, new SurfaceReaction(reactionname, surface, participants, rate));
 	}
 	
 	private boolean hasSurfaceReaction(String reactionname) {

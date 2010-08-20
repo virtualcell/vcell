@@ -10,6 +10,7 @@ import org.vcell.smoldyn.model.Surface;
 import org.vcell.smoldyn.model.Model.Dimensionality;
 import org.vcell.smoldyn.model.Species.StateType;
 import org.vcell.smoldyn.model.util.Point;
+import org.vcell.smoldyn.model.util.ReactionParticipants;
 import org.vcell.smoldyn.model.util.Sphere;
 import org.vcell.smoldyn.model.util.Point.PointFactory;
 import org.vcell.smoldyn.model.util.SurfaceActions;
@@ -152,10 +153,14 @@ public class SimulationExample {
 	}
 	
 	private void addModelSurfaceReactions() throws SmoldynException {
-		model.addSurfaceReaction("surfacereaction1", "surface1", "spec4", StateType.up, "spec4", StateType.up, 
-				"spec2", StateType.down, null, StateType.down, .5f);
-		model.addSurfaceReaction("surfacereaction2", "surface1", "spec2", StateType.down, null, null, "spec4", StateType.up, 
-				"spec4", StateType.up, .5f);
+		ReactionParticipants participants = null;//TODO
+		model.addSurfaceReaction("surfacereaction1", "surface1", participants, .5f);
+//		"spec4", StateType.up, "spec4", StateType.up, 
+//		"spec2", StateType.down, null, StateType.down,
+		
+//		"spec2", StateType.down, null, null, "spec4", StateType.up, 
+//		"spec4", StateType.up
+		model.addSurfaceReaction("surfacereaction2", "surface1", participants, .5f);
 	}
 	
 	private void addModelVolumeMolecules() throws SmoldynException {

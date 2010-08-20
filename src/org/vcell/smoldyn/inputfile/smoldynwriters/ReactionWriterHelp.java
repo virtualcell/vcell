@@ -1,10 +1,9 @@
 package org.vcell.smoldyn.inputfile.smoldynwriters;
 
 
-import org.vcell.smoldyn.model.Participant;
+import org.vcell.smoldyn.model.SpeciesAndState;
 import org.vcell.smoldyn.model.Species;
 import org.vcell.smoldyn.model.Species.StateType;
-import org.vcell.smoldyn.model.util.ReactionParticipants;
 
 
 
@@ -14,29 +13,24 @@ import org.vcell.smoldyn.model.util.ReactionParticipants;
  */
 class ReactionWriterHelp {
 
-	static String getSpeciesStateAsString(Species species, StateType statetype) {
-		String out = species.getName() + "(" + statetype + ")";		
+	static String getSpeciesStateAsString(SpeciesAndState speciesandstate) {
+		final Species species = speciesandstate.getSpecies();
+		final StateType statetype = speciesandstate.getStatetype();
+		final String out = species.getName() + "(" + statetype + ")";		
 		return out;
 	}
 	
-	static String getSurfaceReactionParticipantString(ReactionParticipants reactionparticipants) {
-		String out;
-//		if(reactionparticipants.getReactants().length == 0) {
-//			out = "0";
-//		} else if (reactionparticipants.get().length == 1) {
-//			SpeciesState one = surfacereactionparticipants.getParticipants()[0];
-//			out = ReactionWriterHelp.getSpeciesStateAsString(one);
-//		} else {
-//			SpeciesState [] srp = surfacereactionparticipants.getParticipants();
-//			if(srp.length != 2) {
-//				Utilities.throwUnexpectedException("number of participants in surface reaction should be <= 2 (is actually: <" + 
-//						srp.length + ">)");
-//			}
-//			SpeciesState one = surfacereactionparticipants.getParticipants()[0];
-//			SpeciesState two = surfacereactionparticipants.getParticipants()[1];
-//			out = " " + ReactionWriterHelp.getSpeciesStateAsString(one) + " + " + ReactionWriterHelp.getSpeciesStateAsString(two);
-//		}
-		return null;
+	static String getSurfaceReactionParticipantString(SpeciesAndState [] participants) {
+		if(participants.length == 0) {
+			return "0";
+		} else if (participants.length == 1) {
+			return getSpeciesStateAsString(participants[0]);
+		} else if (participants.length == 2) {
+			return getSpeciesStateAsString(participants[0]) + " + " + getSpeciesStateAsString(participants[1]);
+		} else {
+			Utilities.throwUnexpectedException("too many participants in surface reaction");
+		}
+		return null;//java is too stupid to recognize that control flow never gets here
 	}
 
 	static String getVolumeReactionParticipantString(Species [] participants) {
