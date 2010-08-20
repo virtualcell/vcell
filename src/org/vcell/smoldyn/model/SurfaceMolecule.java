@@ -33,7 +33,6 @@ public class SurfaceMolecule implements SmoldynMolecule {
 	 * @param surface -- not null
 	 * @param point -- not null
 	 * @param count -- positive
-	 * @throws RuntimeException if StateType of speciesstate is solution
 	 */
 	public SurfaceMolecule(Species species, StateType statetype, Surface surface, Point point, int count) {
 		SimulationUtilities.checkForNull("species, statetype, or surface", species, statetype, surface);

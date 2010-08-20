@@ -46,9 +46,7 @@ public interface Modelable {
 	public VolumeReaction getVolumeReaction(String reactionname) throws SmoldynException;
 	
 	public SurfaceReaction [] getSurfaceReactions();
-	public void addSurfaceReaction(String reactionname, String surfacename, String reactant1, StateType reactstate1, 
-			String reactant2, StateType reactstate2, String product1, StateType productstate1,
-			String product2, StateType productstate2, double rate) throws SmoldynException;
+	public void addSurfaceReaction(String reactionname, String surfacename, ReactionParticipants participants, double rate) throws SmoldynException;
 	public SurfaceReaction getSurfaceReaction(String reactionname) throws SmoldynException;
 	
 	public Geometryable getGeometry();

@@ -2,8 +2,8 @@ package org.vcell.smoldyn.model.util;
 
 
 import java.util.ArrayList;
-import org.vcell.smoldyn.model.Participant.Product;
-import org.vcell.smoldyn.model.Participant.Reactant;
+import org.vcell.smoldyn.model.SpeciesAndState.Product;
+import org.vcell.smoldyn.model.SpeciesAndState.Reactant;
 
 
 /**

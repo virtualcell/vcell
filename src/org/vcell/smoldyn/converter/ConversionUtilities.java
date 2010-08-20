@@ -3,8 +3,8 @@ package org.vcell.smoldyn.converter;
 import java.util.ArrayList;
 
 import org.vcell.smoldyn.model.Boundaries;
-import org.vcell.smoldyn.model.Participant.Product;
-import org.vcell.smoldyn.model.Participant.Reactant;
+import org.vcell.smoldyn.model.SpeciesAndState.Product;
+import org.vcell.smoldyn.model.SpeciesAndState.Reactant;
 import org.vcell.smoldyn.model.util.ReactionParticipants;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;

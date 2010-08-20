@@ -4,8 +4,10 @@ import java.io.PrintWriter;
 
 import org.vcell.smoldyn.inputfile.SmoldynFileKeywords;
 import org.vcell.smoldyn.model.Model;
+import org.vcell.smoldyn.model.Species;
 import org.vcell.smoldyn.model.SurfaceMolecule;
 import org.vcell.smoldyn.model.VolumeMolecule;
+import org.vcell.smoldyn.model.Species.StateType;
 import org.vcell.smoldyn.model.util.Point;
 import org.vcell.smoldyn.simulation.Simulation;
 
@@ -17,8 +19,8 @@ import org.vcell.smoldyn.simulation.Simulation;
  */
 public class MoleculeWriter {
 	
-	private Model model;
-	private PrintWriter writer;
+	private final Model model;
+	private final PrintWriter writer;
 	private static final int MAXMOLECULESMULTIPLIER = 5;
 	
 	
@@ -29,6 +31,18 @@ public class MoleculeWriter {
 
 	public void write() {
 		writer.println("# locations of molecules");
+		writeMaxMolecules();
+		writeVolumeMolecules();
+		writeSurfaceMolecules();
+		writer.println();
+		writer.println();
+	}
+	
+	/**
+	 * example:
+	 * 		max_mol 10000
+	 */
+	private void writeMaxMolecules() {
 		int maxMolecules = 0;
 		for(VolumeMolecule vm : model.getVolumeMolecules()) {
 			maxMolecules += vm.getCount();
@@ -38,12 +52,18 @@ public class MoleculeWriter {
 		}
 		maxMolecules *= MAXMOLECULESMULTIPLIER;// TODO this is not good.....overflow possibility, large number possibility....
 		writer.println(SmoldynFileKeywords.Molecule.max_mol + " " + maxMolecules);
-		writeVolumeMolecules();
-		writeSurfaceMolecules();
-		writer.println();
-		writer.println();
 	}
-	
+
+	/**
+	 * example:
+	 * 		randomly distributed:
+	 * 			mol 13 speciesname u u u
+	 * 		specific location:
+	 * 			mol 1 speciesname 7.5 13 2
+	 * 
+	 * example (always randomly distributed):
+	 * 		compartment_mol 3 speciesname compartmentname
+	 */
 	private void writeVolumeMolecules() {
 		VolumeMolecule [] volumemolecules = model.getVolumeMolecules();
 		for(VolumeMolecule volumemolecule : volumemolecules) {
@@ -66,13 +86,19 @@ public class MoleculeWriter {
 		}
 	}
 	
+	/**
+	 * example with unspecified location (Smoldyn calculates random distribution):
+	 * 		surface_mol 75 speciesname(up) surfacename triangle all
+	 * example with specified location:
+	 * 		surface_mol 75 speciesname(up) surfacename sphere panelname1 1 2.3 1.85
+	 */
 	private void writeSurfaceMolecules() {
-		//TODO
-//		SurfaceMolecule [] surfacemolecules = model.getSurfaceMolecules();
-//		for(SurfaceMolecule surfacemolecule : surfacemolecules) {
-//			SpeciesState ssd = surfacemolecule.getSpeciesStateDiffusion();
-//			writer.println(SmoldynFileKeywords.Molecule.surface_mol + " " + surfacemolecule.getCount() + " " + 
-//					ssd.getSpecies().getName() + "(" +  ssd.getState() + ") " + surfacemolecule.getSurface().getName() + " all all");
-//		}
+		SurfaceMolecule [] surfacemolecules = model.getSurfaceMolecules();
+		for(SurfaceMolecule surfacemolecule : surfacemolecules) {
+			final Species species = surfacemolecule.getSpecies();
+			final StateType state = surfacemolecule.getStateType();
+			writer.println(SmoldynFileKeywords.Molecule.surface_mol + " " + surfacemolecule.getCount() + " " + 
+					species.getName() + "(" +  state + ") " + surfacemolecule.getSurface().getName() + " all all");
+		}
 	}
 }
