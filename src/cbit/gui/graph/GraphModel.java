@@ -1,8 +1,8 @@
 package cbit.gui.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.util.*;
 
 import org.vcell.util.BeanUtils;
@@ -774,9 +774,7 @@ public void showShapeHierarchyTopDown() {
 			//
 			boolean bChildFound = false;
 			Shape currShape = (Shape)stack.peek();
-			Enumeration<Shape> enum_children = currShape.getChildren();
-			while (enum_children.hasMoreElements()){
-				Shape shape = enum_children.nextElement();
+			for(Shape shape : currShape.getChildren()) {
 				if (!shapes.contains(shape)) continue;
 				char padding[] = new char[4*stack.size()];
 				for (int k=0;k<padding.length;k++) padding[k] = ' ';

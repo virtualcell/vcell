@@ -1,8 +1,8 @@
 package cbit.vcell.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import cbit.gui.graph.*;
 import cbit.gui.graph.Shape;
 import cbit.vcell.model.*;
@@ -160,52 +160,14 @@ public void layout() throws LayoutException {
 	}	
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param g java.awt.Graphics
- */
-public void paint ( java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY ) {
-
-	int absPosX = screenPos.x + parentOffsetX;
-	int absPosY = screenPos.y + parentOffsetY;
-
-	g.setColor(backgroundColor);
-	g.fillRect(absPosX,absPosY,screenSize.width,screenSize.height);
-	g.setColor(forgroundColor);
-	g.drawRect(absPosX,absPosY,screenSize.width,screenSize.height);
-
-//	g.drawString(getLabel(),labelPos.x,labelPos.y);
-
-	//
-	// draw the edges first
-	//
-	for (int i=0;i<childShapeList.size();i++){
-		Shape child = (Shape)childShapeList.elementAt(i);
-		if (!(child instanceof ReactionContainerShape)){
-			child.paint(g,absPosX,absPosY);
-		}
-	}	
-
-	//
-	// draw reactionContainerShapes now (Shape.bNoFill = true, won't overwrite)
-	//
-	for (int i=0;i<childShapeList.size();i++){
-		Shape child = (Shape)childShapeList.elementAt(i);
-		if (child instanceof ReactionContainerShape){
-			child.paint(g,absPosX,absPosY);
-		}
-	}	
-
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.graph.Shape
- * @param x int
- * @param y int
- */
+	public void paintSelf(Graphics2D graphics, int xThis, int yThis) {
+		graphics.setColor(backgroundColor);
+		graphics.fillRect(xThis,yThis,screenSize.width,screenSize.height);
+		graphics.setColor(forgroundColor);
+		graphics.drawRect(xThis,yThis,screenSize.width,screenSize.height);		
+	}
+	
+// TODO need to add: skip invisible shapes
 public Shape pick(Point point) {
 
 	if (isInside(point)==false) return null;

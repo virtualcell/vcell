@@ -1,11 +1,10 @@
 package cbit.vcell.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import cbit.gui.graph.*;
 import cbit.gui.graph.Shape;
-import cbit.vcell.model.*;
 import cbit.vcell.mapping.GeometryContext;
 import java.awt.*;
 /**
@@ -86,14 +85,7 @@ public void layout() throws LayoutException {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param g java.awt.Graphics
- */
-public void paint ( java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY ) {
-
-	int absPosX = screenPos.x + parentOffsetX;
-	int absPosY = screenPos.y + parentOffsetY;
+public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
 
 //	g.setColor(backgroundColor);
 	g.setColor(java.awt.Color.yellow);
@@ -103,36 +95,8 @@ public void paint ( java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY 
 
 //	g.drawString(getLabel(),labelPos.x,labelPos.y);
 
-
-	//
-	// draw cell structures
-	//
-	structureContainer.paint(g,absPosX,absPosY);
-
-	//
-	// draw subvolumes
-	//
-	geometryContainer.paint(g,absPosX,absPosY);
-
-	//
-	// draw featureMappings
-	//
-	for (int i=0;i<childShapeList.size();i++){
-		Shape child = (Shape)childShapeList.elementAt(i);
-		if (child instanceof FeatureMappingShape){
-			child.paint(g,absPosX,absPosY);
-		}
-	}	
-
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.graph.Shape
- * @param x int
- * @param y int
- */
 public Shape pick(Point point) {
 
 	if (isInside(point)==false) return null;

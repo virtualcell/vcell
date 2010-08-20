@@ -1,10 +1,12 @@
 package cbit.vcell.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import cbit.gui.graph.*;
 import cbit.vcell.model.*;
+
+import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
 import java.awt.geom.GeneralPath;
@@ -149,12 +151,7 @@ public ReactionStepShape getReactionStepShape() {
 	return (ReactionStepShape)endShape;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param g java.awt.Graphics
- */
-public void paint(java.awt.Graphics2D g2D, int parentOffsetX, int parentOffsetY) {
+public void paintSelf(Graphics2D g2D, int parentOffsetX, int parentOffsetY) {
 
     //
     // draw cubic spline with horizontal reactant-end (p' = 0) at reaction

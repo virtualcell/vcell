@@ -1,14 +1,18 @@
 package cbit.gui.graph;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import javax.swing.*;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
+
+import cbit.gui.graph.actions.HideSelectedShapesAction;
+import cbit.gui.graph.actions.ShowShapeTreeAction;
+import cbit.gui.graph.actions.UnhideAllShapesAction;
 
 import java.util.*;
 import java.awt.event.*;
@@ -132,13 +136,18 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 		JMenuItem moveJMenuItem = new javax.swing.JMenuItem();
 		//MIRIAM
 		JMenuItem annotateJMenuItem = new JMenuItem();
-		//
+		//Visibility modes
+		JMenuItem hideSelectedJMenuItem = new JMenuItem(new HideSelectedShapesAction(this));
+		JMenuItem unhideAllJMenuItem = new JMenuItem(new UnhideAllShapesAction(this));
+		JMenuItem showShapeTreeJMenuItem = new JMenuItem(new ShowShapeTreeAction(this));
+		
 		//Add new JMenuItems here too.  Used for convenience to add and remove actionlisteners
 		private JMenuItem[] jmenuItemArr =
 			{	addFeatureJMenuItem,addSpeciesJMenuItem,addGlobalParamJMenuItem,addEnzymeReactionJMenuItem,reactionsJMenuItem,propertiesJMenuItem,
 				enableJMenuItem,disableJMenuItem,solveJMenuItem,resetJMenuItem,showParametersJMenuItem,
 				copyJMenuItem,deleteJMenuItem,cutJMenuItem,pasteJMenuItem,pastenewJMenuItem,moveJMenuItem,addBindingSiteJMenuItem,
-				addComplexJMenuItem,saveAsImageJMenu,annotateJMenuItem
+				addComplexJMenuItem,saveAsImageJMenu,annotateJMenuItem,
+				hideSelectedJMenuItem, unhideAllJMenuItem, showShapeTreeJMenuItem
 			};
 
 /**
@@ -601,7 +610,10 @@ protected final void popupMenu(Shape shape,int x, int y) throws Exception {
 					addableJMenuItem == cutJMenuItem ||
 					addableJMenuItem == pasteJMenuItem ||
 					addableJMenuItem == pastenewJMenuItem ||
-					addableJMenuItem == moveJMenuItem
+					addableJMenuItem == moveJMenuItem ||
+					addableJMenuItem == hideSelectedJMenuItem ||
+					addableJMenuItem == unhideAllJMenuItem ||
+					addableJMenuItem == showShapeTreeJMenuItem
 				){
 					editV.add(addableJMenuItem);
 				}else{

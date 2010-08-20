@@ -1,7 +1,9 @@
 package cbit.vcell.constraints.gui;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.gui.graph.ElipseShape;
-import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.visualstate.ImmutableVisualState;
+import cbit.gui.graph.visualstate.VisualState;
+
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Graphics2D;
@@ -27,22 +29,14 @@ public ConstraintGraphNode(ConstraintsGraphModel graphModel, int argDegree) {
 	this.degree = argDegree;
 }
 
+	public VisualState createVisualState() {
+		return new ImmutableVisualState(this, VisualState.PaintLayer.NODE);
+	}
 
-/**
- * Insert the method's description here.
- * Creation date: (1/4/2005 11:43:06 AM)
- * @return cbit.vcell.constraints.ConstraintContainerImpl
- */
-protected ConstraintContainerImpl getConstraintContainerImpl() {
+	protected ConstraintContainerImpl getConstraintContainerImpl() {
 	return ((ConstraintsGraphModel)graphModel).getConstraintContainerImpl();
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/10/2003 12:35:00 PM)
- * @return int
- */
 public int getDegree() {
 	return degree;
 }

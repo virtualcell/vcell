@@ -1,9 +1,4 @@
 package cbit.vcell.constraints.gui;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.gui.graph.GraphModel;
 /**
  * This type was created in VisualAge.
  */
@@ -61,18 +56,14 @@ public ConstraintVarNode getVarShape() {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param g java.awt.Graphics
- */
-public void paint(java.awt.Graphics2D g2D, int parentOffsetX, int parentOffsetY) {
+public void paintSelf(java.awt.Graphics2D g2D, int absPosX, int absPosY) {
 	cbit.vcell.constraints.AbstractConstraint constraint = (cbit.vcell.constraints.AbstractConstraint)getConstraintShape().getModelObject();
 	if (!((ConstraintsGraphModel)graphModel).getConstraintContainerImpl().getActive(constraint)){
 		forgroundColor = java.awt.Color.lightGray;
 	}else{
 		forgroundColor = java.awt.Color.black;
 	}
-	super.paint(g2D,parentOffsetX,parentOffsetY);
+	super.paintSelf(g2D,absPosX,absPosY);
 }
 
 

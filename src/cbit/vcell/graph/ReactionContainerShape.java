@@ -1,8 +1,8 @@
 package cbit.vcell.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import cbit.gui.graph.*;
 import cbit.gui.graph.Shape;
 import cbit.vcell.model.*;
@@ -94,49 +94,6 @@ public void layout() throws LayoutException {
 		if (child.getSize().width+child.getLocation().x > width || child.getSize().height+child.getLocation().y > height){
 			throw new LayoutException("cannot fit all reactions");
 		}
-	}
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @param g java.awt.Graphics
- */
-public void paint ( java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY ) {
-
-	super.paint(g,parentOffsetX, parentOffsetY);
-	
-	int absPosX = screenPos.x + parentOffsetX;
-	int absPosY = screenPos.y + parentOffsetY;
-
-	//
-	// print edges first
-	//
-	for (int i=0;i<childShapeList.size();i++){
-		Shape child = (Shape)childShapeList.elementAt(i);
-		if (child instanceof EdgeShape){
-			child.paint(g,absPosX,absPosY);
-		}
-	}	
-	//
-	// then print rest of shapes
-	//
-	Shape selectedShape = null;
-	for (int i=0;i<childShapeList.size();i++){
-		Shape child = (Shape)childShapeList.elementAt(i);
-		if (!(child instanceof EdgeShape)){
-			if(child.isSelected()){
-				selectedShape = child;
-			}else{
-				child.paint(g,absPosX,absPosY);
-			}
-		}
-	}
-	if(selectedShape != null){//selected over all others
-		selectedShape.paint(g,absPosX,absPosY);
-	}
-	if(isSelected()){
-		drawLabel(g,absPosX,absPosY);
 	}
 }
 
