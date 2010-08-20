@@ -1,9 +1,11 @@
 package cbit.vcell.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import cbit.gui.graph.*;
+import cbit.gui.graph.visualstate.MutableVisualState;
+import cbit.gui.graph.visualstate.VisualState;
 import cbit.vcell.model.*;
 import java.awt.*;
 import java.awt.geom.*;
@@ -30,12 +32,10 @@ public ReactionStepShape(ReactionStep reactionStep, GraphModel graphModel) {
 	backgroundColor = defaultBG;
 }
 
+	public VisualState createVisualState() { 
+		return new MutableVisualState(this, VisualState.PaintLayer.NODE); 
+	}
 
-/**
- * Insert the method's description here.
- * Creation date: (9/6/2002 10:19:18 PM)
- * @return boolean
- */
 public static boolean getDisplayLabels() {
 	return bDisplayLabels;
 }

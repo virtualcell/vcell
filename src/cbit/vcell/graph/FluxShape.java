@@ -1,10 +1,9 @@
 package cbit.vcell.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import cbit.gui.graph.*;
-import cbit.gui.graph.Shape;
 import cbit.vcell.model.*;
 /**
  * This type was created in VisualAge.

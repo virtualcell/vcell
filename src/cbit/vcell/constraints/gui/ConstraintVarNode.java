@@ -1,9 +1,4 @@
 package cbit.vcell.constraints.gui;
-import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.ElipseShape;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Graphics2D;
 /**
  * Insert the type's description here.
  * Creation date: (7/8/2003 11:58:47 AM)
@@ -38,36 +33,30 @@ public java.lang.Object getModelObject() {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param g java.awt.Graphics
- */
-public void paint(java.awt.Graphics2D g, int parentOriginX, int parentOriginY) {
+public void paintSelf(java.awt.Graphics2D g, int absPosX, int absPosY) {
 
-   int absPosX = screenPos.x + parentOriginX;
-   int absPosY = screenPos.y + parentOriginY;
-	//
-	boolean isBound = false;
-	//
-	// draw elipse
-	//
-	g.setColor(backgroundColor);
-	g.fillOval(absPosX+1,absPosY+1+labelPos.y,2*radius-1,2*radius-1);
-	g.setColor(forgroundColor);
-	g.drawOval(absPosX,absPosY+labelPos.y,2*radius,2*radius);
-	//
-	// draw label
-	//
-	java.awt.FontMetrics fm = g.getFontMetrics();
-	int textX = labelPos.x + absPosX;
-	int textY = labelPos.y + absPosY;
-	g.setColor(forgroundColor);
-	if (getLabel()!=null && getLabel().length()>0){
-		g.drawString(getLabel(),textX,textY);
+		//
+//		boolean isBound = false;
+		//
+		// draw elipse
+		//
+		g.setColor(backgroundColor);
+		g.fillOval(absPosX+1,absPosY+1+labelPos.y,2*radius-1,2*radius-1);
+		g.setColor(forgroundColor);
+		g.drawOval(absPosX,absPosY+labelPos.y,2*radius,2*radius);
+		//
+		// draw label
+		//
+//		java.awt.FontMetrics fm = g.getFontMetrics();
+		int textX = labelPos.x + absPosX;
+		int textY = labelPos.y + absPosY;
+		g.setColor(forgroundColor);
+		if (getLabel()!=null && getLabel().length()>0){
+			g.drawString(getLabel(),textX,textY);
+		}
+
+		return;
 	}
-
-	return;
-}
 
 
 /**

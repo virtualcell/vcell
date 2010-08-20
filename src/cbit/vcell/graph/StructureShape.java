@@ -1,15 +1,17 @@
 package cbit.vcell.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.Shape;
+import cbit.gui.graph.visualstate.ImmutableVisualState;
+import cbit.gui.graph.visualstate.VisualState;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 /**
@@ -32,13 +34,10 @@ public StructureShape (Structure structure, Model model, GraphModel graphModel) 
 	this.model = model;
 }
 
+	public VisualState createVisualState() {
+		return new ImmutableVisualState(this, VisualState.PaintLayer.NODE);
+	}
 
-/**
- * Insert the method's description here.
- * Creation date: (8/24/2005 2:32:09 PM)
- * @return java.awt.Font
- * @param g java.awt.Graphics
- */
 public Font getLabelFont(Graphics g) {
 	return getBoldFont(g);
 }
@@ -75,64 +74,62 @@ public Structure getStructure() {
  * This method was created by a SmartGuide.
  * @param g java.awt.Graphics
  */
-public void paint ( java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY ) {
-   int absPosX = screenPos.x + parentOffsetX;
-   int absPosY = screenPos.y + parentOffsetY;
 
-	g.setColor(backgroundColor);
-	g.fillOval(absPosX+1,absPosY+1,screenSize.width-1,screenSize.height-1);
-	g.setColor(forgroundColor);
-	g.drawOval(absPosX,absPosY,screenSize.width,screenSize.height);
+	public void paintSelf ( Graphics2D g, int absPosX, int absPosY ) {
 
-	//java.awt.FontMetrics fm = g.getFontMetrics();
-	//if (getLabel()!=null && getLabel().length()>0){
-		//if(this instanceof FeatureShape){
-			//g.drawString(getLabel(),labelPos.x+absPosX,labelPos.y+absPosY);
-		//}else{
-			//int textX = absPosX + screenSize.width/2 - fm.stringWidth(getLabel())/2;
-			//int textY = absPosY + 5 + fm.getMaxAscent();
-			//g.drawString(getLabel(),textX,textY);
+		g.setColor(backgroundColor);
+		g.fillOval(absPosX+1,absPosY+1,screenSize.width-1,screenSize.height-1);
+		g.setColor(forgroundColor);
+		g.drawOval(absPosX,absPosY,screenSize.width,screenSize.height);
+
+		//java.awt.FontMetrics fm = g.getFontMetrics();
+		//if (getLabel()!=null && getLabel().length()>0){
+			//if(this instanceof FeatureShape){
+				//g.drawString(getLabel(),labelPos.x+absPosX,labelPos.y+absPosY);
+			//}else{
+				//int textX = absPosX + screenSize.width/2 - fm.stringWidth(getLabel())/2;
+				//int textY = absPosY + 5 + fm.getMaxAscent();
+				//g.drawString(getLabel(),textX,textY);
+			//}
 		//}
-	//}
-	SpeciesContextShape selectedShape = null;
-	for (int i=0;i<childShapeList.size();i++){
-		Shape child = (Shape)childShapeList.elementAt(i);
-		if((child instanceof SpeciesContextShape) && child.isSelected()){
-			selectedShape = (SpeciesContextShape)child;
-		} else {
-			child.paint(g,absPosX,absPosY);
-		}
-	}
-	if(selectedShape != null){//To make sure its on top
-		selectedShape.paint(g,absPosX,absPosY);
-	}
+//		SpeciesContextShape selectedShape = null;
+//		for (int i=0;i<childShapeList.size();i++){
+//			Shape child = (Shape)childShapeList.elementAt(i);
+//			if((child instanceof SpeciesContextShape) && child.isSelected()){
+//				selectedShape = (SpeciesContextShape)child;
+//			} else {
+//				child.paint(g,absPosX,absPosY);
+//			}
+//		}
+//		if(selectedShape != null){//To make sure its on top
+//			selectedShape.paint(g,absPosX,absPosY);
+//		}
 
 
-	if (getLabel()!=null && getLabel().length()>0){
-		Font origFont = g.getFont();
-		g.setFont(getLabelFont(g));
-		if(this instanceof FeatureShape){
-			if(isSelected()){
-				drawRaisedOutline(absPosX+labelPos.x-5,absPosY+labelPos.y-labelSize.height+3,labelSize.width+10,labelSize.height,
-					g,Color.white,Color.black,Color.black);
+		if (getLabel()!=null && getLabel().length()>0){
+			Font origFont = g.getFont();
+			g.setFont(getLabelFont(g));
+			if(this instanceof FeatureShape){
+				if(isSelected()){
+					drawRaisedOutline(absPosX+labelPos.x-5,absPosY+labelPos.y-labelSize.height+3,labelSize.width+10,labelSize.height,
+						g,Color.white,Color.black,Color.black);
+				}
+				g.setColor(Color.black);
+				g.drawString(getLabel(),labelPos.x+absPosX,labelPos.y+absPosY);
+			}else{
+				int textX = absPosX + screenSize.width/2 - labelSize.width/2;
+				int textY = absPosY + labelSize.height -3;
+				if(isSelected()){
+					drawRaisedOutline(textX-5,textY-labelSize.height+3,labelSize.width+10,labelSize.height,
+						g,Color.white,Color.black,Color.black);
+				}
+				g.setColor(Color.black);
+				g.drawString(getLabel(),textX,textY);
 			}
-			g.setColor(Color.black);
-			g.drawString(getLabel(),labelPos.x+absPosX,labelPos.y+absPosY);
-		}else{
-			int textX = absPosX + screenSize.width/2 - labelSize.width/2;
-			int textY = absPosY + labelSize.height -3;
-			if(isSelected()){
-				drawRaisedOutline(textX-5,textY-labelSize.height+3,labelSize.width+10,labelSize.height,
-					g,Color.white,Color.black,Color.black);
-			}
-			g.setColor(Color.black);
-			g.drawString(getLabel(),textX,textY);
+			g.setFont(origFont);
 		}
-		g.setFont(origFont);
+
 	}
-
-}
-
 
 /**
  * This method was created in VisualAge.

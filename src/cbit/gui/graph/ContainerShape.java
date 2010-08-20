@@ -1,8 +1,9 @@
 package cbit.gui.graph;
-/*©
+
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /**
  * This type was created in VisualAge.
  */
@@ -21,11 +22,6 @@ public ContainerShape(GraphModel graphModel) {
 	screenSize.height = 100;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return java.awt.Point
- */
 public java.awt.Point getRandomPosition() {
 
 	double meanX = screenSize.width/2;
@@ -75,34 +71,6 @@ public void layout() throws LayoutException {
 	}
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param g java.awt.Graphics
- */
-public void paint ( java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY ) {
-
-	super.paint(g,parentOffsetX,parentOffsetY);
-	
-	int absPosX = screenPos.x + parentOffsetX;
-	int absPosY = screenPos.y + parentOffsetY;
-
-	//
-	// draw children
-	//
-	for (int i=0;i<childShapeList.size();i++){
-		Shape child = (Shape)childShapeList.elementAt(i);
-		child.paint(g,absPosX,absPosY);
-	}	
-
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return int
- * @param g java.awt.Graphics
- */
 public void randomize() {
 	return;
 }

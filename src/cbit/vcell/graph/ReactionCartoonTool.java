@@ -1,9 +1,9 @@
 package cbit.vcell.graph;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -37,6 +37,10 @@ import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.RubberBandEdgeShape;
 import cbit.gui.graph.RubberBandRectShape;
 import cbit.gui.graph.Shape;
+import cbit.gui.graph.actions.HideSelectedShapesAction;
+import cbit.gui.graph.actions.ShowShapeTreeAction;
+import cbit.gui.graph.actions.UnhideAllShapesAction;
+import cbit.gui.graph.visualstate.VisualStateUtil;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.server.ClientServerManager;
@@ -721,7 +725,7 @@ protected void menuAction(Shape shape, String menuAction) {
 		//
 		// default action is to ignore
 		//
-		System.out.println("unsupported menu action '"+menuAction+"' on shape '"+shape+"'");
+//		System.out.println("unsupported menu action '"+menuAction+"' on shape '"+shape+"'");
 	}
 
 }
@@ -1398,6 +1402,15 @@ protected boolean shapeHasMenuAction(Shape shape, String menuAction) {
 			return true;
 		}
 	}
+	if(menuAction.equals(HideSelectedShapesAction.actionCommand)) {
+		return VisualStateUtil.canBeHidden(shape);
+	}
+	if(menuAction.equals(menuAction.equals(UnhideAllShapesAction.actionCommand))) {
+		return true;
+	}
+	if(menuAction.equals(ShowShapeTreeAction.actionCommand)) {
+		return ShowShapeTreeAction.bActivated;
+	}
 	return false;
 }
 
@@ -1420,6 +1433,13 @@ protected boolean shapeHasMenuActionEnabled(Shape shape, java.lang.String menuAc
 			!shape.getModelObject().equals(getReactionCartoon().getStructure())){
 			return false;
 		}
+	}
+	if(menuAction.equals(HideSelectedShapesAction.actionCommand)) {
+		return VisualStateUtil.canBeHidden(shape);
+	}
+	if(menuAction.equals(ShowShapeTreeAction.actionCommand) || 
+			menuAction.equals(UnhideAllShapesAction.actionCommand)) {
+		return true;
 	}
 	if (shape instanceof ReactionContainerShape){
 		boolean bPasteNew = menuAction.equals(PASTE_NEW_MENU_ACTION);

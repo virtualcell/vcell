@@ -1,9 +1,9 @@
 package cbit.gui.graph;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.EdgeShape;
@@ -62,9 +62,7 @@ public Dimension getPreferedSize(java.awt.Graphics2D g) {
 	}
 	return emptySize;
 }
-/**
- * This method was created in VisualAge.
- */
+
 public void layout() throws LayoutException {
 //System.out.println("ReactionContainerShape.layout(), bRandomize="+bRandomize);
 	super.layout();
@@ -81,42 +79,7 @@ public void layout() throws LayoutException {
 		}
 	}
 }
-/**
- * This method was created by a SmartGuide.
- * @param g java.awt.Graphics
- */
-public void paint ( java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY ) {
 
-	super.paint(g,parentOffsetX, parentOffsetY);
-	
-	int absPosX = screenPos.x + parentOffsetX;
-	int absPosY = screenPos.y + parentOffsetY;
-
-	//
-	// print edges first
-	//
-	for (int i=0;i<childShapeList.size();i++){
-		Shape child = (Shape)childShapeList.elementAt(i);
-		if (child instanceof EdgeShape){
-			child.paint(g,absPosX,absPosY);
-		}
-	}	
-	//
-	// then print rest of shapes
-	//
-	for (int i=0;i<childShapeList.size();i++){
-		Shape child = (Shape)childShapeList.elementAt(i);
-		if (!(child instanceof EdgeShape)){
-			child.paint(g,absPosX,absPosY);
-		}
-	}	
-	return;
-}
-/**
- * This method was created by a SmartGuide.
- * @return int
- * @param g java.awt.Graphics
- */
 public void randomize() {
 
 //System.out.println("ReactionContainerShape.randomize(), bRandomize="+bRandomize);

@@ -1,8 +1,8 @@
 package cbit.vcell.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -11,7 +11,6 @@ import java.awt.image.MemoryImageSource;
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.LayoutException;
-import cbit.gui.graph.Shape;
 import cbit.image.VCPixelClass;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
@@ -79,27 +78,13 @@ public void layout() throws LayoutException {
 	//}
 }
 
-
-/**
- * paint method comment.
- */
-public void paint(java.awt.Graphics2D g, int parentOffsetX, int parentOffsetY) {
+public void paintSelf(java.awt.Graphics2D g, int absPosX, int absPosY) {
 	
-	int absPosX = screenPos.x + parentOffsetX;
-	int absPosY = screenPos.y + parentOffsetY;
-
 	//
 	// draw background image (of handles)
 	//
 	if(brightImage != null){
 		g.drawImage(brightImage,absPosX, absPosY, null);
-	}
-	//
-	// draw attachment points within image (or they can be hidden)
-	//
-	for (int i = 0; i < childShapeList.size(); i++) {
-		Shape child = (Shape) childShapeList.elementAt(i);
-		child.paint(g, absPosX, absPosY);
 	}
 }
 

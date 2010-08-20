@@ -1,8 +1,8 @@
 package cbit.gui.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.*;
 /**
  * This type was created in VisualAge.
@@ -25,11 +25,6 @@ public RubberBandRectShape(java.awt.Point start, java.awt.Point end, GraphModel 
 	forgroundColor = defaultFG;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return java.lang.Object
- */
 public Object getModelObject() {
 	return null;
 }

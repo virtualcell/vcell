@@ -1,9 +1,10 @@
 package cbit.gui.graph;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.GeneralPath;
 
@@ -57,8 +58,9 @@ public void refreshLabel() {
 		setLabel("");
 	}
 }
-public void paint(java.awt.Graphics2D g2D, int parentOffsetX, int parentOffsetY){
-	super.paint(g2D,parentOffsetX,parentOffsetY);
+
+public void paintSelf(Graphics2D g2D, int absPosX, int absPosY){
+	super.paintSelf(g2D,absPosX,absPosY);
 	
 	//
 	// add arrow if directed
