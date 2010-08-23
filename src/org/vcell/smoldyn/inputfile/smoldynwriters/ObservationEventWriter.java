@@ -33,16 +33,14 @@ public class ObservationEventWriter {
 	
 	public void write() {
 		writer.println("# observation events");
-		ObservationEvent [] events = simulationsettings.getObservationEvents();
-		for(ObservationEvent observationevent : events) {
+		for(ObservationEvent observationevent : simulationsettings.getObservationEvents()) {
 			this.determineCommandType(observationevent);
 		}
 		writer.println();
 		writer.println();
 		
 		writer.println("# vcell observation events");
-		VCellObservationEvent [] vcellevents = simulationsettings.getVCellObservationEvents();
-		for(VCellObservationEvent vcellevent : vcellevents) {
+		for(VCellObservationEvent vcellevent : simulationsettings.getVCellObservationEvents()) {
 			this.determineCommandType(vcellevent);
 		}
 		writer.println();
@@ -84,21 +82,18 @@ public class ObservationEventWriter {
 		Double stop = eventtiming.getTimestop();
 		Double step = eventtiming.getTimestep();
 		String timing = SmoldynFileKeywords.Runtime.cmd.toString() + " ";
-		if ((start - 0 < tolerance) && (stop - 0 < tolerance)) {
-			timing = timing + SmoldynFileKeywords.Runtime.b;
-		} else if (stop - start < tolerance) {
-			timing = timing + "@ " + start;
-		} else if (stop > start) {
-			timing = timing + SmoldynFileKeywords.Runtime.i + " " + start + " " + stop + " " + step;
-		}  
-//			else if () {
-//				//a
-//			} 
-//			else if () {
-//				//x
-//			} 
-		else {// unsupported -> throw exception!
-			throw new RuntimeException("unsupported command type caused by odd event specification (timing components unrecognized)");
+		if(eventtiming.getEventtimetype() == null) {
+			if ((start - 0 < tolerance) && (stop - 0 < tolerance)) {
+				timing = timing + SmoldynFileKeywords.Runtime.b;
+			} else if (stop - start < tolerance) {
+				timing = timing + "@ " + start;
+			} else if (stop > start) {
+				timing = timing + SmoldynFileKeywords.Runtime.i + " " + start + " " + stop + " " + step;
+			} else {// unsupported -> throw exception!
+				Utilities.throwUnexpectedException("unsupported command type caused by odd event specification (timing components unrecognized)");
+			}
+		} else {
+			timing = timing + eventtiming.getEventtimetype().getValue();
 		}
 		writer.print(timing + " ");
 	}
