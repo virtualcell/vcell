@@ -63,6 +63,7 @@ public Shape (GraphModel graphModel) {
 	public VisualState getVisualState() { return visualState; }
 	
 public void addChildShape(Shape shape) {
+	if(shape.parent != null) { shape.parent.removeChild(shape); }
 	childShapeList.addElement(shape);
 	shape.parent = this;
 }

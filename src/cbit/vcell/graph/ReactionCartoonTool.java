@@ -415,6 +415,7 @@ System.out.println("Shape "+shape.getLabel()+" @ "+shape.getAbsLocation());
  * This method calls the glg layout library.
  * Creation date: (8/28/2002 3:44:20 PM)
  */
+@SuppressWarnings("unchecked")
 public void layoutGlg() throws Exception {
 	//****In the case of Membranes DO as before!****
 	if (getReactionCartoon().getStructure() instanceof Membrane) {
