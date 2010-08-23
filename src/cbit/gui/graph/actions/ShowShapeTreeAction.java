@@ -20,9 +20,20 @@ public class ShowShapeTreeAction extends AbstractAction implements Action {
 	public static final String actionCommand = "ShowShapeTreeAction";
 	
 	protected final CartoonTool cartoonTool;
+	protected final Shape topShape;
 	
 	public ShowShapeTreeAction(CartoonTool cartoonTool) {
 		this.cartoonTool = cartoonTool;
+		this.topShape = null;
+		putValue(Action.ACTION_COMMAND_KEY, actionCommand);
+		putValue(Action.NAME, "Show Shape Tree");
+		putValue(Action.SHORT_DESCRIPTION, "Print the shape tree.");
+		putValue(Action.LONG_DESCRIPTION, "Print the shape tree (parent-child relations) to the console.");
+	}
+	
+	public ShowShapeTreeAction(Shape topShape) {
+		this.cartoonTool = null;
+		this.topShape = topShape;
 		putValue(Action.ACTION_COMMAND_KEY, actionCommand);
 		putValue(Action.NAME, "Show Shape Tree");
 		putValue(Action.SHORT_DESCRIPTION, "Print the shape tree.");
@@ -44,7 +55,11 @@ public class ShowShapeTreeAction extends AbstractAction implements Action {
 	}
 	
 	public void actionPerformed(ActionEvent event) {
-		showShapeTree(cartoonTool.getGraphModel().getTopShape());	
+		if(topShape != null) {
+			showShapeTree(topShape);
+		} else {
+			showShapeTree(cartoonTool.getGraphModel().getTopShape());				
+		}
 	}
 
 }
