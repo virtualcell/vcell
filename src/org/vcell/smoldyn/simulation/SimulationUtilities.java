@@ -151,4 +151,14 @@ public class SimulationUtilities {
 			throw new RuntimeException(message);
 		}
 	}
+	
+	
+	/**
+	 * Throws a RuntimeException with the requested message.
+	 * 
+	 * @param message
+	 */
+	public static void throwRuntimeException(String message) {
+		throw new RuntimeException(message);
+	}
 }
