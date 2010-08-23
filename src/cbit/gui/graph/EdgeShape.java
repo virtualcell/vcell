@@ -17,8 +17,9 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	
 	public static final int LINE_STYLE_SOLID = 0;
 	public static final int LINE_STYLE_DASHED = 1;
-	public ElipseShape startShape = null;
-	public ElipseShape endShape = null;
+	
+	protected ElipseShape startShape = null;
+	protected ElipseShape endShape = null;
 	protected Point start = new Point();
 	protected Point end = new Point();
 
@@ -50,6 +51,9 @@ public EdgeShape(Point start, Point end, GraphModel graphModel) {
 }
 
 	public VisualState createVisualState() { return new EdgeDefaultVisualState(this); }
+	
+	public ElipseShape getStartShape() { return startShape; }
+	public ElipseShape getEndShape() { return endShape; }
 
 protected static Point2D evaluate(CubicCurve2D curve, double t) {
 	//double a0x = curve.getX1();

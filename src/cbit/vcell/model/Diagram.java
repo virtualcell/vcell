@@ -1,9 +1,9 @@
 package cbit.vcell.model;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.util.*;
 
 import org.vcell.util.Compare;

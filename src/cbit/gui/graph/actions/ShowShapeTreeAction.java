@@ -5,8 +5,6 @@ package cbit.gui.graph.actions;
  */
 
 import java.awt.event.ActionEvent;
-import java.util.Enumeration;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
@@ -14,7 +12,6 @@ import org.vcell.sybil.util.text.StringUtil;
 
 import cbit.gui.graph.CartoonTool;
 import cbit.gui.graph.Shape;
-import cbit.gui.graph.visualstate.VisualStateUtil;
 
 @SuppressWarnings("serial")
 public class ShowShapeTreeAction extends AbstractAction implements Action {

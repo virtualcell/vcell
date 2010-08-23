@@ -22,16 +22,32 @@ public class EdgeDefaultVisualState implements EdgeVisualState {
 		this.wrappedVisualState = new ImmutableVisualState(owner, VisualState.PaintLayer.EDGE);
 	}
 
+	public VisualState getWrappedVisualState() { return wrappedVisualState; }
+	
 	public Owner getOwner() { return (Owner) wrappedVisualState.getOwner(); }
 	public PaintLayer getPaintLayer() { return wrappedVisualState.getPaintLayer(); }
-
+	
 	public boolean isAllowedToShowByAllAncestors() {
 		return wrappedVisualState.isAllowedToShowByAllAncestors();
 	}
 
-	public boolean isAllowingToShowDescendents() { return wrappedVisualState.isAllowingToShowDescendents(); }
+	public boolean isAllowingToShowDescendents() { 
+		return wrappedVisualState.isAllowingToShowDescendents(); 
+	}
+
 	public boolean isAllowingToShowItself() { return wrappedVisualState.isAllowingToShowItself(); }
-	public boolean isShowingItself() { return wrappedVisualState.isShowingItself(); }
+
+	public boolean isShowingItself() { 
+		boolean bShowingItself = false;
+		VisualState.Owner startShape = getOwner().getStartShape();
+		VisualState.Owner endShape = getOwner().getEndShape();
+		if(startShape != null && startShape.getVisualState().isShowingItself() &&
+				endShape != null && endShape.getVisualState().isShowingItself()) {
+			bShowingItself = wrappedVisualState.isShowingItself();
+		}
+		return bShowingItself; 
+	}
+	
 	public boolean isShowingDescendents() { return wrappedVisualState.isShowingDescendents(); }
 
 }
