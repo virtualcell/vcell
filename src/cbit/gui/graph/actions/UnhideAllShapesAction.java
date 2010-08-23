@@ -25,8 +25,8 @@ public class UnhideAllShapesAction extends AbstractAction implements Action {
 		this.cartoonTool = cartoonTool;
 		putValue(Action.ACTION_COMMAND_KEY, actionCommand);
 		putValue(Action.NAME, "Unhide All");
-		putValue(Action.SHORT_DESCRIPTION, "Unhide all nodes.");
-		putValue(Action.LONG_DESCRIPTION, "Unhide all nodes.");
+		putValue(Action.SHORT_DESCRIPTION, "Unhide all hidden shapes.");
+		putValue(Action.LONG_DESCRIPTION, "Unhide all hidden shapes.");
 	}
 	
 	public void actionPerformed(ActionEvent event) {

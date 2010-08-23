@@ -23,9 +23,9 @@ public class HideSelectedShapesAction extends AbstractAction implements Action {
 	public HideSelectedShapesAction(CartoonTool cartoonTool) {
 		this.cartoonTool = cartoonTool;
 		putValue(Action.ACTION_COMMAND_KEY, actionCommand);
-		putValue(Action.NAME, "Hide Nodes");
-		putValue(Action.SHORT_DESCRIPTION, "Hide selected nodes, if possible.");
-		putValue(Action.LONG_DESCRIPTION, "Hide selected nodes which support being hidden.");
+		putValue(Action.NAME, "Hide Selected");
+		putValue(Action.SHORT_DESCRIPTION, "Hide selected shapes, where possible.");
+		putValue(Action.LONG_DESCRIPTION, "Hide selected shapes which support being hidden.");
 	}
 	
 	public void actionPerformed(ActionEvent event) {

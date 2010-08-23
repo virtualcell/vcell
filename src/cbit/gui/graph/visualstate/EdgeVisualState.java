@@ -1,12 +1,14 @@
 package cbit.gui.graph.visualstate;
 
-/* The visual state of an edge depends on the visual state of 
- * 
+/* The visual state of an edge depends on the visual state of its end points
+ * August 2010
  */
+
 public interface EdgeVisualState extends VisualState {
 
 	public interface Owner extends VisualState.Owner {
-		// TODO add refs to start and end owner (shape)
+		public VisualState.Owner getStartShape();
+		public VisualState.Owner getEndShape();
 	}
 	
 	public Owner getOwner();

@@ -321,26 +321,25 @@ public void layout(String layoutName) throws Exception {
 	shapeEnum = getReactionCartoon().getShapes();
 	while (shapeEnum.hasMoreElements()){
 		Shape shape = (Shape)shapeEnum.nextElement();
-		edu.rpi.graphdrawing.Edge newEdge = null;
 		if (shape instanceof ReactionParticipantShape){
 			ReactionParticipantShape rpShape = (ReactionParticipantShape)shape;
-			SpeciesContextShape scShape = (SpeciesContextShape)rpShape.startShape;
-			ReactionStepShape rsShape = (ReactionStepShape)rpShape.endShape;
+			SpeciesContextShape scShape = (SpeciesContextShape)rpShape.getStartShape();
+			ReactionStepShape rsShape = (ReactionStepShape)rpShape.getEndShape();
 			if (rpShape instanceof ReactantShape){
-				newEdge = bb.addEdge(scShape.getLabel(),rsShape.getLabel());
+				bb.addEdge(scShape.getLabel(),rsShape.getLabel());
 			}else if (rpShape instanceof ProductShape){
-				newEdge = bb.addEdge(rsShape.getLabel(),scShape.getLabel());
+				bb.addEdge(rsShape.getLabel(),scShape.getLabel());
 			}else if (rpShape instanceof CatalystShape){
-				newEdge = bb.addEdge(scShape.getLabel(),rsShape.getLabel());
+				bb.addEdge(scShape.getLabel(),rsShape.getLabel());
 			}else if (rpShape instanceof FluxShape){
 				//
 				// check if coming or going
 				//
 				SpeciesContext sc = scShape.getSpeciesContext();
 				if (sc.getStructure() == rsShape.getReactionStep().getStructure().getParentStructure()){
-					newEdge = bb.addEdge(scShape.getLabel(),rsShape.getLabel());
+					bb.addEdge(scShape.getLabel(),rsShape.getLabel());
 				}else{
-					newEdge = bb.addEdge(rsShape.getLabel(),scShape.getLabel());
+					bb.addEdge(rsShape.getLabel(),scShape.getLabel());
 				}
 			}
 		}
@@ -364,6 +363,7 @@ public void layout(String layoutName) throws Exception {
 
 	bb.setEmbedding(layoutName);
 
+	@SuppressWarnings("unchecked")
 	Vector<Node> nodeList = bb.nodes();
 	for (int i = 0; i < nodeList.size(); i++){
 		Node node = nodeList.elementAt(i);
@@ -378,7 +378,8 @@ public void layout(String layoutName) throws Exception {
 	}
 
 	bb.removeDummies();
-	nodeList = bb.nodes();
+	@SuppressWarnings("unchecked") Vector<Node> nodesRaw = bb.nodes();
+	nodeList = nodesRaw;
 	//
 	// calculate offset and scaling so that resulting graph fits on canvas
 	//
@@ -471,8 +472,8 @@ public void layoutGlg() throws Exception {
 		
 		if (shape instanceof ReactionParticipantShape) {
 			ReactionParticipantShape rpShape = (ReactionParticipantShape)shape;
-			SpeciesContextShape scShape = (SpeciesContextShape)rpShape.startShape;
-			ReactionStepShape rsShape =(ReactionStepShape)rpShape.endShape;
+			SpeciesContextShape scShape = (SpeciesContextShape)rpShape.getStartShape();
+			ReactionStepShape rsShape =(ReactionStepShape)rpShape.getEndShape();
 
 			if (rpShape instanceof ReactantShape) {
 				graph.AddEdge((com.genlogic.GraphLayout.GlgGraphNode)nodeMap.get(scShape),(com.genlogic.GraphLayout.GlgGraphNode)nodeMap.get(rsShape),null, 0 ,null);
@@ -506,6 +507,7 @@ public void layoutGlg() throws Exception {
 	//resize and scale the graph
 	//
 	//com.genlogic.GlgObject edgeArray = graph.edge_array;
+	@SuppressWarnings("unchecked")
 	Vector<GlgGraphEdge> edgeVector = graph.edge_array;
 	double distance, minDistance = Double.MAX_VALUE;
 	
@@ -1405,7 +1407,7 @@ protected boolean shapeHasMenuAction(Shape shape, String menuAction) {
 	if(menuAction.equals(HideSelectedShapesAction.actionCommand)) {
 		return VisualStateUtil.canBeHidden(shape);
 	}
-	if(menuAction.equals(menuAction.equals(UnhideAllShapesAction.actionCommand))) {
+	if(menuAction.equals(UnhideAllShapesAction.actionCommand)) {
 		return true;
 	}
 	if(menuAction.equals(ShowShapeTreeAction.actionCommand)) {
