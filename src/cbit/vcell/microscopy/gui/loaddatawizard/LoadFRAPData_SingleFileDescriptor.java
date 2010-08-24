@@ -195,15 +195,15 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 		public ScalePanel()
 		{
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-			noScaleButton.setSelected(true);
-			scaleTextField.setEnabled(false);
+			scaleButton.setSelected(true);
+			scaleTextField.setEnabled(true);
 			ButtonGroup bg = new ButtonGroup();
 			bg.add(noScaleButton);
 			bg.add(scaleButton);
 			
 			noScaleButton.addActionListener(this);
 			scaleButton.addActionListener(this);
-			scaleTextField.setText("65535");
+			scaleTextField.setText("50000");
 			
 			add(noScaleButton);
 			add(scaleButton);

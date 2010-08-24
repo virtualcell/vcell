@@ -80,6 +80,7 @@ public class FRAPOptData {
 	public static final double[] DECREASE_PERCENT_CONST = new double[]{0.01, 0.001, 0.1, 0.01, 0.001};
 	public static final int MAX_ITERATION = 200;
 	public static final int MIN_ITERATION = 50;
+	public static final double DECREMENT_LOWER_BOUND = 0.1;
 	public static final int NUM_CONFIDENCE_LEVELS = 4;
 	public static final int IDX_DELTA_ALPHA_80 = 0;
 	public static final int IDX_DELTA_ALPHA_90 = 1;
@@ -947,7 +948,7 @@ public class FRAPOptData {
 					break;
 				}
 				paramVal = paramVal * increment;
-				if(paramVal > fixedParam.getUpperBound()|| paramVal < fixedParam.getLowerBound())
+				if(paramVal > (fixedParam.getUpperBound()-FRAPOptimization.epsilon) || paramVal < (fixedParam.getLowerBound()+FRAPOptimization.epsilon))
 				{
 					break;
 				}
@@ -978,31 +979,26 @@ public class FRAPOptData {
 				pde = new ProfileDataElement(increasedParam.getName(), Math.log10(increasedParam.getInitialGuess()), totalErr, newParameters);
 				profileData.addElement(pde);
 				//check if the we run enough to get confidence intervals(99% @6.635, we plus 10 over the min error)
+				if(totalErr > (iniTotalErr+10))
+				{
+					break;
+				}
 				if(iterationCount >= MIN_ITERATION)
 				{
-					if(totalErr > (iniTotalErr+10))
+					if(iterationCount == MIN_ITERATION + 1)
 					{
-						break;
+						increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
 					}
-					else
+					else if(iterationCount == 2*MIN_ITERATION + 1)
 					{
-						if(iterationCount == MIN_ITERATION + 1)
-						{
-							increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
-						}
-						else if(iterationCount == 2*MIN_ITERATION + 1)
-						{
-							increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
-						}
-						else if(iterationCount == 3*MIN_ITERATION + 1)
-						{
-							increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
-						}
+						increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
 					}
+					else if(iterationCount == 3*MIN_ITERATION + 1)
+					{
+						increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
+					}
+					
 				}
-				//output opt data
-//				dataFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY +increasedParam.getName()+ increasedParam.getInitialGuess() + ".txt";
-//				outputData(dataFileName, frapStudy.getReducedExpTimePoints(), optData.getFitData(newParameters));
 				
 				iterationCount++;
 			}
@@ -1017,7 +1013,7 @@ public class FRAPOptData {
 					break;
 				}
 				paramVal = paramVal * decrement;
-				if(paramVal > fixedParam.getUpperBound() || paramVal < fixedParam.getLowerBound())
+				if(paramVal > (fixedParam.getUpperBound()-FRAPOptimization.epsilon) || paramVal < (fixedParam.getLowerBound()+FRAPOptimization.epsilon))
 				{
 					break;
 				}
@@ -1047,32 +1043,27 @@ public class FRAPOptData {
 				double totalErr = getLeastError();
 				pde = new ProfileDataElement(decreasedParam.getName(), Math.log10(decreasedParam.getInitialGuess()), totalErr, newParameters);
 				profileData.addElement(0,pde);
+				if(totalErr > (iniTotalErr+10))
+				{
+					break;
+				}
 				if(iterationCount >= MIN_ITERATION)
 				{
-					if(totalErr > (iniTotalErr+10))
+					if(iterationCount == MIN_ITERATION + 1)
 					{
-						break;
+						decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
 					}
-					else
+					else if(iterationCount == 2*MIN_ITERATION + 1)
 					{
-						if(iterationCount == MIN_ITERATION + 1)
-						{
-							decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
-						}
-						else if(iterationCount == 2*MIN_ITERATION + 1)
-						{
-							decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
-						}
-						else if(iterationCount == 3*MIN_ITERATION + 1)
-						{
-							decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(2, iterationCount/MIN_ITERATION);
-						}
+						decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
 					}
+					else if(iterationCount == 3*MIN_ITERATION + 1)
+					{
+						decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
+					}
+					decrement = Math.max( DECREMENT_LOWER_BOUND, decrement);//decrement can be 0 or smaller than 0, we have to clamp it to lower bound decement 0.1.
 				}
-				//output opt data
-//				dataFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + decreasedParam.getName()+ decreasedParam.getInitialGuess() + ".txt";
-//				outputData(dataFileName, frapStudy.getReducedExpTimePoints(), optData.getFitData(newParameters));
-				
+
 				iterationCount++;
 			}
 			resultData[j] = profileData;
