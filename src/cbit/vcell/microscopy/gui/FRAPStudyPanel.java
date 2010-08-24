@@ -1627,7 +1627,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			//add sim
 			int jobIndex = 0;
 			SimulationJob simJob = new SimulationJob(sim,jobIndex,fieldDataIdentifierSpecs);
-			SimulationContext localSC = fStudy.getBioModel().getSimulationContexts(0);
 			// add function to display normalized fluorence data 
 			Norm_Exp_Fluor = new Expression(Norm_Exp_Fluor_Str);
 			SimulationSymbolTable simSymbolTable = simJob.getSimulationSymbolTable();
@@ -1654,13 +1653,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			flourViewer.setPdeDataContext(pdeDataContext);
 			SimulationModelInfo simModelInfo =	new SimulationWorkspaceModelInfo(fStudy.getBioModel().getSimulationContext(sim),sim.getName());
 			flourViewer.setSimulationModelInfo(simModelInfo);
-			try {
-				getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(flourViewer);
-				((VirtualFrapWindowManager)flourViewer.getDataViewerManager()).setLocalWorkSpace(getLocalWorkspace());
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			
+			getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(flourViewer);
+			((VirtualFrapWindowManager)flourViewer.getDataViewerManager()).setLocalWorkSpace(getLocalWorkspace());
+			
 			flourViewer.repaint();
 			
 		}
@@ -2420,6 +2416,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			getAnalysisResultsPanel().clearBestModel();
 			getAnalysisResultsPanel().clearResultTable();
 			getAnalysisResultsPanel().setRunSimButtonEnable(false);
+			clearMovieBuffer();
 			getAnalysisResultsPanel().setResultsButtonEnabled(false);
 		}
 	}

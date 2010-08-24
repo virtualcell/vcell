@@ -205,15 +205,16 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		System.out.println("alltimesMin="+allTimesMin+" allTimesMax="+allTimesMax + " linearScaleFactor=" + linearaScaleFactor);
 		UShortImage[] scaledDataImages = new UShortImage[times.length];
 		Random rnd = new Random();
+		int shortMax = 65535;
 		for (int i = 0; i < times.length; i++) {
 			double[] rawData =
 				dataSetControllerImpl.getSimDataBlock(null,vcSimulationDataIdentifier,variableName,times[i]).getData();
 			short[] scaledDataShort = new short[rawData.length];
-//			if(allTimesMax> SCALE_MAX){
 			for (int j = 0; j < scaledDataShort.length; j++) {
-//				int scaledValue = (int)(rawData[j]*linearaScaleFactor);//###uncomment it
 				double scaledRawDataJ = rawData[j]*linearaScaleFactor;
-				double scaledRawDataJ_withNoise = Math.max(0, scaledRawDataJ + rnd.nextGaussian()*Math.sqrt(scaledRawDataJ));
+				double ran = rnd.nextGaussian();
+				double scaledRawDataJ_withNoise = Math.max(0, (scaledRawDataJ + ran*Math.sqrt(scaledRawDataJ)));
+				scaledRawDataJ_withNoise = Math.min(shortMax, scaledRawDataJ_withNoise);
 				int scaledValue = (int)(scaledRawDataJ_withNoise);
 				scaledDataShort[j]&= 0x0000;
 				scaledDataShort[j]|= 0x0000FFFF & scaledValue;

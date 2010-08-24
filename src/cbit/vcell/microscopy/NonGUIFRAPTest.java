@@ -254,8 +254,7 @@ public class NonGUIFRAPTest {
 		tempF.deleteOnExit();
 		tifWriter.setId(tempF.getAbsolutePath());
 		tifWriter.setCompression("Uncompressed");
-		BufferedImage timePointBufferedImage =
-			AWTImageTools.makeImage(shortPixels, width, height,false);
+		BufferedImage timePointBufferedImage = AWTImageTools.makeImage(shortPixels, width, height,false);
 //		tifWriter.saveImage(timePointBufferedImage, true);
 		tifWriter.close();
 		return tempF;
@@ -409,10 +408,8 @@ public class NonGUIFRAPTest {
 			new VCSimulationDataIdentifier(
 				bioModel.getSimulations()[0].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),
 				FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
-		PDEDataManager simulationDataManager =
-			new PDEDataManager(null, localWorkspace.getVCDataManager(),vcSimulationDataIdentifier);
+		PDEDataManager simulationDataManager = new PDEDataManager(null, localWorkspace.getVCDataManager(),vcSimulationDataIdentifier);
 		double[] frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
-		//
 		VCDataManager testVCDataManager = localWorkspace.getVCDataManager();
 		double[] prebleachAverage = testVCDataManager.getSimDataBlock(null,frapStudy.getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
 		//TODO: need to create parameters here.
