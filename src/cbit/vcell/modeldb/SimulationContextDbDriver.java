@@ -28,7 +28,6 @@ import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
@@ -776,6 +775,8 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 		outputFnContext.setOutputFunctions(outputFunctionList);
 	}
 	
+	DataSymbolTable.table.populateDataSymbols(con, simContextKey, simContext.getDataContext(),user);
+		
 	BioEvent[] bioEvents = SimContextTable.table.getBioEvents(con, simContext);
 	if (bioEvents != null && bioEvents.length > 0) {
 		simContext.setBioEvents(bioEvents);
@@ -957,6 +958,7 @@ private void insertSimulationContext(InsertHashtable hash, Connection con, User 
 	insertReactionSpecsSQL(con, newVersion.getVersionKey(), simContext, updatedModel); // links to reactionSteps
 	insertAnalysisTasksSQL(con, newVersion.getVersionKey(), simContext); // inserts AnalysisTasks
 	ApplicationMathTable.table.saveOutputFunctionsSimContext(con, newVersion.getVersionKey(), simContext.getOutputFunctionContext().getOutputFunctionsList());
+	DataSymbolTable.table.saveDataSymbols(con,newVersion.getVersionKey(),simContext.getDataContext(),user);
 	
 	hash.put(simContext,newVersion.getVersionKey());
 }
