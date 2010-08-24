@@ -15,6 +15,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
@@ -25,6 +26,7 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataJobID;
+import org.vcell.util.gui.JDesktopPaneEnhanced;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotPane;
@@ -166,7 +168,15 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 					plotPane.setPlot2D(plot2D);
 				}						
 			};		
-			ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+			
+			if((JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(PdeTimePlotMultipleVariablesPanel.this) != null)
+			{//for vcell which has non-modal progress 
+				ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+			}
+			else//for vfrap to show modal progress on top
+			{
+				ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, true, null, true);
+			}
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 		}
