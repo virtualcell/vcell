@@ -1496,8 +1496,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if (dataSymbol instanceof FieldDataSymbol){
 			FieldDataSymbol fieldDataSymbol = (FieldDataSymbol)dataSymbol;
 			GeometryClass geometryClass = null;
-			FieldFunctionArguments ffs = new FieldFunctionArguments(fieldDataSymbol.getExternalDataIdentifier().getName(), fieldDataSymbol.getFieldItemName(),
-					new Expression(fieldDataSymbol.getFieldItemTime()), VariableType.getVariableTypeFromVariableTypeName(fieldDataSymbol.getFieldItemType()));
+			FieldFunctionArguments ffs = new FieldFunctionArguments(fieldDataSymbol.getExternalDataIdentifier().getName(), fieldDataSymbol.getFieldDataVarName(),
+					new Expression(fieldDataSymbol.getFieldDataVarTime()), VariableType.getVariableTypeFromVariableTypeName(fieldDataSymbol.getFieldDataVarType()));
 			Expression exp = new Expression(ffs.infix());
 			varHash.addVariable(newFunctionOrConstant(getMathSymbol(dataSymbol, geometryClass),getIdentifierSubstitutions(exp,dataSymbol.getUnitDefinition(),geometryClass),geometryClass));
 		}else{

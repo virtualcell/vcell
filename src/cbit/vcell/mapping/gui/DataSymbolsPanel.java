@@ -12,41 +12,28 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.io.File;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.zip.DataFormatException;
-
-import javax.swing.*;
-import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
+import java.io.File;
+import java.util.Hashtable;
 
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.jdom.Element;
-import org.jdom.Namespace;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.ScopedExpression;
@@ -55,18 +42,9 @@ import cbit.image.VCImageUncompressed;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.importer.AnnotatedImageDataset;
-import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXmlReader;
-import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.ClientSimManager;
-import cbit.vcell.client.DatabaseWindowManager;
-import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.RequestManager;
-import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.desktop.DocumentWindow;
-import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.desktop.biomodel.SPPRPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -74,21 +52,13 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.field.FieldDataGUIPanel;
-import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.geometry.ROIMultiPaintManager;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.units.VCUnitDefinition;
@@ -185,26 +155,29 @@ public NewDataSymbolPanel getNewDataSymbolPanel() {
 }
 
 public void addGenericDataSymbol() {
-	String name = null;
-	try {
-		getNewDataSymbolPanel().setSymbolName("");
-		getNewDataSymbolPanel().setSymbolExpression("vcField(dataset1,var1,0.0,Volume)");
-		int newSettings = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(this, getNewDataSymbolPanel(), "New DataSymbol");
-		if (newSettings == JOptionPane.OK_OPTION) {
-			name = getNewDataSymbolPanel().getSymbolName();
-			String expression = getNewDataSymbolPanel().getSymbolExpression();
-			Expression exp = new Expression(expression);
-			FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(null);
-//			DataSymbol ds = new FieldDataSymbol(DataSymbolType.GENERIC_SYMBOL, name, "",
-//					getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD, 
-//					new FieldFunctionArguments(functionInvocations[0]));
-			DataSymbol ds = new FieldDataSymbol(name, DataSymbolType.GENERIC_SYMBOL,
-					getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD);
-			getSimulationContext().getDataContext().addDataSymbol(ds);
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		DialogUtils.showErrorDialog(this, "Data symbol " + name + " already exists");
+	if(true){
+		throw new RuntimeException("to be implemented");
 	}
+//	String name = null;
+//	try {
+//		getNewDataSymbolPanel().setSymbolName("");
+//		getNewDataSymbolPanel().setSymbolExpression("vcField(dataset1,var1,0.0,Volume)");
+//		int newSettings = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(this, getNewDataSymbolPanel(), "New DataSymbol");
+//		if (newSettings == JOptionPane.OK_OPTION) {
+//			name = getNewDataSymbolPanel().getSymbolName();
+//			String expression = getNewDataSymbolPanel().getSymbolExpression();
+//			Expression exp = new Expression(expression);
+//			FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(null);
+////			DataSymbol ds = new FieldDataSymbol(DataSymbolType.GENERIC_SYMBOL, name, "",
+////					getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD, 
+////					new FieldFunctionArguments(functionInvocations[0]));
+//			DataSymbol ds = new FieldDataSymbol(name, DataSymbolType.GENERIC_SYMBOL,
+//					getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD);
+//			getSimulationContext().getDataContext().addDataSymbol(ds);
+//		}
+//	} catch (java.lang.Throwable ivjExc) {
+//		DialogUtils.showErrorDialog(this, "Data symbol " + name + " already exists");
+//	}
 }
 public void addVFrapDataSymbol() {
 	

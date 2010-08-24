@@ -47,7 +47,6 @@ import cbit.vcell.dictionary.EnzymeInfo;
 import cbit.vcell.dictionary.EnzymeRef;
 import cbit.vcell.dictionary.FormalSpeciesInfo;
 import cbit.vcell.dictionary.ProteinInfo;
-import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.ControlPointCurve;
@@ -1392,9 +1391,9 @@ private Element getXML(FieldDataSymbol fds) {
 	dataSetIDElement.setAttribute(XMLTags.OwnerKeyAttrTag, edi.getOwner().getID().toString());
 	fieldDataSymbolElement.addContent(dataSetIDElement);
 
-	fieldDataSymbolElement.setAttribute(XMLTags.FieldItemNameTag, fds.getFieldItemName());
-	fieldDataSymbolElement.setAttribute(XMLTags.FieldItemTypeTag, fds.getFieldItemType());
-	fieldDataSymbolElement.setAttribute(XMLTags.FieldItemTimeTag, Double.toString(fds.getFieldItemTime()));
+	fieldDataSymbolElement.setAttribute(XMLTags.FieldItemNameTag, fds.getFieldDataVarName());
+	fieldDataSymbolElement.setAttribute(XMLTags.FieldItemTypeTag, fds.getFieldDataVarType());
+	fieldDataSymbolElement.setAttribute(XMLTags.FieldItemTimeTag, Double.toString(fds.getFieldDataVarTime()));
 
 	return fieldDataSymbolElement;
 }
