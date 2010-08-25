@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Hashtable;
 
 import javax.media.ControllerEvent;
 import javax.media.ControllerListener;
@@ -34,7 +35,11 @@ import javax.swing.SwingUtilities;
 import org.vcell.util.FileUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.ZEnforcer;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 
 /**
  * To play a movie with Java Media Framework. Used in VFrap to show the
@@ -125,7 +130,7 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 		thePlayer.start(); // start playing
 	}
 
-	private void save(File movieFile){
+	private void save(final File movieFile){
 		int choice = VirtualFrapLoader.saveMovieFileChooser.showSaveDialog(parentFrame);
 		File outputFile = null;
 		if (choice == JFileChooser.APPROVE_OPTION) {
@@ -145,14 +150,18 @@ public class JMFPlayer extends JPanel implements ControllerListener {
 				}
 			}
 			// copy saved movie file to user specified path.
-			try {
-				FileUtils.copyFile(movieFile, outputFile);
-			} catch (IOException e) {
-				DialogUtils.showErrorDialog(parentFrame,
-						"Fail to save movie to file: "
-								+ outputFile.getPath() + "."
-								+ e.getMessage());
-				return;
+			if(outputFile != null)
+			{
+				final File output = outputFile;
+				AsynchClientTask saveTask = new AsynchClientTask("Saving movie to " + output.getAbsolutePath(), AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+	    		{
+	    			public void run(Hashtable<String, Object> hashTable) throws Exception
+	    			{
+	    				FileUtils.copyFile(movieFile, output);
+	    				
+	    			}
+	    		};
+	    		ClientTaskDispatcher.dispatch(JMFPlayer.this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask},true, false, true,null,true);
 			}
 		} else {
 			throw UserCancelException.CANCEL_GENERIC;

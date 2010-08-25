@@ -590,7 +590,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 			}
 		};
 		//dispatch
-		ClientTaskDispatcher.dispatch(FRAPDiffOneParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{evaluateTask, showResultTask}, false, false, null, true); 
+		ClientTaskDispatcher.dispatch(FRAPDiffOneParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{evaluateTask, showResultTask}, false, true, null, true); 
 	}
 	
 	public void runAndSetBestParameters()
