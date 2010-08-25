@@ -1009,7 +1009,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 			}
 		};
 		//dispatch
-		ClientTaskDispatcher.dispatch(FRAPDiffTwoParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{evaluateTask, showResultTask}, false, false, null, true); 
+		ClientTaskDispatcher.dispatch(FRAPDiffTwoParamPanel.this, new Hashtable<String, Object>(), new AsynchClientTask[]{evaluateTask, showResultTask}, false, true, null, true); 
 	}
 	
 	public double[][] getCurrentFitData() throws Exception{

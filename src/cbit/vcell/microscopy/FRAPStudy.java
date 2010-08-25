@@ -1471,6 +1471,7 @@ public class FRAPStudy implements Matchable{
 
 	public void setProfileData_oneDiffComponent(ProfileData[] profileData) {
 		this.profileData_oneDiffComponent = profileData;
+		setSaveNeeded(true);
 	}
 	
 	public ProfileData[] getProfileData_twoDiffComponents() {
@@ -1480,6 +1481,7 @@ public class FRAPStudy implements Matchable{
 
 	public void setProfileData_twoDiffComponents(ProfileData[] profileData) {
 		this.profileData_twoDiffComponents = profileData;
+		setSaveNeeded(true);
 	}
 	
 	
