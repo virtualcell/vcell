@@ -26,177 +26,186 @@ public class GeometryClassLegendShape extends ElipseShape implements PropertyCha
 	Geometry geometry = null;
 	int radius = 1;
 
-/**
- * SpeciesShape constructor comment.
- * @param label java.lang.String
- * @param graphModel cbit.vcell.graph.GraphModel
- */
-public GeometryClassLegendShape(GeometryClass geometryClass, Geometry geometry, GraphModel graphModel) {
-	this(geometryClass,geometry,graphModel,1);
-}
+	/**
+	 * SpeciesShape constructor comment.
+	 * @param label java.lang.String
+	 * @param graphModel cbit.vcell.graph.GraphModel
+	 */
+	public GeometryClassLegendShape(GeometryClass geometryClass, Geometry geometry, GraphModel graphModel) {
+		this(geometryClass,geometry,graphModel,1);
+	}
 
 
-/**
- * SpeciesShape constructor comment.
- * @param label java.lang.String
- * @param graphModel cbit.vcell.graph.GraphModel
- */
-public GeometryClassLegendShape(GeometryClass geometryClass, Geometry geometry, GraphModel graphModel, int argRadius) {
-	super(graphModel);
-	this.geometryClass = geometryClass;
-	this.geometry = geometry;
-	geometryClass.addPropertyChangeListener(this);
-	defaultBG = java.awt.Color.red;
-	defaultFGselect = java.awt.Color.black;
-	backgroundColor = defaultBG;
-	this.radius = argRadius;
-}
+	/**
+	 * SpeciesShape constructor comment.
+	 * @param label java.lang.String
+	 * @param graphModel cbit.vcell.graph.GraphModel
+	 */
+	public GeometryClassLegendShape(GeometryClass geometryClass, Geometry geometry, GraphModel graphModel, int argRadius) {
+		super(graphModel);
+		this.geometryClass = geometryClass;
+		this.geometry = geometry;
+		geometryClass.addPropertyChangeListener(this);
+		defaultBG = java.awt.Color.red;
+		defaultFGselect = java.awt.Color.black;
+		backgroundColor = defaultBG;
+		this.radius = argRadius;
+	}
 
+	@Override
 	public VisualState createVisualState() {
 		return new ImmutableVisualState(this, VisualState.PaintLayer.NODE);
 	}
 
-public Point getAttachmentLocation(int attachmentType) {
-	return new Point(screenPos.x+radius,screenPos.y+radius);
-}
+	@Override
+	public Point getAttachmentLocation(int attachmentType) {
+		return new Point(radius, radius);
+	}
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.Object
- */
-public Object getModelObject() {
-	return geometryClass;
-}
+	/**
+	 * This method was created in VisualAge.
+	 * @return java.lang.Object
+	 */
+	@Override
+	public Object getModelObject() {
+		return geometryClass;
+	}
 
 
-/**
- * This method was created by a SmartGuide.
- * @return int
- * @param g java.awt.Graphics
- */
-public Dimension getPreferedSize(java.awt.Graphics2D g) {
-	java.awt.FontMetrics fm = g.getFontMetrics();
-	labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
-	labelSize.width = fm.stringWidth(getLabel());
-//	preferedSize.height = radius*2 + labelSize.height;
-//	preferedSize.width = Math.max(radius*2,labelSize.width);
-	preferedSize.height = radius*2;
-	preferedSize.width = radius*2 + labelSize.width;
-	return preferedSize;
-}
+	/**
+	 * This method was created by a SmartGuide.
+	 * @return int
+	 * @param g java.awt.Graphics
+	 */
+	@Override
+	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+		java.awt.FontMetrics fm = g.getFontMetrics();
+		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
+		labelSize.width = fm.stringWidth(getLabel());
+		//	preferedSize.height = radius*2 + labelSize.height;
+		//	preferedSize.width = Math.max(radius*2,labelSize.width);
+		preferredSize.height = radius*2;
+		preferredSize.width = radius*2 + labelSize.width;
+		return preferredSize;
+	}
 
 
-/**
- * This method was created by a SmartGuide.
- * @return int
- */
-public Point getSeparatorDeepCount() {	
-	return new Point(1,1);
-}
+	/**
+	 * This method was created by a SmartGuide.
+	 * @return int
+	 */
+	@Override
+	public Point getSeparatorDeepCount() {	
+		return new Point(1,1);
+	}
 
 
-/**
- * This method was created in VisualAge.
- * @return java.awt.Color
- * @param subVolume cbit.vcell.geometry.SubVolume
- */
-private java.awt.Color getSubvolumeColor(SubVolume subVolume) {
-	java.awt.image.ColorModel colorModel = GeometrySpec.getHandleColorMap();
-	int handle = subVolume.getHandle();
-	return new java.awt.Color(colorModel.getRGB(handle));
-}
+	/**
+	 * This method was created in VisualAge.
+	 * @return java.awt.Color
+	 * @param subVolume cbit.vcell.geometry.SubVolume
+	 */
+	private java.awt.Color getSubvolumeColor(SubVolume subVolume) {
+		java.awt.image.ColorModel colorModel = GeometrySpec.getHandleColorMap();
+		int handle = subVolume.getHandle();
+		return new java.awt.Color(colorModel.getRGB(handle));
+	}
 
 
-/**
- * This method was created by a SmartGuide.
- * @return int
- * @param g java.awt.Graphics
- */
-public void layout() {
+	/**
+	 * This method was created by a SmartGuide.
+	 * @return int
+	 * @param g java.awt.Graphics
+	 */
+	@Override
+	public void layout() {
 
-	//
-	// position label
-	//
-	labelPos.x = 2*radius + 5;
-	labelPos.y = labelSize.height;
-}
+		//
+		// position label
+		//
+		labelPos.x = 2*radius + 5;
+		labelPos.y = labelSize.height;
+	}
 
-public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
+	@Override
+	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
 
-	//
-	// draw elipse
-	//
-	if (geometryClass instanceof SubVolume){
-		SubVolume subVolume = (SubVolume)geometryClass;
-		java.awt.Color fillColor = getSubvolumeColor(subVolume);
-		g.setColor(fillColor);
-		g.fill3DRect(absPosX+1,absPosY+1,2*radius-1,2*radius-1,true);
-		g.setColor(forgroundColor);
-		g.draw3DRect(absPosX,absPosY,2*radius,2*radius,true);
-	}else if (geometryClass instanceof SurfaceClass){
-		SurfaceClass surfaceClass = (SurfaceClass)geometryClass;
-		Set<SubVolume> adjacentSubVolumes = surfaceClass.getAdjacentSubvolumes();
-		Iterator<SubVolume> iterator = adjacentSubVolumes.iterator();
-		SubVolume subVolume1 = iterator.next();
-		SubVolume subVolume2 = iterator.next();
-		java.awt.Color fillColor1 = null;
-		java.awt.Color fillColor2 = null;
-		// make same choice each time so that repaint don't flicker
-		if (subVolume1.getName().compareTo(subVolume2.getName()) > 0) {
-			fillColor1 = getSubvolumeColor(subVolume1);
-			fillColor2 = getSubvolumeColor(subVolume2);	
-		} else {
-			fillColor1 = getSubvolumeColor(subVolume2);
-			fillColor2 = getSubvolumeColor(subVolume1);
+		//
+		// draw elipse
+		//
+		if (geometryClass instanceof SubVolume){
+			SubVolume subVolume = (SubVolume)geometryClass;
+			java.awt.Color fillColor = getSubvolumeColor(subVolume);
+			g.setColor(fillColor);
+			g.fill3DRect(absPosX+1,absPosY+1,2*radius-1,2*radius-1,true);
+			g.setColor(forgroundColor);
+			g.draw3DRect(absPosX,absPosY,2*radius,2*radius,true);
+		}else if (geometryClass instanceof SurfaceClass){
+			SurfaceClass surfaceClass = (SurfaceClass)geometryClass;
+			Set<SubVolume> adjacentSubVolumes = surfaceClass.getAdjacentSubvolumes();
+			Iterator<SubVolume> iterator = adjacentSubVolumes.iterator();
+			SubVolume subVolume1 = iterator.next();
+			SubVolume subVolume2 = iterator.next();
+			java.awt.Color fillColor1 = null;
+			java.awt.Color fillColor2 = null;
+			// make same choice each time so that repaint don't flicker
+			if (subVolume1.getName().compareTo(subVolume2.getName()) > 0) {
+				fillColor1 = getSubvolumeColor(subVolume1);
+				fillColor2 = getSubvolumeColor(subVolume2);	
+			} else {
+				fillColor1 = getSubvolumeColor(subVolume2);
+				fillColor2 = getSubvolumeColor(subVolume1);
+			}
+			g.setColor(fillColor1);
+			g.fill3DRect(absPosX+1,absPosY+1,radius,2*radius-1,true);
+			g.setColor(fillColor2);
+			g.fill3DRect(absPosX+1+radius,absPosY+1,radius-1,2*radius-1,true);
+			g.setColor(forgroundColor);
+			g.draw3DRect(absPosX,absPosY,2*radius,2*radius,true);
 		}
-		g.setColor(fillColor1);
-		g.fill3DRect(absPosX+1,absPosY+1,radius,2*radius-1,true);
-		g.setColor(fillColor2);
-		g.fill3DRect(absPosX+1+radius,absPosY+1,radius-1,2*radius-1,true);
+		//	g.drawRect(screenPos.x+parentOffsetX,screenPos.y+parentOffsetY,screenSize.width,screenSize.height);
+		//
+		// draw label
+		//
+		int textX = labelPos.x + absPosX;
+		int textY = labelPos.y + absPosY;
 		g.setColor(forgroundColor);
-		g.draw3DRect(absPosX,absPosY,2*radius,2*radius,true);
+		if (getLabel()!=null && getLabel().length()>0){
+			g.drawString(getLabel(),textX,textY);
+		}
+		return;
 	}
-//	g.drawRect(screenPos.x+parentOffsetX,screenPos.y+parentOffsetY,screenSize.width,screenSize.height);
-	//
-	// draw label
-	//
-	int textX = labelPos.x + absPosX;
-	int textY = labelPos.y + absPosY;
-	g.setColor(forgroundColor);
-	if (getLabel()!=null && getLabel().length()>0){
-		g.drawString(getLabel(),textX,textY);
+
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (6/5/00 10:50:17 PM)
+	 * @param event java.beans.PropertyChangeEvent
+	 */
+	public void propertyChange(PropertyChangeEvent event) {
+		if (event.getSource() == getModelObject() && event.getPropertyName().equals("name")){
+			refreshLabel();
+			graphModel.notifyChangeEvent();
+		}
 	}
-	return;
-}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/5/00 10:50:17 PM)
- * @param event java.beans.PropertyChangeEvent
- */
-public void propertyChange(PropertyChangeEvent event) {
-	if (event.getSource() == getModelObject() && event.getPropertyName().equals("name")){
-		refreshLabel();
-		graphModel.notifyChangeEvent();
+	/**
+	 * This method was created in VisualAge.
+	 */
+	@Override
+	public void refreshLabel() {
+		setLabel(geometryClass.getName());
 	}
-}
 
 
-/**
- * This method was created in VisualAge.
- */
-public void refreshLabel() {
-	setLabel(geometryClass.getName());
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @param newSize java.awt.Dimension
- */
-public void resize(Graphics2D g, Dimension newSize) {
-	return;
-}
+	/**
+	 * This method was created by a SmartGuide.
+	 * @param newSize java.awt.Dimension
+	 */
+	@Override
+	public void resize(Graphics2D g, Dimension newSize) {
+		return;
+	}
 }

@@ -1,17 +1,18 @@
 package cbit.gui.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /**
  * This is the event class to support the cbit.vcell.graph.GraphListener interface.
  */
+@SuppressWarnings("serial")
 public class GraphEvent extends java.util.EventObject {
-/**
- * GraphEvent constructor comment.
- * @param source java.lang.Object
- */
-public GraphEvent(java.lang.Object source) {
-	super(source);
-}
+	/**
+	 * GraphEvent constructor comment.
+	 * @param source java.lang.Object
+	 */
+	public GraphEvent(java.lang.Object source) {
+		super(source);
+	}
 }

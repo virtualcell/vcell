@@ -17,7 +17,7 @@ public interface VisualState {
 	/* 
 	 * PaintLayer determines the order in which a parent draws its children
 	 */
-	public static enum PaintLayer { EDGE, NODE }
+	public static enum PaintLayer { COMPARTMENT, EDGE, NODE }
 	
 	public Owner getOwner();
 	public PaintLayer getPaintLayer();

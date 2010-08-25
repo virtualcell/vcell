@@ -19,82 +19,88 @@ public class NodeShape extends cbit.gui.graph.ElipseShape {
 	protected int fieldDegree = 0;
 	protected cbit.util.graph.Node fieldNode = null;
 	/**
- * SpeciesShape constructor comment.
- * @param label java.lang.String
- * @param graphModel cbit.vcell.graph.GraphModel
- */
-public NodeShape(cbit.util.graph.Node node, GraphModel graphModel, int degree) {
-	super(graphModel);
-	this.fieldNode = node;
-	this.fieldDegree = degree;
-	defaultBG = java.awt.Color.green;
-	defaultFGselect = java.awt.Color.black;
-	backgroundColor = defaultBG;
-	darkerBackground = backgroundColor.darker().darker();
-	refreshLabel();
-}
+	 * SpeciesShape constructor comment.
+	 * @param label java.lang.String
+	 * @param graphModel cbit.vcell.graph.GraphModel
+	 */
+	public NodeShape(cbit.util.graph.Node node, GraphModel graphModel, int degree) {
+		super(graphModel);
+		this.fieldNode = node;
+		this.fieldDegree = degree;
+		defaultBG = java.awt.Color.green;
+		defaultFGselect = java.awt.Color.black;
+		backgroundColor = defaultBG;
+		darkerBackground = backgroundColor.darker().darker();
+		refreshLabel();
+	}
 
+	@Override
 	public VisualState createVisualState() { 
 		return new ImmutableVisualState(this, VisualState.PaintLayer.NODE); 
 	}
 
-public Object getModelObject() {
-	return fieldNode;
-}
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Species
- */
-public cbit.util.graph.Node getNode() {
-	return fieldNode;
-}
+	@Override
+	public Object getModelObject() {
+		return fieldNode;
+	}
+	/**
+	 * This method was created by a SmartGuide.
+	 * @return cbit.vcell.model.Species
+	 */
+	public cbit.util.graph.Node getNode() {
+		return fieldNode;
+	}
 
-/**
- * This method was created by a SmartGuide.
- * @return int
- * @param g java.awt.Graphics
- */
-public Dimension getPreferedSize(java.awt.Graphics2D g) {
-	java.awt.FontMetrics fm = g.getFontMetrics();
-	labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
-	labelSize.width = fm.stringWidth(getLabel());
-//	preferedSize.height = radius*2 + labelSize.height;
-//	preferedSize.width = Math.max(radius*2,labelSize.width);
-	preferedSize.height = radius*2;
-	preferedSize.width = radius*2;
-	return preferedSize;
-}
-/**
- * This method was created by a SmartGuide.
- * @return int
- */
-public Point getSeparatorDeepCount() {	
-	return new Point(0,0);
-}
-/**
- * This method was created by a SmartGuide.
- * @return int
- * @param g java.awt.Graphics
- */
-public void layout() {
+	/**
+	 * This method was created by a SmartGuide.
+	 * @return int
+	 * @param g java.awt.Graphics
+	 */
+	@Override
+	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+		java.awt.FontMetrics fm = g.getFontMetrics();
+		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
+		labelSize.width = fm.stringWidth(getLabel());
+		//	preferedSize.height = radius*2 + labelSize.height;
+		//	preferedSize.width = Math.max(radius*2,labelSize.width);
+		preferredSize.height = radius*2;
+		preferredSize.width = radius*2;
+		return preferredSize;
+	}
+	/**
+	 * This method was created by a SmartGuide.
+	 * @return int
+	 */
+	@Override
+	public Point getSeparatorDeepCount() {	
+		return new Point(0,0);
+	}
+	/**
+	 * This method was created by a SmartGuide.
+	 * @return int
+	 * @param g java.awt.Graphics
+	 */
+	@Override
+	public void layout() {
 
-//	if (screenSize.width<labelSize.width ||
-//		 screenSize.height<labelSize.height){
-//		 throw new Exception("screen size smaller than label");
-//	} 
-	//
-	// this is like a row/column layout  (1 column)
-	//
-	int centerX = screenSize.width/2;
-	
-	//
-	// position label
-	//
-	labelPos.x = centerX - labelSize.width/2;
-	labelPos.y = 0;
-}
+		//	if (screenSize.width<labelSize.width ||
+		//		 screenSize.height<labelSize.height){
+		//		 throw new Exception("screen size smaller than label");
+		//	} 
+		//
+		// this is like a row/column layout  (1 column)
+		//
+		int centerX = shapeSize.width/2;
 
-public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
+		//
+		// position label
+		//
+		labelPos.x = centerX - labelSize.width/2;
+		labelPos.y = 0;
+	}
+
+	@Override
+	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
 
 		//
 		// boolean isBound = false;
@@ -118,14 +124,16 @@ public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
 		return;
 	}
 
-public void refreshLabel() {
-	setLabel(getNode().getName());
-}
-/**
- * This method was created by a SmartGuide.
- * @param newSize java.awt.Dimension
- */
-public void resize(Graphics2D g, Dimension newSize) {
-	return;
-}
+	@Override
+	public void refreshLabel() {
+		setLabel(getNode().getName());
+	}
+	/**
+	 * This method was created by a SmartGuide.
+	 * @param newSize java.awt.Dimension
+	 */
+	@Override
+	public void resize(Graphics2D g, Dimension newSize) {
+		return;
+	}
 }
