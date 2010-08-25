@@ -24,86 +24,89 @@ public abstract class StructureShape extends ElipseShape {
 	protected static final int defaultSpacingX = 30;
 	protected static final int defaultSpacingY = 10;
 
-/**
- * This method was created by a SmartGuide.
- * @param feature cbit.vcell.model.Feature
- */
-public StructureShape (Structure structure, Model model, GraphModel graphModel) {
-	super(graphModel);
-	this.structure = structure;
-	this.model = model;
-}
-
-	public VisualState createVisualState() {
-		return new ImmutableVisualState(this, VisualState.PaintLayer.NODE);
+	/**
+	 * This method was created by a SmartGuide.
+	 * @param feature cbit.vcell.model.Feature
+	 */
+	public StructureShape (Structure structure, Model model, GraphModel graphModel) {
+		super(graphModel);
+		this.structure = structure;
+		this.model = model;
 	}
 
-public Font getLabelFont(Graphics g) {
-	return getBoldFont(g);
-}
+	@Override
+	public VisualState createVisualState() {
+		return new ImmutableVisualState(this, VisualState.PaintLayer.COMPARTMENT);
+	}
+
+	public Font getLabelFont(Graphics g) {
+		return getBoldFont(g);
+	}
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.model.Model
- */
-public cbit.vcell.model.Model getModel() {
-	return model;
-}
+	/**
+	 * This method was created in VisualAge.
+	 * @return cbit.vcell.model.Model
+	 */
+	public cbit.vcell.model.Model getModel() {
+		return model;
+	}
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.Object
- */
-public Object getModelObject() {
-	return structure;
-}
+	/**
+	 * This method was created in VisualAge.
+	 * @return java.lang.Object
+	 */
+	@Override
+	public Object getModelObject() {
+		return structure;
+	}
 
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Feature
- */
-public Structure getStructure() {
-	return structure;
-}
+	/**
+	 * This method was created by a SmartGuide.
+	 * @return cbit.vcell.model.Feature
+	 */
+	public Structure getStructure() {
+		return structure;
+	}
 
 
-/**
- * This method was created by a SmartGuide.
- * @param g java.awt.Graphics
- */
+	/**
+	 * This method was created by a SmartGuide.
+	 * @param g java.awt.Graphics
+	 */
 
+	@Override
 	public void paintSelf ( Graphics2D g, int absPosX, int absPosY ) {
 
 		g.setColor(backgroundColor);
-		g.fillOval(absPosX+1,absPosY+1,screenSize.width-1,screenSize.height-1);
+		g.fillOval(absPosX+1,absPosY+1,shapeSize.width-1,shapeSize.height-1);
 		g.setColor(forgroundColor);
-		g.drawOval(absPosX,absPosY,screenSize.width,screenSize.height);
+		g.drawOval(absPosX,absPosY,shapeSize.width,shapeSize.height);
 
 		//java.awt.FontMetrics fm = g.getFontMetrics();
 		//if (getLabel()!=null && getLabel().length()>0){
-			//if(this instanceof FeatureShape){
-				//g.drawString(getLabel(),labelPos.x+absPosX,labelPos.y+absPosY);
-			//}else{
-				//int textX = absPosX + screenSize.width/2 - fm.stringWidth(getLabel())/2;
-				//int textY = absPosY + 5 + fm.getMaxAscent();
-				//g.drawString(getLabel(),textX,textY);
-			//}
+		//if(this instanceof FeatureShape){
+		//g.drawString(getLabel(),labelPos.x+absPosX,labelPos.y+absPosY);
+		//}else{
+		//int textX = absPosX + screenSize.width/2 - fm.stringWidth(getLabel())/2;
+		//int textY = absPosY + 5 + fm.getMaxAscent();
+		//g.drawString(getLabel(),textX,textY);
 		//}
-//		SpeciesContextShape selectedShape = null;
-//		for (int i=0;i<childShapeList.size();i++){
-//			Shape child = (Shape)childShapeList.elementAt(i);
-//			if((child instanceof SpeciesContextShape) && child.isSelected()){
-//				selectedShape = (SpeciesContextShape)child;
-//			} else {
-//				child.paint(g,absPosX,absPosY);
-//			}
-//		}
-//		if(selectedShape != null){//To make sure its on top
-//			selectedShape.paint(g,absPosX,absPosY);
-//		}
+		//}
+		//		SpeciesContextShape selectedShape = null;
+		//		for (int i=0;i<childShapeList.size();i++){
+		//			Shape child = (Shape)childShapeList.elementAt(i);
+		//			if((child instanceof SpeciesContextShape) && child.isSelected()){
+		//				selectedShape = (SpeciesContextShape)child;
+		//			} else {
+		//				child.paint(g,absPosX,absPosY);
+		//			}
+		//		}
+		//		if(selectedShape != null){//To make sure its on top
+		//			selectedShape.paint(g,absPosX,absPosY);
+		//		}
 
 
 		if (getLabel()!=null && getLabel().length()>0){
@@ -112,16 +115,16 @@ public Structure getStructure() {
 			if(this instanceof FeatureShape){
 				if(isSelected()){
 					drawRaisedOutline(absPosX+labelPos.x-5,absPosY+labelPos.y-labelSize.height+3,labelSize.width+10,labelSize.height,
-						g,Color.white,Color.black,Color.black);
+							g,Color.white,Color.black,Color.black);
 				}
 				g.setColor(Color.black);
 				g.drawString(getLabel(),labelPos.x+absPosX,labelPos.y+absPosY);
 			}else{
-				int textX = absPosX + screenSize.width/2 - labelSize.width/2;
+				int textX = absPosX + shapeSize.width/2 - labelSize.width/2;
 				int textY = absPosY + labelSize.height -3;
 				if(isSelected()){
 					drawRaisedOutline(textX-5,textY-labelSize.height+3,labelSize.width+10,labelSize.height,
-						g,Color.white,Color.black,Color.black);
+							g,Color.white,Color.black,Color.black);
 				}
 				g.setColor(Color.black);
 				g.drawString(getLabel(),textX,textY);
@@ -131,10 +134,11 @@ public Structure getStructure() {
 
 	}
 
-/**
- * This method was created in VisualAge.
- */
-public void refreshLabel() {
-	setLabel(getStructure().getName());
-}
+	/**
+	 * This method was created in VisualAge.
+	 */
+	@Override
+	public void refreshLabel() {
+		setLabel(getStructure().getName());
+	}
 }

@@ -28,9 +28,9 @@ public Dimension getPreferedSize(java.awt.Graphics2D g) {
 	java.awt.FontMetrics fm = g.getFontMetrics();
 	labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
 	labelSize.width = fm.stringWidth(getLabel());
-	preferedSize.height = labelSize.height + 10;
-	preferedSize.width = labelSize.width + 10;
-	return preferedSize;
+	preferredSize.height = labelSize.height + 10;
+	preferredSize.width = labelSize.width + 10;
+	return preferredSize;
 }
 
 
@@ -40,12 +40,12 @@ public Dimension getPreferedSize(java.awt.Graphics2D g) {
  * @param pick java.awt.Point
  */
 final double getRadius ( Point pick ) {
-	int centerX = screenPos.x+screenSize.width/2;
-	int centerY = screenPos.y+screenSize.height/2;
+	int centerX = relativePos.x+shapeSize.width/2;
+	int centerY = relativePos.y+shapeSize.height/2;
 	double radiusX = pick.x-centerX;
 	double radiusY = pick.y-centerY;
-	double b = screenSize.height/2;
-	double a = screenSize.width/2;
+	double b = shapeSize.height/2;
+	double a = shapeSize.width/2;
    double radius = radiusX*radiusX/(a*a) + radiusY*radiusY/(b*b);
 
    return radius;
@@ -88,15 +88,17 @@ public final boolean isOnBorder(Point p) {
  */
 public void layout() throws LayoutException {
 
-	if (screenSize.width<=labelSize.width ||
-		 screenSize.height<=labelSize.height){
-		 throw new LayoutException("screen size smaller than label");
-	} 
+	if(LayoutException.bActivated) {
+		if (shapeSize.width<=labelSize.width ||
+				shapeSize.height<=labelSize.height){
+			throw new LayoutException("screen size smaller than label");
+		} 		
+	}
 	//
 	// this is like a row/column layout  (1 column)
 	//
-	int centerX = screenSize.width/2;
-	int centerY = screenSize.height/2;
+	int centerX = shapeSize.width/2;
+	int centerY = shapeSize.height/2;
 	
 	//
 	// position label
@@ -111,15 +113,15 @@ public void paintSelf(Graphics2D g2D, int absPosX, int absPosY ) {
 		// draw elipse
 		//
 		g2D.setColor(backgroundColor);
-		g2D.fillOval(absPosX,absPosY,screenSize.width,screenSize.height);
+		g2D.fillOval(absPosX,absPosY,shapeSize.width,shapeSize.height);
 		g2D.setColor(forgroundColor);
-		g2D.drawOval(absPosX,absPosY,screenSize.width,screenSize.height);
+		g2D.drawOval(absPosX,absPosY,shapeSize.width,shapeSize.height);
 
 		//
 		// draw label
 		//
 		java.awt.FontMetrics fm = g2D.getFontMetrics();
-		int textX = absPosX  + screenSize.width/2 - fm.stringWidth(getLabel())/2;
+		int textX = absPosX  + shapeSize.width/2 - fm.stringWidth(getLabel())/2;
 		int textY = absPosY + 5 + fm.getMaxAscent();
 		if (getLabel()!=null && getLabel().length()>0){
 			g2D.drawString(getLabel(),textX,textY);

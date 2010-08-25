@@ -1,8 +1,8 @@
 package cbit.vcell.graph;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import cbit.gui.graph.*;
 import cbit.vcell.mapping.*;
 /**
@@ -11,39 +11,41 @@ import cbit.vcell.mapping.*;
 public class FeatureMappingShape extends EdgeShape {
 	protected FeatureMapping featureMapping = null;
 
-/**
- * ReactionParticipantShape constructor comment.
- * @param label java.lang.String
- * @param graphModel cbit.vcell.graph.GraphModel
- */
-public FeatureMappingShape(FeatureMapping featureMapping, FeatureShape featureShape,
-	                            GeometryClassLegendShape geometryClassShape, GraphModel graphModel) {
-	super(featureShape, geometryClassShape, graphModel);
-	this.featureMapping = featureMapping;
-}
+	/**
+	 * ReactionParticipantShape constructor comment.
+	 * @param label java.lang.String
+	 * @param graphModel cbit.vcell.graph.GraphModel
+	 */
+	public FeatureMappingShape(FeatureMapping featureMapping, FeatureShape featureShape,
+			GeometryClassLegendShape geometryClassShape, GraphModel graphModel) {
+		super(featureShape, geometryClassShape, graphModel);
+		this.featureMapping = featureMapping;
+	}
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.graph.ReactionStepShape
- */
-public FeatureShape getFeatureShape() {
-	return (FeatureShape)startShape;
-}
+	/**
+	 * This method was created in VisualAge.
+	 * @return cbit.vcell.graph.ReactionStepShape
+	 */
+	public FeatureShape getFeatureShape() {
+		return (FeatureShape)startShape;
+	}
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.Object
- */
-public Object getModelObject() {
-	return featureMapping;
-}
+	/**
+	 * This method was created in VisualAge.
+	 * @return java.lang.Object
+	 */
+	@Override
+	public Object getModelObject() {
+		return featureMapping;
+	}
 
-/**
- * This method was created in VisualAge.
- */
-public void refreshLabel() {
-	setLabel("");
-}
+	/**
+	 * This method was created in VisualAge.
+	 */
+	@Override
+	public void refreshLabel() {
+		setLabel("");
+	}
 }
