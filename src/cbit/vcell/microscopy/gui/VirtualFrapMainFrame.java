@@ -75,8 +75,8 @@ public class VirtualFrapMainFrame extends JFrame
 	public static final Dimension INIT_WINDOW_SIZE = new Dimension(appWidth, appHeight);
 
 	private MenuHandler menuHandler = new MenuHandler();
-	private static final String VERSION_NUMBER = "VFrap 1.0";
-	public static final String BATCHRUN_VER_NUMBER = "VFRAP 1.0_Batch_Run";
+	private static final String VERSION_NUMBER = "VFrap 1.1";
+	public static final String BATCHRUN_VER_NUMBER = "VFRAP 1.1_Batch_Run";
 	private static final String OPEN_ACTION_COMMAND = "Open vfrap";
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
@@ -298,7 +298,7 @@ public class VirtualFrapMainFrame extends JFrame
 		      {
 	    		  getBatchRunFrame().setVisible(true);
 		    	  getBatchRunFrame().setState(JFrame.NORMAL);
-		    	  
+		    	  setBatchRunFrameTitle("");
 		      }
 		  }
 	  }

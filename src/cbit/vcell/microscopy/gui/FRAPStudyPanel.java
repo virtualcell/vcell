@@ -2,6 +2,7 @@ package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -53,6 +54,7 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
@@ -478,8 +480,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						BeanUtils.centerOnComponent(get2DResultDialog(), FRAPStudyPanel.this);
 						get2DResultDialog().setVisible(true);
 					} catch (Exception e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						e1.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(FRAPStudyPanel.this, "Simulation results not available due to :\n" + e1.getMessage());
 					}
 	  	   			
 	  	   		}
@@ -1329,7 +1331,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	{
 		//check if frapOpt data is null? if yes, run ref simulation. 
 		//check if parameters of each selected models are there, if not, run analytic solution, get best parameters and store parameters
-		AsynchClientTask saveTask1 = new AsynchClientTask("Preparing for parameter estimation ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		AsynchClientTask saveTask = new AsynchClientTask("Preparing for parameter estimation ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
@@ -1463,7 +1465,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		};
 		
 		//dispatch
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask1, runOptTask, showDialogTask, updateSaveStatusTask}, false);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask, runOptTask, showDialogTask, updateSaveStatusTask}, true, true, true, null, true);
 	}
 	
 	public void clearMovieBuffer()
@@ -1902,38 +1904,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							((ResultDisplayPanel)getAnalysisResultsPanel()).setResultsButtonEnabled(false);
 						}
 					}
-					
-					
-//						//save model do it later. 
-//						String savedFileName = (fStudy.getXmlFilename() == null || fStudy.getXmlFilename().length()<1)? null:fStudy.getXmlFilename();
-//						try{
-////							refreshBiomodel();
-////							createBioModel();
-//							
-//							
-//							//Need a file name to proceed to simulation
-//							if(savedFileName == null)
-//							{
-//								String saveMessage = "Current unsaved document must be saved before running simulation.";
-//								String result = DialogUtils.showWarningDialog(FRAPStudyPanel.this, saveMessage, new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
-//								if(result.equals(UserMessage.OPTION_CANCEL)){
-//									return;
-//								}
-//								else
-//								{
-//									if(!bExtDataOK)
-//									saveAs();
-//								}
-//							}
-//							else
-//							{
-//								save();
-//							}
-//								
-//							
-//						}catch(Exception e){
-//							throw new Exception("Error checking save before running simulation:\n"+e.getMessage());
-//						}
 			}
 			
 		};
@@ -1979,7 +1949,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 						
 						fStudy.setBioModel(bioModel);
-//						FRAPStudy.removeSimulationFiles(oldSimKey, getLocalWorkspace());
 					}catch(Exception e){
 						if(bioModel != null && bioModel.getSimulations() != null){
 							FRAPStudy.removeExternalDataAndSimulationFiles(
@@ -2002,7 +1971,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		};
 		
 		//dispatch
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{prepareRunBindingReactionTask, runReactionBindingTask, updateUITask}, false);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{prepareRunBindingReactionTask, runReactionBindingTask, updateUITask}, true, true, true, null, true);
 	}
 
 	private boolean areReactionDiffusionParametersChangedSinceLastRun(Parameter[] parameters) throws NumberFormatException 

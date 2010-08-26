@@ -133,7 +133,7 @@ public class SingleFileDescriptor extends WizardPanelDescriptor {
     					{
     						String continueStr = "Remove results and continue";
     						String cancelStr = "Cancel loading data";
-    						String msg = "Loading a new data file,\n or vfrap file with no model data,\n or vfrap file with different selected model type, \n will INVALID the existing resuls.";
+    						String msg = "Loading a new data file,\n or a vfrap file with no model data,\n or a vfrap file with different selected model type, \n will INVALID the existing resuls.";
     						String choice = DialogUtils.showWarningDialog(singleFilePanel, msg, new String[]{continueStr, cancelStr}, continueStr);
     						if(choice == continueStr)
     						{
