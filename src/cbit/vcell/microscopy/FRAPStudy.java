@@ -11,6 +11,9 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.JFileChooser;
+
+import org.jdom.Element;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
@@ -32,6 +35,7 @@ import org.vcell.util.document.VersionFlag;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
@@ -55,6 +59,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
+import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
@@ -88,6 +93,8 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XmlReader;
+import cbit.vcell.xml.Xmlproducer;
 
 public class FRAPStudy implements Matchable{
 	public static final String EXTRACELLULAR_NAME = "extracellular";
@@ -145,27 +152,10 @@ public class FRAPStudy implements Matchable{
 	public static void removeExternalDataAndSimulationFiles(
 			KeyValue simulationKeyValue,
 			ExternalDataIdentifier frapDataExtDataId,ExternalDataIdentifier roiExtDataId,
-			LocalWorkspace localWorkspace) throws Exception{
-		
-		if(frapDataExtDataId != null){
-			FRAPStudy.deleteCanonicalExternalData(localWorkspace,frapDataExtDataId);
-		}
-		if(roiExtDataId != null){
-			FRAPStudy.deleteCanonicalExternalData(localWorkspace,roiExtDataId);
-		}
-		if(frapDataExtDataId != null && roiExtDataId != null){
-			File mergedFunctionFile = 
-				FRAPStudy.getMergedFunctionFile(frapDataExtDataId,roiExtDataId,
-						new File(localWorkspace.getDefaultSimDataDirectory()));
-			if(mergedFunctionFile != null){
-				mergedFunctionFile.delete();
-			}
-		}
-		if(simulationKeyValue != null){
-			File userDir =
-				new File(localWorkspace.getDefaultSimDataDirectory());
-			FRAPStudy.deleteSimulationFiles(userDir, simulationKeyValue);
-		}
+			LocalWorkspace localWorkspace) throws Exception
+	{
+		removeSimulationFiles(simulationKeyValue, localWorkspace);
+		removeExternalFiles(frapDataExtDataId, roiExtDataId, localWorkspace);
 	}
 
 	public static void removeExternalFiles(ExternalDataIdentifier frapDataExtDataId, ExternalDataIdentifier roiExtDataId, LocalWorkspace localWorkspace) throws Exception
@@ -634,10 +624,6 @@ public class FRAPStudy implements Matchable{
 			//
 			// get Simulation Data
 			//
-			int totalLen = simTimes.length*varNames.length*SpatialAnalysisResults.ORDERED_ROINAMES.length;
-//			if(progressListener != null){progressListener.updateMessage("Spatial Analysis - normalization and data reduction");}
-//			if(progressListener != null){progressListener.updateProgress(0);}
-			
 			//simulation may have different number of time points(1 more or 1 less) compare with experimental data.
 			//curveHash was intialized with exp time data length. so, we have to replace it with the real sim data length.
 			if(simTimes.length != (frapData.getImageDataset().getImageTimeStamps().length-startingIndexForRecovery))
@@ -663,8 +649,6 @@ public class FRAPStudy implements Matchable{
 							double[] values = curveHash.get(ci);
 							values[i] = accum/roiIndices.length;
 						}
-						double currentLen = i*varNames.length*SpatialAnalysisResults.ORDERED_ROINAMES.length + j*SpatialAnalysisResults.ORDERED_ROINAMES.length + k;
-//						if(progressListener != null){progressListener.updateProgress(currentLen/totalLen);}
 					}
 				}
 			}
@@ -733,26 +717,7 @@ public class FRAPStudy implements Matchable{
 			status = fvSolver.getSolverStatus();
 		}
 
-		if(status.getStatus() == SolverStatus.SOLVER_FINISHED){
-			String roiMeshFileName =
-				SimulationData.createCanonicalMeshFileName(
-					roiExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
-			String imageDataMeshFileName =
-				SimulationData.createCanonicalMeshFileName(
-					imageDataExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
-			String simulationMeshFileName =
-				SimulationData.createCanonicalMeshFileName(
-					sim.getVersion().getVersionKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
-			// delete old external data mesh files and copy simulation mesh file to them
-//			File roiMeshFile = new File(simulationDataDir,roiMeshFileName);
-//			File imgMeshFile = new File(simulationDataDir,imageDataMeshFileName);
-//			File simMeshFile = new File(simulationDataDir,simulationMeshFileName);
-//			if(!roiMeshFile.delete()){throw new Exception("Couldn't delete ROI Mesh file "+roiMeshFile.getAbsolutePath());}
-//			if(!imgMeshFile.delete()){throw new Exception("Couldn't delete ImageData Mesh file "+imgMeshFile.getAbsolutePath());}
-//			FileUtils.copyFile(simMeshFile, roiMeshFile);
-//			FileUtils.copyFile(simMeshFile, imgMeshFile);
-		}
-		else{
+		if(status.getStatus() != SolverStatus.SOLVER_FINISHED){
 			throw new Exception("Sover did not finish normally." + status);
 		}
 	}
@@ -947,8 +912,6 @@ public class FRAPStudy implements Matchable{
 		this.bestModelIndex = bestModelIdx;
 		propertyChangeSupport.firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL, oldModelIndex, bestModelIdx);
 	}
-	
-	
 	
 	
 	public void refreshDependentROIs(){
@@ -1375,9 +1338,7 @@ public class FRAPStudy implements Matchable{
 	}
 
 	public void setXmlFilename(String xmlFilename) {
-		String oldValue = this.xmlFilename;
 		this.xmlFilename = xmlFilename;
-//		propertyChangeSupport.firePropertyChange("xmlFilename", oldValue, xmlFilename);
 	}
 
 	public String getName() {
@@ -1385,9 +1346,7 @@ public class FRAPStudy implements Matchable{
 	}
 
 	public void setName(String name) {
-		String oldValue = this.name;
 		this.name = name;
-		propertyChangeSupport.firePropertyChange("name", oldValue, name);
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -1667,4 +1626,5 @@ public class FRAPStudy implements Matchable{
 		
 		return result;
 	}
+
 }

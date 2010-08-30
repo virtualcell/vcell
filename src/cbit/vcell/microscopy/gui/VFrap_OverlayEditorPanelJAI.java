@@ -412,25 +412,12 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			}
 		});
 		
-//		importROIMaskButton.setText("Import ROI Mask...");
-//		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
-//		gridBagConstraints_5.insets = new Insets(2, 2, 2, 2);
-//		gridBagConstraints_5.gridy = 0;
-//		gridBagConstraints_5.gridx = 1;
-//		topJPanel.add(importROIMaskButton, gridBagConstraints_5);
-
 		clearROIbutton = new JButton(new ImageIcon(getClass().getResource("/images/clearROI.gif")));
 		clearROIbutton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				clearROI();
 			}
 		});
-//		clearROIbutton.setText("Clear ROI");
-//		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-//		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
-//		gridBagConstraints_4.gridy = 0;
-//		gridBagConstraints_4.gridx = 2;
-//		topJPanel.add(clearROIbutton, gridBagConstraints_4);
 
 		roiTimePlotButton = new JButton(new ImageIcon(getClass().getResource("/images/plotROI.gif")));
 		roiTimePlotButton.addActionListener(new ActionListener() {
@@ -459,14 +446,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 				}
 			}
 		});
-//		roiTimePlotButton.setText("Time Plot ROI...");
-//		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-//		gridBagConstraints_3.anchor = GridBagConstraints.WEST;
-//		gridBagConstraints_3.gridx = 3;
-//		gridBagConstraints_3.gridy = 0;
-//		gridBagConstraints_3.insets = new Insets(2, 2, 2, 2);
-//		topJPanel.add(roiTimePlotButton, gridBagConstraints_3);
-//		BeanUtils.enableComponents(topJPanel, false);
 
 		roiAssistButton = new JButton(new ImageIcon(getClass().getResource("/images/assistantROI.gif")));
 		roiAssistButton.addActionListener(new ActionListener() {
@@ -474,12 +453,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 				showAssistDialog();
 			}
 		});
-//		roiAssistButton.setText(ROI_ASSIST_TEXT);
-//		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
-//		gridBagConstraints_16.insets = new Insets(2, 2, 2, 0);
-//		gridBagConstraints_16.gridy = 0;
-//		gridBagConstraints_16.gridx = 4;
-//		topJPanel.add(roiAssistButton, gridBagConstraints_16);
 
 		viewZLabel = new JLabel();
 		viewZLabel.setText("View Z:");

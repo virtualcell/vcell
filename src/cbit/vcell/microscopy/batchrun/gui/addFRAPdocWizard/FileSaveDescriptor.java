@@ -101,8 +101,7 @@ public class FileSaveDescriptor extends WizardPanelDescriptor {
 				    			String overwriteChoice = DialogUtils.showWarningDialog(saveFilePanel, "OverWrite file\n"+ tempOutputFile.getAbsolutePath(),
 				    						new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CANCEL);
 				    			if(overwriteChoice.equals(UserMessage.OPTION_CANCEL)){
-				    				throw UserCancelException.CANCEL_GENERIC;//----? Should use "return"?
-//    				    				return;
+				    				throw UserCancelException.CANCEL_GENERIC;
 				    			}
 				    			else
 				    			{
@@ -121,7 +120,7 @@ public class FileSaveDescriptor extends WizardPanelDescriptor {
 					    				System.out.println(
 					    					"Error deleting externalData and simulation files for overwritten vfrap document "+
 					    					tempOutputFile.getAbsolutePath()+"  "+e.getMessage());
-					    				e.printStackTrace();
+					    				e.printStackTrace(System.out);
 					    			}
 				    			}
 				    		}
