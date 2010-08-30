@@ -56,7 +56,7 @@ public class SimpleContainerShape extends ContainerShape {
 		// make larger than empty size so that children fit
 		//
 		for (int i = 0; i < childShapeList.size(); i++){
-			Shape shape = childShapeList.elementAt(i);
+			Shape shape = childShapeList.get(i);
 			if (shape instanceof ElipseShape){
 				emptySize.width = Math.max(emptySize.width,shape.getLocation().x+shape.getSize().width);
 				emptySize.height = Math.max(emptySize.height,shape.getLocation().y+shape.getSize().height);
@@ -66,9 +66,9 @@ public class SimpleContainerShape extends ContainerShape {
 	}
 
 	@Override
-	public void layout() throws LayoutException {
+	public void refreshLayout() throws LayoutException {
 		//System.out.println("ReactionContainerShape.layout(), bRandomize="+bRandomize);
-		super.layout();
+		super.refreshLayout();
 		//
 		// make sure children fit
 		//
@@ -77,7 +77,7 @@ public class SimpleContainerShape extends ContainerShape {
 			int height = getSize().height;
 
 			for (int i = 0; i < childShapeList.size(); i++){
-				Shape child = childShapeList.elementAt(i);
+				Shape child = childShapeList.get(i);
 				if (child.getSize().width+child.getLocation().x > width || child.getSize().height+child.getLocation().y > height){
 					throw new LayoutException("cannot fit all reactions");
 				}
@@ -94,7 +94,7 @@ public class SimpleContainerShape extends ContainerShape {
 		// then draw in the reactionParticipant edges
 		//
 		for (int i=0;i<childShapeList.size();i++){
-			Shape child = childShapeList.elementAt(i);
+			Shape child = childShapeList.get(i);
 			if (child instanceof ElipseShape){
 				//
 				// position normally about the center
@@ -107,10 +107,10 @@ public class SimpleContainerShape extends ContainerShape {
 		// calculate locations and sizes of reactionParticipant edges
 		//
 		for (int i=0;i<childShapeList.size();i++){
-			Shape child = childShapeList.elementAt(i);
+			Shape child = childShapeList.get(i);
 			if (child instanceof EdgeShape){
 
-				((EdgeShape)child).layout();
+				((EdgeShape)child).refreshLayout();
 
 			}
 		}

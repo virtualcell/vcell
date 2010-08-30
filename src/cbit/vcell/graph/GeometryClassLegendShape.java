@@ -119,7 +119,7 @@ public class GeometryClassLegendShape extends ElipseShape implements PropertyCha
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public void layout() {
+	public void refreshLayout() {
 
 		//
 		// position label

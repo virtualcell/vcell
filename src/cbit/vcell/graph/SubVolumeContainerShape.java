@@ -68,9 +68,9 @@ public class SubVolumeContainerShape extends ContainerShape{
 	 * This method was created in VisualAge.
 	 */
 	@Override
-	public void layout() throws LayoutException {
+	public void refreshLayout() throws LayoutException {
 
-		super.layout();
+		super.refreshLayout();
 
 		//for (int i=0;i<childShapeList.size();i++){
 		//SubvolumeShape shape = (SubvolumeShape)childShapeList.elementAt(i);

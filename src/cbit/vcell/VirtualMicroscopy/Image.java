@@ -1,8 +1,8 @@
 package cbit.vcell.VirtualMicroscopy;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.Rectangle;
 import java.io.Serializable;
 import java.lang.reflect.Array;

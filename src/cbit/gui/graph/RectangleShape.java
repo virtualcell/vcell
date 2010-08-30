@@ -146,7 +146,7 @@ public abstract class RectangleShape extends Shape {
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public void layout() throws LayoutException {
+	public void refreshLayout() throws LayoutException {
 
 		if (shapeSize.width<=labelSize.width ||
 				shapeSize.height<=labelSize.height){

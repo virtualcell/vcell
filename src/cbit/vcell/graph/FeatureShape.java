@@ -106,7 +106,7 @@ public class FeatureShape extends StructureShape {
 				int childStructureTotalHeight = labelSize.height;
 				int childStructureMaxWidth = labelSize.width;
 				for (int i=0;i<childShapeList.size();i++){
-					Shape child = childShapeList.elementAt(i);
+					Shape child = childShapeList.get(i);
 					if(child instanceof StructureShape){
 						structCount+= 1;
 						Dimension childDim = child.getPreferedSize(g);
@@ -119,7 +119,7 @@ public class FeatureShape extends StructureShape {
 				int childSCMaxWidth = 0;
 				int childSCMaxHeight = 0;
 				for (int i=0;i<childShapeList.size();i++){
-					Shape child = childShapeList.elementAt(i);
+					Shape child = childShapeList.get(i);
 					if(child instanceof SpeciesContextShape){
 						scsCount+= 1;
 						Dimension childDim = child.getPreferedSize(g);
@@ -167,7 +167,7 @@ public class FeatureShape extends StructureShape {
 		Point column1 = new Point();
 		int scShapeCount = 0;
 		for (int i=0;i<countChildren();i++){
-			Shape child = childShapeList.elementAt(i);
+			Shape child = childShapeList.get(i);
 			if (child instanceof SpeciesContextShape){
 				scShapeCount++;
 			}
@@ -180,7 +180,7 @@ public class FeatureShape extends StructureShape {
 		//
 		Point column2 = new Point();
 		for (int i=0;i<countChildren();i++){
-			Shape child = childShapeList.elementAt(i);
+			Shape child = childShapeList.get(i);
 			if (child instanceof StructureShape){
 				Point childCount = child.getSeparatorDeepCount();
 				column2.x += childCount.x;
@@ -198,7 +198,7 @@ public class FeatureShape extends StructureShape {
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public void layout() throws LayoutException {
+	public void refreshLayout() throws LayoutException {
 
 
 
@@ -210,7 +210,7 @@ public class FeatureShape extends StructureShape {
 		//int scHeight = 0;
 		//int scWidth = 0;
 		for (int i=0;i<childShapeList.size();i++){
-			Shape child = childShapeList.elementAt(i);
+			Shape child = childShapeList.get(i);
 			if (child instanceof SpeciesContextShape){
 				//scHeight += child.screenSize.height;
 				//scWidth = Math.max(scWidth,child.screenSize.width);
@@ -225,7 +225,7 @@ public class FeatureShape extends StructureShape {
 		int memHeight = 0;
 		int memWidth = 0;
 		for (int i=0;i<childShapeList.size();i++){
-			Shape child = childShapeList.elementAt(i);
+			Shape child = childShapeList.get(i);
 			if (child instanceof StructureShape){
 				memHeight += child.shapeSize.height;
 				memWidth = Math.max(memWidth,child.shapeSize.width);
@@ -315,7 +315,7 @@ public class FeatureShape extends StructureShape {
 		//
 		int col2Y = currentY + spacingY + extraSpacingY;
 		for (int i=0;i<childShapeList.size();i++){
-			Shape child = childShapeList.elementAt(i);
+			Shape child = childShapeList.get(i);
 			if (child instanceof StructureShape){
 				// Dimension childDim = child.screenSize;
 				child.relativePos.x = centerX - child.shapeSize.width/2;
@@ -344,7 +344,7 @@ public class FeatureShape extends StructureShape {
 			currentOval = new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Double(
 					relativePos.x,relativePos.y,shapeSize.width,shapeSize.height));
 			for (int i=0;i<childShapeList.size();i++){
-				Shape child = childShapeList.elementAt(i);
+				Shape child = childShapeList.get(i);
 				if (child instanceof StructureShape){
 					java.awt.geom.Area childArea =
 						new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Double(
@@ -379,8 +379,8 @@ public class FeatureShape extends StructureShape {
 				int boxX = 0;
 				int boxY = 0;
 				for (int i=0;i<childShapeList.size();i++){
-					if (childShapeList.elementAt(i) instanceof SpeciesContextShape){
-						SpeciesContextShape child = (SpeciesContextShape)childShapeList.elementAt(i);
+					if (childShapeList.get(i) instanceof SpeciesContextShape){
+						SpeciesContextShape child = (SpeciesContextShape) childShapeList.get(i);
 						final int XSTEP = child.shapeSize.width + boxSpacingX;
 						final int YSTEP = child.shapeSize.height + boxSpacingY;
 						while(

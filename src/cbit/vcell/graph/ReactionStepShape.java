@@ -95,7 +95,7 @@ public abstract class ReactionStepShape extends ElipseShape {
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public final void layout() {
+	public final void refreshLayout() {
 
 		//	if (screenSize.width<labelSize.width ||
 		//		 screenSize.height<labelSize.height){

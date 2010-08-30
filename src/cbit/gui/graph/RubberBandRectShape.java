@@ -35,7 +35,7 @@ public final class RubberBandRectShape extends RectangleShape {
 	 * This method was created in VisualAge.
 	 */
 	@Override
-	public void layout() {
+	public void refreshLayout() {
 
 		shapeSize.width = Math.abs(end.x-start.x);
 		shapeSize.height = Math.abs(end.y-start.y);
@@ -72,6 +72,6 @@ public final class RubberBandRectShape extends RectangleShape {
 
 		this.end = end;
 
-		layout();
+		refreshLayout();
 	}
 }

@@ -64,9 +64,9 @@ public abstract class ContainerShape extends RectangleShape {
 	 * This method was created in VisualAge.
 	 */
 	@Override
-	public void layout() throws LayoutException {
+	public void refreshLayout() throws LayoutException {
 		//System.out.println("ReactionContainerShape.layout(), bRandomize="+bRandomize);
-		super.layout();
+		super.refreshLayout();
 		if (bRandomize){
 			randomize();
 		}
