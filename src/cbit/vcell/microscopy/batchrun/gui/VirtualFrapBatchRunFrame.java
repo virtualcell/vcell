@@ -115,6 +115,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				if(arg.equals(NEW_ACTION_COMMAND))
 			    {
 					getBatchRunDetailsPanel().deleteAllBatchrunDocs();
+					batchRunWorkspace.setBatchRunXmlFileName(null);
 					setBatchRunFrameTitle("");
 					statusBarNew.showStatus("");
 					enableSave(false);
@@ -630,8 +631,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				    			String overwriteChoice = DialogUtils.showWarningDialog(VirtualFrapBatchRunFrame.this, "OverWrite file\n"+ tempOutputFile.getAbsolutePath(),
 				    						new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CANCEL);
 				    			if(overwriteChoice.equals(UserMessage.OPTION_CANCEL)){
-				    				throw UserCancelException.CANCEL_GENERIC;//----? Should use "return"?
-	//					    				return;
+				    				throw UserCancelException.CANCEL_GENERIC;
 				    			}
 				    			else
 				    			{
@@ -715,7 +715,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 			    			String overwriteChoice = DialogUtils.showWarningDialog(VirtualFrapBatchRunFrame.this, "OverWrite file\n"+ tempOutputFile.getAbsolutePath(),
 			    						new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CANCEL);
 			    			if(overwriteChoice.equals(UserMessage.OPTION_CANCEL)){
-			    				throw UserCancelException.CANCEL_GENERIC;//----? Should use "return"?
+			    				throw UserCancelException.CANCEL_GENERIC;
 			    			}
 			    			else
 			    			{

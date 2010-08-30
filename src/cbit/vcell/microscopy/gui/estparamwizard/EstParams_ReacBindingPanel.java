@@ -579,7 +579,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		this.currentSimTimePoints = currentSimTimePoints;
 	}
 	
-	private void simulateWithCurrentParameters() 
+	private void simulateWithCurrentParameters() //used by reaction binding panel only. not used by VFRAP 1.1 though
 	{
 		fStudy = getFrapWorkspace().getWorkingFrapStudy();
 		//save external files if needed

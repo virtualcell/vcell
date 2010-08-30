@@ -542,11 +542,11 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 							String xmlString = XmlUtil.getXMLString(fStudyFile.getAbsolutePath());
 							MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
 							newFRAPStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),this.getClientTaskStatusSupport());
-							if((newFRAPStudy.getFrapDataExternalDataInfo() != null || newFRAPStudy.getRoiExternalDataInfo() != null) &&
-								!FRAPWorkspace.areExternalDataOK(localWorkspace,newFRAPStudy.getFrapDataExternalDataInfo(),newFRAPStudy.getRoiExternalDataInfo()))
-							{
-								throw new Exception("External Files of Frap Document " + fStudyFile.getAbsolutePath() + " are corrupted");
-							}
+//							if((newFRAPStudy.getFrapDataExternalDataInfo() != null || newFRAPStudy.getRoiExternalDataInfo() != null) &&
+//								!FRAPWorkspace.areExternalDataOK(localWorkspace,newFRAPStudy.getFrapDataExternalDataInfo(),newFRAPStudy.getRoiExternalDataInfo()))
+//							{
+//								throw new Exception("External Files of Frap Document " + fStudyFile.getAbsolutePath() + " are corrupted");
+//							}
 							newFRAPStudy.setXmlFilename(fileName);
 							//restore the dimension reduced fitting data(2 dimensional array).
 							int selectedModelIdx = tempBatchRunWorkspace.getSelectedModel();
