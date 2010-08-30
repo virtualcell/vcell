@@ -1,9 +1,9 @@
 package cbit.image;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.image.*;
 import cbit.image.*;
 import java.io.*;

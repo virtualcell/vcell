@@ -48,7 +48,7 @@ public class GeometryContextStructureShape extends ContainerShape {
 		Dimension d = super.getPreferedSize(g);
 		Dimension childDim = null;
 		if (childShapeList.size()!=0){
-			childDim = (childShapeList.elementAt(0)).getPreferedSize(g);
+			childDim = (childShapeList.get(0)).getPreferedSize(g);
 		}else{
 			childDim = new Dimension(100,100);
 		}
@@ -61,9 +61,9 @@ public class GeometryContextStructureShape extends ContainerShape {
 	 * This method was created in VisualAge.
 	 */
 	@Override
-	public void layout() throws LayoutException {
+	public void refreshLayout() throws LayoutException {
 
-		super.layout();
+		super.refreshLayout();
 
 		int centerX = shapeSize.width/2;
 		int centerY = shapeSize.height/2;
@@ -74,7 +74,7 @@ public class GeometryContextStructureShape extends ContainerShape {
 		int childHeight = 0;
 		int childWidth = 0;
 		for (int i=0;i<childShapeList.size();i++){
-			Shape shape = childShapeList.elementAt(i);
+			Shape shape = childShapeList.get(i);
 			childHeight += shape.shapeSize.height;
 			childWidth = Math.max(childWidth,shape.shapeSize.width);
 		}
@@ -82,11 +82,11 @@ public class GeometryContextStructureShape extends ContainerShape {
 		int currY = Math.max(0,centerY - childHeight/2) + labelSize.height+2;
 
 		for (int i=0;i<childShapeList.size();i++){
-			Shape shape = childShapeList.elementAt(i);
+			Shape shape = childShapeList.get(i);
 			shape.relativePos.x = centerX - shape.shapeSize.width/2;
 			shape.relativePos.y = currY;
 			currY += shape.shapeSize.height;
-			shape.layout();
+			shape.refreshLayout();
 		}
 	}
 }

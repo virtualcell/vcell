@@ -55,7 +55,7 @@ public class MembraneShape extends StructureShape {
 		//
 		// has 1 child (featureShape)
 		//
-		FeatureShape featureShape = (FeatureShape)childShapeList.elementAt(0);
+		FeatureShape featureShape = (FeatureShape)childShapeList.get(0);
 		Dimension featureDim = featureShape.getPreferedSize(g);
 
 		preferredSize.width = featureDim.width + memSpacingX*2;
@@ -115,7 +115,7 @@ public class MembraneShape extends StructureShape {
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public void layout() {
+	public void refreshLayout() {
 
 		//
 		// this is like a row/column layout  (1 column)
@@ -127,8 +127,8 @@ public class MembraneShape extends StructureShape {
 		//
 		FeatureShape featureShape = null;
 		for (int i=0;i<countChildren();i++){
-			if (childShapeList.elementAt(i) instanceof FeatureShape){
-				featureShape = (FeatureShape)childShapeList.elementAt(i);
+			if (childShapeList.get(i) instanceof FeatureShape){
+				featureShape = (FeatureShape)childShapeList.get(i);
 			}
 		}
 
@@ -161,7 +161,7 @@ public class MembraneShape extends StructureShape {
 			double deltaAngle = TotalAngle/(numSpeciesContexts+1);
 			double currentAngle = BeginAngle + deltaAngle;
 			for (int i=0;i<countChildren();i++){
-				Shape shape = childShapeList.elementAt(i);
+				Shape shape = childShapeList.get(i);
 				if (shape instanceof SpeciesContextShape){
 					shape.relativePos = getRadialPosition(currentAngle);
 					currentAngle = (currentAngle + deltaAngle) % (2*Math.PI);
@@ -185,12 +185,12 @@ public class MembraneShape extends StructureShape {
 		//
 		// allocate all extra new space to featureShape
 		//
-		FeatureShape featureShape = (FeatureShape)childShapeList.elementAt(0);
+		FeatureShape featureShape = (FeatureShape)childShapeList.get(0);
 		Dimension featureSize = new Dimension(featureShape.shapeSize);
 		featureSize.width += deltaX;
 		featureSize.height += deltaY;
 		featureShape.resize(g,featureSize);
 
-		layout();
+		refreshLayout();
 	}
 }

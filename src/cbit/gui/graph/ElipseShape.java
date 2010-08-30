@@ -86,7 +86,7 @@ public final boolean isOnBorder(Point p) {
  * @return int
  * @param g java.awt.Graphics
  */
-public void layout() throws LayoutException {
+public void refreshLayout() throws LayoutException {
 
 	if(LayoutException.bActivated) {
 		if (shapeSize.width<=labelSize.width ||

@@ -105,7 +105,7 @@ public class SpeciesContextShape extends ElipseShape {
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public void layout() {
+	public void refreshLayout() {
 
 		//	if (screenSize.width<labelSize.width ||
 		//		 screenSize.height<labelSize.height){
