@@ -726,37 +726,45 @@ private void updateSize() {
 }
 
 public void autoUpdateSizes(ItemEvent e) {
+	if (bInProgress) {
+		return;
+	}
 	int dimension = getMeshSpecification().getGeometry().getDimension();
 	if (dimension < 2) {
 		return;
 	}
-	String xtext = getXTextField().getText();
-	if (xtext == null || xtext.trim().length() == 0) {
-		getXTextField().setText(getMeshSpecification().getSamplingSize().getX() + "");
-	}
-	xtext = getXTextField().getText();
-	int numX = Integer.parseInt(xtext);
-	Extent extent = getMeshSpecification().getGeometry().getExtent();
-	switch (dimension){		
-		case 2:{
-			double yxRatio = extent.getY()/extent.getX();
-			long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
-			getYTextField().setText("" + Math.round(numY));
-			totalSizeLabel.setText(numX + " x " + numY + " = " + (numX * numY));
-			break;
+	try {
+		bInProgress = true;
+		String xtext = getXTextField().getText();
+		if (xtext == null || xtext.trim().length() == 0) {
+			getXTextField().setText(getMeshSpecification().getSamplingSize().getX() + "");
 		}
-		case 3:{
-			double yxRatio = extent.getY()/extent.getX();
-			double zxRatio = extent.getZ()/extent.getX();
-			long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
-			long numZ = Math.max(3, Math.round(zxRatio * (numX - 1) + 1));
-			getYTextField().setText("" + numY);
-			getZTextField().setText("" + numZ);
-			totalSizeLabel.setText(numX + " x " + numY + " x " + numZ + " = " + (numX * numY * numZ));
-			break;
+		xtext = getXTextField().getText();
+		int numX = Integer.parseInt(xtext);
+		Extent extent = getMeshSpecification().getGeometry().getExtent();
+		switch (dimension){
+			case 2:{
+				double yxRatio = extent.getY()/extent.getX();
+				long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
+				getYTextField().setText("" + Math.round(numY));
+				totalSizeLabel.setText(numX + " x " + numY + " = " + (numX * numY));
+				break;
+			}
+			case 3:{
+				double yxRatio = extent.getY()/extent.getX();
+				double zxRatio = extent.getZ()/extent.getX();
+				long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
+				long numZ = Math.max(3, Math.round(zxRatio * (numX - 1) + 1));
+				getYTextField().setText("" + numY);
+				getZTextField().setText("" + numZ);
+				totalSizeLabel.setText(numX + " x " + numY + " x " + numZ + " = " + (numX * numY * numZ));
+				break;
+			}
 		}
+		updateSize();
+	} finally {
+		bInProgress = false;
 	}
-	updateSize();
 }
 
 private void autoUpdateSizes(DocumentEvent e) {
