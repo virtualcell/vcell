@@ -36,7 +36,7 @@ public SmoldynFileWriter(PrintWriter pw, File outputFile, SimulationJob arg_simu
 
 @Override
 public void write(String[] parameterNames) throws Exception {
-	SimulationWriter.write(SimulationJobToSmoldyn.convertSimulationJob(simulationJob, outputFile), printWriter);
+	SimulationWriter.write(SimulationJobToSmoldyn.convertSimulationJob(simulationJob, outputFile), printWriter, simulationJob);
 }
 
 }

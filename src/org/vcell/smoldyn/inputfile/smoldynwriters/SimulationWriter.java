@@ -6,6 +6,9 @@ import org.vcell.smoldyn.model.Model;
 import org.vcell.smoldyn.simulation.Simulation;
 import org.vcell.smoldyn.simulationsettings.SimulationSettings;
 
+import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.solver.SimulationJob;
+
 
 /**
  * Main starting point for writing a simulation to a Smoldyn configuration file.
@@ -41,6 +44,9 @@ import org.vcell.smoldyn.simulationsettings.SimulationSettings;
  * 
  */
 public class SimulationWriter {
+	public static void write(Simulation simulation, PrintWriter writer) {
+		write(simulation, writer, null);
+	}
 
 	/**
 	 * Translates a simulation into a Smoldyn configuration file.
@@ -48,7 +54,21 @@ public class SimulationWriter {
 	 * @param simulation
 	 * @param writer
 	 */
-	public static void write(Simulation simulation, PrintWriter writer) {
+	public static void write(Simulation simulation, PrintWriter writer, SimulationJob simulationJob) {
+		// write jms info
+		if (simulationJob  != null) {
+			writer.println("# JMS_Paramters");
+			writer.println("start_jms"); 
+			writer.println(JmsUtils.getJmsProvider() + " " + JmsUtils.getJmsUrl()
+				+ " " + JmsUtils.getJmsUserID() + " " + JmsUtils.getJmsPassword()
+				+ " " + JmsUtils.getQueueWorkerEvent()  
+				+ " " + JmsUtils.getTopicServiceControl()
+				+ " " + simulationJob.getSimulation().getVersion().getOwner().getName()
+				+ " " + simulationJob.getSimulation().getVersion().getVersionKey()
+				+ " " + simulationJob.getJobIndex());
+			writer.println("end_jms");
+			writer.println();
+		}
 
 		//writers related to Model (although a couple write some display stuff from SimulationSettings)
 		SpeciesWriter specieswriter = new SpeciesWriter(simulation, writer);
