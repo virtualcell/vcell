@@ -43,6 +43,8 @@ import cbit.vcell.client.task.TFRunSims;
 import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.client.task.TFUpdateTestCriteria;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.desktop.VCellCopyPasteHelper;
+import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.numericstest.LoadTestInfoOP;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
@@ -1137,6 +1139,15 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				tasksV.add(tfRefreshTreeTask);
 			} else {
 				throw new Exception("Selected Object is not a TestCriteria! Cannot edit test criteria.");
+			}
+		}else if (e.getActionCommand().equals(TestingFrameworkPanel.COPY_TCRIT_SIMID)) {
+			if (selectedObj instanceof TestCriteriaNew) {
+				TestCriteriaNew tCriteria = (TestCriteriaNew)selectedObj;
+				KeyValue testCritSimID = tCriteria.getSimInfo().getVersion().getVersionKey();
+				VCellTransferable.sendToClipboard(testCritSimID.toString());
+				return;
+			} else {
+				throw new Exception("Selected Object is not a TestCriteria! Copy simid failed.");
 			}
 		}else if (e.getActionCommand().equals(TestingFrameworkPanel.LOAD_MODEL)) {
 			final String LOAD_THIS_MODEL	 = "LOAD_THIS_MODEL";
