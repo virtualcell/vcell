@@ -2373,7 +2373,7 @@ public boolean isValid() {
 					return false;
 				}
 				if (odeRefCount==0 && pdeRefCount==0 && steadyPdeCount == 0){
-					setWarning("Spatial Model, there are neither "+VCML.PdeEquation+"'s, nor "+VCML.OdeEquation+"'s for variable "+volVar.getName());
+					setWarning("Spatial Model, there is neither a "+VCML.PdeEquation+" nor an "+VCML.OdeEquation+" for variable "+volVar.getName());
 					return false;
 				}
 			}
@@ -2407,7 +2407,7 @@ public boolean isValid() {
 					return false;
 				}
 				if (odeRefCount==0 && pdeRefCount==0 && steadyPdeCount == 0){
-					setWarning("Spatial Model, there are neither "+VCML.PdeEquation+"'s, nor "+VCML.OdeEquation+"'s for variable "+var.getName());
+					setWarning("Spatial Model, there is neither a "+VCML.PdeEquation+" nor an "+VCML.OdeEquation+" for variable "+var.getName());
 					return false;
 				}
 			}

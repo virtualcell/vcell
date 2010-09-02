@@ -110,11 +110,10 @@ public class ObservationEventWriter {
 	
 	private void writeWriteOutput(final double boxwidth) {
 		writer.print(SmoldynFileKeywords.SimulationControl.writeOutput);
-		final int dim = 2;//TODO this shouldn't be hard-coded, but where should it come from?
 		Utilities.writeSmoldynWarning("ObservationEventWriter assuming VCell simulation has only 2 dimensions");
 		int [] boxes = this.simulationsettings.getBoxes();
-		for(int i = 0; i < dim; i++) {
-			writer.print(" " + boxes[i]);
+		for(int b : boxes) {
+			writer.print(" " + b);
 		}
 		writer.println();
 	}

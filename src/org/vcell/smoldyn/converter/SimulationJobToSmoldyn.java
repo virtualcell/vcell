@@ -52,6 +52,7 @@ import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -72,25 +73,20 @@ public class SimulationJobToSmoldyn {
 	private File outputFile;
 	
 	
-	public SimulationJobToSmoldyn(SimulationJob vcellSimJob, File outputFile) throws Exception {
+	private SimulationJobToSmoldyn(SimulationJob vcellSimJob, File outputFile) throws SmoldynException {
+		final int vcelldimensions = vcellSimJob.getSimulation().getMathDescription().getGeometry().getDimension();
+		if (vcelldimensions != 3) {
+			throw new SmoldynException(SolverDescription.Smoldyn.getDisplayLabel() + " only supports spatial stochastic models with 3D geometry");
+		}
+		
 		this.vcellSimJob = vcellSimJob;
 		this.outputFile = outputFile;
 		this.mathd = vcellSimJob.getSimulation().getMathDescription();
-		
-		try {
-			final int vcelldimensions = vcellSimJob.getSimulation().getMathDescription().getGeometry().getDimension();
-			if(vcelldimensions != 3) {
-				ConversionUtilities.throwRuntimeException("vcellsmoldyn needs a three dimensional model to work properly (received " + 
-						vcelldimensions + ")");
-			}
-		} catch (RuntimeException e) {
-			e.printStackTrace();
-		}
 		this.smoldynmodel = new Model(Dimensionality.three, 
 				new org.vcell.smoldyn.model.Geometry(ConversionUtilities.getBoundariesFromVCell(mathd.getGeometry())));
 		smoldynsimulationsettings = new SimulationSettings();
 		this.smoldynsimulation = new Simulation(smoldynmodel, smoldynsimulationsettings);
-		this.convert();
+		//this.convert();
 	}
 	
 	
@@ -109,15 +105,10 @@ public class SimulationJobToSmoldyn {
 		return this.smoldynsimulation;
 	}
 	
-	public static Simulation convertSimulationJob(SimulationJob vcellSimJob, File outputFile) {
-		SimulationJobToSmoldyn s;
-		try {
-			s = new SimulationJobToSmoldyn(vcellSimJob, outputFile);
-			return s.getSimulation();
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException();
-		}
+	public static Simulation convertSimulationJob(SimulationJob vcellSimJob, File outputFile) throws SmoldynException {
+		SimulationJobToSmoldyn s = new SimulationJobToSmoldyn(vcellSimJob, outputFile);
+		s.convert();
+		return s.getSimulation();
 	}
 	
 	private void setSmoldynGeometry() throws SmoldynException {
@@ -386,7 +377,14 @@ public class SimulationJobToSmoldyn {
 	
 	private double setMeshsize(ISize isize) {
 		Extent extent = mathd.getGeometry().getExtent();
-		this.smoldynsimulationsettings.setBoxes(isize.getX(), isize.getY(), isize.getZ());
+		
+		if (mathd.getGeometry().getDimension() == 1) {			
+			this.smoldynsimulationsettings.setBoxes(new int[] {isize.getX()});
+		} else if (mathd.getGeometry().getDimension() == 2) {
+			this.smoldynsimulationsettings.setBoxes(new int[] {isize.getX(), isize.getY()});
+		} else if (mathd.getGeometry().getDimension() == 3) {
+			this.smoldynsimulationsettings.setBoxes(new int[] {isize.getX(), isize.getY(), isize.getZ()});
+		}
 		double xsize = ConversionUtilities.getBoxsize(isize.getX(), extent.getX()), 
 			ysize = ConversionUtilities.getBoxsize(isize.getY(), extent.getY()), 
 			zsize = ConversionUtilities.getBoxsize(isize.getZ(), extent.getZ());

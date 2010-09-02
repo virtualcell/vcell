@@ -39,7 +39,7 @@ public class SimulationSettings {
 	private SimulationGraphics simulationgraphics;
 	private SmoldynTime smoldyntime;
 	private InternalSettings internalsettings;
-	private final int [] boxes = new int [3];
+	private int[] boxes = null;
 
 	
 	/**
@@ -177,14 +177,14 @@ public class SimulationSettings {
 	 * @param yboxes -- positive
 	 * @param zboxes -- positive
 	 */
-	public void setBoxes(int xboxes, int yboxes, int zboxes) {
-		SimulationUtilities.checkForPositive("number of boxes", xboxes, yboxes, zboxes);
-		this.boxes[0] = xboxes;
-		this.boxes[1] = yboxes;
-		this.boxes[2] = zboxes;
+	public void setBoxes(int[] boxes) {
+		for (int b : boxes) {
+			SimulationUtilities.checkForPositive("number of boxes", b);
+		}
+		this.boxes = boxes;
 	}
 	
-	public int [] getBoxes() {
+	public int[] getBoxes() {
 		return this.boxes;
 	}
 }
