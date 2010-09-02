@@ -59,6 +59,7 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	public static final String EDIT_ANNOT_TESTCASE = "Edit TestCase Annotation...";
 	public static final String EDIT_ANNOT_TESTSUITE = "Edit TestSuite Annotation...";
 	public static final String QUERY_TCRIT_CROSSREF = "Query Test Criteria Cross Ref";
+	public static final String COPY_TCRIT_SIMID = "Copy TestCrit SimID";
 	public static final String QUERY_TCRITVAR_CROSSREF = "Query TCrit Var Cross Ref";
 	public static final String REMOVE_TESTCASE = "Remove TestCase...";
 	public static final String ADD_TESTCASE = "Add TestCase...";
@@ -176,6 +177,7 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	private javax.swing.JMenuItem ivjRefreshTestCriteriaJMenuItem = null;
 	private javax.swing.JMenuItem ivjGenerateTCRiteportMenuItem1 = null;
 	private javax.swing.JMenuItem ivjQueryTCritCrossRefMenuItem1 = null;
+	private javax.swing.JMenuItem copyTestCriteriaSimKeyMenuItem = null;
 	private javax.swing.JMenuItem  ivjQueryTCritVarCrossRefMenuItem1 = null;
 	private javax.swing.JMenuItem ivjCompareMenuItem = null;
 	private javax.swing.JMenuItem ivjViewMenuItem = null;
@@ -242,6 +244,10 @@ class IvjEventHandler implements TreeExpansionListener,java.awt.event.ActionList
 				TestingFrameworkPanel.this.refireActionPerformed(e);
 			}
 			if (e.getSource() == TestingFrameworkPanel.this.getQueryTCritVarCrossRefMenuItem1()){
+				TestingFrameworkPanel.this.tsRefreshListener.rememberSelectedNode();
+				TestingFrameworkPanel.this.refireActionPerformed(e);
+			}
+			if (e.getSource() == TestingFrameworkPanel.this.getTestCriteriaCopySimKeyMenuItem()){
 				TestingFrameworkPanel.this.tsRefreshListener.rememberSelectedNode();
 				TestingFrameworkPanel.this.refireActionPerformed(e);
 			}
@@ -576,6 +582,7 @@ private void actionsOnMouseClick(MouseEvent mouseEvent) {
 			getCompareMenuItem().setEnabled(bMenuValid);
 			getCompareUserDefinedMenuItem().setEnabled(bMenuValid);
 			getQueryTCritCrossRefMenuItem1().setEnabled(bMenuValid);
+			getTestCriteriaCopySimKeyMenuItem().setEnabled(bMenuValid);
 			boolean isLocked = false;
 			if(getJTree1().getSelectionCount() == 1){
 				isLocked =
@@ -1396,6 +1403,22 @@ private javax.swing.JMenuItem getQueryTCritCrossRefMenuItem1() {
 	return ivjQueryTCritCrossRefMenuItem1;
 }
 
+private javax.swing.JMenuItem getTestCriteriaCopySimKeyMenuItem() {
+	if (copyTestCriteriaSimKeyMenuItem == null) {
+		try {
+			copyTestCriteriaSimKeyMenuItem = new javax.swing.JMenuItem();
+			copyTestCriteriaSimKeyMenuItem.setName("TestCriteriaCopySimKeyMenuItem");
+			copyTestCriteriaSimKeyMenuItem.setText(COPY_TCRIT_SIMID);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return copyTestCriteriaSimKeyMenuItem;
+}
 private javax.swing.JMenuItem getQueryTCritVarCrossRefMenuItem1() {
 	if (ivjQueryTCritVarCrossRefMenuItem1 == null) {
 		try {
@@ -1816,6 +1839,7 @@ private javax.swing.JPopupMenu getSimulationPopupMenu() {
 			ivjSimulationPopupMenu.add(getGenerateTCRitReportMenuItem1());
 			ivjSimulationPopupMenu.add(getGenerateTCRitReportUserDefinedReferenceMenuItem1());
 			ivjSimulationPopupMenu.add(getQueryTCritCrossRefMenuItem1());
+			ivjSimulationPopupMenu.add(getTestCriteriaCopySimKeyMenuItem());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -2022,6 +2046,7 @@ private void initConnections() throws java.lang.Exception {
 	getEditAnnotationTestSuiteMenuItem().addActionListener(ivjEventHandler);
 	getQueryTCritCrossRefMenuItem1().addActionListener(ivjEventHandler);
 	getQueryTCritVarCrossRefMenuItem1().addActionListener(ivjEventHandler);
+	getTestCriteriaCopySimKeyMenuItem().addActionListener(ivjEventHandler);
 }
 /**
  * Initialize the class.

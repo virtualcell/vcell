@@ -141,7 +141,7 @@ public java.awt.Component getTreeCellRendererComponent(javax.swing.JTree tree, O
 					extraText=testCriteria.getReportStatus()+" "+
 					(testCriteria.getReportStatusMessage() != null?" "+testCriteria.getReportStatusMessage().substring(0,Math.min(100,testCriteria.getReportStatusMessage().length())):"");
 				}
-				component.setText(
+				component.setText("["+testCriteria.getSimInfo().getVersion().getVersionKey()+"] "+
 					testCriteria.getSimInfo().getVersion().getName()+(extraText != null?" ("+extraText+")":""));
 				component.setToolTipText(" Test Criteria info");
 				if(extraText != null){
