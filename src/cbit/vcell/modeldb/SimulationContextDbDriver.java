@@ -763,6 +763,9 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	} finally {
 		stmt.close();
 	}
+
+	DataSymbolTable.table.populateDataSymbols(con, simContextKey, simContext.getDataContext(),user);
+	
 	assignStimuliSQL(con,simContextKey, simContext);
 	assignStructureMappingsSQL(dbc, con,simContextKey, simContext);
 	assignSpeciesContextSpecsSQL(con,simContextKey, simContext);
@@ -775,8 +778,6 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 		outputFnContext.setOutputFunctions(outputFunctionList);
 	}
 	
-	DataSymbolTable.table.populateDataSymbols(con, simContextKey, simContext.getDataContext(),user);
-		
 	BioEvent[] bioEvents = SimContextTable.table.getBioEvents(con, simContext);
 	if (bioEvents != null && bioEvents.length > 0) {
 		simContext.setBioEvents(bioEvents);
