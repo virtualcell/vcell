@@ -3,8 +3,20 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>3.3 	Refined Fitting of Redistribution curve</title>
+<title>3.3	Defining Regions of Interest</title>
 <link rel="stylesheet" type="text/css" href="../content.css">
+<style>
+<!--
+ li.MsoNormal
+	{mso-style-parent:"";
+	margin-bottom:.0001pt;
+	text-align:justify;
+	text-justify:inter-ideograph;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	margin-left:0in; margin-right:0in; margin-top:0in}
+-->
+</style>
 </head>
 
 
@@ -16,40 +28,152 @@
   <td background="topbanner_backgrd.jpg" colspan="2"><img src="vfrap.gif" width="497" height="102"></td>
   </tr>
   <tr>
-    <td width="2%" rowspan="2" background="bak.jpg">&nbsp;</td>
-    <td width="98%" class="subHeader">3.3	Refined Fitting of Redistribution curve </td>
+    <td width="2%" rowspan="3" background="bak.jpg">&nbsp;</td>
+    <td width="98%" class="subHeader">3.3	Defining Regions of Interest </td>
   </tr>
   <tr>
     <td class="content" valign="top">
 	
-	<font size="3">The primary fitting is based on a single diffusion rate assumption. However, the real FRAP experiments can be more complicated. In the refining procedure, Virtual FRAP takes a secondary diffusion rate into account. In addition, the data under different regions of the cell are included besides the data under bleached area that is used in the primary fitting.  Virtual FRAP defines 8 ROIs that either encompass or fit within the bleached area.<br>
-	</font>
-	<p></p>
-	<font size="3">The &#8220;Adjust Parameters&#8221; tab contains three panels. These are Derived FRAP Simulation Results panel, Plot Derived FRAP Simulation Results panel and Plot panel. Derived FRAP Simulation Results Panel and Plot FRAP Simulation Results panel work exclusively.  Derived FRAP Simulation Results Panel is enabled by default. Below describes the different functionalities of the two panels.</font><p></p>
-    <p></p>
-    
+	<p class="MsoNormal"><span lang="EN-GB"><font size="3">In virtual FRAP, 
+	spatial data are summarized under regions of interest in order to speed up 
+	the parameter estimation process.&nbsp; Regions of interest are generated based 
+	on three primary regions of interest. They are Cell ROI, Bleached ROI and 
+	Background ROI. The &#8220;Define ROI&#8221; wizard is designed to lead users through 
+	the process of creating primary regions of interest, which includes cropping 
+	images, defining cell ROI, defining bleached ROI, defining background ROI 
+	and selecting regions of interest for error calculation in optimization. 
+	Each step is highlighted on top of the wizard page. To start the &#8220;Define 
+	ROIs&#8221; wizard, users just need to click on the second button
+	<img border="0" src="DefineROIs.jpg" width="62" height="56">&nbsp;in the &#8220;Data 
+	Analysis Work Flow&#8221;.</font></span></p>
+	<p class="MsoNormal">&nbsp;</p>
 	<ul>
-        <li> 
-		<p style="margin-bottom: 5px"><font size="3">Plot FRAP Simulation Results</font>
-		<P style="margin-bottom: 15px"><font size="3">When users select Plot FRAP Simulation Results, the table in the panel is enabled. The table shows the simulation results which are compared with experimental results in terms of standard deviation in each ROI. The spatial simulation here is based on the initial FRAP parameters users set in the &#8220;Initial Parameters&#8221; tab.</font>
-		</P></li>
-		<p></p>
-        <li> 
-		<p style="margin-bottom: 5px"><font size="3">Plot Derived FRAP Simulation Results</font>
-		<p><font size="3">When clicking on Plot Derived FRAP Simulation Results, the corresponding panel is enabled. The panel enables users to tune a primary diffusion rate together with a secondary diffusion rate and the bleach while monitoring rate. Users can set values either by typing into the text fields or tuning the slider bars. The plot will update the display with the new parameter settings. The different colors of the plots represent how the diffusion works in different ROIs of the cell. Clicking on the show ROIs button <img src = "showROI.jpg"> will show the ROIs distinguished by different colors.</font>
-		<p><font size="3">Users can click on the best fit button <img src="setParaForBestFit.jpg"> to get the best fit parameters.  If users want to set parameter values manually, users need to click on the set button <img src="set.jpg">. When tuning the slider bar, the display in plot will be updated automatically. The spatial simulation results showed in &#8220;2D Results&#8221; tab is based on the parameters from &#8220;Initial Parameters&#8221; tab. Users may want to rerun the simulation by the new parameter settings. It can be achieved by simply clicking on the create new FRAP document button <img src="createNewFRAPDoc.jpg">.</font>
-		</p style="margin-bottom: 15px"><font size="3">Figure 3-6 shows the Adjust Parameters panel and the illustrations of its functionalities.</li>
-        
-    </ul>
-      
-    
-      <div align="center"> <img src="figure3_6.jpg"><br><p></p>
-	  <span class="caption"><font size="3">Figure 3-6: Adjust Parameters tab and its functionalities</font></span>
-	  </div>
+		<li>
+		<p class="MsoNormal" style="text-indent: -.25in; margin-left: .25in"><b>
+		<a name="OLE_LINK5"><span lang="EN-GB"><font size="3">Cropping FRAP 
+		image data</font></span></a></b></li>
+	</ul>
+	<p class="MsoNormal"><b><span lang="EN-GB" style="font-family: Verdana">
+	<font size="3">It is highly recommended to apply cropping to any raw image 
+	data to remove unnecessary information in order to speed up the performance. 
+	Figure 3-6 shows cropping of a FRAP image.</font></span></b><span lang="en-gb"><font size="3"><span style="font-family: Verdana; font-weight: 700">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	</span></font></span></p>
+	<p class="MsoNormal"><span lang="EN-GB"><font size="3">Custom Crop &#8211; 
+	Clicking on the crop button
+	<img border="0" src="crop.jpg" width="33" height="30">&nbsp;&nbsp;allows the user to 
+	click on the image and drag the mouse to draw the desired rectangular crop 
+	window. </font></span></p>
+	<span lang="EN-GB"><font size="3">Automatic Crop &#8211; Clicking on the automatic 
+	crop button <img border="0" src="autocrop.jpg" width="38" height="36">&nbsp;creates 
+	a crop window that can be used as a default crop window.</font></span><p>
+	<span lang="en-gb"><font size="3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<img border="0" src="figure3_6.jpg" width="344" height="317"></font></span></p>
+	<p class="MsoNormal"><span lang="en-gb"><font size="3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	</font></span><span lang="EN-GB" style="font-family: Verdana">
+	<font size="3">Figure 3-6 Cropping a FRAP Image Data</font></span></p>
+	<p class="MsoNormal">&nbsp;</p>
+	<ul>
+		<li>
+		<p class="MsoNormal" style="text-indent: -.25in; margin-left: .25in"><b>
+		<span lang="EN-GB"><font size="3">Defining regions of interest</font></span></b></p>
+		<p class="MsoNormal"><span lang="EN-GB"><font size="3">The toolbar 
+		functions in the image viewer are all enabled when the wizard page 
+		navigate to the defining cell/bleached/background ROIs steps. Users are 
+		able to manually draw the ROIs on FRAP images by using Drawing Toolbox 
+		or to define ROI automatically by using ROI Toolbox. Once the primary 
+		ROIs are defined, Virutal FRAP will automatically generate eight ROI 
+		rings to summarize spatial data. Figure 3-7 shows creating a cell ROI 
+		automatically with &#8220;ROI Assistant&#8221; in the &#8220;Define ROI&#8221; wizard.</font></span></p>
+		<p class="MsoNormal">&nbsp;</p>
+		<P style="margin-bottom: 15px"><font size="3">1.&nbsp;&nbsp; </font><b>
+		<span lang="EN-GB"><font size="3" face="Verdana">Defining ROIs manually</font></span></b></P>
+		<p class="MsoNormal"><font face="Verdana" size="3"><span lang="EN-GB">
+		Draw ROI area &#8211; Once the paintbrush button
+		<img border="0" src="paint.jpg" width="30" height="30">&nbsp;is pressed, the 
+		paint mode will be on until another button is selected. When you drag 
+		the mouse over the image in the paint mode, the area the mouse has 
+		passed will be highlighted and saved as the specified ROI. The files 
+		open with brush as the default selection.</span></font></p>
+		<p class="MsoNormal"><font face="Verdana" size="3"><span lang="EN-GB">
+		Erase ROI area &#8211; Select the erase mode by clicking on erase button
+		<img border="0" src="erase.jpg" width="32" height="30">. Dragging the 
+		mouse over a painted area will erase the part that the mouse has passed.</span></font></p>
+		<span lang="EN-GB" style="font-family: Verdana"><font size="3">Fill ROI 
+		area &#8211; Select the fill mode by clicking on erase button
+		<img border="0" src="fill.jpg" width="32" height="32">. If users click 
+		the mouse again in a closed area, the area will be automatically filled.</font></span><p class="MsoNormal">&nbsp;</p>
+		<p><b><span lang="EN-GB">&nbsp;<font size="3">2.&nbsp;&nbsp; Defining 
+		ROIs automatically</font></span></b></p>
+		<p class="MsoNormal"><span lang="EN-GB"><font size="3">Clear ROI &#8211; 
+		Clicking on the clear ROI button
+		<img border="0" src="clearroi.jpg" width="35" height="32">&nbsp;will clear 
+		the selected area for the current ROI. </font></span></p>
+		<p class="MsoNormal"><span lang="EN-GB"><font size="3">ROI time course &#8211; 
+		Clicking on the time plot ROI button
+		<img border="0" src="plotroi.jpg" width="37" height="33">&nbsp;will pop up a 
+		dialog showing the plot of the average intensity of all the pixels in 
+		the area of the current ROI against time.</font></span></p>
+		<p class="MsoNormal"><span lang="EN-GB"><font size="3">Import ROI mask &#8211; 
+		Clicking on the import ROI mask button
+		<img border="0" src="importroimask.jpg" width="36" height="36">&nbsp;will pop 
+		up an open file dialog. Users can select an image file to import the 
+		ROIs that is defined in the file. The imported file must have the same 
+		size of the current image data. The primary ROIs defined in the imported 
+		file will be copied to the current file. </font></span></p>
+		<span lang="EN-GB"><font size="3">ROI assistant tool &#8211; Clicking on the 
+		ROI assistant button
+		<img border="0" src="roiAssistant.jpg" width="37" height="34">&nbsp;will pop 
+		up an ROI assistant dialog. Users have to make decisions on selecting 
+		ROI threshold source and spatial enhance threshold. Users can also play 
+		on the slider bar to shrink ROI or grow ROI. The FRAP image will be 
+		changed simultaneously when users are tuning the thresholds. Once the 
+		automatically generated ROI is accepted, users can click on the resolve 
+		button <img border="0" src="resolved.jpg" width="82" height="21">&nbsp;&nbsp;to 
+		have the image resolved. The fill voids button
+		<img border="0" src="fillVoids.jpg" width="83" height="23">&nbsp;will be 
+		enable if any void pixels exist in the ROI area that are required to be 
+		filled up.&nbsp; Once the created ROI is ready, apply ROI button
+		<img border="0" src="applyROI.jpg" width="81" height="22">&nbsp;will be 
+		enabled. Users can click on that button to apply the current ROI.</font></span><p>
+		<span lang="en-gb"><b><font face="Verdana" size="3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<img border="0" src="figure3_7.jpg" width="558" height="500"></font></b></span></p>
+		<p><span lang="en-gb"><b><font face="Verdana" size="3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		</font></b></span><span lang="EN-GB" style="font-family: Verdana">
+		<font size="3">Figure 3-7 Creating a Cell ROI using ROI Assistant</font></span></ul>
+	<p>&nbsp;</p>
+	<p></li>
+		</p>
+	<p></p>
+	<ul>
+		<li>
+		<p style="margin-bottom: 5px"><b>
+		<span lang="EN-GB" style="font-family: Verdana"><font size="3">Selecting 
+		regions of interest for error calculation</font></span></b> 
+		<p class="MsoNormal"><span lang="EN-GB"><font size="3">The last page of 
+		the &#8220;Define ROIs&#8221; wizard shows the generated ROI rings based on the 
+		primary ROIs. Users can select any numbers of them by clicking on the 
+		checkbox which specifies the different rings. The generated ROI rings 
+		are displayed in different colors. Figure 3-8 shows the ROI selection 
+		page.</font></span></p>
+		<p class="MsoNormal"><span lang="en-gb"><font size="3">&nbsp;&nbsp;&nbsp;
+		<img border="0" src="figure3_8.jpg" width="534" height="410"></font></span></p>
+		<p class="MsoNormal"><span lang="en-gb"><font size="3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		</font></span><span lang="EN-GB" style="font-family: Verdana">
+		<font size="3">Figure 3-8 Selecting ROIs for Error Calculation</font></span></p>
+		<p class="MsoNormal"><span lang="en-gb"><font size="3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		</font></span></p>
+		<p>&nbsp;</li>
+	</ul>
+	<font size="3">
 	  
 	  <div id="toplink"><a href="#top"><font size="3">Back to top</font></a></div>
      </div>
     </td>
+  </tr>
+  <tr>
+    <td class="content" valign="top">
+	
+	&nbsp;</td>
   </tr>
 </table>
 </body>

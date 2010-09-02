@@ -3,8 +3,25 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>3.4 	2D Results</title>
+<title>3.4	Selecting FRAP Model</title>
 <link rel="stylesheet" type="text/css" href="../content.css">
+<style>
+<!--
+h2
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.85in;
+	text-align:justify;
+	text-justify:inter-ideograph;
+	text-indent:-.85in;
+	page-break-after:avoid;
+	tab-stops:list 49.65pt;
+	font-size:14.0pt;
+	font-family:"Bookman Old Style";
+	}
+-->
+</style>
 </head>
 
 
@@ -17,37 +34,27 @@
   </tr>
   <tr>
     <td width="2%" rowspan="2" background="bak.jpg">&nbsp;</td>
-    <td width="98%" class="subHeader">3.4	2D Results</td>
+    <td width="98%" class="subHeader">3.4 <span lang="EN-GB">
+	<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp; </span>Selecting 
+	FRAP Model</span></td>
   </tr>
   <tr>
     <td class="content" valign="top">
 	
-	<font size="3">The spatial simulation is conducted initially by the parameters from &#8220;Initial Parameters&#8221; tab. It can be updated with new set of parameters in &#8220;Adjust Parameters&#8221; tab as aforementioned. The simulation results are used to compare with the original FRAP experimental data. The two sets of data are displayed in Simulation results viewer and Original Virtual Microscopy Data viewer.<br>
-	</font>
-	<p></p>
-	<ul>
-        <li> 
-		<p style="margin-bottom: 15px"><font size="3">Simulation results viewer &#8211; The simulation is conduced by VCell spatial solver.  The immobile data, primary mobile data, secondary mobile data (if users have selected) and combined data are shown in the &#8220;Variable&#8221; list.  The combined data is a sum of primary mobile data time primary mobile fraction, secondary mobile data time secondary mobile fraction (if users have selected) and immobile data time immobile mobile fraction. When users select one of the options, the corresponding data set will be loaded in the viewer.</font></li>
-        <li> 
-		<p style="margin-bottom: 6px"><font size="3">The original data and ROI rings viewer &#8211; The original data are saved in two forms which are raw data and normalized raw data. The normalized raw data is the proper dataset to compare with the simulation results because the simulation runs based on the normalized data. The ROI rings sample at different distances from the user defined initial bleached region. Through ROI rings, users are able to observe how diffusion works in different regions of cell besides the bleached area.</font></li>
-	</ul>
-	     
-    <p></p>
-      <font size="3">There are two kinds of view in this panel when taking into consideration that different monitors have different resolutions.  Parallel view requires higher resolution, which allows users to compare the simulation results and original data side by side.  Tabbed view allows users to see one data set each time.</font><br>
-      
-    <p></p>
-      <font size="3">The spatial simulation is performed when users click on the &#8220;Adjust Parameters&#8221; tab. As long as all the required data are ready, the simulation will complete automatically. (Figure 3-6 shows the spatial simulation results)</font><br>
-    
-      
-    <p></p>
-      <font size="3">To understand and export the spatial simulation results. Please refer to Virtual Cell documentation at 
-	<a href="http://vcell.org/userdocs/Rel/user_guide.pdf">http://vcell.org/userdocs/Rel/user_guide.pdf</a> for chapter 8 and chapter 9.</font><br>   
-    <p></p>  
-      <div align="center">
-      <img src="figure3_7.jpg"><br><p></p>
-	  <span class="caption"><font size="3">Figure 3-7: 2D Spatial Simulation in Virtual FRAP</font></span><font size="3">
-		</font>
-	  </div>
+	<span lang="EN-GB" style="font-family: Verdana"><font size="3">After loading 
+	the FRAP image and setting up all the required ROIs, users can proceed to 
+	select possible models that may fit the data. One possible model is 
+	diffusion with one diffusing component and another is diffusion with two 
+	diffusing components. Users can choose either one or both of them.&nbsp; The 
+	&#8220;Choose Model Type&#8221; wizard has only one page. To select the model users just 
+	need to check the checkbox related to the specific model type. Figure 3-9 
+	shows the wizard.</font></span><br>   
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<img border="0" src="figure3_9.jpg" width="497" height="378"></p>
+	<div align="left">
+      <span class="caption"><font size="3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font></span>
+		<span lang="EN-GB"><font size="3">Figure 3-9 Choose Model Type Wizard in 
+		Virtual FRAP</font></span></div>
 	  
 	  <div id="toplink"><a href="#top"><font size="3">Back to top</font></a></div>
      </div>

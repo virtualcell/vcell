@@ -22,39 +22,39 @@
   <tr>
     <td class="content" valign="top">
 	
-	<font size="3">Virtual FRAP estimates and evaluates diffusion rates from FRAP experimental data in four steps. The four steps are:<br>
+	<font size="3">Virtual FRAP estimates and evaluates diffusion rates from FRAP experimental data in four steps. The four steps are intuitively guided through a wizard-based work flow:<br>
 	</font>
 	<ul>
         <li> 
-		<p style="margin-bottom: 5px"><font size="3">Loading FRAP experiment data and defining regions of interest (ROI).</font></li>
+		<p style="margin-bottom: 5px"><font size="3">Loading FRAP experimental data.</font></li>
         <li> 
-		<p style="margin-bottom: 5px"><font size="3">Primary estimation of a single diffusion rate.</font></li>
+		<p style="margin-bottom: 5px"><font size="3">Defining regions of interest (ROI).</font></li>
         <li> 
-		<p style="margin-bottom: 5px"><font size="3">Refined estimation of a primary diffusion rate and an optional secondary diffusion rate.</font></li>
+		<p style="margin-bottom: 5px"><font size="3">Selecting diffusion model which can either be a single diffusing component model or two diffusing components model.</font></li>
         <li> 
-		<p style="margin-bottom: 5px"><font size="3">Spatial visualization by constructing and fitting a spatial model for the FRAP data using VCell spatial solver.</font></li>
+		<p style="margin-bottom: 5px"><font size="3">Estimation of a primary diffusion rate and an optional secondary diffusion rate.</font></li>
     </ul>
 	
 	<p></p>
       
 	  <a name="gui">
-	  <p class="subTitle">3.1 Manipulating FRAP Experimental Data </p>
+	  <p class="subTitle">3.1	Virtual FRAP Main Interface </p>
 	  </a>
 	   
-      <font size="3">Figure 3-1 illustrates the Virtual Frap user interface for loading and processing FRAP images. The menus of the Images interface only become active after an image has been loaded. The Virtual FRAP&#8217;s &#8220;Images&#8221; tab consists of several tools for manipulating images. These are:</font><p></p>
+      <font size="3">Figure 3-1 illustrates the Virtual FRAP 1.0 main user interface. It contains the raw FRAP data, the data analysis workflow, the best results and the spatial simulation all in one frame.</font><p></p>
      
 	   <ol>
-        <li> <p style="margin-bottom: 5px"><em><font size="3">ROI Toolbox</font></em><font size="3"> - To help automate defining ROIs and plotting ROI time course data.</font></li>
-        <li> <p style="margin-bottom: 5px"> <em><font size="3">ROI Selection box</font></em><font size="3"> - To identify the specific ROI that is being defined.</font></li>
-        <li> <p style="margin-bottom: 5px"><em><font size="3">Drawing Toolbox</font></em><font size="3"> - To enable painting, erasing and filling on the image.</font></li>
-        <li> <p style="margin-bottom: 5px"><em><font size="3">Image Adjustment Toolbox</font></em><font size="3"> - To allow zooming in/out, increasing/reducing image contrast and cropping image by customized or default rectangular window.</font></li>
+        <li> <p style="margin-bottom: 5px"><em><font size="3">Data Analysis Work Flow</font></em><font size="3"> - Wizard based work flow guides users through the whole process from loading raw data to getting estimation results.</font></li>
+        <li> <p style="margin-bottom: 5px"> <em><font size="3">Data Analysis Results Panel</font></em><font size="3"> - It shows the best model and the model parameter values that fits the FRAP dataset.</font></li>
+        <li> <p style="margin-bottom: 5px"><em><font size="3">Spatial Simulation Toolbox</font></em><font size="3"> - It runs the 2D spatial simulation based on the FRAP image with the estimated parameters and shows the simulation results together with the original data.</font></li>
+        <li> <p style="margin-bottom: 5px"><em><font size="3">FRAP Image Viewer</font></em><font size="3"> - It displays the FRAP image based on the time series.</font></li>
       </ol>
       <p></p>
 	  <div align="center">
       <img src="figure3_1.jpg"><br>
 	  &nbsp;</div>
 	<div align="center">
-      <span class="caption"><font size="3">Figure 3-1: Virtual Frap Image Tool</font></span><font size="3">
+      <span class="caption"><font size="3">Figure 3-1: The Virtual Frap User Interface</font></span><font size="3">
 		</font>
 	  </div>
 	  

@@ -11,11 +11,9 @@
     <indexitem target="installation" text="Installation"/>
 </indexitem>
 <indexitem text="Data Operations">
-    <indexitem target="loading" text="Load"/>  
-    <indexitem target="adjusting" text="Modify"/>
-    <indexitem target="definingROI" text="Define ROIs"/>
-    <indexitem target="primaryFit" text="Primary Fit"/>
-    <indexitem target="refinedFit" text="Refined Fit"/>    
-    <indexitem target="fitModel" text="Validate"/>    
+    <indexitem target="loading" text="Loading Experimental Data"/>  
+    <indexitem target="defineROI" text="Defining ROIs"/>
+    <indexitem target="selectModel" text="Selecting Model"/>
+    <indexitem target="estParameters" text="Estimating Parameters"/>    
 </indexitem>
 </index>

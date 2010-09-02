@@ -13,12 +13,12 @@
   <mapID target="installation" url="topics/Chapter2/page2.html"/>
 
   <mapID target="quickTour" url="topics/Chapter3/page3.html"/>
-  <mapID target="manipulatingData" url="topics/Chapter3/page3.html"/>
-  <mapID target="loading" url="topics/Chapter3/page3_1_1.html"/>
-  <mapID target="adjusting" url="topics/Chapter3/page3_1_2.html"/>
-  <mapID target="definingROI" url="topics/Chapter3/page3_1_3.html"/>
-  <mapID target="primaryFit" url="topics/Chapter3/page3_2.html"/>
-  <mapID target="refinedFit" url="topics/Chapter3/page3_3.html"/>
-  <mapID target="fitModel" url="topics/Chapter3/page3_4.html"/>
+  <mapID target="mainInterface" url="topics/Chapter3/page3.html"/>
+  <mapID target="loadData" url="topics/Chapter3/page3_2.html"/>
+  <mapID target="defineROI" url="topics/Chapter3/page3_3.html"/>
+  <mapID target="selectModel" url="topics/Chapter3/page3_4.html"/>
+  <mapID target="estParameters" url="topics/Chapter3/page3_5.html"/>
+  <mapID target="spatialSim" url="topics/Chapter3/page3_6.html"/>
+  <mapID target="batchRun" url="topics/Chapter3/page3_7.html"/>
 
 </map>
