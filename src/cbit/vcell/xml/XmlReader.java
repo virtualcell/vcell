@@ -4055,6 +4055,18 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			throw new XmlParseException("A PropertyVetoException was fired when setting the CharacteristicSize "+ tempchar+" : "+e.getMessage());
 		}
 	}
+	
+	// Retrieve DataContext
+	Element dataContextElement = param.getChild(XMLTags.DataContextTag, vcNamespace);
+	if (dataContextElement != null) {
+		DataContext dataContext = newsimcontext.getDataContext();
+		ArrayList<DataSymbol> dataSymbols = getDataSymbols(dataContextElement, dataContext);
+		for (int i = 0; i < dataSymbols.size(); i++) {
+			dataContext.addDataSymbol(dataSymbols.get(i));
+		}
+	}
+	
+
 	//
 	//-Process the GeometryContext-
 	//
@@ -4127,16 +4139,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		}
 	}
 
-	// Retrieve DataContext
-	Element dataContextElement = param.getChild(XMLTags.DataContextTag, vcNamespace);
-	if (dataContextElement != null) {
-		DataContext dataContext = newsimcontext.getDataContext();
-		ArrayList<DataSymbol> dataSymbols = getDataSymbols(dataContextElement, dataContext);
-		for (int i = 0; i < dataSymbols.size(); i++) {
-			dataContext.addDataSymbol(dataSymbols.get(i));
-		}
-	}
-	
 	
 	//Retrieve Electrical context
 	org.jdom.Element electElem = param.getChild(XMLTags.ElectricalContextTag, vcNamespace);
