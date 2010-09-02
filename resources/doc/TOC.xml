@@ -16,14 +16,13 @@
     </tocitem>
 
     <tocitem target="quickTour" text="Quick Tour of Virtual Frap">
-        <tocitem target="manipulatingData" text="Manipulating FRAP Experimental Data">
-	      <tocitem target="loading" text="Loading FRAP Experimental Data"/>
-	      <tocitem target="adjusting" text="Adjusting FRAP Experimental Data"/>
-	      <tocitem target="definingROI" text="Defining ROIs on FRAP Experimental Data"/>
-        </tocitem>
-        <tocitem target="primaryFit" text="Primary Fitting of Redistribution Curve"/>
-        <tocitem target="refinedFit" text="Refined Fitting of Redistribution Curve"/>
-	  <tocitem target="fitModel" text="Fitting Spatial Model"/>
+        <tocitem target="mainInterface" text="The Vitual FRAP Main Interface"/>
+	  <tocitem target="loadData" text="Loading FRAP Experimental Data"/>
+        <tocitem target="defineROI" text="Defining Regions of Interest"/>
+        <tocitem target="selectModel" text="Selecting FRAP Model"/>
+        <tocitem target="estParameters" text="Estimating Parameters"/>
+        <tocitem target="spatialSim" text="Spatial Simulation and Results"/>   
+        <tocitem target="batchRun" text="The Virtual FRAP Batch Run Mode"/>
     </tocitem>
   </tocitem>
 </toc>
