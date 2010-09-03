@@ -3032,6 +3032,18 @@ private Model getModel(Element param) throws XmlParseException {
 		throw new XmlParseException(e.getMessage());
 	}
 
+	// model param expresions are not bound when they are read in, since they could be functions of each other or structures/speciesContexts.
+	// Hence bind the model param exprs at the end, after reading all model level quantities.
+	ModelParameter[] modelParameters = newmodel.getModelParameters();
+	for (int i=0; modelParameters != null && i<modelParameters.length;i++){
+		try {
+			modelParameters[i].getExpression().bindExpression(newmodel);
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error binding global parameter '" + modelParameters[i].getName() + "' to model."  + e.getMessage());
+		}
+	}
+
 	return newmodel;
 }
 
