@@ -86,28 +86,28 @@ public class AnalysisProcedurePanel extends JPanel
 	private JPanel getBotPanel()
 	{
 		JPanel botPanel = new JPanel();
-		botPanel.setLayout(new FlowLayout());
-		for (int i = 0; i < (buttons.length-1); ++i) {
+		botPanel.setLayout(new GridBagLayout());
+		for (int i = 0; i < (buttons.length); ++i) {
             icons[2*i] = new ImageIcon(iconFiles[2*i]);//button icon
-            icons[2*i+1] = new ImageIcon(iconFiles[2*i+1]);//label icon
             buttons[i] = new JButton(icons[2*i]);
             buttons[i].setMargin(new Insets(0, 0, 0, 0));
             buttons[i].setToolTipText(buttonTips[i]);
             buttons[i].setActionCommand(buttonActionCommands[i]);
-            botPanel.add(buttons[i]);
-            labels[i] = new JLabel(icons[2*i+1]);
-            botPanel.add(labels[i]);
+            GridBagConstraints butConstraint = new GridBagConstraints();
+            butConstraint.gridx = 2*i;
+            butConstraint.gridy = 0;
+            botPanel.add(buttons[i],butConstraint);
+            if(i < (buttons.length -1))
+            {
+	            GridBagConstraints lblConstraint = new GridBagConstraints();
+	            lblConstraint.gridx = 2*i+1;
+	            lblConstraint.gridy = 0;
+	            icons[2*i+1] = new ImageIcon(iconFiles[2*i+1]);//label icon
+	            labels[i] = new JLabel(icons[2*i+1]);
+	            botPanel.add(labels[i],lblConstraint);
+            }
         }
-		//last button
-		icons[iconFiles.length-1] = new ImageIcon(iconFiles[iconFiles.length-1]);//button icon
-        buttons[buttons.length-1] = new JButton(icons[iconFiles.length-1]);
-        buttons[buttons.length-1].setMargin(new Insets(0, 0, 0, 0));
-//        buttons[buttons.length-1].setBorderPainted(false);
-//        buttons[buttons.length-1].setFocusPainted(false);
-//        buttons[buttons.length-1].setContentAreaFilled(false);
-        buttons[buttons.length-1].setToolTipText(buttonTips[buttons.length-1]);
-        buttons[buttons.length-1].setActionCommand(buttonActionCommands[buttons.length-1]);
-        botPanel.add(buttons[buttons.length-1]);
+	
 		return botPanel;
 	}
 	
