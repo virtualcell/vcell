@@ -3,14 +3,12 @@ package org.vcell.smoldyn.test;
 
 import org.vcell.smoldyn.model.Geometryable;
 import org.vcell.smoldyn.model.Model;
-import org.vcell.smoldyn.model.Species;
 import org.vcell.smoldyn.model.Surface;
 import org.vcell.smoldyn.model.Model.Dimensionality;
-import org.vcell.smoldyn.model.Species.StateType;
 import org.vcell.smoldyn.model.util.Point;
 import org.vcell.smoldyn.model.util.Sphere;
-import org.vcell.smoldyn.model.util.Point.PointFactory;
 import org.vcell.smoldyn.model.util.SurfaceActions;
+import org.vcell.smoldyn.model.util.Point.PointFactory;
 import org.vcell.smoldyn.simulation.Simulation;
 import org.vcell.smoldyn.simulation.SmoldynException;
 import org.vcell.smoldyn.simulationsettings.ControlEvent;
@@ -19,9 +17,8 @@ import org.vcell.smoldyn.simulationsettings.ObservationEvent;
 import org.vcell.smoldyn.simulationsettings.SimulationSettings;
 import org.vcell.smoldyn.simulationsettings.SmoldynTime;
 import org.vcell.smoldyn.simulationsettings.util.Color;
-import org.vcell.smoldyn.simulationsettings.util.EventTiming;
+import org.vcell.smoldyn.simulationsettings.util.DefaultEventTiming;
 import org.vcell.smoldyn.simulationsettings.util.SimulationGraphics;
-import org.vcell.smoldyn.simulationsettings.util.SpeciesGraphics;
 import org.vcell.smoldyn.simulationsettings.util.SurfaceGraphics;
 import org.vcell.smoldyn.simulationsettings.util.SimulationGraphics.GraphicsType;
 import org.vcell.smoldyn.simulationsettings.util.SurfaceGraphics.Drawmode;
@@ -168,14 +165,14 @@ public class FoxSheepExample {
 	}
 	
 	private void addSimObservationEvents() throws SmoldynException {
-		simulationsettings.addObservationEvent(new EventTiming(0., 100000., 25.), 
+		simulationsettings.addObservationEvent(new DefaultEventTiming(0., 100000., 25.), 
 				ObservationEvent.EventType.TOTAL_MOLECULES_BY_TYPE, "filehandle.txt");
-		simulationsettings.addObservationEvent(new EventTiming(0., 50000., 5000.), 
+		simulationsettings.addObservationEvent(new DefaultEventTiming(0., 50000., 5000.), 
 				ObservationEvent.EventType.SAVE_SIMULATION_STATE, "savesim.txt");
 	}
 	
 	private void addSimControlEvents() {
-		simulationsettings.addControlEvent(new ControlEvent(new EventTiming(0., 0., 0.), ControlEvent.EventType.pause));
+		simulationsettings.addControlEvent(new ControlEvent(new DefaultEventTiming(0., 0., 0.), ControlEvent.EventType.pause));
 	}
 	
 	private void addSimGraphics() {

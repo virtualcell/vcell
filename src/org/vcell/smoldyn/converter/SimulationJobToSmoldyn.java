@@ -5,13 +5,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+
 import org.vcell.smoldyn.model.Geometryable;
 import org.vcell.smoldyn.model.Model;
+import org.vcell.smoldyn.model.Species;
 import org.vcell.smoldyn.model.Model.Dimensionality;
 import org.vcell.smoldyn.model.SpeciesAndState.Product;
 import org.vcell.smoldyn.model.SpeciesAndState.Reactant;
-import org.vcell.smoldyn.model.Species;
-import org.vcell.smoldyn.model.Species.StateType;
 import org.vcell.smoldyn.model.util.Point;
 import org.vcell.smoldyn.model.util.ReactionParticipants;
 import org.vcell.smoldyn.model.util.Triangle;
@@ -21,13 +21,15 @@ import org.vcell.smoldyn.simulation.SmoldynException;
 import org.vcell.smoldyn.simulationsettings.InternalSettings;
 import org.vcell.smoldyn.simulationsettings.SimulationSettings;
 import org.vcell.smoldyn.simulationsettings.SmoldynTime;
-import org.vcell.smoldyn.simulationsettings.VCellObservationEvent.VCellEventType;
-import org.vcell.smoldyn.simulationsettings.util.EventTiming;
+import org.vcell.smoldyn.simulationsettings.VCellObservationEventProgress;
+import org.vcell.smoldyn.simulationsettings.VCellObservationEventWriteOutput;
+import org.vcell.smoldyn.simulationsettings.util.UniformEventTiming;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
+
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.GeometricRegion;
@@ -63,8 +65,7 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
  * @author mfenwick
  *
  */
-public class SimulationJobToSmoldyn {
-
+public class SimulationJobToSmoldyn {	
 	private MathDescription mathd;
 	private Simulation smoldynsimulation;
 	private Model smoldynmodel;
@@ -348,7 +349,6 @@ public class SimulationJobToSmoldyn {
 	}
 	
 	private void setOutput() throws SmoldynException {
-		TimeBounds timeBounds = vcellSimJob.getSimulation().getSolverTaskDescription().getTimeBounds();
 		double timestep = vcellSimJob.getSimulation().getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
 		OutputTimeSpec ots = vcellSimJob.getSimulation().getSolverTaskDescription().getOutputTimeSpec();
 		if (!ots.isUniform()) {
@@ -358,42 +358,33 @@ public class SimulationJobToSmoldyn {
 		smoldynsimulationsettings.addFilehandle(outputFile.getName());
 		
 		final double saveInterval = ((UniformOutputTimeSpec)ots).getOutputTimeStep();
-		final double start = timeBounds.getStartingTime();
-		final double stop = timeBounds.getEndingTime();
+//		TimeBounds timeBounds = vcellSimJob.getSimulation().getSolverTaskDescription().getTimeBounds();
+//		final double start = timeBounds.getStartingTime();
+//		final double stop = timeBounds.getEndingTime(); 
 //		smoldynsimulationsettings.addObservationEvent(new EventTiming(start, stop, saveInterval), 
 //				EventType.SAVE_SIMULATION_STATE, outputFile.getName());
-		smoldynsimulationsettings.addVCellObservationEvent(new EventTiming(start, stop, timestep), 
-				VCellEventType.PRINT_PROGRESS);
-		smoldynsimulationsettings.addVCellObservationEvent(new EventTiming(start, stop, saveInterval), 
-				VCellEventType.WRITE_OUTPUT);
+		smoldynsimulationsettings.addVCellObservationEvent(new VCellObservationEventProgress(new UniformEventTiming(1)));
+		smoldynsimulationsettings.addVCellObservationEvent(new VCellObservationEventWriteOutput(new UniformEventTiming((int)Math.round(saveInterval/timestep)), 
+				vcellSimJob.getSimulation().getMathDescription().getGeometry().getDimension(), vcellSimJob.getSimulation().getMeshSpecification().getSamplingSize()));
 	}
 	
-	private void setInternalSettings() {
+	private void setInternalSettings() throws SmoldynException {
 		SmoldynSimulationOptions ssoptions = vcellSimJob.getSimulation().getSolverTaskDescription().getSmoldynSimulationOptions();
 		InternalSettings internalsettings = new InternalSettings(ssoptions.getRandomSeed(), ssoptions.getAccuracy(),
-				setMeshsize(vcellSimJob.getSimulation().getMeshSpecification().getSamplingSize()), ssoptions.getGaussianTableSize());
+				getBoxWidth(), ssoptions.getGaussianTableSize());
 		this.smoldynsimulationsettings.setInternalSettings(internalsettings);
 	}
 	
-	private double setMeshsize(ISize isize) {
+	private double getBoxWidth() throws SmoldynException {
+		final double eps = 1e-12;
+		ISize isize = vcellSimJob.getSimulation().getMeshSpecification().getSamplingSize();
 		Extent extent = mathd.getGeometry().getExtent();
 		
-		if (mathd.getGeometry().getDimension() == 1) {			
-			this.smoldynsimulationsettings.setBoxes(new int[] {isize.getX()});
-		} else if (mathd.getGeometry().getDimension() == 2) {
-			this.smoldynsimulationsettings.setBoxes(new int[] {isize.getX(), isize.getY()});
-		} else if (mathd.getGeometry().getDimension() == 3) {
-			this.smoldynsimulationsettings.setBoxes(new int[] {isize.getX(), isize.getY(), isize.getZ()});
-		}
-		double xsize = ConversionUtilities.getBoxsize(isize.getX(), extent.getX()), 
-			ysize = ConversionUtilities.getBoxsize(isize.getY(), extent.getY()), 
-			zsize = ConversionUtilities.getBoxsize(isize.getZ(), extent.getZ());
-		try {
-			if((xsize != ysize) || (ysize != zsize)) {
-				ConversionUtilities.throwRuntimeException("Smoldyn only supports one box size, which must be equal for all dimensions");
-			}
-		} catch(RuntimeException e) {
-			e.printStackTrace();
+		double xsize = ConversionUtilities.getBoxsize(isize.getX(), extent.getX()); 
+		double ysize = ConversionUtilities.getBoxsize(isize.getY(), extent.getY()); 
+		double zsize = ConversionUtilities.getBoxsize(isize.getZ(), extent.getZ());
+		if(Math.abs(xsize - ysize) > eps || Math.abs(ysize - zsize) > 1e-12) {
+			throw new SmoldynException("Smoldyn only supports one box size, which must be equal for all dimensions");
 		}
 		return xsize;
 	}

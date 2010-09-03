@@ -30,7 +30,7 @@ public class FilehandlesWriter {
 		Filehandle [] filehandles = simulationsettings.getFilehandles();
 		//output_root
 		if(filehandles.length > 0) {
-			writer.print(SmoldynFileKeywords.Runtime.output_files);
+			writer.print(SmoldynFileKeywords.RuntimeCommand.output_files);
 			for(Filehandle f : filehandles) {
 				writer.print(" " + f.getPath());
 			}

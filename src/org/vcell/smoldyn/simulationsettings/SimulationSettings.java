@@ -7,7 +7,6 @@ import java.util.Hashtable;
 import org.vcell.smoldyn.simulation.SimulationUtilities;
 import org.vcell.smoldyn.simulation.SmoldynException;
 import org.vcell.smoldyn.simulationsettings.ObservationEvent.EventType;
-import org.vcell.smoldyn.simulationsettings.VCellObservationEvent.VCellEventType;
 import org.vcell.smoldyn.simulationsettings.util.EventTiming;
 import org.vcell.smoldyn.simulationsettings.util.Filehandle;
 import org.vcell.smoldyn.simulationsettings.util.SimulationGraphics;
@@ -39,8 +38,6 @@ public class SimulationSettings {
 	private SimulationGraphics simulationgraphics;
 	private SmoldynTime smoldyntime;
 	private InternalSettings internalsettings;
-	private int[] boxes = null;
-
 	
 	/**
 	 * First, initialize an empty SimulationSettings.  Then, add information using addX and 
@@ -95,10 +92,8 @@ public class SimulationSettings {
 		return vcellobservationevents.toArray(new VCellObservationEvent [vcellobservationevents.size()]);
 	}
 	
-	public void addVCellObservationEvent(EventTiming eventtiming, VCellEventType eventtype) {
-		SimulationUtilities.checkForNull("argument to addVCellDataRecordingEvent", eventtiming, eventtype);
-		VCellObservationEvent vcellobservationevent = new VCellObservationEvent(eventtiming, eventtype);
-		this.vcellobservationevents.add(vcellobservationevent);
+	public void addVCellObservationEvent(VCellObservationEvent vcellObservationEvent) {
+		this.vcellobservationevents.add(vcellObservationEvent);
 	}
 	
 	
@@ -170,21 +165,4 @@ public class SimulationSettings {
 		SimulationUtilities.checkForNull(SmoldynTime.class.toString(), smoldyntime);
 		this.smoldyntime = smoldyntime;
 	}	
-	
-	
-	/**
-	 * @param xboxes -- positive
-	 * @param yboxes -- positive
-	 * @param zboxes -- positive
-	 */
-	public void setBoxes(int[] boxes) {
-		for (int b : boxes) {
-			SimulationUtilities.checkForPositive("number of boxes", b);
-		}
-		this.boxes = boxes;
-	}
-	
-	public int[] getBoxes() {
-		return this.boxes;
-	}
 }

@@ -8,6 +8,7 @@ import org.vcell.smoldyn.simulation.Simulation;
 import org.vcell.smoldyn.simulationsettings.ControlEvent;
 import org.vcell.smoldyn.simulationsettings.SimulationSettings;
 import org.vcell.smoldyn.simulationsettings.ControlEvent.EventType;
+import org.vcell.smoldyn.simulationsettings.util.DefaultEventTiming;
 import org.vcell.smoldyn.simulationsettings.util.EventTiming;
 
 
@@ -41,24 +42,24 @@ public class ControlEventWriter {
 	private void determineCommandType(ControlEvent controlevent) {
 		EventType type = controlevent.getEventType();
 		if(type == EventType.pause) {
-			writeCommandTime(new EventTiming(2d, 2d, 0d));//new eventtiming of before simulation starts
+			writeCommandTime(new DefaultEventTiming(2d, 2d, 0d));//new eventtiming of before simulation starts
 			writer.println(SmoldynFileKeywords.SimulationControl.pause);
 		} else {
 			throw new RuntimeException("printing for event type " + type + " is currently unsupported");
 		}
 	}
 	
-	private void writeCommandTime(EventTiming eventtiming) {
+	private void writeCommandTime(DefaultEventTiming eventtiming) {
 		double start = eventtiming.getTimestart();
 		double stop = eventtiming.getTimestop();
 		double step = eventtiming.getTimestep();
-		String timing = SmoldynFileKeywords.Runtime.cmd.toString() + " ";
+		String timing = SmoldynFileKeywords.RuntimeCommand.cmd.toString() + " ";
 		if ((start - 0 < tolerance) && (stop - 0 < tolerance)) {
-			timing = timing + SmoldynFileKeywords.Runtime.b;
+			timing = timing + SmoldynFileKeywords.RuntimeCommand.b;
 		} else if (stop - start < tolerance) {
 			timing = timing + "@ " + start;
 		} else if (stop > start) {
-			timing = timing + SmoldynFileKeywords.Runtime.i + " " + start + " " + stop + " " + step;
+			timing = timing + SmoldynFileKeywords.RuntimeCommand.i + " " + start + " " + stop + " " + step;
 		} 
 //			else if () {
 //				//a

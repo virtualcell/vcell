@@ -1,19 +1,19 @@
 package org.vcell.smoldyn.test;
 
 import java.util.Random;
+
 import org.vcell.smoldyn.model.Boundaries;
 import org.vcell.smoldyn.model.Geometry;
 import org.vcell.smoldyn.model.Geometryable;
 import org.vcell.smoldyn.model.Model;
-import org.vcell.smoldyn.model.Species;
 import org.vcell.smoldyn.model.Surface;
 import org.vcell.smoldyn.model.Model.Dimensionality;
 import org.vcell.smoldyn.model.Species.StateType;
 import org.vcell.smoldyn.model.util.Point;
 import org.vcell.smoldyn.model.util.ReactionParticipants;
 import org.vcell.smoldyn.model.util.Sphere;
-import org.vcell.smoldyn.model.util.Point.PointFactory;
 import org.vcell.smoldyn.model.util.SurfaceActions;
+import org.vcell.smoldyn.model.util.Point.PointFactory;
 import org.vcell.smoldyn.simulation.Simulation;
 import org.vcell.smoldyn.simulation.SmoldynException;
 import org.vcell.smoldyn.simulationsettings.ControlEvent;
@@ -22,9 +22,8 @@ import org.vcell.smoldyn.simulationsettings.SimulationSettings;
 import org.vcell.smoldyn.simulationsettings.SmoldynTime;
 import org.vcell.smoldyn.simulationsettings.ObservationEvent.EventType;
 import org.vcell.smoldyn.simulationsettings.util.Color;
-import org.vcell.smoldyn.simulationsettings.util.EventTiming;
+import org.vcell.smoldyn.simulationsettings.util.DefaultEventTiming;
 import org.vcell.smoldyn.simulationsettings.util.SimulationGraphics;
-import org.vcell.smoldyn.simulationsettings.util.SpeciesGraphics;
 import org.vcell.smoldyn.simulationsettings.util.SurfaceGraphics;
 import org.vcell.smoldyn.simulationsettings.util.SimulationGraphics.GraphicsType;
 import org.vcell.smoldyn.simulationsettings.util.SurfaceGraphics.Drawmode;
@@ -193,13 +192,13 @@ public class SimulationExample {
 	}
 	
 	private void addSimObservationEvents() throws SmoldynException {
-		simulationsettings.addObservationEvent(new EventTiming(0., 100000., 25.), EventType.TOTAL_MOLECULES_BY_TYPE, "filehandle.txt");
-		simulationsettings.addObservationEvent(new EventTiming(0., 50000., 5000.), EventType.SAVE_SIMULATION_STATE, "savesim.txt");
-		simulationsettings.addObservationEvent(new EventTiming(0., 1000., 50.), EventType.LIST_ALL_MOLECULES, "molecularlocations.txt");
+		simulationsettings.addObservationEvent(new DefaultEventTiming(0., 100000., 25.), EventType.TOTAL_MOLECULES_BY_TYPE, "filehandle.txt");
+		simulationsettings.addObservationEvent(new DefaultEventTiming(0., 50000., 5000.), EventType.SAVE_SIMULATION_STATE, "savesim.txt");
+		simulationsettings.addObservationEvent(new DefaultEventTiming(0., 1000., 50.), EventType.LIST_ALL_MOLECULES, "molecularlocations.txt");
 	}
 	
 	private void addSimControlEvents() {
-		simulationsettings.addControlEvent(new ControlEvent(new EventTiming(0., 0., 0.), ControlEvent.EventType.pause));
+		simulationsettings.addControlEvent(new ControlEvent(new DefaultEventTiming(0., 0., 0.), ControlEvent.EventType.pause));
 	}
 	
 	private void addSimGraphics() {
