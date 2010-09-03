@@ -59,7 +59,7 @@ public class SmoldynFileKeywords {
 		light,
 	};
 	
-	public static enum Runtime {
+	public static enum RuntimeCommand {
 		output_root,
 		output_files,
 		output_file_number,
@@ -218,8 +218,8 @@ public class SmoldynFileKeywords {
 		excludebox,
 		excludesphere,
 		includeecoli,
-		writeOutput,
-		printProgress,
+		vcellWriteOutput,
+		vcellPrintProgress,
 	};
 	
 	public static enum surfaceactionstates {

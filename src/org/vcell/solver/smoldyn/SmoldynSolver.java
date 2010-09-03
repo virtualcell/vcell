@@ -105,7 +105,7 @@ protected void initialize() throws SolverException
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
 		e.printStackTrace(System.out);
-		throw new SolverException("solver input file exception: " + e.getMessage());
+		throw new SolverException(e.getMessage());
 	} finally {
 		if (pw != null) {
 			pw.close();	
