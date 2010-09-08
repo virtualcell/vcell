@@ -4,8 +4,8 @@ package cbit.vcell.graph;
  * All rights reserved.
 �*/
 import cbit.gui.graph.*;
-import cbit.gui.graph.visualstate.MutableVisualState;
 import cbit.gui.graph.visualstate.VisualState;
+import cbit.gui.graph.visualstate.imp.MutableVisualState;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.model.*;
@@ -66,7 +66,7 @@ public class SpeciesContextShape extends ElipseShape {
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+	public Dimension getPreferedSize(Graphics2D g) {
 		java.awt.FontMetrics fm = g.getFontMetrics();
 		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
 		labelSize.width = fm.stringWidth(getLabel());

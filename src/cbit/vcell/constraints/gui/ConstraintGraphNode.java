@@ -1,8 +1,8 @@
 package cbit.vcell.constraints.gui;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.gui.graph.ElipseShape;
-import cbit.gui.graph.visualstate.ImmutableVisualState;
 import cbit.gui.graph.visualstate.VisualState;
+import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -49,7 +49,7 @@ public abstract class ConstraintGraphNode extends ElipseShape {
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+	public Dimension getPreferedSize(Graphics2D g) {
 		java.awt.FontMetrics fm = g.getFontMetrics();
 		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
 		labelSize.width = fm.stringWidth(getLabel());

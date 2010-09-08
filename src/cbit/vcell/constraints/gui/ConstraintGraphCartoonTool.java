@@ -30,6 +30,7 @@ import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.RubberBandEdgeShape;
 import cbit.gui.graph.RubberBandRectShape;
 import cbit.gui.graph.Shape;
+import cbit.gui.graph.ShapeUtil;
 import cbit.gui.graph.SimpleContainerShape;
 import cbit.vcell.constraints.AbstractConstraint;
 import cbit.vcell.constraints.ConstraintSolver;
@@ -198,7 +199,7 @@ public void layout(String layoutName) throws Exception {
 	while (shapeEnum.hasMoreElements()){
 		Shape shape = shapeEnum.nextElement();
 		edu.rpi.graphdrawing.Node newNode = null;
-		if (shape instanceof ElipseShape){
+		if (ShapeUtil.isMovable(shape)){
 			newNode = bb.addNode(shape.getLabel());
 		}
 		//
@@ -315,7 +316,7 @@ public void layoutGlg() {
 		Shape shape = shapeEnum.nextElement();
 
 		//add to the graph			
-		if (shape instanceof ElipseShape) {
+		if (ShapeUtil.isMovable(shape)) {
 			graphNode = graph.AddNode(null, 0, null);
 		} else {
 			continue;
@@ -574,7 +575,7 @@ public void mouseDragged(java.awt.event.MouseEvent event) {
 					g.setTransform(oldTransform);
 				}else{
 					Shape shape = (getGraphModel().getSelectedShape() != null?getGraphModel().getSelectedShape():getConstraintsGraphModel().pickWorld(worldPoint));
-					if (!bCntrl && !bShift && (shape instanceof ElipseShape)){
+					if (!bCntrl && !bShift && (ShapeUtil.isMovable(shape))){
 						bMoving=true;
 						movingShape = shape;
 						movingPointWorld = shape.getAbsLocation();
@@ -803,7 +804,7 @@ private void selectEventFromWorld(Rectangle rect, boolean bShift, boolean bCntrl
 		getConstraintsGraphModel().clearSelection();
 		Shape shapes[] = getConstraintsGraphModel().pickWorld(rect);
 		for (int i = 0; i < shapes.length; i++){
-			if (shapes[i] instanceof ElipseShape){
+			if (ShapeUtil.isMovable(shapes[i])){
 				getConstraintsGraphModel().select(shapes[i]);
 			}
 		}
@@ -813,7 +814,7 @@ private void selectEventFromWorld(Rectangle rect, boolean bShift, boolean bCntrl
 		}
 		Shape shapes[] = getConstraintsGraphModel().pickWorld(rect);
 		for (int i = 0; i < shapes.length; i++){
-			if (shapes[i] instanceof ElipseShape){
+			if (ShapeUtil.isMovable(shapes[i])){
 				getConstraintsGraphModel().select(shapes[i]);
 			}
 		}
@@ -823,7 +824,7 @@ private void selectEventFromWorld(Rectangle rect, boolean bShift, boolean bCntrl
 		}
 		Shape shapes[] = getConstraintsGraphModel().pickWorld(rect);
 		for (int i = 0; i < shapes.length; i++){
-			if (shapes[i] instanceof ElipseShape){
+			if (ShapeUtil.isMovable(shapes[i])){
 				if (shapes[i].isSelected()){
 					getConstraintsGraphModel().deselect(shapes[i]);
 				}else{

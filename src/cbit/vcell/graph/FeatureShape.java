@@ -89,7 +89,7 @@ public class FeatureShape extends StructureShape {
 	 * @return int
 	 * @param g java.awt.Graphics
 	 */
-	public Dimension getPreferedSize_Testing(java.awt.Graphics2D g) {
+	public Dimension getPreferedSize_Testing(Graphics2D g) {
 
 		Font origfont = g.getFont();
 		g.setFont(getLabelFont(g));

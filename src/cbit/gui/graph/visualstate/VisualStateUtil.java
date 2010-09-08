@@ -5,19 +5,36 @@ package cbit.gui.graph.visualstate;
  */
 
 import cbit.gui.graph.Shape;
+import cbit.gui.graph.visualstate.VisualState.Owner;
 
 public class VisualStateUtil {
 
+	public static boolean isAllowedToShowByAllAncestors(VisualState visualState) {
+		return isAllowedToShowByAllAncestors(visualState.getOwner());
+	}
+
+	public static boolean isAllowedToShowByAllAncestors(VisualState.Owner owner) {
+		boolean theyAllAllowToShow = true;
+		Object parent = owner.getParent();
+		if(parent instanceof Owner) {
+			VisualState parentVisualState = ((Owner) parent).getVisualState();
+			theyAllAllowToShow = parentVisualState.isAllowingToShowDescendents() && 
+			parentVisualState.isAllowedToShowByAllAncestors();
+		}
+		return theyAllAllowToShow;
+	}
+
+
+	
 	public static boolean show(Shape shape) { return show(shape, true); }
 	public static boolean hide(Shape shape) { return show(shape, false); }
 	
 	public static boolean show(Shape shape, boolean show) {
 		boolean successfull = false;
 		if(shape instanceof VisualState.Owner) {
-			VisualState visualStateManager = 
-				((VisualState.Owner) shape).getVisualState();
-			if(visualStateManager instanceof MutableVisualState) {
-				((MutableVisualState) visualStateManager).setIsAllowingToShowItself(show);
+			VisualState visualState = ((VisualState.Owner) shape).getVisualState();
+			if(visualState instanceof HideableVisualState) {
+				((HideableVisualState) visualState).setHidden(!show);
 				successfull = true;
 			} 
 		}
@@ -27,9 +44,8 @@ public class VisualStateUtil {
 	public static boolean canBeHidden(Shape shape) {
 		boolean successfull = false;
 		if(shape instanceof VisualState.Owner) {
-			VisualState visualStateManager = 
-				((VisualState.Owner) shape).getVisualState();
-			if(visualStateManager instanceof MutableVisualState) {
+			VisualState visualState = ((VisualState.Owner) shape).getVisualState();
+			if(visualState instanceof HideableVisualState) {
 				successfull = true;
 			} 
 		}

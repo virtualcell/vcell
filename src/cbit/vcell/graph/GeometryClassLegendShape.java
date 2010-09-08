@@ -13,8 +13,8 @@ import java.util.Set;
 
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.visualstate.ImmutableVisualState;
 import cbit.gui.graph.visualstate.VisualState;
+import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
@@ -79,7 +79,7 @@ public class GeometryClassLegendShape extends ElipseShape implements PropertyCha
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+	public Dimension getPreferedSize(Graphics2D g) {
 		java.awt.FontMetrics fm = g.getFontMetrics();
 		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
 		labelSize.width = fm.stringWidth(getLabel());

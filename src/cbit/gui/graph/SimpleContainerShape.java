@@ -57,7 +57,7 @@ public class SimpleContainerShape extends ContainerShape {
 		//
 		for (int i = 0; i < childShapeList.size(); i++){
 			Shape shape = childShapeList.get(i);
-			if (shape instanceof ElipseShape){
+			if (!(shape instanceof EdgeShape)){
 				emptySize.width = Math.max(emptySize.width,shape.getLocation().x+shape.getSize().width);
 				emptySize.height = Math.max(emptySize.height,shape.getLocation().y+shape.getSize().height);
 			}
@@ -95,7 +95,7 @@ public class SimpleContainerShape extends ContainerShape {
 		//
 		for (int i=0;i<childShapeList.size();i++){
 			Shape child = childShapeList.get(i);
-			if (child instanceof ElipseShape){
+			if (ShapeUtil.isMovable(child)){
 				//
 				// position normally about the center
 				//

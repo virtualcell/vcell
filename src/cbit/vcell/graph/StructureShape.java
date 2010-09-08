@@ -10,8 +10,8 @@ import java.awt.Graphics2D;
 
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.visualstate.ImmutableVisualState;
 import cbit.gui.graph.visualstate.VisualState;
+import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 /**

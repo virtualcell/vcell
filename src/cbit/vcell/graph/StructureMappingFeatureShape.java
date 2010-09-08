@@ -22,7 +22,7 @@ public class StructureMappingFeatureShape extends FeatureShape {
 	}
 
 	@Override
-	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+	public Dimension getPreferedSize(Graphics2D g) {
 		FontMetrics fm = g.getFontMetrics();
 		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
 		labelSize.width = fm.stringWidth(getLabel());

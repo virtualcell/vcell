@@ -45,7 +45,7 @@ public class FluxReactionShape extends ReactionStepShape {
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+	public Dimension getPreferedSize(Graphics2D g) {
 
 		preferredSize.width = 65;
 		preferredSize.height = 25;
