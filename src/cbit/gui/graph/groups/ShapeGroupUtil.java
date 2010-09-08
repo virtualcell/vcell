@@ -135,8 +135,8 @@ public class ShapeGroupUtil {
 			Set<EdgeShape> edgeShapes = entry.getValue();
 			EdgeBundleShape edgeBundleShape = new EdgeBundleShape(graphModel,
 					groupShape, externalShape, "", edgeShapes);
-			graphModel.addShape(edgeBundleShape);
 			groupParentShape.addChildShape(edgeBundleShape);
+			graphModel.addShape(edgeBundleShape);
 		}
 	}
 
@@ -149,18 +149,20 @@ public class ShapeGroupUtil {
 		VCNodeGroup group = new VCNodeGroup(groupName, objects);
 		GroupShape groupShape = new GroupShape(graphModel, group);
 		Point location = calculateGroupShapeAbsPos(memberShapes);
-		graphModel.addShape(groupShape);
 		Shape groupParentShape = findGroupParentShape(memberShapes);
+		if(groupParentShape == null) {
+			groupParentShape = graphModel.getTopShape();
+		}
 		groupParentShape.addChildShape(groupShape);
 		groupShape.setAbsLocation(location);
 		moveMembersToGroup(groupShape, memberShapes);
 		addEdgeBundleShapes(graphModel, groupShape, groupParentShape);
+		graphModel.addShape(groupShape);
 		return groupShape;
 	}
 
 	public static void disbandGroup(GraphModel graphModel, Shape groupShape) {
-		List<Shape> memberShapes = new ArrayList<Shape>(groupShape
-				.getChildren());
+		List<Shape> memberShapes = new ArrayList<Shape>(groupShape.getChildren());
 		Shape parentShape = groupShape.getParent();
 		if (parentShape != null) {
 			for (Shape memberShape : memberShapes) {
@@ -168,11 +170,11 @@ public class ShapeGroupUtil {
 			}
 			parentShape.removeChild(groupShape);
 		}
+		groupShape.removeAllChildren();
+		graphModel.removeShape(groupShape);
 		for (Shape edge : ShapeUtil.getEdges(graphModel, groupShape)) {
 			graphModel.removeShape(edge);
 		}
-		groupShape.removeAllChildren();
-		graphModel.removeShape(groupShape);
 	}
 
 	public static boolean canBeCollapsed(Shape shape) {
