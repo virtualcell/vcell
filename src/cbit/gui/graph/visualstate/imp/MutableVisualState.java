@@ -1,11 +1,14 @@
-package cbit.gui.graph.visualstate;
+package cbit.gui.graph.visualstate.imp;
+
+import cbit.gui.graph.visualstate.HideableVisualState;
+import cbit.gui.graph.visualstate.VisualStateUtil;
 
 /* The default visual mode
  * Is visible if it may show itself and all ancestors may show their descendents
  * August 2010
  */
 
-public class MutableVisualState implements VisualState {
+public class MutableVisualState implements HideableVisualState {
 
 	protected final Owner owner;
 	protected final PaintLayer paintType;
@@ -25,14 +28,7 @@ public class MutableVisualState implements VisualState {
 	public boolean isAllowingToShowDescendents() { return bIsAllowingToShowDescendents; }
 
 	public boolean isAllowedToShowByAllAncestors() {
-		boolean theyAllMayShow = true;
-		Object parent = owner.getParent();
-		if(parent instanceof Owner) {
-			VisualState parentVisualState = ((Owner) parent).getVisualState();
-			theyAllMayShow = parentVisualState.isAllowingToShowDescendents() && 
-			parentVisualState.isAllowedToShowByAllAncestors();
-		}
-		return theyAllMayShow;
+		return VisualStateUtil.isAllowedToShowByAllAncestors(this);
 	}
 
 	public boolean isShowingItself() {
@@ -42,4 +38,22 @@ public class MutableVisualState implements VisualState {
 	public boolean isShowingDescendents() {
 		return bIsAllowingToShowDescendents && isAllowedToShowByAllAncestors();
 	}
+
+	public void setHidden(boolean bHidden) {
+		setIsAllowingToShowItself(!bHidden);
+	}
+
+	public boolean isHidden() {
+		return !isAllowingToShowItself();
+	}
+
+	public void hide() {
+		setIsAllowingToShowItself(false);
+	}
+
+	public void show() {
+		setIsAllowingToShowItself(true);
+	}
+	
+	
 }

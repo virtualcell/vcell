@@ -1,9 +1,12 @@
-package cbit.gui.graph.visualstate;
+package cbit.gui.graph.visualstate.imp;
 
 /* Always shows itself and its children, if it can.
  * Is visible if all ancestors may show their descendents
  * August 2010
  */
+
+import cbit.gui.graph.visualstate.VisualState;
+import cbit.gui.graph.visualstate.VisualStateUtil;
 
 public class ImmutableVisualState implements VisualState {
 
@@ -21,14 +24,7 @@ public class ImmutableVisualState implements VisualState {
 	public boolean isAllowingToShowDescendents() { return true; }
 
 	public boolean isAllowedToShowByAllAncestors() {
-		boolean theyAllAllowToShow = true;
-		Object parent = owner.getParent();
-		if(parent instanceof Owner) {
-			VisualState parentVisualState = ((Owner) parent).getVisualState();
-			theyAllAllowToShow = parentVisualState.isAllowingToShowDescendents() && 
-			parentVisualState.isAllowedToShowByAllAncestors();
-		}
-		return theyAllAllowToShow;
+		return VisualStateUtil.isAllowedToShowByAllAncestors(this);
 	}
 
 	public boolean isShowingItself() {

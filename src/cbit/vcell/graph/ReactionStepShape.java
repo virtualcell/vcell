@@ -4,8 +4,8 @@ package cbit.vcell.graph;
  * All rights reserved.
 �*/
 import cbit.gui.graph.*;
-import cbit.gui.graph.visualstate.MutableVisualState;
 import cbit.gui.graph.visualstate.VisualState;
+import cbit.gui.graph.visualstate.imp.MutableVisualState;
 import cbit.vcell.model.*;
 import java.awt.*;
 import java.awt.geom.*;
@@ -58,7 +58,7 @@ public abstract class ReactionStepShape extends ElipseShape {
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+	public Dimension getPreferedSize(Graphics2D g) {
 
 		preferredSize.width = 20;
 		preferredSize.height = 16;

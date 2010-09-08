@@ -1,16 +1,17 @@
-package cbit.gui.graph.visualstate;
+package cbit.gui.graph.visualstate.imp;
 
 /* A simple edge visual state wrapping around a visual state, by default the immutable one
  * August 2010
  */
 
-public class EdgeDefaultVisualState implements EdgeVisualState {
+import cbit.gui.graph.visualstate.EdgeVisualState;
+import cbit.gui.graph.visualstate.VisualState;
 
-	// TODO add the dependency on edge endpoints
-	
+public class DefaultEdgeVisualState implements EdgeVisualState {
+
 	protected final VisualState wrappedVisualState;
 	
-	public EdgeDefaultVisualState(VisualState wrappedVisualState) {
+	public DefaultEdgeVisualState(VisualState wrappedVisualState) {
 		if(!(wrappedVisualState.getOwner() instanceof Owner)) {
 			throw new RuntimeException("Need EdgeVisualState.Owner for an EdgeVisualState, " +
 					"not just a VisualStateOwner");
@@ -18,7 +19,7 @@ public class EdgeDefaultVisualState implements EdgeVisualState {
 		this.wrappedVisualState = wrappedVisualState;
 	}
 	
-	public EdgeDefaultVisualState(Owner owner) {
+	public DefaultEdgeVisualState(Owner owner) {
 		this.wrappedVisualState = new ImmutableVisualState(owner, VisualState.PaintLayer.EDGE);
 	}
 

@@ -46,7 +46,7 @@ public class MembraneShape extends StructureShape {
 	 * @param g java.awt.Graphics
 	 */
 	@Override
-	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+	public Dimension getPreferedSize(Graphics2D g) {
 
 		java.awt.FontMetrics fm = g.getFontMetrics();
 		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();

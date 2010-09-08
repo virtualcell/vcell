@@ -1,20 +1,26 @@
 package cbit.vcell.model;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
-import java.beans.*;
-import java.util.*;
+ï¿½*/
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
+import java.io.PrintWriter;
 
 import org.vcell.util.Cacheable;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.parser.*;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.model.*;
+import cbit.vcell.units.VCUnitDefinition;
 
+@SuppressWarnings("serial")
 public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, PropertyChangeListener {
 	private KeyValue key = null;
 
@@ -49,28 +55,14 @@ public SpeciesContext(Species species, Structure structure) {
 	this(null,createContextName(species,structure),species,structure,false);
 }                  
 
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
+public synchronized void addVetoableChangeListener(VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param obj java.lang.Object
- */
 public boolean compareEqual(Matchable obj) {
 
 	if (obj instanceof SpeciesContext){
@@ -93,41 +85,19 @@ public boolean compareEqual(Matchable obj) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/31/2003 2:04:03 PM)
- * @return java.lang.String
- * @param species cbit.vcell.model.Species
- * @param structure cbit.vcell.model.Structure
- */
 private final static String createContextName(Species species, Structure structure) {
 	return org.vcell.util.TokenMangler.fixTokenStrict(species.getCommonName()+"_"+structure.getName());
 }
 
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(String propertyName, Object oldValue, Object newValue) throws java.beans.PropertyVetoException {
+public void fireVetoableChange(String propertyName, Object oldValue, Object newValue) throws PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public void fromTokens(org.vcell.util.CommentStringTokenizer tokens) throws Exception {
+public void fromTokens(CommentStringTokenizer tokens) throws Exception {
 	String token = null;
 	tokens.nextToken();  // read "{"
 	while (tokens.hasMoreTokens()){
@@ -139,69 +109,30 @@ public void fromTokens(org.vcell.util.CommentStringTokenizer tokens) throws Exce
 	}	
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return double
- */
 public double getConstantValue() throws ExpressionException {
 	throw new ExpressionException(getName()+" is not constant");
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
- * @exception java.lang.Exception The exception description.
- */
 public Expression getExpression() {
 	return null;
 }
 
-
-/**
- * Gets the hasOverride property (boolean) value.
- * @return The hasOverride property value.
- * @see #setHasOverride
- */
 public boolean getHasOverride() {
 	return fieldHasOverride;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return int
- */
 public int getIndex() {
 	return -1;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- */
 public KeyValue getKey() {
 	return key;
 }
 
-
-/**
- * Gets the name property (java.lang.String) value.
- * @return The name property value.
- * @see #setName
- */
 public String getName() {
 	return fieldName;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/31/2003 10:30:36 AM)
- * @return cbit.vcell.parser.NameScope
- */
 public NameScope getNameScope() {
 	if (model != null){
 		return model.getNameScope();
@@ -210,10 +141,6 @@ public NameScope getNameScope() {
 	}
 }
 
-
-/**
- * Accessor for the propertyChange field.
- */
 protected java.beans.PropertyChangeSupport getPropertyChange() {
 	if (propertyChange == null) {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
@@ -221,83 +148,44 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	return propertyChange;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Species
- */
 public Species getSpecies() {
 	return species;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Structure
- */
 public Structure getStructure() {
 	return structure;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/22/00 10:19:02 PM)
- * @return java.lang.String
- */
 public static String getTerm() {
 	return "SpeciesContext";
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/31/2004 3:06:22 PM)
- * @return cbit.vcell.units.VCUnitDefinition
- */
-public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+public VCUnitDefinition getUnitDefinition() {
 	if (structure instanceof Feature){
-		return cbit.vcell.units.VCUnitDefinition.UNIT_uM;
+		return VCUnitDefinition.UNIT_uM;
 	}else if (structure instanceof Membrane){
-		return cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2;
+		return VCUnitDefinition.UNIT_molecules_per_um2;
 	}else{
 		System.out.println("SpeciesContext ... don't know what units are for SpeciesContext "+fieldName);
 		return null;
 	}
 }
 
-
-/**
- * Accessor for the vetoPropertyChange field.
- */
-protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
+protected VetoableChangeSupport getVetoPropertyChange() {
 	if (vetoPropertyChange == null) {
 		vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
 	};
 	return vetoPropertyChange;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return boolean
- */
 public boolean isConstant() {
 	return false;
 }
 
-
-	/**
-	 * This method gets called when a bound property is changed.
-	 * @param evt A PropertyChangeEvent object describing the event source 
-	 *   	and the property that has changed.
-	 */
-public void propertyChange(java.beans.PropertyChangeEvent evt) {
+public void propertyChange(PropertyChangeEvent evt) {
 	if (evt.getSource() == getSpecies() && evt.getPropertyName().equals("commonName")){
 		try {
-			//
 			// if not a user supplied SpeciesContext name, then propagate "cannonical" speciesContext name
-			//
 			if (getHasOverride()==false){
 				setName0(createContextName(getSpecies(), getStructure()));
 			}
@@ -332,11 +220,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/31/2003 2:16:46 PM)
- */
 public void refreshDependencies() {
 	
 	species.removePropertyChangeListener(this);
@@ -352,51 +235,25 @@ public void refreshDependencies() {
 	structure.addPropertyChangeListener(this);
 }
 
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
 }
 
-
-/**
- * Sets the hasOverride property (boolean) value.
- * @param hasOverride The new value for the property.
- * @see #getHasOverride
- */
 public void setHasOverride(boolean hasOverride) {
 	boolean oldValue = fieldHasOverride;
 	fieldHasOverride = hasOverride;
 	firePropertyChange("hasOverride", new Boolean(oldValue), new Boolean(hasOverride));
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/22/2003 10:25:43 AM)
- * @param model cbit.vcell.model.Model
- */
 public void setModel(Model argModel) {
 	model = argModel;
 }
 
-
-/**
- * Sets the name property (java.lang.String) value.
- * @param name The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getName
- */
-public void setName(String name) throws java.beans.PropertyVetoException {
+public void setName(String name) throws PropertyVetoException {
 	if (getHasOverride()==false){
 		throw new PropertyVetoException("cannot override SpeciesContext.name, hasOverride is false",new PropertyChangeEvent(this,"name",getName(),name));
 	}
@@ -404,12 +261,6 @@ public void setName(String name) throws java.beans.PropertyVetoException {
 }
 
 
-/**
- * Sets the name property (java.lang.String) value.
- * @param name The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getName
- */
 private void setName0(String name) throws java.beans.PropertyVetoException {
 	String oldValue = fieldName;
 	fireVetoableChange("name", oldValue, name);
@@ -417,11 +268,6 @@ private void setName0(String name) throws java.beans.PropertyVetoException {
 	firePropertyChange("name", oldValue, name);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param species cbit.vcell.model.Species
- */
 private void setSpecies(Species newSpecies){
 	Species oldValue = this.species;
 	if (oldValue != null){
@@ -433,11 +279,6 @@ private void setSpecies(Species newSpecies){
 	}
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param structure cbit.vcell.model.Structure
- */
 private void setStructure(Structure structure) {
 	
 	if(this.structure != null){
@@ -449,11 +290,6 @@ private void setStructure(Structure structure) {
 	}
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
 public String toString() {
 	StringBuffer sb = new StringBuffer();
 	
@@ -465,11 +301,6 @@ public String toString() {
 	return sb.toString();
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param e java.beans.PropertyChangeEvent
- */
 public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 	if (e.getSource()==this){
 		if (e.getPropertyName().equals("diffusionRate")){
@@ -503,13 +334,7 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 			
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param ps java.io.PrintStream
- * @exception java.lang.Exception The exception description.
- */
-public void writeTokens(java.io.PrintWriter pw) {
+public void writeTokens(PrintWriter pw) {
 	pw.println("\t"+VCMODL.Context+" "+getName()+" "+getSpecies().getCommonName()+" "+VCMODL.BeginBlock+" ");
 	
 	pw.println("\t"+VCMODL.EndBlock+" ");
