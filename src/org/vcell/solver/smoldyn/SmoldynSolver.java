@@ -85,14 +85,14 @@ protected ApplicationMessage getApplicationMessage(String message) {
 protected void initialize() throws SolverException 
 {
 	SessionLog sessionLog = getSessionLog();
-	sessionLog.print("StochSolver.initialize()");
+	sessionLog.print("SmoldynSolver.initialize()");
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	writeFunctionsFile();
 	writeMeshFile();
 
 	String inputFilename = getBaseName() + SMOLDYN_INPUT_FILE_EXTENSION;
 	File outputFile = new File(getBaseName() + SMOLDYN_OUTPUT_FILE_EXTENSION);
-	sessionLog.print("StochSolver.initialize() baseName = " + getBaseName());
+	sessionLog.print("SmoldynSolver.initialize() baseName = " + getBaseName());
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);

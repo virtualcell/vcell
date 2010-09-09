@@ -70,7 +70,7 @@ public class BioModelTreePanel extends JPanel {
 	private JMenuItem ivjJMenuItemEdit = null;
 	private JPopupMenu ivjSimPopupMenu = null;
 	private JMenuItem ivjJMenuItemCopy = null;
-	private JMenu ivjJMenuCopy = null;
+	private JMenu ivjJMenuCopyAs = null;
 	private JMenuItem copyStochApp = null;
 	private JMenuItem copyNonStochApp = null;
 	private JMenuItem ivjBioModelMenuItem = null;
@@ -88,7 +88,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 				connEtoC5(e);
 			if (e.getSource() == BioModelTreePanel.this.getJMenuItemRename()) 
 				connEtoC6(e);
-			if (e.getSource() == BioModelTreePanel.this.getJMenuCopy()) 
+			if (e.getSource() == BioModelTreePanel.this.getJMenuCopyAs()) 
 				connEtoC11(e);
 			if (e.getSource() == BioModelTreePanel.this.getJMenuItemCopy()) 
 				connEtoC11(e);
@@ -744,7 +744,7 @@ private javax.swing.JPopupMenu getAppPopupMenu() {
 			ivjAppPopupMenu.add(getJMenuItemAnnotation());
 			ivjAppPopupMenu.add(this.getJMenuItemCopy());
 			ivjAppPopupMenu.add(getJSeparator2());
-			ivjAppPopupMenu.add(getJMenuCopy());
+			ivjAppPopupMenu.add(getJMenuCopyAs());
 			ivjAppPopupMenu.add(getJMenuNew());
 			// user code begin {1}
 			// user code end
@@ -953,12 +953,12 @@ private javax.swing.JMenuItem getJMenuItemCopy() {
  * @return javax.swing.JMenuItem
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenu getJMenuCopy() {
-	if (ivjJMenuCopy == null) {
+private javax.swing.JMenu getJMenuCopyAs() {
+	if (ivjJMenuCopyAs == null) {
 		try {
-			ivjJMenuCopy = new javax.swing.JMenu();
-			ivjJMenuCopy.setName("JMenuCopy");
-			ivjJMenuCopy.setText("Copy As");
+			ivjJMenuCopyAs = new javax.swing.JMenu();
+			ivjJMenuCopyAs.setName("JMenuCopy");
+			ivjJMenuCopyAs.setText("Copy As");
 			//Menu items in Menu-Copy
 			copyStochApp=new JMenuItem();
 			copyStochApp.setName("JMenuItemToStochApp");
@@ -969,15 +969,15 @@ private javax.swing.JMenu getJMenuCopy() {
 			copyNonStochApp.setText("Deterministic Application");
 			copyNonStochApp.setActionCommand(GuiConstants.ACTIONCMD_COPY_TO_NON_STOCHASTIC_APPLICATION);
 			//add menu items to menu
-			ivjJMenuCopy.add(copyStochApp);
-			ivjJMenuCopy.add(copyNonStochApp);
+			ivjJMenuCopyAs.add(copyNonStochApp);
+			ivjJMenuCopyAs.add(copyStochApp);
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
 			handleException(ivjExc);
 		}
 	}
-	return ivjJMenuCopy;
+	return ivjJMenuCopyAs;
 }
 
 
@@ -1362,7 +1362,7 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemDelete().addActionListener(ivjEventHandler);
 	getJMenuNew().addActionListener(ivjEventHandler);
 	getJMenuItemRename().addActionListener(ivjEventHandler);
-	getJMenuCopy().addActionListener(ivjEventHandler);
+	getJMenuCopyAs().addActionListener(ivjEventHandler);
 	getJMenuItemCopy().addActionListener(ivjEventHandler);
 	getJTree2().addPropertyChangeListener(ivjEventHandler);
 	getJTree2().addMouseListener(ivjEventHandler);

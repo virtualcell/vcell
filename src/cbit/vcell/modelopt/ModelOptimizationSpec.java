@@ -387,7 +387,7 @@ private Parameter[] getModelParameters() {
 
 public void removeUncoupledParameters() {
 	try {
-		MathMapping mathMapping = new MathMapping(getSimulationContext());
+		MathMapping mathMapping = getSimulationContext().createNewMathMapping();
 		MathDescription mathDesc = mathMapping.getMathDescription();
 		MathSystemHash mathSystemHash = MathSystemTest.fromMath(mathDesc);
 		Graph graph = mathSystemHash.getDependencyGraph(mathSystemHash.getSymbols());

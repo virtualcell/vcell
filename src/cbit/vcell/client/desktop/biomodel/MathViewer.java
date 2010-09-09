@@ -393,7 +393,7 @@ private void setsimContext1(cbit.vcell.mapping.SimulationContext newValue) {
 public void updateMath() {
 	try {
 		SimulationContext simContext = getSimContext();
-		MathMapping mathMapping = new MathMapping(simContext);
+		MathMapping mathMapping = simContext.createNewMathMapping();
 		cbit.vcell.math.MathDescription mathDesc = mathMapping.getMathDescription();
 		simContext.setMathDescription(mathDesc);
 		//

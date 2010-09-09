@@ -4638,6 +4638,12 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 			spatial = Boolean.valueOf(spatialStr);
 		}
 		
+		String bWellMixedStr = scsElement.getAttributeValue(XMLTags.WellMixedAttrTag);
+		Boolean bWellMixed = null;
+		if (bWellMixedStr!=null){
+			bWellMixed = Boolean.valueOf(bWellMixedStr);
+		}
+		
 		//Retrieve reference
 		SpeciesContext specref = model.getSpeciesContext(speccontname);
 		if (specref == null) {
@@ -4655,7 +4661,10 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 //		throw new XmlParseException("error setting the 'enableDiffusing' property of a SpeciesContext: "+e.getMessage());
 //	}
 		if (spatial!=null){
-			specspec.setSpatial( spatial );
+			specspec.setWellMixed(!spatial);
+		}
+		if (bWellMixed!=null){
+			specspec.setWellMixed(bWellMixed);
 		}
 		//set expressions
 		//Initial

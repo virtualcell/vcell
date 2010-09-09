@@ -38,11 +38,11 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 	public final Field velocityXExp	= new Field("velocityXExp",	"varchar(1024)",	"");
 	public final Field velocityYExp	= new Field("velocityYExp",	"varchar(1024)",	"");
 	public final Field velocityZExp	= new Field("velocityZExp",	"varchar(1024)",	"");
-	public final Field bSpatial		= new Field("bSpatial",	"integer",	"");
+	public final Field bWellMixed		= new Field("bWellMixed",	"integer",	"");
 	
 	private final Field fields[] = {specContextRef,simContextRef,bEnableDif,bForceConst,bForceIndep,initCondExp,diffRateExp,
 											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp,initCondCountExp,
-											velocityXExp, velocityYExp, velocityZExp, bSpatial};
+											velocityXExp, velocityYExp, velocityZExp, bWellMixed};
 	
 	public static final SpeciesContextSpecTable table = new SpeciesContextSpecTable();
 /**
@@ -138,10 +138,10 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 	}else{
 		buffer.append("'" + TokenMangler.getSQLEscapedString(speciesContextSpec.getVelocityZParameter().getExpression().infix()) + "'" + ",");
 	}
-	if (speciesContextSpec.isSpatial() == null){
+	if (speciesContextSpec.isWellMixed() == null){
 		buffer.append(" NULL " + ")");
 	}else{
-		buffer.append((speciesContextSpec.isSpatial() ? 1 : 0) + ")");
+		buffer.append((speciesContextSpec.isWellMixed() ? 1 : 0) + ")");
 	}
 
 	return buffer.toString();

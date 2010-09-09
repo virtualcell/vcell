@@ -74,6 +74,7 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.ParticleMathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StochMathMapping;
 import cbit.vcell.math.AnnotatedFunction;
@@ -311,12 +312,7 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 											gsd.updateAll();
 										}
 									}
-									MathMapping mathMapping = null;
-									if (simContexts[j].isStoch()) {
-										mathMapping = new StochMathMapping(simContexts[j]);
-									} else {
-										mathMapping = new MathMapping(simContexts[j]);
-									}
+									MathMapping mathMapping = simContexts[j].createNewMathMapping();
 									simContexts[j].setMathDescription(mathMapping.getMathDescription());
 								}
 								Simulation[] sims = bioModel.getSimulations();

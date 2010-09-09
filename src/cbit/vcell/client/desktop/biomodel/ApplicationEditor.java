@@ -30,14 +30,11 @@ import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StochMathMapping;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
-import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.gui.MathDescEditor;
 import cbit.vcell.math.gui.MathDescPanel;
@@ -47,7 +44,6 @@ import cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel;
 import cbit.vcell.modelopt.gui.OptTestPanel;
 import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.mapping.gui.DataSymbolsPanel;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:16:22 PM)
@@ -2028,18 +2024,8 @@ private AsynchClientTask[] updateMath() {
 			// Use differnt mathmapping for different applications (stoch or non-stoch)
 			simContext.checkValidity();
 			
-			MathMapping mathMapping = null;
-			MathDescription mathDesc = null;
-			if (!simContext.isStoch())
-			{
-				mathMapping = new MathMapping(simContext);
-				mathDesc = ((MathMapping)mathMapping).getMathDescription();
-			}
-			else
-			{
-				mathMapping = new StochMathMapping(simContext);
-				mathDesc = ((StochMathMapping)mathMapping).getMathDescription();
-			}
+			MathMapping mathMapping = simContext.createNewMathMapping();
+			MathDescription mathDesc = mathMapping.getMathDescription();
 			hashTable.put("mathMapping", mathMapping);
 			hashTable.put("mathDesc", mathDesc);
 		}			

@@ -44,16 +44,21 @@ import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
@@ -91,7 +96,7 @@ public class SimulationJobToSmoldyn {
 	}
 	
 	
-	private void convert() throws SmoldynException {
+	private void convert() throws SmoldynException, ExpressionException, MathException {
 		this.setSmoldynGeometry();
 		this.setSpecies();
 		this.setSpeciesStates();
@@ -106,7 +111,7 @@ public class SimulationJobToSmoldyn {
 		return this.smoldynsimulation;
 	}
 	
-	public static Simulation convertSimulationJob(SimulationJob vcellSimJob, File outputFile) throws SmoldynException {
+	public static Simulation convertSimulationJob(SimulationJob vcellSimJob, File outputFile) throws SmoldynException, ExpressionException, MathException {
 		SimulationJobToSmoldyn s = new SimulationJobToSmoldyn(vcellSimJob, outputFile);
 		s.convert();
 		return s.getSimulation();
@@ -224,7 +229,10 @@ public class SimulationJobToSmoldyn {
 	private void setSpecies() throws SmoldynException {
 		Enumeration<Variable> variables = mathd.getVariables();
 		while(variables.hasMoreElements()) {
-			smoldynmodel.addSpecies(variables.nextElement().getName());
+			Variable variable = variables.nextElement();
+			if (variable instanceof ParticleVariable) {
+				smoldynmodel.addSpecies(variable.getName());
+			}
 		}
 	}
 	
@@ -235,9 +243,11 @@ public class SimulationJobToSmoldyn {
 	
 	/**
 	 * @throws SmoldynException 
+	 * @throws MathException 
+	 * @throws ExpressionException 
 	 * 
 	 */
-	private void setParticlesInitialConditions() throws SmoldynException {
+	private void setParticlesInitialConditions() throws SmoldynException, ExpressionException, MathException {
 		Enumeration<SubDomain> subdomains = mathd.getSubDomains();
 		while(subdomains.hasMoreElements()) {
 			SubDomain subdomain = subdomains.nextElement();
@@ -254,12 +264,18 @@ public class SimulationJobToSmoldyn {
 	 * @param props
 	 * @param subdomainname
 	 * @throws SmoldynException 
+	 * @throws MathException 
+	 * @throws ExpressionException 
 	 */
-	private void setInitialConditionsDiffusion(List<ParticleProperties> props, String subdomainname) throws SmoldynException {
+	private void setInitialConditionsDiffusion(List<ParticleProperties> props, String subdomainname) throws SmoldynException, ExpressionException, MathException {
+		SimulationSymbolTable sst = vcellSimJob.getSimulationSymbolTable();
 		for(ParticleProperties partprops : props) {
 			try {
 				Species species = this.smoldynmodel.getSpecies(partprops.getVariable().getName());
-				species.setSolutiondiffusion(Double.valueOf(partprops.getDiffusion().infix()));
+				Expression diffusion = new Expression(partprops.getDiffusion());
+				diffusion.bindExpression(sst);
+				diffusion = sst.substituteFunctions(diffusion).flatten();
+				species.setSolutiondiffusion(Double.valueOf(diffusion.infix()));
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}
@@ -273,11 +289,17 @@ public class SimulationJobToSmoldyn {
 	 * @param subdomainname
 	 * @param variablename
 	 * @throws SmoldynException 
+	 * @throws MathException 
+	 * @throws ExpressionException 
 	 */
-	private void setInitialLocations(ArrayList<ParticleInitialCondition> init, String subdomainname, String variablename) throws SmoldynException {
+	private void setInitialLocations(ArrayList<ParticleInitialCondition> init, String subdomainname, String variablename) throws SmoldynException, ExpressionException, MathException {
 		PointFactory pf = this.smoldynmodel.getPointFactory();
+		SimulationSymbolTable sst = vcellSimJob.getSimulationSymbolTable();
 		for(ParticleInitialCondition partinit : init) {
-			double whatever = Double.valueOf(partinit.getCount().infix());
+			Expression initCountExpr = new Expression(partinit.getCount());
+			initCountExpr.bindExpression(sst);
+			initCountExpr = sst.substituteFunctions(initCountExpr).flatten();
+			double whatever = Double.valueOf(initCountExpr.infix());
 			this.smoldynmodel.addVolumeMolecule(subdomainname, variablename, pf.getNewPoint(getDouble(partinit.getLocationX()), 
 				getDouble(partinit.getLocationY()), getDouble(partinit.getLocationZ())), (int) whatever);
 		}

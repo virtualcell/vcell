@@ -1,7 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.AWTEventMulticaster;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -16,7 +15,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
@@ -33,27 +31,21 @@ import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
-import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.DataSymbolsPanel;
 import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
-import cbit.vcell.mapping.gui.NewDataSymbolPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.gui.ModelParameterPanel;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.FunctionInvocation;
-import cbit.vcell.units.VCUnitDefinition;
 
 public class SPPRPanel extends JPanel {
 
@@ -196,7 +188,6 @@ public class SPPRPanel extends JPanel {
 		if (fieldSimulationContext!=null){
 			fieldSimulationContext.addPropertyChangeListener(ivjEventHandler); // listen to the new simlation context.
 			getGeometrySummaryViewer().setGeometry(fieldSimulationContext.getGeometry());
-			getGeometrySummaryViewer().setStochastic(fieldSimulationContext.isStoch());
 		}else{
 			getGeometrySummaryViewer().setGeometry(null);
 		}

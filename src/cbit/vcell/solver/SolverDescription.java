@@ -664,6 +664,7 @@ public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescr
 		case TYPE_HYBRID_EM:
 		case TYPE_HYBRID_MIL:
 		case TYPE_HYBRID_MIL_Adaptive:
+		case TYPE_SMOLDYN:
 		case TYPE_SUNDIALS_PDE:	{
 			return new UniformOutputTimeSpec(0.1);
 		}

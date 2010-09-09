@@ -8,17 +8,14 @@ import java.util.Vector;
 import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.math.MathFunctionDefinitions;
-import cbit.vcell.math.VCML;
+import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
-import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
@@ -41,6 +38,9 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable {
+
+	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
+
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
@@ -276,10 +276,10 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 	private SpeciesContext speciesContext = null;
 	private static final boolean DEFAULT_CONSTANT = false;
 //	private static final boolean DEFAULT_ENABLE_DIFFUSING = true;
-	private static final Boolean DEFAULT_SPATIAL = true;
+	private static final Boolean DEFAULT_WELL_MIXED = false;
 	private boolean        bConstant = DEFAULT_CONSTANT;
 //	private boolean        bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
-	private Boolean        bSpatial = DEFAULT_SPATIAL;
+	private Boolean        bWellMixed = DEFAULT_WELL_MIXED;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private SpeciesContextSpecParameter[] fieldParameters = null;
 	private SpeciesContextSpecProxyParameter[] fieldProxyParameters = new SpeciesContextSpecProxyParameter[0];
@@ -361,7 +361,7 @@ public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationConte
 	this.speciesContext = speciesContextSpec.speciesContext;
 	this.bConstant = speciesContextSpec.bConstant;
 //	this.bEnableDiffusing = speciesContextSpec.bEnableDiffusing;
-	this.bSpatial = speciesContextSpec.bSpatial;
+	this.bWellMixed = speciesContextSpec.bWellMixed;
 	fieldParameters = new SpeciesContextSpecParameter[speciesContextSpec.fieldParameters.length];
 	for (int i = 0; i < speciesContextSpec.fieldParameters.length; i++){
 		SpeciesContextSpecParameter otherParm = speciesContextSpec.fieldParameters[i];
@@ -517,11 +517,11 @@ public boolean compareEqual(Matchable object) {
 //		return false;
 //	}
 
-	if (bSpatial!=null && scs.bSpatial!=null){
-		if (!bSpatial.equals(scs.bSpatial)){
+	if (bWellMixed!=null && scs.bWellMixed!=null){
+		if (!bWellMixed.equals(scs.bWellMixed)){
 			return false;
 		}
-	}else if (bSpatial!=null || scs.bSpatial!=null){
+	}else if (bWellMixed!=null || scs.bWellMixed!=null){
 		return false; // one is specified and one isn't ... 
 	}
 
@@ -978,7 +978,7 @@ public boolean isDiffusing() {
 		return false;
 	}
 	
-	if (bSpatial==false){
+	if (bWellMixed){
 		return false;
 	}
 	
@@ -995,7 +995,7 @@ public boolean isDiffusing() {
 }
 
 public boolean isAdvecting() {
-	if (bSpatial==false || bConstant==true){
+	if (bWellMixed || bConstant==true){
 		return false;
 	}
 	// If all 3 velocity (x,y,z) parameters are null, there is no advection; return <FALSE>, else return <TRUE>
@@ -1016,8 +1016,8 @@ public boolean isAdvecting() {
 //	return bEnableDiffusing;
 //}
 
-public final Boolean isSpatial(){
-	return bSpatial;
+public final Boolean isWellMixed(){
+	return bWellMixed;
 }
 
 /**
@@ -1141,7 +1141,7 @@ private void resetDefaults() {
 //	}else{
 //		bEnableDiffusing = false;
 //	}
-	bSpatial = DEFAULT_SPATIAL;
+	bWellMixed = DEFAULT_WELL_MIXED;
 }
 
 
@@ -1169,12 +1169,10 @@ public void setConstant(boolean isConstant) {
 //}
 
 
-public void setSpatial(boolean isSpatial) {
-	Boolean oldSpatial = this.bSpatial;
-
-	this.bSpatial = isSpatial;
-
-	firePropertyChange("spatial",oldSpatial, bSpatial);
+public void setWellMixed(boolean bWellMixed) {
+	Boolean oldValue = this.bWellMixed;
+	this.bWellMixed = bWellMixed;
+	firePropertyChange(PROPERTY_NAME_WELL_MIXED,oldValue, bWellMixed);
 }
 
 
@@ -1245,18 +1243,47 @@ public String toString() {
 	return sb.toString();
 }
 
-public Expression convertConcentrationToParticles(Expression iniConcentration) throws ExpressionException
+private double computeStructureSize() throws ExpressionException, MappingException {
+	Structure structure = getSpeciesContext().getStructure();
+	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structure);
+	double structSize = 0;
+	if (getSimulationContext().getGeometry().getDimension() == 0) {
+		Expression sizeParameterExpression = sm.getSizeParameter().getExpression();
+		if (sizeParameterExpression == null || sizeParameterExpression.isZero()) {
+			throw new RuntimeException("\nIn application '" + getSimulationContext().getName() + "', " +
+				"size of structure '" + structure.getName() + "' is required to convert " +
+				"concentration to number of particles.\n\nPlease go to 'Structure Mapping' tab to check the size.");
+		}
+		structSize = sizeParameterExpression.evaluateConstant();
+	} else {
+		StructureMapping structureMapping = getSimulationContext().getGeometryContext().getStructureMapping(structure);
+		GeometryClass gc = structureMapping.getGeometryClass();
+		if (gc == null) {
+			throw new MappingException("model structure '" + structure.getName()+ "' not mapped to a geometry subdomain");
+		}
+		
+		try {
+			GeometricRegion[] geometricRegions = getSimulationContext().getGeometry().getGeometrySurfaceDescription().getGeometricRegions(gc);
+			if (geometricRegions == null) {
+				throw new MappingException("Geometry is not updated.");
+			}
+			
+			for (GeometricRegion gr : geometricRegions) {
+				structSize += gr.getSize();
+			}
+		} catch (Exception ex) {
+			
+		}
+	}
+	return structSize;
+}
+
+public Expression convertConcentrationToParticles(Expression iniConcentration) throws ExpressionException, MappingException
 {
 	Expression iniParticlesExpr = null; 
 	Structure structure = getSpeciesContext().getStructure();
-	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structure);
-	Expression sizeParameterExpression = sm.getSizeParameter().getExpression();
-	if (sizeParameterExpression == null || sizeParameterExpression.isZero()) {
-		throw new RuntimeException("\nIn application '" + getSimulationContext().getName() + "', " +
-			"size of structure '" + structure.getName() + "' is required to convert " +
-			"concentration to number of particles.\n\nPlease go to 'Structure Mapping' tab to check the size.");
-	}
-	double structSize = sizeParameterExpression.evaluateConstant();
+	double structSize = computeStructureSize();
+	
 	if (structure instanceof Membrane) {
 		// convert concentration(particles/area) to number of particles
 		// particles = iniConcentration(molecules/um2)*size(um2)
@@ -1280,18 +1307,12 @@ public Expression convertConcentrationToParticles(Expression iniConcentration) t
 	return iniParticlesExpr;
 }
 
-public Expression convertParticlesToConcentration(Expression iniParticles) throws ExpressionException
+public Expression convertParticlesToConcentration(Expression iniParticles) throws ExpressionException, MappingException
 {
 	Expression iniConcentrationExpr = null;
 	Structure structure = getSpeciesContext().getStructure();
-	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structure);
-	Expression sizeParameterExpression = sm.getSizeParameter().getExpression();
-	if (sizeParameterExpression == null || sizeParameterExpression.isZero()) {
-		throw new RuntimeException("\nIn application '" + getSimulationContext().getName() + "', " +
-				"size of structure '" + structure.getName() + "' is required to convert " +
-				"number of particles to concentration.\n\nPlease go to 'Structure Mapping' tab to check the size.");
-	}
-	double structSize = sizeParameterExpression.evaluateConstant();
+	double structSize = computeStructureSize();
+	
 	if (structure instanceof Membrane) {
 		// convert number of particles to concentration(particles/area)
 		// iniConcentration(molecules/um2) = particles/size(um2)

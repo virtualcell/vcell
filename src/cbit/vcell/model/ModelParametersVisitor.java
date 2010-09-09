@@ -95,7 +95,7 @@ public class ModelParametersVisitor implements VCDatabaseVisitor {
 					// since altBiomodel is a copy of newBiomodel, assuming that simContext indices are the same is ok??
 					// Generate math description for SimContext.
 					// SimulationContext altSimContext = altBiomodel.getSimulationContexts(k);
-					MathDescription altMathDesc = (new MathMapping(simContexts[k])).getMathDescription();
+					MathDescription altMathDesc = simContexts[k].createNewMathMapping().getMathDescription();
 					// altSimContext.setMathDescription(altMathDesc);
 					
 					int dim = simContexts[k].getGeometry().getDimension();

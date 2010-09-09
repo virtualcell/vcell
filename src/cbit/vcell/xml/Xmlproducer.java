@@ -1412,8 +1412,8 @@ private Element getXML(SpeciesContextSpec param) {
 	speciesContextSpecElement.setAttribute(XMLTags.SpeciesContextRefAttrTag, mangle(param.getSpeciesContext().getName()));
 	speciesContextSpecElement.setAttribute(XMLTags.ForceConstantAttrTag, String.valueOf(param.isConstant()));
 	//speciesContextSpecElement.setAttribute(XMLTags.EnableDiffusionAttrTag, String.valueOf(param.isEnableDiffusing()));
-	if (param.isSpatial()!=null){
-		speciesContextSpecElement.setAttribute(XMLTags.SpatialAttrTag, String.valueOf(param.isSpatial()));
+	if (param.isWellMixed()!=null){
+		speciesContextSpecElement.setAttribute(XMLTags.WellMixedAttrTag, String.valueOf(param.isWellMixed()));
 	}
 
 	//Add initial

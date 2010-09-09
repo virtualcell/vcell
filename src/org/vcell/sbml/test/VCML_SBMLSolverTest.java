@@ -10,11 +10,14 @@ import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.copasi.CopasiSBMLSolver;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.util.document.SimulationVersion;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
@@ -109,10 +112,10 @@ public class VCML_SBMLSolverTest {
 		//
 	    // select only Application, generate math, and create a single Simulation.
 		//
-	    cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
-	    cbit.vcell.math.MathDescription mathDesc = mathMapping.getMathDescription();
+	    MathMapping mathMapping = simContext.createNewMathMapping();
+	    MathDescription mathDesc = mathMapping.getMathDescription();
 	    simContext.setMathDescription(mathDesc);
-	    org.vcell.util.document.SimulationVersion simVersion =
+	    SimulationVersion simVersion =
 	        new org.vcell.util.document.SimulationVersion(
 	            new org.vcell.util.document.KeyValue("100"),
 	            "simulation1",

@@ -215,7 +215,7 @@ public SurfaceClass[] getSurfaceClasses() {
 public GeometricRegion[] getGeometricRegions(GeometryClass geometryClass){
 	ArrayList<GeometricRegion> regions = new ArrayList<GeometricRegion>();
 	if (this.fieldGeometricRegions==null || this.fieldGeometricRegions.length==0){
-		throw new RuntimeException("geometric regions have not been computed");
+		return null;
 	}
 	for (int j = 0; j < fieldGeometricRegions.length; j++) {
 		if (getGeometryClass(fieldGeometricRegions[j]).equals(geometryClass)){
@@ -298,9 +298,13 @@ private void refreshSurfaceClasses() {
 			}
 		}
 	}
-	if(bChanged){
+	if(bChanged || fieldSurfaceClasses == null || fieldSurfaceClasses.length != surfaceClasses.size()){
 		try{
-			setSurfaceClasses(surfaceClasses.toArray(new SurfaceClass[surfaceClasses.size()]));
+			if (surfaceClasses.size() == 0) {
+				setSurfaceClasses(null);
+			} else {
+				setSurfaceClasses(surfaceClasses.toArray(new SurfaceClass[surfaceClasses.size()]));
+			}
 		}catch(PropertyVetoException e){
 			e.printStackTrace();
 			throw new RuntimeException("SurfaceClass refresh error: "+e.getMessage(), e);
@@ -481,7 +485,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		// if instances are different but content is same, then just replace instances
 		// otherwise, invalidate surfaces and regions.
 		//
-		if (oldValue==null || newValue==null || !org.vcell.util.Compare.isEqualStrict(oldValue,newValue)){
+		if (oldValue==null || newValue==null || !Compare.isEqualStrict(oldValue,newValue)){
 			try {
 				fieldRegionImage = null;
 				setSurfaceCollection(null);

@@ -78,7 +78,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
 			SimulationContext chosenSimContext = bioModel.getSimulationContexts(chosenSimContextIndex.intValue());
 			// regenerate a fresh MathDescription
-			MathMapping mathMapping = new MathMapping(chosenSimContext);
+			MathMapping mathMapping = chosenSimContext.createNewMathMapping();
 			MathDescription mathDesc = mathMapping.getMathDescription();
 			// do export
 			resultString = exportMatlab(exportFile, fileFilter, mathDesc);

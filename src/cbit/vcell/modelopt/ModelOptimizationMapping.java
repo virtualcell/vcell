@@ -124,7 +124,7 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	// get original MathDescription (later to be substituted for local/global parameters).
 	//
 	SimulationContext simContext = modelOptimizationSpec.getSimulationContext();
-	MathMapping mathMapping = new MathMapping(simContext);
+	MathMapping mathMapping = simContext.createNewMathMapping();
 	MathDescription origMathDesc = null;
 	mathSymbolMapping = null;
 	try {

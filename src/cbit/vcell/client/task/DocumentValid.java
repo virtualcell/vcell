@@ -7,6 +7,7 @@ import org.vcell.util.Issue;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.ParticleMathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StochMathMapping;
 import cbit.vcell.math.MathDescription;
@@ -50,12 +51,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				//
 				// create new MathDescription
 				//
-				MathDescription math = null;
-				if(!scArray[i].isStoch())
-					math = (new MathMapping(scArray[i])).getMathDescription();
-				else
-					math = (new StochMathMapping(scArray[i])).getMathDescription();
-	
+				MathDescription math = scArray[i].createNewMathMapping().getMathDescription();
 				//
 				// load MathDescription into SimulationContext 
 				// (BioModel is responsible for propagating this to all applicable Simulations).

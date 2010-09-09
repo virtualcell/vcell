@@ -1887,7 +1887,7 @@ public boolean isSpatialStoch() {
 	Enumeration<Variable> enum1 = getVariables();
 	while (enum1.hasMoreElements()) {
 		Variable var = enum1.nextElement();
-		if (var instanceof VolumeParticleVariable) {
+		if (var instanceof ParticleVariable) {
 			return true;
 		}
 		if (!(var instanceof Constant || var instanceof Function)) {

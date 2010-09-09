@@ -117,7 +117,7 @@ public static void main(String[] args) {
 				}
 				// Generate math for lone simContext
 				SimulationContext simContext = (SimulationContext)bioModel.getSimulationContexts(0);  
-				MathDescription mathDesc = (new MathMapping(simContext)).getMathDescription();
+				MathDescription mathDesc = simContext.createNewMathMapping().getMathDescription();
 				simContext.setMathDescription(mathDesc);
 
 				// Create basic simulation, with IDA solver (set in solve method) and other defaults, and end time 'Te'

@@ -407,7 +407,6 @@ private void initializeInternalFrames() {
 	// Initialize Geometry Viewer internal frame
 	geoViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
 	
-	geoViewer.setStochastic(getMathModel().getMathDescription().isNonSpatialStoch());
 	geometryViewerEditorFrame = createDefaultFrame(geoViewer);
 	geometryViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
 		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
@@ -676,20 +675,6 @@ private void showGeometryViewer(boolean bGeoButtonSelected) {
 		// If toggleButton is selected, check if it is open. If not, open it, add it to desktopPane
 		// If it is iconized, 'de-iconify' it.
 		setDefaultTitle(geometryViewerEditorFrame);
-		if(geoViewer != null)
-		{
-			geoViewer.setStochastic(getMathModel().getMathDescription().isNonSpatialStoch());
-//			if(getMathModel().getMathDescription().isStoch())
-//			{
-//				geoViewer.setChangeGeometryEnabled(false);
-//				geoViewer.setEditGeometryEnabled(false);
-//			}
-//			else
-//			{
-//				geoViewer.setChangeGeometryEnabled(true);
-//				geoViewer.setEditGeometryEnabled(true);
-//			}
-		}
 		showFrame(geometryViewerEditorFrame);
 	} else {
 		// If toggleButton is unselected, check if vcmlEditor is iconized. If not closed, dispose it.

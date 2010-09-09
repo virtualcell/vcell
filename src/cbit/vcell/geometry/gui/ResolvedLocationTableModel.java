@@ -1,5 +1,6 @@
 package cbit.vcell.geometry.gui;
 
+import cbit.gui.ScopedExpression;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 
@@ -44,7 +45,7 @@ public Class<?> getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_INSIDE:{
-			return cbit.gui.ScopedExpression.class;
+			return String.class;
 		}
 		case COLUMN_OUTSIDE:{
 			return String.class;

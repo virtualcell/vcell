@@ -34,6 +34,7 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.xml.merge.NodeInfo;
@@ -205,10 +206,10 @@ private static SimulationContext applyOverrides(BioModel bm, SimulationContext s
 				// 
 				overriddenSimContext.getModel().refreshDependencies();
 				overriddenSimContext.refreshDependencies();			
-				MathMapping mathMapping = new MathMapping(overriddenSimContext);
+				MathMapping mathMapping = overriddenSimContext.createNewMathMapping();
 				MathSymbolMapping msm = mathMapping.getMathSymbolMapping();
 
-				cbit.vcell.solver.MathOverrides mathOverrides = sim.getMathOverrides();
+				MathOverrides mathOverrides = sim.getMathOverrides();
 				String[] moConstNames = mathOverrides.getOverridenConstantNames();
 				for (int i = 0; i < moConstNames.length; i++){
 					cbit.vcell.math.Constant overriddenConstant = mathOverrides.getConstant(moConstNames[i]);

@@ -169,7 +169,7 @@ public Object getValueAt(int row, int col) {
 				return new Boolean(scSpec.isConstant());
 			}
 			case COLUMN_WELLMIXED:{
-				return (scSpec.isConstant() || !scSpec.isSpatial());
+				return (scSpec.isConstant() || scSpec.isWellMixed()) && !getSimulationContext().isStoch();
 			}
 			case COLUMN_INITIAL:{
 				SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
@@ -182,7 +182,7 @@ public Object getValueAt(int row, int col) {
 			}
 			case COLUMN_DIFFUSION:{
 				SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
-				if(diffusionParameter != null && !scSpec.isConstant() && scSpec.isSpatial()!=null && scSpec.isSpatial()) 	{
+				if(diffusionParameter != null && !scSpec.isConstant() && scSpec.isWellMixed()!=null && !scSpec.isWellMixed()) 	{
 					return new ScopedExpression(diffusionParameter.getExpression(),diffusionParameter.getNameScope(), true, autoCompleteSymbolFilter);
 				} else {
 					return null;
@@ -227,17 +227,13 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return true;
 		}
 		case COLUMN_WELLMIXED:{
-			return !speciesContextSpec.isConstant();
+			return !speciesContextSpec.isConstant() && !getSimulationContext().isStoch();
 		}
 		case COLUMN_INITIAL:{
 			return true;
 		}
 		case COLUMN_DIFFUSION: {
-			if (speciesContextSpec.isSpatial() && !speciesContextSpec.isConstant()){
-				return true;
-			}else{
-				return false;
-			}
+			return !speciesContextSpec.isConstant() && (!speciesContextSpec.isWellMixed() || getSimulationContext().isStoch());
 		}
 		default:{
 			return false;
@@ -323,7 +319,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		}
 		case COLUMN_WELLMIXED:{
 			boolean bWellMixed = ((Boolean)aValue).booleanValue();
-			scSpec.setSpatial(!bWellMixed);
+			scSpec.setWellMixed(bWellMixed);
 			fireTableRowsUpdated(rowIndex,rowIndex);
 			break;
 		}
@@ -467,12 +463,12 @@ public void sortColumn(final int col, final boolean ascending) {
 					}
 				}
 				case COLUMN_WELLMIXED : {
-					Boolean bSpatial1 = new Boolean(speciesContextSpec1.isSpatial());
-					Boolean bSpatial2 = new Boolean(speciesContextSpec2.isSpatial());
+					Boolean bWellMixed1 = new Boolean(speciesContextSpec1.isWellMixed());
+					Boolean bWellMixed2 = new Boolean(speciesContextSpec2.isWellMixed());
 					if (ascending){
-						return bSpatial1.compareTo(bSpatial2);
+						return bWellMixed1.compareTo(bWellMixed2);
 					}else{
-						return bSpatial2.compareTo(bSpatial1);
+						return bWellMixed2.compareTo(bWellMixed1);
 					}
 				}
 				case COLUMN_INITIAL: {
