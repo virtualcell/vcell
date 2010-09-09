@@ -759,47 +759,23 @@ public void setSpeciesContextSpecs(SpeciesContextSpec[] speciesContextSpecs) thr
 	firePropertyChange("speciesContextSpecs", oldValue, speciesContextSpecs);
 }
 
-public void convertSpeciesIniCondition(boolean bUseConcentration) throws ExpressionException, PropertyVetoException
+public void convertSpeciesIniCondition(boolean bUseConcentration) throws ExpressionException, PropertyVetoException, MappingException
 {
-	for(int i = 0; i < getSpeciesContextSpecs().length; i++)
+	for(SpeciesContextSpec scs : getSpeciesContextSpecs())
 	{
-		SpeciesContextSpecParameter iniConParam = getSpeciesContextSpecs()[i].getInitialConcentrationParameter();
-		SpeciesContextSpecParameter iniPartParam = getSpeciesContextSpecs()[i].getInitialCountParameter();
-		if(bUseConcentration && iniPartParam.getExpression() != null)
+		SpeciesContextSpecParameter iniConParam = scs.getInitialConcentrationParameter();
+		SpeciesContextSpecParameter iniPartParam = scs.getInitialCountParameter();
+		if (bUseConcentration && iniPartParam.getExpression() != null)
 		{
-			Expression covertedConcentration = getSpeciesContextSpecs()[i].convertParticlesToConcentration(iniPartParam.getExpression());
+			Expression covertedConcentration = scs.convertParticlesToConcentration(iniPartParam.getExpression());
 			iniConParam.setExpression(covertedConcentration);
 			iniPartParam.setExpression(null);
 		}
-		else if(iniConParam.getExpression() != null)
+		else if (iniConParam.getExpression() != null)
 		{
-			Expression covertedAmount = getSpeciesContextSpecs()[i].convertConcentrationToParticles(iniConParam.getExpression());
+			Expression covertedAmount = scs.convertConcentrationToParticles(iniConParam.getExpression());
 			iniPartParam.setExpression(covertedAmount);
 			iniConParam.setExpression(null);
-		}
-	}
-}
-
-public void setIniConditionParam(boolean bUseConcentration, Expression[] iniExp) throws MappingException, PropertyVetoException
-{
-	for(int i = 0; i < getSpeciesContextSpecs().length; i++)
-	{
-		SpeciesContextSpecParameter iniConParam = getSpeciesContextSpecs()[i].getInitialConcentrationParameter();
-		SpeciesContextSpecParameter iniPartParam = getSpeciesContextSpecs()[i].getInitialCountParameter();
-		try{
-			if(bUseConcentration)
-			{
-				iniConParam.setExpression(iniExp[i]);
-				iniPartParam.setExpression(null);
-			}
-			else
-			{
-				iniConParam.setExpression(null);
-				iniPartParam.setExpression(iniExp[i]);
-			}
-		}catch(ExpressionBindingException e)
-		{
-			throw new MappingException(e.getMessage());
 		}
 	}
 }

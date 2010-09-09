@@ -33,8 +33,8 @@ public static BioModel getExample() throws Exception {
 	bioModel.getModel().setName("physiology_"+Integer.toHexString(((new Random()).nextInt())));
 	SimulationContext sc2 = new SimulationContext(bioModel.getModel(),new Geometry("0-D Geometry_"+Integer.toHexString(((new Random()).nextInt())),0));
 	sc2.setName("simContext2_"+Integer.toHexString(((new Random()).nextInt())));
-	sc1.setMathDescription((new MathMapping(sc1)).getMathDescription());
-	sc2.setMathDescription((new MathMapping(sc2)).getMathDescription());
+	sc1.setMathDescription(sc1.createNewMathMapping().getMathDescription());
+	sc2.setMathDescription(sc2.createNewMathMapping().getMathDescription());
 	bioModel.setSimulationContexts(new SimulationContext[] { sc1, sc2 });
 
 	//
@@ -71,8 +71,8 @@ public static BioModel getExampleWithImage() throws Exception {
 	sc2.getGeometryContext().assignFeature(((cbit.vcell.model.Feature)bioModel.getModel().getStructure("cytosol")),geo.getGeometrySpec().getSubVolume("cytosol"));
 	sc2.getGeometryContext().assignFeature(((cbit.vcell.model.Feature)bioModel.getModel().getStructure("er")),geo.getGeometrySpec().getSubVolume("cytosol"));
 	sc2.setName("simContext2_"+Integer.toHexString(((new Random()).nextInt())));
-	sc1.setMathDescription((new MathMapping(sc1)).getMathDescription());
-	sc2.setMathDescription((new MathMapping(sc2)).getMathDescription());
+	sc1.setMathDescription(sc1.createNewMathMapping().getMathDescription());
+	sc2.setMathDescription(sc2.createNewMathMapping().getMathDescription());
 	bioModel.setSimulationContexts(new SimulationContext[] { sc1, sc2 });
 
 	//

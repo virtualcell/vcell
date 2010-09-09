@@ -310,7 +310,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				// 
 				// For the original simContext
 				// 
-		        MathMapping mathMapping_1 = new MathMapping(simContexts[k]);
+		        MathMapping mathMapping_1 = simContexts[k].createNewMathMapping();
 		        MathDescription mathDesc_1 = mathMapping_1.getMathDescription();
 		        simContexts[k].setMathDescription(mathDesc_1);
 		        SimulationVersion simVersion_1 = new SimulationVersion(new KeyValue("100"), "sim_1_1", null, null, null, null, null, null, null, null);
@@ -335,7 +335,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				// For the imported simContext
 				//
 				SimulationContext simContext_2 = bioModel_2.getSimulationContexts(0);
-		        MathMapping mathMapping_2 = new MathMapping(simContext_2);
+		        MathMapping mathMapping_2 = simContext_2.createNewMathMapping();
 		        MathDescription mathDesc_2 = mathMapping_2.getMathDescription();
 		        simContext_2.setMathDescription(mathDesc_2);
 		        SimulationVersion simVersion_2 = new SimulationVersion(new KeyValue("100"), "sim_1_2", null, null, null, null, null, null, null, null);

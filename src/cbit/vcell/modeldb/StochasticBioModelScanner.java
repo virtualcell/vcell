@@ -54,7 +54,7 @@ public class StochasticBioModelScanner implements VCDatabaseVisitor {
 				p.println("\tVersion : <"+bioModel.getVersion().getDate().toString()+">------------");
 				MathDescription old_mathDesc = simContexts[i].getMathDescription();
 				MathDescription new_mathDesc = null;
-				StochMathMapping stochMathMapping = new StochMathMapping(simContexts[i]); 
+				MathMapping stochMathMapping = simContexts[i].createNewMathMapping();
 				try {
 					new_mathDesc = stochMathMapping.getMathDescription();
 					// print out the math? 

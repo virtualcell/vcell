@@ -190,7 +190,7 @@ private List<Parameter> getUnsortedParameters() {
 	SpeciesContext speciesContext = fieldSpeciesContextSpec.getSpeciesContext();
 	if (speciesContext.getStructure() instanceof Membrane){
 		MembraneMapping membraneMapping = (MembraneMapping)simulationContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
-		if (simulationContext.getGeometry()!=null && fieldSpeciesContextSpec.isSpatial()){
+		if (simulationContext.getGeometry()!=null && !fieldSpeciesContextSpec.isWellMixed()){
 			int dimension = simulationContext.getGeometry().getDimension();
 			if (dimension > 1) {
 				// diffusion
@@ -210,7 +210,7 @@ private List<Parameter> getUnsortedParameters() {
 		}		
 	} else if (speciesContext.getStructure() instanceof Feature){
 		FeatureMapping featureMapping = (FeatureMapping)simulationContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
-		if (simulationContext.getGeometry()!=null && fieldSpeciesContextSpec.isSpatial()){
+		if (simulationContext.getGeometry()!=null && !fieldSpeciesContextSpec.isWellMixed()){
 			int dimension = simulationContext.getGeometry().getDimension();
 			if (dimension > 0) {
 				paramList.add(fieldSpeciesContextSpec.getDiffusionParameter());

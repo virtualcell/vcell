@@ -244,9 +244,9 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 				velocityZString = null;
 			}
 
-			String spatialString = rset.getString(speciesContextSpecTable.bSpatial.toString());
+			String wellMixedString = rset.getString(speciesContextSpecTable.bWellMixed.toString());
 			if (rset.wasNull()){
-				spatialString = null;
+				wellMixedString = null;
 			}
 
 			//
@@ -310,13 +310,13 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 						}else{
 							scs.getVelocityZParameter().setExpression(null);
 						}
-						if (spatialString!=null){
-							int value = Integer.parseInt(spatialString);
+						if (wellMixedString!=null){
+							int value = Integer.parseInt(wellMixedString);
 							if (value!=0 && value!=1){
-								throw new DataAccessException("unexpected value for bSpatial column in SimulationCOntextDbDriver: \""+spatialString+"\", expecting 0 or 1");
+								throw new DataAccessException("unexpected value for bSpatial column in SimulationCOntextDbDriver: \""+wellMixedString+"\", expecting 0 or 1");
 							}
-							boolean bSpatial = (value==1)?true:false;
-							scs.setSpatial(bSpatial);
+							boolean bWellMixed = (value==1)?true:false;
+							scs.setWellMixed(bWellMixed);
 						}
 					} catch (Exception e) {
 						throw new DataAccessException("Error setting SpeciesContextSpec info for SimulationContext:"+simContext.getVersion().getName()+" id="+simContextKey);

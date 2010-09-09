@@ -435,7 +435,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			SimulationContext sc = getParameterEstimationTask().getModelOptimizationSpec().getSimulationContext();
 			MathSymbolMapping msm = null;
 			try {
-				MathMapping mm = new cbit.vcell.mapping.MathMapping(sc);
+				MathMapping mm = sc.createNewMathMapping();
 				msm = mm.getMathSymbolMapping();
 			}catch (Exception e){
 				e.printStackTrace(System.out);
@@ -514,7 +514,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			MathSymbolMapping msm = null;
 			Exception mathMappingException = null;
 			try {
-				MathMapping mm = new MathMapping(sc);
+				MathMapping mm = sc.createNewMathMapping();
 				msm = mm.getMathSymbolMapping();
 			}catch (Exception e){
 				mathMappingException = e;

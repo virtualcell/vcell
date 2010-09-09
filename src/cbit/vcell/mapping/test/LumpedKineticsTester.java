@@ -66,7 +66,7 @@ public class LumpedKineticsTester implements VCDatabaseVisitor {
 			
 			MathDescription distMathDesc = null;
 			try {
-				distMathDesc = (new MathMapping(nonspatialSimContext)).getMathDescription();
+				distMathDesc = nonspatialSimContext.createNewMathMapping().getMathDescription();
 			} catch (Exception e) {
 				e.printStackTrace(p);
 				p.println("error creating distributed math");
@@ -105,7 +105,7 @@ public class LumpedKineticsTester implements VCDatabaseVisitor {
 			}
 			MathDescription lumpedMathDesc = null;
 			try {
-				lumpedMathDesc = (new MathMapping(nonspatialSimContext)).getMathDescription();
+				lumpedMathDesc = nonspatialSimContext.createNewMathMapping().getMathDescription();
 			} catch (Exception e) {
 				e.printStackTrace(p);
 				p.println("error creating lumped math");

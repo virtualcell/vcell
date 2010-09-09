@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.gui.GeometryViewer;
 
 
@@ -39,7 +40,6 @@ public class GeometrySummaryViewer extends JPanel {
     protected transient ActionListener actionListener = null;
 	private JButton ivjJButtonViewSurfaces = null;
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
-	private boolean bStochastic = false;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -184,7 +184,7 @@ protected void fireActionPerformed(ActionEvent e) {
  * @return The geometry property value.
  * @see #setGeometry
  */
-public cbit.vcell.geometry.Geometry getGeometry() {
+public Geometry getGeometry() {
 	return fieldGeometry;
 }
 
@@ -369,9 +369,6 @@ private void initialize() {
 private void initButtons() {
 	boolean bSpatial = (getGeometry() != null) && (getGeometry().getDimension() > 0);
 	getJButtonViewSurfaces().setEnabled(bSpatial);
-//	getBtnEditGeometry().setEnabled(bSpatial && !bStochastic);
-	getJButtonReplace().setEnabled(!bStochastic);
-	getJButtonCreateGeometry().setEnabled(!bStochastic);
 }
 
 
@@ -391,7 +388,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -452,11 +448,6 @@ public void setGeometry(cbit.vcell.geometry.Geometry geometry) {
 	}
 
 	firePropertyChange("geometry", oldValue, geometry);
-}
-
-public void setStochastic(boolean bStochastic){
-	this.bStochastic = bStochastic;
-	initButtons();
 }
 
 }

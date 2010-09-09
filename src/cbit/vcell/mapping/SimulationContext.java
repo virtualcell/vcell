@@ -68,6 +68,8 @@ import cbit.vcell.units.VCUnitDefinition;
 public class SimulationContext implements SimulationOwner, Versionable, Matchable, 
 	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable,FieldFunctionContainer {
 
+	public static final String PROPERTY_NAME_USE_CONCENTRATION = "UseConcentration";
+
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient NameScope nameScopes[] = null;
 		public SimulationContextNameScope(){
@@ -256,22 +258,11 @@ public SimulationContext(SimulationContext simulationContext, boolean arg_isStoc
 		{
 			throw new RuntimeException("Error constructing a new simulation context:\n" + msg); //no need to show popup here, the exception passes to upper level.
 		}
-		if(simulationContext.getGeometry().getDimension() > 0)
-		{
-			Geometry geo = new Geometry("non-spatial",0);
-			this.geoContext = new GeometryContext(simulationContext.getModel(),geo,this);
-		}
-		else
-		{
-			this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this);
-		}
 		this.bConcentration = simulationContext.bConcentration;
+	} else {
+		this.bConcentration = true; //deterministic method use concentration only.
 	}
-	else
-	{
-		this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this);
-		this.bConcentration = true;//deterministic method use concentration only.
-	}
+	this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this);		
 	this.reactionContext = new ReactionContext(simulationContext.getReactionContext(),this);
 	this.version = null;
 	this.characteristicSize = simulationContext.getCharacteristicSize();
@@ -468,14 +459,7 @@ public void refreshMathDescription() {
 	if (getMathDescription()==null){
 //		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
 		try {
-			if(isStoch())
-			{
-				setMathDescription((new StochMathMapping(this)).getMathDescription());
-			}
-			else
-			{
-				setMathDescription((new MathMapping(this)).getMathDescription());
-			}
+			setMathDescription(createNewMathMapping().getMathDescription());
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(
@@ -1899,29 +1883,9 @@ public boolean isUsingConcentration() {
 public void setUsingConcentration(boolean bUseConcentration) /*throws MappingException, PropertyVetoException*/ {
 	if(isStoch()) //do it only when it is stochastic application
 	{
-		if(bUseConcentration != bConcentration)
-		{
-			bConcentration = bUseConcentration;
-//			try {
-//				if(getBioModel()!= null && getReactionContext() != null)
-//				{
-//					//refresh math description based on using concentration or amount
-//					setMathDescription(new StochMathMapping(this).getMathDescription());
-//				}	
-//			} catch (MathException e) {
-//				e.printStackTrace();
-//				throw new MappingException(e.getMessage());
-//			} catch (MatrixException e) {
-//				e.printStackTrace();
-//				throw new MappingException(e.getMessage());
-//			} catch (ExpressionException e) {
-//				e.printStackTrace();
-//				throw new MappingException(e.getMessage());
-//			} catch (ModelException e) {
-//				e.printStackTrace();
-//				throw new MappingException(e.getMessage());
-//			}
-		}
+		boolean oldValue = bConcentration;
+		bConcentration = bUseConcentration;
+		firePropertyChange(PROPERTY_NAME_USE_CONCENTRATION, oldValue, bConcentration);
 	}
 }
 //specially created for loading from database, used in ServerDocumentManager.saveBioModel()
@@ -2094,4 +2058,20 @@ public void removeGeometryPropertyChangeListener(PropertyChangeListener listener
 	getGeometryContext().removePropertyChangeListener(listener);
 }
 
+public MathMapping createNewMathMapping() {
+	MathMapping mathMapping = null;
+	if (isStoch())
+	{
+		if (getGeometry().getDimension()==0){
+			mathMapping = new StochMathMapping(this);
+		}else{
+			mathMapping = new ParticleMathMapping(this);
+		}
+	}
+	else
+	{
+		mathMapping = new MathMapping(this);
+	}
+	return mathMapping;
+}
 }

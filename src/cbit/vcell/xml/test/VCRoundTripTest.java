@@ -344,7 +344,7 @@ public static void main(String[] args) {
 		MathDescription md;
 		sc = bm.getSimulationContexts();
 		for (int j = 0; j < sc.length; j++){
-			mp = new cbit.vcell.mapping.MathMapping(sc[j]);
+			mp = sc[j].createNewMathMapping();
 			md = mp.getMathDescription();
 			sc[j].setMathDescription(md);
 		}

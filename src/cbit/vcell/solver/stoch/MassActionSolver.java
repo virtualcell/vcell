@@ -17,6 +17,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.solver.stoch.FluxSolver.FluxFunction;
+import cbit.vcell.units.VCUnitDefinition;
 
 public class MassActionSolver {
 
@@ -52,6 +53,14 @@ public class MassActionSolver {
 
 		public void setReverseRate(Expression rate) {
 			rRate = rate;
+		}
+		public VCUnitDefinition getForwardRateUnit() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		public VCUnitDefinition getReverseRateUnit() {
+			// TODO Auto-generated method stub
+			return null;
 		}
 		
 //		public void show()

@@ -899,7 +899,7 @@ public String getCurveValue(CurveSelectionInfo csi) {
 							String zCoordString = NumberUtils.formatNumber(segmentWC.getZ());
 							infoS = "("+xCoordString+","+yCoordString+","+zCoordString+")  ["+
 										membraneIndexes[csi.getSegment()]+"]  Value = " +
-										(getDataInfoProvider().isDefined(membraneIndexes[csi.getSegment()]) ? membraneValues[csi.getSegment()] : "Undefined");
+										(getDataInfoProvider() == null || getDataInfoProvider().isDefined(membraneIndexes[csi.getSegment()]) ? membraneValues[csi.getSegment()] : "Undefined");
 							if(getDataInfoProvider() != null){
 								PDEDataViewer.MembraneDataInfo membraneDataInfo =
 									getDataInfoProvider().getMembraneDataInfo(membraneIndexes[csi.getSegment()]);

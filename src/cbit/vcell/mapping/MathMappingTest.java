@@ -70,7 +70,7 @@ public static MathMapping getExample(int dimension) throws Exception {
 
 	cbit.vcell.parser.Expression.resetCounters();
 	startDate = new java.util.Date();
-	mathMapping = new MathMapping(simContext);
+	mathMapping = simContext.createNewMathMapping();
 	mathDesc = mathMapping.getMathDescription();
 	endDate = new java.util.Date();
 	System.out.println("\ntime for math mapping = "+((endDate.getTime()-startDate.getTime())/1000.0)+" seconds");
@@ -78,7 +78,7 @@ public static MathMapping getExample(int dimension) throws Exception {
 	
 	cbit.vcell.parser.Expression.resetCounters();
 	startDate = new java.util.Date();
-	mathMapping = new MathMapping(simContext);
+	mathMapping = simContext.createNewMathMapping();
 	mathDesc = mathMapping.getMathDescription();
 	endDate = new java.util.Date();
 	System.out.println("\ntime for math mapping = "+((endDate.getTime()-startDate.getTime())/1000.0)+" seconds");
@@ -86,7 +86,7 @@ public static MathMapping getExample(int dimension) throws Exception {
 	
 	cbit.vcell.parser.Expression.resetCounters();
 	startDate = new java.util.Date();
-	mathMapping = new MathMapping(simContext);
+	mathMapping = simContext.createNewMathMapping();
 	mathDesc = mathMapping.getMathDescription();
 	endDate = new java.util.Date();
 	System.out.println("\ntime for math mapping = "+((endDate.getTime()-startDate.getTime())/1000.0)+" seconds");
@@ -94,7 +94,7 @@ public static MathMapping getExample(int dimension) throws Exception {
 	
 	cbit.vcell.parser.Expression.resetCounters();
 	startDate = new java.util.Date();
-	mathMapping = new MathMapping(simContext);
+	mathMapping = simContext.createNewMathMapping();
 	mathDesc = mathMapping.getMathDescription();
 	endDate = new java.util.Date();
 	System.out.println("\ntime for math mapping = "+((endDate.getTime()-startDate.getTime())/1000.0)+" seconds");
@@ -120,7 +120,7 @@ public static void main(String args[]) {
 		System.out.println("");
 		System.out.println("========================= Math Description ================================");
 		System.out.println("");
-		MathMapping mathMapping = new MathMapping(simContext);
+		MathMapping mathMapping = simContext.createNewMathMapping();
 		MathDescription mathDesc = mathMapping.getMathDescription();
 		System.out.print(mathDesc.getVCML_database());
 		System.out.println("===========================================================================");

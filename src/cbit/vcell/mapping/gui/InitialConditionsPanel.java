@@ -7,8 +7,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -88,18 +86,23 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == InitialConditionsPanel.this.getJMenuItemPaste()) 
 				connEtoC5(e);
-			if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCopy()) 
+			else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCopy()) 
 				connEtoC6(e);
-			if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCopyAll()) 
+			else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCopyAll()) 
 				connEtoC7(e);
-			if (e.getSource() == InitialConditionsPanel.this.getJMenuItemPasteAll()) 
+			else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemPasteAll()) 
 				connEtoC8(e);
-			if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCheckSelected()) 
+			else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCheckSelected()) 
 				checkBooleanTableColumn(CheckOption.CheckSelected);
-			if (e.getSource() == InitialConditionsPanel.this.getJMenuItemUncheckSelected()) 
+			else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemUncheckSelected()) 
 				checkBooleanTableColumn(CheckOption.UncheckSelected);
-			if (e.getSource() == InitialConditionsPanel.this.getSetDiffConstantTextField()) 
+			else if (e.getSource() == InitialConditionsPanel.this.getSetDiffConstantTextField()) 
 				setDiffusionConstant();
+			else if (e.getSource() == getAmountRadioButton()) {
+				amountRadioButton_actionPerformed();
+			} else if (e.getSource() == getConcentrationRadioButton()) {
+				concentrationRadioButton_actionPerformed();
+			}
 		};
 		public void mouseClicked(java.awt.event.MouseEvent e) {
 		};
@@ -120,6 +123,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 				updateTopScrollPanel();
 			}
 			
+			if (evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_USE_CONCENTRATION)) {
+				updateTopScrollPanel();
+			}
 			if (evt.getSource() == InitialConditionsPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("selectionModel"))) {
 				connPtoP5SetTarget();
 			}
@@ -580,6 +586,7 @@ private JPanel getScrollPanel()
 	if(scrollPanel == null)
 	{
 		scrollPanel = new JPanel(new BorderLayout());
+		scrollPanel.add(getRadioButtonPanel(), BorderLayout.NORTH);
 		scrollPanel.add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 	}
 	
@@ -591,7 +598,7 @@ private JPanel getRadioButtonPanel()
 {
 	if(radioButtonPanel == null)
 	{
-		JLabel label = new JLabel("INITIAL CONDITION: ");
+		JLabel label = new JLabel("Initial Condition: ");
 		radioButtonPanel = new JPanel(new FlowLayout());
 		radioButtonPanel.add(label);
 		getButtonGroup();
@@ -600,48 +607,80 @@ private JPanel getRadioButtonPanel()
 	}
 	return radioButtonPanel;
 }
+
+public void concentrationRadioButton_actionPerformed() {
+	AsynchClientTask task1 = new AsynchClientTask("converting to count", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {	
+			boolean bUsingConcentration = getSimulationContext().isUsingConcentration();
+			if(!bUsingConcentration)//was using amount, then it's going to change.
+			{
+				if (getSimulationContext().getGeometry().getDimension() == 0 && !getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()){
+					throw new Exception("\nStructure sizes are required to convert number of particles to concentration.\nPlease go to StructureMapping tab to set valid sizes.");
+				}
+				//set to use concentration
+				getSimulationContext().setUsingConcentration(true);
+				getSimulationContext().convertSpeciesIniCondition(true);
+				// force propertyChange(by setting old value to null), inform other listeners that simulation contect has changed.
+				//firePropertyChange("simulationContext", null, getSimulationContext());
+			}
+		}
+	};
+	AsynchClientTask task2 = new AsynchClientTask("in case of failure", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, true) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) != null) {
+				getSimulationContext().setUsingConcentration(false);
+				updateTopScrollPanel();
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{task1, task2});
+}
+
 //following functions are added in July 2008. To enable selection of concentration or particles as initial condition
 //for deterministic method the selection should be disabled (use concentration only). 
 //for stochastic it should be enabled.
 private JRadioButton getConcentrationRadioButton()
 {
-	if(conRadioButton == null)
-	{
+	if(conRadioButton == null) {
 		conRadioButton = new JRadioButton("Concentration", true);
-		conRadioButton.addActionListener(new ActionListener()
-				{
-					public void actionPerformed(ActionEvent arg0) {
-						boolean oldSelection = getSimulationContext().isUsingConcentration();
-						if(oldSelection == false)//was using amount, then it's going to change.
-						{
-							if (!getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()){
-								getConcentrationRadioButton().setSelected(false);
-								getAmountRadioButton().setSelected(true);
-								DialogUtils.showErrorDialog(InitialConditionsPanel.this, "\nStructure sizes are required to convert number of particles to concentration.\nPlease go to StructureMapping tab to set valid sizes.");
-								return;
-							}
-							//set to use concentration
-							try {
-								getSimulationContext().setUsingConcentration(true);
-								getSimulationContext().convertSpeciesIniCondition(true);
-								// force propertyChange(by setting old value to null), inform other listeners that simulation contect has changed.
-								firePropertyChange("simulationContext", null, getSimulationContext());
-							} catch (MappingException e1) {
-								e1.printStackTrace();
-								DialogUtils.showErrorDialog(InitialConditionsPanel.this, e1.getMessage());
-								return;
-							} catch (PropertyVetoException e1) {
-								e1.printStackTrace();
-								DialogUtils.showErrorDialog(InitialConditionsPanel.this, e1.getMessage());
-								return;
-							}
-							
-						}
-					}
-				}
-		);
 	}
 	return conRadioButton;
+}
+
+private void amountRadioButton_actionPerformed() {
+	AsynchClientTask task1 = new AsynchClientTask("converting to count", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			boolean bUseConcentration = getSimulationContext().isUsingConcentration();
+			if(bUseConcentration)//was using concentration, then it's going to change.
+			{
+				if (getSimulationContext().getGeometry().getDimension() == 0 && !getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()){
+					throw new Exception("\nStructure sizes are required to convert concentration to number of paticles.\nPlease go to StructureMapping tab to set valid sizes.");
+				}
+				//set to use number of particles
+				getSimulationContext().setUsingConcentration(false);
+				getSimulationContext().convertSpeciesIniCondition(false);
+				// force propertyChange(by setting old value to null), inform other listeners that simulation context has changed.
+				//firePropertyChange("simulationContext", null, getSimulationContext());				
+			}
+		}
+	};
+	AsynchClientTask task2 = new AsynchClientTask("in case of failure", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, true) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) != null) {
+				getSimulationContext().setUsingConcentration(true);
+				updateTopScrollPanel();
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{task1, task2});
 }
 
 private JRadioButton getAmountRadioButton()
@@ -649,39 +688,6 @@ private JRadioButton getAmountRadioButton()
 	if(amtRadioButton == null)
 	{
 		amtRadioButton = new JRadioButton("Number of Particles");
-		amtRadioButton.addActionListener(new ActionListener()
-		    {
-				public void actionPerformed(ActionEvent arg0) {
-					boolean oldSelection = getSimulationContext().isUsingConcentration();
-					if(oldSelection == true)//was using concentration, then it's going to change.
-					{
-						if (!getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()){
-							getConcentrationRadioButton().setSelected(true);
-							getAmountRadioButton().setSelected(false);
-							DialogUtils.showErrorDialog(InitialConditionsPanel.this, "\nStructure sizes are required to convert concentration to number of paticles.\nPlease go to StructureMapping tab to set valid sizes.");
-							return;
-						}
-						//set to use number of particles
-						try {
-							getSimulationContext().setUsingConcentration(false);
-							getSimulationContext().convertSpeciesIniCondition(false);
-							// force propertyChange(by setting old value to null), inform other listeners that simulation context has changed.
-							firePropertyChange("simulationContext", null, getSimulationContext());
-						} catch (MappingException e1) {
-							e1.printStackTrace();
-							DialogUtils.showErrorDialog(InitialConditionsPanel.this, e1.getMessage());
-							return;
-						} catch (PropertyVetoException e1) {
-							e1.printStackTrace();
-							DialogUtils.showErrorDialog(InitialConditionsPanel.this, e1.getMessage());
-							return;
-						}
-						
-					}
-				}
-			}
-				
-		);
 	}
 	return amtRadioButton;
 }
@@ -699,21 +705,11 @@ private ButtonGroup getButtonGroup()
 
 private void updateTopScrollPanel()
 {
-	if(getSimulationContext().isStoch())
-	{
-		getScrollPanel().add(getRadioButtonPanel(),BorderLayout.NORTH);
-		if(getSimulationContext().isUsingConcentration())
-		{
-			getConcentrationRadioButton().setSelected(true);
-		}
-		else
-		{
-			getAmountRadioButton().setSelected(true);
-		}
-	}
-	else
-	{
-		getScrollPanel().remove(getRadioButtonPanel());
+	if (getSimulationContext().isStoch()) {
+		getRadioButtonPanel().setVisible(true);
+		getConcentrationRadioButton().setSelected(getSimulationContext().isUsingConcentration());
+	} else {
+		getRadioButtonPanel().setVisible(false);
 	}
 }
 
@@ -844,6 +840,8 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemCheckSelected().addActionListener(ivjEventHandler);
 	getJMenuItemUncheckSelected().addActionListener(ivjEventHandler);
 	getSetDiffConstantTextField().addActionListener(ivjEventHandler);
+	getAmountRadioButton().addActionListener(ivjEventHandler);
+	getConcentrationRadioButton().addActionListener(ivjEventHandler);
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
 	connPtoP5SetTarget();
@@ -932,7 +930,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 
 			MathSymbolMapping msm = null;
 			try {
-				msm = (new MathMapping(getSimulationContext())).getMathSymbolMapping();
+				msm = getSimulationContext().createNewMathMapping().getMathSymbolMapping();
 			}catch (Exception e){
 				e.printStackTrace(System.out);
 				DialogUtils.showWarningDialog(this, "current math not valid, some paste operations will be limited\n\nreason: "+e.getMessage());
@@ -1010,7 +1008,7 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 				Exception mathMappingException = null;
 				try {
 					MathMapping mm = null;
-					mm = new MathMapping(getSimulationContext());
+					mm = getSimulationContext().createNewMathMapping();
 					msm = mm.getMathSymbolMapping();
 				}catch (Exception e){
 					mathMappingException = e;
@@ -1321,7 +1319,13 @@ private void setsimulationContext1(SimulationContext newValue) {
 	if (ivjsimulationContext1 != newValue) {
 		try {
 			SimulationContext oldValue = getsimulationContext1();
+			if (oldValue != null) {
+				oldValue.removePropertyChangeListener(ivjEventHandler);
+			}			
 			ivjsimulationContext1 = newValue;
+			if (newValue != null) {
+				newValue.addPropertyChangeListener(ivjEventHandler);
+			}
 			connPtoP3SetSource();
 			connEtoM2(ivjsimulationContext1);
 			firePropertyChange("simulationContext", oldValue, newValue);
@@ -1345,7 +1349,7 @@ public void checkBooleanTableColumn(CheckOption b) {
 		if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_CLAMPED) {
 			scs.setConstant(bCheck);
 		} else if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_WELLMIXED) {
-			scs.setSpatial(!bCheck);
+			scs.setWellMixed(bCheck);
 		}
 	}
 }

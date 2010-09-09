@@ -83,7 +83,7 @@ public static void main(String[] args) {
 					// After altering speciesContextSpecs, regenerate math
 					MathDescription altMathDesc = null;
 					try {
-						altMathDesc = (new MathMapping(simContexts[k])).getMathDescription();
+						altMathDesc = simContexts[k].createNewMathMapping().getMathDescription();
 						simContexts[k].setMathDescription(altMathDesc);
 						logFilePrintStream.println("Math re-genenerated successfully for simContext '" + simContexts[k].getName() + " (" + dim + "d geometry) in Biomodel : " + bioModel.getName() + "; Version : " + bioModel.getVersion().getDate().toString());
 						// System.out.println("\n\nMath re-generated successfully!\n\n");

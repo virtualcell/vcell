@@ -21,11 +21,11 @@ import org.vcell.util.document.SimulationVersion;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathException;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
@@ -118,9 +118,9 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//
 		    // select only Application, generate math, and create a single Simulation.
 			//
-		    cbit.vcell.mapping.SimulationContext simContext = bioModel.getSimulationContexts(0);
-		    cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
-		    cbit.vcell.math.MathDescription mathDesc = mathMapping.getMathDescription();
+		    SimulationContext simContext = bioModel.getSimulationContexts(0);
+		    MathMapping mathMapping = simContext.createNewMathMapping();
+		    MathDescription mathDesc = mathMapping.getMathDescription();
 		    simContext.setMathDescription(mathDesc);
 		    SimulationVersion simVersion =
 		        new SimulationVersion(
@@ -402,9 +402,9 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//
 		    // select only Application, generate math, and create a single Simulation.
 			//
-		    cbit.vcell.mapping.SimulationContext simContext = bioModel.getSimulationContexts(0);
-		    cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
-		    cbit.vcell.math.MathDescription mathDesc = mathMapping.getMathDescription();
+		    SimulationContext simContext = bioModel.getSimulationContexts(0);
+		    MathMapping mathMapping = simContext.createNewMathMapping();
+		    MathDescription mathDesc = mathMapping.getMathDescription();
 		    simContext.setMathDescription(mathDesc);
 		    SimulationVersion simVersion =
 		        new SimulationVersion(

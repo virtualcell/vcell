@@ -64,7 +64,7 @@ public class StochMathMapping extends MathMapping {
 	 * @param model cbit.vcell.model.Model
 	 * @param geometry cbit.vcell.geometry.Geometry
 	 */
-	public StochMathMapping(SimulationContext simContext) {
+	protected StochMathMapping(SimulationContext simContext) {
 		super(simContext);
 	}
 
@@ -78,7 +78,7 @@ public class StochMathMapping extends MathMapping {
  * @throws MappingException
  * @throws ExpressionException
  */
-public Expression getExpressionConcToAmt(Expression concExpr, SpeciesContext speciesContext) throws MappingException, ExpressionException
+private Expression getExpressionConcToAmt(Expression concExpr, SpeciesContext speciesContext) throws MappingException, ExpressionException
 {
 	Expression particlesExpr = null;	//to create an expression for number of particles 
 
@@ -109,7 +109,7 @@ public Expression getExpressionConcToAmt(Expression concExpr, SpeciesContext spe
  * @throws MappingException
  * @throws ExpressionException
  */
-public Expression getExpressionAmtToConc(Expression particlesExpr, SpeciesContext speciesContext) throws MappingException, ExpressionException
+private Expression getExpressionAmtToConc(Expression particlesExpr, SpeciesContext speciesContext) throws MappingException, ExpressionException
 {
 	Expression concentrationExpr = null;	//to create an expression for concentration 
 
@@ -332,7 +332,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 /**
  * Basically the function clears the error list and calls to get a new mathdescription.
  */
-private void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException{
+protected void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException{
 	localIssueList.clear();
 	//refreshKFluxParameters();
 	
@@ -348,7 +348,8 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 	/**
 	 * set up a math description based on current simulationContext.
 	 */
-	private void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException
+	@Override
+	protected void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException
 	{
 		GeometryClass geometryClass = getSimulationContext().getGeometry().getGeometrySpec().getSubVolumes()[0];
 		Domain domain = new Domain(geometryClass);
@@ -1100,7 +1101,8 @@ private Expression getSubstitutedExpr(Expression expr, boolean bConcentration, b
  * @exception cbit.vcell.mapping.MappingException The exception description.
  * @exception cbit.vcell.math.MathException The exception description.
  */
-private void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException 
+@Override
+protected void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException 
 {
 	//
 	// create a SpeciesContextMapping for each speciesContextSpec.
@@ -1129,10 +1131,8 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 		SpeciesContextSpec scs = speciesContextSpecs[i];
 
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
-		scm.setPDERequired(getSimulationContext().isPDERequired(scs.getSpeciesContext()));
-		scm.setHasEventAssignment(getSimulationContext().hasEventAssignment(scs.getSpeciesContext()));
-//		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
-//		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
+		scm.setPDERequired(false);
+		scm.setHasEventAssignment(false);
 		if (scs.isConstant()){
 			SpeciesContextSpec.SpeciesContextSpecParameter initCountParm = scs.getInitialCountParameter();
 			SpeciesContextSpec.SpeciesContextSpecParameter initConcParm =  scs.getInitialConcentrationParameter();
@@ -1177,7 +1177,8 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
  * Creation date: (10/25/2006 8:59:43 AM)
  * @exception cbit.vcell.mapping.MappingException The exception description.
  */
-private void refreshVariables() throws MappingException {
+@Override
+protected void refreshVariables() throws MappingException {
 	//
 	// non-constant dependant variables(means rely on other contants/functions) require a function
 	//

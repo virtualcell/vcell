@@ -556,7 +556,7 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 			//
 			// updated mathdescription loaded into copy of biomodel, then test for equivalence.
 			//
-			cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContextNewMath);
+			cbit.vcell.mapping.MathMapping mathMapping = simContextNewMath.createNewMathMapping();
 			MathDescription newMathDesc = mathMapping.getMathDescription();
 			String issueString = null;
 			org.vcell.util.Issue issues[] = mathMapping.getIssues();
@@ -1031,7 +1031,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 					//
 					// updated mathdescription loaded into copy of biomodel, then test for equivalence.
 					//
-					cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContextNewMath);
+					cbit.vcell.mapping.MathMapping mathMapping = simContextNewMath.createNewMathMapping();
 					MathDescription newMathDesc = mathMapping.getMathDescription();
 					String issueString = null;
 					org.vcell.util.Issue issues[] = mathMapping.getIssues();
@@ -1313,7 +1313,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                     //
                     // updated mathdescription loaded into copy of biomodel, then test for equivalence.
                     //
-                    cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContextNewMath);
+                    cbit.vcell.mapping.MathMapping mathMapping = simContextNewMath.createNewMathMapping();
                     MathDescription newMathDesc = mathMapping.getMathDescription();
                     String issueString = null;
                     org.vcell.util.Issue issues[] = mathMapping.getIssues();

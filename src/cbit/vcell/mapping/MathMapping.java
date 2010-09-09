@@ -145,7 +145,7 @@ public class MathMapping implements ScopedSymbolTable {
 		
 	private Vector<StructureAnalyzer> structureAnalyzerList = new Vector<StructureAnalyzer>();
 	
-	private Vector<SpeciesContextMapping> speciesContextMappingList = new Vector<SpeciesContextMapping>();
+	protected Vector<SpeciesContextMapping> speciesContextMappingList = new Vector<SpeciesContextMapping>();
 	private HashMap<String, Integer> localNameCountHash = new HashMap<String, Integer>();
 
 	public class MathMappingNameScope extends BioNameScope {
@@ -373,7 +373,7 @@ public class MathMapping implements ScopedSymbolTable {
  * @param model cbit.vcell.model.Model
  * @param geometry cbit.vcell.geometry.Geometry
  */
-public MathMapping(SimulationContext simContext) {
+protected MathMapping(SimulationContext simContext) {
 	this.simContext = simContext;
 }
 
@@ -1067,7 +1067,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 			} else if (sm.getGeometryClass() instanceof SubVolume && ((SurfaceClass)geometryClass).isAdjacentTo((SubVolume)sm.getGeometryClass())) {
 				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 				if (!scs.isConstant()){
-					if (!scs.isDiffusing() && scs.isSpatial()){
+					if (!scs.isDiffusing() && !scs.isWellMixed()){
 						throw new MappingException("Enable diffusion in Application '" + simContext.getName() 
 								+  "'. This must be done for any species (e.g '" + sc.getName() + "') in flux reactions.\n\n" 
 								+ "To save or run simulations, set the diffusion rate to a non-zero " +
@@ -1276,7 +1276,7 @@ protected Variable newFunctionOrConstant(String name, Expression exp, GeometryCl
  * @param obs java.util.Observable
  * @param obj java.lang.Object
  */
-private void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
+protected void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
 //System.out.println("MathMapping.refresh()");
 	VCellThreadChecker.checkCpuIntensiveInvocation();
 	
@@ -1398,7 +1398,7 @@ private Expression substituteGlobalParameters(Expression exp) throws ExpressionE
 /**
  * This method was created in VisualAge.
  */
-private void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
+protected void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
 
 	//All sizes must be set for new ODE models and ratios must be set for old ones.
 	simContext.checkValidity();
@@ -2527,7 +2527,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 }
 
-private GeometryClass getDefaultGeometryClass(Expression expr) throws ExpressionException, MappingException {
+protected GeometryClass getDefaultGeometryClass(Expression expr) throws ExpressionException, MappingException {
 	GeometryClass geometryClass = null;
 	if (simContext.getGeometry().getDimension() == 0) {
 		return null;
@@ -2613,7 +2613,7 @@ private VCUnitDefinition getEventVarUnit(SymbolTableEntry var) {
 /**
  * This method was created in VisualAge.
  */
-private void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException {
+protected void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException {
 	
 	//
 	// create a SpeciesContextMapping for each speciesContextSpec.
@@ -2712,7 +2712,7 @@ protected void refreshStructureAnalyzers() {
 /**
  * This method was created in VisualAge.
  */
-private void refreshVariables() throws MappingException {
+protected void refreshVariables() throws MappingException {
 
 //System.out.println("MathMapping.refreshVariables()");
 
@@ -2727,17 +2727,11 @@ private void refreshVariables() throws MappingException {
 			//scm.setVariable(new Function(scm.getSpeciesContext().getName(),scm.getDependencyExpression()));
 			scm.setVariable(null);
 		}
-	}
-
-	enum1 = getSpeciesContextMappings();
-	while (enum1.hasMoreElements()){
-		SpeciesContextMapping scm = enum1.nextElement();
-		SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
 		if (getSimulationContext().hasEventAssignment(scs.getSpeciesContext())){
 			scm.setDependencyExpression(null);
 		}
 	}
-
+	
 	//
 	// non-constant independent variables require either a membrane or volume variable
 	//
@@ -2754,16 +2748,16 @@ private void refreshVariables() throws MappingException {
 			}
 			if (struct instanceof Feature || struct instanceof Membrane){
 				if (sm.getGeometryClass() instanceof SurfaceClass){
-					if (scs.isSpatial()){
-						scm.setVariable(new MemVariable(scm.getSpeciesContext().getName(),domain));
-					}else{
+					if (scs.isWellMixed()){
 						scm.setVariable(new MembraneRegionVariable(scm.getSpeciesContext().getName(),domain));
+					}else{
+						scm.setVariable(new MemVariable(scm.getSpeciesContext().getName(),domain));
 					}
 				}else{
-					if (scs.isSpatial()){
-						scm.setVariable(new VolVariable(scm.getSpeciesContext().getName(),domain));
-					}else{
+					if (scs.isWellMixed()){
 						scm.setVariable(new VolumeRegionVariable(scm.getSpeciesContext().getName(),domain));
+					}else{
+						scm.setVariable(new VolVariable(scm.getSpeciesContext().getName(),domain));
 					}
 				}
 			}else{

@@ -11,6 +11,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.*;
+import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.util.*;
 
 public abstract class Parameter implements EditableSymbolTableEntry, Serializable, Matchable
@@ -207,22 +208,10 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-/**
  * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
-}
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
 }
 /**
  * Sets the description property (java.lang.String) value.

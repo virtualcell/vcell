@@ -144,7 +144,7 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 		// add K_fluxs
 		//
 		try {
-			simContext.setMathDescription((new cbit.vcell.mapping.MathMapping(simContext)).getMathDescription());
+			simContext.setMathDescription(simContext.createNewMathMapping().getMathDescription());
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException("cannot create mathDescription");
@@ -263,7 +263,7 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 		// rates should be zero
 		//
 		try {
-			simContext.setMathDescription((new cbit.vcell.mapping.MathMapping(simContext)).getMathDescription());
+			simContext.setMathDescription(simContext.createNewMathMapping().getMathDescription());
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException("cannot create mathDescription");
