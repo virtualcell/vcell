@@ -10,6 +10,7 @@ import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.CompartmentSubVolume;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.model.Membrane;
@@ -39,8 +40,8 @@ public class MembraneMapping extends StructureMapping implements java.beans.Veto
  * @param geoContext cbit.vcell.mapping.GeometryContext
  * @exception java.lang.Exception The exception description.
  */
-public MembraneMapping(MembraneMapping membraneMapping, SimulationContext argSimulationContext) {
-	super(membraneMapping, argSimulationContext);
+public MembraneMapping(MembraneMapping membraneMapping, SimulationContext argSimulationContext,Geometry newGeometry) {
+	super(membraneMapping, argSimulationContext,newGeometry);
 	fieldCalculateVoltage = membraneMapping.fieldCalculateVoltage;
 
 	addVetoableChangeListener(this);

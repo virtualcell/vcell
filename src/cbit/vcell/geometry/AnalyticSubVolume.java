@@ -35,6 +35,15 @@ public AnalyticSubVolume(KeyValue key, String subDomainName, Expression exp, int
 	setExpression(exp);
 }
 
+public AnalyticSubVolume(AnalyticSubVolume oldAnalyticSubVolume){
+	super(oldAnalyticSubVolume.getKey(),oldAnalyticSubVolume.getName(), oldAnalyticSubVolume.getHandle());
+	try {
+		setExpression(new Expression(oldAnalyticSubVolume.getExpression()));
+	} catch (ExpressionBindingException e) {
+		e.printStackTrace();
+		throw new RuntimeException(e.getMessage(), e);
+	}
+}
 /**
  * MathDescription constructor comment.
  */

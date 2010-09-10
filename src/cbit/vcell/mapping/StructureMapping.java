@@ -10,6 +10,7 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
@@ -275,7 +276,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 	};
 	private StructureMapping.StructureMappingParameter[] fieldParameters = null;
 
-protected StructureMapping(StructureMapping structureMapping, SimulationContext argSimulationContext) {
+protected StructureMapping(StructureMapping structureMapping, SimulationContext argSimulationContext,Geometry newGeometry) {
 	if (argSimulationContext == null) {
 		throw new IllegalArgumentException("SimulationContext is null");
 	}	
@@ -289,7 +290,10 @@ protected StructureMapping(StructureMapping structureMapping, SimulationContext 
 		boundaryConditionTypes[i]=structureMapping.boundaryConditionTypes[i];
 		boundaryConditionValid[i]=structureMapping.boundaryConditionValid[i];
 	}
-	this.geometryClass = structureMapping.getGeometryClass();
+	if(structureMapping.getGeometryClass()!= null){
+		String geomClassName = structureMapping.getGeometryClass().getName();
+		this.geometryClass = newGeometry.getGeometryClass(geomClassName);
+	}
 }      
 
 

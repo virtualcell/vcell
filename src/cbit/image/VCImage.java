@@ -38,7 +38,7 @@ public abstract class VCImage implements Serializable, org.vcell.util.document.V
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-protected VCImage(VCImage vci) throws ImageException {
+protected VCImage(VCImage vci){
 	this.numX = vci.getNumX();
 	this.numY = vci.getNumY();
 	this.numZ = vci.getNumZ();
@@ -46,7 +46,11 @@ protected VCImage(VCImage vci) throws ImageException {
 	this.version = vci.getVersion();
 	this.fieldName = vci.getName();
 	this.fieldDescription = vci.getDescription();
-	this.fieldPixelClasses = (VCPixelClass[])vci.fieldPixelClasses.clone();
+	VCPixelClass[] newVCPixelClasses = new VCPixelClass[vci.fieldPixelClasses.length];
+	for (int i = 0; i < newVCPixelClasses.length; i++) {
+		newVCPixelClasses[i] = new VCPixelClass(vci.fieldPixelClasses[i]);
+	}
+	this.fieldPixelClasses = newVCPixelClasses;
 	addVetoableChangeListener(this);
 }
 

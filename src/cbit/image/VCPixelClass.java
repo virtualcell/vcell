@@ -19,6 +19,11 @@ public class VCPixelClass implements java.io.Serializable, Cacheable, Immutable,
 
 	public final static String DEFAULT_BASE_NAME = "PixelClass";
 
+	public VCPixelClass(VCPixelClass oldVCPixelClass) {
+		this.key = oldVCPixelClass.key;
+		this.pixelClassName = oldVCPixelClass.pixelClassName;
+		this.pixel = oldVCPixelClass.pixel;
+	}
 /**
  * VCImageRegion constructor comment.
  */
