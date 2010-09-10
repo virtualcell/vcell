@@ -200,6 +200,16 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	}
 
 	if(source instanceof ApplicationEditor && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
+		AsynchClientTask updateGeometryTask = new AsynchClientTask("update geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				Geometry newGeom = (Geometry)hashTable.get("doc");
+				if(newGeom != null){
+					newGeom.precomputeAll();
+				}
+			}
+		};
+
 		AsynchClientTask editSelectTask = new AsynchClientTask("Edit/Apply Geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -221,7 +231,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 				(ApplicationEditor)source).getAppEditor().getSimulationWorkspace().getSimulationOwner().getGeometry();
 		createGeometry(
 				currentGeometry,
-				new AsynchClientTask[] {editSelectTask}
+				new AsynchClientTask[] {updateGeometryTask, editSelectTask}
 				,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,"Apply Geometry");
 	}
 	

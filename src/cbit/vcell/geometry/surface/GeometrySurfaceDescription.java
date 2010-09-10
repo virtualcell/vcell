@@ -300,11 +300,7 @@ private void refreshSurfaceClasses() {
 	}
 	if(bChanged || fieldSurfaceClasses == null || fieldSurfaceClasses.length != surfaceClasses.size()){
 		try{
-			if (surfaceClasses.size() == 0) {
-				setSurfaceClasses(null);
-			} else {
-				setSurfaceClasses(surfaceClasses.toArray(new SurfaceClass[surfaceClasses.size()]));
-			}
+			setSurfaceClasses(surfaceClasses.toArray(new SurfaceClass[surfaceClasses.size()]));
 		}catch(PropertyVetoException e){
 			e.printStackTrace();
 			throw new RuntimeException("SurfaceClass refresh error: "+e.getMessage(), e);
@@ -540,6 +536,7 @@ public void refreshDependencies() {
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+	PropertyChangeListenerProxyVCell.removeProxyListener(getPropertyChange(), listener);
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
