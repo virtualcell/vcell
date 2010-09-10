@@ -53,7 +53,7 @@ public  class GeometryContext implements Serializable, Matchable, PropertyChange
  * @param geometry cbit.vcell.geometry.Geometry
  */
 GeometryContext(GeometryContext geometryContext, SimulationContext simulationContext) {
-	this.fieldGeometry = geometryContext.getGeometry();
+	this.fieldGeometry = new Geometry(geometryContext.getGeometry());
 	this.fieldModel = geometryContext.getModel();
 	this.fieldSimulationContext = simulationContext;
 	try {
@@ -70,9 +70,9 @@ GeometryContext(GeometryContext geometryContext, SimulationContext simulationCon
 		// invoke appropriate copy constructor
 		//
 		if (geometryContext.fieldStructureMappings[i] instanceof FeatureMapping){
-			fieldStructureMappings[i] = new FeatureMapping((FeatureMapping)geometryContext.fieldStructureMappings[i],simulationContext);
+			fieldStructureMappings[i] = new FeatureMapping((FeatureMapping)geometryContext.fieldStructureMappings[i],simulationContext,this.fieldGeometry);
 		}else if (geometryContext.fieldStructureMappings[i] instanceof MembraneMapping){
-			fieldStructureMappings[i] = new MembraneMapping((MembraneMapping)geometryContext.fieldStructureMappings[i],simulationContext);
+			fieldStructureMappings[i] = new MembraneMapping((MembraneMapping)geometryContext.fieldStructureMappings[i],simulationContext,this.fieldGeometry);
 		}else {
 			throw new RuntimeException("unexpected structureMapping = "+geometryContext.fieldStructureMappings[i]);
 		}

@@ -6,6 +6,7 @@ package cbit.vcell.mapping;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.geometry.CompartmentSubVolume;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.model.Feature;
@@ -30,8 +31,8 @@ public class FeatureMapping extends StructureMapping {
  * @param geoContext cbit.vcell.mapping.GeometryContext
  * @exception java.lang.Exception The exception description.
  */
-public FeatureMapping(FeatureMapping featureMapping, SimulationContext argSimulationContext) {
-	super(featureMapping, argSimulationContext);
+public FeatureMapping(FeatureMapping featureMapping, SimulationContext argSimulationContext,Geometry newGeometry) {
+	super(featureMapping, argSimulationContext,newGeometry);
 }
 
 

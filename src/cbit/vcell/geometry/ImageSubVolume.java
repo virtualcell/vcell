@@ -25,7 +25,10 @@ public ImageSubVolume(KeyValue key, VCPixelClass vcPixelClass, int handle) {
 	super(key, vcPixelClass.getPixelClassName(), handle);
 	this.vcPixelClass = vcPixelClass;
 }
-
+public ImageSubVolume(ImageSubVolume oldImagesuImageSubVolume) {
+	super(oldImagesuImageSubVolume.getKey(), oldImagesuImageSubVolume.getPixelClass().getPixelClassName(), oldImagesuImageSubVolume.getHandle());
+	this.vcPixelClass = new VCPixelClass(oldImagesuImageSubVolume.getPixelClass());
+}
 
 /**
  * This method was created in VisualAge.

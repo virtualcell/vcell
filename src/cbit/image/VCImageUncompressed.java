@@ -15,9 +15,9 @@ public class VCImageUncompressed extends VCImage {
  * This method was created in VisualAge.
  * @param vcimage cbit.image.VCImage
  */
-public VCImageUncompressed(VCImage vcimage) throws ImageException {
+public VCImageUncompressed(VCImage vcimage) throws ImageException{
 	super(vcimage);
-	this.pixels = vcimage.getPixels();
+	this.pixels = vcimage.getPixels().clone();
 }
 /**
  * This method was created in VisualAge.
