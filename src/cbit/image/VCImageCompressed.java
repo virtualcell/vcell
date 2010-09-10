@@ -18,7 +18,7 @@ public class VCImageCompressed extends VCImage {
  */
 public VCImageCompressed(VCImage vcimage) throws ImageException {
 	super(vcimage);
-	this.compressedPixels = vcimage.getPixelsCompressed();
+	this.compressedPixels = vcimage.getPixelsCompressed().clone();
 }
 /**
  * This method was created in VisualAge.
