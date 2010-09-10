@@ -22,6 +22,7 @@ import org.vcell.util.document.Version;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
+import cbit.image.VCPixelClass;
 import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.math.VCML;
 import cbit.vcell.parser.ExpressionException;
@@ -93,13 +94,35 @@ public GeometrySpec(Version aVersion, VCImage aVCImage) {
  * This method was created in VisualAge.
  * @param name java.lang.String
  */
-public GeometrySpec(GeometrySpec geometrySpec) {
+public GeometrySpec(GeometrySpec geometrySpec){
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
-	this.vcImage = geometrySpec.vcImage;
+	if(geometrySpec.vcImage != null){
+		try {
+			this.vcImage = new VCImageUncompressed(geometrySpec.vcImage);
+		} catch (ImageException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
 	this.dimension = geometrySpec.dimension;
 	try {
-		setSubVolumes((SubVolume[])geometrySpec.fieldSubVolumes.clone());
+		SubVolume[] newSubvolumes = new SubVolume[geometrySpec.fieldSubVolumes.length];
+		for (int i = 0; i < newSubvolumes.length; i++) {
+			if(geometrySpec.fieldSubVolumes[i] instanceof ImageSubVolume){
+				ImageSubVolume oldImagesuImageSubVolume = (ImageSubVolume)(geometrySpec.fieldSubVolumes[i]);
+				newSubvolumes[i] = new ImageSubVolume(oldImagesuImageSubVolume);
+				VCPixelClass newVCPixelClass = this.vcImage.getPixelClassFromName(oldImagesuImageSubVolume.getPixelClass().getPixelClassName());
+				((ImageSubVolume)newSubvolumes[i]).setPixelClass(newVCPixelClass);
+			}else if(geometrySpec.fieldSubVolumes[i] instanceof AnalyticSubVolume){
+				newSubvolumes[i] = new AnalyticSubVolume((AnalyticSubVolume)(geometrySpec.fieldSubVolumes[i]));
+			}else if(geometrySpec.fieldSubVolumes[i] instanceof CompartmentSubVolume){
+				newSubvolumes[i] = new CompartmentSubVolume(geometrySpec.fieldSubVolumes[i].getKey(), geometrySpec.fieldSubVolumes[i].getHandle());
+			}else{
+				throw new RuntimeException("Unknown SubVolume "+geometrySpec.fieldSubVolumes[i]);
+			}
+		}
+		setSubVolumes(newSubvolumes);
 	}catch (PropertyVetoException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
@@ -108,22 +131,6 @@ public GeometrySpec(GeometrySpec geometrySpec) {
 	this.extent = geometrySpec.getExtent(); // Extent is immutable
 	this.origin = geometrySpec.getOrigin(); // Origin is immutable
 }
-
-
-/**
- * This method was created in VisualAge.
- * @param name java.lang.String
- */
-public GeometrySpec(GeometrySpec geometrySpec, VCImage aVCImage) {
-	this(geometrySpec);
-	try {
-		setImage(aVCImage);
-	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}
-}
-
 
 /**
  * This method was created in VisualAge.
