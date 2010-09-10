@@ -27,7 +27,6 @@ public class ClientTaskDispatcher {
 	public static final String TASK_ABORTED_BY_USER = "cancel";
 	public static final String TASKS_TO_BE_SKIPPED = "conditionalSkip";
 	private static boolean bInProgress = false;
-	public static final String TASK_REWIND = "task_rewind";
 
 /**
  * don't show popup.
@@ -100,6 +99,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				
 //System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
 				if (pp != null ) {
+					pp.setVisible(currentTask.showProgressPopup());
 					if(!bKnowProgress)
 					{
 						pp.setProgress(i*100/taskList.size()); // beginning of task
@@ -107,26 +107,6 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 					pp.setMessage(currentTask.getTaskName());
 				}
 				boolean shouldRun = true;
-				if(hash.containsKey(TASK_REWIND)){
-					String rewindTaskName = (String)hash.remove(TASK_REWIND);
-					if (hash.containsKey(TASK_ABORTED_BY_ERROR) || hash.containsKey(TASK_ABORTED_BY_USER)) {
-						recordException(new Exception("Found REWIND task '"+rewindTaskName+"'  REWIND tasks NOT ALLOWED when hash contains TASK_ABORT_BY_xxx."), hash);
-						break;
-					}
-					int rewindTaskIndex = -1;
-					for (int j = 0; j < taskList.size(); j++) {
-						if(taskList.get(j).getTaskName().equals(rewindTaskName)){
-							rewindTaskIndex = j;
-							break;
-						}
-					}
-					if(rewindTaskIndex != -1){
-						i=rewindTaskIndex-1;
-						continue;
-					}
-					recordException(new Exception("Rewind task named '"+rewindTaskName+"' not found"), hash);
-					break;
-				}
 				if (hash.containsKey(TASK_ABORTED_BY_ERROR) && currentTask.skipIfAbort()) {
 					shouldRun = false;
 				}

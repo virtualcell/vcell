@@ -9,7 +9,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
@@ -30,7 +29,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
@@ -1196,54 +1194,43 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 			getClientTaskStatusSupport().setMessage("Initializing...");
 			final ROIMultiPaintManager roiMultiPaintManager = new ROIMultiPaintManager();
 			roiMultiPaintManager.initROIData((FieldDataFileOperationSpec)hashTable.get(FDFOS));
-			new Thread(new Runnable() {
-				public void run() {
-					final Geometry[] geomHolder = new Geometry[1];
-					try{
-						//user create Geometry
-						SwingUtilities.invokeAndWait(
-							new Runnable() {
-								public void run() {
-									geomHolder[0] = roiMultiPaintManager.showGUI(
-										okButtonText,
-										(String)hashTable.get(IMPORT_SOURCE_NAME),
-										(Component)hashTable.get(GUI_PARENT),
-										(String)hashTable.get(INITIAL_ANNOTATION)
-									);
-								}
-							}
+			final Geometry[] geomHolder = new Geometry[1];
+			AsynchClientTask task1 = new AsynchClientTask("edit geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false) {
+				
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					geomHolder[0] = roiMultiPaintManager.showGUI(
+							okButtonText,
+							(String)hashTable.get(IMPORT_SOURCE_NAME),
+							(Component)hashTable.get(GUI_PARENT),
+							(String)hashTable.get(INITIAL_ANNOTATION)
 						);
-						//Create default name for image
-						geomHolder[0].getGeometrySpec().getImage().setName("img_"+ClientRequestManager.generateDateTimeString());
-						//cause update in this thread so later swing threads won't be delayed
-						geomHolder[0].getGeometrySurfaceDescription().updateAll();
-						geomHolder[0].getGeometrySpec().getSampledImage();
-						hashTable.put("doc", geomHolder[0]);
-						//Process Geometry (save, display, replace, etc...)
-						AsynchClientTask[] finalTasks = afterTasks;
-						if(finalTasks == null){
-							finalTasks = new AsynchClientTask[] {
-									getSaveImageAndGeometryTask()};
-						}
-						ClientTaskDispatcher.dispatch(
-								(Component)hashTable.get(GUI_PARENT),
-								hashTable,finalTasks,false, false, null, true);
-						
-					}catch(Exception exc){
-						Throwable realException = exc;
-						if(exc instanceof InvocationTargetException){
-							if(exc.getCause() instanceof UserCancelException){
-								return;
-							}
-							realException = exc.getCause();
-						}
-						realException.printStackTrace();
-						DialogUtils.showErrorDialog((Component)hashTable.get(GUI_PARENT), "Error in Geometry creation.\n"+
-							realException.getMessage(), realException);
-						
-					}
 				}
-			}).start();
+			};
+			AsynchClientTask task2 = new AsynchClientTask("update geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					//Create default name for image
+					geomHolder[0].getGeometrySpec().getImage().setName("img_"+ClientRequestManager.generateDateTimeString());
+					//cause update in this thread so later swing threads won't be delayed
+					geomHolder[0].precomputeAll();
+					hashTable.put("doc", geomHolder[0]);
+				}
+			};
+			
+			AsynchClientTask[] finalTasks = afterTasks;
+			if(finalTasks == null){
+				finalTasks = new AsynchClientTask[] {
+						getSaveImageAndGeometryTask()};
+			}
+			AsynchClientTask[] tasks = new AsynchClientTask[2 + finalTasks.length];
+			tasks[0] = task1;
+			tasks[1] = task2;
+			System.arraycopy(finalTasks, 0, tasks, 2, finalTasks.length);
+			ClientTaskDispatcher.dispatch(
+					(Component)hashTable.get(GUI_PARENT),
+					hashTable,tasks, false, false, null, true);
 		}
 	};
 	Vector<AsynchClientTask> tasksV = new Vector<AsynchClientTask>();

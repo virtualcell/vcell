@@ -24,15 +24,25 @@ public abstract class AsynchClientTask {
 	private int taskType = TASKTYPE_NONSWING_BLOCKING;
 	private String taskName = "";
 	private ClientTaskStatusSupport clientTaskStatusSupport = null;
+	private boolean bShowProgressPopup = true;
 	//private AsynchClientTask[] followupTasks = null;
 	
 	public AsynchClientTask(String name, int taskType) {
-		this(name, taskType, true, true);
+		this(name, taskType, true, true, true);
+	}
+	
+	public AsynchClientTask(String name, int taskType, boolean bShowPopup) {
+		this(name, taskType, bShowPopup, true, true);
 	}
 	
 	public AsynchClientTask(String name, int taskType, boolean skipIfAbort, boolean skipIfCancel) {
+		this(name, taskType, true, skipIfAbort, skipIfCancel);
+	}
+	
+	public AsynchClientTask(String name, int taskType, boolean bShowPopup, boolean skipIfAbort, boolean skipIfCancel) {
 		this.taskName = name;
 		this.taskType = taskType;
+		this.bShowProgressPopup = bShowPopup;
 		this.bSkipIfAbort = skipIfAbort;
 		this.bSkipIfCancel = skipIfCancel;
 	}
@@ -67,7 +77,9 @@ public abstract class AsynchClientTask {
 	public void setClientTaskStatusSupport(ClientTaskStatusSupport clientTaskStatusSupport) {
 		this.clientTaskStatusSupport = clientTaskStatusSupport;
 	}
-
+	public boolean showProgressPopup() {
+		return bShowProgressPopup;
+	}
 //	public AsynchClientTask[] getFollowupTasks() {
 //		return followupTasks;
 //	}

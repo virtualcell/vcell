@@ -297,4 +297,15 @@ public synchronized boolean isInterrupted() {
 private synchronized void interrupt() {
 	bInterrupted = true;
 }
+
+public void setVisible(final boolean bVisible) {
+	new SwingDispatcherAsync (){
+		public void runSwing() {
+			getDialog().setVisible(bVisible);
+		}
+		public void handleException(Throwable e) {
+			e.printStackTrace();
+		}
+	}.dispatch();			
+}
 }

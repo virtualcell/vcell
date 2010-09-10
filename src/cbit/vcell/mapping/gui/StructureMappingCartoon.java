@@ -171,7 +171,9 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 			this.simulationContext.getGeometryContext().removePropertyChangeListener(this);
 			this.simulationContext.getGeometry().removePropertyChangeListener(this);
 			this.simulationContext.getGeometry().getGeometrySpec().removePropertyChangeListener(this);
-			simulationContext.getGeometry().getGeometrySurfaceDescription().removePropertyChangeListener(this);
+			if (simulationContext.getGeometry().getGeometrySurfaceDescription() != null) {
+				simulationContext.getGeometry().getGeometrySurfaceDescription().removePropertyChangeListener(this);
+			}
 			this.simulationContext.removePropertyChangeListener(this);
 			StructureMapping oldStructureMappings[] = 
 				simulationContext.getGeometryContext().getStructureMappings();
@@ -184,7 +186,9 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 			this.simulationContext.getGeometryContext().addPropertyChangeListener(this);
 			this.simulationContext.getGeometry().addPropertyChangeListener(this);
 			this.simulationContext.getGeometry().getGeometrySpec().addPropertyChangeListener(this);
-			simulationContext.getGeometry().getGeometrySurfaceDescription().addPropertyChangeListener(this);
+			if (simulationContext.getGeometry().getGeometrySurfaceDescription() != null) {
+				simulationContext.getGeometry().getGeometrySurfaceDescription().addPropertyChangeListener(this);
+			}
 			this.simulationContext.addPropertyChangeListener(this);
 			StructureMapping newStructureMappings[] = 
 				simulationContext.getGeometryContext().getStructureMappings();

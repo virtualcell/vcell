@@ -206,7 +206,7 @@ private void connEtoM1(java.awt.event.ActionEvent arg1) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					getGeometrySpec().removeAnalyticSubVolume((AnalyticSubVolume)getSelectedSubVolume());
-					//getGeometry().getGeometrySurfaceDescription().updateAll();
+					//getGeometry().precomputeAll();
 				}
 			};
 			ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});			
@@ -685,7 +685,7 @@ private javax.swing.JPanel getJPanel1() {
 									@Override
 									public void run(Hashtable<String, Object> hashTable) throws Exception {
 										AddShapeJPanel.addSubVolumeToGeometrySpec(addShapeJPanel,getGeometrySpec());
-										//getGeometry().getGeometrySurfaceDescription().updateAll();
+										//getGeometry().precomputeAll();
 									}
 								};
 								ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
