@@ -106,6 +106,7 @@ private void editSelectGeometry(boolean bShowOldGeomEditor/*DocumentCreationInfo
 		localGeometryViewer.setGeometry(newGeom);
 		localGeometryViewer.setSize(800,600);
 		int result = DialogUtils.showComponentOKCancelDialog(getComponent(), localGeometryViewer, "Edit Geometry: '"+/*origGeom*/newGeom.getName()+"'");
+		localGeometryViewer.setGeometry(null);
 		if(result != JOptionPane.OK_OPTION){
 			throw UserCancelException.CANCEL_GENERIC;
 		}
