@@ -173,7 +173,7 @@ public GeometrySpec(String aName, VCImage aVCImage) {
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(new PropertyChangeListenerProxyVCell(listener));
+	PropertyChangeListenerProxyVCell.addProxyListener(getPropertyChange(), listener);
 }
 
 
@@ -381,7 +381,7 @@ public boolean compareEqual(Matchable object) {
  * @return cbit.image.VCImage
  */
 public VCImage createSampledImage(ISize sampleSize) throws GeometryException, ImageException, ExpressionException {
-
+	
 	VCellThreadChecker.checkCpuIntensiveInvocation();
 	
 	byte handles[] = new byte[sampleSize.getX()*sampleSize.getY()*sampleSize.getZ()];
@@ -856,7 +856,7 @@ public VCImage getSampledImage() throws GeometryException, ImageException, Expre
 		ISize sampleSize = getDefaultSampledImageSize();
 		VCImage oldImage = sampledImage;
 		sampledImage = createSampledImage(sampleSize);
-		firePropertyChange("sampledImage",oldImage,sampledImage);
+//		firePropertyChange("sampledImage",oldImage,sampledImage);
 		try {
 			verifyCompleteSampling(sampledImage);
 			setWarningMessage("");
@@ -1055,6 +1055,21 @@ public boolean isCurveValid(Curve curve) {
 }
 
 
+private void fireSampleImagePropertyChange(){
+	VCImage oldSampledImage = sampledImage;
+	//
+	// RATIONALE:
+	//
+	// The "sampledImage" is a pull-model (creates "only as necessary").
+	// Creating the "sampledImage" is expensive, (so only want to
+	// create if someone is listening and want the image (calls the get()).
+	//
+	// invalidate the present sampledImage and send a propertyChangeEvent to prompt
+	// the user to check for a new sampledImage (which can create one on the fly)
+	//
+	sampledImage = null;
+	firePropertyChange("sampledImage",oldSampledImage,sampledImage);
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/3/00 9:58:08 AM)
@@ -1065,57 +1080,21 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 		SubVolume oldSubVolumes[] = (SubVolume[])event.getOldValue();
 		SubVolume newSubVolumes[] = (SubVolume[])event.getNewValue();
 		if (!Compare.isEqualStrict(oldSubVolumes,newSubVolumes)){  // ignore if just a change of instances
-			VCImage oldSampledImage = sampledImage;
-			//
-			// RATIONALE:
-			//
-			// The "sampledImage" is a pull-model (creates "only as necessary").
-			// Creating the "sampledImage" is expensive, (so only want to
-			// create if someone is listening and want the image (calls the get()).
-			//
-			// invalidate the present sampledImage and send a propertyChangeEvent to prompt
-			// the user to check for a new sampledImage (which can create one on the fly)
-			//
-			sampledImage = null;
-			firePropertyChange("sampledImage",oldSampledImage,sampledImage);
+			fireSampleImagePropertyChange();
 		}
 	}
 	if (event.getSource() == this && (event.getPropertyName().equals("extent") || event.getPropertyName().equals("origin"))){
 		Matchable oldExtentOrOrigin = (Matchable)event.getOldValue();
 		Matchable newExtentOrOrigin = (Matchable)event.getNewValue();
 		if (!Compare.isEqual(oldExtentOrOrigin,newExtentOrOrigin)){
-			VCImage oldSampledImage = sampledImage;
-			//
-			// RATIONALE:
-			//
-			// The "sampledImage" is a pull-model (creates "only as necessary").
-			// Creating the "sampledImage" is expensive, (so only want to
-			// create if someone is listening and want the image (calls the get()).
-			//
-			// invalidate the present sampledImage and send a propertyChangeEvent to prompt
-			// the user to check for a new sampledImage (which can create one on the fly)
-			//
-			sampledImage = null;
-			firePropertyChange("sampledImage",oldSampledImage,sampledImage);
+			fireSampleImagePropertyChange();
 		}
 	}
 	if (event.getSource() instanceof AnalyticSubVolume && event.getPropertyName().equals("expression")) {
 		cbit.vcell.parser.Expression oldExpression = (cbit.vcell.parser.Expression)event.getOldValue();
 		cbit.vcell.parser.Expression newExpression = (cbit.vcell.parser.Expression)event.getNewValue();
 		if (!Compare.isEqual(oldExpression,newExpression)) {
-			VCImage oldSampledImage = sampledImage;
-			//
-			// RATIONALE:
-			//
-			// The "sampledImage" is a pull-model (creates "only as necessary").
-			// Creating the "sampledImage" is expensive, (so only want to
-			// create if someone is listening and want the image (calls the get()).
-			//
-			// invalidate the present sampledImage and send a propertyChangeEvent to prompt
-			// the user to check for a new sampledImage (which can create one on the fly)
-			//
-			sampledImage = null;
-			firePropertyChange("sampledImage",oldSampledImage,sampledImage);
+			fireSampleImagePropertyChange();
 		}
 	}
 }

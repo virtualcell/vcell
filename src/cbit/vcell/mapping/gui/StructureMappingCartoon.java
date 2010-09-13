@@ -7,10 +7,12 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Enumeration;
+import java.util.Vector;
 
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
@@ -62,6 +64,15 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 	
 	@Override
 	public void refreshAll() {
+		{
+			GeometryClass[] geometryClasses = getGeometryContext().getGeometry().getGeometryClasses();
+			for (int i=0;i<geometryClasses.length;i++){
+				Shape testShape = getShapeFromModelObject(geometryClasses[i]);
+				if(testShape instanceof GeometryClassLegendShape){
+					geometryClasses[i].removePropertyChangeListener((GeometryClassLegendShape)testShape);
+				}
+			}	
+		}
 		clearAllShapes();
 		if (getSimulationContext() == null){
 			fireGraphChanged(new GraphEvent(this));
@@ -93,24 +104,15 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 		}
 		// create all SubvolumeLegendShapes (for legend)
 		GeometrySpec geometrySpec = getGeometryContext().getGeometry().getGeometrySpec();
-		SubVolume subVolumes[] = geometrySpec.getSubVolumes();
-		for (int i=0;i<subVolumes.length;i++){
+		
+		GeometryClass[] geometryClasses = getGeometryContext().getGeometry().getGeometryClasses();
+		for (int i=0;i<geometryClasses.length;i++){
 			GeometryClassLegendShape geometryClassLegendShape = 
-				new GeometryClassLegendShape(subVolumes[i], getGeometryContext().getGeometry(), this, 10);
+				new GeometryClassLegendShape(geometryClasses[i], getGeometryContext().getGeometry(), this, 10);
+			geometryClasses[i].addPropertyChangeListener(geometryClassLegendShape);
 			addShape(geometryClassLegendShape);
 			geometryShape.addChildShape(geometryClassLegendShape);
 		}	
-		GeometrySurfaceDescription geometrySurfaceDescription = 
-			getGeometryContext().getGeometry().getGeometrySurfaceDescription();
-		if (geometrySurfaceDescription!=null){
-			SurfaceClass[] surfaceClasses = geometrySurfaceDescription.getSurfaceClasses();
-			for (int i=0; surfaceClasses != null && i<surfaceClasses.length; i++){
-				GeometryClassLegendShape geometryClassLegendShape = 
-					new GeometryClassLegendShape(surfaceClasses[i],getGeometryContext().getGeometry(),this,10);
-				addShape(geometryClassLegendShape);
-				geometryShape.addChildShape(geometryClassLegendShape);
-			}	
-		}
 		if((subVolumeContainerShape == null) || 
 				(subVolumeContainerShape.getModelObject() != getGeometryContext().getGeometry())){
 			subVolumeContainerShape = 

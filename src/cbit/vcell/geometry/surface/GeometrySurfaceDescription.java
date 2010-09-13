@@ -116,7 +116,7 @@ public GeometrySurfaceDescription(Geometry geometry, GeometrySurfaceDescription 
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(new PropertyChangeListenerProxyVCell(listener));
+	PropertyChangeListenerProxyVCell.addProxyListener(getPropertyChange(), listener);
 }
 
 /**
@@ -580,6 +580,10 @@ public void setFilterCutoffFrequency(java.lang.Double filterCutoffFrequency) thr
  * @see #getGeometricRegions
  */
 public void setGeometricRegions(GeometricRegion[] geometricRegions) throws java.beans.PropertyVetoException {
+	//VCell logic depends on fieldGeometricRegions being null (not just empty)
+	if(geometricRegions != null && geometricRegions.length==0){
+		throw new IllegalArgumentException("Not expecting empty array of GeometricRegion");
+	}
 	if (fieldGeometricRegions == geometricRegions) {
 		return;
 	}
@@ -731,6 +735,7 @@ public void updateAll() throws GeometryException, ImageException, ExpressionExce
 	//
 	if (getSurfaceClasses()==null || bChanged){
 		refreshSurfaceClasses();
+		bChanged = true;
 	}
 }
 

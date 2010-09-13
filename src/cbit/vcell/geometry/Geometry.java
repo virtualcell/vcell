@@ -161,7 +161,7 @@ public GeometryClass[] getGeometryClasses() {
 	}
 	if (fieldGeometrySurfaceDescription!=null){
 		SurfaceClass[] surfaceClasses = fieldGeometrySurfaceDescription.getSurfaceClasses();
-		if (surfaceClasses==null){
+		if (surfaceClasses==null || fieldGeometrySurfaceDescription.getGeometricRegions()==null){
 			try {
 				fieldGeometrySurfaceDescription.updateAll();
 			} catch (GeometryException e) {

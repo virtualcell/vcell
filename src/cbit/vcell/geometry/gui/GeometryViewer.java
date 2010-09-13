@@ -36,7 +36,6 @@ public class GeometryViewer extends javax.swing.JPanel implements ActionListener
 	private GeometrySizeDialog ivjGeometrySizeDialog1 = null;
 	private GeometrySpec ivjGeometrySpec = null;
 	private javax.swing.JButton ivjJButtonChangeDomain = null;
-	private PropertyChangeListenerProxyVCell listenerProxy = new PropertyChangeListenerProxyVCell(this);
 	
 	public static final String SUBVOLCNTRSHP_CHANGED = "SUBVOLCNTRSHP_CHANGED";
 
@@ -300,7 +299,7 @@ private void refreshSourceDataInfo() {
 			}
 		}	
 	};
-	
+
 	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);	
 }
 
@@ -791,9 +790,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		connEtoC4(evt);
 	if (evt.getSource() == getGeometrySpec() && (evt.getPropertyName().equals("extent"))) 
 		connEtoC5(evt);
-	if (evt.getSource() == getGeometrySpec() && (evt.getPropertyName().equals("sampledImage"))) 
-		connEtoM9(evt);
-	if (evt.getSource() == getGeometrySpec() && (evt.getPropertyName().equals("sampledImage"))){ 
+	if (evt.getSource() == getGeometrySpec() && (evt.getPropertyName().equals("sampledImage"))){
 		refreshSourceDataInfo();
 	}
 	// user code begin {2}
@@ -908,13 +905,13 @@ private void setGeometrySpec(GeometrySpec newValue) {
 		try {
 			/* Stop listening for events from the current object */
 			if (ivjGeometrySpec != null) {
-				ivjGeometrySpec.removePropertyChangeListener(listenerProxy);
+				ivjGeometrySpec.removePropertyChangeListener(this);
 			}
 			ivjGeometrySpec = newValue;
 
 			/* Listen for events from the new object */
 			if (ivjGeometrySpec != null) {
-				ivjGeometrySpec.addPropertyChangeListener(listenerProxy);
+				ivjGeometrySpec.addPropertyChangeListener(this);
 			}
 			// user code begin {1}
 			// user code end
