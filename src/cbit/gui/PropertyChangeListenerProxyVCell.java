@@ -57,4 +57,18 @@ public class PropertyChangeListenerProxyVCell implements PropertyChangeListener 
 			}
 		}
 	}
+	public static void addProxyListener(PropertyChangeSupport pcs, PropertyChangeListener listener) {
+		if(listener instanceof PropertyChangeListenerProxyVCell){
+			throw new IllegalArgumentException("listener already proxy");
+		}
+		PropertyChangeListener[] listeners = pcs.getPropertyChangeListeners();
+		for (PropertyChangeListener pcl : listeners) {
+			if (pcl == listener ||
+				(pcl instanceof PropertyChangeListenerProxyVCell && ((PropertyChangeListenerProxyVCell)pcl).listener == listener)) {
+				throw new IllegalArgumentException("duplicate listener "+listener);
+			}
+		}
+		pcs.addPropertyChangeListener(new PropertyChangeListenerProxyVCell(listener));
+	}
+
 }

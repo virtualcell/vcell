@@ -62,7 +62,6 @@ public class GeometrySubVolumePanel extends javax.swing.JPanel {
 	private final JButton addShapeButton = new JButton();
 
 	private AddShapeJPanel addShapeJPanel = null;
-	private PropertyChangeListenerProxyVCell listenerProxy = new PropertyChangeListenerProxyVCell(ivjEventHandler);
 
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
@@ -960,13 +959,13 @@ private void setGeometrySpec(GeometrySpec newValue) {
 		try {
 			/* Stop listening for events from the current object */
 			if (ivjGeometrySpec != null) {
-				ivjGeometrySpec.removePropertyChangeListener(listenerProxy);
+				ivjGeometrySpec.removePropertyChangeListener(ivjEventHandler);
 			}
 			ivjGeometrySpec = newValue;
 
 			/* Listen for events from the new object */
 			if (ivjGeometrySpec != null) {
-				ivjGeometrySpec.addPropertyChangeListener(listenerProxy);
+				ivjGeometrySpec.addPropertyChangeListener(ivjEventHandler);
 			}
 			connEtoC11(ivjGeometrySpec);
 			// user code begin {1}

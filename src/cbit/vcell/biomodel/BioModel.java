@@ -743,14 +743,15 @@ public void setSimulationContexts(SimulationContext[] simulationContexts) throws
 	SimulationContext[] oldValue = fieldSimulationContexts;
 	fireVetoableChange("simulationContexts", oldValue, simulationContexts);
 	for (int i = 0; oldValue!=null && i < oldValue.length; i++){
-		oldValue[i].removePropertyChangeListener(this);
-		oldValue[i].removeVetoableChangeListener(this);
+//		oldValue[i].removePropertyChangeListener(this);
+//		oldValue[i].removeVetoableChangeListener(this);
 		oldValue[i].setBioModel(null);
 	}
 	fieldSimulationContexts = simulationContexts;
 	for (int i = 0; simulationContexts!=null && i < simulationContexts.length; i++){
-		simulationContexts[i].addPropertyChangeListener(this);
-		simulationContexts[i].addVetoableChangeListener(this);
+//This is done in PropertyChange, not needed here and causes duplication in PropertyChange listener list
+//		simulationContexts[i].addPropertyChangeListener(this);
+//		simulationContexts[i].addVetoableChangeListener(this);
 		simulationContexts[i].setBioModel(this);
 	}
 	firePropertyChange("simulationContexts", oldValue, simulationContexts);

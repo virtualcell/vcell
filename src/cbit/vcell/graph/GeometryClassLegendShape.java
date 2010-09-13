@@ -45,7 +45,6 @@ public class GeometryClassLegendShape extends ElipseShape implements PropertyCha
 		super(graphModel);
 		this.geometryClass = geometryClass;
 		this.geometry = geometry;
-		geometryClass.addPropertyChangeListener(this);
 		defaultBG = java.awt.Color.red;
 		defaultFGselect = java.awt.Color.black;
 		backgroundColor = defaultBG;

@@ -99,7 +99,7 @@ GeometryContext (Model model, Geometry geometry, SimulationContext simulationCon
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(new PropertyChangeListenerProxyVCell(listener));
+	PropertyChangeListenerProxyVCell.addProxyListener(getPropertyChange(), listener);
 }
 /**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.

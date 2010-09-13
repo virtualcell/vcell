@@ -8,8 +8,13 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.Hashtable;
+
+import javax.swing.JOptionPane;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 /**
@@ -878,19 +883,25 @@ private void initialize() {
  */
 private void Ok() throws PropertyVetoException {
 
-	double worldExtentX = Double.valueOf(getSizeXTextField().getText()).doubleValue();
-	double worldExtentY = Double.valueOf(getSizeYTextField().getText()).doubleValue();
-	double worldExtentZ = Double.valueOf(getSizeZTextField().getText()).doubleValue();
+	final double worldExtentX = Double.valueOf(getSizeXTextField().getText()).doubleValue();
+	final double worldExtentY = Double.valueOf(getSizeYTextField().getText()).doubleValue();
+	final double worldExtentZ = Double.valueOf(getSizeZTextField().getText()).doubleValue();
 
-	double worldOriginX = Double.valueOf(getOriginXTextField().getText()).doubleValue();
-	double worldOriginY = Double.valueOf(getOriginYTextField().getText()).doubleValue();
-	double worldOriginZ = Double.valueOf(getOriginZTextField().getText()).doubleValue();
+	final double worldOriginX = Double.valueOf(getOriginXTextField().getText()).doubleValue();
+	final double worldOriginY = Double.valueOf(getOriginYTextField().getText()).doubleValue();
+	final double worldOriginZ = Double.valueOf(getOriginZTextField().getText()).doubleValue();
 
 	bUpdating = true;
 	try {
-		GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
-		geometrySpec.setExtent(new org.vcell.util.Extent(worldExtentX,worldExtentY,worldExtentZ));
-		geometrySpec.setOrigin(new org.vcell.util.Origin(worldOriginX,worldOriginY,worldOriginZ));
+		final GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
+		AsynchClientTask extentOriginTask = new AsynchClientTask("Update Extent and Origin",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				geometrySpec.setExtent(new org.vcell.util.Extent(worldExtentX,worldExtentY,worldExtentZ));
+				geometrySpec.setOrigin(new org.vcell.util.Origin(worldOriginX,worldOriginY,worldOriginZ));
+			}
+		};
+		ClientTaskDispatcher.dispatch(JOptionPane.getRootFrame(), new Hashtable<String, Object>(), new AsynchClientTask[] {extentOriginTask});
 	}finally{
 		bUpdating = false;
 	}
