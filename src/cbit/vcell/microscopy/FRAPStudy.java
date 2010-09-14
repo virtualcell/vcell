@@ -11,9 +11,6 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.JFileChooser;
-
-import org.jdom.Element;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
@@ -23,19 +20,18 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
@@ -56,10 +52,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
@@ -68,33 +61,25 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DataProcessingInstructions;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverEvent;
-import cbit.vcell.solver.SolverListener;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.xml.XmlReader;
-import cbit.vcell.xml.Xmlproducer;
 
 public class FRAPStudy implements Matchable{
 	public static final String EXTRACELLULAR_NAME = "extracellular";
@@ -333,7 +318,7 @@ public class FRAPStudy implements Matchable{
 			scs.getInitialConditionParameter().setExpression(initialConditions[i]);
 			scs.getDiffusionParameter().setExpression(diffusionConstants[i]);
 		}
-		MathMapping mathMapping = new MathMapping(simContext);
+		MathMapping mathMapping = simContext.createNewMathMapping();
 		MathDescription mathDesc = mathMapping.getMathDescription();
 		
 		//Add PSF function
@@ -552,7 +537,7 @@ public class FRAPStudy implements Matchable{
 			scs.getDiffusionParameter().setExpression(diffusionConstants[i]);
 		}
 
-		MathMapping mathMapping = new MathMapping(simContext);
+		MathMapping mathMapping = simContext.createNewMathMapping();
 		MathDescription mathDesc = mathMapping.getMathDescription();
 		//Add total fluorescence as function of mobile(optional: and slower mobile) and immobile fractions
 		mathDesc.addVariable(new Function(FRAPStudy.SPECIES_NAME_PREFIX_COMBINED,
@@ -712,8 +697,19 @@ public class FRAPStudy implements Matchable{
 			if(progressListener != null)
 			{
 				progressListener.setProgress((int)(fvSolver.getProgress()*100));
+				if (progressListener.isInterrupted())
+				{
+					fvSolver.stopSolver();
+					throw UserCancelException.CANCEL_GENERIC;
+				}
 			}
-			Thread.sleep(1000);
+			try{
+				Thread.sleep(1000);
+			}catch(InterruptedException ex)
+			{
+				ex.printStackTrace(System.out);
+				//catch interrupted exception and ignore it, otherwise it will popup a dialog in user interface saying"sleep interrupted"
+			}
 			status = fvSolver.getSolverStatus();
 		}
 
@@ -764,8 +760,19 @@ public class FRAPStudy implements Matchable{
 				if(progressListener != null)
 				{
 					progressListener.setProgress((int)(fvSolver.getProgress()*100));
+					if (progressListener.isInterrupted())
+					{
+						fvSolver.stopSolver();
+						throw UserCancelException.CANCEL_GENERIC;
+					}
 				}
-				Thread.sleep(1000);
+				try{
+					Thread.sleep(1000);
+				}catch(InterruptedException ex)
+				{
+					ex.printStackTrace(System.out);
+					//catch interrupted exception and ignore it, otherwise it will popup a dialog in user interface saying"sleep interrupted"
+				}
 				status = fvSolver.getSolverStatus();
 			}
 

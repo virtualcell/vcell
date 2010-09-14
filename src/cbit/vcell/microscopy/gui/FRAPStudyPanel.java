@@ -141,7 +141,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public static final String VFRAP_PREFIX_MASK = "Mask";
 	public static final String VFRAP_PREFIX_SIM = "Sim";
 	public static final String[] VFRAP_DS_PREFIX = {VFRAP_PREFIX_EXP, VFRAP_PREFIX_MASK, VFRAP_PREFIX_SIM};
-	public static final String NO_THANKS_MSG = "NO, Thanks";
+	public static final String NO_THANKS_MSG = "Don't Save";
 	public static final String SAVE_CONTINUE_MSG = "Save and Continue";
 	
 	//properties
@@ -231,7 +231,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   					}
 	  	   				}
 	  	   				
-		  	   			AsynchClientTask showLoadWizardTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		  	   			AsynchClientTask showLoadWizardTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false) 
 		  	    		{
 		  	    			public void run(Hashtable<String, Object> hashTable) throws Exception
 		  	    			{
@@ -239,7 +239,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		  	    			}
 		  	    		};
 		  	    		
-		  	    		AsynchClientTask afterCloseLoadWizardTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		  	    		AsynchClientTask afterCloseLoadWizardTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING, false) 
 		  	    		{
 		  	    			public void run(Hashtable<String, Object> hashTable) throws Exception
 		  	    			{
@@ -1468,7 +1468,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				mSpec.setViewZoom(1);
 				ExportSpecs exSpecs = new ExportSpecs(vcDataId, format, variableSpecs, timeSpecs, geometrySpecs, mSpec);
 				// pass the request
-				ExportEvent exportEvt = ((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).startExportMovie(exSpecs, outputContext);
+				ExportEvent exportEvt = ((VirtualFrapWindowManager)getFlourDataViewer().getDataViewerManager()).startExportMovie(exSpecs, outputContext, this.getClientTaskStatusSupport());
 				hashTable.put("ExportEvt", exportEvt);
 			}
 		};
@@ -1488,7 +1488,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				JMFPlayer.showMovieInDialog(get2DResultDialog(),movieURLString, movieFileString);
 			}
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{createMovieTask,showMovieTask}, false, false, null, true);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{createMovieTask,showMovieTask}, true, true, null, true);
 	}
 	
 	

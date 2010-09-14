@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 
 import cbit.plot.Plot2D;
@@ -922,7 +923,10 @@ public class FRAPOptData {
 	                        fixedParam.getScale(),
 	                        FRAPOptimization.epsilon);
 			}
-			clientTaskStatusSupport.setMessage("Evaluating parameter: " + fixedParam.getName());
+			if(clientTaskStatusSupport != null)
+			{
+				clientTaskStatusSupport.setMessage("Evaluating parameter: " + fixedParam.getName());
+			}
 			ProfileDataElement pde = new ProfileDataElement(fixedParam.getName(), Math.log10(fixedParam.getInitialGuess()), iniTotalErr, newBestParameters);
 			profileData.addElement(pde);
 			
@@ -999,7 +1003,10 @@ public class FRAPOptData {
 					}
 					
 				}
-				
+				if (clientTaskStatusSupport.isInterrupted())
+				{
+					throw UserCancelException.CANCEL_GENERIC;
+				}
 				iterationCount++;
 			}
 			//decrease
@@ -1063,7 +1070,10 @@ public class FRAPOptData {
 					}
 					decrement = Math.max( DECREMENT_LOWER_BOUND, decrement);//decrement can be 0 or smaller than 0, we have to clamp it to lower bound decement 0.1.
 				}
-
+				if (clientTaskStatusSupport.isInterrupted())
+				{
+					throw UserCancelException.CANCEL_GENERIC;
+				}
 				iterationCount++;
 			}
 			resultData[j] = profileData;

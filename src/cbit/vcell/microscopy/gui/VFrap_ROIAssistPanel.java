@@ -56,7 +56,6 @@ public class VFrap_ROIAssistPanel extends JPanel {
 	private JButton fillVoidsButton;
 	private JButton applyROIButton;
 	private JButton resolveROIButton;
-	private JPanel histogramPanel;
 	private JComboBox spatialEnhanceComboBox;
 	private JComboBox roiSourceComboBox;
 	private JSlider thresholdSlider;
@@ -169,17 +168,6 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		gridBagConstraints_2.gridx = 1;
 		add(spatialEnhanceComboBox, gridBagConstraints_2);
 
-		histogramPanel = new JPanel();
-		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-		gridBagConstraints_4.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_4.gridwidth = 2;
-		gridBagConstraints_4.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_4.weighty = 1;
-		gridBagConstraints_4.weightx = 1;
-		gridBagConstraints_4.gridy = 2;
-		gridBagConstraints_4.gridx = 0;
-		add(histogramPanel, gridBagConstraints_4);
-
 		thresholdSlider = new JSlider();
 		thresholdSlider.setMaximum(MAX_SCALE);
 		thresholdSlider.addChangeListener(processTimepointChangeListener);
@@ -187,7 +175,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		gridBagConstraints_5.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_5.gridwidth = 2;
 		gridBagConstraints_5.gridx = 0;
-		gridBagConstraints_5.gridy = 4;
+		gridBagConstraints_5.gridy = 3;
 		add(thresholdSlider, gridBagConstraints_5);
 
 		final JLabel thresholdForRoiLabel = new JLabel();
@@ -195,7 +183,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		thresholdForRoiLabel.setText("Threshold Adjust ROI");
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.gridwidth = 2;
-		gridBagConstraints_7.gridy = 3;
+		gridBagConstraints_7.gridy = 2;
 		gridBagConstraints_7.gridx = 0;
 		add(thresholdForRoiLabel, gridBagConstraints_7);
 
@@ -205,7 +193,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.insets = new Insets(0, 4, 0, 0);
 		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_8.gridy = 5;
+		gridBagConstraints_8.gridy = 4;
 		gridBagConstraints_8.gridx = 0;
 		add(lowerLabel, gridBagConstraints_8);
 
@@ -215,7 +203,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_9.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_9.gridy = 5;
+		gridBagConstraints_9.gridy = 4;
 		gridBagConstraints_9.gridx = 1;
 		add(higherLabel, gridBagConstraints_9);
 
@@ -224,7 +212,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
 		gridBagConstraints_6.insets = new Insets(20, 2, 2, 2);
 		gridBagConstraints_6.gridwidth = 2;
-		gridBagConstraints_6.gridy = 6;
+		gridBagConstraints_6.gridy = 5;
 		gridBagConstraints_6.gridx = 0;
 		add(okCancelJPanel, gridBagConstraints_6);
 

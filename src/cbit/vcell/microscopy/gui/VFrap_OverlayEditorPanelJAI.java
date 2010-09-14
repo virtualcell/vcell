@@ -92,18 +92,22 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	private double originalScaleFactor = DEFAULT_SCALE_FACTOR;
 	private double originalOffsetFactor = DEFAULT_OFFSET_FACTOR;
 	private ISize originalISize;
+	//display button mode
+	public static final int BUTTON_DISPLAY_ONE_COLUMN = 1;
+	public static final int BUTTON_DISPLAY_TWO_COLUMNS = 2;
+	private int buttonDisplayType = BUTTON_DISPLAY_TWO_COLUMNS;
 	//panel components
 	private JComboBox roiComboBox;
 	private JButton contrastButtonMinus;
 	private JButton contrastButtonPlus;
 	private JToggleButton cropButton;
+	private JToggleButton autoCropButton;
 	private JToggleButton fillButton;
 	private JToggleButton eraseButton;
 	private JToggleButton paintButton;
 	private JButton importROIMaskButton;
 	private JButton clearROIbutton;
 	private JButton roiTimePlotButton;
-	private JButton autoCropButton;
 	private JButton roiAssistButton;
 	private VFrap_OverlayImageDisplayJAI imagePane = null;
 	private JSlider timeSlider = null;
@@ -111,7 +115,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	private ROI roi = null;
 	private StringBuffer sb = new StringBuffer();
 	private JScrollPane jScrollPane2 = null;
-	private JPanel leftJPanel = null;
+	private JPanel rightPanel = null;
 	private JButton zoomInButton = null;
 	private JButton zoomOutButton = null;
 	private Color highlightColor = Color.yellow.darker();
@@ -125,9 +129,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	private JLabel viewZLabel;
 	private JLabel editRoiLabel;
 	
-	private JButton addROIButton;
-	private JButton delROIButton;
-	private boolean bAllowAddROI = true;
 	//variables for undo function	
 	UndoableEditSupport undoableEditSupport;
 	ROI undoableROI;
@@ -147,7 +148,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	ActionListener ROI_COMBOBOX_ACTIONLISTENER =
 		new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				delROIButton.setEnabled(((ComboboxROIName)roiComboBox.getSelectedItem()).isEditable());				
+//				delROIButton.setEnabled(((ComboboxROIName)roiComboBox.getSelectedItem()).isEditable());				
 				String selectedName = ((ComboboxROIName)roiComboBox.getSelectedItem()).getROIName();
 				if (!selectedName.equals(roiName)) {					
 					firePropertyChange(FRAP_DATA_CURRENTROI_PROPERTY, null,((ComboboxROIName)roiComboBox.getSelectedItem()).getROIName());
@@ -189,8 +190,9 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	/**
 	 * This is the default constructor
 	 */
-	public VFrap_OverlayEditorPanelJAI() {
+	public VFrap_OverlayEditorPanelJAI(int buttonDisplayType) {
 		super();
+		this.buttonDisplayType = buttonDisplayType;
 		initialize();
 	}
 
@@ -239,14 +241,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			return Cursor.getDefaultCursor();
 		}
 		return cursorsForROIsHash.get(roi.getROIName());
-//		if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name())){
-//			return FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_CELLROI];
-//		}else if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name())){
-//			return FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BLEACHROI];
-//		}else if(roi.getROIName().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())){
-//			return FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BACKGROUNDROI];
-//		}
-//		throw new RuntimeException("Unknown ROI type "+roi.getROIName()+" while getting cursor");
 	}
 	
 	public void setCursorsForROIs(Hashtable<String, Cursor> cursorsForROIsHash){
@@ -257,6 +251,10 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	 * 
 	 */
 	private void initialize() {
+		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
+		gridBagLayout_1.rowHeights = new int[] {0,7,0};
+		this.setLayout(gridBagLayout_1);
+		
 		GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
 		gridBagConstraints2.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints2.anchor = GridBagConstraints.NORTH;
@@ -271,10 +269,9 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints12.gridx = 0;
 		gridBagConstraints12.gridy = 1;
 		gridBagConstraints12.weightx = 1;
-		this.setSize(734, 534);
-		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
-		gridBagLayout_1.rowHeights = new int[] {0,7,0};  
-		this.setLayout(gridBagLayout_1);
+//		this.setSize(734, 534);
+		  
+		
 
 		editROIPanel = new JPanel();
 		final GridBagLayout gridBagLayout_2 = new GridBagLayout();
@@ -287,7 +284,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_6.weightx = 0;
 		gridBagConstraints_6.gridy = 0;
 		gridBagConstraints_6.gridx = 1;
-		add(editROIPanel, gridBagConstraints_6);
+		this.add(editROIPanel, gridBagConstraints_6);
 
 		final JLabel infoLabel = new JLabel();
 		infoLabel.setText("Data Info:");
@@ -321,138 +318,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] {0,7,7,0,7};
 		topJPanel.setLayout(gridBagLayout);
-
-		autoCropButton = new JButton(new ImageIcon(getClass().getResource("/images/autoCrop.gif")));
-		autoCropButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				try {
-					waitCursor(true);
-					if(isAutoCroppable()){
-						Rectangle cropRect = null;
-						if(imageDataset != null){
-							cropRect = imageDataset.getNonzeroBoundingRectangle();
-						}
-						imagePane.setCrop(
-								new Point(
-									(int)(cropRect.x*imagePane.getZoom()),
-									(int)(cropRect.y*imagePane.getZoom())),
-								new Point(
-									(int)((cropRect.x+cropRect.width)*imagePane.getZoom()),
-									(int)((cropRect.y+cropRect.height)*imagePane.getZoom())));
-						waitCursor(false);
-						if(!cropConfirm(cropRect)){
-							imagePane.setCrop(null, null);
-							return;
-						}
-						waitCursor(true);
-						imagePane.setCrop(null, null);
-						firePropertyChange(FRAP_DATA_CROP_PROPERTY, null,cropRect);						
-					}else{
-						DialogUtils.showInfoDialog(VFrap_OverlayEditorPanelJAI.this, "AutoCrop: No zero values around outer edges.");
-					}
-				} catch (Exception e1) {
-					e1.printStackTrace();
-					DialogUtils.showErrorDialog(VFrap_OverlayEditorPanelJAI.this, "Error AutoCrop:\n"+e1.getMessage());
-				}finally{
-					waitCursor(false);				
-				}
-			}
-		});
-//		autoCropButton.setText("Auto Crop DataSet");
-//		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
-//		gridBagConstraints_1.gridx = 0;
-//		gridBagConstraints_1.gridy = 0;
-//		gridBagConstraints_1.insets = new Insets(2, 2, 2, 2);
-//		topJPanel.add(autoCropButton, gridBagConstraints_1);
-
-		importROIMaskButton = new JButton(new ImageIcon(getClass().getResource("/images/importROI.gif")));
-		importROIMaskButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				File inputFile = null;
-				IFormatReader iFormatReader = null;
-				try {
-					int option = openJFileChooser.showOpenDialog(VFrap_OverlayEditorPanelJAI.this);
-					if (option == JFileChooser.APPROVE_OPTION){
-						inputFile = openJFileChooser.getSelectedFile();
-					}else{
-						throw UserCancelException.CANCEL_GENERIC;
-					}
-					if(!customROIImport.importROI(inputFile)){
-						ImageReader imageReader = new ImageReader();
-						iFormatReader = imageReader.getReader(inputFile.getAbsolutePath());
-						iFormatReader.setId(inputFile.getAbsolutePath());
-						if(iFormatReader.getSizeX() * iFormatReader.getSizeY() != 
-							getImagePane().getHighlightImage().getWidth()*getImagePane().getHighlightImage().getHeight()){
-							throw new Exception(
-								"Imported ROI mask size ("+
-								iFormatReader.getSizeX()+","+iFormatReader.getSizeY()+")"+
-								" does not match current Frap DataSet size ("+
-								getImagePane().getHighlightImage().getWidth()+","+
-								getImagePane().getHighlightImage().getHeight()+")");
-						}
-						BufferedImage roiMaskImage = BufferedImageReader.makeBufferedImageReader(iFormatReader).openImage(0);
-						int maskColor = highlightColor.getRGB();
-						for (int y = 0; y < iFormatReader.getSizeY(); y++) {
-							for (int x = 0; x < iFormatReader.getSizeX(); x++) {
-								if((roiMaskImage.getRGB(x, y)&0x00FFFFFF) != 0){
-									getImagePane().getHighlightImage().setRGB(x,y,maskColor);
-								}
-							}
-						}
-						getImagePane().refreshImage();
-					}
-				} catch (UserCancelException uce) {
-					//Do Nothing
-				} catch (Exception e1) {
-					e1.printStackTrace();
-					DialogUtils.showErrorDialog(VFrap_OverlayEditorPanelJAI.this, "Error importing ROI"+e1.getMessage());
-				}finally{
-					if(iFormatReader != null){try{iFormatReader.close();}catch(Exception e2){e2.printStackTrace();}}
-				}
-			}
-		});
-		
-		clearROIbutton = new JButton(new ImageIcon(getClass().getResource("/images/clearROI.gif")));
-		clearROIbutton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				clearROI();
-			}
-		});
-
-		roiTimePlotButton = new JButton(new ImageIcon(getClass().getResource("/images/plotROI.gif")));
-		roiTimePlotButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				if(getImagePane() == null || getImagePane().getHighlightImage() == null){
-					return;
-				}
-				boolean bHasROI = false;
-				for (int y = 0; y < getImagePane().getHighlightImage().getHeight(); y++) {
-					for (int x = 0; x < getImagePane().getHighlightImage().getWidth(); x++) {
-						if((getImagePane().getHighlightImage().getRGB(x, y)&0x00FFFFFF) != 0){
-							bHasROI = true;
-							break;
-						}
-					}
-					if(bHasROI){
-						break;
-					}
-				}
-				if(bHasROI){
-					firePropertyChange(FRAP_DATA_TIMEPLOTROI_PROPERTY, null,new Boolean(true));
-				}else{
-					DialogUtils.showInfoDialog(VFrap_OverlayEditorPanelJAI.this, 
-						"ROI for "+roi.getROIName()+" is empty.\n"+
-						"Paint, Fill or Import ROI using ROI tools.");
-				}
-			}
-		});
-
-		roiAssistButton = new JButton(new ImageIcon(getClass().getResource("/images/assistantROI.gif")));
-		roiAssistButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				showAssistDialog();
-			}
-		});
 
 		viewZLabel = new JLabel();
 		viewZLabel.setText("View Z:");
@@ -531,7 +396,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_8.gridy = 4;
 		gridBagConstraints_8.gridx = 1;
 		editROIPanel.add(editROIButtonPanel, gridBagConstraints_8);
-		this.add(getLeftJPanel(), gridBagConstraints2);
+		this.add(getRightPanel(), gridBagConstraints2);
 		this.add(getJScrollPane2(), gridBagConstraints12);
 
 		roiComboBox = new JComboBox();
@@ -543,59 +408,13 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_1.gridy = 0;
 		gridBagConstraints_1.gridx = 0;
 		editROIButtonPanel.add(roiComboBox, gridBagConstraints_1);
-
-		addROIButton = new JButton();
-		addROIButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				try{
-					String newROIName = PopupGenerator.showInputDialog0(VFrap_OverlayEditorPanelJAI.this, "New ROI Name", "");
-					if(newROIName == null || newROIName.length() == 0){
-						PopupGenerator.showErrorDialog(VFrap_OverlayEditorPanelJAI.this, "No ROI Name entered, try again.");
-					}else{
-						boolean bNameOK = true;
-						for (int i = 0; i < roiComboBox.getItemCount(); i++) {
-							if(((ComboboxROIName)roiComboBox.getItemAt(i)).getROIName().equals(newROIName)){
-								bNameOK = false;
-								break;
-							}
-						}
-						if(bNameOK){
-							addROIName(newROIName, true, newROIName);
-						}else{
-							PopupGenerator.showErrorDialog(VFrap_OverlayEditorPanelJAI.this, "ROI Name "+newROIName+" already used, try again.");
-						}
-					}
-				}catch(UtilCancelException cancelExc){
-					//do Nothing
-				}
-			}
-		});
-		addROIButton.setText("Add ROI");
-		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-		gridBagConstraints_3.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_3.gridy = 0;
-		gridBagConstraints_3.gridx = 1;
-		editROIButtonPanel.add(addROIButton, gridBagConstraints_3);
-
-		delROIButton = new JButton();
-		delROIButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				roiComboBox.removeItemAt(roiComboBox.getSelectedIndex());
-			}
-		});
-		delROIButton.setText("Delete ROI");
-		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-		gridBagConstraints_4.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_4.gridy = 0;
-		gridBagConstraints_4.gridx = 2;
-		editROIButtonPanel.add(delROIButton, gridBagConstraints_4);
 		
 		roiDrawButtonGroup.add(paintButton);
 		roiDrawButtonGroup.add(eraseButton);
 		roiDrawButtonGroup.add(fillButton);
 		roiDrawButtonGroup.add(cropButton);
 		
-		BeanUtils.enableComponents(getLeftJPanel(), false);
+		BeanUtils.enableComponents(getRightPanel(), false);
 		BeanUtils.enableComponents(editROIPanel, false);
 	}
 	
@@ -623,7 +442,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		roiDialog.setContentPane(roiAssistPanel);
 		roiDialog.pack();
 		roiDialog.setSize(400,200);
-		ZEnforcer.showModalDialogOnTop(roiDialog, VFrap_OverlayEditorPanelJAI.this);
+		roiDialog.setVisible(true);
 	}
 	
 	public void adjustComponentsForVFRAP(int choice)
@@ -646,10 +465,10 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			clearROIbutton.setVisible(false);
 			roiTimePlotButton.setVisible(false);
 			roiAssistButton.setVisible(false);
-
 			editRoiLabel.setEnabled(true);
-			addROIButton.setVisible(false);
-			delROIButton.setVisible(false);
+
+//			addROIButton.setVisible(false);
+//			delROIButton.setVisible(false);
 		}
 		else if(choice == DEFINE_CROP)
 		{
@@ -678,8 +497,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			editRoiLabel.setVisible(false);
 //			zSlider.setVisible(false);
 //			viewZLabel.setVisible(false);
-			addROIButton.setVisible(false);
-			delROIButton.setVisible(false);
+//			addROIButton.setVisible(false);
+//			delROIButton.setVisible(false);
 		}
 		else if(choice == DEFINE_CELLROI || choice == DEFINE_BLEACHEDROI || choice == DEFINE_BACKGROUNDROI)
 		{
@@ -704,14 +523,14 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			editRoiLabel.setVisible(false);
 //			zSlider.setVisible(false);
 //			viewZLabel.setVisible(false);
-			addROIButton.setVisible(false);
-			delROIButton.setVisible(false);
+//			addROIButton.setVisible(false);
+//			delROIButton.setVisible(false);
 		}
 	}
 	
 	private void setAllComponentsVisible()
 	{
-		BeanUtils.enableComponents(getLeftJPanel(), true);
+		BeanUtils.enableComponents(getRightPanel(), true);
 		BeanUtils.enableComponents(editROIPanel, true);
 		//buttons
 		zoomInButton.setVisible(true);
@@ -733,8 +552,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		editRoiLabel.setVisible(true);
 //		zSlider.setVisible(true);
 //		viewZLabel.setVisible(true);
-		addROIButton.setVisible(true);
-		delROIButton.setVisible(true);
+//		addROIButton.setVisible(true);
+//		delROIButton.setVisible(true);
 		
 		roiDrawButtonGroup.add(paintButton);
 		roiDrawButtonGroup.add(eraseButton);
@@ -899,15 +718,11 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		return AWTImageTools.makeBuffered(tempImage, indexColorModel);
 	}
 	
-	public void setAllowAddROI(boolean bAllowAddROI){
-		this.bAllowAddROI = bAllowAddROI;
-	}
 	public void setROITimePlotVisible(boolean bROITimePlotVisible){
 		roiTimePlotButton.setVisible(bROITimePlotVisible);
 	}
 
 	public void addROIName(String roiName,boolean isEditable,String selectROIName){
-//		roiComboBox.removeAllItems();
 		try{
 			roiComboBox.removeActionListener(ROI_COMBOBOX_ACTIONLISTENER);
 			roiComboBox.addItem(new ComboboxROIName(roiName,isEditable));
@@ -918,10 +733,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 				}
 			}
 
-//			for (int i = 0; i < predefinedROINames.length; i++) {
-//				roiComboBox.addItem(predefinedROINames[i]);
-//			}
-//			roiComboBox.setSelectedIndex(0);
 		}finally{
 			roiComboBox.addActionListener(ROI_COMBOBOX_ACTIONLISTENER);
 			ROI_COMBOBOX_ACTIONLISTENER.actionPerformed(new ActionEvent(roiComboBox,0,roiComboBox.getSelectedItem().toString()));
@@ -938,14 +749,10 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			originalISize = (bNew?imageDataset.getISize():originalISize);
 			if(!timeSlider.isEnabled()) //if the component is already enabled, don't do anything
 			{
-				BeanUtils.enableComponents(leftJPanel, true);
+				BeanUtils.enableComponents(rightPanel, true);
 				BeanUtils.enableComponents(topJPanel, true);
 				BeanUtils.enableComponents(editROIPanel, true);
 			}
-			if(!bAllowAddROI){
-				addROIButton.setEnabled(false);
-			}
-			
 			timeSlider.setVisible(imageDataset.getSizeT() > 1);
 			viewTLabel.setVisible(timeSlider.isVisible());
 			int currTimeSliderValue = timeSlider.getValue();
@@ -991,7 +798,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			zSlider.setMaximum(1);
 			zSlider.setLabelTable(null);
 			zSlider.setEnabled(false);
-			BeanUtils.enableComponents(leftJPanel, false);
+			BeanUtils.enableComponents(rightPanel, false);
 			BeanUtils.enableComponents(topJPanel, false);
 			BeanUtils.enableComponents(editROIPanel, false);
 			underlyingImage = null;
@@ -1018,18 +825,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			return new Range(min,max);
 		}
 		return new Range(min/SHORT_TO_BYTE_FACTOR,max/SHORT_TO_BYTE_FACTOR);
-//		short min = argImageDataset.getPixelsZ(0, 0)[0];
-//		short max = min;
-//		for (int c = 0; c < argImageDataset.getSizeC(); c++) {
-//			for (int t = 0; t < argImageDataset.getSizeT(); t++) {
-//				short[] pixelVals = argImageDataset.getPixelsZ(c, t);
-//				for (int p = 0; p < pixelVals.length; p++) {
-//					if(pixelVals[p] < min){min = pixelVals[p];}
-//					if(pixelVals[p] > max){max = pixelVals[p];}
-//				}
-//			}
-//		}
-//		return new Range(min,max);
 	}
 	/** Gets the currently displayed image. * @return BufferedImage
 	 */
@@ -1215,7 +1010,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			imagePane.setCrop(null, null);
 			return false;
 		}
-//		VirtualFrapLoader.mf.setSaveStatus(true);
 		return true;
 	}
 	/**
@@ -1243,14 +1037,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			timeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
 				public void stateChanged(javax.swing.event.ChangeEvent e) {
 					forceImage();
-//					updateLabel(-1, -1);
-//					if(imageDataset != null){
-//						BufferedImage image = getImage();
-//						if (image != null){
-//							imagePane.setUnderlyingImage(image,false);
-//						}
-//					}
-//					imagePane.repaint();
 				}
 			});
 		}
@@ -1282,8 +1068,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	/** Gets the Z value of the currently displayed image. * @return int
 	 */
 	public int getZ() { return Math.max(0,Math.min(imageDataset.getSizeZ(),zSlider.getValue())) - 1; }
-
-
+	
 	/** Updates cursor probe label. * @param x int
 	 * @param y int
 	 */
@@ -1310,10 +1095,9 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		}
 		if (imageDataset.getSizeT() > 1) {
 			sb.append((bMultipleZ?"; ":"")+"T=");
-//			sb.append(getT() + 1);
 			sb.append(imageDataset.getImageTimeStamps()[getT()]);
-//			sb.append("/");
-//			sb.append(imageDataset.getSizeT());
+			//add the indicator to show it is the no. x image among total images.
+			sb.append("  ("+(getT()+1) + "" + "/" + imageDataset.getImageTimeStamps().length + ")");
 		}
 //		BufferedImage image = ImageTools.makeImage(images[ndx].getPixels(), images[ndx].getNumX(), images[ndx].getNumY());
 //		int w = image == null ? -1 : image.getWidth();
@@ -1418,192 +1202,115 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JPanel getLeftJPanel() {
-		if (leftJPanel == null) {
-			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
-			gridBagConstraints3.insets = new Insets(0, 0, 0, 0);
-			gridBagConstraints3.gridy = 1;
-			gridBagConstraints3.ipady = 0;
-			gridBagConstraints3.weighty = 1.0D;
-			gridBagConstraints3.anchor = GridBagConstraints.NORTH;
-			gridBagConstraints3.ipadx = 0;
-			gridBagConstraints3.gridx = 0;
-			GridBagConstraints gridBagConstraints = new GridBagConstraints();
-			gridBagConstraints.gridx = 0;
-			gridBagConstraints.ipady = 0;
-			gridBagConstraints.gridy = 0;
-			
-			//this so call "leftPanel" has been move to the right side of the editor panel for the new frap.
-			leftJPanel = new JPanel();
+	private JPanel getRightPanel() {
+		if (rightPanel == null) {
+			//this is added to the right side of the editor panel with all the buttons in two columns.
+			rightPanel = new JPanel();
 			final GridBagLayout gridBagLayout = new GridBagLayout();
 			gridBagLayout.rowHeights = new int[] {0,0,7,7,7,0,7};
-			leftJPanel.setLayout(gridBagLayout);
-			leftJPanel.add(getZoomInButton(), gridBagConstraints);
-			leftJPanel.add(getZoomOutButton(), gridBagConstraints3);
+			rightPanel.setLayout(gridBagLayout);
+			
+			GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
+			gridBagConstraints1.gridx = 0;
+			gridBagConstraints1.gridy = 0;
+			rightPanel.add(getZoomInButton(), gridBagConstraints1);
+			
+			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
+			if(buttonDisplayType == BUTTON_DISPLAY_ONE_COLUMN)
+			{
+				gridBagConstraints2.gridx = 0;
+				gridBagConstraints2.gridy = 1;
+			}
+			else //display in two columns
+			{
+				gridBagConstraints2.gridx = 1;
+				gridBagConstraints2.gridy = 0;
+			}
+			rightPanel.add(getZoomOutButton(), gridBagConstraints2);
 
-			contrastButtonPlus = new JButton(new ImageIcon(getClass().getResource("/images/contrastUp.gif")));
-			contrastButtonPlus.addActionListener(new ActionListener() {
-				public void actionPerformed(final ActionEvent e) {
-					imagePane.increaseContrast();
-					updateLabel(-1,-1);
-				}
-			});
-			contrastButtonPlus.setPreferredSize(new Dimension(32, 32));
-			contrastButtonPlus.setMinimumSize(new Dimension(32, 32));
-			contrastButtonPlus.setMaximumSize(new Dimension(32, 32));
-			contrastButtonPlus.setMargin(new Insets(2, 2, 2, 2));
-			contrastButtonPlus.setToolTipText("Increase Contrast");
-			final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-			gridBagConstraints_4.gridy = 2;
-			gridBagConstraints_4.gridx = 0;
-			leftJPanel.add(contrastButtonPlus, gridBagConstraints_4);
+			final GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
+			if(buttonDisplayType == BUTTON_DISPLAY_ONE_COLUMN)
+			{
+				gridBagConstraints3.gridy = 2;
+				gridBagConstraints3.gridx = 0;
+			}
+			else //display in two columns
+			{
+				gridBagConstraints3.gridy = 1;
+				gridBagConstraints3.gridx = 0;
+			}
+			rightPanel.add(getContrastButtonPlus(), gridBagConstraints3);
 
-			contrastButtonMinus = new JButton(new ImageIcon(getClass().getResource("/images/contrastDown.gif")));
-			contrastButtonMinus.addActionListener(new ActionListener() {
-				public void actionPerformed(final ActionEvent e) {
-					imagePane.decreaseContrast();
-					updateLabel(-1,-1);
-				}
-			});
-			contrastButtonMinus.setPreferredSize(new Dimension(32, 32));
-			contrastButtonMinus.setMinimumSize(new Dimension(32, 32));
-			contrastButtonMinus.setMaximumSize(new Dimension(32, 32));
-			contrastButtonMinus.setMargin(new Insets(2, 2, 2, 2));
-			contrastButtonMinus.setToolTipText("Decrease Contrast");
-			final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
-			gridBagConstraints_6.insets = new Insets(0, 0, 10, 0);
-			gridBagConstraints_6.gridy = 3;
-			gridBagConstraints_6.gridx = 0;
-			leftJPanel.add(contrastButtonMinus, gridBagConstraints_6);
+			final GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
+			if(buttonDisplayType == BUTTON_DISPLAY_ONE_COLUMN)
+			{
+				gridBagConstraints4.gridy = 3;
+				gridBagConstraints4.gridx = 0;
+			}
+			else //display in two columns
+			{
+				gridBagConstraints4.gridy = 1;
+				gridBagConstraints4.gridx = 1;
+			}
+			rightPanel.add(getContrastButtonMinus(), gridBagConstraints4);
+			
+			/*
+			 *NOTE: display type will not be applied to other buttons so far.
+			 *The reason is only 4 buttons are visible in the image panel in main frame.
+			 *We want one column display for the four buttons in main frame.
+			 *If anyone wants one column display for all the buttons, please change following buttons accordingly.
+			 */
+			
+			final GridBagConstraints gridBagConstraints5 = new GridBagConstraints();
+			gridBagConstraints5.gridy = 2;
+			gridBagConstraints5.gridx = 0;
+			gridBagConstraints5.insets = new Insets(12, 0, 12, 0);
+			rightPanel.add(getCropButton(), gridBagConstraints5);
+			
+			final GridBagConstraints gridBagConstraints6 = new GridBagConstraints();
+			gridBagConstraints6.gridy = 2;
+			gridBagConstraints6.gridx = 1;
+			gridBagConstraints6.insets = new Insets(12, 0, 12, 0);
+			rightPanel.add(getAutoCropButton(), gridBagConstraints6);
+			
+			final GridBagConstraints gridBagConstraints7 = new GridBagConstraints();
+			gridBagConstraints7.gridy = 3;
+			gridBagConstraints7.gridx = 0;
+			rightPanel.add(getPaintButton(), gridBagConstraints7);
 
-			cropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/crop.gif")));
-			cropButton.setPreferredSize(new Dimension(32, 32));
-			cropButton.setMinimumSize(new Dimension(32, 32));
-			cropButton.setMaximumSize(new Dimension(32, 32));
-			cropButton.setMargin(new Insets(2, 2, 2, 2));
-			cropButton.setToolTipText("Crop");
-			final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
-			gridBagConstraints_5.gridy = 4;
-			gridBagConstraints_5.gridx = 0;
-			leftJPanel.add(cropButton, gridBagConstraints_5);
-			
-			
-			autoCropButton.setPreferredSize(new Dimension(32, 32));
-			autoCropButton.setMinimumSize(new Dimension(32, 32));
-			autoCropButton.setMaximumSize(new Dimension(32, 32));
-			autoCropButton.setMargin(new Insets(2, 2, 2, 2));
-			autoCropButton.setToolTipText("Auto Crop");
-			final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
-			gridBagConstraints_7.insets = new Insets(0, 0, 10, 0);
-			gridBagConstraints_7.gridy = 5;
-			gridBagConstraints_7.gridx = 0;
-			leftJPanel.add(autoCropButton, gridBagConstraints_7);
-			
-			paintButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/paint.gif")));
-			paintButton.setSelected(true);
-			paintButton.setPreferredSize(new Dimension(32, 32));
-			paintButton.setMinimumSize(new Dimension(32, 32));
-			paintButton.setMaximumSize(new Dimension(32, 32));
-			paintButton.setPreferredSize(new Dimension(32, 32));
-			paintButton.setMinimumSize(new Dimension(32, 32));
-			paintButton.setMaximumSize(new Dimension(32, 32));
-			paintButton.setMargin(new Insets(2, 2, 2, 2));
-			paintButton.setToolTipText("Paint");
-			final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
-			gridBagConstraints_1.gridy = 6;
-			gridBagConstraints_1.gridx = 0;
-			leftJPanel.add(paintButton, gridBagConstraints_1);
+			final GridBagConstraints gridBagConstraints8 = new GridBagConstraints();
+			gridBagConstraints8.gridy = 4;
+			gridBagConstraints8.gridx = 0;
+			rightPanel.add(getEraseButton(), gridBagConstraints8);
 
-			eraseButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/eraser.gif")));
-			eraseButton.setPreferredSize(new Dimension(32, 32));
-			eraseButton.setMinimumSize(new Dimension(32, 32));
-			eraseButton.setMaximumSize(new Dimension(32, 32));
-			eraseButton.setPreferredSize(new Dimension(32, 32));
-			eraseButton.setMinimumSize(new Dimension(32, 32));
-			eraseButton.setMaximumSize(new Dimension(32, 32));
-			eraseButton.setMargin(new Insets(2, 2, 2, 2));
-			eraseButton.setToolTipText("Erase");
-			final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
-			gridBagConstraints_2.gridy = 7;
-			gridBagConstraints_2.gridx = 0;
-			leftJPanel.add(eraseButton, gridBagConstraints_2);
+			final GridBagConstraints gridBagConstraints9 = new GridBagConstraints();
+			gridBagConstraints9.gridy = 5;
+			gridBagConstraints9.gridx = 0;
+			rightPanel.add(getFillButton(), gridBagConstraints9);
 
-			fillButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/fill.gif")));
-			fillButton.setPreferredSize(new Dimension(32, 32));
-			fillButton.setMinimumSize(new Dimension(32, 32));
-			fillButton.setMaximumSize(new Dimension(32, 32));
-			fillButton.setPreferredSize(new Dimension(32, 32));
-			fillButton.setMinimumSize(new Dimension(32, 32));
-			fillButton.setMaximumSize(new Dimension(32, 32));
-			fillButton.setMargin(new Insets(2, 2, 2, 2));
-			fillButton.setToolTipText("Fill");
-			final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-			gridBagConstraints_3.gridy = 8;
-			gridBagConstraints_3.gridx = 0;
-			gridBagConstraints_3.insets = new Insets(0, 0, 10, 0);
-			leftJPanel.add(fillButton, gridBagConstraints_3);
-
-			importROIMaskButton.setPreferredSize(new Dimension(32, 32));
-			importROIMaskButton.setMinimumSize(new Dimension(32, 32));
-			importROIMaskButton.setMaximumSize(new Dimension(32, 32));
-			importROIMaskButton.setPreferredSize(new Dimension(32, 32));
-			importROIMaskButton.setMinimumSize(new Dimension(32, 32));
-			importROIMaskButton.setMaximumSize(new Dimension(32, 32));
-			importROIMaskButton.setMargin(new Insets(2, 2, 2, 2));
-			importROIMaskButton.setToolTipText("Import ROI mask from file");
-			final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
-			gridBagConstraints_8.gridy = 9;
-			gridBagConstraints_8.gridx = 0;
-			leftJPanel.add(importROIMaskButton, gridBagConstraints_8);
+			final GridBagConstraints gridBagConstraints10 = new GridBagConstraints();
+			gridBagConstraints10.gridy = 3;
+			gridBagConstraints10.gridx = 1;
+			rightPanel.add(getImportROIMaskButton(), gridBagConstraints10);
 			
-			clearROIbutton.setPreferredSize(new Dimension(32, 32));
-			clearROIbutton.setMinimumSize(new Dimension(32, 32));
-			clearROIbutton.setMaximumSize(new Dimension(32, 32));
-			clearROIbutton.setPreferredSize(new Dimension(32, 32));
-			clearROIbutton.setMinimumSize(new Dimension(32, 32));
-			clearROIbutton.setMaximumSize(new Dimension(32, 32));
-			clearROIbutton.setMargin(new Insets(2, 2, 2, 2));
-			clearROIbutton.setToolTipText("Clear ROI");
-			final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
-			gridBagConstraints_9.gridy = 10;
-			gridBagConstraints_9.gridx = 0;
-			leftJPanel.add(clearROIbutton, gridBagConstraints_9);
+			final GridBagConstraints gridBagConstraints11 = new GridBagConstraints();
+			gridBagConstraints11.gridy = 4;
+			gridBagConstraints11.gridx = 1;
+			rightPanel.add(getClearROIbutton(), gridBagConstraints11);
 			
-			roiTimePlotButton.setPreferredSize(new Dimension(32, 32));
-			roiTimePlotButton.setMinimumSize(new Dimension(32, 32));
-			roiTimePlotButton.setMaximumSize(new Dimension(32, 32));
-			roiTimePlotButton.setPreferredSize(new Dimension(32, 32));
-			roiTimePlotButton.setMinimumSize(new Dimension(32, 32));
-			roiTimePlotButton.setMaximumSize(new Dimension(32, 32));
-			roiTimePlotButton.setMargin(new Insets(2, 2, 2, 2));
-			roiTimePlotButton.setToolTipText("ROI time plot");
-			final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
-			gridBagConstraints_10.gridy = 11;
-			gridBagConstraints_10.gridx = 0;
-			leftJPanel.add(roiTimePlotButton, gridBagConstraints_10);
+			final GridBagConstraints gridBagConstraints12 = new GridBagConstraints();
+			gridBagConstraints12.gridy = 5;
+			gridBagConstraints12.gridx = 1;
+			rightPanel.add(getRoiTimePlotButton(), gridBagConstraints12);
 			
-			roiAssistButton.setPreferredSize(new Dimension(32, 32));
-			roiAssistButton.setMinimumSize(new Dimension(32, 32));
-			roiAssistButton.setMaximumSize(new Dimension(32, 32));
-			roiAssistButton.setPreferredSize(new Dimension(32, 32));
-			roiAssistButton.setMinimumSize(new Dimension(32, 32));
-			roiAssistButton.setMaximumSize(new Dimension(32, 32));
-			roiAssistButton.setMargin(new Insets(2, 2, 2, 2));
-			roiAssistButton.setToolTipText("ROI Assist");
-			final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
-			gridBagConstraints_11.gridy = 12;
-			gridBagConstraints_11.gridx = 0;
-			leftJPanel.add(roiAssistButton, gridBagConstraints_11);
-			
+			final GridBagConstraints gridBagConstraints13 = new GridBagConstraints();
+			gridBagConstraints13.gridy = 6;
+			gridBagConstraints13.gridx = 1;
+			rightPanel.add(getRoiAssistButton(), gridBagConstraints13);
 		}
-		return leftJPanel;
+		return rightPanel;
 	}
 
-	/**
-	 * This method initializes zoomInButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
 	private JButton getZoomInButton() {
 		if (zoomInButton == null) {
 			zoomInButton = new JButton();
@@ -1624,11 +1331,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		return zoomInButton;
 	}
 	
-	/**
-	 * This method initializes zoomOutButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
 	private JButton getZoomOutButton() {
 		if (zoomOutButton == null) {
 			zoomOutButton = new JButton();
@@ -1650,6 +1352,298 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		return zoomOutButton;
 	}
 
+	public JButton getContrastButtonMinus() {
+		if(contrastButtonMinus == null)
+		{
+			contrastButtonMinus = new JButton(new ImageIcon(getClass().getResource("/images/contrastDown.gif")));
+			contrastButtonMinus.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					imagePane.decreaseContrast();
+					updateLabel(-1,-1);
+				}
+			});
+			contrastButtonMinus.setPreferredSize(new Dimension(32, 32));
+			contrastButtonMinus.setMinimumSize(new Dimension(32, 32));
+			contrastButtonMinus.setMaximumSize(new Dimension(32, 32));
+			contrastButtonMinus.setMargin(new Insets(2, 2, 2, 2));
+			contrastButtonMinus.setToolTipText("Decrease Contrast");
+		}
+		return contrastButtonMinus;
+	}
+
+	public JButton getContrastButtonPlus() {
+		if(contrastButtonPlus == null)
+		{
+			contrastButtonPlus = new JButton(new ImageIcon(getClass().getResource("/images/contrastUp.gif")));
+			contrastButtonPlus.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					imagePane.increaseContrast();
+					updateLabel(-1,-1);
+				}
+			});
+			contrastButtonPlus.setPreferredSize(new Dimension(32, 32));
+			contrastButtonPlus.setMinimumSize(new Dimension(32, 32));
+			contrastButtonPlus.setMaximumSize(new Dimension(32, 32));
+			contrastButtonPlus.setMargin(new Insets(2, 2, 2, 2));
+			contrastButtonPlus.setToolTipText("Increase Contrast");
+		}
+		return contrastButtonPlus;
+	}
+
+	public JToggleButton getCropButton() {
+		if(cropButton == null)
+		{
+			cropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/crop.gif")));
+			cropButton.setPreferredSize(new Dimension(32, 32));
+			cropButton.setMinimumSize(new Dimension(32, 32));
+			cropButton.setMaximumSize(new Dimension(32, 32));
+			cropButton.setMargin(new Insets(2, 2, 2, 2));
+			cropButton.setToolTipText("Crop");
+		}
+		return cropButton;
+	}
+
+	public JToggleButton getFillButton() {
+		if(fillButton == null)
+		{
+			fillButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/fill.gif")));
+			fillButton.setPreferredSize(new Dimension(32, 32));
+			fillButton.setMinimumSize(new Dimension(32, 32));
+			fillButton.setMaximumSize(new Dimension(32, 32));
+			fillButton.setPreferredSize(new Dimension(32, 32));
+			fillButton.setMinimumSize(new Dimension(32, 32));
+			fillButton.setMaximumSize(new Dimension(32, 32));
+			fillButton.setMargin(new Insets(2, 2, 2, 2));
+			fillButton.setToolTipText("Fill");
+		}
+		return fillButton;
+	}
+
+	public JToggleButton getEraseButton() {
+		if(eraseButton == null)
+		{
+			eraseButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/eraser.gif")));
+			eraseButton.setPreferredSize(new Dimension(32, 32));
+			eraseButton.setMinimumSize(new Dimension(32, 32));
+			eraseButton.setMaximumSize(new Dimension(32, 32));
+			eraseButton.setPreferredSize(new Dimension(32, 32));
+			eraseButton.setMinimumSize(new Dimension(32, 32));
+			eraseButton.setMaximumSize(new Dimension(32, 32));
+			eraseButton.setMargin(new Insets(2, 2, 2, 2));
+			eraseButton.setToolTipText("Erase");
+		}
+		return eraseButton;
+	}
+
+	public JToggleButton getPaintButton() {
+		if(paintButton == null)
+		{
+			paintButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/paint.gif")));
+			paintButton.setSelected(true);
+			paintButton.setPreferredSize(new Dimension(32, 32));
+			paintButton.setMinimumSize(new Dimension(32, 32));
+			paintButton.setMaximumSize(new Dimension(32, 32));
+			paintButton.setPreferredSize(new Dimension(32, 32));
+			paintButton.setMinimumSize(new Dimension(32, 32));
+			paintButton.setMaximumSize(new Dimension(32, 32));
+			paintButton.setMargin(new Insets(2, 2, 2, 2));
+			paintButton.setToolTipText("Paint");
+		}
+		return paintButton;
+	}
+
+	public JButton getImportROIMaskButton() {
+		if(importROIMaskButton == null)
+		{
+			importROIMaskButton = new JButton(new ImageIcon(getClass().getResource("/images/importROI.gif")));
+			importROIMaskButton.setPreferredSize(new Dimension(32, 32));
+			importROIMaskButton.setMinimumSize(new Dimension(32, 32));
+			importROIMaskButton.setMaximumSize(new Dimension(32, 32));
+			importROIMaskButton.setPreferredSize(new Dimension(32, 32));
+			importROIMaskButton.setMinimumSize(new Dimension(32, 32));
+			importROIMaskButton.setMaximumSize(new Dimension(32, 32));
+			importROIMaskButton.setMargin(new Insets(2, 2, 2, 2));
+			importROIMaskButton.setToolTipText("Import ROI mask from file");
+			importROIMaskButton.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					File inputFile = null;
+					IFormatReader iFormatReader = null;
+					try {
+						int option = openJFileChooser.showOpenDialog(VFrap_OverlayEditorPanelJAI.this);
+						if (option == JFileChooser.APPROVE_OPTION){
+							inputFile = openJFileChooser.getSelectedFile();
+						}else{
+							throw UserCancelException.CANCEL_GENERIC;
+						}
+						if(!customROIImport.importROI(inputFile)){
+							ImageReader imageReader = new ImageReader();
+							iFormatReader = imageReader.getReader(inputFile.getAbsolutePath());
+							iFormatReader.setId(inputFile.getAbsolutePath());
+							if(iFormatReader.getSizeX() * iFormatReader.getSizeY() != 
+								getImagePane().getHighlightImage().getWidth()*getImagePane().getHighlightImage().getHeight()){
+								throw new Exception(
+									"Imported ROI mask size ("+
+									iFormatReader.getSizeX()+","+iFormatReader.getSizeY()+")"+
+									" does not match current Frap DataSet size ("+
+									getImagePane().getHighlightImage().getWidth()+","+
+									getImagePane().getHighlightImage().getHeight()+")");
+							}
+							BufferedImage roiMaskImage = BufferedImageReader.makeBufferedImageReader(iFormatReader).openImage(0);
+							int maskColor = highlightColor.getRGB();
+							for (int y = 0; y < iFormatReader.getSizeY(); y++) {
+								for (int x = 0; x < iFormatReader.getSizeX(); x++) {
+									if((roiMaskImage.getRGB(x, y)&0x00FFFFFF) != 0){
+										getImagePane().getHighlightImage().setRGB(x,y,maskColor);
+									}
+								}
+							}
+							getImagePane().refreshImage();
+						}
+					} catch (UserCancelException uce) {
+						//Do Nothing
+					} catch (Exception e1) {
+						e1.printStackTrace();
+						DialogUtils.showErrorDialog(VFrap_OverlayEditorPanelJAI.this, "Error importing ROI"+e1.getMessage());
+					}finally{
+						if(iFormatReader != null){try{iFormatReader.close();}catch(Exception e2){e2.printStackTrace();}}
+					}
+				}
+			});
+		}
+		return importROIMaskButton;
+	}
+
+	public JButton getClearROIbutton() {
+		if(clearROIbutton == null)
+		{
+			clearROIbutton = new JButton(new ImageIcon(getClass().getResource("/images/clearROI.gif")));
+			clearROIbutton.setPreferredSize(new Dimension(32, 32));
+			clearROIbutton.setMinimumSize(new Dimension(32, 32));
+			clearROIbutton.setMaximumSize(new Dimension(32, 32));
+			clearROIbutton.setPreferredSize(new Dimension(32, 32));
+			clearROIbutton.setMinimumSize(new Dimension(32, 32));
+			clearROIbutton.setMaximumSize(new Dimension(32, 32));
+			clearROIbutton.setMargin(new Insets(2, 2, 2, 2));
+			clearROIbutton.setToolTipText("Clear ROI");
+			clearROIbutton.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					clearROI();
+				}
+			});
+		}
+		return clearROIbutton;
+	}
+
+	public JButton getRoiTimePlotButton() {
+		if(roiTimePlotButton == null)
+		{
+			roiTimePlotButton = new JButton(new ImageIcon(getClass().getResource("/images/plotROI.gif")));
+			roiTimePlotButton.setPreferredSize(new Dimension(32, 32));
+			roiTimePlotButton.setMinimumSize(new Dimension(32, 32));
+			roiTimePlotButton.setMaximumSize(new Dimension(32, 32));
+			roiTimePlotButton.setPreferredSize(new Dimension(32, 32));
+			roiTimePlotButton.setMinimumSize(new Dimension(32, 32));
+			roiTimePlotButton.setMaximumSize(new Dimension(32, 32));
+			roiTimePlotButton.setMargin(new Insets(2, 2, 2, 2));
+			roiTimePlotButton.setToolTipText("ROI time plot");
+			roiTimePlotButton.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					if(getImagePane() == null || getImagePane().getHighlightImage() == null){
+						return;
+					}
+					boolean bHasROI = false;
+					for (int y = 0; y < getImagePane().getHighlightImage().getHeight(); y++) {
+						for (int x = 0; x < getImagePane().getHighlightImage().getWidth(); x++) {
+							if((getImagePane().getHighlightImage().getRGB(x, y)&0x00FFFFFF) != 0){
+								bHasROI = true;
+								break;
+							}
+						}
+						if(bHasROI){
+							break;
+						}
+					}
+					if(bHasROI){
+						firePropertyChange(FRAP_DATA_TIMEPLOTROI_PROPERTY, null,new Boolean(true));
+					}else{
+						DialogUtils.showInfoDialog(VFrap_OverlayEditorPanelJAI.this, 
+							"ROI for "+roi.getROIName()+" is empty.\n"+
+							"Paint, Fill or Import ROI using ROI tools.");
+					}
+				}
+			});
+		}
+		return roiTimePlotButton;
+	}
+
+	public JToggleButton getAutoCropButton() {
+		if(autoCropButton == null)
+		{
+			autoCropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/autoCrop.gif")));
+			autoCropButton.setPreferredSize(new Dimension(32, 32));
+			autoCropButton.setMinimumSize(new Dimension(32, 32));
+			autoCropButton.setMaximumSize(new Dimension(32, 32));
+			autoCropButton.setMargin(new Insets(2, 2, 2, 2));
+			autoCropButton.setToolTipText("Auto Crop");
+			autoCropButton.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					try {
+						waitCursor(true);
+						if(isAutoCroppable()){
+							Rectangle cropRect = null;
+							if(imageDataset != null){
+								cropRect = imageDataset.getNonzeroBoundingRectangle();
+							}
+							imagePane.setCrop(
+									new Point(
+										(int)(cropRect.x*imagePane.getZoom()),
+										(int)(cropRect.y*imagePane.getZoom())),
+									new Point(
+										(int)((cropRect.x+cropRect.width)*imagePane.getZoom()),
+										(int)((cropRect.y+cropRect.height)*imagePane.getZoom())));
+							waitCursor(false);
+							if(!cropConfirm(cropRect)){
+								imagePane.setCrop(null, null);
+								return;
+							}
+							waitCursor(true);
+							imagePane.setCrop(null, null);
+							firePropertyChange(FRAP_DATA_CROP_PROPERTY, null,cropRect);						
+						}else{
+							DialogUtils.showInfoDialog(VFrap_OverlayEditorPanelJAI.this, "AutoCrop: No zero values around outer edges.");
+						}
+					} catch (Exception e1) {
+						e1.printStackTrace();
+						DialogUtils.showErrorDialog(VFrap_OverlayEditorPanelJAI.this, "Error AutoCrop:\n"+e1.getMessage());
+					}finally{
+						waitCursor(false);				
+					}
+				}
+			});
+		}
+		return autoCropButton;
+	}
+
+	public JButton getRoiAssistButton() {
+		if(roiAssistButton == null)
+		{
+			roiAssistButton = new JButton(new ImageIcon(getClass().getResource("/images/assistantROI.gif")));
+			roiAssistButton.setPreferredSize(new Dimension(32, 32));
+			roiAssistButton.setMinimumSize(new Dimension(32, 32));
+			roiAssistButton.setMaximumSize(new Dimension(32, 32));
+			roiAssistButton.setPreferredSize(new Dimension(32, 32));
+			roiAssistButton.setMinimumSize(new Dimension(32, 32));
+			roiAssistButton.setMaximumSize(new Dimension(32, 32));
+			roiAssistButton.setMargin(new Insets(2, 2, 2, 2));
+			roiAssistButton.setToolTipText("ROI Assist");
+			roiAssistButton.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					showAssistDialog();
+				}
+			});
+		}
+		return roiAssistButton;
+	}
 
 	/**
 	 * This method initializes zSlider	

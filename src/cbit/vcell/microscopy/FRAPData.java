@@ -136,9 +136,10 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		return new VCSimulationIdentifier(simulationKey,getDotUser());
 
 	}
-	public static FRAPData importFRAPDataFromVCellSimulationData(File vcellSimLogFile,String variableName, Double maxIntensity,
+	public static FRAPData importFRAPDataFromVCellSimulationData(File vcellSimLogFile,String variableName, String bleachedMaskVarName, Double maxIntensity,
 			final ClientTaskStatusSupport progressListener) throws Exception
 	{
+//		bleachedMaskVarName = "laserMask_cell";
 		VCSimulationIdentifier vcSimulationIdentifier = getVCSimulationIdentifierFromVCellSimulationData(vcellSimLogFile);
 		VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier,0);
 		
@@ -206,6 +207,8 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		UShortImage[] scaledDataImages = new UShortImage[times.length];
 		Random rnd = new Random();
 		int shortMax = 65535;
+		//set messge to load variable
+		progressListener.setMessage("Loading variable " + variableName + "...");
 		for (int i = 0; i < times.length; i++) {
 			double[] rawData =
 				dataSetControllerImpl.getSimDataBlock(null,vcSimulationDataIdentifier,variableName,times[i]).getData();
@@ -226,36 +229,66 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 					cartesianMesh.getOrigin(),
 					cartesianMesh.getExtent(),
 					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
-			if(progressListener != null){progressListener.setProgress((int)(.75+(.25*(double)(i+1)/times.length)));}
+			if(progressListener != null){progressListener.setProgress((int)(((i+1)/times.length))*100);}
 		}
-		
-//		for(int i=0; i<scaledDataImages.length; i++)
-//		{
-//			UShortImage img = scaledDataImages[i];
-//			short[] pixels = img.getPixels();
-//			for(int j=0; j<pixels.length; j++)
-//			{
-//				if(allTimesMax < pixels[j])
-//				{
-//					allTimesMax = pixels[j];
-//				}
-//			}
-//		}
-		
+	
 		ImageDataset imageDataSet = new ImageDataset(scaledDataImages,times,cartesianMesh.getSizeZ());
+		FRAPData frapData = new FRAPData(imageDataSet, new String[]{ FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
 		
 		
-		
-		
-		FRAPData frapData = new FRAPData(imageDataSet,
-				new String[]{ FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()}
-		);
-//		frapData.setOriginalGlobalScaleInfo(
-//			new FRAPData.OriginalGlobalScaleInfo(
-//				(int)(allTimesMin*linearaScaleFactor),
-//				(int)(allTimesMax*linearaScaleFactor),
-//				linearaScaleFactor,0));
-		
+		 //get rois from log file
+		if(bleachedMaskVarName != null)
+		{
+			//set message to load cell ROI variable 
+			progressListener.setMessage("Loading ROIs...");
+			double[] rawROIBleached = dataSetControllerImpl.getSimDataBlock(null,vcSimulationDataIdentifier, bleachedMaskVarName, 0).getData();
+			short[] scaledCellDataShort = new short[rawROIBleached.length];
+			short[] scaledBleachedDataShort = new short[rawROIBleached.length];
+			short[] scaledBackgoundDataShort = new short[rawROIBleached.length];
+			for (int j = 0; j < scaledCellDataShort.length; j++) {
+				boolean isCell = cartesianMesh.getCompartmentSubdomainNamefromVolIndex(j).equals("subVolume1");
+				boolean isBackground = cartesianMesh.getCompartmentSubdomainNamefromVolIndex(j).equals("subVolume0");
+				if(isCell)
+				{
+					scaledCellDataShort[j]= 1;
+				}
+				if(isBackground)
+				{
+					scaledBackgoundDataShort[j]= 1;
+				}
+				if(rawROIBleached[j] > 0.2)
+				{
+					
+					scaledBleachedDataShort[j]= 1;
+				}
+				
+			}
+			UShortImage cellImage =
+				new UShortImage(
+					scaledCellDataShort,
+					cartesianMesh.getOrigin(),
+					cartesianMesh.getExtent(),
+					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
+			UShortImage bleachedImage =
+				new UShortImage(
+						scaledBleachedDataShort,
+					cartesianMesh.getOrigin(),
+					cartesianMesh.getExtent(),
+					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
+			UShortImage backgroundImage =
+				new UShortImage(
+						scaledBackgoundDataShort,
+					cartesianMesh.getOrigin(),
+					cartesianMesh.getExtent(),
+					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
+
+			if(progressListener != null){progressListener.setProgress(100);}
+			
+			frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).setROIImages(new UShortImage[]{cellImage});
+			frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).setROIImages(new UShortImage[]{bleachedImage});
+			frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).setROIImages(new UShortImage[]{backgroundImage});
+		}
+
 		return frapData;
 	}
 	/**

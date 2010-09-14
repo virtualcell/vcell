@@ -28,7 +28,7 @@ import cbit.vcell.microscopy.FRAPStudy;
 
 public class LoadFRAPData_SummaryPanel extends JPanel
 {
-	public final String loadSuccessInfo = "Data loaded. Please varify/modify the following information.";
+	public final String loadSuccessInfo = "Data loaded. Please verify/modify the following information.";
 	public final String loadFailedInfo= "Data loading failed.";
 	private JTextField imgPixelSizeY = null;
 	private JTextField imgPixelSizeX = null;

@@ -9,6 +9,7 @@ import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.SimStatusEvent;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportServiceImpl;
@@ -20,6 +21,7 @@ import cbit.vcell.microscopy.LocalWorkspace;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
@@ -171,25 +173,21 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 		}
 	}
 	
-	public ExportEvent startExportMovie(ExportSpecs exportSpecs, OutputContext outputContext){
+	public ExportEvent startExportMovie(ExportSpecs exportSpecs, OutputContext outputContext, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
+	{
 		ExportEvent exportEvt = null;
-		try {
-			SessionLog log = new StdoutSessionLog("export");
-			ExportServiceImpl exportServiceImpl = new ExportServiceImpl(new StdoutSessionLog("export"));
-			DataServerImpl dataServerImpl = new DataServerImpl(log,localWorkSpace.getDataSetControllerImpl(),exportServiceImpl);
-			exportServiceImpl.addExportListener(new ExportListener() {
-				public void exportMessage(ExportEvent event) {
-					System.out.println(event.toString());
-				}
-			});
-			//the last parameter denotes whether the saved file is comporessed or not.
-			exportEvt = exportServiceImpl.makeRemoteFile(outputContext, LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs, false);
-		}catch (DataAccessException e){
-			e.printStackTrace(System.out);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
+		SessionLog log = new StdoutSessionLog("export");
+		ExportServiceImpl exportServiceImpl = new ExportServiceImpl(new StdoutSessionLog("export"));
+		DataServerImpl dataServerImpl = new DataServerImpl(log,localWorkSpace.getDataSetControllerImpl(),exportServiceImpl);
+		exportServiceImpl.addExportListener(new ExportListener() {
+			public void exportMessage(ExportEvent event) {
+				System.out.println(event.toString());
+			}
+		});
+		//the last parameter denotes whether the saved file is comporessed or not.
+		exportEvt = exportServiceImpl.makeRemoteFile(outputContext, LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs, false, clientTaskStatusSupport);
+		
 		return exportEvt;
 	}
 		

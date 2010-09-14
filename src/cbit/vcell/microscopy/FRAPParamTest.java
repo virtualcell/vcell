@@ -11,6 +11,7 @@ import loci.formats.FormatException;
 import cbit.image.ImageException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.resource.ResourceUtil;
 /**
@@ -23,8 +24,6 @@ public class FRAPParamTest
 	private static final double stepDecrease = 0.999; //decrease 0.1 based on last step value
 	private static final String SUB_DIRECTORY = "paramTest\\test2_mobileFrac0.1%\\";
 	private static final int maxIteration = 100; 
-	private static final int NUM_MODEL_PARAMRTERS = FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF;
-	private static final int IDX_FIXED_MODEL_PARAMETER = FRAPModel.INDEX_PRIMARY_FRACTION;
 	private ArrayList<ProfileDataElement> profileData = new ArrayList<ProfileDataElement>();
 		
 	private LocalWorkspace localWorkspace = null;
@@ -62,14 +61,14 @@ public class FRAPParamTest
 		setFrapStudy(newFRAPStudy);
 	}
 	
-	public void loadLogFile(String fileName, String varName)
+	public void loadLogFile(String fileName, String varName, String bleachedMaskVarName)
 	{
 		System.out.println("Loading "+fileName+"...");
 		
 		FRAPStudy newFRAPStudy = null;
 		File inFile = new File(fileName);
 		try {
-			newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, varName, new Double(65535), null);
+			newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, varName, bleachedMaskVarName, new Double(50000), null);
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 		}
@@ -147,98 +146,34 @@ public class FRAPParamTest
 				Parameter[] bestParameters = frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters();//######
 				//get frap opt class
 				FRAPOptData optData = frapStudy.getFrapOptData();
-				//add the fixed parameter to profileData, output exp data and opt results
-				optData.setNumEstimatedParams(NUM_MODEL_PARAMRTERS);//redo optimization in order to get least error;
-				Parameter[] newBestParameters = optData.getBestParamters(bestParameters, frapStudy.getSelectedROIsForErrorCalculation(), null, true);
-				double totalErr = optData.getLeastError();
-				//fixed parameter
-				Parameter fixedParam = newBestParameters[IDX_FIXED_MODEL_PARAMETER];
-				ProfileDataElement pd = new ProfileDataElement(fixedParam.getInitialGuess(), totalErr, newBestParameters);
-				profileData.add(pd);
-				//output exp data
-				String expFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY +"exp.txt";
-				outputData(expFileName, frapStudy.getReducedExpTimePoints(), frapStudy.getDimensionReducedExpData());
-				//output opt data
-				String dataFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY +fixedParam.getName()+ fixedParam.getInitialGuess() + ".txt";
-				outputData(dataFileName, frapStudy.getReducedExpTimePoints(), optData.getFitData(bestParameters));
-				
-				Parameter[] unFixedParam = new Parameter[bestParameters.length - 1];
-				int indexCounter = 0;
-				for(int i=0; i<bestParameters.length; i++)
-				{
-					if(i != IDX_FIXED_MODEL_PARAMETER)
-					{
-						unFixedParam[indexCounter] = bestParameters[i];
-						indexCounter++;
-					}
-					else continue;
-				}
-				//increase
-				int iterationCount = 0;
-				double paramVal = fixedParam.getInitialGuess();
-				while(true)
-				{
-					if(iterationCount > maxIteration)
-					{
-						break;
-					}
-					//if satisfies condition break;
-					paramVal = paramVal * stepIncrease;
-					if(paramVal > fixedParam.getUpperBound()|| paramVal < fixedParam.getLowerBound())
-					{
-						break;
-					}
-					Parameter increasedParam = new Parameter (fixedParam.getName(),
-                                                              fixedParam.getLowerBound(),
-                                                              fixedParam.getUpperBound(),
-                                                              fixedParam.getScale(),
-                                                              paramVal);
-					//getBestParameters returns the whole set of parameters including the fixed parameters
-					optData.setNumEstimatedParams(NUM_MODEL_PARAMRTERS-1);
-					Parameter[] newParameters = optData.getBestParamters(unFixedParam, frapStudy.getSelectedROIsForErrorCalculation(), increasedParam, true);
-					totalErr = optData.getLeastError();
-					pd = new ProfileDataElement(increasedParam.getInitialGuess(), totalErr, newParameters);
-					profileData.add(pd);
-					//output opt data
-					dataFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY +increasedParam.getName()+ increasedParam.getInitialGuess() + ".txt";
-					outputData(dataFileName, frapStudy.getReducedExpTimePoints(), optData.getFitData(newParameters));
+                ProfileData[] profileData = optData.evaluateParameters(bestParameters, new ClientTaskStatusSupport() {
 					
-					iterationCount++;
-				}
-				//decrease
-				iterationCount = 0;
-				paramVal = fixedParam.getInitialGuess();
-				while(true)
-				{
-					if(iterationCount > maxIteration)
-					{
-						break;
-					}
-					//if satisfies condition break;
-					paramVal = paramVal * stepDecrease;
-					if(paramVal > fixedParam.getUpperBound() || paramVal < fixedParam.getLowerBound())
-					{
-						break;
-					}
-					Parameter decreasedParam = new Parameter (fixedParam.getName(),
-                                                    fixedParam.getLowerBound(),
-                                                    fixedParam.getUpperBound(),
-                                                    fixedParam.getScale(),
-                                                    paramVal);
-					//getBestParameters returns the whole set of parameters including the fixed parameters
-					optData.setNumEstimatedParams(NUM_MODEL_PARAMRTERS-1);
-					Parameter[] newParameters = optData.getBestParamters(unFixedParam, frapStudy.getSelectedROIsForErrorCalculation(), decreasedParam, true);
-					totalErr = optData.getLeastError();
-					pd = new ProfileDataElement(decreasedParam.getInitialGuess(), totalErr, newParameters);
-					profileData.add(0,pd);
-					//output opt data
-					dataFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + decreasedParam.getName()+ decreasedParam.getInitialGuess() + ".txt";
-					outputData(dataFileName, frapStudy.getReducedExpTimePoints(), optData.getFitData(newParameters));
-					
-					iterationCount++;
-				}
+						public void setProgress(int progress) {
+							// TODO Auto-generated method stub
+							
+						}
+						
+						public void setMessage(String message) {
+							System.out.println(message);
+						}
+						
+						public boolean isInterrupted() {
+							// TODO Auto-generated method stub
+							return false;
+						}
+						
+						public int getProgress() {
+							// TODO Auto-generated method stub
+							return 0;
+						}
+					});
+
 				//output profile likelihood
-				outputProfileLikelihood(profileData, fixedParam);
+                for(int i=0; i<profileData.length; i++)
+                {
+                	ProfileDataElement profileDataElement = profileData[i].getProfileDataElements().get(0);
+					outputProfileLikelihood(profileData[i].getProfileDataElements(), profileDataElement.getParamName());
+                }
 			}catch(Exception e)
 			{
 				e.printStackTrace(System.out);
@@ -247,12 +182,12 @@ public class FRAPParamTest
 		}
 	}
 	
-	private void outputProfileLikelihood(ArrayList<ProfileDataElement> arg_profileData, Parameter arg_fixedParam) 
+	private void outputProfileLikelihood(ArrayList<ProfileDataElement> arg_profileData, String fixedParamName) 
 	{
 		try{
 			System.out.println("Writing profile likelihood...");
 			//output results
-			String outFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + arg_fixedParam.getName() +"_profileLikelihood" +".txt"; 
+			String outFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + fixedParamName +"_profileLikelihood" +".txt"; 
 			File outFile = new File(outFileName);
 			FileWriter fstream = new FileWriter(outFile);
 	        BufferedWriter out = new BufferedWriter(fstream);
@@ -326,18 +261,18 @@ public class FRAPParamTest
 	
 	public static void main(String[] args) {
 		try{
-			if(args.length != 2 && args.length != 4 && args.length != 6)
+			if(args.length != 2 && args.length != 4 && args.length != 5 && args.length != 7)
 			{
 				System.out.println("Wrong Command!");
 				System.out.println("Usage: -i imageFileName(/.lsm .tif) [-D workingDirectory]");
-				System.out.println("Usage: -l vcellLogFileName(/.log) [-D workingDirectory] -v varName");
+				System.out.println("Usage: -l vcellLogFileName(/.log) [-D workingDirectory] -v varName bleachedMaskVarName");
 				System.out.println("Usage: -x xmlFileName(/.vfrap) [-D workingDirectory]");
 				System.exit(1);
 			}
 			else
 			{
 				File workingDirectory = null;
-				if((args.length == 4 || args.length == 6) && args[2].equals("-D") && args[3].length() > 0)
+				if((args.length == 4 || args.length == 7) && args[2].equals("-D") && args[3].length() > 0)
 				{
 					workingDirectory = new File(args[3]);
 				}
@@ -361,18 +296,18 @@ public class FRAPParamTest
 				}
 				else if( args[0].equals("-l"))
 				{
-					if(args.length == 4 && args[2].equals("-v") && args[3].length() > 0)
+					if(args.length == 5 && args[2].equals("-v") && args[3].length() > 0 && args[4].length() > 0)
 					{
-						test.loadLogFile(fileStr, args[3]);
+						test.loadLogFile(fileStr, args[3], args[4]);
 					}
-					else if (args.length == 6 && args[4].equals("-v") && args[5].length() > 0)
+					else if (args.length == 7 && args[4].equals("-v") && args[5].length() > 0 && args[6].length() > 0)
 					{
-						test.loadLogFile(fileStr, args[5]);
+						test.loadLogFile(fileStr, args[5], args[6]);
 					}	
 					else
 					{
 						System.out.println("Wrong Command!");
-						System.out.println("Usage: -l vcellLogFileName(/.log) [-D workingDirectory] -v varName");
+						System.out.println("Usage: -l vcellLogFileName(/.log) [-D workingDirectory] -v varName [cellMaskVarName, bleachedMaskVarName, backgroundMaskVarName]");
 						System.exit(1);
 					}
 				}
@@ -385,7 +320,7 @@ public class FRAPParamTest
 				test.runProfileLikelihood();
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 		}
 	}
 

@@ -37,13 +37,13 @@ public abstract class FRAPWorkspace
 		return newFrapStudy;
 	}
 	
-	public static FRAPStudy loadFRAPDataFromVcellLogFile(File inputFile, String identifierName, Double maxIntensity, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
+	public static FRAPStudy loadFRAPDataFromVcellLogFile(File inputFile, String identifierName, String bleachedMaskVarName, Double maxIntensity, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
 	{
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
 		try {
-			newFrapData = FRAPData.importFRAPDataFromVCellSimulationData(inputFile, identifierName, maxIntensity, clientTaskStatusSupport);
+			newFrapData = FRAPData.importFRAPDataFromVCellSimulationData(inputFile, identifierName, bleachedMaskVarName, maxIntensity, clientTaskStatusSupport);
 		} catch (Exception e) {
 			throw new Exception(e.getMessage());
 		}
