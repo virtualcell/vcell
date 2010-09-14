@@ -852,6 +852,10 @@ roundtripTimer += l2 - l1;
 					int count=0;
 					while (dbServer.getDBTopLevel().isNameUsed(user,VersionableType.VCImage,memoryImage.getName(),true)){
 						try {
+							if(memoryImage.getName() == null)
+							{
+								memoryImage.setName("image");
+							}
 							memoryImage.setName(TokenMangler.getNextRandomToken(memoryImage.getName()));
 						}catch (java.beans.PropertyVetoException e){
 							e.printStackTrace(System.out);
@@ -1471,6 +1475,10 @@ public String saveGeometry(QueryHashtable dbc, User user,String geometryXML,Stri
 			//
 			while (dbServer.getDBTopLevel().isNameUsed(user,VersionableType.VCImage,image.getName(),true)){
 				try {
+					if(image.getName() == null)
+					{
+						image.setName("image");
+					}
 					image.setName(TokenMangler.getNextRandomToken(image.getName()));
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
@@ -1590,6 +1598,10 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 				int count=0;
 				while (dbServer.getDBTopLevel().isNameUsed(user,VersionableType.VCImage,memoryImage.getName(),true)){
 					try {
+						if(memoryImage.getName() == null)
+						{
+							memoryImage.setName("image");
+						}
 						memoryImage.setName(TokenMangler.getNextRandomToken(memoryImage.getName()));
 					}catch (java.beans.PropertyVetoException e){
 						e.printStackTrace(System.out);
@@ -1991,6 +2003,10 @@ public String saveSimulation(QueryHashtable dbc, User user, String simulationXML
 				int count=0;
 				while (dbServer.getDBTopLevel().isNameUsed(user,VersionableType.VCImage,memoryImage.getName(),true)){
 					try {
+						if(memoryImage.getName() == null)
+						{
+							memoryImage.setName("image");
+						}
 						memoryImage.setName(TokenMangler.getNextRandomToken(memoryImage.getName()));
 					}catch (java.beans.PropertyVetoException e){
 						e.printStackTrace(System.out);
