@@ -387,7 +387,7 @@ public class VirtualFrapMainFrame extends JFrame
     
     //set window size
     setSize(INIT_WINDOW_SIZE);
-    setLocation( iniFrameLocX, iniFrameLocY);
+    setLocation(iniFrameLocX, iniFrameLocY);
     
     updateStatus("This is the main frame of Virtual Frap.");
     //to handle the close button of the frame
@@ -430,7 +430,6 @@ public class VirtualFrapMainFrame extends JFrame
    */
   protected void initiateComponents()
   {
-//      statusBar = new StatusBar();
       toolBar = new ToolBar();
       toolBar.setNewAndRunButtonVisible(false);
       ToolBarHandler th = new ToolBarHandler();
