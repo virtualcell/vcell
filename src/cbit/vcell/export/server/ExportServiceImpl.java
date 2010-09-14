@@ -17,6 +17,7 @@ import GIFUtils.*;
 import java.util.zip.*;
 import java.net.*;
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.export.*;
 import cbit.rmi.event.*;
 import cbit.vcell.simdata.gui.*;
@@ -27,6 +28,7 @@ import java.util.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
@@ -169,11 +171,13 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 	return makeRemoteFile(outputContext,user, dataServerImpl, exportSpecs, true);
 }
 
-/**
- * This method was created in VisualAge.
- */
-public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, boolean bSaveAsZip)
-						throws DataAccessException {
+public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, boolean bSaveAsZip) throws DataAccessException
+{
+	return makeRemoteFile(outputContext, user, dataServerImpl, exportSpecs, bSaveAsZip, null);
+}
+	
+//amended Sept. 2010 to include clientTaskStatusSupport which can display progress and make task cancellable work.	
+public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, boolean bSaveAsZip, ClientTaskStatusSupport clientTaskStatusSupport) throws DataAccessException {
 	// if export completes successfully, we return the generated event for logging
 	if (user == null) {
 		throw new DataAccessException("ERROR: user is null");
@@ -245,7 +249,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 				exportOutputs = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs);
 				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
 			case FORMAT_QUICKTIME:
-				exportOutputs = qtExporter.makeMovieData(outputContext,newExportJob, user, dataServerImpl, exportSpecs);
+				exportOutputs = qtExporter.makeMovieData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, clientTaskStatusSupport);
 				if(bSaveAsZip)
 				{
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
@@ -275,7 +279,11 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 			default:
 				throw new DataAccessException("Unknown export format requested");
 		}
-	} catch (Throwable exc) {
+	}catch(UserCancelException ex)
+	{
+		throw ex;
+	}
+	catch (Throwable exc) {
 		log.exception(exc);
 		fireExportFailed(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exc.getMessage());
 		throw new DataAccessException(exc.getMessage());
