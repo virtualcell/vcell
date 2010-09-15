@@ -13,6 +13,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 
+@SuppressWarnings("serial")
 public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 	private TextFieldAutoCompletion textFieldAutoCompletion = null;
 	private JTable thisTable = null;

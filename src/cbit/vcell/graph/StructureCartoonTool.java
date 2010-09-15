@@ -26,6 +26,9 @@ import org.vcell.util.gui.VCFileChooser;
 
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
+import cbit.gui.graph.actions.CartoonToolEditActions;
+import cbit.gui.graph.actions.CartoonToolMiscActions;
+import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.ClientServerManager;
@@ -53,7 +56,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 	// public Shape movingShape = null;
 	// private Point movingPointWorld = null;
 	// private Point movingOffsetWorld = null;
-	private int mode = -1;
+	private Mode mode = null;
 	private Hashtable<Structure, ReactionCartoonEditorDialog> reactionEditorHash = new Hashtable<Structure, ReactionCartoonEditorDialog>();
 	private ModelParametersDialog modelParametersDialog = null;
 
@@ -143,7 +146,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 	 */
 	@Override
 	protected void menuAction(Shape shape, String menuAction) {
-		if (menuAction.equals(SHOW_PARAMETERS_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolMiscActions.ShowParameters.MENU_ACTION)) {
 			showParametersDialog();
 		}
 		//
@@ -151,24 +154,24 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 			return;
 		}
 		//
-		if (menuAction.equals(COPY_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolEditActions.Copy.MENU_ACTION)) {
 			if (shape instanceof SpeciesContextShape) {
 				Species species = ((SpeciesContextShape) shape).getSpeciesContext().getSpecies();
 				VCellTransferable.sendToClipboard(species);
 			}
-		} else if (menuAction.equals(PASTE_MENU_ACTION)
-				|| menuAction.equals(PASTE_NEW_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
+				|| menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
 			if (shape instanceof StructureShape) {
 				Species species = (Species) SimpleTransferable
 				.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
 				IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
 				if (species != null) {
-					boolean bPasteNew = menuAction.equals(PASTE_NEW_MENU_ACTION);
+					boolean bPasteNew = menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION);
 					pasteSpecies(getGraphPane(), species, getStructureCartoon().getModel(), 
 							((StructureShape) shape).getStructure(), bPasteNew, speciesHash, null);
 				}
 			}
-		} else if (menuAction.equals(PROPERTIES_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolMiscActions.Properties.MENU_ACTION)) {
 			if (shape instanceof FeatureShape) {
 				//
 				// showFeaturePropertyDialog is invoked in two modes:
@@ -191,12 +194,12 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 						((SpeciesContextShape) shape).getSpeciesContext());
 			}
 
-		} else if (menuAction.equals(SHOW_PARAMETERS_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolMiscActions.ShowParameters.MENU_ACTION)) {
 			if (shape instanceof FeatureShape || shape instanceof MembraneShape) {
 				showParametersDialog();
 			}
 
-		} else if (menuAction.equals(ADD_GLOBAL_PARAM_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolMiscActions.AddGlobalParameter.MENU_ACTION)) {
 			if (shape instanceof FeatureShape || shape instanceof MembraneShape) {
 				Point locationOnScreen = shape.getAbsLocation();
 				Point graphPaneLocation = getGraphPane().getLocationOnScreen();
@@ -206,14 +209,14 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 						getStructureCartoon().getModel(), locationOnScreen);
 			}
 
-		} else if (menuAction.equals(ADD_SPECIES_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolMiscActions.AddSpecies.MENU_ACTION)) {
 			if (shape instanceof StructureShape) {
 				showCreateSpeciesContextDialog(getGraphPane(),
 						getStructureCartoon().getModel(),
 						((StructureShape) shape).getStructure(), null);
 			}
 
-		} else if (menuAction.equals(ADD_FEATURE_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolMiscActions.AddFeature.MENU_ACTION)) {
 			try {
 				if (shape instanceof FeatureShape) {
 					showFeaturePropertiesDialog(getGraphPane(),
@@ -225,17 +228,17 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				generateErrorDialog(e, 0, 0);
 			}
 
-		} else if (menuAction.equals(DELETE_MENU_ACTION)
-				|| menuAction.equals(CUT_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)
+				|| menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
 			try {
 				if (shape instanceof FeatureShape
-						&& menuAction.equals(DELETE_MENU_ACTION)) {
+						&& menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
 					getStructureCartoon().getModel().removeFeature(
 							((FeatureShape) shape).getFeature());
 				} else if (shape instanceof SpeciesContextShape) {
 					getStructureCartoon().getModel().removeSpeciesContext(
 							((SpeciesContextShape) shape).getSpeciesContext());
-					if (menuAction.equals(CUT_MENU_ACTION)) {
+					if (menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
 						VCellTransferable.sendToClipboard(((SpeciesContextShape) shape).getSpeciesContext().getSpecies());
 					}
 				}
@@ -243,21 +246,21 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				DialogUtils.showErrorDialog(getGraphPane(), e.getMessage(), e);
 			}
 
-		} else if (menuAction.equals(REACTIONS_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolMiscActions.Reactions.MENU_ACTION)) {
 			if (shape instanceof StructureShape) {
 				showReactionCartoonEditorPanel((StructureShape) shape);
 			}
 
-		} else if (menuAction.equals(HIGH_RES_MENU_ACTION)
-				|| menuAction.equals(MED_RES_MENU_ACTION)
-				|| menuAction.equals(LOW_RES_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)
+				|| menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)
+				|| menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
 			try {
 				String resType = null;
-				if (menuAction.equals(HIGH_RES_MENU_ACTION)) {
+				if (menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)) {
 					resType = ITextWriter.HIGH_RESOLUTION;
-				} else if (menuAction.equals(MED_RES_MENU_ACTION)) {
+				} else if (menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)) {
 					resType = ITextWriter.MEDIUM_RESOLUTION;
-				} else if (menuAction.equals(LOW_RES_MENU_ACTION)) {
+				} else if (menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
 					resType = ITextWriter.LOW_RESOLUTION;
 				}
 				if (shape instanceof StructureShape) {
@@ -266,7 +269,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 			} catch (Exception e) {
 				DialogUtils.showErrorDialog(getGraphPane(), e.getMessage(), e);
 			}
-		} else if (menuAction.equals(MOVE_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolEditActions.Move.MENU_ACTION)) {
 			if (shape instanceof FeatureShape) {
 				showMoveDialog((FeatureShape) shape);
 			}
@@ -297,11 +300,11 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				return;
 			}
 			switch (mode) {
-			case SELECT_MODE: {
+			case SELECT: {
 				if (event.getClickCount() == 2) {
 					Shape selectedShape = getStructureCartoon().getSelectedShape();
 					if (selectedShape != null) {
-						menuAction(selectedShape, PROPERTIES_MENU_ACTION);
+						menuAction(selectedShape, CartoonToolMiscActions.Properties.MENU_ACTION);
 						// if(selectedShape instanceof SpeciesContextShape){
 						// showEditSpeciesDialog(((SpeciesContextShape)selectedShape).getSpeciesContext(),worldPoint);
 						// }else if(selectedShape instanceof
@@ -332,9 +335,9 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				// }
 				break;
 			}
-			case FEATURE_MODE: {
+			case FEATURE: {
 				menuAction(getStructureCartoon().getSelectedShape(),
-						ADD_FEATURE_MENU_ACTION);
+						CartoonToolMiscActions.AddFeature.MENU_ACTION);
 				// createFeature(pickedShape);
 				// String newFeatureName =
 				// getStructureCartoon().getModel().getFreeFeatureName();
@@ -348,7 +351,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				// }else if (pickedShape==null){
 				// getStructureCartoon().getModel().addFeature(newFeatureName,null,null);
 				// }
-				setMode(SELECT_MODE);
+				setMode(Mode.SELECT);
 				// Feature feature =
 				// (Feature)getStructureCartoon().getModel().getStructure(newFeatureName);
 				// Shape shape =
@@ -356,9 +359,9 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				// showFeaturePropertiesDialog((FeatureShape)shape,shape.getLocationOnScreen());
 				break;
 			}
-			case SPECIES_MODE: {
+			case SPECIES: {
 				menuAction(getStructureCartoon().getSelectedShape(),
-						ADD_SPECIES_MENU_ACTION);
+						CartoonToolMiscActions.AddSpecies.MENU_ACTION);
 				// if (pickedShape instanceof StructureShape){
 				// showCreateSpeciesContextDialog(getStructureCartoon().getModel(),((StructureShape)pickedShape).getStructure(),pickedShape.getLocationOnScreen(getGraphPane().getLocationOnScreen()));
 				// }
@@ -381,62 +384,6 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 
 	@Override
 	public void mouseDragged(MouseEvent event) {
-		// if(event.getID() != DragFix.QUEUED){
-		// dragFix.queueEvent(event);
-		// return;
-		// }
-		if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
-			return;
-		}
-		// try {
-		// switch (mode){
-		// case SELECT_MODE: {
-		// java.awt.Point worldPoint = screenToWorld(event.getX(),event.getY());
-		// if (bMoving){
-		// getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-		// //graphPane.repaint();
-		// Graphics2D g = (Graphics2D)getGraphPane().getGraphics();
-		// java.awt.geom.AffineTransform oldTransform = g.getTransform();
-		// g.scale(0.01*getStructureCartoon().getZoomPercent(),0.01*getStructureCartoon().getZoomPercent());
-		// g.setXORMode(Color.white);
-		// movingShape.setLocation(movingPointWorld);
-		// movingShape.paint(g,0,0);
-		// movingPointWorld = new
-		// Point(worldPoint.x-movingOffsetWorld.x,worldPoint.y-movingOffsetWorld.y);
-		// movingShape.setLocation(movingPointWorld);
-		// movingShape.paint(g,0,0);
-		// g.setTransform(oldTransform);
-		// }else{
-		// if (movingShape != null){
-		// return;
-		// }
-		// movingShape = getStructureCartoon().pickWorld(worldPoint);
-		// if (movingShape!=null){
-		// if (movingShape.getParent()!=null){
-		// if (movingShape instanceof FeatureShape){
-		// movingShape = (MembraneShape)movingShape.getParent();
-		// if (movingShape.getParent()!=null && movingShape.getParent()
-		// instanceof FeatureShape){
-		// movingShape.getParent().removeChild(movingShape);
-		// }
-		// bMoving=true;
-		// movingPointWorld = movingShape.getAbsLocation();
-		// movingOffsetWorld = new
-		// Point(worldPoint.x-movingPointWorld.x,worldPoint.y-movingPointWorld.y);
-		// }
-		// }
-		// }
-		// }
-		// break;
-		// }
-		// default: {
-		// break;
-		// }
-		// }
-		// }catch (Exception e){
-		// System.out.println("CartoonTool.mouseDragged: uncaught exception");
-		// e.printStackTrace(System.out);
-		// }
 	}
 
 	@Override
@@ -450,13 +397,13 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 			int y = event.getY();
 			java.awt.Point worldPoint = screenToWorld(x, y);
 			// Always select with MousePress
-			if (mode == SELECT_MODE
+			if (mode == Mode.SELECT
 					|| (event.getModifiers() & InputEvent.BUTTON1_MASK) != 0) {
 				selectEventFromWorld(worldPoint);
 			}
 			//
 			// If mouse popupMenu event, popup menu
-			if (event.isPopupTrigger() && mode == SELECT_MODE) {
+			if (event.isPopupTrigger() && mode == Mode.SELECT) {
 				popupMenu(getStructureCartoon().getSelectedShape(), event.getX(), 
 						event.getY());
 				return;
@@ -480,7 +427,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 			//
 			if (event.isPopupTrigger() &&
 					// !bMoving &&
-					mode == SELECT_MODE) {
+					mode == Mode.SELECT) {
 				// selectEventFromWorld(worldPoint);
 				Shape pickedShape = getStructureCartoon().pickWorld(worldPoint);
 				if (pickedShape == getStructureCartoon().getSelectedShape()) {
@@ -650,36 +597,36 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 	}
 
 	@Override
-	protected boolean shapeHasMenuAction(Shape shape, String menuAction) {
+	public boolean shapeHasMenuAction(Shape shape, String menuAction) {
 		// all structures (features and membranes) can edit properties and reactions
 		if (shape instanceof StructureShape) {
-			if (menuAction.equals(PROPERTIES_MENU_ACTION)
-					|| menuAction.equals(REACTIONS_MENU_ACTION)
-					|| menuAction.equals(PASTE_MENU_ACTION)
-					|| menuAction.equals(PASTE_NEW_MENU_ACTION)
-					|| menuAction.equals(ADD_SPECIES_MENU_ACTION)
-					|| menuAction.equals(ADD_GLOBAL_PARAM_MENU_ACTION)
-					|| menuAction.equals(SHOW_PARAMETERS_MENU_ACTION)
-					|| menuAction.equals(HIGH_RES_MENU_ACTION)
-					|| menuAction.equals(MED_RES_MENU_ACTION)
-					|| menuAction.equals(LOW_RES_MENU_ACTION)) {
+			if (menuAction.equals(CartoonToolMiscActions.Properties.MENU_ACTION)
+					|| menuAction.equals(CartoonToolMiscActions.Reactions.MENU_ACTION)
+					|| menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
+					|| menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)
+					|| menuAction.equals(CartoonToolMiscActions.AddSpecies.MENU_ACTION)
+					|| menuAction.equals(CartoonToolMiscActions.AddGlobalParameter.MENU_ACTION)
+					|| menuAction.equals(CartoonToolMiscActions.ShowParameters.MENU_ACTION)
+					|| menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)
+					|| menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)
+					|| menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
 				return true;
 			}
 		}
 		// only features should be deleted (not membranes).
 		if (shape instanceof FeatureShape) {
-			if (menuAction.equals(DELETE_MENU_ACTION)
-					|| menuAction.equals(ADD_FEATURE_MENU_ACTION)
-					|| menuAction.equals(MOVE_MENU_ACTION)) {
+			if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)
+					|| menuAction.equals(CartoonToolMiscActions.AddFeature.MENU_ACTION)
+					|| menuAction.equals(CartoonToolEditActions.Move.MENU_ACTION)) {
 				return true;
 			}
 		}
 		// speciesContext's may be deleted or edited or species edited or
 		// copied.
 		if (shape instanceof SpeciesContextShape) {
-			if (menuAction.equals(CUT_MENU_ACTION)
-					|| menuAction.equals(PROPERTIES_MENU_ACTION)
-					|| menuAction.equals(COPY_MENU_ACTION)) {
+			if (menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)
+					|| menuAction.equals(CartoonToolMiscActions.Properties.MENU_ACTION)
+					|| menuAction.equals(CartoonToolEditActions.Copy.MENU_ACTION)) {
 				return true;
 			}
 		}
@@ -687,12 +634,12 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 	}
 
 	@Override
-	protected boolean shapeHasMenuActionEnabled(Shape shape, String menuAction) {
+	public boolean shapeHasMenuActionEnabled(Shape shape, String menuAction) {
 		// Paste if there is a species on the system clipboard and (it doesn't
 		// exist in structure || you are PASTE_NEW)
 		if (shape instanceof StructureShape) {
-			boolean bPasteNew = menuAction.equals(PASTE_NEW_MENU_ACTION);
-			boolean bPaste = menuAction.equals(PASTE_MENU_ACTION);
+			boolean bPasteNew = menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION);
+			boolean bPaste = menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION);
 			if (bPaste || bPasteNew) {
 				Species species = 
 					(Species) SimpleTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
@@ -713,7 +660,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		}
 		// Is Move valid
 		if (shape instanceof FeatureShape) {
-			if (menuAction.equals(MOVE_MENU_ACTION)) {
+			if (menuAction.equals(CartoonToolEditActions.Move.MENU_ACTION)) {
 				Feature[] featureArr = 
 					getStructureCartoon().getModel().getValidDestinationsForMovingFeature(
 							((FeatureShape) shape).getFeature());
@@ -970,7 +917,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 	}
 
 	@Override
-	public void updateMode(int newMode) {
+	public void updateMode(Mode newMode) {
 		if (newMode == mode) {
 			return;
 		}
@@ -982,15 +929,15 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		this.mode = newMode;
 		if (getGraphPane() != null) {
 			switch (mode) {
-			case FEATURE_MODE: {
+			case FEATURE: {
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 				break;
 			}
-			case SPECIES_MODE: {
+			case SPECIES: {
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 				break;
 			}
-			case SELECT_MODE: {
+			case SELECT: {
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				break;
 			}

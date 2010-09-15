@@ -318,8 +318,7 @@ public class FeatureShape extends StructureShape {
 			Shape child = childShapeList.get(i);
 			if (child instanceof StructureShape){
 				// Dimension childDim = child.screenSize;
-				child.relativePos.x = centerX - child.shapeSize.width/2;
-				child.relativePos.y = col2Y;
+				child.getSpaceManager().setRelPos(centerX - child.shapeSize.width/2, col2Y);
 				col2Y += child.shapeSize.height + spacingY;
 			}	
 		}
@@ -342,14 +341,15 @@ public class FeatureShape extends StructureShape {
 			//Calculate Mask of valid area where SpeciesContextShape may render
 			//
 			currentOval = new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Double(
-					relativePos.x,relativePos.y,shapeSize.width,shapeSize.height));
+					getSpaceManager().getRelX(), getSpaceManager().getRelY(),
+					shapeSize.width,shapeSize.height));
 			for (int i=0;i<childShapeList.size();i++){
 				Shape child = childShapeList.get(i);
 				if (child instanceof StructureShape){
 					java.awt.geom.Area childArea =
 						new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Double(
-								child.relativePos.x+relativePos.x,
-								child.relativePos.y+relativePos.y,
+								child.getSpaceManager().getRelX() + getSpaceManager().getRelX(),
+								child.getSpaceManager().getRelY() + getSpaceManager().getRelY(),
 								child.shapeSize.width,child.shapeSize.height));
 					currentOval.subtract(childArea);
 				}	
@@ -414,8 +414,7 @@ public class FeatureShape extends StructureShape {
 							}
 						}
 						if(!bLayoutFailed){
-							child.relativePos.x = boxX;
-							child.relativePos.y = boxY;
+							child.getSpaceManager().setRelPos(boxX, boxY);
 							boxY+= YSTEP;
 						}else{
 							break;

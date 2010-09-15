@@ -57,11 +57,10 @@ public class GeometryContextGeometryShape extends ContainerShape {
 		for (int i = childShapeList.size() - 1; i >= 0; --i){
 			Shape shape = childShapeList.get(i);
 			if (i == childShapeList.size()-1){
-				shape.relativePos.x = centerX - shape.shapeSize.width/2;
+				shape.getSpaceManager().setRelPos(centerX - shape.shapeSize.width/2, currentY);
 			} else {
-				shape.relativePos.x = centerX - maxChildWidth/2;
+				shape.getSpaceManager().setRelPos(centerX - maxChildWidth/2, currentY);
 			}
-			shape.relativePos.y = currentY;
 			currentY += shape.shapeSize.height + PAD_Y;
 			shape.refreshLayout();
 		}

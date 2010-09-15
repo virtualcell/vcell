@@ -102,22 +102,18 @@ public class ContainerContainerShape extends ContainerShape {
 	public void refreshLayout() throws LayoutException {
 		if (featureContainer!=null){
 			// position feature
-			featureContainer.relativePos.x = 0;
-			featureContainer.relativePos.y = 0;
+			featureContainer.getSpaceManager().setRelPos(0, 0);
 		}else{
 			int currentX = 0;
 			int currentY = 0;
 			// position outside shape
-			outsideContainer.relativePos.x = currentX;
-			outsideContainer.relativePos.y = currentY;
+			outsideContainer.getSpaceManager().setRelPos(currentX, currentY);
 			currentX += outsideContainer.shapeSize.width;
 			// position membrane shape
-			membraneContainer.relativePos.x = currentX;
-			membraneContainer.relativePos.y = currentY;
+			membraneContainer.getSpaceManager().setRelPos(currentX, currentY);
 			currentX += membraneContainer.shapeSize.width;
 			// position inside shape
-			insideContainer.relativePos.x = currentX;
-			insideContainer.relativePos.y = currentY;
+			insideContainer.getSpaceManager().setRelPos(currentX, currentY);
 			currentX += insideContainer.shapeSize.width;
 		}
 		// layout the edges

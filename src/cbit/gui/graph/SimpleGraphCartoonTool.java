@@ -14,7 +14,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
@@ -23,27 +22,28 @@ import javax.swing.JViewport;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.gui.graph.actions.CartoonToolMiscActions;
+
 import com.genlogic.GraphLayout.GlgCube;
 import com.genlogic.GraphLayout.GlgGraphEdge;
 import com.genlogic.GraphLayout.GlgGraphLayout;
 import com.genlogic.GraphLayout.GlgGraphNode;
 import com.genlogic.GraphLayout.GlgPoint;
 
+import edu.rpi.graphdrawing.Annealer;
 import edu.rpi.graphdrawing.Blackboard;
+import edu.rpi.graphdrawing.Circularizer;
+import edu.rpi.graphdrawing.Cycleizer;
+import edu.rpi.graphdrawing.Embedder;
+import edu.rpi.graphdrawing.ForceDirect;
+import edu.rpi.graphdrawing.Leveller;
 import edu.rpi.graphdrawing.Node;
+import edu.rpi.graphdrawing.Randomizer;
+import edu.rpi.graphdrawing.Relaxer;
+import edu.rpi.graphdrawing.Stabilizer;
 
 public class SimpleGraphCartoonTool extends CartoonTool {
 	private GraphModel graphModel = null;
-
-	public static final String ANNEALER = "Annealer";
-	public static final String CIRCULARIZER = "Circularizer";
-	public static final String CYCLEIZER = "Cycleizer";
-	public static final String FORCEDIRECT = "ForceDirect";
-	public static final String LEVELLER = "Leveller";
-	public static final String TRANSPOSE = "Transpose";
-	public static final String RANDOMIZER = "Randomizer";
-	public static final String RELAXER = "Relaxer";
-	public static final String STABILIZER = "Stabilizer";
 
 	// for dragging speciesContext's around
 	private boolean bMoving = false;
@@ -57,7 +57,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 
 	// for dragging line around
 	private Point endPointWorld = null;
-	private int mode = -1;
+	private Mode mode = null;
 
 	public SimpleGraphCartoonTool() {
 		super();
@@ -69,10 +69,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 	}
 
 	public void transposeLayout() {
-		// calculate offset and scaling so that resulting graph fits on canvas
-		Enumeration<Shape> enumShapes = getGraphModel().getShapes();
-		while (enumShapes.hasMoreElements()) {
-			Shape shape = enumShapes.nextElement();
+		for(Shape shape : getGraphModel().getShapes()) {
 			if (ShapeUtil.isMovable(shape)) {
 				Point location = shape.getLocation();
 				int oldX = location.x;
@@ -89,9 +86,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 		HashMap<String, Shape> nodeShapeMap = new HashMap<String, Shape>();
 		// add nodes
 		boolean bHasSelections = getGraphModel().getSelectedShape() != null;
-		Enumeration<Shape> shapeEnum = getGraphModel().getShapes();
-		while (shapeEnum.hasMoreElements()) {
-			Shape shape = shapeEnum.nextElement();
+		for(Shape shape : getGraphModel().getShapes()) {
 			edu.rpi.graphdrawing.Node newNode = null;
 			if (ShapeUtil.isMovable(shape)) {
 				if (!bHasSelections || shape.isSelected()) {
@@ -104,10 +99,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 				nodeShapeMap.put(newNode.label(), shape);
 			}
 		}
-		// add edges
-		shapeEnum = getGraphModel().getShapes();
-		while (shapeEnum.hasMoreElements()) {
-			Shape shape = shapeEnum.nextElement();
+		for(Shape shape : getGraphModel().getShapes()) {
 			if (shape instanceof EdgeShape) {
 				EdgeShape eShape = (EdgeShape) shape;
 				Shape node1Shape = eShape.startShape;
@@ -120,14 +112,14 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 		}
 		bb.setArea(0, 0, getGraphPane().getWidth(), getGraphPane().getHeight());
 		bb.globals.D(20);
-		bb.addEmbedder(ANNEALER, new edu.rpi.graphdrawing.Annealer(bb));
-		bb.addEmbedder(CIRCULARIZER, new edu.rpi.graphdrawing.Circularizer(bb));
-		bb.addEmbedder(CYCLEIZER, new edu.rpi.graphdrawing.Cycleizer(bb));
-		bb.addEmbedder(FORCEDIRECT, new edu.rpi.graphdrawing.ForceDirect(bb));
-		bb.addEmbedder(LEVELLER, new edu.rpi.graphdrawing.Leveller(bb));
-		bb.addEmbedder(RANDOMIZER, new edu.rpi.graphdrawing.Randomizer(bb));
-		bb.addEmbedder(RELAXER, new edu.rpi.graphdrawing.Relaxer(bb));
-		bb.addEmbedder(STABILIZER, new edu.rpi.graphdrawing.Stabilizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.ANNEALER, new Annealer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.CIRCULARIZER, new Circularizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.CYCLEIZER, new Cycleizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.FORCEDIRECT, new ForceDirect(bb));
+		bb.addEmbedder(GraphEmbeddingManager.LEVELLER, new Leveller(bb));
+		bb.addEmbedder(GraphEmbeddingManager.RANDOMIZER, new Randomizer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.RELAXER, new Relaxer(bb));
+		bb.addEmbedder(GraphEmbeddingManager.STABILIZER, new Stabilizer(bb));
 		bb.setEmbedding(layoutName);
 		@SuppressWarnings("unchecked")
 		List<Node> nodeList = bb.nodes();
@@ -138,7 +130,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 		}
 		bb.PreprocessNodes();
 
-		edu.rpi.graphdrawing.Embedder embedder = bb.embedder();
+		Embedder embedder = bb.embedder();
 		embedder.Init();
 		for (int i = 0; i < 1000; i++) {
 			embedder.Embed();
@@ -191,13 +183,9 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 		newPoint = new GlgPoint(1600, 1600, 0);
 		graphDim.p2 = newPoint;
 		graph.dimensions = graphDim;
-		// Add nodes (Vertex) to the graph
-		Enumeration<Shape> shapeEnum = getGraphModel().getShapes();
 		com.genlogic.GraphLayout.GlgGraphNode graphNode;
 		java.util.HashMap<Shape, GlgGraphNode> nodeMap = new java.util.HashMap<Shape, GlgGraphNode>();
-
-		while (shapeEnum.hasMoreElements()) {
-			Shape shape = shapeEnum.nextElement();
+		for(Shape shape : getGraphModel().getShapes()) {
 			// add to the graph
 			if (ShapeUtil.isMovable(shape)) {
 				graphNode = graph.AddNode(null, 0, null);
@@ -207,10 +195,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 			// add to the hashmap
 			nodeMap.put(shape, graphNode);
 		}
-		// Add edges
-		shapeEnum = getGraphModel().getShapes();
-		while (shapeEnum.hasMoreElements()) {
-			Shape shape = shapeEnum.nextElement();
+		for(Shape shape : getGraphModel().getShapes()) {
 			if (shape instanceof EdgeShape) {
 				EdgeShape eShape = (EdgeShape) shape;
 				graph.AddEdge(nodeMap.get(eShape.startShape), nodeMap
@@ -239,12 +224,9 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 		if (minDistance > 40) {
 			ratio = 40.0 / minDistance;
 		}
-		// Update positions
-		shapeEnum = getGraphModel().getShapes();
 		Point place;
 		com.genlogic.GraphLayout.GlgPoint glgPoint;
-		while (shapeEnum.hasMoreElements()) {
-			Shape shape = shapeEnum.nextElement();
+		for(Shape shape : getGraphModel().getShapes()) {
 			// test if it is contained in the nodeMap
 			graphNode = nodeMap.get(shape);
 			if (graphNode != null) {
@@ -279,11 +261,11 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 				return;
 			}
 			switch (mode) {
-			case SELECT_MODE: {
+			case SELECT: {
 				if (event.getClickCount() == 2) {
 					Shape selectedShape = getGraphModel().getSelectedShape();
 					if (selectedShape != null) {
-						menuAction(selectedShape, PROPERTIES_MENU_ACTION);
+						menuAction(selectedShape, CartoonToolMiscActions.Properties.MENU_ACTION);
 					}
 				}
 				break;
@@ -314,7 +296,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 		//
 		try {
 			switch (mode) {
-			case SELECT_MODE: {
+			case SELECT: {
 				Point worldPoint = screenToWorld(event.getX(), event.getY());
 				if (bMoving) {
 					Shape selectedShapes[] = getGraphModel()
@@ -469,12 +451,12 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 			// Always select with MousePress
 			boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
 			boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
-			if (mode == SELECT_MODE
+			if (mode == Mode.SELECT
 					|| (event.getModifiers() & InputEvent.BUTTON1_MASK) != 0) {
 				selectEventFromWorld(worldPoint, bShift, bCntrl);
 			}
 			// if mouse popupMenu event, popup menu
-			if (event.isPopupTrigger() && mode == SELECT_MODE) {
+			if (event.isPopupTrigger() && mode == Mode.SELECT) {
 				popupMenu(getGraphModel().getSelectedShape(), eventX, eventY);
 				return;
 			}
@@ -498,7 +480,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 					(int) (eventY * 100.0 / getGraphModel().getZoomPercent()));
 			Shape pickedShape = getGraphModel().pickWorld(worldPoint);
 			// if mouse popupMenu event, popup menu
-			if (event.isPopupTrigger() && mode == SELECT_MODE) {
+			if (event.isPopupTrigger() && mode == Mode.SELECT) {
 				if (pickedShape == getGraphModel().getSelectedShape()) {
 					popupMenu(getGraphModel().getSelectedShape(), event.getX(),
 							event.getY());
@@ -510,7 +492,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 			}
 			// else do select and move
 			switch (mode) {
-			case SELECT_MODE: {
+			case SELECT: {
 				getGraphPane().setCursor(Cursor.getDefaultCursor());
 				if (bMoving) {
 					getGraphPane().invalidate();
@@ -641,17 +623,17 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 	}
 
 	@Override
-	protected boolean shapeHasMenuAction(Shape shape, String menuAction) {
+	public boolean shapeHasMenuAction(Shape shape, String menuAction) {
 		return false;
 	}
 
 	@Override
-	protected boolean shapeHasMenuActionEnabled(Shape shape, String menuAction) {
+	public boolean shapeHasMenuActionEnabled(Shape shape, String menuAction) {
 		return false;
 	}
 
 	@Override
-	public void updateMode(int newMode) {
+	public void updateMode(Mode newMode) {
 		if (newMode == mode) {
 			return;
 		}
@@ -666,7 +648,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 		this.mode = newMode;
 		if (getGraphPane() != null) {
 			switch (mode) {
-			case SELECT_MODE: {
+			case SELECT: {
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				break;
 			}

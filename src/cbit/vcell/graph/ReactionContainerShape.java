@@ -122,7 +122,7 @@ public class ReactionContainerShape extends ContainerShape {
 				//
 				// position normally about the center
 				//
-				child.relativePos = getRandomPosition();
+				child.getSpaceManager().setRelPos(getRandomPosition());
 			}	
 		}
 

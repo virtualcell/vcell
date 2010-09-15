@@ -18,7 +18,8 @@ import cbit.gui.graph.visualstate.VisualState.PaintLayer;
 
 public abstract class Shape implements VisualState.Owner {
 
-	public Point relativePos = new Point(0, 0); // screen coordinate relative to
+	protected ShapeSpaceManager spaceManager = new ShapeSpaceManager();
+//	public Point relativePos = new Point(0, 0); // screen coordinate relative to
 	// parent
 	public Dimension shapeSize = new Dimension();
 	protected Dimension preferredSize = new Dimension();
@@ -57,6 +58,8 @@ public abstract class Shape implements VisualState.Owner {
 		this.graphModel = graphModel;
 	}
 
+	public ShapeSpaceManager getSpaceManager() { return spaceManager; }
+	
 	public abstract VisualState createVisualState();
 
 	public VisualState getVisualState() {
@@ -149,10 +152,10 @@ public abstract class Shape implements VisualState.Owner {
 
 	public final Point getAbsLocation() {
 		Shape parent = this;
-		Point pos = new Point(relativePos);
+		Point pos = new Point(getSpaceManager().getRelPos());
 		while ((parent = parent.getParent()) != null) {
-			pos.x += parent.relativePos.x;
-			pos.y += parent.relativePos.y;
+			pos.x += parent.getSpaceManager().getRelX();
+			pos.y += parent.getSpaceManager().getRelY();
 		}
 		return pos;
 	}
@@ -160,11 +163,10 @@ public abstract class Shape implements VisualState.Owner {
 	public final void setAbsLocation(Point absLocation) {
 		if (parent != null) {
 			Point parentAbsLoc = parent.getAbsLocation();
-			relativePos.x = absLocation.x - parentAbsLoc.x;
-			relativePos.y = absLocation.y - parentAbsLoc.y;
+			getSpaceManager().setRelPos(absLocation.x - parentAbsLoc.x, 
+					absLocation.y - parentAbsLoc.y);
 		} else {
-			relativePos.x = absLocation.x;
-			relativePos.y = absLocation.y;
+			getSpaceManager().setRelPos(absLocation.x, absLocation.y);
 		}
 	}
 
@@ -221,7 +223,7 @@ public abstract class Shape implements VisualState.Owner {
 	}
 
 	public Point getLocation() {
-		return relativePos;
+		return getSpaceManager().getRelPos();
 	}
 
 	public abstract Object getModelObject();
@@ -280,8 +282,8 @@ public abstract class Shape implements VisualState.Owner {
 	public abstract void refreshLayout() throws LayoutException;
 
 	public void paint(Graphics2D graphics, int xParent, int yParent) {
-		int xThis = relativePos.x + xParent;
-		int yThis = relativePos.y + yParent;
+		int xThis = getSpaceManager().getRelX() + xParent;
+		int yThis = getSpaceManager().getRelY() + yParent;
 		if (visualState.isAllowedToShowByAllAncestors()) {
 			if (visualState.isShowingItself()) {
 				paintSelf(graphics, xThis, yThis);
@@ -299,8 +301,8 @@ public abstract class Shape implements VisualState.Owner {
 	public final Shape pick(Point point) {
 		if (visualState.isAllowedToShowByAllAncestors()) {
 			if (visualState.isShowingDescendents()) {
-				Point childPoint = new Point(point.x - relativePos.x, point.y
-						- relativePos.y);
+				Point childPoint = new Point(point.x - getSpaceManager().getRelX(), 
+						point.y - getSpaceManager().getRelY());
 				for (int iChild = childShapeList.size() - 1; iChild >= 0; --iChild) {
 					Shape child = childShapeList.get(iChild);
 					Shape childPick = child.pick(childPoint);
@@ -362,8 +364,7 @@ public abstract class Shape implements VisualState.Owner {
 	}
 
 	public void setLocation(Point screenPoint) {
-		relativePos.x = screenPoint.x;
-		relativePos.y = screenPoint.y;
+		getSpaceManager().setRelPos(screenPoint);
 		return;
 	}
 

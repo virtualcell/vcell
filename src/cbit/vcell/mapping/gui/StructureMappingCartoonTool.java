@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.RubberBandEdgeShape;
 import cbit.gui.graph.Shape;
+import cbit.gui.graph.actions.CartoonToolEditActions;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.graph.BioCartoonTool;
@@ -33,7 +34,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 	private RubberBandEdgeShape edgeShape = null;
 
 
-	private int mode = 	-1;
+	private Mode mode = null;
 
 	private static final int LINE_TYPE_NULL = 0;
 	private static final int LINE_TYPE_RESOLVED = 1;
@@ -81,7 +82,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 		//
 		if(shape == null){return;}
 		//	
-		if (menuAction.equals(DELETE_MENU_ACTION)){
+		if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)){
 			if (shape instanceof FeatureMappingShape){
 				try {
 					FeatureMapping fm = (FeatureMapping)((FeatureMappingShape)shape).getModelObject();
@@ -117,7 +118,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 		}
 		// process clicks only in select mode
 		switch (mode) {
-		case SELECT_MODE: {
+		case SELECT: {
 			selectEventFromWorld(screenToWorld(event.getPoint()));
 			break;		
 		}	
@@ -132,7 +133,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 		}
 		try {
 			switch (mode){
-			case LINE_MODE: {
+			case LINE: {
 				if (getStructureMappingCartoon().getGeometryContext().getGeometry().getDimension()==0) return;
 				Point worldPoint = screenToWorld(event.getX(),event.getY());
 				if (bLineStretch){
@@ -192,7 +193,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 			//
 			// if right mouse button, then do nothing
 			//
-			if (event.isPopupTrigger() && mode == SELECT_MODE){
+			if (event.isPopupTrigger() && mode == Mode.SELECT){
 				Shape selectedShape = getStructureMappingCartoon().getSelectedShape();
 				if (selectedShape != null) {
 					popupMenu(selectedShape,event.getX(),event.getY());
@@ -201,7 +202,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 			// else, line etc...
 			getGraphPane().setCursor(Cursor.getDefaultCursor());
 			switch (mode){
-			case LINE_MODE: {
+			case LINE: {
 				if (getStructureMappingCartoon() == null ||
 						getStructureMappingCartoon().getGeometryContext() == null ||
 						getStructureMappingCartoon().getGeometryContext().getGeometry() == null ||
@@ -224,7 +225,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 						GeometryClass geometryClass = (GeometryClass)shape.getModelObject();
 						getStructureMappingCartoon().getGeometryContext().assignFeature(feature, geometryClass);
 						getStructureMappingCartoon().refreshAll();
-						setMode(SELECT_MODE);
+						setMode(Mode.SELECT);
 					}else{
 						getGraphPane().repaint();
 					}
@@ -235,7 +236,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 			}
 		}catch (IllegalMappingException e){
 			PopupGenerator.showErrorDialog(getJDesktopPane(), "mapping error\n"+e.getMessage());
-			setMode(SELECT_MODE);
+			setMode(Mode.SELECT);
 		}catch (Exception e){
 			System.out.println("CartoonTool.mouseReleased: uncaught exception");
 			e.printStackTrace(System.out);
@@ -258,20 +259,20 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 		structureMappingCartoon = newStructureMappingCartoon;
 	}
 
-	protected boolean shapeHasMenuAction(cbit.gui.graph.Shape shape, java.lang.String menuAction) {
+	public boolean shapeHasMenuAction(cbit.gui.graph.Shape shape, java.lang.String menuAction) {
 		if (shape instanceof FeatureMappingShape){
-			if (menuAction.equals(DELETE_MENU_ACTION)){
+			if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)){
 				return true;
 			}
 		}
 		return false;
 	}
 
-	protected boolean shapeHasMenuActionEnabled(Shape shape, String menuAction) {
+	public boolean shapeHasMenuActionEnabled(Shape shape, String menuAction) {
 		return true;
 	}
 
-	public void updateMode(int newMode) {
+	public void updateMode(Mode newMode) {
 		if (newMode==mode){
 			return;
 		}		
@@ -284,11 +285,11 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 		this.mode = newMode;
 		if(getGraphPane() != null){
 			switch (mode){
-			case LINE_MODE:{
+			case LINE:{
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 				break;
 			}
-			case SELECT_MODE:{
+			case SELECT:{
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				break;
 			}

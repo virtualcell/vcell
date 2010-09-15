@@ -6,18 +6,12 @@ package cbit.vcell.mapping.gui;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Enumeration;
-import java.util.Vector;
-
+import java.util.List;
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.graph.FeatureMappingShape;
 import cbit.vcell.graph.FeatureShape;
 import cbit.vcell.graph.GeometryClassLegendShape;
@@ -103,8 +97,6 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 			}	
 		}
 		// create all SubvolumeLegendShapes (for legend)
-		GeometrySpec geometrySpec = getGeometryContext().getGeometry().getGeometrySpec();
-		
 		GeometryClass[] geometryClasses = getGeometryContext().getGeometry().getGeometryClasses();
 		for (int i=0;i<geometryClasses.length;i++){
 			GeometryClassLegendShape geometryClassLegendShape = 
@@ -142,9 +134,8 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 		}	
 		// assign children to shapes according to heirarchy in Model
 		int nullParentCount=0;
-		Enumeration<Shape> enum_shape = getShapes();
-		while (enum_shape.hasMoreElements()){
-			Shape shape = enum_shape.nextElement();
+		List<Shape> shapes = getShapes();
+		for(Shape shape : shapes) {
 			// for each featureShape, find corresponding featureShape
 			if (shape instanceof FeatureShape){
 				FeatureShape fs = (FeatureShape)shape;

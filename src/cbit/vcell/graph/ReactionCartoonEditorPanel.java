@@ -17,8 +17,9 @@ import javax.swing.border.BevelBorder;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.JToolBarToggleButton;
 
-import cbit.gui.graph.CartoonTool;
+import cbit.gui.graph.GraphEmbeddingManager;
 import cbit.gui.graph.GraphPane;
+import cbit.gui.graph.actions.CartoonToolMiscActions;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
@@ -174,7 +175,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 		try {
 			// user code begin {1}
 			// user code end
-			getReactionCartoonTool1().layout(CartoonTool.RANDOMIZER);
+			getReactionCartoonTool1().layout(GraphEmbeddingManager.RANDOMIZER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -231,7 +232,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 		try {
 			// user code begin {1}
 			// user code end
-			getReactionCartoonTool1().layout(CartoonTool.RELAXER);
+			getReactionCartoonTool1().layout(GraphEmbeddingManager.RELAXER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -250,7 +251,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 		try {
 			// user code begin {1}
 			// user code end
-			getReactionCartoonTool1().layout(CartoonTool.LEVELLER);
+			getReactionCartoonTool1().layout(GraphEmbeddingManager.LEVELLER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -387,7 +388,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 		try {
 			// user code begin {1}
 			// user code end
-			getReactionCartoonTool1().layout(CartoonTool.ANNEALER);
+			getReactionCartoonTool1().layout(GraphEmbeddingManager.ANNEALER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -478,7 +479,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 		try {
 			// user code begin {1}
 			// user code end
-			getReactionCartoonTool1().layout(CartoonTool.CIRCULARIZER);
+			getReactionCartoonTool1().layout(GraphEmbeddingManager.CIRCULARIZER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1224,9 +1225,9 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 		if (parameterButton == null) {
 			try {
 				parameterButton = new JButton();
-				parameterButton.setToolTipText(CartoonTool.SHOW_PARAMETERS_MENU_TEXT);
+				parameterButton.setToolTipText(CartoonToolMiscActions.ShowParameters.MENU_TEXT);
 				parameterButton.setText("");
-				parameterButton.setActionCommand(CartoonTool.SHOW_PARAMETERS_MENU_ACTION);
+				parameterButton.setActionCommand(CartoonToolMiscActions.ShowParameters.MENU_ACTION);
 				parameterButton.setBorder(new BevelBorder(BevelBorder.RAISED));
 				parameterButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 				parameterButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/parameter.gif")));

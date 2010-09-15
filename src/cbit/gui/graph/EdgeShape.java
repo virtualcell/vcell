@@ -225,8 +225,8 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	public final boolean isInside(Point p) {
 		CubicCurve2D curve = getCurve();
 		Point absLocation = this.getAbsLocation();
-		double xAbs = p.getX() + absLocation.x - relativePos.x;
-		double yAbs = p.getY() + absLocation.y - relativePos.y;
+		double xAbs = p.getX() + absLocation.x - getSpaceManager().getRelX();
+		double yAbs = p.getY() + absLocation.y - getSpaceManager().getRelY();
 		return curve.intersects(xAbs - 2, yAbs - 2, 4, 4);
 	}
 
@@ -242,8 +242,7 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 			end.x += endShape.getAbsLocation().x;
 			end.y += endShape.getAbsLocation().y;
 		}
-		relativePos.x = Math.min(start.x, end.x);
-		relativePos.y = Math.min(start.y, end.y);
+		getSpaceManager().setRelPos(Math.min(start.x, end.x), Math.min(start.y, end.y));
 		shapeSize.width = Math.abs(start.x - end.x);
 		shapeSize.height = Math.abs(start.y - end.y);
 		// this is like a row/column layout (1 column)

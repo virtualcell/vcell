@@ -79,8 +79,8 @@ public abstract class RectangleShape extends Shape {
 	@Override
 	protected final boolean isInside(Point p) {
 		// bring into local coordinates
-		int x = p.x - relativePos.x;
-		int y = p.y - relativePos.y;
+		int x = p.x - getSpaceManager().getRelX();
+		int y = p.y - getSpaceManager().getRelY();
 		// check to see if inside rectangle
 		if (x > 0 && x < shapeSize.width && y > 0 && y < shapeSize.height) {
 			return true;

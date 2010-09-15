@@ -50,9 +50,9 @@ public class GroupShape extends Shape {
 
 	@Override
 	protected boolean isInside(Point p) {
-		return p.x >= relativePos.x && p.x <= relativePos.x + shapeSize.width
-				&& p.y >= relativePos.y
-				&& p.y <= relativePos.y + shapeSize.height;
+		Point relPos = spaceManager.getRelPos();
+		return p.x >= relPos.x && p.x <= relPos.x + shapeSize.width
+				&& p.y >= relPos.y && p.y <= relPos.y + shapeSize.height;
 	}
 
 	@Override

@@ -5,7 +5,6 @@ package cbit.gui.graph;
  * All rights reserved.
 �*/
 import cbit.gui.graph.ContainerShape;
-import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.LayoutException;

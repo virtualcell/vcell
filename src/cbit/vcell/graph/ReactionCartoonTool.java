@@ -15,10 +15,8 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyVetoException;
 import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.Vector;
+import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -35,20 +33,17 @@ import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
 
+import cbit.gui.graph.GraphEmbeddingManager;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.RubberBandEdgeShape;
 import cbit.gui.graph.RubberBandRectShape;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.ShapeUtil;
-import cbit.gui.graph.actions.CollapseAsNewGroupAction;
-import cbit.gui.graph.actions.CollapseExistingGroupsAction;
-import cbit.gui.graph.actions.DisbandGroupsAction;
-import cbit.gui.graph.actions.ExpandSelectedGroupsAction;
-import cbit.gui.graph.actions.HideSelectedShapesAction;
-import cbit.gui.graph.actions.ShowShapeTreeAction;
-import cbit.gui.graph.actions.UnhideAllShapesAction;
-import cbit.gui.graph.groups.ShapeGroupUtil;
-import cbit.gui.graph.visualstate.VisualStateUtil;
+import cbit.gui.graph.actions.ActionUtil;
+import cbit.gui.graph.actions.CartoonToolEditActions;
+import cbit.gui.graph.actions.CartoonToolMiscActions;
+import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
+import cbit.gui.graph.actions.GraphViewAction;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
@@ -71,11 +66,6 @@ import cbit.vcell.model.gui.DBReactionWizardPanel;
 import cbit.vcell.model.gui.FluxReaction_Dialog;
 import cbit.vcell.model.gui.SimpleReactionPanelDialog;
 import cbit.vcell.publish.ITextWriter;
-
-import com.genlogic.GraphLayout.GlgGraphEdge;
-import com.genlogic.GraphLayout.GlgGraphNode;
-
-import edu.rpi.graphdrawing.Node;
 
 public class ReactionCartoonTool extends BioCartoonTool {
 
@@ -125,7 +115,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	private boolean bLineStretch = false;
 	private Point endPointWorld = null;
 	private RubberBandEdgeShape edgeShape = null;
-	private int mode = -1;
+	private Mode mode = null;
 
 	private static final int LINE_TYPE_NULL = 0;
 	private static final int LINE_TYPE_CATALYST = 1;
@@ -232,12 +222,11 @@ public class ReactionCartoonTool extends BioCartoonTool {
 
 	private ReactionStep[] getReactionStepArray(Shape shape, String menuAction) {
 		if (shape instanceof ReactionStepShape) {
-			Shape[] reactionStepShapeArr = getReactionCartoon()
-					.getSelectedShapes();
-			if (reactionStepShapeArr != null && reactionStepShapeArr.length > 0) {
-				ReactionStep[] rxStepsArr = new ReactionStep[reactionStepShapeArr.length];
-				for (int i = 0; i < reactionStepShapeArr.length; i += 1) {
-					rxStepsArr[i] = (ReactionStep) reactionStepShapeArr[i].getModelObject();
+			List<Shape> reactionStepShapes = getReactionCartoon().getSelectedShapes();
+			if (reactionStepShapes != null && reactionStepShapes.size() > 0) {
+				ReactionStep[] rxStepsArr = new ReactionStep[reactionStepShapes.size()];
+				for (int i = 0; i < reactionStepShapes.size(); i += 1) {
+					rxStepsArr[i] = (ReactionStep) reactionStepShapes.get(i).getModelObject();
 				}
 				// java.util.Arrays.sort(rxStepsArr,new
 				// SortStructureHeirarchy(getReactionCartoon().getModel()));
@@ -249,7 +238,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 
 	public void layout(String layoutName) throws Exception {
 		if (getReactionCartoon().getStructure() instanceof Membrane) {
-			if (RANDOMIZER.equals(layoutName)) {
+			if (GraphEmbeddingManager.RANDOMIZER.equals(layoutName)) {
 				getReactionCartoon().setRandomLayout(true);
 				getGraphPane().repaint();
 			} else {
@@ -260,120 +249,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			return;
 		}
 		// for non-membranes, use RPI's layout stuff
-		edu.rpi.graphdrawing.Blackboard bb = new edu.rpi.graphdrawing.Blackboard();
-		HashMap<String, Shape> nodeShapeMap = new HashMap<String, Shape>();
-		// add nodes
-		Enumeration<Shape> shapeEnum = getReactionCartoon().getShapes();
-		while (shapeEnum.hasMoreElements()) {
-			Shape shape = shapeEnum.nextElement();
-			edu.rpi.graphdrawing.Node newNode = null;
-			if (shape instanceof SpeciesContextShape) {
-				newNode = bb.addNode(((SpeciesContextShape) shape).getLabel());
-			}
-			if (shape instanceof ReactionStepShape) {
-				newNode = bb.addNode(((ReactionStepShape) shape).getLabel());
-			}
-			// initialize node location to current absolute position
-			if (newNode != null) {
-				newNode.XY(shape.getAbsLocation().x, shape.getAbsLocation().y);
-				nodeShapeMap.put(newNode.label(), shape);
-			}
-		}
-		// add edges
-		shapeEnum = getReactionCartoon().getShapes();
-		while (shapeEnum.hasMoreElements()) {
-			Shape shape = shapeEnum.nextElement();
-			if (shape instanceof ReactionParticipantShape) {
-				ReactionParticipantShape rpShape = (ReactionParticipantShape) shape;
-				SpeciesContextShape scShape = (SpeciesContextShape) rpShape
-						.getStartShape();
-				ReactionStepShape rsShape = (ReactionStepShape) rpShape
-						.getEndShape();
-				if (rpShape instanceof ReactantShape) {
-					bb.addEdge(scShape.getLabel(), rsShape.getLabel());
-				} else if (rpShape instanceof ProductShape) {
-					bb.addEdge(rsShape.getLabel(), scShape.getLabel());
-				} else if (rpShape instanceof CatalystShape) {
-					bb.addEdge(scShape.getLabel(), rsShape.getLabel());
-				} else if (rpShape instanceof FluxShape) {
-					//
-					// check if coming or going
-					//
-					SpeciesContext sc = scShape.getSpeciesContext();
-					if (sc.getStructure() == 
-						rsShape.getReactionStep().getStructure().getParentStructure()) {
-						bb.addEdge(scShape.getLabel(), rsShape.getLabel());
-					} else {
-						bb.addEdge(rsShape.getLabel(), scShape.getLabel());
-					}
-				}
-			}
-			// edge doesn't need any init now.
-		}
-
-		bb.setArea(0, 0, getGraphPane().getWidth(), getGraphPane().getHeight());
-		bb.globals.D(20);
-
-		bb.addEmbedder(ANNEALER, new edu.rpi.graphdrawing.Annealer(bb));
-		bb.addEmbedder(CIRCULARIZER, new edu.rpi.graphdrawing.Circularizer(bb));
-		bb.addEmbedder(CYCLEIZER, new edu.rpi.graphdrawing.Cycleizer(bb));
-		bb.addEmbedder(FORCEDIRECT, new edu.rpi.graphdrawing.ForceDirect(bb));
-		bb.addEmbedder(LEVELLER, new edu.rpi.graphdrawing.Leveller(bb));
-		bb.addEmbedder(RANDOMIZER, new edu.rpi.graphdrawing.Randomizer(bb));
-		bb.addEmbedder(RELAXER, new edu.rpi.graphdrawing.Relaxer(bb));
-		bb.addEmbedder(STABILIZER, new edu.rpi.graphdrawing.Stabilizer(bb));
-
-		bb.setEmbedding(layoutName);
-		@SuppressWarnings("unchecked")
-		Vector<Node> nodeList = bb.nodes();
-		for (int i = 0; i < nodeList.size(); i++) {
-			Node node = nodeList.elementAt(i);
-			System.out.println("Node " + node.label() + " @ (" + node.x() + ","
-					+ node.y() + ")");
-		}
-		bb.PreprocessNodes();
-		edu.rpi.graphdrawing.Embedder embedder = bb.embedder();
-		embedder.Init();
-		for (int i = 0; i < 1000; i++) {
-			embedder.Embed();
-		}
-		bb.removeDummies();
-		@SuppressWarnings("unchecked")
-		Vector<Node> nodesRaw = bb.nodes();
-		nodeList = nodesRaw;
-		// calculate offset and scaling so that resulting graph fits on canvas
-		double lowX = 100000;
-		double highX = -100000;
-		double lowY = 100000;
-		double highY = -100000;
-		for (int i = 0; i < nodeList.size(); i++) {
-			Node node = nodeList.elementAt(i);
-			lowX = Math.min(lowX, node.x());
-			highX = Math.max(highX, node.x());
-			lowY = Math.min(lowY, node.y());
-			highY = Math.max(highY, node.y());
-		}
-		double scaleX = getGraphPane().getWidth() / (1.5 * (highX - lowX));
-		double scaleY = getGraphPane().getHeight() / (1.5 * (highY - lowY));
-		int offsetX = getGraphPane().getWidth() / 6;
-		int offsetY = getGraphPane().getHeight() / 6;
-		for (int i = 0; i < nodeList.size(); i++) {
-			Node node = nodeList.elementAt(i);
-			Shape shape = nodeShapeMap.get(node.label());
-			Point parentLoc = shape.getParent().getAbsLocation();
-			shape.setLocation(new Point(
-							(int) (scaleX * (node.x() - lowX)) + offsetX
-									+ parentLoc.x,
-							(int) ((scaleY * (node.y() - lowY)) + offsetY + parentLoc.y)));
-			System.out.println("Shape " + shape.getLabel() + " @ "
-					+ shape.getAbsLocation());
-		}
-
-		getGraphPane().repaint();
+		graphEmbeddingManager.layoutRPI(layoutName);
 		saveDiagram();
 	}
 
-	@SuppressWarnings("unchecked")
 	public void layoutGlg() throws Exception {
 		// ****In the case of Membranes DO as before!****
 		if (getReactionCartoon().getStructure() instanceof Membrane) {
@@ -383,108 +262,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			return;
 		}
 		// Create graph object
-		com.genlogic.GraphLayout.GlgGraphLayout graph = new com.genlogic.GraphLayout.GlgGraphLayout();
-		graph.SetUntangle(true); // true
-		// specify dimensions for the graph! 400x400
-		// System.out.println("H:"+getGraphPane().getHeight()+" W"+getGraphPane().getWidth());
-		com.genlogic.GraphLayout.GlgCube graphDim = new com.genlogic.GraphLayout.GlgCube();
-		com.genlogic.GraphLayout.GlgPoint newPoint = new com.genlogic.GraphLayout.GlgPoint(
-				0, 0, 0);
-		graphDim.p1 = newPoint;
-		// newPoint = new com.genlogic.GlgPoint(getGraphPane().getWidth()-20,
-		// getGraphPane().getHeight()-10, 0);//400,400,0
-		newPoint = new com.genlogic.GraphLayout.GlgPoint(1600, 1600, 0);
-		graphDim.p2 = newPoint;
-		graph.dimensions = graphDim;
-		// Add nodes (Vertex) to the graph
-		Enumeration<Shape> shapeEnum = getReactionCartoon().getShapes();
-		com.genlogic.GraphLayout.GlgGraphNode graphNode;
-		HashMap<Shape, GlgGraphNode> nodeMap = new HashMap<Shape, GlgGraphNode>();
-		while (shapeEnum.hasMoreElements()) {
-			Shape shape = shapeEnum.nextElement();
-			// add to the graph
-			if (ShapeUtil.isMovable(shape)) {
-				graphNode = graph.AddNode(null, 0, null);
-			} else {
-				continue;
-			}
-			// add to the hashmap
-			nodeMap.put(shape, graphNode);
-		}
-		// Add edges
-		shapeEnum = getReactionCartoon().getShapes();
-		while (shapeEnum.hasMoreElements()) {
-			Shape shape = shapeEnum.nextElement();
-			if (shape instanceof ReactionParticipantShape) {
-				ReactionParticipantShape rpShape = (ReactionParticipantShape) shape;
-				SpeciesContextShape scShape = (SpeciesContextShape) rpShape.getStartShape();
-				ReactionStepShape rsShape = (ReactionStepShape) rpShape.getEndShape();
-				if (rpShape instanceof ReactantShape) {
-					graph.AddEdge(nodeMap.get(scShape), nodeMap.get(rsShape), null, 0, null);
-				} else if (rpShape instanceof ProductShape) {
-					graph.AddEdge(nodeMap.get(rsShape), nodeMap.get(scShape), null, 0, null);
-				} else if (rpShape instanceof CatalystShape) {
-					graph.AddEdge(nodeMap.get(scShape), nodeMap.get(rsShape), null, 0, null);
-				} else if (rpShape instanceof FluxShape) {
-					// check if coming or going
-					SpeciesContext sc = scShape.getSpeciesContext();
-					if (sc.getStructure() == rsShape.getReactionStep()
-							.getStructure().getParentStructure()) {
-						graph.AddEdge(nodeMap.get(scShape), nodeMap.get(rsShape), null, 0, null);
-					} else {
-						graph.AddEdge(nodeMap.get(scShape), nodeMap.get(rsShape), null, 0, null);
-					}
-				} else {
-					continue;
-				}
-			}
-		}
-		// call layout algorithm
-		while (!graph.SpringIterate()) {
-			;
-		}
-		graph.Update();
-		// resize and scale the graph
-		// com.genlogic.GlgObject edgeArray = graph.edge_array;
-		Vector<GlgGraphEdge> edgeVector = graph.edge_array;
-		double distance, minDistance = Double.MAX_VALUE;
-		for (int i = 0; i < edgeVector.size(); i++) {
-			GlgGraphEdge edge = edgeVector.elementAt(i);
-			distance = java.awt.geom.Point2D.distance(
-					edge.start_node.display_position.x,
-					edge.start_node.display_position.y,
-					edge.end_node.display_position.x,
-					edge.end_node.display_position.y);
-			minDistance = distance < minDistance ? distance : minDistance;
-		}
-		double ratio = 1.0;
-		if (minDistance > 40) {
-			ratio = 40.0 / minDistance;
-		}
-		// Update positions
-		shapeEnum = getReactionCartoon().getShapes();
-		Point place;
-		com.genlogic.GraphLayout.GlgPoint glgPoint;
-		while (shapeEnum.hasMoreElements()) {
-			Shape shape = shapeEnum.nextElement();
-			// test if it is contained in the nodeMap
-			graphNode = nodeMap.get(shape);
-			if (graphNode != null) {
-				glgPoint = graph.GetNodePosition(graphNode);
-				// glgPoint = graphNode.display_position;
-				place = new Point();
-				place.setLocation(glgPoint.x * ratio + 30, glgPoint.y * ratio
-						+ 30);
-				shape.setLocation(place);
-			}
-		}
-		Dimension graphSize = new Dimension((int) (1600 * ratio) + 50,
-				(int) (1600 * ratio) + 50);
-		getGraphPane().setSize(graphSize);
-		getGraphPane().setPreferredSize(graphSize);
-		// update the window
-		getGraphPane().invalidate();
-		((JViewport) getGraphPane().getParent()).revalidate();
+		graphEmbeddingManager.layoutGLG();
 		saveDiagram();
 	}
 
@@ -493,7 +271,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		if (shape == null) {
 			return;
 		}
-		if (menuAction.equals(PROPERTIES_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolMiscActions.Properties.MENU_ACTION)) {
 			if (shape instanceof FluxReactionShape) {
 				showFluxReactionPropertiesDialog((FluxReactionShape) shape);
 			} else if (shape instanceof SimpleReactionShape) {
@@ -538,13 +316,13 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				}
 			}
 
-		} else if (menuAction.equals(ADD_SPECIES_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolMiscActions.AddSpecies.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
 				showCreateSpeciesContextDialog(getGraphPane(),
 						getReactionCartoon().getModel(),
 						((ReactionContainerShape) shape).getStructure(), null);
 			}
-		} else if (menuAction.equals(COPY_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolEditActions.Copy.MENU_ACTION)) {
 			if (shape instanceof SpeciesContextShape) {
 				Species species = ((SpeciesContextShape) shape)
 						.getSpeciesContext().getSpecies();
@@ -556,8 +334,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					VCellTransferable.sendToClipboard(reactionStepArr);
 				}
 			}
-		} else if (menuAction.equals(PASTE_MENU_ACTION)
-				|| menuAction.equals(PASTE_NEW_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
+				|| menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
 				// See if Species
 				Species species = (Species) SimpleTransferable
@@ -567,7 +345,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					pasteSpecies(getGraphPane(), species, getReactionCartoon()
 							.getModel(), ((ReactionContainerShape) shape)
 							.getStructure(), menuAction
-							.equals(PASTE_NEW_MENU_ACTION),/* true, */
+							.equals(CartoonToolEditActions.PasteNew.MENU_ACTION),/* true, */
 					speciesHash, null);
 				}
 				// See if ReactionStep[]
@@ -579,7 +357,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								reactionStepArr,
 								getReactionCartoon().getModel(),
 								((ReactionContainerShape) shape).getStructure(),
-								menuAction.equals(PASTE_NEW_MENU_ACTION),
+								menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION),
 								getGraphPane(), null);
 					} catch (Exception e) {
 						e.printStackTrace(System.out);
@@ -589,8 +367,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					}
 				}
 			}
-		} else if (menuAction.equals(DELETE_MENU_ACTION)
-				|| menuAction.equals(CUT_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)
+				|| menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
 			try {
 				if (shape instanceof ReactantShape
 						|| shape instanceof ProductShape
@@ -605,7 +383,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					ReactionStep[] reactionStepArr = getReactionStepArray(
 							shape, menuAction);
 					if (reactionStepArr != null) {
-						if (menuAction.equals(CUT_MENU_ACTION)) {
+						if (menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
 							VCellTransferable.sendToClipboard(reactionStepArr);
 						}
 					}
@@ -617,7 +395,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				if (shape instanceof SpeciesContextShape) {
 					getReactionCartoon().getModel().removeSpeciesContext(
 							((SpeciesContextShape) shape).getSpeciesContext());
-					if (menuAction.equals(CUT_MENU_ACTION)) {
+					if (menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
 						VCellTransferable.sendToClipboard(((SpeciesContextShape) shape).getSpeciesContext().getSpecies());
 					}
 				}
@@ -627,7 +405,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				DialogUtils.showErrorDialog(getGraphPane(), e.getMessage(), e);
 			}
 
-		} else if (menuAction.equals(ADD_ENZYME_REACTION_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolMiscActions.SearchReactions.MENU_ACTION)) {
 			try {
 				if (shape instanceof ReactionContainerShape) {
 					showReactionBrowserDialog(getReactionCartoon(),
@@ -636,16 +414,16 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			} catch (Exception e) {
 				DialogUtils.showErrorDialog(getGraphPane(), e.getMessage(), e);
 			}
-		} else if (menuAction.equals(HIGH_RES_MENU_ACTION)
-				|| menuAction.equals(MED_RES_MENU_ACTION)
-				|| menuAction.equals(LOW_RES_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)
+				|| menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)
+				|| menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
 			try {
 				String resType = null;
-				if (menuAction.equals(HIGH_RES_MENU_ACTION)) {
+				if (menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)) {
 					resType = ITextWriter.HIGH_RESOLUTION;
-				} else if (menuAction.equals(MED_RES_MENU_ACTION)) {
+				} else if (menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)) {
 					resType = ITextWriter.MEDIUM_RESOLUTION;
-				} else if (menuAction.equals(LOW_RES_MENU_ACTION)) {
+				} else if (menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
 					resType = ITextWriter.LOW_RESOLUTION;
 				}
 				if (shape instanceof ReactionContainerShape) {
@@ -655,7 +433,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			} catch (Exception e) {
 				DialogUtils.showErrorDialog(getGraphPane(), e.getMessage(), e);
 			}
-		} else if (menuAction.equals(ANNOTATE_MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolMiscActions.Annotate.MENU_ACTION)) {
 			if (shape instanceof ReactionStepShape) {
 				// MIRIAMHelper.showMIRIAMAnnotationDialog(((SimpleReactionShape)shape).getReactionStep());
 				// System.out.println("Menu action annotate activated...");
@@ -690,11 +468,11 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				return;
 			}
 			switch (mode) {
-			case SELECT_MODE: {
+			case SELECT: {
 				if (event.getClickCount() == 2) {
 					Shape selectedShape = getReactionCartoon().getSelectedShape();
 					if (selectedShape != null) {
-						menuAction(selectedShape, PROPERTIES_MENU_ACTION);
+						menuAction(selectedShape, CartoonToolMiscActions.Properties.MENU_ACTION);
 						// if(selectedShape instanceof SpeciesContextShape){
 						// showEditSpeciesDialog(((SpeciesContextShape)selectedShape).getSpeciesContext(),worldPoint);
 						// }else if(selectedShape instanceof
@@ -720,7 +498,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				// }
 				break;
 			}
-			case STEP_MODE: {
+			case STEP: {
 				Shape pickedShape = getReactionCartoon().pickWorld(worldPoint);
 
 				if (pickedShape instanceof ReactionContainerShape) {
@@ -747,7 +525,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				}
 				break;
 			}
-			case FLUX_MODE: {
+			case FLUX: {
 				Shape pickedShape = getReactionCartoon().pickWorld(worldPoint);
 
 				if (pickedShape instanceof ReactionContainerShape) {
@@ -778,7 +556,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				}
 				break;
 			}
-			case SPECIES_MODE: {
+			case SPECIES: {
 				Shape pickedShape = getReactionCartoon().pickWorld(worldPoint);
 
 				if (pickedShape instanceof ReactionContainerShape) {
@@ -814,7 +592,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		//
 		try {
 			switch (mode) {
-			case SELECT_MODE: {
+			case SELECT: {
 				Point worldPoint = screenToWorld(event.getX(), event.getY());
 				if (bMoving) {
 					Shape selectedShapes[] = getReactionCartoon()
@@ -944,7 +722,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				}
 				break;
 			}
-			case LINE_MODE: {
+			case LINE: {
 				int x = event.getX();
 				int y = event.getY();
 				Point worldPoint = new Point(
@@ -1025,12 +803,12 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			// Always select with MousePress
 			boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
 			boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
-			if (mode == SELECT_MODE
+			if (mode == Mode.SELECT
 					|| (event.getModifiers() & InputEvent.BUTTON1_MASK) != 0) {
 				selectEventFromWorld(worldPoint, bShift, bCntrl);
 			}
 			// if mouse popupMenu event, popup menu
-			if (event.isPopupTrigger() && mode == SELECT_MODE) {
+			if (event.isPopupTrigger() && mode == Mode.SELECT) {
 				popupMenu(getReactionCartoon().getSelectedShape(), eventX, eventY);
 				return;
 			}
@@ -1054,7 +832,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					(int) (eventY * 100.0 / getReactionCartoon().getZoomPercent()));
 			Shape pickedShape = getReactionCartoon().pickWorld(worldPoint);
 			// if mouse popupMenu event, popup menu
-			if (event.isPopupTrigger() && mode == SELECT_MODE) {
+			if (event.isPopupTrigger() && mode == Mode.SELECT) {
 				popupMenu(getReactionCartoon().getSelectedShape(), event.getX(), event.getY());
 				return;
 			}
@@ -1063,7 +841,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			}
 			// else do select and move
 			switch (mode) {
-			case SELECT_MODE: {
+			case SELECT: {
 				getGraphPane().setCursor(Cursor.getDefaultCursor());
 				// int x = event.getX();
 				// int y = event.getY();
@@ -1090,7 +868,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				rectShape = null;
 				break;
 			}
-			case LINE_MODE: {
+			case LINE: {
 				getGraphPane().setCursor(Cursor.getDefaultCursor());
 				if (bLineStretch) {
 					bLineStretch = false;
@@ -1109,19 +887,19 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						case LINE_TYPE_CATALYST: {
 							simpleReaction.addCatalyst(speciesContext);
 							getReactionCartoon().notifyChangeEvent();
-							setMode(SELECT_MODE);
+							setMode(Mode.SELECT);
 							break;
 						}
 						case LINE_TYPE_REACTANT: {
 							simpleReaction.addReactant(speciesContext, 1);
 							getReactionCartoon().notifyChangeEvent();
-							setMode(SELECT_MODE);
+							setMode(Mode.SELECT);
 							break;
 						}
 						case LINE_TYPE_PRODUCT: {
 							simpleReaction.addProduct(speciesContext, 1);
 							getReactionCartoon().notifyChangeEvent();
-							setMode(SELECT_MODE);
+							setMode(Mode.SELECT);
 							break;
 						}
 						case LINE_TYPE_NULL: {
@@ -1136,7 +914,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						case LINE_TYPE_CATALYST: {
 							fluxReaction.addCatalyst(speciesContext);
 							getReactionCartoon().notifyChangeEvent();
-							setMode(SELECT_MODE);
+							setMode(Mode.SELECT);
 							break;
 						}
 						case LINE_TYPE_FLUX: {
@@ -1161,7 +939,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 
 							fluxReaction.setFluxCarrier(speciesContext.getSpecies(), reactionCartoon.getModel());
 							getReactionCartoon().notifyChangeEvent();
-							setMode(SELECT_MODE);
+							setMode(Mode.SELECT);
 							break;
 						}
 						case LINE_TYPE_NULL: {
@@ -1279,26 +1057,26 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	}
 
 	@Override
-	protected boolean shapeHasMenuAction(Shape shape, String menuAction) {
+	public boolean shapeHasMenuAction(Shape shape, String menuAction) {
 
-		if (menuAction.equals(ANNOTATE_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolMiscActions.Annotate.MENU_ACTION)) {
 			if (shape instanceof ReactionStepShape) {
 				return true;
 			}
 		}
-		if (menuAction.equals(COPY_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolEditActions.Copy.MENU_ACTION)) {
 			if (shape instanceof SpeciesContextShape
 					|| shape instanceof ReactionStepShape) {
 				return true;
 			}
 		}
-		if (menuAction.equals(PASTE_MENU_ACTION)
-				|| menuAction.equals(PASTE_NEW_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
+				|| menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
 				return true;
 			}
 		}
-		if (menuAction.equals(DELETE_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
 			if (shape instanceof ReactionStepShape
 					|| shape instanceof ReactantShape
 					|| shape instanceof ProductShape
@@ -1306,31 +1084,31 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				return true;
 			}
 		}
-		if (menuAction.equals(CUT_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
 			if (shape instanceof SpeciesContextShape
 					|| shape instanceof ReactionStepShape) {
 				return true;
 			}
 		}
-		if (menuAction.equals(ADD_SPECIES_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolMiscActions.AddSpecies.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
 				return true;
 			}
 		}
-		if (menuAction.equals(ADD_ENZYME_REACTION_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolMiscActions.SearchReactions.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
 				return true;
 			}
 		}
 
-		if (menuAction.equals(HIGH_RES_MENU_ACTION)
-				|| menuAction.equals(MED_RES_MENU_ACTION)
-				|| menuAction.equals(LOW_RES_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)
+				|| menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)
+				|| menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
 				return true;
 			}
 		}
-		if (menuAction.equals(PROPERTIES_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolMiscActions.Properties.MENU_ACTION)) {
 			if (shape instanceof ReactionStepShape
 					|| shape instanceof SpeciesContextShape
 					|| shape instanceof ReactantShape
@@ -1340,90 +1118,43 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				return true;
 			}
 		}
-		if (menuAction.equals(HideSelectedShapesAction.actionCommand)) {
-			return VisualStateUtil.canBeHidden(shape);
+		GraphViewAction paintingAction = ActionUtil.getAction(paintingActions, menuAction);
+		if(paintingAction != null) {
+			return paintingAction.canBeAppliedToShape(shape);
 		}
-		if (menuAction.equals(UnhideAllShapesAction.actionCommand)) {
-			return true;
-		}
-		if (menuAction.equals(ShowShapeTreeAction.actionCommand)) {
-			return ShowShapeTreeAction.bActivated;
-		}
-		if (menuAction.equals(CollapseAsNewGroupAction.actionCommand)) {
-			return ShapeGroupUtil.isEligibleAsGroupMember(shape);
-		}
-		if (menuAction.equals(CollapseExistingGroupsAction.actionCommand)) {
-			Shape parentShape = shape.getParent();
-			if (parentShape != null) {
-				return ShapeGroupUtil.isGroup(parentShape);
-			}
-		}
-		if (menuAction.equals(ExpandSelectedGroupsAction.actionCommand)) {
-			return ShapeGroupUtil.isGroup(shape);
-		}
-		if (menuAction.equals(DisbandGroupsAction.actionCommand)) {
-			if (ShapeGroupUtil.isGroup(shape)) {
-				return true;
-			} else {
-				Shape parent = shape.getParent();
-				if (parent != null && ShapeGroupUtil.isGroup(parent)) {
-					return true;
-				}
-			}
-			return false;
+		GraphViewAction groupAction = ActionUtil.getAction(groupActions, menuAction);
+		if(groupAction != null) {
+			return groupAction.canBeAppliedToShape(shape);
 		}
 		return false;
 	}
 
 	@Override
-	protected boolean shapeHasMenuActionEnabled(Shape shape,
-			java.lang.String menuAction) {
+	public boolean shapeHasMenuActionEnabled(Shape shape, String menuAction) {
 
-		if (menuAction.equals(PROPERTIES_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolMiscActions.Properties.MENU_ACTION)) {
 			if (shape instanceof CatalystShape) {
 				return false;
 			}
 		}
-		if (menuAction.equals(ADD_ENZYME_REACTION_MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolMiscActions.SearchReactions.MENU_ACTION)) {
 			if (!(shape instanceof ReactionContainerShape)
 					|| !shape.getModelObject().equals(
 							getReactionCartoon().getStructure())) {
 				return false;
 			}
 		}
-		if (menuAction.equals(HideSelectedShapesAction.actionCommand)) {
-			return VisualStateUtil.canBeHidden(shape);
+		GraphViewAction paintingAction = ActionUtil.getAction(paintingActions, menuAction);
+		if(paintingAction != null) {
+			return paintingAction.isEnabledForShape(shape);
 		}
-		if (menuAction.equals(ShowShapeTreeAction.actionCommand)
-				|| menuAction.equals(UnhideAllShapesAction.actionCommand)) {
-			return true;
-		}
-		if (menuAction.equals(CollapseAsNewGroupAction.actionCommand)) {
-			return ShapeGroupUtil.isEligibleAsGroupMember(shape);
-		}
-		if (menuAction.equals(CollapseExistingGroupsAction.actionCommand)) {
-			Shape parentShape = shape.getParent();
-			if (parentShape != null) {
-				return ShapeGroupUtil.isGroup(parentShape);
-			}
-		}
-		if (menuAction.equals(ExpandSelectedGroupsAction.actionCommand)) {
-			return ShapeGroupUtil.isGroup(shape);
-		}
-		if (menuAction.equals(DisbandGroupsAction.actionCommand)) {
-			if (ShapeGroupUtil.isGroup(shape)) {
-				return true;
-			} else {
-				Shape parent = shape.getParent();
-				if (parent != null && ShapeGroupUtil.isGroup(parent)) {
-					return true;
-				}
-			}
-			return false;
+		GraphViewAction groupAction = ActionUtil.getAction(groupActions, menuAction);
+		if(groupAction != null) {
+			return groupAction.isEnabledForShape(shape);
 		}
 		if (shape instanceof ReactionContainerShape) {
-			boolean bPasteNew = menuAction.equals(PASTE_NEW_MENU_ACTION);
-			boolean bPaste = menuAction.equals(PASTE_MENU_ACTION);
+			boolean bPasteNew = menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION);
+			boolean bPaste = menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION);
 			if (bPaste || bPasteNew) {
 				// Paste if there is a species on the system clipboard and it
 				// doesn't exist in structure
@@ -1651,11 +1382,11 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	}
 
 	@Override
-	public void updateMode(int newMode) {
+	public void updateMode(Mode newMode) {
 		if (newMode == mode) {
 			return;
 		}
-		if ((newMode == FLUX_MODE) && (getReactionCartoon() != null)
+		if ((newMode == Mode.FLUX) && (getReactionCartoon() != null)
 				&& (!(getReactionCartoon().getStructure() instanceof Membrane))) {
 			setMode(mode);
 			return;
@@ -1673,23 +1404,23 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		this.mode = newMode;
 		if (getGraphPane() != null) {
 			switch (mode) {
-			case LINE_MODE: {
+			case LINE: {
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 				break;
 			}
-			case STEP_MODE: {
+			case STEP: {
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 				break;
 			}
-			case FLUX_MODE: {
+			case FLUX: {
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 				break;
 			}
-			case SPECIES_MODE: {
+			case SPECIES: {
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				break;
 			}
-			case SELECT_MODE: {
+			case SELECT: {
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				break;
 			}

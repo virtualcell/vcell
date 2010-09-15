@@ -14,9 +14,9 @@ import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JToolBarToggleButton;
 
-import cbit.gui.graph.CartoonTool;
 import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.Shape;
+import cbit.gui.graph.actions.CartoonToolMiscActions;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
 
@@ -546,9 +546,9 @@ public class CartoonEditorPanelFixed extends JPanel {
 		if (reactionButton == null) {
 			try {
 				reactionButton = new JButton();
-				reactionButton.setToolTipText(CartoonTool.REACTIONS_MENU_TEXT);
+				reactionButton.setToolTipText(CartoonToolMiscActions.Reactions.MENU_TEXT);
 				reactionButton.setText("");
-				reactionButton.setActionCommand(CartoonTool.REACTIONS_MENU_ACTION);
+				reactionButton.setActionCommand(CartoonToolMiscActions.Reactions.MENU_ACTION);
 				reactionButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 				reactionButton.setBorder(new BevelBorder(BevelBorder.RAISED));
 				reactionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/step.gif")));
@@ -570,9 +570,9 @@ public class CartoonEditorPanelFixed extends JPanel {
 		if (parameterButton == null) {
 			try {
 				parameterButton = new JButton();
-				parameterButton.setToolTipText(CartoonTool.SHOW_PARAMETERS_MENU_TEXT);
+				parameterButton.setToolTipText(CartoonToolMiscActions.ShowParameters.MENU_TEXT);
 				parameterButton.setText("");
-				parameterButton.setActionCommand(CartoonTool.SHOW_PARAMETERS_MENU_ACTION);
+				parameterButton.setActionCommand(CartoonToolMiscActions.ShowParameters.MENU_ACTION);
 				parameterButton.setBorder(new BevelBorder(BevelBorder.RAISED));
 				parameterButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 				parameterButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/parameter.gif")));
@@ -639,8 +639,8 @@ public class CartoonEditorPanelFixed extends JPanel {
 	private void handleException(java.lang.Throwable exception) {
 
 		/* Uncomment the following lines to print uncaught exceptions to stdout */
-		// System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-		// exception.printStackTrace(System.out);
+		System.out.println("--------- UNCAUGHT EXCEPTION ---------");
+		exception.printStackTrace(System.out);
 	}
 
 
@@ -713,7 +713,7 @@ public class CartoonEditorPanelFixed extends JPanel {
 					System.exit(0);
 				};
 			});
-			frame.show();
+			frame.setVisible(true);
 			java.awt.Insets insets = frame.getInsets();
 			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 			frame.setVisible(true);

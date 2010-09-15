@@ -39,8 +39,7 @@ public final class RubberBandRectShape extends RectangleShape {
 
 		shapeSize.width = Math.abs(end.x-start.x);
 		shapeSize.height = Math.abs(end.y-start.y);
-		relativePos.x = Math.min(end.x,start.x);
-		relativePos.y = Math.min(end.y,start.y);
+		getSpaceManager().setRelPos(Math.min(end.x,start.x), Math.min(end.y,start.y));
 		//
 		// this is like a row/column layout  (1 column)
 		//

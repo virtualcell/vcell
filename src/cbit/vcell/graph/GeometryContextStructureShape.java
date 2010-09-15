@@ -83,8 +83,7 @@ public class GeometryContextStructureShape extends ContainerShape {
 
 		for (int i=0;i<childShapeList.size();i++){
 			Shape shape = childShapeList.get(i);
-			shape.relativePos.x = centerX - shape.shapeSize.width/2;
-			shape.relativePos.y = currY;
+			shape.getSpaceManager().setRelPos(centerX - shape.shapeSize.width/2, currY);
 			currY += shape.shapeSize.height;
 			shape.refreshLayout();
 		}

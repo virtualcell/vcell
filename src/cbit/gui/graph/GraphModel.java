@@ -168,27 +168,22 @@ public abstract class GraphModel {
 	}
 
 	public Shape getSelectedShape() {
-		Shape[] theSelectedShapes = getSelectedShapes();
-		if (theSelectedShapes != null && theSelectedShapes.length > 0) {
-			return theSelectedShapes[0];
+		List<Shape> selectedShapes = getSelectedShapes();
+		if (selectedShapes != null && selectedShapes.size() > 0) {
+			return selectedShapes.get(0);
 		}
 		return null;
 	}
 
-	public Shape[] getSelectedShapes() {
-		Vector<Shape> theSelectedShapesV = new Vector<Shape>();
+	public List<Shape> getSelectedShapes() {
+		List<Shape> selectedShapes = new ArrayList<Shape>();
 		for (int i = 0; i < shapeList.size(); i++) {
 			Shape fs = shapeList.elementAt(i);
 			if (fs.isSelected()) {
-				theSelectedShapesV.add(fs);
+				selectedShapes.add(fs);
 			}
 		}
-		if (theSelectedShapesV.size() > 0) {
-			Shape[] theSelectedShapeArr = new Shape[theSelectedShapesV.size()];
-			theSelectedShapesV.copyInto(theSelectedShapeArr);
-			return theSelectedShapeArr;
-		}
-		return null;
+		return selectedShapes;
 	}
 
 	public Shape getShapeFromLabel(String label) {
@@ -211,8 +206,8 @@ public abstract class GraphModel {
 		return null;
 	}
 
-	public Enumeration<Shape> getShapes() {
-		return shapeList.elements();
+	public List<Shape> getShapes() {
+		return shapeList;
 	}
 
 	public Shape getTopShape() {

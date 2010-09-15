@@ -27,8 +27,8 @@ public abstract class ElipseShape extends Shape {
 	}
 
 	final double getRadius(Point pick) {
-		int centerX = relativePos.x + shapeSize.width / 2;
-		int centerY = relativePos.y + shapeSize.height / 2;
+		int centerX = getSpaceManager().getRelX() + shapeSize.width / 2;
+		int centerY = getSpaceManager().getRelY() + shapeSize.height / 2;
 		double radiusX = pick.x - centerX;
 		double radiusY = pick.y - centerY;
 		double b = shapeSize.height / 2;

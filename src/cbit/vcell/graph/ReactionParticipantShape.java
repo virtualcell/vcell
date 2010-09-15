@@ -15,7 +15,6 @@ import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.GeneralPath;
-import java.util.Enumeration;
 
 public abstract class ReactionParticipantShape extends EdgeShape {
 	protected ReactionParticipant reactionParticipant = null;
@@ -47,9 +46,7 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 		double tangentY = 0.0;
 		if (endShape instanceof ReactionStepShape){
 			ReactionStepShape reactionStepShape = (ReactionStepShape) endShape;
-			Enumeration<Shape> enumShapes = graphModel.getShapes();
-			while(enumShapes.hasMoreElements()) {
-				Shape shape = enumShapes.nextElement();
+			for(Shape shape : graphModel.getShapes()) {
 				if (shape instanceof ReactionParticipantShape && 
 						((ReactionParticipantShape) shape).endShape == reactionStepShape){
 
