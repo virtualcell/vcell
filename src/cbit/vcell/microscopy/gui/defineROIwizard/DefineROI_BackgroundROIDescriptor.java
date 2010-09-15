@@ -17,6 +17,7 @@ import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
@@ -47,6 +48,12 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
     	((JPanel)getPanelComponent()).removeAll();
     	((JPanel)getPanelComponent()).add(imgPanel);
     	((DefineROI_Panel)imgPanel).adjustComponents(VFrap_OverlayEditorPanelJAI.DEFINE_BACKGROUNDROI);
+    	((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().setROIAssistVisible(false);
+    	if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
+			((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).getNonzeroPixelsCount()<1)
+		{
+			((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+		}
     }
     
     public ArrayList<AsynchClientTask> preNextProcess()
@@ -69,6 +76,26 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
 		return taskArrayList;
     } 
  
+    public ArrayList<AsynchClientTask> postNextProcess()
+    {
+    	//create AsynchClientTask arraylist
+		ArrayList<AsynchClientTask> taskArrayList = new ArrayList<AsynchClientTask>();
+		
+		AsynchClientTask ifNeedROIAssistTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				if(((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().isROIAssistVisible() &&
+				   ((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).getNonzeroPixelsCount()<1)
+				{
+					DialogUtils.showWarningDialog(((DefineROI_Panel)imgPanel), "Background ROI is not applied. Please complete the following actions to apply: \n \'Resolve...\' -> \'Fill Voids\' -> \'Apply and Close\'. ");
+				}
+			}
+		};
+		taskArrayList.add(ifNeedROIAssistTask);
+		return taskArrayList;
+    }
+    
     public ArrayList<AsynchClientTask> preBackProcess()
     {
     	//create AsynchClientTask arraylist
@@ -86,25 +113,6 @@ public class DefineROI_BackgroundROIDescriptor extends WizardPanelDescriptor {
 		taskArrayList.add(setCurrentROITask);															
 		return taskArrayList;
     }
-    
-    public ArrayList<AsynchClientTask> postBackProcess()
-    {
-    	//create AsynchClientTask arraylist
-		ArrayList<AsynchClientTask> taskArrayList = new ArrayList<AsynchClientTask>();
-		
-		AsynchClientTask ifNeedROIAssistTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
-		{
-			public void run(Hashtable<String, Object> hashTable) throws Exception
-			{
-				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
-				   ((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)
-				{
-					((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showAssistDialog();
-				}
-			}
-		};
-		taskArrayList.add(ifNeedROIAssistTask);
-		return taskArrayList;
-    }
+
 }
 

@@ -269,14 +269,8 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	public VFrap_OverlayEditorPanelJAI getOverlayEditorPanelJAI(){
 		if (overlayEditorPanel==null){
 			//if the panel is not editable, it is in the main frame which should have buttons listed in one column
-			if(!isEditable)
-			{
-				overlayEditorPanel = new VFrap_OverlayEditorPanelJAI(VFrap_OverlayEditorPanelJAI.BUTTON_DISPLAY_ONE_COLUMN);
-			}
-			else
-			{
-				overlayEditorPanel = new VFrap_OverlayEditorPanelJAI(VFrap_OverlayEditorPanelJAI.BUTTON_DISPLAY_TWO_COLUMNS);
-			}
+			//otherwise, the image panel is in ROI wizard, the panel should have buttons listed in two columns.
+			overlayEditorPanel = new VFrap_OverlayEditorPanelJAI(isEditable);
 			overlayEditorPanel.setROITimePlotVisible(true);
 			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 			overlayEditorPanel.addROIName(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(), false, FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
