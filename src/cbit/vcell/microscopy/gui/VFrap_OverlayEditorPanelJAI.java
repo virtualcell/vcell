@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -37,6 +38,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
@@ -62,6 +65,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.microscopy.VFrap_ROISourceData;
+import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */
@@ -92,10 +96,9 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	private double originalScaleFactor = DEFAULT_SCALE_FACTOR;
 	private double originalOffsetFactor = DEFAULT_OFFSET_FACTOR;
 	private ISize originalISize;
-	//display button mode
-	public static final int BUTTON_DISPLAY_ONE_COLUMN = 1;
-	public static final int BUTTON_DISPLAY_TWO_COLUMNS = 2;
-	private int buttonDisplayType = BUTTON_DISPLAY_TWO_COLUMNS;
+	//editable mode, useful for listing buttons in one or two columns,
+	//for adding roiAssitPanel or not.
+	private boolean isEditable = true;
 	//panel components
 	private JComboBox roiComboBox;
 	private JButton contrastButtonMinus;
@@ -123,12 +126,12 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	private ButtonGroup roiDrawButtonGroup = new ButtonGroup();
 	private Point lastHighlightPoint = null;
 	private JLabel textLabel = null;
-	private JPanel topJPanel = null;
+	private JPanel editROITopPanel = null;
 	private JPanel editROIPanel = null;
 	private JLabel viewTLabel;
 	private JLabel viewZLabel;
 	private JLabel editRoiLabel;
-	
+	private VFrap_ROIAssistPanel roiAssistPanel = null;
 	//variables for undo function	
 	UndoableEditSupport undoableEditSupport;
 	ROI undoableROI;
@@ -190,9 +193,9 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	/**
 	 * This is the default constructor
 	 */
-	public VFrap_OverlayEditorPanelJAI(int buttonDisplayType) {
+	public VFrap_OverlayEditorPanelJAI(boolean isEditable) {
 		super();
-		this.buttonDisplayType = buttonDisplayType;
+		this.isEditable = isEditable;
 		initialize();
 	}
 
@@ -251,10 +254,13 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	 * 
 	 */
 	private void initialize() {
-		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
-		gridBagLayout_1.rowHeights = new int[] {0,7,0};
-		this.setLayout(gridBagLayout_1);
+		this.setLayout(new BorderLayout());
 		
+		final GridBagLayout gridBagLayout = new GridBagLayout();
+		gridBagLayout.rowHeights = new int[] {0,7,0};
+		//the top panel is the container for both image editor panel and roi assist panel
+		JPanel topPanel = new JPanel(gridBagLayout);
+				
 		GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
 		gridBagConstraints2.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints2.anchor = GridBagConstraints.NORTH;
@@ -269,9 +275,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints12.gridx = 0;
 		gridBagConstraints12.gridy = 1;
 		gridBagConstraints12.weightx = 1;
-//		this.setSize(734, 534);
-		  
-		
 
 		editROIPanel = new JPanel();
 		final GridBagLayout gridBagLayout_2 = new GridBagLayout();
@@ -284,7 +287,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_6.weightx = 0;
 		gridBagConstraints_6.gridy = 0;
 		gridBagConstraints_6.gridx = 1;
-		this.add(editROIPanel, gridBagConstraints_6);
 
 		final JLabel infoLabel = new JLabel();
 		infoLabel.setText("Data Info:");
@@ -305,19 +307,20 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_2.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_2.gridy = 0;
 		gridBagConstraints_2.gridx = 1;
-		editROIPanel.add(textLabel, gridBagConstraints_2);
 		textLabel.setText("No FRAP DataSet loaded.");
+		editROIPanel.add(textLabel, gridBagConstraints_2);
+		
 
-		topJPanel = new JPanel();
+		editROITopPanel = new JPanel();
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(0, 1, 0, 0);
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
 		gridBagConstraints.gridy = 1;
 		gridBagConstraints.gridx = 1;
-		editROIPanel.add(topJPanel, gridBagConstraints);
-		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] {0,7,7,0,7};
-		topJPanel.setLayout(gridBagLayout);
+		final GridBagLayout gridBagLayout_3 = new GridBagLayout();
+		gridBagLayout_3.columnWidths = new int[] {0,7,7,0,7};
+		editROITopPanel.setLayout(gridBagLayout_3);
+		editROIPanel.add(editROITopPanel, gridBagConstraints);
 
 		viewZLabel = new JLabel();
 		viewZLabel.setText("View Z:");
@@ -328,24 +331,24 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_17.gridx = 0;
 		editROIPanel.add(viewZLabel, gridBagConstraints_17);
 
-		final JPanel panel_1 = new JPanel();
+		final JPanel ZSliderPanel = new JPanel();
 		final GridBagLayout gridBagLayout_4 = new GridBagLayout();
 		gridBagLayout_4.columnWidths = new int[] {7,0};
-		panel_1.setLayout(gridBagLayout_4);
+		ZSliderPanel.setLayout(gridBagLayout_4);
 		final GridBagConstraints gridBagConstraints_18 = new GridBagConstraints();
 		gridBagConstraints_18.insets = new Insets(0, 2, 0, 0);
 		gridBagConstraints_18.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_18.weightx = 0;
 		gridBagConstraints_18.gridy = 2;
 		gridBagConstraints_18.gridx = 1;
-		editROIPanel.add(panel_1, gridBagConstraints_18);
+		editROIPanel.add(ZSliderPanel, gridBagConstraints_18);
 		final GridBagConstraints gridBagConstraints_19 = new GridBagConstraints();
 		gridBagConstraints_19.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_19.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_19.weightx = 1;
 		gridBagConstraints_19.gridy = 0;
 		gridBagConstraints_19.gridx = 0;
-		panel_1.add(getZSlider(), gridBagConstraints_19);
+		ZSliderPanel.add(getZSlider(), gridBagConstraints_19);
 
 		viewTLabel = new JLabel();
 		viewTLabel.setText("View Time:");
@@ -356,8 +359,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_13.gridx = 0;
 		editROIPanel.add(viewTLabel, gridBagConstraints_13);
 
-		final JPanel panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
+		final JPanel timeSliderPanel = new JPanel();
+		timeSliderPanel.setLayout(new GridBagLayout());
 		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
 		gridBagConstraints_15.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_15.weightx = 1;
@@ -365,7 +368,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_15.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_15.gridy = 0;
 		gridBagConstraints_15.gridx = 0;
-		panel.add(getTimeSlider(), gridBagConstraints_15);
+		timeSliderPanel.add(getTimeSlider(), gridBagConstraints_15);
 		
 		final GridBagConstraints gridBagConstraints_14 = new GridBagConstraints();
 		gridBagConstraints_14.fill = GridBagConstraints.HORIZONTAL;
@@ -373,7 +376,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_14.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_14.gridy = 3;
 		gridBagConstraints_14.gridx = 1;
-		editROIPanel.add(panel, gridBagConstraints_14);
+		editROIPanel.add(timeSliderPanel, gridBagConstraints_14);
 
 		editRoiLabel = new JLabel();
 		editRoiLabel.setText("Active ROI:");
@@ -385,9 +388,9 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		editROIPanel.add(editRoiLabel, gridBagConstraints_7);
 
 		final JPanel editROIButtonPanel = new JPanel();
-		final GridBagLayout gridBagLayout_3 = new GridBagLayout();
-		gridBagLayout_3.columnWidths = new int[] {0,7,7};
-		editROIButtonPanel.setLayout(gridBagLayout_3);
+		final GridBagLayout gridBagLayout_5 = new GridBagLayout();
+		gridBagLayout_5.columnWidths = new int[] {0,7,7};
+		editROIButtonPanel.setLayout(gridBagLayout_5);
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.weightx = 0;
 		gridBagConstraints_8.fill = GridBagConstraints.HORIZONTAL;
@@ -395,10 +398,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_8.gridy = 4;
 		gridBagConstraints_8.gridx = 1;
-		editROIPanel.add(editROIButtonPanel, gridBagConstraints_8);
-		this.add(getRightPanel(), gridBagConstraints2);
-		this.add(getJScrollPane2(), gridBagConstraints12);
-
 		roiComboBox = new JComboBox();
 		roiComboBox.addActionListener(ROI_COMBOBOX_ACTIONLISTENER);
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
@@ -408,6 +407,23 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		gridBagConstraints_1.gridy = 0;
 		gridBagConstraints_1.gridx = 0;
 		editROIButtonPanel.add(roiComboBox, gridBagConstraints_1);
+		editROIPanel.add(editROIButtonPanel, gridBagConstraints_8);
+		
+		topPanel.add(editROIPanel, gridBagConstraints_6);
+		topPanel.add(getRightPanel(), gridBagConstraints2);
+		topPanel.add(getJScrollPane2(), gridBagConstraints12);
+		topPanel.setBorder(new TitledBorder(new EtchedBorder(), ""));
+		
+		if(isEditable)//in ROI wizard
+		{
+	        this.add(topPanel, BorderLayout.CENTER);
+	        this.add(getROIAssistPanel(), BorderLayout.SOUTH);
+	        setROIAssistVisible(false);
+		}
+		else // in main frame
+		{
+			this.add(topPanel, BorderLayout.CENTER);
+		}
 		
 		roiDrawButtonGroup.add(paintButton);
 		roiDrawButtonGroup.add(eraseButton);
@@ -418,7 +434,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		BeanUtils.enableComponents(editROIPanel, false);
 	}
 	
-	public void showAssistDialog()
+	public void showROIAssist()
 	{
 		//only check when doing roiAssist for bleached, this is actually used by VFRAP. (VCell has Cell ROI only)
 		if(getRoiSouceData().getCurrentlyDisplayedROI().getROIName().equals(VFrap_ROISourceData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()) &&
@@ -427,10 +443,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			DialogUtils.showInfoDialog(VFrap_OverlayEditorPanelJAI.this,"Cell ROI must be defined before using ROI Assist Tool to create Bleached ROI.");
 			return;
 		}
-		JDialog roiDialog = new JDialog((JFrame)BeanUtils.findTypeParentOfComponent(VFrap_OverlayEditorPanelJAI.this, JFrame.class));
-		roiDialog.setTitle("Create Region of Interest (ROI) using intensity thresholding");
-		roiDialog.setModal(true);
-		VFrap_ROIAssistPanel roiAssistPanel = new VFrap_ROIAssistPanel();
 		ROI originalROI = null;
 		try{
 			originalROI = new ROI(roi);
@@ -438,11 +450,27 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			ex.printStackTrace();
 			//can't happen
 		}
-		roiAssistPanel.init(roiDialog, originalROI, getRoiSouceData(),VFrap_OverlayEditorPanelJAI.this);
-		roiDialog.setContentPane(roiAssistPanel);
-		roiDialog.pack();
-		roiDialog.setSize(400,200);
-		roiDialog.setVisible(true);
+		getROIAssistPanel().init(originalROI, getRoiSouceData(),VFrap_OverlayEditorPanelJAI.this);
+		setROIAssistVisible(true);
+	}
+	
+	public void setROIAssistVisible(boolean isVisible)
+	{
+		getROIAssistPanel().setVisible(isVisible);
+	}
+	
+	public boolean isROIAssistVisible()
+	{
+		return getROIAssistPanel().isVisible();
+	}
+	
+	public VFrap_ROIAssistPanel getROIAssistPanel()
+	{
+		if(roiAssistPanel == null)
+		{
+			roiAssistPanel = new VFrap_ROIAssistPanel();
+		}
+		return roiAssistPanel;
 	}
 	
 	public void adjustComponentsForVFRAP(int choice)
@@ -750,7 +778,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			if(!timeSlider.isEnabled()) //if the component is already enabled, don't do anything
 			{
 				BeanUtils.enableComponents(rightPanel, true);
-				BeanUtils.enableComponents(topJPanel, true);
+				BeanUtils.enableComponents(editROITopPanel, true);
 				BeanUtils.enableComponents(editROIPanel, true);
 			}
 			timeSlider.setVisible(imageDataset.getSizeT() > 1);
@@ -799,7 +827,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			zSlider.setLabelTable(null);
 			zSlider.setEnabled(false);
 			BeanUtils.enableComponents(rightPanel, false);
-			BeanUtils.enableComponents(topJPanel, false);
+			BeanUtils.enableComponents(editROITopPanel, false);
 			BeanUtils.enableComponents(editROIPanel, false);
 			underlyingImage = null;
 			setROI(null);
@@ -1216,7 +1244,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			rightPanel.add(getZoomInButton(), gridBagConstraints1);
 			
 			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
-			if(buttonDisplayType == BUTTON_DISPLAY_ONE_COLUMN)
+			if(!isEditable)//buttons in one column
 			{
 				gridBagConstraints2.gridx = 0;
 				gridBagConstraints2.gridy = 1;
@@ -1229,7 +1257,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			rightPanel.add(getZoomOutButton(), gridBagConstraints2);
 
 			final GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
-			if(buttonDisplayType == BUTTON_DISPLAY_ONE_COLUMN)
+			if(!isEditable)//buttons in one column
 			{
 				gridBagConstraints3.gridy = 2;
 				gridBagConstraints3.gridx = 0;
@@ -1242,7 +1270,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			rightPanel.add(getContrastButtonPlus(), gridBagConstraints3);
 
 			final GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
-			if(buttonDisplayType == BUTTON_DISPLAY_ONE_COLUMN)
+			if(!isEditable)//buttons in one column
 			{
 				gridBagConstraints4.gridy = 3;
 				gridBagConstraints4.gridx = 0;
@@ -1638,7 +1666,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			roiAssistButton.setToolTipText("ROI Assist");
 			roiAssistButton.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
-					showAssistDialog();
+					showROIAssist();
 				}
 			});
 		}

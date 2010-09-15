@@ -295,7 +295,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			  			//start index for recovery
 	  	   				Integer oldStartIndexForRecovery = fStudy.getStartingIndexForRecovery();
 	  	   				//show wizard
-	  	   			    roiWizard.showModalDialog(new Dimension(640,670));
+	  	   			    roiWizard.showModalDialog(new Dimension(600,670));
 	  	   			    
 		  	   			if(roiWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
 	  	   				{
