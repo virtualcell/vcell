@@ -37,6 +37,7 @@ import cbit.vcell.solver.Simulation;
  * Creation date: (5/3/2004 2:55:18 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class BioModelEditor extends JPanel {
 	private BioModelTreePanel ivjBioModelTreePanel1 = null;
 	private CartoonEditorPanelFixed ivjCartoonEditorPanel1 = null;

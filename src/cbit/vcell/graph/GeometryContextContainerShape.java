@@ -48,12 +48,10 @@ public class GeometryContextContainerShape extends ContainerShape {
 		int currentX = 0;
 		int currentY = 0;
 		// position structureContainer shape
-		structureContainer.relativePos.x = currentX;
-		structureContainer.relativePos.y = currentY;
+		structureContainer.getSpaceManager().setRelPos(currentX, currentY);
 		currentX += structureContainer.shapeSize.width;
 		// position subvolumeContainer shape
-		geometryContainer.relativePos.x = currentX;
-		geometryContainer.relativePos.y = currentY;
+		geometryContainer.getSpaceManager().setRelPos(currentX, currentY);
 		currentX += geometryContainer.shapeSize.width;
 		for (int i=0;i<childShapeList.size();i++){
 			Shape child = childShapeList.get(i);

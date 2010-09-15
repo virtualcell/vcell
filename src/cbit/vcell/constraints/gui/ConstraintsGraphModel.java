@@ -1,8 +1,8 @@
 package cbit.vcell.constraints.gui;
-import java.util.Enumeration;
-import cbit.gui.graph.GraphModel;
+import java.util.ArrayList;
+import java.util.List;
+
 import cbit.gui.graph.GraphEvent;
-import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.SimpleContainerShape;
@@ -70,12 +70,7 @@ public void refreshAll() {
 	// 3) remove remaining dirty shapes
 	//
 
-	//
-	//	mark all shapes as dirty
-	//
-	Enumeration enum_shapes = getShapes();
-	while (enum_shapes.hasMoreElements()) {
-		Shape shape = (Shape) enum_shapes.nextElement();
+	for(Shape shape : getShapes()) {
 		shape.setDirty(true);
 		if (shape instanceof ConstraintVarNode){
 			((ConstraintVarNode)shape).setDegree(1);
@@ -122,9 +117,7 @@ public void refreshAll() {
 			constraintVarNode.setDirty(false);
 
 			ConstraintDependencyEdgeShape constraintDependencyEdgeShape = null;
-			Enumeration enumShapes = getShapes();
-			while (enumShapes.hasMoreElements()){
-				Shape shape = (Shape)enumShapes.nextElement();
+			for(Shape shape : getShapes()) {
 				if (shape instanceof ConstraintDependencyEdgeShape){
 					if (((ConstraintDependencyEdgeShape)shape).getConstraintShape() == generalConstraintNode &&
 						((ConstraintDependencyEdgeShape)shape).getVarShape() == constraintVarNode){
@@ -168,9 +161,7 @@ public void refreshAll() {
 		constraintVarNode.setDirty(false);
 
 		ConstraintDependencyEdgeShape constraintDependencyEdgeShape = null;
-		Enumeration enumShapes = getShapes();
-		while (enumShapes.hasMoreElements()){
-			Shape shape = (Shape)enumShapes.nextElement();
+		for(Shape shape : getShapes()) {
 			if (shape instanceof ConstraintDependencyEdgeShape){
 				if (((ConstraintDependencyEdgeShape)shape).getConstraintShape() == boundsNode &&
 					((ConstraintDependencyEdgeShape)shape).getVarShape() == constraintVarNode){
@@ -187,19 +178,14 @@ public void refreshAll() {
 		constraintDependencyEdgeShape.setDirty(false);
 	}
 	
-	//
-	//	remove all dirty shapes (enumerations aren't editable), so build list and delete from that.
-	//
-	enum_shapes = getShapes();
-	java.util.Vector deleteList = new java.util.Vector();
-	while (enum_shapes.hasMoreElements()) {
-		Shape shape = (Shape) enum_shapes.nextElement();
+	List<Shape> deleteList = new ArrayList<Shape>();
+	for(Shape shape : getShapes()) {
 		if (shape.isDirty()) {
 			deleteList.add(shape);
 		}
 	}
-	for (int i = 0; i < deleteList.size(); i++){
-		removeShape((Shape)deleteList.elementAt(i));
+	for(Shape shape : deleteList) {
+		removeShape(shape);
 	}
 	
 	fireGraphChanged(new GraphEvent(this));

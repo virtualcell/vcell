@@ -18,7 +18,7 @@ public class PropertyChangeListenerProxyVCell implements PropertyChangeListener 
 	private boolean bRunOnSwing = false;
 	public PropertyChangeListenerProxyVCell(PropertyChangeListener listener) {
 		this.listener = listener;
-		Class enclosingClass = listener.getClass().getEnclosingClass();
+		Class<?> enclosingClass = listener.getClass().getEnclosingClass();
 		if (listener instanceof Component 
 				|| listener instanceof TableModel
 				|| listener instanceof ListModel

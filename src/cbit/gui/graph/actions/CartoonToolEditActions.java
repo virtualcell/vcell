@@ -1,0 +1,96 @@
+package cbit.gui.graph.actions;
+
+/*  Organizes miscellaneous cartoon tool actions 
+ *  September 2010
+ */
+
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.KeyStroke;
+
+import cbit.gui.graph.CartoonTool;
+
+public class CartoonToolEditActions {
+
+	@SuppressWarnings("serial")
+	public static class Copy extends CartoonToolWrapperAction {
+		public static final String MENU_ACTION = "Copy";
+		public static final String MENU_TEXT = MENU_ACTION;		
+		public Copy(CartoonTool cartoonTool) {
+			super(cartoonTool, MENU_ACTION, MENU_TEXT, MENU_TEXT, MENU_TEXT);
+			putValue(MNEMONIC_KEY, KeyEvent.VK_C);
+			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_C,
+				Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class Delete extends CartoonToolWrapperAction {
+		public static final String MENU_ACTION = "Delete";
+		public static final String MENU_TEXT = MENU_ACTION;
+		public Delete(CartoonTool cartoonTool) {
+			super(cartoonTool, MENU_ACTION, MENU_TEXT, MENU_TEXT, MENU_TEXT);
+			putValue(MNEMONIC_KEY, KeyEvent.VK_D);
+//			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE,0));
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class Cut extends CartoonToolWrapperAction {
+		public static final String MENU_ACTION = "Cut";
+		public static final String MENU_TEXT = MENU_ACTION;
+		public Cut(CartoonTool cartoonTool) {
+			super(cartoonTool, MENU_ACTION, MENU_TEXT, MENU_TEXT, MENU_TEXT);
+			putValue(MNEMONIC_KEY, KeyEvent.VK_X);
+			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_X,
+					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class Paste extends CartoonToolWrapperAction {
+		public static final String MENU_ACTION = "Paste";
+		public static final String MENU_TEXT = MENU_ACTION;
+		public Paste(CartoonTool cartoonTool) {
+			super(cartoonTool, MENU_ACTION, MENU_TEXT, MENU_TEXT, MENU_TEXT);
+			putValue(MNEMONIC_KEY, KeyEvent.VK_V);
+			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_V,
+					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+		}
+	}	
+	
+	@SuppressWarnings("serial")
+	public static class PasteNew extends CartoonToolWrapperAction {
+		public static final String MENU_ACTION = "Paste New";
+		public static final String MENU_TEXT = MENU_ACTION;
+		public PasteNew(CartoonTool cartoonTool) {
+			super(cartoonTool, MENU_ACTION, MENU_TEXT, MENU_TEXT, MENU_TEXT);
+			putValue(MNEMONIC_KEY, KeyEvent.VK_W);
+		}
+	}	
+	
+	@SuppressWarnings("serial")
+	public static class Move extends CartoonToolWrapperAction {
+		public static final String MENU_ACTION = "Move...";
+		public static final String MENU_TEXT = MENU_ACTION;
+		public Move(CartoonTool cartoonTool) {
+			super(cartoonTool, MENU_ACTION, MENU_TEXT, MENU_TEXT, MENU_TEXT);
+			putValue(MNEMONIC_KEY, KeyEvent.VK_M);
+		}
+	}	
+	
+	public static List<GraphViewAction> getDefaultActions(CartoonTool cartoonTool) { 
+		List<GraphViewAction> list = new ArrayList<GraphViewAction>();
+		list.add(new Copy(cartoonTool));
+		list.add(new Delete(cartoonTool));
+		list.add(new Cut(cartoonTool));
+		list.add(new Paste(cartoonTool));
+		list.add(new PasteNew(cartoonTool));
+		list.add(new Move(cartoonTool));
+		return list; 
+	}
+
+}

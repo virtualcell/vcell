@@ -5,7 +5,6 @@ package cbit.gui.graph;
  */
 
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,9 +50,7 @@ public class ShapeUtil {
 
 	public static Set<Shape> getEdges(GraphModel graph, Shape shape) {
 		HashSet<Shape> edges = new HashSet<Shape>();
-		Enumeration<Shape> shapeEnum = graph.getShapes();
-		while(shapeEnum.hasMoreElements()) {
-			Shape aShape = shapeEnum.nextElement();
+		for(Shape aShape : graph.getShapes()) {
 			if(aShape instanceof EdgeShape) {
 				EdgeShape edge = (EdgeShape) aShape;
 				if(shape.equals(edge.getStartShape()) || shape.equals(edge.getEndShape())) {
@@ -68,9 +65,7 @@ public class ShapeUtil {
 			GraphModel graph, Shape groupShape) {
 		Map<Shape, Set<EdgeShape>> connections = new HashMap<Shape, Set<EdgeShape>>();
 		List<Shape> children = groupShape.getChildren();
-		Enumeration<Shape> shapeEnum = graph.getShapes();
-		while (shapeEnum.hasMoreElements()) {
-			Shape shape = shapeEnum.nextElement();
+		for(Shape shape : graph.getShapes()) {
 			if (shape instanceof EdgeShape) {
 				EdgeShape edge = (EdgeShape) shape;
 				Shape startShape = edge.getStartShape();

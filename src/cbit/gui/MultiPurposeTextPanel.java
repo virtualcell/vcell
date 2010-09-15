@@ -92,6 +92,7 @@ import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.ASTFuncNode;
 
+@SuppressWarnings("serial")
 public class MultiPurposeTextPanel extends JPanel {
 	private JTextPane textPane = null;
 	private JScrollPane scrollPane = null;

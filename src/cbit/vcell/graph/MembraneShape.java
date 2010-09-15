@@ -145,8 +145,7 @@ public class MembraneShape extends StructureShape {
 		labelPos.y = currentY;
 		currentY += memSpacingY;
 
-		featureShape.relativePos.x = centerX - featureShape.shapeSize.width/2;
-		featureShape.relativePos.y = currentY;
+		featureShape.getSpaceManager().setRelPos(centerX - featureShape.shapeSize.width/2, currentY);
 		currentY += featureShape.shapeSize.height + memSpacingY;
 
 		//
@@ -163,7 +162,7 @@ public class MembraneShape extends StructureShape {
 			for (int i=0;i<countChildren();i++){
 				Shape shape = childShapeList.get(i);
 				if (shape instanceof SpeciesContextShape){
-					shape.relativePos = getRadialPosition(currentAngle);
+					shape.getSpaceManager().setRelPos(getRadialPosition(currentAngle));
 					currentAngle = (currentAngle + deltaAngle) % (2*Math.PI);
 				}	
 			}	

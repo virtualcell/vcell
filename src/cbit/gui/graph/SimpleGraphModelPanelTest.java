@@ -25,7 +25,7 @@ public class SimpleGraphModelPanelTest {
 					System.exit(0);
 				};
 			});
-			frame.show();
+			frame.setVisible(true);
 			java.awt.Insets insets = frame.getInsets();
 			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 
@@ -60,7 +60,7 @@ public class SimpleGraphModelPanelTest {
 					System.exit(0);
 				};
 			});
-			frame.show();
+			frame.setVisible(true);
 			java.awt.Insets insets = frame.getInsets();
 			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 

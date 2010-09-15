@@ -1,9 +1,9 @@
 package cbit.gui;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.*;
 import javax.swing.text.*;
 /**
@@ -11,6 +11,7 @@ import javax.swing.text.*;
  * Creation date: (2/10/2001 12:40:08 AM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class StealthCaret extends DefaultCaret {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private boolean fieldStealthMode = false;

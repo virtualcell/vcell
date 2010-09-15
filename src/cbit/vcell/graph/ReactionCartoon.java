@@ -25,7 +25,6 @@ import cbit.vcell.model.Structure;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
@@ -160,15 +159,7 @@ public class ReactionCartoon extends ModelCartoon {
 			if (getModel() == null || getStructure() == null) {
 				return;
 			}
-			// 1) mark all shapes as dirty
-			// 2) traverse model adding new shapes or cleaning those that
-			// already exist
-			// 3) remove remaining dirty shapes
-			//
-			// mark all shapes as dirty
-			Enumeration<Shape> enum_shapes = getShapes();
-			while (enum_shapes.hasMoreElements()) {
-				Shape shape = enum_shapes.nextElement();
+			for(Shape shape : getShapes()) {
 				shape.setDirty(true);
 			}
 			ContainerContainerShape containerShape = (ContainerContainerShape) getShapeFromModelObject(getModel());
@@ -261,7 +252,7 @@ public class ReactionCartoon extends ModelCartoon {
 						structSpeciesContext[i].getSpecies().addPropertyChangeListener(this);
 						reactionContainerShape.addChildShape(ss);
 						addShape(ss);
-						ss.relativePos = reactionContainerShape.getRandomPosition();
+						ss.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
 					}
 					ss.refreshLabel();
 					ss.setDirty(false);
@@ -297,7 +288,7 @@ public class ReactionCartoon extends ModelCartoon {
 						}
 						addShape(reactionStepShape);
 						reactionStep.addPropertyChangeListener(this);
-						reactionStepShape.relativePos = reactionContainerShape.getRandomPosition();
+						reactionStepShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
 						reactionContainerShape.addChildShape(reactionStepShape);
 					}
 					reactionStepShape.refreshLabel();
@@ -321,7 +312,7 @@ public class ReactionCartoon extends ModelCartoon {
 							speciesContextShape.truncateLabelName(false);
 							reactionContainerShape.addChildShape(speciesContextShape);
 							addShape(speciesContextShape);
-							speciesContextShape.relativePos = reactionContainerShape.getRandomPosition();
+							speciesContextShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
 						}
 						speciesContextShape.refreshLabel();
 						speciesContextShape.setDirty(false);
@@ -356,12 +347,8 @@ public class ReactionCartoon extends ModelCartoon {
 					}
 				}
 			}
-			// remove all dirty shapes (enumerations aren't editable), so build
-			// list and delete from that.
-			enum_shapes = getShapes();
 			List<Shape> deleteList = new ArrayList<Shape>();
-			while (enum_shapes.hasMoreElements()) {
-				Shape shape = enum_shapes.nextElement();
+			for(Shape shape : getShapes()) {
 				if (shape.isDirty()) {
 					deleteList.add(shape);
 				}
@@ -382,9 +369,7 @@ public class ReactionCartoon extends ModelCartoon {
 
 	public void setPositionsFromReactionCartoon(Diagram diagram) {
 		List<NodeReference> nodeList = new ArrayList<NodeReference>();
-		Enumeration<Shape> enum1 = getShapes();
-		while (enum1.hasMoreElements()) {
-			Shape shape = enum1.nextElement();
+		for(Shape shape : getShapes()) {
 			if (shape instanceof FluxReactionShape) {
 				nodeList.add(new NodeReference(
 						NodeReference.FLUX_REACTION_NODE, ((FluxReaction) shape.getModelObject()).getName(), 

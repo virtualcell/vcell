@@ -104,8 +104,7 @@ public class StructureMappingFeatureShape extends FeatureShape {
 		int colY = currentY + extraSpacingY;
 		for (int i=0;i<childShapeList.size();i++){
 			Shape child = childShapeList.get(i);
-			child.relativePos.x = centerX - child.shapeSize.width/2;
-			child.relativePos.y = colY;
+			child.getSpaceManager().setRelPos(centerX - child.shapeSize.width/2, colY);
 			colY += child.shapeSize.height + spacingY;
 		}
 		currentX += spacingX;

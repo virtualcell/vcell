@@ -133,7 +133,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		try {
 			// user code begin {1}
 			// user code end
-			getSimpleGraphModelTool1().layout(this.getRandomizer());
+			getSimpleGraphModelTool1().layout(GraphEmbeddingManager.RANDOMIZER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -168,7 +168,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		try {
 			// user code begin {1}
 			// user code end
-			getSimpleGraphModelTool1().layout(this.getRelaxer());
+			getSimpleGraphModelTool1().layout(GraphEmbeddingManager.RELAXER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -186,7 +186,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		try {
 			// user code begin {1}
 			// user code end
-			getSimpleGraphModelTool1().layout(this.getLeveller());
+			getSimpleGraphModelTool1().layout(GraphEmbeddingManager.LEVELLER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -238,7 +238,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		try {
 			// user code begin {1}
 			// user code end
-			getSimpleGraphModelTool1().layout(this.getAnnealer());
+			getSimpleGraphModelTool1().layout(GraphEmbeddingManager.ANNEALER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -291,7 +291,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		try {
 			// user code begin {1}
 			// user code end
-			getSimpleGraphModelTool1().layout(this.getCircularizer());
+			getSimpleGraphModelTool1().layout(GraphEmbeddingManager.CIRCULARIZER);
 			// user code begin {2}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -412,12 +412,6 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 	}
 	/**
-	 * Comment
-	 */
-	private java.lang.String getAnnealer() {
-		return CartoonTool.ANNEALER;
-	}
-	/**
 	 * Return the AnnealLayoutButton property value.
 	 * @return javax.swing.JButton
 	 */
@@ -489,12 +483,6 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 			}
 		}
 		return ivjCircleLayoutButton;
-	}
-	/**
-	 * Comment
-	 */
-	private java.lang.String getCircularizer() {
-		return CartoonTool.CIRCULARIZER;
 	}
 	/**
 	 * Comment
@@ -744,12 +732,6 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		return ivjJToolBar1;
 	}
 	/**
-	 * Comment
-	 */
-	private java.lang.String getLeveller() {
-		return CartoonTool.LEVELLER;
-	}
-	/**
 	 * Return the LevellerLayoutButton property value.
 	 * @return javax.swing.JButton
 	 */
@@ -787,12 +769,6 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 		return propertyChange;
 	}
 	/**
-	 * Comment
-	 */
-	private java.lang.String getRandomizer() {
-		return CartoonTool.RANDOMIZER;
-	}
-	/**
 	 * Return the RandomLayoutButton property value.
 	 * @return javax.swing.JButton
 	 */
@@ -818,12 +794,6 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 			}
 		}
 		return ivjRandomLayoutButton;
-	}
-	/**
-	 * Comment
-	 */
-	private java.lang.String getRelaxer() {
-		return CartoonTool.RELAXER;
 	}
 	/**
 	 * Return the RelaxerLayoutButton property value.
@@ -1061,7 +1031,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 					System.exit(0);
 				};
 			});
-			frame.show();
+			frame.setVisible(true);
 			java.awt.Insets insets = frame.getInsets();
 			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 			frame.setVisible(true);

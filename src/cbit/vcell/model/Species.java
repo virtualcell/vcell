@@ -1,18 +1,17 @@
 package cbit.vcell.model;
-import java.beans.*;
 
-import org.jdom.Element;
-import org.vcell.util.Compare;
-import org.vcell.util.Matchable;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-/*©
+/*
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
-import cbit.sql.DbDictionary;
+ */
+
+import java.beans.*;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 import cbit.vcell.biomodel.meta.Identifiable;
 
+@SuppressWarnings("serial")
 public class Species
 	implements
 		java.beans.VetoableChangeListener,org.vcell.util.Cacheable,Identifiable {
