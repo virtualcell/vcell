@@ -132,6 +132,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	private JLabel viewZLabel;
 	private JLabel editRoiLabel;
 	private VFrap_ROIAssistPanel roiAssistPanel = null;
+	private JPanel roiAssistBasePanel = null;
 	//variables for undo function	
 	UndoableEditSupport undoableEditSupport;
 	ROI undoableROI;
@@ -413,11 +414,11 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		topPanel.add(getRightPanel(), gridBagConstraints2);
 		topPanel.add(getJScrollPane2(), gridBagConstraints12);
 		topPanel.setBorder(new TitledBorder(new EtchedBorder(), ""));
-		
+				
 		if(isEditable)//in ROI wizard
 		{
 	        this.add(topPanel, BorderLayout.CENTER);
-	        this.add(getROIAssistPanel(), BorderLayout.SOUTH);
+	        this.add(getROIAssistBasePanel(), BorderLayout.SOUTH);
 	        setROIAssistVisible(false);
 		}
 		else // in main frame
@@ -457,6 +458,14 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	public void setROIAssistVisible(boolean isVisible)
 	{
 		getROIAssistPanel().setVisible(isVisible);
+		if(isVisible)
+		{
+			getRoiAssistButton().setIcon(new ImageIcon(getClass().getResource("/images/roiAssistOpen.gif")));
+		}
+		else
+		{
+			getRoiAssistButton().setIcon(new ImageIcon(getClass().getResource("/images/roiAssistClose.gif")));
+		}
 	}
 	
 	public boolean isROIAssistVisible()
@@ -473,6 +482,22 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		return roiAssistPanel;
 	}
 	
+	public JPanel getROIAssistBasePanel()
+	{
+		if(roiAssistBasePanel == null)
+		{
+			roiAssistBasePanel = new JPanel(new BorderLayout());
+			JPanel buttonPanel = new JPanel(new BorderLayout());
+			buttonPanel.add(getRoiAssistButton(), BorderLayout.WEST);
+			roiAssistBasePanel.add(buttonPanel, BorderLayout.NORTH);
+			roiAssistBasePanel.add(getROIAssistPanel(),BorderLayout.CENTER);
+			//set border
+			TitledBorder tb = new TitledBorder(new EtchedBorder(), "");
+			roiAssistBasePanel.setBorder(tb);
+		}
+		return roiAssistBasePanel;
+	}
+	
 	public void adjustComponentsForVFRAP(int choice)
 	{
 		if(choice == DISPLAY_WITH_ROIS)
@@ -483,76 +508,66 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			roiDrawButtonGroup.remove(fillButton);
 			roiDrawButtonGroup.remove(cropButton);
 			
-			cropButton.setVisible(false);
-			autoCropButton.setVisible(false);
-			paintButton.setVisible(false);
-			paintButton.setSelected(false);
-			eraseButton.setVisible(false);
-			fillButton.setVisible(false);
-			importROIMaskButton.setVisible(false);
-			clearROIbutton.setVisible(false);
-			roiTimePlotButton.setVisible(false);
-			roiAssistButton.setVisible(false);
+			getCropButton().setVisible(false);
+			getAutoCropButton().setVisible(false);
+			getPaintButton().setVisible(false);
+			getPaintButton().setSelected(false);
+			getEraseButton().setVisible(false);
+			getFillButton().setVisible(false);
+			getImportROIMaskButton().setVisible(false);
+			getClearROIbutton().setVisible(false);
+			getRoiTimePlotButton().setVisible(false);
+//			roiAssistButton.setVisible(false);
 			editRoiLabel.setEnabled(true);
 
-//			addROIButton.setVisible(false);
-//			delROIButton.setVisible(false);
 		}
 		else if(choice == DEFINE_CROP)
 		{
 			setAllComponentsVisible();
 						
-			zoomInButton.setEnabled(false);
-			zoomOutButton.setEnabled(false);
-			contrastButtonPlus.setEnabled(false);
-			contrastButtonMinus.setEnabled(false);
-			cropButton.setEnabled(true);
-			cropButton.setSelected(true);//paint button will not be selected
-			autoCropButton.setEnabled(isAutoCroppable());
-			paintButton.setSelected(false);
-			paintButton.setEnabled(false);
-			paintButton.setFocusPainted(false);
-			paintButton.setBorderPainted(false);
-			eraseButton.setEnabled(false);
-			fillButton.setEnabled(false);
-			importROIMaskButton.setEnabled(false);
-			clearROIbutton.setEnabled(false);
-			roiTimePlotButton.setEnabled(false);
-			roiAssistButton.setEnabled(false);
+			getZoomInButton().setEnabled(false);
+			getZoomOutButton().setEnabled(false);
+			getContrastButtonPlus().setEnabled(false);
+			getContrastButtonMinus().setEnabled(false);
+			getCropButton().setEnabled(true);
+			getCropButton().setSelected(true);//paint button will not be selected
+			getAutoCropButton().setEnabled(isAutoCroppable());
+			getPaintButton().setSelected(false);
+			getPaintButton().setEnabled(false);
+			getPaintButton().setFocusPainted(false);
+			getPaintButton().setBorderPainted(false);
+			getEraseButton().setEnabled(false);
+			getFillButton().setEnabled(false);
+			getImportROIMaskButton().setEnabled(false);
+			getClearROIbutton().setEnabled(false);
+			getRoiTimePlotButton().setEnabled(false);
+			getRoiAssistButton().setEnabled(false);
 			//other components
 			roiComboBox.setVisible(false);
 			roiComboBox.setEnabled(false);
 			editRoiLabel.setVisible(false);
-//			zSlider.setVisible(false);
-//			viewZLabel.setVisible(false);
-//			addROIButton.setVisible(false);
-//			delROIButton.setVisible(false);
 		}
 		else if(choice == DEFINE_CELLROI || choice == DEFINE_BLEACHEDROI || choice == DEFINE_BACKGROUNDROI)
 		{
 			setAllComponentsVisible();
 						
-			zoomInButton.setEnabled(true);
-			zoomOutButton.setEnabled(true);
-			contrastButtonPlus.setEnabled(true);
-			contrastButtonMinus.setEnabled(true);
-			cropButton.setEnabled(false);
-			autoCropButton.setEnabled(false);
-			paintButton.setEnabled(true);
-			eraseButton.setEnabled(true);
-			fillButton.setEnabled(true);
-			importROIMaskButton.setEnabled(true);
-			clearROIbutton.setEnabled(true);
-			roiTimePlotButton.setEnabled(true);
-			roiAssistButton.setEnabled(true);
+			getZoomInButton().setEnabled(true);
+			getZoomOutButton().setEnabled(true);
+			getContrastButtonPlus().setEnabled(true);
+			getContrastButtonMinus().setEnabled(true);
+			getCropButton().setEnabled(false);
+			getAutoCropButton().setEnabled(false);
+			getPaintButton().setEnabled(true);
+			getEraseButton().setEnabled(true);
+			getFillButton().setEnabled(true);
+			getImportROIMaskButton().setEnabled(true);
+			getClearROIbutton().setEnabled(true);
+			getRoiTimePlotButton().setEnabled(true);
+			getRoiAssistButton().setEnabled(true);
 			//other components
 			roiComboBox.setVisible(false);
 			roiComboBox.setEnabled(false);
 			editRoiLabel.setVisible(false);
-//			zSlider.setVisible(false);
-//			viewZLabel.setVisible(false);
-//			addROIButton.setVisible(false);
-//			delROIButton.setVisible(false);
 		}
 	}
 	
@@ -561,32 +576,28 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		BeanUtils.enableComponents(getRightPanel(), true);
 		BeanUtils.enableComponents(editROIPanel, true);
 		//buttons
-		zoomInButton.setVisible(true);
-		zoomOutButton.setVisible(true);
-		contrastButtonPlus.setVisible(true);
-		contrastButtonMinus.setVisible(true);
-		cropButton.setVisible(true);
-		autoCropButton.setVisible(true);
-		paintButton.setVisible(true);
-		paintButton.setSelected(true);
-		eraseButton.setVisible(true);
-		fillButton.setVisible(true);
-		importROIMaskButton.setVisible(true);
-		clearROIbutton.setVisible(true);
-		roiTimePlotButton.setVisible(true);
-		roiAssistButton.setVisible(true);
+		getZoomInButton().setVisible(true);
+		getZoomOutButton().setVisible(true);
+		getContrastButtonPlus().setVisible(true);
+		getContrastButtonMinus().setVisible(true);
+		getCropButton().setVisible(true);
+		getAutoCropButton().setVisible(true);
+		getPaintButton().setVisible(true);
+		getPaintButton().setSelected(true);
+		getEraseButton().setVisible(true);
+		getFillButton().setVisible(true);
+		getImportROIMaskButton().setVisible(true);
+		getClearROIbutton().setVisible(true);
+		getRoiTimePlotButton().setVisible(true);
+//		roiAssistButton.setVisible(true);
 		//other components
 		roiComboBox.setVisible(true);
 		editRoiLabel.setVisible(true);
-//		zSlider.setVisible(true);
-//		viewZLabel.setVisible(true);
-//		addROIButton.setVisible(true);
-//		delROIButton.setVisible(true);
 		
-		roiDrawButtonGroup.add(paintButton);
-		roiDrawButtonGroup.add(eraseButton);
-		roiDrawButtonGroup.add(fillButton);
-		roiDrawButtonGroup.add(cropButton);
+		roiDrawButtonGroup.add(getPaintButton());
+		roiDrawButtonGroup.add(getEraseButton());
+		roiDrawButtonGroup.add(getFillButton());
+		roiDrawButtonGroup.add(getCropButton());
 	}
 	
 	private void clearROI(){
@@ -603,8 +614,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	
 	private void refreshROI(){
 		if (roi!=null && imageDataset != null){
-//			BufferedImage highlightImage = createHighlightImageFromROI();
-//			short[] highlightImageWritebackBuffer = roi.getRoiImages()[getRoiImageIndex()].getPixels();
 			getImagePane().setHighlightImageAndWritebackBuffer(
 				createHighlightImageFromROI(),
 				roi.getRoiImages()[getRoiImageIndex()].getPixels());
@@ -1331,10 +1340,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			gridBagConstraints12.gridx = 1;
 			rightPanel.add(getRoiTimePlotButton(), gridBagConstraints12);
 			
-			final GridBagConstraints gridBagConstraints13 = new GridBagConstraints();
-			gridBagConstraints13.gridy = 6;
-			gridBagConstraints13.gridx = 1;
-			rightPanel.add(getRoiAssistButton(), gridBagConstraints13);
 		}
 		return rightPanel;
 	}
@@ -1343,11 +1348,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		if (zoomInButton == null) {
 			zoomInButton = new JButton();
 			zoomInButton.setMargin(new Insets(2, 2, 2, 2));
-			zoomInButton.setMinimumSize(new Dimension(32, 32));
-			zoomInButton.setMaximumSize(new Dimension(32, 32));
 			zoomInButton.setIcon(new ImageIcon(getClass().getResource("/images/zoomin.gif")));
 			zoomInButton.setPreferredSize(new Dimension(32, 32));
-			zoomInButton.setIcon(new ImageIcon(getClass().getResource("/images/zoomin.gif")));
 			zoomInButton.setToolTipText("Zoom In");
 			zoomInButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -1363,11 +1365,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		if (zoomOutButton == null) {
 			zoomOutButton = new JButton();
 			zoomOutButton.setPreferredSize(new Dimension(32, 32));
-			zoomOutButton.setMinimumSize(new Dimension(32, 32));
-			zoomOutButton.setMaximumSize(new Dimension(32, 32));
 			zoomOutButton.setMargin(new Insets(2, 2, 2, 2));
 			zoomOutButton.setIcon(new ImageIcon(getClass().getResource("/images/zoomout.gif")));
-			zoomOutButton.setPreferredSize(new Dimension(32, 32));
 			zoomOutButton.setToolTipText("Zoom Out");
 			zoomOutButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -1391,8 +1390,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 				}
 			});
 			contrastButtonMinus.setPreferredSize(new Dimension(32, 32));
-			contrastButtonMinus.setMinimumSize(new Dimension(32, 32));
-			contrastButtonMinus.setMaximumSize(new Dimension(32, 32));
 			contrastButtonMinus.setMargin(new Insets(2, 2, 2, 2));
 			contrastButtonMinus.setToolTipText("Decrease Contrast");
 		}
@@ -1410,8 +1407,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 				}
 			});
 			contrastButtonPlus.setPreferredSize(new Dimension(32, 32));
-			contrastButtonPlus.setMinimumSize(new Dimension(32, 32));
-			contrastButtonPlus.setMaximumSize(new Dimension(32, 32));
 			contrastButtonPlus.setMargin(new Insets(2, 2, 2, 2));
 			contrastButtonPlus.setToolTipText("Increase Contrast");
 		}
@@ -1423,8 +1418,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		{
 			cropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/crop.gif")));
 			cropButton.setPreferredSize(new Dimension(32, 32));
-			cropButton.setMinimumSize(new Dimension(32, 32));
-			cropButton.setMaximumSize(new Dimension(32, 32));
 			cropButton.setMargin(new Insets(2, 2, 2, 2));
 			cropButton.setToolTipText("Crop");
 		}
@@ -1436,11 +1429,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		{
 			fillButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/fill.gif")));
 			fillButton.setPreferredSize(new Dimension(32, 32));
-			fillButton.setMinimumSize(new Dimension(32, 32));
-			fillButton.setMaximumSize(new Dimension(32, 32));
-			fillButton.setPreferredSize(new Dimension(32, 32));
-			fillButton.setMinimumSize(new Dimension(32, 32));
-			fillButton.setMaximumSize(new Dimension(32, 32));
 			fillButton.setMargin(new Insets(2, 2, 2, 2));
 			fillButton.setToolTipText("Fill");
 		}
@@ -1452,11 +1440,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		{
 			eraseButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/eraser.gif")));
 			eraseButton.setPreferredSize(new Dimension(32, 32));
-			eraseButton.setMinimumSize(new Dimension(32, 32));
-			eraseButton.setMaximumSize(new Dimension(32, 32));
-			eraseButton.setPreferredSize(new Dimension(32, 32));
-			eraseButton.setMinimumSize(new Dimension(32, 32));
-			eraseButton.setMaximumSize(new Dimension(32, 32));
 			eraseButton.setMargin(new Insets(2, 2, 2, 2));
 			eraseButton.setToolTipText("Erase");
 		}
@@ -1469,11 +1452,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			paintButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/paint.gif")));
 			paintButton.setSelected(true);
 			paintButton.setPreferredSize(new Dimension(32, 32));
-			paintButton.setMinimumSize(new Dimension(32, 32));
-			paintButton.setMaximumSize(new Dimension(32, 32));
-			paintButton.setPreferredSize(new Dimension(32, 32));
-			paintButton.setMinimumSize(new Dimension(32, 32));
-			paintButton.setMaximumSize(new Dimension(32, 32));
 			paintButton.setMargin(new Insets(2, 2, 2, 2));
 			paintButton.setToolTipText("Paint");
 		}
@@ -1485,11 +1463,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		{
 			importROIMaskButton = new JButton(new ImageIcon(getClass().getResource("/images/importROI.gif")));
 			importROIMaskButton.setPreferredSize(new Dimension(32, 32));
-			importROIMaskButton.setMinimumSize(new Dimension(32, 32));
-			importROIMaskButton.setMaximumSize(new Dimension(32, 32));
-			importROIMaskButton.setPreferredSize(new Dimension(32, 32));
-			importROIMaskButton.setMinimumSize(new Dimension(32, 32));
-			importROIMaskButton.setMaximumSize(new Dimension(32, 32));
 			importROIMaskButton.setMargin(new Insets(2, 2, 2, 2));
 			importROIMaskButton.setToolTipText("Import ROI mask from file");
 			importROIMaskButton.addActionListener(new ActionListener() {
@@ -1546,11 +1519,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		{
 			clearROIbutton = new JButton(new ImageIcon(getClass().getResource("/images/clearROI.gif")));
 			clearROIbutton.setPreferredSize(new Dimension(32, 32));
-			clearROIbutton.setMinimumSize(new Dimension(32, 32));
-			clearROIbutton.setMaximumSize(new Dimension(32, 32));
-			clearROIbutton.setPreferredSize(new Dimension(32, 32));
-			clearROIbutton.setMinimumSize(new Dimension(32, 32));
-			clearROIbutton.setMaximumSize(new Dimension(32, 32));
 			clearROIbutton.setMargin(new Insets(2, 2, 2, 2));
 			clearROIbutton.setToolTipText("Clear ROI");
 			clearROIbutton.addActionListener(new ActionListener() {
@@ -1567,11 +1535,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		{
 			roiTimePlotButton = new JButton(new ImageIcon(getClass().getResource("/images/plotROI.gif")));
 			roiTimePlotButton.setPreferredSize(new Dimension(32, 32));
-			roiTimePlotButton.setMinimumSize(new Dimension(32, 32));
-			roiTimePlotButton.setMaximumSize(new Dimension(32, 32));
-			roiTimePlotButton.setPreferredSize(new Dimension(32, 32));
-			roiTimePlotButton.setMinimumSize(new Dimension(32, 32));
-			roiTimePlotButton.setMaximumSize(new Dimension(32, 32));
 			roiTimePlotButton.setMargin(new Insets(2, 2, 2, 2));
 			roiTimePlotButton.setToolTipText("ROI time plot");
 			roiTimePlotButton.addActionListener(new ActionListener() {
@@ -1609,8 +1572,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		{
 			autoCropButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/autoCrop.gif")));
 			autoCropButton.setPreferredSize(new Dimension(32, 32));
-			autoCropButton.setMinimumSize(new Dimension(32, 32));
-			autoCropButton.setMaximumSize(new Dimension(32, 32));
 			autoCropButton.setMargin(new Insets(2, 2, 2, 2));
 			autoCropButton.setToolTipText("Auto Crop");
 			autoCropButton.addActionListener(new ActionListener() {
@@ -1655,18 +1616,22 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	public JButton getRoiAssistButton() {
 		if(roiAssistButton == null)
 		{
-			roiAssistButton = new JButton(new ImageIcon(getClass().getResource("/images/assistantROI.gif")));
-			roiAssistButton.setPreferredSize(new Dimension(32, 32));
-			roiAssistButton.setMinimumSize(new Dimension(32, 32));
-			roiAssistButton.setMaximumSize(new Dimension(32, 32));
-			roiAssistButton.setPreferredSize(new Dimension(32, 32));
-			roiAssistButton.setMinimumSize(new Dimension(32, 32));
-			roiAssistButton.setMaximumSize(new Dimension(32, 32));
+			roiAssistButton = new JButton("ROI ASSIST (Help Detecting ROI Automatically)");
+			roiAssistButton.setIcon(new ImageIcon(getClass().getResource("/images/roiAssistClose.gif")));
 			roiAssistButton.setMargin(new Insets(2, 2, 2, 2));
 			roiAssistButton.setToolTipText("ROI Assist");
+			roiAssistButton.setContentAreaFilled(false);
+			roiAssistButton.setFocusPainted(false);
 			roiAssistButton.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
-					showROIAssist();
+					if(isROIAssistVisible())
+					{
+						setROIAssistVisible(false);
+					}
+					else
+					{
+						showROIAssist();
+					}
 				}
 			});
 		}

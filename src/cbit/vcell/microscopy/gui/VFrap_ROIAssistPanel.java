@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -108,7 +109,6 @@ public class VFrap_ROIAssistPanel extends JPanel {
 	private static final String ENHANCE_MEDIAN_3X3 = "Median 3x3";
 	private static final String ENHANCE_MEDIAN_5x5 = "Median 5x5";
 	
-	private Window disposableWindow;
 	private VFrap_ROISourceData frapData;
 	private short[] roiTimeAverageDataShort;
 	private short[] lastROISourceDataShort;
@@ -126,7 +126,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		setLayout(gridBagLayout);
 
 		final JLabel roiSourceLabel = new JLabel();
-		roiSourceLabel.setFont(new Font("", Font.BOLD, 12));
+		roiSourceLabel.setFont(new Font("", Font.PLAIN, 12));
 		roiSourceLabel.setText("ROI Threshold Source");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.insets = new Insets(10, 4, 0, 4);
@@ -136,7 +136,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		add(roiSourceLabel, gridBagConstraints_1);
 
 		final JLabel spatialEnahnceLabel = new JLabel();
-		spatialEnahnceLabel.setFont(new Font("", Font.BOLD, 12));
+		spatialEnahnceLabel.setFont(new Font("", Font.PLAIN, 12));
 		spatialEnahnceLabel.setText("Spatial Enhance Threshold");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.insets = new Insets(10, 4, 0, 4);
@@ -183,7 +183,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		add(thresholdSlider, gridBagConstraints_5);
 
 		final JLabel thresholdForRoiLabel = new JLabel();
-		thresholdForRoiLabel.setFont(new Font("", Font.BOLD, 12));
+		thresholdForRoiLabel.setFont(new Font("", Font.PLAIN, 12));
 		thresholdForRoiLabel.setText("Threshold Adjust ROI");
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.gridwidth = 2;
@@ -192,7 +192,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		add(thresholdForRoiLabel, gridBagConstraints_7);
 
 		final JLabel lowerLabel = new JLabel();
-		lowerLabel.setFont(new Font("", Font.BOLD, 14));
+		lowerLabel.setFont(new Font("", Font.PLAIN, 12));
 		lowerLabel.setText("ROI Shrink");
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.insets = new Insets(0, 4, 0, 0);
@@ -202,7 +202,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		add(lowerLabel, gridBagConstraints_8);
 
 		final JLabel higherLabel = new JLabel();
-		higherLabel.setFont(new Font("", Font.BOLD, 14));
+		higherLabel.setFont(new Font("", Font.PLAIN, 12));
 		higherLabel.setText("ROI Grow");
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.insets = new Insets(0, 0, 0, 4);
@@ -228,6 +228,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 				}catch(Exception e2){
 					e2.printStackTrace();
 				}
+				overlayEditorPanelJAI.getRoiAssistButton().setIcon(new ImageIcon(getClass().getResource("/images/roiAssistClose.gif")));
 				VFrap_ROIAssistPanel.this.setVisible(false);
 			}
 		});
@@ -243,6 +244,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 					e2.printStackTrace();
 				}
 				frapData.addReplaceRoi(originalROI);
+				overlayEditorPanelJAI.getRoiAssistButton().setIcon(new ImageIcon(getClass().getResource("/images/roiAssistClose.gif")));
 				VFrap_ROIAssistPanel.this.setVisible(false);
 			}
 		});
@@ -313,9 +315,6 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		});
 		fillVoidsButton.setText("Fill Voids");
 		buttonPanel.add(fillVoidsButton);
-		//set border
-		TitledBorder tb = new TitledBorder(new EtchedBorder(), "ROI Assist");
-		this.setBorder(tb);
 	}
 	
 	private void createScaledTimeAverageData() throws Exception{
