@@ -239,14 +239,24 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		  	    			}
 		  	    		};
 		  	    		
+		  	    		AsynchClientTask afterCloseLoadWizardTask_UI = new AsynchClientTask("", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false) 
+		  	    		{
+		  	    			public void run(Hashtable<String, Object> hashTable) throws Exception
+		  	    			{
+		  	    				if(loadWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
+			  	   				{
+		  	    					getAnalysisProcedurePanel().setWorkFlowStage(AnalysisProcedurePanel.STAGE_DEFINE_ROIS);
+								}
+		  	    			}
+		  	    		};
+		  	    		
 		  	    		AsynchClientTask afterCloseLoadWizardTask = new AsynchClientTask("", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING, false) 
 		  	    		{
 		  	    			public void run(Hashtable<String, Object> hashTable) throws Exception
 		  	    			{
 		  	    				if(loadWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
 			  	   				{
-			  	   					getAnalysisProcedurePanel().setWorkFlowStage(AnalysisProcedurePanel.STAGE_DEFINE_ROIS);
-			  	   					//set need save flag
+		  	    					//set need save flag
 			  	   					getFrapWorkspace().getWorkingFrapStudy().setSaveNeeded(true);
 			  	   					//clear movie buffer
 			  	   					clearMovieBuffer();
@@ -261,6 +271,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		  	    		};
 		  	    		
 		  	    		totalTasks.add(showLoadWizardTask);
+		  	    		totalTasks.add(afterCloseLoadWizardTask_UI);
 		  	    		totalTasks.add(afterCloseLoadWizardTask);
 		  	    		//dispatch
 		  	    		ClientTaskDispatcher.dispatch(FRAPStudyPanel.this, new Hashtable<String, Object>(), totalTasks.toArray(new AsynchClientTask[totalTasks.size()]), false);
