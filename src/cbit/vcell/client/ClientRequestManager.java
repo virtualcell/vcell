@@ -70,6 +70,7 @@ import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
 import cbit.vcell.client.data.OutputContext;
@@ -2156,6 +2157,8 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 						TranslationLogger transLogger = new TranslationLogger(requester);
 						doc = XmlHelper.importMathCellML(transLogger, xmlInfo);
 					}
+				} else if (xmlType.equals(MicroscopyXMLTags.FRAPStudyTag)) {
+					doc = XmlHelper.VFRAPToBioModel(xmlInfo, getDocumentManager());
 				} else { // unknown XML format
 					throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 				}

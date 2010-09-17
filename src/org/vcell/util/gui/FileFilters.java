@@ -16,7 +16,7 @@ public interface FileFilters {
 	public static final FileFilter FILE_FILTER_GIF 		= new ExtensionFilter(".gif",	"GIF Files (*.gif)");
 	public static final FileFilter FILE_FILTER_NRRD 	= new ExtensionFilter(".nrrd", 	"NRRD Files (*.nrrd)");
 	public static final FileFilter FILE_FILTER_ZIP 		= new ExtensionFilter(".zip", 	"ZIP Files (*.zip)");
-	public static final FileFilter FILE_FILTER_XML 		= new ExtensionFilter(new String[] {".xml",".vcml",".sbml", ".cellml"}, "XML Files (.xml .vcml .sbml .cellml)");
+	public static final FileFilter FILE_FILTER_XML 		= new ExtensionFilter(new String[] {".xml",".vcml",".sbml", ".cellml", ".vfrap"}, "XML Files (.xml .vcml .sbml .cellml .vfrap)");
 	public static final FileFilter FILE_FILTER_VCML		= new ExtensionFilter(new String[] {".vcml"},"VCML format (.vcml)");
 	public static final FileFilter FILE_FILTER_SBML_12	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level1,Version2>  (.xml .sbml)");
 	public static final FileFilter FILE_FILTER_SBML_21	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version1>  (.xml .sbml)");
