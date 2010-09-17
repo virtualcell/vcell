@@ -35,8 +35,8 @@ public class FieldDataSymbol extends DataSymbol {
 
 	public FieldDataSymbol(String dataSymbolName, DataSymbolType dataSymbolType, 
 			DataContext dataContext, VCUnitDefinition vcUnitDefinition,
-			ExternalDataIdentifier dataSetID, String fieldDataVarName, 
-			String fieldDataVarType, double fieldDataVarTime){
+			ExternalDataIdentifier dataSetID, 
+			String fieldDataVarName, String fieldDataVarType, double fieldDataVarTime){
 		super(dataSymbolName, dataSymbolType, dataContext, vcUnitDefinition);
 		this.dataSetID = dataSetID;
 		this.fieldDataVarName = fieldDataVarName;

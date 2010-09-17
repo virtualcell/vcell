@@ -194,6 +194,10 @@ private ROI getROI(Element param) throws XmlParseException{
 /**
  * This method is only called by DataSymbolsPanel to get the frap image dataset
  */
+public List <BioModel> getBioModels(Element vFrapRoot, Object object) {
+	// TODO Auto-generated method stub
+	return null;
+}
 public AnnotatedImageDataset getAnnotatedImageDataset(Element param/*root, frapstudy element*/, ClientTaskStatusSupport progressListener) throws XmlParseException
 {
 	//get frapData element
@@ -295,5 +299,6 @@ private static ExternalDataIdentifier getExternalDataIdentifier(Element external
 private String unMangle(String str){
 	return XmlBase.unMangle(str);
 }
+
 
 }

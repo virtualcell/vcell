@@ -4078,7 +4078,6 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		}
 	}
 	
-
 	//
 	//-Process the GeometryContext-
 	//

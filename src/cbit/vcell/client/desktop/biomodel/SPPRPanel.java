@@ -520,6 +520,7 @@ public class SPPRPanel extends JPanel {
 				menuItemAddGenericData.setName("JMenuItemAddData");
 				menuItemAddGenericData.setMnemonic('d');
 				menuItemAddGenericData.setText("Add Generic DataSymbol");
+//				menuItemAddGenericData.setText("Import vFrap Simulation");
 				menuItemAddGenericData.setEnabled(false);
 				menuItemAddGenericData.setActionCommand(GuiConstants.ACTIONCMD_ADD_GENERIC_DATA);
 			} catch (java.lang.Throwable ivjExc) {
@@ -535,6 +536,7 @@ public class SPPRPanel extends JPanel {
 				menuItemAddVFrapData.setName("JMenuItemAddVFrapData");
 				menuItemAddVFrapData.setMnemonic('v');
 				menuItemAddVFrapData.setText("Add vFrap DataSymbols");
+				menuItemAddVFrapData.setEnabled(true);
 				menuItemAddVFrapData.setActionCommand(GuiConstants.ACTIONCMD_ADD_VFRAP_DATA);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
