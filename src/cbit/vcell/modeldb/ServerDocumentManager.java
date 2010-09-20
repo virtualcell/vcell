@@ -1,4 +1,5 @@
 package cbit.vcell.modeldb;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -26,6 +27,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
@@ -850,12 +852,9 @@ roundtripTimer += l2 - l1;
 					// insert it with a unique name
 					//
 					int count=0;
+					fixNullImageName(memoryImage);
 					while (dbServer.getDBTopLevel().isNameUsed(user,VersionableType.VCImage,memoryImage.getName(),true)){
 						try {
-							if(memoryImage.getName() == null)
-							{
-								memoryImage.setName("image");
-							}
 							memoryImage.setName(TokenMangler.getNextRandomToken(memoryImage.getName()));
 						}catch (java.beans.PropertyVetoException e){
 							e.printStackTrace(System.out);
@@ -1473,16 +1472,23 @@ public String saveGeometry(QueryHashtable dbc, User user,String geometryXML,Stri
 			// Image hasn't been saved, has been renamed, or has been forced 'dirty'
 			// insert it with a unique name
 			//
-			while (dbServer.getDBTopLevel().isNameUsed(user,VersionableType.VCImage,image.getName(),true)){
-				try {
-					if(image.getName() == null)
-					{
-						image.setName("image");
+			try{
+				fixNullImageName(image);
+				int count = 0;
+				while (dbServer.getDBTopLevel().isNameUsed(user,VersionableType.VCImage,image.getName(),true))
+				{
+					try {
+						image.setName(TokenMangler.getNextRandomToken(image.getName()));
+					}catch (java.beans.PropertyVetoException e){
+						e.printStackTrace(System.out);
 					}
-					image.setName(TokenMangler.getNextRandomToken(image.getName()));
-				}catch (java.beans.PropertyVetoException e){
-					e.printStackTrace(System.out);
+					if (count++ > 5){
+						throw new DataAccessException("failed to find unique image name '" + image.getName()+"' is last name tried");
+					}
 				}
+			}catch(Exception ex){
+				ex.printStackTrace(System.out);
+				throw new DataAccessException(ex.getMessage(),ex);
 			}
 			updatedImageKey = dbServer.getDBTopLevel().insertVersionable(user,image,image.getName(),false,true);
 		}else{
@@ -1596,12 +1602,9 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 				// insert it with a unique name
 				//
 				int count=0;
+				fixNullImageName(memoryImage);
 				while (dbServer.getDBTopLevel().isNameUsed(user,VersionableType.VCImage,memoryImage.getName(),true)){
 					try {
-						if(memoryImage.getName() == null)
-						{
-							memoryImage.setName("image");
-						}
 						memoryImage.setName(TokenMangler.getNextRandomToken(memoryImage.getName()));
 					}catch (java.beans.PropertyVetoException e){
 						e.printStackTrace(System.out);
@@ -2001,12 +2004,9 @@ public String saveSimulation(QueryHashtable dbc, User user, String simulationXML
 				// insert it with a unique name
 				//
 				int count=0;
+				fixNullImageName(memoryImage);
 				while (dbServer.getDBTopLevel().isNameUsed(user,VersionableType.VCImage,memoryImage.getName(),true)){
 					try {
-						if(memoryImage.getName() == null)
-						{
-							memoryImage.setName("image");
-						}
 						memoryImage.setName(TokenMangler.getNextRandomToken(memoryImage.getName()));
 					}catch (java.beans.PropertyVetoException e){
 						e.printStackTrace(System.out);
@@ -2300,6 +2300,14 @@ private KeyValue update(User user, BioModelMetaData bioModelMetaData,BioModelChi
 		return dbServer.getDBTopLevel().updateVersionable(user,bioModelMetaData,bmcs,false,true);
 	}else{
 		return dbServer.getDBTopLevel().insertVersionable(user,bioModelMetaData,bmcs,bioModelMetaData.getName(),false,true);
+	}
+}
+
+private static void fixNullImageName(VCImage image) throws PropertyVetoException
+{
+	if(image.getName() == null || image.getName().length() == 0){
+		String newImageName = "image" + ClientRequestManager.generateDateTimeString();
+		image.setName(newImageName);
 	}
 }
 }
