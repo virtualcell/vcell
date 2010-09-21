@@ -160,7 +160,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		populateData();
 	}
 	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("reactionSpecs")) {
-		fireTableDataChanged();
+		populateData();
 	}
 	if (evt.getSource() instanceof ReactionStep && evt.getPropertyName().equals("name")) {
 		fireTableRowsUpdated(0,getRowCount()-1);
@@ -202,8 +202,9 @@ public void setSimulationContext(SimulationContext simulationContext) {
 }
 
 private void populateData() {
-	rows.clear();
-	if (getSimulationContext() != null) {
+	if (getSimulationContext() == null) {
+		setData(null);
+	} else {
 		List<ReactionSpec> rslist = Arrays.asList(getSimulationContext().getReactionContext().getReactionSpecs());
 		setData(rslist);
 	}
