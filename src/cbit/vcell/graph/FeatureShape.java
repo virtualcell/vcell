@@ -7,12 +7,14 @@ import cbit.gui.graph.*;
 import cbit.gui.graph.Shape;
 import cbit.vcell.model.*;
 import java.awt.*;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 
 public class FeatureShape extends StructureShape {
 
-	private java.awt.geom.Area currentOval;
+	private Area currentOval;
 
-	public FeatureShape (cbit.vcell.model.Feature feature, cbit.vcell.model.Model model, GraphModel graphModel) {
+	public FeatureShape (Feature feature, Model model, GraphModel graphModel) {
 		super(feature, model, graphModel);
 	}
 
@@ -28,83 +30,34 @@ public class FeatureShape extends StructureShape {
 		return new Dimension(width,height);
 	}
 
-
-	/**
-	 * This method was created in VisualAge.
-	 * @return java.awt.Point
-	 */
 	@Override
 	public Point getAttachmentLocation(int attachmentType) {
-		return new Point(shapeSize.width/2, labelSize.height*5/4);
+		return new Point(getSpaceManager().getSize().width/2, getLabelSize().height*5/4);
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return cbit.vcell.model.Feature
-	 */
 	public Feature getFeature() {
 		return (Feature)getStructure();
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return int
-	 * @param g java.awt.Graphics
-	 */
 	@Override
-	public Dimension getPreferedSize(java.awt.Graphics2D g) {
-
+	public Dimension getPreferedSize(Graphics2D g) {
 		return getPreferedSize_Testing(g);
-
-		//java.awt.FontMetrics fm = g.getFontMetrics();
-		//labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
-		//labelSize.width = fm.stringWidth(getLabel());
-
-		//labelPos.x = screenSize.width/2 - fm.stringWidth(getLabel())/2;
-		//labelPos.y = 5 + fm.getMaxAscent();
-
-		//if (childShapeList.size()>0){
-		//int totalHeight = labelSize.height;
-		//int maxWidth = labelSize.width;
-		//for (int i=0;i<childShapeList.size();i++){
-		//Shape child = (Shape)childShapeList.elementAt(i);
-		//Dimension childDim = child.getPreferedSize(g);
-		//totalHeight += childDim.height + defaultSpacingY;
-		//maxWidth = Math.max(maxWidth,childDim.width);
-		//}
-		//preferedSize.width = maxWidth + defaultSpacingX*2;
-		//preferedSize.height = totalHeight + defaultSpacingY*2;
-		//}else{
-		//preferedSize.width = labelSize.width + defaultSpacingX*2;
-		//preferedSize.height = labelSize.height + defaultSpacingY*2;
-		//}	
-		//return preferedSize;
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return int
-	 * @param g java.awt.Graphics
-	 */
 	public Dimension getPreferedSize_Testing(Graphics2D g) {
 
 		Font origfont = g.getFont();
 		g.setFont(getLabelFont(g));
 		try{
-			java.awt.FontMetrics fm = g.getFontMetrics();
-			labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
-			labelSize.width = fm.stringWidth(getLabel());
-
-			labelPos.x = shapeSize.width/2 - fm.stringWidth(getLabel())/2;
+			FontMetrics fm = g.getFontMetrics();
+			setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
+			labelPos.x = getSpaceManager().getSize().width/2 - fm.stringWidth(getLabel())/2; 
 			labelPos.y = 5 + fm.getMaxAscent();
 
-			if (childShapeList.size()>0){
+			if (childShapeList.size() > 0){
 				int structCount = 0;
-				int childStructureTotalHeight = labelSize.height;
-				int childStructureMaxWidth = labelSize.width;
+				int childStructureTotalHeight = getLabelSize().height;
+				int childStructureMaxWidth = getLabelSize().width;
 				for (int i=0;i<childShapeList.size();i++){
 					Shape child = childShapeList.get(i);
 					if(child instanceof StructureShape){
@@ -131,28 +84,21 @@ public class FeatureShape extends StructureShape {
 				}
 
 				Dimension box = calculateBox(scsCount,childSCMaxWidth,childSCMaxHeight);
-				if(structCount == 0){
-					preferredSize.width = box.width +defaultSpacingX*2;
-					preferredSize.height = box.height+defaultSpacingY*2;
+				if(structCount == 0) {
+					getSpaceManager().setSizePreferred((box.width + defaultSpacingX*2), (box.height + defaultSpacingY*2));
 				}else{
-					preferredSize.width = childStructureMaxWidth + box.width + defaultSpacingX*2;
-					preferredSize.height = Math.max(childStructureTotalHeight,box.height) + defaultSpacingY*2;
+					getSpaceManager().setSizePreferred((childStructureMaxWidth + box.width + defaultSpacingX*2), (Math.max(childStructureTotalHeight,box.height) + defaultSpacingY*2));
 				}
-			}else{
-				preferredSize.width = labelSize.width + defaultSpacingX*2;
-				preferredSize.height = labelSize.height + defaultSpacingY*2;
+			} else {
+				getSpaceManager().setSizePreferred((getLabelSize().width + defaultSpacingX*2), 
+						(getLabelSize().height + defaultSpacingY*2));
 			}	
-			return preferredSize;
-		}finally{
+			return getSpaceManager().getSizePreferred();
+		} finally {
 			g.setFont(origfont);
 		}
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return int
-	 */
 	@Override
 	public Point getSeparatorDeepCount() {
 		int selfCountX = 1;
@@ -160,10 +106,7 @@ public class FeatureShape extends StructureShape {
 			selfCountX++;
 		}		
 		int selfCountY = 1;
-
-		//
 		// column1 is speciesContextShapes
-		//
 		Point column1 = new Point();
 		int scShapeCount = 0;
 		for (int i=0;i<countChildren();i++){
@@ -174,10 +117,7 @@ public class FeatureShape extends StructureShape {
 		}	
 		column1.x = (scShapeCount>0)?1:0;
 		column1.y = (scShapeCount>0)?scShapeCount/2:0;	
-
-		//
 		// column2 is StructureShapes
-		//
 		Point column2 = new Point();
 		for (int i=0;i<countChildren();i++){
 			Shape child = childShapeList.get(i);
@@ -187,121 +127,44 @@ public class FeatureShape extends StructureShape {
 				column2.y += childCount.y;
 			}	
 		}
-
 		return new Point(selfCountX+column1.x+column2.x,selfCountY+Math.max(column1.y,column2.y));
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return int
-	 * @param g java.awt.Graphics
-	 */
 	@Override
 	public void refreshLayout() throws LayoutException {
-
-
-
-
-		//////
-		////// calculate total height and max width of speciesContext (column1)
-		//////
+		// calculate total height and max width of speciesContext (column1)
 		int scCount = 0;
-		//int scHeight = 0;
-		//int scWidth = 0;
 		for (int i=0;i<childShapeList.size();i++){
 			Shape child = childShapeList.get(i);
 			if (child instanceof SpeciesContextShape){
-				//scHeight += child.screenSize.height;
-				//scWidth = Math.max(scWidth,child.screenSize.width);
 				scCount++;
 			}	
 		}
-
-		//
 		// calculate total height and max width of Membranes (column2)
-		//
 		int memCount = 0;
 		int memHeight = 0;
 		int memWidth = 0;
 		for (int i=0;i<childShapeList.size();i++){
 			Shape child = childShapeList.get(i);
 			if (child instanceof StructureShape){
-				memHeight += child.shapeSize.height;
-				memWidth = Math.max(memWidth,child.shapeSize.width);
+				memHeight += child.getSpaceManager().getSize().height;
+				memWidth = Math.max(memWidth, child.getSpaceManager().getSize().width);
 				memCount++;
 			}	
 		}
-
-		//
 		// position label
-		//
-		int centerX = shapeSize.width/2;
-		int currentY = labelSize.height;
-		labelPos.x = centerX - labelSize.width/2;
+		int centerX = getSpaceManager().getSize().width/2;
+		int currentY = getLabelSize().height;
+		labelPos.x = centerX - getLabelSize().width/2; 
 		labelPos.y = currentY;
-		currentY += labelSize.height;
-
-		////
-		//// find current centerX
-		////
-		//int numColumns=0;
-		//if (memCount>0) numColumns++;
-		//if (scCount>0) numColumns++;
-
-		//int totalSpacingX = screenSize.width - (scWidth+memWidth);
-		//if (totalSpacingX<0){
-		//throw new LayoutException("unable to fit children within container (width)");
-		//}	
-		//int spacingX = totalSpacingX/(numColumns+2);
-		//int extraSpacingX = totalSpacingX%(numColumns+2);
-		//int currentX = 2*spacingX + extraSpacingX;
-
-		//////
-		////// position column1 (speciesContext)
-		//////
-		//int totalSpacingY = (screenSize.height-currentY) - scHeight;
-		//if (totalSpacingY<0){
-		//throw new LayoutException("unable to fit children within container (height)");
-		//}		
-		//int spacingY = totalSpacingY/(scCount+2);
-		//int extraSpacingY = totalSpacingY%(scCount+2);
-		//centerX = currentX + scWidth/2;
-		////
-		//// position children (and label)
-		////
-		//int col1Y = currentY + spacingY + extraSpacingY;
-		//for (int i=0;i<childShapeList.size();i++){
-		//Shape child = (Shape)childShapeList.elementAt(i);
-		//if (child instanceof SpeciesContextShape){
-		//Dimension childDim = child.screenSize;
-		//child.screenPos.x = centerX - child.screenSize.width/2;
-		//child.screenPos.y = col1Y;
-		//col1Y += child.screenSize.height + spacingY;
-		//}	
-		//}
-		//col1Y += spacingY;
-		//if (col1Y != screenSize.height){
-		//throw new RuntimeException("layout for column1 incorrect, currentY="+col1Y+", screenSize.height="+screenSize.height);
-		//}	
-		//if (scCount>0){
-		//currentX += spacingX + scWidth;
-		//}
-
-
-
-		//
-		//
-		//
+		currentY += getLabelSize().height;
 		int totalSpacingY;
 		int spacingY;
 		int extraSpacingY;
-		int currentX = shapeSize.width/2 - memWidth/2;
+		int currentX = getSpaceManager().getSize().width/2 - memWidth/2;
 		int spacingX = defaultSpacingX;
-		//
 		// position column2 (membranes)
-		//
-		totalSpacingY = (shapeSize.height-currentY) - memHeight;
+		totalSpacingY = (getSpaceManager().getSize().height - currentY) - memHeight;
 		if(LayoutException.bActivated) {
 			if (totalSpacingY<0){
 				throw new LayoutException("unable to fit children within container");
@@ -310,47 +173,36 @@ public class FeatureShape extends StructureShape {
 		spacingY = totalSpacingY/(memCount+1);
 		extraSpacingY = totalSpacingY%(memCount+1);
 		centerX = currentX + memWidth/2;
-		//
 		// position children (and label)
-		//
 		int col2Y = currentY + spacingY + extraSpacingY;
 		for (int i=0;i<childShapeList.size();i++){
 			Shape child = childShapeList.get(i);
 			if (child instanceof StructureShape){
-				// Dimension childDim = child.screenSize;
-				child.getSpaceManager().setRelPos(centerX - child.shapeSize.width/2, col2Y);
-				col2Y += child.shapeSize.height + spacingY;
+				child.getSpaceManager().setRelPos(centerX - child.getSpaceManager().getSize().width/2, col2Y);
+				col2Y += child.getSpaceManager().getSize().height + spacingY;
 			}	
 		}
-		if (col2Y != shapeSize.height){
-			throw new RuntimeException("layout for column2 incorrect ("+getLabel()+"), currentY="+currentY+", screenSize.height="+shapeSize.height);
+		if (col2Y != getSpaceManager().getSize().height){
+			throw new RuntimeException("layout for column2 incorrect ("+getLabel()+"), currentY="+currentY+", screenSize.height="+getSpaceManager().getSize().height);
 		}
 		if (memCount>0){
 			currentX += spacingX + memWidth;
 		}	
-		if (currentX != shapeSize.width){
-			//throw new RuntimeException("layout for column widths incorrect ("+getLabel()+"), currentX="+currentX+", screenSize.width="+screenSize.width);
-		}
-
-
 		if(scCount > 0){
-			//
 			//The following code attempts to position SpeciesContextShapes so that their
 			//ovals and labels do not overlap other structures
-			//
 			//Calculate Mask of valid area where SpeciesContextShape may render
-			//
-			currentOval = new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Double(
+			currentOval = new Area(new Ellipse2D.Double(
 					getSpaceManager().getRelX(), getSpaceManager().getRelY(),
-					shapeSize.width,shapeSize.height));
+					getSpaceManager().getSize().width, getSpaceManager().getSize().height));
 			for (int i=0;i<childShapeList.size();i++){
 				Shape child = childShapeList.get(i);
 				if (child instanceof StructureShape){
-					java.awt.geom.Area childArea =
-						new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Double(
+					Area childArea =
+						new Area(new Ellipse2D.Double(
 								child.getSpaceManager().getRelX() + getSpaceManager().getRelX(),
 								child.getSpaceManager().getRelY() + getSpaceManager().getRelY(),
-								child.shapeSize.width,child.shapeSize.height));
+								child.getSpaceManager().getSize().width, child.getSpaceManager().getSize().height));
 					currentOval.subtract(childArea);
 				}	
 			}
@@ -371,9 +223,7 @@ public class FeatureShape extends StructureShape {
 
 			final int XEND = currentOval.getBounds().x + currentOval.getBounds().width;
 			final int YEND = currentOval.getBounds().y + currentOval.getBounds().height;
-			//		java.awt.geom.Rectangle2D featureLabelBounds =
-			//			new java.awt.geom.Rectangle2D.Double(labelPos.x-10,labelPos.y-20,labelSize.width+20,labelSize.height+40);
-			while(true){
+			while(true) {
 				bLayoutFailed = false;
 				int xCount = 0;
 				int boxX = 0;
@@ -381,42 +231,43 @@ public class FeatureShape extends StructureShape {
 				for (int i=0;i<childShapeList.size();i++){
 					if (childShapeList.get(i) instanceof SpeciesContextShape){
 						SpeciesContextShape child = (SpeciesContextShape) childShapeList.get(i);
-						final int XSTEP = child.shapeSize.width + boxSpacingX;
-						final int YSTEP = child.shapeSize.height + boxSpacingY;
-						while(
-								(layoutRetryCount <= MAX_LAYOUT_RETRY//If last try, don't check labels for overlap
-										&&
-										(
-												boxY <= TOPOFFSET// away from structure label
-												||
-												!currentOval.contains(//SCS label not overlap other structures
-														boxX+child.smallLabelPos.x+currentOval.getBounds().getX(),
-														boxY+child.smallLabelPos.y+currentOval.getBounds().getY()-child.smallLabelSize.height,
-														child.smallLabelSize.width,child.smallLabelSize.height)
-										)
-								)
-								||
-								!currentOval.contains(//SCS oval not overlap other structures
-										boxX+currentOval.getBounds().getX(),boxY+currentOval.getBounds().getY(),
-										SpeciesContextShape.DIAMETER,SpeciesContextShape.DIAMETER)
-						){
-
-							if(boxY < YEND){
-								boxY+= YSTEP;
-							}else{
-								boxY = (xCount%2 == 0?TOPOFFSET:TOPOFFSET+SpeciesContextShape.DIAMETER);
-								boxX+= XSTEP;
-								xCount+= 1;
+						final int XSTEP = child.getSpaceManager().getSize().width + boxSpacingX;
+						final int YSTEP = child.getSpaceManager().getSize().height + boxSpacingY;
+						while ((layoutRetryCount <= MAX_LAYOUT_RETRY
+						// If last try, don't check labels for overlap
+								&& (boxY <= TOPOFFSET// away from structure label
+								|| !currentOval.contains(
+										// SCS label not overlap other structures
+										boxX + child.smallLabelPos.x
+											+ currentOval.getBounds().getX(), boxY
+											+ child.smallLabelPos.y
+											+ currentOval.getBounds().getY()
+											- child.smallLabelSize.height,
+										child.smallLabelSize.width,
+										child.smallLabelSize.height)))
+								|| !currentOval.contains(
+										// SCS oval not overlap other structures
+										boxX + currentOval.getBounds().getX(),
+										boxY + currentOval.getBounds().getY(),
+										SpeciesContextShape.DIAMETER,
+										SpeciesContextShape.DIAMETER)) {
+							if (boxY < YEND) {
+								boxY += YSTEP;
+							} else {
+								boxY = (xCount % 2 == 0 ? TOPOFFSET : TOPOFFSET
+										+ SpeciesContextShape.DIAMETER);
+								boxX += XSTEP;
+								xCount += 1;
 							}
-							if(boxX > XEND && boxY > YEND){
+							if (boxX > XEND && boxY > YEND) {
 								bLayoutFailed = true;
 								break;
 							}
 						}
-						if(!bLayoutFailed){
+						if (!bLayoutFailed) {
 							child.getSpaceManager().setRelPos(boxX, boxY);
-							boxY+= YSTEP;
-						}else{
+							boxY += YSTEP;
+						} else {
 							break;
 						}
 					}

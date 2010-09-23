@@ -3,33 +3,28 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
  */
-import cbit.gui.graph.*;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+
+import cbit.gui.graph.ContainerShape;
+import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.LayoutException;
 import cbit.gui.graph.Shape;
-import cbit.vcell.model.*;
-import java.awt.*;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Structure;
+
 
 public class ContainerContainerShape extends ContainerShape {
-
 	Model model = null;
-
-	//
 	// either membrane
-	//
 	ReactionContainerShape insideContainer = null;
 	ReactionContainerShape outsideContainer = null;
 	ReactionContainerShape membraneContainer = null;
-
-	//
 	// or compartment
-	//
 	ReactionContainerShape featureContainer = null;
 
-	/**
-	 * This method was created in VisualAge.
-	 * @param graphModel cbit.vcell.graph.GraphModel
-	 * @param model cbit.vcell.model.Model
-	 * @param featureContainerShape cbit.vcell.graph.ReactionContainerShape
-	 */
 	public ContainerContainerShape(GraphModel graphModel, Model model, 
 			ReactionContainerShape featureReactionContainer) {
 		super(graphModel);
@@ -41,11 +36,6 @@ public class ContainerContainerShape extends ContainerShape {
 
 	}
 
-
-	/**
-	 * ContainerContainerShape constructor comment.
-	 * @param graphModel cbit.vcell.graph.GraphModel
-	 */
 	public ContainerContainerShape(GraphModel graphModel, Model model, 
 			ReactionContainerShape insideReactionContainer, 
 			ReactionContainerShape membraneReactionContainer, 
@@ -82,7 +72,7 @@ public class ContainerContainerShape extends ContainerShape {
 	public Object getModelObject() { return model; }
 
 	@Override
-	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+	public Dimension getPreferedSize(Graphics2D g) {
 		// get size when empty
 		Dimension emptySize = super.getPreferedSize(g);
 		// make larger than empty size so that children fit
@@ -90,9 +80,11 @@ public class ContainerContainerShape extends ContainerShape {
 			Shape shape = childShapeList.get(i);
 			if (shape instanceof ReactionContainerShape){
 				emptySize.width = 
-					Math.max(emptySize.width, shape.getLocation().x + shape.getPreferedSize(g).width);
+					Math.max(emptySize.width, 
+							shape.getSpaceManager().getRelPos().x + shape.getPreferedSize(g).width);
 				emptySize.height = 
-					Math.max(emptySize.height, shape.getLocation().y + shape.getPreferedSize(g).height);
+					Math.max(emptySize.height, 
+							shape.getSpaceManager().getRelPos().y + shape.getPreferedSize(g).height);
 			}
 		}
 		return emptySize;
@@ -108,13 +100,13 @@ public class ContainerContainerShape extends ContainerShape {
 			int currentY = 0;
 			// position outside shape
 			outsideContainer.getSpaceManager().setRelPos(currentX, currentY);
-			currentX += outsideContainer.shapeSize.width;
+			currentX += outsideContainer.getSpaceManager().getSize().width;
 			// position membrane shape
 			membraneContainer.getSpaceManager().setRelPos(currentX, currentY);
-			currentX += membraneContainer.shapeSize.width;
+			currentX += membraneContainer.getSpaceManager().getSize().width;
 			// position inside shape
 			insideContainer.getSpaceManager().setRelPos(currentX, currentY);
-			currentX += insideContainer.shapeSize.width;
+			currentX += insideContainer.getSpaceManager().getSize().width;
 		}
 		// layout the edges
 		for (int i=0;i<childShapeList.size();i++){
@@ -128,9 +120,9 @@ public class ContainerContainerShape extends ContainerShape {
 	@Override
 	public void paintSelf(Graphics2D graphics, int xThis, int yThis) {
 		graphics.setColor(backgroundColor);
-		graphics.fillRect(xThis,yThis, shapeSize.width, shapeSize.height);
+		graphics.fillRect(xThis, yThis, getSpaceManager().getSize().width, getSpaceManager().getSize().height);
 		graphics.setColor(forgroundColor);
-		graphics.drawRect(xThis, yThis, shapeSize.width, shapeSize.height);		
+		graphics.drawRect(xThis, yThis, getSpaceManager().getSize().width, getSpaceManager().getSize().height);		
 	}
 
 	@Override
@@ -152,42 +144,39 @@ public class ContainerContainerShape extends ContainerShape {
 	}
 
 	@Override
-	public void resize(java.awt.Graphics2D g, java.awt.Dimension newSize) throws Exception {
-		shapeSize = newSize;
+	public void resize(Graphics2D g, Dimension newSize) throws Exception {
+		getSpaceManager().setSize(newSize);
 		if (featureContainer!=null){
 			// allocate space according to feature layout
-			featureContainer.resize(g,  new java.awt.Dimension(shapeSize.width, shapeSize.height));
+			featureContainer.resize(g,  new Dimension(getSpaceManager().getSize()));
 		} else {
 			// allocate space according to membrane layout
 			int insideWidth = insideContainer.getPreferedSize(g).width;
 			int membraneWidth = membraneContainer.getPreferedSize(g).width;
 			int outsideWidth = outsideContainer.getPreferedSize(g).width;
-			int remainingWidth = shapeSize.width - insideWidth - membraneWidth - outsideWidth;
-			//		if (remainingWidth>0){
+			int remainingWidth = getSpaceManager().getSize().width - insideWidth - membraneWidth - outsideWidth;
 			insideWidth += remainingWidth*1/6;
 			membraneWidth += remainingWidth*4/6;
 			outsideWidth += remainingWidth*1/6;
-			//		}
-			insideContainer.resize(g,   new java.awt.Dimension(insideWidth, shapeSize.height));
-			membraneContainer.resize(g, new java.awt.Dimension(membraneWidth, shapeSize.height));
-			outsideContainer.resize(g,  new java.awt.Dimension(outsideWidth, shapeSize.height));
+			insideContainer.resize(g,   new Dimension(insideWidth, getSpaceManager().getSize().height));
+			membraneContainer.resize(g, new Dimension(membraneWidth, getSpaceManager().getSize().height));
+			outsideContainer.resize(g,  new Dimension(outsideWidth, getSpaceManager().getSize().height));
 		}
 		refreshLayout();
 	}
 
 	@Override
 	public void setRandomLayout(boolean isRandom) {
-		//	System.out.println("ReactionContainerShape.setRandomLayout("+isRandom+")");
-		if (insideContainer!=null){
+		if (insideContainer != null){
 			insideContainer.setRandomLayout(isRandom);
 		}
-		if (membraneContainer!=null){
+		if (membraneContainer != null){
 			membraneContainer.setRandomLayout(isRandom);
 		}
-		if (outsideContainer!=null){
+		if (outsideContainer != null){
 			outsideContainer.setRandomLayout(isRandom);
 		}
-		if (featureContainer!=null){
+		if (featureContainer != null){
 			featureContainer.setRandomLayout(isRandom);
 		}
 	}

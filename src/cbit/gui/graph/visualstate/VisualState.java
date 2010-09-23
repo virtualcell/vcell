@@ -4,7 +4,11 @@ package cbit.gui.graph.visualstate;
  * August 2010
  */
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public interface VisualState {
 
@@ -15,8 +19,18 @@ public interface VisualState {
 	}
 	
 	// PaintLayer determines the order in which a parent draws its children
-	public static enum PaintLayer { COMPARTMENT, EDGE, NODE }
-	
+	public static enum PaintLayer { COMPARTMENT, EDGE, NODE;
+
+	public static final List<PaintLayer> valuesReverse = createValuesReverse();
+
+	protected static List<PaintLayer> createValuesReverse() {
+		ArrayList<PaintLayer> valuesReverseNew = new ArrayList<PaintLayer>(Arrays.asList(values()));
+		Collections.reverse(valuesReverseNew);
+		return valuesReverseNew;
+	}
+
+	}
+
 	public Owner getOwner();
 	public PaintLayer getPaintLayer();
 	

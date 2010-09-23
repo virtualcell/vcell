@@ -103,7 +103,7 @@ public class ShapeGroupUtil {
 		int posCount = 0;
 		for (Shape memberShape : memberShapes) {
 			if (!willBeSkippedWhenGrouping(memberShape)) {
-				Point memberAbsPos = memberShape.getAbsLocation();
+				Point memberAbsPos = memberShape.getSpaceManager().getAbsLoc();
 				xSum += memberAbsPos.x;
 				ySum += memberAbsPos.y;
 				++posCount;
@@ -119,9 +119,9 @@ public class ShapeGroupUtil {
 			Collection<Shape> memberShapes) {
 		for (Shape memberShape : memberShapes) {
 			if (!willBeSkippedWhenGrouping(memberShape)) {
-				Point absLocation = memberShape.getAbsLocation();
+				Point absLocation = memberShape.getSpaceManager().getAbsLoc();
 				groupShape.addChildShape(memberShape);
-				memberShape.setAbsLocation(absLocation);
+				memberShape.getSpaceManager().setAbsLoc(absLocation);
 			}
 		}
 	}
@@ -154,7 +154,7 @@ public class ShapeGroupUtil {
 			groupParentShape = graphModel.getTopShape();
 		}
 		groupParentShape.addChildShape(groupShape);
-		groupShape.setAbsLocation(location);
+		groupShape.getSpaceManager().setAbsLoc(location);
 		moveMembersToGroup(groupShape, memberShapes);
 		addEdgeBundleShapes(graphModel, groupShape, groupParentShape);
 		graphModel.addShape(groupShape);

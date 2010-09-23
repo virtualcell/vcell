@@ -5,6 +5,7 @@ package cbit.gui.graph;
  * All rights reserved.
  �*/
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -34,7 +35,6 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	protected Point lastCurve_Start = null;
 	protected Point lastCurve_End = null;
 	protected CubicCurve2D.Double lastCurve = null;
-	// protected static final float DASH_ARRAY[] = new float[] { 5,3 };
 	protected static final BasicStroke DASHED_STROKE = new BasicStroke(1,
 			BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, new float[] { 5,	3 } , 10f);
 
@@ -53,8 +53,8 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 		this.endShape = null;
 		this.start = start;
 		this.end = end;
-		defaultFG = java.awt.Color.black;
-		defaultFGselect = java.awt.Color.red;
+		defaultFG = Color.black;
+		defaultFGselect = Color.red;
 	}
 
 	@Override
@@ -86,11 +86,9 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 		double deltaX = back.getX() - front.getX();
 		double deltaY = back.getY() - front.getY();
 		double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-		//
 		// take straight-line approximation for direction (given right.p1 and
 		// right.p2 as end points)
 		// use 10 and 30 "pixels" away for the arrowhead.
-		//
 		double X1 = front.getX();
 		double Y1 = front.getY();
 		double X2 = front.getX() + 1.5 * deltaX;
@@ -99,7 +97,6 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 		double Y3 = Y2 - 0.5 * width * deltaX / distance;
 		double X4 = X2 - 0.5 * width * deltaY / distance;
 		double Y4 = Y2 + 0.5 * width * deltaX / distance;
-
 		GeneralPath arrow = new GeneralPath();
 		arrow.moveTo((float) X1, (float) Y1);
 		arrow.lineTo((float) X3, (float) Y3);
@@ -110,7 +107,6 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	}
 
 	protected CubicCurve2D.Double getCurve() {
-
 		if (lastCurve != null && lastCurve_Start != null
 				&& lastCurve_Start.equals(start) && lastCurve_End != null
 				&& lastCurve_End.equals(end)) {
@@ -125,11 +121,9 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 					* start.getX() + (1.0 - FRACT_WEIGHT) * end.getX(),
 					FRACT_WEIGHT * start.getY() + (1.0 - FRACT_WEIGHT)
 							* end.getY());
-
 			lastCurve = new CubicCurve2D.Double(start.getX(), start.getY(),
 					p1ctrl.getX(), p1ctrl.getY(), p2ctrl.getX(), p2ctrl.getY(),
 					end.getX(), end.getY());
-
 			lastCurve_Start = new Point(start);
 			lastCurve_End = new Point(end);
 		}
@@ -165,11 +159,9 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
 		FontMetrics fm = g.getFontMetrics();
-		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
-		labelSize.width = fm.stringWidth(getLabel());
-		preferredSize.height = labelSize.height + 10;
-		preferredSize.width = labelSize.width + 10;
-		return preferredSize;
+		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
+		getSpaceManager().setSizePreferred((getLabelSize().height + 10), (getLabelSize().width + 10));
+		return getSpaceManager().getSizePreferred();
 	}
 
 	protected int getStartAttachment() {
@@ -224,7 +216,7 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	@Override
 	public final boolean isInside(Point p) {
 		CubicCurve2D curve = getCurve();
-		Point absLocation = this.getAbsLocation();
+		Point absLocation = this.spaceManager.getAbsLoc();
 		double xAbs = p.getX() + absLocation.x - getSpaceManager().getRelX();
 		double yAbs = p.getY() + absLocation.y - getSpaceManager().getRelY();
 		return curve.intersects(xAbs - 2, yAbs - 2, 4, 4);
@@ -234,30 +226,28 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	public void refreshLayout() {
 		if (startShape != null) {
 			start = startShape.getAttachmentLocation(getStartAttachment());
-			start.x += startShape.getAbsLocation().x;
-			start.y += startShape.getAbsLocation().y;
+			start.x += startShape.getSpaceManager().getAbsLoc().x;
+			start.y += startShape.getSpaceManager().getAbsLoc().y;
 		}
 		if (endShape != null) {
 			end = endShape.getAttachmentLocation(getEndAttachment());
-			end.x += endShape.getAbsLocation().x;
-			end.y += endShape.getAbsLocation().y;
+			end.x += endShape.getSpaceManager().getAbsLoc().x;
+			end.y += endShape.getSpaceManager().getAbsLoc().y;
 		}
 		getSpaceManager().setRelPos(Math.min(start.x, end.x), Math.min(start.y, end.y));
-		shapeSize.width = Math.abs(start.x - end.x);
-		shapeSize.height = Math.abs(start.y - end.y);
+		getSpaceManager().setSize(Math.abs(start.x - end.x), Math.abs(start.y - end.y));
 		// this is like a row/column layout (1 column)
-		int centerX = shapeSize.width / 2;
-		int centerY = shapeSize.height / 2;
+		int centerX = getSpaceManager().getSize().width / 2;
+		int centerY = getSpaceManager().getSize().height / 2;
 		// position label
-		labelPos.x = centerX - labelSize.width / 2;
-		labelPos.y = centerY - labelSize.height / 2;
+		labelPos.x = centerX - getLabelSize().width / 2; 
+		labelPos.y = centerY - getLabelSize().height / 2;
 	}
 
 	@Override
 	public void paintSelf(Graphics2D g2D, int xPos, int yPos) {
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
-
 		paint0(g2D, xPos, yPos);
 	}
 

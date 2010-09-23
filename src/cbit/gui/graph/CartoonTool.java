@@ -132,8 +132,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		return buttonGroup;
 	}
 
-	protected static final Container getDialogOwner(
-			GraphPane graphPaneSeekingOwner) {
+	protected static final Container getDialogOwner(GraphPane graphPaneSeekingOwner) {
 		if (graphPaneSeekingOwner == null) {
 			return null;
 		}
@@ -149,7 +148,6 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		if (dialogOwner != null) {
 			return ((JFrame) dialogOwner).getContentPane();
 		}
-
 		return dialogOwner;
 	}
 

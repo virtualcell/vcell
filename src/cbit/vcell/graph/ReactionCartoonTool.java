@@ -277,14 +277,14 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			} else if (shape instanceof SimpleReactionShape) {
 				showSimpleReactionPropertiesDialog((SimpleReactionShape) shape);
 			} else if (shape instanceof ReactantShape) {
-				Point locationOnScreen = shape.getAbsLocation();
+				Point locationOnScreen = shape.getSpaceManager().getAbsLoc();
 				Point graphPaneLocation = getGraphPane().getLocationOnScreen();
 				locationOnScreen.translate(graphPaneLocation.x,
 						graphPaneLocation.y);
 				showReactantPropertiesDialog((ReactantShape) shape,
 						locationOnScreen);
 			} else if (shape instanceof ProductShape) {
-				Point locationOnScreen = shape.getAbsLocation();
+				Point locationOnScreen = shape.getSpaceManager().getAbsLoc();
 				Point graphPaneLocation = getGraphPane().getLocationOnScreen();
 				locationOnScreen.translate(graphPaneLocation.x,
 						graphPaneLocation.y);
@@ -473,29 +473,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					Shape selectedShape = getReactionCartoon().getSelectedShape();
 					if (selectedShape != null) {
 						menuAction(selectedShape, CartoonToolMiscActions.Properties.MENU_ACTION);
-						// if(selectedShape instanceof SpeciesContextShape){
-						// showEditSpeciesDialog(((SpeciesContextShape)selectedShape).getSpeciesContext(),worldPoint);
-						// }else if(selectedShape instanceof
-						// SimpleReactionShape){
-						// showSimpleReactionPropertiesDialog((SimpleReactionShape)selectedShape,worldPoint);
-						// }else if(selectedShape instanceof FluxReactionShape){
-						// showFluxReactionPropertiesDialog((FluxReactionShape)selectedShape,worldPoint);
-						// }else if(selectedShape instanceof ProductShape){
-						// showProductPropertiesDialog((ProductShape)selectedShape,worldPoint);
-						// }else if(selectedShape instanceof ReactantShape){
-						// showReactantPropertiesDialog((ReactantShape)selectedShape,worldPoint);
-						// }
-						// selectedShape.sho/wPropertiesDialog(desktop,
-						// selectedShape.getLocationOnScreen());
 					}
 				}
-				// else{
-				// boolean bShift = (event.getModifiers() &
-				// InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
-				// boolean bCntrl = (event.getModifiers() &
-				// InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
-				// selectEventFromWorld(worldPoint,bShift,bCntrl);
-				// }
 				break;
 			}
 			case STEP: {
@@ -512,10 +491,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								reactionStep);
 						ReactionStepShape rsShape = (ReactionStepShape) 
 							getReactionCartoon().getShapeFromModelObject(reactionStep);
-						Point parentLocation = rsShape.getParent().getAbsLocation();
-						rsShape.setLocation(new Point(worldPoint.x
-								- parentLocation.x, worldPoint.y
-								- parentLocation.y));
+						Point parentLocation = rsShape.getParent().getSpaceManager().getAbsLoc();
+						rsShape.getSpaceManager().setRelPos(worldPoint.x - parentLocation.x, 
+						worldPoint.y - parentLocation.y);
 						saveDiagram();
 						// setMode(SELECT_MODE);
 					} else {
@@ -540,10 +518,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								fluxReaction);
 						ReactionStepShape frShape = (ReactionStepShape) 
 							getReactionCartoon().getShapeFromModelObject(fluxReaction);
-						Point parentLocation = frShape.getParent().getAbsLocation();
-						frShape.setLocation(new Point(worldPoint.x
-								- parentLocation.x, worldPoint.y
-								- parentLocation.y));
+						Point parentLocation = frShape.getParent().getSpaceManager().getAbsLoc();
+						frShape.getSpaceManager().setRelPos(worldPoint.x - parentLocation.x, 
+						worldPoint.y - parentLocation.y);
 						saveDiagram();
 						// setMode(SELECT_MODE);
 						Shape shape = getReactionCartoon()
@@ -560,7 +537,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				Shape pickedShape = getReactionCartoon().pickWorld(worldPoint);
 
 				if (pickedShape instanceof ReactionContainerShape) {
-					Point parentLocation = pickedShape.getAbsLocation();
+					Point parentLocation = pickedShape.getSpaceManager().getAbsLoc();
 					Point scShapeLocation = new Point(worldPoint.x
 							- parentLocation.x, worldPoint.y - parentLocation.y);
 					showCreateSpeciesContextDialog(getGraphPane(),
@@ -583,7 +560,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 
 	@Override
 	public void mouseDragged(MouseEvent event) {
-
 		if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
 			return;
 		}
@@ -595,45 +571,43 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			case SELECT: {
 				Point worldPoint = screenToWorld(event.getX(), event.getY());
 				if (bMoving) {
-					Shape selectedShapes[] = getReactionCartoon()
-							.getAllSelectedShapes();
+					List<Shape> selectedShapes = getReactionCartoon().getSelectedShapes();
 					// constrain to stay within the corresponding parent for the
 					// "movingShape" as well as all other selected (hence
 					// moving) shapes.
-					Point movingParentLoc = movingShape.getParent().getAbsLocation();
-					Dimension movingParentSize = movingShape.getParent().getSize();
+					Point movingParentLoc = movingShape.getParent().getSpaceManager().getAbsLoc();
+					Dimension movingParentSize = movingShape.getParent().getSpaceManager().getSize();
 					worldPoint.x = Math.max(movingOffsetWorld.x
 							+ movingParentLoc.x, Math.min(movingOffsetWorld.x
 							+ movingParentLoc.x + movingParentSize.width
-							- movingShape.getSize().width, worldPoint.x));
+							- movingShape.getSpaceManager().getSize().width, worldPoint.x));
 					worldPoint.y = Math.max(movingOffsetWorld.y
 							+ movingParentLoc.y, Math.min(movingOffsetWorld.x
 							+ movingParentLoc.y + movingParentSize.height
-							- movingShape.getSize().height, worldPoint.y));
-					for (int i = 0; selectedShapes != null
-							&& i < selectedShapes.length; i++) {
-						if (selectedShapes[i] != movingShape) {
-							Point selectedParentLoc = selectedShapes[i].getParent().getAbsLocation();
-							Dimension selectedParentSize = selectedShapes[i].getParent().getSize();
+							- movingShape.getSpaceManager().getSize().height, worldPoint.y));
+					for (Shape shape : selectedShapes) {
+						if (shape != movingShape) {
+							Point selectedParentLoc = shape.getParent().getSpaceManager().getAbsLoc();
+							Dimension selectedParentSize = shape.getParent().getSpaceManager().getSize();
 							int selectedMovingOffsetX = movingOffsetWorld.x
-									+ (movingShape.getAbsLocation().x - selectedShapes[i].getAbsLocation().x);
+									+ (movingShape.getSpaceManager().getAbsLoc().x - 
+											shape.getSpaceManager().getAbsLoc().x);
 							int selectedMovingOffsetY = movingOffsetWorld.y
-									+ (movingShape.getAbsLocation().y - selectedShapes[i].getAbsLocation().y);
+									+ (movingShape.getSpaceManager().getAbsLoc().y - 
+											shape.getSpaceManager().getAbsLoc().y);
 							worldPoint.x = Math.max(selectedMovingOffsetX
 									+ selectedParentLoc.x, Math.min(
 											selectedMovingOffsetX
 													+ selectedParentLoc.x
 													+ selectedParentSize.width
-													- selectedShapes[i]
-															.getSize().width,
+													- shape.getSpaceManager().getSize().width,
 											worldPoint.x));
 							worldPoint.y = Math.max(selectedMovingOffsetY
 									+ selectedParentLoc.y, Math.min(
 											selectedMovingOffsetY
 													+ selectedParentLoc.y
 													+ selectedParentSize.height
-													- selectedShapes[i]
-															.getSize().height,
+													- shape.getSpaceManager().getSize().height,
 											worldPoint.y));
 						}
 					}
@@ -645,18 +619,13 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					int deltaX = newMovingPoint.x - movingPointWorld.x;
 					int deltaY = newMovingPoint.y - movingPointWorld.y;
 					movingPointWorld = newMovingPoint;
-					movingShape.setLocation(new Point(movingPointWorld.x
-							- movingParentLoc.x, movingPointWorld.y
-							- movingParentLoc.y));
+					movingShape.getSpaceManager().setRelPos(movingPointWorld.x - movingParentLoc.x, 
+					movingPointWorld.y - movingParentLoc.y);
 					// for any other "movable" shapes that are selected, move
 					// them also
-					for (int i = 0; selectedShapes != null
-							&& i < selectedShapes.length; i++) {
-						if (selectedShapes[i] != movingShape) {
-							selectedShapes[i]
-									.setLocation(new Point(selectedShapes[i].getLocation().x
-											+ deltaX, selectedShapes[i].getLocation().y
-											+ deltaY));
+					for (Shape shape : selectedShapes) {
+						if (shape != movingShape) {
+							shape.getSpaceManager().move(deltaX, deltaY);
 						}
 					}
 					getGraphPane().invalidate();
@@ -664,8 +633,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					getGraphPane().repaint();
 				} else if (bRectStretch) {
 					// constain to stay within parent
-					Point parentLoc = rectShape.getParent().getAbsLocation();
-					Dimension parentSize = rectShape.getParent().getSize();
+					Point parentLoc = rectShape.getParent().getSpaceManager().getAbsLoc();
+					Dimension parentSize = rectShape.getParent().getSpaceManager().getSize();
 					worldPoint.x = Math.max(1, Math.min(parentSize.width - 1,
 							worldPoint.x - parentLoc.x))
 							+ parentLoc.x;
@@ -693,7 +662,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					if (!bCntrl && !bShift && (ShapeUtil.isMovable(shape))) {
 						bMoving = true;
 						movingShape = shape;
-						movingPointWorld = shape.getAbsLocation();
+						movingPointWorld = shape.getSpaceManager().getAbsLoc();
 						movingOffsetWorld = new Point(worldPoint.x
 								- movingPointWorld.x, worldPoint.y
 								- movingPointWorld.y);
@@ -851,8 +820,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					getGraphPane().repaint();
 					saveDiagram();
 				} else if (bRectStretch) {
-					Point absLoc = rectShape.getLocation();
-					Dimension size = rectShape.getSize();
+					Point absLoc = rectShape.getSpaceManager().getRelPos();
+					Dimension size = rectShape.getSpaceManager().getSize();
 					// remove temporary rectangle
 					getReactionCartoon().removeShape(rectShape);
 					rectShape = null;
@@ -1019,33 +988,33 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			boolean bCntrl) {
 		if (!bShift && !bCntrl) {
 			getReactionCartoon().clearSelection();
-			Shape shapes[] = getReactionCartoon().pickWorld(rect);
-			for (int i = 0; i < shapes.length; i++) {
-				if (ShapeUtil.isMovable(shapes[i])) {
-					getReactionCartoon().select(shapes[i]);
+			List<Shape> shapes = getReactionCartoon().pickWorld(rect);
+			for (Shape shape : shapes) {
+				if (ShapeUtil.isMovable(shape)) {
+					getReactionCartoon().select(shape);
 				}
 			}
 		} else if (bShift) {
 			if (getReactionCartoon().getSelectedShape() instanceof ReactionContainerShape) {
 				getReactionCartoon().clearSelection();
 			}
-			Shape shapes[] = getReactionCartoon().pickWorld(rect);
-			for (int i = 0; i < shapes.length; i++) {
-				if (ShapeUtil.isMovable(shapes[i])) {
-					getReactionCartoon().select(shapes[i]);
+			List<Shape> shapes = getReactionCartoon().pickWorld(rect);
+			for (Shape shape : shapes) {
+				if (ShapeUtil.isMovable(shape)) {
+					getReactionCartoon().select(shape);
 				}
 			}
 		} else if (bCntrl) {
 			if (getReactionCartoon().getSelectedShape() instanceof ReactionContainerShape) {
 				getReactionCartoon().clearSelection();
 			}
-			Shape shapes[] = getReactionCartoon().pickWorld(rect);
-			for (int i = 0; i < shapes.length; i++) {
-				if (ShapeUtil.isMovable(shapes[i])) {
-					if (shapes[i].isSelected()) {
-						getReactionCartoon().deselect(shapes[i]);
+			List<Shape> shapes = getReactionCartoon().pickWorld(rect);
+			for (Shape shape : shapes) {
+				if (ShapeUtil.isMovable(shape)) {
+					if (shape.isSelected()) {
+						getReactionCartoon().deselect(shape);
 					} else {
-						getReactionCartoon().select(shapes[i]);
+						getReactionCartoon().select(shape);
 					}
 				}
 			}

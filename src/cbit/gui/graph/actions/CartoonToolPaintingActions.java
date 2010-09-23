@@ -42,8 +42,8 @@ public class CartoonToolPaintingActions {
 
 		public void showShapeTree(Shape shape, int depth) {
 			String indent = StringUtil.multiply("  ", depth);
-			System.out.println(indent + shape + " rel.pos.:" + shape.getLocation()
-					+ " abs.pos.:" + shape.getAbsLocation());
+			System.out.println(indent + shape + " rel.pos.:" + shape.getSpaceManager().getRelPos()
+					+ " abs.pos.:" + shape.getSpaceManager().getAbsLoc());
 			if (depth < maximumShapeTreeDepth) {
 				for (Shape child : shape.getChildren()) {
 					showShapeTree(child, depth + 1);
