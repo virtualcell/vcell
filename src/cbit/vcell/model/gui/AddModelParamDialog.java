@@ -331,7 +331,7 @@ private javax.swing.JPanel getJInternalFrameEnhancedContentPane() {
 			gbc.gridx = 0; gbc.gridy = 3;
 			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 			gbc.anchor = GridBagConstraints.NORTHEAST;
-			getJInternalFrameEnhancedContentPane().add(new JLabel("Annotatation"), gbc);
+			getJInternalFrameEnhancedContentPane().add(new JLabel("Annotation"), gbc);
 
 			annotationTextField = new javax.swing.JTextArea("", 4, 30);
 			annotationTextField.setLineWrap(true);

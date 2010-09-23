@@ -657,7 +657,7 @@ private javax.swing.JPanel getJDialogContentPane() {
 			gbc.gridx = 0; gbc.gridy = 2;
 			gbc.insets = new Insets(4, 4, 5, 5);
 			gbc.anchor = GridBagConstraints.NORTHEAST;
-			getJDialogContentPane().add(new JLabel("Annotatation"), gbc);
+			getJDialogContentPane().add(new JLabel("Annotation"), gbc);
 
 			annotationTextArea = new javax.swing.JTextArea("", 2, 30);
 			annotationTextArea.setLineWrap(true);
