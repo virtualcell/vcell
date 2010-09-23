@@ -332,10 +332,10 @@ private static class RecodeDataForDomainInfo{
 	public boolean isRecoded() {
 		return isRecoded;
 	}
-
 }
 private double[] originalData = null;
 private RecodeDataForDomainInfo recodeDataForDomainInfo = null;
+private boolean bDataInfoProviderNull = true;
 
 private void recodeDataForDomain() {
 	//This method recodes data (out of domain data is set to 'out of range' value that is displayed differently)
@@ -365,7 +365,9 @@ private void recodeDataForDomain0() {
 	VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();
 	boolean bRecoding = getDataInfoProvider() != null && varDomain != null;	
 	
-	if (getpdeDataContext1().getDataValues() != originalData || recodeDataForDomainInfo == null) {
+	if (getpdeDataContext1().getDataValues() != originalData || recodeDataForDomainInfo == null ||
+			((getDataInfoProvider() == null) != bDataInfoProviderNull)) {
+		bDataInfoProviderNull = (getDataInfoProvider() == null);
 		originalData = getpdeDataContext1().getDataValues();
 		tempRecodedData = originalData;
 		
@@ -417,6 +419,9 @@ private void recodeDataForDomain0() {
 			}
 		}
 		dataRange = new Range(min,max);
+	}else{
+		dataRange = recodeDataForDomainInfo.getRecodedDataRange();
+		tempRecodedData = recodeDataForDomainInfo.getRecodedDataForDomain();
 	}
 	if (bRecoding) {
 		recodeDataForDomainInfo = new RecodeDataForDomainInfo(true, tempRecodedData, dataRange);
