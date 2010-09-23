@@ -201,7 +201,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 
 		} else if (menuAction.equals(CartoonToolMiscActions.AddGlobalParameter.MENU_ACTION)) {
 			if (shape instanceof FeatureShape || shape instanceof MembraneShape) {
-				Point locationOnScreen = shape.getAbsLocation();
+				Point locationOnScreen = shape.getSpaceManager().getAbsLoc();
 				Point graphPaneLocation = getGraphPane().getLocationOnScreen();
 				locationOnScreen.translate(graphPaneLocation.x,
 						graphPaneLocation.y);

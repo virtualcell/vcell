@@ -66,7 +66,7 @@ public class GraphEmbeddingManager {
 			}
 			// initialize node location to current absolute position
 			if (newNode != null) {
-				newNode.XY(shape.getAbsLocation().x, shape.getAbsLocation().y);
+				newNode.XY(shape.spaceManager.getAbsLoc().x, shape.spaceManager.getAbsLoc().y);
 				nodeShapeMap.put(newNode.label(), shape);
 			}
 		}
@@ -148,13 +148,12 @@ public class GraphEmbeddingManager {
 		for (int i = 0; i < nodeList.size(); i++) {
 			Node node = nodeList.get(i);
 			Shape shape = nodeShapeMap.get(node.label());
-			Point parentLoc = shape.getParent().getAbsLocation();
-			shape.setLocation(new Point(
-							(int) (scaleX * (node.x() - lowX)) + offsetX
-									+ parentLoc.x,
-							(int) ((scaleY * (node.y() - lowY)) + offsetY + parentLoc.y)));
+			Point parentLoc = shape.getParent().spaceManager.getAbsLoc();
+			shape.getSpaceManager().setRelPos(
+			(int) (scaleX * (node.x() - lowX)) + offsetX + parentLoc.x,
+			(int) ((scaleY * (node.y() - lowY)) + offsetY + parentLoc.y));
 			System.out.println("Shape " + shape.getLabel() + " @ "
-					+ shape.getAbsLocation());
+					+ shape.spaceManager.getAbsLoc());
 		}
 		graphView.repaint();
 	}
@@ -249,7 +248,7 @@ public class GraphEmbeddingManager {
 				place = new Point();
 				place.setLocation(glgPoint.x * ratio + 30, glgPoint.y * ratio
 						+ 30);
-				shape.setLocation(place);
+				shape.getSpaceManager().setRelPos(place);
 			}
 		}
 		Dimension graphSize = new Dimension((int) (1600 * ratio) + 50,

@@ -627,7 +627,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			SpeciesContext speciesContext = model.getSpeciesContext(createSpeciesContextDialog.getSpeciesContext().getName());
 			if (speciesContext!=null){
 				Shape scShape = getGraphModel().getShapeFromModelObject(speciesContext);
-				scShape.setLocation(locationForSpeciesContextShape);
+				scShape.getSpaceManager().setRelPos(locationForSpeciesContextShape);
 			}
 		}
 	}

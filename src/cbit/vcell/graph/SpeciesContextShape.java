@@ -3,14 +3,22 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 �*/
-import cbit.gui.graph.*;
+import cbit.gui.graph.ElipseShape;
+import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.GraphModelPreferences;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.MutableVisualState;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
-import cbit.vcell.model.*;
-import java.awt.*;
-import java.util.*;
+import cbit.vcell.model.InUseException;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.SpeciesContext;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.util.Map;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 
@@ -46,88 +54,43 @@ public class SpeciesContextShape extends ElipseShape {
 	protected void delete() throws Exception, InUseException {
 		Model model = ((ModelCartoon)graphModel).getModel();
 		model.removeSpeciesContext(getSpeciesContext());
-		//	graphModel.update(null,null);
 	}
 
-
-	/**
-	 * This method was created in VisualAge.
-	 * @return java.lang.Object
-	 */
 	@Override
 	public Object getModelObject() {
 		return speciesContext;
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return int
-	 * @param g java.awt.Graphics
-	 */
 	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
-		java.awt.FontMetrics fm = g.getFontMetrics();
-		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
-		labelSize.width = fm.stringWidth(getLabel());
-		smallLabelSize.width = (smallLabel != null?fm.stringWidth(smallLabel):labelSize.width);
-		smallLabelSize.height = labelSize.height;
-		//	preferedSize.height = radius*2 + labelSize.height;
-		//	preferedSize.width = Math.max(radius*2,labelSize.width);
-		preferredSize.height = DIAMETER;
-		preferredSize.width = DIAMETER;
-		return preferredSize;
+		FontMetrics fm = g.getFontMetrics();
+		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
+		smallLabelSize.width = (smallLabel != null ? fm.stringWidth(smallLabel) : getLabelSize().width);
+		smallLabelSize.height = getLabelSize().height;
+		getSpaceManager().setSizePreferred(DIAMETER, DIAMETER);
+		return getSpaceManager().getSizePreferred();
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return int
-	 */
 	@Override
 	public Point getSeparatorDeepCount() {	
 		return new Point(0,0);
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return cbit.vcell.model.Species
-	 */
 	public SpeciesContext getSpeciesContext() {
 		return speciesContext;
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return int
-	 * @param g java.awt.Graphics
-	 */
 	@Override
 	public void refreshLayout() {
-
-		//	if (screenSize.width<labelSize.width ||
-		//		 screenSize.height<labelSize.height){
-		//		 throw new Exception("screen size smaller than label");
-		//	} 
-		//
-		// this is like a row/column layout  (1 column)
-		//
-		int centerX = shapeSize.width/2;
-
-		//
-		// position label
-		//
-		labelPos.x = centerX - labelSize.width/2;
+		int centerX = getSpaceManager().getSize().width/2;
+		labelPos.x = centerX - getLabelSize().width/2; 
 		labelPos.y = 0;
 		smallLabelPos.x = centerX - smallLabelSize.width/2;
-		smallLabelPos.y = labelPos.y;
+		smallLabelPos.y = getLabelPos().y;
 	}
 
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
-
 		boolean isBound = false;
 		SpeciesContext sc = (SpeciesContext)getModelObject();
 		boolean bHasPCLink = false;
@@ -147,64 +110,29 @@ public class SpeciesContextShape extends ElipseShape {
 		if(sc.getSpecies().getDBSpecies() != null || bHasPCLink){
 			isBound = true;
 		}
-		//
 		// draw elipse
-		//
 		g.setColor((!isBound && !isSelected()?darkerBackground:backgroundColor));
-		g.fillOval(absPosX+1,absPosY+1+labelPos.y,SMALL_DIAMETER,SMALL_DIAMETER);
+		g.fillOval(absPosX + 1, absPosY + 1 + getLabelPos().y, SMALL_DIAMETER, SMALL_DIAMETER);
 		g.setColor(forgroundColor);
-		g.drawOval(absPosX,absPosY+labelPos.y,DIAMETER,DIAMETER);
-
-		//g.drawRect(absPosX,absPosY,DIAMETER,DIAMETER);
-		//
+		g.drawOval(absPosX, absPosY + getLabelPos().y, DIAMETER, DIAMETER);
 		// draw label
-		//
-		//java.awt.FontMetrics fm = g.getFontMetrics();
-		//int textX = labelPos.x + absPosX;
-		//int textY = labelPos.y + absPosY;
 		g.setColor(forgroundColor);
 		if (getLabel()!=null && getLabel().length()>0){
 			if(isSelected()){//clear background and outline to make selected label stand out
 				drawRaisedOutline(
-						labelPos.x + absPosX - 5,labelPos.y + absPosY-labelSize.height+3,labelSize.width + 10,labelSize.height,
-						g,Color.white,forgroundColor,Color.gray);
+						getLabelPos().x + absPosX - 5, 
+						getLabelPos().y + absPosY - getLabelSize().height + 3,
+						getLabelSize().width + 10, getLabelSize().height, g, 
+						Color.white, forgroundColor, Color.gray);
 			}
 			g.setColor(forgroundColor);
 			g.drawString(
-					(isSelected() || smallLabel == null?getLabel():smallLabel),
-					(isSelected() || smallLabel == null?labelPos.x:smallLabelPos.x) + absPosX,labelPos.y + absPosY);
+					(isSelected() || smallLabel == null ? getLabel():smallLabel),
+					(isSelected() || smallLabel == null ? getLabelPos().x : smallLabelPos.x) + 
+					absPosX, getLabelPos().y + absPosY);
 		}
-
-		//g.drawRect(smallLabelPos.x+absPosX,smallLabelPos.y+absPosY-smallLabelSize.height,smallLabelSize.width,smallLabelSize.height);
-
-		//SpeciesContext sc = (SpeciesContext)getModelObject();
-		//if(sc.getSpecies().getDBSpecies() != null && sc.getSpecies().getDBSpecies().getFormalSpeciesType().equals(cbit.vcell.dictionary.FormalSpeciesType.enzyme)){
-		////
-		//// draw triangle
-		////
-		//Polygon poly = new Polygon();
-		//poly.addPoint(absPosX+radius,absPosY+1+labelPos.y);
-		//poly.addPoint(absPosX+(2*radius),absPosY+(2*radius)+labelPos.y);
-		//poly.addPoint(absPosX,absPosY+(2*radius)+labelPos.y);
-
-		//g.setColor(backgroundColor);
-		//g.fillPolygon(poly);
-		//g.setColor(forgroundColor);
-		//g.drawPolygon(poly);
-		//}else{
-		////
-		//// draw elipse
-		////
-		//g.setColor(backgroundColor);
-		//g.fillOval(absPosX+1,absPosY+1+labelPos.y,2*radius-1,2*radius-1);
-		//g.setColor(forgroundColor);
-		//g.drawOval(absPosX,absPosY+labelPos.y,2*radius,2*radius);
-		//}
 	}
 
-	/**
-	 * This method was created in VisualAge.
-	 */
 	@Override
 	public void refreshLabel() {
 		switch (GraphModelPreferences.getInstance().getSpeciesContextDisplayName()) {
@@ -216,10 +144,6 @@ public class SpeciesContextShape extends ElipseShape {
 			setLabel(getSpeciesContext().getName());
 			break;
 		}
-		//case GraphModelPreferences.DISPLAY_FORMAL_NAME: {
-		//setLabel(getSpeciesContext().getSpecies().getCommonName());
-		//break;
-		//}
 		}
 
 		smallLabel = getLabel();
@@ -231,22 +155,11 @@ public class SpeciesContextShape extends ElipseShape {
 		}
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @param newSize java.awt.Dimension
-	 */
 	@Override
 	public void resize(Graphics2D g, Dimension newSize) {
 		return;
 	}
 
-
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (8/28/2006 9:53:57 AM)
-	 * @param bTruncate boolean
-	 */
 	public void truncateLabelName(boolean bTruncate) {
 
 		bTruncateLabelName = bTruncate;

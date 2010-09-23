@@ -11,10 +11,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.swing.JViewport;
 
@@ -205,7 +205,7 @@ public void layout(String layoutName) throws Exception {
 		// initialize node location to current absolute position
 		//
 		if (newNode!=null){
-			newNode.XY(shape.getAbsLocation().x,shape.getAbsLocation().y);
+			newNode.XY(shape.getSpaceManager().getAbsLoc().x, shape.getSpaceManager().getAbsLoc().y);
 			nodeShapeMap.put(newNode.label(),shape);
 		}
 	}
@@ -249,7 +249,7 @@ public void layout(String layoutName) throws Exception {
 
 	bb.removeDummies();
 	@SuppressWarnings("unchecked")
-	Vector<Node> nodesTemp = bb.nodes();
+	List<Node> nodesTemp = bb.nodes();
 	nodeList = nodesTemp;
 	//
 	// calculate offset and scaling so that resulting graph fits on canvas
@@ -272,9 +272,10 @@ public void layout(String layoutName) throws Exception {
 	for (int i = 0; i < nodeList.size(); i++){
 		Node node = nodeList.get(i);
 		Shape shape = nodeShapeMap.get(node.label());
-		Point parentLoc = shape.getParent().getAbsLocation();
-		shape.setLocation(new Point((int)(scaleX*(node.x()-lowX))+offsetX+parentLoc.x,(int)((scaleY*(node.y()-lowY))+offsetY+parentLoc.y)));
-System.out.println("Shape "+shape.getLabel()+" @ "+shape.getAbsLocation());
+		Point parentLoc = shape.getParent().getSpaceManager().getAbsLoc();
+		shape.getSpaceManager().setRelPos((int)(scaleX*(node.x()-lowX)) + offsetX + parentLoc.x, 
+				(int)((scaleY*(node.y()-lowY))+offsetY+parentLoc.y));
+		System.out.println("Shape " + shape.getLabel() + " @ " + shape.getSpaceManager().getAbsLoc());
 	}
 
 	getGraphPane().repaint();
@@ -359,7 +360,7 @@ public void layoutGlg() {
 			//glgPoint = graphNode.display_position;
 			place = new Point();
 			place.setLocation(glgPoint.x*ratio, glgPoint.y*ratio+30);
-			shape.setLocation(place);		
+			shape.getSpaceManager().setRelPos(place);		
 		}
 	}	
 	
@@ -387,7 +388,7 @@ protected void menuAction(Shape shape, String menuAction) {
 
 		// if multiselect, then get them all
 		ConstraintsGraphModel constraintsGraphModel = (ConstraintsGraphModel)getGraphModel();
-		Shape shapes[] = constraintsGraphModel.getAllSelectedShapes();
+		List<Shape> shapes = constraintsGraphModel.getSelectedShapes();
 		//	
 		if (menuAction.equals(CartoonToolMiscActions.Reset.MENU_ACTION)){
 			getConstraintSolver().resetIntervals();
@@ -396,42 +397,45 @@ protected void menuAction(Shape shape, String menuAction) {
 			getConstraintSolver().narrow();
 		}
 		if (menuAction.equals(CartoonToolMiscActions.Enable.MENU_ACTION)){
-			for (int i = 0; i < shapes.length; i++){
-				if (shapes[i] instanceof BoundsNode || shapes[i] instanceof GeneralConstraintNode){
-					AbstractConstraint constraint = (AbstractConstraint)shapes[i].getModelObject();
+			for (Shape selectedShape : shapes){
+				if (selectedShape instanceof BoundsNode || 
+						selectedShape instanceof GeneralConstraintNode){
+					AbstractConstraint constraint = (AbstractConstraint)shape.getModelObject();
 					getConstraintsGraphModel().getConstraintContainerImpl().setActive(constraint,true);
 				}
 			}
 		}
 		if (menuAction.equals(CartoonToolMiscActions.Disable.MENU_ACTION)){
-			for (int i = 0; i < shapes.length; i++){
-				if (shapes[i] instanceof BoundsNode || shapes[i] instanceof GeneralConstraintNode){
-					AbstractConstraint constraint = (AbstractConstraint)shapes[i].getModelObject();
+			for (Shape selectedShape : shapes){
+				if (selectedShape instanceof BoundsNode || 
+						selectedShape instanceof GeneralConstraintNode){
+					AbstractConstraint constraint = 
+						(AbstractConstraint) selectedShape.getModelObject();
 					getConstraintsGraphModel().getConstraintContainerImpl().setActive(constraint,false);
 				}
 			}
 		}
 		if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)){
-			java.util.Vector<BoundsNode> boundsToDelete = new java.util.Vector<BoundsNode>();
-			java.util.Vector<GeneralConstraintNode> genConstraintsToDelete = new java.util.Vector<GeneralConstraintNode>();
-			for (int i = 0; i < shapes.length; i++){
-				if (shapes[i] instanceof BoundsNode){
-					boundsToDelete.add((BoundsNode)shapes[i].getModelObject());
-				}else if (shapes[i] instanceof GeneralConstraintNode){
-					genConstraintsToDelete.add((GeneralConstraintNode)shapes[i].getModelObject());
+			List<BoundsNode> boundsToDelete = new ArrayList<BoundsNode>();
+			List<GeneralConstraintNode> genConstraintsToDelete = new ArrayList<GeneralConstraintNode>();
+			for (Shape selectedShape : shapes){
+				if (selectedShape instanceof BoundsNode){
+					boundsToDelete.add((BoundsNode) selectedShape.getModelObject());
+				} else if (selectedShape instanceof GeneralConstraintNode){
+					genConstraintsToDelete.add((GeneralConstraintNode) selectedShape.getModelObject());
 				}
 			}
 			if (boundsToDelete.size()>0){
 				SimpleBounds bounds[] = constraintsGraphModel.getConstraintContainerImpl().getSimpleBounds();
 				for (int i = 0; i < boundsToDelete.size(); i++){
-					bounds = (SimpleBounds[])BeanUtils.removeElement(bounds,boundsToDelete.elementAt(i));
+					bounds = (SimpleBounds[])BeanUtils.removeElement(bounds,boundsToDelete.get(i));
 				}
 				constraintsGraphModel.getConstraintContainerImpl().setSimpleBounds(bounds);
 			}
 			if (genConstraintsToDelete.size()>0){
 				GeneralConstraint genConstraints[] = constraintsGraphModel.getConstraintContainerImpl().getGeneralConstraints();
 				for (int i = 0; i < genConstraintsToDelete.size(); i++){
-					genConstraints = (GeneralConstraint[])BeanUtils.removeElement(genConstraints,genConstraintsToDelete.elementAt(i));
+					genConstraints = (GeneralConstraint[])BeanUtils.removeElement(genConstraints,genConstraintsToDelete.get(i));
 				}
 				constraintsGraphModel.getConstraintContainerImpl().setGeneralConstraints(genConstraints);
 			}
@@ -483,7 +487,7 @@ public void mouseClicked(java.awt.event.MouseEvent event) {
  * This method was created by a SmartGuide.
  * @param event java.awt.event.MouseEvent
  */
-public void mouseDragged(java.awt.event.MouseEvent event) {
+public void mouseDragged(MouseEvent event) {
 	
 	if ((event.getModifiers() & (MouseEvent.BUTTON2_MASK | MouseEvent.BUTTON3_MASK)) != 0){
 		return;
@@ -494,50 +498,61 @@ public void mouseDragged(java.awt.event.MouseEvent event) {
 	try {
 		switch (mode){
 			case SELECT: {
-				java.awt.Point worldPoint = screenToWorld(event.getX(),event.getY());
+				Point worldPoint = screenToWorld(event.getX(),event.getY());
 				if (bMoving){
-					Shape selectedShapes[] = getConstraintsGraphModel().getAllSelectedShapes();
+					List<Shape> selectedShapes = getConstraintsGraphModel().getSelectedShapes();
 					//
 					// constrain to stay within the corresponding parent for the "movingShape" as well as all other selected (hence moving) shapes.
 					//
-					Point movingParentLoc = movingShape.getParent().getAbsLocation();
-					Dimension movingParentSize = movingShape.getParent().getSize();
-					worldPoint.x = Math.max(movingOffsetWorld.x+movingParentLoc.x,Math.min(movingOffsetWorld.x+movingParentLoc.x+movingParentSize.width-movingShape.getSize().width, worldPoint.x));
-					worldPoint.y = Math.max(movingOffsetWorld.y+movingParentLoc.y,Math.min(movingOffsetWorld.x+movingParentLoc.y+movingParentSize.height-movingShape.getSize().height, worldPoint.y));
-					for (int i = 0; selectedShapes!=null && i < selectedShapes.length; i++){
-						if (selectedShapes[i]!=movingShape){
-							Point selectedParentLoc = selectedShapes[i].getParent().getAbsLocation();
-							Dimension selectedParentSize = selectedShapes[i].getParent().getSize();
-							int selectedMovingOffsetX = movingOffsetWorld.x + (movingShape.getAbsLocation().x-selectedShapes[i].getAbsLocation().x);
-							int selectedMovingOffsetY = movingOffsetWorld.y + (movingShape.getAbsLocation().y-selectedShapes[i].getAbsLocation().y);
-							worldPoint.x = Math.max(selectedMovingOffsetX+selectedParentLoc.x,Math.min(selectedMovingOffsetX+selectedParentLoc.x+selectedParentSize.width-selectedShapes[i].getSize().width, worldPoint.x));
-							worldPoint.y = Math.max(selectedMovingOffsetY+selectedParentLoc.y,Math.min(selectedMovingOffsetY+selectedParentLoc.y+selectedParentSize.height-selectedShapes[i].getSize().height, worldPoint.y));
+					Point movingParentLoc = movingShape.getParent().getSpaceManager().getAbsLoc();
+					Dimension movingParentSize = movingShape.getParent().getSpaceManager().getSize();
+					worldPoint.x = Math.max(movingOffsetWorld.x + movingParentLoc.x,
+							Math.min(movingOffsetWorld.x + movingParentLoc.x + movingParentSize.width - 
+									movingShape.getSpaceManager().getSize().width, worldPoint.x));
+					worldPoint.y = Math.max(movingOffsetWorld.y + movingParentLoc.y,
+							Math.min(movingOffsetWorld.x + movingParentLoc.y + movingParentSize.height - 
+									movingShape.getSpaceManager().getSize().height, worldPoint.y));
+					for (Shape shape : selectedShapes) {
+						if (shape != movingShape){
+							Point selectedParentLoc = shape.getParent().getSpaceManager().getAbsLoc();
+							Dimension selectedParentSize = shape.getParent().getSpaceManager().getSize();
+							int selectedMovingOffsetX = 
+								movingOffsetWorld.x + (movingShape.getSpaceManager().getAbsLoc().x - 
+										shape.getSpaceManager().getAbsLoc().x);
+							int selectedMovingOffsetY = movingOffsetWorld.y + 
+							(movingShape.getSpaceManager().getAbsLoc().y - 
+									shape.getSpaceManager().getAbsLoc().y);
+							worldPoint.x = Math.max(selectedMovingOffsetX + selectedParentLoc.x, 
+									Math.min(selectedMovingOffsetX + selectedParentLoc.x + 
+											selectedParentSize.width - shape.getSpaceManager().getSize().width, worldPoint.x));
+							worldPoint.y = Math.max(selectedMovingOffsetY + selectedParentLoc.y,
+									Math.min(selectedMovingOffsetY + selectedParentLoc.y + 
+											selectedParentSize.height - shape.getSpaceManager().getSize().height, 
+											worldPoint.y));
 						}
 					}
 
 					getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-					Point newMovingPoint = new Point(worldPoint.x-movingOffsetWorld.x,worldPoint.y-movingOffsetWorld.y);
+					Point newMovingPoint = new Point(worldPoint.x - movingOffsetWorld.x,
+							worldPoint.y - movingOffsetWorld.y);
 					int deltaX = newMovingPoint.x - movingPointWorld.x;
 					int deltaY = newMovingPoint.y - movingPointWorld.y;
 					movingPointWorld = newMovingPoint;
-					movingShape.setLocation(new Point(movingPointWorld.x-movingParentLoc.x,movingPointWorld.y-movingParentLoc.y));
-					//
+					movingShape.getSpaceManager().setRelPos(movingPointWorld.x - movingParentLoc.x,
+							movingPointWorld.y-movingParentLoc.y);
 					// for any other "movable" shapes that are selected, move them also
-					//
-					for (int i = 0; selectedShapes!=null && i < selectedShapes.length; i++){
-						if (selectedShapes[i]!=movingShape){
-							selectedShapes[i].setLocation(new Point(selectedShapes[i].getLocation().x + deltaX, selectedShapes[i].getLocation().y + deltaY));
+					for (Shape shape : selectedShapes) {
+						if (shape != movingShape){
+							shape.getSpaceManager().move(deltaX, deltaY);
 						}
 					}
 					getGraphPane().invalidate();
 					((JViewport)getGraphPane().getParent()).revalidate();
 					getGraphPane().repaint();
-				}else if (bRectStretch){
-					//
+				} else if (bRectStretch){
 					// constain to stay within parent
-					//
-					Point parentLoc = rectShape.getParent().getAbsLocation();
-					Dimension parentSize = rectShape.getParent().getSize();
+					Point parentLoc = rectShape.getParent().getSpaceManager().getAbsLoc();
+					Dimension parentSize = rectShape.getParent().getSpaceManager().getSize();
 					worldPoint.x = Math.max(1,Math.min(parentSize.width-1,worldPoint.x-parentLoc.x)) + parentLoc.x;
 					worldPoint.y = Math.max(1,Math.min(parentSize.height-1,worldPoint.y-parentLoc.y)) + parentLoc.y;
 					getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
@@ -557,7 +572,7 @@ public void mouseDragged(java.awt.event.MouseEvent event) {
 					if (!bCntrl && !bShift && (ShapeUtil.isMovable(shape))){
 						bMoving=true;
 						movingShape = shape;
-						movingPointWorld = shape.getAbsLocation();
+						movingPointWorld = shape.getSpaceManager().getAbsLoc();
 						movingOffsetWorld = new Point(worldPoint.x-movingPointWorld.x,worldPoint.y-movingPointWorld.y);
 					}else if (shape instanceof ContainerShape || bShift || bCntrl){
 						bRectStretch = true;
@@ -660,18 +675,14 @@ public void mouseReleased(java.awt.event.MouseEvent event) {
 		switch (mode){
 			case SELECT:{
 				getGraphPane().setCursor(Cursor.getDefaultCursor());
-				//int x = event.getX();
-				//int y = event.getY();
 				if (bMoving){
 					getGraphPane().invalidate();
 					((JViewport)getGraphPane().getParent()).revalidate();
 					getGraphPane().repaint();
-				}else if (bRectStretch){
-					Point absLoc = rectShape.getLocation();
-					Dimension size = rectShape.getSize();
-					//
+				} else if (bRectStretch){
+					Point absLoc = rectShape.getSpaceManager().getRelPos();
+					Dimension size = rectShape.getSpaceManager().getSize();
 					// remove temporary rectangle
-					//
 					getConstraintsGraphModel().removeShape(rectShape);
 					rectShape = null;
 					Rectangle rect = new Rectangle(absLoc.x,absLoc.y,size.width,size.height);
@@ -779,35 +790,35 @@ private void selectEventFromWorld(Point worldPoint, boolean bShift, boolean bCnt
  * @param bCntrl boolean
  */
 private void selectEventFromWorld(Rectangle rect, boolean bShift, boolean bCntrl) {
-	if (!bShift && !bCntrl){
+	if (!bShift && !bCntrl) {
 		getConstraintsGraphModel().clearSelection();
-		Shape shapes[] = getConstraintsGraphModel().pickWorld(rect);
-		for (int i = 0; i < shapes.length; i++){
-			if (ShapeUtil.isMovable(shapes[i])){
-				getConstraintsGraphModel().select(shapes[i]);
+		List<Shape> shapes = getConstraintsGraphModel().pickWorld(rect);
+		for (Shape shape : shapes){
+			if (ShapeUtil.isMovable(shape)){
+				getConstraintsGraphModel().select(shape);
 			}
 		}
-	}else if (bShift){
+	} else if (bShift) {
 		if(getConstraintsGraphModel().getSelectedShape() instanceof ContainerShape){
 			getConstraintsGraphModel().clearSelection();
 		}
-		Shape shapes[] = getConstraintsGraphModel().pickWorld(rect);
-		for (int i = 0; i < shapes.length; i++){
-			if (ShapeUtil.isMovable(shapes[i])){
-				getConstraintsGraphModel().select(shapes[i]);
+		List<Shape> shapes = getConstraintsGraphModel().pickWorld(rect);
+		for (Shape shape : shapes){
+			if (ShapeUtil.isMovable(shape)){
+				getConstraintsGraphModel().select(shape);
 			}
 		}
 	}else if (bCntrl){
 		if(getConstraintsGraphModel().getSelectedShape() instanceof ContainerShape){
 			getConstraintsGraphModel().clearSelection();
 		}
-		Shape shapes[] = getConstraintsGraphModel().pickWorld(rect);
-		for (int i = 0; i < shapes.length; i++){
-			if (ShapeUtil.isMovable(shapes[i])){
-				if (shapes[i].isSelected()){
-					getConstraintsGraphModel().deselect(shapes[i]);
-				}else{
-					getConstraintsGraphModel().select(shapes[i]);
+		List<Shape> shapes = getConstraintsGraphModel().pickWorld(rect);
+		for (Shape shape : shapes){
+			if (ShapeUtil.isMovable(shape)){
+				if (shape.isSelected()){
+					getConstraintsGraphModel().deselect(shape);
+				} else {
+					getConstraintsGraphModel().select(shape);
 				}
 			}
 		}
@@ -887,7 +898,7 @@ public boolean shapeHasMenuAction(Shape shape, String menuAction) {
  * @return boolean
  * @param actionString java.lang.String
  */
-public boolean shapeHasMenuActionEnabled(Shape shape, java.lang.String menuAction) {
+public boolean shapeHasMenuActionEnabled(Shape shape, String menuAction) {
 	if (shape == null){
 		return false;
 	}
@@ -906,24 +917,22 @@ public boolean shapeHasMenuActionEnabled(Shape shape, java.lang.String menuActio
 		//
 		// enable if any selected shapes can be enabled
 		//
-		Shape shapes[] = getGraphModel().getAllSelectedShapes();
-		for (int i = 0; i < shapes.length; i++){
-			if ((shapes[i] instanceof GeneralConstraintNode || shapes[i] instanceof BoundsNode)){
-				AbstractConstraint constraint = (AbstractConstraint)shapes[i].getModelObject();
-				if (getConstraintsGraphModel().getConstraintContainerImpl().getActive(constraint)==false){
+		List<Shape> shapes = getGraphModel().getSelectedShapes();
+		for (Shape shape2 : shapes) {
+			if ((shape2 instanceof GeneralConstraintNode || shape2 instanceof BoundsNode)){
+				AbstractConstraint constraint = (AbstractConstraint) shape2.getModelObject();
+				if (!getConstraintsGraphModel().getConstraintContainerImpl().getActive(constraint)){
 					return true;
 				}
 			}
 		}
 	}
 	if (menuAction.equals(CartoonToolMiscActions.Disable.MENU_ACTION)){
-		//
 		// disable if any selected shapes can be disabled
-		//
-		Shape shapes[] = getGraphModel().getAllSelectedShapes();
-		for (int i = 0; i < shapes.length; i++){
-			if ((shapes[i] instanceof GeneralConstraintNode || shapes[i] instanceof BoundsNode)){
-				AbstractConstraint constraint = (AbstractConstraint)shapes[i].getModelObject();
+		List<Shape> shapes = getGraphModel().getSelectedShapes();
+		for (Shape shape2 : shapes) {
+			if ((shape2 instanceof GeneralConstraintNode || shape2 instanceof BoundsNode)){
+				AbstractConstraint constraint = (AbstractConstraint) shape2.getModelObject();
 				if (getConstraintsGraphModel().getConstraintContainerImpl().getActive(constraint)==true){
 					return true;
 				}
@@ -934,9 +943,9 @@ public boolean shapeHasMenuActionEnabled(Shape shape, java.lang.String menuActio
 		//
 		// delete if any selected shapes can be deleted
 		//
-		Shape shapes[] = getGraphModel().getAllSelectedShapes();
-		for (int i = 0; i < shapes.length; i++){
-			if ((shapes[i] instanceof GeneralConstraintNode || shapes[i] instanceof BoundsNode)){
+		List<Shape> shapes = getGraphModel().getSelectedShapes();
+		for (Shape shape2 : shapes) {
+			if ((shape2 instanceof GeneralConstraintNode || shape2 instanceof BoundsNode)){
 				return true;
 			}
 		}

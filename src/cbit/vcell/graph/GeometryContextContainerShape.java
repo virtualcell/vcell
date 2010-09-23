@@ -34,7 +34,7 @@ public class GeometryContextContainerShape extends ContainerShape {
 	public Object getModelObject() { return geometryContext; }
 
 	@Override
-	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+	public Dimension getPreferedSize(Graphics2D g) {
 		Dimension geometryChildDim = geometryContainer.getPreferedSize(g);
 		Dimension structureChildDim = structureContainer.getPreferedSize(g);
 		Dimension newDim = 
@@ -49,34 +49,33 @@ public class GeometryContextContainerShape extends ContainerShape {
 		int currentY = 0;
 		// position structureContainer shape
 		structureContainer.getSpaceManager().setRelPos(currentX, currentY);
-		currentX += structureContainer.shapeSize.width;
+		currentX += structureContainer.getSpaceManager().getSize().width;
 		// position subvolumeContainer shape
 		geometryContainer.getSpaceManager().setRelPos(currentX, currentY);
-		currentX += geometryContainer.shapeSize.width;
-		for (int i=0;i<childShapeList.size();i++){
-			Shape child = childShapeList.get(i);
+		currentX += geometryContainer.getSpaceManager().getSize().width;
+		for (Shape child : childShapeList) {
 			child.refreshLayout();
 		}	
 	}
 
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
-		//	g.setColor(backgroundColor);
 		g.setColor(java.awt.Color.yellow);
-		g.fillRect(absPosX, absPosY, shapeSize.width, shapeSize.height);
+		g.fillRect(absPosX, absPosY, getSpaceManager().getSize().width, getSpaceManager().getSize().height);
 		g.setColor(forgroundColor);
-		g.drawRect(absPosX, absPosY, shapeSize.width, shapeSize.height);
-		//	g.drawString(getLabel(),labelPos.x,labelPos.y);
+		g.drawRect(absPosX, absPosY, getSpaceManager().getSize().width, getSpaceManager().getSize().height);
 	}
 
 	@Override
 	public void resize(Graphics2D g, Dimension newSize) throws Exception {
-		shapeSize = newSize;
+		getSpaceManager().setSize(newSize);
 		// try to make geometryContainer have full width and structureContainer have rest
-		int geomNewWidth = Math.min(shapeSize.width-10,geometryContainer.getPreferedSize(g).width);
-		int structNewWidth = shapeSize.width - geomNewWidth - 1;
-		structureContainer.resize(g, new Dimension(structNewWidth, shapeSize.height - labelSize.height));
-		geometryContainer.resize(g, new Dimension(geomNewWidth, shapeSize.height - labelSize.height));
+		int geomNewWidth = Math.min(getSpaceManager().getSize().width - 10, geometryContainer.getPreferedSize(g).width);
+		int structNewWidth = getSpaceManager().getSize().width - geomNewWidth - 1;
+		structureContainer.resize(g, new Dimension(structNewWidth, 
+				getSpaceManager().getSize().height - getLabelSize().height));
+		geometryContainer.resize(g, new Dimension(geomNewWidth, 
+				getSpaceManager().getSize().height - getLabelSize().height));
 		refreshLayout();
 	}
 }

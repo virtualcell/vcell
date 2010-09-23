@@ -54,9 +54,8 @@ public class ReactionCartoon extends ModelCartoon {
 			throw new Exception("unknown type of ReactionStep '"
 					+ modelObject.getClass().toString());
 		}
-		Point origin = reactionContainerShape.getAbsLocation();
-		shape.setLocation(new Point(location.x - origin.x, location.y
-				- origin.y));
+		Point origin = reactionContainerShape.getSpaceManager().getAbsLoc();
+		shape.getSpaceManager().setRelPos(location.x - origin.x, location.y - origin.y);
 		addShape(shape);
 		shape.setDirty(false);
 		fireGraphChanged(new GraphEvent(this));
@@ -95,7 +94,7 @@ public class ReactionCartoon extends ModelCartoon {
 			}
 			Shape shape = getShapeFromModelObject(obj);
 			if (shape != null) {
-				shape.setLocation(node.location);
+				shape.getSpaceManager().setRelPos(node.location);
 			}
 		}
 	}
@@ -373,17 +372,17 @@ public class ReactionCartoon extends ModelCartoon {
 			if (shape instanceof FluxReactionShape) {
 				nodeList.add(new NodeReference(
 						NodeReference.FLUX_REACTION_NODE, ((FluxReaction) shape.getModelObject()).getName(), 
-						shape.getLocation()));
+						shape.getSpaceManager().getRelPos()));
 			} else if (shape instanceof SimpleReactionShape) {
 				nodeList.add(new NodeReference(
 						NodeReference.SIMPLE_REACTION_NODE,
 						((ReactionStep) shape.getModelObject()).getName(),
-						shape.getLocation()));
+						shape.getSpaceManager().getRelPos()));
 			} else if (shape instanceof SpeciesContextShape) {
 				nodeList.add(new NodeReference(
 						NodeReference.SPECIES_CONTEXT_NODE,
 						((SpeciesContext) shape.getModelObject()).getName(),
-						shape.getLocation()));
+						shape.getSpaceManager().getRelPos()));
 			}
 		}
 		diagram.setNodeReferences((NodeReference[]) nodeList.toArray(new NodeReference[0]));

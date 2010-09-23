@@ -3,18 +3,17 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
  */
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.LayoutException;
 import cbit.gui.graph.Shape;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 
-import java.awt.*;
-/**
- * Insert the type's description here.
- * Creation date: (4/12/01 3:03:38 PM)
- * @author: Jim Schaff
- */
 public class StructureMappingFeatureShape extends FeatureShape {
 
 	public StructureMappingFeatureShape(Feature feature, Model model, GraphModel graphModel) {
@@ -35,13 +34,11 @@ public class StructureMappingFeatureShape extends FeatureShape {
 				totalHeight += childDim.height + defaultSpacingY;
 				maxWidth = Math.max(maxWidth,childDim.width);
 			}
-			preferredSize.width = maxWidth + defaultSpacingX*2;
-			preferredSize.height = totalHeight + defaultSpacingY;
+			getSpaceManager().setSizePreferred((maxWidth + defaultSpacingX*2), (totalHeight + defaultSpacingY));
 		} else {
-			preferredSize.width = labelSize.width + defaultSpacingX*2;
-			preferredSize.height = labelSize.height + defaultSpacingY*2;
+			getSpaceManager().setSizePreferred((labelSize.width + defaultSpacingX*2), (labelSize.height + defaultSpacingY*2));
 		}	
-		return preferredSize;
+		return getSpaceManager().getSizePreferred();
 	}
 
 	@Override
@@ -71,17 +68,16 @@ public class StructureMappingFeatureShape extends FeatureShape {
 		int memWidth = 0;
 		for (int i=0;i<childShapeList.size();i++){
 			Shape child = childShapeList.get(i);
-			memHeight += child.shapeSize.height;
-			memWidth = Math.max(memWidth,child.shapeSize.width);
+			memHeight += child.getSpaceManager().getSize().height;
+			memWidth = Math.max(memWidth, child.getSpaceManager().getSize().width);
 		}
 		// position label
-		int centerX = shapeSize.width/2;
+		int centerX = getSpaceManager().getSize().width/2;
 		int currentY = labelSize.height;
-		labelPos.x = centerX - labelSize.width/2;
-		labelPos.y = currentY;
+		labelPos.x = centerX - labelSize.width/2; labelPos.y = currentY;
 		currentY += labelSize.height;
 		// find current centerX
-		int totalSpacingX = shapeSize.width - memWidth;
+		int totalSpacingX = getSpaceManager().getSize().width - memWidth;
 		if(LayoutException.bActivated) {
 			if (totalSpacingX<0){
 				throw new LayoutException("unable to fit children within container (width)");
@@ -91,7 +87,7 @@ public class StructureMappingFeatureShape extends FeatureShape {
 		int extraSpacingX = totalSpacingX%2;
 		int currentX = spacingX + extraSpacingX;
 		// position child compartments
-		int totalSpacingY = (shapeSize.height-currentY) - memHeight;
+		int totalSpacingY = (getSpaceManager().getSize().height-currentY) - memHeight;
 		if(LayoutException.bActivated) {
 			if (totalSpacingY<0){
 				throw new LayoutException("unable to fit children within container (height)");
@@ -104,21 +100,21 @@ public class StructureMappingFeatureShape extends FeatureShape {
 		int colY = currentY + extraSpacingY;
 		for (int i=0;i<childShapeList.size();i++){
 			Shape child = childShapeList.get(i);
-			child.getSpaceManager().setRelPos(centerX - child.shapeSize.width/2, colY);
-			colY += child.shapeSize.height + spacingY;
+			child.getSpaceManager().setRelPos(centerX - child.getSpaceManager().getSize().width/2, colY);
+			colY += child.getSpaceManager().getSize().height + spacingY;
 		}
 		currentX += spacingX;
 		colY += spacingY;
-		if (colY != shapeSize.height){
+		if (colY != getSpaceManager().getSize().height){
 			throw new RuntimeException("layout for column incorrect (" + getLabel() + "), currentY=" 
-					+ currentY + ", screenSize.height=" + shapeSize.height);
+					+ currentY + ", screenSize.height=" + getSpaceManager().getSize().height);
 		}
 		if (countChildren()>0){
 			currentX += memWidth;
 		}	
-		if (currentX != shapeSize.width){
+		if (currentX != getSpaceManager().getSize().width){
 			throw new RuntimeException("layout for column widths incorrect (" + getLabel() + 
-					"), currentX=" + currentX + ", screenSize.width="+shapeSize.width);
+					"), currentX=" + currentX + ", screenSize.width=" + getSpaceManager().getSize().width);
 		}
 	}
 }

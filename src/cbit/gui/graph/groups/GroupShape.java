@@ -51,8 +51,8 @@ public class GroupShape extends Shape {
 	@Override
 	protected boolean isInside(Point p) {
 		Point relPos = spaceManager.getRelPos();
-		return p.x >= relPos.x && p.x <= relPos.x + shapeSize.width
-				&& p.y >= relPos.y && p.y <= relPos.y + shapeSize.height;
+		return p.x >= relPos.x && p.x <= relPos.x + getSpaceManager().getSize().width
+				&& p.y >= relPos.y && p.y <= relPos.y + getSpaceManager().getSize().height;
 	}
 
 	@Override
@@ -63,12 +63,9 @@ public class GroupShape extends Shape {
 		}
 		graphics.setColor(forgroundColor);
 		graphics.drawRect(xAbs, yAbs, rectangleWidth, rectangleHeight);
-
-		labelPos = ShapeLayoutUtil.placeTextUnder(graphics, new Dimension(
-				rectangleWidth, rectangleHeight), labelPadding, getLabel());
-
-		graphics.drawString(getLabel(), xAbs + labelPos.x, yAbs + labelPos.y);
-
+		this.labelPos = ShapeLayoutUtil.placeTextUnder(graphics, new Dimension(
+		rectangleWidth, rectangleHeight), labelPadding, getLabel());
+		graphics.drawString(getLabel(), xAbs + getLabelPos().x, yAbs + getLabelPos().y);
 	}
 
 	@Override

@@ -18,21 +18,21 @@ public abstract class ElipseShape extends Shape {
 
 	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
+		ShapeSpaceManager spaceManager = getSpaceManager();
 		FontMetrics fm = g.getFontMetrics();
-		labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
-		labelSize.width = fm.stringWidth(getLabel());
-		preferredSize.height = labelSize.height + 10;
-		preferredSize.width = labelSize.width + 10;
-		return preferredSize;
+		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
+		spaceManager.setSizePreferred(getLabelSize().width + 10, getLabelSize().height + 10);
+		return spaceManager.getSizePreferred();
 	}
 
 	final double getRadius(Point pick) {
-		int centerX = getSpaceManager().getRelX() + shapeSize.width / 2;
-		int centerY = getSpaceManager().getRelY() + shapeSize.height / 2;
+		ShapeSpaceManager spaceManager = getSpaceManager();
+		int centerX = spaceManager.getRelX() + spaceManager.getSize().width / 2;
+		int centerY = spaceManager.getRelY() + spaceManager.getSize().height / 2;
 		double radiusX = pick.x - centerX;
 		double radiusY = pick.y - centerY;
-		double b = shapeSize.height / 2;
-		double a = shapeSize.width / 2;
+		double b = spaceManager.getSize().height / 2;
+		double a = spaceManager.getSize().width / 2;
 		double radius = radiusX * radiusX / (a * a) + radiusY * radiusY
 				/ (b * b);
 
@@ -50,31 +50,30 @@ public abstract class ElipseShape extends Shape {
 
 	@Override
 	public void refreshLayout() throws LayoutException {
-
 		if (LayoutException.bActivated) {
-			if (shapeSize.width <= labelSize.width
-					|| shapeSize.height <= labelSize.height) {
+			if (getSpaceManager().getSize().width <= getLabelSize().width
+					|| getSpaceManager().getSize().height <= getLabelSize().height) {
 				throw new LayoutException("screen size smaller than label");
 			}
 		}
 		// this is like a row/column layout (1 column)
-		int centerX = shapeSize.width / 2;
-		int centerY = shapeSize.height / 2;
+		int centerX = getSpaceManager().getSize().width / 2;
+		int centerY = getSpaceManager().getSize().height / 2;
 		// position label
-		labelPos.x = centerX - labelSize.width / 2;
-		labelPos.y = centerY - labelSize.height / 2;
+		labelPos.x = centerX - getLabelSize().width / 2; 
+		labelPos.y = centerY - getLabelSize().height / 2;
 	}
 
 	@Override
 	public void paintSelf(Graphics2D g2D, int absPosX, int absPosY) {
 		// draw elipse
 		g2D.setColor(backgroundColor);
-		g2D.fillOval(absPosX, absPosY, shapeSize.width, shapeSize.height);
+		g2D.fillOval(absPosX, absPosY, getSpaceManager().getSize().width, getSpaceManager().getSize().height);
 		g2D.setColor(forgroundColor);
-		g2D.drawOval(absPosX, absPosY, shapeSize.width, shapeSize.height);
+		g2D.drawOval(absPosX, absPosY, getSpaceManager().getSize().width, getSpaceManager().getSize().height);
 		// draw label
 		FontMetrics fm = g2D.getFontMetrics();
-		int textX = absPosX + shapeSize.width / 2 - fm.stringWidth(getLabel())
+		int textX = absPosX + getSpaceManager().getSize().width / 2 - fm.stringWidth(getLabel())
 				/ 2;
 		int textY = absPosY + 5 + fm.getMaxAscent();
 		if (getLabel() != null && getLabel().length() > 0) {

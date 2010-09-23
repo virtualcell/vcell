@@ -8,6 +8,7 @@ package cbit.gui.graph;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -27,14 +28,13 @@ public abstract class RectangleShape extends Shape {
 	}
 
 	protected void drawLabel(Graphics2D g2D, int absPosX, int absPosY) {
-
 		if (getLabel() != null && getLabel().length() > 0) {
 			int textX = absPosX
-					+ Math.max(0, shapeSize.width / 2 - labelSize.width / 2);
-			int textY = absPosY + Math.max(0, 5 + labelSize.height);
+					+ Math.max(0, getSpaceManager().getSize().width / 2 - getLabelSize().width / 2);
+			int textY = absPosY + Math.max(0, 5 + getLabelSize().height);
 			if (isSelected()) {
-				drawRaisedOutline(textX - 5, textY - labelSize.height + 3,
-						labelSize.width + 10, labelSize.height, g2D,
+				drawRaisedOutline(textX - 5, textY - getLabelSize().height + 3,
+						getLabelSize().width + 10, getLabelSize().height, g2D,
 						Color.white, Color.black, Color.gray);
 			}
 			Color origColor = g2D.getColor();
@@ -45,7 +45,6 @@ public abstract class RectangleShape extends Shape {
 			g2D.setColor(origColor);
 			g2D.setFont(origFont);
 		}
-
 	}
 
 	public Font getLabelFont(Graphics g) {
@@ -55,25 +54,21 @@ public abstract class RectangleShape extends Shape {
 	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
 		if (g == null) {
-			labelSize.height = 20;
-			labelSize.width = 10;
+			setLabelSize(10, 20);
 		} else {
 			try {
-				java.awt.FontMetrics fm = g.getFontMetrics();
-				labelSize.height = fm.getMaxAscent() + fm.getMaxDescent();
+				FontMetrics fm = g.getFontMetrics();
 				if (getLabel() != null) {
-					labelSize.width = fm.stringWidth(getLabel());
+					setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
 				} else {
-					labelSize.width = 1;
+					setLabelSize(1, fm.getMaxAscent() + fm.getMaxDescent());
 				}
 			} catch (NullPointerException e) {
-				labelSize.height = 20;
-				labelSize.width = 10;
+				setLabelSize(10, 20);
 			}
 		}
-		preferredSize.height = labelSize.height + 10;
-		preferredSize.width = labelSize.width + 10;
-		return preferredSize;
+		getSpaceManager().setSizePreferred((getLabelSize().height + 10), (getLabelSize().width + 10));
+		return getSpaceManager().getSizePreferred();
 	}
 
 	@Override
@@ -82,7 +77,7 @@ public abstract class RectangleShape extends Shape {
 		int x = p.x - getSpaceManager().getRelX();
 		int y = p.y - getSpaceManager().getRelY();
 		// check to see if inside rectangle
-		if (x > 0 && x < shapeSize.width && y > 0 && y < shapeSize.height) {
+		if (x > 0 && x < getSpaceManager().getSize().width && y > 0 && y < getSpaceManager().getSize().height) {
 			return true;
 		} else {
 			return false;
@@ -91,15 +86,15 @@ public abstract class RectangleShape extends Shape {
 
 	@Override
 	public void refreshLayout() throws LayoutException {
-		if (shapeSize.width <= labelSize.width
-				|| shapeSize.height <= labelSize.height) {
+		if (getSpaceManager().getSize().width <= getLabelSize().width || 
+				getSpaceManager().getSize().height <= getLabelSize().height) {
 		}
 		// this is like a row/column layout (1 row)
-		int centerX = shapeSize.width / 2;
-		int centerY = shapeSize.height / 2;
+		int centerX = getSpaceManager().getSize().width / 2;
+		int centerY = getSpaceManager().getSize().height / 2;
 		// position label
-		labelPos.x = centerX - labelSize.width / 2;
-		labelPos.y = centerY - labelSize.height / 2;
+		labelPos.x = centerX - getLabelSize().width / 2; 
+		labelPos.y = centerY - getLabelSize().height / 2;
 	}
 
 	@Override
@@ -107,10 +102,10 @@ public abstract class RectangleShape extends Shape {
 		// draw rectangle
 		g2D.setColor(backgroundColor);
 		if (!bNoFill) {
-			g2D.fillRect(absPosX, absPosY, shapeSize.width, shapeSize.height);
+			g2D.fillRect(absPosX, absPosY, getSpaceManager().getSize().width, getSpaceManager().getSize().height);
 		}
 		g2D.setColor(forgroundColor);
-		g2D.drawRect(absPosX, absPosY, shapeSize.width, shapeSize.height);
+		g2D.drawRect(absPosX, absPosY, getSpaceManager().getSize().width, getSpaceManager().getSize().height);
 		drawLabel(g2D, absPosX, absPosY);
 	}
 }

@@ -16,13 +16,9 @@ import java.util.List;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.VisualState.PaintLayer;
 
-public abstract class Shape implements VisualState.Owner {
+public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owner {
 
-	protected ShapeSpaceManager spaceManager = new ShapeSpaceManager();
-//	public Point relativePos = new Point(0, 0); // screen coordinate relative to
-	// parent
-	public Dimension shapeSize = new Dimension();
-	protected Dimension preferredSize = new Dimension();
+	protected ShapeSpaceManager spaceManager = new ShapeSpaceManager(this);
 
 	protected Dimension labelSize = new Dimension();
 	protected Point labelPos = new Point();
@@ -60,40 +56,24 @@ public abstract class Shape implements VisualState.Owner {
 
 	public ShapeSpaceManager getSpaceManager() { return spaceManager; }
 	
+	public void setLabelSize(int width, int height) { labelSize.width = width; labelSize.height = height; }
+	public Dimension getLabelSize() { return labelSize; }
+	public Point getLabelPos() { return labelPos; }
+	
 	public abstract VisualState createVisualState();
 
 	public VisualState getVisualState() {
 		return visualState;
 	}
-
+	
 	public void addChildShape(Shape shape) {
-		Point absLocation = shape.getAbsLocation();
+		Point absLocation = shape.spaceManager.getAbsLoc();
 		if (shape.parent != null) {
 			shape.parent.removeChild(shape);
 		}
-		int iChildMin = 0;
-		int iChildMax = childShapeList.size();
-		while (iChildMin < iChildMax) {
-			int iChildNew = (iChildMin + iChildMax) / 2;
-			Shape childComparison = childShapeList.get(iChildNew);
-			if (childrenAreInCorrectOrder(childComparison, shape)) {
-				iChildMin = iChildNew + 1;
-			} else {
-				iChildMax = iChildNew;
-			}
-		}
-		childShapeList.add(iChildMax, shape);
+		childShapeList.add(shape);
 		shape.parent = this;
-		shape.setAbsLocation(absLocation);
-	}
-
-	protected boolean childrenAreInCorrectOrder(Shape child1, Shape child2) {
-		PaintLayer paintLayer1 = child1.getVisualState().getPaintLayer();
-		PaintLayer paintLayer2 = child2.getVisualState().getPaintLayer();
-		if (paintLayer1.ordinal() > paintLayer2.ordinal()) {
-			return false;
-		}
-		return true;
+		shape.getSpaceManager().setAbsLoc(absLocation);
 	}
 
 	// TODO does this do anything useful, or is it just Visual Age baggage?
@@ -102,21 +82,7 @@ public abstract class Shape implements VisualState.Owner {
 			Shape child = childShapeList.get(i);
 			child.change_managed(g);
 		}
-		shapeSize = getPreferedSize(g);
-		refreshLayout();
-	}
-
-	public void change_managed2(Graphics2D g, Dimension forceSize)
-			throws Exception {
-		for (int i = 0; i < countChildren(); i++) {
-			Shape child = childShapeList.get(i);
-			child.change_managed2(g, null);
-		}
-		if (forceSize != null) {
-			shapeSize = forceSize;
-		} else {
-			shapeSize = getPreferedSize(g);
-		}
+		getSpaceManager().setSize(getPreferedSize(g));
 		refreshLayout();
 	}
 
@@ -150,28 +116,8 @@ public abstract class Shape implements VisualState.Owner {
 		g.setColor(origColor);
 	}
 
-	public final Point getAbsLocation() {
-		Shape parent = this;
-		Point pos = new Point(getSpaceManager().getRelPos());
-		while ((parent = parent.getParent()) != null) {
-			pos.x += parent.getSpaceManager().getRelX();
-			pos.y += parent.getSpaceManager().getRelY();
-		}
-		return pos;
-	}
-
-	public final void setAbsLocation(Point absLocation) {
-		if (parent != null) {
-			Point parentAbsLoc = parent.getAbsLocation();
-			getSpaceManager().setRelPos(absLocation.x - parentAbsLoc.x, 
-					absLocation.y - parentAbsLoc.y);
-		} else {
-			getSpaceManager().setRelPos(absLocation.x, absLocation.y);
-		}
-	}
-
 	public int getAttachmentFromAbs(Point screenPoint) throws Exception {
-		Point offset = getAbsLocation();
+		Point offset = spaceManager.getAbsLoc();
 		Point localPos = new Point(screenPoint.x - offset.x, screenPoint.y
 				- offset.y);
 		// get distance from Center
@@ -201,7 +147,7 @@ public abstract class Shape implements VisualState.Owner {
 	}
 
 	public Point getAttachmentLocation(int attachmentType) {
-		return new Point(shapeSize.width / 2, shapeSize.height / 2);
+		return new Point(getSpaceManager().getSize().width / 2, getSpaceManager().getSize().height / 2);
 	}
 
 	public Font getBoldFont(Graphics g) {
@@ -220,10 +166,6 @@ public abstract class Shape implements VisualState.Owner {
 			refreshLabel();
 		}
 		return label;
-	}
-
-	public Point getLocation() {
-		return getSpaceManager().getRelPos();
 	}
 
 	public abstract Object getModelObject();
@@ -248,10 +190,6 @@ public abstract class Shape implements VisualState.Owner {
 			totalDeepCount.y += childCount.y;
 		}
 		return totalDeepCount;
-	}
-
-	public Dimension getSize() {
-		return shapeSize;
 	}
 
 	boolean isDescendant(Shape shape) {
@@ -282,15 +220,21 @@ public abstract class Shape implements VisualState.Owner {
 	public abstract void refreshLayout() throws LayoutException;
 
 	public void paint(Graphics2D graphics, int xParent, int yParent) {
+		for(PaintLayer layer : PaintLayer.values()) {
+			paint(graphics, xParent, yParent, layer);
+		}
+	}
+	
+	public void paint(Graphics2D graphics, int xParent, int yParent, PaintLayer layer) {
 		int xThis = getSpaceManager().getRelX() + xParent;
 		int yThis = getSpaceManager().getRelY() + yParent;
 		if (visualState.isAllowedToShowByAllAncestors()) {
-			if (visualState.isShowingItself()) {
+			if (visualState.isShowingItself() && visualState.getPaintLayer().equals(layer)) {
 				paintSelf(graphics, xThis, yThis);
 			}
 			if (visualState.isShowingDescendents()) {
 				for (Shape child : getChildren()) {
-					child.paint(graphics, xThis, yThis);
+					child.paint(graphics, xThis, yThis, layer);
 				}
 			}
 		}
@@ -299,18 +243,27 @@ public abstract class Shape implements VisualState.Owner {
 	public abstract void paintSelf(Graphics2D graphics, int xAbs, int yAbs);
 
 	public final Shape pick(Point point) {
+		Shape shape = null;
+		for(PaintLayer layer : PaintLayer.valuesReverse) {
+			shape = pick(point, layer);
+			if(shape != null) { break; }
+		}
+		return shape;
+	}
+	
+	public final Shape pick(Point point, PaintLayer layer) {
 		if (visualState.isAllowedToShowByAllAncestors()) {
 			if (visualState.isShowingDescendents()) {
 				Point childPoint = new Point(point.x - getSpaceManager().getRelX(), 
 						point.y - getSpaceManager().getRelY());
 				for (int iChild = childShapeList.size() - 1; iChild >= 0; --iChild) {
 					Shape child = childShapeList.get(iChild);
-					Shape childPick = child.pick(childPoint);
+					Shape childPick = child.pick(childPoint, layer);
 					if (childPick != null)
 						return childPick;
 				}
 			}
-			if (visualState.isShowingItself()) {
+			if (visualState.isShowingItself() && visualState.getPaintLayer().equals(layer)) {
 				if (isInside(point)) {
 					return this;
 				}
@@ -332,15 +285,15 @@ public abstract class Shape implements VisualState.Owner {
 	}
 
 	public void resize(Graphics2D g, Dimension newSize) throws Exception {
-		int deltaX = newSize.width - shapeSize.width;
-		int deltaY = newSize.height - shapeSize.height;
-		shapeSize = newSize;
+		int deltaX = newSize.width - getSpaceManager().getSize().width;
+		int deltaY = newSize.height - getSpaceManager().getSize().height;
+		getSpaceManager().setSize(newSize);
 		// allocate extra new space according to deep child count of children
 		Point totalDeepCount = getSeparatorDeepCount();
 		for (int i = 0; i < countChildren(); i++) {
 			Shape child = childShapeList.get(i);
 			Point childDeepCount = child.getSeparatorDeepCount();
-			Dimension childSize = new Dimension(child.shapeSize);
+			Dimension childSize = new Dimension(child.getSpaceManager().getSize());
 			childSize.width += deltaX * childDeepCount.x / totalDeepCount.x;
 			childSize.height += deltaY * childDeepCount.y / totalDeepCount.y;
 			child.resize(g, childSize);
@@ -361,11 +314,6 @@ public abstract class Shape implements VisualState.Owner {
 
 	public final void setLabel(String label) {
 		this.label = label;
-	}
-
-	public void setLocation(Point screenPoint) {
-		getSpaceManager().setRelPos(screenPoint);
-		return;
 	}
 
 	@Override

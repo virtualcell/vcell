@@ -4,90 +4,54 @@ package cbit.vcell.graph;
  * All rights reserved.
 �*/
 import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.MemoryImageSource;
 
+import javax.swing.ImageIcon;
+
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.LayoutException;
+import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
-/**
- * This type was created in VisualAge.
- */
+
 public class SubVolumeContainerShape extends ContainerShape{
 	Geometry geom = null;
 	private static final int SAMPLED_GEOM_SIZE_MAX = 150;
-	private java.awt.image.BufferedImage brightImage = null;
+	private BufferedImage brightImage = null;
 
-	/**
-	 * ImageShape constructor comment.
-	 * @param graphModel cbit.vcell.graph.GraphModel
-	 */
-	public SubVolumeContainerShape(Geometry argGeom,GraphModel graphModel) {
+	public SubVolumeContainerShape(Geometry argGeom, GraphModel graphModel) {
 		super(graphModel);
 		geom = argGeom;
 	}
 
-	/**
-	 * getModelObject method comment.
-	 */
 	@Override
 	public Object getModelObject() {
 		return geom;
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return int
-	 * @param g java.awt.Graphics
-	 */
 	@Override
-	public Dimension getPreferedSize(java.awt.Graphics2D g) {
+	public Dimension getPreferedSize(Graphics2D g) {
 		if(brightImage != null){
 			return new Dimension(brightImage.getWidth(),brightImage.getHeight());
 		}
 		return new Dimension(10,10);
 	}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @return int
-	 */
 	@Override
 	public Point getSeparatorDeepCount() {	
 		return new Point(0,0);
 	}
 
-	/**
-	 * This method was created in VisualAge.
-	 */
 	@Override
-	public void refreshLayout() throws LayoutException {
-
-		super.refreshLayout();
-
-		//for (int i=0;i<childShapeList.size();i++){
-		//SubvolumeShape shape = (SubvolumeShape)childShapeList.elementAt(i);
-		//Point attachPoint = getLocalAttachmentPoint((SubVolume)shape.getModelObject());
-		////System.out.println("attachPoint for "+((SubVolume)shape.getModelObject()).getName()+" is "+attachPoint);
-		//shape.screenPos.x = attachPoint.x - shape.screenSize.width/2;
-		//shape.screenPos.y = attachPoint.y - shape.screenSize.height/2;
-		//shape.layout();
-		//}
-	}
-
-	@Override
-	public void paintSelf(java.awt.Graphics2D g, int absPosX, int absPosY) {
-
-		//
+	public void paintSelf(Graphics2D g, int absPosX, int absPosY) {
 		// draw background image (of handles)
-		//
 		if(brightImage != null){
 			g.drawImage(brightImage,absPosX, absPosY, null);
 		}
@@ -96,9 +60,7 @@ public class SubVolumeContainerShape extends ContainerShape{
 	public void refreshDisplayImage(BufferedImage newDisplayImage){
 		brightImage = newDisplayImage;
 	}
-	/**
-	 * This method was created in VisualAge.
-	 */
+
 	public static BufferedImage CreateDisplayImage(Geometry geom) throws GeometryException{
 		try {		
 			int REAL_SAMPLE_X = 0;
@@ -119,16 +81,14 @@ public class SubVolumeContainerShape extends ContainerShape{
 					}
 				}
 			}
-
 			GeometrySpec geometrySpec = geom.getGeometrySpec();
 			if (geometrySpec.getDimension() > 0) {
-				//
-				BufferedImage brightImage = new java.awt.image.BufferedImage(REAL_SAMPLE_X,REAL_SAMPLE_Y,java.awt.image.BufferedImage.TYPE_INT_RGB);
-				java.awt.Graphics2D brightG2D = brightImage.createGraphics();
+				BufferedImage brightImage = 
+					new BufferedImage(REAL_SAMPLE_X,REAL_SAMPLE_Y, BufferedImage.TYPE_INT_RGB);
+				Graphics2D brightG2D = brightImage.createGraphics();
 				brightG2D.setColor(java.awt.Color.white);
 				brightG2D.fillRect(0,0,REAL_SAMPLE_X,REAL_SAMPLE_Y);
-
-				cbit.image.VCImage sampledImage = geometrySpec.getSampledImage();
+				VCImage sampledImage = geometrySpec.getSampledImage();
 				java.awt.image.IndexColorModel handleColorMap = GeometrySpec.getHandleColorMap();
 				byte[] reds = new byte[256];
 				handleColorMap.getReds(reds);
@@ -162,13 +122,11 @@ public class SubVolumeContainerShape extends ContainerShape{
 									new byte[]{0,(byte)(200)}),
 									zBuf, 
 									0, sampledImage.getNumX());
-					javax.swing.ImageIcon theImageIcon =
-						new javax.swing.ImageIcon(
-								java.awt.Toolkit.getDefaultToolkit().createImage(mis1).
-								getScaledInstance(REAL_SAMPLE_X,REAL_SAMPLE_Y,java.awt.Image.SCALE_AREA_AVERAGING));
-
-					brightG2D.drawImage(theImageIcon.getImage(),0,0,theImageIcon.getImageObserver());
-
+					ImageIcon theImageIcon =
+						new ImageIcon(Toolkit.getDefaultToolkit().createImage(mis1).
+								getScaledInstance(REAL_SAMPLE_X,REAL_SAMPLE_Y,
+										Image.SCALE_AREA_AVERAGING));
+					brightG2D.drawImage(theImageIcon.getImage(), 0, 0, theImageIcon.getImageObserver());
 				}
 				return brightImage;
 			}
@@ -182,20 +140,11 @@ public class SubVolumeContainerShape extends ContainerShape{
 		}
 	}
 
-
-	/**
-	 * refreshLabel method comment.
-	 */
 	@Override
 	public void refreshLabel() {}
 
-
-	/**
-	 * This method was created by a SmartGuide.
-	 * @param newSize java.awt.Dimension
-	 */
 	@Override
-	public void resize(java.awt.Graphics2D g, Dimension newSize) {
+	public void resize(Graphics2D g, Dimension newSize) {
 		return;
 	}
 }

@@ -71,7 +71,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 	public void transposeLayout() {
 		for(Shape shape : getGraphModel().getShapes()) {
 			if (ShapeUtil.isMovable(shape)) {
-				Point location = shape.getLocation();
+				Point location = shape.getSpaceManager().getRelPos();
 				int oldX = location.x;
 				int oldY = location.y;
 				location.y = oldX;
@@ -95,7 +95,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 			}
 			// initialize node location to current absolute position
 			if (newNode != null) {
-				newNode.XY(shape.getAbsLocation().x, shape.getAbsLocation().y);
+				newNode.XY(shape.spaceManager.getAbsLoc().x, shape.spaceManager.getAbsLoc().y);
 				nodeShapeMap.put(newNode.label(), shape);
 			}
 		}
@@ -161,12 +161,12 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 		for (int i = 0; i < nodeList.size(); i++) {
 			Node node = nodeList.get(i);
 			Shape shape = nodeShapeMap.get(node.label());
-			Point parentLoc = shape.getParent().getAbsLocation();
-			shape.setAbsLocation(new Point(
-							(int) (scaleX * (node.x() - lowX)) + offsetX + parentLoc.x,
-							(int) ((scaleY * (node.y() - lowY)) + offsetY + parentLoc.y)));
+			Point parentLoc = shape.getParent().spaceManager.getAbsLoc();
+			shape.getSpaceManager().setAbsLoc(new Point(
+			(int) (scaleX * (node.x() - lowX)) + offsetX + parentLoc.x,
+			(int) ((scaleY * (node.y() - lowY)) + offsetY + parentLoc.y)));
 			System.out.println("Shape " + shape.getLabel() + " @ "
-					+ shape.getAbsLocation());
+					+ shape.spaceManager.getAbsLoc());
 		}
 		getGraphPane().repaint();
 	}
@@ -234,7 +234,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 				// glgPoint = graphNode.display_position;
 				place = new Point();
 				place.setLocation(glgPoint.x * ratio, glgPoint.y * ratio + 30);
-				shape.setAbsLocation(place);
+				shape.getSpaceManager().setAbsLoc(place);
 			}
 		}
 		Dimension graphSize = new Dimension((int) (1600 * ratio) + 50,
@@ -299,47 +299,41 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 			case SELECT: {
 				Point worldPoint = screenToWorld(event.getX(), event.getY());
 				if (bMoving) {
-					Shape selectedShapes[] = getGraphModel()
-							.getAllSelectedShapes();
+					List<Shape> selectedShapes = getGraphModel().getSelectedShapes();
 					// constrain to stay within the corresponding parent for the
 					// "movingShape" as well as all other selected (hence
 					// moving) shapes.
-					Point movingParentLoc = movingShape.getParent()
-							.getAbsLocation();
-					Dimension movingParentSize = movingShape.getParent()
-							.getSize();
+					Point movingParentLoc = movingShape.getParent().spaceManager.getAbsLoc();
+					Dimension movingParentSize = movingShape.getParent().getSpaceManager().getSize();
 					worldPoint.x = Math.max(movingOffsetWorld.x
 							+ movingParentLoc.x, Math.min(movingOffsetWorld.x
 							+ movingParentLoc.x + movingParentSize.width
-							- movingShape.getSize().width, worldPoint.x));
+							- movingShape.getSpaceManager().getSize().width, worldPoint.x));
 					worldPoint.y = Math.max(movingOffsetWorld.y
 							+ movingParentLoc.y, Math.min(movingOffsetWorld.x
 							+ movingParentLoc.y + movingParentSize.height
-							- movingShape.getSize().height, worldPoint.y));
-					for (int i = 0; selectedShapes != null
-							&& i < selectedShapes.length; i++) {
-						if (selectedShapes[i] != movingShape) {
-							Point selectedParentLoc = selectedShapes[i].getParent().getAbsLocation();
-							Dimension selectedParentSize = selectedShapes[i].getParent().getSize();
+							- movingShape.getSpaceManager().getSize().height, worldPoint.y));
+					for (Shape selectedShape : selectedShapes) {
+						if (selectedShape != movingShape) {
+							Point selectedParentLoc = selectedShape.getParent().spaceManager.getAbsLoc();
+							Dimension selectedParentSize = selectedShape.getParent().getSpaceManager().getSize();
 							int selectedMovingOffsetX = movingOffsetWorld.x
-									+ (movingShape.getAbsLocation().x - selectedShapes[i].getAbsLocation().x);
+									+ (movingShape.spaceManager.getAbsLoc().x - selectedShape.spaceManager.getAbsLoc().x);
 							int selectedMovingOffsetY = movingOffsetWorld.y
-									+ (movingShape.getAbsLocation().y - selectedShapes[i].getAbsLocation().y);
+									+ (movingShape.spaceManager.getAbsLoc().y - selectedShape.spaceManager.getAbsLoc().y);
 							worldPoint.x = Math.max(selectedMovingOffsetX
 									+ selectedParentLoc.x, Math.min(
 											selectedMovingOffsetX
 													+ selectedParentLoc.x
 													+ selectedParentSize.width
-													- selectedShapes[i]
-															.getSize().width,
+													- selectedShape.getSpaceManager().getSize().width,
 											worldPoint.x));
 							worldPoint.y = Math.max(selectedMovingOffsetY
 									+ selectedParentLoc.y, Math.min(
 											selectedMovingOffsetY
 													+ selectedParentLoc.y
 													+ selectedParentSize.height
-													- selectedShapes[i]
-															.getSize().height,
+													- selectedShape.getSpaceManager().getSize().height,
 											worldPoint.y));
 						}
 					}
@@ -351,27 +345,24 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 					int deltaX = newMovingPoint.x - movingPointWorld.x;
 					int deltaY = newMovingPoint.y - movingPointWorld.y;
 					movingPointWorld = newMovingPoint;
-					movingShape.setLocation(new Point(movingPointWorld.x
-							- movingParentLoc.x, movingPointWorld.y
-							- movingParentLoc.y));
+					movingShape.getSpaceManager().setRelPos(movingPointWorld.x - movingParentLoc.x, 
+					movingPointWorld.y - movingParentLoc.y);
 					// for any other "movable" shapes that are selected, move
 					// them also
-					for (int i = 0; selectedShapes != null
-							&& i < selectedShapes.length; i++) {
-						if (selectedShapes[i] != movingShape) {
-							selectedShapes[i]
-									.setLocation(new Point(selectedShapes[i].getLocation().x
-											+ deltaX, selectedShapes[i].getLocation().y
-											+ deltaY));
-						}
+					if(selectedShapes != null) {
+						for (Shape selectedShape : selectedShapes) {
+							if (selectedShape != movingShape) {
+								selectedShape.getSpaceManager().move(deltaX, deltaY);
+							}
+						}						
 					}
 					getGraphPane().invalidate();
 					((JViewport) getGraphPane().getParent()).revalidate();
 					getGraphPane().repaint();
 				} else if (bRectStretch) {
 					// constain to stay within parent
-					Point parentLoc = rectShape.getParent().getAbsLocation();
-					Dimension parentSize = rectShape.getParent().getSize();
+					Point parentLoc = rectShape.getParent().spaceManager.getAbsLoc();
+					Dimension parentSize = rectShape.getParent().getSpaceManager().getSize();
 					worldPoint.x = Math.max(1, Math.min(parentSize.width - 1,
 							worldPoint.x - parentLoc.x))
 							+ parentLoc.x;
@@ -399,7 +390,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 					if (!bCntrl && !bShift && (ShapeUtil.isMovable(shape))) {
 						bMoving = true;
 						movingShape = shape;
-						movingPointWorld = shape.getAbsLocation();
+						movingPointWorld = shape.spaceManager.getAbsLoc();
 						movingOffsetWorld = new Point(worldPoint.x
 								- movingPointWorld.x, worldPoint.y
 								- movingPointWorld.y);
@@ -499,8 +490,8 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 					((JViewport) getGraphPane().getParent()).revalidate();
 					getGraphPane().repaint();
 				} else if (bRectStretch) {
-					Point absLoc = rectShape.getLocation();
-					Dimension size = rectShape.getSize();
+					Point absLoc = rectShape.getSpaceManager().getRelPos();
+					Dimension size = rectShape.getSpaceManager().getSize();
 					// remove temporary rectangle
 					getGraphModel().removeShape(rectShape);
 					rectShape = null;
@@ -585,33 +576,33 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 			boolean bCntrl) {
 		if (!bShift && !bCntrl) {
 			getGraphModel().clearSelection();
-			Shape shapes[] = getGraphModel().pickWorld(rect);
-			for (int i = 0; i < shapes.length; i++) {
-				if (ShapeUtil.isMovable(shapes[i])) {
-					getGraphModel().select(shapes[i]);
+			List<Shape> shapes = getGraphModel().pickWorld(rect);
+			for (Shape shape : shapes) {
+				if (ShapeUtil.isMovable(shape)) {
+					getGraphModel().select(shape);
 				}
 			}
 		} else if (bShift) {
 			if (getGraphModel().getSelectedShape() instanceof ContainerShape) {
 				getGraphModel().clearSelection();
 			}
-			Shape shapes[] = getGraphModel().pickWorld(rect);
-			for (int i = 0; i < shapes.length; i++) {
-				if (ShapeUtil.isMovable(shapes[i])) {
-					getGraphModel().select(shapes[i]);
+			List<Shape> shapes = getGraphModel().pickWorld(rect);
+			for (Shape shape : shapes) {
+				if (ShapeUtil.isMovable(shape)) {
+					getGraphModel().select(shape);
 				}
 			}
 		} else if (bCntrl) {
 			if (getGraphModel().getSelectedShape() instanceof ContainerShape) {
 				getGraphModel().clearSelection();
 			}
-			Shape shapes[] = getGraphModel().pickWorld(rect);
-			for (int i = 0; i < shapes.length; i++) {
-				if (ShapeUtil.isMovable(shapes[i])) {
-					if (shapes[i].isSelected()) {
-						getGraphModel().deselect(shapes[i]);
+			List<Shape> shapes = getGraphModel().pickWorld(rect);
+			for (Shape shape : shapes) {
+				if (ShapeUtil.isMovable(shape)) {
+					if (shape.isSelected()) {
+						getGraphModel().deselect(shape);
 					} else {
-						getGraphModel().select(shapes[i]);
+						getGraphModel().select(shape);
 					}
 				}
 			}

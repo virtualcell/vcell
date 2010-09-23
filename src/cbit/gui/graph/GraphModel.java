@@ -10,23 +10,22 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.*;
-
-import org.vcell.util.BeanUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
 import cbit.gui.graph.GraphListener;
 
 public abstract class GraphModel {
-	private Vector<Shape> shapeList = new Vector<Shape>();
-	protected transient cbit.gui.graph.GraphListener aGraphListener = null;
-	protected transient java.beans.PropertyChangeSupport propertyChange;
+
+	private List<Shape> shapeList = new ArrayList<Shape>();
+	protected transient GraphListener aGraphListener = null;
+	protected transient PropertyChangeSupport propertyChange;
 	private int fieldZoomPercent = 100;
 	private boolean fieldResizable = true;
-
-	public GraphModel() {
-	}
 
 	public void addGraphListener(GraphListener newListener) {
 		aGraphListener = GraphEventMulticaster.add(aGraphListener, newListener);
@@ -42,16 +41,15 @@ public abstract class GraphModel {
 	}
 
 	public final void addShape(Shape shape) {
-		shapeList.addElement(shape);
+		shapeList.add(shape);
 	}
 
 	protected final void clearAllShapes() {
-		shapeList.removeAllElements();
+		shapeList.clear();
 	}
 
 	public void clearSelection() {
-		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.elementAt(i);
+		for (Shape fs : shapeList) {
 			if (fs.isSelected()) {
 				fs.unselect();
 			}
@@ -74,50 +72,32 @@ public abstract class GraphModel {
 		if (aGraphListener == null) {
 			return;
 		}
-		;
 		aGraphListener.graphChanged(event);
 	}
 
-	public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
+	public void firePropertyChange(PropertyChangeEvent evt) {
 		getPropertyChange().firePropertyChange(evt);
 	}
 
-	public void firePropertyChange(java.lang.String propertyName, int oldValue,
-			int newValue) {
+	public void firePropertyChange(String propertyName, int oldValue, int newValue) {
 		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 	}
 
-	public void firePropertyChange(java.lang.String propertyName,
-			java.lang.Object oldValue, java.lang.Object newValue) {
+	public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 	}
 
-	public void firePropertyChange(java.lang.String propertyName,
-			boolean oldValue, boolean newValue) {
+	public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
 		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 	}
 
 	ElipseShape firstNode() {
-		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.elementAt(i);
+		for (Shape fs : shapeList) {
 			if (fs instanceof ElipseShape) {
 				return (ElipseShape) fs;
 			}
 		}
 		return null;
-	}
-
-	public Shape[] getAllSelectedShapes() {
-		Vector<Shape> selectedShapeList = new Vector<Shape>();
-		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.elementAt(i);
-			if (fs.isSelected()) {
-				selectedShapeList.add(fs);
-			}
-		}
-		Shape selectedShapes[] = new Shape[selectedShapeList.size()];
-		selectedShapeList.copyInto(selectedShapes);
-		return selectedShapes;
 	}
 
 	int getIndexFromNode(ElipseShape shape) {
@@ -128,7 +108,7 @@ public abstract class GraphModel {
 		if (index < 0 || index >= shapeList.size()) {
 			return null;
 		}
-		Shape shape = shapeList.elementAt(index);
+		Shape shape = shapeList.get(index);
 		if (shape instanceof ElipseShape) {
 			return (ElipseShape) shape;
 		} else {
@@ -177,9 +157,8 @@ public abstract class GraphModel {
 
 	public List<Shape> getSelectedShapes() {
 		List<Shape> selectedShapes = new ArrayList<Shape>();
-		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.elementAt(i);
-			if (fs.isSelected()) {
+		for (Shape fs : shapeList) {
+			if (fs.isSelected() && fs.getVisualState().isShowingItself()) {
 				selectedShapes.add(fs);
 			}
 		}
@@ -188,7 +167,7 @@ public abstract class GraphModel {
 
 	public Shape getShapeFromLabel(String label) {
 		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.elementAt(i);
+			Shape fs = shapeList.get(i);
 			if (label.equals(fs.getLabel())) {
 				return fs;
 			}
@@ -198,7 +177,7 @@ public abstract class GraphModel {
 
 	public Shape getShapeFromModelObject(Object obj) {
 		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.elementAt(i);
+			Shape fs = shapeList.get(i);
 			if (fs.getModelObject() == obj) {
 				return fs;
 			}
@@ -219,8 +198,7 @@ public abstract class GraphModel {
 			return null;
 		}
 		Shape topShape = null;
-		for (int i = 0; i < numShapes; i++) {
-			Shape fs = shapeList.elementAt(i);
+		for (Shape fs : shapeList) {
 			if (fs.getParent() == null) {
 				if (topShape != null) {
 					showShapeHierarchyBottomUp();
@@ -250,8 +228,7 @@ public abstract class GraphModel {
 	}
 
 	boolean hasEdge(ElipseShape node1, ElipseShape node2) {
-		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.elementAt(i);
+		for (Shape fs : shapeList) {
 			if (fs instanceof EdgeShape) {
 				EdgeShape edge = (EdgeShape) fs;
 				if ((edge.startShape == node1 && edge.endShape == node2)
@@ -272,8 +249,7 @@ public abstract class GraphModel {
 		if (startIndex >= shapeList.size()) {
 			return null;
 		}
-		for (int i = startIndex; i < shapeList.size(); i++) {
-			Shape fs = shapeList.elementAt(i);
+		for (Shape fs : shapeList) {
 			if (fs instanceof ElipseShape) {
 				return (ElipseShape) fs;
 			}
@@ -287,8 +263,7 @@ public abstract class GraphModel {
 
 	int numberOfEdges() {
 		int nodeCount = 0;
-		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.elementAt(i);
+		for (Shape fs : shapeList) {
 			if (fs instanceof EdgeShape) {
 				nodeCount++;
 			}
@@ -298,8 +273,7 @@ public abstract class GraphModel {
 
 	int numberOfNodes() {
 		int nodeCount = 0;
-		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.elementAt(i);
+		for (Shape fs : shapeList) {
 			if (fs instanceof ElipseShape) {
 				nodeCount++;
 			}
@@ -339,8 +313,7 @@ public abstract class GraphModel {
 	}
 
 	public Shape pickEdgeWorld(Point point) {
-		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.elementAt(i);
+		for (Shape fs : shapeList) {
 			if (fs instanceof EdgeShape) {
 				Shape pickedShape = fs.pick(point);
 				if (pickedShape == fs) {
@@ -358,18 +331,17 @@ public abstract class GraphModel {
 		return topShape.pick(argPoint);
 	}
 
-	public Shape[] pickWorld(Rectangle argRectWorld) {
+	public List<Shape> pickWorld(Rectangle argRectWorld) {
 		Shape topShape = getTopShape();
 		if (topShape == null)
 			return null;
-		Vector<Shape> pickedList = new Vector<Shape>();
-		for (int i = 0; i < shapeList.size(); i++) {
-			Shape shape = shapeList.elementAt(i);
-			if (argRectWorld.contains(shape.getAbsLocation())) {
+		List<Shape> pickedList = new ArrayList<Shape>();
+		for (Shape shape : shapeList) {
+			if (argRectWorld.contains(shape.spaceManager.getAbsLoc())) {
 				pickedList.add(shape);
 			}
 		}
-		return (Shape[]) BeanUtils.getArray(pickedList, Shape.class);
+		return pickedList;
 	}
 
 	public abstract void refreshAll();
@@ -390,7 +362,7 @@ public abstract class GraphModel {
 
 	public void removeShape(Shape shape) {
 		if (shapeList.contains(shape)) {
-			shapeList.removeElement(shape);
+			shapeList.remove(shape);
 		}
 		Shape parent = shape.getParent();
 		if (parent != null) {
@@ -439,18 +411,17 @@ public abstract class GraphModel {
 
 	public void showShapeHierarchyBottomUp() {
 		System.out.println("<<<<<<<<<Shape Hierarchy Bottom Up>>>>>>>>>");
-		Vector<Shape> shapes = new Vector<Shape>(shapeList);
+		List<Shape> shapes = new ArrayList<Shape>(shapeList);
 		// gather top(s) ... should only have one
-		Vector<Shape> topList = new Vector<Shape>();
+		List<Shape> topList = new ArrayList<Shape>();
 		for (int i = 0; i < shapes.size(); i++) {
-			if (shapes.elementAt(i).getParent() == null) {
-				topList.add(shapes.elementAt(i));
+			if (shapes.get(i).getParent() == null) {
+				topList.add(shapes.get(i));
 			}
 		}
 		// for each top, print tree
 		Stack<Shape> stack = new Stack<Shape>();
-		for (int j = 0; j < topList.size(); j++) {
-			Shape top = topList.elementAt(j);
+		for (Shape top : topList) {
 			System.out.println(top.toString());
 			stack.push(top);
 			shapes.remove(top);
@@ -458,7 +429,7 @@ public abstract class GraphModel {
 				// find first remaining children of current parent and print
 				boolean bChildFound = false;
 				for (int i = 0; i < shapes.size() && stack.size() > 0; i++) {
-					Shape shape = shapes.elementAt(i);
+					Shape shape = shapes.get(i);
 					if (shape.getParent() == stack.peek()) {
 						char padding[] = new char[4 * stack.size()];
 						for (int k = 0; k < padding.length; k++)
@@ -482,7 +453,7 @@ public abstract class GraphModel {
 		if (shapes.size() > 0) {
 			System.out.println(".......shapes left over:");
 			for (int i = 0; i < shapes.size(); i++) {
-				System.out.println((shapes.elementAt(i)).toString());
+				System.out.println((shapes.get(i)).toString());
 			}
 		}
 
@@ -490,18 +461,18 @@ public abstract class GraphModel {
 
 	public void showShapeHierarchyTopDown() {
 		System.out.println("<<<<<<<<<Shape Hierarchy Top Down>>>>>>>>>");
-		Vector<Shape> shapes = new Vector<Shape>(shapeList);
+		List<Shape> shapes = new ArrayList<Shape>(shapeList);
 		// gather top(s) ... should only have one
-		Vector<Shape> topList = new Vector<Shape>();
+		List<Shape> topList = new ArrayList<Shape>();
 		for (int i = 0; i < shapes.size(); i++) {
-			if (shapes.elementAt(i).getParent() == null) {
-				topList.add(shapes.elementAt(i));
+			if (shapes.get(i).getParent() == null) {
+				topList.add(shapes.get(i));
 			}
 		}
 		// for each top, print tree
 		Stack<Shape> stack = new Stack<Shape>();
 		for (int j = 0; j < topList.size(); j++) {
-			Shape top = topList.elementAt(j);
+			Shape top = topList.get(j);
 			System.out.println(top.toString());
 			stack.push(top);
 			shapes.remove(top);
@@ -530,7 +501,7 @@ public abstract class GraphModel {
 		if (shapes.size() > 0) {
 			System.out.println(".......shapes left over:");
 			for (int i = 0; i < shapes.size(); i++) {
-				System.out.println((shapes.elementAt(i)).toString());
+				System.out.println((shapes.get(i)).toString());
 			}
 		}
 	}
