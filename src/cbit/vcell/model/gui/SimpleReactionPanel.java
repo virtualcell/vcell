@@ -840,7 +840,7 @@ private void initialize() {
 			gbc.gridx = 0; gbc.gridy = gridy;
 			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 			gbc.anchor = GridBagConstraints.NORTHEAST;
-			JLabel label = new JLabel("Annotatation");
+			JLabel label = new JLabel("Annotation");
 			label.setHorizontalAlignment(SwingConstants.RIGHT);
 			label.setFont(label.getFont().deriveFont(Font.BOLD));
 			add(label, gbc);
