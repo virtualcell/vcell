@@ -6,11 +6,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EventObject;
+
+import org.vcell.util.gui.ProgressDialogListener;
 
 import loci.formats.FormatException;
 import cbit.image.ImageException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.resource.ResourceUtil;
@@ -22,7 +26,7 @@ public class FRAPParamTest
 {
 	private static final double stepIncrease = 1.001; //increase 0.01 based on last step value
 	private static final double stepDecrease = 0.999; //decrease 0.1 based on last step value
-	private static final String SUB_DIRECTORY = "paramTest\\test2_mobileFrac0.1%\\";
+	private static final String SUB_DIRECTORY = "paramTest\\";
 	private static final int maxIteration = 100; 
 	private ArrayList<ProfileDataElement> profileData = new ArrayList<ProfileDataElement>();
 		
@@ -88,7 +92,7 @@ public class FRAPParamTest
 			newFRAPStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),null);
 			newFRAPStudy.setXmlFilename(fileName);
 			//create optData
-			newFRAPStudy.setFrapOptData(new FRAPOptData(newFRAPStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), newFRAPStudy.getStoredRefData()));
+			newFRAPStudy.setFrapOptData(new FRAPOptData(newFRAPStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, getLocalWorkspace(), newFRAPStudy.getStoredRefData()));
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 		} 
@@ -142,15 +146,10 @@ public class FRAPParamTest
 		else
 		{
 			try{
-				//try diffusion with one diffusing compoent model
-				Parameter[] bestParameters = frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters();//######
-				//get frap opt class
-				FRAPOptData optData = frapStudy.getFrapOptData();
-                ProfileData[] profileData = optData.evaluateParameters(bestParameters, new ClientTaskStatusSupport() {
-					
+				ClientTaskStatusSupport ctss =  new ClientTaskStatusSupport() {
+						
 						public void setProgress(int progress) {
-							// TODO Auto-generated method stub
-							
+							System.out.println(progress);
 						}
 						
 						public void setMessage(String message) {
@@ -166,13 +165,112 @@ public class FRAPParamTest
 							// TODO Auto-generated method stub
 							return 0;
 						}
-					});
+					};
+				//get startign index
+				if(frapStudy.getStartingIndexForRecovery() == null)
+				{
+					int index = FRAPDataAnalysis.getRecoveryIndex(frapStudy.getFrapData());
+					frapStudy.setStartingIndexForRecovery(index);
+				}
+				//get dependent rois
+				if(frapStudy.getFrapData().getRois().length < 4)
+				{
+					frapStudy.refreshDependentROIs();
+				}
+				//get selected ROIs
+				if(frapStudy.getSelectedROIsForErrorCalculation() == null)
+				{
+					boolean[] selectedROIs = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
+					int counter = 0;
+					for(FRAPData.VFRAP_ROI_ENUM roiEnum : FRAPData.VFRAP_ROI_ENUM.values())
+					{
+						if(roiEnum.name().equals(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()) || roiEnum.name().equals(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()))
+						{
+							counter++;
+							continue;
+						}
+						if(frapStudy.getFrapData().getRoi(roiEnum.name()).getNonzeroPixelsCount() > 0)
+						{
+							selectedROIs[counter] = true;
+							counter++;
+						}
+					}
+					frapStudy.setSelectedROIsForErrorCalculation(selectedROIs);
+				}
+				//get frap opt data
+				if(frapStudy.getFrapOptData() == null)
+				{
+					if(!FRAPWorkspace.areExternalDataOK(getLocalWorkspace(),frapStudy.getFrapDataExternalDataInfo(), frapStudy.getRoiExternalDataInfo()))
+					{
+						//if external files are missing/currupt or ROIs are changed, create keys and save them
+						frapStudy.setFrapDataExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME));
+						frapStudy.setRoiExternalDataInfo(FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.ROI_EXTDATA_NAME));
+						frapStudy.saveROIsAsExternalData(localWorkspace, frapStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),frapStudy.getStartingIndexForRecovery());
+						frapStudy.saveImageDatasetAsExternalData(localWorkspace, frapStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),frapStudy.getStartingIndexForRecovery());
+					}
+					
+					//run ref sim
+					frapStudy.setFrapOptData(new FRAPOptData(frapStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, localWorkspace, ctss));
+				}
+				
+				FRAPOptData optData = frapStudy.getFrapOptData();
+				//create frapModels
+				if(frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]== null )
+				{
+					frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] = new FRAPModel(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT], null, null, null);
+					if(frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() ==null )
+					{
+						frapStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF);
+						Parameter[] initialParams = FRAPModel.getInitialParameters(frapStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
+						Parameter[] bestParameters = frapStudy.getFrapOptData().getBestParamters(initialParams, frapStudy.getSelectedROIsForErrorCalculation());
+						frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(bestParameters);
+					}
+				}
+				if(frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]== null)
+				{
+					frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] = new FRAPModel(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS], null, null, null);
+					if(frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() ==null )
+					{
+						frapStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF);
+						Parameter[] initialParams = FRAPModel.getInitialParameters(frapStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
+						Parameter[] bestParameters = frapStudy.getFrapOptData().getBestParamters(initialParams, frapStudy.getSelectedROIsForErrorCalculation());
+						frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
+					}
+				}
+				
+				
+				//try diffusion with one diffusing component model
+				System.out.println("Evaluating parameters in diffusion with one diffusing compoent model...");
+				Parameter[] bestParameters = frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters();
+				ProfileData[] profileData = optData.evaluateParameters(bestParameters, ctss);
 
-				//output profile likelihood
+				//output profile likelihood 
+				File outputDir_oneComponent = new File(getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + "OneComponent_SAVED_AT_" + ClientRequestManager.generateDateTimeString() + System.getProperty("file.separator"));
+				if(!outputDir_oneComponent.exists())
+				{
+					outputDir_oneComponent.mkdirs();
+				}
                 for(int i=0; i<profileData.length; i++)
                 {
                 	ProfileDataElement profileDataElement = profileData[i].getProfileDataElements().get(0);
-					outputProfileLikelihood(profileData[i].getProfileDataElements(), profileDataElement.getParamName());
+					outputProfileLikelihood(profileData[i].getProfileDataElements(), profileDataElement.getParamName(), outputDir_oneComponent);
+                }
+                
+                //try diffusion with two diffusing components model
+				System.out.println("Evaluating parameters in diffusion with two diffusing compoents model...");
+				bestParameters = frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters();
+				profileData = optData.evaluateParameters(bestParameters, ctss);
+
+				//output profile likelihood
+				File outputDir_twoComponents = new File(getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + "TwoComponents_SAVED_AT_" + ClientRequestManager.generateDateTimeString() + System.getProperty("file.separator"));
+				if(!outputDir_twoComponents.exists())
+				{
+					outputDir_twoComponents.mkdirs();
+				}
+                for(int i=0; i<profileData.length; i++)
+                {
+                	ProfileDataElement profileDataElement = profileData[i].getProfileDataElements().get(0);
+					outputProfileLikelihood(profileData[i].getProfileDataElements(), profileDataElement.getParamName(), outputDir_twoComponents);
                 }
 			}catch(Exception e)
 			{
@@ -182,12 +280,12 @@ public class FRAPParamTest
 		}
 	}
 	
-	private void outputProfileLikelihood(ArrayList<ProfileDataElement> arg_profileData, String fixedParamName) 
+	private void outputProfileLikelihood(ArrayList<ProfileDataElement> arg_profileData, String fixedParamName, File outputDir) 
 	{
 		try{
 			System.out.println("Writing profile likelihood...");
 			//output results
-			String outFileName = getLocalWorkspace().getDefaultWorkspaceDirectory() + SUB_DIRECTORY + fixedParamName +"_profileLikelihood" +".txt"; 
+			String outFileName = outputDir.getAbsolutePath() + "\\" + fixedParamName +"_profileLikelihood" +".txt"; 
 			File outFile = new File(outFileName);
 			FileWriter fstream = new FileWriter(outFile);
 	        BufferedWriter out = new BufferedWriter(fstream);
@@ -195,7 +293,7 @@ public class FRAPParamTest
 	        for(int i=0; i < arg_profileData.size(); i++)
 	        {
 	        	out.newLine();
-	        	String rowStr = Math.log10(arg_profileData.get(i).getParameterValue()) + "\t" + arg_profileData.get(i).getLikelihood();
+	        	String rowStr = arg_profileData.get(i).getParameterValue() + "\t" + arg_profileData.get(i).getLikelihood();
 	        	Parameter[] params = arg_profileData.get(i).getBestParameters();
 	        	rowStr = rowStr + "\t";
 	        	for(int j=0; j < params.length; j++)

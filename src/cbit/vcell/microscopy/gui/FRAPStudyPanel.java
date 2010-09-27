@@ -1279,7 +1279,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					{
 						if(fStudy.getStoredRefData() != null)
 						{
-							getFrapWorkspace().getWorkingFrapStudy().setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, getLocalWorkspace(), fStudy.getStoredRefData()));
+							getFrapWorkspace().getWorkingFrapStudy().setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, getLocalWorkspace(), fStudy.getStoredRefData()));
 						}
 						else
 						{
@@ -1294,7 +1294,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								fStudy.saveImageDatasetAsExternalData(localWorkspace, fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
 							}
 							//run ref sim
-							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, localWorkspace, this.getClientTaskStatusSupport()));
+							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, localWorkspace, this.getClientTaskStatusSupport()));
 						}
 					}
 				}
@@ -1321,8 +1321,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
 								fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(bestParameters);
 							}
-							
-							
 						}
 						else if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
 						{
