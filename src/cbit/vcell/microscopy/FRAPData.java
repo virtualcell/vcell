@@ -208,7 +208,10 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		Random rnd = new Random();
 		int shortMax = 65535;
 		//set messge to load variable
-		progressListener.setMessage("Loading variable " + variableName + "...");
+		if(progressListener != null)
+		{
+			progressListener.setMessage("Loading variable " + variableName + "...");
+		}
 		for (int i = 0; i < times.length; i++) {
 			double[] rawData =
 				dataSetControllerImpl.getSimDataBlock(null,vcSimulationDataIdentifier,variableName,times[i]).getData();
@@ -229,7 +232,9 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 					cartesianMesh.getOrigin(),
 					cartesianMesh.getExtent(),
 					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
-			if(progressListener != null){progressListener.setProgress((int)(((i+1)/times.length))*100);}
+			if(progressListener != null){
+				progressListener.setProgress((int)(((i+1)/times.length))*100);
+			}
 		}
 	
 		ImageDataset imageDataSet = new ImageDataset(scaledDataImages,times,cartesianMesh.getSizeZ());
@@ -240,7 +245,10 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		if(bleachedMaskVarName != null)
 		{
 			//set message to load cell ROI variable 
-			progressListener.setMessage("Loading ROIs...");
+			if(progressListener != null)
+			{
+				progressListener.setMessage("Loading ROIs...");
+			}
 			double[] rawROIBleached = dataSetControllerImpl.getSimDataBlock(null,vcSimulationDataIdentifier, bleachedMaskVarName, 0).getData();
 			short[] scaledCellDataShort = new short[rawROIBleached.length];
 			short[] scaledBleachedDataShort = new short[rawROIBleached.length];

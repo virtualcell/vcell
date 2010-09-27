@@ -501,11 +501,11 @@ public class VirtualFrapBatchRunFrame extends JFrame
 						//run ref sim
 						if(fStudy.getStoredRefData() != null)//if ref data is stored ,we don't have to re-run
 						{
-							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, localWorkspace, fStudy.getStoredRefData()));
+							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, localWorkspace, fStudy.getStoredRefData()));
 						}
 						else
 						{
-							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, localWorkspace, msgPanel));
+							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, localWorkspace, msgPanel));
 						}
 					}
 				};

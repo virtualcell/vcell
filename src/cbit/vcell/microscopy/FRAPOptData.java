@@ -19,6 +19,7 @@ import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.DataProcessingInstructions;
@@ -31,57 +32,36 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 
 
 public class FRAPOptData {
-	public static final int NUM_PARAMS_FOR_ONE_DIFFUSION_RATE = 3;//diffusion rate, mobile fraction, bleach while monitoring rate
-	public static final int NUM_PARAMS_FOR_TWO_DIFFUSION_RATE = 5;//fast diff rate, fast mobile fraction, slow diff rate, slow mobile fraction, bleach while monitoring rate
+	public static final int NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION = 3;//diffusion rate, mobile fraction, bleach while monitoring rate
+	public static final int NUM_PARAMS_FOR_TWO_COMPONENTS_DIFFUSION = 5;//faster diff rate, faster mobile fraction, bleach while monitoring rate, slower diff rate, slower mobile fraction, 
 	
-	/*----------------reference data by diffusion rate=1, mobileFrac=1 and bwmRate = 0-------------------*/
+	/*----------------for reference simulation-------------------*/
+	//The parameters setting for running reference simulation: diffusion rate=1, mobileFrac=1 and bwmRate = 0
 	public static final Parameter REF_DIFFUSION_RATE_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 0, 200, 1.0, 1.0);
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 0, 200, 1.0, 1.0);
 	public static final Parameter REF_MOBILE_FRACTION_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION], 0, 1, 1.0, 1.0);
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION], 0, 1, 1.0, 1.0);
 	public static final Parameter REF_BLEACH_WHILE_MONITOR_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 0, 1, 1.0,  0);
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 0, 1, 1.0,  0);
 	public static final Parameter REF_SECOND_DIFFUSION_RATE_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE], 0, 100, 1.0, 1.0);
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE], 0, 100, 1.0, 1.0);
 	public static final Parameter REF_SECOND_MOBILE_FRACTION_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION], 0, 1, 1.0, 1.0);
-	
-	public static final int REF_BWM_LOG_VAL_MIN = -5;
-	public static final int REF_BWM_LOG_VAL_MAX = 0;
-	
-	
-//	private static int maxRefSavePoints = 500;
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION], 0, 1, 1.0, 1.0);
+	//The time bounds for reference simulation, simulation will stop at spatial uniform or the ending time(if uniform hasn't reached yet). 
 	private static double REF_STARTINGTIME = 0;
 	private static double REF_ENDINGTIME = 500;
-	
-//	private Boolean bRunRefSim = null;
-	
-	private FRAPStudy expFrapStudy = null;
-	private LocalWorkspace localWorkspace = null;
-	private TimeBounds refTimeBounds = null;
-	private TimeStep refTimeStep = null;
-	private DefaultOutputTimeSpec  refTimeSpec = null;
-	private int numEstimatedParams = 0;
-	private double[][] dimensionReducedRefData = null;
-	private double[] refDataTimePoints = null;
-	private Parameter fixedParam = null;
-	private boolean bApplyMeasurementError = false;
-	private double leastError = 0;
-	//used for optimization when takeing measurement error into account.
-	//first dimension length 11, according to the order in FRAPData.VFRAP_ROI_ENUM
-	//second dimension time, total time length - starting index for recovery 
-	private double[][] measurementErrors = null;
-	
+	//Variable reference diffusion rate actually used in simulation in order to reach spatial uniform faster
+	//after the simulation, the results will convert to the results as if it was run by diffusion rate  1.
 	public static final double REFERENCE_DIFF_DELTAT = 0.05;
 	private static final double REFERENCE_DIFF_RATE_COEFFICIENT = 1;
 	private static final String REFERENCE_DIFF_RATE_STR = REFERENCE_DIFF_RATE_COEFFICIENT +"*(t+"+ REFERENCE_DIFF_DELTAT +")";
 	
-	//for parameter evaluation
-	public static final double[] INCREASE_PERCENT_CONST = new double[]{0.01, 0.001, 0.02, 0.01, 0.001};
-	public static final double[] DECREASE_PERCENT_CONST = new double[]{0.01, 0.001, 0.1, 0.01, 0.001};
-	public static final int MAX_ITERATION = 200;
-	public static final int MIN_ITERATION = 50;
-	public static final double DECREMENT_LOWER_BOUND = 0.1;
+	/*----------------for calculating confidence intervals of estimated parameters-----------------*/
+	//initial increasing/decreasing steps
+	public static final double[] DEFAULT_CI_STEPS = new double[]{0.04, 0.004, 0.04, 0.04, 0.04};
+	public static final int MAX_ITERATION = 100;
+	public static final double MIN_LIKELIHOOD_CHANGE = 0.01;
+	//Confidence levels constants 
 	public static final int NUM_CONFIDENCE_LEVELS = 4;
 	public static final int IDX_DELTA_ALPHA_80 = 0;
 	public static final int IDX_DELTA_ALPHA_90 = 1;
@@ -90,7 +70,25 @@ public class FRAPOptData {
 	public static final String[] CONFIDENCE_LEVEL_NAME = new String[]{"80% confidence", "90%confidence", "95%confidence", "99%confidence"};
 	public static final double[] DELTA_ALPHA_VALUE = new double[]{1.642, 2.706, 3.841, 6.635};
 	
-
+	
+	//used in diffusion parameter panels to show log scale of the bleach monitoring rate slider.
+	public static final int REF_BWM_LOG_VAL_MIN = -5;
+	public static final int REF_BWM_LOG_VAL_MAX = 0;
+	
+	
+	private FRAPStudy expFrapStudy = null;
+	private LocalWorkspace localWorkspace = null;
+	private int numEstimatedParams = 0;
+	private double[][] dimensionReducedRefData = null;
+	private double[] refDataTimePoints = null;
+	private Parameter fixedParam = null;
+	private boolean bApplyMeasurementError = false;
+	private double leastError = 0;
+	//used for optimization when taking measurement error into account.
+	//first dimension length 11, according to the order in FRAPData.VFRAP_ROI_ENUM
+	//second dimension time, total time length - starting index for recovery 
+	private double[][] measurementErrors = null;
+	
 	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace,
 			ClientTaskStatusSupport progressListener) throws Exception
 	{
@@ -117,23 +115,6 @@ public class FRAPOptData {
 	
 	public TimeBounds getRefTimeBounds()
 	{
-//		if(refTimeBounds == null)
-//		{
-//			//estimated t = ( bleach area max width^2 /(4*D)) * ln(1/delta), use bleah area width as length.
-//			ROI bleachedROI = getExpFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED);
-//			
-//			Rectangle bleachRect = bleachedROI.getRoiImages()[0].getNonzeroBoundingBox();
-//			double width = ((double)bleachRect.width/getExpFrapStudy().getFrapData().getImageDataset().getISize().getX()) * 
-//			               getExpFrapStudy().getFrapData().getImageDataset().getExtent().getX();
-//			double height = ((double)bleachRect.height/getExpFrapStudy().getFrapData().getImageDataset().getISize().getY()) * 
-//            			   getExpFrapStudy().getFrapData().getImageDataset().getExtent().getY();
-//			
-//			double bleachWidth = Math.max(width, height);
-//			final double  unrecovery_threshold = .01;
-//			double refEndingTime = (bleachWidth * bleachWidth/(4*REF_DIFFUSION_RATE_PARAM.getInitialGuess())) * Math.log(1/unrecovery_threshold);
-			
-//			refTimeBounds = new TimeBounds(FRAPOptData.startingTime, refEndingTime);
-//		}
 		TimeBounds refTimeBounds = new TimeBounds(FRAPOptData.REF_STARTINGTIME, FRAPOptData.REF_ENDINGTIME);
 		return refTimeBounds;
 	}
@@ -409,11 +390,11 @@ public class FRAPOptData {
 	public double[][] getFitData(Parameter[] newParams) throws Exception
 	{
 		double[][] result = null;
-		if(newParams.length == FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE)
+		if(newParams.length == FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION)
 		{
 			result = getFitData_oneDiffRate(newParams);
 		}
-		else if(newParams.length == FRAPOptData.NUM_PARAMS_FOR_TWO_DIFFUSION_RATE)
+		else if(newParams.length == FRAPOptData.NUM_PARAMS_FOR_TWO_COMPONENTS_DIFFUSION)
 		{
 			result = getFitData_twoDiffRates(newParams);
 		}
@@ -912,7 +893,7 @@ public class FRAPOptData {
 			//add the fixed parameter to profileData, output exp data and opt results
 			setNumEstimatedParams(totalParamLen);
 			Parameter[] newBestParameters = getBestParamters(currentParams, frapStudy.getSelectedROIsForErrorCalculation(), null, true);
-			double iniTotalErr = getLeastError();
+			double iniError = getLeastError();
 			//fixed parameter
 			Parameter fixedParam = newBestParameters[j];
 			if(fixedParam.getInitialGuess() == 0)//log function cannot take 0 as parameter
@@ -927,7 +908,7 @@ public class FRAPOptData {
 			{
 				clientTaskStatusSupport.setMessage("Evaluating parameter: " + fixedParam.getName());
 			}
-			ProfileDataElement pde = new ProfileDataElement(fixedParam.getName(), Math.log10(fixedParam.getInitialGuess()), iniTotalErr, newBestParameters);
+			ProfileDataElement pde = new ProfileDataElement(fixedParam.getName(), Math.log10(fixedParam.getInitialGuess()), iniError, newBestParameters);
 			profileData.addElement(pde);
 			
 			Parameter[] unFixedParams = new Parameter[totalParamLen - 1];
@@ -942,19 +923,30 @@ public class FRAPOptData {
 				else continue;
 			}
 			//increase
-			int iterationCount = 0;
-			double paramVal = fixedParam.getInitialGuess();
-			double increment = 1 + INCREASE_PERCENT_CONST[j];
+			int iterationCount = 1;
+			double paramLogVal = Math.log10(fixedParam.getInitialGuess());
+			double lastLogVal = paramLogVal; 
+			double lastError = iniError;
+			boolean isBoundReached = false;
+			double incrementStep = DEFAULT_CI_STEPS[j];
+			int stepIncreaseCount = 0;
 			while(true)
 			{
 				if(iterationCount > MAX_ITERATION)//if exceeds the maximum iterations, break;
 				{
 					break;
 				}
-				paramVal = paramVal * increment;
-				if(paramVal > (fixedParam.getUpperBound()-FRAPOptimization.epsilon) || paramVal < (fixedParam.getLowerBound()+FRAPOptimization.epsilon))
+				if(isBoundReached)
 				{
 					break;
+				}
+				paramLogVal = paramLogVal + incrementStep ;
+				double paramVal = Math.pow(10,paramLogVal);
+				if(paramVal > (fixedParam.getUpperBound() - FRAPOptimization.epsilon))
+				{
+					paramVal = fixedParam.getUpperBound();
+					paramLogVal = Math.log10(fixedParam.getUpperBound());
+					isBoundReached = true;
 				}
 				Parameter increasedParam = new Parameter (fixedParam.getName(),
 	                                                      fixedParam.getLowerBound(),
@@ -979,50 +971,74 @@ public class FRAPOptData {
 						}
 					}
 				}
-				double totalErr = getLeastError();
-				pde = new ProfileDataElement(increasedParam.getName(), Math.log10(increasedParam.getInitialGuess()), totalErr, newParameters);
+				double error = getLeastError();
+				pde = new ProfileDataElement(increasedParam.getName(), paramLogVal, error, newParameters);
 				profileData.addElement(pde);
 				//check if the we run enough to get confidence intervals(99% @6.635, we plus 10 over the min error)
-				if(totalErr > (iniTotalErr+10))
+				if(error > (iniError+10))
 				{
 					break;
 				}
-				if(iterationCount >= MIN_ITERATION)
+				if(Math.abs((error-lastError)/lastError) < MIN_LIKELIHOOD_CHANGE)
 				{
-					if(iterationCount == MIN_ITERATION + 1)
-					{
-						increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
-					}
-					else if(iterationCount == 2*MIN_ITERATION + 1)
-					{
-						increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
-					}
-					else if(iterationCount == 3*MIN_ITERATION + 1)
-					{
-						increment = 1 + INCREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
-					}
-					
+					stepIncreaseCount ++;
+					incrementStep = DEFAULT_CI_STEPS[j] * Math.pow(2, stepIncreaseCount);
 				}
+				else
+				{
+					if(stepIncreaseCount > 1)
+					{
+						incrementStep = DEFAULT_CI_STEPS[j] / Math.pow(2, stepIncreaseCount);
+						stepIncreaseCount --;
+					}
+				}
+				//use first derivative
+//				double yPrime = Math.abs((error-lastError)/(paramLogVal - lastLogVal));
+//				if(yPrime < (0.1763+FRAPOptimization.epsilon) /*< 10 degree angle*/|| yPrime > (56.9168 + FRAPOptimization.epsilon) /*>89 degree angle*/)
+//				{
+//					stepIncreaseCount ++;
+//					incrementStep = DEFAULT_CI_STEPS[j] * Math.pow(2, stepIncreaseCount);
+//				}
+//				else
+//				{
+//					stepIncreaseCount = 0;
+//					incrementStep = DEFAULT_CI_STEPS[j];
+//				}
+				
 				if (clientTaskStatusSupport.isInterrupted())
 				{
 					throw UserCancelException.CANCEL_GENERIC;
 				}
+
+				lastError = error;
+				lastLogVal = paramLogVal;
 				iterationCount++;
 			}
 			//decrease
-			iterationCount = 0;
-			paramVal = fixedParam.getInitialGuess();
-			double decrement = 1 - DECREASE_PERCENT_CONST[j];
+			iterationCount = 1;
+			paramLogVal = Math.log10(fixedParam.getInitialGuess());;
+			lastLogVal = paramLogVal;;
+			lastError = iniError;
+			isBoundReached = false;
+			double decrementStep = DEFAULT_CI_STEPS[j];
+			stepIncreaseCount = 0;
 			while(true)
 			{
 				if(iterationCount > MAX_ITERATION)//if exceeds the maximum iterations, break;
 				{
 					break;
 				}
-				paramVal = paramVal * decrement;
-				if(paramVal > (fixedParam.getUpperBound()-FRAPOptimization.epsilon) || paramVal < (fixedParam.getLowerBound()+FRAPOptimization.epsilon))
+				if(isBoundReached)
 				{
 					break;
+				}
+				paramLogVal = paramLogVal - decrementStep;
+				double paramVal = Math.pow(10,paramLogVal);
+				if(paramVal < (fixedParam.getLowerBound() + FRAPOptimization.epsilon))
+				{
+					paramVal = FRAPOptimization.epsilon;
+					paramLogVal = Math.log10(FRAPOptimization.epsilon);
+					isBoundReached = true;
 				}
 				Parameter decreasedParam = new Parameter (fixedParam.getName(),
 	                                            fixedParam.getLowerBound(),
@@ -1047,33 +1063,45 @@ public class FRAPOptData {
 						}
 					}
 				}
-				double totalErr = getLeastError();
-				pde = new ProfileDataElement(decreasedParam.getName(), Math.log10(decreasedParam.getInitialGuess()), totalErr, newParameters);
+				double error = getLeastError();
+				pde = new ProfileDataElement(decreasedParam.getName(), paramLogVal, error, newParameters);
 				profileData.addElement(0,pde);
-				if(totalErr > (iniTotalErr+10))
+				if(error > (iniError+10))
 				{
 					break;
 				}
-				if(iterationCount >= MIN_ITERATION)
+				if(Math.abs((error-lastError)/lastError) < MIN_LIKELIHOOD_CHANGE)
 				{
-					if(iterationCount == MIN_ITERATION + 1)
-					{
-						decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
-					}
-					else if(iterationCount == 2*MIN_ITERATION + 1)
-					{
-						decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
-					}
-					else if(iterationCount == 3*MIN_ITERATION + 1)
-					{
-						decrement = 1 - DECREASE_PERCENT_CONST[j] * Math.pow(4, iterationCount/MIN_ITERATION);
-					}
-					decrement = Math.max( DECREMENT_LOWER_BOUND, decrement);//decrement can be 0 or smaller than 0, we have to clamp it to lower bound decement 0.1.
+					stepIncreaseCount ++;
+					decrementStep = DEFAULT_CI_STEPS[j] * Math.pow(2, stepIncreaseCount);
 				}
+				else
+				{
+					if(stepIncreaseCount > 1)
+					{
+						incrementStep = DEFAULT_CI_STEPS[j] / Math.pow(2, stepIncreaseCount);
+						stepIncreaseCount --;
+					}
+				}
+				// use first derivative
+//				double yPrime = Math.abs((error-lastError)/(paramLogVal -lastLogVal));
+//				if(yPrime < (0.0875 + FRAPOptimization.epsilon)/*5 degree angle*/ || yPrime > (56.9168 + FRAPOptimization.epsilon)/*89 degree angle*/ )
+//				{
+//					stepIncreaseCount++;
+//					decrementStep = DEFAULT_CI_STEPS[j] * Math.pow(2, stepIncreaseCount);
+//				}
+//				else
+//				{
+//					stepIncreaseCount = 0;
+//					decrementStep = DEFAULT_CI_STEPS[j];
+//				}
+				
 				if (clientTaskStatusSupport.isInterrupted())
 				{
 					throw UserCancelException.CANCEL_GENERIC;
 				}
+				lastError = error;
+				lastLogVal = paramLogVal;
 				iterationCount++;
 			}
 			resultData[j] = profileData;
