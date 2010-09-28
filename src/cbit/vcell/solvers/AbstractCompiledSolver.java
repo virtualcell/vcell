@@ -140,7 +140,7 @@ private void runSolver() {
 		getSessionLog().exception(executableException);
 		cleanup();
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not execute code: " + executableException.getMessage())));
-		fireSolverAborted(SimulationMessage.solverAborted("Could not execute code: " + executableException.getMessage()));
+		fireSolverAborted(SimulationMessage.solverAborted(executableException.getMessage()));
 	} catch (Throwable throwable) {
 		getSessionLog().alert("AbstractODESolver.start() : Caught Throwable instead of SolverException -- THIS EXCEPTION SHOULD NOT HAPPEN!");
 		getSessionLog().exception(throwable);

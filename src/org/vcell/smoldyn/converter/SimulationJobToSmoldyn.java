@@ -155,16 +155,15 @@ public class SimulationJobToSmoldyn {
 		}
 	}
 
-	private void addSmoldynSurface(GeometricRegion gr, Geometry vcellgeometry, Geometryable smoldyngeometry) throws SmoldynException {
+	private void addSmoldynSurface(SurfaceGeometricRegion sgr, Geometry vcellgeometry, Geometryable smoldyngeometry) throws SmoldynException {
 		GeometrySurfaceDescription geoSurfaceDescription = vcellgeometry.getGeometrySurfaceDescription();
-		smoldyngeometry.addSurface(gr.getName());
-		VolumeGeometricRegion insideVolRegion = (VolumeGeometricRegion) gr.getAdjacentGeometricRegions()[0];
-		org.vcell.smoldyn.model.Surface smoldynsurface = smoldyngeometry.getSurface(gr.getName());
-		addPanels(smoldynsurface, insideVolRegion.getRegionID(), geoSurfaceDescription);
-		ConversionUtilities.printWarning("added surface of name: " + gr.getName());
+		smoldyngeometry.addSurface(sgr.getName());
+		org.vcell.smoldyn.model.Surface smoldynsurface = smoldyngeometry.getSurface(sgr.getName());
+		addPanels(smoldynsurface, sgr, geoSurfaceDescription);
+		ConversionUtilities.printWarning("added surface of name: " + sgr.getName());
 	}
 	
-	private void addPanels(org.vcell.smoldyn.model.Surface smoldynsurface, Integer volRegionID, 
+	private void addPanels(org.vcell.smoldyn.model.Surface smoldynsurface, SurfaceGeometricRegion sgr, 
 			GeometrySurfaceDescription geometrySurfaceDescription) throws SmoldynException{
 		SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
 		for(int j = 0; j < surfaceCollection.getSurfaceCount(); j++) {
@@ -173,23 +172,14 @@ public class SimulationJobToSmoldyn {
 				Polygon polygon = surface.getPolygons(k);
 				Node [] nodes = polygon.getNodes();
 				Boolean interior = null;
-				if(surface.getInteriorRegionIndex() == volRegionID) {
-					interior = true;
-				} else if(surface.getExteriorRegionIndex() == volRegionID) {
-					interior = false;
-				}
-				if (interior == true) {
+				int volRegion1ID = ((VolumeGeometricRegion) sgr.getAdjacentGeometricRegions()[0]).getRegionID();
+				int volRegion2ID = ((VolumeGeometricRegion) sgr.getAdjacentGeometricRegions()[1]).getRegionID();
+				if(surface.getInteriorRegionIndex() == volRegion1ID && surface.getExteriorRegionIndex() == volRegion2ID
+						|| surface.getInteriorRegionIndex() == volRegion2ID && surface.getExteriorRegionIndex() == volRegion1ID) {				
 					addTriangle(smoldynsurface, new Node [] {nodes[0], nodes[1], nodes[2]}, interior);
 					if(nodes.length == 4) {
 						addTriangle(smoldynsurface, new Node [] {nodes[0], nodes[2], nodes[3]}, interior);
 					}
-				} else if (interior == false) {
-					addTriangle(smoldynsurface, new Node [] {nodes[2], nodes[1], nodes[0]}, interior);
-					if(nodes.length == 4) {
-						addTriangle(smoldynsurface, new Node [] {nodes[3], nodes[2], nodes[0]}, interior);
-					}
-				} else {//interior is null
-					ConversionUtilities.throwRuntimeException("neither interior nor exterior???");						
 				}
 			}
 		}

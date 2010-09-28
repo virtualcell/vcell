@@ -211,7 +211,7 @@ public void setMessagingInterval(int newMessagingInterval) {
  */
 public void solverAborted(SolverEvent event) {
 	try {
-		log.print("LocalMathController Caught solverAborted("+event.getSource().toString()+",error='"+event.getSimulationMessage()+"')");
+		log.print("LocalSolverController Caught solverAborted("+event.getSource().toString()+",error='"+event.getSimulationMessage()+"')");
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}
@@ -234,7 +234,7 @@ public void solverAborted(SolverEvent event) {
  */
 public void solverFinished(SolverEvent event) {
 	try {
-		log.print("LocalMathController Caught solverFinished("+event.getSource().toString()+")");
+		log.print("LocalSolverController Caught solverFinished("+event.getSource().toString()+")");
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}
@@ -295,7 +295,7 @@ public void solverProgress(SolverEvent event) {
  */
 public void solverStarting(SolverEvent event) {
 	try {
-		log.print("LocalMathController Caught solverStarting("+event.getSource().toString()+")");
+		log.print("LocalSolverController Caught solverStarting("+event.getSource().toString()+")");
 		SimulationJob simJob = getSimulationJob();
 		if (serialParameterScanJobIndex >= 0) {
 			SimulationJob newSimJob = new SimulationJob(simJob.getSimulation(), serialParameterScanJobIndex, simJob.getFieldDataIdentifierSpecs());
@@ -316,7 +316,7 @@ public void solverStarting(SolverEvent event) {
  */
 public void solverStopped(SolverEvent event) {
 	try {
-		log.print("LocalMathController Caught solverStopped("+event.getSource().toString()+")");
+		log.print("LocalSolverController Caught solverStopped("+event.getSource().toString()+")");
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}

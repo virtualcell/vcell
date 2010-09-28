@@ -3,13 +3,13 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -21,7 +21,9 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.ISize;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
@@ -29,6 +31,8 @@ import cbit.vcell.client.desktop.simulation.SimulationListTreeModel.SimulationLi
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
@@ -1002,25 +1006,94 @@ private void refreshSimListTable() {
  * Comment
  */
 private void runSimulations() {
-	int[] selections = getScrollPaneTable().getSelectedRows();
-	Vector<Simulation> v = new Vector<Simulation>();
-	for (int i = 0; i < selections.length; i++){
-		Simulation sim = getSimulationWorkspace().getSimulations()[selections[i]];
-		MeshSpecification meshSpecification = sim.getMeshSpecification();
-		if (meshSpecification != null && !meshSpecification.isAspectRatioOK()) {
-			String warningMessage =  "Simulation '" + sim.getName() + "' has differences in mesh sizes. This might affect the accuracy of the solution.\n"
-			+ "\u0394x=" + meshSpecification.getDx() + "\n" 
-			+ "\u0394y=" + meshSpecification.getDy()
-			+ (meshSpecification.getGeometry().getDimension() < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz());			
-			int result = JOptionPane.showConfirmDialog(this, warningMessage + "\n\nDo you want to continue anyway?", "Warning", JOptionPane.YES_NO_OPTION);
-			if (result != JOptionPane.YES_OPTION) {
-				return;
+	final ArrayList<Simulation> simList = new ArrayList<Simulation>();
+	AsynchClientTask task1 = new AsynchClientTask("checking", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			int[] selections = getScrollPaneTable().getSelectedRows();
+			int dimension = getSimulationWorkspace().getSimulationOwner().getGeometry().getDimension();
+			
+			for (int i = 0; i < selections.length; i++){
+				Simulation sim = getSimulationWorkspace().getSimulations()[selections[i]];
+
+				if (dimension > 0) {
+					MeshSpecification meshSpecification = sim.getMeshSpecification();
+					if (meshSpecification != null && !meshSpecification.isAspectRatioOK()) {
+						String warningMessage =  "Simulation '" + sim.getName() + "' has differences in mesh sizes. " +
+								"This might affect the accuracy of the solution.\n"
+						+ "\u0394x=" + meshSpecification.getDx() + "\n" 
+						+ "\u0394y=" + meshSpecification.getDy()
+						+ (dimension > 2 ? "" : "\n\u0394z=" + meshSpecification.getDz())
+						 + "\n\nDo you want to continue anyway?";
+						String result = DialogUtils.showWarningDialog(SimulationListPanel.this, warningMessage, new String[] {"OK", "Cancel"}, "OK");
+						if (result == null || result != "OK") {
+							return;
+						}
+					}		
+	
+					// check the number of regions if the simulation mesh is coarser.
+					Geometry mathGeometry = sim.getMathDescription().getGeometry();
+					ISize newSize = meshSpecification.getSamplingSize();
+					ISize defaultSize = mathGeometry.getGeometrySpec().getDefaultSampledImageSize();
+					int defaultTotalVolumeElements = mathGeometry.getGeometrySurfaceDescription().getVolumeSampleSize().getXYZ();
+					int newTotalVolumeElements = meshSpecification.getSamplingSize().getXYZ();
+					if (defaultTotalVolumeElements > newTotalVolumeElements) { // coarser
+						Geometry resampledGeometry = (Geometry) BeanUtils.cloneSerializable(mathGeometry);
+						GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
+						geoSurfaceDesc.setVolumeSampleSize(newSize);
+						geoSurfaceDesc.updateAll();
+						
+						int defaultNumGeometricRegions = mathGeometry.getGeometrySurfaceDescription().getGeometricRegions().length;
+						int numGeometricRegions = geoSurfaceDesc.getGeometricRegions().length;
+						if (numGeometricRegions != defaultNumGeometricRegions) {
+							String warningMessage =  "The simulation mesh size (" + newSize.getX() 
+							+ (dimension > 1 ? " x " + newSize.getY() : "") + (dimension > 2 ? " x " + newSize.getZ() : "") + ")" +
+							" for '" + sim.getName() + "' results in different number of geometric regions [" + numGeometricRegions + "] than " +
+									"the number of geometric regions [" + defaultNumGeometricRegions + "] resolved in the Geometry Viewer." +
+									"\n\nThis can affect the accuracy of the solution. Finer simulation mesh is recommended."
+									 + "\n\nDo you want to continue anyway?";
+							String result = DialogUtils.showWarningDialog(SimulationListPanel.this, warningMessage, new String[] {"OK", "Cancel"}, "OK");
+							if (result == null || result != "OK") {
+								throw UserCancelException.CANCEL_GENERIC;
+							}
+						}
+					} 
+					
+					if (mathGeometry.getGeometrySpec().hasImage()) { // if it's an image.
+						if (defaultSize.getX() + 1 < newSize.getX() 
+								|| defaultSize.getY() + 1 < newSize.getY()
+								|| defaultSize.getZ() + 1 < newSize.getZ()) { // finer
+							String warningMessage =  "The mesh size (" + newSize.getX() 
+							+ (dimension > 1 ? " x " + newSize.getY() : "") + (dimension > 2 ? " x " + newSize.getZ() : "") + ")" +
+							" for simulation '" + sim.getName() + "' is finer than the original image resolution (" 
+									+ (defaultSize.getX() + 1) 
+									+ (dimension > 1 ? " x " + (defaultSize.getY() + 1) : "") 
+									+ (dimension > 2 ? " x " + (defaultSize.getZ() + 1): "") + ")" +
+									".\n\nThis will not improve the accuracy of the solution and can take longer to run. Original resolution (" 
+									+ (defaultSize.getX() + 1) + (dimension > 1 ? " x " + (defaultSize.getY() + 1) : "") 
+									+ (dimension > 2 ? " x " + (defaultSize.getZ() + 1) : "") 
+									+ ") or coarser mesh is recommended."  + "\n\nDo you want to continue anyway?";
+							String result = DialogUtils.showWarningDialog(SimulationListPanel.this, warningMessage, new String[] {"OK", "Cancel"}, "OK");
+							if (result == null || result != "OK") {
+								throw UserCancelException.CANCEL_GENERIC;
+							}
+						}
+					}
+				}
+				simList.add(sim);
 			}
 		}
-		v.add(sim);
-	}
-	Simulation[] toRun = (Simulation[])BeanUtils.getArray(v, Simulation.class);
-	getSimulationWorkspace().runSimulations(toRun);
+	};
+			
+	AsynchClientTask task2 = new AsynchClientTask("running", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			// run simulations
+			Simulation[] toRun = simList.toArray(new Simulation[0]);
+			getSimulationWorkspace().runSimulations(toRun);
+		}
+	};
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
 }
 
 

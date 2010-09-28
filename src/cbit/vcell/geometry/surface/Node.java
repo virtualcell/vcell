@@ -132,4 +132,8 @@ public void setY(double y) {
 public void setZ(double z) {
 	fieldZ = z;
 }
+
+public String toString() {
+	return "Node(" + getX() + "," + getY() + "," + getZ() + ")";
+}
 }
