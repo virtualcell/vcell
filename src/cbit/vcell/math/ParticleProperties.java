@@ -13,6 +13,7 @@ import com.hp.hpl.jena.sparql.function.library.localname;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
 
 public class ParticleProperties implements Serializable, Matchable {
 	
@@ -94,6 +95,18 @@ public class ParticleProperties implements Serializable, Matchable {
 		public final Expression getLocationZ() {
 			return locationZ;
 		}
+		public boolean isXUniform() {
+			return locationX.infix().equals(UNIFORM);
+		}
+		public boolean isYUniform() {
+			return locationY.infix().equals(UNIFORM);
+		}
+		public boolean isZUniform() {
+			return locationZ.infix().equals(UNIFORM);
+		}
+		public boolean isUniform() {
+			return isXUniform() && isYUniform() && isZUniform();
+		}
 		public boolean compareEqual(Matchable object) {
 			if (!(object instanceof ParticleInitialCondition)) {
 				return false;
@@ -105,16 +118,16 @@ public class ParticleProperties implements Serializable, Matchable {
 					&&	Compare.isEqualOrNull(locationY, pic.locationY) 
 					&&	Compare.isEqualOrNull(locationZ, pic.locationZ);
 		}
-		public void bind(MathDescription mathDesc) throws ExpressionBindingException {		
-			count.bindExpression(mathDesc);
-			if (locationX != null && !locationX.infix().equals(UNIFORM)) {
-				locationX.bindExpression(mathDesc);
+		void bind(SymbolTable symbolTable) throws ExpressionBindingException {		
+			count.bindExpression(symbolTable);
+			if (locationX != null && !isXUniform()) {
+				locationX.bindExpression(symbolTable);
 			}
-			if (locationY != null && !locationY.infix().equals(UNIFORM)) {
-				locationY.bindExpression(mathDesc);
+			if (locationY != null && !isYUniform()) {
+				locationY.bindExpression(symbolTable);
 			}
-			if (locationZ != null && !locationZ.infix().equals(UNIFORM)) {
-				locationZ.bindExpression(mathDesc);
+			if (locationZ != null && !isZUniform()) {
+				locationZ.bindExpression(symbolTable);
 			}
 		}	
 	}
@@ -214,10 +227,10 @@ public class ParticleProperties implements Serializable, Matchable {
 		return true;
 	}
 	
-	public void bind(MathDescription mathDesc) throws ExpressionBindingException {
-		diffExp.bindExpression(mathDesc);
+	public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
+		diffExp.bindExpression(symbolTable);
 		for (ParticleInitialCondition pic : listOfParticleInitialConditions) {
-			pic.bind(mathDesc);
+			pic.bind(symbolTable);
 		}
 	}
 }

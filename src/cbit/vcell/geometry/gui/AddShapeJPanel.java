@@ -5,17 +5,13 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.MouseInfo;
-import java.awt.Point;
-import java.awt.PointerInfo;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.StringTokenizer;
+
 import javax.swing.BoxLayout;
-
-import javax.swing.JButton;
-
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -25,8 +21,6 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
-
-import org.vcell.util.Coordinate;
 
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.geometry.GeometrySpec;
@@ -48,16 +42,18 @@ public class AddShapeJPanel extends JPanel {
 	private ActionListener shapeTypeComboBoxActionListener =
 		new ActionListener(){
 		public void actionPerformed(ActionEvent e) {
-			if(comboBox.getSelectedItem().equals(MANUAL_SELECT)){
-				cardLayout.show(cardPanel, manualPanel.getName());
-			}else if(comboBox.getSelectedItem().equals(CIRCLE_SELECT) || comboBox.getSelectedItem().equals(SPHERE_SELECT)){
-				cardLayout.show(cardPanel, circlePanel.getName());
-			}else if(comboBox.getSelectedItem().equals(RECTANGLE_SELECT) || comboBox.getSelectedItem().equals(BOX_SELECT)){
-				cardLayout.show(cardPanel, boxPanel.getName());
-			}else if(comboBox.getSelectedItem().equals(ELLIPSE_SELECT) || comboBox.getSelectedItem().equals(ELLIPSOID_SELECT)){
-				cardLayout.show(cardPanel, ellipsePanel.getName());
-			}else if(comboBox.getSelectedItem().equals(CYLINDER_SELECT)){
-				cardLayout.show(cardPanel, cylinderPanel.getName());
+			if (e.getSource() == comboBox) {
+				if(comboBox.getSelectedItem().equals(MANUAL_SELECT)){
+					cardLayout.show(cardPanel, manualPanel.getName());
+				}else if(comboBox.getSelectedItem().equals(CIRCLE_SELECT) || comboBox.getSelectedItem().equals(SPHERE_SELECT)){
+					cardLayout.show(cardPanel, circlePanel.getName());
+				}else if(comboBox.getSelectedItem().equals(RECTANGLE_SELECT) || comboBox.getSelectedItem().equals(BOX_SELECT)){
+					cardLayout.show(cardPanel, boxPanel.getName());
+				}else if(comboBox.getSelectedItem().equals(ELLIPSE_SELECT) || comboBox.getSelectedItem().equals(ELLIPSOID_SELECT)){
+					cardLayout.show(cardPanel, ellipsePanel.getName());
+				}else if(comboBox.getSelectedItem().equals(CYLINDER_SELECT)){
+					cardLayout.show(cardPanel, cylinderPanel.getName());
+				}
 			}
 			setAnalyticExprLabel();
 		}
@@ -443,7 +439,6 @@ public class AddShapeJPanel extends JPanel {
 		}
 		comboBox.setSelectedIndex(0);
 		comboBox.addActionListener(shapeTypeComboBoxActionListener);
-
 	}
 	private void setAnalyticExprLabel(){
 		try{
@@ -466,6 +461,9 @@ public class AddShapeJPanel extends JPanel {
 		cylAxisButtonGroup.add(cylXRadioButton);
 		cylAxisButtonGroup.add(cylYRadioButton);
 		cylAxisButtonGroup.add(cylZRadioButton);
+		cylXRadioButton.addActionListener(shapeTypeComboBoxActionListener);
+		cylYRadioButton.addActionListener(shapeTypeComboBoxActionListener);
+		cylZRadioButton.addActionListener(shapeTypeComboBoxActionListener);
 		
 		copyExpressionTextButton.setEnabled(false);
 		
@@ -507,123 +505,130 @@ public class AddShapeJPanel extends JPanel {
 		String result = null;
 		if(comboBox.getSelectedItem().equals(AddShapeJPanel.MANUAL_SELECT)){
 			return manualTextField.getText();
-		}else if(comboBox.getSelectedItem().equals(AddShapeJPanel.CIRCLE_SELECT) ||comboBox.getSelectedItem().equals(AddShapeJPanel.SPHERE_SELECT)){
-			double radius = Double.parseDouble(circleRadiusTextField.getText());
-			double xp = 0;
-			double yp = 0;
-			double zp = 0;
-			StringTokenizer st = new StringTokenizer(circleCenterTextField.getText(),",");
-			xp = Double.parseDouble(st.nextToken());
-			if(st.hasMoreTokens()){
-				yp = Double.parseDouble(st.nextToken());
+		} else {
+			String X = ReservedSymbol.X.getName();
+			String Y = ReservedSymbol.Y.getName();
+			String Z = ReservedSymbol.Z.getName();
+			if(comboBox.getSelectedItem().equals(AddShapeJPanel.CIRCLE_SELECT) ||comboBox.getSelectedItem().equals(AddShapeJPanel.SPHERE_SELECT)){
+				double radius = Double.parseDouble(circleRadiusTextField.getText());
+				double xp = 0;
+				double yp = 0;
+				double zp = 0;
+				StringTokenizer st = new StringTokenizer(circleCenterTextField.getText(),",");
+				xp = Double.parseDouble(st.nextToken());
+				
 				if(st.hasMoreTokens()){
-					zp = Double.parseDouble(st.nextToken());				
-					result = 
-						"("+xp+"-"+ReservedSymbol.X.getName()+")^2 + " +
-						"("+yp+"-"+ReservedSymbol.Y.getName()+")^2 +" +
-						"("+zp+"-"+ReservedSymbol.Z.getName()+")^2" +
-						" < "+radius+"^2";
+					yp = Double.parseDouble(st.nextToken());
+					if(st.hasMoreTokens()){
+						zp = Double.parseDouble(st.nextToken());
+						result = 
+							(xp == 0 ? X + "^2" : "("+X+"-"+xp +")^2") + " + " +
+							(yp == 0 ? Y + "^2" : "("+Y+"-"+yp +")^2") + " + " + 
+							(zp == 0 ? Z + "^2" : "("+Z+"-"+zp +")^2") +
+							" < "+radius+"^2";
+					}else{
+						result = 
+							(xp == 0 ? X + "^2" : "("+X+"-"+xp +")^2") + " + " +
+							(yp == 0 ? Y + "^2" : "("+Y+"-"+yp +")^2") + 
+							" < "+radius+"^2";
+					}
 				}else{
-					result = 
-						"("+xp+"-"+ReservedSymbol.X.getName()+")^2 + " +
-						"("+yp+"-"+ReservedSymbol.Y.getName()+")^2" +
-						" < "+radius+"^2";
+					result = (xp == 0 ? X + "^2" : "("+X+"-"+xp +")^2") + " < "+radius+"^2";
 				}
-			}else{
-				result = 
-					"("+xp+"-"+ReservedSymbol.X.getName()+")^2" +
-					" < "+radius+"^2";
-			}
-		}else if(comboBox.getSelectedItem().equals(AddShapeJPanel.RECTANGLE_SELECT) || comboBox.getSelectedItem().equals(AddShapeJPanel.BOX_SELECT)){
-			double xl = 0;
-			double yl = 0;
-			double zl = 0;
-			double xh = 0;
-			double yh = 0;
-			double zh = 0;
-			StringTokenizer stl = new StringTokenizer(boxLCTextField.getText(),",");
-			StringTokenizer sth = new StringTokenizer(boxUCTextField.getText(),",");
-			xl = Double.parseDouble(stl.nextToken());
-			xh = Double.parseDouble(sth.nextToken());
-			if(xl > xh){double temp = xl;xl=xh;xh=temp;}
-			if(stl.hasMoreTokens()){
-				yl = Double.parseDouble(stl.nextToken());
-				yh = Double.parseDouble(sth.nextToken());
-				if(yl > yh){double temp = yl;yl=yh;yh=temp;}
+			}else if(comboBox.getSelectedItem().equals(AddShapeJPanel.RECTANGLE_SELECT) || comboBox.getSelectedItem().equals(AddShapeJPanel.BOX_SELECT)){
+				double xl = 0;
+				double yl = 0;
+				double zl = 0;
+				double xh = 0;
+				double yh = 0;
+				double zh = 0;
+				StringTokenizer stl = new StringTokenizer(boxLCTextField.getText(),",");
+				StringTokenizer sth = new StringTokenizer(boxUCTextField.getText(),",");
+				xl = Double.parseDouble(stl.nextToken());
+				xh = Double.parseDouble(sth.nextToken());
+				if(xl > xh){double temp = xl;xl=xh;xh=temp;}
 				if(stl.hasMoreTokens()){
-					zl = Double.parseDouble(stl.nextToken());				
-					zh = Double.parseDouble(sth.nextToken());
-					if(zl > zh){double temp = zl;zl=zh;zh=temp;}
-					result = 
-						ReservedSymbol.X.getName()+">="+xl+" && "+
-						ReservedSymbol.X.getName()+"<="+xh+" && "+
-						ReservedSymbol.Y.getName()+">="+yl+" && "+
-						ReservedSymbol.Y.getName()+"<="+yh+" && "+
-						ReservedSymbol.Z.getName()+">="+zl+" && "+
-						ReservedSymbol.Z.getName()+"<="+zh;
+					yl = Double.parseDouble(stl.nextToken());
+					yh = Double.parseDouble(sth.nextToken());
+					if(yl > yh){double temp = yl;yl=yh;yh=temp;}
+					if(stl.hasMoreTokens()){
+						zl = Double.parseDouble(stl.nextToken());
+						zh = Double.parseDouble(sth.nextToken());
+						if(zl > zh){double temp = zl;zl=zh;zh=temp;}
+						result = 
+							X+">="+xl+" && "+
+							X+"<="+xh+" && "+
+							Y+">="+yl+" && "+
+							Y+"<="+yh+" && "+
+							Z+">="+zl+" && "+
+							Z+"<="+zh;
+					}else{
+						result = 
+							X+">="+xl+" && "+
+							X+"<="+xh+" && "+
+							Y+">="+yl+" && "+
+							Y+"<="+yh;
+					}
 				}else{
 					result = 
-						ReservedSymbol.X.getName()+">="+xl+" && "+
-						ReservedSymbol.X.getName()+"<="+xh+" && "+
-						ReservedSymbol.Y.getName()+">="+yl+" && "+
-						ReservedSymbol.Y.getName()+"<="+yh;
+						X+">="+xl+" && "+
+						X+"<="+xh;
 				}
-			}else{
-				result = 
-					ReservedSymbol.X.getName()+">="+xl+" && "+
-					ReservedSymbol.X.getName()+"<="+xh;
-			}
 
-		}else if(comboBox.getSelectedItem().equals(AddShapeJPanel.ELLIPSE_SELECT) || comboBox.getSelectedItem().equals(AddShapeJPanel.ELLIPSOID_SELECT)){
-			double xl = 0;
-			double yl = 0;
-			double zl = 0;
-			double xh = 0;
-			double yh = 0;
-			double zh = 0;
-			StringTokenizer stl = new StringTokenizer(ellipseCenterTextField.getText(),",");
-			StringTokenizer sth = new StringTokenizer(axisRadiiTextField.getText(),",");
-			xl = Double.parseDouble(stl.nextToken());
-			xh = Double.parseDouble(sth.nextToken());
-			if(stl.hasMoreTokens()){
-				yl = Double.parseDouble(stl.nextToken());
-				yh = Double.parseDouble(sth.nextToken());
+			}else if(comboBox.getSelectedItem().equals(AddShapeJPanel.ELLIPSE_SELECT) || comboBox.getSelectedItem().equals(AddShapeJPanel.ELLIPSOID_SELECT)){
+				double xl = 0;
+				double yl = 0;
+				double zl = 0;
+				double xh = 0;
+				double yh = 0;
+				double zh = 0;
+				StringTokenizer stl = new StringTokenizer(ellipseCenterTextField.getText(),",");
+				StringTokenizer sth = new StringTokenizer(axisRadiiTextField.getText(),",");
+				xl = Double.parseDouble(stl.nextToken());
+				xh = Double.parseDouble(sth.nextToken());
 				if(stl.hasMoreTokens()){
-					zl = Double.parseDouble(stl.nextToken());				
-					zh = Double.parseDouble(sth.nextToken());				
-					result = 
-						"("+xl+"-"+ReservedSymbol.X.getName()+")^2" + "/"+xh+"^2"+"+"+
-						"("+yl+"-"+ReservedSymbol.Y.getName()+")^2" + "/"+yh+"^2"+"+"+
-						"("+zl+"-"+ReservedSymbol.Z.getName()+")^2" + "/"+zh+"^2"+
-						"<=1";
+					yl = Double.parseDouble(stl.nextToken());
+					yh = Double.parseDouble(sth.nextToken());
+					if(stl.hasMoreTokens()){
+						zl = Double.parseDouble(stl.nextToken());
+						zh = Double.parseDouble(sth.nextToken());
+						result = 
+							(xl == 0 ? X + "^2" : "("+X+"-"+xl+")^2") + "/"+xh+"^2"+" + "+
+							(yl == 0 ? Y + "^2" : "("+Y+"-"+yl+")^2") + "/"+yh+"^2"+" + "+
+							(zl == 0 ? Z + "^2" : "("+Z+"-"+zl+")^2") + "/"+zh+"^2"+
+							" <= 1";
+					}else{
+						result = 
+							(xl == 0 ? X + "^2" : "("+X+"-"+xl+")^2") + "/"+xh+"^2"+" + "+
+							(yl == 0 ? Y + "^2" : "("+Y+"-"+yl+")^2") + "/"+yh+"^2"+
+							" <=1 ";
+					}
 				}else{
 					result = 
-						"("+xl+"-"+ReservedSymbol.X.getName()+")^2" + "/"+xh+"^2"+"+"+
-						"("+yl+"-"+ReservedSymbol.Y.getName()+")^2" + "/"+yh+"^2"+
-						"<=1";
+						(xl == 0 ? X + "^2" : "("+X+"-"+xl+")^2") + "/"+xh+"^2"+
+						" <=1 ";
 				}
-			}else{
-				result = 
-					"("+xl+"-"+ReservedSymbol.X.getName()+")^2" + "/"+xh+"^2"+
-					"<=1";
-			}
 
-		}else if(comboBox.getSelectedItem().equals(AddShapeJPanel.CYLINDER_SELECT)){
-			double radius = Double.parseDouble(cylRadiusTextField.getText());
-			double length = Double.parseDouble(cylLengthTextField.getText());
-			StringTokenizer st = new StringTokenizer(cylStartPointTextField.getText(),",");
-			double xp = Double.parseDouble(st.nextToken());
-			double yp = Double.parseDouble(st.nextToken());
-			double zp = Double.parseDouble(st.nextToken());
-			if(cylXRadioButton.isSelected()){
-				result = ReservedSymbol.X.getName()+">="+xp+"&&"+ReservedSymbol.X.getName()+"<="+(xp+length)+"&&"+
-				"("+yp+"-"+ReservedSymbol.Y.getName()+")^2+("+zp+"-"+ReservedSymbol.Z.getName()+")^2<"+radius+"^2";
-			}else if(cylYRadioButton.isSelected()){
-				result = ReservedSymbol.Y.getName()+">="+yp+"&&"+ReservedSymbol.Y.getName()+"<="+(yp+length)+"&&"+
-				"("+xp+"-"+ReservedSymbol.X.getName()+")^2+("+zp+"-"+ReservedSymbol.Z.getName()+")^2<"+radius+"^2";				
-			}else if(cylZRadioButton.isSelected()){
-				result = ReservedSymbol.Z.getName()+">="+zp+"&&"+ReservedSymbol.Z.getName()+"<="+(zp+length)+"&&"+
-				"("+yp+"-"+ReservedSymbol.Y.getName()+")^2+("+xp+"-"+ReservedSymbol.X.getName()+")^2<"+radius+"^2";				
+			}else if(comboBox.getSelectedItem().equals(AddShapeJPanel.CYLINDER_SELECT)){
+				double radius = Double.parseDouble(cylRadiusTextField.getText());
+				double length = Double.parseDouble(cylLengthTextField.getText());
+				StringTokenizer st = new StringTokenizer(cylStartPointTextField.getText(),",");
+				double xp = Double.parseDouble(st.nextToken());
+				double yp = Double.parseDouble(st.nextToken());
+				double zp = Double.parseDouble(st.nextToken());
+				if(cylXRadioButton.isSelected()){
+					result = X+">="+xp+" && "+X+"<="+(xp+length)+" && "+
+					(yp == 0 ? Y + "^2" : "("+Y+"-"+yp+")^2") + " + " +
+					(zp == 0 ? Z + "^2" : "("+Z+"-"+zp+")^2") + " < "+radius+"^2";
+				}else if(cylYRadioButton.isSelected()){
+					result = Y+">="+yp+" && "+Y+"<="+(yp+length)+" && "+
+					(xp == 0 ? X + "^2" : "("+X+"-"+xp+")^2") + " + " +
+					(zp == 0 ? Z + "^2" : "("+Z+"-"+zp+")^2") + " < "+radius+"^2";
+				}else if(cylZRadioButton.isSelected()){
+					result = Z+">="+zp+" && "+Z+"<="+(zp+length)+" && "+
+					(xp == 0 ? X + "^2" : "("+X+"-"+xp+")^2") + " + " +
+					(yp == 0 ? Y + "^2" : "("+Y+"-"+yp+")^2") + " < "+radius+"^2";
+				}
 			}
 		}
 		return result;

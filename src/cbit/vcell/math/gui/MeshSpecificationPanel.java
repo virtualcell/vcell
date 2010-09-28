@@ -811,10 +811,7 @@ private void autoUpdateSizes(DocumentEvent e) {
 		}	
 		return;
 	}
-	
-	if (dimension < 2) {
-		return;
-	}	
+
 	JTextField input = null;
 	try {
 		bInProgress = true;
@@ -828,24 +825,28 @@ private void autoUpdateSizes(DocumentEvent e) {
 				return;
 			}
 			int numX = Integer.parseInt(xtext);
-			switch (dimension){		
-				case 2:{
-					double yxRatio = extent.getY()/extent.getX();
-					long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
-					getYTextField().setText("" + numY);
-					totalSizeLabel.setText(numX + " x " + numY + " = " + (numX * numY));
-					break;
-				}
-				case 3:{
-					double yxRatio = extent.getY()/extent.getX();
-					double zxRatio = extent.getZ()/extent.getX();
-					long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
-					long numZ = Math.max(3, Math.round(zxRatio * (numX - 1) + 1));
-					getYTextField().setText("" + numY);
-					getZTextField().setText("" + numZ);
-					totalSizeLabel.setText(numX + " x " + numY + " x " + numZ + " = " + (numX * numY * numZ));
-					break;
-				}
+			switch (dimension){
+			case 1: {
+				totalSizeLabel.setText(numX + "");
+				break;
+			}
+			case 2:{
+				double yxRatio = extent.getY()/extent.getX();
+				long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
+				getYTextField().setText("" + numY);
+				totalSizeLabel.setText(numX + " x " + numY + " = " + (numX * numY));
+				break;
+			}
+			case 3:{
+				double yxRatio = extent.getY()/extent.getX();
+				double zxRatio = extent.getZ()/extent.getX();
+				long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
+				long numZ = Math.max(3, Math.round(zxRatio * (numX - 1) + 1));
+				getYTextField().setText("" + numY);
+				getZTextField().setText("" + numZ);
+				totalSizeLabel.setText(numX + " x " + numY + " x " + numZ + " = " + (numX * numY * numZ));
+				break;
+			}
 			}
 		} else if (e.getDocument() == getYTextField().getDocument()) {
 			input = getYTextField();
