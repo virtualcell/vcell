@@ -395,13 +395,14 @@ private class RowSegment {
 }
 
 private void writeSurfacesAndCompartments() throws SolverException {
-//	PrintWriter tmppw = null;  
-//	try {
-//		tmppw = new PrintWriter("D:\\smoldyn-2.15\\surfacepoints.m");
-//	} catch (FileNotFoundException e) {
-//		// TODO Auto-generated catch block
-//		e.printStackTrace();
-//	}
+	boolean DEBUG = false;
+	
+	PrintWriter tmppw = null;  
+	try {
+		if (DEBUG) tmppw = new PrintWriter("D:\\smoldyn-2.15\\surfacepoints.m");
+	} catch (FileNotFoundException e) {
+		e.printStackTrace();
+	}
 	
 	GeometrySurfaceDescription geometrySurfaceDescription = resampledGeometry.getGeometrySurfaceDescription();	
 	SurfaceClass[] surfaceClasses = geometrySurfaceDescription.getSurfaceClasses();
@@ -485,7 +486,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 		printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
 		printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());
 		
-//		tmppw.println("verts" + sci + "=[");
+		if (DEBUG) tmppw.println("verts" + sci + "=[");
 		for (Node[] threeCorners : triList) {
 			printWriter.print(SmoldynKeyword.panel + " " + SmoldynKeyword.tri);
 			switch (dimension) {
@@ -494,14 +495,14 @@ private void writeSurfacesAndCompartments() throws SolverException {
 				break;
 			case 2:
 				printWriter.print(" " + threeCorners[0].getX() + " " + threeCorners[0].getY());
-//				tmppw.print(" " + threeCorners[0].getX() + " " + threeCorners[0].getY());
+				if (DEBUG) tmppw.print(" " + threeCorners[0].getX() + " " + threeCorners[0].getY());
 
 				if (threeCorners[0].getX() == threeCorners[1].getX() && threeCorners[0].getY() == threeCorners[1].getY()) {
 					printWriter.print(" " + threeCorners[2].getX() + " " + threeCorners[2].getY());
-//					tmppw.print(" " + threeCorners[2].getX() + " " + threeCorners[2].getY());
+					if (DEBUG) tmppw.print(" " + threeCorners[2].getX() + " " + threeCorners[2].getY());
 				} else {
 					printWriter.print(" " + threeCorners[1].getX() + " " + threeCorners[1].getY());
-//					tmppw.print(" " + threeCorners[1].getX() + " " + threeCorners[1].getY());
+					if (DEBUG) tmppw.print(" " + threeCorners[1].getX() + " " + threeCorners[1].getY());
 				}
 				break;
 			case 3:
@@ -512,11 +513,11 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			}
 		
 			printWriter.println();
-//			tmppw.println();
+			if (DEBUG) tmppw.println();
 		}
 		printWriter.println(SmoldynKeyword.end_surface);
 		printWriter.println();
-//		tmppw.println("];");
+		if (DEBUG) tmppw.println("];");
 	}
 	
 	// write compartment
@@ -565,7 +566,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 				}				
 			}
 		}
-//		tmppw.println("points" + svi + "=[");
+		if (DEBUG) tmppw.println("points" + svi + "=[");
 		
 		// gather all the points in all the regions
 		GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(sv);
@@ -628,19 +629,19 @@ private void writeSurfacesAndCompartments() throws SolverException {
 									if (bPrint) {
 										double coordX = origin.getX() + dx * midi;
 										printWriter.print(SmoldynKeyword.point + " " + coordX);
-//										tmppw.print(coordX);
+										if (DEBUG) tmppw.print(coordX);
 										if (dimension > 1) {
 											double coordY = origin.getY() + dy * j;
 											printWriter.print(" " + coordY);
-//											tmppw.print(" " + coordY);										
+											if (DEBUG) tmppw.print(" " + coordY);										
 											if (dimension > 2) {
 												double coordZ = origin.getZ() + dz * k;
 												printWriter.print(" " + coordZ);
-//												tmppw.print(" " + coordZ);
+												if (DEBUG) tmppw.print(" " + coordZ);
 											}
 										}
 										printWriter.println();
-//										tmppw.println();
+										if (DEBUG) tmppw.println();
 									}
 								}
 								starti = -1;
@@ -649,13 +650,13 @@ private void writeSurfacesAndCompartments() throws SolverException {
 					} // end j
 				} // end k
 			} // end for (RegionInfo
-//			tmppw.println("];");
+			if (DEBUG) tmppw.println("];");
 		} // end for (GeometricRegion
 		
 		printWriter.println(SmoldynKeyword.end_compartment);
 		printWriter.println();
 	}
-//	tmppw.close();
+	if (DEBUG) tmppw.close();
 }
 
 private void writeWallSurfaces() throws SolverException {
