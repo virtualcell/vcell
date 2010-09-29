@@ -379,23 +379,37 @@ private void writeSimulationTimes() {
 	printWriter.println();
 }
 
-private class RowSegment {
-	int starti;
-	int endi;
+private class SelectPoint {
+	int j, k;
+	int starti, endi;
 	
-	public RowSegment(int starti, int endi) {
+	public SelectPoint(int starti, int endi, int j, int k) {
 		super();
 		this.starti = starti;
 		this.endi = endi;
+		this.j = j;
+		this.k = k;
 	}
 	@Override
 	public String toString() {	
-		return "(" + starti + ", " + endi + ")";
+		return "([" + starti + ", " + endi + "], " + j + ", " + k + ")";
+	}
+	
+	public int length() {
+		return endi - starti + 1;
+	}
+	
+	public boolean contains(SelectPoint point) {
+		return point.starti > starti && point.endi <= endi || point.starti >= starti && point.endi < endi;
+	}
+	
+	public boolean same(SelectPoint point) {
+		return point.starti == starti && point.endi == endi || point.starti == starti && point.endi == endi;
 	}
 }
 
 private void writeSurfacesAndCompartments() throws SolverException {
-	boolean DEBUG = false;
+	boolean DEBUG = true;
 	
 	PrintWriter tmppw = null;  
 	try {
@@ -447,10 +461,6 @@ private void writeSurfacesAndCompartments() throws SolverException {
 					for(int k = 0; k < surface.getPolygonCount(); k++) {
 						Polygon polygon = surface.getPolygons(k);
 						Node[] nodes = polygon.getNodes();
-//						System.out.println();
-//						for (Node node : nodes) {
-//							System.out.println(node);
-//						}
 						if (surface.getInteriorRegionIndex() == volRegionID) { // interior							
 							Node[] threeCorners = new Node[3];
 							threeCorners[0] = nodes[0];
@@ -508,6 +518,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 			case 3:
 				for (Node node : threeCorners) {
 					printWriter.print(" " + node.getX() + " " + node.getY() + " " + node.getZ());
+					if (DEBUG) tmppw.print(" " + node.getX() + " " + node.getY() + " " + node.getZ());
 				}
 				break;
 			}
@@ -545,38 +556,37 @@ private void writeSurfacesAndCompartments() throws SolverException {
 	Origin origin = geometrySpec.getOrigin();
 
 	printWriter.println("# compartments");
-	for (int svi = 0; svi < subVolumes.length; svi ++) { 		
-		SubVolume sv = subVolumes[svi];
-		printWriter.println(SmoldynKeyword.start_compartment + " " + sv.getName());		
+	int pointsCount = 0;
+	for (SubVolume subVolume : subVolumes) {		
+		printWriter.println(SmoldynKeyword.start_compartment + " " + subVolume.getName());		
 		for (SurfaceClass sc : surfaceClasses) {
-			if (sc.getAdjacentSubvolumes().contains(sv)) {
+			if (sc.getAdjacentSubvolumes().contains(subVolume)) {
 				printWriter.println(SmoldynKeyword.surface + " " + sc.getName());
 			}
 		}
-		if (boundaryXSubVolumes.contains(sv)) {
+		if (boundaryXSubVolumes.contains(subVolume)) {
 			printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
 		}
 		if (dimension > 1) {
-			if (boundaryYSubVolumes.contains(sv)) {			
+			if (boundaryYSubVolumes.contains(subVolume)) {			
 				printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
 			}
 			if (dimension > 2) {
-				if (boundaryZSubVolumes.contains(sv)) {
+				if (boundaryZSubVolumes.contains(subVolume)) {
 					printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
 				}				
 			}
-		}
-		if (DEBUG) tmppw.println("points" + svi + "=[");
+		}		
 		
 		// gather all the points in all the regions
-		GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(sv);
+		GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(subVolume);
 		RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();
-		ArrayList<RowSegment> rowSegmentList = new ArrayList<RowSegment>(); 
-		ArrayList<RowSegment> lastRowSegmentList = new ArrayList<RowSegment>(); 
-		for (GeometricRegion gr : geometricRegions) {			
-			VolumeGeometricRegion vgr = (VolumeGeometricRegion)gr;
-			for (RegionInfo ri : regionInfos) {
-				if (ri.getRegionIndex() != vgr.getRegionID()) {
+		for (GeometricRegion geometricRegion : geometricRegions) {			
+			VolumeGeometricRegion volumeGeometricRegion = (VolumeGeometricRegion)geometricRegion;
+			
+			ArrayList<SelectPoint> selectPointList = new ArrayList<SelectPoint>();
+			for (RegionInfo regionInfo : regionInfos) {
+				if (regionInfo.getRegionIndex() != volumeGeometricRegion.getRegionID()) {
 					continue;
 				}
 				int volIndex = 0;
@@ -584,12 +594,9 @@ private void writeSurfacesAndCompartments() throws SolverException {
 					for (int j = 0; j < numY; j ++){
 						int starti = -1;
 						int endi = 0;
-						lastRowSegmentList.clear();
-						lastRowSegmentList.addAll(rowSegmentList);
-						rowSegmentList.clear();
 						for (int i = 0; i < numX; i ++, volIndex ++){
 							boolean bInRegion = false;
-							if (ri.isIndexInRegion(volIndex)) {
+							if (regionInfo.isIndexInRegion(volIndex)) {
 								bInRegion = true;
 								if (starti == -1) {
 									starti = i;
@@ -610,39 +617,14 @@ private void writeSurfacesAndCompartments() throws SolverException {
 										k == numZ - 1 ? -1 : midVolIndex + numXY,											
 								};
 								for (int n = 0; n < 2 * (dimension - 1); n ++) {									
-									if (neighbors[n] == -1 || !ri.isIndexInRegion(neighbors[n])) {
+									if (neighbors[n] == -1 || !regionInfo.isIndexInRegion(neighbors[n])) {
 										bOnBoundary = true;
 										break;
 									}
 								}								
 								
 								if (!bOnBoundary) {
-									rowSegmentList.add(new RowSegment(starti, endi));
-									boolean bPrint = true;
-									// check if this row segment is contained in any segment in last row.
-									for (RowSegment rs : lastRowSegmentList) {
-										if (rs.starti <= starti && rs.endi >= endi && ((rs.endi - rs.starti + 1) / (endi - starti + 1) < 2) ) {
-											bPrint = false;
-											break;
-										}
-									}
-									if (bPrint) {
-										double coordX = origin.getX() + dx * midi;
-										printWriter.print(SmoldynKeyword.point + " " + coordX);
-										if (DEBUG) tmppw.print(coordX);
-										if (dimension > 1) {
-											double coordY = origin.getY() + dy * j;
-											printWriter.print(" " + coordY);
-											if (DEBUG) tmppw.print(" " + coordY);										
-											if (dimension > 2) {
-												double coordZ = origin.getZ() + dz * k;
-												printWriter.print(" " + coordZ);
-												if (DEBUG) tmppw.print(" " + coordZ);
-											}
-										}
-										printWriter.println();
-										if (DEBUG) tmppw.println();
-									}
+									selectPointList.add(new SelectPoint(starti, endi, j, k));
 								}
 								starti = -1;
 							}							
@@ -650,12 +632,56 @@ private void writeSurfacesAndCompartments() throws SolverException {
 					} // end j
 				} // end k
 			} // end for (RegionInfo
+			
+			if (DEBUG) {
+				tmppw.println("points" + pointsCount + "=[");
+				pointsCount ++;
+			}
+			for (int m = 0; m < selectPointList.size(); m ++) {
+				SelectPoint thisPoint = selectPointList.get(m);
+				boolean bPrint = true;
+				for (int n = 0; n < selectPointList.size(); n ++) {
+					if (n == m) {
+						continue;
+					}
+					SelectPoint point = selectPointList.get(n);
+					if (thisPoint.k == point.k && Math.abs(thisPoint.j - point.j) == 1 
+							|| thisPoint.j == point.j && Math.abs(thisPoint.k - point.k) == 1) {
+						if (point.same(thisPoint) && m < n) { // found same one later, print the later one
+							bPrint = false;
+							break;
+						}
+						if (point.contains(thisPoint) && point.length() < 2 * thisPoint.length()) { // found a longer one, but not too much longer
+							bPrint = false;
+							break;
+						}
+					}
+				}
+				if (bPrint) {
+					int midi = (thisPoint.starti + thisPoint.endi) / 2;
+					double coordX = origin.getX() + dx * midi;
+					printWriter.print(SmoldynKeyword.point + " " + coordX);
+					if (DEBUG) tmppw.print(coordX);
+					if (dimension > 1) {
+						double coordY = origin.getY() + dy * thisPoint.j;
+						printWriter.print(" " + coordY);
+						if (DEBUG) tmppw.print(" " + coordY);										
+						if (dimension > 2) {
+							double coordZ = origin.getZ() + dz * thisPoint.k;
+							printWriter.print(" " + coordZ);
+							if (DEBUG) tmppw.print(" " + coordZ);
+						}
+					}
+					printWriter.println();
+					if (DEBUG) tmppw.println();					
+				}
+			}
 			if (DEBUG) tmppw.println("];");
 		} // end for (GeometricRegion
 		
 		printWriter.println(SmoldynKeyword.end_compartment);
 		printWriter.println();
-	}
+	} // end for (SubVolume
 	if (DEBUG) tmppw.close();
 }
 

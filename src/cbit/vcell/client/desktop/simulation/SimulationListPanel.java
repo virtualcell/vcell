@@ -1027,7 +1027,7 @@ private void runSimulations() {
 						 + "\n\nDo you want to continue anyway?";
 						String result = DialogUtils.showWarningDialog(SimulationListPanel.this, warningMessage, new String[] {"OK", "Cancel"}, "OK");
 						if (result == null || result != "OK") {
-							return;
+							throw UserCancelException.CANCEL_GENERIC;
 						}
 					}		
 	
@@ -1043,6 +1043,9 @@ private void runSimulations() {
 						geoSurfaceDesc.setVolumeSampleSize(newSize);
 						geoSurfaceDesc.updateAll();
 						
+						if (mathGeometry.getGeometrySurfaceDescription().getGeometricRegions() == null) {
+							mathGeometry.getGeometrySurfaceDescription().updateAll();
+						}
 						int defaultNumGeometricRegions = mathGeometry.getGeometrySurfaceDescription().getGeometricRegions().length;
 						int numGeometricRegions = geoSurfaceDesc.getGeometricRegions().length;
 						if (numGeometricRegions != defaultNumGeometricRegions) {
