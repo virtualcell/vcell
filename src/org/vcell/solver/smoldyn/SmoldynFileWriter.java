@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,9 +18,9 @@ import org.vcell.util.Origin;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.Node;
@@ -40,10 +39,10 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -409,7 +408,7 @@ private class SelectPoint {
 }
 
 private void writeSurfacesAndCompartments() throws SolverException {
-	boolean DEBUG = true;
+	boolean DEBUG = false;
 	
 	PrintWriter tmppw = null;  
 	try {
@@ -911,9 +910,6 @@ private void writeDiffusions() throws ExpressionBindingException,
 	}
 	printWriter.println();
 }
-
-
-
 
 private void writeSpecies() {
 	// write species
