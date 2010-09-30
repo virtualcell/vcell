@@ -64,8 +64,9 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		CartoonToolSaveAsImageActions.getDefaultActions(this);
 	
 	public static enum Mode { SELECT("select"), FEATURE("feature"), SPECIES("species"), LINE("line"), 
-		STEP("step"), FLUX("flux"), SPLINE("spline"), ADDCP("addCP"), COMPLEX("complex"), 
-		BINDINGSITE("bindingSite"), INTERACTION("interaction");
+		LINEDIRECTED("lineDirected"), LINECATALYST("lineCatalyst"), STEP("step"), FLUX("flux"), 
+		SPLINE("spline"), ADDCP("addCP"), COMPLEX("complex"), BINDINGSITE("bindingSite"), 
+		INTERACTION("interaction");
 	protected final String actionCommand;
 	private Mode(String actionCommand) { this.actionCommand = actionCommand; }
 	public String getActionCommand() { return actionCommand; }

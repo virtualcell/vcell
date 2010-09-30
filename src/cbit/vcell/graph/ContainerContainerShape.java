@@ -5,6 +5,10 @@ package cbit.vcell.graph;
  */
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.vcell.sybil.util.lists.ListUtil;
 
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphModel;
@@ -18,12 +22,16 @@ import cbit.vcell.model.Structure;
 
 public class ContainerContainerShape extends ContainerShape {
 	Model model = null;
+
 	// either membrane
 	ReactionContainerShape insideContainer = null;
 	ReactionContainerShape outsideContainer = null;
 	ReactionContainerShape membraneContainer = null;
 	// or compartment
 	ReactionContainerShape featureContainer = null;
+
+	// or all compartments
+	List<ReactionSliceContainerShape> structureContainers = null;
 
 	public ContainerContainerShape(GraphModel graphModel, Model model, 
 			ReactionContainerShape featureReactionContainer) {
@@ -33,6 +41,19 @@ public class ContainerContainerShape extends ContainerShape {
 		setLabel(" ");
 
 		addChildShape(featureContainer);
+
+	}
+
+	public ContainerContainerShape(GraphModel graphModel, Model model, 
+			List<ReactionSliceContainerShape> reactionContainers) {
+		super(graphModel);
+		this.structureContainers = new ArrayList<ReactionSliceContainerShape>(reactionContainers);
+		this.model = model;
+		setLabel(" ");
+
+		for(ReactionSliceContainerShape reactionContainer : reactionContainers) {
+			addChildShape(reactionContainer);
+		}
 
 	}
 
@@ -51,9 +72,9 @@ public class ContainerContainerShape extends ContainerShape {
 		addChildShape(membraneReactionContainer);
 		addChildShape(outsideReactionContainer);
 
-		Structure inside   = (Structure) insideContainer.getModelObject();
-		Structure membrane = (Structure) membraneContainer.getModelObject();
-		Structure outside  = (Structure) outsideContainer.getModelObject();
+		Structure inside   = (Structure)insideContainer.getModelObject();
+		Structure membrane = (Structure)membraneContainer.getModelObject();
+		Structure outside  = (Structure)outsideContainer.getModelObject();
 
 		if (!(membrane instanceof Membrane) ||
 				!(inside instanceof Feature)    ||
@@ -69,22 +90,22 @@ public class ContainerContainerShape extends ContainerShape {
 	}
 
 	@Override
-	public Object getModelObject() { return model; }
+	public Object getModelObject() {
+		return model;
+	}
 
 	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
 		// get size when empty
 		Dimension emptySize = super.getPreferedSize(g);
 		// make larger than empty size so that children fit
-		for (int i = 0; i < childShapeList.size(); i++){
-			Shape shape = childShapeList.get(i);
-			if (shape instanceof ReactionContainerShape){
-				emptySize.width = 
-					Math.max(emptySize.width, 
-							shape.getSpaceManager().getRelPos().x + shape.getPreferedSize(g).width);
-				emptySize.height = 
-					Math.max(emptySize.height, 
-							shape.getSpaceManager().getRelPos().y + shape.getPreferedSize(g).height);
+		for(Shape shape : childShapeList) {
+			if (shape instanceof ReactionSliceContainerShape){
+				emptySize.width = Math.max(emptySize.width, 
+						shape.getSpaceManager().getRelPos().x + shape.getPreferedSize(g).width);
+				emptySize.width += 8; // spaces between compartments
+				emptySize.height = Math.max(emptySize.height, 
+						shape.getSpaceManager().getRelPos().y+shape.getPreferedSize(g).height);
 			}
 		}
 		return emptySize;
@@ -95,7 +116,7 @@ public class ContainerContainerShape extends ContainerShape {
 		if (featureContainer!=null){
 			// position feature
 			featureContainer.getSpaceManager().setRelPos(0, 0);
-		}else{
+		} else if (membraneContainer!=null){
 			int currentX = 0;
 			int currentY = 0;
 			// position outside shape
@@ -107,22 +128,77 @@ public class ContainerContainerShape extends ContainerShape {
 			// position inside shape
 			insideContainer.getSpaceManager().setRelPos(currentX, currentY);
 			currentX += insideContainer.getSpaceManager().getSize().width;
+		} else if (structureContainers!=null){
+			int draggedIndex = -1;
+			for (int i = 0; i < structureContainers.size(); i++) {
+				if (structureContainers.get(i).isBeingDragged){
+					draggedIndex = i;
+				}
+			}
+			// preliminary layout (before reordering)
+			int currentX = 4;
+			int currentY = 0;
+			for (int i = 0; i < structureContainers.size(); i++) {
+				if (i != draggedIndex) {
+					structureContainers.get(i).getSpaceManager().setRelPos(currentX, currentY);
+				}
+				currentX += structureContainers.get(i).getSpaceManager().getSize().width;
+				currentX += 8;
+			}
+			// if the position of the one being dragged is out of place, reorder and do it again once.
+			if (draggedIndex>=0){
+				int insertionIndex = draggedIndex;
+				int dragX = structureContainers.get(draggedIndex).getSpaceManager().getRelPos().x;
+				for (int i = 0; i < structureContainers.size(); i++) {
+					ReactionSliceContainerShape currentShape = structureContainers.get(i);
+					if (i != draggedIndex){
+						if (dragX >= currentShape.getSpaceManager().getRelPos().x && 
+								dragX < 
+								currentShape.getSpaceManager().getRelPos().x + 
+								currentShape.getSpaceManager().getSize().width/2){
+							insertionIndex = Math.min(i, structureContainers.size() - 1);
+							break;
+						}
+						if (dragX >= 
+							currentShape.getSpaceManager().getRelPos().x + 
+							currentShape.getSpaceManager().getSize().width/2 && 
+							dragX <= 
+								currentShape.getSpaceManager().getRelPos().x + 
+								currentShape.getSpaceManager().getSize().width){
+							insertionIndex = Math.min(i + 1, structureContainers.size() - 1);
+							break;
+						}
+					}
+				}
+				if (insertionIndex!=draggedIndex){
+					synchronized (structureContainers) {
+						ListUtil.shiftElement(structureContainers, draggedIndex, insertionIndex);
+						// layout again
+						currentX = 4;
+						currentY = 0;
+						for(ReactionSliceContainerShape structureContainer : structureContainers) {
+							if (!structureContainer.isBeingDragged){
+								structureContainer.getSpaceManager().setRelPos(currentX, currentY);
+							}
+							currentX += structureContainer.getSpaceManager().getSize().width;
+							currentX += 8;
+						}
+					}
+				}
+			}
 		}
-		// layout the edges
-		for (int i=0;i<childShapeList.size();i++){
-			Shape child = childShapeList.get(i);
-			if (!(child instanceof ReactionContainerShape)){
+		for(Shape child : childShapeList) {
+			if (!(child instanceof ReactionSliceContainerShape)){
 				child.refreshLayout();
 			}
 		}	
 	}
 
-	@Override
-	public void paintSelf(Graphics2D graphics, int xThis, int yThis) {
-		graphics.setColor(backgroundColor);
-		graphics.fillRect(xThis, yThis, getSpaceManager().getSize().width, getSpaceManager().getSize().height);
-		graphics.setColor(forgroundColor);
-		graphics.drawRect(xThis, yThis, getSpaceManager().getSize().width, getSpaceManager().getSize().height);		
+	public void paintSelf ( java.awt.Graphics2D g, int absPosX, int absPosY ) {
+		g.setColor(backgroundColor);
+		g.fillRect(absPosX, absPosY, spaceManager.getSize().width, spaceManager.getSize().height);
+		g.setColor(forgroundColor);
+		g.drawRect(absPosX,absPosY, spaceManager.getSize().width, spaceManager.getSize().height);
 	}
 
 	@Override
@@ -141,6 +217,12 @@ public class ContainerContainerShape extends ContainerShape {
 		if (featureContainer!=null){
 			featureContainer.randomize();
 		}
+
+		if (structureContainers!=null){
+			for (int i = 0; i < structureContainers.size(); i++) {
+				structureContainers.get(i).randomize();
+			}
+		}
 	}
 
 	@Override
@@ -148,19 +230,36 @@ public class ContainerContainerShape extends ContainerShape {
 		getSpaceManager().setSize(newSize);
 		if (featureContainer!=null){
 			// allocate space according to feature layout
-			featureContainer.resize(g,  new Dimension(getSpaceManager().getSize()));
-		} else {
+			featureContainer.resize(g,  getSpaceManager().getSize());
+		}else if (membraneContainer!=null){
 			// allocate space according to membrane layout
 			int insideWidth = insideContainer.getPreferedSize(g).width;
 			int membraneWidth = membraneContainer.getPreferedSize(g).width;
 			int outsideWidth = outsideContainer.getPreferedSize(g).width;
-			int remainingWidth = getSpaceManager().getSize().width - insideWidth - membraneWidth - outsideWidth;
+			int remainingWidth = 
+				getSpaceManager().getSize().width - insideWidth - membraneWidth - outsideWidth;
 			insideWidth += remainingWidth*1/6;
 			membraneWidth += remainingWidth*4/6;
 			outsideWidth += remainingWidth*1/6;
 			insideContainer.resize(g,   new Dimension(insideWidth, getSpaceManager().getSize().height));
 			membraneContainer.resize(g, new Dimension(membraneWidth, getSpaceManager().getSize().height));
 			outsideContainer.resize(g,  new Dimension(outsideWidth, getSpaceManager().getSize().height));
+		} else if (structureContainers!=null){
+			int remainingWidth = getSpaceManager().getSize().width;
+			int[] widths = new int[structureContainers.size()];
+			for (int i = 0; i < structureContainers.size(); i++) {
+				widths[i] = structureContainers.get(i).getPreferedSize(g).width;
+				remainingWidth -= widths[i];
+				remainingWidth -= 8;// TODO make 8 (space between reaction slices) a field
+			}
+			for (int i = 0; i < widths.length; i++) {
+				int extraWidth = remainingWidth / structureContainers.size(); // redistribute evenly
+				if (i==0){ // add extra width to first element.
+					extraWidth += remainingWidth % structureContainers.size();
+				}
+				structureContainers.get(i).resize(g, new Dimension(widths[i] + extraWidth, 
+						getSpaceManager().getSize().height));
+			}
 		}
 		refreshLayout();
 	}
@@ -178,6 +277,11 @@ public class ContainerContainerShape extends ContainerShape {
 		}
 		if (featureContainer != null){
 			featureContainer.setRandomLayout(isRandom);
+		}
+		if (structureContainers!=null){
+			for(ReactionSliceContainerShape structureContainer : structureContainers) {
+				structureContainer.setRandomLayout(isRandom);
+			}
 		}
 	}
 }

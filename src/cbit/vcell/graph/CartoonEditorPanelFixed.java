@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -16,6 +17,7 @@ import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.Shape;
+import cbit.gui.graph.CartoonTool.Mode;
 import cbit.gui.graph.actions.CartoonToolMiscActions;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
@@ -33,6 +35,7 @@ public class CartoonEditorPanelFixed extends JPanel {
 	private JToolBarToggleButton ivjSpeciesButton = null;
 
 	private JButton reactionButton = null;	
+	private JButton reactionSlicesButton = null;	
 	private JButton parameterButton = null;
 
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
@@ -59,7 +62,8 @@ public class CartoonEditorPanelFixed extends JPanel {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == reactionButton) {
+		// TODO not all checks necessary for reaction slices
+			if (e.getSource() == reactionButton || e.getSource() == reactionSlicesButton) {
 				Shape selectedShape = getStructureCartoonTool1().getGraphModel().getSelectedShape();
 				if (selectedShape == null || !(selectedShape instanceof FeatureShape || selectedShape instanceof MembraneShape)) {
 					DialogUtils.showErrorDialog(JOptionPane.getFrameForComponent(CartoonEditorPanelFixed.this), "Please select a " +
@@ -376,11 +380,11 @@ public class CartoonEditorPanelFixed extends JPanel {
 				ivjFeatureButton.setName("FeatureButton");
 				ivjFeatureButton.setToolTipText("Feature Tool");
 				ivjFeatureButton.setText("");
-				ivjFeatureButton.setMaximumSize(new java.awt.Dimension(28, 28));
-				ivjFeatureButton.setActionCommand("feature");
+				ivjFeatureButton.setMaximumSize(new Dimension(28, 28));
+				ivjFeatureButton.setActionCommand(Mode.FEATURE.getActionCommand());
 				ivjFeatureButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/feature.gif")));
-				ivjFeatureButton.setPreferredSize(new java.awt.Dimension(28, 28));
-				ivjFeatureButton.setMinimumSize(new java.awt.Dimension(28, 28));
+				ivjFeatureButton.setPreferredSize(new Dimension(28, 28));
+				ivjFeatureButton.setMinimumSize(new Dimension(28, 28));
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -458,6 +462,7 @@ public class CartoonEditorPanelFixed extends JPanel {
 				getJToolBar().add(getSpeciesButton(), getSpeciesButton().getName());
 				getJToolBar().addSeparator(new Dimension(5,30));
 				getJToolBar().add(getReactionButton());
+				getJToolBar().add(getReactionSlicesButton());
 				getJToolBar().addSeparator();
 				getJToolBar().add(getParameterButton());
 				// user code begin {1}
@@ -484,12 +489,12 @@ public class CartoonEditorPanelFixed extends JPanel {
 				ivjSelectButton.setName("SelectButton");
 				ivjSelectButton.setToolTipText("Select Tool");
 				ivjSelectButton.setText("");
-				ivjSelectButton.setMaximumSize(new java.awt.Dimension(28, 28));
-				ivjSelectButton.setActionCommand("select");
+				ivjSelectButton.setMaximumSize(new Dimension(28, 28));
+				ivjSelectButton.setActionCommand(Mode.SELECT.getActionCommand());
 				ivjSelectButton.setSelected(true);
 				ivjSelectButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/select.gif")));
-				ivjSelectButton.setPreferredSize(new java.awt.Dimension(28, 28));
-				ivjSelectButton.setMinimumSize(new java.awt.Dimension(28, 28));
+				ivjSelectButton.setPreferredSize(new Dimension(28, 28));
+				ivjSelectButton.setMinimumSize(new Dimension(28, 28));
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -526,11 +531,11 @@ public class CartoonEditorPanelFixed extends JPanel {
 				ivjSpeciesButton.setName("SpeciesButton");
 				ivjSpeciesButton.setToolTipText("Species Tool");
 				ivjSpeciesButton.setText("");
-				ivjSpeciesButton.setMaximumSize(new java.awt.Dimension(28, 28));
-				ivjSpeciesButton.setActionCommand("species");
+				ivjSpeciesButton.setMaximumSize(new Dimension(28, 28));
+				ivjSpeciesButton.setActionCommand(Mode.SPECIES.getActionCommand());
 				ivjSpeciesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/species.gif")));
-				ivjSpeciesButton.setPreferredSize(new java.awt.Dimension(28, 28));
-				ivjSpeciesButton.setMinimumSize(new java.awt.Dimension(28, 28));
+				ivjSpeciesButton.setPreferredSize(new Dimension(28, 28));
+				ivjSpeciesButton.setMinimumSize(new Dimension(28, 28));
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -551,10 +556,10 @@ public class CartoonEditorPanelFixed extends JPanel {
 				reactionButton.setActionCommand(CartoonToolMiscActions.Reactions.MENU_ACTION);
 				reactionButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 				reactionButton.setBorder(new BevelBorder(BevelBorder.RAISED));
-				reactionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/step.gif")));
-				reactionButton.setPreferredSize(new java.awt.Dimension(28, 28));
-				reactionButton.setMinimumSize(new java.awt.Dimension(28, 28));
-				reactionButton.setMaximumSize(new java.awt.Dimension(28, 28));
+				reactionButton.setIcon(new ImageIcon(getClass().getResource("/images/step.gif")));
+				reactionButton.setPreferredSize(new Dimension(28, 28));
+				reactionButton.setMinimumSize(new Dimension(28, 28));
+				reactionButton.setMaximumSize(new Dimension(28, 28));
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -566,6 +571,31 @@ public class CartoonEditorPanelFixed extends JPanel {
 		return reactionButton;
 	}
 
+	private JButton getReactionSlicesButton() {
+		if (reactionSlicesButton == null) {
+			try {
+				reactionSlicesButton = new JButton();
+				reactionSlicesButton.setToolTipText(CartoonToolMiscActions.ReactionsSlices.MENU_TEXT);
+				reactionSlicesButton.setText("");
+				reactionSlicesButton.setActionCommand(CartoonToolMiscActions.ReactionsSlices.MENU_ACTION);
+				reactionSlicesButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+				reactionSlicesButton.setBorder(new BevelBorder(BevelBorder.RAISED));
+				reactionSlicesButton.setIcon(
+						new ImageIcon(getClass().getResource("/images/stepSlices.gif")));
+				reactionSlicesButton.setPreferredSize(new Dimension(28, 28));
+				reactionSlicesButton.setMinimumSize(new Dimension(28, 28));
+				reactionSlicesButton.setMaximumSize(new Dimension(28, 28));
+				// user code begin {1}
+				// user code end
+			} catch (java.lang.Throwable ivjExc) {
+				// user code begin {2}
+				// user code end
+				handleException(ivjExc);
+			}
+		}
+		return reactionSlicesButton;
+	}
+
 	private JButton getParameterButton() {
 		if (parameterButton == null) {
 			try {
@@ -575,10 +605,10 @@ public class CartoonEditorPanelFixed extends JPanel {
 				parameterButton.setActionCommand(CartoonToolMiscActions.ShowParameters.MENU_ACTION);
 				parameterButton.setBorder(new BevelBorder(BevelBorder.RAISED));
 				parameterButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-				parameterButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/parameter.gif")));
-				parameterButton.setPreferredSize(new java.awt.Dimension(28, 28));
-				parameterButton.setMinimumSize(new java.awt.Dimension(28, 28));
-				parameterButton.setMaximumSize(new java.awt.Dimension(28, 28));
+				parameterButton.setIcon(new ImageIcon(getClass().getResource("/icons/parameter.gif")));
+				parameterButton.setPreferredSize(new Dimension(28, 28));
+				parameterButton.setMinimumSize(new Dimension(28, 28));
+				parameterButton.setMaximumSize(new Dimension(28, 28));
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -659,6 +689,7 @@ public class CartoonEditorPanelFixed extends JPanel {
 		connPtoP3SetTarget();
 
 		getReactionButton().addActionListener(ivjEventHandler);
+		getReactionSlicesButton().addActionListener(ivjEventHandler);
 		getParameterButton().addActionListener(ivjEventHandler);
 	}
 

@@ -68,6 +68,17 @@ public class CartoonToolMiscActions {
 	}	
 	
 	@SuppressWarnings("serial")
+	public static class ReactionsSlices extends CartoonToolWrapperAction {
+		public static final String MENU_ACTION = "Reactions (Slices) ...";
+		public static final String MENU_TEXT = MENU_ACTION;
+		public ReactionsSlices(CartoonTool cartoonTool) {
+			super(cartoonTool, MENU_ACTION, MENU_TEXT, "Edit reactions (slices)", 
+					"Edit reactions of this bio model in slices layout.");
+			putValue(MNEMONIC_KEY, KeyEvent.VK_Z);
+		}
+	}	
+	
+	@SuppressWarnings("serial")
 	public static class Properties extends CartoonToolWrapperAction {
 		public static final String MENU_ACTION = "Properties";
 		public static final String MENU_TEXT = MENU_ACTION;
@@ -164,6 +175,7 @@ public class CartoonToolMiscActions {
 		list.add(new AddGlobalParameter(cartoonTool));
 		list.add(new SearchReactions(cartoonTool));
 		list.add(new Reactions(cartoonTool));
+		list.add(new ReactionsSlices(cartoonTool));
 		list.add(new Properties(cartoonTool));
 		list.add(new Enable(cartoonTool));
 		list.add(new Disable(cartoonTool));
