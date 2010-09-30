@@ -19,6 +19,7 @@ import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.gui.graph.GraphEmbeddingManager;
 import cbit.gui.graph.GraphPane;
+import cbit.gui.graph.CartoonTool.Mode;
 import cbit.gui.graph.actions.CartoonToolMiscActions;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.model.Membrane;
@@ -735,7 +736,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 				ivjFluxButton.setToolTipText("Flux Tool");
 				ivjFluxButton.setText("");
 				ivjFluxButton.setMaximumSize(new java.awt.Dimension(28, 28));
-				ivjFluxButton.setActionCommand("flux");
+				ivjFluxButton.setActionCommand(Mode.FLUX.getActionCommand());
 				ivjFluxButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flux.gif")));
 				ivjFluxButton.setPreferredSize(new java.awt.Dimension(28, 28));
 				ivjFluxButton.setEnabled(true);
@@ -979,7 +980,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 				ivjLineButton.setToolTipText("RX Connection Tool");
 				ivjLineButton.setText("");
 				ivjLineButton.setMaximumSize(new java.awt.Dimension(28, 28));
-				ivjLineButton.setActionCommand("line");
+				ivjLineButton.setActionCommand(Mode.LINE.getActionCommand());
 				ivjLineButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/line.gif")));
 				ivjLineButton.setPreferredSize(new java.awt.Dimension(28, 28));
 				ivjLineButton.setMinimumSize(new java.awt.Dimension(28, 28));
@@ -1137,7 +1138,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 				ivjSelectButton.setToolTipText("Select Tool");
 				ivjSelectButton.setText("");
 				ivjSelectButton.setMaximumSize(new java.awt.Dimension(28, 28));
-				ivjSelectButton.setActionCommand("select");
+				ivjSelectButton.setActionCommand(Mode.SELECT.getActionCommand());
 				ivjSelectButton.setSelected(true);
 				ivjSelectButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/select.gif")));
 				ivjSelectButton.setPreferredSize(new java.awt.Dimension(28, 28));
@@ -1177,7 +1178,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 				ivjSpeciesButton.setToolTipText("Species Tool");
 				ivjSpeciesButton.setText("");
 				ivjSpeciesButton.setMaximumSize(new java.awt.Dimension(28, 28));
-				ivjSpeciesButton.setActionCommand("species");
+				ivjSpeciesButton.setActionCommand(Mode.SPECIES.getActionCommand());
 				ivjSpeciesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/species.gif")));
 				ivjSpeciesButton.setPreferredSize(new java.awt.Dimension(28, 28));
 				ivjSpeciesButton.setMinimumSize(new java.awt.Dimension(28, 28));
@@ -1206,7 +1207,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 				ivjStepButton.setToolTipText("Reaction Tool");
 				ivjStepButton.setText("");
 				ivjStepButton.setMaximumSize(new java.awt.Dimension(28, 28));
-				ivjStepButton.setActionCommand("step");
+				ivjStepButton.setActionCommand(Mode.STEP.getActionCommand());
 				ivjStepButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/step.gif")));
 				ivjStepButton.setPreferredSize(new java.awt.Dimension(28, 28));
 				ivjStepButton.setMinimumSize(new java.awt.Dimension(28, 28));

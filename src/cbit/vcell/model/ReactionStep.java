@@ -1,9 +1,9 @@
 package cbit.vcell.model;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -26,7 +26,6 @@ import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
-import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -45,6 +44,7 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
  * @see     cbit.vcell.model.SimpleReaction
  * @since   VCELL1.0
  */
+@SuppressWarnings("serial")
 public abstract class ReactionStep
 	implements
 		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable

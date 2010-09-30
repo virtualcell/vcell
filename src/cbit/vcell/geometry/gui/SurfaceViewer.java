@@ -1,5 +1,6 @@
 package cbit.vcell.geometry.gui;
 
+import cbit.gui.graph.CartoonTool.Mode;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 /**
@@ -581,7 +582,7 @@ private javax.swing.JButton getDefaultToolBarButton() {
 			ivjDefaultToolBarButton.setName("DefaultToolBarButton");
 			ivjDefaultToolBarButton.setText("T");
 			ivjDefaultToolBarButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			ivjDefaultToolBarButton.setActionCommand("select");
+			ivjDefaultToolBarButton.setActionCommand(Mode.SELECT.getActionCommand());
 			ivjDefaultToolBarButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 			ivjDefaultToolBarButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/run_16x16.gif")));
 			ivjDefaultToolBarButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -607,7 +608,7 @@ private javax.swing.JButton getDefaultToolBarButton1() {
 			ivjDefaultToolBarButton1.setName("DefaultToolBarButton1");
 			ivjDefaultToolBarButton1.setText("H");
 			ivjDefaultToolBarButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			ivjDefaultToolBarButton1.setActionCommand("select");
+			ivjDefaultToolBarButton1.setActionCommand(Mode.SELECT.getActionCommand());
 			ivjDefaultToolBarButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 			ivjDefaultToolBarButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/select.gif")));
 			ivjDefaultToolBarButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -633,7 +634,7 @@ private javax.swing.JButton getDefaultToolBarButton11() {
 			ivjDefaultToolBarButton11.setName("DefaultToolBarButton11");
 			ivjDefaultToolBarButton11.setText("G");
 			ivjDefaultToolBarButton11.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-			ivjDefaultToolBarButton11.setActionCommand("select");
+			ivjDefaultToolBarButton11.setActionCommand(Mode.SELECT.getActionCommand());
 			ivjDefaultToolBarButton11.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 			ivjDefaultToolBarButton11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/run_16x16.gif")));
 			ivjDefaultToolBarButton11.setMargin(new java.awt.Insets(0, 0, 0, 0));
