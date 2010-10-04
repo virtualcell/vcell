@@ -19,6 +19,7 @@ import cbit.vcell.math.VCML;
  * @author: John Wagner
  */
 public class MeshSpecification implements Serializable, Matchable, java.beans.VetoableChangeListener {
+	private static final String PROPERTY_NAME_SAMPLING_SIZE = "samplingSize";
 	private java.lang.Double fieldMinimumAngleConstraint = null;
 	private java.lang.Double fieldMaximumSizeConstraint = null;
 	private Geometry fieldGeometry = null;
@@ -320,9 +321,9 @@ public void setSamplingSize(ISize samplingSize) throws java.beans.PropertyVetoEx
 		(samplingSize.getZ() != fieldSamplingSize.getZ())){
 			
 		ISize oldSamplingSize = fieldSamplingSize;
-		fireVetoableChange("samplingSize",oldSamplingSize,samplingSize);
+		fireVetoableChange(PROPERTY_NAME_SAMPLING_SIZE,oldSamplingSize,samplingSize);
 		fieldSamplingSize = samplingSize;
-		firePropertyChange("samplingSize",oldSamplingSize,fieldSamplingSize);
+		firePropertyChange(PROPERTY_NAME_SAMPLING_SIZE,oldSamplingSize,fieldSamplingSize);
 	}
 }
 
@@ -334,7 +335,7 @@ public void setSamplingSize(ISize samplingSize) throws java.beans.PropertyVetoEx
  * @exception java.beans.PropertyVetoException The exception description.
  */
 public void vetoableChange(java.beans.PropertyChangeEvent event) throws java.beans.PropertyVetoException {
-	if (event.getSource() == this && event.getPropertyName().equals("samplingSize")){
+	if (event.getSource() == this && event.getPropertyName().equals(PROPERTY_NAME_SAMPLING_SIZE)){
 		ISize isize = (ISize)event.getNewValue();
 		if (getGeometry()!=null){
 			int dim = getGeometry().getDimension();

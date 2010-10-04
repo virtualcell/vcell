@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -27,6 +28,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.simulation.SimulationListTreeModel.SimulationListTreeFolderNode;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -34,8 +36,16 @@ import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
 /**
@@ -1001,7 +1011,46 @@ private void refreshSimListTable() {
 	getScrollPaneTable().repaint();
 }
 
-
+private boolean isSmoldynTimeStepOK(Simulation sim) {
+	for (int jobIndex = 0; jobIndex < sim.getScanCount(); jobIndex ++) {
+		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, jobIndex);
+		double Dmax = 0;
+		MathDescription mathDesc = sim.getMathDescription();
+		
+		Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
+		while (subDomainEnumeration.hasMoreElements()) {
+			SubDomain subDomain = subDomainEnumeration.nextElement();
+			
+			if (!(subDomain instanceof CompartmentSubDomain)) {
+				continue;
+			}
+			for (ParticleProperties particleProperties : subDomain.getParticleProperties()) {
+				try {
+					Expression newExp = new Expression(particleProperties.getDiffusion());
+					newExp.bindExpression(simSymbolTable);
+					newExp = simSymbolTable.substituteFunctions(newExp).flatten();
+					try {
+						double diffConstant = newExp.evaluateConstant();
+						Dmax = Math.max(Dmax, diffConstant);
+					} catch (ExpressionException ex) {
+						throw new ExpressionException("diffusion coefficient for variable " 
+								+ particleProperties.getVariable().getQualifiedName() 
+								+ " is not a constant. Constants are required for all diffusion coefficients");
+					}
+				} catch (Exception ex) {
+					
+				}
+			}
+		}
+		
+		double s = sim.getMeshSpecification().getDx();
+		double dt = sim.getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
+		if (dt >= s * s / (2 * Dmax)) {
+			return false;
+		}
+	}
+	return true;
+}
 /**
  * Comment
  */
@@ -1019,17 +1068,38 @@ private void runSimulations() {
 				if (dimension > 0) {
 					MeshSpecification meshSpecification = sim.getMeshSpecification();
 					if (meshSpecification != null && !meshSpecification.isAspectRatioOK()) {
-						String warningMessage =  "Simulation '" + sim.getName() + "' has differences in mesh sizes. " +
-								"This might affect the accuracy of the solution.\n"
-						+ "\u0394x=" + meshSpecification.getDx() + "\n" 
-						+ "\u0394y=" + meshSpecification.getDy()
-						+ (dimension > 2 ? "" : "\n\u0394z=" + meshSpecification.getDz())
-						 + "\n\nDo you want to continue anyway?";
-						String result = DialogUtils.showWarningDialog(SimulationListPanel.this, warningMessage, new String[] {"OK", "Cancel"}, "OK");
-						if (result == null || result != "OK") {
+						if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.Smoldyn)) {
+							String warningMessage = "Simulation '" + sim.getName() + "' does not have uniform spatial step. " +
+								SolverDescription.Smoldyn.getDisplayLabel() + " requires uniform spatial step in all directions.\n\n"
+								+ "\u0394x=" + meshSpecification.getDx() + "\n" 
+								+ "\u0394y=" + meshSpecification.getDy()
+								+ (dimension < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz());
+							DialogUtils.showErrorDialog(SimulationListPanel.this, warningMessage);
+							throw UserCancelException.CANCEL_GENERIC;
+						} else {
+							String warningMessage =  "Simulation '" + sim.getName() + "' does not have uniform spatial step. " +
+									"This might affect the accuracy of the solution.\n"
+							+ "\u0394x=" + meshSpecification.getDx() + "\n" 
+							+ "\u0394y=" + meshSpecification.getDy()
+							+ (dimension > 2 ? "" : "\n\u0394z=" + meshSpecification.getDz())
+							 + "\n\nDo you want to continue anyway?";
+							String result = DialogUtils.showWarningDialog(SimulationListPanel.this, warningMessage, 
+									new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+							if (result == null || result.equals(UserMessage.OPTION_OK)) {
+								throw UserCancelException.CANCEL_GENERIC;
+							}
+						}
+					}
+					if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.Smoldyn)) {
+						if (!isSmoldynTimeStepOK(sim)) {
+							String warningMessage =  "<html>The time step for " + SolverDescription.Smoldyn.getDisplayLabel()
+								+ " needs to satisfy stability constraint<br><br><i>\u0394t &lt; s<sup>2</sup>/2D<sub>max</sub></i><br><br>" 
+								+ "Where <i>s</i> is spatial resolution and <i>D<sub>max</sub></i> is the diffusion " +
+										"coefficient of the fastest diffusing species. </html>";
+							DialogUtils.showErrorDialog(SimulationListPanel.this, warningMessage);
 							throw UserCancelException.CANCEL_GENERIC;
 						}
-					}		
+					}
 	
 					// check the number of regions if the simulation mesh is coarser.
 					Geometry mathGeometry = sim.getMathDescription().getGeometry();
