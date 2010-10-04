@@ -80,7 +80,9 @@ public Geometry(Geometry geometry) {
 	this.fieldName = geometry.fieldName;
 	this.fieldDescription = geometry.fieldDescription;
 	fieldGeometrySpec = new GeometrySpec(geometry.getGeometrySpec());
-	fieldGeometrySurfaceDescription = new GeometrySurfaceDescription(this);
+	if (geometry.getDimension() > 0) {
+		fieldGeometrySurfaceDescription = new GeometrySurfaceDescription(this);
+	}
 }
 
 /**
