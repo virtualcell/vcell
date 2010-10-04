@@ -21,6 +21,7 @@ import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.mapping.SimulationContext;
@@ -311,20 +312,16 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 		MeshSpecification meshSpecification = simulation.getMeshSpecification();
 		if (meshSpecification != null && !meshSpecification.isAspectRatioOK()) {
 			warningMessage =  (warningMessage == null? "" : warningMessage + "\n\n") 
-				+ "Differences in mesh sizes are detected. This might affect the accuracy of the solution.\n"
+				+ "Non uniform spatial step is detected. This might affect the accuracy of the solution.\n\n"
 				+ "\u0394x=" + meshSpecification.getDx() + "\n" 
 				+ "\u0394y=" + meshSpecification.getDy()
 				+ (meshSpecification.getGeometry().getDimension() < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz());
 		}		
 		if (warningMessage != null)
 		{
-			int result = JOptionPane.showConfirmDialog(parent, warningMessage + "\n\nDo you want to continue anyway?", "Warning", JOptionPane.YES_NO_OPTION);
-			if (result == JOptionPane.YES_OPTION) {
-				// continue anyway
-				return true;
-			} else {
-				return false;
-			}
+			String result = DialogUtils.showWarningDialog(parent, warningMessage + "\n\nDo you want to continue anyway?", 
+					new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+			return (result != null && result.equals(UserMessage.OPTION_OK));
 		} else {
 			return true;
 		}

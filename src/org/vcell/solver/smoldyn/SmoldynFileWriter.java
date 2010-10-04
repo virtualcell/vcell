@@ -127,10 +127,13 @@ public class SmoldynFileWriter extends SolverFileWriter
 		
 		cmd,
 		n,
+		killmoloutsidesystem,
+		warnescapee,
 	
 		accuracy,
 		boxsize,
 		gauss_table_size,
+		rand_seed,
 	}
 
 	enum VCellSmoldynKeyword {
@@ -208,6 +211,9 @@ private void writeSimulationSettings() {
 	printWriter.println(SmoldynKeyword.accuracy + " " + smoldynSimulationOptions.getAccuracy());
 	printWriter.println(SmoldynKeyword.boxsize + " " + simulation.getMeshSpecification().getDx());
 	printWriter.println(SmoldynKeyword.gauss_table_size + " " + smoldynSimulationOptions.getGaussianTableSize());
+	if (smoldynSimulationOptions.getRandomSeed() != null) {
+		printWriter.println(SmoldynKeyword.rand_seed + " " + smoldynSimulationOptions.getRandomSeed());
+	}
 	
 }
 
@@ -216,6 +222,8 @@ private void writeRuntimeCommands() throws SolverException {
 	if (ots.isUniform()) {
 		printWriter.println("# runtime command");	
 		printWriter.println(SmoldynKeyword.output_files + " " + outputFile.getName());
+		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.warnescapee + " " + SmoldynKeyword.all + " " + outputFile.getName());
+		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.killmoloutsidesystem + " " + SmoldynKeyword.all);
 		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + VCellSmoldynKeyword.vcellPrintProgress);
 		ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
 		TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
@@ -309,15 +317,9 @@ private void writeMolecules() throws ExpressionException, MathException {
 			continue;
 		}
 		
-		for (ParticleVariable particleVariable : particleVariableList) {
-			ParticleProperties particleProperties = subDomain.getParticleProperties(particleVariable);			
-			String variableName = getVariableName(particleVariable);
-			
-			if (particleProperties == null) {
-				sb.append(SmoldynKeyword.compartment_mol + " 0 " + variableName + " " + subDomain.getName() + "\n");
-				continue;
-			}
+		for (ParticleProperties particleProperties : subDomain.getParticleProperties()) {
 			ArrayList<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
+			String variableName = getVariableName(particleProperties.getVariable());
 			for (ParticleInitialCondition pic : particleInitialConditions) {
 				int count = 0;
 				try {
@@ -575,7 +577,12 @@ private void writeSurfacesAndCompartments() throws SolverException {
 					printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
 				}				
 			}
-		}		
+		}
+		
+		if (DEBUG) {
+			tmppw.println("points" + pointsCount + "=[");
+			pointsCount ++;
+		}
 		
 		// gather all the points in all the regions
 		GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(subVolume);
@@ -632,10 +639,6 @@ private void writeSurfacesAndCompartments() throws SolverException {
 				} // end k
 			} // end for (RegionInfo
 			
-			if (DEBUG) {
-				tmppw.println("points" + pointsCount + "=[");
-				pointsCount ++;
-			}
 			for (int m = 0; m < selectPointList.size(); m ++) {
 				SelectPoint thisPoint = selectPointList.get(m);
 				boolean bPrint = true;
@@ -675,8 +678,8 @@ private void writeSurfacesAndCompartments() throws SolverException {
 					if (DEBUG) tmppw.println();					
 				}
 			}
-			if (DEBUG) tmppw.println("];");
 		} // end for (GeometricRegion
+		if (DEBUG) tmppw.println("];");
 		
 		printWriter.println(SmoldynKeyword.end_compartment);
 		printWriter.println();

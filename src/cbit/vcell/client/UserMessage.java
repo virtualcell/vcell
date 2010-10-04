@@ -16,7 +16,7 @@ public class UserMessage {
 	public final static String OPTION_USE_EXISTING_SPECIES = "Use existing species";
 	public final static String OPTION_YES = "Yes";
 	public final static String OPTION_NO = "No";
-	public final static String OPTION_OK = "Ok";
+	public final static String OPTION_OK = "OK";
 	public final static String OPTION_CANCEL = "Cancel";
 	public final static String OPTION_DISCARD_CHANGES = "Discard changes";
 	public final static String OPTION_EXIT = "Exit";
