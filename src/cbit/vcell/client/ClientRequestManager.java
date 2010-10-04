@@ -2471,12 +2471,15 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 		VCDocument vcd = documentWindowManager.getVCDocument();
 		if(vcd instanceof BioModel)
 		{
+			String stochChkMsg = null;
 			//we want to check when there is stochastic application if the rate laws set in model can be automatically transformed.
-			String stochChkMsg =((BioModel)vcd).getModel().isValidForStochApp();
 			for(int i=0; i<simulations.length; i++)
 			{
-				if(simulations[i].getMathDescription().isNonSpatialStoch())
+				if(simulations[i].getMathDescription().isNonSpatialStoch() || simulations[i].getMathDescription().isSpatialStoch())
 				{
+					if (stochChkMsg == null) {
+						stochChkMsg = ((BioModel)vcd).getModel().isValidForStochApp();
+					}
 					if(!(stochChkMsg.equals("")))
 					{
 						DialogUtils.showErrorDialog(documentWindowManager.getComponent(), "Problem in simulation: "+simulations[i].getName()+".\n"+stochChkMsg);

@@ -3,7 +3,6 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Polygon;
-import java.awt.event.ActionEvent;
 import java.util.Hashtable;
 
 import javax.swing.Icon;
@@ -29,8 +28,15 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelTreePanel;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.graph.CartoonEditorPanelFixed;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
@@ -91,6 +97,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connPtoP2SetTarget();
 			if (evt.getSource() == BioModelEditor.this.getCartoonEditorPanel1() && (evt.getPropertyName().equals("documentManager"))) 
 				connPtoP2SetSource();
+			if (evt.getSource() == getBioModelTreePanel1() && (evt.getPropertyName().equals(BioModelTreePanel.PROPERTY_NAME_SELECTED_VERSIONABLE))) {
+				updateMenuOnSelectionChange();
+			}
 		};
 	};
 
@@ -101,6 +110,7 @@ public BioModelEditor() {
 	super();
 	initialize();
 }
+
 
 /**
  * Insert the method's description here.
@@ -127,11 +137,19 @@ public void bioModelTreePanel1_ActionPerformed(java.awt.event.ActionEvent e) {
 	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_RENAME_APPLICATION)) {
 		renameApplication();
 	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION)) {
-		copyApplication(e);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_TO_STOCHASTIC_APPLICATION)) {
-		copyApplication(e);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_TO_NON_STOCHASTIC_APPLICATION)) {
-		copyApplication(e);
+		copyApplication();
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION)) {
+		copyApplication(false, true);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION)) {
+		copyApplication(false, false);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION)) {
+		copyApplication(false, false);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION)) {
+		copyApplication(false, true);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION)) {
+		copyApplication(true, false);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION)) {
+		copyApplication(true, true);
 	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_NEW_APPLICATION)) {
 		newApplication(e);
 	} 
@@ -186,7 +204,7 @@ private void connEtoC3(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.copyApplication(arg1);
+		this.copyApplication();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -404,11 +422,7 @@ private void connPtoP3SetTarget() {
 	}
 }
 
-
-/**
- * Comment
- */
-private void copyApplication(ActionEvent evt) {
+private void copyApplication() {
 	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
 	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
 	if (selection == null && selectedParent == null) {
@@ -419,76 +433,66 @@ private void copyApplication(ActionEvent evt) {
 		PopupGenerator.showWarningDialog(this, "This will copy the whole application.");
 		selection = selectedParent;
 	}
+	SimulationContext selectedSimContext = (SimulationContext)selection;
+	copyApplication(selectedSimContext.getGeometry().getDimension() > 0, selectedSimContext.isStoch());
+}
+/**
+ * Comment
+ */
+private void copyApplication(final boolean bSpatial, final boolean bStochastic) {
+	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
+	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
+	if (selection == null && selectedParent == null) {
+		PopupGenerator.showErrorDialog(this, "Please select an application.");
+		return;
+	}	
+	if(!(selection instanceof SimulationContext)) {
+		PopupGenerator.showWarningDialog(this, "This will copy the whole application.");
+		selection = selectedParent;
+	}
+
+	final SimulationContext selectedSimContext = (SimulationContext)selection;
 	try {
 		String newApplicationName = null;
 		
-		if (selection instanceof SimulationContext) {
-			String actionCommand = evt.getActionCommand();
-			if(actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION))
+		if (bStochastic) {
+			//check validity if copy to stochastic application
+			String message = getBioModel().getModel().isValidForStochApp();
+			if(!message.equals(""))
 			{
-				//check validity if selected application is a stochastic application
-				if(((SimulationContext)selection).isStoch())
-				{
-					String message = getBioModel().getModel().isValidForStochApp();
-					if(!message.equals(""))
-					{
-						throw new Exception(message);
-					}
-				}
-				//get valid application name
-				try{
-					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
-				}catch(UserCancelException e){
-					return;
-				}
-				if (newApplicationName != null) {
-					if (newApplicationName.equals("")) {
-						PopupGenerator.showErrorDialog(this, "Blank name not allowed");
-					} else {
-						SimulationContext newSimulationContext = getBioModel().copySimulationContext((SimulationContext)selection, newApplicationName, ((SimulationContext)selection).isStoch());
-						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
-					}
-				}
+				throw new Exception(message);
 			}
-			else if(actionCommand.equals(GuiConstants.ACTIONCMD_COPY_TO_STOCHASTIC_APPLICATION))
-			{
-				//check validity if copy to stochastic application
-				String message = getBioModel().getModel().isValidForStochApp();
-				if(!message.equals(""))
-				{
-					throw new Exception(message);
-				}
-				//get valid application name
-				try{
-					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
-				}catch(UserCancelException e){
-					return;
-				}
-				if (newApplicationName != null) {
-					if (newApplicationName.equals("")) {
-						PopupGenerator.showErrorDialog(this, "Blank name not allowed");
-					} else {
-						SimulationContext newSimulationContext = getBioModel().copySimulationContext((SimulationContext)selection, newApplicationName, true);
+		}
+		
+		//get valid application name
+		try{
+			newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
+		}catch(UserCancelException e){
+			return;
+		}
+		if (newApplicationName != null) {
+			if (newApplicationName.equals("")) {
+				PopupGenerator.showErrorDialog(this, "Blank name not allowed");
+			} else {
+				final String newName = newApplicationName;
+				AsynchClientTask task1 = new AsynchClientTask("copying", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						SimulationContext newSimulationContext = copySimulationContext(selectedSimContext, newName, bSpatial, bStochastic);
+						hashTable.put("newSimulationContext", newSimulationContext);
+					}
+				};
+				AsynchClientTask task2 = new AsynchClientTask("showing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+					
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
+						getBioModel().addSimulationContext(newSimulationContext);
 						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
 					}
-				}
-			}
-			else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_TO_NON_STOCHASTIC_APPLICATION))
-			{
-				//get valid application name
-				try{
-					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
-				}catch(UserCancelException e){
-					return;
-				}
-				if (newApplicationName != null) {
-					if (newApplicationName.equals("")) {
-						PopupGenerator.showErrorDialog(this, "Blank name not allowed");
-					} else {
-						SimulationContext newSimulationContext = getBioModel().copySimulationContext((SimulationContext)selection, newApplicationName, false);
-						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
-					}
-				}
+				};
+				ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
 			}
 		}
 	} catch (Throwable exc) {
@@ -497,6 +501,54 @@ private void copyApplication(ActionEvent evt) {
 	}
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (1/19/01 3:31:00 PM)
+ * @param srcSimContext cbit.vcell.mapping.SimulationContext
+ * @exception java.beans.PropertyVetoException The exception description.
+ * @throws ExpressionException 
+ * @throws MappingException 
+ */
+private SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, boolean bStoch) throws java.beans.PropertyVetoException, ExpressionException, MappingException {
+	//if stoch copy to ode, we need to check is stoch is using particles. If yes, should convert particles to concentraton.
+	//the other 3 cases are fine. ode->ode, ode->stoch, stoch-> stoch 
+	SimulationContext destSimContext = new SimulationContext(srcSimContext, bStoch);
+	if(srcSimContext.isStoch() && !srcSimContext.isUsingConcentration() && !bStoch)
+	{
+		try {
+			destSimContext.convertSpeciesIniCondition(true);
+		} catch (MappingException e) {
+			e.printStackTrace();
+			throw new java.beans.PropertyVetoException(e.getMessage(), null);
+		}
+	}
+	if (srcSimContext.getGeometry().getDimension() > 0 && !bSpatial) { // copy the size over
+		destSimContext.setGeometry(new Geometry("nonspatial", 0));
+		StructureMapping srcStructureMappings[] = srcSimContext.getGeometryContext().getStructureMappings();
+		StructureMapping destStructureMappings[] = destSimContext.getGeometryContext().getStructureMappings();
+		for (StructureMapping destStructureMapping : destStructureMappings) {
+			for (StructureMapping srcStructureMapping : srcStructureMappings) {
+				if (destStructureMapping.getStructure() == srcStructureMapping.getStructure()) {
+					if (srcStructureMapping.getUnitSizeParameter() != null) {
+						Expression sizeRatio = srcStructureMapping.getUnitSizeParameter().getExpression();
+						GeometryClass srcGeometryClass = srcStructureMapping.getGeometryClass();
+						GeometricRegion[] srcGeometricRegions = srcSimContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(srcGeometryClass);
+						if (srcGeometricRegions != null) {
+							double size = 0;
+							for (GeometricRegion srcGeometricRegion : srcGeometricRegions) {
+								size += srcGeometricRegion.getSize();
+							}
+							destStructureMapping.getSizeParameter().setExpression(Expression.mult(sizeRatio, new Expression(size)));
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+	destSimContext.setName(newSimulationContextName);	
+	return destSimContext;
+}
 
 /**
  * Comment
@@ -1033,6 +1085,7 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP3SetTarget();
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
+	getBioModelTreePanel1().addPropertyChangeListener(ivjEventHandler);
 }
 
 /**
@@ -1252,6 +1305,16 @@ public void setDocumentManager(DocumentManager documentManager) {
 	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
+}
+
+public void updateMenuOnSelectionChange() {	
+	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
+	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
+	boolean bAppSelected = selection != null && (selection instanceof SimulationContext || selectedParent != null);
+	getCopyMenuItem().setEnabled(bAppSelected);
+	getOpenAppMenuItem().setEnabled(bAppSelected);
+	getRenameMenuItem().setEnabled(bAppSelected);
+	getDeleteMenuItem().setEnabled(bAppSelected);
 }
 
 }

@@ -48,6 +48,11 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  */
 public class BioModelTreePanel extends JPanel {
 	
+	public static final String PROPERTY_NAME_SELECTED_VERSIONABLE = "selectedVersionable";
+	private static final String MENU_TEXT_SPATIAL_APPLICATION = "Spatial Application";
+	private static final String MENU_TEXT_NON_SPATIAL_APPLICATION = "Non-Spatial Application";
+	private static final String MENU_TEXT_DETERMINISTIC_APPLICATION = "Deterministic Application";
+	private static final String MENU_TEXT_STOCHASTIC_APPLICATION = "Stochastic Application";
 	private JScrollPane ivjJScrollPane1 = null;
 	private JTreeFancy ivjJTree2 = null;
 	private boolean ivjConnPtoP1Aligning = false;
@@ -70,9 +75,18 @@ public class BioModelTreePanel extends JPanel {
 	private JMenuItem ivjJMenuItemEdit = null;
 	private JPopupMenu ivjSimPopupMenu = null;
 	private JMenuItem ivjJMenuItemCopy = null;
+	
 	private JMenu ivjJMenuCopyAs = null;
-	private JMenuItem copyStochApp = null;
-	private JMenuItem copyNonStochApp = null;
+	private JMenuItem menuItemNonSpatialCopyStochastic = null;
+	private JMenuItem menuItemNonSpatialCopyDeterministic = null;
+	
+	private JMenu menuSpatialCopyAsNonSpatial = null;
+	private JMenuItem menuItemSpatialCopyAsNonSpatialStochastic = null;
+	private JMenuItem menuItemSpatialCopyAsNonSpatialDeterministic = null;
+	private JMenu menuSpatialCopyAsSpatial = null;
+	private JMenuItem menuItemSpatialCopyAsSpatialStochastic = null;
+	private JMenuItem menuItemSpatialCopyAsSpatialDeterministic = null;
+	
 	private JMenuItem ivjBioModelMenuItem = null;
 	private JPopupMenu ivjBioModelPopupMenu = null;
 	private JMenuItem ivjEditAnnotationMenuItem = null;
@@ -110,10 +124,16 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 				BioModelTreePanel.this.refireActionPerformed(e);
 			if (e.getSource() == BioModelTreePanel.this.newNonStochApp)
 				BioModelTreePanel.this.refireActionPerformed(e);
-			if (e.getSource() == BioModelTreePanel.this.copyStochApp)
+			if (e.getSource() == BioModelTreePanel.this.menuItemNonSpatialCopyStochastic)
 				BioModelTreePanel.this.refireActionPerformed(e);
-			if (e.getSource() == BioModelTreePanel.this.copyNonStochApp)
+			if (e.getSource() == BioModelTreePanel.this.menuItemNonSpatialCopyDeterministic)
 				BioModelTreePanel.this.refireActionPerformed(e);
+			if (e.getSource() == menuItemSpatialCopyAsNonSpatialDeterministic
+				|| e.getSource() == menuItemSpatialCopyAsNonSpatialStochastic
+				|| e.getSource() == menuItemSpatialCopyAsSpatialDeterministic
+				|| e.getSource() == menuItemSpatialCopyAsSpatialStochastic) {
+				refireActionPerformed(e);
+			}
 		};
 		public void mouseClicked(java.awt.event.MouseEvent e) {
 			if (e.getSource() == BioModelTreePanel.this.getJTree2()) 
@@ -141,34 +161,6 @@ public BioModelTreePanel() {
 	super();
 	initialize();
 }
-
-/**
- * BioModelTreePanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public BioModelTreePanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-
-
-/**
- * BioModelTreePanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public BioModelTreePanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * BioModelTreePanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public BioModelTreePanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
 
 /**
  * Comment
@@ -736,16 +728,6 @@ private javax.swing.JPopupMenu getAppPopupMenu() {
 		try {
 			ivjAppPopupMenu = new javax.swing.JPopupMenu();
 			ivjAppPopupMenu.setName("AppPopupMenu");
-			ivjAppPopupMenu.add(getJLabel1());
-			ivjAppPopupMenu.add(getJSeparator1());
-			ivjAppPopupMenu.add(getJMenuItemOpen());
-			ivjAppPopupMenu.add(getJMenuItemDelete());
-			ivjAppPopupMenu.add(getJMenuItemRename());
-			ivjAppPopupMenu.add(getJMenuItemAnnotation());
-			ivjAppPopupMenu.add(this.getJMenuItemCopy());
-			ivjAppPopupMenu.add(getJSeparator2());
-			ivjAppPopupMenu.add(getJMenuCopyAs());
-			ivjAppPopupMenu.add(getJMenuNew());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -754,6 +736,17 @@ private javax.swing.JPopupMenu getAppPopupMenu() {
 			handleException(ivjExc);
 		}
 	}
+	ivjAppPopupMenu.removeAll();
+	ivjAppPopupMenu.add(getJLabel1());
+	ivjAppPopupMenu.add(getJSeparator1());
+	ivjAppPopupMenu.add(getJMenuItemOpen());
+	ivjAppPopupMenu.add(getJMenuItemDelete());
+	ivjAppPopupMenu.add(getJMenuItemRename());
+	ivjAppPopupMenu.add(getJMenuItemAnnotation());
+	ivjAppPopupMenu.add(this.getJMenuItemCopy());
+	ivjAppPopupMenu.add(getJSeparator2());
+	ivjAppPopupMenu.add(getJMenuCopyAs());
+	ivjAppPopupMenu.add(getJMenuNew());
 	return ivjAppPopupMenu;
 }
 
@@ -960,26 +953,52 @@ private javax.swing.JMenu getJMenuCopyAs() {
 			ivjJMenuCopyAs.setName("JMenuCopy");
 			ivjJMenuCopyAs.setText("Copy As");
 			//Menu items in Menu-Copy
-			copyStochApp=new JMenuItem();
-			copyStochApp.setName("JMenuItemToStochApp");
-			copyStochApp.setText("Stochastic Application");
-			copyStochApp.setActionCommand(GuiConstants.ACTIONCMD_COPY_TO_STOCHASTIC_APPLICATION);
-			copyNonStochApp = new javax.swing.JMenuItem();
-			copyNonStochApp.setName("JMenuItemToNonStochApp");
-			copyNonStochApp.setText("Deterministic Application");
-			copyNonStochApp.setActionCommand(GuiConstants.ACTIONCMD_COPY_TO_NON_STOCHASTIC_APPLICATION);
-			//add menu items to menu
-			ivjJMenuCopyAs.add(copyNonStochApp);
-			ivjJMenuCopyAs.add(copyStochApp);
+			menuItemNonSpatialCopyStochastic=new JMenuItem();
+			menuItemNonSpatialCopyStochastic.setName("JMenuItemToStochApp");
+			menuItemNonSpatialCopyStochastic.setText(MENU_TEXT_STOCHASTIC_APPLICATION);
+			menuItemNonSpatialCopyStochastic.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION);
+			menuItemNonSpatialCopyDeterministic = new javax.swing.JMenuItem();
+			menuItemNonSpatialCopyDeterministic.setName("JMenuItemToNonStochApp");
+			menuItemNonSpatialCopyDeterministic.setText(MENU_TEXT_DETERMINISTIC_APPLICATION);
+			menuItemNonSpatialCopyDeterministic.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION);
+			
+			
+			menuSpatialCopyAsNonSpatial = new JMenu(MENU_TEXT_NON_SPATIAL_APPLICATION);
+			menuItemSpatialCopyAsNonSpatialDeterministic = new JMenuItem(MENU_TEXT_DETERMINISTIC_APPLICATION);
+			menuItemSpatialCopyAsNonSpatialDeterministic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION);
+			menuItemSpatialCopyAsNonSpatialStochastic = new JMenuItem(MENU_TEXT_STOCHASTIC_APPLICATION);
+			menuItemSpatialCopyAsNonSpatialStochastic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION);
+			menuSpatialCopyAsNonSpatial.add(menuItemSpatialCopyAsNonSpatialDeterministic);
+			menuSpatialCopyAsNonSpatial.add(menuItemSpatialCopyAsNonSpatialStochastic);
+			
+			menuSpatialCopyAsSpatial = new JMenu(MENU_TEXT_SPATIAL_APPLICATION);
+			menuItemSpatialCopyAsSpatialDeterministic = new JMenuItem(MENU_TEXT_DETERMINISTIC_APPLICATION);
+			menuItemSpatialCopyAsSpatialDeterministic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION);
+			menuItemSpatialCopyAsSpatialStochastic = new JMenuItem(MENU_TEXT_STOCHASTIC_APPLICATION);
+			menuItemSpatialCopyAsSpatialStochastic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION);
+			menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialDeterministic);
+			menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialStochastic);
+
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
 			handleException(ivjExc);
 		}
 	}
+	ivjJMenuCopyAs.removeAll();
+	Versionable selectedSimContext = getSelectedVersionable();
+	if (selectedSimContext != null && selectedSimContext instanceof SimulationContext
+			&& ((SimulationContext)selectedSimContext).getGeometry().getDimension() == 0 ||
+			getSelectedApplicationParent() != null && getSelectedApplicationParent().getGeometry().getDimension() == 0) {
+		//add menu items to menu
+		ivjJMenuCopyAs.add(menuItemNonSpatialCopyDeterministic);
+		ivjJMenuCopyAs.add(menuItemNonSpatialCopyStochastic);
+	} else {
+		ivjJMenuCopyAs.add(menuSpatialCopyAsNonSpatial);
+		ivjJMenuCopyAs.add(menuSpatialCopyAsSpatial);
+	}
 	return ivjJMenuCopyAs;
 }
-
 
 /**
  * Return the JMenuItemCreateStochApp property value.
@@ -1067,11 +1086,11 @@ private javax.swing.JMenu getJMenuNew() {
 			//Menu items in Menu-New
 			newStochApp=new JMenuItem();
 			newStochApp.setName("JMenuItemStochApp");
-			newStochApp.setText("Stochastic Application");
+			newStochApp.setText(MENU_TEXT_STOCHASTIC_APPLICATION);
 			newStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION);
 			newNonStochApp = new javax.swing.JMenuItem();
 			newNonStochApp.setName("JMenuItemNonStochApp");
-			newNonStochApp.setText("Deterministic Application");
+			newNonStochApp.setText(MENU_TEXT_DETERMINISTIC_APPLICATION);
 			newNonStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION);
 			//add menu items to menu
 			ivjJMenuNew.add(newStochApp);
@@ -1375,8 +1394,12 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemCreateStochApp().addActionListener(ivjEventHandler);
 	newStochApp.addActionListener(ivjEventHandler);
 	newNonStochApp.addActionListener(ivjEventHandler);
-	copyStochApp.addActionListener(ivjEventHandler);
-	copyNonStochApp.addActionListener(ivjEventHandler);
+	menuItemNonSpatialCopyStochastic.addActionListener(ivjEventHandler);
+	menuItemNonSpatialCopyDeterministic.addActionListener(ivjEventHandler);
+	menuItemSpatialCopyAsNonSpatialDeterministic.addActionListener(ivjEventHandler);
+	menuItemSpatialCopyAsNonSpatialStochastic.addActionListener(ivjEventHandler);
+	menuItemSpatialCopyAsSpatialDeterministic.addActionListener(ivjEventHandler);
+	menuItemSpatialCopyAsSpatialStochastic.addActionListener(ivjEventHandler);
 	connPtoP3SetTarget();
 	connPtoP1SetTarget();
 }
@@ -1494,7 +1517,7 @@ private void setBioModel(BioModel newValue) {
 private void setSelectedVersionable(Versionable selectedVersionable) {
 	Versionable oldValue = fieldSelectedVersionable;
 	fieldSelectedVersionable = selectedVersionable;
-	firePropertyChange("selectedVersionable", oldValue, selectedVersionable);
+	firePropertyChange(PROPERTY_NAME_SELECTED_VERSIONABLE, oldValue, selectedVersionable);
 }
 
 

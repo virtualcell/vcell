@@ -608,7 +608,7 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 	}
 		
 	for (int j=0;j<newStructureMappings.length;j++){
-			StructureMapping structureMapping = newStructureMappings[j];
+		StructureMapping structureMapping = newStructureMappings[j];
 		
 		Structure mappedStructure = structureMapping.getStructure();
 		//SubVolume mappedSubvolume = structureMapping.getSubVolume();

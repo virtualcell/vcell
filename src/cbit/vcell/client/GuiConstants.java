@@ -21,8 +21,13 @@ public class GuiConstants {
 	public static final String ACTIONCMD_RENAME_APPLICATION = "Rename";
 	public static final String ACTIONCMD_DELETE_APPLICATION = "Delete";
 	public static final String ACTIONCMD_CREATE_NEW_APPLICATION = "Create New Application";
-	public static final String ACTIONCMD_COPY_TO_NON_STOCHASTIC_APPLICATION = "Copy To Non-stochastic Application";
-	public static final String ACTIONCMD_COPY_TO_STOCHASTIC_APPLICATION = "Copy To Stochastic Application";
+	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION = "Non-Spatial Copy To Deterministic Application";
+	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION = "Non-Spatial Copy To Stochastic Application";
+	
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION = "Spatial Copy To NonSpatial Deterministic Application";
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION = "Spatial Copy To NonSpatial Stochastic Application";
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION = "Spatial Copy To Spatial Deterministic Application";
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION = "Spatial Copy To Spatial Stochastic Application";
 	
 	public static final String ACTIONCMD_CHANGE_GEOMETRY = "Change Geometry...";
 //	public static final String ACTIONCMD_VIEW_CHANGE_GEOMETRY = "View / Change Geometry";
