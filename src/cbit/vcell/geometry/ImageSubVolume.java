@@ -26,7 +26,7 @@ public ImageSubVolume(KeyValue key, VCPixelClass vcPixelClass, int handle) {
 	this.vcPixelClass = vcPixelClass;
 }
 public ImageSubVolume(ImageSubVolume oldImagesuImageSubVolume) {
-	super(oldImagesuImageSubVolume.getKey(), oldImagesuImageSubVolume.getPixelClass().getPixelClassName(), oldImagesuImageSubVolume.getHandle());
+	super(oldImagesuImageSubVolume.getKey(), oldImagesuImageSubVolume.getName(), oldImagesuImageSubVolume.getHandle());
 	this.vcPixelClass = new VCPixelClass(oldImagesuImageSubVolume.getPixelClass());
 }
 

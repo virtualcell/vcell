@@ -56,11 +56,6 @@ GeometryContext(GeometryContext geometryContext, SimulationContext simulationCon
 	this.fieldGeometry = new Geometry(geometryContext.getGeometry());
 	this.fieldModel = geometryContext.getModel();
 	this.fieldSimulationContext = simulationContext;
-	try {
-		refreshStructureMappings();
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-	}
 	//
 	// copy the contents of the structure mappings.
 	//
@@ -77,6 +72,11 @@ GeometryContext(GeometryContext geometryContext, SimulationContext simulationCon
 			throw new RuntimeException("unexpected structureMapping = "+geometryContext.fieldStructureMappings[i]);
 		}
 	}
+	try {
+		refreshStructureMappings();
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+	}	
 	refreshDependencies();
 }
 /**
