@@ -18,6 +18,7 @@ import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.UIManager;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
@@ -94,8 +95,10 @@ public BioModelWindowManager(JPanel panel, RequestManager requestManager, final 
 	setJDesktopPane(new JDesktopPaneEnhanced());
 	getJPanel().setLayout(new BorderLayout());
 	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
-	JTaskBar taskBar = new JTaskBar(getJDesktopPane());
-	getJPanel().add(taskBar, BorderLayout.SOUTH);
+	if (!UIManager.getBoolean("InternalFrame.useTaskBar")) {
+		JTaskBar taskBar = new JTaskBar(getJDesktopPane());
+		getJPanel().add(taskBar, BorderLayout.SOUTH);
+	}
 	setBioModel(bioModel);
 	setBioModelEditor(new BioModelEditor());
 	createBioModelFrame();

@@ -11,6 +11,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
@@ -91,8 +92,10 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 	setJDesktopPane(new JDesktopPaneEnhanced());
 	getJPanel().setLayout(new BorderLayout());
 	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
-	JTaskBar taskBar = new JTaskBar(getJDesktopPane());
-	getJPanel().add(taskBar, BorderLayout.SOUTH);	
+	if (!UIManager.getBoolean("InternalFrame.useTaskBar")) {
+		JTaskBar taskBar = new JTaskBar(getJDesktopPane());
+		getJPanel().add(taskBar, BorderLayout.SOUTH);
+	}
 	setMathModel(aMathModel);
 	createMathModelEditor();
 
