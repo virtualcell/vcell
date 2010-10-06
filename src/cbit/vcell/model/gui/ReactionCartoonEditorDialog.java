@@ -4,6 +4,10 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.BorderLayout;
+
+import javax.swing.ImageIcon;
+
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.clientdb.DocumentManager;
@@ -34,28 +38,6 @@ public ReactionCartoonEditorDialog(StructureCartoonTool sct) {
 public void cleanupOnClose() {
 
 	getReactionCartoonEditorPanel().cleanupOnClose();
-}
-/**
- * Return the ContentsPane property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getContentsPane() {
-	if (ivjContentsPane == null) {
-		try {
-			ivjContentsPane = new javax.swing.JPanel();
-			ivjContentsPane.setName("ContentsPane");
-			ivjContentsPane.setLayout(new java.awt.BorderLayout());
-			getContentsPane().add(getReactionCartoonEditorPanel(), "Center");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjContentsPane;
 }
 /**
  * Return the ReactionCartoonEditorPanel property value.
@@ -104,14 +86,13 @@ public void init(Model model, Structure structure, DocumentManager documentManag
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
+		setFrameIcon(new ImageIcon(getClass().getResource("/images/step.gif")));
 		setName("ReactionCartoonEditorDialog");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 		setClosable(true);
 		setSize(600, 495);
 		setResizable(true);
-		setContentPane(getContentsPane());
+		add(getReactionCartoonEditorPanel(), BorderLayout.CENTER);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

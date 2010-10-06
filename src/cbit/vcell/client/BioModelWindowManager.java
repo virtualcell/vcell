@@ -13,9 +13,11 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
@@ -28,6 +30,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
+import org.vcell.util.gui.JTaskBar;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
@@ -91,6 +94,8 @@ public BioModelWindowManager(JPanel panel, RequestManager requestManager, final 
 	setJDesktopPane(new JDesktopPaneEnhanced());
 	getJPanel().setLayout(new BorderLayout());
 	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
+	JTaskBar taskBar = new JTaskBar(getJDesktopPane());
+	getJPanel().add(taskBar, BorderLayout.SOUTH);
 	setBioModel(bioModel);
 	setBioModelEditor(new BioModelEditor());
 	createBioModelFrame();
@@ -343,7 +348,8 @@ private void createBioModelFrame() {
 	getBioModelEditor().setBioModel(getBioModel());
 	getBioModelEditor().setDocumentManager(getRequestManager().getDocumentManager());
 	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("Model", true, false, true, true);
-	editorFrame.setContentPane(bioModelEditor);
+	editorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/bioModel_16x16.gif")));
+	editorFrame.add(bioModelEditor, BorderLayout.CENTER);
 	getJDesktopPane().add(editorFrame);
 	editorFrame.show();
 	editorFrame.setSize(900,600);

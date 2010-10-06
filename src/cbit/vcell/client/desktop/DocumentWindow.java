@@ -22,6 +22,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
@@ -136,6 +137,7 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenu toolMenu = null;
 	private JMenuItem transMAMenuItem = null;
 	private JMenuItem jMenuItemPermissions  = null;
+	private JScrollPane scrollPane = new JScrollPane();
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -1266,29 +1268,6 @@ private javax.swing.JMenu getHelpMenu() {
 		}
 	}
 	return ivjHelpMenu;
-}
-
-/**
- * Return the JFrameContentPane property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJFrameContentPane() {
-	if (ivjJFrameContentPane == null) {
-		try {
-			ivjJFrameContentPane = new javax.swing.JPanel();
-			ivjJFrameContentPane.setName("JFrameContentPane");
-			ivjJFrameContentPane.setLayout(new java.awt.BorderLayout());
-			getJFrameContentPane().add(getStatusBarPane(), "South");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJFrameContentPane;
 }
 
 /**
@@ -2750,7 +2729,8 @@ private void initialize() {
 		setJMenuBar(getDocumentWindowJMenuBar());
 		setSize(460, 536);
 		setTitle("DocumentWindow");
-		setContentPane(getJFrameContentPane());
+//		add(scrollPane, BorderLayout.CENTER);
+		add(getStatusBarPane(), BorderLayout.SOUTH);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -2910,7 +2890,8 @@ public void setWindowManager(DocumentWindowManager windowManager) {
  * @param c java.awt.Component
  */
 public void setWorkArea(Component c) {
-	getContentPane().add(c, BorderLayout.CENTER);
+	add(c, BorderLayout.CENTER);
+//	scrollPane.setViewportView(c);
 }
 
 

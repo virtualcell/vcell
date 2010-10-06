@@ -4,6 +4,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 
@@ -45,6 +46,7 @@ public ApplicationComponents(SimulationContext simContext, BioModelWindowManager
 	getAppEditor().setOptimizationService(bioModelWindowManager.getOptimizationService());
 	getAppEditor().setUserPreferences(bioModelWindowManager.getUserPreferences());
 	setAppEditorFrame(new JInternalFrameEnhanced("APPLICATION: "+simContext.getName(), true, true, true, true));
+	getAppEditorFrame().setFrameIcon(new ImageIcon(getClass().getResource("/images/application3_16x16.gif")));
 	getAppEditorFrame().setContentPane(getAppEditor());
 	getAppEditorFrame().setSize(800,650);
 	getAppEditorFrame().setMinimumSize(new Dimension(500,500));

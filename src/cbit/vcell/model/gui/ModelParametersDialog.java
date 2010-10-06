@@ -4,6 +4,9 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.BorderLayout;
+
+import javax.swing.ImageIcon;
 import javax.swing.JTabbedPane;
 
 import cbit.vcell.model.*;
@@ -87,13 +90,14 @@ public void init(Model model) {
  */
 private void initialize() {
 	try {
+		setFrameIcon(new ImageIcon(getClass().getResource("/icons/parameter.gif")));
 		setName("ModelParametersDialog");
 		setTitle("Parameters and Rate Expressions");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 		setClosable(true);
 		setSize(542, 495);
 		setResizable(true);
-		getContentPane().add(getTabbedPane());
+		add(getTabbedPane(), BorderLayout.CENTER);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
