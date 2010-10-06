@@ -97,7 +97,7 @@ public class ResultsParamTableEditor extends AbstractCellEditor implements Table
 	{
 		fireEditingStopped();
 		int oldSelectedRow = -1;
-		firePropertyChange(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DETAIL, oldSelectedRow, table.getSelectedRow());
+		firePropertyChange(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DETAILS, oldSelectedRow, table.getSelectedRow());
 	}
 	public boolean isCellEditable(EventObject anEvent) {
         return true;

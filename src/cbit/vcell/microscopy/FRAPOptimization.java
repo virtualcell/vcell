@@ -425,7 +425,7 @@ public class FRAPOptimization {
 		double minError = solver.powell(1, p, xi, FTOL, func);
 		parameters[FRAPOptData.idxOptDiffRate] = p[0];
 		parameters[FRAPOptData.idxMinError] = minError;*/
-		
+		//long startTime =System.currentTimeMillis();
 		// create optimization solver 
 		PowellOptimizationSolver optSolver = new PowellOptimizationSolver();
 		// create optimization spec
@@ -467,7 +467,8 @@ public class FRAPOptimization {
 			outParaNames[i] = names[i];
 			outParaVals[i] = values[i];
 		}
-		
+		//long endTime =System.currentTimeMillis();
+		//System.out.println("total: " + ( endTime - startTime) );
 		return  optResultSet.getObjectiveFunctionValue();
 	}
 	//for second run of optimization for diffusion with two diffusing components

@@ -96,6 +96,7 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
+import cbit.vcell.microscopy.ProfileData;
 import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_ModelTypesDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BackgroundROIDescriptor;
@@ -1334,17 +1335,72 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						}
 					}
 				}
-				hashTable.put(FRAPSTUDY_KEY, fStudy);
 			}
 		
 		};
 
+		AsynchClientTask evaulateCITask = new AsynchClientTask("Evaluating confidence intervals for model parameters ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		{
+			public void run(Hashtable<String, Object> hashTable) throws Exception
+			{
+				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
+				if(fStudy.hasOptModel())
+				{
+					ArrayList<Integer> models = fStudy.getSelectedModels();
+					for(int i = 0; i<models.size(); i++)
+					{
+						if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+						{
+							if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null &&
+							   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters().length > 0)
+							{
+								Parameter[] currentParams = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters();
+								fStudy.getFrapOptData().setNumEstimatedParams(currentParams.length);
+								ProfileData[] profileData = null;
+								if(fStudy.getFrapOptData().getExpFrapStudy().getProfileData_oneDiffComponent() !=null )
+								{
+									profileData = fStudy.getProfileData_oneDiffComponent();
+								}
+								else
+								{
+								    profileData = fStudy.getFrapOptData().evaluateParameters(currentParams, this.getClientTaskStatusSupport());
+								    fStudy.setProfileData_oneDiffComponent(profileData);
+								}
+							}
+						}
+						else if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+						{
+							if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
+							   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters().length > 0)
+							{
+								Parameter[] currentParams = fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters();
+								fStudy.getFrapOptData().setNumEstimatedParams(currentParams.length);
+								ProfileData[] profileData = null;
+								if(fStudy.getFrapOptData().getExpFrapStudy().getProfileData_twoDiffComponents() !=null )
+								{
+									profileData = fStudy.getProfileData_twoDiffComponents();
+								}
+								else
+								{
+								    profileData = fStudy.getFrapOptData().evaluateParameters(currentParams, this.getClientTaskStatusSupport());
+								    fStudy.setProfileData_twoDiffComponents(profileData);
+								}
+							}
+						}
+						
+					}
+				}
+				hashTable.put(FRAPSTUDY_KEY, fStudy);
+			}
+		
+		};
+		
 		AsynchClientTask showDialogTask = new AsynchClientTask("Showing estimation results ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				//get frap models  before the wizard
-				FRAPStudy fStudy = (FRAPStudy)hashTable.get(FRAPSTUDY_KEY);
+				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
 				FRAPModel[] oldFrapModels = new FRAPModel[FRAPModel.NUM_MODEL_TYPES];
 				for(int i=0; i<fStudy.getModels().length; i++)
 				{
@@ -1403,7 +1459,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		};
 		
 		//dispatch
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask, runOptTask, showDialogTask, updateSaveStatusTask}, true, true, true, null, true);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[]{saveTask, runOptTask, evaulateCITask, showDialogTask, updateSaveStatusTask}, true, true, true, null, true);
 	}
 	
 	public void clearMovieBuffer()

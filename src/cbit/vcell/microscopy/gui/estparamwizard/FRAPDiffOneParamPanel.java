@@ -295,7 +295,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 			}
 		});
 		JButton evaluationButton = new JButton();
-		evaluationButton.setText("Evaluate Confidence Intervals");
+		evaluationButton.setText("Show Confidence Intervals");
 		evaluationButton.setToolTipText("Get confidence intervals for each parameter based on confidence level");
 		evaluationButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -536,23 +536,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				String errorStr = checkParameters();
-				if(errorStr.equals(""))
-				{
-					Parameter[] currentParams = getCurrentParameters();
-					frapOptData.setNumEstimatedParams(currentParams.length);
-					ProfileData[] profileData = null;
-					if(frapOptData.getExpFrapStudy().getProfileData_oneDiffComponent() !=null )
-					{
-						profileData = frapOptData.getExpFrapStudy().getProfileData_oneDiffComponent();
-					}
-					else
-					{
-					    profileData = frapOptData.evaluateParameters(currentParams, this.getClientTaskStatusSupport());
-					    frapOptData.getExpFrapStudy().setProfileData_oneDiffComponent(profileData);
-					}
-					hashTable.put("ProfileData", profileData);
-				}
-				else
+				if(!errorStr.equals(""))
 				{
 					throw new IllegalArgumentException(errorStr);
 				}
@@ -563,30 +547,33 @@ public class FRAPDiffOneParamPanel extends JPanel
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				ProfileData[] profileData = (ProfileData[])hashTable.get("ProfileData");
-				//put plotpanes of different parameters' profile likelihoods into a base panel
-				JPanel basePanel= new JPanel();
-		    	basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
-				for(int i=0; i<profileData.length; i++)
+				ProfileData[] profileData = frapOptData.getExpFrapStudy().getProfileData_oneDiffComponent();
+				if(profileData != null && profileData.length > 0)
 				{
-					ConfidenceIntervalPlotPanel plotPanel = new ConfidenceIntervalPlotPanel();
-					plotPanel.setProfileSummaryData(frapOptData.getSummaryFromProfileData(profileData[i]));
-					plotPanel.setBorder(new EtchedBorder());
-					String paramName = "";
-					if(profileData[i].getProfileDataElements().size() > 0)
+					//put plotpanes of different parameters' profile likelihoods into a base panel
+					JPanel basePanel= new JPanel();
+			    	basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
+					for(int i=0; i<profileData.length; i++)
 					{
-						paramName = profileData[i].getProfileDataElements().get(0).getParamName();
+						ConfidenceIntervalPlotPanel plotPanel = new ConfidenceIntervalPlotPanel();
+						plotPanel.setProfileSummaryData(frapOptData.getSummaryFromProfileData(profileData[i]));
+						plotPanel.setBorder(new EtchedBorder());
+						String paramName = "";
+						if(profileData[i].getProfileDataElements().size() > 0)
+						{
+							paramName = profileData[i].getProfileDataElements().get(0).getParamName();
+						}
+						ProfileDataPanel profileDataPanel = new ProfileDataPanel(plotPanel, paramName);
+						basePanel.add(profileDataPanel);
 					}
-					ProfileDataPanel profileDataPanel = new ProfileDataPanel(plotPanel, paramName);
-					basePanel.add(profileDataPanel);
+					JScrollPane scrollPane = new JScrollPane(basePanel);
+			    	scrollPane.setAutoscrolls(true);
+			    	scrollPane.setPreferredSize(new Dimension(620, 600));
+			    	scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			    	scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			    	//show plots in a dialog
+			    	DialogUtils.showComponentCloseDialog(FRAPDiffOneParamPanel.this, scrollPane, "Profile Likelihood of Parameters");
 				}
-				JScrollPane scrollPane = new JScrollPane(basePanel);
-		    	scrollPane.setAutoscrolls(true);
-		    	scrollPane.setPreferredSize(new Dimension(620, 600));
-		    	scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		    	scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		    	//show plots in a dialog
-		    	DialogUtils.showComponentCloseDialog(FRAPDiffOneParamPanel.this, scrollPane, "Profile Likelihood of Parameters");
 			}
 		};
 		//dispatch

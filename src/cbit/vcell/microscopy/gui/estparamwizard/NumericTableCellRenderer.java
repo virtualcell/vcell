@@ -1,6 +1,7 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.Border;
 import javax.swing.*;
@@ -43,8 +44,8 @@ public class NumericTableCellRenderer  extends DefaultTableCellRenderer {
     	
     	if(value == null)
 		{
-			setBackground(new Color(238,238,238)); //light gray
-			setForeground(new Color(238,238,238));
+			setBackground(new Color(228,228,228)); //light gray
+			setForeground(new Color(228,228,228));
 		}
     	else
 		{

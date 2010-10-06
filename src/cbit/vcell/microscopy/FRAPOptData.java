@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.swing.border.EtchedBorder;
+
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
@@ -17,6 +19,8 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.microscopy.gui.estparamwizard.ConfidenceIntervalPlotPanel;
+import cbit.vcell.microscopy.gui.estparamwizard.ProfileDataPanel;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
@@ -324,7 +328,7 @@ public class FRAPOptData {
 //		{
 //			System.out.println("Parameter "+ i + " is: " + newParamVals[i]);
 //		}
-//		System.out.println("Variance:" + error);
+//		System.out.println("squared error:" + error);
 //		System.out.println("--------------------------------");
 		return error;
 	}
@@ -884,6 +888,7 @@ public class FRAPOptData {
 
 	public ProfileData[] evaluateParameters(Parameter[] currentParams, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
 	{
+//		long startTime =System.currentTimeMillis();
 		int totalParamLen = currentParams.length;
 		ProfileData[] resultData = new ProfileData[totalParamLen];
 		FRAPStudy frapStudy = getExpFrapStudy();
@@ -906,7 +911,15 @@ public class FRAPOptData {
 			}
 			if(clientTaskStatusSupport != null)
 			{
-				clientTaskStatusSupport.setMessage("Evaluating parameter: " + fixedParam.getName());
+				if(totalParamLen == FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF)
+				{
+					clientTaskStatusSupport.setMessage("Evaluating \'" + fixedParam.getName() + "\' of one diffusing component model.");
+				}
+				else if(totalParamLen == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
+				{
+					clientTaskStatusSupport.setMessage("Evaluating \'" + fixedParam.getName() + "\' of two diffusing components model.");
+				}
+				clientTaskStatusSupport.setProgress(0);//start evaluation of a parameter.
 			}
 			ProfileDataElement pde = new ProfileDataElement(fixedParam.getName(), Math.log10(fixedParam.getInitialGuess()), iniError, newBestParameters);
 			profileData.addElement(pde);
@@ -1013,7 +1026,9 @@ public class FRAPOptData {
 				lastError = error;
 				lastLogVal = paramLogVal;
 				iterationCount++;
+				clientTaskStatusSupport.setProgress((int)((iterationCount*1.0/MAX_ITERATION) * 0.5 * 100));
 			}
+			clientTaskStatusSupport.setProgress(50);//half way through evaluation of a parameter.
 			//decrease
 			iterationCount = 1;
 			paramLogVal = Math.log10(fixedParam.getInitialGuess());;
@@ -1103,9 +1118,13 @@ public class FRAPOptData {
 				lastError = error;
 				lastLogVal = paramLogVal;
 				iterationCount++;
+				clientTaskStatusSupport.setProgress((int)(((iterationCount+MAX_ITERATION)*1.0/MAX_ITERATION) * 0.5 * 100));
 			}
 			resultData[j] = profileData;
+			clientTaskStatusSupport.setProgress(100);//finish evaluation of a parameter
 		}
+//		long endTime =System.currentTimeMillis();
+//		System.out.println("total time used:" + (endTime - startTime));
 		return resultData;
 	}
 	
@@ -1264,13 +1283,8 @@ public class FRAPOptData {
 				boolean bUpperBoundOpen = true;
 				if(smallLeftIdx[i] == -1 && bigLeftIdx[i] == -1)//no lower bound
 				{
-					//if not diffustion rates the lower bound is 0
-					if(!parameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE]) &&
-					   !parameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE]))
-					{
-						lowerBound = 0;
-						bLowerBoundOpen = false;
-					}
+					lowerBound = parameter.getLowerBound();
+					bLowerBoundOpen = false;
 				}
 				else if(smallLeftIdx[i] != -1 && bigLeftIdx[i] != -1)//there is a lower bound
 				{
@@ -1286,13 +1300,8 @@ public class FRAPOptData {
 				}
 				if(smallRightIdx[i] == -1 && bigRightIdx[i] == -1)//no upper bound
 				{
-					//if not diffustion rates the upper bound is 1
-					if(!parameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE]) &&
-					   !parameter.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE]))
-					{
-						upperBound = 1;
-						bUpperBoundOpen = false;
-					}
+					upperBound = parameter.getUpperBound();
+					bUpperBoundOpen = false;
 				}
 				else if(smallRightIdx[i] != -1 && bigRightIdx[i] != -1)//there is a upper bound
 				{
@@ -1311,5 +1320,30 @@ public class FRAPOptData {
 			return new ProfileSummaryData(plots, bestParamVal, intervals);
 		}
 		return null;
+	}
+	
+	//save all the profile summary data for parameters from either one diffusing component model or two diffusing components model
+	//first dimension :2 two types of models, second dimension :5 max parameters length(3 for Diff 1, 5 for Diff 2)
+	public ProfileSummaryData[][] getAllProfileSummaryData()
+	{
+		ProfileSummaryData[][] summaryData = new ProfileSummaryData[FRAPModel.NUM_MODEL_TYPES-1][FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF];
+		//for parameters from diffusion with one diffusing component
+		if(getExpFrapStudy().getProfileData_oneDiffComponent() !=null )
+		{
+			ProfileData[] profileData = getExpFrapStudy().getProfileData_oneDiffComponent();
+			for(int i=0; i<profileData.length; i++)
+			{
+				summaryData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i] = getSummaryFromProfileData(profileData[i]);
+			}
+		}
+		if(getExpFrapStudy().getProfileData_twoDiffComponents() !=null )
+		{
+			ProfileData[] profileData = getExpFrapStudy().getProfileData_twoDiffComponents();
+			for(int i=0; i<profileData.length; i++)
+			{
+				summaryData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i] = getSummaryFromProfileData(profileData[i]);
+			}
+		}
+		return summaryData;
 	}
 }
