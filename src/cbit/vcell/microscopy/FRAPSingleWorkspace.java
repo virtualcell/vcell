@@ -34,6 +34,7 @@ public class FRAPSingleWorkspace extends FRAPWorkspace implements PropertyChange
 	public static final String PROPERTY_CHANGE_CURRENTLY_DISPLAYED_ROI_WITH_SAVE = "CURRENTLY_DISPLAYED_ROI_WITH_SAVE";
 	public static final String PROPERTY_CHANGE_OPTIMIZER_VALUE = "OPTIMIZER_VALUE_CHANGE";
 	public static final String PROPERTY_CHANGE_BEST_MODEL = "BEST_MODEL_CHANGE";
+	public static final String PROPERTY_CHANGE_CONFIDENCEINTERVAL_DETAILS = "PROPERTY_CHANGE_CONFIDENCEINTERVAL_DETAILS";
 	
 	public FRAPSingleWorkspace()
 	{

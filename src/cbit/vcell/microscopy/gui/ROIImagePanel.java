@@ -14,6 +14,7 @@ import org.vcell.util.ISize;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
 
+@SuppressWarnings("serial")
 public class ROIImagePanel extends JPanel {
 	
 	private final JLabel roiImageJLabel;

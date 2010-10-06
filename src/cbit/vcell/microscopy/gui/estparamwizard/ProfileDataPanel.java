@@ -21,6 +21,11 @@ public class ProfileDataPanel extends BoxPanel
         contentPane.add(profileDataPlotPanel, BorderLayout.CENTER);
 	}
 	
+	public void setProfileDataPlotDetailsVisible(boolean bVisible)
+	{
+		profileDataPlotPanel.setDetail(bVisible);
+	}
+	
 	public static void main(java.lang.String[] args) {
 		try {
 			javax.swing.JFrame frame = new javax.swing.JFrame();

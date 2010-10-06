@@ -38,7 +38,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 	//Properties that are used in VFRAP Batch Run
 	public static final String PROPERTY_CHANGE_BATCHRUN_DISPLAY_IMG = "BATCHRUN_DISPLAY_IMG";
 	public static final String PROPERTY_CHANGE_BATCHRUN_DISPLAY_PARAM = "BATCHRUN_DISPLAY_PARAM";//property to disply results
-	public static final String PROPERTY_CHANGE_BATCHRUN_DETAIL = "PROPERTY_CHANGE_BATCHRUN_DETAIL";//property when details button pressed
+	public static final String PROPERTY_CHANGE_BATCHRUN_DETAILS = "PROPERTY_CHANGE_BATCHRUN_DETAILS";//property when details button pressed in batch run results display panel
 	public static final String PROPERTY_CHANGE_BATCHRUN_UPDATE_STATISTICS = "PROPERTY_CHANGE_BATCHRUN_UPDATE_STATISTICS";
 	public static final String PROPERTY_CHANGE_BATCHRUN_CLEAR_RESULTS = "PROPERTY_CHANGE_BATCHRUN_CLEAR_RESULTS";
 	

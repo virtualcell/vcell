@@ -688,7 +688,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		buttonPanel.add(optimalButton);
 		JButton evaluationButton = new JButton();
 		evaluationButton.setMargin(new Insets(2, 6, 2, 6));
-		evaluationButton.setText("Evaluate CI");
+		evaluationButton.setText("Show CIs");
 		evaluationButton.setToolTipText("Get confidence intervals for each parameter based on confidence level");
 		evaluationButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -950,62 +950,49 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 	public void evaluateParameters()
 	{
 		
-		AsynchClientTask evaluateTask = new AsynchClientTask("Evaluating best parameters ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+		AsynchClientTask evaluateTask = new AsynchClientTask("Prepare to evaluate parameters ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				String errorStr = checkParameters();
-				if(errorStr.equals(""))
-				{
-					Parameter[] currentParams = getCurrentParameters();
-					frapOptData.setNumEstimatedParams(currentParams.length);
-					ProfileData[] profileData = null;
-					if(frapOptData.getExpFrapStudy().getProfileData_twoDiffComponents() !=null )
-					{
-						profileData = frapOptData.getExpFrapStudy().getProfileData_twoDiffComponents();
-					}
-					else
-					{
-					    profileData = frapOptData.evaluateParameters(currentParams, this.getClientTaskStatusSupport());
-					    frapOptData.getExpFrapStudy().setProfileData_twoDiffComponents(profileData);
-					}
-					hashTable.put("ProfileData", profileData);
-				}
-				else
+				if(!errorStr.equals(""))
 				{
 					throw new IllegalArgumentException(errorStr);
 				}
 			}
 		};
 		
-		AsynchClientTask showResultTask = new AsynchClientTask("Evaluating best parameters ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+		AsynchClientTask showResultTask = new AsynchClientTask("Showing profile likelihood and confidence intervals ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				ProfileData[] profileData = (ProfileData[])hashTable.get("ProfileData");
-				JPanel basePanel= new JPanel();
-				//put plotpanes of different parameters' profile likelihoods into a base panel
-		    	basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
-				for(int i=0; i<profileData.length; i++)
+				ProfileData[] profileData = frapOptData.getExpFrapStudy().getProfileData_twoDiffComponents();
+				if(profileData != null && profileData.length > 0)
 				{
-					ConfidenceIntervalPlotPanel plotPanel = new ConfidenceIntervalPlotPanel();
-					plotPanel.setProfileSummaryData(frapOptData.getSummaryFromProfileData(profileData[i]));
-					plotPanel.setBorder(new EtchedBorder());
-					String paramName = "";
-					if(profileData[i].getProfileDataElements().size() > 0)
+					JPanel basePanel= new JPanel();
+					//put plotpanes of different parameters' profile likelihoods into a base panel
+			    	basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
+					for(int i=0; i<profileData.length; i++)
 					{
-						paramName = profileData[i].getProfileDataElements().get(0).getParamName();
+						ConfidenceIntervalPlotPanel plotPanel = new ConfidenceIntervalPlotPanel();
+						plotPanel.setProfileSummaryData(frapOptData.getSummaryFromProfileData(profileData[i]));
+						plotPanel.setBorder(new EtchedBorder());
+						String paramName = "";
+						if(profileData[i].getProfileDataElements().size() > 0)
+						{
+							paramName = profileData[i].getProfileDataElements().get(0).getParamName();
+						}
+						ProfileDataPanel profileDataPanel = new ProfileDataPanel(plotPanel, paramName);
+						basePanel.add(profileDataPanel);
 					}
-					ProfileDataPanel profileDataPanel = new ProfileDataPanel(plotPanel, paramName);
-					basePanel.add(profileDataPanel);
+					JScrollPane scrollPane = new JScrollPane(basePanel);
+			    	scrollPane.setAutoscrolls(true);
+			    	scrollPane.setPreferredSize(new Dimension(620, 600));
+			    	scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			    	scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			    	//show plots in a dialog
+			    	DialogUtils.showComponentCloseDialog(FRAPDiffTwoParamPanel.this, scrollPane, "Profile Likelihood of Parameters");
 				}
-				JScrollPane scrollPane = new JScrollPane(basePanel);
-		    	scrollPane.setAutoscrolls(true);
-		    	scrollPane.setPreferredSize(new Dimension(620, 600));
-		    	scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		    	scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		    	//show plots in a dialog
-		    	DialogUtils.showComponentCloseDialog(FRAPDiffTwoParamPanel.this, scrollPane, "Profile Likelihood of Parameters");
 			}
 		};
 		//dispatch

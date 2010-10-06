@@ -282,7 +282,7 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
 	
 	public void propertyChange(PropertyChangeEvent evt) {
 		
-		if(evt.getPropertyName().equals(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DETAIL))
+		if(evt.getPropertyName().equals(FRAPBatchRunWorkspace.PROPERTY_CHANGE_BATCHRUN_DETAILS))
 		{
 			int rowNum = ((Integer)evt.getNewValue()).intValue();
 			String fileName = ((File)table_param.getValueAt(rowNum, BatchRunResultsParamTableModel.COLUMN_FILE_NAME)).getAbsolutePath();
