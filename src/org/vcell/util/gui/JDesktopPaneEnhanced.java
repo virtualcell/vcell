@@ -43,8 +43,8 @@ public class JDesktopPaneEnhanced extends javax.swing.JDesktopPane {
 			JInternalFrame[] allFrames = getAllFrames();
 			for (JInternalFrame frame : allFrames) {
 				if (frame.isIcon()) {
-					Rectangle r = getBoundsForIconOf(frame);
-					frame.getDesktopIcon().setBounds(r.x, r.y, r.width, r.height);
+//					Rectangle r = getBoundsForIconOf(frame);
+//					frame.getDesktopIcon().setBounds(r.x, r.y, r.width, r.height);
 				} else if (frame.isVisible()) {
 					relayoutFrame(frame);
 				}

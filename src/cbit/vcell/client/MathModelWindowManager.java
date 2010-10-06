@@ -20,6 +20,7 @@ import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
+import org.vcell.util.gui.JTaskBar;
 
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
@@ -90,6 +91,8 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 	setJDesktopPane(new JDesktopPaneEnhanced());
 	getJPanel().setLayout(new BorderLayout());
 	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
+	JTaskBar taskBar = new JTaskBar(getJDesktopPane());
+	getJPanel().add(taskBar, BorderLayout.SOUTH);	
 	setMathModel(aMathModel);
 	createMathModelEditor();
 
