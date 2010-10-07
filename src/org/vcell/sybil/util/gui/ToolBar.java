@@ -6,7 +6,6 @@ package org.vcell.sybil.util.gui;
 
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Insets;
 
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -29,7 +28,6 @@ public class ToolBar extends JToolBar {
 			setPreferredSize(new Dimension(180, 28));
 			setFont(new Font("Arial", 1, 10));
 			setMinimumSize(new Dimension(120, 28));
-			setMargin(new Insets(2, 2, 2, 2));
 			setToolTipText((String) action.getValue(Action.SHORT_DESCRIPTION));
 		}
 		

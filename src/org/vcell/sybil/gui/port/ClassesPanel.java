@@ -66,7 +66,7 @@ public class ClassesPanel extends JPanel {
 		generalSelectionsButtonGroup.add(generalSelections.getKey(GeneralSelection.Some));
 		generalSelectionsButtonGroup.add(generalSelections.getKey(GeneralSelection.All) );
 		panelCenter.addLine(generalSelections.getKey(GeneralSelection.None),
-				new JLabel("<html> - None of the substances is considered modifable. <br>" + 
+				new JLabel("<html> None of the substances is considered modifiable. <br>" + 
 						"Choose this option if none of the substances involved " + 
 						"may occur in different states. </html>")); 
 		panelCenter.addLine(generalSelections.getKey(GeneralSelection.Some), 
