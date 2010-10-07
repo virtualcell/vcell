@@ -4,6 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,6 +15,7 @@ import java.awt.event.WindowEvent;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -26,6 +30,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
+import javax.swing.border.EtchedBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.User;
@@ -70,7 +75,6 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjExitMenuItem = null;
 	private JMenu ivjFileMenu = null;
 	private JMenu ivjHelpMenu = null;
-	private JPanel ivjJFrameContentPane = null;
 	private JSeparator ivjJSeparator1 = null;
 	private JSeparator ivjJSeparator2 = null;
 	private JSeparator ivjJSeparator3 = null;
@@ -1556,6 +1560,7 @@ private javax.swing.JPanel getJPanelMemStatus() {
 	if (ivjJPanelMemStatus == null) {
 		try {
 			ivjJPanelMemStatus = new javax.swing.JPanel();
+			ivjJPanelMemStatus.setBorder(new EtchedBorder());
 			ivjJPanelMemStatus.setName("JPanelMemStatus");
 			ivjJPanelMemStatus.setPreferredSize(new java.awt.Dimension(300, 26));
 			ivjJPanelMemStatus.setLayout(new java.awt.GridBagLayout());
@@ -2280,9 +2285,17 @@ private javax.swing.JPanel getStatusBarPane() {
 			ivjStatusBarPane = new javax.swing.JPanel();
 			ivjStatusBarPane.setName("StatusBarPane");
 			ivjStatusBarPane.setLayout(new java.awt.BorderLayout());
-			getStatusBarPane().add(getStatusMsgConnection(), "Center");
-			getStatusBarPane().add(getJPanelMemStatus(), "East");
-			getStatusBarPane().add(getJProgressBarConnection(), "West");
+			getStatusBarPane().add(getStatusMsgConnection(), BorderLayout.CENTER);
+			getStatusBarPane().add(getJPanelMemStatus(), BorderLayout.EAST);
+			JPanel panel = new JPanel();
+			panel.setLayout(new GridBagLayout());
+			panel.setBorder(new EtchedBorder());
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			panel.add(getJProgressBarConnection(), gbc);
+			getStatusBarPane().add(panel, BorderLayout.WEST);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2304,7 +2317,7 @@ private javax.swing.JLabel getStatusMsgConnection() {
 		try {
 			ivjStatusMsgConnection = new javax.swing.JLabel();
 			ivjStatusMsgConnection.setName("StatusMsgConnection");
-			ivjStatusMsgConnection.setBorder(new javax.swing.border.EtchedBorder());
+			ivjStatusMsgConnection.setBorder(BorderFactory.createCompoundBorder(new EtchedBorder(), BorderFactory.createEmptyBorder(0, 4, 0, 4)));
 			ivjStatusMsgConnection.setText("");
 			// user code begin {1}
 			// user code end
