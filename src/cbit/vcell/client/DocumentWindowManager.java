@@ -133,6 +133,7 @@ public static void close(JInternalFrame[] editorFrames, JDesktopPane pane) {
  */
 public static void close(JInternalFrame editorFrame, JDesktopPane pane) {
 	pane.getDesktopManager().closeFrame(editorFrame);
+	editorFrame.dispose();
 }
 
 

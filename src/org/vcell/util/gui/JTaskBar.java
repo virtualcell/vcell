@@ -15,6 +15,7 @@ import java.beans.PropertyVetoException;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
@@ -22,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
@@ -168,6 +170,9 @@ public class JTaskBar extends JPanel {
 	public JTaskBar(final JDesktopPane desktop) {
 		super();
 		setLayout(new EqualSizesLayout(EqualSizesLayout.LEFT, 0));
+		setBackground(desktop.getBackground());
+		setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createEtchedBorder(EtchedBorder.RAISED), BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)));
 		this.buttonGroup = new ButtonGroup();
 
 		desktop.addContainerListener(new ContainerListener() {
