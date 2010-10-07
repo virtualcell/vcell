@@ -103,12 +103,12 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    // export bioModel as sbml and save
 			    // String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0).getName());
 			    // SimulationJob simJob = new SimulationJob(bioModel.getSimulations(bioModel.getSimulationContexts(0))[0], null, 0);
-			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0), null);
+			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, 0, false, bioModel.getSimulationContexts(0), null);
 			    SBMLUtils.writeStringToFile(vcml_sbml, new File(outDir,filePrefix+".vcml.sbml").getAbsolutePath(), true);
 			    
 			    // re-import bioModel from exported sbml
 			    XMLSource vcml_sbml_Src = new XMLSource(vcml_sbml);
-			    BioModel newBioModel = (BioModel)XmlHelper.importSBML(logger, vcml_sbml_Src);
+			    BioModel newBioModel = (BioModel)XmlHelper.importSBML(logger, vcml_sbml_Src, false);
 			    String vcml_sbml_vcml = XmlHelper.bioModelToXML(newBioModel);
 			    SBMLUtils.writeStringToFile(vcml_sbml_vcml, new File(outDir,filePrefix+".vcml.sbml.vcml").getAbsolutePath(), true);
 			    
@@ -390,11 +390,11 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    // Round trip the bioModel (bioModel->sbml->bioModel).
 		    	
 			    // export bioModel as sbml and save
-			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0), null);
+			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, 0, false, bioModel.getSimulationContexts(0), null);
 			    
 			    // re-import bioModel from exported sbml
 			    XMLSource vcml_sbml_Src = new XMLSource(vcml_sbml);
-			    BioModel newBioModel = (BioModel)XmlHelper.importSBML(logger, vcml_sbml_Src);
+			    BioModel newBioModel = (BioModel)XmlHelper.importSBML(logger, vcml_sbml_Src, false);
 			    
 			    // have rest of code use the round-tripped biomodel
 			    bioModel = newBioModel;

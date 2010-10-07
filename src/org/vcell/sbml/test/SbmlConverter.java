@@ -200,7 +200,7 @@ public static void main(String[] args) {
 //						String sbmlString = XmlHelper.exportSBML(bioModel, 2, 1, simContext.getName());
 						
 						// Export the application itself, with default overrides
-						String sbmlString = XmlHelper.exportSBML(bioModel, 2, 1, simContext, null);
+						String sbmlString = XmlHelper.exportSBML(bioModel, 2, 1, 0, false, simContext, null);
 						String filePath = pathName.substring(0, pathName.lastIndexOf("\\")+1);
 						String outputFileName = TokenMangler.mangleToSName(bioModel.getName() + "_" + i);
 						File outputFile = new File(filePath + outputFileName + ".xml");
@@ -217,7 +217,7 @@ public static void main(String[] args) {
 								for (int k = 0; k < simulations[j].getScanCount(); k++) {
 									SimulationJob simJob = new SimulationJob(simulations[j], k, null);
 									sbmlString = null;
-									sbmlString = XmlHelper.exportSBML(bioModel, 2, 1, simContext, simJob);
+									sbmlString = XmlHelper.exportSBML(bioModel, 2, 1, 0, false, simContext, simJob);
 									String fileName = TokenMangler.mangleToSName(outputFileName + "_" + j + "_" + k); 
 									outputFile = new File(filePath + fileName + ".xml");
 									fileWriter = new FileWriter(outputFile);

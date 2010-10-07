@@ -35,7 +35,11 @@ public abstract class SBMLUtils {
 	public static final String SBML_NS_2_3 = "http://www.sbml.org/sbml/level2/version3";
 	public static final String SBML_NS_2_4 = "http://www.sbml.org/sbml/level2/version4";
 	public static final String SBML_NS_3_1 = "http://www.sbml.org/sbml/level3/version1/core";
+	public static final String SBML_NS_3_1_SPATIAL = "http://www.sbml.org/sbml/level3/version1/spatial/version1";
+	public static final String SBML_NS_3_1_REQUIREDELEMENTS = "http://www.sbml.org/sbml/level3/version1/requiredElements/version1";
 	public static final String SBML_VCELL_NS = XMLTags.SBML_VCELL_NS;
+	public static final String SBML_SPATIAL_NS_PREFIX = XMLTags.SBML_SPATIAL_NS_PREFIX;
+	public static final String SBML_REQUIREDELEMENTS_NS_PREFIX = "req";
 
 	public static class SBMLUnitParameter implements SymbolTableEntry {
 		private String paramName = null;

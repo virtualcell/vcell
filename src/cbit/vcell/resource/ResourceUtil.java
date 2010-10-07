@@ -143,18 +143,30 @@ public class ResourceUtil {
 		try {
 			System.loadLibrary("expat");
 			System.loadLibrary("sbml");
+			System.loadLibrary("sbml-requiredElements");
+			System.loadLibrary("sbml-spatial");
 			System.loadLibrary("sbmlj");
 		} catch (Throwable ex1){
-			if (bMac) { // try again if Mac has power PC
+			if (bMac) { // try again for Mac, 10.6 or G5
 				try {
-					System.loadLibrary("expatG5");
-					System.loadLibrary("sbmlG5");
-					System.loadLibrary("sbmljG5");
-				} catch (Throwable ex2){					
-					throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml library " + ex2.getMessage());					
-				}				
+					System.loadLibrary("expat_10_6");
+					System.loadLibrary("sbml_10_6");
+					System.loadLibrary("sbml-requiredElements_10_6");
+					System.loadLibrary("sbml-spatial_10_6");
+					System.loadLibrary("sbmlj_10_6");
+				} catch (Throwable ex0) {
+					try {
+						System.loadLibrary("expatG5");
+						System.loadLibrary("sbmlG5");
+						System.loadLibrary("sbml-requiredElementsG5");
+						System.loadLibrary("sbml-spatialG5");
+						System.loadLibrary("sbmljG5");
+					} catch (Throwable ex2){
+						throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml libraries on Mac");
+					}
+				}
 			} else {
-				throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml library " + ex1.getMessage());
+				throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml libraries " + ex1.getMessage());
 			}
 		}
 	}

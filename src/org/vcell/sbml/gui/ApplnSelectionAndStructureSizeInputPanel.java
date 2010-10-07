@@ -751,13 +751,19 @@ private void setSelectedSimContextAndEnableStructureSizePanel() {
 	if (index < 0 || index > getSimContexts().length) {
 		throw new RuntimeException("Not a valid application selection; Select a valid application.");
 	}
-	// Check if selected application has its structure sizes set; if so, disable the structureSize panel
-	if (getSimContexts(index).getGeometryContext().isAllSizeSpecifiedPositive()) {
-		// disable structureSizePanel
-		enableStructureSizePanel(false);
+	boolean bIsSpatial = (getSimContexts(index).getGeometry().getDimension() > 0) ? true : false;
+	if (!bIsSpatial) {
+		// Check if selected application has its structure sizes set; if so, disable the structureSize panel
+		if (getSimContexts(index).getGeometryContext().isAllSizeSpecifiedPositive()) {
+			// disable structureSizePanel
+			enableStructureSizePanel(false);
+		} else {
+			// structure sizes not set, enable the panel
+			enableStructureSizePanel(true);
+		}
 	} else {
-		// structure sizes not set, enable the panel
-		enableStructureSizePanel(true);
+		// the structureSize panel should not be visible if application is spatial - no need to set sizes in spatial
+		getStructSizePanel().setVisible(false);
 	}
 	
 	setSelectedSimContext(getSimContexts(index));

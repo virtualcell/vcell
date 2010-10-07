@@ -15,6 +15,9 @@ import org.jdom.Namespace;
 import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbml.vcell.SBMLSpatialExporter;
+import org.vcell.sbml.vcell.SBMLSpatialImporter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -193,17 +196,24 @@ public static cbit.xml.merge.XmlTreeDiff compareMerge(String xmlBaseString, Stri
  * Creation date: (4/8/2003 12:30:27 PM)
  * @return java.lang.String
  */
-public static String exportSBML(VCDocument vcDoc, int level, int version, SimulationContext simContext, SimulationJob simJob) throws XmlParseException {
+public static String exportSBML(VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial, SimulationContext simContext, SimulationJob simJob) throws XmlParseException {
 
 	if (vcDoc == null) {
         throw new XmlParseException("Invalid arguments for exporting SBML.");
     } 
 	if (vcDoc instanceof BioModel) {
 		SimulationContext clonedSimContext = applyOverrides((BioModel)vcDoc, simContext, simJob);
-	    SBMLExporter sbmlExporter = new SBMLExporter((BioModel)vcDoc, level, version);
-	    sbmlExporter.setSelectedSimContext(clonedSimContext);
-	    sbmlExporter.setSelectedSimulationJob(simJob);
-	    return sbmlExporter.getSBMLFile();
+		if (!isSpatial) { 
+		    SBMLExporter sbmlExporter = new SBMLExporter((BioModel)vcDoc, level, version);
+		    sbmlExporter.setSelectedSimContext(clonedSimContext);
+		    sbmlExporter.setSelectedSimulationJob(simJob);
+		    return sbmlExporter.getSBMLFile();
+		} else {
+			SBMLSpatialExporter sbmlSpatialExporter = new SBMLSpatialExporter((BioModel)vcDoc);
+			sbmlSpatialExporter.setSelectedSimContext(clonedSimContext);
+			sbmlSpatialExporter.setSelectedSimulationJob(simJob);
+			return sbmlSpatialExporter.getSBMLFile();
+		}
 	} else if (vcDoc instanceof MathModel) {
 		try {
 			return MathModel_SBMLExporter.getSBMLString((MathModel)vcDoc, level, version);
@@ -392,7 +402,7 @@ public static String exportCellML(VCDocument vcDoc, String appName) throws XmlPa
 /**
 Allows the translation process to interact with the user via TranslationMessager
 */
-public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource) throws Exception {
+public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, boolean bSpatial) throws Exception {
 
 	//checks that the source is not empty
 	if (xmlSource == null){
@@ -413,8 +423,14 @@ public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource) thro
 		}
 	}
     VCDocument vcDoc = null;
-	org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger);
-	vcDoc = sbmlImporter.getBioModel();
+    if (!bSpatial) {
+		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger);
+		vcDoc = sbmlImporter.getBioModel();
+    } else {
+    	SBMLSpatialImporter sbmlSpatialImporter = new SBMLSpatialImporter(sbmlFile.getAbsolutePath(), vcLogger);
+    	vcDoc = sbmlSpatialImporter.getBioModel();
+    }
+
 	vcDoc.refreshDependencies();
     return vcDoc;
 }
@@ -591,7 +607,9 @@ public static VCDocument XMLToDocument(VCLogger vcLogger, String xmlString) thro
 	} else if (xmlType.equals(XMLTags.GeometryTag)) {
 		doc = XmlHelper.XMLToGeometry(xmlSource);
 	} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
-		doc = XmlHelper.importSBML(vcLogger, xmlSource);
+		Namespace namespace = rootElement.getNamespace(XMLTags.SBML_SPATIAL_NS_PREFIX);
+		boolean bIsSpatial = (namespace==null) ? false : true; 
+		doc = XmlHelper.importSBML(vcLogger, xmlSource, bIsSpatial);
 	} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
 		doc = XmlHelper.importMathCellML(vcLogger, xmlSource);
 	} else { // unknown XML format

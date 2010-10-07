@@ -87,6 +87,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_24);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_CORE);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_SPATIAL);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
@@ -124,7 +125,8 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 			String n = selectedFile.getPath().toLowerCase();
 			if (((fileFilter == FileFilters.FILE_FILTER_SBML_12) || (fileFilter == FileFilters.FILE_FILTER_SBML_21) ||
 				(fileFilter == FileFilters.FILE_FILTER_SBML_22) || (fileFilter == FileFilters.FILE_FILTER_SBML_23) ||
-				(fileFilter == FileFilters.FILE_FILTER_SBML_24) || (fileFilter == FileFilters.FILE_FILTER_SBML_31_CORE)) 
+				(fileFilter == FileFilters.FILE_FILTER_SBML_24) || (fileFilter == FileFilters.FILE_FILTER_SBML_31_CORE) || 
+				(fileFilter == FileFilters.FILE_FILTER_SBML_31_SPATIAL)) 
 				&& !n.endsWith(".xml")) {
 				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_CELLML && !n.endsWith(".xml")) {
@@ -164,6 +166,16 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				if (applicableAppNameList.size() == 0) {
 					throw new Exception("Only non-spatial applications can be exported to this format. No non-spatial applications exist in the \"" + bioModel.getName() + "\".");
 				}
+			} else if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_SPATIAL.getDescription())) {
+				// for export to L3V1 SPATIAL, only spatial apps 
+				for (int i=0;i<simContexts.length;i++){
+					if (simContexts[i].getGeometryContext().getGeometry().getDimension()>0 && !simContexts[i].isStoch()){
+						applicableAppNameList.add(simContexts[i].getName());
+					}
+				}
+				if (applicableAppNameList.size() == 0) {
+					throw new Exception("Only spatial applications can be exported to this format. No spatial applications exist in the \"" + bioModel.getName() + "\".");
+				}
 			} else {
 				// all apps
 				for (int i=0;i<simContexts.length;i++){
@@ -180,7 +192,8 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_22.getDescription()) &&
 					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) &&
 					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_24.getDescription()) &&
-					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription())) {
+					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription()) &&
+					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_SPATIAL.getDescription())) {
 				String[] applicationNames = (String[])org.vcell.util.BeanUtils.getArray(applicableAppNameList,String.class);
 				Object choice = PopupGenerator.showListDialog(topLevelWindowManager, applicationNames, "Please select Application");
 				if (choice == null) {
@@ -195,7 +208,8 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_22.getDescription()) &&
 				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) &&
 				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_24.getDescription()) &&
-				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription()) ) {
+				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription()) && 
+				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_SPATIAL.getDescription())) {
 				for (int i=0;i<simContexts.length;i++){
 					if (simContexts[i].getName().equals(chosenSimContextName)){
 						hashTable.put("chosenSimContextIndex", new Integer(i));
@@ -210,17 +224,18 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_22.getDescription()) ||
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) ||
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_24.getDescription()) ||
-				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription()) ) {
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription()) ||
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_SPATIAL.getDescription())) {
 				// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
 				Structure[] structures = bioModel.getModel().getStructures();
 				// get the nonspatial simulationContexts corresponding to names in applicableAppNameList 
 				// This is needed in ApplnSelectionAndStructureSizeInputPanel
-				SimulationContext[] nonSpatialSimContexts = new SimulationContext[applicableAppNameList.size()];
+				SimulationContext[] applicableSimContexts = new SimulationContext[applicableAppNameList.size()];
 				for (int jj = 0; jj < applicableAppNameList.size(); jj++) {
 					String applnName = (String)applicableAppNameList.elementAt(jj); 
 					for (int ii = 0; ii < simContexts.length; ii++) {
 						if (simContexts[ii].getName().equals(applnName)) {
-							nonSpatialSimContexts[jj] = simContexts[ii];
+							applicableSimContexts[jj] = simContexts[ii];
 						}
 					}
 				}
@@ -234,7 +249,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				ApplnSelectionAndStructureSizeInputPanel applnStructInputPanel = null;
 				while (structSelection < 0) {
 					applnStructInputPanel = new ApplnSelectionAndStructureSizeInputPanel();
-					applnStructInputPanel.setSimContexts(nonSpatialSimContexts);
+					applnStructInputPanel.setSimContexts(applicableSimContexts);
 					applnStructInputPanel.setStructures(structures);
 					applnStructInputPanel.setPreferredSize(new java.awt.Dimension(350, 400));
 					applnStructInputPanel.setMaximumSize(new java.awt.Dimension(350, 400));
@@ -246,32 +261,42 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 						DialogUtils.showErrorDialog(currentWindow, "Please select a structure and set its size");
 					}
 				}
+				
 				if (option == JOptionPane.OK_OPTION) {
 					applnStructInputPanel.applyStructureNameAndSizeValues();
 					strucName = applnStructInputPanel.getSelectedStructureName();
-					structSize = applnStructInputPanel.getStructureSize();
 					chosenSimContext = applnStructInputPanel.getSelectedSimContext();
-		
 					hashTable.put("selectedSimContext", chosenSimContext);
-
-					// Invoke StructureSizeEvaluator to compute absolute sizes of compartments if all sizes are not set
+	
 					GeometryContext geoContext = chosenSimContext.getGeometryContext();
-					if ( (geoContext.isAllSizeSpecifiedNull() && geoContext.isAllVolFracAndSurfVolSpecifiedNull()) ||
-						 (geoContext.isAllSizeSpecifiedNull() && geoContext.isAllVolFracAndSurfVolSpecified()) ||
-						 (!geoContext.isAllSizeSpecifiedPositive() && geoContext.isAllVolFracAndSurfVolSpecifiedNull()) ||
-						 (!geoContext.isAllSizeSpecifiedPositive() && !geoContext.isAllVolFracAndSurfVolSpecified()) ||
-						 (geoContext.isAllSizeSpecifiedNull() && !geoContext.isAllVolFracAndSurfVolSpecified()) ) {
-						DialogUtils.showErrorDialog(currentWindow, "Cannot export to SBML without compartment sizes being set. This can be automatically " +
-								" computed if the absolute size of at least one compartment and the relative sizes (Surface-to-volume-ratio/Volume-fraction) " +
-								" of all compartments are known. Sufficient information is not available to perform this computation." +
-								"\n\nThis can be fixed by going back to the application '" + chosenSimContextName + "' and setting structure sizes in the 'StructureMapping' tab.");
-						throw UserCancelException.CANCEL_XML_TRANSLATION;
-					} 
-					if (!geoContext.isAllSizeSpecifiedPositive() && geoContext.isAllVolFracAndSurfVolSpecified()) {
-						Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
-						StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
-						StructureSizeSolver.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
-					} 
+					if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_SPATIAL.getDescription())) { 
+						// calculate structure Sizes only if appln is not spatial
+						structSize = applnStructInputPanel.getStructureSize();
+						// Invoke StructureSizeEvaluator to compute absolute sizes of compartments if all sizes are not set
+						if ( (geoContext.isAllSizeSpecifiedNull() && geoContext.isAllVolFracAndSurfVolSpecifiedNull()) ||
+							 (geoContext.isAllSizeSpecifiedNull() && geoContext.isAllVolFracAndSurfVolSpecified()) ||
+							 (!geoContext.isAllSizeSpecifiedPositive() && geoContext.isAllVolFracAndSurfVolSpecifiedNull()) ||
+							 (!geoContext.isAllSizeSpecifiedPositive() && !geoContext.isAllVolFracAndSurfVolSpecified()) ||
+							 (geoContext.isAllSizeSpecifiedNull() && !geoContext.isAllVolFracAndSurfVolSpecified()) ) {
+							DialogUtils.showErrorDialog(currentWindow, "Cannot export to SBML without compartment sizes being set. This can be automatically " +
+									" computed if the absolute size of at least one compartment and the relative sizes (Surface-to-volume-ratio/Volume-fraction) " +
+									" of all compartments are known. Sufficient information is not available to perform this computation." +
+									"\n\nThis can be fixed by going back to the application '" + chosenSimContext.getName() + "' and setting structure sizes in the 'StructureMapping' tab.");
+							throw UserCancelException.CANCEL_XML_TRANSLATION;
+						} 
+						if (!geoContext.isAllSizeSpecifiedPositive() && geoContext.isAllVolFracAndSurfVolSpecified()) {
+							Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
+							StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
+							StructureSizeSolver.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
+						}
+					} else {
+						if (!geoContext.isAllUnitSizeParameterSetForSpatial()) {
+							DialogUtils.showErrorDialog(currentWindow, "Cannot export to SBML without compartment size ratios being set."  +
+									"\n\nThis can be fixed by going back to the application '" + chosenSimContext.getName() + "' and setting structure" +
+									" size ratios in the 'StructureMapping' tab.");
+							throw UserCancelException.CANCEL_XML_TRANSLATION;
+						}
+					}
 
 					// Select simulation whose overrides need to be exported
 					// If simContext doesn't have simulations, don't pop up simulationSelectionPanel

@@ -26,6 +26,7 @@ public class XMLTags {
 	public static final String VCML_NS_OLD 				 = "http://www.sbml.org/2001/ns/vcell";
 	public static final String VCML_NS_BLANK 			 = "";
 	public static final String VCELL_NS_PREFIX 			 = "vcell";
+	public static final String SBML_SPATIAL_NS_PREFIX 	 = "spatial";
 
 	//Tags related to MetaData
 	public static final String HTML_XHTML_ATTR_TAG			= "xhtml";

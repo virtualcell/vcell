@@ -31,6 +31,8 @@ import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 
 import org.jdom.Element;
+import org.jdom.Namespace;
+import org.vcell.sbml.SBMLUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -2147,8 +2149,10 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 				} else if (xmlType.equals(XMLTags.GeometryTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.GeometryTag))) {
 					doc = XmlHelper.XMLToGeometry(xmlInfo);
 				} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
+					Namespace namespace = rootElement.getNamespace(XMLTags.SBML_SPATIAL_NS_PREFIX);
+					boolean bIsSpatial = (namespace==null) ? false : true; 
 					TranslationLogger transLogger = new TranslationLogger(requester);
-					doc = XmlHelper.importSBML(transLogger, xmlInfo);
+					doc = XmlHelper.importSBML(transLogger, xmlInfo, bIsSpatial);
 				} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
 					if (requester instanceof BioModelWindowManager){
 						TranslationLogger transLogger = new TranslationLogger(requester);
