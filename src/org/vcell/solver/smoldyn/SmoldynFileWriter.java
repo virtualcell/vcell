@@ -3,6 +3,7 @@ package org.vcell.solver.smoldyn;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -25,9 +26,11 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.Node;
 import cbit.vcell.geometry.surface.Polygon;
+import cbit.vcell.geometry.surface.StlExporter;
 import cbit.vcell.geometry.surface.Surface;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
+import cbit.vcell.geometry.surface.Triangle;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.BoundaryConditionType;
@@ -121,19 +124,38 @@ public class SmoldynFileWriter extends SolverFileWriter
 		
 		max_mol,
 		compartment_mol,
+		surface_mol,
 		mol,
 				
 		output_files,
 		
 		cmd,
 		n,
+//		one line of display is printed to the listed file, giving the time and the number 
+//		of molecules for each molecular species. Molecule states are ignored. 
+//		The ordering used is the same as was given in the species command.
+		molcount,
+//		This prints out the identity, state, and location of every molecule in the
+//		system to the listed file name, using a separate line of text for each
+//		molecule.		
+		listmols,
+//		This is very similar to listmols but has a slightly different output format.
+//		Each line of text is preceded by the “time counter”, which is an integer
+//		that starts at 1 and is incremented each time the routine is called. Also, the
+//		names and states of molecules are not printed, but instead the identity and
+//		state numbers are printed.
+		listmols2,
 		killmoloutsidesystem,
 		warnescapee,
-	
+		output_file_number,		
+		incrementfile,
+		
 		accuracy,
 		boxsize,
 		gauss_table_size,
 		rand_seed,
+		
+		end_file,
 	}
 
 	enum VCellSmoldynKeyword {
@@ -189,10 +211,6 @@ private void init() throws SolverException {
 public void write(String[] parameterNames) throws ExpressionException, MathException, SolverException {	
 	init();
 	
-	if (!simulation.getMeshSpecification().isAspectRatioOK()) {
-		throw new SolverException(SolverDescription.Smoldyn.getDisplayLabel() + " expect uniform box sizes");
-	}
-	
 	writeJms(simulation);	
 	writeSpecies();	
 	writeDiffusions();	
@@ -202,6 +220,7 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	writeSimulationTimes();
 	writeRuntimeCommands();
 	writeSimulationSettings();
+	printWriter.println(SmoldynKeyword.end_file);
 	//SimulationWriter.write(SimulationJobToSmoldyn.convertSimulationJob(simulationJob, outputFile), printWriter, simulationJob);
 }
 
@@ -209,12 +228,11 @@ private void writeSimulationSettings() {
 	printWriter.println("# simulation settings");
 	SmoldynSimulationOptions smoldynSimulationOptions = simulation.getSolverTaskDescription().getSmoldynSimulationOptions();
 	printWriter.println(SmoldynKeyword.accuracy + " " + smoldynSimulationOptions.getAccuracy());
-	printWriter.println(SmoldynKeyword.boxsize + " " + simulation.getMeshSpecification().getDx());
 	printWriter.println(SmoldynKeyword.gauss_table_size + " " + smoldynSimulationOptions.getGaussianTableSize());
 	if (smoldynSimulationOptions.getRandomSeed() != null) {
 		printWriter.println(SmoldynKeyword.rand_seed + " " + smoldynSimulationOptions.getRandomSeed());
 	}
-	
+	printWriter.println();
 }
 
 private void writeRuntimeCommands() throws SolverException {
@@ -222,12 +240,14 @@ private void writeRuntimeCommands() throws SolverException {
 	if (ots.isUniform()) {
 		printWriter.println("# runtime command");	
 		printWriter.println(SmoldynKeyword.output_files + " " + outputFile.getName());
-		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.warnescapee + " " + SmoldynKeyword.all + " " + outputFile.getName());
-		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.killmoloutsidesystem + " " + SmoldynKeyword.all);
+//		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.warnescapee + " " + SmoldynKeyword.all + " " + outputFile.getName());
+//		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.killmoloutsidesystem + " " + SmoldynKeyword.all);
 		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + VCellSmoldynKeyword.vcellPrintProgress);
 		ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
 		TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
 		int n = (int)Math.round(((UniformOutputTimeSpec)ots).getOutputTimeStep()/timeStep.getDefaultTimeStep());
+		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + SmoldynKeyword.incrementfile + " " + outputFile.getName());
+		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + SmoldynKeyword.listmols + " " + outputFile.getName());
 		printWriter.print(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + sampleSize.getX());
 		if (dimension > 1) {
 			printWriter.print(" " + sampleSize.getY());
@@ -235,8 +255,8 @@ private void writeRuntimeCommands() throws SolverException {
 				printWriter.print(" " + sampleSize.getZ());			
 			}
 		}
-		
 		printWriter.println();
+		
 		printWriter.println();
 	} else {
 		throw new SolverException(SolverDescription.Smoldyn.getDisplayLabel() + " only supports uniform output.");
@@ -268,6 +288,10 @@ private void writeReactions() throws ExpressionException, MathException {
 				}
 			} else {
 				new RuntimeException("particle probability rate not supported");
+			}
+			
+			if (rateConstant == 0) {
+				continue;
 			}
 			
 			if(subdomain instanceof CompartmentSubDomain) {
@@ -312,11 +336,7 @@ private void writeMolecules() throws ExpressionException, MathException {
 	Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
 	while (subDomainEnumeration.hasMoreElements()) {
 		SubDomain subDomain = subDomainEnumeration.nextElement();
-		
-		if (!(subDomain instanceof CompartmentSubDomain)) {
-			continue;
-		}
-		
+				
 		for (ParticleProperties particleProperties : subDomain.getParticleProperties()) {
 			ArrayList<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
 			String variableName = getVariableName(particleProperties.getVariable());
@@ -327,10 +347,18 @@ private void writeMolecules() throws ExpressionException, MathException {
 				} catch (NotAConstantException ex) {
 					throw new ExpressionException("initial count for variable " + variableName + " is not a constant. Constants are required for all intial counts");
 				}
+				if (count == 0) {
+					continue;
+				}
 				max_mol += count;
 				if (pic.isUniform()) {
 					// here count has to split between all compartments
-					sb.append(SmoldynKeyword.compartment_mol + " " + count + " " + variableName + " " + subDomain.getName() + "\n");
+					if (subDomain instanceof CompartmentSubDomain) {
+						sb.append(SmoldynKeyword.compartment_mol);
+					} else if (subDomain instanceof MembraneSubDomain) {
+						sb.append(SmoldynKeyword.surface_mol); 
+					}
+					sb.append(" " + count + " " + variableName + " " + subDomain.getName() + "\n");
 				} else {
 					sb.append(SmoldynKeyword.mol + " " + count + " " + variableName);
 					try {
@@ -420,6 +448,21 @@ private void writeSurfacesAndCompartments() throws SolverException {
 	}
 	
 	GeometrySurfaceDescription geometrySurfaceDescription = resampledGeometry.getGeometrySurfaceDescription();	
+	
+	if (DEBUG) {
+		PrintWriter stlpw = null;  
+		try {
+			stlpw = new PrintWriter("D:\\smoldyn-2.15\\surface.stl");
+			StlExporter.writeStl(geometrySurfaceDescription, stlpw);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (stlpw != null) stlpw.close();
+		}
+	}
+	
 	SurfaceClass[] surfaceClasses = geometrySurfaceDescription.getSurfaceClasses();
 	GeometrySpec geometrySpec = resampledGeometry.getGeometrySpec();
 	SubVolume[] subVolumes = geometrySpec.getSubVolumes();
@@ -450,7 +493,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 	for (int sci = 0; sci < surfaceClasses.length; sci ++) {
 		SurfaceClass surfaceClass = surfaceClasses[sci];
 		GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);	
-		ArrayList<Node[]> triList = new ArrayList<Node[]>();	
+		ArrayList<Triangle> triList = new ArrayList<Triangle>();	
 		for (GeometricRegion gr : geometricRegions) {
 			SurfaceGeometricRegion sgr = (SurfaceGeometricRegion)gr;
 			VolumeGeometricRegion volRegion1 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[0];
@@ -463,30 +506,14 @@ private void writeSurfacesAndCompartments() throws SolverException {
 						Polygon polygon = surface.getPolygons(k);
 						Node[] nodes = polygon.getNodes();
 						if (surface.getInteriorRegionIndex() == volRegionID) { // interior							
-							Node[] threeCorners = new Node[3];
-							threeCorners[0] = nodes[0];
-							threeCorners[1] = nodes[1];
-							threeCorners[2] = nodes[2];
-							triList.add(threeCorners);
+							triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
 							if(nodes.length == 4 && dimension > 2) {
-								threeCorners = new Node[3];
-								threeCorners[0] = nodes[0];
-								threeCorners[1] = nodes[2];
-								threeCorners[2] = nodes[3];
-								triList.add(threeCorners);
+								triList.add(new Triangle(nodes[0], nodes[2], nodes[3]));
 							}
 						} else {
-							Node[] threeCorners = new Node[3];
-							threeCorners[0] = nodes[2];
-							threeCorners[1] = nodes[1];
-							threeCorners[2] = nodes[0];
-							triList.add(threeCorners);
+							triList.add(new Triangle(nodes[2], nodes[1], nodes[0]));
 							if(nodes.length == 4 && dimension > 2) {
-								threeCorners = new Node[3];
-								threeCorners[0] = nodes[3];
-								threeCorners[1] = nodes[2];
-								threeCorners[2] = nodes[0];
-								triList.add(threeCorners);
+								triList.add(new Triangle(nodes[3], nodes[2], nodes[0]));
 							}
 						}
 					}
@@ -498,26 +525,26 @@ private void writeSurfacesAndCompartments() throws SolverException {
 		printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());
 		
 		if (DEBUG) tmppw.println("verts" + sci + "=[");
-		for (Node[] threeCorners : triList) {
+		for (Triangle triangle : triList) {
 			printWriter.print(SmoldynKeyword.panel + " " + SmoldynKeyword.tri);
 			switch (dimension) {
 			case 1:
-				printWriter.print(" " + threeCorners[0].getX());
+				printWriter.print(" " + triangle.getNodes(0).getX());
 				break;
 			case 2:
-				printWriter.print(" " + threeCorners[0].getX() + " " + threeCorners[0].getY());
-				if (DEBUG) tmppw.print(" " + threeCorners[0].getX() + " " + threeCorners[0].getY());
+				printWriter.print(" " + triangle.getNodes(0).getX() + " " + triangle.getNodes(0).getY());
+				if (DEBUG) tmppw.print(" " + triangle.getNodes(0).getX() + " " + triangle.getNodes(0).getY());
 
-				if (threeCorners[0].getX() == threeCorners[1].getX() && threeCorners[0].getY() == threeCorners[1].getY()) {
-					printWriter.print(" " + threeCorners[2].getX() + " " + threeCorners[2].getY());
-					if (DEBUG) tmppw.print(" " + threeCorners[2].getX() + " " + threeCorners[2].getY());
+				if (triangle.getNodes(0).getX() == triangle.getNodes(1).getX() && triangle.getNodes(0).getY() == triangle.getNodes(1).getY()) {
+					printWriter.print(" " + triangle.getNodes(2).getX() + " " + triangle.getNodes(2).getY());
+					if (DEBUG) tmppw.print(" " + triangle.getNodes(2).getX() + " " + triangle.getNodes(2).getY());
 				} else {
-					printWriter.print(" " + threeCorners[1].getX() + " " + threeCorners[1].getY());
-					if (DEBUG) tmppw.print(" " + threeCorners[1].getX() + " " + threeCorners[1].getY());
+					printWriter.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
+					if (DEBUG) tmppw.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
 				}
 				break;
 			case 3:
-				for (Node node : threeCorners) {
+				for (Node node : triangle.getNodes()) {
 					printWriter.print(" " + node.getX() + " " + node.getY() + " " + node.getZ());
 					if (DEBUG) tmppw.print(" " + node.getX() + " " + node.getY() + " " + node.getZ());
 				}
