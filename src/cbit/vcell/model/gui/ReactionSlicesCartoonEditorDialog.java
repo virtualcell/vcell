@@ -7,6 +7,7 @@ package cbit.vcell.model.gui;
 import java.awt.BorderLayout;
 import java.awt.Insets;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
@@ -77,6 +78,7 @@ public class ReactionSlicesCartoonEditorDialog extends JInternalFrameEnhanced {
 	private void initialize() {
 		try {
 			setName("ReactionCartoonEditorDialog");
+			setFrameIcon(new ImageIcon(getClass().getResource("/images/stepSlices.gif")));
 			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			setClosable(true);
 			setSize(600, 495);
