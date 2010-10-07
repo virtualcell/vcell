@@ -74,7 +74,7 @@ public class CoreManager {
 		tabSpace.addTab("Data", tabSpaceData);
 		portSpace = ui().createPortSpace();
 		fileManager.evaluator().listeners().add(new PortSpaceUpdater(portSpace));
-		tabSpace.addTab("BioPAX to SBML Conversion", portSpace);
+		tabSpace.addTab("Convert to BioModel/SBML", portSpace);
 		tabSpace.addTab("Advanced", tabSpaceAdvanced);
 		tabSpaceAdvanced.addTab("Schemas", tabSpaceSchemas);
 		tabSpaceData.addTab("Graph", graphManager.graphSpace());
