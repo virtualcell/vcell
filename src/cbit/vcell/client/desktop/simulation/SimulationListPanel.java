@@ -1068,32 +1068,23 @@ private void runSimulations() {
 				if (dimension > 0) {
 					MeshSpecification meshSpecification = sim.getMeshSpecification();
 					if (meshSpecification != null && !meshSpecification.isAspectRatioOK()) {
-						if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.Smoldyn)) {
-							String warningMessage = "Simulation '" + sim.getName() + "' does not have uniform spatial step. " +
-								SolverDescription.Smoldyn.getDisplayLabel() + " requires uniform spatial step in all directions.\n\n"
-								+ "\u0394x=" + meshSpecification.getDx() + "\n" 
-								+ "\u0394y=" + meshSpecification.getDy()
-								+ (dimension < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz());
-							DialogUtils.showErrorDialog(SimulationListPanel.this, warningMessage);
+						String warningMessage =  "Simulation '" + sim.getName() + "' has non-uniform spatial step. " +
+								"This might affect the accuracy of the solution.\n\n"
+						+ "\u0394x=" + meshSpecification.getDx() + "\n" 
+						+ "\u0394y=" + meshSpecification.getDy()
+						+ (dimension > 2 ? "" : "\n\u0394z=" + meshSpecification.getDz())
+						 + "\n\nDo you want to continue anyway?";
+						String result = DialogUtils.showWarningDialog(SimulationListPanel.this, warningMessage, 
+								new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+						if (result == null || !result.equals(UserMessage.OPTION_OK)) {
 							throw UserCancelException.CANCEL_GENERIC;
-						} else {
-							String warningMessage =  "Simulation '" + sim.getName() + "' does not have uniform spatial step. " +
-									"This might affect the accuracy of the solution.\n"
-							+ "\u0394x=" + meshSpecification.getDx() + "\n" 
-							+ "\u0394y=" + meshSpecification.getDy()
-							+ (dimension > 2 ? "" : "\n\u0394z=" + meshSpecification.getDz())
-							 + "\n\nDo you want to continue anyway?";
-							String result = DialogUtils.showWarningDialog(SimulationListPanel.this, warningMessage, 
-									new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
-							if (result == null || result.equals(UserMessage.OPTION_OK)) {
-								throw UserCancelException.CANCEL_GENERIC;
-							}
 						}
 					}
 					if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.Smoldyn)) {
 						if (!isSmoldynTimeStepOK(sim)) {
 							String warningMessage =  "<html>The time step for " + SolverDescription.Smoldyn.getDisplayLabel()
-								+ " needs to satisfy stability constraint<br><br><i>\u0394t &lt; s<sup>2</sup>/2D<sub>max</sub></i><br><br>" 
+								+ " needs to satisfy stability constraint" 
+								+ "<dl><dd><i>\t\u0394t &lt; s<sup>2</sup> / ( 2D<sub>max</sub> )</i></dd></dl>" 
 								+ "Where <i>s</i> is spatial resolution and <i>D<sub>max</sub></i> is the diffusion " +
 										"coefficient of the fastest diffusing species. </html>";
 							DialogUtils.showErrorDialog(SimulationListPanel.this, warningMessage);
