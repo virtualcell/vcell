@@ -233,11 +233,11 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				BioModel bioModel_2 = null;
 				
 				if (sims == null || sims.length == 0) { 
-					exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k], null);
+					exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, 0, false, simContexts[k], null);
 					//exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k].getName());
 					XmlUtil.writeXMLStringToFile(exportedSBMLStr, "C:\\VCell\\SBML_Testing\\SBMLValidationSuiteTests\\SBMLOverridesExportTests\\" + bioModel_1.getName()+"_"+simContexts[k].getName()+".xml",true);
 					// Import the exported model
-					bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, new XMLSource(exportedSBMLStr));
+					bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, new XMLSource(exportedSBMLStr), false);
 					// Create a simulation from mathmapping, mathDescription, simContext for the original model.
 					// For the original simContext
 			        MathMapping mathMapping_1 = simContexts[k].createNewMathMapping();
@@ -309,11 +309,11 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 						for (int j = 0; j < sims[i].getScanCount(); j++) {
 							logFilePrintStream.println("Simulation : " + sims[i].getName() + ":\tscan # : " + j);
 							SimulationJob simJob = new SimulationJob(sims[i], j, null);
-							exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k], simJob);
+							exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, 0, false, simContexts[k], simJob);
 							//exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k].getName());
 							XmlUtil.writeXMLStringToFile(exportedSBMLStr, "C:\\SBMLRelated\\SBML_Testing\\SBMLValidationSuiteTests\\SBMLOverridesExportTests\\Alpha_Results_4_22_08\\" + bioModel_1.getName()+"_"+simContexts[k].getName()+"_"+sims[i].getName()+"_"+j+".xml",true);
 							// Import the exported model
-							bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, new XMLSource(exportedSBMLStr));
+							bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, new XMLSource(exportedSBMLStr), false);
 							
 							// solve the original vcell model simulation.
 							Simulation simulation = simJob.getSimulation();

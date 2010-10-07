@@ -513,6 +513,26 @@ public boolean isAllFeatureMapped()
 	}
 	return true;
 }
+
+public boolean isAllUnitSizeParameterSetForSpatial()
+{
+	int dimension = getGeometry().getDimension();
+	// check unit size parameters only for spatial applications. 
+	if (dimension == 0) {
+		throw new RuntimeException("UnitSizeParameter is set only for spatial application.");
+	}
+	StructureMapping structureMappings[] = getStructureMappings();
+	boolean bIsAllUnitSizeParamSet = true;
+	for (int i=0;i<structureMappings.length;i++)
+	{
+		if(structureMappings[i].getUnitSizeParameter().getExpression() == null)	{
+			bIsAllUnitSizeParamSet = bIsAllUnitSizeParamSet && false;
+		}
+	}
+	return bIsAllUnitSizeParamSet;
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (6/5/00 10:23:55 PM)

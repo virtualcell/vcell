@@ -293,11 +293,11 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				// now export to SBML
 				logFilePrintStream.println("User : " + bioModel_1.getVersion().getOwner().getName() + ";\tBiomodel : " + bioModel_1.getName() + ";\tDate : " + bioModel_1.getVersion().getDate().toString() + ";\tAppln : " + simContexts[k].getName());
 //				String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k].getName());
-				String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k], null);
+				String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, 0, false, simContexts[k], null);
 				SBMLUtils.writeStringToFile(exportedSBMLStr, "C:\\VCell\\SBML_Testing\\SBMLValidationSuiteTests\\"+bioModel_1.getName()+".xml", true);
 
 				// Import the exported model
-				BioModel bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, new XMLSource(exportedSBMLStr));
+				BioModel bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, new XMLSource(exportedSBMLStr), false);
 
 				//
 		        // Generate math and create a single simulation for the original simContext and for the model that was exported to SBML

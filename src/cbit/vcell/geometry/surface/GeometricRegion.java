@@ -113,4 +113,10 @@ public cbit.vcell.units.VCUnitDefinition getSizeUnit() {
 public void setAdjacentGeometricRegions(cbit.vcell.geometry.surface.GeometricRegion[] adjacentGeometricRegions) {
 	fieldAdjacentGeometricRegions = adjacentGeometricRegions;
 }
+
+
+public void setName(String name) {
+	fieldName = name;
+}
+
 }
