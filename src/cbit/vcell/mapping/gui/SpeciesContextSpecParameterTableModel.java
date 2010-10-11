@@ -453,7 +453,6 @@ public void setSpeciesContextSpec(SpeciesContextSpec speciesContextSpec) {
 
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	System.out.println("setValueAt called");
 	Parameter parameter = (Parameter)getData().get(rowIndex);
 	switch (columnIndex){
 		case COLUMN_NAME:{
