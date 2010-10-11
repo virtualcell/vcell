@@ -12,14 +12,11 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
@@ -44,6 +41,7 @@ import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
  * @author fgao
  *
  */
+@SuppressWarnings("serial")
 public class ScrollTable extends JTable {
 	public enum CheckOption {
 		CheckAll("Check All"),
@@ -121,8 +119,7 @@ public class ScrollTable extends JTable {
 		setDefaultRenderer(Object.class, new DefaultScrollTableCellRenderer());		
 		setDefaultRenderer(Number.class, new DefaultScrollTableCellRenderer());		
 		setDefaultRenderer(Double.class, new DefaultScrollTableCellRenderer());		
-		setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
-		setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
+		setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());		
 		
 		// to gain focus if being clicked.
 		MouseAdapter mouseListener = new MouseAdapter() {
@@ -191,6 +188,8 @@ public class ScrollTable extends JTable {
 	public void setAutoResizeMode(int mode) {
 		super.setAutoResizeMode(mode);
 		if (autoResizeMode == AUTO_RESIZE_OFF) {
+			setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
+			
 			if (componentListener == null) {
 				componentListener  = new ComponentAdapter() {
 					public void componentResized(ComponentEvent e) {

@@ -12,6 +12,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -27,6 +28,7 @@ import cbit.vcell.parser.ExpressionPrintFormatter;
  * Creation date: (8/8/2006 12:22:39 PM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public class ScopedExpressionTableCellRenderer implements javax.swing.table.TableCellRenderer {
 	private Hashtable<String, ImageIcon> scopedExpressionImageIconHash = new Hashtable<String, ImageIcon>();//Cache ScopedExpression ImageIcons
 	private Hashtable<String, Boolean> scopedExpressionSelectedHash = new Hashtable<String, Boolean>();//Cache ScopedExpression Selected
@@ -81,7 +83,7 @@ public ScopedExpressionTableCellRenderer() {
 	 * This fine grain notification tells listeners the exact range
 	 * of cells, rows, or columns that changed.
 	 */
-public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] targetRows,int[] targetColumns) {
+public static void formatTableCellSizes(final javax.swing.JTable targetTable,int[] targetRows,int[] targetColumns) {
 
 	try{
 		if(targetRows == null){
@@ -105,8 +107,8 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 			targetColumns = (int[])targetColumns.clone();
 			java.util.Arrays.sort(targetColumns);
 		}
-		int[] maxRowHeights = new int[targetTable.getRowCount()];
-		int[] maxColumnWidths = new int[targetTable.getColumnCount()];
+		final int[] maxRowHeights = new int[targetTable.getRowCount()];
+		final int[] maxColumnWidths = new int[targetTable.getColumnCount()];
 		java.util.Arrays.fill(maxRowHeights,0);
 		java.util.Arrays.fill(maxColumnWidths,0);
 		//
@@ -176,14 +178,13 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 		//
 		//Set row heights to fit tallest component in row
 		//without making any smaller than preferred
-		//
-		//Do the following just for compatability with VAJ JRE
-		//JTable setRowHeight(int,int) method template doesn't exist in VAJ old JRE
-		//but is preferred and available in newer JRE.
-		//Check for preferred setRowHeight(int,int) by introspection to avoid compile errors in VAJ
-		for(int rowIndex : targetRows){
+		for(final int rowIndex : targetRows){
 			if (targetTable.getRowHeight(rowIndex) < maxRowHeights[rowIndex]){
-				targetTable.setRowHeight(rowIndex,maxRowHeights[rowIndex]+targetTable.getRowMargin());
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						targetTable.setRowHeight(rowIndex, maxRowHeights[rowIndex]+targetTable.getRowMargin());						
+					}
+				});
 			}
 		}
 	}catch(Exception exc){
