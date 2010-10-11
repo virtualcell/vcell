@@ -1,18 +1,22 @@
 package cbit.vcell.client;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 
-import java.awt.*;
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
+import org.vcell.util.gui.JTaskBar;
 
+import cbit.vcell.client.desktop.geometry.GeometryDisplayPanel;
+import cbit.vcell.client.desktop.geometry.GeometryEditor;
+import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
+import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.client.desktop.geometry.*;
-import cbit.vcell.client.desktop.simulation.SimulationWindow;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**
  * Insert the type's description here.
@@ -45,6 +49,10 @@ public GeometryWindowManager(JPanel panel, RequestManager requestManager, final 
 	setJDesktopPane(new JDesktopPaneEnhanced());
 	getJPanel().setLayout(new BorderLayout());
 	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
+	if (!UIManager.getBoolean("InternalFrame.useTaskBar")) {
+		JTaskBar taskBar = new JTaskBar(getJDesktopPane());
+		getJPanel().add(taskBar, BorderLayout.SOUTH);
+	}	
 	createGeometryEditor();
 	initializeInternalFrames();
 	getJPanel().add(getGeometryEditor(), BorderLayout.NORTH);

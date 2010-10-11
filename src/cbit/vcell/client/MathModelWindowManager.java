@@ -6,6 +6,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -429,6 +430,7 @@ private void initializeInternalFrames() {
 	String simsListTitle = "Simulations";
 	simsPanel.setSimulationWorkspace(new SimulationWorkspace(MathModelWindowManager.this, getMathModel()));
 	simsListEditorFrame = new JInternalFrameEnhanced(simsListTitle, true, true, true, true);
+	simsListEditorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/simulations.gif")));
 	simsListEditorFrame.setContentPane(simsPanel);
 	simsListEditorFrame.setSize(800, 600);
 	simsListEditorFrame.setLocation(500, 300);

@@ -2,6 +2,8 @@ package cbit.vcell.client.desktop.simulation;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.ImageIcon;
+
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.client.data.DataViewer;
@@ -86,7 +88,9 @@ public VCSimulationIdentifier getVcSimulationIdentifier() {
  */
 private void initialize(DataViewer dataViewer) {
 	// create frame
-	setFrame(new JInternalFrameEnhanced("SIMULATION: " + getSimulation().getName(), true, true, true, true));
+	JInternalFrameEnhanced newFrame = new JInternalFrameEnhanced("SIMULATION: " + getSimulation().getName(), true, true, true, true);
+	newFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/run2_16x16.gif")));
+	setFrame(newFrame);
 	getFrame().add(dataViewer);
 	getFrame().setSize(850, 650);
 	getSimulation().addPropertyChangeListener(pcl);
