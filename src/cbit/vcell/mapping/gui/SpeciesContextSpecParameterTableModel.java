@@ -196,47 +196,50 @@ private List<Parameter> getUnsortedParameters() {
 				// diffusion
 				paramList.add(fieldSpeciesContextSpec.getDiffusionParameter());
 				
-				// boundary condition
-				paramList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
-				paramList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
-				paramList.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
-				paramList.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
-				
-				if (dimension > 2) {
-					paramList.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
-					paramList.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
-				}
-			}
-		}		
-	} else if (speciesContext.getStructure() instanceof Feature){
-		FeatureMapping featureMapping = (FeatureMapping)simulationContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
-		if (simulationContext.getGeometry()!=null && !fieldSpeciesContextSpec.isWellMixed()){
-			int dimension = simulationContext.getGeometry().getDimension();
-			if (dimension > 0) {
-				paramList.add(fieldSpeciesContextSpec.getDiffusionParameter());
-				
-				// boundary condition
-				paramList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
-				paramList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
-			 
-				if (dimension > 1) {
+				if (!simulationContext.isStoch()) {
+					// boundary condition
+					paramList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
+					paramList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
 					paramList.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
 					paramList.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
-				
-				
+					
 					if (dimension > 2) {
 						paramList.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
 						paramList.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
 					}
 				}
+			}
+		}		
+	} else if (speciesContext.getStructure() instanceof Feature){
+		if (simulationContext.getGeometry()!=null && !fieldSpeciesContextSpec.isWellMixed()){
+			int dimension = simulationContext.getGeometry().getDimension();
+			if (dimension > 0) {
+				paramList.add(fieldSpeciesContextSpec.getDiffusionParameter());
 				
-				// velocity
-				paramList.add(fieldSpeciesContextSpec.getVelocityXParameter());
-				if (dimension > 1) {
-					paramList.add(fieldSpeciesContextSpec.getVelocityYParameter());
-				
-					if (dimension > 2) {
-						paramList.add(fieldSpeciesContextSpec.getVelocityZParameter());
+				if (!simulationContext.isStoch()) {
+					// boundary condition
+					paramList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
+					paramList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
+				 
+					if (dimension > 1) {
+						paramList.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
+						paramList.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
+					
+					
+						if (dimension > 2) {
+							paramList.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
+							paramList.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
+						}
+					}
+					
+					// velocity
+					paramList.add(fieldSpeciesContextSpec.getVelocityXParameter());
+					if (dimension > 1) {
+						paramList.add(fieldSpeciesContextSpec.getVelocityYParameter());
+					
+						if (dimension > 2) {
+							paramList.add(fieldSpeciesContextSpec.getVelocityZParameter());
+						}
 					}
 				}
 			}
@@ -450,6 +453,7 @@ public void setSpeciesContextSpec(SpeciesContextSpec speciesContextSpec) {
 
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+	System.out.println("setValueAt called");
 	Parameter parameter = (Parameter)getData().get(rowIndex);
 	switch (columnIndex){
 		case COLUMN_NAME:{
