@@ -39,6 +39,7 @@ import cbit.vcell.units.VCUnitDefinition;
 
 public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable {
 
+	public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
 	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
 
 
@@ -1199,7 +1200,7 @@ private void setParameters(SpeciesContextSpecParameter[] parameters) throws java
 private void setProxyParameters(SpeciesContextSpecProxyParameter[] proxyParameters) {
 	SpeciesContextSpecProxyParameter[] oldValue = fieldProxyParameters;
 	fieldProxyParameters = proxyParameters;
-	firePropertyChange("proxyParameters", oldValue, proxyParameters);
+	firePropertyChange(PARAMETER_NAME_PROXY_PARAMETERS, oldValue, proxyParameters);
 }
 
 
