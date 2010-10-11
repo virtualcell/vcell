@@ -427,9 +427,12 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					}
 				}
 			}
-			// for any change to the SpeciesContextSpec, want to update all.
-			setData(getUnsortedParameters());
-			fireTableDataChanged();
+			if (!evt.getPropertyName().equals(SpeciesContextSpec.PARAMETER_NAME_PROXY_PARAMETERS)) {
+				// for any change to the SpeciesContextSpec, want to update all.
+				// proxy parameters don't affect table
+				setData(getUnsortedParameters());
+				fireTableDataChanged();
+			}
 		}
 		if(evt.getSource() instanceof Parameter){
 			setData(getUnsortedParameters());
