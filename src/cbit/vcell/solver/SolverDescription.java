@@ -1001,6 +1001,7 @@ public Set<SolverFeature> getSupportedFeatures() {
 	case TYPE_SMOLDYN:
 		featureSet.add(SolverFeature.Feature_Spatial);
 		featureSet.add(SolverFeature.Feature_Stochastic);
+		featureSet.add(SolverFeature.Feature_PeriodicBoundaryCondition);
 		break;	
 	}
 	return featureSet;

@@ -81,6 +81,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private SimulationSymbolTable simulationSymbolTable = null;
 	ArrayList<ParticleVariable> particleVariableList = null;
 	private Geometry resampledGeometry = null;
+	private boolean bHasNoSurface = false;
 	private int dimension = 1;
 	private Set<SubVolume> boundaryXSubVolumes = new HashSet<SubVolume>();
 	private Set<SubVolume> boundaryYSubVolumes = new HashSet<SubVolume>();
@@ -98,6 +99,11 @@ public class SmoldynFileWriter extends SolverFileWriter
 		max_compartment,
 		max_surface,
 		boundaries,
+		low_wall,
+		high_wall,
+		r,
+		a,
+		p,
 		
 		start_surface,
 		end_surface,
@@ -199,7 +205,8 @@ private void init() throws SolverException {
 		GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
 		ISize newSize = simulation.getMeshSpecification().getSamplingSize();
 		geoSurfaceDesc.setVolumeSampleSize(newSize);
-		geoSurfaceDesc.updateAll();		
+		geoSurfaceDesc.updateAll();	
+		bHasNoSurface = geoSurfaceDesc.getSurfaceClasses() == null || geoSurfaceDesc.getSurfaceClasses().length == 0;
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new SolverException(e.getMessage());
@@ -488,90 +495,92 @@ private void writeSurfacesAndCompartments() throws SolverException {
 	// write boundaries and wall surfaces
 	writeWallSurfaces();
 	
-	// write surfaces
-	printWriter.println("# surfaces");
-	for (int sci = 0; sci < surfaceClasses.length; sci ++) {
-		SurfaceClass surfaceClass = surfaceClasses[sci];
-		GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);	
-		ArrayList<Triangle> triList = new ArrayList<Triangle>();	
-		for (GeometricRegion gr : geometricRegions) {
-			SurfaceGeometricRegion sgr = (SurfaceGeometricRegion)gr;
-			VolumeGeometricRegion volRegion1 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[0];
-			int volRegionID = volRegion1.getRegionID();
-			SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
-			for(int j = 0; j < surfaceCollection.getSurfaceCount(); j++) {
-				Surface surface = surfaceCollection.getSurfaces(j);
-				if (surface.getInteriorRegionIndex() == volRegionID || surface.getExteriorRegionIndex() == volRegionID) { // my triangles
-					for(int k = 0; k < surface.getPolygonCount(); k++) {
-						Polygon polygon = surface.getPolygons(k);
-						Node[] nodes = polygon.getNodes();
-						if (surface.getInteriorRegionIndex() == volRegionID) { // interior							
-							triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
-							if(nodes.length == 4 && dimension > 2) {
-								triList.add(new Triangle(nodes[0], nodes[2], nodes[3]));
-							}
-						} else {
-							triList.add(new Triangle(nodes[2], nodes[1], nodes[0]));
-							if(nodes.length == 4 && dimension > 2) {
-								triList.add(new Triangle(nodes[3], nodes[2], nodes[0]));
+	if (!bHasNoSurface) {	
+		// write surfaces
+		printWriter.println("# surfaces");
+		for (int sci = 0; sci < surfaceClasses.length; sci ++) {
+			SurfaceClass surfaceClass = surfaceClasses[sci];
+			GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);
+			ArrayList<Triangle> triList = new ArrayList<Triangle>();
+			for (GeometricRegion gr : geometricRegions) {
+				SurfaceGeometricRegion sgr = (SurfaceGeometricRegion)gr;
+				VolumeGeometricRegion volRegion1 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[0];
+				int volRegionID = volRegion1.getRegionID();
+				SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
+				for(int j = 0; j < surfaceCollection.getSurfaceCount(); j++) {
+					Surface surface = surfaceCollection.getSurfaces(j);
+					if (surface.getInteriorRegionIndex() == volRegionID || surface.getExteriorRegionIndex() == volRegionID) { // my triangles
+						for(int k = 0; k < surface.getPolygonCount(); k++) {
+							Polygon polygon = surface.getPolygons(k);
+							Node[] nodes = polygon.getNodes();
+							if (surface.getInteriorRegionIndex() == volRegionID) { // interior							
+								triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
+								if(nodes.length == 4 && dimension > 2) {
+									triList.add(new Triangle(nodes[0], nodes[2], nodes[3]));
+								}
+							} else {
+								triList.add(new Triangle(nodes[2], nodes[1], nodes[0]));
+								if(nodes.length == 4 && dimension > 2) {
+									triList.add(new Triangle(nodes[3], nodes[2], nodes[0]));
+								}
 							}
 						}
 					}
 				}
 			}
-		}
-		
-		printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
-		printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());
-		
-		if (DEBUG) tmppw.println("verts" + sci + "=[");
-		for (Triangle triangle : triList) {
-			printWriter.print(SmoldynKeyword.panel + " " + SmoldynKeyword.tri);
-			switch (dimension) {
-			case 1:
-				printWriter.print(" " + triangle.getNodes(0).getX());
-				break;
-			case 2:
-				printWriter.print(" " + triangle.getNodes(0).getX() + " " + triangle.getNodes(0).getY());
-				if (DEBUG) tmppw.print(" " + triangle.getNodes(0).getX() + " " + triangle.getNodes(0).getY());
-
-				if (triangle.getNodes(0).getX() == triangle.getNodes(1).getX() && triangle.getNodes(0).getY() == triangle.getNodes(1).getY()) {
-					printWriter.print(" " + triangle.getNodes(2).getX() + " " + triangle.getNodes(2).getY());
-					if (DEBUG) tmppw.print(" " + triangle.getNodes(2).getX() + " " + triangle.getNodes(2).getY());
-				} else {
-					printWriter.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
-					if (DEBUG) tmppw.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
+			
+			printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
+			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());
+			
+			if (DEBUG) tmppw.println("verts" + sci + "=[");
+			for (Triangle triangle : triList) {
+				printWriter.print(SmoldynKeyword.panel + " " + SmoldynKeyword.tri);
+				switch (dimension) {
+				case 1:
+					printWriter.print(" " + triangle.getNodes(0).getX());
+					break;
+				case 2:
+					printWriter.print(" " + triangle.getNodes(0).getX() + " " + triangle.getNodes(0).getY());
+					if (DEBUG) tmppw.print(" " + triangle.getNodes(0).getX() + " " + triangle.getNodes(0).getY());
+	
+					if (triangle.getNodes(0).getX() == triangle.getNodes(1).getX() && triangle.getNodes(0).getY() == triangle.getNodes(1).getY()) {
+						printWriter.print(" " + triangle.getNodes(2).getX() + " " + triangle.getNodes(2).getY());
+						if (DEBUG) tmppw.print(" " + triangle.getNodes(2).getX() + " " + triangle.getNodes(2).getY());
+					} else {
+						printWriter.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
+						if (DEBUG) tmppw.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
+					}
+					break;
+				case 3:
+					for (Node node : triangle.getNodes()) {
+						printWriter.print(" " + node.getX() + " " + node.getY() + " " + node.getZ());
+						if (DEBUG) tmppw.print(" " + node.getX() + " " + node.getY() + " " + node.getZ());
+					}
+					break;
 				}
-				break;
-			case 3:
-				for (Node node : triangle.getNodes()) {
-					printWriter.print(" " + node.getX() + " " + node.getY() + " " + node.getZ());
-					if (DEBUG) tmppw.print(" " + node.getX() + " " + node.getY() + " " + node.getZ());
-				}
-				break;
+			
+				printWriter.println();
+				if (DEBUG) tmppw.println();
 			}
-		
+			printWriter.println(SmoldynKeyword.end_surface);
 			printWriter.println();
-			if (DEBUG) tmppw.println();
+			if (DEBUG) tmppw.println("];");
 		}
-		printWriter.println(SmoldynKeyword.end_surface);
+		
+		// write compartment
+		printWriter.println("# bounding wall compartment");
+		printWriter.println(SmoldynKeyword.start_compartment + " " + VCellSmoldynKeyword.bounding_wall_compartment);
+		printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
+		if (dimension > 1) {
+			printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
+			if (dimension > 2) {
+				printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
+			}
+		}
+		printWriter.println(SmoldynKeyword.end_compartment);
 		printWriter.println();
-		if (DEBUG) tmppw.println("];");
 	}
 	
-	// write compartment
-	printWriter.println("# bounding wall compartment");
-	printWriter.println(SmoldynKeyword.start_compartment + " " + VCellSmoldynKeyword.bounding_wall_compartment);
-	printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
-	if (dimension > 1) {
-		printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
-		if (dimension > 2) {
-			printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
-		}
-	}
-	printWriter.println(SmoldynKeyword.end_compartment);
-	printWriter.println();
-		
 	MeshSpecification meshSpecification = simulation.getMeshSpecification();
 	ISize sampleSize = meshSpecification.getSamplingSize();
 	int numX = sampleSize.getX();
@@ -723,189 +732,240 @@ private void writeWallSurfaces() throws SolverException {
 	Origin origin = geometrySpec.getOrigin();
 	Extent extent = geometrySpec.getExtent();
 	Coordinate lowWall = new Coordinate(origin.getX(), origin.getY(), origin.getZ());
-	Coordinate highWall = new Coordinate(origin.getX() + extent.getX(), origin.getY() + extent.getY(), origin.getZ() + extent.getZ());
-	// x 
-	printWriter.println(SmoldynKeyword.boundaries + " 0 " + lowWall.getX() + " " + highWall.getX());
-	if (dimension > 1) {
-		// y	
-		printWriter.println(SmoldynKeyword.boundaries + " 1 " + lowWall.getY() + " " + highWall.getY());
-		if (dimension > 2) {
-			// z
-			printWriter.println(SmoldynKeyword.boundaries + " 2 " + lowWall.getZ() + " " + highWall.getZ());
+	Coordinate highWall = new Coordinate(origin.getX() + extent.getX(), origin.getY() + extent.getY(), origin.getZ() + extent.getZ());	
+//	These boundaries of the entire system are different from surfaces, which are
+//	described below. However, they have enough in common that Smoldyn does not work
+//	well with both at once. Thus, if any surfaces are used, the system boundaries will always
+//	behave as though the types are transparent, whether they are defined that way or not.
+//	Thus, if there are surfaces, it is usually best to use the boundaries statement without a
+//	type parameter, which will lead to the default transparent type. To account for the
+//	transparent boundaries, an outside surface may be needed that keeps molecules within the
+//	system. The one exception to these suggestions arises for systems with both surfaces and
+//	periodic boundary conditions. To accomplish this with the maximum accuracy, set the
+//	boundary types to periodic (although they will behave as though they are transparent) and
+//	create jump type surfaces, described below, at each outside edge that send molecules to
+//	the far sides. The reason for specifying that the boundaries are periodic is that they will
+//	then allow bimolecular reactions that occur with one molecule on each side of the system.
+//	This will probably yield a negligible improvement in results, but nevertheless removes a
+//	potential artifact.	
+	if (bHasNoSurface) {
+		SubDomain subDomain0 = mathDesc.getSubDomains().nextElement();
+		CompartmentSubDomain compartSubDomain0 = null;
+		compartSubDomain0 = (CompartmentSubDomain)subDomain0;
+		// x
+		if (compartSubDomain0.getBoundaryConditionXm().isPERIODIC()) {
+			printWriter.println(SmoldynKeyword.boundaries + " 0 " + lowWall.getX() + " " + highWall.getX() + " " + SmoldynKeyword.p);
+		} else {
+			printWriter.println(SmoldynKeyword.low_wall + " 0 " + lowWall.getX() + " " + (compartSubDomain0.getBoundaryConditionXm().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
+			printWriter.println(SmoldynKeyword.high_wall + " 0 " + highWall.getX() + " " + (compartSubDomain0.getBoundaryConditionXp().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
 		}
-	}
-	printWriter.println();
-	
-	// bounding walls as surfaces
-	
-	// have to find boundary condition type
-	ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
-	int numX = sampleSize.getX();
-	int numY = dimension < 2 ? 1 : sampleSize.getY();
-	int numZ = dimension < 3 ? 1 : sampleSize.getZ();	
-	
-	if (dimension > 2) {
-		int[] k_wall = new int[] {0, numZ - 1};
-		for (int k = 0; k < k_wall.length; k ++) {
-			for (int j = 0; j < numY; j ++) {
-				for (int i = 0; i < numX; i ++) {
-					int volIndex = k_wall[k] * numX * numY + j * numY + i;
-					
-					for (SubVolume sv : subVolumes) {
-						// gather all the points in all the regions
-						GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(sv);
-						RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();		
-						for (GeometricRegion gr : geometricRegions) {
-							VolumeGeometricRegion vgr = (VolumeGeometricRegion)gr;
-							for (RegionInfo ri : regionInfos) {
-								if (ri.getRegionIndex() == vgr.getRegionID() && ri.isIndexInRegion(volIndex)) {
-									boundaryZSubVolumes.add(sv);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	if (dimension > 1) {
-		int[] j_wall = new int[] {0, numY - 1};
-		for (int k = 0; k < numZ; k ++) {
-			for (int j = 0; j < j_wall.length; j ++) {
-				for (int i = 0; i < numX; i ++) {
-					int volIndex = k * numX * numY + j_wall[j] * numY + i;
-					
-					for (SubVolume sv : subVolumes) {
-						// gather all the points in all the regions
-						GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(sv);
-						RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();		
-						for (GeometricRegion gr : geometricRegions) {
-							VolumeGeometricRegion vgr = (VolumeGeometricRegion)gr;
-							for (RegionInfo ri : regionInfos) {
-								if (ri.getRegionIndex() == vgr.getRegionID() && ri.isIndexInRegion(volIndex)) {
-									boundaryYSubVolumes.add(sv);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	int[] i_wall = new int[] {0, numX - 1};
-	for (int k = 0; k < numZ; k ++) {
-		for (int j = 0; j < numY; j ++) {
-			for (int i = 0; i < i_wall.length; i ++) {
-				int volIndex = k * numX * numY + j * numY + i_wall[i];
-				
-				for (SubVolume sv : subVolumes) {
-					// gather all the points in all the regions
-					GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(sv);
-					RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();		
-					for (GeometricRegion gr : geometricRegions) {
-						VolumeGeometricRegion vgr = (VolumeGeometricRegion)gr;
-						for (RegionInfo ri : regionInfos) {
-							if (ri.getRegionIndex() == vgr.getRegionID() && ri.isIndexInRegion(volIndex)) {
-								boundaryXSubVolumes.add(sv);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	Set<SubVolume> boundarySubVolumes = new HashSet<SubVolume>();
-	boundarySubVolumes.addAll(boundaryXSubVolumes);
-	boundarySubVolumes.addAll(boundaryYSubVolumes);
-	boundarySubVolumes.addAll(boundaryZSubVolumes);
-	BoundaryConditionType[] computedBct = new BoundaryConditionType[dimension * 2];
-	String[] smoldynBct = new String[dimension * 2];
-	String[] wallNames = new String[] {"Xm", "Xp", "Ym", "Yp", "Zm", "Zp"};
-	if (boundarySubVolumes.size() >= 1) {
-		for (SubVolume sv : boundarySubVolumes) {
-			CompartmentSubDomain csd = (CompartmentSubDomain)mathDesc.getSubDomain(sv.getName());
-			BoundaryConditionType bct[] = new BoundaryConditionType[] {
-				csd.getBoundaryConditionXm(),
-				csd.getBoundaryConditionXp(),
-				csd.getBoundaryConditionYm(),
-				csd.getBoundaryConditionYp(),
-				csd.getBoundaryConditionZm(),
-				csd.getBoundaryConditionZp(),				
-			};
-			
-			if (computedBct[0] == null) {
-				System.arraycopy(bct, 0, computedBct, 0, dimension * 2);
-				for (int i = 0; i < dimension * 2; i ++) {
-					smoldynBct[i] = computedBct[i].isDIRICHLET() ? SmoldynKeyword.absorb.name() : SmoldynKeyword.reflect.name();
-				}
+		if (dimension > 1) {
+			// y
+			if (compartSubDomain0.getBoundaryConditionYm().isPERIODIC()) {
+				printWriter.println(SmoldynKeyword.boundaries + " 1 " + lowWall.getY() + " " + highWall.getY() + " " + SmoldynKeyword.p);
 			} else {
-				for (int i = 0; i < dimension * 2; i ++) {
-					if (!computedBct[i].compareEqual(bct[i])) {
-						throw new SolverException(wallNames[i] + " wall has different boundary conditions");	
+				printWriter.println(SmoldynKeyword.low_wall + " 1 " + lowWall.getY() + " " + (compartSubDomain0.getBoundaryConditionYm().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
+				printWriter.println(SmoldynKeyword.high_wall + " 1 " + highWall.getY() + " " + (compartSubDomain0.getBoundaryConditionYp().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
+			}
+			
+			if (dimension > 2) {
+				// z
+				if (compartSubDomain0.getBoundaryConditionZm().isPERIODIC()) {
+					printWriter.println(SmoldynKeyword.boundaries + " 2 " + lowWall.getZ() + " " + highWall.getZ() + " " + SmoldynKeyword.p);
+				} else {
+					printWriter.println(SmoldynKeyword.low_wall + " 2 " + lowWall.getZ() + " " + (compartSubDomain0.getBoundaryConditionZm().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
+					printWriter.println(SmoldynKeyword.high_wall + " 2 " + highWall.getZ() + " " + (compartSubDomain0.getBoundaryConditionZp().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
+				}				
+			}
+		}
+		printWriter.println();
+	} else {	
+		// x 
+		printWriter.println(SmoldynKeyword.boundaries + " 0 " + lowWall.getX() + " " + highWall.getX());
+		if (dimension > 1) {
+			// y	
+			printWriter.println(SmoldynKeyword.boundaries + " 1 " + lowWall.getY() + " " + highWall.getY());
+			if (dimension > 2) {
+				// z
+				printWriter.println(SmoldynKeyword.boundaries + " 2 " + lowWall.getZ() + " " + highWall.getZ());
+			}
+		}
+		printWriter.println();
+		
+		// bounding walls as surfaces
+		
+		// have to find boundary condition type
+		ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
+		int numX = sampleSize.getX();
+		int numY = dimension < 2 ? 1 : sampleSize.getY();
+		int numZ = dimension < 3 ? 1 : sampleSize.getZ();	
+		
+		if (dimension > 2) {
+			int[] k_wall = new int[] {0, numZ - 1};
+			for (int k = 0; k < k_wall.length; k ++) {
+				for (int j = 0; j < numY; j ++) {
+					for (int i = 0; i < numX; i ++) {
+						int volIndex = k_wall[k] * numX * numY + j * numY + i;
+						
+						for (SubVolume sv : subVolumes) {
+							// gather all the points in all the regions
+							GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(sv);
+							RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();		
+							for (GeometricRegion gr : geometricRegions) {
+								VolumeGeometricRegion vgr = (VolumeGeometricRegion)gr;
+								for (RegionInfo ri : regionInfos) {
+									if (ri.getRegionIndex() == vgr.getRegionID() && ri.isIndexInRegion(volIndex)) {
+										boundaryZSubVolumes.add(sv);
+									}
+								}
+							}
+						}
 					}
 				}
 			}
 		}
-	}
-	
-	printWriter.println("# bounding wall surface");
-	// X walls
-	printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
-	printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.front + " " + SmoldynKeyword.all + " " + smoldynBct[0]);
-	printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.back + " " + SmoldynKeyword.all + " " + smoldynBct[1]);
-	printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
-	// yz walls
-	switch (dimension) {
-	case 1:
-		printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +0 " + lowWall.getX());
-		printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -0 " + highWall.getX());
-		break;
-	case 2:
-		printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +0 " + lowWall.getX() + " " + lowWall.getY() + " " + extent.getY());
-		printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -0 " + highWall.getX() + " " + lowWall.getY() + " " + extent.getY());
-		break;
-	case 3:
-		printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +0 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getY() + " " + extent.getZ());
-		printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -0 " + highWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getY() + " " + extent.getZ());
-		break;
-	}
-	printWriter.println(SmoldynKeyword.end_surface);
-	printWriter.println();
-	
-	if (dimension > 1) {
-		// Y walls
-		printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
-		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.front + " " + SmoldynKeyword.all + " " + smoldynBct[2]);
-		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.back + " " + SmoldynKeyword.all + " " + smoldynBct[3]);
+		
+		if (dimension > 1) {
+			int[] j_wall = new int[] {0, numY - 1};
+			for (int k = 0; k < numZ; k ++) {
+				for (int j = 0; j < j_wall.length; j ++) {
+					for (int i = 0; i < numX; i ++) {
+						int volIndex = k * numX * numY + j_wall[j] * numY + i;
+						
+						for (SubVolume sv : subVolumes) {
+							// gather all the points in all the regions
+							GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(sv);
+							RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();		
+							for (GeometricRegion gr : geometricRegions) {
+								VolumeGeometricRegion vgr = (VolumeGeometricRegion)gr;
+								for (RegionInfo ri : regionInfos) {
+									if (ri.getRegionIndex() == vgr.getRegionID() && ri.isIndexInRegion(volIndex)) {
+										boundaryYSubVolumes.add(sv);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		int[] i_wall = new int[] {0, numX - 1};
+		for (int k = 0; k < numZ; k ++) {
+			for (int j = 0; j < numY; j ++) {
+				for (int i = 0; i < i_wall.length; i ++) {
+					int volIndex = k * numX * numY + j * numY + i_wall[i];
+					
+					for (SubVolume sv : subVolumes) {
+						// gather all the points in all the regions
+						GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(sv);
+						RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();		
+						for (GeometricRegion gr : geometricRegions) {
+							VolumeGeometricRegion vgr = (VolumeGeometricRegion)gr;
+							for (RegionInfo ri : regionInfos) {
+								if (ri.getRegionIndex() == vgr.getRegionID() && ri.isIndexInRegion(volIndex)) {
+									boundaryXSubVolumes.add(sv);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		Set<SubVolume> boundarySubVolumes = new HashSet<SubVolume>();
+		boundarySubVolumes.addAll(boundaryXSubVolumes);
+		boundarySubVolumes.addAll(boundaryYSubVolumes);
+		boundarySubVolumes.addAll(boundaryZSubVolumes);
+		BoundaryConditionType[] computedBct = new BoundaryConditionType[dimension * 2];
+		String[] smoldynBct = new String[dimension * 2];
+		String[] wallNames = new String[] {"Xm", "Xp", "Ym", "Yp", "Zm", "Zp"};
+		if (boundarySubVolumes.size() >= 1) {
+			for (SubVolume sv : boundarySubVolumes) {
+				CompartmentSubDomain csd = (CompartmentSubDomain)mathDesc.getSubDomain(sv.getName());
+				BoundaryConditionType bct[] = new BoundaryConditionType[] {
+					csd.getBoundaryConditionXm(),
+					csd.getBoundaryConditionXp(),
+					csd.getBoundaryConditionYm(),
+					csd.getBoundaryConditionYp(),
+					csd.getBoundaryConditionZm(),
+					csd.getBoundaryConditionZp(),
+				};
+				
+				if (computedBct[0] == null) {
+					System.arraycopy(bct, 0, computedBct, 0, dimension * 2);
+					for (int i = 0; i < dimension * 2; i ++) {
+						if (computedBct[i].isPERIODIC()) {
+							throw new SolverException("Models with both surfaces and periodic boundary conditions are not supported yet.");
+						}
+						smoldynBct[i] = computedBct[i].isDIRICHLET() ? SmoldynKeyword.absorb.name() : SmoldynKeyword.reflect.name();
+					}
+				} else {
+					for (int i = 0; i < dimension * 2; i ++) {
+						if (!computedBct[i].compareEqual(bct[i])) {
+							throw new SolverException(wallNames[i] + " wall has different boundary conditions");
+						}
+					}
+				}
+			}
+		}
+		
+		printWriter.println("# bounding wall surface");
+		// X walls
+		printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
+		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.front + " " + SmoldynKeyword.all + " " + smoldynBct[0]);
+		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.back + " " + SmoldynKeyword.all + " " + smoldynBct[1]);
 		printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
-		// xz walls
+		// yz walls
 		switch (dimension) {
+		case 1:
+			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +0 " + lowWall.getX());
+			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -0 " + highWall.getX());
+			break;
 		case 2:
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + extent.getX());
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + extent.getX());		
+			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +0 " + lowWall.getX() + " " + lowWall.getY() + " " + extent.getY());
+			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -0 " + highWall.getX() + " " + lowWall.getY() + " " + extent.getY());
 			break;
 		case 3:
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());		
+			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +0 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getY() + " " + extent.getZ());
+			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -0 " + highWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getY() + " " + extent.getZ());
 			break;
 		}
 		printWriter.println(SmoldynKeyword.end_surface);
 		printWriter.println();
 		
-		if (dimension > 2) {
-			// Z walls
-			printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
-			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.front + " " + SmoldynKeyword.all + " " + smoldynBct[4]);
-			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.back + " " + SmoldynKeyword.all + " " + smoldynBct[5]);
+		if (dimension > 1) {
+			// Y walls
+			printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
+			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.front + " " + SmoldynKeyword.all + " " + smoldynBct[2]);
+			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.back + " " + SmoldynKeyword.all + " " + smoldynBct[3]);
 			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
-			// xy walls
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +2 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getY());
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -2 " + lowWall.getX() + " " + lowWall.getY() + " " + highWall.getZ() + " " + extent.getX() + " " + extent.getY());			
+			// xz walls
+			switch (dimension) {
+			case 2:
+				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + extent.getX());
+				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + extent.getX());		
+				break;
+			case 3:
+				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());
+				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());		
+				break;
+			}
 			printWriter.println(SmoldynKeyword.end_surface);
 			printWriter.println();
+			
+			if (dimension > 2) {
+				// Z walls
+				printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
+				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.front + " " + SmoldynKeyword.all + " " + smoldynBct[4]);
+				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.back + " " + SmoldynKeyword.all + " " + smoldynBct[5]);
+				printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
+				// xy walls
+				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +2 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getY());
+				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -2 " + lowWall.getX() + " " + lowWall.getY() + " " + highWall.getZ() + " " + extent.getX() + " " + extent.getY());			
+				printWriter.println(SmoldynKeyword.end_surface);
+				printWriter.println();
+			}
 		}
 	}
 }
