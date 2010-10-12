@@ -400,19 +400,20 @@ private void refresh() {
 		getMinimumTimeStepTextField().setText(ts.getMinimumTimeStep()+"");
 		getMaximumTimeStepTextField().setText(ts.getMaximumTimeStep()+"");	
 		
-		if (solverDescription.hasVariableTimestep() &&  solverDescription.isNonSpatialStochasticSolver()) {
-			enableDefaultTimeStep(false);
-			enableMinTimeStep(true);
-			enableMaxTimeStep(true);
-		} else {
+		// fixed time step solvers and non spatial stochastic solvers only show default time step.
+		if (!solverDescription.hasVariableTimestep() || solverDescription.isNonSpatialStochasticSolver()) {
 			enableDefaultTimeStep(true);
 			enableMinTimeStep(false);
 			enableMaxTimeStep(false);
+		} else {
+			// variable time step solvers shows min and max, but sundials solvers don't show min
+			enableDefaultTimeStep(false);
+			if (solverDescription.isSundialsSolver()) {
+				enableMinTimeStep(false);
+			}
+			enableMaxTimeStep(true);			
 		}
 		
-		if (solverDescription.isSundialsSolver()) {
-			enableMinTimeStep(false);
-		}
 	 }
 }
 
