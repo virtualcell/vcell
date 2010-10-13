@@ -707,7 +707,9 @@ private void updateTopScrollPanel()
 {
 	if (getSimulationContext().isStoch()) {
 		getRadioButtonPanel().setVisible(true);
-		getConcentrationRadioButton().setSelected(getSimulationContext().isUsingConcentration());
+		boolean bUsingConcentration = getSimulationContext().isUsingConcentration();
+		getConcentrationRadioButton().setSelected(bUsingConcentration);
+		getAmountRadioButton().setSelected(!bUsingConcentration);
 	} else {
 		getRadioButtonPanel().setVisible(false);
 	}
