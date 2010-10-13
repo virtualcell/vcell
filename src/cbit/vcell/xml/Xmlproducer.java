@@ -1977,8 +1977,8 @@ Element getXML(MathDescription mathdes) throws XmlParseException {
             math.addContent(getXML((VolVariable) var));
         } else if (var instanceof StochVolVariable) { //added for stochastic volumn variables
             math.addContent(getXML((StochVolVariable) var));
-        } else if (var instanceof VolumeParticleVariable) {
-        	math.addContent(getXML((VolumeParticleVariable) var));
+        } else if (var instanceof ParticleVariable) {
+        	math.addContent(getXML((ParticleVariable) var));
         }
         else {
 	        throw new XmlParseException("An unknown variable type "+var.getClass().getName()+" was found when parsing the mathdescription "+ mathdes.getName() +"!");
@@ -2224,6 +2224,12 @@ private Element getXML(MembraneSubDomain param) throws XmlParseException{
 		membrane.addContent( getXML(param.getFastSystem()) );
 	}
 	
+	for (ParticleProperties pp : param.getParticleProperties()){
+		membrane.addContent(getXML(pp));
+	}
+	for (ParticleJumpProcess pjp : param.getParticleJumpProcesses()){
+		membrane.addContent(getXML(pjp));
+	}
 	return membrane;
 }
 
@@ -2439,8 +2445,8 @@ private Element getXML(StochVolVariable param) {
 	return stochVar;
 }
 
-private Element getXML(VolumeParticleVariable param) {
-	org.jdom.Element e = new org.jdom.Element(XMLTags.VolumeParticleVariableTag);
+private Element getXML(ParticleVariable param) {
+	org.jdom.Element e = new org.jdom.Element(param instanceof VolumeParticleVariable ? XMLTags.VolumeParticleVariableTag : XMLTags.MembraneParticleVariableTag);
 	
 	//Add atribute
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));

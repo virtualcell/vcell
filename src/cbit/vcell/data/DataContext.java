@@ -7,28 +7,18 @@ package cbit.vcell.data;
  */
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.Serializable;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
-import cbit.vcell.mapping.gui.DataSymbolsTableModel;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.NameScope;
-import cbit.vcell.units.VCUnitDefinition;
 
 /* 
  * Container for all data symbols
  */
-public class DataContext implements Matchable{
+public class DataContext implements Matchable, Serializable {
 
 	private DataSymbol[] dataSymbols = new DataSymbol[0];
 	

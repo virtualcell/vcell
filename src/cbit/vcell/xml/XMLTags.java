@@ -469,6 +469,7 @@ public class XMLTags {
 	
 	// Smoldyn
 	public final static String VolumeParticleVariableTag = "VolumeParticleVariable";
+	public final static String MembraneParticleVariableTag = "MembraneParticleVariable";
 	public final static String ParticleJumpProcessTag = "ParticleJumpProcess";
 	public final static String ParticleProbabilityRateTag = "ParticleProbabilityRate";
 	public final static String SelectedParticleTag = "SelectedParticle";

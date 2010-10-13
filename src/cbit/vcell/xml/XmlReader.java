@@ -42,8 +42,8 @@ import cbit.vcell.biomodel.meta.xml.XMLMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
-import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
+import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.dictionary.BoundCompound;
 import cbit.vcell.dictionary.BoundEnzyme;
 import cbit.vcell.dictionary.BoundProtein;
@@ -57,7 +57,6 @@ import cbit.vcell.dictionary.FormalEnzyme;
 import cbit.vcell.dictionary.FormalProtein;
 import cbit.vcell.dictionary.FormalSpeciesInfo;
 import cbit.vcell.dictionary.ProteinInfo;
-import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.ControlPointCurve;
@@ -80,6 +79,7 @@ import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -88,14 +88,16 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.mapping.VoltageClampStimulus;
-import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Distribution;
 import cbit.vcell.math.Event;
+import cbit.vcell.math.Event.Delay;
+import cbit.vcell.math.Event.EventAssignment;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
 import cbit.vcell.math.FastSystem;
@@ -112,6 +114,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneRandomVariable;
 import cbit.vcell.math.MembraneRegionEquation;
 import cbit.vcell.math.MembraneRegionVariable;
@@ -121,6 +124,7 @@ import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.RandomVariable;
@@ -128,16 +132,12 @@ import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
-import cbit.vcell.math.Event.Delay;
-import cbit.vcell.math.Event.EventAssignment;
-import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;
@@ -154,6 +154,7 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
@@ -166,7 +167,6 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
@@ -242,7 +242,7 @@ private Action getAction(Element param, MathDescription md) throws XmlParseExcep
 	if (var == null){
 		throw new MathFormatException("variable "+name+" not defined");
 	}	
-	if (!(var instanceof StochVolVariable) && !(var instanceof VolumeParticleVariable)){
+	if (!(var instanceof StochVolVariable) && !(var instanceof ParticleVariable)){
 		throw new MathFormatException("variable "+name+" not a Stochastic Volume Variable");
 	}
 	try {
@@ -2403,6 +2403,16 @@ MathDescription getMathDescription(Element param) throws XmlParseException {
 			throw new XmlParseException(e.getMessage());
 		}
 	}
+	iterator = param.getChildren(XMLTags.MembraneParticleVariableTag, vcNamespace).iterator();
+	while ( iterator.hasNext() ){
+		tempelement = (Element)iterator.next();
+		try {
+			varHash.addVariable(getMembraneParticalVariable(tempelement));
+		}catch (MappingException e){
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
+	}
 	
 	//
 	// add all variables at once
@@ -3147,6 +3157,28 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 			e.printStackTrace();
 			throw new XmlParseException("A MathException was fired when adding a MembraneRegionEquation to a MEmbraneSubDomain!"+" : "+e.getMessage());
 		}
+	}
+	
+	iterator = param.getChildren(XMLTags.ParticleJumpProcessTag, vcNamespace).iterator();
+	while (iterator.hasNext()) {
+		Element tempelement = (Element)iterator.next();
+		try {
+			subDomain.addParticleJumpProcess(getParticleJumpProcess(tempelement, mathDesc) );
+		} catch (MathException e) {
+			e.printStackTrace();
+			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name+" : "+e.getMessage());
+		} 
+	}
+	
+	iterator = param.getChildren(XMLTags.ParticlePropertiesTag, vcNamespace).iterator();
+	while (iterator.hasNext()) {
+		Element tempelement = (Element)iterator.next();
+		try {
+			subDomain.addParticleProperties(getParticleProperties(tempelement, mathDesc));
+		} catch (MathException e) {
+			e.printStackTrace();
+			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name+" : "+e.getMessage());
+		} 
 	}
 
 	return subDomain;	
@@ -5294,4 +5326,17 @@ private VolumeParticleVariable getVolumeParticalVariable(Element param) {
 	return var;
 }
 
+private MembraneParticleVariable getMembraneParticalVariable(Element param) {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
+	
+	//-- create new VolVariable object
+	MembraneParticleVariable var = new MembraneParticleVariable( name, domain );
+	
+	return var;
+}
 }
