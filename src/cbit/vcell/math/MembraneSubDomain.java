@@ -254,6 +254,16 @@ public String getVCML(int spatialDimension) {
 		Equation equ = enum1.nextElement();
 		buffer.append(equ.getVCML());
 	}	
+	//particle initial conditions
+	for (ParticleProperties pp : getParticleProperties()){
+		buffer.append(pp.getVCML(spatialDimension));
+		buffer.append("\n");
+	}
+	//Jump processes
+	for (ParticleJumpProcess particleJumpProcess : getParticleJumpProcesses()){
+		buffer.append(particleJumpProcess.getVCML());
+		buffer.append("\n");
+	}
 	Enumeration<JumpCondition> enum2 = getJumpConditions();
 	while (enum2.hasMoreElements()){
 		JumpCondition jc = enum2.nextElement();

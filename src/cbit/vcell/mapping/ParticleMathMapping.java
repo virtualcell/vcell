@@ -23,6 +23,7 @@ import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProbabilityRate;
@@ -578,8 +579,8 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		StructureMapping      sm  = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure());
 		SpeciesContextSpec    scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
 
-		if (scm.getVariable() instanceof VolumeParticleVariable && scm.getDependencyExpression()==null){
-			VolumeParticleVariable volumeParticleVariable = (VolumeParticleVariable)scm.getVariable();
+		if (scm.getVariable() instanceof ParticleVariable && scm.getDependencyExpression()==null){
+			ParticleVariable volumeParticleVariable = (ParticleVariable)scm.getVariable();
 			
 			//
 			// initial distribution of particles
@@ -960,8 +961,7 @@ protected void refreshVariables() throws MappingException {
 						//scm.setVariable(new StochMembraneRegionVariable(scm.getSpeciesContext().getName(),domain));
 						throw new MappingException("stochastic membrane region variables not yet supported");
 					}else{
-						//scm.setVariable(new MembraneParticleVariable(scm.getSpeciesContext().getName(),domain));
-						throw new MappingException("membrane particle variables not yet supported");
+						scm.setVariable(new MembraneParticleVariable(scm.getSpeciesContext().getName(),domain));
 					}
 				}else{
 					if (scs.isWellMixed()){
