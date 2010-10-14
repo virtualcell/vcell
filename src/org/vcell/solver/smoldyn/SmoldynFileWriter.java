@@ -255,6 +255,19 @@ private void writeSimulationSettings() {
 private void writeRuntimeCommands() throws SolverException {
 	OutputTimeSpec ots = simulation.getSolverTaskDescription().getOutputTimeSpec();
 	if (ots.isUniform()) {
+		GeometricRegion[] AllGeometricRegions = resampledGeometry.getGeometrySurfaceDescription().getGeometricRegions();
+		ArrayList<SurfaceGeometricRegion> surfaceRegionList = new ArrayList<SurfaceGeometricRegion>();
+		ArrayList<VolumeGeometricRegion> volumeRegionList = new ArrayList<VolumeGeometricRegion>();
+		for (GeometricRegion geometricRegion : AllGeometricRegions) {
+			if (geometricRegion instanceof SurfaceGeometricRegion){
+				surfaceRegionList.add((SurfaceGeometricRegion)geometricRegion);
+			} else if (geometricRegion instanceof VolumeGeometricRegion){
+				volumeRegionList.add((VolumeGeometricRegion)geometricRegion);
+			} else {
+				throw new SolverException("unsupported geometric region type " + geometricRegion.getClass());
+			}
+		}
+		
 		printWriter.println("# runtime command");	
 		printWriter.println(SmoldynKeyword.output_files + " " + outputFile.getName());
 //		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.n + " 1 " + SmoldynKeyword.warnescapee + " " + SmoldynKeyword.all + " " + outputFile.getName());
@@ -272,6 +285,7 @@ private void writeRuntimeCommands() throws SolverException {
 				printWriter.print(" " + sampleSize.getZ());			
 			}
 		}
+		printWriter.print(" " + volumeRegionList.size());
 		printWriter.println();
 		
 		printWriter.println();
@@ -469,7 +483,7 @@ private class SelectPoint {
 }
 
 private void writeSurfacesAndCompartments() throws SolverException {
-	boolean DEBUG = false;
+	boolean DEBUG = true;
 	
 	PrintWriter tmppw = null;  
 	try {
