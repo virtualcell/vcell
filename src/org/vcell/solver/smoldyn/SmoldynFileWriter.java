@@ -132,6 +132,15 @@ public class SmoldynFileWriter extends SolverFileWriter
 		compartment_mol,
 		surface_mol,
 		mol,
+	
+//		the possible molecular states
+		up,
+		down,
+//		front,
+//		back,
+		fsoln,
+		bsoln,
+//		all,
 				
 		output_files,
 		
@@ -285,11 +294,11 @@ private void writeReactions() throws ExpressionException, MathException {
 					reactants.add(a.getVar());
 				}
 			}
-			double rateConstant = 0;
+			double macroscopicRateConstant = 0;
 			ParticleProbabilityRate ppr = pjp.getParticleProbabilityRate();
 			if(ppr instanceof MacroscopicRateConstant) {
 				try {
-					rateConstant = subsituteFlatten(((MacroscopicRateConstant) ppr).getExpression());
+					macroscopicRateConstant = subsituteFlatten(((MacroscopicRateConstant) ppr).getExpression());
 				} catch (NotAConstantException ex) {
 					throw new ExpressionException("reacion rate for jump process " + pjp.getName() + " is not a constant. Constants are required for all reaction rates");
 				}
@@ -297,23 +306,23 @@ private void writeReactions() throws ExpressionException, MathException {
 				new RuntimeException("particle probability rate not supported");
 			}
 			
-			if (rateConstant == 0) {
+			if (macroscopicRateConstant == 0) {
 				continue;
 			}
 			
 			if(subdomain instanceof CompartmentSubDomain) {
-				printWriter.print(SmoldynKeyword.reaction_cmpt);
+				printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
 			} else if (subdomain instanceof MembraneSubDomain){
-				printWriter.print(SmoldynKeyword.reaction_surface);
+				printWriter.print(SmoldynKeyword.reaction + " " + pjp.getName() + " ");
 			}
-			printWriter.print(" " + subdomain.getName() + " " + pjp.getName() + " ");
 			// reactants
 			if (reactants.size() == 0) {
 				printWriter.print(0);
 			} else {
-				printWriter.print(getVariableName(reactants.get(0)));
+				// find state for each molecule ... (up) for membrane, (fsoln) for front soluble, (bsoln) for back soluble
+				printWriter.print(getVariableName(reactants.get(0),subdomain));
 				for (int i = 1; i < reactants.size(); i ++) {
-					printWriter.print(" + " + getVariableName(reactants.get(i)));
+					printWriter.print(" + " + getVariableName(reactants.get(i),subdomain));
 				}
 			}
 			printWriter.print(" -> ");
@@ -321,19 +330,32 @@ private void writeReactions() throws ExpressionException, MathException {
 			if (products.size() == 0) {
 				printWriter.print(0);
 			} else {
-				printWriter.print(getVariableName(products.get(0)));
+				printWriter.print(getVariableName(products.get(0),subdomain));
 				for (int i = 1; i < products.size(); i ++) {
-					printWriter.print(" + " + getVariableName(products.get(i)));
+					printWriter.print(" + " + getVariableName(products.get(i),subdomain));
 				}
 			}
-			printWriter.println(" " + rateConstant);
+			printWriter.println(" " + macroscopicRateConstant);
 		}
 	}
 	printWriter.println();
 }
 
-private String getVariableName(Variable var) {
-	return var.getName();
+private String getVariableName(Variable var, SubDomain subdomain) throws MathException {
+	if (subdomain instanceof MembraneSubDomain){
+		MembraneSubDomain membrane = (MembraneSubDomain)subdomain;
+		if (var.getDomain().getName().equals(membrane.getName())){
+			return var.getName()+"("+SmoldynKeyword.up+")";
+		}else if (membrane.getInsideCompartment().getName().equals(var.getDomain().getName())){
+			return var.getName()+"("+SmoldynKeyword.bsoln+")";
+		}else if (membrane.getOutsideCompartment().getName().equals(var.getDomain().getName())){
+			return var.getName()+"("+SmoldynKeyword.fsoln+")";
+		}else{
+			throw new MathException("variable "+var.getQualifiedName()+" cannot be in a reaction on non-adjacent membrane "+subdomain.getName());
+		}
+	}else{
+		return var.getName();
+	} 
 }
 
 private void writeMolecules() throws ExpressionException, MathException {
@@ -346,7 +368,7 @@ private void writeMolecules() throws ExpressionException, MathException {
 				
 		for (ParticleProperties particleProperties : subDomain.getParticleProperties()) {
 			ArrayList<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
-			String variableName = getVariableName(particleProperties.getVariable());
+			String variableName = getVariableName(particleProperties.getVariable(),subDomain);
 			for (ParticleInitialCondition pic : particleInitialConditions) {
 				int count = 0;
 				try {
@@ -362,12 +384,17 @@ private void writeMolecules() throws ExpressionException, MathException {
 					// here count has to split between all compartments
 					if (subDomain instanceof CompartmentSubDomain) {
 						sb.append(SmoldynKeyword.compartment_mol);
+						sb.append(" " + count + " " + variableName + " " + subDomain.getName() + "\n");
 					} else if (subDomain instanceof MembraneSubDomain) {
 						sb.append(SmoldynKeyword.surface_mol); 
+						sb.append(" " + count + " " + variableName+"("+SmoldynKeyword.up+")" + " " + subDomain.getName() + "\n");
 					}
-					sb.append(" " + count + " " + variableName + " " + subDomain.getName() + "\n");
 				} else {
-					sb.append(SmoldynKeyword.mol + " " + count + " " + variableName);
+					if (subDomain instanceof CompartmentSubDomain){
+						sb.append(SmoldynKeyword.mol + " " + count + " " + variableName);
+					}else if (subDomain instanceof MembraneSubDomain) {
+						sb.append(SmoldynKeyword.mol + " " + count + " " + variableName+"("+SmoldynKeyword.up+")");
+					}
 					try {
 						if (pic.isXUniform()) {
 							sb.append(" " + pic.getLocationX().infix());					
@@ -989,7 +1016,7 @@ private void writeDiffusions() throws ExpressionBindingException,
 		SubDomain subDomain = subDomainEnumeration.nextElement();
 		List<ParticleProperties> particlePropertiesList = subDomain.getParticleProperties();
 		for (ParticleProperties pp : particlePropertiesList) {
-			String variableName = getVariableName(pp.getVariable());
+			String variableName = getVariableName(pp.getVariable(),null);
 			try {
 				double diffConstant = subsituteFlatten(pp.getDiffusion());
 				printWriter.println(SmoldynKeyword.difc + " " + variableName + " " + diffConstant);
@@ -1001,12 +1028,12 @@ private void writeDiffusions() throws ExpressionBindingException,
 	printWriter.println();
 }
 
-private void writeSpecies() {
+private void writeSpecies() throws MathException {
 	// write species
 	printWriter.println("# species declarations");
 	printWriter.print(SmoldynKeyword.species);
 	for (ParticleVariable pv : particleVariableList) {
-		printWriter.print(" " + getVariableName(pv));
+		printWriter.print(" " + getVariableName(pv,null));
 	}
 	printWriter.println();
 	printWriter.println();
