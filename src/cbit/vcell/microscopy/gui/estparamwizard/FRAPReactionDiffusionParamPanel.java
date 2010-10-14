@@ -13,21 +13,14 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
-import org.vcell.util.Compare;
 import org.vcell.util.gui.DialogUtils;
-
-import cbit.vcell.client.task.RunSims;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel.FrapChangeInfo;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel.SavedFrapModelInfo;
 import cbit.vcell.opt.Parameter;
 
+@SuppressWarnings("serial")
 public class FRAPReactionDiffusionParamPanel extends JPanel{
 
 	private JTextField complexFractionTextField;
@@ -596,48 +589,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		offRateTextField.setCaretPosition(0);
 	}
 	
-	public FrapChangeInfo createCompleteFRAPChangeInfo(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo,
-			boolean bCellROISame,boolean bBleachROISame,boolean bBackgroundROISame,boolean bROISameSize, String idxForRecovery)
-	{
-		return new FrapChangeInfo(
-				!bCellROISame || !bBleachROISame || !bBackgroundROISame,
-				!bROISameSize,
-				isFreeDiffusionRateChanged(savedFrapModelInfo),
-				getFreeDiffusionRateString(),
-				isFreeMobileFractionChanged(savedFrapModelInfo),
-				getFreeMobileFractionString(),
-				false/*isComplexDiffusionRateChanged(savedFrapModelInfo)*/,
-				""/*getComplexDiffusionRateString()*/,
-				isComplexMobileFractionChanged(savedFrapModelInfo),
-				getComplexMobileFractionString(),
-				isMonitorBleachRateChanged(savedFrapModelInfo),
-				getMonitorBleachRateString(),
-				false/*isBSConcentrationChanged(savedFrapModelInfo)*/,
-				""/*getBSConcentrationString()*/,
-				isOnRateChanged(savedFrapModelInfo),
-				getOnRateString(),
-				isOffRateChanged(savedFrapModelInfo),
-				getOffRateString(),
-				isUserStartIndexForRecoveryChanged(savedFrapModelInfo, idxForRecovery),
-				idxForRecovery);
-
-	}
-	
-		
-	public String getFullParamDescritpion()
-	{
-		String des = "";
-		Parameter[] params = getCurrentParameters();
-		if(params != null)
-		{
-			des = des + "Primary Diffusion Rate: " +params[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess() + ", Primary Fraction: " + params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess() +"\n";
-			des = des + "Complex Diffusion Rate: " +params[FRAPModel.INDEX_SECONDARY_DIFF_RATE].getInitialGuess() + ", Complex Fraction: " + params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess() +"\n";
-			des = des + "Bleach While Monitoring Rate: " +params[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess() + ", Binding site concentration: " + params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION].getInitialGuess() +"\n";
-			des = des + "Reaction On Rate: " +params[FRAPModel.INDEX_ON_RATE].getInitialGuess() + ", Reaction Off Rate: " + params[FRAPModel.INDEX_OFF_RATE].getInitialGuess() +".";
-		}
-		return des;
-	}
-	
 	public void setParameters(Parameter[] displayParameters)
 	{
 		if(displayParameters != null)
@@ -673,68 +624,4 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		repaint();
 	}
 	
-	private boolean isFreeDiffusionRateChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
-		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastFreeDiffusionrate), getFreeDiffusionRateString());
-	}
-	
-	private boolean isFreeMobileFractionChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
-		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastFreeMobileFraction), getFreeMobileFractionString());
-	}
-	
-	private boolean isComplexMobileFractionChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
-		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastComplexMobileFraction), getComplexMobileFractionString());
-	}
-	
-	private boolean isMonitorBleachRateChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
-		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastBleachWhileMonitoringRate), getMonitorBleachRateString());
-	}
-	
-	private boolean isOnRateChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
-		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.reactionOnRate), getOnRateString());
-	}
-	
-	private boolean isOffRateChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
-		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.reactionOffRate), getOffRateString());
-	}
-	
-	private boolean isUserStartIndexForRecoveryChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo, String userStartingIndexForRecovery){
-		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.startingIndexForRecovery),userStartingIndexForRecovery);
-	}
-	
-	private String getFreeDiffusionRateString(){
-		return
-			(freeDiffRateTextField.getText() == null || freeDiffRateTextField.getText().length() == 0
-				?null:freeDiffRateTextField.getText());
-	}
-	
-	private String getFreeMobileFractionString(){
-		return
-			(freeFractionTextField.getText() == null || freeFractionTextField.getText().length() == 0
-				?null:freeFractionTextField.getText());
-	}
-	
-	private String getComplexMobileFractionString(){
-		return
-			(complexFractionTextField.getText() == null || complexFractionTextField.getText().length() == 0
-				?null:complexFractionTextField.getText());
-	}
-	
-	private String getMonitorBleachRateString(){
-		return
-			(bleachWhileMonitorRateTextField.getText() == null || bleachWhileMonitorRateTextField.getText().length() == 0
-				?null:bleachWhileMonitorRateTextField.getText());
-	}
-	
-	private String getOnRateString(){
-		return
-			(onRateTextField.getText() == null || onRateTextField.getText().length() == 0
-				?null:onRateTextField.getText());
-	}
-	private String getOffRateString(){
-		return
-			(offRateTextField.getText() == null || offRateTextField.getText().length() == 0
-				?null:offRateTextField.getText());
-	}
-	
-
 }

@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Hashtable;
 
@@ -31,6 +32,7 @@ import javax.swing.undo.UndoableEdit;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.wizard.Wizard;
 
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -60,13 +62,13 @@ public class VirtualFrapMainFrame extends JFrame
 	
 	public static final boolean SAVE_COMPRESSED = true;
 	
-	public static final int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
-	public static final int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
-	public static final int appWidth = Math.min(screenWidth,1024);
-	public static final int appHeight = Math.min(screenHeight,768);
-	public static final int iniFrameLocX = (screenWidth - appWidth)/2;
-	public static final int iniFrameLocY = (screenHeight - appHeight)/2;
-	public static final Dimension INIT_WINDOW_SIZE = new Dimension(appWidth, appHeight);
+	public static final int SCREEN_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
+	public static final int SCREEN_HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
+	public static final int APP_WIDTH = Math.min(SCREEN_WIDTH,1024);
+	public static final int APP_HEIGHT = Math.min(SCREEN_HEIGHT,768);
+	public static final int INI_FRAME_LOCX = (SCREEN_WIDTH - APP_WIDTH)/2;
+	public static final int INI_FRAME_LOCY = (SCREEN_HEIGHT - APP_HEIGHT)/2;
+	public static final Dimension INIT_WINDOW_SIZE = new Dimension(APP_WIDTH, APP_HEIGHT);
 
 	private MenuHandler menuHandler = new MenuHandler();
 	private static final String VERSION_NUMBER = "VFrap 1.1";
@@ -75,7 +77,7 @@ public class VirtualFrapMainFrame extends JFrame
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
 	private static final String IMPORTFILESERIES_ACTION_COMMAND = "Import file series ...";
-	private static final String PRINT_ACTION_COMMAND = "Print";
+//	private static final String PRINT_ACTION_COMMAND = "Print";
 	private static final String EXIT_ACTION_COMMAND = "Exit";
 	private static final String HELPTOPICS_ACTION_COMMAND = "Help Topics";
 	private static final String ABOUT_ACTION_COMMAND = "About Virtual Frap";
@@ -96,7 +98,7 @@ public class VirtualFrapMainFrame extends JFrame
 	private static final JMenuItem msave = new JMenuItem(SAVE_ACTION_COMMAND,'S');
 	private static final JMenuItem msaveas = new JMenuItem(SAVEAS_ACTION_COMMAND);
 	private static final JMenuItem mfileSeries = new JMenuItem(IMPORTFILESERIES_ACTION_COMMAND);
-	private static final JMenuItem mprint = new JMenuItem(PRINT_ACTION_COMMAND);
+//	private static final JMenuItem mprint = new JMenuItem(PRINT_ACTION_COMMAND);
 	private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
 	private static final JMenuItem mabout = new JMenuItem(ABOUT_ACTION_COMMAND);
 	private static final JMenuItem mUndo = new JMenuItem(UNDO_ACTION_COMMAND);
@@ -258,13 +260,17 @@ public class VirtualFrapMainFrame extends JFrame
 		      {
 		    	  if(hviewer == null)
 		    	  {
-		    		  hviewer = new HelpViewer();
+//						SwingUtilities.invokeLater(new Runnable() {
+//							public void run() {
+//								// TODO Auto-generated method stub
+								hviewer = new HelpViewer();
+//							}
+//						});
 		    	  }
 		    	  else
 		    	  {
 		    		  hviewer.setVisible(true);
 		    	  }
-		    		  
 		    		
 		      }
 		      else if(arg.equals(ABOUT_ACTION_COMMAND))
@@ -387,7 +393,7 @@ public class VirtualFrapMainFrame extends JFrame
     
     //set window size
     setSize(INIT_WINDOW_SIZE);
-    setLocation(iniFrameLocX, iniFrameLocY);
+    setLocation(INI_FRAME_LOCX, INI_FRAME_LOCY);
     
     updateStatus("This is the main frame of Virtual Frap.");
     //to handle the close button of the frame

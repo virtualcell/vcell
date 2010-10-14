@@ -1,6 +1,5 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -11,18 +10,14 @@ import java.awt.event.ActionListener;
 import java.util.Hashtable;
 
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
@@ -32,19 +27,16 @@ import javax.swing.event.UndoableEditListener;
 
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.plot.PlotPane;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.ProfileData;
-import cbit.vcell.model.gui.ParameterPanel;
 import cbit.vcell.opt.Parameter;
 
+@SuppressWarnings("serial")
 public class FRAPDiffTwoParamPanel extends JPanel {
 	
 	
@@ -154,7 +146,6 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 						try{
 							double primaryFrac = Double.parseDouble(mobileFractionTextField.getText());
 							double secFrac = Double.parseDouble(secondMobileFracTextField.getText());
-							double immFrac = Double.parseDouble(immoFracValueLabel.getText());
 							
 							double[] adjustedVals = adjustMobileFractions(primaryFrac, secFrac, isSetPrimaryMFrac);
 							//primary				
@@ -222,7 +213,6 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 					//get mobile fractions
 					double primaryMFrac = Double.parseDouble(mobileFractionTextField.getText());
 					double secondMFrac = Double.parseDouble(secondMobileFracTextField.getText());
-					double immMFrac = Double.parseDouble(immoFracValueLabel.getText());
 					double[] adjustedVals = adjustMobileFractions(primaryMFrac, secondMFrac, isSetPrimaryMFrac);
 					
 //					if(e.getSource() == diffusionRateSetButton){
@@ -692,7 +682,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		evaluationButton.setToolTipText("Get confidence intervals for each parameter based on confidence level");
 		evaluationButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				evaluateParameters();
+				showParameterEvaluation();
 			}
 		});
 		buttonPanel.add(evaluationButton);
@@ -947,7 +937,7 @@ public class FRAPDiffTwoParamPanel extends JPanel {
 		return fitData;
 	}
 	
-	public void evaluateParameters()
+	public void showParameterEvaluation()
 	{
 		
 		AsynchClientTask evaluateTask = new AsynchClientTask("Prepare to evaluate parameters ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 

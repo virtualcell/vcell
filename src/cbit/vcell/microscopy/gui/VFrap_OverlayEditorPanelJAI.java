@@ -17,9 +17,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Hashtable;
 
@@ -29,9 +26,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -46,26 +41,23 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
+import loci.formats.IFormatReader;
+import loci.formats.ImageReader;
+import loci.formats.gui.AWTImageTools;
+import loci.formats.gui.BufferedImageReader;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
-import org.vcell.util.gui.ZEnforcer;
 
-import loci.formats.IFormatReader;
-import loci.formats.ImageReader;
-import loci.formats.gui.AWTImageTools;
-import loci.formats.gui.BufferedImageReader;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.microscopy.VFrap_ROISourceData;
-import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */
@@ -169,9 +161,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		}
 		public String getROIName(){
 			return roiName;
-		}
-		public boolean isEditable(){
-			return bEdit;
 		}
 		public String toString(){
 			return getROIName();
@@ -1121,7 +1110,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		int x = (int)(inx/zoom);
 		int y = (int)(iny/zoom);
 		UShortImage[] images = imageDataset.getAllImages();
-		int ndx = getImageIndex();
 		sb.setLength(0);
 		boolean bMultipleZ = imageDataset.getSizeZ() > 1;
 		if (bMultipleZ) {

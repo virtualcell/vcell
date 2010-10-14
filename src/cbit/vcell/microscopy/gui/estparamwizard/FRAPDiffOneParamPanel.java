@@ -1,6 +1,5 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -8,44 +7,34 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.plot.Plot2DPanel;
-import cbit.plot.PlotPane;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.ProfileData;
-import cbit.vcell.microscopy.ProfileDataElement;
 import cbit.vcell.opt.Parameter;
 
+@SuppressWarnings("serial")
 public class FRAPDiffOneParamPanel extends JPanel
 {
 	private final JLabel immoFracValueLabel;
@@ -82,7 +71,6 @@ public class FRAPDiffOneParamPanel extends JPanel
 	private final ChangeListener OPTIMIZER_SLIDER_CHANGE_LISTENER =
 		new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
-				boolean isSetPrimaryMFrac = true;
 				if(e.getSource() == diffusionRateSlider){
 					double value =
 						FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound()+
@@ -118,8 +106,6 @@ public class FRAPDiffOneParamPanel extends JPanel
 						isExecuting = true;
 						try{
 							double primaryFrac = Double.parseDouble(mobileFractionTextField.getText());
-							double immFrac = Double.parseDouble(immoFracValueLabel.getText());
-							
 							double[] adjustedVals = adjustMobileFractions(primaryFrac);
 							//primary				
 							double value = adjustedVals[0];
@@ -156,11 +142,9 @@ public class FRAPDiffOneParamPanel extends JPanel
 					diffusionRateSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 					mobileFractionSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 					bleachWhileMonitorSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
-					boolean isSetPrimaryMFrac = true;
 					
 					//get mobile fractions
 					double primaryMFrac = Double.parseDouble(mobileFractionTextField.getText());
-					double immMFrac = Double.parseDouble(immoFracValueLabel.getText());
 					double[] adjustedVals = adjustMobileFractions(primaryMFrac);
 					
 //					if(e.getSource() == diffusionRateSetButton){
@@ -299,7 +283,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 		evaluationButton.setToolTipText("Get confidence intervals for each parameter based on confidence level");
 		evaluationButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				evaluateParameters();
+				showParameterEvaluation();
 			}
 		});
 		
@@ -528,7 +512,7 @@ public class FRAPDiffOneParamPanel extends JPanel
 		return errMsg;
 	}
 	
-	public void evaluateParameters()
+	public void showParameterEvaluation()
 	{
 		
 		AsynchClientTask evaluateTask = new AsynchClientTask("Prepare to evaluate parameters ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 

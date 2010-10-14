@@ -71,7 +71,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	
 	public static final boolean SAVE_COMPRESSED = true;
 	//divider location actually is relatively based on the top-left point(as 0,0) of the app window(not the screen window)
-	public static final int iniDividerLocation = (VirtualFrapMainFrame.appHeight*2)/3;
+	public static final int iniDividerLocation = (VirtualFrapMainFrame.APP_HEIGHT*2)/3;
 
 	private BatchRunMenuHandler menuHandler = new BatchRunMenuHandler();
 	
@@ -270,8 +270,8 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	    enableSave(false);
 	    
 	    //set window size
-	    setSize(VirtualFrapMainFrame.appWidth, VirtualFrapMainFrame.appHeight);
-	    setLocation(VirtualFrapMainFrame.iniFrameLocX, VirtualFrapMainFrame.iniFrameLocY);
+	    setSize(VirtualFrapMainFrame.APP_WIDTH, VirtualFrapMainFrame.APP_HEIGHT);
+	    setLocation(VirtualFrapMainFrame.INI_FRAME_LOCX, VirtualFrapMainFrame.INI_FRAME_LOCY);
 	    updateStatus("Virtual Frap batch run interface.");
 		
 	    //to handle the close button of the frame
