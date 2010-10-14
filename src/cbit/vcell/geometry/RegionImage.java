@@ -12,6 +12,7 @@ import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
+import cbit.vcell.render.Vect3d;
 /*�
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -865,9 +866,12 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 				xSurfElements,ySurfElements,zSurfElements,
 				dimension, extent, origin);
 	}
+	
+	if (surfaceCollection != null){
+		correctQuadVertexOrdering();
+	}
 	//System.out.println("----------create surface time "+((System.currentTimeMillis()-startTime)/1000.0));
 	//startTime = System.currentTimeMillis();
-	
 	//Taubin smoothing
 	if (surfaceCollection != null && filterCutoffFrequency<RegionImage.NO_SMOOTHING){
 		TaubinSmoothing taubinSmoothing = new TaubinSmoothingWrong();
@@ -879,6 +883,79 @@ private void calculateRegions_New(VCImage vcImage,int dimension,Extent extent, O
 
 //	System.out.println("Total Num Regions = "+regionsV.size());
 //	System.out.println("Total Size = "+totalSize);
+}
+
+private void correctQuadVertexOrdering() {
+	for (int s=0;s<surfaceCollection.getSurfaceCount();s++){
+		Surface surface = surfaceCollection.getSurfaces(s);
+		for (int p=0;p<surface.getPolygonCount();p++){
+			Quadrilateral quad = (Quadrilateral)surface.getPolygons(p);
+			
+			// average the polygon vertices to get the center of the quad
+			// this is also halfway between the coordinates of the inside and outside volume elements.
+			cbit.vcell.geometry.surface.Node[] nodes = quad.getNodes();
+			double centerx = (nodes[0].getX() + nodes[1].getX() + nodes[2].getX() + nodes[3].getX())/4.0;
+			double centery = (nodes[0].getY() + nodes[1].getY() + nodes[2].getY() + nodes[3].getY())/4.0;
+			double centerz = (nodes[0].getZ() + nodes[1].getZ() + nodes[2].getZ() + nodes[3].getZ())/4.0;
+			// have normal go in direction from low region index to high region index
+			int lowVolIndex = quad.getVolIndexNeighbor1();
+			int hiVolIndex = quad.getVolIndexNeighbor2();
+			if (getRegionInfoFromOffset(lowVolIndex).getRegionIndex() > getRegionInfoFromOffset(hiVolIndex).getRegionIndex()){
+				int temp = lowVolIndex;
+				lowVolIndex = hiVolIndex;
+				hiVolIndex = temp;
+			}
+			Vect3d v0 = new Vect3d(nodes[0].getX(),nodes[0].getY(),nodes[0].getZ());
+			Vect3d v1 = new Vect3d(nodes[1].getX(),nodes[1].getY(),nodes[1].getZ());
+			Vect3d v2 = new Vect3d(nodes[2].getX(),nodes[2].getY(),nodes[2].getZ());
+			Vect3d v3 = new Vect3d(nodes[3].getX(),nodes[3].getY(),nodes[3].getZ());
+			int volNormalDiff = hiVolIndex - lowVolIndex;
+			Vect3d v01 = Vect3d.sub(v1, v0);
+			Vect3d v02 = Vect3d.sub(v2, v0);
+			Vect3d unit012 = v01.cross(v02);
+			unit012.unit();
+			Vect3d v03 = Vect3d.sub(v3, v0);
+			Vect3d unit023 = v02.cross(v03);
+			unit023.unit();
+			Vect3d gridNormal = null;
+			if (volNormalDiff==1){
+				// y-z plane, normal is [1 0 0]
+				gridNormal = new Vect3d(1,0,0);
+			}else if (volNormalDiff==-1){
+				// y-z plane, normal is [-1 0 0]
+				gridNormal = new Vect3d(-1,0,0);
+			}else if (volNormalDiff==getNumX()){
+				// y-z plane, normal is [0 1 0]
+				gridNormal = new Vect3d(0,1,0);
+			}else if (volNormalDiff==-getNumX()){
+				// y-z plane, normal is [0 -1 0]
+				gridNormal = new Vect3d(0,-1,0);
+			}else if (volNormalDiff==getNumX()*getNumY()){
+				// y-z plane, normal is [0 0 1]
+				gridNormal = new Vect3d(0,0,1);
+			}else if (volNormalDiff==-getNumX()*getNumY()){
+				// y-z plane, normal is [0 0 -1]
+				gridNormal = new Vect3d(0,0,-1);
+			}
+			if (Math.abs(unit012.dot(unit023)-1.0)>1e-8){
+				System.out.println("");
+				System.out.println("two triangles contradicted themselves");
+				System.out.println("normal_012 = ["+unit012.getX()+" "+unit012.getY()+" "+unit012.getZ()+"]");
+				System.out.println("normal_023 = ["+unit023.getX()+" "+unit023.getY()+" "+unit023.getZ()+"]");
+				System.out.println("gridNormal = ["+gridNormal.getX()+" "+gridNormal.getY()+" "+gridNormal.getZ()+"]");
+				System.out.println("");
+			}else if (Math.abs(unit012.dot(gridNormal)-1.0)>1e-8){
+				System.out.println("");
+				System.out.println("triangles contradict grid normal");
+				System.out.println("normal_012 = ["+unit012.getX()+" "+unit012.getY()+" "+unit012.getZ()+"]");
+				System.out.println("normal_023 = ["+unit023.getX()+" "+unit023.getY()+" "+unit023.getZ()+"]");
+				System.out.println("gridNormal = ["+gridNormal.getX()+" "+gridNormal.getY()+" "+gridNormal.getZ()+"]");
+				System.out.println("");
+			}else{
+				System.out.println("normals ok");
+			}
+		}
+	}	
 }
 
 private void generateSurfaceCollection(int numRegions,
