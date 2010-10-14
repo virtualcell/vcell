@@ -387,7 +387,7 @@ private void writeMolecules() throws ExpressionException, MathException {
 						sb.append(" " + count + " " + variableName + " " + subDomain.getName() + "\n");
 					} else if (subDomain instanceof MembraneSubDomain) {
 						sb.append(SmoldynKeyword.surface_mol); 
-						sb.append(" " + count + " " + variableName+"("+SmoldynKeyword.up+")" + " " + subDomain.getName() + "\n");
+						sb.append(" " + count + " " + variableName + " " + subDomain.getName() + " " + SmoldynKeyword.all + " " + SmoldynKeyword.all + "\n");
 					}
 				} else {
 					if (subDomain instanceof CompartmentSubDomain){
