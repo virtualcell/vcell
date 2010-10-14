@@ -2,11 +2,9 @@ package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -15,7 +13,6 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
@@ -26,15 +23,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.AbstractUndoableEdit;
@@ -54,7 +48,6 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
@@ -63,9 +56,7 @@ import cbit.image.ImagePaneModel;
 import cbit.rmi.event.ExportEvent;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.data.NewClientPDEDataContext;
 import cbit.vcell.client.data.OutputContext;
@@ -84,26 +75,25 @@ import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
 import cbit.vcell.microscopy.ProfileData;
 import cbit.vcell.microscopy.gui.choosemodelwizard.ChooseModel_ModelTypesDescriptor;
-import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BackgroundROIDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BleachedROIDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_CellROIDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_CropDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_Panel;
+import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorDescriptor;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_SummaryDescriptor;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_CompareResultsDescriptor;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentDescriptor;
@@ -117,19 +107,16 @@ import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryDescriptor;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.MergedData;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.VCData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 
+@SuppressWarnings("serial")
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	public static final String FRAPSTUDYPANEL_TABNAME_IMAGES = "Images";
@@ -168,26 +155,32 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private static final String REACTION_RATE_PREFIX = "J_";
 	public static final String NORM_FLUOR_VAR = "Exp_norm_fluor";
 	public static final String NORM_SIM_VAR = "Sim_norm_fluor";
-		
+	
+	enum DisplayChoice { PDE,EXTTIMEDATA};
+	
+	public static final int CURSOR_CELLROI = 0;
+	public static final int CURSOR_BLEACHROI = 1;
+	public static final int CURSOR_BACKGROUNDROI = 2;
+	public static final Cursor[] ROI_CURSORS = new Cursor[]{
+		Cursor.getDefaultCursor(),
+		Cursor.getDefaultCursor(),
+		Cursor.getDefaultCursor()
+	};
+	
 	private FRAPSingleWorkspace frapWorkspace = null;
 	private FRAPDataPanel frapDataPanel = null;
 	private LocalWorkspace localWorkspace = null;
 	private JPanel leftPanel = null;
 	private AnalysisProcedurePanel analysisProcedurePanel = null;
 	private ResultDisplayPanel analysisRestultsPanel = null;
-	private FRAPParametersPanel frapParametersPanel = null;
 	
 	private JButton showMovieButton = null;
 	private JPanel simResultsViewPanel = null;
-	private PDEDataViewer pdeDataViewer = null;
-	private PDEDataViewer flourDataViewer = null;
 	private JPanel fitSpatialModelPanel = null;
 	private FRAPSimDataViewerPanel frapSimDataViewerPanel = null;
 	//to store movie file info. movie file will be refreshed after each simulation run.
 	private String movieURLString = null;
 	private String movieFileString = null;
-	
-	private boolean isSetTabIdxFromSpatialAnalysis = false;
 	
 	//wizards created for new VFRAP version
 	private Wizard loadFRAPDataWizard = null;
@@ -306,12 +299,54 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			  			ISize lastImgISize = (lastCellROI == null? null:lastCellROI.getISize());
 			  			//start index for recovery
 	  	   				Integer oldStartIndexForRecovery = fStudy.getStartingIndexForRecovery();
+	  	   				//get old selected ROIs
+	  	   				boolean[] oldSelectedROIs = null;
+	  	   				if(fStudy.getSelectedROIsForErrorCalculation()!= null)
+	  	   				{
+	  	   					oldSelectedROIs = new boolean[fStudy.getSelectedROIsForErrorCalculation().length];
+		  	   				for(int i=0; i<fStudy.getSelectedROIsForErrorCalculation().length; i++)
+		  	   				{
+		  	   					oldSelectedROIs[i] = fStudy.getSelectedROIsForErrorCalculation()[i];
+		  	   				}
+	  	   				}
 	  	   				//show wizard
 	  	   			    roiWizard.showModalDialog(new Dimension(600,670));
 	  	   			    
 		  	   			if(roiWizard.getReturnCode() == Wizard.FINISH_RETURN_CODE)
 	  	   				{
 		  	   				FRAPStudy newFrapStudy = getFrapWorkspace().getWorkingFrapStudy();
+		  	   				
+		  	   			    //check if selected ROIs have changed
+	  	   					boolean selectedROIsChanged = false;
+	  	   					boolean[] newSelectedROIs = newFrapStudy.getSelectedROIsForErrorCalculation();
+	  	   					if((oldSelectedROIs != null && newSelectedROIs ==null) ||
+	  	   					   (oldSelectedROIs == null && newSelectedROIs !=null))
+	  	   					{
+	  	   						selectedROIsChanged = true;
+	  	   					}
+	  	   					else if(oldSelectedROIs != null && newSelectedROIs != null)
+	  	   					{	
+		  	   					if(oldSelectedROIs.length != newSelectedROIs.length)
+		  	   					{
+		  	   						selectedROIsChanged = true;
+		  	   					}
+		  	   					else
+		  	   					{
+			  	   					for(int i=0; i<FRAPData.VFRAP_ROI_ENUM.values().length; i++)
+		  	   						{
+	  	   								if(oldSelectedROIs[i] != newSelectedROIs[i])
+	  	   								{
+	  	   									selectedROIsChanged = true;
+	  	   									break;
+	  	   								}
+		  	   						}
+		  	   					}
+	  	   					}
+		  	   				if(selectedROIsChanged)
+		  	   				{
+		  	   				    //set need save flag
+	  	   						getFrapWorkspace().getWorkingFrapStudy().setSaveNeeded(true);
+		  	   				}
 		  	   				//check if one of images/rois/starting index for recovery is chaged. if so, rerun ref simulation by setting frapoptdata and storedrefdata to null.
 	  	   					if(!Compare.isEqualOrNull(lastCellROI,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name())) ||
 	  	   					   !Compare.isEqualOrNull(lastBleachROI,newFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name())) ||
@@ -368,16 +403,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   				{
 	  	   					oldSelectedModelsArr[i]=fStudy.getSelectedModels().get(i).intValue();
 	  	   				}
-	  	   				//get old selected ROIs
-	  	   				boolean[] oldSelectedROIs = null;
-	  	   				if(fStudy.getSelectedROIsForErrorCalculation()!= null)
-	  	   				{
-	  	   					oldSelectedROIs = new boolean[fStudy.getSelectedROIsForErrorCalculation().length];
-		  	   				for(int i=0; i<fStudy.getSelectedROIsForErrorCalculation().length; i++)
-		  	   				{
-		  	   					oldSelectedROIs[i] = fStudy.getSelectedROIsForErrorCalculation()[i];
-		  	   				}
-	  	   				}
+	  	   				
 	  	   				//show dialog
 	  	   				modelTypeWizard.showModalDialog(new Dimension(550,420));
 	  	   				
@@ -410,34 +436,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	  	   							}
 	  	   						}
 	  	   					}
-	  	   					//check if selected ROIs have changed
-	  	   					boolean selectedROIsChanged = false;
-	  	   					boolean[] newSelectedROIs = fStudy.getSelectedROIsForErrorCalculation();
-	  	   					if((oldSelectedROIs != null && newSelectedROIs ==null) ||
-	  	   					   (oldSelectedROIs == null && newSelectedROIs !=null))
-	  	   					{
-	  	   						selectedROIsChanged = true;
-	  	   					}
-	  	   					else if(oldSelectedROIs != null && newSelectedROIs != null)
-	  	   					{	
-		  	   					if(oldSelectedROIs.length != newSelectedROIs.length)
-		  	   					{
-		  	   						selectedROIsChanged = true;
-		  	   					}
-		  	   					else
-		  	   					{
-			  	   					for(int i=0; i<FRAPData.VFRAP_ROI_ENUM.values().length; i++)
-		  	   						{
-	  	   								if(oldSelectedROIs[i] != newSelectedROIs[i])
-	  	   								{
-	  	   									selectedROIsChanged = true;
-	  	   									break;
-	  	   								}
-		  	   						}
-		  	   					}
-	  	   					}
 	  	   					//set need save flag
-	  	   					if(modelsChanged || selectedROIsChanged)
+	  	   					if(modelsChanged)
 	  	   					{
 	  	   						fStudy.setSaveNeeded(true);
 	  	   					}
@@ -500,167 +500,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	    }
 	}
 	
-	enum DisplayChoice { PDE,EXTTIMEDATA};
-
-	private static final int USER_CHANGES_FLAG_ALL = 0xFFFFFFFF;
-	private static final int USER_CHANGES_FLAG_ROI = 0x01;
-	private static final int USER_CHANGES_FLAG_INI_PARAMS = 0x02;
-	private static final int USER_CHANGES_FLAG_ADJUST_PARAMS = 0x04;
-	
-	//Elements that change the Model
-	public static class FrapChangeInfo{
-		public final boolean bROIValuesChanged;
-		public final boolean bROISizeChanged;
-		public final boolean bFreeDiffRateChanged;
-		public final String freeDiffRateString;
-		public final boolean bFreeMFChanged;
-		public final String freeMFString;
-		public final boolean bComplexDiffRateChanged;
-		public final String complexDiffRateString;
-		public final boolean bComplexMFChanged;
-		public final String complexMFString;
-		public final boolean bBleachWhileMonitorChanged;
-		public final String bleachWhileMonitorRateString;
-		public final boolean bBSConcentrationChanged;
-		public final String bsConcentrationString;
-		public final boolean bOnRateChanged;
-		public final String onRateString;
-		public final boolean bOffRateChanged;
-		public final String offRateString;
-		public final boolean bStartIndexForRecoveryChanged;
-		public final String startIndexForRecoveryString;
-		public FrapChangeInfo(boolean bROIValuesChanged,boolean bROISizeChanged,
-				boolean bFreeDiffRateChanged,String freeDiffRateString,
-				boolean bFreeMFChanged,String freeMFString,
-				boolean bComplexDiffRateChanged,String complexDiffRateString,
-				boolean bComplexMFChanged,String complexMFString,
-				boolean bBleachWhileMonitorChanged,String bleachWhileMonitorRateString,
-				boolean bBSConcentrationChanged, String bsConcentrationString,
-				boolean bOnRateChanged, String onRateString,
-				boolean bOffRateChanged, String offRateString,
-				boolean bStartIndexForRecoveryChanged,String startIndexForRecoveryString)
-		{
-			this.bROIValuesChanged = bROIValuesChanged;
-			this.bROISizeChanged = bROISizeChanged;
-			this.bFreeDiffRateChanged = bFreeDiffRateChanged;
-			this.freeDiffRateString = freeDiffRateString;
-			this.bFreeMFChanged = bFreeMFChanged;
-			this.freeMFString = freeMFString;
-			this.bComplexDiffRateChanged = bComplexDiffRateChanged;
-			this.complexDiffRateString = complexDiffRateString;
-			this.bComplexMFChanged = bComplexMFChanged;
-			this.complexMFString = complexMFString;
-			this.bBleachWhileMonitorChanged = bBleachWhileMonitorChanged;
-			this.bleachWhileMonitorRateString = bleachWhileMonitorRateString;
-			this.bBSConcentrationChanged = bBSConcentrationChanged;
-			this.bsConcentrationString = bsConcentrationString;
-			this.bOnRateChanged = bOnRateChanged;
-			this.onRateString = onRateString;
-			this.bOffRateChanged = bOffRateChanged;
-			this.offRateString = offRateString;
-			this.bStartIndexForRecoveryChanged = bStartIndexForRecoveryChanged;
-			this.startIndexForRecoveryString = startIndexForRecoveryString;
-			//Don't forget to change 'hasAnyChanges' if adding new parameters
-		}
-		
-		public boolean hasAnyChanges(){
-			return bROIValuesChanged || bROISizeChanged ||
-				bFreeDiffRateChanged || bFreeMFChanged ||
-				bComplexDiffRateChanged || bComplexMFChanged ||
-				bBleachWhileMonitorChanged || bBSConcentrationChanged ||
-				bOnRateChanged || bOffRateChanged ||
-				bStartIndexForRecoveryChanged;
-		}
-		public boolean hasStartingIdxChanged()
-		{
-			return bStartIndexForRecoveryChanged;
-		}
-		public boolean hasROIChanged(){
-			return bROISizeChanged || bROIValuesChanged;
-		}
-		
-		public String getChangeDescription(){
-			return
-			(bROIValuesChanged?"(Cell,Bleach or Backgroung ROI)":" ")+
-			(bROISizeChanged?"(Data Dimension)":" ")+
-			(bFreeDiffRateChanged?"(Free Particle Diffusion Rate)":" ")+
-			(bFreeMFChanged?"(Free Particle Mobile Fraction)":" ")+
-			(bComplexDiffRateChanged?"(Binding Complex Diffusion Rate)":" ")+
-			(bComplexMFChanged?"(Binding Complex Mobile Fraction)":" ")+
-			(bBleachWhileMonitorChanged?"(BleachWhileMonitoring Rate)":" ")+
-			(bBSConcentrationChanged?"(Binding Complex Concentration)":" ")+
-			(bOnRateChanged?"(Reaction On Rate)":" ")+
-			(bOffRateChanged?"(Reaction Off Rate)":" ")+
-			(bStartIndexForRecoveryChanged?"(Start Index for Recovery)":" ");
-		}
-		public String getROIOrStartingIdxChangeInfo(){
-			return
-			(bROIValuesChanged?"Cell,Bleach or Backgroung ROI":" ")+
-			(bROISizeChanged?"Data Dimension":" ")+
-			(bStartIndexForRecoveryChanged?"Start Index for Recovery":" ");
-		}
-		
-	};
-	public static class SavedFrapModelInfo{
-		public final KeyValue savedSimKeyValue;
-		public final ROI lastCellROI;
-		public final ROI lastBleachROI;
-		public final ROI lastBackgroundROI;
-		public final String lastFreeDiffusionrate;
-		public final String lastFreeMobileFraction;
-		public final String lastComplexDiffusionRate;
-		public final String lastComplexMobileFraction;
-		public final String lastBleachWhileMonitoringRate;
-		public final String lastBSConcentration;
-		public final String reactionOnRate;
-		public final String reactionOffRate;
-		public final String startingIndexForRecovery;
-		public SavedFrapModelInfo(
-			KeyValue savedSimKeyValue,
-			ROI cellROI,
-			ROI bleachROI,
-			ROI backgroundROI,
-			String freeDiffusionrate,
-			String freeMobileFraction,
-			String complexDiffusionRate,
-			String complexMobileFraction,
-			String bleachWhileMonitoringRate,
-			String bsConcentration,
-			String onRate,
-			String offRate,
-			String startingIndexForRecovery)
-		{
-//			if(savedSimKeyValue == null){
-//				throw new IllegalArgumentException("SimKey cannot be null for a saved FrapModel.");
-//			}
-			this.savedSimKeyValue = savedSimKeyValue;
-			this.lastCellROI = cellROI;
-			this.lastBleachROI = bleachROI;
-			this.lastBackgroundROI = backgroundROI;
-			this.lastFreeDiffusionrate = freeDiffusionrate;
-			this.lastFreeMobileFraction = freeMobileFraction;
-			this.lastComplexDiffusionRate = complexDiffusionRate;
-			this.lastComplexMobileFraction = complexMobileFraction;
-			this.lastBleachWhileMonitoringRate = bleachWhileMonitoringRate;
-			this.lastBSConcentration = bsConcentration;
-			this.reactionOnRate = onRate;
-			this.reactionOffRate = offRate;
-			this.startingIndexForRecovery = startingIndexForRecovery;
-		}
-	};
-	private FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfoNew2 = null;
-
-	public static final int CURSOR_CELLROI = 0;
-	public static final int CURSOR_BLEACHROI = 1;
-	public static final int CURSOR_BACKGROUNDROI = 2;
-	public static final Cursor[] ROI_CURSORS = new Cursor[]{
-		Cursor.getDefaultCursor(),
-		Cursor.getDefaultCursor(),
-		Cursor.getDefaultCursor()
-	};
-	
-	private UndoableEditSupport undoableEditSupport =
-		new UndoableEditSupport();
+	private UndoableEditSupport undoableEditSupport = new UndoableEditSupport();
 	
 	public static final UndoableEdit CLEAR_UNDOABLE_EDIT =
 		new AbstractUndoableEdit(){
@@ -701,17 +541,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		getFRAPDataPanel().getOverlayEditorPanelJAI().setUndoableEditSupport(undoableEditSupport);
 	}	
 	
-	public void setSavedFrapModelInfo(SavedFrapModelInfo savedFrapModelInfo) throws Exception{
-		try{
-			undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		savedFrapModelInfoNew2 = savedFrapModelInfo;
-	}
-	private SavedFrapModelInfo getSavedFrapModelInfo(){
-		return savedFrapModelInfoNew2;
-	}
 	public static void loadROICursors(){
 		for (int i = 0; i < ROI_CURSORS.length; i++) {
 			URL cursorImageURL = null;
@@ -869,49 +698,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return frapSimDataViewerPanel;
 	}
 	
-	private void checkROIExsitence()throws Exception
-	{
-		FRAPData frapData = getFrapWorkspace().getWorkingFrapStudy().getFrapData();
-		ROI cellROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
-		ROI bleachROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name());
-		ROI bgROI = frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
-		String msg = "";
-		if(cellROI.getNonzeroPixelsCount()<1)
-		{
-			msg = msg + "Cell ROI,";
-		}
-		if(bleachROI.getNonzeroPixelsCount()<1)
-		{
-			msg = msg + "Bleached ROI,";
-		}
-		if(bgROI.getNonzeroPixelsCount()<1)
-		{
-			msg = msg + "Background ROI,";
-		}
-		if(!msg.equals(""))
-		{
-			msg = msg.substring(0, msg.length()-1)+" have to be defined before performing any analysis.";
-			throw new  Exception(msg);
-		}
-	}
-	
-	private void checkStartIndexforRecovery() throws Exception{
-		FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
-	}
-	
-	
-	/**
-	 * Changed in Feb, 2008. GridBagLayout to BorderLayout.
-	 * Set splitPane and put MultisourcePlotPane on top and the scrollText, equation and radio button at bottom	
-	 * @return javax.swing.JPanel	
-	 */
-	private FRAPParametersPanel getFRAPParametersPanel() {
-		if (frapParametersPanel == null) {
-			frapParametersPanel = new FRAPParametersPanel();
-		}
-		return frapParametersPanel;
-	}
-
 	/**
 	 * This method initializes fitSpatialModelPanel	
 	 * 	
@@ -1141,18 +927,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		
 		return new AsynchClientTask[]{beforeSaveTask, saveTask, afterSaveAsTask};
 	}
-	private void applyUserChangesToCurrentFRAPStudy(int applyUserChangeFlags) throws Exception{
-		if((applyUserChangeFlags&USER_CHANGES_FLAG_ROI) != 0){
-			getFRAPDataPanel().saveROI();
-		}
-		if((applyUserChangeFlags&USER_CHANGES_FLAG_INI_PARAMS) != 0){
-			getFRAPParametersPanel().insertFRAPIniModelParametersIntoFRAPStudy(getFrapWorkspace().getWorkingFrapStudy());	
-		}
-		if((applyUserChangeFlags&USER_CHANGES_FLAG_ADJUST_PARAMS) != 0){
-//			getResultsSummaryPanel().insertPureDiffusionParametersIntoFRAPStudy(getFrapWorkspace().getFrapStudy());
-		}
-	}
-	
+
 	private void saveProcedure(File xmlFrapFile, boolean bSaveAs, ClientTaskStatusSupport progressListener) throws Exception
 	{
 		if(bSaveAs)
@@ -1296,6 +1071,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							}
 							//run ref sim
 							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, localWorkspace, this.getClientTaskStatusSupport()));
+							fStudy.setSaveNeeded(true);
 						}
 					}
 				}
@@ -1321,6 +1097,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
 								Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
 								fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(bestParameters);
+								fStudy.setSaveNeeded(true);
 							}
 						}
 						else if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
@@ -1331,6 +1108,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
 								Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
 								fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
+								fStudy.setSaveNeeded(true);
 							}
 						}
 					}
@@ -1365,6 +1143,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								{
 								    profileData = fStudy.getFrapOptData().evaluateParameters(currentParams, this.getClientTaskStatusSupport());
 								    fStudy.setProfileData_oneDiffComponent(profileData);
+								    fStudy.setSaveNeeded(true);
 								}
 							}
 						}
@@ -1384,6 +1163,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								{
 								    profileData = fStudy.getFrapOptData().evaluateParameters(currentParams, this.getClientTaskStatusSupport());
 								    fStudy.setProfileData_twoDiffComponents(profileData);
+								    fStudy.setSaveNeeded(true);
 								}
 							}
 						}

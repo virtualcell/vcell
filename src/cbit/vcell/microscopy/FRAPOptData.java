@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.swing.border.EtchedBorder;
-
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
@@ -19,12 +17,8 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.microscopy.gui.estparamwizard.ConfidenceIntervalPlotPanel;
-import cbit.vcell.microscopy.gui.estparamwizard.ProfileDataPanel;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -304,6 +298,27 @@ public class FRAPOptData {
 					                                              measurementErrors,
 					                                              fixedParam,
 					                                              bApplyMeasurementError);
+			
+			//uncomment for debug. The following code is to test if the error calculation functions correctly.
+			//compare error calculated by one diff rate and another error with second diff rate and fraction both as 0s, we should get the same errors.
+//			double[] paramVals2 = new double[FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF];
+//			for(int i=0; i<newParamVals.length; i++)
+//			{
+//				paramVals2[i] = newParamVals[i];
+//			}
+//			
+//			double error2 = FRAPOptimization.getErrorByNewParameters_twoDiffRates(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
+//																  paramVals2,
+//																  getDimensionReducedRefData(null, null),
+//																  getDimensionReducedExpData(),
+//																  refDataTimePoints,
+//																  getReducedExpTimePoints(),
+//																  getExpFrapStudy().getFrapData().getROILength(),
+//																  eoi,
+//																  measurementErrors,
+//																  fixedParam,
+//																  bApplyMeasurementError);
+//			System.out.println("error: " + error + "   error2: " + error2);
 		}
 		else if((getNumEstimatedParams() + numberFixedParam) == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
 		{
@@ -354,7 +369,6 @@ public class FRAPOptData {
 			if(roi != null)
 			{
 				short[] roiData = roi.getPixelsXYZ();
-				int roiCount = roi.getNonzeroPixelsCount();
 				for(int timeIdx = startIndexRecovery; timeIdx < timeStamp.length; timeIdx++)
 				{
 					short[] rawTimeData = AnnotatedImageDataset.collectAllZAtOneTimepointIntoOneArray(imgDataset, timeIdx);
@@ -718,40 +732,6 @@ public class FRAPOptData {
 		return outputParams;
 	}
 	
-	private void checkValidityOfRefData() throws Exception 
-	{
-		double[] portion = new double[]{0.8, 0.9};
-		double[][] refData = getDimensionReducedRefData(null, null);
-		double[] refTimePoints = FRAPOptimization.timeReduction(refDataTimePoints, getExpFrapStudy().getStartingIndexForRecovery());
-		for(int i = 0 ; i < getExpFrapStudy().getFrapData().getROILength(); i++)
-		{
-			for(int k = 0 ; k < portion.length; k++)
-			{
-				int startingTimeIndex = (int)Math.round(refTimePoints.length * portion[k]);
-				double max = 0;
-				double avg = 0;
-				double std = 0;
-				for(int j = startingTimeIndex; j < (refTimePoints.length); j++ )
-				{
-					if(refData[i][j] > max)
-					{
-						max = refData[i][j];
-					}
-					avg = avg + refData[i][j];
-				}
-				avg = avg / (refTimePoints.length - startingTimeIndex);
-				for(int j = startingTimeIndex; j < (refTimePoints.length); j++ )
-				{
-					std = std + (refData[i][j] - avg)*(refData[i][j] - avg);
-				}
-				std = Math.sqrt(std);
-				System.out.println("In ROI Name " + getExpFrapStudy().getFrapData().getRois()[i].getROIName() + ".   Max of last "+ (1-portion[k])*100+"% data is:" + max +".  Average is:" + avg +". Standard Deviation is:" + std + ".    Std is "+ ((std/max)*100) + "% of max.");
-			}
-		}
-		
-		System.out.println("End of check validity of reference data");
-	}
-	
 	public LocalWorkspace getLocalWorkspace() {
 		return localWorkspace;
 	}
@@ -781,16 +761,6 @@ public class FRAPOptData {
 			//create reference data
 			System.out.println("creating rederence data....");
 			
-			DataSetControllerImpl.ProgressListener progressListener =
-			new DataSetControllerImpl.ProgressListener(){
-				public void updateProgress(double progress){
-					System.out.println((int)Math.round(progress*100));
-				}
-				public void updateMessage(String message){
-					//ignore
-				}
-			};
-
 			FRAPOptData optData = new FRAPOptData(expFrapStudy, 5, localWorkspace, new ClientTaskStatusSupport(){
 				
 				public void setProgress(int progress) {
@@ -913,11 +883,11 @@ public class FRAPOptData {
 			{
 				if(totalParamLen == FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF)
 				{
-					clientTaskStatusSupport.setMessage("Evaluating \'" + fixedParam.getName() + "\' of one diffusing component model.");
+					clientTaskStatusSupport.setMessage("Evaluating confidence intervals of \'" + fixedParam.getName() + "\' of one diffusing component model.");
 				}
 				else if(totalParamLen == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
 				{
-					clientTaskStatusSupport.setMessage("Evaluating \'" + fixedParam.getName() + "\' of two diffusing components model.");
+					clientTaskStatusSupport.setMessage("Evaluating confidence intervals of \'" + fixedParam.getName() + "\' of two diffusing components model.");
 				}
 				clientTaskStatusSupport.setProgress(0);//start evaluation of a parameter.
 			}

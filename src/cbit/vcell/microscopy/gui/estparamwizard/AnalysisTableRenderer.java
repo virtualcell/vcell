@@ -86,6 +86,7 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
 			{
 				if(((String)identifyStr).equals(AnalysisTableModel.STR_NOT_SIGNIFICANT))
 				{
+					setForeground(Color.red);
 					setBackground(new Color(255,170,170));
 				}
 			}
@@ -100,10 +101,6 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
 					setForeground(Color.red);
 					setBackground(new Color(255,170,170));
 				}
-//				else
-//				{
-//					setb
-//				}
 			}
 		}	
 		

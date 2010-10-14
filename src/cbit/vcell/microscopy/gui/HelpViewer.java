@@ -21,60 +21,65 @@ import javax.swing.UIManager;
  * Created in June 2008.
  * @version 1.0
  */
-public class HelpViewer extends JFrame {
+public class HelpViewer extends JFrame 
+{
+	public static final int DEFAULT_HELP_DIALOG_WIDTH = 900;
+	public static final int DEFAULT_HELP_DIALOG_HIGHT = 700;
+	public static final int DEFAULT_HELP_DIALOG_LOCX = (VirtualFrapMainFrame.SCREEN_WIDTH - DEFAULT_HELP_DIALOG_WIDTH)/2;
+	public static final int DEFAULT_HELP_DIALOG_LOCY = (VirtualFrapMainFrame.SCREEN_HEIGHT - DEFAULT_HELP_DIALOG_HIGHT)/2;
+	/**
+	 * Prints the usage info and exits.
+	 */
+	private static void printUsage(){
+		System.out.println("\nUsage: "+ "java HelpViewer "+ "resourcepath helpsetname");
+	}
 
-/**
-* Prints the usage info and exits.
-*/
-private static void printUsage(){
-       System.out.println("\nUsage: "+ "java HelpViewer "+ "resourcepath helpsetname");
-}
+	/* *
+	 * Default constructor to create a Java helpset Viewer with
+	 * the given helpset name in the given resource path.
+	 *
+	 * @param String resourcePath - the path of the dir or the jar file where the
+	 * java help system files are located.
+	 * @param String helpsetName - the helpset name without prefix.
+	 * Prefix is assumed to be .hs
+	 */
 
-/* *
-* Default constructor to create a Java helpset Viewer with
-* the given helpset name in the given resource path.
-*
-* @param String resourcePath - the path of the dir or the jar file where the
-* java help system files are located.
-* @param String helpsetName - the helpset name without prefix.
-* Prefix is assumed to be .hs
-*/
+	public HelpViewer() {
+		super("Virtual Frap Help");
+		setIconImage(new ImageIcon(getClass().getResource("/images/logo.gif")).getImage());
 
-public HelpViewer() {
-    super("Virtual Frap Help");
-    setIconImage(new ImageIcon(getClass().getResource("/images/logo.gif")).getImage());
+		URL resourceURL = HelpViewer.class.getResource("/doc/HelpSet.hs");
 
-    URL resourceURL = HelpViewer.class.getResource("/doc/HelpSet.hs");
-    
-    Container contentPane = getContentPane();
-    //URL hsURL;
-    HelpSet hs;
-    try {
-        // get the system class loader
-        ClassLoader cl = this.getClass().getClassLoader();
-        // create helpset
-        hs = new HelpSet(cl, resourceURL);
-        JHelp jhelp = new JHelp(hs);
-        contentPane.setLayout(new BorderLayout());
-        contentPane.add(jhelp);
-    } catch (Exception e) {
-	    e.printStackTrace();
-	    return;
-    }
-
-    setLocation(480,120);
-    setPreferredSize(new Dimension(850,800));
-    pack();
-    setVisible(true);
-}
+		Container contentPane = getContentPane();
+		//URL hsURL;
+		HelpSet hs;
+		try {
+			// get the system class loader
+			ClassLoader cl = this.getClass().getClassLoader();
+			// create helpset
+			hs = new HelpSet(cl, resourceURL);
+			JHelp jhelp = new JHelp(hs);
+			contentPane.setLayout(new BorderLayout());
+			contentPane.add(jhelp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
 
 
-public static void main(String[] args) {
-    try {
-        UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-    } catch (Exception e) { }
- 
-    new HelpViewer();
-}
+		setLocation(DEFAULT_HELP_DIALOG_LOCX,DEFAULT_HELP_DIALOG_LOCY);
+		setPreferredSize(new Dimension(DEFAULT_HELP_DIALOG_WIDTH,DEFAULT_HELP_DIALOG_HIGHT));
+		pack();
+		setVisible(true);
+	}
+
+
+	public static void main(String[] args) {
+		try {
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		} catch (Exception e) { }
+
+		new HelpViewer();
+	}
 
 }

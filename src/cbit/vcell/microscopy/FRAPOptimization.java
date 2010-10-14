@@ -1,7 +1,5 @@
 package cbit.vcell.microscopy;
 
-import org.vcell.util.DataAccessException;
-
 import cbit.function.DefaultScalarFunction;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.server.VCDataManager;
@@ -14,7 +12,6 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.opt.solvers.PowellOptimizationSolver;
-import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
