@@ -537,7 +537,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 						for(int k = 0; k < surface.getPolygonCount(); k++) {
 							Polygon polygon = surface.getPolygons(k);
 							Node[] nodes = polygon.getNodes();
-							if (surface.getInteriorRegionIndex() == volRegionID) { // interior	
+							if (surface.getExteriorRegionIndex() == volRegionID) { // interior	
 								if (dimension == 2){
 									// ignore z
 									Vect3d unitNormal = new Vect3d();
@@ -549,7 +549,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 									Vect3d v01 = Vect3d.sub(v1, v0);
 									Vect3d unit01n = v01.cross(unitNormal);
 									unit01n.unit();
-									if (Math.abs(unit01n.getX()-1.0) < 1e-6){
+									if (Math.abs(unit01n.dot(new Vect3d(0,0,1))-1.0) < 1e-6){
 										// first two indices are ok
 										triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
 									}else if ((unit01n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
@@ -560,7 +560,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 										Vect3d v02 = Vect3d.sub(v2, v0);
 										Vect3d unit02n = v02.cross(unitNormal);
 										unit02n.unit();
-										if (Math.abs(unit02n.getX()-1.0) < 1e-6){
+										if (Math.abs(unit02n.dot(new Vect3d(0,0,1))-1.0) < 1e-6){
 											// first two indices are ok
 											triList.add(new Triangle(nodes[0], nodes[2], nodes[1]));
 										}else if ((unit02n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
@@ -569,9 +569,6 @@ private void writeSurfacesAndCompartments() throws SolverException {
 										}else{
 											throw new RuntimeException("failed to generate surface");
 										}
-									}
-									if(nodes.length == 4 && dimension > 2) {
-										triList.add(new Triangle(nodes[0], nodes[2], nodes[3]));
 									}
 								}else{
 									triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
@@ -589,7 +586,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 									Vect3d v01 = Vect3d.sub(v1, v0);
 									Vect3d unit01n = v01.cross(unitNormal);
 									unit01n.unit();
-									if (Math.abs(unit01n.getX()-1.0) < 1e-6){
+									if (Math.abs(unit01n.getZ()-1.0) < 1e-6){
 										// first two indices are ok
 										triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
 									}else if ((unit01n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
@@ -600,7 +597,7 @@ private void writeSurfacesAndCompartments() throws SolverException {
 										Vect3d v02 = Vect3d.sub(v2, v0);
 										Vect3d unit02n = v02.cross(unitNormal);
 										unit02n.unit();
-										if (Math.abs(unit02n.getX()-1.0) < 1e-6){
+										if (Math.abs(unit02n.getZ()-1.0) < 1e-6){
 											// first two indices are ok
 											triList.add(new Triangle(nodes[0], nodes[2], nodes[1]));
 										}else if ((unit02n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
@@ -609,9 +606,6 @@ private void writeSurfacesAndCompartments() throws SolverException {
 										}else{
 											throw new RuntimeException("failed to generate surface");
 										}
-									}
-									if(nodes.length == 4 && dimension > 2) {
-										triList.add(new Triangle(nodes[0], nodes[2], nodes[3]));
 									}
 								}else{
 									triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
