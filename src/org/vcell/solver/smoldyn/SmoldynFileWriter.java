@@ -50,6 +50,7 @@ import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.render.Vect3d;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
@@ -390,11 +391,7 @@ private void writeMolecules() throws ExpressionException, MathException {
 						sb.append(" " + count + " " + variableName + " " + subDomain.getName() + " " + SmoldynKeyword.all + " " + SmoldynKeyword.all + "\n");
 					}
 				} else {
-					if (subDomain instanceof CompartmentSubDomain){
-						sb.append(SmoldynKeyword.mol + " " + count + " " + variableName);
-					}else if (subDomain instanceof MembraneSubDomain) {
-						sb.append(SmoldynKeyword.mol + " " + count + " " + variableName+"("+SmoldynKeyword.up+")");
-					}
+					sb.append(SmoldynKeyword.mol + " " + count + " " + variableName);
 					try {
 						if (pic.isXUniform()) {
 							sb.append(" " + pic.getLocationX().infix());					
@@ -540,15 +537,85 @@ private void writeSurfacesAndCompartments() throws SolverException {
 						for(int k = 0; k < surface.getPolygonCount(); k++) {
 							Polygon polygon = surface.getPolygons(k);
 							Node[] nodes = polygon.getNodes();
-							if (surface.getInteriorRegionIndex() == volRegionID) { // interior							
-								triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
-								if(nodes.length == 4 && dimension > 2) {
+							if (surface.getInteriorRegionIndex() == volRegionID) { // interior	
+								if (dimension == 2){
+									// ignore z
+									Vect3d unitNormal = new Vect3d();
+									polygon.getUnitNormal(unitNormal);
+									unitNormal.set(unitNormal.getX(), unitNormal.getY(), 0);
+									Vect3d v0 = new Vect3d(nodes[0].getX(),nodes[0].getY(),0);
+									Vect3d v1 = new Vect3d(nodes[1].getX(),nodes[1].getY(),0);
+									Vect3d v2 = new Vect3d(nodes[2].getX(),nodes[2].getY(),0);
+									Vect3d v01 = Vect3d.sub(v1, v0);
+									Vect3d unit01n = v01.cross(unitNormal);
+									unit01n.unit();
+									if (Math.abs(unit01n.getX()-1.0) < 1e-6){
+										// first two indices are ok
+										triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
+									}else if ((unit01n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
+										// first two are opposite
+										triList.add(new Triangle(nodes[1], nodes[2], nodes[0]));
+									}else if (unit01n.dot(new Vect3d(0,0,1)) < 1e-6){
+										// same plane ... do we use 0 and 2 or 2 and 0?
+										Vect3d v02 = Vect3d.sub(v2, v0);
+										Vect3d unit02n = v02.cross(unitNormal);
+										unit02n.unit();
+										if (Math.abs(unit02n.getX()-1.0) < 1e-6){
+											// first two indices are ok
+											triList.add(new Triangle(nodes[0], nodes[2], nodes[1]));
+										}else if ((unit02n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
+											// first two are opposite
+											triList.add(new Triangle(nodes[2], nodes[0], nodes[1]));
+										}else{
+											throw new RuntimeException("failed to generate surface");
+										}
+									}
+									if(nodes.length == 4 && dimension > 2) {
+										triList.add(new Triangle(nodes[0], nodes[2], nodes[3]));
+									}
+								}else{
+									triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
 									triList.add(new Triangle(nodes[0], nodes[2], nodes[3]));
 								}
 							} else {
-								triList.add(new Triangle(nodes[2], nodes[1], nodes[0]));
-								if(nodes.length == 4 && dimension > 2) {
-									triList.add(new Triangle(nodes[3], nodes[2], nodes[0]));
+								if (dimension == 2){
+									// ignore z
+									Vect3d unitNormal = new Vect3d();
+									polygon.getUnitNormal(unitNormal);
+									unitNormal.set(unitNormal.getX(), unitNormal.getY(), 0);
+									Vect3d v0 = new Vect3d(nodes[2].getX(),nodes[2].getY(),0);
+									Vect3d v1 = new Vect3d(nodes[1].getX(),nodes[1].getY(),0);
+									Vect3d v2 = new Vect3d(nodes[0].getX(),nodes[0].getY(),0);
+									Vect3d v01 = Vect3d.sub(v1, v0);
+									Vect3d unit01n = v01.cross(unitNormal);
+									unit01n.unit();
+									if (Math.abs(unit01n.getX()-1.0) < 1e-6){
+										// first two indices are ok
+										triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
+									}else if ((unit01n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
+										// first two are opposite
+										triList.add(new Triangle(nodes[1], nodes[2], nodes[0]));
+									}else if (unit01n.dot(new Vect3d(0,0,1)) < 1e-6){
+										// same plane ... do we use 0 and 2 or 2 and 0?
+										Vect3d v02 = Vect3d.sub(v2, v0);
+										Vect3d unit02n = v02.cross(unitNormal);
+										unit02n.unit();
+										if (Math.abs(unit02n.getX()-1.0) < 1e-6){
+											// first two indices are ok
+											triList.add(new Triangle(nodes[0], nodes[2], nodes[1]));
+										}else if ((unit02n.dot(new Vect3d(0,0,1))+1.0) < 1e-6){
+											// first two are opposite
+											triList.add(new Triangle(nodes[2], nodes[0], nodes[1]));
+										}else{
+											throw new RuntimeException("failed to generate surface");
+										}
+									}
+									if(nodes.length == 4 && dimension > 2) {
+										triList.add(new Triangle(nodes[0], nodes[2], nodes[3]));
+									}
+								}else{
+									triList.add(new Triangle(nodes[0], nodes[1], nodes[2]));
+									triList.add(new Triangle(nodes[0], nodes[2], nodes[3]));
 								}
 							}
 						}
