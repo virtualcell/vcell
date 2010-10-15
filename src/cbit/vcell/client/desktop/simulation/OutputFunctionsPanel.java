@@ -191,19 +191,6 @@ public class OutputFunctionsPanel extends JPanel {
 		return buttons_n_label_Panel;
 	}
 
-	private javax.swing.JScrollPane getFnTableScrollPane() {
-		if (fnTableScrollPane == null) {
-			try {
-				fnTableScrollPane = new javax.swing.JScrollPane();
-				fnTableScrollPane.setName("JScrollPane1");
-				getFnTableScrollPane().setViewportView(getFnScrollPaneTable());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace(System.out);
-			}
-		}
-		return fnTableScrollPane;
-	}
-
 	private JSortTable getFnScrollPaneTable() {
 		if (outputFnsScrollPaneTable == null) {
 			try {
@@ -388,12 +375,6 @@ public class OutputFunctionsPanel extends JPanel {
 		getFnScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 		this.addPropertyChangeListener(ivjEventHandler);
 		getSubdomainComboBox().addActionListener(ivjEventHandler);
-		
-		getFnTableScrollPane().addComponentListener(new ComponentAdapter() {
-			public void componentResized(ComponentEvent e) {
-				ScopedExpressionTableCellRenderer.formatTableCellSizes(getFnScrollPaneTable(),null,null);
-			}
-		});
 
 		// for scrollPaneTable, set tableModel and create default columns
 		getFnScrollPaneTable().setModel(getOutputFnsListTableModel1());
@@ -408,19 +389,9 @@ public class OutputFunctionsPanel extends JPanel {
 			setSize(750, 100);
 			setLayout(new BorderLayout());
 			add(getButtonPanel(), BorderLayout.NORTH);
-			add(getFnTableScrollPane(), BorderLayout.CENTER);
+			add(getFnScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 			initConnections();
 			getFnScrollPaneTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			getFnScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-			getFnScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getFnScrollPaneTable(), true));
-			
-			getOutputFnsListTableModel1().addTableModelListener(
-				new javax.swing.event.TableModelListener(){
-					public void tableChanged(javax.swing.event.TableModelEvent e){
-						ScopedExpressionTableCellRenderer.formatTableCellSizes(getFnScrollPaneTable(),null,null);
-					}
-				}
-			);
 		} catch (java.lang.Throwable e) {
 			e.printStackTrace(System.out);
 		}

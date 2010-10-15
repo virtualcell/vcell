@@ -93,18 +93,6 @@ public class EventsDisplayPanel extends JPanel {
 			initConnections();
 			
 			getScrollPaneTable().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-			
-			getEventSummaryTableModel().addTableModelListener(
-					new javax.swing.event.TableModelListener(){
-						public void tableChanged(javax.swing.event.TableModelEvent e){
-							try {
-								ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-							} catch (Exception e1) {
-								e1.printStackTrace(System.out);
-							}
-						}
-					}
-				);
 
 		} catch (java.lang.Throwable e) {
 			e.printStackTrace(System.out);

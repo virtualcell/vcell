@@ -68,12 +68,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == GeometrySubVolumePanel.this.getFrontButton()) 
 				connEtoM6(e);
-			if (e.getSource() == GeometrySubVolumePanel.this.getFrontButton()) 
-				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(), null, null);
 			if (e.getSource() == GeometrySubVolumePanel.this.getBackButton()) 
 				connEtoM9(e);
-			if (e.getSource() == GeometrySubVolumePanel.this.getBackButton()) 
-				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(), null, null);
 			if (e.getSource() == GeometrySubVolumePanel.this.getDeleteButton()) 
 				connEtoM1(e);
 		};
@@ -154,24 +150,7 @@ private void connEtoC11(GeometrySpec value) {
 		handleException(ivjExc);
 	}
 }
-/**
- * connEtoC12:  (Geometry.this --> GeometrySubVolumePanel.geometry_This(Lcbit.vcell.geometry.Geometry;)V)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12(Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.geometry_This(getGeometry());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+
 /**
  * connEtoC2:  (Geometry.subVolumes --> GeometrySubVolumePanel.refreshButtons()V)
  * @param arg1 java.beans.PropertyChangeEvent
@@ -431,20 +410,13 @@ private SubVolume findSubVolume() {
 		return null;
 	}
 }
-/**
- * Comment
- */
-private void geometry_This(Geometry arg1) {
-	cbit.vcell.model.gui.ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-}
+
 /**
  * Comment
  */
 private void geometrySubVolumePanel_Initialize() {
 	
 	getScrollPaneTable().setDefaultRenderer(SubVolume.class,new GeometrySubVolumeTableCellRenderer());
-	getScrollPaneTable().setDefaultRenderer(cbit.gui.ScopedExpression.class,new cbit.vcell.model.gui.ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), true));
 	getScrollPaneTable().setDefaultEditor(SubVolume.class,new DefaultCellEditor(new JTextField()) {
 			private int lastRow = -1;
 			private int lastCol = -1;
@@ -936,7 +908,6 @@ public void setGeometry(Geometry newValue) {
 			ivjGeometry = newValue;
 			connEtoM2(ivjGeometry);
 			connEtoM8(ivjGeometry);
-			connEtoC12(ivjGeometry);
 			firePropertyChange("geometry", oldValue, newValue);
 			// user code begin {1}
 			// user code end
