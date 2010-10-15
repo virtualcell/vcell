@@ -16,6 +16,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
@@ -153,25 +155,6 @@ public class ScrollTable extends JTable {
 	public final JScrollPane getEnclosingScrollPane() {
 		return enclosingScrollPane;
 	}
-	
-	private void initConnections() {
-		boolean bHasScopedExpressionColumn = false;
-		for (int i = 0; i < dataModel.getColumnCount(); i ++) {
-			if (getColumnClass(i).equals(ScopedExpression.class)) {
-				bHasScopedExpressionColumn = true;
-				break;
-			}
-		}
-		if (bHasScopedExpressionColumn) {
-			setValidateExpressionBinding(bValidateExpressionBinding);
-			setAutoResizeMode(autoResizeMode);
-		} else {
-			if (autoResizeMode == AUTO_RESIZE_OFF) {
-				autoResizeMode = AUTO_RESIZE_SUBSEQUENT_COLUMNS;
-			}
-			setAutoResizeMode(autoResizeMode);
-		}
-	}
 
 	public final void setValidateExpressionBinding(boolean bValidateExpressionBinding) {
 		this.bValidateExpressionBinding = bValidateExpressionBinding;
@@ -193,7 +176,11 @@ public class ScrollTable extends JTable {
 			if (componentListener == null) {
 				componentListener  = new ComponentAdapter() {
 					public void componentResized(ComponentEvent e) {
-						ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this,null,null);
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this,null,null);
+							}
+						});	
 					}
 				};
 			}
@@ -202,8 +189,15 @@ public class ScrollTable extends JTable {
 			
 			if (tableModelListener == null) {
 				tableModelListener  = new javax.swing.event.TableModelListener(){
+					// this tableChanged() is called before JTable.tableChanged() where all sizes are
+					// set back to default. So we need to format the table after JTable.tableChanged()
+					// is called. That's why SwingUtilities.invokeLater() is used.
 					public void tableChanged(javax.swing.event.TableModelEvent e){
-						ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this,null,null);
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this,null,null);
+							}
+						});	
 					}
 				};
 			}
@@ -225,6 +219,27 @@ public class ScrollTable extends JTable {
 			getModel().removeTableModelListener(tableModelListener);
 		}
 		super.setModel(dataModel);
-		initConnections();
+		
+		// setting up listeners 
+		boolean bHasScopedExpressionColumn = false;
+		for (int i = 0; i < dataModel.getColumnCount(); i ++) {
+			if (getColumnClass(i).equals(ScopedExpression.class)) {
+				bHasScopedExpressionColumn = true;
+				break;
+			}
+		}
+		if (bHasScopedExpressionColumn) {
+			setValidateExpressionBinding(bValidateExpressionBinding);
+			setAutoResizeMode(autoResizeMode);
+		} else {
+			if (autoResizeMode == AUTO_RESIZE_OFF) {
+				autoResizeMode = AUTO_RESIZE_SUBSEQUENT_COLUMNS;
+			}
+			setAutoResizeMode(autoResizeMode);
+		}
+		
+		if (tableModelListener != null) {
+			tableModelListener.tableChanged(new TableModelEvent(dataModel, TableModelEvent.HEADER_ROW));
+		}
 	}	
 }

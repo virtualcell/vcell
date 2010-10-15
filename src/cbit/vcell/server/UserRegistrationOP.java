@@ -88,7 +88,8 @@ public class UserRegistrationOP implements Serializable{
 		return userRegistrationOP;		
 	}
 
-	public static void registrationOperationGUI(final RequestManager requestManager, final DocumentWindowManager currWindowManager, final ClientServerInfo currentClientServerInfo, final String userAction, final ClientServerManager clientServerManager) throws Exception{
+	public static void registrationOperationGUI(final RequestManager requestManager, final DocumentWindowManager currWindowManager, 
+			final ClientServerInfo currentClientServerInfo, final String userAction, final ClientServerManager clientServerManager) throws Exception{
 		if(!(userAction.equals(LoginDialog.USERACTION_REGISTER) ||
 				userAction.equals(LoginDialog.USERACTION_EDITINFO) ||
 				userAction.equals(LoginDialog.USERACTION_LOSTPASSWORD))){
@@ -245,6 +246,7 @@ public class UserRegistrationOP implements Serializable{
 							PopupGenerator.showInfoDialog(currWindowManager, "No registration information has changed.");
 							continue;
 						}
+					} catch (UserCancelException ex) {
 					} catch (Exception ex) {
 						PopupGenerator.showErrorDialog(currWindowManager, ex.getMessage());
 						continue;
@@ -298,7 +300,7 @@ public class UserRegistrationOP implements Serializable{
 			}			
 		};
 		
-		ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] {gatherInfoTask, showPanelTask, updateDbTask, connectTask}, false);
+		ClientTaskDispatcher.dispatch(currWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {gatherInfoTask, showPanelTask, updateDbTask, connectTask}, false);
 	}
 
 	public static boolean hasIllegalCharacters(String apo){

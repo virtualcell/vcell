@@ -503,9 +503,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 			}
 			JScrollPane scrollPane = new JScrollPane(table);
 			table.setPreferredScrollableViewportSize(new Dimension(500, 250));
-			
-			ScopedExpressionTableCellRenderer.formatTableCellSizes(table, null, null);
-			
+						
 			OKEnabler tableListOKEnabler = null;
 			if(listSelectionModel_SelectMode != null){
 				tableListOKEnabler = new OKEnabler(){

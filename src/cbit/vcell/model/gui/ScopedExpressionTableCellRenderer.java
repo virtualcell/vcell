@@ -39,9 +39,12 @@ public class ScopedExpressionTableCellRenderer implements javax.swing.table.Tabl
 		private Icon icon = null;
 		private Insets borderInsets = null;
 		
+		@Override
 		public void setIcon(Icon imageIcon){
 			icon = imageIcon;
 		}
+		
+		@Override
 	    public Dimension getPreferredSize() {
 	    	if (borderInsets==null){
 	    		borderInsets = getBorder().getBorderInsets(this);
@@ -52,6 +55,8 @@ public class ScopedExpressionTableCellRenderer implements javax.swing.table.Tabl
 	    		return new Dimension(borderInsets.left+borderInsets.right, borderInsets.top+borderInsets.bottom);
 	    	}
 	    }
+	    
+	    @Override
 		public void paintComponent(Graphics graphics){
 			Dimension size = getSize();
 			graphics.setColor(getBackground());
@@ -180,11 +185,7 @@ public static void formatTableCellSizes(final javax.swing.JTable targetTable,int
 		//without making any smaller than preferred
 		for(final int rowIndex : targetRows){
 			if (targetTable.getRowHeight(rowIndex) < maxRowHeights[rowIndex]){
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						targetTable.setRowHeight(rowIndex, maxRowHeights[rowIndex]+targetTable.getRowMargin());						
-					}
-				});
+				targetTable.setRowHeight(rowIndex, maxRowHeights[rowIndex]);
 			}
 		}
 	}catch(Exception exc){
