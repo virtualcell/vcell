@@ -86,6 +86,7 @@ public class FRAPOptData {
 	//first dimension length 11, according to the order in FRAPData.VFRAP_ROI_ENUM
 	//second dimension time, total time length - starting index for recovery 
 	private double[][] measurementErrors = null;
+	private ProfileSummaryData[][] allProfileSummaryData = null;
 	
 	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace,
 			ClientTaskStatusSupport progressListener) throws Exception
@@ -1296,24 +1297,28 @@ public class FRAPOptData {
 	//first dimension :2 two types of models, second dimension :5 max parameters length(3 for Diff 1, 5 for Diff 2)
 	public ProfileSummaryData[][] getAllProfileSummaryData()
 	{
-		ProfileSummaryData[][] summaryData = new ProfileSummaryData[FRAPModel.NUM_MODEL_TYPES-1][FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF];
-		//for parameters from diffusion with one diffusing component
-		if(getExpFrapStudy().getProfileData_oneDiffComponent() !=null )
+		if(allProfileSummaryData == null)
 		{
-			ProfileData[] profileData = getExpFrapStudy().getProfileData_oneDiffComponent();
-			for(int i=0; i<profileData.length; i++)
+			ProfileSummaryData[][] summaryData = new ProfileSummaryData[FRAPModel.NUM_MODEL_TYPES-1][FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF];
+			//for parameters from diffusion with one diffusing component
+			if(getExpFrapStudy().getProfileData_oneDiffComponent() !=null )
 			{
-				summaryData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i] = getSummaryFromProfileData(profileData[i]);
+				ProfileData[] profileData = getExpFrapStudy().getProfileData_oneDiffComponent();
+				for(int i=0; i<profileData.length; i++)
+				{
+					summaryData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i] = getSummaryFromProfileData(profileData[i]);
+				}
 			}
-		}
-		if(getExpFrapStudy().getProfileData_twoDiffComponents() !=null )
-		{
-			ProfileData[] profileData = getExpFrapStudy().getProfileData_twoDiffComponents();
-			for(int i=0; i<profileData.length; i++)
+			if(getExpFrapStudy().getProfileData_twoDiffComponents() !=null )
 			{
-				summaryData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i] = getSummaryFromProfileData(profileData[i]);
+				ProfileData[] profileData = getExpFrapStudy().getProfileData_twoDiffComponents();
+				for(int i=0; i<profileData.length; i++)
+				{
+					summaryData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i] = getSummaryFromProfileData(profileData[i]);
+				}
 			}
+			allProfileSummaryData = summaryData;
 		}
-		return summaryData;
+		return allProfileSummaryData;
 	}
 }

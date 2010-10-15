@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.ConfidenceInterval;
 import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.ProfileData;
+import cbit.vcell.microscopy.ProfileSummaryData;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BleachedROIDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
@@ -55,6 +59,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     	}
     	else
     	{
+    		//check least error model
 	    	double minError = 1000;
 	    	if(mseSummaryData != null)
 	    	{
@@ -67,6 +72,56 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
 	    				bestModel = i;
 	    			}
 	    		}
+	    	}
+	    	//check model significance if more than one model
+	    	if(fStudy.getSelectedModels().size() > 1)
+	    	{	
+		    	ProfileSummaryData[][] allProfileSumData = frapWorkspace.getWorkingFrapStudy().getFrapOptData().getAllProfileSummaryData();
+				FRAPModel[] frapModels = frapWorkspace.getWorkingFrapStudy().getModels();
+				int confidenceIdx = ((EstParams_CompareResultsPanel)this.getPanelComponent()).getSelectedConfidenceIndex();
+				boolean diffOneModelSignificance = true;
+				boolean diffTwoModelSignificance = true;
+				if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null &&
+				   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null && 
+				   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][0] != null)
+				{
+					for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF; i++)
+					{
+						ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i].getConfidenceIntervals();
+						if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getUpperBound() && 
+						   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getLowerBound())
+						{
+							diffOneModelSignificance = false;
+							break;
+						}
+					}
+				}
+				if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
+				   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null && 
+				   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][0] != null)
+				{
+					for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF; i++)
+					{
+						ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i].getConfidenceIntervals();
+						if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getUpperBound() && 
+						   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getLowerBound())
+						{
+							diffTwoModelSignificance = false;
+							break;
+						}
+					}
+				}
+				if((diffOneModelSignificance && !diffTwoModelSignificance) || (! diffOneModelSignificance && diffTwoModelSignificance))
+				{
+					if(diffOneModelSignificance)
+					{
+						bestModel = FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT;
+					}
+					else if(diffTwoModelSignificance)
+					{
+						bestModel = FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS;
+					}
+				}
 	    	}
     	}
     	((EstParams_CompareResultsPanel)this.getPanelComponent()).setBestModelRadioButton(bestModel);

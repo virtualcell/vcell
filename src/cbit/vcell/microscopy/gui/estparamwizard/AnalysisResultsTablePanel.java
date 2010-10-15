@@ -31,10 +31,12 @@ import javax.swing.table.TableColumn;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.microscopy.ConfidenceInterval;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.ProfileData;
+import cbit.vcell.microscopy.ProfileSummaryData;
 import cbit.vcell.microscopy.gui.AdvancedTablePanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.groupableTableHeader.ColumnGroup;
@@ -239,21 +241,73 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
     }
 
 	public void actionPerformed(ActionEvent evt) {
+		ProfileSummaryData[][] allProfileSumData = frapWorkspace.getWorkingFrapStudy().getFrapOptData().getAllProfileSummaryData();
+		FRAPModel[] frapModels = frapWorkspace.getWorkingFrapStudy().getModels();
+		int confidenceIdx = FRAPOptData.IDX_DELTA_ALPHA_80;
+		boolean diffOneModelSignificance = true;
+		boolean diffTwoModelSignificance = true;
+		
 		if(confidence80RadioButton.isSelected())
 		{
 			anaTableModel.setCurrentConfidenceLevelIndex(FRAPOptData.IDX_DELTA_ALPHA_80);
+			confidenceIdx = FRAPOptData.IDX_DELTA_ALPHA_80;
 		}
 		else if(confidence90RadioButton.isSelected())
 		{
 			anaTableModel.setCurrentConfidenceLevelIndex(FRAPOptData.IDX_DELTA_ALPHA_90);
+			confidenceIdx = FRAPOptData.IDX_DELTA_ALPHA_90;
 		}
 		else if(confidence95RadioButton.isSelected())
 		{
 			anaTableModel.setCurrentConfidenceLevelIndex(FRAPOptData.IDX_DELTA_ALPHA_95);
+			confidenceIdx = FRAPOptData.IDX_DELTA_ALPHA_95;
 		}
 		else if(confidence99RadioButton.isSelected())
 		{
 			anaTableModel.setCurrentConfidenceLevelIndex(FRAPOptData.IDX_DELTA_ALPHA_99);
+			confidenceIdx = FRAPOptData.IDX_DELTA_ALPHA_99;
+		}
+		//adjust best model button
+		if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null && frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null &&
+		   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null && 
+		   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][0] != null)
+		{
+			for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF; i++)
+			{
+				ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i].getConfidenceIntervals();
+				if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getUpperBound() && 
+				   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getLowerBound())
+				{
+					diffOneModelSignificance = false;
+					break;
+				}
+			}
+		}
+		if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null && frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
+		   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null && 
+		   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][0] != null)
+		{
+			for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF; i++)
+			{
+				ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i].getConfidenceIntervals();
+				if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getUpperBound() && 
+				   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getLowerBound())
+				{
+					diffTwoModelSignificance = false;
+					break;
+				}
+			}
+		}
+		if((diffOneModelSignificance && !diffTwoModelSignificance) || (! diffOneModelSignificance && diffTwoModelSignificance))
+		{
+			if(diffOneModelSignificance)
+			{
+				firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL_WITH_SIGNIFICANCE, new Integer(-1), new Integer(FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT));
+			}
+			else if(diffTwoModelSignificance)
+			{
+				firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL_WITH_SIGNIFICANCE, new Integer(-1), new Integer(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS));
+			}
 		}
 	}
 
@@ -359,6 +413,26 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 		public GroupableTableCellRenderer() {
 			super();
 		}
+	}
+
+	public int getSelectedConfidenceIndex() {
+		if(confidence80RadioButton.isSelected())
+		{
+			return FRAPOptData.IDX_DELTA_ALPHA_80;
+		}
+		else if(confidence90RadioButton.isSelected())
+		{
+			return FRAPOptData.IDX_DELTA_ALPHA_90;
+		}
+		else if(confidence95RadioButton.isSelected())
+		{
+			return FRAPOptData.IDX_DELTA_ALPHA_95;
+		}
+		else if(confidence99RadioButton.isSelected())
+		{
+			return FRAPOptData.IDX_DELTA_ALPHA_99;
+		}
+		return -1;
 	}
 }
 

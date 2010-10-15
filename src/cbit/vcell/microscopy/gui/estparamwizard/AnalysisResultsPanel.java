@@ -21,6 +21,10 @@ public class AnalysisResultsPanel extends BoxPanel
         contentPane.add(anaResultsTablePanel);
 	}
 	
+	public AnalysisResultsTablePanel getAnaResultsTablePanel() {
+		return anaResultsTablePanel;
+	}
+
 	public FRAPSingleWorkspace getFrapWorkspace()
     {
     	return frapWorkspace;
@@ -50,5 +54,9 @@ public class AnalysisResultsPanel extends BoxPanel
 			System.err.println("Exception occurred in main() of javax.swing.JPanel");
 			exception.printStackTrace(System.out);
 		}
+	}
+
+	public int getSelectedConfidenceIndex() {
+		return anaResultsTablePanel.getSelectedConfidenceIndex();
 	}
 }

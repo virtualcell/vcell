@@ -14,6 +14,8 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -22,7 +24,7 @@ import java.util.*;
 /**
  * 
  */
-public class EstParams_CompareResultsPanel extends JPanel {
+public class EstParams_CompareResultsPanel extends JPanel implements PropertyChangeListener{
 
     private AnalysisResultsPanel anaResultsPanel;
     private SummaryPlotPanel sumPlotPanel;
@@ -39,6 +41,7 @@ public class EstParams_CompareResultsPanel extends JPanel {
     	innerPanel= new JPanel();
     	innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
     	innerPanel.add(getAnalysisResultsPanel());
+    	getAnalysisResultsPanel().getAnaResultsTablePanel().addPropertyChangeListener(this);
     	innerPanel.add(getSummaryPlotPanel());
     	innerPanel.add(getMSEPanel());
     	innerPanel.add(getRadioButtonPanel());
@@ -116,17 +119,31 @@ public class EstParams_CompareResultsPanel extends JPanel {
     	getRadioButtonPanel().disableAllRadioButtons();
     }
     
+    public int getSelectedConfidenceIndex()
+    {
+    	return getAnalysisResultsPanel().getSelectedConfidenceIndex();
+    }
+    
     public void enableRadioButton(int modelIdx)
 	{
     	getRadioButtonPanel().enableRadioButton(modelIdx);
 	}
     
-    public static void main(java.lang.String[] args) {
+	public void propertyChange(PropertyChangeEvent evt)
+	{
+		if(evt.getPropertyName().equals(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL_WITH_SIGNIFICANCE) && evt.getNewValue() != null)
+		{
+			int bestModelIdx = ((Integer)evt.getNewValue()).intValue();
+			setBestModelRadioButton(bestModelIdx);
+		}
+	}
+	
+	public static void main(java.lang.String[] args) {
 		try {
 			javax.swing.JFrame frame = new javax.swing.JFrame();
 			EstParams_CompareResultsPanel aPanel = new EstParams_CompareResultsPanel();
 			frame.setContentPane(aPanel);
-//			frame.pack();
+	//				frame.pack();
 			frame.setSize(900,800);
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {
 				public void windowClosing(java.awt.event.WindowEvent e) {
@@ -140,4 +157,5 @@ public class EstParams_CompareResultsPanel extends JPanel {
 			exception.printStackTrace(System.out);
 		}
 	}
+
 }
