@@ -9,9 +9,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.vcell.sybil.util.debug.Debug;
-import org.vcell.sybil.util.text.StringUtil;
-
 public class CommonOrganisms {
 
 	public static final Set<OrganismRef> all = new HashSet<OrganismRef>();

@@ -11,6 +11,7 @@ import org.vcell.sybil.rdf.schemas.SBPAX;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
+@SuppressWarnings("serial")
 public class LocationFactory extends ThingFactory<SBBox.MutableLocation> {
 
 	public LocationFactory(SBBox box) { super(box, SBPAX.Location); }

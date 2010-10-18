@@ -3,8 +3,6 @@ package org.vcell.sybil.gui.pcsearch.test;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Insets;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,9 +20,8 @@ import org.vcell.sybil.util.event.Accepter;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.miriam.XRefToURN;
 
+@SuppressWarnings("serial")
 public class PCKeywordQueryPanel extends JPanel {
-	@SuppressWarnings("serial")
-	
 	private XRef xref = null;
 	
 	public XRef getSelectedXRef() {
@@ -35,7 +32,6 @@ public class PCKeywordQueryPanel extends JPanel {
 		public String keyword() { return getText(); }
 	}
 	
-	@SuppressWarnings("serial")
 	public static class XRefLabel extends JLabel implements Accepter<XRef> {
 		public void accept(XRef xRef) { setText(XRefToURN.createURN(xRef.db(), xRef.id())); }
 	}

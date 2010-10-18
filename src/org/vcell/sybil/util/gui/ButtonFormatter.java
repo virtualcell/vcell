@@ -1,15 +1,9 @@
 package org.vcell.sybil.util.gui;
 
-import java.awt.Color;
-import java.awt.Insets;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
-import javax.swing.plaf.basic.BasicBorders;
-import javax.swing.plaf.metal.MetalBorders;
 
 public class ButtonFormatter {
 

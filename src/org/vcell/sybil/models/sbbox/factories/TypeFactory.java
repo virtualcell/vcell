@@ -10,6 +10,7 @@ import org.vcell.sybil.models.sbbox.imp.RDFTypeImp;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.OWL;
 
+@SuppressWarnings("serial")
 public class TypeFactory extends ThingFactory<MutableRDFType> {
 
 	public TypeFactory(SBBox box) { super(box, OWL.Class); }

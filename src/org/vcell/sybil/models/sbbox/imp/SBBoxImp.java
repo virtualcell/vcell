@@ -13,6 +13,7 @@ import org.vcell.sybil.models.sbbox.factories.SubstanceFactory;
 import org.vcell.sybil.util.label.LabelMan;
 import com.hp.hpl.jena.rdf.model.Model;
 
+@SuppressWarnings("serial")
 public class SBBoxImp extends InfBoxImp implements SBBox, Serializable {
 	
 	protected String baseURI;

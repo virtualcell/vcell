@@ -10,6 +10,7 @@ import org.vcell.sybil.rdf.schemas.SBPAX;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
+@SuppressWarnings("serial")
 public class ProcessModelFactory extends ThingFactory<SBBox.MutableProcessModel> {
 
 	public ProcessModelFactory(SBBox box) { super(box, SBPAX.ProcessModel); }

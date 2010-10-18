@@ -11,7 +11,6 @@ import org.vcell.sybil.rdf.schemas.SBPAX;
 import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.reasoner.ReasonerRegistry;
 
 public class InfBoxImp implements InferenceBox {
 	

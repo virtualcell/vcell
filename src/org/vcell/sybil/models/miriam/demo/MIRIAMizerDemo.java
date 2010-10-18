@@ -54,7 +54,6 @@ public class MIRIAMizerDemo {
 	//		box.getRdf().write(System.out, "N3");
 			
 		    cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
-		        private StringBuffer buffer = new StringBuffer();
 		        public void sendMessage(int messageLevel, int messageType) {
 		            String message = cbit.util.xml.VCLogger.getDefaultMessage(messageType);
 		            sendMessage(messageLevel, messageType, message);	

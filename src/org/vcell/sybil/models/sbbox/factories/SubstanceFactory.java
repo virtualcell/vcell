@@ -10,6 +10,7 @@ import org.vcell.sybil.rdf.schemas.SBPAX;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
+@SuppressWarnings("serial")
 public class SubstanceFactory extends ThingFactory<SBBox.MutableSubstance> {
 
 	public SubstanceFactory(SBBox box) { super(box, SBPAX.Substance); }

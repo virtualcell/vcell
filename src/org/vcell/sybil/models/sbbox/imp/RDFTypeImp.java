@@ -22,6 +22,7 @@ import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
+@SuppressWarnings("serial")
 public class RDFTypeImp extends SBWrapper implements SBBox.MutableRDFType, Serializable {
 
 	public RDFTypeImp(SBBox box, Resource resource) { super(box, resource); }
