@@ -9,22 +9,106 @@ import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.*;
 
 public class ExpressionTest {
-/**
- * main entrypoint - starts the application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
+	public static void main(java.lang.String[] args) {
 		int num = 5000;
 		
 		if (args.length > 0) {
 			num = Integer.parseInt(args[0]);
 		}
+//		testEval(num);
+		testCopyTree(num);
+	}
+
+	public static void testCopyTree(int num) {
+		try {
+				
+			java.util.Random r = new java.util.Random();
+
+			for (int j = 0; j < 1; j ++) {
+				//java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".txt"));
+				java.io.PrintWriter pw2 = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".cpp"));
+				pw2.println("#include \"Windows.h\"");
+				pw2.println("#include \"ExpressionTest.h\"");
+				pw2.println("#include \"Expression.h\"");
+				pw2.println("#include \"MathUtil.h\"");
+				pw2.println("#include \"SimpleSymbolTable.h\"");
+				pw2.println("#include <math.h>");
+				pw2.println("#include <string>");
+				pw2.println("#include <iostream>");
+				pw2.println("using namespace std;");
+				pw2.println();
+				
+				String[] undefinedFunctions = {
+						"csc",		
+						"cot",		
+						"sec",		
+						"acsc",		
+						"acot",		
+						"asec",		
+//						"sinh",		
+//						"cosh",		
+//						"tanh",		
+						"csch",		
+						"coth",		
+						"sech",		
+						"asinh",	
+						"acosh",	
+						"atanh",	
+						"acsch",	
+						"acoth",	
+						"asech",	
+						"factorial"	
+				};
+				for (int k = 0; k < undefinedFunctions.length; k ++) {
+					pw2.println("#define " + undefinedFunctions[k] + "(a) (MathUtil::" + undefinedFunctions[k] + "(a))");
+				}
+				pw2.println("#define abs(a) fabs(a)");
+				pw2.println();
+				
+				pw2.println("void main() {");
+				pw2.println("\tExpression* expression, *copyExpression;");
+				pw2.println("\tstring infix, copyInfix;");
+				pw2.println("\tstring str;");
+				
+				for (int i = 0; i < num; i ++){
+					Expression exp = ExpressionUtils.generateExpression(r, 4, false);
+
+					try {
+						pw2.println("\t// " + i);
+						pw2.println("\tstr = string(\"" + exp.infix() + ";\");");
+						pw2.println("\texpression = new Expression(str);");
+						pw2.println("\tcopyExpression = new Expression(expression);");
+						pw2.println("\tinfix = expression->infix();");
+						pw2.println("\tcopyInfix = copyExpression->infix();");
+						pw2.println("\tif (infix != copyInfix) {");
+						pw2.println("\t\tcout << " + i + " << \" different\" << endl;");						
+						pw2.println("\t\tcout << \"infix : \" << infix << endl;");						
+						pw2.println("\t\tcout << \"copyInfix : \" << copyInfix << endl;");				
+						pw2.println("\t} else {");
+						pw2.println("\t\tcout << " + i + " << \" same\" << endl;");				
+						pw2.println("\t}");						
+						pw2.println();
+					} catch (Exception ex) {
+						System.out.println("!!!!!" + ex.getMessage());						
+					}
+				}			
+				//pw.close();
+				pw2.println("}");
+				pw2.close();
+			}
+		}catch (Throwable e){
+			e.printStackTrace(System.out);
+		}
+
+	}
+
+public static void testEval(int num) {
+	try {
 			
 		java.util.Random r = new java.util.Random();
 		String ids[] = {"id_0", "id_1", "id_2", "id_3", 
 				"id_4", "id_5", "id_6", "id_7", "id_8", "id_9"};
-		cbit.vcell.parser.SimpleSymbolTable symbolTable = new cbit.vcell.parser.SimpleSymbolTable(ids);		
+		SimpleSymbolTable symbolTable = new SimpleSymbolTable(ids);		
 
 		double v1[] = {0,1,2,3,4,5,6,7,8,9 };
 
@@ -80,7 +164,7 @@ public static void main(java.lang.String[] args) {
 			pw2.println();
 
 			for (int i = 0; i < num; i ++){
-				cbit.vcell.parser.Expression exp = cbit.vcell.parser.ExpressionUtils.generateExpression(r, 4, false);
+				Expression exp = ExpressionUtils.generateExpression(r, 4, false);
 				exp.bindExpression(symbolTable);
 
 				try {
@@ -100,7 +184,6 @@ public static void main(java.lang.String[] args) {
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
 	}
-
 }
 
 
