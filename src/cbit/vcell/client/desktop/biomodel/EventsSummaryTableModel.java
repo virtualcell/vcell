@@ -62,6 +62,9 @@ public class EventsSummaryTableModel extends ManageTableModel implements Propert
 	 * getRowCount method comment.
 	 */
 	public int getRowCount() {
+		if (fieldSimContext == null) {
+			return 0;
+		}
 		BioEvent[] bioEvents = fieldSimContext.getBioEvents();
 		if (bioEvents != null) {
 			return bioEvents.length;
