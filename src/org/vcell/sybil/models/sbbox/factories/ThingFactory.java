@@ -20,6 +20,7 @@ import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 
+@SuppressWarnings("serial")
 public abstract class ThingFactory<T extends NamedThing> implements Serializable{
 
 	protected SBBox box;

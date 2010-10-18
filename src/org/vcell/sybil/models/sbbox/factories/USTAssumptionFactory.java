@@ -9,6 +9,7 @@ import org.vcell.sybil.models.sbbox.imp.USTAssumptionImp;
 import org.vcell.sybil.rdf.reason.SYBREAMO;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+@SuppressWarnings("serial")
 public class USTAssumptionFactory 
 extends ThingFactory<SBBox.MutableUSTAssumption> {
 

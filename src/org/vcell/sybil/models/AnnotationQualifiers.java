@@ -5,8 +5,6 @@ import java.util.Set;
 
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
-import org.vcell.sybil.rdf.schemas.ProtegeDC;
-import org.vcell.sybil.util.sets.SetUtil;
 
 public class AnnotationQualifiers {
 	public static final Set<MIRIAMQualifier> MIRIAMMODEL_all;

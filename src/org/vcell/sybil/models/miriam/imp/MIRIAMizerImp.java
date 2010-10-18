@@ -4,7 +4,6 @@ package org.vcell.sybil.models.miriam.imp;
  *   Handling MIRIAM annotations
  */
 
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,14 +14,12 @@ import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef;
 import org.vcell.sybil.models.miriam.MIRIAMizer;
 import org.vcell.sybil.models.miriam.RefGroup;
-import org.vcell.sybil.models.miriam.demo.MIRIAMizerDemo;
 import org.vcell.sybil.rdf.RDFBox;
 import org.vcell.sybil.rdf.RDFBox.RDFThing;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 public class MIRIAMizerImp implements MIRIAMizer {

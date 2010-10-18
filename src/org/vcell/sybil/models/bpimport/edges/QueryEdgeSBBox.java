@@ -10,6 +10,8 @@ import java.util.Vector;
 
 import org.vcell.sybil.models.arq.ProcessQuery;
 import org.vcell.sybil.models.sbbox.SBBox;
+
+import com.hp.hpl.jena.datatypes.DatatypeFormatException;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.RDFNode;
@@ -64,7 +66,25 @@ public class QueryEdgeSBBox extends EdgeSBTray {
 			}
 			RDFNode nodeSC = getRDFNode(binding, ProcessVars.STOICHCOEFF);
 			if(nodeSC instanceof Literal) { 
-				edge.setSC(((Literal) nodeSC).getFloat());
+				Literal literal = (Literal) nodeSC;
+				try {
+					edge.setSC(literal.getFloat());					
+				} catch(DatatypeFormatException exception) {
+					String lexicalForm = literal.getLexicalForm();
+					try {
+						edge.setSC(Float.valueOf(lexicalForm).floatValue());							
+					} catch (Throwable t) {
+						try {
+							edge.setSC((float) literal.getDouble());	
+							System.out.println(
+							"Converting stoichiometric coefficient from double to float");
+						} catch(DatatypeFormatException exception2) {
+							edge.setSC((float) Double.valueOf(lexicalForm).doubleValue());								
+							System.out.println(
+									"Converting stoichiometric coefficient from double to float");
+						}
+					}
+				}
 			}
 			edges.add(edge);
 		}

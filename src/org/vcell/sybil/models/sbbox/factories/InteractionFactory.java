@@ -10,6 +10,7 @@ import org.vcell.sybil.rdf.schemas.SBPAX;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
+@SuppressWarnings("serial")
 public class InteractionFactory extends ThingFactory<SBBox.MutableInteraction> {
 
 	public InteractionFactory(SBBox box) { super(box, SBPAX.Interaction); }

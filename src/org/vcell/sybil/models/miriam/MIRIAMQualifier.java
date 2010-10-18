@@ -6,9 +6,6 @@ package org.vcell.sybil.models.miriam;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.vcell.sybil.models.AnnotationQualifier;
 import org.vcell.sybil.rdf.schemas.MIRIAM;
 import org.vcell.sybil.rdf.RDFBox;

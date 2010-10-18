@@ -4,7 +4,6 @@ package org.vcell.sybil.util.http.uniprot;
  *   Launch a web request to UniProt to get RDF for an id
  */
 
-import org.vcell.sybil.util.debug.Debug;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 

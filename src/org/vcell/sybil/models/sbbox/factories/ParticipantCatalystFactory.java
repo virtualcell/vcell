@@ -10,6 +10,7 @@ import org.vcell.sybil.rdf.schemas.SBPAX;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
+@SuppressWarnings("serial")
 public class ParticipantCatalystFactory extends ThingFactory<SBBox.MutableParticipantCatalyst> {
 
 	public ParticipantCatalystFactory(SBBox box) { super(box, SBPAX.ProcessParticipantCatalyst); }

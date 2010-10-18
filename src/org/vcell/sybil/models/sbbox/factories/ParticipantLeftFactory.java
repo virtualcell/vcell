@@ -10,6 +10,7 @@ import org.vcell.sybil.rdf.schemas.SBPAX;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
+@SuppressWarnings("serial")
 public class ParticipantLeftFactory extends ThingFactory<SBBox.MutableParticipantLeft> {
 
 	public ParticipantLeftFactory(SBBox box) { super(box, SBPAX.ProcessParticipantLeft); }

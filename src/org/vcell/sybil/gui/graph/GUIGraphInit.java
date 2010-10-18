@@ -7,7 +7,6 @@ package org.vcell.sybil.gui.graph;
 import org.vcell.sybil.actions.ActionsGraphInit;
 import org.vcell.sybil.actions.graph.ModelGraphManager;
 import org.vcell.sybil.gui.GUIMainInit;
-import org.vcell.sybil.gui.GUIMainInit.SubInitGraph;
 import org.vcell.sybil.util.ui.UserInterfaceGraph;
 
 public class GUIGraphInit extends ActionsGraphInit<Shape, Graph> implements GUIMainInit.SubInitGraph {

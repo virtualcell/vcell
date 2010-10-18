@@ -24,6 +24,7 @@ import org.vcell.sybil.models.sbbox.factories.TypeFactory;
 import org.vcell.sybil.models.sbbox.factories.USTAssumptionFactory;
 import org.vcell.sybil.models.sbbox.factories.UnitFactory;
 
+@SuppressWarnings("serial")
 public class FactoriesImp implements Factories, Serializable {
 	
 	protected SBBox box;

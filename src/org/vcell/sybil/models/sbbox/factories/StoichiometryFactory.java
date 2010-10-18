@@ -10,6 +10,7 @@ import org.vcell.sybil.rdf.schemas.SBPAX;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
+@SuppressWarnings("serial")
 public class StoichiometryFactory extends ThingFactory<SBBox.MutableStoichiometry> {
 
 	public StoichiometryFactory(SBBox box) { super(box, SBPAX.Stoichiometry); }

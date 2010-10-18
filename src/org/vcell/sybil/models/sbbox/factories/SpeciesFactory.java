@@ -10,6 +10,7 @@ import org.vcell.sybil.rdf.schemas.SBPAX;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
+@SuppressWarnings("serial")
 public class SpeciesFactory extends ThingFactory<SBBox.MutableSpecies> {
 
 	public SpeciesFactory(SBBox box) { super(box, SBPAX.Species); }
