@@ -101,7 +101,6 @@ public class ScrollTable extends JTable {
 	
 	private JScrollPane enclosingScrollPane = null;
 	private boolean bValidateExpressionBinding = true;
-	private TableModelListener tableModelListener = null;
 	private ComponentAdapter componentListener = null;
 	
 	public ScrollTable() {
@@ -178,7 +177,7 @@ public class ScrollTable extends JTable {
 					public void componentResized(ComponentEvent e) {
 						SwingUtilities.invokeLater(new Runnable() {
 							public void run() {
-								ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this,null,null);
+								ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this);
 							}
 						});	
 					}
@@ -186,38 +185,15 @@ public class ScrollTable extends JTable {
 			}
 			enclosingScrollPane.removeComponentListener(componentListener);
 			enclosingScrollPane.addComponentListener(componentListener);
-			
-			if (tableModelListener == null) {
-				tableModelListener  = new javax.swing.event.TableModelListener(){
-					// this tableChanged() is called before JTable.tableChanged() where all sizes are
-					// set back to default. So we need to format the table after JTable.tableChanged()
-					// is called. That's why SwingUtilities.invokeLater() is used.
-					public void tableChanged(javax.swing.event.TableModelEvent e){
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-								ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this,null,null);
-							}
-						});	
-					}
-				};
-			}
-			getModel().removeTableModelListener(tableModelListener);
-			getModel().addTableModelListener(tableModelListener);			
 		} else {
 			if (componentListener != null) {
 				enclosingScrollPane.removeComponentListener(componentListener);
-			}
-			if (tableModelListener != null) {
-				getModel().removeTableModelListener(tableModelListener);
 			}
 		}
 	}
 
 	@Override
 	public void setModel(TableModel dataModel) {
-		if (tableModelListener != null) {
-			getModel().removeTableModelListener(tableModelListener);
-		}
 		super.setModel(dataModel);
 		
 		// setting up listeners 
@@ -237,9 +213,11 @@ public class ScrollTable extends JTable {
 			}
 			setAutoResizeMode(autoResizeMode);
 		}
-		
-		if (tableModelListener != null) {
-			tableModelListener.tableChanged(new TableModelEvent(dataModel, TableModelEvent.HEADER_ROW));
-		}
+	}
+
+	@Override
+	public void tableChanged(TableModelEvent e) {
+		super.tableChanged(e);
+		ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this);
 	}	
 }

@@ -88,29 +88,19 @@ public ScopedExpressionTableCellRenderer() {
 	 * This fine grain notification tells listeners the exact range
 	 * of cells, rows, or columns that changed.
 	 */
-public static void formatTableCellSizes(final javax.swing.JTable targetTable,int[] targetRows,int[] targetColumns) {
-
+public static void formatTableCellSizes(final javax.swing.JTable targetTable) {
+	if (targetTable.getTableHeader() == null) {
+		return;
+	}
 	try{
-		if(targetRows == null){
-			targetRows = new int[targetTable.getRowCount()];
-			for(int i=0;i<targetRows.length;i+= 1){
-				targetRows[i] = i;
-			}
-		}else{
-			targetRows = (int[])targetRows.clone();
-			java.util.Arrays.sort(targetRows);
+		int[] targetRows, targetColumns;
+		targetRows = new int[targetTable.getRowCount()];
+		for(int i=0;i<targetRows.length;i+= 1){
+			targetRows[i] = i;
 		}
-//		if (targetRows.length == 0) {
-//			return;
-//		}
-		if(targetColumns == null){
-			targetColumns = new int[targetTable.getColumnCount()];
-			for(int i=0;i<targetColumns.length;i+= 1){
-				targetColumns[i] = i;
-			}
-		}else{
-			targetColumns = (int[])targetColumns.clone();
-			java.util.Arrays.sort(targetColumns);
+		targetColumns = new int[targetTable.getColumnCount()];
+		for(int i=0;i<targetColumns.length;i+= 1){
+			targetColumns[i] = i;
 		}
 		final int[] maxRowHeights = new int[targetTable.getRowCount()];
 		final int[] maxColumnWidths = new int[targetTable.getColumnCount()];
