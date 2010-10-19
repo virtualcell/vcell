@@ -60,7 +60,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     	else
     	{
     		//check least error model
-	    	double minError = 1000;
+	    	double minError = 1E8;
 	    	if(mseSummaryData != null)
 	    	{
 	    		int secDimLen = FRAPData.VFRAP_ROI_ENUM.values().length - 2 + 1;//exclude cell and bkground ROIs, include sum of error

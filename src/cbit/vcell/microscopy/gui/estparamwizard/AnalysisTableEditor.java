@@ -13,6 +13,7 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellEditor;
 
+import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 
 
@@ -48,7 +49,8 @@ public class AnalysisTableEditor extends AbstractCellEditor implements TableCell
 	public Component getTableCellEditorComponent(JTable table, Object value,
 	                 boolean isSelected, int row, int column) 
 	{
-		if(column == AnalysisTableModel.COLUMN_DIFF_ONE_CI_PLOT || column == AnalysisTableModel.COLUMN_DIFF_TWO_CI_PLOT)
+		if((column == AnalysisTableModel.COLUMN_DIFF_ONE_CI_PLOT && row < FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF &&/*there is a CI*/ table.getValueAt(row , column -1) != null) ||
+		   (column == AnalysisTableModel.COLUMN_DIFF_TWO_CI_PLOT && row < FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF &&/*there is a CI*/ table.getValueAt(row , column -1) != null))
 		{
 			return button;
 		}

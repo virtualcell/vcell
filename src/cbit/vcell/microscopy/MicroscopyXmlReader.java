@@ -414,37 +414,37 @@ public class MicroscopyXmlReader {
 				frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(getModelParameters(paramElement, FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS));
 			}
 		}
-		Element diffReacElement = frapModelElement.getChild(MicroscopyXMLTags.DiffustionReactionModelTag);
-		if(diffReacElement != null)
-		{
-			String id = diffReacElement.getAttributeValue(MicroscopyXMLTags.ModelIdentifierAttTag);
-			frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING] = new FRAPModel(id, null, null, null);
-			Element paramElement = diffReacElement.getChild(MicroscopyXMLTags.ModelParametersTag);
-			if(paramElement != null)
-			{
-				frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setModelParameters(getModelParameters(paramElement, FRAPModel.IDX_MODEL_DIFF_BINDING));
-			}
-			Element timePointsElement = diffReacElement.getChild(MicroscopyXMLTags.ModelTimePointsTag);
-			if(timePointsElement != null)
-			{
-				frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setTimepoints(getBindingReacTimePoints(timePointsElement));
-			}
-			Element modelDataElement = diffReacElement.getChild(MicroscopyXMLTags.ModelDataTag);
-			if(modelDataElement != null)
-			{
-				SimpleReferenceData refModelData = getSimpleReferenceData(modelDataElement);
-				int roiLen = FRAPData.VFRAP_ROI_ENUM.values().length;
-				double[][] result = new double[roiLen][];
-				if(refModelData.getNumColumns() == (1+roiLen))
-				{
-					for(int i=0; i<roiLen; i++)
-					{
-						result[i]=refModelData.getColumnData(i+1); //first column is t, so the roi data starts from second column
-					}
-				}
-				frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setData(result);
-			}
-		}
+//		Element diffReacElement = frapModelElement.getChild(MicroscopyXMLTags.DiffustionReactionModelTag);
+//		if(diffReacElement != null)
+//		{
+//			String id = diffReacElement.getAttributeValue(MicroscopyXMLTags.ModelIdentifierAttTag);
+//			frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING] = new FRAPModel(id, null, null, null);
+//			Element paramElement = diffReacElement.getChild(MicroscopyXMLTags.ModelParametersTag);
+//			if(paramElement != null)
+//			{
+//				frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setModelParameters(getModelParameters(paramElement, FRAPModel.IDX_MODEL_DIFF_BINDING));
+//			}
+//			Element timePointsElement = diffReacElement.getChild(MicroscopyXMLTags.ModelTimePointsTag);
+//			if(timePointsElement != null)
+//			{
+//				frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setTimepoints(getBindingReacTimePoints(timePointsElement));
+//			}
+//			Element modelDataElement = diffReacElement.getChild(MicroscopyXMLTags.ModelDataTag);
+//			if(modelDataElement != null)
+//			{
+//				SimpleReferenceData refModelData = getSimpleReferenceData(modelDataElement);
+//				int roiLen = FRAPData.VFRAP_ROI_ENUM.values().length;
+//				double[][] result = new double[roiLen][];
+//				if(refModelData.getNumColumns() == (1+roiLen))
+//				{
+//					for(int i=0; i<roiLen; i++)
+//					{
+//						result[i]=refModelData.getColumnData(i+1); //first column is t, so the roi data starts from second column
+//					}
+//				}
+//				frapModels[FRAPModel.IDX_MODEL_DIFF_BINDING].setData(result);
+//			}
+//		}
 		return frapModels;
 	}
 	

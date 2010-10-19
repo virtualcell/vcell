@@ -884,11 +884,11 @@ public class FRAPOptData {
 			{
 				if(totalParamLen == FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF)
 				{
-					clientTaskStatusSupport.setMessage("Evaluating confidence intervals of \'" + fixedParam.getName() + "\' of one diffusing component model.");
+					clientTaskStatusSupport.setMessage("<html>Evaluating confidence intervals of \'" + fixedParam.getName() + "\' <br> of diffusion with one diffusing component model.</html>");
 				}
 				else if(totalParamLen == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
 				{
-					clientTaskStatusSupport.setMessage("Evaluating confidence intervals of \'" + fixedParam.getName() + "\' of two diffusing components model.");
+					clientTaskStatusSupport.setMessage("<html>Evaluating confidence intervals of \'" + fixedParam.getName() + "\' <br> of diffusion with two diffusing components model.</html>");
 				}
 				clientTaskStatusSupport.setProgress(0);//start evaluation of a parameter.
 			}
