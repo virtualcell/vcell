@@ -873,7 +873,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 				}
 		);
 		
-		ScopedExpressionTableCellRenderer.formatTableCellSizes(table, null, null);
+		ScopedExpressionTableCellRenderer.formatTableCellSizes(table);
 		
 		int result = DialogUtils.showComponentOKCancelDialog(requester, scrollPane, title);
 		if(result != JOptionPane.OK_OPTION){

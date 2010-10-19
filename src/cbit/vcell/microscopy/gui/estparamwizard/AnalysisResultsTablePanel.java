@@ -32,6 +32,7 @@ import javax.swing.table.TableColumn;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.microscopy.ConfidenceInterval;
+import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
@@ -298,17 +299,34 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 				}
 			}
 		}
+		int bestModel = FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT;
 		if((diffOneModelSignificance && !diffTwoModelSignificance) || (! diffOneModelSignificance && diffTwoModelSignificance))
 		{
-			if(diffOneModelSignificance)
+			if(diffTwoModelSignificance)
 			{
-				firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL_WITH_SIGNIFICANCE, new Integer(-1), new Integer(FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT));
-			}
-			else if(diffTwoModelSignificance)
-			{
-				firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL_WITH_SIGNIFICANCE, new Integer(-1), new Integer(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS));
+				bestModel = FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS;
 			}
 		}
+		else //both model are identifiable or not identifiable, we choose the one with least sum of error
+		{
+			double[][] mseSummaryData = frapWorkspace.getWorkingFrapStudy().getAnalysisMSESummaryData();
+	    	
+    		//check least error model
+	    	double minError = 1E8;
+	    	if(mseSummaryData != null)
+	    	{
+	    		int secDimLen = FRAPData.VFRAP_ROI_ENUM.values().length - 2 + 1;//exclude cell and bkground ROIs, include sum of error
+	    		for(int i=0; i<FRAPModel.NUM_MODEL_TYPES; i++)
+	    		{
+	    			if(minError > mseSummaryData[i][secDimLen - 1])
+	    			{
+	    				minError = mseSummaryData[i][secDimLen - 1];
+	    				bestModel = i;
+	    			}
+	    		}
+	    	}
+		}
+		firePropertyChange(FRAPSingleWorkspace.PROPERTY_CHANGE_BEST_MODEL_WITH_SIGNIFICANCE, new Integer(-1), new Integer(bestModel));
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) 
