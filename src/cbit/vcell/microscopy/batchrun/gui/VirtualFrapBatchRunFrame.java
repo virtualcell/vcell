@@ -40,7 +40,9 @@ import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
+import cbit.vcell.microscopy.ProfileData;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.FileSavePanel;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.RoiForErrorDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.ModelTypesDescriptor;
 import cbit.vcell.microscopy.gui.AboutDialog;
@@ -241,6 +243,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 									ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), tasks, false, true, null, true);
 								}
 				   			}
+				   			batchRunWorkspace.setSaveNeeded(true);
 			  	   		}
 			  	   		else
 			  	   		{
@@ -460,7 +463,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						appendJobStatus("Running "+((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx)).getXmlFilename(), false);
+						appendJobStatus("<html><br>Running "+((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx)).getXmlFilename()+"</html>", false);
 					}
 				};
 				
@@ -510,12 +513,11 @@ public class VirtualFrapBatchRunFrame extends JFrame
 					}
 				};
 				
-				AsynchClientTask message3Task = new AsynchClientTask("Running reference simulation ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+				AsynchClientTask message3Task = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
 						MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
-						msgPanel.setProgress(100);
 						msgPanel.setProgressCompleted();
 						
 						MessagePanel msgPanel1 = appendJobStatus("Running optimization ...", true);
@@ -575,11 +577,66 @@ public class VirtualFrapBatchRunFrame extends JFrame
 					}
 				};
 				
-				AsynchClientTask message4Task = new AsynchClientTask("Running optimization ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+				AsynchClientTask message4Task = new AsynchClientTask("Evaluating confidence intervals for parameters ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
 						MessagePanel msgPanel = (MessagePanel)hashTable.get("optimizationStatus");
+						msgPanel.setProgressCompleted();
+						
+						MessagePanel msgPanel2 = appendJobStatus("Evaluating confidence intervals for parameters ...", true);
+						hashTable.put("evaluateCI", msgPanel2);
+					}
+				};
+				
+				AsynchClientTask evaluateCITask = new AsynchClientTask("Evaluating confidence intervals for parameters ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
+				{
+					public void run(Hashtable<String, Object> hashTable) throws Exception
+					{
+						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx));
+						MessagePanel msgPanel = (MessagePanel)hashTable.get("evaluateCI");
+						//evaluate confidence intervals
+						ArrayList<Integer> models = fStudy.getSelectedModels();
+						if(models.size() == 1)
+						{
+							for(int i = 0; i<models.size(); i++)
+							{
+								int model = ((Integer)models.get(i)).intValue();
+								if(model == batchRunWorkspace.getSelectedModel())
+								{
+									if(model == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+									{
+										if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null)
+										{
+											ProfileData[] profileData = fStudy.getFrapOptData().evaluateParameters(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters(), msgPanel);
+											fStudy.setProfileData_oneDiffComponent(profileData);
+										}
+									}
+									else if(model == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+									{
+										if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null)
+										{
+											ProfileData[] profileData = fStudy.getFrapOptData().evaluateParameters(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters(), msgPanel);
+											fStudy.setProfileData_twoDiffComponents(profileData);
+										}
+									}
+								}
+								else{
+									throw new Exception("Selected model for batch run is not the same as selected model in FRAP doc " + fStudy.getXmlFilename());
+								}
+							}
+						}
+						else{
+							throw new Exception("Selected model size exceed 1");
+						}
+					}
+				};
+				
+				AsynchClientTask message5Task = new AsynchClientTask("Evaluating confidence intervals for parameters ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
+				{
+					public void run(Hashtable<String, Object> hashTable) throws Exception
+					{
+						MessagePanel msgPanel = (MessagePanel)hashTable.get("evaluateCI");
 						msgPanel.setProgressCompleted();
 					}
 				};
@@ -591,6 +648,8 @@ public class VirtualFrapBatchRunFrame extends JFrame
 				batchRunTaskList.add(message3Task);
 				batchRunTaskList.add(runOptTask);
 				batchRunTaskList.add(message4Task);
+				batchRunTaskList.add(evaluateCITask);
+				batchRunTaskList.add(message5Task);
 			}
 			
 			return batchRunTaskList;
@@ -742,7 +801,42 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		};
 		saveAsTasks.add(beforeSaveTask);
 		//add saving each single vfrap files in the batchrun
-		saveAsTasks.add(batchRunWorkspace.getSaveSingleFilesTask());
+		//to see if users want to overwrite 
+		String choice = DialogUtils.showWarningDialog(VirtualFrapBatchRunFrame.this, "All \'.vfrap\' files in the batchrun will have to be saved to new copies.\nIf you just want to overwrite the existing \'.vfrap\' files in the batchrun, \nPlease cancel this action and use \'save\' function instead.", new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+		if(choice.equals(UserMessage.OPTION_OK))
+		{
+			ArrayList<FRAPStudy> frapStudies = batchRunWorkspace.getFrapStudies();
+			for(FRAPStudy fStudy:frapStudies)
+			{
+				String fileName = fStudy.getXmlFilename();
+				VirtualFrapLoader.saveFileChooser_batchRunSaveSingleFileAs.setDialogTitle("Save "+fileName+" as...");
+				int option = VirtualFrapLoader.saveFileChooser_batchRunSaveSingleFileAs.showSaveDialog(VirtualFrapBatchRunFrame.this);
+				if(option == JFileChooser.APPROVE_OPTION)
+				{
+					String fileStr = VirtualFrapLoader.saveFileChooser_batchRunSaveSingleFileAs.getSelectedFile().getAbsolutePath();
+					File tempFile = new File(fileStr);
+		    		if(!VirtualFrapLoader.filter_vfrap.accept(tempFile)){
+    					if(tempFile.getName().indexOf(".") == -1){
+    						tempFile = new File(tempFile.getParentFile(),tempFile.getName()+"."+VirtualFrapLoader.VFRAP_EXTENSION);
+    					}else{
+    						DialogUtils.showErrorDialog(this, "Virtual FRAP document names must have an extension of ."+VirtualFrapLoader.VFRAP_EXTENSION);
+    						throw new RuntimeException("Virtual FRAP document names must have an extension of ."+VirtualFrapLoader.VFRAP_EXTENSION);//return?
+    					}
+    				}
+					fStudy.setXmlFilename(tempFile.getAbsolutePath());
+				}
+				else
+				{
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+			}
+			
+			saveAsTasks.add(batchRunWorkspace.getSaveSingleFilesTask());
+		}
+		else
+		{
+			throw UserCancelException.CANCEL_GENERIC;
+		}
 		//write batch run file
 		saveAsTasks.add(batchRunWorkspace.getSaveBatchRunFileTask());
 
@@ -750,6 +844,9 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
+				//update tree
+				getBatchRunDetailsPanel().updateViewTreeForNewBatchRunFile(batchRunWorkspace);
+				//update title bar and status bar
 				File outFile = (File)hashTable.get(FRAPStudyPanel.SAVE_FILE_NAME_KEY);
 				VirtualFrapBatchRunFrame.updateStatus("File " + outFile.getAbsolutePath()+" has been saved.");
 		        VirtualFrapLoader.mf.setBatchRunFrameTitle(outFile.getName());

@@ -65,16 +65,16 @@ public class VirtualFrapLoader {
 	//get paths
 	//get current working directory
 	//filefilters for VFrap
-	public static final String VFRAP_EXTENSION = "vfrap";
-	public static final String LSM_EXTENSION = "lsm";
-	public static final String TIFF_EXTENSION = "tif";
-	public static final String QT_EXTENSION = "mov";
-	public static final String VFRAP_BATCH_EXTENSION = "vfbatch";
-	public final static  VirtualFrapMainFrame.AFileFilter filter_lsm = new VirtualFrapMainFrame.AFileFilter(LSM_EXTENSION,"Zeiss Lsm Images");
-	public final static  VirtualFrapMainFrame.AFileFilter filter_tif = new VirtualFrapMainFrame.AFileFilter(TIFF_EXTENSION, "TIFF Images");
-	public final static  VirtualFrapMainFrame.AFileFilter filter_vfrap = new VirtualFrapMainFrame.AFileFilter(VFRAP_EXTENSION,"Virtual FRAP Files");
-	public final static  VirtualFrapMainFrame.AFileFilter filter_qt = new VirtualFrapMainFrame.AFileFilter(QT_EXTENSION,"Quick Time Movie Files");
-	public final static  VirtualFrapMainFrame.AFileFilter filter_vfbatch = new VirtualFrapMainFrame.AFileFilter(VFRAP_BATCH_EXTENSION,"Virtual FRAP BatchRun Files");
+	public final static String VFRAP_EXTENSION = "vfrap";
+	public final static String LSM_EXTENSION = "lsm";
+	public final static String TIFF_EXTENSION = "tif";
+	public final static String QT_EXTENSION = "mov";
+	public final static String VFRAP_BATCH_EXTENSION = "vfbatch";
+	public final static VirtualFrapMainFrame.AFileFilter filter_lsm = new VirtualFrapMainFrame.AFileFilter(LSM_EXTENSION,"Zeiss Lsm Images");
+	public final static VirtualFrapMainFrame.AFileFilter filter_tif = new VirtualFrapMainFrame.AFileFilter(TIFF_EXTENSION, "TIFF Images");
+	public final static VirtualFrapMainFrame.AFileFilter filter_vfrap = new VirtualFrapMainFrame.AFileFilter(VFRAP_EXTENSION,"Virtual FRAP Files");
+	public final static VirtualFrapMainFrame.AFileFilter filter_qt = new VirtualFrapMainFrame.AFileFilter(QT_EXTENSION,"Quick Time Movie Files");
+	public final static VirtualFrapMainFrame.AFileFilter filter_vfbatch = new VirtualFrapMainFrame.AFileFilter(VFRAP_BATCH_EXTENSION,"Virtual FRAP BatchRun Files");
     //create one instance of each kind of filechooser, so that it remembers the last time visited path. 
     public static JFileChooser openVFRAPFileChooser; 
     public static JFileChooser openVFRAPBatchRunChooser;
@@ -82,10 +82,11 @@ public class VirtualFrapLoader {
     public static JFileChooser addDataFileChooser_batchRun;
     public static JFileChooser saveFileChooser; 
     public static JFileChooser saveFileChooser_batchRun;
+    public static JFileChooser saveFileChooser_batchRunSaveSingleFileAs;
     public static JFileChooser multiOpenFileChooser; 
     public static JFileChooser saveMovieFileChooser;
     //set default font 
-    public static Font defaultFont = new Font("Tahoma", Font.PLAIN, 11); 
+    public final static Font defaultFont = new Font("Tahoma", Font.PLAIN, 11); 
     //the only one instance of the main frame 
     public static VirtualFrapMainFrame mf; 
 	
@@ -124,33 +125,44 @@ public class VirtualFrapLoader {
 			    }
 			    //set up file choosers 
 			    openVFRAPFileChooser = new JFileChooser(); 
+			    openVFRAPFileChooser.setDialogTitle("Open Virtual FRAP document (.vfrap)");
 			    openVFRAPFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
 			    openVFRAPFileChooser.addChoosableFileFilter(filter_vfrap); 
 			    openVFRAPFileChooser.setAcceptAllFileFilterUsed(false);
 			    openVFRAPBatchRunChooser = new JFileChooser(); 
+			    openVFRAPBatchRunChooser.setDialogTitle("Open Virtual FRAP batchrun document (.vfbatch)");
 			    openVFRAPBatchRunChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
 			    openVFRAPBatchRunChooser.addChoosableFileFilter(filter_vfbatch); 
 			    openVFRAPBatchRunChooser.setAcceptAllFileFilterUsed(false);
 			    loadFRAPImageFileChooser = new JFileChooser(); 
+			    loadFRAPImageFileChooser.setDialogTitle("Load FRAP image file");
 			    loadFRAPImageFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
 			    loadFRAPImageFileChooser.addChoosableFileFilter(filter_tif);
 			    loadFRAPImageFileChooser.addChoosableFileFilter(filter_lsm); 
 			    addDataFileChooser_batchRun = new JFileChooser(); 
+			    addDataFileChooser_batchRun.setDialogTitle("Add a Virtual FRAP docmument or FRAP image file to batchrun");
 			    addDataFileChooser_batchRun.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 			    addDataFileChooser_batchRun.addChoosableFileFilter(filter_vfrap);
 			    addDataFileChooser_batchRun.addChoosableFileFilter(filter_tif);
 			    addDataFileChooser_batchRun.addChoosableFileFilter(filter_lsm);
 			    saveFileChooser = new JFileChooser();
+			    saveFileChooser.setDialogTitle("Save Virtual FRAP document (.vfrap)");
 			    saveFileChooser.addChoosableFileFilter(filter_vfrap); 
 			    saveFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 			    saveFileChooser_batchRun = new JFileChooser();
+			    saveFileChooser_batchRun.setDialogTitle("Save Virtual FRAP batchrun document (.vfbatch)");
 			    saveFileChooser_batchRun.addChoosableFileFilter(filter_vfbatch); 
 			    saveFileChooser_batchRun.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
+			    saveFileChooser_batchRunSaveSingleFileAs= new JFileChooser();
+			    saveFileChooser_batchRunSaveSingleFileAs.addChoosableFileFilter(filter_vfrap); 
+			    saveFileChooser_batchRunSaveSingleFileAs.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 			    multiOpenFileChooser = new JFileChooser(); 
+			    multiOpenFileChooser.setDialogTitle("Open FRAP image series");
 			    multiOpenFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));
 			    multiOpenFileChooser.addChoosableFileFilter(filter_tif);
 			    multiOpenFileChooser.setMultiSelectionEnabled(true);
 			    saveMovieFileChooser = new JFileChooser();
+			    saveMovieFileChooser.setDialogTitle("Save to quick time movie (.mov)");
 			    saveMovieFileChooser.addChoosableFileFilter(filter_qt);
 			    saveMovieFileChooser.setAcceptAllFileFilterUsed(false);
 			    saveMovieFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory()));

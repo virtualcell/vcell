@@ -9,8 +9,6 @@ import java.util.Hashtable;
 
 import org.vcell.util.Compare;
 
-import com.sun.media.rtsp.protocol.SetParameterMessage;
-
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
@@ -471,6 +469,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		};
 		return saveSingleFileTask;
 	}
+	
 	//get client task for saving a batch run file
 	public AsynchClientTask getSaveBatchRunFileTask()
 	{
