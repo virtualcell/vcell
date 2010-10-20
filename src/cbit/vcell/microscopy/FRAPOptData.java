@@ -1094,6 +1094,8 @@ public class FRAPOptData {
 			resultData[j] = profileData;
 			clientTaskStatusSupport.setProgress(100);//finish evaluation of a parameter
 		}
+		//this message is specifically set for batchrun, the message will stay in the status panel. It doesn't affect single run,which disappears quickly that user won't notice.
+		clientTaskStatusSupport.setMessage("Evaluating confidence intervals ...");
 //		long endTime =System.currentTimeMillis();
 //		System.out.println("total time used:" + (endTime - startTime));
 		return resultData;
