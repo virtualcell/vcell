@@ -10,6 +10,7 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
+import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -314,7 +315,7 @@ protected StructureMapping(Structure structure, SimulationContext argSimulationC
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
+	PropertyChangeListenerProxyVCell.addProxyListener(getPropertyChange(), listener);
 }
 
 /**
@@ -660,6 +661,7 @@ public void refreshDependencies(){
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+	PropertyChangeListenerProxyVCell.removeProxyListener(getPropertyChange(), listener);
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 

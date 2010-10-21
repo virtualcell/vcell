@@ -3,6 +3,8 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.Hashtable;
+
 import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
@@ -11,6 +13,8 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
@@ -235,10 +239,16 @@ public void setGeometry(Geometry geometry) {
 	Geometry oldValue = fieldGeometry;
 	if (oldValue != null){
 		oldValue.getGeometrySpec().removePropertyChangeListener(this);
+		for (SubVolume sv : oldValue.getGeometrySpec().getSubVolumes()) {
+			sv.removePropertyChangeListener(this);
+		}
 	}
 	fieldGeometry = geometry;
 	if (fieldGeometry != null){
 		fieldGeometry.getGeometrySpec().addPropertyChangeListener(this);
+		for (SubVolume sv : fieldGeometry.getGeometrySpec().getSubVolumes()) {
+			sv.addPropertyChangeListener(this);
+		}
 		autoCompleteSymbolFilter = new AutoCompleteSymbolFilter() {
 			public boolean accept(SymbolTableEntry ste) {
 				int dimension = fieldGeometry.getDimension();
@@ -265,39 +275,44 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=getColumnCount()){
 		throw new RuntimeException("GeometrySubVolumeTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
-	SubVolume subVolume = getGeometry().getGeometrySpec().getSubVolumes(rowIndex);
+	final SubVolume subVolume = getGeometry().getGeometrySpec().getSubVolumes(rowIndex);
 	try {
 		switch (columnIndex){
 			case COLUMN_NAME:{
-				String newName = (String)aValue;
+				final String newName = (String)aValue;
 				subVolume.setName(newName);
-				fireTableRowsUpdated(rowIndex,rowIndex);
+				AsynchClientTask task1 = new AsynchClientTask("changing the name", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						getGeometry().precomputeAll();
+					}
+				};
+				ClientTaskDispatcher.dispatch(ownerTable, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
 				break;
 			}
 			case COLUMN_VALUE:{
-				try {
-					if (subVolume instanceof AnalyticSubVolume){
-						AnalyticSubVolume analyticSubVolume = (AnalyticSubVolume)subVolume;
-						if (aValue instanceof ScopedExpression){
-//							Expression exp = ((ScopedExpression)aValue).getExpression();
-//							analyticSubVolume.setExpression(exp);
-							throw new RuntimeException("unexpected value type ScopedExpression");
-						}else if (aValue instanceof String) {
-							String newExpressionString = (String)aValue;
-							analyticSubVolume.setExpression(new Expression(newExpressionString));
-						}
-						fireTableRowsUpdated(rowIndex,rowIndex);
+				if (subVolume instanceof AnalyticSubVolume){
+					final AnalyticSubVolume analyticSubVolume = (AnalyticSubVolume)subVolume;
+					if (aValue instanceof ScopedExpression){
+						throw new RuntimeException("unexpected value type ScopedExpression");
+					}else if (aValue instanceof String) {
+						final String newExpressionString = (String)aValue;
+						analyticSubVolume.setExpression(new Expression(newExpressionString));
+						AsynchClientTask task1 = new AsynchClientTask("changing the expression", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+							@Override
+							public void run(Hashtable<String, Object> hashTable) throws Exception {
+								getGeometry().precomputeAll();
+							}
+						};
+						ClientTaskDispatcher.dispatch(ownerTable, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
 					}
-				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}
 				break;
 			}
 		}
-	}catch (java.beans.PropertyVetoException e){
+	}catch (Exception e){
 		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(ownerTable, e.getMessage());
+		DialogUtils.showErrorDialog(ownerTable, e.getMessage(), e);
 	}
 }
 

@@ -528,7 +528,10 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 
 		GeometrySpec geomSpec = geom.getGeometrySpec();
 		IndexColorModel icm = GeometrySpec.getHandleColorMap();
-		VCImage geomImage = geomSpec.getSampledImage();
+		VCImage geomImage = geomSpec.getSampledImage().getCurrentValue();
+		if(geomImage == null){
+			throw new Exception("generateGeometryImage error : No Image");
+		}
 		int x = geomImage.getNumX(); 
 		int y = geomImage.getNumY();
 		int z = geomImage.getNumZ();
@@ -567,9 +570,6 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 			WritableRaster smallPixelWR = null;
 			int[] cmap = new int[256];
 			final int DISPLAY_DIM_MAX = 256;
-			if(geomImage == null){
-				throw new Exception("generateGeometryImage error : No Image");
-			}
 			
 			try{
 				// int RGB interpretation as follows:

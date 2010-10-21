@@ -51,11 +51,6 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 		}
 	}
 
-	public void refreshSubVolumeContainerShape(BufferedImage newDisplayImage){
-		subVolumeContainerShape.refreshDisplayImage(newDisplayImage);
-		fireGraphChanged(new GraphEvent(this));
-	}
-	
 	@Override
 	public void refreshAll() {
 		{
@@ -111,6 +106,7 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 				new SubVolumeContainerShape(getGeometryContext().getGeometry(), this);			
 		}
 		subVolumeContainerShape.removeAllChildren();
+		subVolumeContainerShape.setBrightImage(getGeometryContext().getGeometry().getGeometrySpec().getThumbnailImage().getCurrentValue());
 		addShape(subVolumeContainerShape);
 		geometryShape.addChildShape(subVolumeContainerShape);
 		StructureMapping structureMappings[] = getGeometryContext().getStructureMappings();

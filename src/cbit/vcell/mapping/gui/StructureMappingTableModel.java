@@ -47,6 +47,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class StructureMappingTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
 	private static final String PROPERTY_GEOMETRY_CONTEXT = "geometryContext";
 	

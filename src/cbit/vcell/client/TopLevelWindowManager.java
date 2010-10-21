@@ -392,7 +392,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 					}else{
 						hashTable.put(B_SHOW_OLD_GEOM_EDITOR, true);
 						//preload sampledimage to prevent gui delay later
-						copiedGeom.getGeometrySpec().getSampledImage();
+						copiedGeom.precomputeAll();
 						hashTable.put("doc",copiedGeom);
 						runtimeTasksV.addAll(Arrays.asList(afterTasks));
 					}

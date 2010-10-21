@@ -126,15 +126,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(String property,java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(property,listener);
-}
-
-
 /**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
@@ -161,30 +152,16 @@ public GeometryClass[] getGeometryClasses() {
 	for (int i = 0; i < subVolumes.length; i++) {
 		gcList.add(subVolumes[i]);
 	}
-	if (fieldGeometrySurfaceDescription!=null){
+	if (fieldGeometrySurfaceDescription != null){
 		SurfaceClass[] surfaceClasses = fieldGeometrySurfaceDescription.getSurfaceClasses();
-		if (surfaceClasses==null || fieldGeometrySurfaceDescription.getGeometricRegions()==null){
-			try {
-				fieldGeometrySurfaceDescription.updateAll();
-			} catch (GeometryException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
-			} catch (ImageException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
-			} catch (ExpressionException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
+		if (surfaceClasses != null) {
+			for (int i = 0; i < surfaceClasses.length; i++) {
+				gcList.add(surfaceClasses[i]);
 			}
-		}
-		surfaceClasses = fieldGeometrySurfaceDescription.getSurfaceClasses();
-		for (int i = 0;surfaceClasses != null &&  i < surfaceClasses.length; i++) {
-			gcList.add(surfaceClasses[i]);
 		}
 	}
 	return gcList.toArray(new GeometryClass[gcList.size()]);
 }
-
 
 public GeometryClass getGeometryClass(String name) {
 	for (SubVolume sv : fieldGeometrySpec.getSubVolumes()) {
@@ -192,26 +169,13 @@ public GeometryClass getGeometryClass(String name) {
 			return sv;
 		}
 	}
-	if (fieldGeometrySurfaceDescription!=null){
+	if (fieldGeometrySurfaceDescription != null){
 		SurfaceClass[] surfaceClasses = fieldGeometrySurfaceDescription.getSurfaceClasses();
-		if (surfaceClasses==null){
-			try {
-				fieldGeometrySurfaceDescription.updateAll();
-			} catch (GeometryException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
-			} catch (ImageException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
-			} catch (ExpressionException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());
-			}
-		}
-		surfaceClasses = fieldGeometrySurfaceDescription.getSurfaceClasses();
-		for (SurfaceClass sc : fieldGeometrySurfaceDescription.getSurfaceClasses()) {
-			if (sc.getName().equals(name)) {
-				return sc;
+		if (surfaceClasses != null){
+			for (SurfaceClass sc : fieldGeometrySurfaceDescription.getSurfaceClasses()) {
+				if (sc.getName().equals(name)) {
+					return sc;
+				}
 			}
 		}
 	}
@@ -228,10 +192,10 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 	Geometry geometry = (Geometry) object;
-	if (!org.vcell.util.Compare.isEqual(getName(), geometry.getName())){
+	if (!Compare.isEqual(getName(), geometry.getName())){
 		return false;
 	}
-	if (!org.vcell.util.Compare.isEqual(getDescription(), geometry.getDescription())){
+	if (!Compare.isEqual(getDescription(), geometry.getDescription())){
 		return false;
 	}
 	if (!Compare.isEqualOrNull(getGeometrySurfaceDescription(), geometry.getGeometrySurfaceDescription())){
@@ -486,9 +450,13 @@ public String toString() {
 }
 
 public void precomputeAll() throws GeometryException, ImageException, ExpressionException {
-	getGeometrySpec().getSampledImage();
+	getGeometrySpec().updateSampledImage();
 	if (getDimension()>0 && getGeometrySurfaceDescription().getGeometricRegions()==null){
 		getGeometrySurfaceDescription().updateAll();					
-	}	
+	}
+	
+	getGeometrySpec().fireAll();
+	getGeometrySurfaceDescription().fireAll();
 }
+
 }

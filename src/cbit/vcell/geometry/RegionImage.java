@@ -952,7 +952,7 @@ private void correctQuadVertexOrdering() {
 				System.out.println("gridNormal = ["+gridNormal.getX()+" "+gridNormal.getY()+" "+gridNormal.getZ()+"]");
 				System.out.println("");
 			}else{
-				System.out.println("normals ok");
+				//System.out.println("normals ok");
 			}
 		}
 	}	

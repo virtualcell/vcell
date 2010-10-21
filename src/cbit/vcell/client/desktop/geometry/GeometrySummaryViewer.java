@@ -19,29 +19,30 @@ import cbit.vcell.geometry.gui.GeometryViewer;
  * Creation date: (6/3/2004 11:48:54 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class GeometrySummaryViewer extends JPanel {
 
 	//
 	public static class GeometrySummaryViewerEvent extends ActionEvent{
 
-		private cbit.vcell.geometry.Geometry geometry;
+		private Geometry geometry;
 		
-		public GeometrySummaryViewerEvent(cbit.vcell.geometry.Geometry argGeom,Object source, int id, String command,int modifiers) {
+		public GeometrySummaryViewerEvent(Geometry argGeom,Object source, int id, String command,int modifiers) {
 			super(source, id, command, modifiers);
 			geometry = argGeom;
 		}
-		public cbit.vcell.geometry.Geometry getGeometry(){
+		public Geometry getGeometry(){
 			return geometry;
 		}
 	}
 	private GeometryViewer geometryViewer = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JButton ivjJButtonReplace = null;
     protected transient ActionListener actionListener = null;
 	private JButton ivjJButtonViewSurfaces = null;
-	private cbit.vcell.geometry.Geometry fieldGeometry = null;
+	private Geometry fieldGeometry = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == GeometrySummaryViewer.this.getJButtonReplace()) 
 				connEtoC1(e);
@@ -55,9 +56,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoM1(evt);
 			if (evt.getSource() == GeometrySummaryViewer.this && (evt.getPropertyName().equals("geometry"))) 
 				connEtoC3(evt);
-			if(evt.getSource() == getGeometryViewer() && evt.getPropertyName().equals(GeometryViewer.SUBVOLCNTRSHP_CHANGED)){
-				firePropertyChange(GeometryViewer.SUBVOLCNTRSHP_CHANGED, evt.getOldValue(), evt.getNewValue());
-			}
 		};
 	};
 	private JButton ivjJButtonCreateGeometry = null;
@@ -415,30 +413,18 @@ public synchronized void removeActionListener(ActionListener l) {
  * @param geometry The new value for the property.
  * @see #getGeometry
  */
-public void setGeometry(cbit.vcell.geometry.Geometry geometry) {
-	cbit.vcell.geometry.Geometry oldValue = fieldGeometry;
+public void setGeometry(Geometry geometry) {
+	Geometry oldValue = fieldGeometry;
 	if(oldValue != null){
-//		oldValue.removePropertyChangeListener(ivjEventHandler);
 		if(oldValue.getGeometrySpec() != null){
 			oldValue.getGeometrySpec().removePropertyChangeListener(ivjEventHandler);
-//			SubVolume subVolumes[] = oldValue.getGeometrySpec().getSubVolumes();
-//			for (int i = 0;subVolumes!=null && i < subVolumes.length; i++){
-//				subVolumes[i].removePropertyChangeListener(ivjEventHandler);
-//			}
 		}
 	}
 	fieldGeometry = geometry;
 	if(fieldGeometry != null ){
-//		fieldGeometry.removePropertyChangeListener(ivjEventHandler);
-//		fieldGeometry.addPropertyChangeListener(ivjEventHandler);
 		if(fieldGeometry.getGeometrySpec() != null){
 			fieldGeometry.getGeometrySpec().removePropertyChangeListener(ivjEventHandler);
 			fieldGeometry.getGeometrySpec().addPropertyChangeListener(ivjEventHandler);
-//			SubVolume subVolumes[] = fieldGeometry.getGeometrySpec().getSubVolumes();
-//			for (int i = 0;subVolumes!=null && i < subVolumes.length; i++){
-//				subVolumes[i].removePropertyChangeListener(ivjEventHandler);
-//				subVolumes[i].addPropertyChangeListener(ivjEventHandler);
-//			}
 		}
 		if (geometry.getDimension()<1){
 			getGeometryViewer().setVisible(false);

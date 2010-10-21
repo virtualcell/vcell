@@ -18,6 +18,7 @@ import cbit.image.*;
  * Creation date: (4/9/01 8:06:53 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class GeometrySummaryPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjJLabel1 = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
@@ -1004,7 +1005,7 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Comment
  */
-private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
+private void initGeometry(Geometry arg1) {
 	final boolean bSpatial = getGeometry() != null && getGeometry().getDimension() > 0;
 	getImagePlaneManagerPanel1().setVisible(bSpatial);
 	getJPanelOrigin().setVisible(bSpatial);
@@ -1012,7 +1013,10 @@ private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
 	
 	if(getGeometry() != null){
 		try{
-			VCImage vcImage = getGeometry().getGeometrySpec().getSampledImage();
+			if (getGeometry().getGeometrySpec().getSampledImage().isDirty()) {
+				return;
+			}
+			VCImage vcImage = getGeometry().getGeometrySpec().getSampledImage().getCurrentValue();
 			byte[] pixels = vcImage.getPixels();
 			
 			DisplayAdapterService das = new DisplayAdapterService();
