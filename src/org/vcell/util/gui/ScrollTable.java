@@ -217,6 +217,8 @@ public class ScrollTable extends JTable {
 	@Override
 	public void tableChanged(TableModelEvent e) {
 		super.tableChanged(e);
-		ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this);
+		if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
+			ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this);
+		}
 	}	
 }
