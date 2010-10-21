@@ -492,16 +492,8 @@ public class AddShapeJPanel extends JPanel {
 	public void setDefaultCenter(Double x,Double y,Double z){
 		circleCenterTextField.setText((x != null?x:"")+(y != null?","+y:"")+(z != null?","+z:""));
 	}
-
-	public static void addSubVolumeToGeometrySpec(AddShapeJPanel addShapeJPanel,GeometrySpec geometrySpec) throws Exception{
-		geometrySpec.addSubVolume(
-				new cbit.vcell.geometry.AnalyticSubVolume(
-					null, geometrySpec.getFreeSubVolumeName(),
-					new cbit.vcell.parser.Expression(addShapeJPanel.getCurrentAnalyticExpression()),
-					-1),true);
-	}
 	
-	private String getCurrentAnalyticExpression(){
+	public String getCurrentAnalyticExpression(){
 		String result = null;
 		if(comboBox.getSelectedItem().equals(AddShapeJPanel.MANUAL_SELECT)){
 			return manualTextField.getText();

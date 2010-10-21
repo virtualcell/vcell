@@ -12,6 +12,9 @@ import java.util.Hashtable;
 
 import javax.swing.JOptionPane;
 
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
+
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -894,14 +897,15 @@ private void Ok() throws PropertyVetoException {
 	bUpdating = true;
 	try {
 		final GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
-		AsynchClientTask extentOriginTask = new AsynchClientTask("Update Extent and Origin",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		AsynchClientTask extentOriginTask = new AsynchClientTask("Changing domain",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				geometrySpec.setExtent(new org.vcell.util.Extent(worldExtentX,worldExtentY,worldExtentZ));
-				geometrySpec.setOrigin(new org.vcell.util.Origin(worldOriginX,worldOriginY,worldOriginZ));
+				geometrySpec.setExtent(new Extent(worldExtentX,worldExtentY,worldExtentZ));
+				geometrySpec.setOrigin(new Origin(worldOriginX,worldOriginY,worldOriginZ));
+				getGeometry().precomputeAll();
 			}
 		};
-		ClientTaskDispatcher.dispatch(JOptionPane.getRootFrame(), new Hashtable<String, Object>(), new AsynchClientTask[] {extentOriginTask});
+		ClientTaskDispatcher.dispatch(this.getParent(), new Hashtable<String, Object>(), new AsynchClientTask[] {extentOriginTask}, false);
 	}finally{
 		bUpdating = false;
 	}

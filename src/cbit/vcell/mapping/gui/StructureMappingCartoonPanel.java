@@ -4,7 +4,6 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 �*/
 import java.awt.GridBagConstraints;
-import java.awt.image.BufferedImage;
 
 import javax.swing.ButtonModel;
 import javax.swing.JFrame;
@@ -14,7 +13,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
+import org.vcell.util.gui.ButtonGroupCivilized;
+import org.vcell.util.gui.JToolBarToggleButton;
+
 import cbit.gui.graph.CartoonTool.Mode;
+import cbit.gui.graph.GraphPane;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 /**
@@ -22,12 +25,12 @@ import cbit.vcell.mapping.SimulationContext;
  */
 @SuppressWarnings("serial")
 public class StructureMappingCartoonPanel extends JPanel implements java.beans.PropertyChangeListener {
-	private cbit.gui.graph.GraphPane ivjStructureGraphPane = null;
+	private GraphPane ivjStructureGraphPane = null;
 	private StructureMappingPanel ivjStructureMappingPanel = null;
 	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized = null;
 	private JToolBar ivjJToolBar1 = null;
-	private org.vcell.util.gui.JToolBarToggleButton ivjLineButton = null;
-	private org.vcell.util.gui.JToolBarToggleButton ivjSelectButton = null;
+	private JToolBarToggleButton ivjLineButton = null;
+	private JToolBarToggleButton ivjSelectButton = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private ButtonModel ivjSelection = null;
 	private JScrollPane ivjJScrollPane1 = null;
@@ -73,7 +76,7 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	 * @param value cbit.vcell.mapping.SimulationContext
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private void connEtoM10(cbit.vcell.mapping.SimulationContext value) {
+	private void connEtoM10(SimulationContext value) {
 		try {
 			// user code begin {1}
 			// user code end
@@ -175,7 +178,7 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	 * @param value cbit.vcell.mapping.SimulationContext
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private void connEtoM3(cbit.vcell.mapping.SimulationContext value) {
+	private void connEtoM3(SimulationContext value) {
 		try {
 			// user code begin {1}
 			// user code end
@@ -434,10 +437,10 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	 * @return cbit.gui.ButtonGroupCivilized
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized() {
+	private ButtonGroupCivilized getButtonGroupCivilized() {
 		if (ivjButtonGroupCivilized == null) {
 			try {
-				ivjButtonGroupCivilized = new org.vcell.util.gui.ButtonGroupCivilized();
+				ivjButtonGroupCivilized = new ButtonGroupCivilized();
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -453,7 +456,7 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	/**
 	 * Comment
 	 */
-	public cbit.vcell.mapping.GeometryContext getGeoContext(SimulationContext argSimulationContext) {
+	public GeometryContext getGeoContext(SimulationContext argSimulationContext) {
 		if (argSimulationContext!=null){
 			return argSimulationContext.getGeometryContext();
 		}else{
@@ -467,7 +470,7 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	 * @return cbit.vcell.mapping.GeometryContext
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private cbit.vcell.mapping.GeometryContext getGeometryContext1() {
+	private GeometryContext getGeometryContext1() {
 		// user code begin {1}
 		// user code end
 		return ivjGeometryContext1;
@@ -580,8 +583,8 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 				ivjJToolBar1.setFloatable(false);
 				ivjJToolBar1.setBorder(new javax.swing.border.EtchedBorder());
 				ivjJToolBar1.setOrientation(javax.swing.SwingConstants.VERTICAL);
-				getJToolBar1().add(getSelectButton(), getSelectButton().getName());
-				getJToolBar1().add(getLineButton(), getLineButton().getName());
+				ivjJToolBar1.add(getSelectButton(), getSelectButton().getName());
+				ivjJToolBar1.add(getLineButton(), getLineButton().getName());
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -626,10 +629,10 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	 * @return cbit.gui.JToolBarToggleButton
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private org.vcell.util.gui.JToolBarToggleButton getSelectButton() {
+	private JToolBarToggleButton getSelectButton() {
 		if (ivjSelectButton == null) {
 			try {
-				ivjSelectButton = new org.vcell.util.gui.JToolBarToggleButton();
+				ivjSelectButton = new JToolBarToggleButton();
 				ivjSelectButton.setName("SelectButton");
 				ivjSelectButton.setText("");
 				ivjSelectButton.setMaximumSize(new java.awt.Dimension(28, 28));
@@ -676,7 +679,7 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	 * @return cbit.vcell.mapping.SimulationContext
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
+	private SimulationContext getsimulationContext1() {
 		// user code begin {1}
 		// user code end
 		return ivjsimulationContext1;
@@ -687,10 +690,10 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	 * @return cbit.vcell.graph.GraphPane
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private cbit.gui.graph.GraphPane getStructureGraphPane() {
+	private GraphPane getStructureGraphPane() {
 		if (ivjStructureGraphPane == null) {
 			try {
-				ivjStructureGraphPane = new cbit.gui.graph.GraphPane();
+				ivjStructureGraphPane = new GraphPane();
 				ivjStructureGraphPane.setName("StructureGraphPane");
 				ivjStructureGraphPane.setBounds(0, 0, 290, 237);
 				// user code begin {1}
@@ -712,7 +715,7 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	private StructureMappingCartoon getStructureMappingCartoon1() {
 		if (ivjStructureMappingCartoon1 == null) {
 			try {
-				ivjStructureMappingCartoon1 = new cbit.vcell.mapping.gui.StructureMappingCartoon();
+				ivjStructureMappingCartoon1 = new StructureMappingCartoon();
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -733,7 +736,7 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	private StructureMappingCartoonTool getStructureMappingCartoonTool1() {
 		if (ivjStructureMappingCartoonTool1 == null) {
 			try {
-				ivjStructureMappingCartoonTool1 = new cbit.vcell.mapping.gui.StructureMappingCartoonTool();
+				ivjStructureMappingCartoonTool1 = new StructureMappingCartoonTool();
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -754,7 +757,7 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	private StructureMappingPanel getStructureMappingPanel() {
 		if (ivjStructureMappingPanel == null) {
 			try {
-				ivjStructureMappingPanel = new cbit.vcell.mapping.gui.StructureMappingPanel();
+				ivjStructureMappingPanel = new StructureMappingPanel();
 				ivjStructureMappingPanel.setName("StructureMappingPanel");
 				ivjStructureMappingPanel.setPreferredSize(new java.awt.Dimension(100, 200));
 				// user code begin {1}
@@ -884,15 +887,12 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 		// user code end
 	}
 
-	public void refreshSubVolumeContainerShapeDisplayImage(BufferedImage newDisplayImage){
-		getStructureMappingCartoon1().refreshSubVolumeContainerShape(newDisplayImage);
-	}
 	/**
 	 * Set the GeometryContext1 to a new value.
 	 * @param newValue cbit.vcell.mapping.GeometryContext
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private void setGeometryContext1(cbit.vcell.mapping.GeometryContext newValue) {
+	private void setGeometryContext1(GeometryContext newValue) {
 		if (ivjGeometryContext1 != newValue) {
 			try {
 				/* Stop listening for events from the current object */
@@ -959,10 +959,10 @@ public class StructureMappingCartoonPanel extends JPanel implements java.beans.P
 	 * @param newValue cbit.vcell.mapping.SimulationContext
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private void setsimulationContext1(cbit.vcell.mapping.SimulationContext newValue) {
+	private void setsimulationContext1(SimulationContext newValue) {
 		if (ivjsimulationContext1 != newValue) {
 			try {
-				cbit.vcell.mapping.SimulationContext oldValue = getsimulationContext1();
+				SimulationContext oldValue = getsimulationContext1();
 				/* Stop listening for events from the current object */
 				if (ivjsimulationContext1 != null) {
 					ivjsimulationContext1.removePropertyChangeListener(this);

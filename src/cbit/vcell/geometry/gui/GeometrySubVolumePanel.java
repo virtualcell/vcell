@@ -30,9 +30,6 @@ import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.ZEnforcer;
 
-import cbit.gui.PropertyChangeListenerProxyVCell;
-import cbit.gui.ScopedExpression;
-import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.AnalyticSubVolume;
@@ -40,10 +37,11 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
+import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class GeometrySubVolumePanel extends javax.swing.JPanel {
 	private javax.swing.JButton ivjBackButton = null;
 	private javax.swing.JButton ivjDeleteButton = null;
@@ -67,11 +65,11 @@ public class GeometrySubVolumePanel extends javax.swing.JPanel {
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == GeometrySubVolumePanel.this.getFrontButton()) 
-				connEtoM6(e);
+				moveSubvolumeFront();
 			if (e.getSource() == GeometrySubVolumePanel.this.getBackButton()) 
-				connEtoM9(e);
+				moveBack();
 			if (e.getSource() == GeometrySubVolumePanel.this.getDeleteButton()) 
-				connEtoM1(e);
+				deleteSubvolume();
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == GeometrySubVolumePanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("selectionModel"))) 
@@ -175,7 +173,7 @@ private void connEtoC2(java.beans.PropertyChangeEvent arg1) {
  * @param arg1 java.awt.event.ActionEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(java.awt.event.ActionEvent arg1) {
+private void deleteSubvolume() {
 	try {
 		// user code begin {1}
 		// user code end
@@ -184,10 +182,10 @@ private void connEtoM1(java.awt.event.ActionEvent arg1) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					getGeometrySpec().removeAnalyticSubVolume((AnalyticSubVolume)getSelectedSubVolume());
-					//getGeometry().precomputeAll();
+					getGeometry().precomputeAll();
 				}
 			};
-			ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});			
+			ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);			
 		}
 		// user code begin {2}
 		// user code end
@@ -262,12 +260,19 @@ private void connEtoM3(javax.swing.event.ListSelectionEvent arg1) {
  * @param arg1 java.awt.event.ActionEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(java.awt.event.ActionEvent arg1) {
+private void moveSubvolumeFront() {
 	try {
 		// user code begin {1}
 		// user code end
 		if ((getSelectedSubVolume() != null)) {
-			getGeometrySpec().bringForward((AnalyticSubVolume)getSelectedSubVolume());
+			AsynchClientTask task1 = new AsynchClientTask("moving to front", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					getGeometrySpec().bringForward((AnalyticSubVolume)getSelectedSubVolume());
+					getGeometry().precomputeAll();
+				}
+			};
+			ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
 		}
 		// user code begin {2}
 		// user code end
@@ -320,12 +325,19 @@ private void connEtoM8(Geometry value) {
  * @param arg1 java.awt.event.ActionEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM9(java.awt.event.ActionEvent arg1) {
+private void moveBack() {
 	try {
 		// user code begin {1}
 		// user code end
 		if ((getSelectedSubVolume() != null)) {
-			getGeometrySpec().sendBackward((AnalyticSubVolume)getSelectedSubVolume());
+			AsynchClientTask task1 = new AsynchClientTask("moving to back", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					getGeometrySpec().sendBackward((AnalyticSubVolume)getSelectedSubVolume());
+					getGeometry().precomputeAll();
+				}
+			};
+			ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
 		}
 		// user code begin {2}
 		// user code end
@@ -647,19 +659,22 @@ private javax.swing.JPanel getJPanel1() {
 							d.getContentPane().add(main);
 							d.setSize(300,300);
 							d.setLocation(300,200);
-//							BeanUtils.centerOnComponent(GeometrySubVolumePanel.this,null);
 							ZEnforcer.showModalDialogOnTop(d, GeometrySubVolumePanel.this);
 
 							if(acceptFlag[0]){
-								//ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(), null, null);
 								AsynchClientTask task1 = new AsynchClientTask("adding subdomain", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 									@Override
 									public void run(Hashtable<String, Object> hashTable) throws Exception {
-										AddShapeJPanel.addSubVolumeToGeometrySpec(addShapeJPanel,getGeometrySpec());
-										//getGeometry().precomputeAll();
+										//AddShapeJPanel.addSubVolumeToGeometrySpec(addShapeJPanel,getGeometrySpec());
+										getGeometrySpec().addSubVolume(
+											new AnalyticSubVolume(
+													null, getGeometrySpec().getFreeSubVolumeName(),
+													new Expression(addShapeJPanel.getCurrentAnalyticExpression()),
+													-1),true);
+										getGeometry().precomputeAll();
 									}
 								};
-								ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
+								ClientTaskDispatcher.dispatch(GeometrySubVolumePanel.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
 							}
 							break;
 						} catch (Exception e1) {

@@ -6,10 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
+import org.vcell.util.State;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.image.ImageException;
@@ -28,16 +28,20 @@ import cbit.vcell.parser.ExpressionException;
  * Creation date: (5/26/2004 9:58:01 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class GeometrySurfaceDescription implements Matchable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
+	private static final String PROPERTY_NAME_SURFACE_CLASSES = "surfaceClasses";
+	private static final String PROPERTY_NAME_SURFACE_COLLECTION = "surfaceCollection";
+	private static final String PROPERTY_NAME_GEOMETRIC_REGIONS = "geometricRegions";
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ISize fieldVolumeSampleSize = null;
 	private java.lang.Double fieldFilterCutoffFrequency = null;
-	private transient RegionImage fieldRegionImage = null;
-	private transient SurfaceCollection fieldSurfaceCollection = null;
+	private transient State<RegionImage> fieldRegionImage = null;
+	private transient State<SurfaceCollection> fieldSurfaceCollection = null;
 	private Geometry fieldGeometry = null;
-	private GeometricRegion[] fieldGeometricRegions = null;
-	private SurfaceClass[] fieldSurfaceClasses = null;
+	private State<GeometricRegion[]> fieldGeometricRegions = new State<GeometricRegion[]>(null);
+	private State<SurfaceClass[]> fieldSurfaceClasses = new State<SurfaceClass[]>(null);
 
 /**
  * GeometrySurfaceDescription constructor comment.
@@ -202,24 +206,21 @@ public java.lang.Double getFilterCutoffFrequency() {
  * @see #setGeometricRegions
  */
 public GeometricRegion[] getGeometricRegions() {
-	return fieldGeometricRegions;
+	return fieldGeometricRegions.getCurrentValue();
 }
 
 public SurfaceClass[] getSurfaceClasses() {
-	if (fieldSurfaceClasses==null && fieldGeometricRegions!=null){
-		refreshSurfaceClasses();
-	}
-	return fieldSurfaceClasses;
+	return fieldSurfaceClasses.getCurrentValue();
 }
 
 public GeometricRegion[] getGeometricRegions(GeometryClass geometryClass){
 	ArrayList<GeometricRegion> regions = new ArrayList<GeometricRegion>();
-	if (this.fieldGeometricRegions==null || this.fieldGeometricRegions.length==0){
+	if (this.getGeometricRegions().length==0){
 		return null;
 	}
-	for (int j = 0; j < fieldGeometricRegions.length; j++) {
-		if (getGeometryClass(fieldGeometricRegions[j]).equals(geometryClass)){
-			regions.add(fieldGeometricRegions[j]);
+	for (int j = 0; j < getGeometricRegions().length; j++) {
+		if (getGeometryClass(getGeometricRegions()[j]).equals(geometryClass)){
+			regions.add(getGeometricRegions()[j]);
 		}
 	}
 	return regions.toArray(new GeometricRegion[regions.size()]);
@@ -298,7 +299,7 @@ private void refreshSurfaceClasses() {
 			}
 		}
 	}
-	if(bChanged || fieldSurfaceClasses == null || fieldSurfaceClasses.length != surfaceClasses.size()){
+	if(bChanged || fieldSurfaceClasses.getCurrentValue() == null || fieldSurfaceClasses.getCurrentValue().length != surfaceClasses.size()){
 		try{
 			setSurfaceClasses(surfaceClasses.toArray(new SurfaceClass[surfaceClasses.size()]));
 		}catch(PropertyVetoException e){
@@ -347,9 +348,15 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @see #setRegionImage
  */
 public RegionImage getRegionImage() {
-	return fieldRegionImage;
+	return getRegionImage0().getCurrentValue();
 }
 
+private State<RegionImage> getRegionImage0() {
+	if (fieldRegionImage == null) {
+		fieldRegionImage = new State<RegionImage>(null);
+	}
+	return fieldRegionImage;
+}
 
 /**
  * Gets the surfaceCollection property (cbit.vcell.geometry.surface.SurfaceCollection) value.
@@ -357,6 +364,13 @@ public RegionImage getRegionImage() {
  * @see #setSurfaceCollection
  */
 public SurfaceCollection getSurfaceCollection() {
+	return getSurfaceCollection0().getCurrentValue();
+}
+
+private State<SurfaceCollection> getSurfaceCollection0() {
+	if (fieldSurfaceCollection == null) {
+		fieldSurfaceCollection = new State<SurfaceCollection>(null);
+	}
 	return fieldSurfaceCollection;
 }
 
@@ -377,7 +391,7 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
  * @return The volumeSampleSize property value.
  * @see #setVolumeSampleSize
  */
-public org.vcell.util.ISize getVolumeSampleSize() {
+public ISize getVolumeSampleSize() {
 	return fieldVolumeSampleSize;
 }
 
@@ -401,9 +415,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		ISize newValue = (ISize)evt.getNewValue();
 		if (!oldValue.compareEqual(newValue)){
 			try {
-				fieldRegionImage = null; // nobody listens to this, updateAll() will propagate changes
-				setSurfaceCollection(null);
-				setGeometricRegions(null);
+				getRegionImage0().setDirty(); // nobody listens to this, updateAll() will propagate changes
+				getSurfaceCollection0().setDirty();
+				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
 				e.printStackTrace(System.out);
 			}
@@ -414,24 +428,24 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		Double newValue = (Double)evt.getNewValue();
 		if (!oldValue.equals(newValue)){
 			try {
-				setSurfaceCollection(null);
-				setGeometricRegions(null);
+				getSurfaceCollection0().setDirty();
+				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
 				e.printStackTrace(System.out);
 			}
 		}
 	}
-	if (evt.getSource()==this && evt.getPropertyName().equals("geometricRegions")){
+	if (evt.getSource()==this && evt.getPropertyName().equals(PROPERTY_NAME_GEOMETRIC_REGIONS)){
 		refreshSurfaceClasses();
 	}
 	if (evt.getSource() == getGeometry().getGeometrySpec() && (evt.getPropertyName().equals("extent") || evt.getPropertyName().equals("origin"))){
-		org.vcell.util.Matchable oldExtentOrOrigin = (org.vcell.util.Matchable)evt.getOldValue();
-		org.vcell.util.Matchable newExtentOrOrigin = (org.vcell.util.Matchable)evt.getNewValue();
+		Matchable oldExtentOrOrigin = (Matchable)evt.getOldValue();
+		Matchable newExtentOrOrigin = (Matchable)evt.getNewValue();
 		if (!Compare.isEqual(oldExtentOrOrigin,newExtentOrOrigin)){
 			try {
-				fieldRegionImage = null; // nobody listens to this, updateAll() will propagate changes
-				setSurfaceCollection(null);
-				setGeometricRegions(null);
+				getRegionImage0().setDirty(); // nobody listens to this, updateAll() will propagate changes
+				getSurfaceCollection0().setDirty();
+				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
 				e.printStackTrace(System.out);
 			}
@@ -442,9 +456,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		Expression newExpression = (Expression)evt.getNewValue();
 		if (!Compare.isEqual(oldExpression,newExpression)) {
 			try {
-				fieldRegionImage = null; // nobody listens to this, updateAll() will propagate changes
-				setSurfaceCollection(null);
-				setGeometricRegions(null);
+				getRegionImage0().setDirty(); // nobody listens to this, updateAll() will propagate changes
+				getSurfaceCollection0().setDirty();
+				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
 				e.printStackTrace(System.out);
 			}
@@ -455,11 +469,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		String newName = (String)evt.getNewValue();
 		if (!Compare.isEqual(oldName,newName)){
 			try {
-				if (getRegionImage()!=null && getSurfaceCollection()!=null) {
-					setGeometricRegions(GeometrySurfaceUtils.getUpdatedGeometricRegions(this,getRegionImage(),getSurfaceCollection()));
-				}else{
-					setGeometricRegions(null);
-				}
+				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
 				e.printStackTrace(System.out);
 			}
@@ -483,21 +493,21 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		//
 		if (oldValue==null || newValue==null || !Compare.isEqualStrict(oldValue,newValue)){
 			try {
-				fieldRegionImage = null;
-				setSurfaceCollection(null);
-				setGeometricRegions(null);
+				getRegionImage0().setDirty(); // nobody listens to this, updateAll() will propagate changes
+				getSurfaceCollection0().setDirty();
+				fieldGeometricRegions.setDirty();
 			}catch (Exception e){
 				e.printStackTrace(System.out);
 			}
-		} else if (fieldGeometricRegions!=null && oldValue != newValue) {
+		} else if (fieldGeometricRegions.getCurrentValue() != null && oldValue != newValue) {
 			//
 			// update instances of subvolume in volumeGeometricRegions.
 			//
 			for (int i = 0; i < newValue.length; i++){
 				SubVolume subVolume = newValue[i];
-				for (int j = 0; j < fieldGeometricRegions.length; j++){
-					if (fieldGeometricRegions[j] instanceof VolumeGeometricRegion){
-						VolumeGeometricRegion volumeRegion = (VolumeGeometricRegion)fieldGeometricRegions[j];
+				for (int j = 0; j < fieldGeometricRegions.getCurrentValue().length; j++){
+					if (fieldGeometricRegions.getCurrentValue()[j] instanceof VolumeGeometricRegion){
+						VolumeGeometricRegion volumeRegion = (VolumeGeometricRegion)fieldGeometricRegions.getCurrentValue()[j];
 						//
 						// replace instance of subVolume.
 						//
@@ -547,15 +557,6 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
 }
 
-
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
-}
-
-
 /**
  * Sets the filterCutoffFrequency property (java.lang.Double) value.
  * @param filterCutoffFrequency The new value for the property.
@@ -584,13 +585,12 @@ public void setGeometricRegions(GeometricRegion[] geometricRegions) throws java.
 	if(geometricRegions != null && geometricRegions.length==0){
 		throw new IllegalArgumentException("Not expecting empty array of GeometricRegion");
 	}
-	if (fieldGeometricRegions == geometricRegions) {
+	if (fieldGeometricRegions.getCurrentValue() == geometricRegions) {
 		return;
 	}
-	GeometricRegion[] oldValue = fieldGeometricRegions;
-	fireVetoableChange("geometricRegions", oldValue, geometricRegions);
-	fieldGeometricRegions = geometricRegions;
-	firePropertyChange("geometricRegions", oldValue, geometricRegions);
+	GeometricRegion[] oldValue = fieldGeometricRegions.getCurrentValue();
+	fireVetoableChange(PROPERTY_NAME_GEOMETRIC_REGIONS, oldValue, geometricRegions);
+	fieldGeometricRegions.setValue(geometricRegions);
 }
 
 
@@ -601,44 +601,12 @@ public void setGeometricRegions(GeometricRegion[] geometricRegions) throws java.
  * @see #getGeometricRegions
  */
 public void setSurfaceClasses(SurfaceClass[] surfaceClasses) throws PropertyVetoException{
-	if (fieldSurfaceClasses == surfaceClasses) {
+	if (fieldSurfaceClasses.getCurrentValue() == surfaceClasses) {
 		return;
 	}
-	SurfaceClass[] oldValue = fieldSurfaceClasses;
-//	if(oldValue != null && surfaceClasses != null && oldValue.length == surfaceClasses.length){
-//		HashSet<SubVolume> oldSurfClassSubVolumeHash = new HashSet<SubVolume>();
-//		HashSet<SubVolume> newSurfClassSubVolumeHash = new HashSet<SubVolume>();
-//		for (int i = 0; i < oldValue.length; i++) {
-//			oldSurfClassSubVolumeHash.addAll(oldValue[i].getAdjacentSubvolumes());
-//			newSurfClassSubVolumeHash.addAll(surfaceClasses[i].getAdjacentSubvolumes());
-//		}
-//		Matchable[] oldMatchables = oldSurfClassSubVolumeHash.toArray(new Matchable[0]);
-//		Matchable[] newMatchables = newSurfClassSubVolumeHash.toArray(new Matchable[0]);
-//		if(!BeanUtils.checkFullyEqual(oldMatchables, newMatchables)){
-//			System.out.println("GeometrySurfaceDescription.setSurfaceclasses has different instances of same old and new subvolumes");
-//		}
-//	}
-	fireVetoableChange("surfaceClasses", oldValue, surfaceClasses);
-	fieldSurfaceClasses = surfaceClasses;
-	firePropertyChange("surfaceClasses", oldValue, surfaceClasses);
-}
-
-
-/**
- * Sets the geometricRegions index property (cbit.vcell.geometry.surface.GeometricRegion[]) value.
- * @param index The index value into the property array.
- * @param geometricRegions The new value for the property.
- * @see #getGeometricRegions
- */
-public void setGeometricRegions(int index, GeometricRegion geometricRegions) {
-	if (fieldGeometricRegions[index] == geometricRegions) {
-		return;
-	}
-	GeometricRegion oldValue = fieldGeometricRegions[index];
-	fieldGeometricRegions[index] = geometricRegions;
-	if (oldValue != null && !oldValue.equals(geometricRegions)) {
-		firePropertyChange("geometricRegions", null, fieldGeometricRegions);
-	};
+	SurfaceClass[] oldValue = fieldSurfaceClasses.getCurrentValue();
+	fireVetoableChange(PROPERTY_NAME_SURFACE_CLASSES, oldValue, surfaceClasses);
+	fieldSurfaceClasses.setValue(surfaceClasses);
 }
 
 
@@ -648,14 +616,18 @@ public void setGeometricRegions(int index, GeometricRegion geometricRegions) {
  * @see #getSurfaceCollection
  */
 private void setSurfaceCollection(SurfaceCollection surfaceCollection) {
-	if (surfaceCollection == fieldSurfaceCollection) {
+	if (surfaceCollection == getSurfaceCollection()) {
 		return;
 	}
-	SurfaceCollection oldValue = fieldSurfaceCollection;
-	fieldSurfaceCollection = surfaceCollection;
-	firePropertyChange("surfaceCollection", oldValue, surfaceCollection);
+	getSurfaceCollection0().setValue(surfaceCollection);
 }
 
+
+public void fireAll() {
+	firePropertyChange(PROPERTY_NAME_GEOMETRIC_REGIONS, fieldGeometricRegions.getOldValue(), fieldGeometricRegions.getCurrentValue());
+	firePropertyChange(PROPERTY_NAME_SURFACE_COLLECTION, getSurfaceCollection0().getOldValue(), getSurfaceCollection0().getCurrentValue());
+	firePropertyChange(PROPERTY_NAME_SURFACE_CLASSES, fieldSurfaceClasses.getOldValue(), fieldSurfaceClasses.getCurrentValue());
+}
 
 /**
  * Sets the volumeSampleSize property (cbit.util.ISize) value.
@@ -706,7 +678,7 @@ public void updateAll() throws GeometryException, ImageException, ExpressionExce
 	boolean bChanged = false;
 	RegionImage updatedRegionImage = GeometrySurfaceUtils.getUpdatedRegionImage(this);
 	if (updatedRegionImage != getRegionImage()){  // getUpdatedRegionImage returns same image if not changed
-		fieldRegionImage = updatedRegionImage;
+		getRegionImage0().setValue(updatedRegionImage);
 		bChanged = true;
 	}
 	//
@@ -769,7 +741,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			throw new java.beans.PropertyVetoException("filterCutoffFrequency ("+cutoffFrequency+") must be between [0,2]",evt);
 		}
 	}
-	if(evt.getSource()==this && evt.getPropertyName().equals("surfaceClasses")){
+	if(evt.getSource()==this && evt.getPropertyName().equals(PROPERTY_NAME_SURFACE_CLASSES)){
 		List<SubVolume> geomsubVolumeList = Arrays.asList(getGeometry().getGeometrySpec().getSubVolumes());
 		SurfaceClass[] newSurfaceClassArr = (SurfaceClass[])evt.getNewValue();
 		for (int i = 0;newSurfaceClassArr != null && i < newSurfaceClassArr.length; i++) {

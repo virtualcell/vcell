@@ -3,27 +3,25 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
+import javax.swing.JOptionPane;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ZEnforcer;
 
-import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.image.DisplayAdapterService;
+import cbit.image.ImageException;
 import cbit.image.ImagePaneModel;
 import cbit.image.ImagePlaneManagerPanel;
 import cbit.image.SourceDataInfo;
 import cbit.image.VCImage;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.graph.SubVolumeContainerShape;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class GeometryViewer extends javax.swing.JPanel implements ActionListener, java.beans.PropertyChangeListener {
 	private GeometrySubVolumePanel ivjGeometrySubVolumePanel = null;
 	private javax.swing.JLabel ivjSizeLabel = null;
@@ -36,8 +34,6 @@ public class GeometryViewer extends javax.swing.JPanel implements ActionListener
 	private GeometrySizeDialog ivjGeometrySizeDialog1 = null;
 	private GeometrySpec ivjGeometrySpec = null;
 	private javax.swing.JButton ivjJButtonChangeDomain = null;
-	
-	public static final String SUBVOLCNTRSHP_CHANGED = "SUBVOLCNTRSHP_CHANGED";
 
 
 /**
@@ -180,28 +176,7 @@ private void connEtoM1(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		if ((getGeometry() != null)) {
-			getGeometrySizeDialog1().init(getGeometry());
-		}
 		connEtoC8();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM10:  (GeometryViewer.initialize() --> GeometrySizeDialog2.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10() {
-	try {
-		// user code begin {1}
-		// user code end
-		setGeometrySizeDialog1(this.createGeometrySizeDialog());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -260,47 +235,33 @@ private void refreshSourceDataInfo() {
 	if ( getGeometry() == null){
 		return;
 	}
-	final String SUBVOLUME_CNTRSHP_DISPIMG_KEY = "SUBVOLUME_CNTRSHP_DISPIMG_KEY";
-	AsynchClientTask task1 = new AsynchClientTask("generating sampled image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	GeometrySpec geometrySpec = getGeometry().getGeometrySpec();	
+	if (geometrySpec.getSampledImage().isDirty()) {
+		return;
+	}
 
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
-			VCImage sampledImage = geometrySpec.getSampledImage();
-			SourceDataInfo sdi = new SourceDataInfo(SourceDataInfo.INDEX_TYPE, 
-									sampledImage.getPixels(),
-									geometrySpec.getExtent(),
-									geometrySpec.getOrigin(),
-									null,
-									0,
-									sampledImage.getNumX(),
-									1,
-									sampledImage.getNumY(),
-									sampledImage.getNumX(),
-									sampledImage.getNumZ(),
-									sampledImage.getNumX() * sampledImage.getNumY());
-			hashTable.put("sdi", sdi);
-			BufferedImage subvolumeContainerShapeDisplayImage = SubVolumeContainerShape.CreateDisplayImage(getGeometry());
-			if(subvolumeContainerShapeDisplayImage != null){
-				hashTable.put(SUBVOLUME_CNTRSHP_DISPIMG_KEY, subvolumeContainerShapeDisplayImage);
-			}
-		}	
-	};
-	
-	AsynchClientTask task2 = new AsynchClientTask("displaying image", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			SourceDataInfo sdi = (SourceDataInfo)hashTable.get("sdi");
-			getImagePlaneManagerPanel1().setSourceDataInfo(sdi);
-			if(hashTable.get(SUBVOLUME_CNTRSHP_DISPIMG_KEY) != null){
-				getPropertyChange().firePropertyChange(
-					GeometryViewer.SUBVOLCNTRSHP_CHANGED, null, hashTable.get(SUBVOLUME_CNTRSHP_DISPIMG_KEY));
-			}
-		}	
-	};
-
-	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);	
+	VCImage sampledImage = geometrySpec.getSampledImage().getCurrentValue();
+	try {
+		SourceDataInfo sdi = new SourceDataInfo(SourceDataInfo.INDEX_TYPE, 
+								sampledImage.getPixels(),
+								geometrySpec.getExtent(),
+								geometrySpec.getOrigin(),
+								null,
+								0,
+								sampledImage.getNumX(),
+								1,
+								sampledImage.getNumY(),
+								sampledImage.getNumX(),
+								sampledImage.getNumZ(),
+								sampledImage.getNumX() * sampledImage.getNumY());
+		getImagePlaneManagerPanel1().setSourceDataInfo(sdi);
+	} catch (ImageException e) {
+		e.printStackTrace();
+		DialogUtils.showErrorDialog(this, e.getMessage());
+	} catch (Exception e) {
+		e.printStackTrace();
+		DialogUtils.showErrorDialog(this, e.getMessage(), e);
+	}
 }
 
 /**
@@ -403,27 +364,6 @@ private void connEtoM8(Geometry value) {
 	}
 }
 
-
-/**
- * connEtoM9:  (Geometry.sampledImage --> ImagePlaneManagerPanel1.sourceDataInfo)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM9(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getImagePlaneManagerPanel1().setSourceDataInfo(null);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connPtoP1SetTarget:  (CurveRendererGeometry1.this <--> ImagePlaneManagerPanel1.curveRenderer)
  */
@@ -439,20 +379,6 @@ private void connPtoP1SetTarget() {
 		// user code end
 		handleException(ivjExc);
 	}
-}
-
-
-/**
- * Comment
- */
-private GeometrySizeDialog createGeometrySizeDialog() {
-	//cbit.vcell.desktop.controls.ClientDisplayManager.getClientDisplayManager().getMainClientWindow()
-	Frame frame = (Frame)BeanUtils.findTypeParentOfComponent(this,Frame.class);
-	GeometrySizeDialog gsd = new GeometrySizeDialog(frame,false);
-	gsd.setName("GeometrySizeDialog1");
-	gsd.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-	gsd.setResizable(false);
-	return gsd;
 }
 
 /**
@@ -514,8 +440,13 @@ public GeometryFilamentCurveDialog getGeometryFilamentCurveDialog1() {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private GeometrySizeDialog getGeometrySizeDialog1() {
-	// user code begin {1}
-	// user code end
+	if (ivjGeometrySizeDialog1 == null) {
+		Frame frame = JOptionPane.getFrameForComponent(this);
+		ivjGeometrySizeDialog1 = new GeometrySizeDialog(frame,false);
+		ivjGeometrySizeDialog1.setName("GeometrySizeDialog1");
+		ivjGeometrySizeDialog1.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+		ivjGeometrySizeDialog1.setResizable(false);
+	}
 	return ivjGeometrySizeDialog1;
 }
 
@@ -730,7 +661,6 @@ private void initialize() {
 		connEtoC7();
 		connEtoM5();
 		connEtoM7();
-		connEtoM10();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -929,10 +859,9 @@ private void setGeometrySpec(GeometrySpec newValue) {
 /**
  * Comment
  */
-private void showSizeDialog() {
-	org.vcell.util.BeanUtils.centerOnComponent(getGeometrySizeDialog1(), this);
+private void showSizeDialog() {	
 	getGeometrySizeDialog1().init(getGeometry());
-	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(getGeometrySizeDialog1(),this);
+	ZEnforcer.showModalDialogOnTop(getGeometrySizeDialog1(),this);
 }
 
 

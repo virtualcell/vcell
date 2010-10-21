@@ -32,7 +32,6 @@ import javax.swing.ListSelectionModel;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.sbml.SBMLUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -49,11 +48,11 @@ import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.gui.AsynchGuiUpdater;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
@@ -187,7 +186,7 @@ private void changeGeometry0(final TopLevelWindowManager requester, final Simula
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			VCDocumentInfo vcDocumentInfo = (VCDocumentInfo)hashTable.get("vcDocumentInfo");
 			Geometry geom = getGeometryFromDocumentSelection(requester.getComponent(),vcDocumentInfo, false);
-			geom.getGeometrySpec().getSampledImage();//pregenerate sampled image, cpu intensive
+			geom.precomputeAll();//pregenerate sampled image, cpu intensive
 			hashTable.put(GEOMETRY_KEY, geom);
 		}		
 	};
@@ -1381,7 +1380,8 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						Geometry geometry = new Geometry("Geometry" + (getMdiManager().getNewlyCreatedDesktops() + 1), documentCreationInfo.getOption());
-						geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subdomain0",new Expression(1.0)));					
+						geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subdomain0",new Expression(1.0)));
+						geometry.precomputeAll();
 						hashTable.put("doc", geometry);
 					}
 				};
