@@ -3,14 +3,14 @@ package cbit.vcell.parser;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 import cbit.vcell.units.VCUnitDefinition;
-import net.sourceforge.interval.ia_math.*;
 
 public class ExpressionTest {
 	public static void main(java.lang.String[] args) {
-		int num = 5000;
+		int num = 10;
 		
 		if (args.length > 0) {
 			num = Integer.parseInt(args[0]);
@@ -27,15 +27,13 @@ public class ExpressionTest {
 			for (int j = 0; j < 1; j ++) {
 				//java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".txt"));
 				java.io.PrintWriter pw2 = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".cpp"));
-				pw2.println("#include \"Windows.h\"");
-				pw2.println("#include \"ExpressionTest.h\"");
-				pw2.println("#include \"Expression.h\"");
-				pw2.println("#include \"MathUtil.h\"");
-				pw2.println("#include \"SimpleSymbolTable.h\"");
 				pw2.println("#include <math.h>");
 				pw2.println("#include <string>");
 				pw2.println("#include <iostream>");
 				pw2.println("using namespace std;");
+
+				pw2.println("#include \"Expression.h\"");
+				pw2.println("using VCell::Expression;");
 				pw2.println();
 				
 				String[] undefinedFunctions = {
