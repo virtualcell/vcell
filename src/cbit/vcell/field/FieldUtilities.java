@@ -91,6 +91,13 @@ public class FieldUtilities {
 		return fiSet;
 	}
 
+	private static String removeLiteralQuotes(Expression astLiteralExpression) {
+		String infix = astLiteralExpression.infix();
+		if (infix.startsWith("'") && infix.endsWith("'")) {
+			return infix.substring(1, infix.length() - 1);
+		}
+		return infix;
+	}
 	public static void substituteFieldFuncNames(
 			Hashtable<String, ExternalDataIdentifier> oldFieldFuncArgsNameNewID,
 			Hashtable<FieldFunctionArguments, Vector<Expression>> fieldFuncArgsExpHash
@@ -106,14 +113,15 @@ public class FieldUtilities {
 				FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(functionFilter);
 				for (int j = 0; j < functionInvocations.length; j++) {
 					Expression[] arguments = functionInvocations[j].getArguments();
-					String oldFieldName = arguments[0].infix();
-					String varName = arguments[1].infix();
-					Expression timeExp = arguments[2];
-					VariableType varType = VariableType.UNKNOWN;
-					if (arguments.length>3){
-						varType = VariableType.getVariableTypeFromVariableTypeName(arguments[3].infix());
-					}
+					String oldFieldName = removeLiteralQuotes(arguments[0]);
 					if(oldFieldFuncArgsNameNewID.containsKey(oldFieldName)){
+						String varName = removeLiteralQuotes(arguments[1]);
+						Expression timeExp = arguments[2];
+						VariableType varType = VariableType.UNKNOWN;
+						if (arguments.length>3){
+							String vt = removeLiteralQuotes(arguments[3]);
+							varType = VariableType.getVariableTypeFromVariableTypeName(vt);
+						}
 						String newFieldName = oldFieldFuncArgsNameNewID.get(oldFieldName).getName();
 						FieldFunctionArguments newFieldFunctionArguments = new FieldFunctionArguments(newFieldName, varName, timeExp, varType);
 						Expression newFunctionExp = new Expression(newFieldFunctionArguments.infix());
