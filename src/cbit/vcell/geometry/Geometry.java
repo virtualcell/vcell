@@ -10,6 +10,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
@@ -286,7 +287,7 @@ public GeometrySpec getGeometrySpec() {
  * Gets the geometrySurfaceDescription property (cbit.vcell.geometry.surface.GeometrySurfaceDescription) value.
  * @return The geometrySurfaceDescription property value.
  */
-public cbit.vcell.geometry.surface.GeometrySurfaceDescription getGeometrySurfaceDescription() {
+public GeometrySurfaceDescription getGeometrySurfaceDescription() {
 	return fieldGeometrySurfaceDescription;
 }
 
@@ -295,7 +296,7 @@ public cbit.vcell.geometry.surface.GeometrySurfaceDescription getGeometrySurface
  * This method was created in VisualAge.
  * @return KeyValue
  */
-public org.vcell.util.document.KeyValue getKey() {
+public KeyValue getKey() {
 	if(version != null){
 		return version.getVersionKey();
 	}
@@ -432,7 +433,7 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(org.vcell.util.document.Version newVersion) throws PropertyVetoException {
+private void setVersion(Version newVersion) throws PropertyVetoException {
 	this.version = newVersion;
 	if (newVersion != null){
 		setName(newVersion.getName());
@@ -456,7 +457,9 @@ public void precomputeAll() throws GeometryException, ImageException, Expression
 	}
 	
 	getGeometrySpec().fireAll();
-	getGeometrySurfaceDescription().fireAll();
+	if (getDimension()>0) {
+		getGeometrySurfaceDescription().fireAll();
+	}
 }
 
 }
