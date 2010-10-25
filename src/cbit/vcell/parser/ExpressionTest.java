@@ -10,13 +10,13 @@ import cbit.vcell.units.VCUnitDefinition;
 
 public class ExpressionTest {
 	public static void main(java.lang.String[] args) {
-		int num = 10;
+		int num = 5000;
 		
 		if (args.length > 0) {
 			num = Integer.parseInt(args[0]);
 		}
-//		testEval(num);
-		testCopyTree(num);
+		testEval(num);
+//		testCopyTree(num);
 	}
 
 	public static void testCopyTree(int num) {
