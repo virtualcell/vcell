@@ -969,6 +969,10 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			KeyValue origSimKey = fieldDataFileOperationSpec.sourceSimDataKey;
 			File sourceDir = new File(primaryRootDirectory,fieldDataFileOperationSpec.sourceOwner.getName());			
 			File meshFile_orig = new File(sourceDir,SimulationData.createCanonicalMeshFileName(origSimKey,simJobIndex,isOldStyle));
+			if (!meshFile_orig.exists() && secondaryRootDirectory != null) {
+				sourceDir = new File(secondaryRootDirectory,fieldDataFileOperationSpec.sourceOwner.getName());
+				meshFile_orig = new File(sourceDir,SimulationData.createCanonicalMeshFileName(origSimKey,simJobIndex,isOldStyle));
+			}
 			File funcFile_orig = new File(sourceDir,SimulationData.createCanonicalFunctionsFileName(origSimKey,simJobIndex,isOldStyle));
 			File fdLogFile_orig = new File(sourceDir,SimulationData.createCanonicalSimLogFileName(origSimKey,simJobIndex,isOldStyle));
 			File zipFile_orig = new File(sourceDir,SimulationData.createCanonicalSimZipFileName(origSimKey,0,simJobIndex,isOldStyle));
