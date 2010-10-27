@@ -116,7 +116,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 			}
 		} catch (ExpressionBindingException e) {
 			e.printStackTrace(System.out);
-			throw new RuntimeException("Error parsing the following output function:\n\n" 
+			throw new RuntimeException("Error parsing the following output function in " + getSimulationOwner().getName() + ":\n\n" 
 					+ func.getName() + " = " + func.getExpression().infix() + "\n\n" + e.getMessage());
 		}
 	}

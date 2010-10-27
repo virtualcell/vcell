@@ -17,6 +17,7 @@ import javax.swing.SwingConstants;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.Versionable;
+import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.biomodel.BioModel;
@@ -610,18 +611,7 @@ private javax.swing.JMenu getApplicationMenu() {
 			ivjApplicationMenu = new javax.swing.JMenu();
 			ivjApplicationMenu.setName("ApplicationMenu");
 			ivjApplicationMenu.setMnemonic('a');
-			ivjApplicationMenu.setIcon(new Icon() {
-				public void paintIcon(Component c, Graphics g, int x, int y) {
-				    Polygon p = new Polygon();
-				    p.addPoint(x, y);
-				    p.addPoint(x+getIconWidth(), y);
-				    p.addPoint(x+getIconWidth()/2, y+getIconHeight());
-				    g.fillPolygon(p);
-
-				}
-				public int getIconWidth() { return 8; }
-				public int getIconHeight() { return 4; }
-			    } );
+			ivjApplicationMenu.setIcon(new DownArrowIcon());
 			ivjApplicationMenu.setText("Applications");
 			ivjApplicationMenu.setHorizontalTextPosition(SwingConstants.LEFT);
 			ivjApplicationMenu.add(getJMenuNew());

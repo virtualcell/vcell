@@ -2392,10 +2392,7 @@ private void showSpatialPlot() {
 					Plot2D plot2D = new Plot2D(symbolTableEntries, new String[] { varName },new PlotData[] { plotData },
 								new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"});
 					plotPane.setPlot2D(	plot2D);
-					String title = "Spatial Plot: ("+varName+")";
-					if (getSimulationModelInfo()!=null){
-						title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
-					}
+					String title = getSimulation().getName() + " : Spatial Plot : " + varName;
 					showComponentInFrame(plotPane, title);
 				}
 			}
@@ -2479,7 +2476,7 @@ private void showTimePlot() {
 				PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(PDEDataViewer.this, 
 						getPDEPlotControlPanel1().getVariableListCellRenderer(),
 						getSimulation(), singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
-				final JInternalFrame frame = new JInternalFrame("Time Plot : " + varName, true, true, true, true);
+				final JInternalFrame frame = new JInternalFrame(getSimulation().getName() + " : Time Plot : " + varName, true, true, true, true);
 				frame.setFrameIcon(new ImageIcon(getClass().getResource("/data_exporter_20x20.gif")));
 				frame.add(pdeTimePlotPanel);
 				frame.setSize(900, 550);
