@@ -2162,7 +2162,7 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 						doc = XmlHelper.importMathCellML(transLogger, xmlInfo);
 					}
 				} else if (xmlType.equals(MicroscopyXMLTags.FRAPStudyTag)) {
-					doc = XmlHelper.VFRAPToBioModel(xmlInfo, getDocumentManager());
+					doc = XmlHelper.VFRAPToBioModel(hashTable, xmlInfo, getDocumentManager(), requester);
 				} else { // unknown XML format
 					throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 				}

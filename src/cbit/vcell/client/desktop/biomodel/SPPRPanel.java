@@ -32,6 +32,7 @@ import cbit.vcell.client.desktop.biomodel.SPPRTreeModel.SPPRTreeFolderNode;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
+import static cbit.vcell.data.VFrapConstants.*;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
@@ -508,9 +509,8 @@ public class SPPRPanel extends JPanel {
 				menuItemAddGenericData = new javax.swing.JMenuItem();
 				menuItemAddGenericData.setName("JMenuItemAddData");
 				menuItemAddGenericData.setMnemonic('d');
-				menuItemAddGenericData.setText("Add Generic DataSymbol");
-//				menuItemAddGenericData.setText("Import vFrap Simulation");
-				menuItemAddGenericData.setEnabled(false);
+				menuItemAddGenericData.setText(ADD_VFRAP_DATASET_MENU);
+				menuItemAddGenericData.setEnabled(true);
 				menuItemAddGenericData.setActionCommand(GuiConstants.ACTIONCMD_ADD_GENERIC_DATA);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -524,7 +524,7 @@ public class SPPRPanel extends JPanel {
 				menuItemAddVFrapData = new javax.swing.JMenuItem();
 				menuItemAddVFrapData.setName("JMenuItemAddVFrapData");
 				menuItemAddVFrapData.setMnemonic('v');
-				menuItemAddVFrapData.setText("Add vFrap DataSymbols");
+				menuItemAddVFrapData.setText(ADD_VFRAP_SPECIALS_MENU);
 				menuItemAddVFrapData.setEnabled(true);
 				menuItemAddVFrapData.setActionCommand(GuiConstants.ACTIONCMD_ADD_VFRAP_DATA);
 			} catch (java.lang.Throwable ivjExc) {
@@ -549,15 +549,16 @@ public class SPPRPanel extends JPanel {
 	}
 
 	private void addGenericDataSymbol() {
-		getDataSymbolsPanel().addGenericDataSymbol();
+		getDataSymbolsPanel().addVFrapOriginalImages();
 	}
 	private void addVFrapDataSymbol() {
-		getDataSymbolsPanel().addVFrapDataSymbol();
+		getDataSymbolsPanel().addVFrapDerivedImages();
 	}
 
 /*	private void addDataSymbol() {
 		String name = null;
 		try {
+		// vcField('eeeD','fluor_0.32_eeeD',0.32373046875,'Volume');
 			getDataSymbolsPanel().getNewDataSymbolPanel().setSymbolName("");
 			getDataSymbolsPanel().getNewDataSymbolPanel().setSymbolExpression("vcField(dataset1,var1,0.0,Volume)");
 			int newSettings = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(this, getDataSymbolsPanel().getNewDataSymbolPanel(), "New DataSymbol");
