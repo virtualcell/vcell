@@ -27,7 +27,7 @@ public class CheckUnchanged extends AsynchClientTask {
  * @param whileSavingForRunningSims boolean
  */
 public CheckUnchanged(boolean whileSavingForRunningSims) {
-	super("Checking changes to document", TASKTYPE_SWING_BLOCKING);
+	super("Checking changes to document", TASKTYPE_NONSWING_BLOCKING);
 	this.whileSavingForRunningSims = whileSavingForRunningSims;
 }
 
