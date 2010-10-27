@@ -2390,7 +2390,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					}else if (memSubDomain.getOutsideCompartment().getName().equals(sm.getGeometryClass().getName())){
 						jc.setOutFlux(flux);
 					}else{
-						throw new RuntimeException("APPLICATION  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+" with a non-local flux species "+scm.getSpeciesContext().getName());
+						throw new RuntimeException("Application  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+" with a non-local flux species "+scm.getSpeciesContext().getName());
 					}
 				}else if (scm.getVariable() instanceof VolumeRegionVariable){
 					VolumeRegionVariable volRegionVar = (VolumeRegionVariable)scm.getVariable();
@@ -2405,10 +2405,10 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					}else if (memSubDomain.getOutsideCompartment().getName().equals(sm.getGeometryClass().getName())){
 						jc.setOutFlux(flux);
 					}else{
-						throw new RuntimeException("APPLICATION  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+" with a non-local flux species "+scm.getSpeciesContext().getName());
+						throw new RuntimeException("Application  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+" with a non-local flux species "+scm.getSpeciesContext().getName());
 					}
 				}else{
-					throw new MappingException("APPLICATION  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+", but doesn't diffuse in compartment "+scm.getSpeciesContext().getStructure().getName());
+					throw new MappingException("Application  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+scm.getSpeciesContext().getStructure().getName()+", but doesn't diffuse in compartment "+scm.getSpeciesContext().getStructure().getName());
 				}
 			}
 		}
