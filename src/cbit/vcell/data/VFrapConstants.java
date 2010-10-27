@@ -2,9 +2,20 @@ package cbit.vcell.data;
 
 import cbit.vcell.data.DataSymbol.DataSymbolType;
 
+/**
+ * vFrap and vCell name equivalences
+ * Creation date: (09/14/2010)
+ * 
+ * @author: Dan Vasilescu
+ */
 public class VFrapConstants
 {
-
+	//menus
+	public static final String ADD_VFRAP_DATASET_MENU = "Add Dataset (normal images) from vFrap";
+	public static final String ADD_VFRAP_SPECIALS_MENU = "Add Special (computed) images from vFrap";
+	public static final String DELETE_DATA_SYMBOL = "Delete data symbol";
+	
+	// importing related - the names of the special objects
     public static final String PREBLEACH_AVG_TAG = "prebleach_avg";
     public static final String POSTBLEACH_FIRST_TAG = "postbleach_first";
     public static final String POSTBLEACH_LAST_TAG = "postbleach_last";
@@ -39,39 +50,53 @@ public class VFrapConstants
 	
 	
 	public enum SymbolEquivalence {
-		PREBLEACH_AVG		(PREBLEACH_AVG_TAG,		DataSymbolType.VFRAP_PREBLEACH_AVG),
-		POSTBLEACH_FIRST	(POSTBLEACH_FIRST_TAG,	DataSymbolType.VFRAP_FIRST_POSTBLEACH),
-		POSTBLEACH_LAST		(POSTBLEACH_LAST_TAG,	DataSymbolType.VFRAP_FIRST_POSTBLEACH),
-		BLEACHED_MASK		(BLEACHED_MASK_TAG,		DataSymbolType.VFRAP_ROI), 
-		CELL_MASK			(CELL_MASK_TAG,			DataSymbolType.VFRAP_ROI), 
-		RING1_MASK			(RING1_MASK_TAG,		DataSymbolType.VFRAP_ROI),
-		RING2_MASK			(RING2_MASK_TAG,		DataSymbolType.VFRAP_ROI),
-		RING3_MASK			(RING3_MASK_TAG,		DataSymbolType.VFRAP_ROI),
-		RING4_MASK			(RING4_MASK_TAG,		DataSymbolType.VFRAP_ROI),
-		RING5_MASK			(RING5_MASK_TAG,		DataSymbolType.VFRAP_ROI),
-		RING6_MASK			(RING6_MASK_TAG,		DataSymbolType.VFRAP_ROI),
-		RING7_MASK			(RING7_MASK_TAG,		DataSymbolType.VFRAP_ROI),
-		RING8_MASK			(RING8_MASK_TAG,		DataSymbolType.VFRAP_ROI);
+		PREBLEACH_AVG		(PREBLEACH_AVG_TAG,		"PrebleachAvg",		DataSymbolType.VFRAP_PREBLEACH_AVG),
+		POSTBLEACH_FIRST	(POSTBLEACH_FIRST_TAG,	"PostbleachFirst",	DataSymbolType.VFRAP_FIRST_POSTBLEACH),
+		POSTBLEACH_LAST		(POSTBLEACH_LAST_TAG,	"PostbleachLast",	DataSymbolType.VFRAP_FIRST_POSTBLEACH),
+		BLEACHED_MASK		(BLEACHED_MASK_TAG,		"BleachedMask",		DataSymbolType.VFRAP_ROI), 
+		CELL_MASK			(CELL_MASK_TAG,			"CellMask",			DataSymbolType.VFRAP_ROI), 
+		RING1_MASK			(RING1_MASK_TAG,		"Ring1Mask",		DataSymbolType.VFRAP_ROI),
+		RING2_MASK			(RING2_MASK_TAG,		"Ring2Mask",		DataSymbolType.VFRAP_ROI),
+		RING3_MASK			(RING3_MASK_TAG,		"Ring3Mask",		DataSymbolType.VFRAP_ROI),
+		RING4_MASK			(RING4_MASK_TAG,		"Ring4Mask",		DataSymbolType.VFRAP_ROI),
+		RING5_MASK			(RING5_MASK_TAG,		"Ring5Mask",		DataSymbolType.VFRAP_ROI),
+		RING6_MASK			(RING6_MASK_TAG,		"Ring6Mask",		DataSymbolType.VFRAP_ROI),
+		RING7_MASK			(RING7_MASK_TAG,		"Ring7Mask",		DataSymbolType.VFRAP_ROI),
+		RING8_MASK			(RING8_MASK_TAG,		"Ring8Mask",		DataSymbolType.VFRAP_ROI);
 
-		private final String tokenName;		// internal name as used in vFrap
+		private final String tokenName;			// internal name as used in vFrap
+		private final String symbolName;		// the name we give to the symbol
 		private final DataSymbolType dataSymbolType;
-		SymbolEquivalence(String tokenName, DataSymbolType dataSymbolType) {
+		SymbolEquivalence(String tokenName, String symbolName, DataSymbolType dataSymbolType) {
 			this.tokenName = tokenName;
+			this.symbolName = symbolName;
 			this.dataSymbolType = dataSymbolType;
 		}
 		public String getVFrapTokenName() {
 			return tokenName;
 		}
+		public String getVFrapSymbolName() {
+			return symbolName;
+		}
 		public DataSymbolType getDataSymbolType() {
 			return dataSymbolType;
 		}
-	    public static DataSymbolType fromVFrapName(String tokenName) {
+	    public static DataSymbolType typeFromToken(String tokenName) {
 	        for (SymbolEquivalence se : SymbolEquivalence.values()){
 	        	if (se.getVFrapTokenName().equals(tokenName)){
 	        		return se.getDataSymbolType();
 	        	}
 	        }
-	        return null;
+	        return DataSymbolType.UNKNOWN;
+	    }
+	    // TODO: not in use yet, see vFrapXmlHelper::CreateSaveVFrapDataSymbols()
+	    public static String nameFromToken(String tokenName) {
+	        for (SymbolEquivalence se : SymbolEquivalence.values()){
+	        	if (se.getVFrapTokenName().equals(tokenName)){
+	        		return se.getVFrapSymbolName();
+	        	}
+	        }
+	        return tokenName;	// fallback nicely and use what we have
 	    }
 	}
 

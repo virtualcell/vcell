@@ -1,5 +1,7 @@
 package cbit.vcell.xml;
 
+import java.awt.Component;
+import java.awt.Frame;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +9,9 @@ import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Hashtable;
+
+import javax.swing.JOptionPane;
 
 import org.jdom.Comment;
 import org.jdom.Document;
@@ -30,10 +35,13 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
 
 import com.ibm.icu.util.StringTokenizer;
 
 import static cbit.vcell.data.VFrapConstants.*;
+import static cbit.vcell.xml.VFrapXmlHelper.*;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
@@ -50,6 +58,7 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
@@ -64,6 +73,8 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.gui.DataSymbolsPanel;
+import cbit.vcell.mapping.gui.NewDataSymbolPanel;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
@@ -791,18 +802,24 @@ public static Simulation XMLToSim(String xmlString) throws XmlParseException {
 }
 
 
-public static BioModel VFRAPToBioModel(XMLSource xmlSource, DocumentManager documentManager) 
-		throws XmlParseException, IOException, DataAccessException, MathException, DivideByZeroException, ExpressionException, ImageException {
+public static BioModel VFRAPToBioModel(Hashtable<String, Object> hashTable, XMLSource xmlSource, DocumentManager documentManager, final TopLevelWindowManager requester) 
+		throws XmlParseException, IOException, DataAccessException, MathException, DivideByZeroException, ExpressionException, ImageException, UtilCancelException {
 
+	Component requesterComponent = requester.getComponent();
 	File vFrapFile = xmlSource.getXmlFile();
-	String vFrapFileNameExtended = vFrapFile.getName();	// ex  ccc8.vfrap
+// ---	
+	String vFrapFileNameExtended = vFrapFile.getName();			// ex  ccc8.vfrap
+	{	// we want to make sure to reload these strings from the hash later on
 	String initialFieldDataName = vFrapFileNameExtended.substring(0, vFrapFileNameExtended.indexOf(".vfrap"));
 	String mixedFieldDataName = initialFieldDataName + "Mx";	// we'll save here the "special" vFrap images (prebleach_avg, ...)
-		
-	VFrapXmlHelper vFrapXmlHelper = new VFrapXmlHelper();
-	if(vFrapXmlHelper.isAlreadyImported(mixedFieldDataName, documentManager)) {
-		throw new RuntimeException("FieldData name " + mixedFieldDataName + " already in use.");
+	hashTable.put("mixedFieldDataName",mixedFieldDataName);
+	hashTable.put("initialFieldDataName",initialFieldDataName);
 	}
+	if(vFrapFileNameExtended.indexOf(".vfrap") < 0) {
+		throw new RuntimeException("File extension must be .vfrap");
+	}
+//	VFrapXmlHelper vFrapXmlHelper = new VFrapXmlHelper();
+	checkNameAvailability(hashTable, true, documentManager, requesterComponent);
 
 	System.out.println("Loading " + vFrapFileNameExtended + " ...");
     String xmlString = XmlUtil.getXMLString(vFrapFile.getAbsolutePath());
@@ -817,126 +834,20 @@ public static BioModel VFRAPToBioModel(XMLSource xmlSource, DocumentManager docu
 		throw new RuntimeException("Unable to load biomodel.");
 	}
 	bioModel = vcellXMLReader.getBioModel(bioModelElement);
-
-	// ------ parse the vfrap file and the log/zip files referred within -----
-	int NumTimePoints = 1;					// many channels of 1 timepoint each
-	int NumChannels = tokenNames.length;	// the channels: prebleach, postbleach, roi1, roi2 ... roiN
-	String[] channelNames = new String[NumChannels];
-	VariableType[] channelTypes = new VariableType[NumChannels];
-	DataSymbolType[] channelVFrapImageType = new DataSymbolType[NumChannels];
-	double[][][] pixData = new double[NumTimePoints][NumChannels][]; 
-
-	// get the path of the file tagged with "ROIExternalDataInfoTag" and open it
-	Element roiExternalDataInfoElement  = vFrapRoot.getChild(MicroscopyXMLTags.ROIExternalDataInfoTag);
-	if (roiExternalDataInfoElement == null){
-		// can't load FieldData for some reason, fall back to importing the biomodel only
-		return bioModel;
-	}
-	//	<ROIExternalDataInfo Filename="c:\vFrap\VirtualMicroscopy\SimulationData\SimID_1282941232246_0_.log">
-	//		<ExternalDataIdentifier Name="timeData" KeyValue="1282941232246" OwnerName="SimulationData" OwnerKey="0" />
-	//	</ImageDatasetExternalDataInfo>
-	String filename = (roiExternalDataInfoElement).getAttributeValue("Filename");	// c:\VirtualMicroscopy\SimulationData\SimID_1284149203811_0_.log
-	Element childElement = (roiExternalDataInfoElement).getChild("ExternalDataIdentifier");
-	if(childElement == null) {
-		// can't load FieldData for some reason, fall back to importing the biomodel only
-		return bioModel;
-	}
-	StringTokenizer tokens = new StringTokenizer(filename,"/\\.");
-	final ArrayList<String> tokenArray = new ArrayList<String>();
-	while (tokens.hasMoreElements()){
-		tokenArray.add(tokens.nextToken());
-	}
-	final String dataID = tokenArray.get(tokenArray.size()-2);
-	final String userName = tokenArray.get(tokenArray.size()-3);
-	VCDataIdentifier vcDataIdentifier = new VCDataIdentifier() {
-		public String getID(){
-			return dataID;
-		}
-		public User getOwner(){
-			return new User(userName, new KeyValue("123345432334"));
-		}
-	};
 	
-	// ------- recover simulation data for this user name, load the images in memory ------------
-	String userDirName = filename.substring(0,filename.indexOf(dataID)-1);	// ex  c:\\VirtualMicroscopy\\SimulationData
-	File userDir = new File(userDirName);
-	SimulationData simData = new SimulationData(vcDataIdentifier, userDir, userDir);
-
-	CartesianMesh incompleteMesh = simData.getMesh();	// build a valid mesh in 2 steps, what we have in simData is incomplete
-	Extent extent = incompleteMesh.getExtent();
-	ISize isize = new ISize(incompleteMesh.getSizeX(), incompleteMesh.getSizeY(), incompleteMesh.getSizeZ());
-	Origin origin = new Origin(0,0,0);
-	CartesianMesh mesh = CartesianMesh.createSimpleCartesianMesh(origin, extent,isize, 
-		new RegionImage( new VCImageUncompressed(null, new byte[isize.getXYZ()], extent, 
-				isize.getX(),isize.getY(),isize.getZ()),0,null,null,RegionImage.NO_SMOOTHING));
-
-	DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
-	double times[] = simData.getDataTimes();
-	for (int i=0; i<dataIdentifiers.length; i++){
-		// ex: prebleach_avg, postbleach_first, postbleach_last, bleached_mask, cell_mask, ring1_mask,... ring8_mask
-		System.out.println(dataIdentifiers[i].getName());
-		for (double time : times){			// this loops only once, we have just 1 timepoint for each "special" image
-			SimDataBlock simDataBlock = simData.getSimDataBlock(null, dataIdentifiers[i].getName(), time);
-			channelNames[i] = dataIdentifiers[i].getName();
-			channelTypes[i] = VariableType.VOLUME;
-			channelVFrapImageType[i] = SymbolEquivalence.fromVFrapName(dataIdentifiers[i].getName());
-			pixData[0][i] = simDataBlock.getData();
-//			var = prebleach_avg, time = 0.0, data = { 1.0832530361887216 1.0832530361887216 1.0832530361887216 1.0 .... }
-			System.out.print("var = " + dataIdentifiers[i].getName() + ", time = " + time + ", data = { ");
-			for (int j=0; j<5; j++){ System.out.print(pixData[0][i][j] + " "); }; System.out.println(" ... ");	// show a few
-		}
+	// ------ locate the special images within the vFrap files and load them in memory
+	if(!LoadVFrapSpecialImages(hashTable, vFrapRoot)) {
+		return bioModel;	// just return the biomodel if image loading fails for some reason
 	}
 
 	// ------- save the special images in the database as field data ------------
-	FieldDataFileOperationSpec vfrapMiscFieldDataOpSpec = new FieldDataFileOperationSpec();
-	vfrapMiscFieldDataOpSpec.opType = FieldDataFileOperationSpec.FDOS_ADD;
-	vfrapMiscFieldDataOpSpec.cartesianMesh = mesh;
-	vfrapMiscFieldDataOpSpec.doubleSpecData =  pixData;
-	vfrapMiscFieldDataOpSpec.specEDI = null;
-	vfrapMiscFieldDataOpSpec.varNames = channelNames;				// item name as it comes from vFrap
-	vfrapMiscFieldDataOpSpec.owner = documentManager.getUser();
-	vfrapMiscFieldDataOpSpec.times = new double[] { 0.0 };
-	vfrapMiscFieldDataOpSpec.variableTypes = channelTypes;
-	vfrapMiscFieldDataOpSpec.origin = new Origin(0,0,0);
-	vfrapMiscFieldDataOpSpec.extent = mesh.getExtent();
-	vfrapMiscFieldDataOpSpec.isize = new ISize(mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
-	ExternalDataIdentifier vfrapMisc = documentManager.saveFieldData(vfrapMiscFieldDataOpSpec, mixedFieldDataName);
-
-	// --------- create and save data symbols for the vFrap "special" images -----------
-	SimulationContext simContext = bioModel.getSimulationContexts()[0];
-	for (int i=0; i<channelNames.length; i++) {
-		String dataSymbolName = channelNames[i] + "_" + initialFieldDataName;			// item name postfixed with field data name
-		DataSymbol dataSymbol = new FieldDataSymbol(dataSymbolName, channelVFrapImageType[i],
-				simContext.getDataContext(), VCUnitDefinition.UNIT_TBD,
-				vfrapMisc, channelNames[i], VariableType.VOLUME.getTypeName(), 0D);
-		simContext.getDataContext().addDataSymbol(dataSymbol);
-	}	
+	ExternalDataIdentifier vfrapMisc = SaveVFrapSpecialImagesAsFieldData(hashTable, documentManager);
+	
+	// ------- create and save data symbols for the vFrap "special" images -----------
+	CreateSaveVFrapDataSymbols(hashTable, bioModel, vfrapMisc);
 	
 	// -------- replace vFrap default names in field function arguments with data symbol names -----
-	SpeciesContextSpec[] scsArray = simContext.getReactionContext().getSpeciesContextSpecs();
-	for (SpeciesContextSpec scs : scsArray){
-		Expression exp = scs.getInitialConditionParameter().getExpression();	// vFrap('a','c',0.0,'volume')
-		FieldFunctionArguments[] fieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(exp);
-		if (fieldFunctionArgs!=null && fieldFunctionArgs.length>0){
-			for (FieldFunctionArguments args : fieldFunctionArgs){
-				for (DataSymbol ds : simContext.getDataContext().getDataSymbols()){
-					if (ds instanceof FieldDataSymbol){
-						FieldDataSymbol fieldDataSymbol = (FieldDataSymbol)ds;
-//						String extDataIdentName = fieldDataSymbol.getExternalDataIdentifier().getName();	// name of field data
-//						String argsFieldName = args.getFieldName();				// roiData
-//						fieldDataSymbol.getFieldDataVarTime() == args.getTime().evaluateConstant()	
-						String dataSymbolName = fieldDataSymbol.getName();		// name of data symbol  ex: postbleach_first_ccccF
-						String argsVariableName = args.getVariableName();		// name in expression as it comes from vFrap   ex: postbleach_first
-						if ( dataSymbolName.startsWith(argsVariableName)) {
-							String oldExpression = args.infix();				// vcField('roiData','postbleach_first',0.0,'Volume')
-							exp.substituteInPlace(new Expression(oldExpression), new Expression(dataSymbolName));
-							exp.bindExpression(simContext);
-						}
-					}
-				}
-			}
-		}
-	}	
+	ReplaceVFrapNamesWithSymbolNames(bioModel);
 	return bioModel;
 }
 

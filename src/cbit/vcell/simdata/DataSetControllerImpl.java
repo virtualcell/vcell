@@ -684,12 +684,11 @@ private SimDataBlock evaluateFunction(
 	AnnotatedFunction function, 
 	double time)
 	throws ExpressionException, DataAccessException, IOException, MathException {
- 
-	Expression exp = fieldFunctionSubstitution(outputContext, vcdID, function);
-		
 
+	Expression exp = new Expression(function.getExpression());
 	exp = MathFunctionDefinitions.substituteSizeFunctions(exp, function.getFunctionType().getVariableDomain());
 	exp.bindExpression(simData);
+	exp = fieldFunctionSubstitution(outputContext, vcdID, function);
 	
 	//
 	// get Dependent datasets
