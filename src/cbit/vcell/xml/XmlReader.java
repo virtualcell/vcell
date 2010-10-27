@@ -62,6 +62,7 @@ import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.ControlPointCurve;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.Line;
 import cbit.vcell.geometry.SampledCurve;
@@ -1650,6 +1651,15 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 		GeometrySurfaceDescription dummy = getGeometrySurfaceDescription(sd, newgeometry);
 	}
 	
+	try {
+		newgeometry.precomputeAll();
+	} catch (GeometryException e) {
+		e.printStackTrace(System.out);
+	} catch (ImageException e) {
+		e.printStackTrace(System.out);
+	} catch (ExpressionException e) {
+		e.printStackTrace(System.out);
+	}
 	return newgeometry;
 }
 
