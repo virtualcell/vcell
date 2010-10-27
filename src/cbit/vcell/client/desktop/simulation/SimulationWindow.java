@@ -20,7 +20,7 @@ public class SimulationWindow {
 		public void propertyChange(PropertyChangeEvent evt){
 			if (evt.getSource() == getSimulation() && evt.getPropertyName().equals("name")){
 				String newName = (String)evt.getNewValue();
-				getFrame().setTitle("SIMULATION: " + newName);
+				getFrame().setTitle("Simulation: " + newName);
 			}
 		}
 	};

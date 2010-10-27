@@ -58,9 +58,6 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	private JList pointJList = new JList();
 	private ListCellRenderer listCellRenderer = null;
 	
-	private static ImageIcon function_icon = null;
-	private static ImageIcon old_function_icon = null;
-
 	private class EventHandler implements ListSelectionListener {
 
 		public void valueChanged(ListSelectionEvent e) {

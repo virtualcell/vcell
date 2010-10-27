@@ -1,8 +1,11 @@
 package cbit.vcell.client.desktop.simulation;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -11,11 +14,15 @@ import java.util.Vector;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.TableCellEditor;
@@ -25,6 +32,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
@@ -60,14 +68,11 @@ public class SimulationListPanel extends JPanel {
 	private JScrollPane scrollPane;
 	private JSplitPane innerSplitPane;
 	private JPanel ivjButtonPanel = null;
-	private JButton ivjCopyButton = null;
-	private JButton ivjDeleteButton = null;
 	private JButton ivjEditButton = null;
 	private JButton ivjNewButton = null;
 	private JButton ivjResultsButton = null;
 	private JButton ivjRunButton = null;
 	private ScrollTable ivjScrollPaneTable = null;
-	private JButton ivjStopButton = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
 	private SimulationWorkspace fieldSimulationWorkspace = null;
@@ -76,29 +81,37 @@ public class SimulationListPanel extends JPanel {
 	private SimulationSummaryPanel ivjSimulationSummaryPanel1 = null;
 	private DefaultCellEditor ivjcellEditor1 = null;
 	private java.awt.Component ivjComponent1 = null;
-	private JButton ivjStatusDetailsButton = null;
 	private JTree simulationListTree = null;
 	private SimulationListTreeModel simulationListTreeModel = null;
+	private JButton moreActionsButton = null;
+	private JPopupMenu popupMenuMoreAction = null;
+	private JMenuItem menuItemCopy = new JMenuItem("Copy");
+	private JMenuItem menuItemDelete = new JMenuItem("Delete");			
+	private JMenuItem menuItemStop = new JMenuItem("Stop");
+	private JMenuItem menuItemStatusDetails = new JMenuItem("Status Details...");
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, 
-	java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, javax.swing.event.TableModelListener, TreeSelectionListener {
+	java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, javax.swing.event.TableModelListener, TreeSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == SimulationListPanel.this.getNewButton()) 
 				connEtoC2(e);
 			if (e.getSource() == SimulationListPanel.this.getEditButton()) 
 				connEtoC3(e);
-			if (e.getSource() == SimulationListPanel.this.getCopyButton()) 
+			if (e.getSource() == menuItemCopy) 
 				connEtoC4(e);
-			if (e.getSource() == SimulationListPanel.this.getDeleteButton()) 
+			if (e.getSource() == menuItemDelete) 
 				connEtoC5(e);
 			if (e.getSource() == SimulationListPanel.this.getRunButton()) 
 				connEtoC6(e);
-			if (e.getSource() == SimulationListPanel.this.getStopButton()) 
+			if (e.getSource() == SimulationListPanel.this.menuItemStop) 
 				connEtoC7(e);
 			if (e.getSource() == SimulationListPanel.this.getResultsButton()) 
 				connEtoC8(e);
-			if (e.getSource() == SimulationListPanel.this.getStatusDetailsButton()) 
+			if (e.getSource() == SimulationListPanel.this.menuItemStatusDetails) 
 				connEtoC13(e);
+			if (e.getSource() == moreActionsButton) {
+				getPopupMenuMore().show(moreActionsButton, 0, moreActionsButton.getHeight());
+			}
 		};
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
@@ -136,6 +149,19 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				treeValueChanged(e);
 			}
 		}
+		public void mouseClicked(MouseEvent e) {
+			if (e.getSource() == getMoreActionsButton()) { 
+				getPopupMenuMore().show(e.getComponent(), e.getX(), e.getY());
+			}			
+		}
+		public void mousePressed(MouseEvent e) {
+		}
+		public void mouseReleased(MouseEvent e) {
+		}
+		public void mouseEntered(MouseEvent e) {
+		}
+		public void mouseExited(MouseEvent e) {
+		}
 	};
 
 public SimulationListPanel() {
@@ -152,17 +178,6 @@ private void component1_FocusLost(java.awt.event.FocusEvent focusEvent) {
 	}
 }
 
-
-/**
- * connEtoC1:  (SimulationListPanel.initialize() --> SimulationListPanel.setSelectionMode()V)
- */
-private void connEtoC1() {
-	try {
-		this.customizeTable();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
 
 /**
  * connEtoC10:  (SimulationListTableModel1.tableModel.tableChanged(javax.swing.event.TableModelEvent) --> SimulationListPanel.refreshButtonsAndSummary()V)
@@ -432,14 +447,6 @@ private void copySimulations() {
 /**
  * Comment
  */
-private void customizeTable() {
-	getScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-}
-
-
-/**
- * Comment
- */
 private void deleteSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
@@ -475,7 +482,6 @@ private void editSimulation() {
 	}
 }
 
-
 /**
  * Return the ButtonPanel property value.
  * @return javax.swing.JPanel
@@ -489,15 +495,14 @@ private javax.swing.JPanel getButtonPanel() {
 			ivjButtonPanel.setAlignmentY(Component.TOP_ALIGNMENT);
 			ivjButtonPanel.setPreferredSize(new Dimension(750, 40));
 			ivjButtonPanel.setName("ButtonPanel");
-			ivjButtonPanel.setLayout(getButtonPanelFlowLayout());
+			FlowLayout fl = new java.awt.FlowLayout();
+			fl.setVgap(5);
+			ivjButtonPanel.setLayout(fl);
 			getButtonPanel().add(getNewButton(), getNewButton().getName());
 			getButtonPanel().add(getEditButton(), getEditButton().getName());
-			getButtonPanel().add(getCopyButton(), getCopyButton().getName());
-			getButtonPanel().add(getDeleteButton(), getDeleteButton().getName());
 			getButtonPanel().add(getRunButton(), getRunButton().getName());
-			getButtonPanel().add(getStopButton(), getStopButton().getName());
 			getButtonPanel().add(getResultsButton(), getResultsButton().getName());
-			getButtonPanel().add(getStatusDetailsButton(), getStatusDetailsButton().getName());
+			getButtonPanel().add(getMoreActionsButton(), getMoreActionsButton().getName());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -508,24 +513,6 @@ private javax.swing.JPanel getButtonPanel() {
 	}
 	return ivjButtonPanel;
 }
-
-/**
- * Return the ButtonPanelFlowLayout property value.
- * @return java.awt.FlowLayout
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private java.awt.FlowLayout getButtonPanelFlowLayout() {
-	java.awt.FlowLayout ivjButtonPanelFlowLayout = null;
-	try {
-		/* Create part */
-		ivjButtonPanelFlowLayout = new java.awt.FlowLayout();
-		ivjButtonPanelFlowLayout.setVgap(5);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	};
-	return ivjButtonPanelFlowLayout;
-}
-
 
 /**
  * Return the cellEditor1 property value.
@@ -548,55 +535,6 @@ private java.awt.Component getComponent1() {
 	// user code end
 	return ivjComponent1;
 }
-
-
-/**
- * Return the CopyButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getCopyButton() {
-	if (ivjCopyButton == null) {
-		try {
-			ivjCopyButton = new javax.swing.JButton();
-			ivjCopyButton.setName("CopyButton");
-			ivjCopyButton.setText("Copy");
-			ivjCopyButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjCopyButton;
-}
-
-
-/**
- * Return the DeleteButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getDeleteButton() {
-	if (ivjDeleteButton == null) {
-		try {
-			ivjDeleteButton = new javax.swing.JButton();
-			ivjDeleteButton.setName("DeleteButton");
-			ivjDeleteButton.setText("Delete");
-			ivjDeleteButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjDeleteButton;
-}
-
 
 /**
  * Return the EditButton property value.
@@ -786,46 +724,6 @@ public SimulationWorkspace getSimulationWorkspace() {
 	return fieldSimulationWorkspace;
 }
 
-
-/**
- * Return the StatusDetailsButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getStatusDetailsButton() {
-	if (ivjStatusDetailsButton == null) {
-		try {
-			ivjStatusDetailsButton = new javax.swing.JButton();
-			ivjStatusDetailsButton.setName("StatusDetailsButton");
-			ivjStatusDetailsButton.setText("Status Details...");
-			ivjStatusDetailsButton.setEnabled(false);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjStatusDetailsButton;
-}
-
-/**
- * Return the StopButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getStopButton() {
-	if (ivjStopButton == null) {
-		try {
-			ivjStopButton = new javax.swing.JButton();
-			ivjStopButton.setName("StopButton");
-			ivjStopButton.setText("Stop");
-			ivjStopButton.setEnabled(false);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjStopButton;
-}
-
-
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -848,15 +746,16 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	getNewButton().addActionListener(ivjEventHandler);
 	getEditButton().addActionListener(ivjEventHandler);
-	getCopyButton().addActionListener(ivjEventHandler);
-	getDeleteButton().addActionListener(ivjEventHandler);
+	menuItemCopy.addActionListener(ivjEventHandler);
+	menuItemDelete.addActionListener(ivjEventHandler);
 	getRunButton().addActionListener(ivjEventHandler);
-	getStopButton().addActionListener(ivjEventHandler);
+	menuItemStop.addActionListener(ivjEventHandler);
 	getResultsButton().addActionListener(ivjEventHandler);
+	getMoreActionsButton().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getSimulationListTableModel1().addTableModelListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
-	getStatusDetailsButton().addActionListener(ivjEventHandler);
+	menuItemStatusDetails.addActionListener(ivjEventHandler);
 	connPtoP2SetTarget();
 	connPtoP1SetTarget();
 	
@@ -898,7 +797,7 @@ private void initialize() {
 		add(outerSplitPane, gridBagConstraints);		
 		
 		initConnections();
-		connEtoC1();
+		getScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -910,7 +809,7 @@ private void initialize() {
  */
 public static void main(java.lang.String[] args) {
 	try {
-		JFrame frame = new javax.swing.JFrame();
+		JFrame frame = new javax.swing.JFrame("SimulationListPanel");
 		SimulationListPanel aSimulationListPanel;
 		aSimulationListPanel = new SimulationListPanel();
 		frame.setContentPane(aSimulationListPanel);
@@ -957,7 +856,7 @@ private void newSimulation() {
 /**
  * Comment
  */
-public void refreshButtonsAndSummary() {
+private void refreshButtonsAndSummary() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	refreshButtonsLax(selections);
 	if (selections.length != 1) {
@@ -973,7 +872,7 @@ public void refreshButtonsAndSummary() {
  */
 private void refreshButtonsLax(int[] selections) {
 	// newButton always available...
-	getCopyButton().setEnabled(selections.length > 0);
+	menuItemCopy.setEnabled(selections.length > 0);
 	boolean bEditable = false;
 	if (selections.length==1){
 		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationWorkspace().getSimulations()[selections[0]]);
@@ -996,10 +895,10 @@ private void refreshButtonsLax(int[] selections) {
 		bStatusDetails = !simStatus.isNeverRan() ? true : bStatusDetails;
 	}
 	getEditButton().setEnabled(bEditable);
-	getDeleteButton().setEnabled(bDeletable);
+	menuItemDelete.setEnabled(bDeletable);
 	getRunButton().setEnabled(bRunnable);
-	getStatusDetailsButton().setEnabled(bStatusDetails);
-	getStopButton().setEnabled(bStoppable);
+	menuItemStatusDetails.setEnabled(bStatusDetails);
+	menuItemStop.setEnabled(bStoppable);
 	getResultsButton().setEnabled(bHasData);
 }
 
@@ -1072,7 +971,7 @@ private void runSimulations() {
 								"This might affect the accuracy of the solution.\n\n"
 						+ "\u0394x=" + meshSpecification.getDx() + "\n" 
 						+ "\u0394y=" + meshSpecification.getDy()
-						+ (dimension > 2 ? "" : "\n\u0394z=" + meshSpecification.getDz())
+						+ (dimension < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz())
 						 + "\n\nDo you want to continue anyway?";
 						String result = DialogUtils.showWarningDialog(SimulationListPanel.this, warningMessage, 
 								new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
@@ -1319,7 +1218,7 @@ private void stopSimulations() {
 	/**
 	 * @return
 	 */
-	protected JSplitPane getInnerSplitPane() {
+	private JSplitPane getInnerSplitPane() {
 		if (innerSplitPane == null) {
 			innerSplitPane = new JSplitPane();
 			innerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -1333,17 +1232,18 @@ private void stopSimulations() {
 	/**
 	 * @return
 	 */
-	protected JScrollPane getScrollPane() {
+	private JScrollPane getScrollPane() {
 		if (scrollPane == null) {
 			scrollPane = new JScrollPane();
 			scrollPane.setViewportView(getSimulationSummaryPanel1());
 		}
 		return scrollPane;
 	}
+	
 	/**
 	 * @return
 	 */
-	protected JPanel getButtonsAndSimSummarypanel() {
+	private JPanel getButtonsAndSimSummarypanel() {
 		if (buttonsAndSimSummarypanel == null) {
 			buttonsAndSimSummarypanel = new JPanel();
 			buttonsAndSimSummarypanel.setLayout(new GridBagLayout());
@@ -1421,5 +1321,35 @@ private void stopSimulations() {
 				return;
 			}
 		}
+	}
+
+	private JPopupMenu getPopupMenuMore() {
+		if (popupMenuMoreAction == null) {
+			popupMenuMoreAction = new JPopupMenu();
+			popupMenuMoreAction.add(menuItemCopy);
+			popupMenuMoreAction.add(menuItemDelete);
+			popupMenuMoreAction.add(new JSeparator());
+			popupMenuMoreAction.add(menuItemStop);
+			popupMenuMoreAction.add(menuItemStatusDetails);
+		}
+		
+		return popupMenuMoreAction;
+	}
+	
+	private javax.swing.JButton getMoreActionsButton() {
+		if (moreActionsButton == null) {
+			try {
+				moreActionsButton = new JButton("More Actions", new DownArrowIcon());
+				moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);
+				moreActionsButton.setName("MoreActionsButton");
+				// user code begin {1}
+				// user code end
+			} catch (java.lang.Throwable ivjExc) {
+				// user code begin {2}
+				// user code end
+				handleException(ivjExc);
+			}
+		}
+		return moreActionsButton;
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"

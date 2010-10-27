@@ -513,9 +513,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		JInternalFrameEnhanced editorFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getAppEditorFrame();
 //		JInternalFrameEnhanced geoFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getGeometrySummaryViewerFrame();
 		JInternalFrameEnhanced surfaceFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getSurfaceViewerFrame();
-		editorFrame.setTitle("APPLICATION: "+simContext.getName());
+		editorFrame.setTitle("Application: "+simContext.getName());
 //		geoFrame.setTitle("GEOMETRY for: "+simContext.getName());
-		surfaceFrame.setTitle("SURFACE for: "+simContext.getName()+"'s Geometry");
+		surfaceFrame.setTitle("Surface for: "+simContext.getName()+"'s Geometry");
 	}
 }
 

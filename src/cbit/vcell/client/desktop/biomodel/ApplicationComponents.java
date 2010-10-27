@@ -45,7 +45,7 @@ public ApplicationComponents(SimulationContext simContext, BioModelWindowManager
 	getAppEditor().setSimulationWorkspace(new SimulationWorkspace(bioModelWindowManager, simContext));
 	getAppEditor().setOptimizationService(bioModelWindowManager.getOptimizationService());
 	getAppEditor().setUserPreferences(bioModelWindowManager.getUserPreferences());
-	setAppEditorFrame(new JInternalFrameEnhanced("APPLICATION: "+simContext.getName(), true, true, true, true));
+	setAppEditorFrame(new JInternalFrameEnhanced("Application: "+simContext.getName(), true, true, true, true));
 	getAppEditorFrame().setFrameIcon(new ImageIcon(getClass().getResource("/images/application3_16x16.gif")));
 	getAppEditorFrame().setContentPane(getAppEditor());
 	getAppEditorFrame().setSize(800,650);

@@ -40,9 +40,8 @@ import cbit.vcell.solver.stoch.StochSimOptions;
  * @author: Ion Moraru
  */
 public class SimulationSummaryPanel extends JPanel {
-	private static final String SIM_SUMMARY_LABEL = "SIMULATION SUMMARY:";
-	private cbit.vcell.solver.Simulation fieldSimulation = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private Simulation fieldSimulation = null;
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JLabel ivjJLabel1 = null;
 	private JLabel ivjJLabel11 = null;
 	private JLabel ivjJLabel12 = null;
@@ -73,7 +72,7 @@ public class SimulationSummaryPanel extends JPanel {
 	private JLabel labelRelTolValue = null;
 	private JLabel labelAbsTolValue = null;
 
-class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.DocumentListener {
+	private class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.DocumentListener {
 		public void changedUpdate(javax.swing.event.DocumentEvent e) {
 			if (e.getDocument() == SimulationSummaryPanel.this.getdocument1()) 
 				connEtoC4(e);
@@ -465,7 +464,6 @@ private javax.swing.JLabel getJLabel1() {
 		try {
 			ivjJLabel1 = new javax.swing.JLabel();
 			ivjJLabel1.setName("JLabel1");
-			ivjJLabel1.setText(SIM_SUMMARY_LABEL);
 			ivjJLabel1.addMouseListener(
 					new MouseAdapter(){				
 						JPopupMenu jPopup;
@@ -1094,8 +1092,13 @@ private void initialize() {
 		// 0
 		java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 		constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
-		constraintsJLabel1.gridwidth = 7;
-		constraintsJLabel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJLabel1.anchor = java.awt.GridBagConstraints.EAST;
+		constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(new JLabel("Simulation Summary:"), constraintsJLabel1);
+
+		constraintsJLabel1 = new java.awt.GridBagConstraints();
+		constraintsJLabel1.gridx = 1; constraintsJLabel1.gridy = 0;
+		constraintsJLabel1.anchor = java.awt.GridBagConstraints.LINE_START;
 		constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabel1(), constraintsJLabel1);
 
@@ -1220,7 +1223,7 @@ private void initialize() {
 		constraintsJLabel11.gridx = 0; constraintsJLabel11.gridy = 6;
 		constraintsJLabel11.anchor = java.awt.GridBagConstraints.EAST;
 		constraintsJLabel11.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel11(), constraintsJLabel11);
+		add(getJLabel11(), constraintsJLabel11); // Mesh:
 
 		java.awt.GridBagConstraints constraintsJLabelMesh = new java.awt.GridBagConstraints();
 		constraintsJLabelMesh.gridx = 1; constraintsJLabelMesh.gridy = 6;
@@ -1233,7 +1236,7 @@ private void initialize() {
 		constraintsJLabel8.gridx = 4; constraintsJLabel8.gridy = 6;
 		constraintsJLabel8.anchor = java.awt.GridBagConstraints.EAST;
 		constraintsJLabel8.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel8(), constraintsJLabel8);
+		add(getJLabel8(), constraintsJLabel8); // Geometry Size
 
 		java.awt.GridBagConstraints constraintsJLabelGeometrySize = new java.awt.GridBagConstraints();
 		constraintsJLabelGeometrySize.gridx = 5; constraintsJLabelGeometrySize.gridy = 6;
@@ -1247,7 +1250,7 @@ private void initialize() {
 		constraintsJLabel5.gridx = 0; constraintsJLabel5.gridy = 7;
 		constraintsJLabel5.anchor = java.awt.GridBagConstraints.EAST;
 		constraintsJLabel5.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel5(), constraintsJLabel5);
+		add(getJLabel5(), constraintsJLabel5); // Solver:
 		
 		java.awt.GridBagConstraints constraintsJLabelSolver = new java.awt.GridBagConstraints();
 		constraintsJLabelSolver.gridx = 1; constraintsJLabelSolver.gridy = 7;
@@ -1263,7 +1266,7 @@ private void initialize() {
 		constraintsJLabel9.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabel9.weightx = 1.0;
 		constraintsJLabel9.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel9(), constraintsJLabel9);
+		add(getJLabel9(), constraintsJLabel9); // parameters with values
 
 		// 9
 		java.awt.GridBagConstraints constraintsMathOverridesPanel1 = new java.awt.GridBagConstraints();
@@ -1315,15 +1318,22 @@ private void newSimulation(final Simulation simulation) {
 	if (simulation==null){
 		getJTextAreaDescription().setBackground(getBackground());
 		getJTextAreaDescription().setEditable(false);
-		getJLabel1().setText(SIM_SUMMARY_LABEL);
+		getJLabel1().setText("");
 		return;
-	}else{
-		getJTextAreaDescription().setBackground(java.awt.Color.white);
-		getJTextAreaDescription().setEditable(true);
-		getJLabel1().setText(SIM_SUMMARY_LABEL + (simulation.getKey() == null ? "" : " (SimID=" + simulation.getKey()+
-			(simulation.getSimulationVersion() != null && simulation.getSimulationVersion().getParentSimulationReference() != null 
-					? ", parentSimRef="+simulation.getSimulationVersion().getParentSimulationReference() : "" ) + ")"));
 	}
+	
+	getJTextAreaDescription().setBackground(java.awt.Color.white);
+	getJTextAreaDescription().setEditable(true);
+	String key = "";
+	if (simulation.getKey() != null) {
+		key = "(SimID=" + simulation.getKey();
+		if (simulation.getSimulationVersion() != null && simulation.getSimulationVersion().getParentSimulationReference() != null) {
+			key += ", parentSimRef="+simulation.getSimulationVersion().getParentSimulationReference();
+		}
+		key += ")";
+	}
+	getJLabel1().setText(key);
+	
 	// also set up a listener that will refresh when simulation is edited in place
 	simulation.removePropertyChangeListener(simChangeListener);
 	simulation.addPropertyChangeListener(simChangeListener);
