@@ -1,27 +1,19 @@
 package cbit.vcell.solver.ode.gui;
 
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.beans.PropertyVetoException;
 
-import javax.swing.BorderFactory;
 import javax.swing.InputVerifier;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
+import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.GuiConstants;
@@ -34,9 +26,8 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
-import cbit.vcell.solver.SolverDescription.SolverFeature;
 
-public class OutputOptionsPanel extends JPanel {
+public class OutputOptionsPanel extends CollapsiblePanel {
 	private javax.swing.JTextField ivjOutputTimesTextField = null;
 	private javax.swing.JRadioButton ivjDefaultOutputRadioButton = null;
 	private javax.swing.JRadioButton ivjExplicitOutputRadioButton = null;
@@ -54,20 +45,14 @@ public class OutputOptionsPanel extends JPanel {
 	private javax.swing.ButtonGroup ivjbuttonGroup1 = null;
 	
 	private javax.swing.JLabel ivjPointsLabel = null;
-	
-	private StopAtSpatiallyUniformPanel stopAtSpatiallyUniformPanel = null;
-	private DataProcessingInstructionPanel dataProcessingInstructionPanel = null;
-	private JCheckBox serialParameterScanCheckBox = null;
-	
+		
 	private SolverTaskDescription solverTaskDescription = null;
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
-	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, ItemListener {
+	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == OutputOptionsPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) {
-				stopAtSpatiallyUniformPanel.setSolverTaskDescription(solverTaskDescription);
-				dataProcessingInstructionPanel.setSolverTaskDescription(solverTaskDescription);
 				refresh();
 			}
 			if (evt.getSource() == solverTaskDescription && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_SOLVER_DESCRIPTION))) {
@@ -110,15 +95,9 @@ public class OutputOptionsPanel extends JPanel {
 				setNewOutputOption();
 			}
 		}
-
-		public void itemStateChanged(ItemEvent e) {			
-			if (e.getSource() == serialParameterScanCheckBox) {
-				solverTaskDescription.setSerialParameterScan(serialParameterScanCheckBox.isSelected());
-			}
-		}
 	}
 	public OutputOptionsPanel() {
-		super();
+		super("Output Options");
 		addPropertyChangeListener(ivjEventHandler);
 		initialize();
 	}
@@ -351,13 +330,10 @@ public class OutputOptionsPanel extends JPanel {
 		}
 		return ivjbuttonGroup1;
 	}
-	
+
 	private void initialize() {
 		try {
 			setLayout(new java.awt.GridBagLayout());
-			TitledBorder tb = new TitledBorder(new EtchedBorder(),"Output Options", TitledBorder.DEFAULT_JUSTIFICATION,
-					TitledBorder.DEFAULT_POSITION, getFont());
-	     	setBorder(tb);
 	
 	     	// 0
 			java.awt.GridBagConstraints constraintsDefaultOutputRadioButton = new java.awt.GridBagConstraints();
@@ -409,47 +385,7 @@ public class OutputOptionsPanel extends JPanel {
 			constraintsExplicitOutputPanel.weighty = 1.0;
 			constraintsExplicitOutputPanel.insets = new java.awt.Insets(0, 4, 4, 4);
 			add(getExplicitOutputPanel(), constraintsExplicitOutputPanel);
-			
-			// 3		
-			java.awt.GridBagConstraints gridbag1 = new java.awt.GridBagConstraints();
-			gridbag1.gridx = 0; 
-			gridbag1.gridy = 3;
-			gridbag1.fill = GridBagConstraints.HORIZONTAL;
-			gridbag1.gridwidth = 4;
-			gridbag1.insets = new java.awt.Insets(0, 0, 0, 0);
-			JSeparator separator = new JSeparator();
-			add(separator, gridbag1);
-	
-			// 4
-			serialParameterScanCheckBox = new JCheckBox("Run Parameter Scan Serially");
-			gridbag1 = new java.awt.GridBagConstraints();
-			gridbag1.gridx = 0; 
-			gridbag1.gridy = 4;
-			gridbag1.fill = GridBagConstraints.HORIZONTAL;
-			gridbag1.gridwidth = 4;
-			gridbag1.insets = new java.awt.Insets(0, 0, 5, 0);
-			add(serialParameterScanCheckBox, gridbag1);
 					
-			// 5
-			stopAtSpatiallyUniformPanel = new StopAtSpatiallyUniformPanel();		
-			gridbag1 = new java.awt.GridBagConstraints();
-			gridbag1.gridx = 0; 
-			gridbag1.gridy = 5;
-			gridbag1.fill = GridBagConstraints.HORIZONTAL;
-			gridbag1.gridwidth = 4;
-			gridbag1.insets = new java.awt.Insets(0, 0, 5, 0);
-			add(stopAtSpatiallyUniformPanel, gridbag1);
-			
-			// 7
-			dataProcessingInstructionPanel = new DataProcessingInstructionPanel();
-			gridbag1 = new java.awt.GridBagConstraints();
-			gridbag1.gridx = 0; 
-			gridbag1.gridy = 6;
-			gridbag1.fill = GridBagConstraints.HORIZONTAL;
-			gridbag1.gridwidth = 4;
-			gridbag1.insets = new java.awt.Insets(0, 0, 0, 10);
-			add(dataProcessingInstructionPanel, gridbag1);			
-			
 			getbuttonGroup1().add(getDefaultOutputRadioButton());
 			getbuttonGroup1().add(getUniformOutputRadioButton());
 			getbuttonGroup1().add(getExplicitOutputRadioButton());
@@ -556,7 +492,6 @@ public class OutputOptionsPanel extends JPanel {
 		getKeepEveryTextField().addFocusListener(ivjEventHandler);
 		getKeepAtMostTextField().addFocusListener(ivjEventHandler);
 		getOutputTimesTextField().addFocusListener(ivjEventHandler);
-		serialParameterScanCheckBox.addItemListener(ivjEventHandler);
 				
 		getOutputTimeStepTextField().setInputVerifier(new InputVerifier() {
 			
@@ -831,16 +766,6 @@ public class OutputOptionsPanel extends JPanel {
 			getKeepAtMostTextField().setText("");
 			getKeepAtMostTextField().setEnabled(false);
 		}
-		
-		if (solverDesc.getSupportedFeatures().contains(SolverFeature.Feature_SerialParameterScans)) {
-			serialParameterScanCheckBox.setVisible(true);
-			boolean bSerialParameterScan = solverTaskDescription.isSerialParameterScan();
-			if (bSerialParameterScan) {
-				serialParameterScanCheckBox.setSelected(bSerialParameterScan);
-			}
-		} else {
-			serialParameterScanCheckBox.setVisible(false);
-		}
 	}	
 
 	public final void setSolverTaskDescription(SolverTaskDescription newValue) {
@@ -859,5 +784,39 @@ public class OutputOptionsPanel extends JPanel {
 		firePropertyChange("solverTaskDescription", oldValue, newValue);
 		
 		initConnections();
+	}
+	
+	public static void main(java.lang.String[] args) {
+		try {
+			System.out.println("UIManager Default Properties");
+			javax.swing.UIDefaults df1 = javax.swing.UIManager.getDefaults(); // returns a HashTable
+			java.util.Enumeration dfkeys = df1.keys(); // returns an Enumeration
+
+			System.out.println("\n KEY / VALUE list");
+			while (dfkeys.hasMoreElements())
+			{ 
+				Object key = dfkeys.nextElement();
+				//if (key.equals("Table.sortIconColor"))
+					System.out.println(key + "\tval: "+ df1.get(key) );
+			}
+			
+			JFrame frame = new javax.swing.JFrame("OutputOptionsPanel");
+			OutputOptionsPanel panel;
+			panel = new OutputOptionsPanel();
+			frame.setContentPane(panel);
+			frame.setSize(panel.getSize());
+			frame.addWindowListener(new java.awt.event.WindowAdapter() {
+				public void windowClosing(java.awt.event.WindowEvent e) {
+					System.exit(0);
+				};
+			});
+			java.awt.Insets insets = frame.getInsets();
+			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
+			frame.pack();
+			frame.setVisible(true);
+		} catch (Throwable exception) {
+			System.err.println("Exception occurred in main() of javax.swing.JPanel");
+			exception.printStackTrace(System.out);
+		}
 	}	
 }

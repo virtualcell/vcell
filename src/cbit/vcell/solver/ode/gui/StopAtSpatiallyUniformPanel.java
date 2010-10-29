@@ -117,11 +117,11 @@ private void initialize() {
 
 		// 0
 		JLabel label = new javax.swing.JLabel("Error Tolerance");
-		label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = 0;
 		gbc.gridwidth = 4;
+		gbc.weightx = 1.0;
 		gbc.anchor = java.awt.GridBagConstraints.CENTER;
 		add(label, gbc);
 
@@ -132,6 +132,7 @@ private void initialize() {
 		gbc.gridy = 1;
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = java.awt.GridBagConstraints.LINE_START;
 		add(stopSpatiallyUniformCheckBox, gbc);
 
 		gbc = new java.awt.GridBagConstraints();
@@ -145,6 +146,8 @@ private void initialize() {
 		gbc.gridx = 2; 
 		gbc.gridy = 1;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		absTolTextField = new javax.swing.JTextField();
 		absTolTextField.setColumns(10);
 		add(absTolTextField, gbc);
@@ -160,6 +163,8 @@ private void initialize() {
 		gbc.gridx = 4; 
 		gbc.gridy = 1;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		relTolTextField = new javax.swing.JTextField();
 		relTolTextField.setColumns(10);
 		add(relTolTextField, gbc);

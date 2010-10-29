@@ -165,6 +165,7 @@ import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.SundialsSolverOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -3541,9 +3542,13 @@ private Element getXML(SolverTaskDescription param) {
 		solvertask.setAttribute(XMLTags.RunParameterScanSerially, String.valueOf(bRunParameterScanSerially));
 	}
 	
-	SmoldynSimulationOptions sso = param.getSmoldynSimulationOptions();
-	if (sso != null) {		
-		solvertask.addContent(getXML(sso));
+	SmoldynSimulationOptions smoldynSimulationOptions = param.getSmoldynSimulationOptions();
+	if (smoldynSimulationOptions != null) {		
+		solvertask.addContent(getXML(smoldynSimulationOptions));
+	}
+	SundialsSolverOptions sundialsSolverOptions = param.getSundialsSolverOptions();
+	if (sundialsSolverOptions != null) {		
+		solvertask.addContent(getXML(sundialsSolverOptions));
 	}
 	return solvertask;
 }
@@ -3566,6 +3571,18 @@ private Element getXML(SmoldynSimulationOptions sso) {
 		element = new Element(XMLTags.SmoldynSimulationOptions_gaussianTableSize);
 		element.setText(sso.getGaussianTableSize() + "");
 		ssoElement.addContent(element);			
+	}
+	return ssoElement;
+}
+
+private Element getXML(SundialsSolverOptions sso) {
+	Element ssoElement = null;
+	if (sso != null) {
+		ssoElement = new Element(XMLTags.SundialsSolverOptions);
+		
+		Element element = new Element(XMLTags.SundialsSolverOptions_maxOrder);
+		element.setText(sso.getMaxOrder() + "");
+		ssoElement.addContent(element);
 	}
 	return ssoElement;
 }

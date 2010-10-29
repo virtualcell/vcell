@@ -17,15 +17,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
 
+import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.solver.SolverTaskDescription;
 
 
-public class SmoldynSimulationOptionsPanel extends JPanel {
+public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 
 	private JCheckBox randomSeedCheckBox;
 	private JTextField randomSeedTextField;
@@ -38,7 +37,7 @@ public class SmoldynSimulationOptionsPanel extends JPanel {
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
-	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, PropertyChangeListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, PropertyChangeListener {
 
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
@@ -97,7 +96,7 @@ public class SmoldynSimulationOptionsPanel extends JPanel {
 		
 	}
 	public SmoldynSimulationOptionsPanel() {
-		super();
+		super("Smoldyn Options", false);
 		initialize();
 	}
 	private void initialize() {
@@ -121,11 +120,7 @@ public class SmoldynSimulationOptionsPanel extends JPanel {
 		gaussianTableSizeHelpButton.setFont(font);
 		gaussianTableSizeHelpButton.setBorder(border);
 		
-		setLayout(new GridBagLayout());
-		TitledBorder tb = new TitledBorder(new EtchedBorder(),"Smoldyn Options", 
-				TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, getFont());
-		setBorder(tb);
-		
+		setLayout(new GridBagLayout());		
 		int gridy = 0;
 		GridBagConstraints  gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -191,10 +186,9 @@ public class SmoldynSimulationOptionsPanel extends JPanel {
 		gbc.gridx = 2;
 		gbc.gridy = gridy;
 		gbc.weightx = 1;
-//		gbc.gridwidth = 2;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		add(randomSeedTextField, gbc);	
+		add(randomSeedTextField, gbc);
 	}
 	
 	private void initConnections() {
