@@ -178,5 +178,8 @@ public class VCML {
 	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";
 	public final static String SmoldynSimulationOptions_gaussianTableSize	= "gaussianTableSize";
-	public final static String SmoldynSimulationOptions_boxSize	= "BoxSize";	
+	public final static String SmoldynSimulationOptions_boxSize	= "BoxSize";
+	
+	public final static String SundialsSolverOptions	= "SundialsSolverOptions";
+	public final static String SundialsSolverOptions_maxOrder	= "MaxOrder";
 }
