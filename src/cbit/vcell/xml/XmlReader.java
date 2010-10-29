@@ -187,6 +187,7 @@ import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.SundialsSolverOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -4488,8 +4489,13 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 		
 		Element smoldySimulationOptionsElement = param.getChild(XMLTags.SmoldynSimulationOptions, vcNamespace);
 		if (smoldySimulationOptionsElement != null) {
-			SmoldynSimulationOptions sso = getSmoldySimulationOptions(smoldySimulationOptionsElement);
-			solverTaskDesc.setSmoldynSimulationOptions(sso);			
+			SmoldynSimulationOptions smoldynSimulationOptions = getSmoldySimulationOptions(smoldySimulationOptionsElement);
+			solverTaskDesc.setSmoldynSimulationOptions(smoldynSimulationOptions);			
+		}
+		Element sundialsSolverOptionsElement = param.getChild(XMLTags.SundialsSolverOptions, vcNamespace);
+		if (sundialsSolverOptionsElement != null) {
+			SundialsSolverOptions sundialsSolverOptions = getSundialsSolverOptions(sundialsSolverOptionsElement);
+			solverTaskDesc.setSundialsSolverOptions(sundialsSolverOptions);			
 		}
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
@@ -4526,6 +4532,18 @@ private SmoldynSimulationOptions getSmoldySimulationOptions(Element smoldySimula
 		}
 	}	
 	return sso;
+}
+
+private SundialsSolverOptions getSundialsSolverOptions(Element sundialsSolverOptionsElement) throws XmlParseException {
+	
+	SundialsSolverOptions sundialsSolverOptions = null;	
+	if (sundialsSolverOptionsElement != null) {		
+		String temp = sundialsSolverOptionsElement.getChildText(XMLTags.SundialsSolverOptions_maxOrder, vcNamespace);
+		if (temp != null) {
+			sundialsSolverOptions = new SundialsSolverOptions(Integer.parseInt(temp));
+		}
+	}	
+	return sundialsSolverOptions;
 }
 
 public ModelParameter[] getModelParams(Element globalParams, Model model) throws XmlParseException {

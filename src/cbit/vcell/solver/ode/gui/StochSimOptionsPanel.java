@@ -2,7 +2,10 @@ package cbit.vcell.solver.ode.gui;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
@@ -11,8 +14,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
 
+import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.GuiConstants;
@@ -22,7 +25,8 @@ import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
 
-public class StochSimOptionsPanel extends JPanel {
+@SuppressWarnings("serial")
+public class StochSimOptionsPanel extends CollapsiblePanel {
 	
 	private SolverTaskDescription solverTaskDescription = null;	
 
@@ -47,7 +51,7 @@ public class StochSimOptionsPanel extends JPanel {
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
-	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == StochSimOptionsPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) { 
 				refresh();
@@ -94,18 +98,15 @@ public class StochSimOptionsPanel extends JPanel {
 	}
 	
 	public StochSimOptionsPanel() {
-		super();
+		super("Stochastic Options");
 		addPropertyChangeListener(ivjEventHandler);
 		initialize();		
 	}
 	
 	private void initialize() {
-		try {			
-			setLayout(new java.awt.GridLayout(0,1));
-			TitledBorder tb = new TitledBorder(new EtchedBorder(),"Stochastic Options", 
-					TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, getFont());
-			setBorder(tb);
+		try {
 
+			setLayout(new java.awt.GridBagLayout());
 			// 1
 			JPanel trialPanel = new JPanel(new GridLayout(0,1));
 			trialPanel.add(getTrajectoryButton());
@@ -126,41 +127,110 @@ public class StochSimOptionsPanel extends JPanel {
 			panelb.add(getJTextFieldCustomSeed());
 			seedPanel.add(panelb);
 			seedPanel.setBorder(new EtchedBorder());
+						
+			JPanel advancedPanel = new CollapsiblePanel("Advanced", false);
+			advancedPanel.setLayout(new GridBagLayout());
 			
-			//combine 1 and 2
-			JPanel paneld=new JPanel(new GridLayout(0,2));
-			paneld.add(trialPanel);
-			paneld.add(seedPanel);
-			add(paneld);
+			// 0
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.anchor = GridBagConstraints.LINE_END;
+			gbc.insets = new Insets(4,4,4,4);
+//			gbc.weightx = 1.0;
+			advancedPanel.add(getEpsilonLabel(), gbc);
 			
-			// 3
-			JPanel panelc = new JPanel(new GridLayout(0,2));
-			JPanel panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));			
-			panel1.add(getEpsilonLabel());
-			panel1.add(getEpsilonTextField());
-			panelc.add(panel1);
-			panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			panel1.add(getLambdaLabel());
-			panel1.add(getLambdaTextField());
-			panelc.add(panel1);
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(4,4,4,4);
+			advancedPanel.add(getEpsilonTextField(), gbc);
 			
-			panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			panel1.add(getMSRToleranceLabel());
-			panel1.add(getMSRToleranceTextField());
-			panelc.add(panel1);
-			panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			panel1.add(getSDEToleranceLabel());
-			panel1.add(getSDEToleranceTextField());
-			panelc.add(panel1);
-			panelc.setBorder(new EtchedBorder());
-			add(panelc);		
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 0;
+//			gbc.weightx = 1.0;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			advancedPanel.add(getLambdaLabel(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 3;
+			gbc.gridy = 0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(4,4,4,4);
+			advancedPanel.add(getLambdaTextField(), gbc);
+			
+			// 1
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+//			gbc.weightx = 1.0;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			advancedPanel.add(getMSRToleranceLabel(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 1;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			advancedPanel.add(getMSRToleranceTextField(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 1;
+			gbc.insets = new Insets(4,4,4,4);
+//			gbc.weightx = 1.0;
+			gbc.anchor = GridBagConstraints.LINE_END;			
+			advancedPanel.add(getSDEToleranceLabel(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 3;
+			gbc.gridy = 1;
+			gbc.insets = new Insets(4,4,4,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			advancedPanel.add(getSDEToleranceTextField(), gbc);
+			
+			//
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(4,4,4,4);
+			add(trialPanel, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 0;			
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.insets = new Insets(4,4,4,4);
+			add(seedPanel, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.gridwidth = 2;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.insets = new Insets(10,4,10,4);
+			add(advancedPanel, gbc);
 		    
 			getButtonGroupSeed().add(getRandomSeedRadioButton());
 			getButtonGroupSeed().add(getCustomizedSeedRadioButton());
 			
 			//trial radio button group
 			getButtonGroupTrials().add(getTrajectoryButton());
-			getButtonGroupTrials().add(getHistogramButton());						
+			getButtonGroupTrials().add(getHistogramButton());
 			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);		
@@ -296,10 +366,8 @@ public class StochSimOptionsPanel extends JPanel {
 	private javax.swing.JLabel getEpsilonLabel() {
 		if (ivjEpsilonLabel == null) {
 			try {
-				ivjEpsilonLabel = new javax.swing.JLabel();
+				ivjEpsilonLabel = new javax.swing.JLabel("Epsilon");
 				ivjEpsilonLabel.setName("EpsilonLabel");
-				ivjEpsilonLabel.setText("Epsilon");
-				ivjEpsilonLabel.setPreferredSize(new Dimension(75, 20));			
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -323,10 +391,8 @@ public class StochSimOptionsPanel extends JPanel {
 	private javax.swing.JLabel getLambdaLabel() {
 		if (ivjLambdaLabel == null) {
 			try {
-				ivjLambdaLabel = new javax.swing.JLabel();
+				ivjLambdaLabel = new javax.swing.JLabel("Lambda");
 				ivjLambdaLabel.setName("LambdaLabel");
-				ivjLambdaLabel.setText("Lambda");
-				ivjLambdaLabel.setPreferredSize(new java.awt.Dimension(75, 20));
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -351,10 +417,8 @@ public class StochSimOptionsPanel extends JPanel {
 	private javax.swing.JLabel getMSRToleranceLabel() {
 		if (ivjMSRToleranceLabel == null) {
 			try {
-				ivjMSRToleranceLabel = new javax.swing.JLabel();
+				ivjMSRToleranceLabel = new javax.swing.JLabel("MSR Tolerance");
 				ivjMSRToleranceLabel.setName("MSRLabel");
-				ivjMSRToleranceLabel.setText("MSR Tolerance");
-				ivjMSRToleranceLabel.setPreferredSize(new java.awt.Dimension(75, 20));
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -378,10 +442,8 @@ public class StochSimOptionsPanel extends JPanel {
 	private javax.swing.JLabel getSDEToleranceLabel() {
 		if (ivjSDEToleranceLabel == null) {
 			try {
-				ivjSDEToleranceLabel = new javax.swing.JLabel();
+				ivjSDEToleranceLabel = new javax.swing.JLabel("SDE Tolerance");
 				ivjSDEToleranceLabel.setName("SDELabel");
-				ivjSDEToleranceLabel.setText("SDE Tolerance");
-				ivjSDEToleranceLabel.setPreferredSize(new java.awt.Dimension(75, 20));
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -627,6 +689,29 @@ public class StochSimOptionsPanel extends JPanel {
 			{
 				getSDEToleranceTextField().setEnabled(false);
 			}
+		}
+	}
+	
+	public static void main(java.lang.String[] args) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			
+			javax.swing.JFrame frame = new javax.swing.JFrame();
+			StochSimOptionsPanel aStochSimOptionsPanel;
+			aStochSimOptionsPanel = new StochSimOptionsPanel();
+			frame.setContentPane(aStochSimOptionsPanel);
+			frame.addWindowListener(new java.awt.event.WindowAdapter() {
+				public void windowClosing(java.awt.event.WindowEvent e) {
+					System.exit(0);
+				};
+			});
+			java.awt.Insets insets = frame.getInsets();
+			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
+			frame.pack();
+			frame.setVisible(true);
+		} catch (Throwable exception) {
+			System.err.println("Exception occurred in main() of javax.swing.JPanel");
+			exception.printStackTrace(System.out);
 		}
 	}
 }

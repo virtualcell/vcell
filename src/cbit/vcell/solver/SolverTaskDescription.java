@@ -24,6 +24,7 @@ import cbit.vcell.solver.stoch.StochSimOptions;
  * Creation date: (8/19/2000 8:59:15 PM)
  * @author: John Wagner
  */
+@SuppressWarnings("serial")
 public class SolverTaskDescription implements Matchable, java.beans.PropertyChangeListener, java.io.Serializable {
 	public static final String PROPERTY_ERROR_TOLERANCE = "errorTolerance";
 	public static final String PROPERTY_USE_SYMBOLIC_JACOBIAN = "useSymbolicJacobian";
@@ -34,6 +35,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	public static final String PROPERTY_STOCH_SIM_OPTIONS = "StochSimOptions";
 	public static final String PROPERTY_STOP_AT_SPATIALLY_UNIFORM_ERROR_TOLERANCE = "stopAtSpatiallyUniformErrorTolerance";
 	public static final String PROPERTY_SMOLDYN_SIMULATION_OPTIONS = "smoldynSimulationOptions";
+	public static final String PROPERTY_SUNDIALS_SOLVER_OPTIONS = "sundialsSolverOptions";
 	
 	//  Or TASK_NONE for use as a default?
 	public static final int TASK_UNSTEADY = 0;
@@ -54,6 +56,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private ErrorTolerance stopAtSpatiallyUniformErrorTolerance = null;
 	private boolean bSerialParameterScan = false;
 	private SmoldynSimulationOptions smoldynSimulationOptions = null;
+	private SundialsSolverOptions sundialsSolverOptions = null; 
 
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
@@ -77,6 +80,7 @@ public SolverTaskDescription(Simulation simulation, CommentStringTokenizer token
  */
 public SolverTaskDescription(CommentStringTokenizer tokenizer) throws DataAccessException {
 	super();
+	addPropertyChangeListener(this);
 	readVCML(tokenizer);
 }
 
@@ -119,6 +123,11 @@ public SolverTaskDescription(Simulation simulation, SolverTaskDescription solver
 		smoldynSimulationOptions = new SmoldynSimulationOptions(solverTaskDescription.smoldynSimulationOptions);
 	} else {
 		smoldynSimulationOptions = null;
+	}
+	if (fieldSolverDescription.equals(SolverDescription.SundialsPDE)) {
+		sundialsSolverOptions = new SundialsSolverOptions(solverTaskDescription.sundialsSolverOptions);
+	} else {
+		sundialsSolverOptions = null;
 	}
 }
 
@@ -201,6 +210,9 @@ public boolean compareEqual(Matchable object) {
 			return false;
 		}
 		if  (!Compare.isEqualOrNull(smoldynSimulationOptions,solverTaskDescription.smoldynSimulationOptions)) {
+			return false;
+		}
+		if  (!Compare.isEqualOrNull(sundialsSolverOptions,solverTaskDescription.sundialsSolverOptions)) {
 			return false;
 		}
 		return true;
@@ -489,6 +501,9 @@ public String getVCML() {
 	if (smoldynSimulationOptions != null) {
 		buffer.append(smoldynSimulationOptions.getVCML());
 	}
+	if (sundialsSolverOptions != null) {
+		buffer.append(sundialsSolverOptions.getVCML());
+	}
 	buffer.append(VCML.EndBlock+"\n");
 		
 	return buffer.toString();
@@ -532,7 +547,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				if (solverDescription.equals(SolverDescription.SundialsPDE)) {
 					setErrorTolerance(ErrorTolerance.getDefaultSundialsErrorTolerance());
 					setTimeStep(TimeStep.getDefaultSundialsTimeStep());
+					if (sundialsSolverOptions == null) {
+						sundialsSolverOptions = new SundialsSolverOptions();
+					}
 				} else {
+					sundialsSolverOptions = null;
 					setErrorTolerance(ErrorTolerance.getDefaultSemiImplicitErrorTolerance());
 				}
 			} else if (!solverDescription.supports(getOutputTimeSpec())){
@@ -755,6 +774,8 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				setSerialParameterScan((new Boolean(token)).booleanValue());
 			} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions)) {
 				setSmoldynSimulationOptions(new SmoldynSimulationOptions(tokens));				
+			} else if (token.equalsIgnoreCase(VCML.SundialsSolverOptions)) {
+				setSundialsSolverOptions(new SundialsSolverOptions(tokens));
 			} else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}
@@ -975,11 +996,20 @@ public final SmoldynSimulationOptions getSmoldynSimulationOptions() {
 	return smoldynSimulationOptions;
 }
 
+public final SundialsSolverOptions getSundialsSolverOptions() {
+	return sundialsSolverOptions;
+}
 
 public final void setSmoldynSimulationOptions(SmoldynSimulationOptions smoldynSimulationOptions) {
-	SmoldynSimulationOptions oldValue = smoldynSimulationOptions;
+	SmoldynSimulationOptions oldValue = this.smoldynSimulationOptions;
 	this.smoldynSimulationOptions = smoldynSimulationOptions;
 	firePropertyChange(PROPERTY_SMOLDYN_SIMULATION_OPTIONS, oldValue, smoldynSimulationOptions);
+}
+
+public final void setSundialsSolverOptions(SundialsSolverOptions sundialsSolverOptions) {
+	SundialsSolverOptions oldValue = this.sundialsSolverOptions;
+	this.sundialsSolverOptions = sundialsSolverOptions;
+	firePropertyChange(PROPERTY_SUNDIALS_SOLVER_OPTIONS, oldValue, sundialsSolverOptions);
 }
 
 }

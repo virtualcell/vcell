@@ -1203,8 +1203,8 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 		ClientTaskDispatcher.dispatch(this, hash, tasksArr, true);
 		
 	}catch(Throwable exc){
-		exc.printStackTrace();
 		if(!(exc instanceof UserCancelException) && !(exc instanceof UtilCancelException)){
+			exc.printStackTrace(System.out);
 			PopupGenerator.showErrorDialog(TestingFrameworkWindowPanel.this, exc.getMessage(), exc);
 		}
 	}

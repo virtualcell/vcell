@@ -485,4 +485,6 @@ public class XMLTags {
 	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";
 	public final static String SmoldynSimulationOptions_gaussianTableSize	= "gaussianTableSize";
 
+	public final static String SundialsSolverOptions	= "SundialsSolverOptions";
+	public final static String SundialsSolverOptions_maxOrder	= "maxOrder";
 }

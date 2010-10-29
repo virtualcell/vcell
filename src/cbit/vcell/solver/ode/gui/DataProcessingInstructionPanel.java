@@ -222,8 +222,7 @@ private void refresh() {
 	SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
 	
 	if (solverDesc.supports(new SolverFeature[]{SolverFeature.Feature_DataProcessingInstructions})) {
-		dataProcessorCheckBox.setVisible(true);
-		editDataProcessorButton.setVisible(true);
+		setVisible(true);
 		DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();
 		if (dpi != null) {
 			dataProcessorCheckBox.setSelected(true);
@@ -232,8 +231,7 @@ private void refresh() {
 			editDataProcessorButton.setEnabled(false);
 		}
 	} else {
-		dataProcessorCheckBox.setVisible(false);
-		editDataProcessorButton.setVisible(false);
+		setVisible(false);
 	}
 }
 
