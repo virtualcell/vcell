@@ -398,7 +398,7 @@ public String infixString(int lang){
 	 
 	buffer.append("(");
 	
-	if (bAllBoolean || bNoBoolean || lang != SimpleNode.LANGUAGE_C) { // old way
+	if (bAllBoolean || bNoBoolean || (lang != SimpleNode.LANGUAGE_C && lang != SimpleNode.LANGUAGE_VISIT)) { // old way
 		for (int i=0;i<jjtGetNumChildren();i++){
 			if (jjtGetChild(i) instanceof ASTInvertTermNode){
 				if (lang == SimpleNode.LANGUAGE_MATLAB){
@@ -440,7 +440,16 @@ public String infixString(int lang){
 				valueBuffer.append(jjtGetChild(i).infixString(lang));
 			}
 		}
-		buffer.append("((" + conditionBuffer + ") ? (" + valueBuffer + ") : 0.0)");
+		if(lang == SimpleNode.LANGUAGE_VISIT){
+			try{
+				Expression exp = new Expression(conditionBuffer.toString());
+				buffer.append("(if(" + exp.infix_VISIT(null) + ") , (" + valueBuffer + ") , 0.0)");		
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}else{
+			buffer.append("((" + conditionBuffer + ") ? (" + valueBuffer + ") : 0.0)");
+		}
 	}
 
 	buffer.append(")");
