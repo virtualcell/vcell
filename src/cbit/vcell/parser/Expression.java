@@ -453,6 +453,50 @@ public int hashCode() {
 		 return rootNode.infixString(SimpleNode.LANGUAGE_ECLiPSe);
 	  }
    }   
+   public String infix_VISIT(String visitMeshName)
+   {
+	   //
+	   //This will return a string that potentially has VISIT_RESERVED_... strings
+	   //ASTIdNodet.VISIT_RESEVED_X, ASTIdNodet.VISIT_RESEVED_Y, ASTIdNodet.VISIT_RESEVED_Z that have to be
+	   //replaced with the syntax for X,Y,Z in visit expressions.  Referencing X,Y,Z coordinates
+	   //in VisIt requires a mesh name and takes the form "coord(meshName)[n]" where n is 0->X,1->Y,2->Z.
+	   //String should be searched for VISIT_RESERVED_... strings and be replaced with "coord(meshName)[n]" strings.
+	   //
+	  if (rootNode==null){
+		 return null;
+	  }else{
+		 String afterInfix = rootNode.infixString(SimpleNode.LANGUAGE_VISIT);
+		 if(visitMeshName != null){
+			 return replaceVisitReservedSymbols(afterInfix,visitMeshName);
+		 }
+		 return afterInfix;
+	  }
+   }  
+   private static String replaceVisitReservedSymbols(String after_Infix_VISIT,String visitMeshName){
+	   StringBuffer visitStr = new StringBuffer(after_Infix_VISIT);
+		do{
+			boolean bFound = false;
+			int index = visitStr.indexOf(ASTIdNode.VISIT_RESEVED_X);
+			if(index != -1){
+				bFound = true;
+				visitStr.replace(index, index+ASTIdNode.VISIT_RESEVED_X.length(), "coord("+visitMeshName+")[0]");
+			}
+			index = visitStr.indexOf(ASTIdNode.VISIT_RESEVED_Y);
+			if(index != -1){
+				bFound = true;
+				visitStr.replace(index, index+ASTIdNode.VISIT_RESEVED_Y.length(), "coord("+visitMeshName+")[1]");
+			}
+			index = visitStr.indexOf(ASTIdNode.VISIT_RESEVED_Z);
+			if(index != -1){
+				bFound = true;
+				visitStr.replace(index, index+ASTIdNode.VISIT_RESEVED_Z.length(), "coord("+visitMeshName+")[2]");
+			}
+			if(!bFound){
+				break;
+			}
+		}while(true);
+		return visitStr.toString();
+   }
    public String infix_JSCL()
    {
 	  if (rootNode==null){

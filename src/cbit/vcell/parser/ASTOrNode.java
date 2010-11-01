@@ -152,15 +152,27 @@ public Node flatten() throws ExpressionException {
 	 
 	  buffer.append("(");
 
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		if (i>0) {
-			if (lang == LANGUAGE_ECLiPSe){
-				buffer.append(" or ");
-			}else{
-				buffer.append(" || ");
+	  if(lang == LANGUAGE_VISIT){
+		  for (int i=0;i<jjtGetNumChildren()-1;i++){
+			  buffer.append("or(");
+		  }
+		  buffer.append(jjtGetChild(0).infixString(lang));
+		  for (int i=1;i<jjtGetNumChildren();i++){
+			  buffer.append(",");
+			  buffer.append(jjtGetChild(i).infixString(lang));
+			  buffer.append(")");
+		  }
+	  }else{
+		  for (int i=0;i<jjtGetNumChildren();i++){
+			if (i>0) {
+				if (lang == LANGUAGE_ECLiPSe){
+					buffer.append(" or ");
+				}else{
+					buffer.append(" || ");
+				}
 			}
-		}
-		buffer.append(jjtGetChild(i).infixString(lang));
+			buffer.append(jjtGetChild(i).infixString(lang));
+		  }
 	  }
 
 	  buffer.append(")");

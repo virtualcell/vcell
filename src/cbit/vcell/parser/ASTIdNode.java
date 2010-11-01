@@ -10,6 +10,8 @@ import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.model.ReservedSymbol;
+
 public class ASTIdNode extends SimpleNode {
 
   String name = null;
@@ -260,6 +262,9 @@ public String[] getSymbols(int language) {
 	return array;
 }
 
+public static final String VISIT_RESEVED_X = "___X___";
+public static final String VISIT_RESEVED_Y = "___Y___";
+public static final String VISIT_RESEVED_Z = "___Z___";
 public String infixString(int lang) {
 	String idName = name;
 	if (lang == LANGUAGE_DEFAULT) {
@@ -272,6 +277,17 @@ public String infixString(int lang) {
 		return TokenMangler.getEscapedTokenJSCL(idName);
 	}else if (lang == LANGUAGE_ECLiPSe) {
 		return TokenMangler.getEscapedTokenECLiPSe(idName);
+	}else if (lang == LANGUAGE_VISIT) {
+		if(idName.equals(ReservedSymbol.X.getName())){
+			return VISIT_RESEVED_X;
+		}else if(idName.equals(ReservedSymbol.Y.getName())){
+			return VISIT_RESEVED_Y;
+		}else if(idName.equals(ReservedSymbol.Z.getName())){
+			return VISIT_RESEVED_Z;
+		}else if(idName.equals(ReservedSymbol.TIME.getName())){
+			return "time";
+		}
+		return idName;
 	}else{
 		throw new RuntimeException("Lanaguage '"+lang+" not supported");
 	}

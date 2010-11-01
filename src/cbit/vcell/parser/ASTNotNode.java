@@ -127,7 +127,9 @@ public Node flatten() throws ExpressionException {
 public String infixString(int language) {
 	StringBuffer buffer = new StringBuffer();
 
-	if (language == LANGUAGE_ECLiPSe){
+	if (language == LANGUAGE_VISIT){
+		buffer.append("not(");
+	}else if (language == LANGUAGE_ECLiPSe){
 		buffer.append("neg(");
 	}else{
 		buffer.append("!(");

@@ -304,48 +304,83 @@ public static String getOperationFromMathML(String mathML) {
 	  StringBuffer buffer = new StringBuffer();
 	 
 	  buffer.append("(");
-
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		if (i>0) {
-			String langSpecificOpString = opString;
-			if (lang == LANGUAGE_ECLiPSe){
-				switch (operation){
-					case GT:{
-						langSpecificOpString = "$>";
-						break;
-					}
-					case LT:{
-						langSpecificOpString = "$<";
-						break;
-					}
-					case GE:{
-						langSpecificOpString = "$>=";
-						break;
-					}
-					case LE:{
-						langSpecificOpString = "$=<";
-						break;
-					}
-					case EQ:{
-						langSpecificOpString = "$=";
-						break;
-					}
-					case NE:{
-						langSpecificOpString = "$\\=";
-						break;
-					}
-					default:{
-						throw new IllegalArgumentException("unknown relational operator id = "+operation);
-					}
+	  if(lang == LANGUAGE_VISIT){
+		  if(jjtGetNumChildren() != 2){
+			  throw new RuntimeException(getClass().getName()+" for VISIT expecting 2 children");
+		  }
+			switch (operation){
+				case GT:{
+					buffer.append("gt(");
+					break;
 				}
-				buffer.append(" "+langSpecificOpString+" ");
-			}else{
-				buffer.append(" "+opString+" ");
+				case LT:{
+					buffer.append("lt(");
+					break;
+				}
+				case GE:{
+					buffer.append("gte(");
+					break;
+				}
+				case LE:{
+					buffer.append("lte(");
+					break;
+				}
+				case EQ:{
+					buffer.append("equal(");
+					break;
+				}
+				case NE:{
+					buffer.append("notequal(");
+					break;
+				}
+				default:{
+					throw new IllegalArgumentException("unknown relational operator id = "+operation);
+				}
 			}
-		}
-		buffer.append(jjtGetChild(i).infixString(lang));
-	  }
+			buffer.append(jjtGetChild(0).infixString(lang)+","+jjtGetChild(1).infixString(lang)+")");
 
+	  }else{
+		  for (int i=0;i<jjtGetNumChildren();i++){
+			if (i>0) {
+				String langSpecificOpString = opString;
+				if (lang == LANGUAGE_ECLiPSe){
+					switch (operation){
+						case GT:{
+							langSpecificOpString = "$>";
+							break;
+						}
+						case LT:{
+							langSpecificOpString = "$<";
+							break;
+						}
+						case GE:{
+							langSpecificOpString = "$>=";
+							break;
+						}
+						case LE:{
+							langSpecificOpString = "$=<";
+							break;
+						}
+						case EQ:{
+							langSpecificOpString = "$=";
+							break;
+						}
+						case NE:{
+							langSpecificOpString = "$\\=";
+							break;
+						}
+						default:{
+							throw new IllegalArgumentException("unknown relational operator id = "+operation);
+						}
+					}
+					buffer.append(" "+langSpecificOpString+" ");
+				}else{
+					buffer.append(" "+opString+" ");
+				}
+			}
+			buffer.append(jjtGetChild(i).infixString(lang));
+		  }
+	  }
 	  buffer.append(")");
 
 	  return buffer.toString();
