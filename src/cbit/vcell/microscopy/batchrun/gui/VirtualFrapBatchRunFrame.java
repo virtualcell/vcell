@@ -2,6 +2,14 @@ package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -11,6 +19,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -61,7 +70,7 @@ import cbit.vcell.opt.Parameter;
  * @author Tracy LI
  * Created in Dec 2009.
  */
-public class VirtualFrapBatchRunFrame extends JFrame 
+public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListener
 {
 	//the application has one local workspace and one FRAP workspace
 	private LocalWorkspace localWorkspace = null;
@@ -105,6 +114,8 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	String openErrMsg = "";
 	//modeltype wizard
 	private Wizard modelTypeWizard = null;
+	//for drag and drop action 
+	private DropTarget dt;
 	
     private class BatchRunMenuHandler implements ActionListener
 	{
@@ -280,6 +291,7 @@ public class VirtualFrapBatchRunFrame extends JFrame
 	    //to handle the close button of the frame
 	    setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 	    addWindowListener(createAppCloser());
+	    dt = new DropTarget(getMainSplitPane(), this);
 	  }// end of constructor
 
 	  public static void updateStatus(final String newStatusMessage){
@@ -921,5 +933,89 @@ public class VirtualFrapBatchRunFrame extends JFrame
 		{
 		    setTitle(str + " - " + VirtualFrapMainFrame.BATCHRUN_VER_NUMBER);
 		}
+	}
+	
+	//the following methods are used to implement the DropTargetListener
+	public void dragEnter(DropTargetDragEvent dtde) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void dragExit(DropTargetEvent dte) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void dragOver(DropTargetDragEvent dtde) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void drop(DropTargetDropEvent dtde) {
+		try {
+			// get the dropped object and try to figure out what it is
+			Transferable tr = dtde.getTransferable();
+			DataFlavor[] flavors = tr.getTransferDataFlavors();
+			boolean bFileSelected = false;
+			if(flavors.length > 0) 
+			{
+				for(DataFlavor flavor:flavors)
+				{
+					// Check for file lists specifically
+					if (flavor.isFlavorJavaFileListType()) {
+						// Accept copy and move drops...
+						dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+						// And add the list of file names to our text area
+						boolean b = tr.getTransferData(flavor) instanceof List;
+						List tData = (List)tr.getTransferData(flavor);
+						for(Object dataElement:tData)
+						{
+							if(dataElement instanceof File)
+							{
+								File inputFile = (File)dataElement;
+								//check file extension, we'll open only .vfrap
+								if(VirtualFrapLoader.filter_vfbatch.accept(inputFile)){
+									bFileSelected = true;
+									AsynchClientTask[] openTasks = open(inputFile);
+									ClientTaskDispatcher.dispatch(VirtualFrapBatchRunFrame.this, new Hashtable<String, Object>(), openTasks, true);
+			    				}
+								else{
+									String msg = "Unkown file type of " + inputFile.getName() +". Virtual FRAP Batchrun document names must have an extension of \'."+VirtualFrapLoader.VFRAP_BATCH_EXTENSION + "\'.";
+									DialogUtils.showErrorDialog(this, msg);
+		    						return;
+		    					}
+								
+							}
+							if(bFileSelected)
+							{
+								break;
+							}
+						}
+					}
+					// If we made it this far, everything worked.
+					dtde.dropComplete(true);
+					return;
+					// other cases can be....
+	//				else if (flavor.isFlavorSerializedObjectType()) {
+	//					java object
+	//				}
+	//				else if (flavor.isRepresentationClassInputStream()) {
+	//					input stream
+	//				}
+				}
+			}
+			// the user must not have dropped a file list
+			System.out.println("Drop failed: " + dtde);
+			dtde.rejectDrop();
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			dtde.rejectDrop();
+		}
+
+	}
+
+	public void dropActionChanged(DropTargetDragEvent dtde) {
+		// TODO Auto-generated method stub
+
 	}
 }
