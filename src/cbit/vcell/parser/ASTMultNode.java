@@ -424,7 +424,7 @@ public String infixString(int lang){
 				if (conditionBuffer.length() > 0) {
 					conditionBuffer.append(" && ");
 				}
-				conditionBuffer.append(jjtGetChild(i).infixString(lang));
+				conditionBuffer.append(jjtGetChild(i).infixString((lang == SimpleNode.LANGUAGE_VISIT?SimpleNode.LANGUAGE_DEFAULT:lang)));
 			} else {
 				if (valueBuffer.length() == 0) {					
 					if (jjtGetChild(i) instanceof ASTInvertTermNode){
@@ -443,7 +443,7 @@ public String infixString(int lang){
 		if(lang == SimpleNode.LANGUAGE_VISIT){
 			try{
 				Expression exp = new Expression(conditionBuffer.toString());
-				buffer.append("(if(" + exp.infix_VISIT(null) + ") , (" + valueBuffer + ") , 0.0)");		
+				buffer.append("if(" + exp.infix_VISIT(null) + " , " + valueBuffer + " , 0.0)");		
 			}catch(Exception e){
 				e.printStackTrace();
 			}

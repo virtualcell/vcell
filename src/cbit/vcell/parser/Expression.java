@@ -491,6 +491,11 @@ public int hashCode() {
 				bFound = true;
 				visitStr.replace(index, index+ASTIdNode.VISIT_RESEVED_Z.length(), "coord("+visitMeshName+")[2]");
 			}
+			index = visitStr.indexOf(ASTIdNode.VISIT_RESEVED_T);
+			if(index != -1){
+				bFound = true;
+				visitStr.replace(index, index+ASTIdNode.VISIT_RESEVED_T.length(), "time("+visitMeshName+")");
+			}
 			if(!bFound){
 				break;
 			}

@@ -265,6 +265,7 @@ public String[] getSymbols(int language) {
 public static final String VISIT_RESEVED_X = "___X___";
 public static final String VISIT_RESEVED_Y = "___Y___";
 public static final String VISIT_RESEVED_Z = "___Z___";
+public static final String VISIT_RESEVED_T = "___T___";
 public String infixString(int lang) {
 	String idName = name;
 	if (lang == LANGUAGE_DEFAULT) {
@@ -285,7 +286,7 @@ public String infixString(int lang) {
 		}else if(idName.equals(ReservedSymbol.Z.getName())){
 			return VISIT_RESEVED_Z;
 		}else if(idName.equals(ReservedSymbol.TIME.getName())){
-			return "time";
+			return VISIT_RESEVED_T;
 		}
 		return idName;
 	}else{
