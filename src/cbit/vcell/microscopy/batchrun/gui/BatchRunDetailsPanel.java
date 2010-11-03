@@ -284,9 +284,9 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 						fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setData(fitData);
 						//refresh the results
 						getBatchRunWorkspace().refreshBatchRunResults();
-						//set save flag true when a doc has been added successfully
-						getBatchRunWorkspace().setSaveNeeded(true);
 					}
+					//set save flag true when a doc has been added successfully
+					getBatchRunWorkspace().setSaveNeeded(true);
 					//update tree
 					DefaultMutableTreeNode newNode = frapBatchRunViewTree.addBatchRunDocNode(new File(getBatchRunWorkspace().getWorkingFrapStudy().getXmlFilename()));
 					//get the new tree node after sorting
