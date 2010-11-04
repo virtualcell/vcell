@@ -15,6 +15,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
+import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -1174,7 +1175,9 @@ private void writeFieldData() throws FileNotFoundException, ExpressionException,
 		return;
 	}
 
-	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),null);
+	String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);	
+	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),
+			secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 	
 	printWriter.println("# Field Data");
 	printWriter.println("FIELD_DATA_BEGIN");
