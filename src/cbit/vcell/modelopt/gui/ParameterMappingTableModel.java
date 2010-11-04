@@ -327,9 +327,11 @@ public Object getValueAt(int row, int col) {
 				for (int i = 0; i < getParameterEstimationTask().getModelOptimizationMapping().getParameterMappings().length; i++){
 					if (getParameterEstimationTask().getModelOptimizationMapping().getParameterMappings()[i].getModelParameter() == parameterMappingSpec.getModelParameter()){
 						ParameterMapping parameterMapping = getParameterEstimationTask().getModelOptimizationMapping().getParameterMappings()[i];
-						for (int j = 0; getParameterEstimationTask().getOptimizationResultSet().getParameterNames()!=null && j < getParameterEstimationTask().getOptimizationResultSet().getParameterNames().length; j++){
-							if (getParameterEstimationTask().getOptimizationResultSet().getParameterNames()[j].equals(parameterMapping.getOptParameter().getName())){
-								return new Double(getParameterEstimationTask().getOptimizationResultSet().getParameterValues()[j]);
+						String[] parameterNames = getParameterEstimationTask().getOptimizationResultSet().getOptSolverResultSet().getParameterNames();
+						for (int j = 0; parameterNames!=null 
+						&& j < parameterNames.length; j++){
+							if (parameterNames[j].equals(parameterMapping.getOptParameter().getName())){
+								return new Double(getParameterEstimationTask().getOptimizationResultSet().getOptSolverResultSet().getParameterValues()[j]);
 							}
 						}
 					}

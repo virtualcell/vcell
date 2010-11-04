@@ -9,21 +9,15 @@ import java.awt.event.ItemEvent;
 import java.util.Hashtable;
 
 import javax.swing.ButtonGroup;
-import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 
 import org.vcell.util.Issue;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
 
 import cbit.gui.MultiPurposeTextPanel;
-import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -38,10 +32,6 @@ import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.gui.MathDescEditor;
 import cbit.vcell.math.gui.MathDescPanel;
-import cbit.vcell.modelopt.AnalysisTask;
-import cbit.vcell.modelopt.ParameterEstimationTask;
-import cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel;
-import cbit.vcell.modelopt.gui.OptTestPanel;
 import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
 /**
@@ -49,6 +39,7 @@ import cbit.vcell.solver.Simulation;
  * Creation date: (5/7/2004 3:16:22 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class ApplicationEditor extends JPanel {
 	public static final int TAB_IDX_SPPR = 0;
 	public static final int TAB_IDX_VIEW_MATH = 1;
@@ -56,7 +47,7 @@ public class ApplicationEditor extends JPanel {
 	public static final int TAB_IDX_ANALYSIS = 3;
 	
 	private boolean ivjConnPtoP1Aligning = false;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP2Aligning = false;
 	private SimulationWorkspace fieldSimulationWorkspace = null;
     protected transient ActionListener actionListener = null;
@@ -82,17 +73,7 @@ public class ApplicationEditor extends JPanel {
 	private JPanel ivjButtonsPanel = null;
 	private JButton ivjCreateMathModelButton = null;
 	private JButton ivjRefreshMathButton = null;
-	private JPanel ivjJPanel2 = null;
-	private OptTestPanel ivjoptTestPanel = null;
-	private JPanel ivjParameterEstimationPanel = null;
-	private JComboBox ivjAnalysisTaskComboBox = null;
-	private JButton ivjDeleteAnalysisTaskButton = null;
-	private JButton ivjNewAnalysisTaskButton = null;
-	private AnalysisTaskComboBoxModel ivjAnalysisTaskComboBoxModel = null;
-	private boolean ivjConnPtoP8Aligning = false;
-	private ComboBoxModel ivjmodel1 = null;
-	private JButton ivjCopyButton = null;
-	private ClientSimManager clientSimManager = null;
+	private AnalysisPanel ivjParameterEstimationPanel;
 	
 	         
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
@@ -103,14 +84,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC4(e);
 			if (e.getSource() == ApplicationEditor.this.getCreateMathModelButton()) 
 				connEtoC5(e);
-			if (e.getSource() == ApplicationEditor.this.getAnalysisTaskComboBox()) 
-				connEtoC6(e);
-			if (e.getSource() == ApplicationEditor.this.getNewAnalysisTaskButton()) 
-				connEtoC8(e);
-			if (e.getSource() == ApplicationEditor.this.getDeleteAnalysisTaskButton()) 
-				connEtoC9(e);
-			if (e.getSource() == ApplicationEditor.this.getCopyButton()) 
-				connEtoC10(e);
 		};
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == ApplicationEditor.this.getViewEqunsRadioButton()) 
@@ -140,8 +113,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			if (evt.getSource() == ApplicationEditor.this.getsimulationContext() && (evt.getPropertyName().equals("geometry"))) { 
 				refreshAnalysisTab();
 			}
-			if (evt.getSource() == ApplicationEditor.this.getAnalysisTaskComboBox() && (evt.getPropertyName().equals("model"))) 
-				connPtoP8SetTarget();
 		}
 	};
 
@@ -154,16 +125,6 @@ public ApplicationEditor()
 public synchronized void addActionListener(ActionListener l) {
 	actionListener = AWTEventMulticaster.add(actionListener, l);
 }
-
-
-/**
- * Comment
- */
-private void analysisTaskComboBox_ActionPerformed() {
-	getoptTestPanel().setParameterEstimationTask((ParameterEstimationTask)getAnalysisTaskComboBoxModel().getSelectedItem());
-	return;
-}
-
 
 /**
  * connEtoC1:  (ViewEqunsRadioButton.item.itemStateChanged(java.awt.event.ItemEvent) --> ApplicationEditor.viewMath_ItemStateChanged(Ljava.awt.event.ItemEvent;)V)
@@ -183,66 +144,6 @@ private void connEtoC1(java.awt.event.ItemEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC10:  (CopyButton.action.actionPerformed(java.awt.event.ActionEvent) --> ApplicationEditor.copyAnalysisTaskButton_ActionPerformed()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC10(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.copyAnalysisTaskButton_ActionPerformed();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC11:  (simulationContext.this --> ApplicationEditor.refreshAnalysisTaskEnables()V)
- * @param value cbit.vcell.mapping.SimulationContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(SimulationContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.refreshAnalysisTaskEnables();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC12:  (ApplicationEditor.initialize() --> ApplicationEditor.initializeComboBoxModel()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.initializeComboBoxModel();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC2:  (ViewVCMDLRadioButton.item.itemStateChanged(java.awt.event.ItemEvent) --> ApplicationEditor.viewMath_ItemStateChanged(Ljava.awt.event.ItemEvent;)V)
@@ -323,25 +224,6 @@ private void connEtoC5(java.awt.event.ActionEvent arg1) {
 }
 
 /**
- * connEtoC6:  (ModelOptSpecComboBox.action.actionPerformed(java.awt.event.ActionEvent) --> ApplicationEditor.modelOptSpecComboBox_ActionPerformed()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.analysisTaskComboBox_ActionPerformed();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
  * connEtoC7:  (mathDescription.this --> ApplicationEditor.mathDescription_This()V)
  * @param value cbit.vcell.math.MathDescription
  */
@@ -351,45 +233,6 @@ private void connEtoC7(MathDescription value) {
 		// user code begin {1}
 		// user code end
 		this.mathDescription_This();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC8:  (NewModelOptSpecButton.action.actionPerformed(java.awt.event.ActionEvent) --> ApplicationEditor.newModelOptSpecButton_ActionPerformed()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newParameterEstimationTaskButton_ActionPerformed();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC9:  (DeleteModelOptSpecButton.action.actionPerformed(java.awt.event.ActionEvent) --> ApplicationEditor.deleteModelOptSpecButton_ActionPerformed()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.deleteAnalysisTaskButton_ActionPerformed();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -417,26 +260,6 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoM10:  (ApplicationEditor.initialize() --> model1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10() {
-	try {
-		// user code begin {1}
-		// user code end
-		setmodel1(getAnalysisTaskComboBoxModel());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoM2:  (simulationContext.this --> geometryContext.this)
@@ -590,7 +413,7 @@ private void connEtoM9(SimulationContext value) {
 		// user code begin {1}
 		// user code end
 		if ((getsimulationContext() != null)) {
-			getAnalysisTaskComboBoxModel().setSimulationContext(getsimulationContext());
+			getAnalysisPanel().setSimulationContext(getsimulationContext());
 		}
 		// user code begin {2}
 		// user code end
@@ -739,6 +562,7 @@ private void connPtoP4SetTarget() {
 			// user code end
 			ivjConnPtoP4Aligning = true;
 			if ((getsimulationWorkspace1() != null)) {
+				getAnalysisPanel().setSimulationContext((SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 				getInitialConditionsPanel().setSimulationContext((SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 			}
 			// user code begin {2}
@@ -790,75 +614,6 @@ private void connPtoP7SetTarget() {
 	}
 }
 
-
-/**
- * connPtoP8SetSource:  (AnalysisTaskComboBox.model <--> model1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP8SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP8Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP8Aligning = true;
-			if ((getmodel1() != null)) {
-				getAnalysisTaskComboBox().setModel(getmodel1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP8Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP8Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP8SetTarget:  (AnalysisTaskComboBox.model <--> model1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP8SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP8Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP8Aligning = true;
-			setmodel1(getAnalysisTaskComboBox().getModel());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP8Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP8Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * Comment
- */
-private void copyAnalysisTaskButton_ActionPerformed() {
-	try {
-		AnalysisTask taskToCopy = (AnalysisTask) getAnalysisTaskComboBoxModel().getSelectedItem();
-		if (getSimulationContext() != null && taskToCopy != null){
-			AnalysisTask newAnalysisTask = getsimulationContext().copyAnalysisTask(taskToCopy);
-			getAnalysisTaskComboBox().setSelectedItem(newAnalysisTask);
-		}
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(this,e.getMessage(), e);
-	}
-}
-
-
 private void createMathModel(final ActionEvent e) {
 	// relays an action event with this as the source
 	AsynchClientTask[] updateTasks = updateMath();
@@ -880,13 +635,7 @@ private void createMathModel(final ActionEvent e) {
 /**
  * Comment
  */
-private void deleteAnalysisTaskButton_ActionPerformed() throws java.beans.PropertyVetoException {
-	AnalysisTask taskToDelete = (AnalysisTask) getAnalysisTaskComboBoxModel().getSelectedItem();
-	if (taskToDelete != null && getSimulationContext() != null) {
-		getSimulationContext().removeAnalysisTask(taskToDelete);
-	}
-	return;
-}
+
 
 
 protected void fireActionPerformed(ActionEvent e) {
@@ -894,53 +643,6 @@ protected void fireActionPerformed(ActionEvent e) {
 		actionListener.actionPerformed(e);
 	}         
 }
-
-
-/**
- * Return the ModelOptSpecComboBox property value.
- * @return javax.swing.JComboBox
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JComboBox getAnalysisTaskComboBox() {
-	if (ivjAnalysisTaskComboBox == null) {
-		try {
-			ivjAnalysisTaskComboBox = new javax.swing.JComboBox();
-			ivjAnalysisTaskComboBox.setName("AnalysisTaskComboBox");
-			ivjAnalysisTaskComboBox.setPreferredSize(new java.awt.Dimension(300, 23));
-			ivjAnalysisTaskComboBox.setRenderer(new AnalysisTaskListCellRenderer());
-			ivjAnalysisTaskComboBox.setMinimumSize(new java.awt.Dimension(300, 23));
-			ivjAnalysisTaskComboBox.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjAnalysisTaskComboBox;
-}
-
-/**
- * Return the AnalysisTaskComboBoxModel property value.
- * @return cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private AnalysisTaskComboBoxModel getAnalysisTaskComboBoxModel() {
-	if (ivjAnalysisTaskComboBoxModel == null) {
-		try {
-			ivjAnalysisTaskComboBoxModel = new AnalysisTaskComboBoxModel();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjAnalysisTaskComboBoxModel;
-}
-
 
 /**
  * Return the buttonGroup property value.
@@ -1003,30 +705,6 @@ private java.awt.CardLayout getcardLayout() {
 	return ivjcardLayout;
 }
 
-
-/**
- * Return the CopyButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getCopyButton() {
-	if (ivjCopyButton == null) {
-		try {
-			ivjCopyButton = new javax.swing.JButton();
-			ivjCopyButton.setName("CopyButton");
-			ivjCopyButton.setText("Copy...");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjCopyButton;
-}
-
-
 /**
  * Return the CreateMathModelButton property value.
  * @return javax.swing.JButton
@@ -1047,31 +725,6 @@ private javax.swing.JButton getCreateMathModelButton() {
 		}
 	}
 	return ivjCreateMathModelButton;
-}
-
-
-/**
- * Return the DeleteModelOptSpecButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getDeleteAnalysisTaskButton() {
-	if (ivjDeleteAnalysisTaskButton == null) {
-		try {
-			ivjDeleteAnalysisTaskButton = new javax.swing.JButton();
-			ivjDeleteAnalysisTaskButton.setName("DeleteAnalysisTaskButton");
-			ivjDeleteAnalysisTaskButton.setText("Delete");
-			ivjDeleteAnalysisTaskButton.setEnabled(false);
-			ivjDeleteAnalysisTaskButton.setActionCommand("DeleteModelOptSpec");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjDeleteAnalysisTaskButton;
 }
 
 /**
@@ -1108,32 +761,6 @@ private InitialConditionsPanel getInitialConditionsPanel() {
 }
 
 /**
- * Return the JPanel2 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel2() {
-	if (ivjJPanel2 == null) {
-		try {
-			ivjJPanel2 = new javax.swing.JPanel();
-			ivjJPanel2.setName("JPanel2");
-			ivjJPanel2.setLayout(new java.awt.FlowLayout());
-			getJPanel2().add(getAnalysisTaskComboBox(), getAnalysisTaskComboBox().getName());
-			getJPanel2().add(getNewAnalysisTaskButton(), getNewAnalysisTaskButton().getName());
-			getJPanel2().add(getCopyButton(), getCopyButton().getName());
-			getJPanel2().add(getDeleteAnalysisTaskButton(), getDeleteAnalysisTaskButton().getName());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel2;
-}
-
-/**
  * Return the JTabbedPane1 property value.
  * @return javax.swing.JTabbedPane
  */
@@ -1148,7 +775,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1.insertTab("Specifications", null, getSPPRPanel(), null, TAB_IDX_SPPR);
 			ivjJTabbedPane1.insertTab("View Math", null, getViewMathPanel(), null, TAB_IDX_VIEW_MATH);
 			ivjJTabbedPane1.insertTab("Simulation", null, getSimulationListPanel(), null, TAB_IDX_SIMULATION);
-			ivjJTabbedPane1.insertTab("Analysis", null, getParameterEstimationPanel(), null, TAB_IDX_ANALYSIS);
+			ivjJTabbedPane1.insertTab("Analysis", null, getAnalysisPanel(), null, TAB_IDX_ANALYSIS);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1220,86 +847,14 @@ private javax.swing.JPanel getMathViewerPanel() {
 
 
 /**
- * Return the model1 property value.
- * @return javax.swing.ComboBoxModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.ComboBoxModel getmodel1() {
-	// user code begin {1}
-	// user code end
-	return ivjmodel1;
-}
-
-
-/**
- * Return the NewModelOptSpecButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getNewAnalysisTaskButton() {
-	if (ivjNewAnalysisTaskButton == null) {
-		try {
-			ivjNewAnalysisTaskButton = new javax.swing.JButton();
-			ivjNewAnalysisTaskButton.setName("NewAnalysisTaskButton");
-			ivjNewAnalysisTaskButton.setText("New Parameter Estimation Task...");
-			ivjNewAnalysisTaskButton.setActionCommand("NewModelOptSpec");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjNewAnalysisTaskButton;
-}
-
-/**
- * Method generated to support the promotion of the optimizationService attribute.
- * @return cbit.vcell.opt.solvers.OptimizationService
- */
-public OptimizationService getOptimizationService() {
-	return getoptTestPanel().getOptimizationService();
-}
-
-
-/**
- * Return the optTestPanel property value.
- * @return cbit.vcell.modelopt.gui.OptTestPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private OptTestPanel getoptTestPanel() {
-	if (ivjoptTestPanel == null) {
-		try {
-			ivjoptTestPanel = new OptTestPanel();
-			ivjoptTestPanel.setName("optTestPanel");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjoptTestPanel;
-}
-
-
-/**
  * Return the ParameterEstimationPanel property value.
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getParameterEstimationPanel() {
+private AnalysisPanel getAnalysisPanel() {
 	if (ivjParameterEstimationPanel == null) {
 		try {
-			ivjParameterEstimationPanel = new javax.swing.JPanel();
-			ivjParameterEstimationPanel.setName("ParameterEstimationPanel");
-			ivjParameterEstimationPanel.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
-			ivjParameterEstimationPanel.setLayout(new java.awt.BorderLayout());
-			ivjParameterEstimationPanel.setAlignmentY(java.awt.Component.CENTER_ALIGNMENT);
-			getParameterEstimationPanel().add(getoptTestPanel(), "Center");
-			getParameterEstimationPanel().add(getJPanel2(), "North");
+			ivjParameterEstimationPanel = new AnalysisPanel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1415,15 +970,6 @@ public SimulationWorkspace getSimulationWorkspace() {
 private SimulationWorkspace getsimulationWorkspace1() {
 	return ivjsimulationWorkspace1;
 }
-
-/**
- * Method generated to support the promotion of the userPreferences attribute.
- * @return cbit.vcell.client.server.UserPreferences
- */
-public UserPreferences getUserPreferences() {
-	return getoptTestPanel().getUserPreferences();
-}
-
 
 /**
  * Return the VCMLEditorPane property value.
@@ -1588,16 +1134,10 @@ private void initConnections() throws java.lang.Exception {
 	getViewVCMDLRadioButton().addItemListener(ivjEventHandler);
 	getRefreshMathButton().addActionListener(ivjEventHandler);
 	getCreateMathModelButton().addActionListener(ivjEventHandler);
-	getAnalysisTaskComboBox().addActionListener(ivjEventHandler);
-	getNewAnalysisTaskButton().addActionListener(ivjEventHandler);
-	getDeleteAnalysisTaskButton().addActionListener(ivjEventHandler);
-	getAnalysisTaskComboBox().addPropertyChangeListener(ivjEventHandler);
-	getCopyButton().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP4SetTarget();
 	connPtoP7SetTarget();
-	connPtoP8SetTarget();
 }
 
 /**
@@ -1615,8 +1155,6 @@ private void initialize() {
 		initConnections();
 		connEtoM4();
 		connEtoM5();
-		connEtoC12();
-		connEtoM10();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -1646,15 +1184,6 @@ private void refreshAnalysisTab()
 		}
 	}
 }
-/**
- * Comment
- */
-private void initializeComboBoxModel() {
-	AnalysisTaskComboBoxModel analysisTaskCBModel = new AnalysisTaskComboBoxModel();
-	analysisTaskCBModel.setSimulationContext(getSimulationContext());
-	getAnalysisTaskComboBox().setModel(analysisTaskCBModel);
-}
-
 
 /**
  * main entrypoint - starts the part when it is run as an application
@@ -1703,65 +1232,6 @@ private void mathDescription_This() {
 /**
  * Comment
  */
-private void newParameterEstimationTaskButton_ActionPerformed() {
-	try {
-		String parameterEstimationName = "task0";
-		if (getsimulationContext()==null){
-			return;
-		}
-
-		AnalysisTask analysisTasks[] = getSimulationContext().getAnalysisTasks();
-		boolean found = true;
-		while (found) {
-			found = false;
-			parameterEstimationName = TokenMangler.getNextEnumeratedToken(parameterEstimationName);
-			for (int i = 0;analysisTasks!=null && i < analysisTasks.length; i++){
-				if (analysisTasks[i].getName().equals(parameterEstimationName)){
-					found = true;
-					continue;
-				}
-			}
-		}
-
-		String newParameterEstimationName = null;
-		try {
-			newParameterEstimationName = DialogUtils.showInputDialog0(this,"name for new parameter estimation set",parameterEstimationName);
-		} catch (UtilCancelException ex) {
-			// user canceled; it's ok
-		}
-
-		if (newParameterEstimationName != null) {
-			if (newParameterEstimationName.length() == 0) {
-				PopupGenerator.showErrorDialog(this,"Error:\n name for new parameter estimation can't be empty" );
-			} else {
-				final String finalname = newParameterEstimationName;
-				AsynchClientTask task1 = new AsynchClientTask("init task", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-					
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						ParameterEstimationTask newParameterEstimationTask = new ParameterEstimationTask(getsimulationContext());
-						newParameterEstimationTask.setName(finalname);
-						hashTable.put("newParameterEstimationTask", newParameterEstimationTask);
-					}
-				};
-				AsynchClientTask task2 = new AsynchClientTask("add task", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						ParameterEstimationTask newParameterEstimationTask = (ParameterEstimationTask)hashTable.get("newParameterEstimationTask");
-						getsimulationContext().addAnalysisTask(newParameterEstimationTask);
-						getAnalysisTaskComboBoxModel().setSelectedItem(newParameterEstimationTask);
-					}
-				};
-				
-				ClientTaskDispatcher.dispatch(ApplicationEditor.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
-			}
-		}
-		refreshAnalysisTaskEnables();
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(this,e.getMessage(), e);
-	}
-}
 
 
 private void refireActionPerformed(ActionEvent e) {
@@ -1769,21 +1239,9 @@ private void refireActionPerformed(ActionEvent e) {
 	fireActionPerformed(new ActionEvent(this, e.getID(), e.getActionCommand(), e.getModifiers()));
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (12/19/2005 5:32:20 PM)
- */
-private void refreshAnalysisTaskEnables() {
-	getAnalysisTaskComboBox().setEnabled(getAnalysisTaskComboBoxModel().getSize() > 0);
-	getDeleteAnalysisTaskButton().setEnabled(getAnalysisTaskComboBoxModel().getSize() > 0);
-}
-
-
 public synchronized void removeActionListener(ActionListener l) {
 	actionListener = AWTEventMulticaster.remove(actionListener, l);
 }
-
 
 /**
  * Insert the method's description here.
@@ -1886,34 +1344,11 @@ private void setmathDescription(MathDescription newValue) {
 }
 
 /**
- * Set the model1 to a new value.
- * @param newValue javax.swing.ComboBoxModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setmodel1(javax.swing.ComboBoxModel newValue) {
-	if (ivjmodel1 != newValue) {
-		try {
-			ivjmodel1 = newValue;
-			connPtoP8SetSource();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-
-/**
  * Method generated to support the promotion of the optimizationService attribute.
  * @param arg1 cbit.vcell.opt.solvers.OptimizationService
  */
 public void setOptimizationService(OptimizationService arg1) {
-	getoptTestPanel().setOptimizationService(arg1);
+	getAnalysisPanel().setOptimizationService(arg1);
 }
 
 
@@ -1938,7 +1373,6 @@ private void setsimulationContext(SimulationContext newValue) {
 			connEtoM2(ivjsimulationContext);
 			connEtoM6(ivjsimulationContext);
 			connEtoM9(ivjsimulationContext);
-			connEtoC11(ivjsimulationContext);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2004,7 +1438,7 @@ private void setsimulationWorkspace1(SimulationWorkspace newValue) {
  * @param arg1 cbit.vcell.client.server.UserPreferences
  */
 public void setUserPreferences(UserPreferences arg1) {
-	getoptTestPanel().setUserPreferences(arg1);
+	getAnalysisPanel().setUserPreferences(arg1);
 }
 
 

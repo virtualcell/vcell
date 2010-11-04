@@ -1,21 +1,13 @@
 package cbit.vcell.opt.solvers;
-import cbit.vcell.opt.solvers.OdeLSFunction;
-import cbit.vcell.opt.solvers.ConjGradSolver;
-import cbit.vcell.opt.Parameter;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.opt.OptimizationResultSet;
-import cbit.vcell.opt.OptimizationSpec;
+import org.vcell.optimization.OptSolverResultSet;
+import org.vcell.optimization.OptSolverResultSet.OptRunResultSet;
+
 import cbit.vcell.opt.OptimizationException;
-import cbit.vcell.opt.OptimizationStatus;
+import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.server.*;
-import java.util.*;
-import cbit.vcell.solvers.*;
-import java.io.*;
+import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.opt.OptimizationStatus;
+import cbit.vcell.opt.Parameter;
 /**
  * Insert the type's description here.
  * Creation date: (3/5/00 11:16:39 PM)
@@ -89,7 +81,8 @@ public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec o
 			parameterValues[i] *= scalings[i];
 		}
 		OptimizationStatus optStatus = new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, "Normal Termination");
-		return new OptimizationResultSet(os.getParameterNames(),parameterValues,new Double(fret),optSolverCallbacks.getEvaluationCount(),odeSolverResultSet, optStatus);
+		OptRunResultSet bestResult = new OptRunResultSet(parameterValues,new Double(fret),optSolverCallbacks.getEvaluationCount(), optStatus);
+		return new OptimizationResultSet(new OptSolverResultSet(os.getParameterNames(),bestResult), odeSolverResultSet);
 	}catch (OptimizationException e){
 		OptimizationStatus optStatus = new OptimizationStatus(OptimizationStatus.FAILED, e.getMessage());
 		cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = null;
@@ -103,7 +96,8 @@ public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec o
 		if (parameterVector==null){
 			parmNames = null;
 		}
-		return new OptimizationResultSet(parmNames,parameterVector,objFunctionValue,optSolverCallbacks.getEvaluationCount(),odeSolverResultSet,optStatus);
+		OptRunResultSet bestResult = new OptRunResultSet(parameterValues,objFunctionValue,optSolverCallbacks.getEvaluationCount(), optStatus);
+		return new OptimizationResultSet(new OptSolverResultSet(parmNames,bestResult),odeSolverResultSet);
 	}
 }
 }

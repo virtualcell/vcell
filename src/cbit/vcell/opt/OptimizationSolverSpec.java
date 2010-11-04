@@ -1,10 +1,14 @@
 package cbit.vcell.opt;
+
+import org.vcell.util.Matchable;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/4/2005 12:48:37 PM)
  * @author: Jim Schaff
  */
-public class OptimizationSolverSpec implements org.vcell.util.Matchable, java.io.Serializable {
+@SuppressWarnings("serial")
+public class OptimizationSolverSpec implements Matchable, java.io.Serializable {
 	private String solverType = null;
 	private double objectiveFunctionChangeTolerance;
 

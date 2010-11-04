@@ -1,8 +1,15 @@
 package cbit.vcell.modelopt;
+import org.vcell.util.Compare;
+import org.vcell.util.Issue;
+
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathSymbolMapping;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.MathException;
+import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
+import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
@@ -12,18 +19,18 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  */
 public class ParameterEstimationTask extends AnalysisTask {
 	private ModelOptimizationSpec fieldModelOptimizationSpec = null;
-	private cbit.vcell.opt.OptimizationSolverSpec fieldOptimizationSolverSpec = null;
+	private OptimizationSolverSpec fieldOptimizationSolverSpec = null;
 	
 	private transient ModelOptimizationMapping fieldModelOptimizationMapping = null;
-	private transient cbit.vcell.mapping.MathSymbolMapping fieldMathSymbolMapping = null;
-	private transient cbit.vcell.opt.OptimizationResultSet fieldOptimizationResultSet = null;
-	private transient cbit.vcell.opt.solvers.OptSolverCallbacks fieldOptSolverCallbacks = null;
+	private transient MathSymbolMapping fieldMathSymbolMapping = null;
+	private transient OptimizationResultSet fieldOptimizationResultSet = null;
+	private transient OptSolverCallbacks fieldOptSolverCallbacks = null;
 	private transient java.lang.String fieldSolverMessageText = new String();
 
 /**
  * ParameterEstimationTask constructor comment.
  */
-public ParameterEstimationTask(cbit.vcell.mapping.SimulationContext simContext) throws ExpressionException {
+public ParameterEstimationTask(SimulationContext simContext) throws ExpressionException {
 	super();
 	fieldModelOptimizationSpec = new ModelOptimizationSpec(simContext);
 	fieldModelOptimizationMapping = new ModelOptimizationMapping(fieldModelOptimizationSpec);
@@ -69,7 +76,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 			return false;
 		}
 
-		if (!org.vcell.util.Compare.isEqual(getOptimizationSolverSpec(),task.getOptimizationSolverSpec())){
+		if (!Compare.isEqual(getOptimizationSolverSpec(),task.getOptimizationSolverSpec())){
 			return false;
 		}
 		
@@ -84,7 +91,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * Creation date: (5/2/2006 11:04:39 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(java.util.Vector issueList) {
+public void gatherIssues(java.util.Vector<Issue> issueList) {
 	if (getModelOptimizationMapping().getOptimizationSpec()!=null){
 		getModelOptimizationMapping().getOptimizationSpec().gatherIssues(issueList);
 	}

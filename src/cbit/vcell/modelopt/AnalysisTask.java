@@ -1,4 +1,7 @@
 package cbit.vcell.modelopt;
+
+import org.vcell.util.Issue;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2006 4:35:02 PM)
@@ -120,7 +123,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (5/2/2006 11:04:33 PM)
  * @param issueList java.util.Vector
  */
-public abstract void gatherIssues(java.util.Vector issueList);
+public abstract void gatherIssues(java.util.Vector<Issue> issueList);
 
 
 /**

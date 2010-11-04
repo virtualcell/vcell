@@ -3,6 +3,8 @@ package org.vcell.optimization;
 public class OptXmlTags {
 	
 	public static final String OptProblemDescription_Tag = "optProblemDescription";
+	
+	public static final String ComputeProfileDistributions_Attr = "ComputeProfileDistributions";
 
 	public static final String ObjectiveFunction_Tag = "objectiveFunction";
 	public static final String ObjectiveFunctionType_Attr = "type";
@@ -63,5 +65,12 @@ public class OptXmlTags {
 	public static final String OptSolverResultSetStatus_Attr_Failed = "failed";
 	public static final String OptSolverResultSetStatus_Attr_StoppedByUser = "stoppedByUser";
 	public static final String OptSolverResultSetStatusMessage_Attr = "statusMessage";
+	
+	public static final String bestOptRunResultSet_Tag = "bestOptRunResultSet";
+	public static final String OptRunResultSet_Tag = "OptRunResultSet";
+	public static final String ProfileDistributionList_Tag = "ProfileDistibutionList";
+	public static final String ProfileDistribution_Tag = "ProfileDistibution";
+	public static final String ProfileDistribution_FixedIndex_Attr = "fixedIndex";
+	public static final String ProfileDistribution_FixedParameter_Attr = "fixedParameter";
 
 }

@@ -1,5 +1,8 @@
 package cbit.vcell.opt.solvers;
 
+import org.vcell.optimization.OptSolverResultSet;
+import org.vcell.optimization.OptSolverResultSet.OptRunResultSet;
+
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
@@ -90,6 +93,7 @@ public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec o
 	for (int i = 0; i < parameters.length; i++){
 		System.out.println("final "+parameters[i].getName()+" = "+parameterValues[i]);
 	}
-	return new OptimizationResultSet(os.getParameterNames(),parameterValues,new Double(fret),optSolverCallbacks.getEvaluationCount(),odeSolverResultSet, optStatus);
+	OptRunResultSet bestResult = new OptRunResultSet(parameterValues,new Double(fret),optSolverCallbacks.getEvaluationCount(), optStatus);
+	return new OptimizationResultSet(new OptSolverResultSet(os.getParameterNames(),bestResult),odeSolverResultSet);
 }
 }
