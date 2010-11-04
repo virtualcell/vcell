@@ -1,53 +1,33 @@
 package cbit.vcell.opt;
+
+import org.vcell.optimization.OptSolverResultSet;
+
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/26/2002 4:22:13 PM)
  * @author: Michael Duff
  */
+@SuppressWarnings("serial")
 public class OptimizationResultSet implements java.io.Serializable {
-	private String[] fieldParameterNames = null;
-	private double[] fieldParameterValues = null;
-	private Double fieldObjectiveFunctionValue = null;
+	
+	private OptSolverResultSet optSolverResultSet = null;
 	private String[] fieldSolutionNames = null;
 	private double[][] fieldSolutionValues = null;
-	private OptimizationStatus optStatus = null;
-	private long numObjFunctionEvaluations = 0;
 
 /**
  * OptimizationResultSet constructor comment.
  */
-public OptimizationResultSet(String[] parameterNames, double parameterValues[], Double objectiveFunctionValue, long argNumObjFuncEvals, String[] solutionNames, double solutionValues[][], OptimizationStatus argStatus) {
-	if ((parameterNames==null && parameterValues!=null) || 
-		(parameterNames!=null && parameterValues==null) || 
-		(parameterNames!=null && parameterValues!=null && parameterNames.length!=parameterValues.length)){
-		throw new IllegalArgumentException("number of parameter names not same as number of values in OptimizationResultSet");
-	}
-	if ((solutionNames==null && solutionValues!=null) ||
-		(solutionNames!=null && solutionValues==null) ||
-		(solutionNames!=null && solutionValues!=null && solutionNames.length!=solutionValues[0].length)){
-		throw new IllegalArgumentException("number of model variables not same as number of values in OptimizationResultSet");
-	}
-	this.fieldParameterNames = parameterNames;
-	this.fieldParameterValues = parameterValues;
-	this.fieldObjectiveFunctionValue = objectiveFunctionValue;
-	this.fieldSolutionNames = solutionNames;
-	this.fieldSolutionValues = solutionValues;
-	this.optStatus = argStatus;
-	this.numObjFunctionEvaluations = argNumObjFuncEvals;
-}
-
-
-/**
- * OptimizationResultSet constructor comment.
- */
-public OptimizationResultSet(String[] parameterNames, double parameterValues[], Double objectiveFunctionValue, long argNumObjFuncEvals, cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet, OptimizationStatus argStatus) {
-	this(parameterNames,parameterValues,objectiveFunctionValue,argNumObjFuncEvals,null,null, argStatus);
+public OptimizationResultSet(OptSolverResultSet ors, ODESolverResultSet odeSolverResultSet) {
+	optSolverResultSet = ors;
 	if (odeSolverResultSet!=null){
 		try {
 			int numColumns = odeSolverResultSet.getDataColumnCount();
 			int numRows = odeSolverResultSet.getRowCount();
 			this.fieldSolutionNames = new String[numColumns];
-			this.fieldSolutionValues = new double[numRows][];
+			fieldSolutionValues = new double[numRows][];
 			for (int i = 0; i < numRows; i++){
 				fieldSolutionValues[i] = new double[numColumns];
 			}
@@ -59,7 +39,7 @@ public OptimizationResultSet(String[] parameterNames, double parameterValues[], 
 					fieldSolutionValues[j][i] = columnValues[j];
 				}
 			}
-		}catch (cbit.vcell.parser.ExpressionException e){
+		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
 		}
@@ -72,50 +52,9 @@ public OptimizationResultSet(String[] parameterNames, double parameterValues[], 
  * Creation date: (9/5/2005 11:48:10 AM)
  * @return java.lang.Double
  */
-public java.lang.Double getObjectiveFunctionValue() {
-	return fieldObjectiveFunctionValue;
+public OptSolverResultSet getOptSolverResultSet() {
+	return optSolverResultSet;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/15/2005 11:17:32 AM)
- * @return long
- */
-public long getObjFunctionEvaluations() {
-	return numObjFunctionEvaluations;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/25/2005 10:53:48 AM)
- * @return java.lang.String
- */
-public OptimizationStatus getOptimizationStatus() {
-	return optStatus;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/25/2005 12:05:02 AM)
- * @return java.lang.String[]
- */
-public String[] getParameterNames() {
-	return fieldParameterNames;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/29/2005 3:17:44 PM)
- * @return double[]
- */
-public double[] getParameterValues() {
-	return fieldParameterValues;
-}
-
 
 /**
  * Insert the method's description here.

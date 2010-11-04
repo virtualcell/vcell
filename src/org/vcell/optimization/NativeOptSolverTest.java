@@ -24,7 +24,7 @@ public class NativeOptSolverTest {
 			System.out.println(optSolverResultSetXML);
 
 			OptXmlReader optXmlReader = new OptXmlReader();
-			OptimizationResultSet optResultSet = optXmlReader.getOptimizationResultSet(optSolverResultSetXML);		
+			OptSolverResultSet optResultSet = optXmlReader.getOptimizationResultSet(optSolverResultSetXML);		
 			
 			optResultSet.show();
 			

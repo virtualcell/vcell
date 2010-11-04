@@ -1,28 +1,25 @@
 package cbit.vcell.opt;
-import cbit.vcell.math.MathFunctionDefinitions;
-import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.Expression;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.util.*;
+import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Issue;
 
-import cbit.util.*;
+import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.SimpleSymbolTable;
 /**
  * Insert the type's description here.
  * Creation date: (3/3/00 12:06:21 AM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class OptimizationSpec implements java.io.Serializable {
+	private boolean bComputeProfileDistributions = false;
 	private ObjectiveFunction objectiveFunction = null;
-	private Vector constraintList = new Vector();
-	private Vector parameterList = new Vector();
+	private Vector<Constraint> constraintList = new Vector<Constraint>();
+	private Vector<Parameter> parameterList = new Vector<Parameter>();
 
 	public final static String SCALED_VARIABLE_SUFFIX = "_scaled";
 
@@ -131,7 +128,7 @@ public Constraint[] getConstraints() {
  * @param constraintType cbit.vcell.opt.ConstraintType
  */
 public Constraint[] getConstraints(ConstraintType constraintType) {
-	Vector typedConstraintList = new Vector();
+	Vector<Constraint> typedConstraintList = new Vector<Constraint>();
 	for (int i=0;i<this.constraintList.size();i++){
 		Constraint constraint = (Constraint)this.constraintList.elementAt(i);
 		if (constraint.getConstraintType().equals(constraintType)){
@@ -375,5 +372,15 @@ public void read(CommentStringTokenizer tokens) {
  */
 public void setObjectiveFunction(ObjectiveFunction argObjectiveFunction) {
 	this.objectiveFunction = argObjectiveFunction;
+}
+
+
+public void setComputeProfileDistributions(boolean bComputeProfileDistributions) {
+	this.bComputeProfileDistributions = bComputeProfileDistributions;
+}
+
+
+public boolean isComputeProfileDistributions() {
+	return bComputeProfileDistributions;
 }
 }

@@ -8,7 +8,7 @@ package org.vcell.optimization;
  * Creation date: (3/3/00 12:24:17 AM)
  * @author: 
  */
-public class OptimizationStatus implements java.io.Serializable {
+public class OptSolverStatus implements java.io.Serializable {
 	
 	private int statusCode = 0;
 	private String statusString = null;
@@ -94,7 +94,7 @@ public class OptimizationStatus implements java.io.Serializable {
 /**
  * ConstraintType constructor comment.
  */
-public OptimizationStatus(int argStatusCode, String argStatusMsg) {
+public OptSolverStatus(int argStatusCode, String argStatusMsg) {
 	if (argStatusCode < MIN_CODE || argStatusCode > MAX_CODE) {
 		throw new RuntimeException("Status code out of range");
 	}
@@ -110,8 +110,8 @@ public OptimizationStatus(int argStatusCode, String argStatusMsg) {
  * @param obj java.lang.Object
  */
 public boolean equals(Object obj) {
-	if (obj instanceof OptimizationStatus){
-		if (statusCode == ((OptimizationStatus)obj).statusCode){
+	if (obj instanceof OptSolverStatus){
+		if (statusCode == ((OptSolverStatus)obj).statusCode){
 			return true;
 		}
 	}

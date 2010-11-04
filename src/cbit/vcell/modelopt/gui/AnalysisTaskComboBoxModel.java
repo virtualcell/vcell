@@ -1,7 +1,8 @@
 package cbit.vcell.modelopt.gui;
-import javax.swing.MutableComboBoxModel;
-import java.io.Serializable;
 import javax.swing.AbstractListModel;
+
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.modelopt.AnalysisTask;
 
 /**
  * Insert the type's description here.
@@ -9,8 +10,8 @@ import javax.swing.AbstractListModel;
  * @author: John Wagner
  */
 public class AnalysisTaskComboBoxModel extends AbstractListModel implements javax.swing.ComboBoxModel, java.beans.PropertyChangeListener {
-	cbit.vcell.modelopt.AnalysisTask selectedObject = null;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private AnalysisTask selectedObject = null;
+	private SimulationContext fieldSimulationContext = null;
 
 	/**
 	 * Constructs an empty DefaultComboBoxModel object.
@@ -24,7 +25,7 @@ public Object getElementAt(int index) {
 	if (getSimulationContext()==null){
 		return null;
 	}
-	cbit.vcell.modelopt.AnalysisTask analysisTasks[] = getSimulationContext().getAnalysisTasks();
+	AnalysisTask analysisTasks[] = getSimulationContext().getAnalysisTasks();
 	if (analysisTasks==null || index<0 || index >= analysisTasks.length){
 		return null;
 	}else{
@@ -44,7 +45,7 @@ public Object getElementAt(int index) {
 		if (getSimulationContext()==null){
 			return -1;
 		}
-		cbit.vcell.modelopt.AnalysisTask[] analysisTasks = getSimulationContext().getAnalysisTasks();
+		AnalysisTask[] analysisTasks = getSimulationContext().getAnalysisTasks();
 		for (int i = 0;analysisTasks!=null && i < analysisTasks.length; i++){
 			if (analysisTasks[i] == anObject){
 				return i;
@@ -65,7 +66,7 @@ public java.lang.Object getSelectedItem() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+private SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -87,16 +88,16 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext() {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	 if (evt.getSource() == getSimulationContext() && evt.getPropertyName().equals("analysisTasks")){
-		 cbit.vcell.modelopt.AnalysisTask oldSelected = (cbit.vcell.modelopt.AnalysisTask)getSelectedItem();
+		 AnalysisTask oldSelected = (AnalysisTask)getSelectedItem();
 		 
-		 cbit.vcell.modelopt.AnalysisTask[] oldAnalysisTasks = (cbit.vcell.modelopt.AnalysisTask[])evt.getOldValue();
+		 AnalysisTask[] oldAnalysisTasks = (AnalysisTask[])evt.getOldValue();
 		 if (oldAnalysisTasks!=null && oldAnalysisTasks.length > 0){
 			 for (int i = 0; i < oldAnalysisTasks.length; i++){
 			 	oldAnalysisTasks[i].removePropertyChangeListener(this);
 			 }
 			 fireIntervalRemoved(this,0,oldAnalysisTasks.length-1);
 		 }
-		 cbit.vcell.modelopt.AnalysisTask[] newAnalysisTasks = (cbit.vcell.modelopt.AnalysisTask[])evt.getNewValue();		 
+		 AnalysisTask[] newAnalysisTasks = (AnalysisTask[])evt.getNewValue();		 
 		 if (newAnalysisTasks!=null && newAnalysisTasks.length > 0){
 			 for (int i = 0; i < newAnalysisTasks.length; i++){
 			 	newAnalysisTasks[i].addPropertyChangeListener(this);
@@ -106,7 +107,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		 if (newAnalysisTasks==null || newAnalysisTasks.length==0){
 			 setSelectedItem(null);
 		 } else {
-			 cbit.vcell.modelopt.AnalysisTask newSelected = null;
+			 AnalysisTask newSelected = null;
 			 if (oldSelected != null) {
 				 for (int i = 0; i < newAnalysisTasks.length; i++){
 				 	if (oldSelected.getName().equals(newAnalysisTasks[i].getName())) {
@@ -121,23 +122,15 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			 setSelectedItem(newSelected);
 		 }
 	 }
-	 if (evt.getSource() instanceof cbit.vcell.modelopt.AnalysisTask){
+	 if (evt.getSource() instanceof AnalysisTask){
 		 fireContentsChanged(this,0,getSize()-1);
 	 }
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (12/19/2005 4:26:38 PM)
- */
-private void refreshList() {}
-
-
 // implements javax.swing.ComboBoxModel
 public void setSelectedItem(Object anObject) {
 	if ((selectedObject != null && !selectedObject.equals(anObject)) || selectedObject == null && anObject != null) {
-		selectedObject = (cbit.vcell.modelopt.AnalysisTask)anObject;
+		selectedObject = (AnalysisTask)anObject;
 		fireContentsChanged(this, -1, -1);
 	}
 }
@@ -148,7 +141,7 @@ public void setSelectedItem(Object anObject) {
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
+public void setSimulationContext(SimulationContext simulationContext) {
 	if (fieldSimulationContext!=null){
 		fieldSimulationContext.removePropertyChangeListener(this);
 		if (fieldSimulationContext.getAnalysisTasks() != null) {
@@ -158,7 +151,7 @@ public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulation
 		}
 	}
 	int oldSize = getSize();
-	cbit.vcell.modelopt.AnalysisTask oldSelection = (cbit.vcell.modelopt.AnalysisTask)getSelectedItem();
+	AnalysisTask oldSelection = (AnalysisTask)getSelectedItem();
 	
 	fieldSimulationContext = simulationContext;
 	
@@ -179,8 +172,8 @@ public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulation
 		//
 		// try to select corresponding item if exists
 		//
-		cbit.vcell.modelopt.AnalysisTask[] analysisTasks = simulationContext.getAnalysisTasks();
-		cbit.vcell.modelopt.AnalysisTask newSelection = null;
+		AnalysisTask[] analysisTasks = simulationContext.getAnalysisTasks();
+		AnalysisTask newSelection = null;
 		if (oldSelection != null){
 			if (getIndexOf(oldSelection)>-1){
 				newSelection = oldSelection;

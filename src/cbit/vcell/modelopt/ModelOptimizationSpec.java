@@ -56,6 +56,8 @@ public class ModelOptimizationSpec implements java.io.Serializable, Matchable, P
 	private ParameterMappingSpec[] fieldParameterMappingSpecs = null;
 	private ReferenceData fieldReferenceData = null;
 	private ReferenceDataMappingSpec[] fieldReferenceDataMappingSpecs = null;
+	
+	private boolean bComputeProfileDistributions = false;
 
 /**
  * ModelOptimizationSpec constructor comment.
@@ -805,5 +807,15 @@ private void updateListenersList(Model model, boolean bAdd) {
 			}
 		}
 	}
+}
+
+
+public void setComputeProfileDistributions(boolean bComputeProfileDistributions) {
+	this.bComputeProfileDistributions = bComputeProfileDistributions;
+}
+
+
+public boolean isComputeProfileDistributions() {
+	return bComputeProfileDistributions;
 }
 }

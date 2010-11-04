@@ -10,15 +10,12 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.ScrollTable;
 
-import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 
 public class EventsDisplayPanel extends JPanel {
 	private JSplitPane outerSplitPane = null;

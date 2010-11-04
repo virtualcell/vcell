@@ -1,6 +1,12 @@
 package cbit.vcell.modelopt.gui;
+import java.awt.GridBagConstraints;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.UIManager;
+import javax.swing.border.TitledBorder;
+
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.TitledBorderBean;
 
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.model.Kinetics;
@@ -19,6 +25,7 @@ import cbit.vcell.parser.SymbolTableEntry;
  * Creation date: (8/22/2005 5:21:08 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class OptTestPanel extends javax.swing.JPanel {
 	private ParameterMappingPanel ivjparameterMappingPanel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -62,13 +69,14 @@ public class OptTestPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjObjectiveFunctionValueLabel = null;
 	private javax.swing.JButton ivjStopButton = null;
 	private javax.swing.JPanel ivjJPanel10 = null;
-	private javax.swing.JPanel ivjJPanel11 = null;
 	private ParameterEstimationTask fieldParameterEstimationTask = null;
 	private boolean ivjConnPtoP4Aligning = false;
 	private ParameterEstimationTask ivjparameterEstimationTask1 = null;
 	private ModelOptimizationSpec ivjmodelOptimizationSpec = null;
 	private OptimizationController ivjOptimizationController = null;
 	private OptimizationController ivjOptimizationControllerFactory = null;
+	private JCheckBox computeProfileDistributionsCheckBox = null;
+	private JButton ivjEvaluateConfidenceIntervalButton = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -81,9 +89,11 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 			if (e.getSource() == OptTestPanel.this.getSaveSolutionAsNewSimButton()) 
 				connEtoM18(e);
 			if (e.getSource() == OptTestPanel.this.getSolveButton()) 
-				connEtoM19(e);
+				solve();
 			if (e.getSource() == OptTestPanel.this.getStopButton()) 
 				connEtoM20(e);
+			else if (e.getSource() == OptTestPanel.this.getEvaluateConfidenceIntervalButton()) 
+				evaluateConfidenceInterval(); 
 		};
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
@@ -466,10 +476,11 @@ private void connEtoM18(java.awt.event.ActionEvent arg1) {
  * @param arg1 java.awt.event.ActionEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM19(java.awt.event.ActionEvent arg1) {
+private void solve() {
 	try {
 		// user code begin {1}
 		// user code end
+		getParameterEstimationTask().getModelOptimizationSpec().setComputeProfileDistributions(computeProfileDistributionsCheckBox.isSelected());
 		getOptimizationController().solve();
 		// user code begin {2}
 		// user code end
@@ -786,16 +797,16 @@ private java.lang.String displayResults(OptimizationResultSet optResultSet) {
 	StringBuffer buffer = new StringBuffer();
 	
 	buffer.append("\n-------------Optimizer Output-----------------\n");
-	buffer.append(optResultSet.getOptimizationStatus() + "\n");
-	buffer.append("best objective function :"+optResultSet.getObjectiveFunctionValue()+"\n");
-	buffer.append("num function evaluations :"+optResultSet.getObjFunctionEvaluations()+"\n");
-	if (optResultSet.getOptimizationStatus().isNormal()){
+	buffer.append(optResultSet.getOptSolverResultSet().getOptimizationStatus() + "\n");
+	buffer.append("best objective function :"+optResultSet.getOptSolverResultSet().getObjectiveFunctionValue()+"\n");
+	buffer.append("num function evaluations :"+optResultSet.getOptSolverResultSet().getObjFunctionEvaluations()+"\n");
+	if (optResultSet.getOptSolverResultSet().getOptimizationStatus().isNormal()){
 		buffer.append("status: complete\n");
 	}else{
 		buffer.append("status: aborted\n");
 	}
-	for (int i = 0; optResultSet.getParameterNames()!=null && i < optResultSet.getParameterNames().length; i++){
-		buffer.append(optResultSet.getParameterNames()[i]+" = "+optResultSet.getParameterValues()[i]+"\n");
+	for (int i = 0; optResultSet.getOptSolverResultSet().getParameterNames()!=null && i < optResultSet.getOptSolverResultSet().getParameterNames().length; i++){
+		buffer.append(optResultSet.getOptSolverResultSet().getParameterNames()[i]+" = "+optResultSet.getOptSolverResultSet().getParameterValues()[i]+"\n");
 	}
 	
 	//for (int i = 0; i < optResultSet.getSolutionNames().length; i++){
@@ -1042,29 +1053,50 @@ private javax.swing.JPanel getJPanel1() {
 private javax.swing.JPanel getJPanel10() {
 	if (ivjJPanel10 == null) {
 		try {
-			org.vcell.util.gui.TitledBorderBean ivjLocalBorder2;
-			ivjLocalBorder2 = new TitledBorderBean();
+			TitledBorder ivjLocalBorder2 = new TitledBorder("Optimization Solver");
 			ivjLocalBorder2.setTitleJustification(javax.swing.border.TitledBorder.CENTER);
-			ivjLocalBorder2.setTitle("optimization solver");
 			ivjJPanel10 = new javax.swing.JPanel();
 			ivjJPanel10.setName("JPanel10");
 			ivjJPanel10.setBorder(ivjLocalBorder2);
 			ivjJPanel10.setLayout(new java.awt.GridBagLayout());
 
+			computeProfileDistributionsCheckBox = new JCheckBox("Compute Profile Distributions");
+			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = 0;
+			gbc.weightx = 1.0;
+			gbc.gridwidth = 2;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 0);
+			ivjJPanel10.add(computeProfileDistributionsCheckBox, gbc);
+		
 			java.awt.GridBagConstraints constraintsSolverTypeComboBox = new java.awt.GridBagConstraints();
-			constraintsSolverTypeComboBox.gridx = 0; constraintsSolverTypeComboBox.gridy = 0;
+			constraintsSolverTypeComboBox.gridx = 0; 
+			constraintsSolverTypeComboBox.gridy = 1;
 			constraintsSolverTypeComboBox.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsSolverTypeComboBox.weightx = 1.0;
 			constraintsSolverTypeComboBox.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel10().add(getSolverTypeComboBox(), constraintsSolverTypeComboBox);
+			constraintsSolverTypeComboBox.gridwidth = 2;
+			ivjJPanel10.add(getSolverTypeComboBox(), constraintsSolverTypeComboBox);
 
-			java.awt.GridBagConstraints constraintsJPanel11 = new java.awt.GridBagConstraints();
-			constraintsJPanel11.gridx = 0; constraintsJPanel11.gridy = 1;
-			constraintsJPanel11.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJPanel11.weightx = 1.0;
-			constraintsJPanel11.weighty = 1.0;
-			constraintsJPanel11.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel10().add(getJPanel11(), constraintsJPanel11);
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = 2;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			gbc.weighty = 1.0;
+			gbc.weightx = 1.0;
+//			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.PAGE_START;
+			ivjJPanel10.add(getSolveButton(), gbc);
+			
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 1; 
+			gbc.gridy = 2;
+			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+//			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.PAGE_START;
+			ivjJPanel10.add(getStopButton(), gbc);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1075,32 +1107,6 @@ private javax.swing.JPanel getJPanel10() {
 	}
 	return ivjJPanel10;
 }
-
-
-/**
- * Return the JPanel11 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel11() {
-	if (ivjJPanel11 == null) {
-		try {
-			ivjJPanel11 = new javax.swing.JPanel();
-			ivjJPanel11.setName("JPanel11");
-			ivjJPanel11.setLayout(new java.awt.FlowLayout());
-			getJPanel11().add(getSolveButton(), getSolveButton().getName());
-			ivjJPanel11.add(getStopButton());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel11;
-}
-
 
 /**
  * Return the JPanel2 property value.
@@ -1245,7 +1251,8 @@ private javax.swing.JPanel getJPanel6() {
 			ivjJPanel6.setName("JPanel6");
 			ivjJPanel6.setLayout(new java.awt.FlowLayout());
 			ivjJPanel6.add(getPlotButton());
-			getJPanel6().add(getSaveSolutionAsNewSimButton(), getSaveSolutionAsNewSimButton().getName());
+			ivjJPanel6.add(getSaveSolutionAsNewSimButton(), getSaveSolutionAsNewSimButton().getName());
+			ivjJPanel6.add(getEvaluateConfidenceIntervalButton());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1265,10 +1272,8 @@ private javax.swing.JPanel getJPanel6() {
 private javax.swing.JPanel getJPanel7() {
 	if (ivjJPanel7 == null) {
 		try {
-			org.vcell.util.gui.TitledBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new org.vcell.util.gui.TitledBorderBean();
+			TitledBorder ivjLocalBorder1 = new TitledBorder("Solution");
 			ivjLocalBorder1.setTitleJustification(javax.swing.border.TitledBorder.CENTER);
-			ivjLocalBorder1.setTitle("solution");
 			ivjJPanel7 = new javax.swing.JPanel();
 			ivjJPanel7.setName("JPanel7");
 			ivjJPanel7.setBorder(ivjLocalBorder1);
@@ -1549,9 +1554,8 @@ private ModelOptimizationSpec getModelOptimizationSpec() {
 private javax.swing.JLabel getNumEvaluationsTitleLabel() {
 	if (ivjNumEvaluationsTitleLabel == null) {
 		try {
-			ivjNumEvaluationsTitleLabel = new javax.swing.JLabel();
+			ivjNumEvaluationsTitleLabel = new javax.swing.JLabel("Number of Evaluations: ");
 			ivjNumEvaluationsTitleLabel.setName("NumEvaluationsTitleLabel");
-			ivjNumEvaluationsTitleLabel.setText("number of evaluations");
 			ivjNumEvaluationsTitleLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 			ivjNumEvaluationsTitleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
 			// user code begin {1}
@@ -1590,10 +1594,9 @@ private javax.swing.JLabel getNumEvaluationsValueLabel() {
 private javax.swing.JLabel getObjectiveFunctionTitleLabel() {
 	if (ivjObjectiveFunctionTitleLabel == null) {
 		try {
-			ivjObjectiveFunctionTitleLabel = new javax.swing.JLabel();
+			ivjObjectiveFunctionTitleLabel = new javax.swing.JLabel("Best Objective Function Value: ");
 			ivjObjectiveFunctionTitleLabel.setName("ObjectiveFunctionTitleLabel");
 			ivjObjectiveFunctionTitleLabel.setAlignmentX(java.awt.Component.RIGHT_ALIGNMENT);
-			ivjObjectiveFunctionTitleLabel.setText("best objective function value");
 			ivjObjectiveFunctionTitleLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 			ivjObjectiveFunctionTitleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
 			// user code begin {1}
@@ -1769,6 +1772,22 @@ private javax.swing.JButton getPlotButton() {
 	return ivjPlotButton;
 }
 
+private javax.swing.JButton getEvaluateConfidenceIntervalButton() {
+	if ( ivjEvaluateConfidenceIntervalButton == null) {
+		try {
+			ivjEvaluateConfidenceIntervalButton = new javax.swing.JButton("Evaluate Confidence Interval");
+			ivjEvaluateConfidenceIntervalButton.setName("EvaluateConfidenceIntervalButton");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjEvaluateConfidenceIntervalButton;
+}
+
 /**
  * Return the referenceDataMappingSpecTableModel property value.
  * @return cbit.vcell.modelopt.gui.ReferenceDataMappingSpecTableModel
@@ -1822,7 +1841,7 @@ private javax.swing.JButton getSaveSolutionAsNewSimButton() {
 		try {
 			ivjSaveSolutionAsNewSimButton = new javax.swing.JButton();
 			ivjSaveSolutionAsNewSimButton.setName("SaveSolutionAsNewSimButton");
-			ivjSaveSolutionAsNewSimButton.setText("Save solution as new Simulation...");
+			ivjSaveSolutionAsNewSimButton.setText("Save Solution as New Simulation...");
 			ivjSaveSolutionAsNewSimButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -1964,6 +1983,7 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP2SetTarget();
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
+	getEvaluateConfidenceIntervalButton().addActionListener(ivjEventHandler);
 }
 
 /**
@@ -1999,6 +2019,8 @@ private void initialize() {
  */
 public static void main(java.lang.String[] args) {
 	try {
+		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		
 		javax.swing.JFrame frame = new javax.swing.JFrame();
 		OptTestPanel aOptTestPanel;
 		aOptTestPanel = new OptTestPanel();
@@ -2009,8 +2031,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		java.awt.Insets insets = frame.getInsets();
-		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
+		frame.pack();
 		frame.setVisible(true);
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");
@@ -2246,8 +2267,8 @@ private void setOptimizationSolverTypeSelection() {
  * @param parameterEstimationTask The new value for the property.
  * @see #getParameterEstimationTask
  */
-public void setParameterEstimationTask(cbit.vcell.modelopt.ParameterEstimationTask parameterEstimationTask) {
-	cbit.vcell.modelopt.ParameterEstimationTask oldValue = fieldParameterEstimationTask;
+public void setParameterEstimationTask(ParameterEstimationTask parameterEstimationTask) {
+	ParameterEstimationTask oldValue = fieldParameterEstimationTask;
 	fieldParameterEstimationTask = parameterEstimationTask;
 	firePropertyChange("parameterEstimationTask", oldValue, parameterEstimationTask);
 }
@@ -2258,10 +2279,10 @@ public void setParameterEstimationTask(cbit.vcell.modelopt.ParameterEstimationTa
  * @param newValue cbit.vcell.modelopt.ParameterEstimationTask
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setparameterEstimationTask1(cbit.vcell.modelopt.ParameterEstimationTask newValue) {
+private void setparameterEstimationTask1(ParameterEstimationTask newValue) {
 	if (ivjparameterEstimationTask1 != newValue) {
 		try {
-			cbit.vcell.modelopt.ParameterEstimationTask oldValue = getparameterEstimationTask1();
+			ParameterEstimationTask oldValue = getparameterEstimationTask1();
 			/* Stop listening for events from the current object */
 			if (ivjparameterEstimationTask1 != null) {
 				ivjparameterEstimationTask1.removePropertyChangeListener(ivjEventHandler);
@@ -2331,8 +2352,8 @@ private void setselectionModel1(javax.swing.ListSelectionModel newValue) {
  * @param userPreferences The new value for the property.
  * @see #getUserPreferences
  */
-public void setUserPreferences(cbit.vcell.client.server.UserPreferences userPreferences) {
-	cbit.vcell.client.server.UserPreferences oldValue = fieldUserPreferences;
+public void setUserPreferences(UserPreferences userPreferences) {
+	UserPreferences oldValue = fieldUserPreferences;
 	fieldUserPreferences = userPreferences;
 	firePropertyChange("userPreferences", oldValue, userPreferences);
 }
@@ -2369,7 +2390,7 @@ private void solverTypeComboBox_ActionPerformed() {
 	}
 	
 	String solverName = (String)getSolverTypeComboBox().getSelectedItem();
-	OptimizationSolverSpec optSolverSpec = new cbit.vcell.opt.OptimizationSolverSpec(solverName);
+	OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(solverName);
 	getParameterEstimationTask().setOptimizationSolverSpec(optSolverSpec);
 }
 
@@ -2394,4 +2415,9 @@ public void setNumEvaluations(String num) {
 public void setObjectFunctionValue(String d) {
 	getObjectiveFunctionValueLabel().setText(d);
 }
+
+public void evaluateConfidenceInterval() {
+	getOptimizationController().evaluateConfidenceInterval();
+}
+
 }

@@ -97,8 +97,9 @@ public void applySolutionToMathOverrides(Simulation simulation, OptimizationResu
 			//
 			// correct math overrides with parameter solution
 			//
-			for (int i = 0; i < optResultSet.getParameterNames().length; i++){
-				simulation.getMathOverrides().putConstant(new Constant(optResultSet.getParameterNames()[i],new Expression(optResultSet.getParameterValues()[i])));
+			for (int i = 0; i < optResultSet.getOptSolverResultSet().getParameterNames().length; i++){
+				simulation.getMathOverrides().putConstant(
+						new Constant(optResultSet.getOptSolverResultSet().getParameterNames()[i],new Expression(optResultSet.getOptSolverResultSet().getParameterValues()[i])));
 			}
 		}
 	}
@@ -118,6 +119,7 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 		return null;
 	}
 	OptimizationSpec optSpec = new OptimizationSpec();
+	optSpec.setComputeProfileDistributions(modelOptimizationSpec.isComputeProfileDistributions());
 	parameterMappings = null;
 
 	//
@@ -162,9 +164,26 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 		cbit.vcell.model.Parameter modelParameter = parameterMappingSpecs[i].getModelParameter();
 		String mathSymbol = mathMapping.getMathSymbol(modelParameter,structureMapping.getGeometryClass());
 		Variable mathVariable = origMathDesc.getVariable(mathSymbol);
+		if (parameterMappingSpecs[i].isSelected()) {
+			if (parameterMappingSpecs[i].getHigh() < parameterMappingSpecs[i].getLow()) {
+				throw new MathException("The lower bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is greater than its upper bound.");
+			}
+			if (parameterMappingSpecs[i].getLow() < 0) {
+				throw new MathException("The lower bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is negative. All lower bounds must not be negative.");
+			}
+			if (Double.isInfinite(parameterMappingSpecs[i].getLow())) {
+				throw new MathException("The lower bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is infinity. Lower bounds must not be infinity.");
+			}
+			if (parameterMappingSpecs[i].getHigh() <= 0) {
+				throw new MathException("The upper bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is negative. All upper bounds must be positive.");
+			}
+			if (Double.isInfinite(parameterMappingSpecs[i].getHigh())) {
+				throw new MathException("The upper bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is infinity. Upper bounds must not be infinity.");
+			}
+		}
 		Parameter optParameter = new Parameter(
 								mathSymbol,
-								parameterMappingSpecs[i].getLow(),
+								parameterMappingSpecs[i].isSelected() && parameterMappingSpecs[i].getLow() == 0 ? 1e-8 : parameterMappingSpecs[i].getLow(),
 								parameterMappingSpecs[i].getHigh(),
 								Math.abs(parameterMappingSpecs[i].getCurrent()) < 1.0E-10 ? 1.0 : Math.abs(parameterMappingSpecs[i].getCurrent()),
 								parameterMappingSpecs[i].getCurrent());
@@ -242,7 +261,11 @@ public ModelOptimizationSpec getModelOptimizationSpec() {
  * @throws InconsistentDomainException 
  */
 public static ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, OptimizationResultSet optResultSet) throws ExpressionException, InconsistentDomainException {
-	if (optResultSet==null || optResultSet.getParameterNames()==null || optResultSet.getSolutionNames()==null){
+	if (optResultSet==null) {
+		return null;
+	}
+	String[] parameterNames = optResultSet.getOptSolverResultSet().getParameterNames();
+	if (parameterNames==null || optResultSet.getSolutionNames()==null){
 		return null;
 	}
 	String[] solutionNames = optResultSet.getSolutionNames();
@@ -278,8 +301,8 @@ public static ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec,
 		//
 		// correct math overrides with parameter solution
 		//
-		for (int i = 0; i < optResultSet.getParameterNames().length; i++){
-			simulation.getMathOverrides().putConstant(new Constant(optResultSet.getParameterNames()[i],new Expression(optResultSet.getParameterValues()[i])));
+		for (int i = 0; i < parameterNames.length; i++){
+			simulation.getMathOverrides().putConstant(new Constant(parameterNames[i],new Expression(optResultSet.getOptSolverResultSet().getParameterValues()[i])));
 		}
 
 		//
@@ -288,8 +311,8 @@ public static ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec,
 		Vector <AnnotatedFunction> annotatedFunctions = simSymbolTable.createAnnotatedFunctionsList(mathDesc);
 		for (AnnotatedFunction f: annotatedFunctions){
 			Expression funcExp = f.getExpression();
-			for (int j = 0; j < optResultSet.getParameterNames().length; j ++) {
-				funcExp.substituteInPlace(new Expression(optResultSet.getParameterNames()[j]), new Expression(optResultSet.getParameterValues()[j]));
+			for (int j = 0; j < parameterNames.length; j ++) {
+				funcExp.substituteInPlace(new Expression(parameterNames[j]), new Expression(optResultSet.getOptSolverResultSet().getParameterValues()[j]));
 			}
 			odeSolverResultSet.addFunctionColumn(new FunctionColumnDescription(funcExp,f.getName(),null,f.getName(),false));
 		}

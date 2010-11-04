@@ -152,7 +152,9 @@ public void plot() {
 	}
 }
 
-
+public void evaluateConfidenceInterval() {
+	
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/4/2006 10:01:41 AM)
