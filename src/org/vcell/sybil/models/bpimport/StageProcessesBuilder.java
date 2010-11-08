@@ -56,7 +56,7 @@ public class StageProcessesBuilder {
 		for(MutableEdge edge : view.edges()) {
 			MutableSubstance substance = edge.substance();
 			MutableSubstance entity = edge.entity();
-			if(!substance.equals(entity)) { entity.addSubSubstance(substance); }
+			if(entity != null && !substance.equals(entity)) { entity.addSubSubstance(substance); }
 			MutableRDFType type = edge.entityType();
 			if(type != null) {
 				substance.addType(type);

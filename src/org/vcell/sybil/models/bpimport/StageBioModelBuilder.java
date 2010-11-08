@@ -6,8 +6,6 @@ package org.vcell.sybil.models.bpimport;
 
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.vcell.sybil.models.sbbox.SBBox;
@@ -18,6 +16,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
@@ -25,9 +24,14 @@ import cbit.vcell.model.Structure;
 
 public class StageBioModelBuilder {
 
+	@SuppressWarnings("serial")
 	public static class UnsupportedTopologyException extends Exception {
-		private static final long serialVersionUID = 6693230807708603387L;
 		public UnsupportedTopologyException(String message) { super(message); }
+	}
+	
+	@SuppressWarnings("serial")
+	public static class UnsupportedReactionClassException extends Exception {
+		public UnsupportedReactionClassException(String message) { super(message); }
 	}
 	
 	protected static class ModifierSpeciesReference {
@@ -48,10 +52,6 @@ public class StageBioModelBuilder {
 	protected static class BuilderTray {
 		protected SBBox box;
 		protected BioModel bio;
-	    protected Map<SBBox.Substance, Species> speciesMap = 
-	    	new HashMap<SBBox.Substance, Species>();
-	    protected Map<SBBox.Location, Feature> featureMap = new HashMap<SBBox.Location, Feature>();
-	    protected Map<SBBox.Location, Membrane> membraneMap = new HashMap<SBBox.Location, Membrane>();
 	    
 		public BuilderTray(SBBox box, BioModel bio) {
 			this.box = box;
@@ -62,9 +62,6 @@ public class StageBioModelBuilder {
 		public com.hp.hpl.jena.rdf.model.Model rdf() { return box.getRdf(); }
 		public BioModel bio() { return bio; }
 		public Model model() { return bio.getModel(); }
-		public Map<SBBox.Substance, Species> speciesMap() { return speciesMap; }
-		public Map<SBBox.Location, Feature> featureMap() { return featureMap; }
-		public Map<SBBox.Location, Membrane> membraneMap() { return membraneMap; }
 	}
 
 	public static void build(SBWorkView view) {
@@ -88,7 +85,7 @@ public class StageBioModelBuilder {
 			if(process != null) {
 				SimpleReaction reaction;
 				try {
-					reaction = newReaction(tray, process);
+					reaction = getReaction(tray, process);
 					//StmtIterator partIterCat = process.listProperties(SBPAX.hasParticipantCatalyst);
 					for(SBBox.ParticipantLeft participantLeft : process.participantsLeft()) {	
 						SpeciesReference reactantRef = getSpeciesReference(tray, participantLeft);
@@ -135,30 +132,43 @@ public class StageBioModelBuilder {
 
 	public static Species addSpecies(BuilderTray tray, SBBox.Substance substance) 
 	throws InvocationTargetException {
-		Species species = tray.speciesMap().get(substance);
+		String label = substance.label();
+		Species species = tray.model().getSpecies(label);
 		if(species == null) {
-			species = new Species(substance.label(), "");
+			species = new Species(label, "");
 			try { tray.model().addSpecies(species); } 
 			catch (PropertyVetoException e) {
-				String message = "Exception while trying to add species " + substance.label() + " ";
+				String message = "Exception while trying to add species " + label + " ";
 				throw new InvocationTargetException(e, message);
 			}
-			tray.speciesMap().put(substance, species);
 		}
 		return species;
 	}
 	
-	public static SimpleReaction newReaction(BuilderTray tray, SBBox.Process process) 
+	public static SimpleReaction getReaction(BuilderTray tray, SBBox.Process process) 
 	throws UnsupportedTopologyException, InvocationTargetException {
 		SimpleReaction reaction = null;
 		SBBox.Location location = LocationUtil.bestLocationForParticipants(process.participants());
 		if(location != null) {
 			Structure structure = addStructure(tray, location);
 			if(structure != null) {
-				try { reaction = new SimpleReaction(structure, process.label()); } 
+				String label = process.label();
+				try { 
+					ReactionStep reactionStep = tray.model().getReactionStep(label);
+					if(reactionStep instanceof SimpleReaction) {
+						reaction = (SimpleReaction) reactionStep;
+					} else if (reactionStep == null) {
+						reaction = new SimpleReaction(structure, label); 						
+					} else {
+						throw new UnsupportedReactionClassException("Name " + label +
+								" already given to a reaction which is not a simple reaction.");
+					}
+				} 
 				catch (PropertyVetoException e) {
 					throw new InvocationTargetException(e, 
-							"Could not create reaction " + process.label());
+							"Could not create reaction " + label);
+				} catch (UnsupportedReactionClassException e) {
+					e.printStackTrace();
 				}				
 			}
 		}
@@ -218,18 +228,14 @@ public class StageBioModelBuilder {
 
 	public static Feature addFeature(BuilderTray tray, SBBox.Location locFeature) 
 	throws UnsupportedTopologyException, InvocationTargetException {
-		Feature feature = tray.featureMap().get(locFeature);
 		String featureName = locFeature.label();
-		if(feature == null) {
-			Structure structure = tray.model().getStructure(featureName);
-			if(structure instanceof Feature) { 
-				feature = (Feature) structure; 
-				tray.featureMap().put(locFeature, feature);
-			} 
-			else if(structure != null) { 
-				throw new UnsupportedTopologyException(featureName + " has three dimensions, " 
+		Feature feature = null;
+		Structure structure = tray.model().getStructure(featureName);
+		if(structure instanceof Feature) { 
+			feature = (Feature) structure; 
+		} else if(structure != null) { 
+			throw new UnsupportedTopologyException(featureName + " has three dimensions, " 
 					+ "but is not listed as a feature."); 
-			}
 		}
 		if(feature == null) {
 			SBBox.Location outLoc = locFeature.locationSurrounding();
@@ -243,34 +249,27 @@ public class StageBioModelBuilder {
 					SBBox.Location parentLoc = outLoc.locationSurrounding();
 					Feature parent = null;
 					if(parentLoc != null) { parent = addFeature(tray, parentLoc); }
+					else { parent = tray.bio().getModel().getTopFeature(); }
 					String membraneName = outLoc.label();
 					addFeatureAndMembrane(tray, featureName, parent, membraneName);
-					Structure membrane = tray.model().getStructure(membraneName);
-					if(membrane instanceof Membrane) { 
-						tray.membraneMap().put(outLoc, (Membrane) membrane);
-					}
 				} else { throw newWrongDimsException(outLoc, outLocDims); }
 			} else {
 				addFeatureAndMembrane(tray, featureName, null, featureName + "_Membrane");
 			}
 			feature = (Feature) tray.model().getStructure(featureName);
-			tray.featureMap().put(locFeature, feature);
 		}
 		return feature;
 	}
 	
 	public static Membrane addMembrane(BuilderTray tray, SBBox.Location locMembrane) 
 	throws UnsupportedTopologyException, InvocationTargetException {
-		Membrane membrane = tray.membraneMap().get(locMembrane);
+		Membrane membrane = null;
 		String membraneName = locMembrane.label();
-		if(membrane == null) {
-			Structure structure = tray.model().getStructure(membraneName);
-			if(structure instanceof Membrane) { membrane = (Membrane) structure; } 
-			else if(structure != null) { 
-				throw new UnsupportedTopologyException(membraneName + " has two dimensions, " 
+		Structure structure = tray.model().getStructure(membraneName);
+		if(structure instanceof Membrane) { membrane = (Membrane) structure; } 
+		else if(structure != null) { 
+			throw new UnsupportedTopologyException(membraneName + " has two dimensions, " 
 					+ "but is not listed as a membrane."); 
-			}
-			tray.membraneMap().put(locMembrane, membrane);
 		}
 		if(membrane == null) {
 			Set<SBBox.Location> inLocs = locMembrane.locationsSurrounded();
@@ -298,10 +297,7 @@ public class StageBioModelBuilder {
 				parent = tray.model().getTopFeature();
 			}
 			addFeatureAndMembrane(tray, featureName, parent, membraneName);
-			Feature feature = (Feature) tray.model().getStructure(featureName);
-			tray.featureMap().put(inLoc, feature);
 			membrane = (Membrane) tray.model().getStructure(membraneName);
-			tray.membraneMap().put(locMembrane, membrane);
 		}
 		return membrane;
 	}
