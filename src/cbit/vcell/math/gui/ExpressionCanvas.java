@@ -1,8 +1,8 @@
 package cbit.vcell.math.gui;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.*;
 import cbit.vcell.parser.Expression;
 import java.util.*;
@@ -203,10 +203,10 @@ public java.awt.Dimension getPreferredScrollableViewportSize() {
 public Dimension getPreferredSize() {
 	if ((fieldExpressions!=null) || (fieldStrings!=null)){
 		Dimension prefSize = getMinimumSize();
-		if (getJScrollPaneParent()!=null){
-			java.awt.Rectangle viewBorderBounds = getJScrollPaneParent().getViewportBorderBounds();
-			prefSize = new Dimension(Math.max(viewBorderBounds.width,prefSize.width),Math.max(viewBorderBounds.height,prefSize.height));
-		}
+//		if (getJScrollPaneParent()!=null){
+//			java.awt.Rectangle viewBorderBounds = getJScrollPaneParent().getViewportBorderBounds();
+//			prefSize = new Dimension(Math.max(viewBorderBounds.width,prefSize.width),Math.max(viewBorderBounds.height,prefSize.height));
+//		}
 		return prefSize;
 	}else{
 		return super.getPreferredSize();
