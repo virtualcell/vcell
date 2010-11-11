@@ -1629,7 +1629,7 @@ private void updateMembraneCurves() {
 	//
 	fireDataSamplers();
 }
-private PDEDataViewer.DataInfoProvider getDataInfoProvider() {
+public PDEDataViewer.DataInfoProvider getDataInfoProvider() {
 	return dataInfoProvider;
 }
 public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider) {
