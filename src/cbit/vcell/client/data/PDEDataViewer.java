@@ -23,10 +23,10 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.Map.Entry;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -106,8 +106,8 @@ import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
@@ -123,9 +123,9 @@ import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.simdata.gui.SpatialSelection;
-import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
+import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
@@ -1708,7 +1708,8 @@ private javax.swing.JButton getJButtonSnapshotROI() {
 							final boolean isVolumeType = (variableType.equals(VariableType.VOLUME) ||	variableType.equals(VariableType.VOLUME_REGION));
 							final BitSet snapshotROI = new BitSet(dataValues.length);
 							for (int i = 0; i < dataValues.length; i++) {
-								snapshotROI.set(i,(dataValues[i] == 1.0));
+								boolean bInDomain = (getPDEDataContextPanel1().getDataInfoProvider()==null?true:getPDEDataContextPanel1().getDataInfoProvider().isDefined(i));
+								snapshotROI.set(i,bInDomain && (dataValues[i] == 1.0));
 							}
 							final String variableName = getPdeDataContext().getVariableName();
 							final double timePoint = getPdeDataContext().getTimePoint();
