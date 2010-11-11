@@ -7,6 +7,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -14,9 +15,12 @@ import java.util.Hashtable;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.BoundedRangeModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -28,6 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -1152,6 +1157,7 @@ private javax.swing.JSlider getJSliderTime() {
 			ivjJSliderTime.setMajorTickSpacing(1);
 			ivjJSliderTime.setSnapToTicks(true);
 			ivjJSliderTime.setOrientation(javax.swing.JSlider.VERTICAL);
+			sliderUpDownBusyActions();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1163,6 +1169,43 @@ private javax.swing.JSlider getJSliderTime() {
 	return ivjJSliderTime;
 }
 
+private void sliderUpDownBusyActions(){
+	InputMap im_focus = ivjJSliderTime.getInputMap();//map KeyStroke to actionID (for WHEN_FOCUS condition)
+	ActionMap am = ivjJSliderTime.getActionMap();//map actionID to Action
+	//Get actionID for DOWN-ARROW keystroke
+	Object downArrowActionID = im_focus.get(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0));
+	//Get actionID for UP-ARROW keystroke
+	Object upArrowActionID = im_focus.get(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0));
+	//remove any currently defined actions for up and down actionIDs
+	am.remove(downArrowActionID);
+	am.remove(upArrowActionID);
+	//redefine Actions of up and down arrows on JSlider
+	//If getPdeDataContext isBusy then ignore up and down arrow actions to avoid
+	//having the "wait" popup appear when using the up and down arrows on the JSlider
+	am.put(downArrowActionID, new AbstractAction() {
+		public void actionPerformed(ActionEvent e) {
+			if(getPdeDataContext().isBusy()){
+				return;
+			}
+			if(ivjJSliderTime.getValue() == ivjJSliderTime.getMaximum()){
+				return;
+			}
+			ivjJSliderTime.setValue(ivjJSliderTime.getValue()+1);
+		}
+	});
+	am.put(upArrowActionID, new AbstractAction() {
+		public void actionPerformed(ActionEvent e) {
+			if(getPdeDataContext().isBusy()){
+				return;
+			}
+			if(ivjJSliderTime.getValue() == ivjJSliderTime.getMinimum()){
+				return;
+			}
+			ivjJSliderTime.setValue(ivjJSliderTime.getValue()-1);
+		}
+	});
+
+}
 /**
  * Return the JSplitPane1 property value.
  * @return javax.swing.JSplitPane
