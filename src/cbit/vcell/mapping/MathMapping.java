@@ -1482,70 +1482,81 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		}
 	} else {
 		// populate in globalParameterVariants hashtable
-		for (int j = 0; j < modelParameters.length; j++){
-			Hashtable<String, Expression> structMappingVariantsHash = new Hashtable<String, Expression>();
-			for (int k = 0; k < structureMappings.length; k++) {
-				String paramVariantName = null;
-				Expression paramVariantExpr = null;
-				if (modelParameters[j].getExpression().getSymbols() == null) {
-					paramVariantName = modelParameters[j].getName();
-					paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), null);
-				} else {
-					paramVariantName = modelParameters[j].getName()+"_"+TokenMangler.fixTokenStrict(structureMappings[k].getStructure().getName());
-					// if the expression has symbols that do not belong in that structureMapping, do not create the variant.
-					Expression exp1 = modelParameters[j].getExpression();
-					Expression modelParamExpr = substituteGlobalParameters(exp1); 
-					String[] symbols = modelParamExpr.getSymbols();
-					boolean bValid = true;
-					Structure sm_struct = structureMappings[k].getStructure();
-					if (symbols != null) {
-						for (int ii = 0; ii < symbols.length; ii++) {
-							SpeciesContext sc = simContext.getModel().getSpeciesContext(symbols[ii]); 
-							if (sc != null) {
-								// symbol[ii] is a speciesContext, check its structure with structureMapping[k].structure. If they are the same or
-								// if it is the adjacent membrane(s), allow variant expression to be created. Else, continue.
-								Structure sp_struct = sc.getStructure();
-								if (sp_struct.compareEqual(sm_struct)) {
-									bValid = bValid && true;
-								} else {
-									// if the 2 structures are not the same, are they adjacent? then 'bValid' is true, else false.
-									if ((sm_struct instanceof Feature) && (sp_struct instanceof Membrane)) {
-										Feature sm_feature = (Feature)sm_struct;
-										Membrane sp_mem = (Membrane)sp_struct;
-										if (sp_mem.compareEqual(sm_feature.getParentStructure()) || (sp_mem.getInsideFeature().compareEqual(sm_feature) || 
-												sp_mem.getOutsideFeature().compareEqual(sm_feature))) {
-											bValid = bValid && true;
-										} else {
-											bValid = bValid && false;
-											break;
-										}
-									} else if ((sm_struct instanceof Membrane) && (sp_struct instanceof Feature)) {
-										Feature sp_feature = (Feature)sp_struct;
-										Membrane sm_mem = (Membrane)sm_struct;
-										if (sm_mem.compareEqual(sp_feature.getParentStructure()) || (sm_mem.getInsideFeature().compareEqual(sp_feature) || 
-												sm_mem.getOutsideFeature().compareEqual(sp_feature))) {
-											bValid = bValid && true;
-										} else {
-											bValid = bValid && false;
-											break;
-										}
+		//
+		// to accommodate forward references, we will do this processing in two passes.
+		// 1) first pass, create list of model parameter variants without defining expressions (dummy expression VCELL_TEMPORARY_EXPRESSION_PLACEHOLDER).
+		// 2) second pass, compute proper expressions that can have forward references (that were defined in pass 1).
+		//
+		for (int pass = 0; pass < 2; pass ++ ){
+			for (int j = 0; j < modelParameters.length; j++){
+				Hashtable<String, Expression> structMappingVariantsHash = new Hashtable<String, Expression>();
+				for (int k = 0; k < structureMappings.length; k++) {
+					String paramVariantName = null;
+					Expression paramVariantExpr = null;
+					if (modelParameters[j].getExpression().getSymbols() == null) {
+						paramVariantName = modelParameters[j].getName();
+						paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), null);
+					} else {
+						paramVariantName = modelParameters[j].getName()+"_"+TokenMangler.fixTokenStrict(structureMappings[k].getStructure().getName());
+						// if the expression has symbols that do not belong in that structureMapping, do not create the variant.
+						Expression exp1 = modelParameters[j].getExpression();
+						Expression flattenedModelParamExpr = substituteGlobalParameters(exp1); 
+						String[] symbols = flattenedModelParamExpr.getSymbols();
+						boolean bValid = true;
+						Structure sm_struct = structureMappings[k].getStructure();
+						if (symbols != null) {
+							for (int ii = 0; ii < symbols.length; ii++) {
+								SpeciesContext sc = simContext.getModel().getSpeciesContext(symbols[ii]); 
+								if (sc != null) {
+									// symbol[ii] is a speciesContext, check its structure with structureMapping[k].structure. If they are the same or
+									// if it is the adjacent membrane(s), allow variant expression to be created. Else, continue.
+									Structure sp_struct = sc.getStructure();
+									if (sp_struct.compareEqual(sm_struct)) {
+										bValid = bValid && true;
 									} else {
-										bValid = bValid && false;
-										break;
+										// if the 2 structures are not the same, are they adjacent? then 'bValid' is true, else false.
+										if ((sm_struct instanceof Feature) && (sp_struct instanceof Membrane)) {
+											Feature sm_feature = (Feature)sm_struct;
+											Membrane sp_mem = (Membrane)sp_struct;
+											if (sp_mem.compareEqual(sm_feature.getParentStructure()) || (sp_mem.getInsideFeature().compareEqual(sm_feature) || 
+													sp_mem.getOutsideFeature().compareEqual(sm_feature))) {
+												bValid = bValid && true;
+											} else {
+												bValid = bValid && false;
+												break;
+											}
+										} else if ((sm_struct instanceof Membrane) && (sp_struct instanceof Feature)) {
+											Feature sp_feature = (Feature)sp_struct;
+											Membrane sm_mem = (Membrane)sm_struct;
+											if (sm_mem.compareEqual(sp_feature.getParentStructure()) || (sm_mem.getInsideFeature().compareEqual(sp_feature) || 
+													sm_mem.getOutsideFeature().compareEqual(sp_feature))) {
+												bValid = bValid && true;
+											} else {
+												bValid = bValid && false;
+												break;
+											}
+										} else {
+											bValid = bValid && false;
+											break;
+										}
 									}
-								}
-							} 
+								} 
+							}
+						}
+						if (bValid) {
+							if (pass==0){
+								paramVariantExpr = new Expression("VCELL_TEMPORARY_EXPRESSION_PLACEHOLDER");
+							}else{
+								paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), structureMappings[k]);
+							}
 						}
 					}
-					if (bValid) {
-						paramVariantExpr = getIdentifierSubstitutions(modelParameters[j].getExpression(), modelParameters[j].getUnitDefinition(), structureMappings[k]);
+					if (paramVariantExpr != null) {
+						structMappingVariantsHash.put(paramVariantName, paramVariantExpr);
 					}
 				}
-				if (paramVariantExpr != null) {
-					structMappingVariantsHash.put(paramVariantName, paramVariantExpr);
-				}
+				globalParamVariantsHash.put(modelParameters[j], structMappingVariantsHash);
 			}
-			globalParamVariantsHash.put(modelParameters[j], structMappingVariantsHash);
 		}
 		//
 		// global parameters from model add all variants (due to different structureMappings)

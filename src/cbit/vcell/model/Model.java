@@ -1522,6 +1522,39 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			fieldDiagrams[i].renameNode((String)evt.getOldValue(),(String)evt.getNewValue());
 		}
 	}
+	
+	if ((evt.getSource() == this) && evt.getPropertyName().equals(MODEL_PARAMETERS_PROPERTY_NAME)) {
+		ModelParameter oldValue[] = (ModelParameter[])evt.getOldValue();
+		if (oldValue!=null){
+			for (int i = 0; i < oldValue.length; i++){
+				oldValue[i].removePropertyChangeListener(this);
+			}
+		}
+		ModelParameter newValue[] = (ModelParameter[])evt.getNewValue();
+		if (newValue!=null){
+			for (int i = 0; i < newValue.length; i++){
+				newValue[i].addPropertyChangeListener(this);
+			}
+		}
+	}
+	
+	if (evt.getSource() instanceof ModelParameter && evt.getPropertyName().equals("name")){
+		for (int i = 0; i < fieldModelParameters.length; i++){
+			try {
+				Expression exp = fieldModelParameters[i].getExpression();
+				Expression renamedExp = exp.renameBoundSymbols(getNameScope());
+				if (!renamedExp.compareEqual(exp)) {
+					fieldModelParameters[i].setExpression(renamedExp);
+				}
+			} catch (ExpressionBindingException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException(e.getMessage());
+			} catch (PropertyVetoException e2) {
+				e2.printStackTrace(System.out);
+				throw new RuntimeException(e2.getMessage());
+			}
+		}
+	}
 }
 
 
@@ -1589,7 +1622,9 @@ public void refreshDependencies() {
 	
 	for (int i=0;i<fieldModelParameters.length;i++){
 		fieldModelParameters[i].removeVetoableChangeListener(this);
+		fieldModelParameters[i].removePropertyChangeListener(this);
 		fieldModelParameters[i].addVetoableChangeListener(this);
+		fieldModelParameters[i].addPropertyChangeListener(this);
 		try {
 			fieldModelParameters[i].getExpression().bindExpression(this);
 		} catch (ExpressionBindingException e) {
