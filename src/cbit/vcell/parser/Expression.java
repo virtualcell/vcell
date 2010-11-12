@@ -825,6 +825,7 @@ substituteCount++;////////////////////////////////
    
    public Expression renameBoundSymbols(NameScope nameScope) throws ExpressionBindingException {
 	   Expression exp = new Expression(this);
+	   exp.normalizedInfixString = null;
 	   exp.rootNode.renameBoundSymbols(nameScope);
 	   return exp;
    }
