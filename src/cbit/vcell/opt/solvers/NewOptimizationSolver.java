@@ -80,17 +80,17 @@ public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec o
 			String modelInput = modelElement.getText();
 			if (modelType.equals(OptXmlTags.ModelType_Attr_IDA)){
 				NativeIDASolver nativeIDASolver = new NativeIDASolver();
-				rcResultSet = nativeIDASolver.solve(modelInput,newOptResultSet.getParameterValues());
+				rcResultSet = nativeIDASolver.solve(modelInput,newOptResultSet.getBestEstimates());
 			}else if (modelType.equals(OptXmlTags.ModelType_Attr_CVODE)){
 				NativeCVODESolver nativeCVODESolver = new NativeCVODESolver();
-				rcResultSet = nativeCVODESolver.solve(modelInput,newOptResultSet.getParameterValues());
+				rcResultSet = nativeCVODESolver.solve(modelInput,newOptResultSet.getBestEstimates());
 			}
 			MathDescription mathDesc = odeObjFunc.getMathDescription();
 			Simulation sim = new Simulation(mathDesc);
 			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, 0);
 			MathOverrides mathOverrides = sim.getMathOverrides();
 			String[] parameterNames = newOptResultSet.getParameterNames();
-			double[] parameterValues = newOptResultSet.getParameterValues();
+			double[] parameterValues = newOptResultSet.getBestEstimates();
 			for (int i = 0; i < parameterValues.length; i++) {
 				mathOverrides.putConstant(new Constant(parameterNames[i],new Expression(parameterValues[i])));
 			}

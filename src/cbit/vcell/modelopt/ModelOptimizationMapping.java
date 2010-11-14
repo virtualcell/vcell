@@ -99,7 +99,7 @@ public void applySolutionToMathOverrides(Simulation simulation, OptimizationResu
 			//
 			for (int i = 0; i < optResultSet.getOptSolverResultSet().getParameterNames().length; i++){
 				simulation.getMathOverrides().putConstant(
-						new Constant(optResultSet.getOptSolverResultSet().getParameterNames()[i],new Expression(optResultSet.getOptSolverResultSet().getParameterValues()[i])));
+						new Constant(optResultSet.getOptSolverResultSet().getParameterNames()[i],new Expression(optResultSet.getOptSolverResultSet().getBestEstimates()[i])));
 			}
 		}
 	}
@@ -302,7 +302,7 @@ public static ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec,
 		// correct math overrides with parameter solution
 		//
 		for (int i = 0; i < parameterNames.length; i++){
-			simulation.getMathOverrides().putConstant(new Constant(parameterNames[i],new Expression(optResultSet.getOptSolverResultSet().getParameterValues()[i])));
+			simulation.getMathOverrides().putConstant(new Constant(parameterNames[i],new Expression(optResultSet.getOptSolverResultSet().getBestEstimates()[i])));
 		}
 
 		//
@@ -312,7 +312,7 @@ public static ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec,
 		for (AnnotatedFunction f: annotatedFunctions){
 			Expression funcExp = f.getExpression();
 			for (int j = 0; j < parameterNames.length; j ++) {
-				funcExp.substituteInPlace(new Expression(parameterNames[j]), new Expression(optResultSet.getOptSolverResultSet().getParameterValues()[j]));
+				funcExp.substituteInPlace(new Expression(parameterNames[j]), new Expression(optResultSet.getOptSolverResultSet().getBestEstimates()[j]));
 			}
 			odeSolverResultSet.addFunctionColumn(new FunctionColumnDescription(funcExp,f.getName(),null,f.getName(),false));
 		}
