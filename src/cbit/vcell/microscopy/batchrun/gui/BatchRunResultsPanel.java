@@ -14,9 +14,10 @@ import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
+import org.vcell.util.gui.StyleTable;
+
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.estparamwizard.MSEPanel;
-import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
 
 public class BatchRunResultsPanel extends JPanel
 {

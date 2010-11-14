@@ -11,8 +11,9 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import cbit.vcell.microscopy.DescriptiveStatistics;
-import cbit.vcell.microscopy.gui.estparamwizard.HyperLinkLabel;
+import org.vcell.util.DescriptiveStatistics;
+import org.vcell.util.gui.HyperLinkLabel;
+
 
 public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 {

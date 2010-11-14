@@ -1,7 +1,10 @@
 package cbit.vcell.microscopy;
 
 
+import java.io.IOException;
+
 import cbit.vcell.VirtualMicroscopy.ROI;
+import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -119,7 +122,8 @@ public class FRAPDataAnalysis {
 	 * @return FrapDataAnalysisResults
 	 * @throws ExpressionException
 	 */
-	public static FrapDataAnalysisResults fitRecovery(FRAPData frapData, int arg_bleachType) throws ExpressionException{
+	public static FrapDataAnalysisResults fitRecovery(FRAPData frapData, int arg_bleachType) throws ExpressionException, OptimizationException, IOException
+	{
 		
 		int startIndexForRecovery = getRecoveryIndex(frapData);
 		//
@@ -172,8 +176,7 @@ public class FRAPDataAnalysis {
 		//
 		//Bleach while monitoring fit
 		//
-		double[] tempCellROIAverage =
-			getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
+		double[] tempCellROIAverage = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
 //		for (int i = 0; i < temp_fluor.length; i++) {
 //			tempCellROIAverage[i] -= averageBackground;
 //		}
@@ -182,8 +185,7 @@ public class FRAPDataAnalysis {
 		System.arraycopy(tempCellROIAverage, startIndexForRecovery, cellROIAverage, 0, cellROIAverage.length);
 
 		outputParamValues = new double[1];
-		Expression bleachWhileMonitorFitExpression =
-			CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues);
+		Expression bleachWhileMonitorFitExpression = CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues);
 		double bleachWhileMonitoringRate = outputParamValues[0];
 		frapDataAnalysisResults.setBleachWhileMonitoringTau(bleachWhileMonitoringRate);
 		frapDataAnalysisResults.setFitBleachWhileMonitorExpression(bleachWhileMonitorFitExpression.flatten());

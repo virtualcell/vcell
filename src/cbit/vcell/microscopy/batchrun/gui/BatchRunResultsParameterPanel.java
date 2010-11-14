@@ -5,8 +5,9 @@ import java.awt.Color;
 
 import javax.swing.BoxLayout;
 
+import org.vcell.util.gui.BoxPanel;
+
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.estparamwizard.BoxPanel;
 
 public class BatchRunResultsParameterPanel extends BoxPanel
 {

@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 
 import javax.swing.BoxLayout;
 
+import org.vcell.util.gui.BoxPanel;
+
 public class FitModelPanel extends BoxPanel
 {
 	private FitModelRadioButtonPanel radioPanel;

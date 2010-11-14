@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 
 import javax.swing.BoxLayout;
 
+import org.vcell.util.gui.BoxPanel;
+
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 
 public class MSEPanel extends BoxPanel

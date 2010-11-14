@@ -4,6 +4,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.vcell.optimization.ConfidenceInterval;
+import org.vcell.optimization.ProfileData;
+import org.vcell.optimization.ProfileDataElement;
+import org.vcell.optimization.ProfileSummaryData;
+import org.vcell.util.DescriptiveStatistics;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
@@ -59,15 +64,6 @@ public class FRAPOptData {
 	public static final double[] DEFAULT_CI_STEPS = new double[]{0.04, 0.004, 0.04, 0.04, 0.04};
 	public static final int MAX_ITERATION = 100;
 	public static final double MIN_LIKELIHOOD_CHANGE = 0.01;
-	//Confidence levels constants 
-	public static final int NUM_CONFIDENCE_LEVELS = 4;
-	public static final int IDX_DELTA_ALPHA_80 = 0;
-	public static final int IDX_DELTA_ALPHA_90 = 1;
-	public static final int IDX_DELTA_ALPHA_95 = 2;
-	public static final int IDX_DELTA_ALPHA_99 = 3;
-	public static final String[] CONFIDENCE_LEVEL_NAME = new String[]{"80% confidence", "90%confidence", "95%confidence", "99%confidence"};
-	public static final double[] DELTA_ALPHA_VALUE = new double[]{1.642, 2.706, 3.841, 6.635};
-	
 	
 	//used in diffusion parameter panels to show log scale of the bleach monitoring rate slider.
 	public static final int REF_BWM_LOG_VAL_MIN = -5;
@@ -1180,19 +1176,19 @@ public class FRAPOptData {
 			DescriptiveStatistics paramValStat = DescriptiveStatistics.CreateBasicStatistics(paramValArrayCopy);
 			DescriptiveStatistics errorStat = DescriptiveStatistics.CreateBasicStatistics(errorArrayCopy);
 			double[] xArray = new double[2];
-			double[][] yArray = new double[NUM_CONFIDENCE_LEVELS][2];
+			double[][] yArray = new double[ConfidenceInterval.NUM_CONFIDENCE_LEVELS][2];
 			//get confidence level plot lines
 			xArray[0] = paramValStat.getMin() -  (Math.abs(paramValStat.getMin()) * 0.2);
 			xArray[1] = paramValStat.getMax() + (Math.abs(paramValStat.getMax()) * 0.2) ;
-			for(int i=0; i<NUM_CONFIDENCE_LEVELS; i++)
+			for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
 			{
-				yArray[i][0] = errorStat.getMin() + DELTA_ALPHA_VALUE[i];
+				yArray[i][0] = errorStat.getMin() + ConfidenceInterval.DELTA_ALPHA_VALUE[i];
 				yArray[i][1] = yArray[i][0];
 			}
-			PlotData confidence80Plot = new PlotData(xArray, yArray[IDX_DELTA_ALPHA_80]);
-			PlotData confidence90Plot = new PlotData(xArray, yArray[IDX_DELTA_ALPHA_90]);
-			PlotData confidence95Plot = new PlotData(xArray, yArray[IDX_DELTA_ALPHA_95]);
-			PlotData confidence99Plot = new PlotData(xArray, yArray[IDX_DELTA_ALPHA_99]);
+			PlotData confidence80Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_80]);
+			PlotData confidence90Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_90]);
+			PlotData confidence95Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_95]);
+			PlotData confidence99Plot = new PlotData(xArray, yArray[ConfidenceInterval.IDX_DELTA_ALPHA_99]);
 			//generate plot2D data
 			Plot2D plots = new Plot2D(null,new String[] {"profile Likelihood Data", "80% confidence", "90% confidence", "95% confidence", "99% confidence"}, 
 					                  new PlotData[] {dataPlot, confidence80Plot, confidence90Plot, confidence95Plot, confidence99Plot},
@@ -1210,18 +1206,18 @@ public class FRAPOptData {
 			}
 			double bestParamVal = Math.pow(10,paramValArray[minErrIndex]);
 			//find confidence interval points
-			ConfidenceInterval[] intervals = new ConfidenceInterval[NUM_CONFIDENCE_LEVELS];
+			ConfidenceInterval[] intervals = new ConfidenceInterval[ConfidenceInterval.NUM_CONFIDENCE_LEVELS];
 			//half loop through the errors(left side curve)
-			int[] smallLeftIdx = new int[NUM_CONFIDENCE_LEVELS]; 
-			int[] bigLeftIdx = new int[NUM_CONFIDENCE_LEVELS];
-			for(int i=0; i<NUM_CONFIDENCE_LEVELS; i++)
+			int[] smallLeftIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS]; 
+			int[] bigLeftIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS];
+			for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
 			{
 				smallLeftIdx[i] = -1;
 				bigLeftIdx[i] = -1;
 				for(int j=1; j < minErrIndex+1 ; j++)//loop from bigger error to smaller error
 				{
-					if((errorArray[j] < (errorStat.getMin()+DELTA_ALPHA_VALUE[i])) &&
-					   (errorArray[j-1] > (errorStat.getMin()+DELTA_ALPHA_VALUE[i])))
+					if((errorArray[j] < (errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i])) &&
+					   (errorArray[j-1] > (errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i])))
 					{
 						smallLeftIdx[i]= j-1;
 						bigLeftIdx[i]=j;
@@ -1230,16 +1226,16 @@ public class FRAPOptData {
 				}
 			}
 			//another half loop through the errors(right side curve)
-			int[] smallRightIdx = new int[NUM_CONFIDENCE_LEVELS]; 
-			int[] bigRightIdx = new int[NUM_CONFIDENCE_LEVELS];
-			for(int i=0; i<NUM_CONFIDENCE_LEVELS; i++)
+			int[] smallRightIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS]; 
+			int[] bigRightIdx = new int[ConfidenceInterval.NUM_CONFIDENCE_LEVELS];
+			for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
 			{
 				smallRightIdx[i] = -1;
 				bigRightIdx[i] = -1;
 				for(int j=(minErrIndex+1); j<errorArray.length; j++)//loop from bigger error to smaller error
 				{
-					if((errorStat.getMin()+DELTA_ALPHA_VALUE[i]) < errorArray[j] &&
-					   (errorStat.getMin()+DELTA_ALPHA_VALUE[i]) > errorArray[j-1])
+					if((errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i]) < errorArray[j] &&
+					   (errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i]) > errorArray[j-1])
 					{
 						smallRightIdx[i]= j-1;
 						bigRightIdx[i]=j;
@@ -1248,7 +1244,7 @@ public class FRAPOptData {
 				}
 			}
 			//calculate intervals
-			for(int i=0; i<NUM_CONFIDENCE_LEVELS; i++)
+			for(int i=0; i<ConfidenceInterval.NUM_CONFIDENCE_LEVELS; i++)
 			{
 				double lowerBound = Double.NEGATIVE_INFINITY;
 				boolean bLowerBoundOpen = true;
@@ -1264,7 +1260,7 @@ public class FRAPOptData {
 					//x=x1+(x2-x1)*(y-y1)/(y2-y1);
 					double x1 = paramValArray[smallLeftIdx[i]];
 					double x2 = paramValArray[bigLeftIdx[i]];
-					double y = errorStat.getMin()+DELTA_ALPHA_VALUE[i];
+					double y = errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i];
 					double y1 = errorArray[smallLeftIdx[i]];
 					double y2 = errorArray[bigLeftIdx[i]];
 					lowerBound = x1+(x2-x1)*(y-y1)/(y2-y1);
@@ -1281,7 +1277,7 @@ public class FRAPOptData {
 					//x=x1+(x2-x1)*(y-y1)/(y2-y1);
 					double x1 = paramValArray[smallRightIdx[i]];
 					double x2 = paramValArray[bigRightIdx[i]];
-					double y = errorStat.getMin()+DELTA_ALPHA_VALUE[i];
+					double y = errorStat.getMin()+ConfidenceInterval.DELTA_ALPHA_VALUE[i];
 					double y1 = errorArray[smallRightIdx[i]];
 					double y2 = errorArray[bigRightIdx[i]];
 					upperBound = x1+(x2-x1)*(y-y1)/(y2-y1);
@@ -1290,7 +1286,7 @@ public class FRAPOptData {
 				}
 				intervals[i] = new ConfidenceInterval(lowerBound, bLowerBoundOpen, upperBound, bUpperBoundOpen);
 			}
-			return new ProfileSummaryData(plots, bestParamVal, intervals);
+			return new ProfileSummaryData(plots, bestParamVal, intervals, paramName);
 		}
 		return null;
 	}

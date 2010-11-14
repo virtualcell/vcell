@@ -8,11 +8,11 @@ import java.util.Arrays;
 import java.util.Hashtable;
 
 import org.vcell.util.Compare;
+import org.vcell.util.DescriptiveStatistics;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
-import cbit.vcell.microscopy.DescriptiveStatistics;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;

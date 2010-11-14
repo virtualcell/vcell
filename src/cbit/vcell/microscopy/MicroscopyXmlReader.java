@@ -12,6 +12,8 @@ import java.util.zip.InflaterInputStream;
 
 import org.jdom.Element;
 import org.vcell.optimization.OptXmlTags;
+import org.vcell.optimization.ProfileData;
+import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;

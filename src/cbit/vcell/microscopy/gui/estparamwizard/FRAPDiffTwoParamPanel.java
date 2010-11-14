@@ -25,6 +25,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
+import org.vcell.optimization.ProfileData;
+import org.vcell.optimization.gui.ConfidenceIntervalPlotPanel;
+import org.vcell.optimization.gui.ProfileDataPanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.task.AsynchClientTask;
@@ -33,7 +36,6 @@ import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.ProfileData;
 import cbit.vcell.opt.Parameter;
 
 @SuppressWarnings("serial")

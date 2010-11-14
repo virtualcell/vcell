@@ -5,6 +5,8 @@ import java.awt.Dimension;
 
 import javax.swing.BoxLayout;
 
+import org.vcell.util.gui.BoxPanel;
+
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 
 public class AnalysisResultsPanel extends BoxPanel

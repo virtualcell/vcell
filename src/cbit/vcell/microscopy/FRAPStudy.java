@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.optimization.ProfileData;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;

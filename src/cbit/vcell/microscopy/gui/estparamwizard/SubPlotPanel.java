@@ -20,6 +20,8 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.vcell.util.gui.HyperLinkLabel;
+
 import cbit.plot.Plot2DPanel;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;

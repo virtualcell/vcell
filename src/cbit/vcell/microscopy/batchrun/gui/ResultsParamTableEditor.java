@@ -16,9 +16,10 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 
-import cbit.vcell.microscopy.DescriptiveStatistics;
+import org.vcell.util.DescriptiveStatistics;
+import org.vcell.util.gui.HyperLinkLabel;
+
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.estparamwizard.HyperLinkLabel;
 
 public class ResultsParamTableEditor extends AbstractCellEditor implements TableCellEditor, ActionListener
 

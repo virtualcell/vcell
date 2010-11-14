@@ -27,18 +27,18 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import org.vcell.util.gui.AdvancedTablePanel;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.HyperLinkLabel;
+import org.vcell.util.gui.StyleTable;
 
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.AdvancedTablePanel;
+import cbit.vcell.microscopy.gui.NumericTableCellRenderer;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.microscopy.gui.estparamwizard.NumericTableCellRenderer;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentPanel;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_TwoDiffComponentPanel;
-import cbit.vcell.microscopy.gui.estparamwizard.HyperLinkLabel;
-import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
 
 public class BatchRunResultsParamTablePanel extends JPanel implements PropertyChangeListener
 {

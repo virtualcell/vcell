@@ -11,6 +11,8 @@ import java.util.zip.DeflaterOutputStream;
 
 import org.jdom.Element;
 import org.vcell.optimization.OptXmlTags;
+import org.vcell.optimization.ProfileData;
+import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.document.ExternalDataIdentifier;
 
 import cbit.util.xml.XmlUtil;

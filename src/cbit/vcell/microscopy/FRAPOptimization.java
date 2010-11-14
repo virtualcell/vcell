@@ -1,5 +1,7 @@
 package cbit.vcell.microscopy;
 
+import org.vcell.optimization.OptSolverResultSet;
+
 import cbit.function.DefaultScalarFunction;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.server.VCDataManager;
@@ -439,26 +441,28 @@ public class FRAPOptimization {
 			optSpec.addParameter(inParams[i]);
 		}
 		optResultSet = optSolver.solve(optSpec, optSolverSpec, optSolverCallbacks);
+		OptSolverResultSet optSolverResultSet = optResultSet.getOptSolverResultSet();
 		//if the parameters are 5, we have to go over again to see if we get the best answer.
 		if(inParams.length == 5)//5 parameters
 		{
 			OptimizationSpec optSpec2 = new OptimizationSpec();
 			optSpec2.setObjectiveFunction(new ImplicitObjectiveFunction(scalarFunc));
-			Parameter[] inParamsFromResult = generateInParamSet(inParams, optResultSet.getParameterValues());
+			Parameter[] inParamsFromResult = generateInParamSet(inParams, optSolverResultSet.getBestEstimates());
 			for (int i = 0; i < inParamsFromResult.length; i++) { //add parameters
 				optSpec2.addParameter(inParamsFromResult[i]);
 			}
 			OptimizationResultSet tempOptResultSet = optSolver.solve(optSpec2, optSolverSpec, optSolverCallbacks);
-			if(optResultSet.getObjectiveFunctionValue() > tempOptResultSet.getObjectiveFunctionValue())
+			OptSolverResultSet  tempOptSolverResultSet = tempOptResultSet.getOptSolverResultSet();
+			if(optSolverResultSet.getLeastObjectiveFunctionValue() > tempOptSolverResultSet.getLeastObjectiveFunctionValue())
 			{
-				optResultSet = tempOptResultSet;
+				optSolverResultSet = tempOptSolverResultSet;
 			}
 		}
 		//System.out.println("obj function value:"+optResultSet.getObjectiveFunctionValue());
 		//System.out.println("");
 		// copy results to output parameters
-		String[] names = optResultSet.getParameterNames();
-		double[] values = optResultSet.getParameterValues();
+		String[] names = optSolverResultSet.getParameterNames();
+		double[] values = optSolverResultSet.getBestEstimates();
 		for (int i = 0; i < names.length; i++) 
 		{
 			outParaNames[i] = names[i];
@@ -466,7 +470,7 @@ public class FRAPOptimization {
 		}
 		//long endTime =System.currentTimeMillis();
 		//System.out.println("total: " + ( endTime - startTime) );
-		return  optResultSet.getObjectiveFunctionValue();
+		return  optSolverResultSet.getLeastObjectiveFunctionValue();
 	}
 	//for second run of optimization for diffusion with two diffusing components
 	private static Parameter[] generateInParamSet(Parameter[] inputParams, double newValues[])
