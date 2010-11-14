@@ -5,9 +5,10 @@ import java.util.ArrayList;
 
 import javax.swing.table.AbstractTableModel;
 
+import org.vcell.util.DescriptiveStatistics;
+
 import sun.security.action.GetBooleanAction;
 
-import cbit.vcell.microscopy.DescriptiveStatistics;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;

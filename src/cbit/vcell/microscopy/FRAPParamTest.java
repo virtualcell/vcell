@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EventObject;
 
+import org.vcell.optimization.ProfileData;
+import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.gui.ProgressDialogListener;
 
 import loci.formats.FormatException;

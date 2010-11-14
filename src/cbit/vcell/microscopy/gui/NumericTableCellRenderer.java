@@ -1,4 +1,4 @@
-package cbit.vcell.microscopy.gui.estparamwizard;
+package cbit.vcell.microscopy.gui;
 
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
@@ -6,7 +6,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.Border;
 import javax.swing.*;
 
-import cbit.vcell.microscopy.DescriptiveStatistics;
+import org.vcell.util.DescriptiveStatistics;
+
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.batchrun.gui.BatchRunResultsParamTableModel;
 

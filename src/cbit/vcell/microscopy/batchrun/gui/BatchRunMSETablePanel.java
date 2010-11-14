@@ -19,11 +19,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.vcell.util.gui.AdvancedTablePanel;
+import org.vcell.util.gui.HyperLinkLabel;
+import org.vcell.util.gui.StyleTable;
+
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.AdvancedTablePanel;
-import cbit.vcell.microscopy.gui.estparamwizard.NumericTableCellRenderer;
-import cbit.vcell.microscopy.gui.estparamwizard.HyperLinkLabel;
-import cbit.vcell.microscopy.gui.estparamwizard.StyleTable;
+import cbit.vcell.microscopy.gui.NumericTableCellRenderer;
 
 public class BatchRunMSETablePanel extends AdvancedTablePanel
 {

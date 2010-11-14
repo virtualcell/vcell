@@ -5,9 +5,13 @@ import javax.swing.table.*;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 
+import org.vcell.util.gui.AdvancedTablePanel;
+import org.vcell.util.gui.HyperLinkLabel;
+import org.vcell.util.gui.StyleTable;
+
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPWorkspace;
-import cbit.vcell.microscopy.gui.AdvancedTablePanel;
+import cbit.vcell.microscopy.gui.NumericTableCellRenderer;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 
 import java.awt.*;

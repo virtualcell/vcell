@@ -2,6 +2,8 @@ package cbit.vcell.microscopy.gui.estparamwizard;
 
 import javax.swing.BoxLayout;
 
+import org.vcell.util.gui.BoxPanel;
+
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;

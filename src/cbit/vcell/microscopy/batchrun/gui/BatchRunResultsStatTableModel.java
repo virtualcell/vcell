@@ -5,7 +5,8 @@ import java.util.ArrayList;
 
 import javax.swing.table.AbstractTableModel;
 
-import cbit.vcell.microscopy.DescriptiveStatistics;
+import org.vcell.util.DescriptiveStatistics;
+
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;

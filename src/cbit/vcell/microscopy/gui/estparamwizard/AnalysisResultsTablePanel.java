@@ -29,16 +29,20 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.vcell.optimization.ConfidenceInterval;
+import org.vcell.optimization.ProfileData;
+import org.vcell.optimization.ProfileSummaryData;
+import org.vcell.optimization.gui.ConfidenceIntervalPlotPanel;
+import org.vcell.optimization.gui.ProfileDataPanel;
+import org.vcell.util.gui.AdvancedTablePanel;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.HyperLinkLabel;
+import org.vcell.util.gui.StyleTable;
 
-import cbit.vcell.microscopy.ConfidenceInterval;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.ProfileData;
-import cbit.vcell.microscopy.ProfileSummaryData;
-import cbit.vcell.microscopy.gui.AdvancedTablePanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.groupableTableHeader.ColumnGroup;
 import cbit.vcell.microscopy.gui.groupableTableHeader.GroupableTableColumnModel;
@@ -244,29 +248,29 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 	public void actionPerformed(ActionEvent evt) {
 		ProfileSummaryData[][] allProfileSumData = frapWorkspace.getWorkingFrapStudy().getFrapOptData().getAllProfileSummaryData();
 		FRAPModel[] frapModels = frapWorkspace.getWorkingFrapStudy().getModels();
-		int confidenceIdx = FRAPOptData.IDX_DELTA_ALPHA_80;
+		int confidenceIdx = ConfidenceInterval.IDX_DELTA_ALPHA_80;
 		boolean diffOneModelSignificance = true;
 		boolean diffTwoModelSignificance = true;
 		
 		if(confidence80RadioButton.isSelected())
 		{
-			anaTableModel.setCurrentConfidenceLevelIndex(FRAPOptData.IDX_DELTA_ALPHA_80);
-			confidenceIdx = FRAPOptData.IDX_DELTA_ALPHA_80;
+			anaTableModel.setCurrentConfidenceLevelIndex(ConfidenceInterval.IDX_DELTA_ALPHA_80);
+			confidenceIdx = ConfidenceInterval.IDX_DELTA_ALPHA_80;
 		}
 		else if(confidence90RadioButton.isSelected())
 		{
-			anaTableModel.setCurrentConfidenceLevelIndex(FRAPOptData.IDX_DELTA_ALPHA_90);
-			confidenceIdx = FRAPOptData.IDX_DELTA_ALPHA_90;
+			anaTableModel.setCurrentConfidenceLevelIndex(ConfidenceInterval.IDX_DELTA_ALPHA_90);
+			confidenceIdx = ConfidenceInterval.IDX_DELTA_ALPHA_90;
 		}
 		else if(confidence95RadioButton.isSelected())
 		{
-			anaTableModel.setCurrentConfidenceLevelIndex(FRAPOptData.IDX_DELTA_ALPHA_95);
-			confidenceIdx = FRAPOptData.IDX_DELTA_ALPHA_95;
+			anaTableModel.setCurrentConfidenceLevelIndex(ConfidenceInterval.IDX_DELTA_ALPHA_95);
+			confidenceIdx = ConfidenceInterval.IDX_DELTA_ALPHA_95;
 		}
 		else if(confidence99RadioButton.isSelected())
 		{
-			anaTableModel.setCurrentConfidenceLevelIndex(FRAPOptData.IDX_DELTA_ALPHA_99);
-			confidenceIdx = FRAPOptData.IDX_DELTA_ALPHA_99;
+			anaTableModel.setCurrentConfidenceLevelIndex(ConfidenceInterval.IDX_DELTA_ALPHA_99);
+			confidenceIdx = ConfidenceInterval.IDX_DELTA_ALPHA_99;
 		}
 		//adjust best model button
 		if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null && frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null &&
@@ -436,19 +440,19 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 	public int getSelectedConfidenceIndex() {
 		if(confidence80RadioButton.isSelected())
 		{
-			return FRAPOptData.IDX_DELTA_ALPHA_80;
+			return ConfidenceInterval.IDX_DELTA_ALPHA_80;
 		}
 		else if(confidence90RadioButton.isSelected())
 		{
-			return FRAPOptData.IDX_DELTA_ALPHA_90;
+			return ConfidenceInterval.IDX_DELTA_ALPHA_90;
 		}
 		else if(confidence95RadioButton.isSelected())
 		{
-			return FRAPOptData.IDX_DELTA_ALPHA_95;
+			return ConfidenceInterval.IDX_DELTA_ALPHA_95;
 		}
 		else if(confidence99RadioButton.isSelected())
 		{
-			return FRAPOptData.IDX_DELTA_ALPHA_99;
+			return ConfidenceInterval.IDX_DELTA_ALPHA_99;
 		}
 		return -1;
 	}

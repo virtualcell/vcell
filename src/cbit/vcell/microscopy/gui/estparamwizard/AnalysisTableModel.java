@@ -4,12 +4,13 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.table.AbstractTableModel;
 
-import cbit.vcell.microscopy.ConfidenceInterval;
+import org.vcell.optimization.ConfidenceInterval;
+import org.vcell.optimization.ProfileSummaryData;
+
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.ProfileSummaryData;
 import cbit.vcell.opt.Parameter;
 
 public class AnalysisTableModel extends AbstractTableModel 

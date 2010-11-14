@@ -4,8 +4,9 @@ import java.awt.BorderLayout;
 
 import javax.swing.BoxLayout;
 
+import org.vcell.util.gui.BoxPanel;
+
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.estparamwizard.BoxPanel;
 
 public class BatchRunMSEPanel extends BoxPanel
 {

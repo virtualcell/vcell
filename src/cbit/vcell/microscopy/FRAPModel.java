@@ -1,9 +1,12 @@
 package cbit.vcell.microscopy;
 
+import java.io.IOException;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
@@ -98,7 +101,7 @@ public class FRAPModel implements Matchable
 		this.modelParameters = modelParameters;
 	}
 	
-	public static Parameter[] getInitialParameters(FRAPData frapData, String modelIdentifier) throws ExpressionException
+	public static Parameter[] getInitialParameters(FRAPData frapData, String modelIdentifier) throws ExpressionException, OptimizationException, IOException
 	{
 		Parameter[] params = null;
 		//get estimated bleach type
