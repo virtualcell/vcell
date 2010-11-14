@@ -290,25 +290,25 @@ private void connPtoP2SetTarget() {
  * Comment
  */
 private java.lang.String displayResults(OptimizationResultSet optResultSet, OptimizationSpec optSpec) {
-	if (optResultSet==null || optResultSet.getOptSolverResultSet().getParameterValues()==null){
+	if (optResultSet==null || optResultSet.getOptSolverResultSet().getBestEstimates()==null){
 		return "no results";
 	}
 	if (optSpec==null){
 		return "no optimization specification";
 	}
-	if (optSpec.getNumParameters() != optResultSet.getOptSolverResultSet().getParameterValues().length){
-		return "there are "+optSpec.getNumParameters()+" opt variables and "+optResultSet.getOptSolverResultSet().getParameterValues().length+" values";
+	if (optSpec.getNumParameters() != optResultSet.getOptSolverResultSet().getBestEstimates().length){
+		return "there are "+optSpec.getNumParameters()+" opt variables and "+optResultSet.getOptSolverResultSet().getBestEstimates().length+" values";
 	}
 
 	StringBuffer buffer = new StringBuffer();
 
 	Parameter[] parameters = optSpec.getParameters();
 	for (int i = 0; i < parameters.length; i++){
-		buffer.append(parameters[i].getName()+" = "+optResultSet.getOptSolverResultSet().getParameterValues()[i]+"\n");
+		buffer.append(parameters[i].getName()+" = "+optResultSet.getOptSolverResultSet().getBestEstimates()[i]+"\n");
 	}
 
-	if (optResultSet.getOptSolverResultSet().getObjectiveFunctionValue()!=null){
-		buffer.append("final objective function value = "+optResultSet.getOptSolverResultSet().getObjectiveFunctionValue());
+	if (optResultSet.getOptSolverResultSet().getLeastObjectiveFunctionValue()!=null){
+		buffer.append("final objective function value = "+optResultSet.getOptSolverResultSet().getLeastObjectiveFunctionValue());
 	}else{
 		buffer.append("no objective function returned");
 	}

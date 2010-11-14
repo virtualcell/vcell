@@ -331,7 +331,7 @@ public Object getValueAt(int row, int col) {
 						for (int j = 0; parameterNames!=null 
 						&& j < parameterNames.length; j++){
 							if (parameterNames[j].equals(parameterMapping.getOptParameter().getName())){
-								return new Double(getParameterEstimationTask().getOptimizationResultSet().getOptSolverResultSet().getParameterValues()[j]);
+								return new Double(getParameterEstimationTask().getOptimizationResultSet().getOptSolverResultSet().getBestEstimates()[j]);
 							}
 						}
 					}

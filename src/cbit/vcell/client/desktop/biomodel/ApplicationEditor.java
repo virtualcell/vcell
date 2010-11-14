@@ -1169,17 +1169,13 @@ private void refreshAnalysisTab()
 	{
 		if(getSimulationContext().isStoch()) //stochastic
 		{
-			ivjJTabbedPane1.setEnabledAt(ApplicationEditor.TAB_IDX_ANALYSIS, false);
+			ivjJTabbedPane1.remove(ApplicationEditor.TAB_IDX_ANALYSIS);
 		}
 		else
 		{
 			if(getSimulationContext().getGeometryContext().getGeometry().getDimension() != 0)//pde
 			{
-				ivjJTabbedPane1.setEnabledAt(ApplicationEditor.TAB_IDX_ANALYSIS, false);
-			}
-			else //ode
-			{
-				ivjJTabbedPane1.setEnabledAt(ApplicationEditor.TAB_IDX_ANALYSIS, true);
+				ivjJTabbedPane1.remove(ApplicationEditor.TAB_IDX_ANALYSIS);
 			}
 		}
 	}
