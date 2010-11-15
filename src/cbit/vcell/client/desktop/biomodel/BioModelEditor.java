@@ -3,6 +3,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Polygon;
+import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 
 import javax.swing.Icon;
@@ -20,6 +21,7 @@ import org.vcell.util.document.Versionable;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
+import cbit.image.ImageException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
@@ -31,6 +33,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelTreePanel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.mapping.MappingException;
@@ -510,10 +513,14 @@ private void copyApplication(final boolean bSpatial, final boolean bStochastic) 
  * @throws ExpressionException 
  * @throws MappingException 
  */
-private SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, boolean bStoch) throws java.beans.PropertyVetoException, ExpressionException, MappingException {
+private SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, boolean bStoch) throws PropertyVetoException, ExpressionException, MappingException,  GeometryException, ImageException, ExpressionException 
+{
+	//create a geometry for the copy of simulation context
+	Geometry newClonedGeometry = new Geometry(srcSimContext.getGeometry());
+	newClonedGeometry.precomputeAll();
 	//if stoch copy to ode, we need to check is stoch is using particles. If yes, should convert particles to concentraton.
 	//the other 3 cases are fine. ode->ode, ode->stoch, stoch-> stoch 
-	SimulationContext destSimContext = new SimulationContext(srcSimContext, bStoch);
+	SimulationContext destSimContext = new SimulationContext(srcSimContext,newClonedGeometry, bStoch);
 	if(srcSimContext.isStoch() && !srcSimContext.isUsingConcentration() && !bStoch)
 	{
 		try {

@@ -249,7 +249,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
  * Construct a new SimulationContext from an old SimulationContext.
  * Input paras: SimulationContext (the old one), boolean (is stochastic application or not) 
  */
-public SimulationContext(SimulationContext simulationContext, boolean arg_isStoch) throws PropertyVetoException {
+public SimulationContext(SimulationContext simulationContext,Geometry newClonedGeometry, boolean arg_isStoch) throws PropertyVetoException {
 	
 	if(arg_isStoch)
 	{
@@ -262,7 +262,7 @@ public SimulationContext(SimulationContext simulationContext, boolean arg_isStoc
 	} else {
 		this.bConcentration = true; //deterministic method use concentration only.
 	}
-	this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this);		
+	this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this, newClonedGeometry);		
 	this.reactionContext = new ReactionContext(simulationContext.getReactionContext(),this);
 	this.version = null;
 	this.characteristicSize = simulationContext.getCharacteristicSize();
