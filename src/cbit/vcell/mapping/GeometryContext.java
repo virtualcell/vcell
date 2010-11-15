@@ -52,10 +52,10 @@ public  class GeometryContext implements Serializable, Matchable, PropertyChange
  * @param model cbit.vcell.model.Model
  * @param geometry cbit.vcell.geometry.Geometry
  */
-GeometryContext(GeometryContext geometryContext, SimulationContext simulationContext) {
-	this.fieldGeometry = new Geometry(geometryContext.getGeometry());
+GeometryContext(GeometryContext geometryContext, SimulationContext newSimulationContext, Geometry newClonedGeometry) {
+	this.fieldGeometry = newClonedGeometry;
 	this.fieldModel = geometryContext.getModel();
-	this.fieldSimulationContext = simulationContext;
+	this.fieldSimulationContext = newSimulationContext;
 	//
 	// copy the contents of the structure mappings.
 	//
@@ -65,9 +65,9 @@ GeometryContext(GeometryContext geometryContext, SimulationContext simulationCon
 		// invoke appropriate copy constructor
 		//
 		if (geometryContext.fieldStructureMappings[i] instanceof FeatureMapping){
-			fieldStructureMappings[i] = new FeatureMapping((FeatureMapping)geometryContext.fieldStructureMappings[i],simulationContext,this.fieldGeometry);
+			fieldStructureMappings[i] = new FeatureMapping((FeatureMapping)geometryContext.fieldStructureMappings[i],newSimulationContext,this.fieldGeometry);
 		}else if (geometryContext.fieldStructureMappings[i] instanceof MembraneMapping){
-			fieldStructureMappings[i] = new MembraneMapping((MembraneMapping)geometryContext.fieldStructureMappings[i],simulationContext,this.fieldGeometry);
+			fieldStructureMappings[i] = new MembraneMapping((MembraneMapping)geometryContext.fieldStructureMappings[i],newSimulationContext,this.fieldGeometry);
 		}else {
 			throw new RuntimeException("unexpected structureMapping = "+geometryContext.fieldStructureMappings[i]);
 		}
