@@ -29,7 +29,6 @@ import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
-
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.client.data.OutputContext;
@@ -46,12 +45,17 @@ import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationInfo;
 
 public class FieldDataWindowManager 
 	extends TopLevelWindowManager
 		implements PropertyChangeListener,FieldDataDBEventListener{
 	
+	public interface DataSymbolCallBack {
+		void createDataSymbol(ExternalDataIdentifier dataSetID,String fieldDataVarName,VariableType fieldDataVarType,double fieldDataVarTime);
+	}
+
 	private FieldDataGUIPanel fieldDataGUIPanel;
 	private ExternalDataIdentifier currentlyViewedEDI;
 	private JFrame currentlyViewedJFrame;
