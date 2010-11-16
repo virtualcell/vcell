@@ -4538,7 +4538,7 @@ private SundialsSolverOptions getSundialsSolverOptions(Element sundialsSolverOpt
 	
 	SundialsSolverOptions sundialsSolverOptions = null;	
 	if (sundialsSolverOptionsElement != null) {		
-		String temp = sundialsSolverOptionsElement.getChildText(XMLTags.SundialsSolverOptions_maxOrder, vcNamespace);
+		String temp = sundialsSolverOptionsElement.getChildText(XMLTags.SundialsSolverOptions_maxOrderAdvection, vcNamespace);
 		if (temp != null) {
 			sundialsSolverOptions = new SundialsSolverOptions(Integer.parseInt(temp));
 		}

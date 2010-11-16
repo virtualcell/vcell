@@ -3580,8 +3580,8 @@ private Element getXML(SundialsSolverOptions sso) {
 	if (sso != null) {
 		ssoElement = new Element(XMLTags.SundialsSolverOptions);
 		
-		Element element = new Element(XMLTags.SundialsSolverOptions_maxOrder);
-		element.setText(sso.getMaxOrder() + "");
+		Element element = new Element(XMLTags.SundialsSolverOptions_maxOrderAdvection);
+		element.setText(sso.getMaxOrderAdvection() + "");
 		ssoElement.addContent(element);
 	}
 	return ssoElement;

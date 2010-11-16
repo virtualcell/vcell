@@ -95,7 +95,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 			FlowLayout layout = new FlowLayout(FlowLayout.LEFT);
 			layout.setVgap(0);
 			setLayout(layout);
-			JLabel label = new JLabel("Max Order for BDF method");
+			JLabel label = new JLabel("Max Order for BDF method (advection only) ");
 			add(label);
 			add(getMaxOrderButton());
 			getJComboBoxMaxOrder().setPreferredSize(new Dimension((int)label.getPreferredSize().getWidth(), (int)getJComboBoxMaxOrder().getPreferredSize().getHeight()));
@@ -193,7 +193,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 	private void refresh() {
 		
 		if (solverTaskDescription != null) {
-			if (!solverTaskDescription.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+			if (!solverTaskDescription.getSolverDescription().equals(SolverDescription.SundialsPDE) || !solverTaskDescription.getSimulation().getMathDescription().hasVelocity()) {
 				setVisible(false);
 				return;
 			}
@@ -201,7 +201,7 @@ public class SundialsSolverOptionsPanel extends CollapsiblePanel {
 			
 		setVisible(true);
 		SundialsSolverOptions sso = solverTaskDescription.getSundialsSolverOptions();	
-		ivjJComboBoxMaxOrder.setSelectedItem(sso.getMaxOrder());
+		ivjJComboBoxMaxOrder.setSelectedItem(sso.getMaxOrderAdvection());
 	}
 	
 	public static void main(java.lang.String[] args) {
