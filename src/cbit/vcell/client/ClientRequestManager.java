@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -2792,7 +2793,24 @@ public void showBNGWindow() {
 public void showFieldDataWindow(FieldDataWindowManager.DataSymbolCallBack dataSymbolCallBack) {
 	FieldDataWindowManager fdwm = (FieldDataWindowManager)getMdiManager().getWindowManager(ClientMDIManager.FIELDDATA_WINDOW_ID);
 	fdwm.getFieldDataGUIPanel().setCreateDataSymbolCallBack(dataSymbolCallBack);
+	Window win = (Window)BeanUtils.findTypeParentOfComponent(fdwm.getFieldDataGUIPanel(), Window.class);
+	if(win != null){
+		win.setVisible(false);
+	}
 	getMdiManager().showWindow(ClientMDIManager.FIELDDATA_WINDOW_ID);
+	
+//	if(windowID.equals(ClientMDIManager.FIELDDATA_WINDOW_ID)){
+//	FieldDataWindow fdw = (FieldDataWindow)frame;
+//	FieldDataGUIPanel fdgp = (FieldDataGUIPanel)fdw.getContentPane().getComponent(0);
+//	if(fdgp.getDisplayMode() == FieldDataGUIPanel.DISPLAY_NORMAL){
+//		fdgp.setCreateDataSymbolCallBack(new FieldDataGUIPanel.DataSymbolCallBack(){
+//			public void createDataSymbol() {
+//			}});
+//	}else{
+//		fdgp.setCreateDataSymbolCallBack(null);
+//	}
+//}
+
 }
 
 /**
