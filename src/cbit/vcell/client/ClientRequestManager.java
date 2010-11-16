@@ -2789,7 +2789,9 @@ public void showBNGWindow() {
 	getMdiManager().showWindow(ClientMDIManager.BIONETGEN_WINDOW_ID);
 }
 
-public void showFieldDataWindow() {
+public void showFieldDataWindow(int displayMode) {
+	FieldDataWindowManager fdwm = (FieldDataWindowManager)getMdiManager().getWindowManager(ClientMDIManager.FIELDDATA_WINDOW_ID);
+	fdwm.getFieldDataGUIPanel().setDisplayMode(displayMode);
 	getMdiManager().showWindow(ClientMDIManager.FIELDDATA_WINDOW_ID);
 }
 
