@@ -1,6 +1,7 @@
 package cbit.vcell.field;
 
 import java.awt.Dimension;
+import java.awt.DisplayMode;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -205,7 +206,7 @@ public class FieldDataGUIPanel extends JPanel{
 	private javax.swing.JButton ivjJButtonFDFromFile = null;
 	private javax.swing.JButton ivjJButtonFDFromSim = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
-	private javax.swing.JPanel ivjJPanel2 = null;
+	private javax.swing.JPanel normalTopPanel = null;
 	private javax.swing.JButton ivjJButtonFDView = null;
 	private javax.swing.JTree ivjJTree1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -723,8 +724,8 @@ private javax.swing.JPanel getJPanel1() {
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel2() {
-	if (ivjJPanel2 == null) {
+private javax.swing.JPanel getNormalTopPanel() {
+	if (normalTopPanel == null) {
 		try {
 			GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
 			gridBagConstraints4.gridx = 2;
@@ -732,16 +733,16 @@ private javax.swing.JPanel getJPanel2() {
 			GridBagConstraints gridBagConstraints21 = new GridBagConstraints();
 			gridBagConstraints21.gridx = 2;
 			gridBagConstraints21.gridy = 0;
-			ivjJPanel2 = new javax.swing.JPanel();
-			ivjJPanel2.setName("JPanel2");
-			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
+			normalTopPanel = new javax.swing.JPanel();
+			normalTopPanel.setName("normalTopPanel");
+			normalTopPanel.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 0;
 constraintsJPanel1.gridheight = 2;
 			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel2().add(getJPanel1(), constraintsJPanel1);
+			getNormalTopPanel().add(getJPanel1(), constraintsJPanel1);
 
 			java.awt.GridBagConstraints constraintsJButtonFDDelete = new java.awt.GridBagConstraints();
 			constraintsJButtonFDDelete.gridx = 1; constraintsJButtonFDDelete.gridy = 0;
@@ -753,18 +754,99 @@ constraintsJPanel1.gridheight = 2;
 			constraintsJButtonFDView.gridwidth = 1;
 			constraintsJButtonFDView.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJButtonFDView.insets = new java.awt.Insets(4, 4, 4, 4);
- 			ivjJPanel2.add(getJButtonFDDelete(), constraintsJButtonFDDelete);
-			ivjJPanel2.add(getJButtonFDView(), constraintsJButtonFDView);
-			ivjJPanel2.add(getJPanel(), gridBagConstraints21);
-			ivjJPanel2.add(getJPanel12(), gridBagConstraints4);
+ 			normalTopPanel.add(getJButtonFDDelete(), constraintsJButtonFDDelete);
+			normalTopPanel.add(getJButtonFDView(), constraintsJButtonFDView);
+			normalTopPanel.add(getJPanel(), gridBagConstraints21);
+			normalTopPanel.add(getJPanel12(), gridBagConstraints4);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel2;
+	return normalTopPanel;
 }
 
+public static final int DISPLAY_NORMAL = 0;
+public static final int DISPLAY_DATASYMBOLS = 1;
+private int displayMode = DISPLAY_NORMAL;
+private JPanel dataSymbolsJPanel = null;
+private JButton dsAnnotButton = new JButton();
+private JButton dsViewButton = new JButton();
+private JButton dsDataSymbolButton = new JButton();
+public int getDisplayMode(){
+	return displayMode;
+}
+public void setDisplayMode(int newDisplayMode){
+	displayMode = newDisplayMode;
+	if(newDisplayMode == DISPLAY_DATASYMBOLS){
+		for (int i = 0; i < getComponentCount(); i++) {
+			if(getComponent(i) == getNormalTopPanel()){
+				remove(getComponent(i));
+				break;
+			}else if(getComponent(i) == dataSymbolsJPanel){
+				return;
+			}
+		}
+		if(dataSymbolsJPanel == null){
+			dataSymbolsJPanel = new JPanel();
+			dataSymbolsJPanel.setName("dataSymbolsPanel");
+			//View Button
+			//JButton viewButton = new JButton();
+			dsViewButton.setText("View...");
+			dsViewButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					jButtonFDView_ActionPerformed(e);
+				}
+			});
+			dsViewButton.setEnabled(false);
+			dataSymbolsJPanel.add(dsViewButton);
+			//view Annotation
+			//JButton annotButton = new JButton();
+			dsAnnotButton.setText("View Annot...");
+			dsAnnotButton.addActionListener(viewAnnotAction);
+			dsAnnotButton.setEnabled(false);
+			dataSymbolsJPanel.add(dsAnnotButton);
+			//datasymbol Callback button
+			//JButton dataSymbolButton = new JButton();
+			dsDataSymbolButton.setText("Create Data Symbol...");
+			dsDataSymbolButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(dataSymbolCallBack != null){
+						dataSymbolCallBack.createDataSymbol();
+					}
+				}
+			});
+			dsDataSymbolButton.setEnabled(false);
+			dataSymbolsJPanel.add(dsDataSymbolButton);
+		}
+		java.awt.GridBagConstraints gbc_datasymbolsPanel = new java.awt.GridBagConstraints();
+		gbc_datasymbolsPanel.gridx = 0; gbc_datasymbolsPanel.gridy = 0;
+		gbc_datasymbolsPanel.fill = java.awt.GridBagConstraints.BOTH;
+		gbc_datasymbolsPanel.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(dataSymbolsJPanel, gbc_datasymbolsPanel);
 
+	}else{
+		for (int i = 0; i < getComponentCount(); i++) {
+			if(getComponent(i) == dataSymbolsJPanel){
+				remove(getComponent(i));
+				break;
+			}else if(getComponent(i) == getNormalTopPanel()){
+				return;
+			}
+		}
+		java.awt.GridBagConstraints gbc_normalTopPanel = new java.awt.GridBagConstraints();
+		gbc_normalTopPanel.gridx = 0; gbc_normalTopPanel.gridy = 0;
+		gbc_normalTopPanel.fill = java.awt.GridBagConstraints.BOTH;
+		gbc_normalTopPanel.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getNormalTopPanel(), gbc_normalTopPanel);
+	}
+}
+public interface DataSymbolCallBack {
+	void createDataSymbol();
+}
+private DataSymbolCallBack dataSymbolCallBack = null;
+public void setCreateDataSymbolsCallBack(DataSymbolCallBack dataSymbolCallBack){
+	this.dataSymbolCallBack = dataSymbolCallBack;
+}
 /**
  * Return the JScrollPane1 property value.
  * @return javax.swing.JScrollPane
@@ -866,11 +948,11 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		setSize(676, 430);
 
-		java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
-		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 0;
-		constraintsJPanel2.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel2(), constraintsJPanel2);
+		java.awt.GridBagConstraints gbc_normalTopPanel = new java.awt.GridBagConstraints();
+		gbc_normalTopPanel.gridx = 0; gbc_normalTopPanel.gridy = 0;
+		gbc_normalTopPanel.fill = java.awt.GridBagConstraints.BOTH;
+		gbc_normalTopPanel.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getNormalTopPanel(), gbc_normalTopPanel);
 
 		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 		constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 1;
@@ -902,10 +984,10 @@ public boolean isInitialized(){
  */
 private void jTree1_ValueChanged(javax.swing.event.TreeSelectionEvent treeSelectionEvent) {
 	getJButtonFDDelete().setEnabled(false);
-	getJButtonFDView().setEnabled(false);
-	getJButtonFDCopyRef().setEnabled(false);
+	getJButtonFDView().setEnabled(false);dsViewButton.setEnabled(false);
+	getJButtonFDCopyRef().setEnabled(false);dsDataSymbolButton.setEnabled(false);
 	getJButtonFindRefModel().setEnabled(false);
-	getJButtonViewAnnot().setEnabled(false);
+	getJButtonViewAnnot().setEnabled(false);dsAnnotButton.setEnabled(false);
 	getJButtonCreateGeom().setEnabled(false);
 	javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
 	if(selPath != null){
@@ -913,11 +995,11 @@ private void jTree1_ValueChanged(javax.swing.event.TreeSelectionEvent treeSelect
 //		System.out.println("count="+selPath.getPathCount()+"  "+(lastPathComponent != null?lastPathComponent.toString():"null"));
 		if(lastPathComponent.getUserObject() instanceof FieldDataMainList){
 			getJButtonFDDelete().setEnabled(true);
-			getJButtonFDView().setEnabled(fieldDataWindowManager != null);
+			getJButtonFDView().setEnabled(fieldDataWindowManager != null);dsViewButton.setEnabled(fieldDataWindowManager != null);
 			getJButtonFindRefModel().setEnabled(true);
-			getJButtonViewAnnot().setEnabled(true);
+			getJButtonViewAnnot().setEnabled(true);dsAnnotButton.setEnabled(true);
 		}else if (lastPathComponent.getUserObject() instanceof FieldDataVarList){
-			getJButtonFDCopyRef().setEnabled(true);
+			getJButtonFDCopyRef().setEnabled(true);dsDataSymbolButton.setEnabled(true);
 			getJButtonCreateGeom().setEnabled(true);
 		}
 	}
@@ -1665,24 +1747,25 @@ private JPanel getJPanel12() {
  * 	
  * @return javax.swing.JButton	
  */
+ActionListener viewAnnotAction = new java.awt.event.ActionListener() {
+	public void actionPerformed(java.awt.event.ActionEvent e) {
+		javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
+		if(selPath != null){
+			javax.swing.tree.DefaultMutableTreeNode lastPathComponent =
+				(javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
+			if(lastPathComponent.getUserObject() instanceof FieldDataMainList){
+				PopupGenerator.showInfoDialog(FieldDataGUIPanel.this, 
+						((FieldDataMainList)(lastPathComponent.getUserObject())).extDataAnnot);
+			}
+		}
+	}
+};
 private JButton getJButtonViewAnnot() {
 	if (jButtonViewAnnot == null) {
 		jButtonViewAnnot = new JButton();
 		jButtonViewAnnot.setText("View Annot...");
 		jButtonViewAnnot.setEnabled(false);
-		jButtonViewAnnot.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
-				if(selPath != null){
-					javax.swing.tree.DefaultMutableTreeNode lastPathComponent =
-						(javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
-					if(lastPathComponent.getUserObject() instanceof FieldDataMainList){
-						PopupGenerator.showInfoDialog(FieldDataGUIPanel.this, 
-								((FieldDataMainList)(lastPathComponent.getUserObject())).extDataAnnot);
-					}
-				}
-			}
-		});
+		jButtonViewAnnot.addActionListener(viewAnnotAction);
 	}
 	return jButtonViewAnnot;
 }
