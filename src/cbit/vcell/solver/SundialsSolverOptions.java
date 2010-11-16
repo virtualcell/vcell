@@ -10,16 +10,18 @@ import cbit.vcell.math.VCML;
 
 @SuppressWarnings("serial")
 public class SundialsSolverOptions implements Matchable, Serializable {
-	private int maxOrder = 5;
+	private final static int DEFAULT_MAX_ORDER_ADVECTION = 2;
+	
+	private int maxOrderAdvection = DEFAULT_MAX_ORDER_ADVECTION;
 	
 	public SundialsSolverOptions() {
 		
 	}
 	public SundialsSolverOptions(int order) {
-		maxOrder = order;
+		maxOrderAdvection = order;
 	}
 	public SundialsSolverOptions(SundialsSolverOptions sundialsSolverOptions) {
-		maxOrder = sundialsSolverOptions.maxOrder;
+		maxOrderAdvection = sundialsSolverOptions.maxOrderAdvection;
 	}
 	public SundialsSolverOptions(CommentStringTokenizer tokens) throws DataAccessException {
 		this();
@@ -31,13 +33,13 @@ public class SundialsSolverOptions implements Matchable, Serializable {
 			return false;
 		}
 		SundialsSolverOptions sundialsSolverOptions = (SundialsSolverOptions)obj;
-		return maxOrder == sundialsSolverOptions.maxOrder;
+		return maxOrderAdvection == sundialsSolverOptions.maxOrderAdvection;
 	}
 	
 	public String getVCML() {		
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("\t" + VCML.SundialsSolverOptions + " " + VCML.BeginBlock + "\n");
-		buffer.append("\t\t" + VCML.SundialsSolverOptions_maxOrder + " " + maxOrder + "\n");
+		buffer.append("\t\t" + VCML.SundialsSolverOptions_maxOrderAdvection + " " + maxOrderAdvection + "\n");
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		
 		return buffer.toString();
@@ -57,15 +59,15 @@ public class SundialsSolverOptions implements Matchable, Serializable {
 			if (token.equalsIgnoreCase(VCML.EndBlock)) {
 				break;
 			}
-			if (token.equalsIgnoreCase(VCML.SundialsSolverOptions_maxOrder)) {
+			if (token.equalsIgnoreCase(VCML.SundialsSolverOptions_maxOrderAdvection)) {
 				token = tokens.nextToken();
-				maxOrder = Integer.parseInt(token);
+				maxOrderAdvection = Integer.parseInt(token);
 			}  else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}
 		}
 	}
-	public final int getMaxOrder() {
-		return maxOrder;
+	public final int getMaxOrderAdvection() {
+		return maxOrderAdvection;
 	}
 }

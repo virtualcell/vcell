@@ -855,9 +855,12 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 	printWriter.println("# Simulation Parameters");
 	printWriter.println("SIMULATION_PARAM_BEGIN");
 	if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
-		printWriter.println("SOLVER SUNDIALS_PDE_SOLVER " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance() 
-				+ " " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance() + " " + solverTaskDesc.getTimeStep().getMaximumTimeStep()
-				+ " " + solverTaskDesc.getSundialsSolverOptions().getMaxOrder());
+		printWriter.print("SOLVER SUNDIALS_PDE_SOLVER " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance() 
+				+ " " + solverTaskDesc.getErrorTolerance().getAbsoluteErrorTolerance() + " " + solverTaskDesc.getTimeStep().getMaximumTimeStep());
+		if (simulation.getMathDescription().hasVelocity()) {
+			printWriter.print(" " + solverTaskDesc.getSundialsSolverOptions().getMaxOrderAdvection());
+		}
+		printWriter.println();
 		Vector<Discontinuity> discontinuities = new Vector<Discontinuity>();
 		TreeSet<Double> discontinuityTimes = new TreeSet<Double>();
 		MathDescription mathDesc = simulation.getMathDescription();

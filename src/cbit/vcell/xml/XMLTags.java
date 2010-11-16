@@ -486,5 +486,5 @@ public class XMLTags {
 	public final static String SmoldynSimulationOptions_gaussianTableSize	= "gaussianTableSize";
 
 	public final static String SundialsSolverOptions	= "SundialsSolverOptions";
-	public final static String SundialsSolverOptions_maxOrder	= "maxOrder";
+	public final static String SundialsSolverOptions_maxOrderAdvection	= "maxOrderAdvection";
 }

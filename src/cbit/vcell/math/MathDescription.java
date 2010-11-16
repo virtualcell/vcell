@@ -1791,6 +1791,17 @@ public boolean hasVelocity(VolVariable volVariable) {
 	return false;		
 }
 
+public boolean hasVelocity() {
+	for (Variable var : variableList) {
+		if (var instanceof VolVariable) {
+			if (hasVelocity((VolVariable)var)) {
+				return true;
+			}
+		}
+	}
+	return false;		
+}
+
 /**
  * This method was created by a SmartGuide.
  * @return boolean
