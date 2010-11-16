@@ -63,6 +63,7 @@ public class SundialsSolverOptions implements Matchable, Serializable {
 				token = tokens.nextToken();
 				maxOrderAdvection = Integer.parseInt(token);
 			} else if (token.equalsIgnoreCase("maxOrder")) { // old way
+				token = tokens.nextToken();
 			} else {
 				throw new DataAccessException("unexpected identifier " + token);
 			}
