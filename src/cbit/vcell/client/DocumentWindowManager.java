@@ -31,7 +31,6 @@ import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -528,7 +527,7 @@ public abstract void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plot
  */
 public void showFieldDataWindow() {
 
-	getRequestManager().showFieldDataWindow(FieldDataGUIPanel.DISPLAY_NORMAL);
+	getRequestManager().showFieldDataWindow(null);
 	
 //	try{
 ////		if(pdeDataViewerJIF == null){

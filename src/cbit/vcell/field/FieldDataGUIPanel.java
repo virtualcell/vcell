@@ -1,7 +1,6 @@
 package cbit.vcell.field;
 
 import java.awt.Dimension;
-import java.awt.DisplayMode;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -43,9 +42,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 
 import cbit.image.VCImageUncompressed;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.importer.AnnotatedImageDataset;
-import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXmlReader;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
@@ -57,7 +53,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
@@ -775,7 +770,7 @@ private JButton dsDataSymbolButton = new JButton();
 public int getDisplayMode(){
 	return displayMode;
 }
-public void setDisplayMode(int newDisplayMode){
+private void setDisplayMode(int newDisplayMode){
 	displayMode = newDisplayMode;
 	if(newDisplayMode == DISPLAY_DATASYMBOLS){
 		for (int i = 0; i < getComponentCount(); i++) {
@@ -810,9 +805,7 @@ public void setDisplayMode(int newDisplayMode){
 			dsDataSymbolButton.setText("Create Data Symbol...");
 			dsDataSymbolButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if(dataSymbolCallBack != null){
-						dataSymbolCallBack.createDataSymbol();
-					}
+					jButtonFDCopyRef_ActionPerformed(e);
 				}
 			});
 			dsDataSymbolButton.setEnabled(false);
@@ -840,12 +833,10 @@ public void setDisplayMode(int newDisplayMode){
 		add(getNormalTopPanel(), gbc_normalTopPanel);
 	}
 }
-public interface DataSymbolCallBack {
-	void createDataSymbol();
-}
-private DataSymbolCallBack dataSymbolCallBack = null;
-public void setCreateDataSymbolsCallBack(DataSymbolCallBack dataSymbolCallBack){
+private FieldDataWindowManager.DataSymbolCallBack dataSymbolCallBack = null;
+public void setCreateDataSymbolCallBack(FieldDataWindowManager.DataSymbolCallBack dataSymbolCallBack){
 	this.dataSymbolCallBack = dataSymbolCallBack;
+	setDisplayMode((dataSymbolCallBack==null?FieldDataGUIPanel.DISPLAY_NORMAL:FieldDataGUIPanel.DISPLAY_DATASYMBOLS));
 }
 /**
  * Return the JScrollPane1 property value.
@@ -1263,6 +1254,12 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 					times[begIndex],((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getVariableType().getTypeName());
 	
 		VCellTransferable.sendToClipboard(fieldFunctionReference);
+	}else if(actionEvent.getSource() == dsDataSymbolButton && dataSymbolCallBack != null){
+		dataSymbolCallBack.createDataSymbol(
+				((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier,
+				((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getName(),
+				((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getVariableType(),
+				times[begIndex]);
 	}
 	
 }

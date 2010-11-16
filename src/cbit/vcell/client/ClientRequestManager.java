@@ -48,11 +48,11 @@ import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.gui.AsynchGuiUpdater;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
@@ -2789,9 +2789,9 @@ public void showBNGWindow() {
 	getMdiManager().showWindow(ClientMDIManager.BIONETGEN_WINDOW_ID);
 }
 
-public void showFieldDataWindow(int displayMode) {
+public void showFieldDataWindow(FieldDataWindowManager.DataSymbolCallBack dataSymbolCallBack) {
 	FieldDataWindowManager fdwm = (FieldDataWindowManager)getMdiManager().getWindowManager(ClientMDIManager.FIELDDATA_WINDOW_ID);
-	fdwm.getFieldDataGUIPanel().setDisplayMode(displayMode);
+	fdwm.getFieldDataGUIPanel().setCreateDataSymbolCallBack(dataSymbolCallBack);
 	getMdiManager().showWindow(ClientMDIManager.FIELDDATA_WINDOW_ID);
 }
 

@@ -292,7 +292,7 @@ MathModelInfo selectMathModelInfo(TopLevelWindowManager tfWindowManager);
  */
 void showBNGWindow();
 
-void showFieldDataWindow(int displayMode);
+void showFieldDataWindow(FieldDataWindowManager.DataSymbolCallBack dataSymbolCallBack);
 
 /**
  * Insert the method's description here.
