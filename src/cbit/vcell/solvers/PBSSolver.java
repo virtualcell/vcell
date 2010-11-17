@@ -1,12 +1,11 @@
 package cbit.vcell.solvers;
-import cbit.htc.PBSConstants;
-import cbit.htc.PBSUtils;
 import java.io.File;
 
 import org.vcell.util.ExecutableException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.SessionLog;
 
+import cbit.htc.PBSUtils;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
@@ -42,7 +41,7 @@ private void submit2PBS() throws SolverException, ExecutableException {
 	String subFile = new File(getBaseName()).getPath() + PBS_SUBMIT_FILE_EXT;
 	String jobname = "S_" + simulationTask.getSimKey() + "_" + simulationTask.getSimulationJob().getJobIndex();
 	
-	String jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, cmd, cmdArguments, 1, simulationTask.getEstimatedMemorySizeMB(), PBSConstants.PBS_ARCH_LINUX);
+	String jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, cmd, cmdArguments, 1, simulationTask.getEstimatedMemorySizeMB());
 	if (jobid == null) {
 		fireSolverAborted(SimulationMessage.jobFailed("Failed. (error message: submitting to job scheduler failed)."));
 		return;

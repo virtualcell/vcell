@@ -1,5 +1,18 @@
 package cbit.htc;
 
+import static cbit.htc.PBSConstants.JOB_CMD_DELETE;
+import static cbit.htc.PBSConstants.JOB_CMD_HISTORY;
+import static cbit.htc.PBSConstants.JOB_CMD_STATUS;
+import static cbit.htc.PBSConstants.JOB_CMD_SUBMIT;
+import static cbit.htc.PBSConstants.JOB_EXEC_OK;
+import static cbit.htc.PBSConstants.PBS_JOB_EXEC_STATUS;
+import static cbit.htc.PBSConstants.PBS_JOB_STATUS;
+import static cbit.htc.PBSConstants.PBS_MEM_OVERHEAD_MB;
+import static cbit.htc.PBSConstants.PBS_STATUS_EXITING;
+import static cbit.htc.PBSConstants.PBS_STATUS_RUNNING;
+import static cbit.htc.PBSConstants.PBS_STATUS_UNKNOWN;
+import static cbit.htc.PBSConstants.SERVER_CMD_STATUS;
+
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -12,8 +25,6 @@ import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
-
-import static cbit.htc.PBSConstants.*;
 
 public class PBSUtils {
 	private static SessionLog pbsLog = new StdoutSessionLog("PBS-Command");
@@ -249,12 +260,12 @@ public static void main(String[] args) {
  * Creation date: (9/25/2003 8:04:51 AM)
  * @param command java.lang.String
  */
-public static String submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize, String arch) throws ExecutableException {	
+public static String submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws ExecutableException {	
 	try {	
 		BufferedReader br = new BufferedReader(new FileReader(HTCUtils.getJobSubmitTemplate(computeResource)));
 		PrintWriter pw = new PrintWriter(new FileOutputStream(sub_file));
 		pw.println("#PBS -N " + jobName);
-		pw.println("#PBS -l select=1:ncpus=" + ncpus + ":mem=" + (int)(memSize + PBS_MEM_OVERHEAD_MB) + "mb:arch=" + arch);
+		pw.println("#PBS -l mem=" + (int)(memSize + PBS_MEM_OVERHEAD_MB));
 		
 		while (true) {
 			String line = br.readLine();

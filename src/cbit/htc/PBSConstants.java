@@ -1,6 +1,5 @@
 package cbit.htc;
 
-import org.vcell.util.PropertyLoader;
 
 public class PBSConstants {
 	static final int PBS_STATUS_UNKNOWN = -1; 			//Not a status in PBS. 
@@ -75,9 +74,5 @@ public class PBSConstants {
 	final static String JOB_CMD_STATUS = "qstat";	
 	final static String JOB_CMD_HISTORY = "tracejob";
 	final static String SERVER_CMD_STATUS = "qstat";
-	final static int PBS_MEM_OVERHEAD_MB = 70;
-	
-	public final static String PBS_ARCH_LINUX = "linux"; // rocks
-	public final static String PBS_ARCH_ALTIX = "altix"; // SGI
-	public final static String PBS_ARCH_OSG = "osg"; // OSG
+	final static int PBS_MEM_OVERHEAD_MB = 70;	
 }
