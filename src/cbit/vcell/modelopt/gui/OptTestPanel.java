@@ -1758,15 +1758,16 @@ public class OptTestPanel extends javax.swing.JPanel {
 	 * @return javax.swing.JButton
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private javax.swing.JButton getPlotButton() {
+	private JButton getPlotButton() {
 		if (ivjPlotButton == null) {
 			try {
-				ivjPlotButton = new javax.swing.JButton();
+				ivjPlotButton = new JButton();
 				ivjPlotButton.setName("PlotButton");
-				ivjPlotButton.setText("Plot");
+				ivjPlotButton.setText("Plot Best Solution");
+				ivjPlotButton.setEnabled(false);
 				// user code begin {1}
 				// user code end
-			} catch (java.lang.Throwable ivjExc) {
+			} catch (Throwable ivjExc) {
 				// user code begin {2}
 				// user code end
 				handleException(ivjExc);
@@ -1775,14 +1776,15 @@ public class OptTestPanel extends javax.swing.JPanel {
 		return ivjPlotButton;
 	}
 
-	private javax.swing.JButton getEvaluateConfidenceIntervalButton() {
+	private JButton getEvaluateConfidenceIntervalButton() {
 		if ( ivjEvaluateConfidenceIntervalButton == null) {
 			try {
 				ivjEvaluateConfidenceIntervalButton = new javax.swing.JButton("Evaluate Confidence Interval");
 				ivjEvaluateConfidenceIntervalButton.setName("EvaluateConfidenceIntervalButton");
+				ivjEvaluateConfidenceIntervalButton.setEnabled(false);
 				// user code begin {1}
 				// user code end
-			} catch (java.lang.Throwable ivjExc) {
+			} catch (Throwable ivjExc) {
 				// user code begin {2}
 				// user code end
 				handleException(ivjExc);
@@ -1979,6 +1981,7 @@ public class OptTestPanel extends javax.swing.JPanel {
 		getSolverTypeComboBox().addActionListener(ivjEventHandler);
 		getPlotButton().addActionListener(ivjEventHandler);
 		getSaveSolutionAsNewSimButton().addActionListener(ivjEventHandler);
+		getEvaluateConfidenceIntervalButton().addActionListener(ivjEventHandler);
 		getSolveButton().addActionListener(ivjEventHandler);
 		getStopButton().addActionListener(ivjEventHandler);
 		getJTextField1().addFocusListener(ivjEventHandler);
@@ -1986,7 +1989,6 @@ public class OptTestPanel extends javax.swing.JPanel {
 		connPtoP2SetTarget();
 		connPtoP3SetTarget();
 		connPtoP4SetTarget();
-		getEvaluateConfidenceIntervalButton().addActionListener(ivjEventHandler);
 	}
 
 	/**
@@ -2398,8 +2400,9 @@ public class OptTestPanel extends javax.swing.JPanel {
 	}
 
 	public void updateInterface(boolean bSolving) {
+		getPlotButton().setEnabled(!bSolving);
 		getSaveSolutionAsNewSimButton().setEnabled(!bSolving);
-		getPlotButton().setEnabled(!bSolving);	
+		getEvaluateConfidenceIntervalButton().setEnabled(!bSolving);
 		getSolveButton().setEnabled(!bSolving);
 		getStopButton().setEnabled(bSolving);
 
