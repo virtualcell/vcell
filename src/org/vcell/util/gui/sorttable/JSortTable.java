@@ -23,10 +23,6 @@ public class JSortTable extends ScrollTable
 {  
 	private int pressedXPoint = -1;
 
-public JSortTable() {
-	super();
-}
-
 /**
  * Insert the method's description here.
  * Creation date: (4/27/2004 10:10:56 AM)

@@ -7,6 +7,9 @@ package org.vcell.sybil.models.io.selection;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import org.vcell.sybil.rdf.schemas.BioPAX2;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -22,6 +25,7 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 public class ModelSelectorSimple implements ModelSelector {
 
 	public Model createSelection(Model model, Set<Resource> selectedResources) {
+		
 		Model modelSelection = ModelFactory.createDefaultModel();
 		Set<Resource> entitiesNew = new HashSet<Resource>();
 		entitiesNew.addAll(selectedResources);

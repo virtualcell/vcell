@@ -19,6 +19,7 @@ import org.vcell.sybil.util.text.StringUtil;
 public class PCIDRequest extends PathwayCommonsRequest {
 	
 	protected String id;
+	protected String str;
 	public PCIDRequest(String id)  { 
 		super(PCRParameter.CmdVersion.getRecordByCPID); 
 		this.id = id;

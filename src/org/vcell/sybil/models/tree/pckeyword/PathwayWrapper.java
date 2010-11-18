@@ -24,7 +24,7 @@ public class PathwayWrapper extends NodeDataWrapper<Pathway> {
 		if(dataSource != null) {
 			dataSourceText = ", " + dataSource.name();
 		}
-		return pathway().name() + " (" + primaryId + dataSourceText + ")";
+		return primaryId +":"+pathway().name() + " ("  + dataSourceText + ")";
 	}
 	
 }
