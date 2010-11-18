@@ -1757,7 +1757,8 @@ private javax.swing.JButton getPlotButton() {
 		try {
 			ivjPlotButton = new javax.swing.JButton();
 			ivjPlotButton.setName("PlotButton");
-			ivjPlotButton.setText("Plot");
+			ivjPlotButton.setText("Plot Best Solution");
+			ivjPlotButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

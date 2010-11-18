@@ -70,7 +70,7 @@ public ModelOptimizationSpec(SimulationContext argSimulationContext) throws Expr
 	if (fieldSimulationContext != null) {
 		updateListenersList(fieldSimulationContext.getModel(), true);
 	}
-	initializeParameterMappingSpecs();
+	refreshParameterMappingSpecs();
 }
 
 
@@ -553,7 +553,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Creation date: (8/22/2005 10:35:28 AM)
  * @throws PropertyVetoException 
  */
-private void initializeParameterMappingSpecs() throws ExpressionException {
+private void refreshParameterMappingSpecs() throws ExpressionException {
 	Parameter modelParameters[] = getModelParameters();
 
 	ParameterMappingSpec[] parameterMappingSpecs = new ParameterMappingSpec[modelParameters.length];
@@ -565,13 +565,29 @@ private void initializeParameterMappingSpecs() throws ExpressionException {
 	
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		parameterMappingSpecs[i] = new ParameterMappingSpec(modelParameters[i]);
-		for (int j = 0; j < issues.length; j++){
-			if (issues[j].getSource() == modelParameters[i]){
-				if (issues[j] instanceof SimpleBoundsIssue){
-					SimpleBoundsIssue simpleBoundsIssue = (SimpleBoundsIssue)issues[j];
-					net.sourceforge.interval.ia_math.RealInterval bounds = simpleBoundsIssue.getBounds();
-					parameterMappingSpecs[i].setLow(bounds.lo());
-					parameterMappingSpecs[i].setHigh(bounds.hi());
+		//check if parameter mapping spec already exist
+		ParameterMappingSpec  memoryParameterMappingSpec = null;
+		if(this.getParameterMappingSpecs() != null && this.getParameterMappingSpecs().length > 0)
+		{
+			memoryParameterMappingSpec = this.getParameterMappingSpec(modelParameters[i]);
+		}
+		//parameter mapping spec already exist
+		if(memoryParameterMappingSpec != null)
+		{
+			parameterMappingSpecs[i].setLow(memoryParameterMappingSpec.getLow());
+			parameterMappingSpecs[i].setHigh(memoryParameterMappingSpec.getHigh());
+			
+		}
+		else //not found
+		{
+			for (int j = 0; j < issues.length; j++){
+				if (issues[j].getSource() == modelParameters[i]){
+					if (issues[j] instanceof SimpleBoundsIssue){
+						SimpleBoundsIssue simpleBoundsIssue = (SimpleBoundsIssue)issues[j];
+						net.sourceforge.interval.ia_math.RealInterval bounds = simpleBoundsIssue.getBounds();
+						parameterMappingSpecs[i].setLow(bounds.lo());
+						parameterMappingSpecs[i].setHigh(bounds.hi());
+					}
 				}
 			}
 		}
@@ -750,7 +766,7 @@ public void propertyChange(PropertyChangeEvent event) {
 
 	// for all propChangeEvents, initialize ParamMapppingSpecs only then changes in params (expr or numeric) will be recorded properly
 	try {
-		initializeParameterMappingSpecs();
+		refreshParameterMappingSpecs();
 	} catch (ExpressionException e) {
 		e.printStackTrace(System.out);
 	}
