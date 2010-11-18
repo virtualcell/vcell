@@ -1,8 +1,14 @@
 package cbit.vcell.modelopt;
+import java.beans.PropertyVetoException;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Issue;
+
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.util.graph.Node;
 import cbit.vcell.mapping.SimulationContext;
@@ -27,7 +33,7 @@ public class ModelOptimizationSpec implements java.io.Serializable, org.vcell.ut
 public ModelOptimizationSpec(SimulationContext argSimulationContext) throws cbit.vcell.parser.ExpressionException {
 	super();
 	this.fieldSimulationContext = argSimulationContext;
-	initializeParameterMappingSpecs();
+	refreshParameterMappingSpecs();
 }
 
 
@@ -458,31 +464,53 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Insert the method's description here.
  * Creation date: (8/22/2005 10:35:28 AM)
  */
-private void initializeParameterMappingSpecs() throws cbit.vcell.parser.ExpressionException {
+private void refreshParameterMappingSpecs() throws cbit.vcell.parser.ExpressionException {
 	cbit.vcell.model.Parameter modelParameters[] = getModelParameters();
 
 	ParameterMappingSpec[] parameterMappingSpecs = new ParameterMappingSpec[modelParameters.length];
 	
-	java.util.Vector issueList = new java.util.Vector();
+	java.util.Vector<Issue> issueList = new java.util.Vector<Issue>();
 	getSimulationContext().gatherIssues(issueList);
 	getSimulationContext().getModel().gatherIssues(issueList);
-	org.vcell.util.Issue[] issues = (org.vcell.util.Issue[])org.vcell.util.BeanUtils.getArray(issueList,org.vcell.util.Issue.class);
+	Issue[] issues = (Issue[])BeanUtils.getArray(issueList,Issue.class);
 	
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		parameterMappingSpecs[i] = new ParameterMappingSpec(modelParameters[i]);
-		for (int j = 0; j < issues.length; j++){
-			if (issues[j].getSource() == modelParameters[i]){
-				if (issues[j] instanceof cbit.vcell.model.SimpleBoundsIssue){
-					cbit.vcell.model.SimpleBoundsIssue simpleBoundsIssue = (cbit.vcell.model.SimpleBoundsIssue)issues[j];
-					net.sourceforge.interval.ia_math.RealInterval bounds = simpleBoundsIssue.getBounds();
-					parameterMappingSpecs[i].setLow(bounds.lo());
-					parameterMappingSpecs[i].setHigh(bounds.hi());
+		//check if parameter mapping spec already exist
+		ParameterMappingSpec  memoryParameterMappingSpec = null;
+		if(this.getParameterMappingSpecs() != null && this.getParameterMappingSpecs().length > 0)
+		{
+			memoryParameterMappingSpec = this.getParameterMappingSpec(modelParameters[i]);
+		}
+		//parameter mapping spec already exist
+		if(memoryParameterMappingSpec != null)
+		{
+			parameterMappingSpecs[i].setLow(memoryParameterMappingSpec.getLow());
+			parameterMappingSpecs[i].setHigh(memoryParameterMappingSpec.getHigh());
+			
+		}
+		else //not found
+		{
+			for (int j = 0; j < issues.length; j++){
+				if (issues[j].getSource() == modelParameters[i]){
+					if (issues[j] instanceof SimpleBoundsIssue){
+						SimpleBoundsIssue simpleBoundsIssue = (SimpleBoundsIssue)issues[j];
+						net.sourceforge.interval.ia_math.RealInterval bounds = simpleBoundsIssue.getBounds();
+						parameterMappingSpecs[i].setLow(bounds.lo());
+						parameterMappingSpecs[i].setHigh(bounds.hi());
+					}
 				}
 			}
 		}
 	}
-
-	this.fieldParameterMappingSpecs = parameterMappingSpecs;
+	try {
+		setParameterMappingSpecs(parameterMappingSpecs);
+//		removeUncoupledParameters();
+	} catch (PropertyVetoException e) {
+		e.printStackTrace(System.out);
+	}
+	
+	
 }
 
 
