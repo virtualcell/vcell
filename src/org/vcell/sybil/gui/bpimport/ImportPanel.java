@@ -65,6 +65,11 @@ public class ImportPanel extends JPanel implements RequestPanel.Container, Impor
 			RequestPanel requestPanel = new RequestPanel(this, importManager, request);
 			tabPanel.addTab(requestPanel.request().shortTitle(), requestPanel);
 			tabPanel.setSelectedComponent(requestPanel);
+			// wei's code
+			int idx = tabPanel.getTabCount()-1;
+			tabPanel.setToolTipTextAt(idx, requestPanel.request().description());
+			
+			//done
 			if(!tabPanelAdded) { 
 				remove(emptyLabel);
 				add(tabPanel); 

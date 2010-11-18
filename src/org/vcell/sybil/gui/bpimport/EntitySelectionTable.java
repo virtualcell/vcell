@@ -8,6 +8,7 @@ import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 
 import org.vcell.sybil.models.sbbox.SBBox;
+import org.vcell.util.gui.sorttable.JSortTable;
 
 public class EntitySelectionTable extends JTable {
 
@@ -17,7 +18,7 @@ public class EntitySelectionTable extends JTable {
 	
 	public EntitySelectionTable(SBBox box) {
 		super(new EntitySelectionTableModel(box));
-//		setAutoCreateRowSorter(true);
+		super.setAutoCreateRowSorter(true);
 		doColumnSizes();
 	}
 	

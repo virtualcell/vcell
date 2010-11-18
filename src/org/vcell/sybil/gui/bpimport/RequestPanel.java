@@ -9,7 +9,9 @@ import java.awt.event.ActionEvent;
 import java.util.Set;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.vcell.sybil.actions.ActionSpecs;
@@ -114,7 +116,17 @@ public class RequestPanel extends JPanel implements PathwayCommonsWorker.Client 
 		public void actionPerformed(ActionEvent event) { new ImportAcceptWorker(this).run(panel); }
 		public FileManager fileManager() { return importManager.fileManager(); }
 		public PCTextModelResponse response() { return panel.response(); }
-		public Set<Resource> selectedResources() { return panel.selectedEntities(); }
+		public Set<Resource> selectedResources() { 
+			// wei's code
+			// display a warning if no entities are selected
+//			if(panel.selectedEntities().size()==0){
+//				JOptionPane.showMessageDialog(new JFrame(), "NO entities are selected.\n"+
+//						"Please select an entity to import!"); 
+//				System.out.println("NO entities are selected!");
+//			}
+			// done
+			return panel.selectedEntities(); 
+		}
 
 		public boolean requestsSmelting() { return panel.requestsSmelting(); }
 

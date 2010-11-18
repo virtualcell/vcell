@@ -49,7 +49,7 @@ public class PCKeywordRequest extends PathwayCommonsRequest {
 	}
 
 	public String keyword() { return keyword; }
-	public String description() { return "Keyword search for \"" + keyword + "\""; }
+	public String description() { return "Keyword search result for \"" + keyword + "\""; }
 	@Override public String shortTitle() { return "Keyword \"" + keyword + "\""; }
 	
 }
