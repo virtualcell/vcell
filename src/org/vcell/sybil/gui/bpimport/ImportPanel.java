@@ -89,7 +89,7 @@ public class ImportPanel extends JPanel implements RequestPanel.Container, Impor
 		
 		public SearchAction(ImportPanel panelNew) {
 			super(new ActionSpecs("Search", "Search", 
-					"Perform keyword search using Pathway Commons"));
+					"Perform keyword search using Pathway Commons "));
 			panel = panelNew;
 		}
 		
