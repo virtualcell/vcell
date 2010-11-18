@@ -22,6 +22,18 @@ import cbit.vcell.parser.ExpressionException;
  */
 public class ParameterMappingTableModel extends ManageTableModel implements PropertyChangeListener {
 
+	private final static int COLUMN_NAME = 0;
+	private final static int COLUMN_SCOPE = 1;
+	private final static int COLUMN_MODELVALUE = 2;
+	private final static int COLUMN_SELECTED = 3;
+	public final static int COLUMN_CURRENTVALUE = 4;
+	private final static int COLUMN_LOWVALUE = 5;
+	private final static int COLUMN_HIGHVALUE = 6;
+	public final static int COLUMN_SOLUTION = 7;
+	private final static String LABELS[] = { "Parameter", "Context",  "Model Value", "Optimize", "Initial Guess", "Lower", "Upper", "Solution"  };
+	protected transient java.beans.PropertyChangeSupport propertyChange;
+	private ParameterEstimationTask fieldParameterEstimationTask = null;
+
 	private class ParameterColumnComparator implements Comparator<ParameterMappingSpec> {
 		protected int index;
 		protected boolean ascending;
@@ -116,18 +128,7 @@ public class ParameterMappingTableModel extends ManageTableModel implements Prop
 			return 1;
 		}
 	}
-	private final static int COLUMN_NAME = 0;
-	private final static int COLUMN_SCOPE = 1;
-	private final static int COLUMN_MODELVALUE = 2;
-	private final static int COLUMN_SELECTED = 3;
-	public final static int COLUMN_CURRENTVALUE = 4;
-	private final static int COLUMN_LOWVALUE = 5;
-	private final static int COLUMN_HIGHVALUE = 6;
-	public final static int COLUMN_SOLUTION = 7;
-	private final static String LABELS[] = { "Parameter", "Context",  "Model Value", "Optimize", "Initial Guess", "Lower", "Upper", "Solution"  };
-	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private ParameterEstimationTask fieldParameterEstimationTask = null;
-
+	
 /**
  * ReactionSpecsTableModel constructor comment.
  */
