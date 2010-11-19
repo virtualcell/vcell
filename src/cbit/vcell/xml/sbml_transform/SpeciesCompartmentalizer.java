@@ -5,6 +5,7 @@ package cbit.vcell.xml.sbml_transform;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ class SpeciesCompartmentalizer extends ASbmlTransformer {
 	/** map old specie name pattern to compartment ids 
 	 */
 	private List<Pair<Pattern, String> > compartmentNamePattern = null;
+	private HashMap<String, Integer> compDimensionMap = null;
 	
 	/** map each compartment id to its enclosing compartment id, the outmost 
 	 * compartment shall be paired with "";
@@ -34,7 +36,7 @@ class SpeciesCompartmentalizer extends ASbmlTransformer {
 	private Map<String, String> compIds = null;
 	
 	public String getName() {return Name;}
-	public int countParameters() {	return 3;}
+	public int countParameters() {	return 4;}
 	
 	/** Adds a rule for re-assigning species to different compartments based on 
 	 * specie name
@@ -49,12 +51,14 @@ class SpeciesCompartmentalizer extends ASbmlTransformer {
 		if( compartmentNamePattern == null ) {
 			compartmentNamePattern = new ArrayList<Pair<Pattern, String> >();
 			compIds = new HashMap<String, String>();
+			compDimensionMap = new HashMap<String, Integer>();
 		}
 		
 		super.storeTransformationInfo(parameters, comment);
 		String pattern = parameters[0];
-		String compartment = parameters[1];
-		String enclosed = parameters[2];
+		String dim = parameters[1];
+		String compartment = parameters[2];
+		String enclosed = parameters[3];
 		
 		Pattern p = Pattern.compile(pattern);
 		compartmentNamePattern.add(new Pair<Pattern, String>(p, compartment) );
@@ -63,11 +67,13 @@ class SpeciesCompartmentalizer extends ASbmlTransformer {
 		
 		if( null == compartment || compartment.length() == 0 )
 			throw new SbmlTransformException("empty compartment name");
+
+		// store the compartment - spDim values in hash
+		compDimensionMap.put(compartment, Integer.valueOf(dim));
 		
-		if( 
-				null == enclStored || //compartment is not defined or
-				enclStored.equals(enclosed) //defined again inside same enclosure
-		) {
+		if( null == enclStored || //compartment is not defined or
+			enclStored.equals(enclosed)) //defined again inside same enclosure
+		{
 			compIds.put(compartment, enclosed);
 		} else {
 			StringBuffer buff = new StringBuffer();
@@ -117,11 +123,22 @@ class SpeciesCompartmentalizer extends ASbmlTransformer {
 			String compId = e.getKey();
 			String encl = e.getValue();
 			
+			// get sp dim from compDimsensionHashMap
+			Integer dimInt = compDimensionMap.get(compId);
+			int spDim = dimInt.intValue();
+			
 			Element c = doc.createElement(SbmlElements.Compartment_tag);
 			c.setAttribute(SbmlElements.Id_attrib, compId);
 			c.setAttribute(SbmlElements.Name_attrib, compId);
+			c.setAttribute(SbmlElements.CompSpatialDim_attrib, Integer.toString(spDim));
 			c.setAttribute(SbmlElements.Size_attrib, "1.0");
-			c.setAttribute(SbmlElements.Units_attrib, SbmlElements.Litre_val);
+			if (spDim == 3) {
+				c.setAttribute(SbmlElements.Units_attrib, SbmlElements.Litre_val);
+			} else if (spDim == 2) {
+				c.setAttribute(SbmlElements.Units_attrib, SbmlElements.Um2_val);
+			} else {
+				throw new RuntimeException("Unknown spatial dimension for compartment - VCell only allows compartments of dimension 2 or 3");
+			}
 			
 			if( null != encl && encl.length() > 0 ) {
 				c.setAttribute(SbmlElements.CompOutside_attrib, encl);

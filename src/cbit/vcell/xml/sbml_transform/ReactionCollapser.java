@@ -47,7 +47,24 @@ class ReactionCollapser extends ASbmlTransformer {
 				rsList.add(rs);
 			}//scope
 		}
-		
+
+		// add the collapsed reactions back to the JDOM document
+		for( int i = 0, max = rsList.size(); i < max; ++i ) {
+			rsList.get(i).commitToDom();
+		}
+		doc.normalizeDocument();
+
+		// now convert reaction kinetics from Lumped to distributed (general) kinetics by multiplying 
+		// reaction rate with compartment size (compartment - location in which reaction takes place).
+		listOfRs = getListOfReactions(doc);
+		nReacts = listOfRs.getLength();
+		rsList.clear();
+		for( int i = 0; i < nReacts; ++i ) {
+			Element r = (Element)listOfRs.item(i);
+			ReactStep rs = ReactStep.adjustReactionRate(r, doc);
+			rsList.add(rs);
+		}
+		// add the adjusted reactions back to the JDOM document
 		for( int i = 0, max = rsList.size(); i < max; ++i ) {
 			rsList.get(i).commitToDom();
 		}

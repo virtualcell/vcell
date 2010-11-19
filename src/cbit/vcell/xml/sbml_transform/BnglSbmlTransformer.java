@@ -108,7 +108,7 @@ public class BnglSbmlTransformer {
 		}
 
 		do {
-			String fName = m1.group(1);
+			String fName = m1.group(1);	// represents the command name (eg., speciesRenamePattern'
 			
 			if( null == fName ) break;
 			

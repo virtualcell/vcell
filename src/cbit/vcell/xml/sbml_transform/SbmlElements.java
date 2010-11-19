@@ -100,11 +100,13 @@ public class SbmlElements {
 	public static final String ListOfUnits_tag = "listOfUnits";
 	public static final String Litre_val = "litre";
 	public static final String Um3_val = "um3";
+	public static final String Um2_val = "um2";
 	
 	public static final String ListOfCompartm_tag = "listOfCompartments";
 	public static final String Compartment_tag = "compartment";
 	public static final String CompOutside_attrib = "outside";
 	public static final String Size_attrib = "size";
+	public static final String CompSpatialDim_attrib = "spatialDimensions";
 	public static final String Units_attrib = "units";
 	
 	public static final String ListOfReactions_tag = "listOfReactions";
