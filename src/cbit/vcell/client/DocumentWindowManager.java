@@ -936,8 +936,8 @@ public static void showFrame(JInternalFrame frame, JDesktopPaneEnhanced pane) {
 		} catch (java.beans.PropertyVetoException exc) {
 		}
 	}
+	frame.pack();
 	frame.show();
-//	pane.getDesktopManager().activateFrame(frame);
 	try {
 		frame.setSelected(true);
 	} catch (PropertyVetoException e) {

@@ -150,13 +150,12 @@ public static String createCanonicalTitle(VCDocument vcDocument) {
  * Insert the method's description here.
  * Creation date: (5/5/2004 9:07:12 PM)
  */
-private DocumentWindow createDocumentWindow() {
+private DocumentWindow createDocumentWindow() {	
 	DocumentWindow documentWindow = new DocumentWindow();
 	// stagger 90% screen size windows
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-	documentWindow.setSize((int)(screenSize.getWidth()*0.9), (int)(screenSize.getHeight()*0.9));
-	int location = (25 * getNewlyCreatedDesktops())%(screenSize.width/2);
-	documentWindow.setLocation(location,location);
+	documentWindow.setSize(800, 700);
+	BeanUtils.centerOnScreen(documentWindow);
 	if (getNewlyCreatedDesktops() == 0) {
 		// first window
 		// cbit.util.BeanUtils.attemptMaximize(documentWindow);	

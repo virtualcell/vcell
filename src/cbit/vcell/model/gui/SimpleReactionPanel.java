@@ -1,30 +1,18 @@
 package cbit.vcell.model.gui;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyVetoException;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.model.DistributedKinetics;
-import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.KineticsDescription;
-import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.SimpleReaction;
 /**
@@ -39,33 +27,18 @@ public class SimpleReactionPanel extends javax.swing.JPanel {
 	private SimpleReaction ivjTornOffSimpleReaction = null;
 	private KineticsTypeTemplatePanel ivjKineticsTypeTemplatePanel = null;
 	private ReactionCanvas ivjReactionCanvas = null;
-	private javax.swing.JLabel ivjKineticTypeTitleLabel = null;
 	private javax.swing.JLabel ivjNameLabel = null;
 	private javax.swing.JTextField ivjSimpleReactionNameTextField = null;
 	private javax.swing.JLabel ivjStoichiometryLabel = null;
 	private javax.swing.JScrollPane ivjReactionScrollPane = null;
 	private ReactionElectricalPropertiesPanel ivjReactionElectricalPropertiesPanel1 = null;
-	private javax.swing.JComboBox ivjJComboBox1 = null;
-	private Kinetics ivjKinetics = null;
+
 	private boolean ivjConnPtoP2Aligning = false;
-	private JButton jToggleButton = null;
 	private JTextArea annotationTextArea = null;
 	private JLabel reactoinElectrialPropertiesLabel = null;
-	private boolean subset = false;
-	
-	private final static KineticsDescription[] kineticTypes = {
-		KineticsDescription.MassAction,
-		KineticsDescription.General,
-		KineticsDescription.GeneralLumped,
-		KineticsDescription.HMM_irreversible,
-		KineticsDescription.HMM_reversible
-	};
+	private boolean bSubset = false;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, FocusListener {
-		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == SimpleReactionPanel.this.getJComboBox1()) 
-				connEtoC3();
-		};
+	private class IvjEventHandler implements java.beans.PropertyChangeListener, FocusListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == SimpleReactionPanel.this && (evt.getPropertyName().equals("simpleReaction"))) {
 				connPtoP1SetTarget();
@@ -76,8 +49,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connPtoP2SetTarget();
 			if (evt.getSource() == SimpleReactionPanel.this.getSimpleReactionNameTextField() && (evt.getPropertyName().equals("text"))) 
 				connPtoP2SetSource();
-			if (evt.getSource() == SimpleReactionPanel.this.getTornOffSimpleReaction() && (evt.getPropertyName().equals("kinetics"))) 
-				connEtoM6(evt);
 		}
 		public void focusGained(FocusEvent e) {
 			
@@ -99,12 +70,12 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
  * SimpleReactionPanel constructor comment.
  */
 	public SimpleReactionPanel() {
-		this(false);
+		this(false, true);
 	}
 
-	public SimpleReactionPanel(boolean pSubset) {
+	public SimpleReactionPanel(boolean pSubset, boolean editable) {
 		super();
-		subset = pSubset;
+		bSubset = pSubset;
 		initialize();		// only draw a subset of the panel
 	}
 
@@ -115,217 +86,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 public void cleanupOnClose() {
 	getKineticsTypeTemplatePanel().cleanupOnClose();
 }
-
-
-/**
- * connEtoC3:  (JComboBox1.action. --> SimpleReactionPanel.updateKineticChoice(Ljava.lang.String;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateKineticChoice((KineticsDescription)getJComboBox1().getSelectedItem());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC9:  (SimpleReactionPanel.initialize() --> SimpleReactionPanel.initKineticChoices()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.initKineticChoices();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM1:  (TornOffSimpleReaction.this --> ReactionCanvas.reactionStep)
- * @param value cbit.vcell.model.SimpleReaction
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(SimpleReaction value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if (!subset && (getTornOffSimpleReaction() != null)) {
-			getReactionCanvas().setReactionStep(getTornOffSimpleReaction());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM15:  (Kinetics.this --> ReactionElectricalPropertiesPanel1.kinetics)
- * @param value cbit.vcell.model.Kinetics
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM15(Kinetics value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getReactionElectricalPropertiesPanel1().setKinetics(getKinetics());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM16:  (TornOffSimpleReaction.this --> ReactionElectricalPropertiesPanel1.visible)
- * @param value cbit.vcell.model.SimpleReaction
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM16(SimpleReaction value) {
-	try {
-		// user code begin {1}
-		// user code end
-		boolean electricalPropertiesVisible = this.getElectricalPropertiesVisible(getTornOffSimpleReaction());
-		getReactionElectricalPropertiesPanel1().setVisible(electricalPropertiesVisible);
-		getReactionElectricalPropertiesLabel().setVisible(electricalPropertiesVisible);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM2:  (Kinetics.this --> JComboBox1.setSelectedItem(Ljava.lang.Object;)V)
- * @param value cbit.vcell.model.Kinetics
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(Kinetics value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJComboBox1().setSelectedItem(this.getKineticType(getKinetics()));
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM3:  (Kinetics.this --> KineticsTypeTemplatePanel.kinetics)
- * @param value cbit.vcell.model.Kinetics
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(Kinetics value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getKineticsTypeTemplatePanel().setKinetics(getKinetics());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM6:  (TornOffSimpleReaction.kinetics --> Kinetics.this)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getTornOffSimpleReaction() != null)) {
-			setKinetics(getTornOffSimpleReaction().getKinetics());
-		} else {
-			setKinetics(null);
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM7:  (TornOffSimpleReaction.this --> KineticsTemplate1.this)
- * @param value cbit.vcell.model.SimpleReaction
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(SimpleReaction value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getTornOffSimpleReaction() != null)) {
-			setKinetics(getTornOffSimpleReaction().getKinetics());
-		} else {
-			setKinetics(null);
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM8:  (Kinetics.this --> TornOffSimpleReaction.kinetics)
- * @param value cbit.vcell.model.Kinetics
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(Kinetics value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getKinetics() != null)) {
-			getTornOffSimpleReaction().setKinetics(getKinetics().getReactionStep().getKinetics());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connPtoP1SetSource:  (SimpleReactionPanel.simpleReaction <--> TornOffSimpleReaction.this)
@@ -417,7 +177,7 @@ private void connPtoP2SetTarget() {
 			// user code begin {1}
 			// user code end
 			ivjConnPtoP2Aligning = true;
-			if (!subset && (getTornOffSimpleReaction() != null)) {
+			if (!bSubset && (getTornOffSimpleReaction() != null)) {
 				getSimpleReactionNameTextField().setText(getTornOffSimpleReaction().getName());
 			}
 			// user code begin {2}
@@ -445,91 +205,6 @@ public boolean getElectricalPropertiesVisible(SimpleReaction sr) {
 	return false;
 }
 
-
-/**
- * Return the JComboBox1 property value.
- * @return javax.swing.JComboBox
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JComboBox getJComboBox1() {
-	if (ivjJComboBox1 == null) {
-		try {
-			ivjJComboBox1 = new javax.swing.JComboBox();
-			ivjJComboBox1.setName("JComboBox1");
-			ivjJComboBox1.setRenderer(new DefaultListCellRenderer() {
-				private final static String MU = "\u03BC";
-				private final static String MICROMOLAR = MU+"M";
-				private final static String SQUARED = "\u00B2";
-				private final static String SQUAREMICRON = MU+"m"+SQUARED;
-
-				public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-					java.awt.Component component = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-					
-					if (value instanceof KineticsDescription) {
-						KineticsDescription kineticsDescription = (KineticsDescription)value;
-						if (getKinetics()!=null && getKinetics().getReactionStep()!=null){
-							if (getKinetics().getReactionStep().getStructure() instanceof Feature){
-								if (kineticsDescription.equals(KineticsDescription.General)){
-									setText("General ["+MICROMOLAR+"/s]");
-								}else if (kineticsDescription.equals(KineticsDescription.MassAction)){
-									setText("Mass Action ["+MICROMOLAR+"/s] (recommended for stochastic application)");
-								}else if (kineticsDescription.equals(KineticsDescription.GeneralLumped)){
-									setText("General [molecules/s]");
-								}else if (kineticsDescription.equals(KineticsDescription.HMM_irreversible)){
-									setText("Henri-Michaelis-Menten (Irreversible) ["+MICROMOLAR+"/s]");
-								}else if (kineticsDescription.equals(KineticsDescription.HMM_reversible)){
-									setText("Henri-Michaelis-Menten (Reversible) ["+MICROMOLAR+"/s]");
-								}else{
-									setText(kineticsDescription.getDescription());
-								}
-							}else if (getKinetics().getReactionStep().getStructure() instanceof Membrane){
-								if (kineticsDescription.equals(KineticsDescription.General)){
-									setText("General [molecules/("+SQUAREMICRON+" s)]");
-								}else if (kineticsDescription.equals(KineticsDescription.MassAction)){
-									setText("Mass Action [molecules/("+SQUAREMICRON+" s)]");
-								}else if (kineticsDescription.equals(KineticsDescription.GeneralLumped)){
-									setText("General [molecules/s)]");
-								}else if (kineticsDescription.equals(KineticsDescription.HMM_irreversible)){
-									setText("Henri-Michaelis-Menten (Irreversible) [molecules/("+SQUAREMICRON+" s)]");
-								}else if (kineticsDescription.equals(KineticsDescription.HMM_reversible)){
-									setText("Henri-Michaelis-Menten (Reversible) [molecules/("+SQUAREMICRON+" s)]");
-								}else{
-									setText(kineticsDescription.getDescription());
-								}
-							}
-						}else{
-							setText(kineticsDescription.getDescription());
-						}
-					}
-
-					return component;
-				}
-				
-			});
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJComboBox1;
-}
-
-
-/**
- * Return the Kinetics property value.
- * @return cbit.vcell.model.Kinetics
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private Kinetics getKinetics() {
-	// user code begin {1}
-	// user code end
-	return ivjKinetics;
-}
-
-
 /**
  * Return the KineticsTypeTemplatePanel property value.
  * @return cbit.vcell.model.gui.KineticsTypeTemplatePanel
@@ -549,44 +224,6 @@ private KineticsTypeTemplatePanel getKineticsTypeTemplatePanel() {
 		}
 	}
 	return ivjKineticsTypeTemplatePanel;
-}
-
-/**
- * Comment
- */
-private KineticsDescription getKineticType(Kinetics kinetics) {
-	if (kinetics!=null){
-		return kinetics.getKineticsDescription();
-	}else{
-		return null;
-	}
-}
-
-
-/**
- * Return the JLabel4 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getKineticTypeTitleLabel() {
-	if (ivjKineticTypeTitleLabel == null) {
-		try {
-			ivjKineticTypeTitleLabel = new javax.swing.JLabel();
-			ivjKineticTypeTitleLabel.setName("KineticTypeTitleLabel");
-			ivjKineticTypeTitleLabel.setFont(ivjKineticTypeTitleLabel.getFont().deriveFont(Font.BOLD));
-//			ivjKineticTypeTitleLabel.setFont(new java.awt.Font("Arial", 1, 12));
-			ivjKineticTypeTitleLabel.setText("Kinetic type");
-			ivjKineticTypeTitleLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-			ivjKineticTypeTitleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjKineticTypeTitleLabel;
 }
 
 /**
@@ -766,7 +403,7 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
-	getJComboBox1().addActionListener(ivjEventHandler);
+	
 	if (annotationTextArea != null) {
 		annotationTextArea.addFocusListener(ivjEventHandler);
 	}
@@ -785,7 +422,7 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 
 		int gridy = 0;
-		if(!subset) {	// draw full table
+		if(!bSubset) {	// draw full table
 			// stoichiometry
 			java.awt.GridBagConstraints constraintsStoichiometryLabel = new java.awt.GridBagConstraints();
 			constraintsStoichiometryLabel.gridx = 0; constraintsStoichiometryLabel.gridy = gridy;
@@ -860,34 +497,7 @@ private void initialize() {
 			gridy ++;
 		}
 		
-		// Kinetic Type
-		java.awt.GridBagConstraints constraintsKineticTypeTitleLabel = new java.awt.GridBagConstraints();
-		constraintsKineticTypeTitleLabel.gridx = 0; constraintsKineticTypeTitleLabel.gridy = gridy;
-		constraintsKineticTypeTitleLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsKineticTypeTitleLabel.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsKineticTypeTitleLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getKineticTypeTitleLabel(), constraintsKineticTypeTitleLabel);
-
-		java.awt.GridBagConstraints constraintsJComboBox1 = new java.awt.GridBagConstraints();
-		constraintsJComboBox1.gridx = 1; constraintsJComboBox1.gridy = gridy;
-		constraintsJComboBox1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJComboBox1.weightx = 1.0;
-		constraintsJComboBox1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJComboBox1(), constraintsJComboBox1);
-		if (subset) {
-			getJComboBox1().setEnabled(false);
-		}
-		
-		GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = gridy;
-		gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 10);
-		this.add(getJToggleButton(), gridBagConstraints);
-		if (subset) {
-			getJToggleButton().setVisible(false);
-		}
-		gridy ++;
-		
+		gridy ++;		
 		// Kinetic Parameters
 		java.awt.GridBagConstraints constraintsKineticsTypeTemplatePanel = new java.awt.GridBagConstraints();
 		constraintsKineticsTypeTemplatePanel.gridx = 0; constraintsKineticsTypeTemplatePanel.gridy = gridy;
@@ -898,13 +508,12 @@ private void initialize() {
 		constraintsKineticsTypeTemplatePanel.weighty = 1.0;
 		constraintsKineticsTypeTemplatePanel.insets = new java.awt.Insets(5, 10, 5, 10);
 		add(getKineticsTypeTemplatePanel(), constraintsKineticsTypeTemplatePanel);
-		if (subset) {
+		if (bSubset) {
 			BeanUtils.enableComponents(getKineticsTypeTemplatePanel(), false);
 		}
 		gridy ++;
 
 		initConnections();
-		connEtoC9();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -917,20 +526,6 @@ private JLabel getReactionElectricalPropertiesLabel() {
 	}
 	return reactoinElectrialPropertiesLabel;
 }
-
-/**
- * Comment
- */
-private void initKineticChoices() {
-	javax.swing.DefaultComboBoxModel model = new DefaultComboBoxModel();
-	for (int i=0;i<kineticTypes.length;i++){
-		model.addElement(kineticTypes[i]);
-	}
-	getJComboBox1().setModel(model);
-	
-	return;
-}
-
 
 /**
  * main entrypoint - starts the part when it is run as an application
@@ -968,31 +563,6 @@ public void setChargeCarrierValence_Exception(java.lang.Throwable e) {
 	}
 }
 
-
-/**
- * Set the Kinetics to a new value.
- * @param newValue cbit.vcell.model.Kinetics
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setKinetics(Kinetics newValue) {
-	if (ivjKinetics != newValue) {
-		try {
-			ivjKinetics = newValue;
-			connEtoM15(ivjKinetics);
-			connEtoM8(ivjKinetics);
-			connEtoM2(ivjKinetics);
-			connEtoM3(ivjKinetics);
-			updateToggleButtonLabel();
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
 /**
  * Sets the simpleReaction property (cbit.vcell.model.SimpleReaction) value.
  * @param simpleReaction The new value for the property.
@@ -1024,11 +594,19 @@ private void setTornOffSimpleReaction(SimpleReaction newValue) {
 			if (ivjTornOffSimpleReaction != null) {
 				ivjTornOffSimpleReaction.addPropertyChangeListener(ivjEventHandler);
 			}
-			connPtoP1SetSource();
-			connEtoM1(ivjTornOffSimpleReaction);
-			connPtoP2SetTarget();
-			connEtoM16(ivjTornOffSimpleReaction);
-			connEtoM7(ivjTornOffSimpleReaction);
+			connPtoP1SetSource();			
+			
+			getReactionCanvas().setReactionStep(ivjTornOffSimpleReaction);
+			if (ivjTornOffSimpleReaction != null) {
+				getSimpleReactionNameTextField().setText(getTornOffSimpleReaction().getName());
+			}			
+			getReactionElectricalPropertiesPanel1().setKinetics(ivjTornOffSimpleReaction.getKinetics());
+			boolean electricalPropertiesVisible = ivjTornOffSimpleReaction != null && ivjTornOffSimpleReaction.getStructure() instanceof Membrane;			
+			getReactionElectricalPropertiesPanel1().setVisible(electricalPropertiesVisible);
+			getReactionElectricalPropertiesLabel().setVisible(electricalPropertiesVisible);
+			
+			getKineticsTypeTemplatePanel().setReactionStep(getSimpleReaction());
+			
 			firePropertyChange("simpleReaction", oldValue, newValue);
 			// user code begin {1}
 			// user code end
@@ -1043,108 +621,12 @@ private void setTornOffSimpleReaction(SimpleReaction newValue) {
 }
 
 /**
- * Comment
- */
-private void updateKineticChoice(KineticsDescription newKineticChoice) {
-	boolean bFoundKineticType = false;
-	for (int i=0;i<kineticTypes.length;i++){
-		if (kineticTypes[i].equals(newKineticChoice)){
-			bFoundKineticType = true;
-		}
-	}
-	if (!bFoundKineticType){
-		return;
-	}
-	//
-	// if same as current kinetics, don't create new one
-	//
-	if (getKinetics()!=null && getKinetics().getKineticsDescription().equals(newKineticChoice)){
-		return;
-	}
-	if (!getJComboBox1().getSelectedItem().equals(newKineticChoice)) {
-		getJComboBox1().setSelectedItem(newKineticChoice);
-	}
-	if (getTornOffSimpleReaction() != null) {
-		try {
-			if (getKinetics()==null || !getKinetics().getKineticsDescription().equals(newKineticChoice)){
-				setKinetics(newKineticChoice.createKinetics(getTornOffSimpleReaction()));
-			}
-		} catch (Exception exc) {
-			handleException(exc);
-		}
-	}
-}
-
-private void updateToggleButtonLabel(){
-	final String MU = "\u03BC";
-	final String MICROMOLAR = MU+"M";
-	if (getKinetics() instanceof DistributedKinetics){
-		getJToggleButton().setText("Convert to [molecules/s]");
-		getJToggleButton().setToolTipText("convert kinetics to be in terms of molecules rather than concentration");
-	}else if (getKinetics() instanceof LumpedKinetics){
-		getJToggleButton().setText("Convert to ["+MICROMOLAR+"/s]");
-		getJToggleButton().setToolTipText("convert kinetics to be in terms of concentration rather than molecules");
-	}
-}
-
-/**
  * This method initializes jToggleButton	
  * 	
  * @return javax.swing.JButton	
  */
-private JButton getJToggleButton() {
-	if (jToggleButton == null) {
-		jToggleButton = new JButton();
-		jToggleButton.setText("Toggle");
-		jToggleButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				final String MU = "\u03BC";
-				final String SQUARED = "\u00B2";
-				final String CUBED = "\u00B3";
-				String sizeUnits = MU+"m"+SQUARED;
-				if (getKinetics()!=null && getKinetics().getReactionStep()!=null && getKinetics().getReactionStep().getStructure() instanceof Feature){
-					sizeUnits = MU+"m"+CUBED;
-				}
-
-				if (getKinetics() instanceof DistributedKinetics){
-					try {
-						String response = DialogUtils.showInputDialog0(SimpleReactionPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
-						double size = Double.parseDouble(response);
-						setKinetics(LumpedKinetics.toLumpedKinetics((DistributedKinetics)getKinetics(), size));
-					} catch (UtilCancelException e1) {
-					} catch (Exception e2){
-						if (getKinetics().getKineticsDescription().isElectrical()){
-							DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Current Kinetics [pA]: "+e2.getMessage(), e2);
-						}else{
-							DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Lumped Kinetics [molecules/s]: "+e2.getMessage(), e2);
-						}
-					}
- 				}else if (getKinetics() instanceof LumpedKinetics){
-					try {
-						String response = DialogUtils.showInputDialog0(SimpleReactionPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
-						double size = Double.parseDouble(response);
-						setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)getKinetics(), size));
-					} catch (UtilCancelException e1) {
-					} catch (Exception e2){
-						if (getKinetics().getKineticsDescription().isElectrical()){
-							DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Current Density Kinetics [pA/"+MU+"m"+SQUARED+"]: "+e2.getMessage(), e2);
-						}else{
-							if (getKinetics().getReactionStep().getStructure() instanceof Feature){
-								DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Kinetics ["+MU+"M/s]: "+e2.getMessage(), e2);
-							}else{
-								DialogUtils.showErrorDialog(SimpleReactionPanel.this,"failed to translate into General Kinetics [molecules/"+MU+"m"+SQUARED+".s]: "+e2.getMessage(), e2);
-							}
-						}
-					}
- 				}
-			}
-		});
-	}
-	return jToggleButton;
-}
-
 private void refreshAnnotationTextField() {
-	if(subset) {
+	if(bSubset) {
 		return;
 	}
 	annotationTextArea.setText(getSimpleReaction().getModel().getVcMetaData().getFreeTextAnnotation(getSimpleReaction()));
@@ -1153,15 +635,10 @@ private void refreshAnnotationTextField() {
 
 
 private void refreshNameTextField() {
-	if(subset) {
+	if(bSubset) {
 		return;
 	}
 	getSimpleReactionNameTextField().setText(getSimpleReaction().getName());	
 }
 
-public void reset() {
-	setSimpleReaction(null);
-	getJComboBox1().setSelectedIndex(-1);
-	getKineticsTypeTemplatePanel().setKinetics(null);
-}
 }

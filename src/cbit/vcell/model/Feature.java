@@ -1,18 +1,11 @@
 package cbit.vcell.model;
-import cbit.vcell.parser.ExpressionException;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.util.*;
-
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
 
 public class Feature extends Structure
 {
-	public Membrane membrane = null;
+	private Membrane membrane = null;
 
 public Feature(KeyValue key, String name) throws java.beans.PropertyVetoException {
 	super(key);
@@ -177,5 +170,11 @@ public String toString() {
 @Override
 public int getDimension() {
 	return 3;
+}
+
+
+@Override
+public String getTypeName() {
+	return TYPE_NAME_FEATURE;
 }
 }

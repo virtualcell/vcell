@@ -219,4 +219,10 @@ public String toString() {
 public int getDimension() {
 	return 2;
 }
+
+
+@Override
+public String getTypeName() {
+	return TYPE_NAME_MEMBRANE;
+}
 }

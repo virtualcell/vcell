@@ -31,10 +31,9 @@ public class ContainerContainerShape extends ContainerShape {
 	ReactionContainerShape featureContainer = null;
 
 	// or all compartments
-	List<ReactionSliceContainerShape> structureContainers = null;
+	private List<ReactionSliceContainerShape> structureContainers = null;
 
-	public ContainerContainerShape(GraphModel graphModel, Model model, 
-			ReactionContainerShape featureReactionContainer) {
+	public ContainerContainerShape(GraphModel graphModel, Model model, ReactionContainerShape featureReactionContainer) {
 		super(graphModel);
 		this.featureContainer = featureReactionContainer;
 		this.model = model;
@@ -44,17 +43,10 @@ public class ContainerContainerShape extends ContainerShape {
 
 	}
 
-	public ContainerContainerShape(GraphModel graphModel, Model model, 
-			List<ReactionSliceContainerShape> reactionContainers) {
+	public ContainerContainerShape(GraphModel graphModel, Model model) {
 		super(graphModel);
-		this.structureContainers = new ArrayList<ReactionSliceContainerShape>(reactionContainers);
 		this.model = model;
 		setLabel(" ");
-
-		for(ReactionSliceContainerShape reactionContainer : reactionContainers) {
-			addChildShape(reactionContainer);
-		}
-
 	}
 
 	public ContainerContainerShape(GraphModel graphModel, Model model, 
@@ -282,6 +274,13 @@ public class ContainerContainerShape extends ContainerShape {
 			for(ReactionSliceContainerShape structureContainer : structureContainers) {
 				structureContainer.setRandomLayout(isRandom);
 			}
+		}
+	}
+
+	public final void setStructureContainers(List<ReactionSliceContainerShape> structureContainers) {
+		this.structureContainers = new ArrayList<ReactionSliceContainerShape>(structureContainers);
+		for(ReactionSliceContainerShape reactionContainer : structureContainers) {
+			addChildShape(reactionContainer);
 		}
 	}
 }

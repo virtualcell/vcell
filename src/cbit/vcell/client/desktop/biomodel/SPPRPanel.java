@@ -433,7 +433,7 @@ public class SPPRPanel extends JPanel {
 	private DataSymbolsPanel getDataSymbolsPanel() {
 		if (dataSymbolsPanel == null) {
 			try {
-				dataSymbolsPanel = new DataSymbolsPanel(this);
+				dataSymbolsPanel = new DataSymbolsPanel();
 				dataSymbolsPanel.setName("DataSymbolsPanel");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -445,7 +445,7 @@ public class SPPRPanel extends JPanel {
 	private InitialConditionsPanel getInitialConditionsPanel() {
 		if (initialConditionsPanel == null) {
 			try {
-				initialConditionsPanel = new InitialConditionsPanel(this);
+				initialConditionsPanel = new InitialConditionsPanel();
 				initialConditionsPanel.setName("InitialConditionsPanel");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -457,7 +457,7 @@ public class SPPRPanel extends JPanel {
 	private ModelParameterPanel getModelParameterPanel() {
 		if (modelParameterPanel == null) {
 			try {
-				modelParameterPanel = new ModelParameterPanel(this);
+				modelParameterPanel = new ModelParameterPanel();
 				modelParameterPanel.setName("ModelParameterPanel");
 				modelParameterPanel.setEditable(false);
 			} catch (java.lang.Throwable ivjExc) {
@@ -470,7 +470,7 @@ public class SPPRPanel extends JPanel {
 	private ReactionSpecsPanel getReactionSpecsPanel() {
 		if (reactionSpecsPanel == null) {
 			try {
-				reactionSpecsPanel = new ReactionSpecsPanel(this);
+				reactionSpecsPanel = new ReactionSpecsPanel();
 				reactionSpecsPanel.setName("ReactionSpecsPanel");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);

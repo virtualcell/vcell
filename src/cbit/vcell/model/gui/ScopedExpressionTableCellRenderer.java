@@ -19,6 +19,7 @@ import javax.swing.table.TableColumnModel;
 
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
+import cbit.gui.ReactionEquation;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionPrintFormatter;
@@ -138,7 +139,8 @@ public static void formatTableCellSizes(final javax.swing.JTable targetTable) {
 			TableColumn column = columnModel.getColumn(columnIndex);
 			// set prefer width if it is expression since the size is computed through image.
 			int preferredWidth = maxColumnWidths[columnIndex] + columnModel.getColumnMargin();
-			if (targetTable.getColumnClass(columnIndex).equals(ScopedExpression.class)) {
+			Class<?> columnClass = targetTable.getColumnClass(columnIndex);
+			if (columnClass.equals(ScopedExpression.class) || columnClass.equals(ReactionEquation.class)) {
 				expressionColumnList.add(columnIndex);
 				column.setPreferredWidth(preferredWidth);
 			} else if (column.getPreferredWidth() < preferredWidth){

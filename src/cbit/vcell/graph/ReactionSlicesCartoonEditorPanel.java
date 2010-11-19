@@ -3,6 +3,7 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
  */
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
@@ -35,6 +36,7 @@ import cbit.vcell.model.Structure;
 @SuppressWarnings("serial")
 public class ReactionSlicesCartoonEditorPanel extends JPanel 
 implements ActionListener, PropertyChangeListener {
+	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
 	private JPanel featureSizePanel = null;
 	private GraphPane graphPane = null;
 	protected transient PropertyChangeSupport propertyChange;
@@ -122,11 +124,11 @@ implements ActionListener, PropertyChangeListener {
 				annealLayoutButton.setName("AnnealLayoutButton");
 				annealLayoutButton.setToolTipText("Layout Annealing");
 				annealLayoutButton.setText("anl");
-				annealLayoutButton.setMaximumSize(new Dimension(28, 28));
+				annealLayoutButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				annealLayoutButton.setActionCommand("AnnealLayout");
-				annealLayoutButton.setPreferredSize(new Dimension(28, 28));
+				annealLayoutButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
 				annealLayoutButton.setFont(new Font("Arial", 1, 10));
-				annealLayoutButton.setMinimumSize(new Dimension(28, 28));
+				annealLayoutButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 				annealLayoutButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
@@ -153,11 +155,11 @@ implements ActionListener, PropertyChangeListener {
 				circleLayoutButton.setName("CircleLayoutButton");
 				circleLayoutButton.setToolTipText("Layout Circular");
 				circleLayoutButton.setText("crc");
-				circleLayoutButton.setMaximumSize(new Dimension(28, 28));
+				circleLayoutButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				circleLayoutButton.setActionCommand("CircleLayout");
-				circleLayoutButton.setPreferredSize(new Dimension(28, 28));
+				circleLayoutButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
 				circleLayoutButton.setFont(new Font("Arial", 1, 10));
-				circleLayoutButton.setMinimumSize(new Dimension(28, 28));
+				circleLayoutButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 				circleLayoutButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
@@ -177,7 +179,7 @@ implements ActionListener, PropertyChangeListener {
 				featureSizePanel.setName("FeatureSizePanel");
 				featureSizePanel.setPreferredSize(new Dimension(22, 396));
 				featureSizePanel.setLayout(new java.awt.BorderLayout());
-				featureSizePanel.setMinimumSize(new Dimension(22, 396));
+//				featureSizePanel.setMinimumSize(new Dimension(22, 396));
 				getFeatureSizePanel().add(getJPanel1(), "South");
 				getFeatureSizePanel().add(getJScrollPane1(), "Center");
 			} catch (Throwable ivjExc) {
@@ -194,12 +196,12 @@ implements ActionListener, PropertyChangeListener {
 				fluxButton.setName("FluxButton");
 				fluxButton.setToolTipText("Flux Tool");
 				fluxButton.setText("");
-				fluxButton.setMaximumSize(new Dimension(28, 28));
+				fluxButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				fluxButton.setActionCommand(Mode.FLUX.getActionCommand());
 				fluxButton.setIcon(new ImageIcon(getClass().getResource("/images/flux.gif")));
-				fluxButton.setPreferredSize(new Dimension(28, 28));
+				fluxButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
 				fluxButton.setEnabled(true);
-				fluxButton.setMinimumSize(new Dimension(28, 28));
+				fluxButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -214,10 +216,10 @@ implements ActionListener, PropertyChangeListener {
 				glgLayoutJButton.setName("GlgLayoutJButton");
 				glgLayoutJButton.setToolTipText("Layout GLG");
 				glgLayoutJButton.setText("glg");
-				glgLayoutJButton.setMaximumSize(new Dimension(28, 28));
-				glgLayoutJButton.setPreferredSize(new Dimension(28, 28));
+				glgLayoutJButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
+				glgLayoutJButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
 				glgLayoutJButton.setFont(new Font("Arial", 1, 10));
-				glgLayoutJButton.setMinimumSize(new Dimension(28, 28));
+				glgLayoutJButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 				glgLayoutJButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
@@ -286,7 +288,7 @@ implements ActionListener, PropertyChangeListener {
 				scrollPane1.setPreferredSize(new Dimension(22, 396));
 				scrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 				scrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-				scrollPane1.setMinimumSize(new Dimension(22, 396));
+//				scrollPane1.setMinimumSize(new Dimension(22, 396));
 				getJScrollPane1().setViewportView(getGraphPane());
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
@@ -302,7 +304,7 @@ implements ActionListener, PropertyChangeListener {
 				toolBar1.setName("JToolBar1");
 				toolBar1.setFloatable(false);
 				toolBar1.setBorder(new javax.swing.border.EtchedBorder());
-				toolBar1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+				toolBar1.setOrientation(javax.swing.SwingConstants.HORIZONTAL);
 				getJToolBar1().add(getSelectButton(), getSelectButton().getName());
 				getJToolBar1().add(getSpeciesButton(), getSpeciesButton().getName());
 				getJToolBar1().add(getStepButton(), getStepButton().getName());
@@ -336,11 +338,11 @@ implements ActionListener, PropertyChangeListener {
 				levellerLayoutButton.setName("LevellerLayoutButton");
 				levellerLayoutButton.setToolTipText("Layout Leveler");
 				levellerLayoutButton.setText("lev");
-				levellerLayoutButton.setMaximumSize(new Dimension(28, 28));
+				levellerLayoutButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				levellerLayoutButton.setActionCommand("LevellerLayout");
-				levellerLayoutButton.setPreferredSize(new Dimension(28, 28));
+				levellerLayoutButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
 				levellerLayoutButton.setFont(new Font("Arial", 1, 10));
-				levellerLayoutButton.setMinimumSize(new Dimension(28, 28));
+				levellerLayoutButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 				levellerLayoutButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
@@ -356,12 +358,12 @@ implements ActionListener, PropertyChangeListener {
 				lineDirectedButton.setName("LineButton");
 				lineDirectedButton.setToolTipText("RX Connection Tool");
 				lineDirectedButton.setText("");
-				lineDirectedButton.setMaximumSize(new Dimension(28, 28));
+				lineDirectedButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				lineDirectedButton.setActionCommand(Mode.LINEDIRECTED.getActionCommand());
 				lineDirectedButton.setIcon(
 						new ImageIcon(getClass().getResource("/images/lineDirected.gif")));
-				lineDirectedButton.setPreferredSize(new Dimension(28, 28));
-				lineDirectedButton.setMinimumSize(new Dimension(28, 28));
+				lineDirectedButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				lineDirectedButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -376,12 +378,12 @@ implements ActionListener, PropertyChangeListener {
 				lineCatalystButton.setName("LineCatalystButton");
 				lineCatalystButton.setToolTipText("Set a catalyst");
 				lineCatalystButton.setText("");
-				lineCatalystButton.setMaximumSize(new Dimension(28, 28));
+				lineCatalystButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				lineCatalystButton.setActionCommand(Mode.LINECATALYST.getActionCommand());
 				lineCatalystButton.setIcon(new ImageIcon(
 						getClass().getResource("/images/lineCatalyst.gif")));
-				lineCatalystButton.setPreferredSize(new Dimension(28, 28));
-				lineCatalystButton.setMinimumSize(new Dimension(28, 28));
+				lineCatalystButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				lineCatalystButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -407,11 +409,11 @@ implements ActionListener, PropertyChangeListener {
 				randomLayoutButton.setName("RandomLayoutButton");
 				randomLayoutButton.setToolTipText("Layout Random");
 				randomLayoutButton.setText("rnd");
-				randomLayoutButton.setMaximumSize(new Dimension(28, 28));
+				randomLayoutButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				randomLayoutButton.setActionCommand("RandomLayout");
-				randomLayoutButton.setPreferredSize(new Dimension(28, 28));
+				randomLayoutButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
 				randomLayoutButton.setFont(new Font("Arial", 1, 10));
-				randomLayoutButton.setMinimumSize(new Dimension(28, 28));
+				randomLayoutButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 				randomLayoutButton.setMargin(new Insets(2, 2, 2, 2));
 				// user code begin {1}
 				// user code end
@@ -453,11 +455,11 @@ implements ActionListener, PropertyChangeListener {
 				relaxerLayoutButton.setName("RelaxerLayoutButton");
 				relaxerLayoutButton.setToolTipText("Layout Relaxer");
 				relaxerLayoutButton.setText("rlx");
-				relaxerLayoutButton.setMaximumSize(new Dimension(28, 28));
+				relaxerLayoutButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				relaxerLayoutButton.setActionCommand("RelaxerLayout");
-				relaxerLayoutButton.setPreferredSize(new Dimension(28, 28));
+				relaxerLayoutButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
 				relaxerLayoutButton.setFont(new Font("Arial", 1, 10));
-				relaxerLayoutButton.setMinimumSize(new Dimension(28, 28));
+				relaxerLayoutButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 				relaxerLayoutButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
@@ -473,12 +475,12 @@ implements ActionListener, PropertyChangeListener {
 				selectButton.setName("SelectButton");
 				selectButton.setToolTipText("Select Tool");
 				selectButton.setText("");
-				selectButton.setMaximumSize(new Dimension(28, 28));
+				selectButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				selectButton.setActionCommand(Mode.SELECT.getActionCommand());
 				selectButton.setSelected(true);
 				selectButton.setIcon(new ImageIcon(getClass().getResource("/images/select.gif")));
-				selectButton.setPreferredSize(new Dimension(28, 28));
-				selectButton.setMinimumSize(new Dimension(28, 28));
+				selectButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				selectButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -497,11 +499,11 @@ implements ActionListener, PropertyChangeListener {
 				speciesButton.setName("SpeciesButton");
 				speciesButton.setToolTipText("Species Tool");
 				speciesButton.setText("");
-				speciesButton.setMaximumSize(new Dimension(28, 28));
+				speciesButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				speciesButton.setActionCommand(Mode.SELECT.getActionCommand());
 				speciesButton.setIcon(new ImageIcon(getClass().getResource("/images/species.gif")));
-				speciesButton.setPreferredSize(new Dimension(28, 28));
-				speciesButton.setMinimumSize(new Dimension(28, 28));
+				speciesButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				speciesButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -516,11 +518,11 @@ implements ActionListener, PropertyChangeListener {
 				stepButton.setName("StepButton");
 				stepButton.setToolTipText("Reaction Tool");
 				stepButton.setText("");
-				stepButton.setMaximumSize(new Dimension(28, 28));
+				stepButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				stepButton.setActionCommand(Mode.STEP.getActionCommand());
 				stepButton.setIcon(new ImageIcon(getClass().getResource("/images/step.gif")));
-				stepButton.setPreferredSize(new Dimension(28, 28));
-				stepButton.setMinimumSize(new Dimension(28, 28));
+				stepButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				stepButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -538,9 +540,9 @@ implements ActionListener, PropertyChangeListener {
 				parameterButton.setBorder(new BevelBorder(BevelBorder.RAISED));
 				parameterButton.setMargin(new Insets(2, 2, 2, 2));
 				parameterButton.setIcon(new ImageIcon(getClass().getResource("/icons/parameter.gif")));
-				parameterButton.setPreferredSize(new Dimension(28, 28));
-				parameterButton.setMinimumSize(new Dimension(28, 28));
-				parameterButton.setMaximumSize(new Dimension(28, 28));
+				parameterButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				parameterButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
+				parameterButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -559,11 +561,11 @@ implements ActionListener, PropertyChangeListener {
 				zoomInButton.setName("ZoomInButton");
 				zoomInButton.setToolTipText("Zoom In");
 				zoomInButton.setText("");
-				zoomInButton.setMaximumSize(new Dimension(28, 28));
+				zoomInButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				zoomInButton.setActionCommand("ZoomIn");
 				zoomInButton.setIcon(new ImageIcon(getClass().getResource("/images/zoomin.gif")));
-				zoomInButton.setPreferredSize(new Dimension(28, 28));
-				zoomInButton.setMinimumSize(new Dimension(28, 28));
+				zoomInButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				zoomInButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 				zoomInButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
@@ -579,11 +581,11 @@ implements ActionListener, PropertyChangeListener {
 				zoomOutButton.setName("ZoomOutButton");
 				zoomOutButton.setToolTipText("Zoom Out");
 				zoomOutButton.setText("");
-				zoomOutButton.setMaximumSize(new Dimension(28, 28));
+				zoomOutButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				zoomOutButton.setActionCommand("ZoomOut");
 				zoomOutButton.setIcon(new ImageIcon(getClass().getResource("/images/zoomout.gif")));
-				zoomOutButton.setPreferredSize(new Dimension(28, 28));
-				zoomOutButton.setMinimumSize(new Dimension(28, 28));
+				zoomOutButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				zoomOutButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -634,12 +636,12 @@ implements ActionListener, PropertyChangeListener {
 	private void initialize() {
 		try {
 			setName("ReactionSlicesCartoonPanel");
-			setPreferredSize(new Dimension(54, 425));
+//			setPreferredSize(new Dimension(54, 425));
 			setLayout(new java.awt.BorderLayout());
 			setSize(472, 422);
-			setMinimumSize(new Dimension(54, 425));
-			add(getFeatureSizePanel(), "Center");
-			add(getJToolBar1(), "West");
+//			setMinimumSize(new Dimension(54, 425));
+			add(getFeatureSizePanel(), BorderLayout.CENTER);
+			add(getJToolBar1(), BorderLayout.NORTH);
 			initConnections();
 			getButtonGroupCivilized().add(getStepButton());
 			getButtonGroupCivilized().add(getFluxButton());
