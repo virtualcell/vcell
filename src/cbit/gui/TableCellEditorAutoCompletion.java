@@ -15,7 +15,7 @@ import cbit.vcell.parser.ExpressionException;
 
 @SuppressWarnings("serial")
 public class TableCellEditorAutoCompletion extends DefaultCellEditor {
-	private TextFieldAutoCompletion textFieldAutoCompletion = null;
+	protected TextFieldAutoCompletion textFieldAutoCompletion = null;
 	private JTable thisTable = null;
 	private boolean bValidateBinding = false;
 	

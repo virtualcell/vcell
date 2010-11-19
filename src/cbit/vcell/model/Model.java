@@ -14,7 +14,6 @@ import java.util.Stack;
 import java.util.Vector;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
-import org.vcell.sybil.util.miriam.XRefToURN;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -24,9 +23,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
-import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.mapping.MathMapping;
@@ -45,7 +43,13 @@ import cbit.vcell.solver.stoch.MassActionSolver;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 
+@SuppressWarnings("serial")
 public class Model implements Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, ScopedSymbolTable {
+	public static final String PROPERTY_NAME_REACTION_STEPS = "reactionSteps";
+	public static final String PROPERTY_NAME_STRUCTURES = "structures";
+	public static final String PROPERTY_NAME_SPECIES_CONTEXTS = "speciesContexts";
+	private static final String PROPERTY_NAME_SPECIES = "species";
+	
 	private Version version = null;
 	protected transient PropertyChangeSupport propertyChange;
 	private java.lang.String fieldName = new String("NoName");
@@ -778,14 +782,15 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) throws Expre
  * @return java.lang.String
  */
 public String getFreeFeatureName() {
-	String featureName = "Feature";
 	int count=0;
-	while (getStructure(featureName+count)!=null){
+	while (true) {
+		String featureName = "Feature" + count;
+		if (getStructure(featureName) == null){
+			return featureName;
+		}	
 		count++;
 	}
-	return featureName+count;
 }
-
 
 /**
  * This method was created in VisualAge.
@@ -806,12 +811,14 @@ public String getFreeFluxReactionName() {
  * @return java.lang.String
  */
 public String getFreeMembraneName() {
-	String membraneName = "Membrane";
 	int count=0;
-	while (getStructure(membraneName+count)!=null){
+	while (true) {
+		String memName = "Membrane" + count;
+		if (getStructure(memName) == null) {
+			return memName;
+		}
 		count++;
 	}
-	return membraneName+count;
 }
 
 
@@ -819,12 +826,15 @@ public String getFreeMembraneName() {
  * @return java.lang.String
  */
 public String getFreeReactionStepName() {
-	String reactionStepName = "reaction";
 	int count=0;
-	while (getReactionStep(reactionStepName+count)!=null){
+	while (true) {
+		String reactionStepName = "reaction" + count;
+		if (getReactionStep(reactionStepName) == null){
+			return reactionStepName;
+		}
+	
 		count++;
 	}
-	return reactionStepName+count;
 }
 
 
@@ -832,12 +842,14 @@ public String getFreeReactionStepName() {
  * @return java.lang.String
  */
 public String getFreeSpeciesName() {
-	String speciesName = "species";
 	int count=0;
-	while (getSpecies(speciesName+count)!=null){
+	while (true) {
+		String speciesName = "species" + count;	
+		if (getSpecies(speciesName) == null) {
+			return speciesName;
+		}	
 		count++;
 	}
-	return speciesName+count;
 }
 
 public String getFreeModelParamName() {
@@ -2049,9 +2061,9 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  */
 public void setReactionSteps(ReactionStep[] reactionSteps) throws java.beans.PropertyVetoException {
 	ReactionStep[] oldValue = fieldReactionSteps;
-	fireVetoableChange("reactionSteps", oldValue, reactionSteps);
+	fireVetoableChange(PROPERTY_NAME_REACTION_STEPS, oldValue, reactionSteps);
 	fieldReactionSteps = reactionSteps;
-	firePropertyChange("reactionSteps", oldValue, reactionSteps);
+	firePropertyChange(PROPERTY_NAME_REACTION_STEPS, oldValue, reactionSteps);
 
 	ReactionStep newValue[] = reactionSteps;
 	for (int i=0;i<oldValue.length;i++){	
@@ -2086,7 +2098,7 @@ public void setReactionSteps(int index, ReactionStep reactionSteps) {
 	ReactionStep oldValue = fieldReactionSteps[index];
 	fieldReactionSteps[index] = reactionSteps;
 	if (oldValue != null && !oldValue.equals(reactionSteps)) {
-		firePropertyChange("reactionSteps", null, fieldReactionSteps);
+		firePropertyChange(PROPERTY_NAME_REACTION_STEPS, null, fieldReactionSteps);
 	};
 }
 
@@ -2099,9 +2111,9 @@ public void setReactionSteps(int index, ReactionStep reactionSteps) {
  */
 public void setSpecies(Species[] species) throws java.beans.PropertyVetoException {
 	Species[] oldValue = fieldSpecies;
-	fireVetoableChange("species", oldValue, species);
+	fireVetoableChange(PROPERTY_NAME_SPECIES, oldValue, species);
 	fieldSpecies = species;
-	firePropertyChange("species", oldValue, species);
+	firePropertyChange(PROPERTY_NAME_SPECIES, oldValue, species);
 	
 	Species newValue[] = species;
 	for (int i=0;i<oldValue.length;i++){	
@@ -2125,7 +2137,7 @@ public void setSpecies(int index, Species species) {
 	Species oldValue = fieldSpecies[index];
 	fieldSpecies[index] = species;
 	if (oldValue != null && !oldValue.equals(species)) {
-		firePropertyChange("species", null, fieldSpecies);
+		firePropertyChange(PROPERTY_NAME_SPECIES, null, fieldSpecies);
 	};
 }
 
@@ -2138,9 +2150,9 @@ public void setSpecies(int index, Species species) {
  */
 public void setSpeciesContexts(SpeciesContext[] speciesContexts) throws java.beans.PropertyVetoException {
 	SpeciesContext[] oldValue = fieldSpeciesContexts;
-	fireVetoableChange("speciesContexts", oldValue, speciesContexts);
+	fireVetoableChange(PROPERTY_NAME_SPECIES_CONTEXTS, oldValue, speciesContexts);
 	fieldSpeciesContexts = speciesContexts;
-	firePropertyChange("speciesContexts", oldValue, speciesContexts);
+	firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXTS, oldValue, speciesContexts);
 
 	SpeciesContext newValue[] = speciesContexts;
 	for (int i=0;i<oldValue.length;i++){	
@@ -2190,7 +2202,7 @@ public void setSpeciesContexts(int index, SpeciesContext speciesContexts) {
 	speciesContexts.setModel(this);
 	fieldSpeciesContexts[index] = speciesContexts;
 	if (oldValue != null && !oldValue.equals(speciesContexts)) {
-		firePropertyChange("speciesContexts", null, fieldSpeciesContexts);
+		firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXTS, null, fieldSpeciesContexts);
 	};
 }
 
@@ -2203,10 +2215,10 @@ public void setSpeciesContexts(int index, SpeciesContext speciesContexts) {
  */
 public void setStructures(Structure[] structures) throws java.beans.PropertyVetoException {
 	Structure[] oldValue = fieldStructures;
-	fireVetoableChange("structures", oldValue, structures);
+	fireVetoableChange(PROPERTY_NAME_STRUCTURES, oldValue, structures);
 	fieldStructures = structures;
 	refreshDiagrams();
-	firePropertyChange("structures", oldValue, structures);
+	firePropertyChange(PROPERTY_NAME_STRUCTURES, oldValue, structures);
 
 
 	Structure newValue[] = structures;
@@ -2387,7 +2399,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		}
 	}
 
-	if (e.getSource() == this && e.getPropertyName().equals("structures")){
+	if (e.getSource() == this && e.getPropertyName().equals(PROPERTY_NAME_STRUCTURES)){
 		Structure topStructure = null;
 		Structure newStructures[] = (Structure[])e.getNewValue();
 		if (newStructures==null){
@@ -2478,7 +2490,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		}
 	}
 	
-	if (e.getSource() == this && e.getPropertyName().equals("species")){
+	if (e.getSource() == this && e.getPropertyName().equals(PROPERTY_NAME_SPECIES)){
 		Species newSpeciesArray[] = (Species[])e.getNewValue();
 		if (newSpeciesArray==null){
 			throw new PropertyVetoException("species cannot be null",e);
@@ -2592,7 +2604,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		}
 	}
 	
-	if (e.getSource() == this && e.getPropertyName().equals("speciesContexts")){
+	if (e.getSource() == this && e.getPropertyName().equals(PROPERTY_NAME_SPECIES_CONTEXTS)){
 		SpeciesContext newSpeciesContextArray[] = (SpeciesContext[])e.getNewValue();
 		if (newSpeciesContextArray==null){
 			throw new PropertyVetoException("speciesContexts cannot be null",e);
@@ -2639,7 +2651,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		}
 	}
 	
-	if (e.getSource() == this && e.getPropertyName().equals("reactionSteps")){
+	if (e.getSource() == this && e.getPropertyName().equals(PROPERTY_NAME_REACTION_STEPS)){
 		ReactionStep[] newReactionStepArr = (ReactionStep[])e.getNewValue();
 		//
 		//Check because a null could get this far and would throw a NullPointerException later

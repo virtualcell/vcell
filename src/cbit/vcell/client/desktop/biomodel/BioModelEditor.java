@@ -1,25 +1,34 @@
 package cbit.vcell.client.desktop.biomodel;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Polygon;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 
-import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.Versionable;
-import org.vcell.util.gui.DownArrowIcon;
-import org.vcell.util.gui.JInternalFrameEnhanced;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.ImageException;
 import cbit.vcell.biomodel.BioModel;
@@ -27,18 +36,48 @@ import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorTreeModel.BioModelEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorTreeModel.BioModelEditorTreeFolderNode;
+import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
+import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
+import cbit.vcell.client.desktop.simulation.SimulationListPanel;
+import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
+import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.desktop.BioModelTreePanel;
+import cbit.vcell.data.DataSymbol;
+import cbit.vcell.data.VFrapConstants;
+import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.graph.CartoonEditorPanelFixed;
+import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.gui.DataSymbolsPanel;
+import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
+import cbit.vcell.mapping.gui.InitialConditionsPanel;
+import cbit.vcell.mapping.gui.ReactionSpecsPanel;
+import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.gui.FeatureEditorPanel;
+import cbit.vcell.model.gui.FluxReactionPanel;
+import cbit.vcell.model.gui.MembraneEditorPanel;
+import cbit.vcell.model.gui.ModelParameterPanel;
+import cbit.vcell.model.gui.SimpleReactionPanel;
+import cbit.vcell.model.gui.SpeciesEditorPanel;
+import cbit.vcell.modelopt.gui.OptTestPanel;
+import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
@@ -49,62 +88,245 @@ import cbit.vcell.solver.Simulation;
  */
 @SuppressWarnings("serial")
 public class BioModelEditor extends JPanel {
-	private BioModelTreePanel ivjBioModelTreePanel1 = null;
-	private CartoonEditorPanelFixed ivjCartoonEditorPanel1 = null;
-	private JLabel ivjJLabel2 = null;
-	private JPanel ivjJPanel1 = null;
-	private JPanel ivjJPanel2 = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	public static final String ADD_NEW_HERE_TEXT = "(add new here)";
+	
+	private static final String PROPERTY_NAME_DOCUMENT_MANAGER = "documentManager";
+	public static final String PROPERTY_NAME_SELECTED_VERSIONABLE = "selectedVersionable";
+	private static final String MENU_TEXT_SPATIAL_APPLICATION = "Spatial Application";
+	private static final String MENU_TEXT_NON_SPATIAL_APPLICATION = "Non-Spatial Application";
+	private static final String MENU_TEXT_DETERMINISTIC_APPLICATION = "Deterministic Application";
+	private static final String MENU_TEXT_STOCHASTIC_APPLICATION = "Stochastic Application";
+	
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private BioModelWindowManager bioModelWindowManager = null;
-	private JMenu ivjApplicationMenu = null;
-	private JMenuItem ivjCopyMenuItem = null;
-	private JMenuItem ivjDeleteMenuItem = null;
-	private JPanel ivjJInternalFrameEnhancedContentPane = null;
-	private JSeparator ivjJSeparator1 = null;
-	private JMenuItem ivjOpenAppMenuItem = null;
-	private JMenuItem ivjRenameMenuItem = null;
-	private JInternalFrameEnhanced ivjjInternalFrameApplication = null;
-	private JMenuBar ivjjInternalFrameApplicationJMenuBar = null;
 	private BioModel fieldBioModel = new BioModel(null);
 	private DocumentManager fieldDocumentManager = null;
-	private boolean ivjConnPtoP1Aligning = false;
-	private boolean ivjConnPtoP2Aligning = false;
-	private JMenuItem ivjJMenuItemNonStochApp = null;
-	private JMenuItem ivjJMenuItemStochApp = null;
-	private JMenu ivjJMenuNew = null;
+	
+	private JTree bioModelEditorTree = null;
+	private JSplitPane splitPane = null; 
+	private javax.swing.JScrollPane treePanel = null;
+	
+	private CartoonEditorPanelFixed ivjCartoonEditorPanel1 = null;
+	private OptTestPanel ivjoptTestPanel = null;
+	private AnalysisPanel ivjParameterEstimationPanel = null;
+	private SimulationListPanel ivjSimulationListPanel = null;
+	private GeometrySummaryViewer ivjGeometrySummaryViewer = null;
+	private StructureMappingCartoonPanel ivjStructureMappingCartoonPanel = null;
+	private OutputFunctionsPanel outputFunctionsPanel = null;
+	private InitialConditionsPanel initialConditionsPanel = null;
+	private DataSymbolsPanel dataSymbolsPanel = null;
+	private ModelParameterPanel modelParameterPanel = null;
+	private ReactionSpecsPanel reactionSpecsPanel = null;
+	private ElectricalMembraneMappingPanel ivjElectricalMembraneMappingPanel = null;
+	private EventsDisplayPanel eventsDisplayPanel = null;
+	private MathematicsPanel mathematicsPanel = null;
+	private SimpleReactionPanel simpleReactionPanel = null;
+	private FluxReactionPanel fluxReactionPanel = null;
+	private SpeciesEditorPanel speciesEditorPanel = null;
+	private FeatureEditorPanel featureEditorPanel = null;
+	private MembraneEditorPanel membraneEditorPanel = null;
+	private BioModelEditorSpeciesPanel bioModelEditorSpeciesPanel = null;
+	private BioModelEditorStructurePanel bioModelEditorStructurePanel = null;
+	private BioModelEditorReactionPanel bioModelEditorReactionPanel = null;
+	
+	private BioModelEditorTreeModel bioModelEditorTreeModel = null;
+	private JPanel emptyPanel = new JPanel();
+	
+	// popup menu items
+	private JPopupMenu addEventPopupMenu = null;
+	private JPopupMenu addDataPopupMenu = null;
+	private JPopupMenu deleteEventPopupMenu = null;
+	private JMenuItem menuItemAddEvent = null;
+	private JMenuItem menuItemAddGenericData = null;
+	private JMenuItem menuItemAddVFrapData = null;
+	private JMenuItem menuItemDeleteEvent = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {		
+	// application popup menu items
+	private JPopupMenu ivjAppsPopupMenu = null;
+	private JPopupMenu ivjAppPopupMenu = null;
+	
+	private JMenu ivjJMenuAppCopyAs = null;
+	private JMenuItem menuItemAppNonSpatialCopyStochastic = null;
+	private JMenuItem menuItemNonSpatialCopyDeterministic = null;
+	
+	private JMenu menuAppSpatialCopyAsNonSpatial = null;
+	private JMenuItem menuItemAppSpatialCopyAsNonSpatialStochastic = null;
+	private JMenuItem menuItemAppSpatialCopyAsNonSpatialDeterministic = null;
+	private JMenu menuAppSpatialCopyAsSpatial = null;
+	private JMenuItem menuItemAppSpatialCopyAsSpatialStochastic = null;
+	private JMenuItem menuItemAppSpatialCopyAsSpatialDeterministic = null;
+	
+	private JMenuItem ivjJMenuItemAppDelete = null;
+	private JMenuItem appNewStochApp = null;
+	private JMenuItem appNewDeterministicApp = null;
+	private JSeparator ivjJSeparator1 = null;
+//	private JSeparator ivjJSeparator2 = null;
+	private JMenuItem ivjJMenuItemAppRename = null;
+	private JMenuItem ivjJMenuItemAppAnnotation = null;
+	private JMenuItem ivjJMenuItemAppCopy = null;
+	
+	private JMenu ivjJMenuAppNew = null;
+	
+	private Hashtable<SimulationContext, SimulationWorkspace> simWorkspaceHashTable = new Hashtable<SimulationContext, SimulationWorkspace>();
+	private AnnotationEditorPanel ivjAnnotationEditorPanel = null;
+	
+	public static class SelectionEvent {
+		private Object selectedContainer;
+		private Object selectedObject;
+		
+		public SelectionEvent(Object selectedContainer, Object selectedObject) {
+			super();
+			this.selectedContainer = selectedContainer;
+			this.selectedObject = selectedObject;
+		}
+
+		public final Object getSelectedContainer() {
+			return selectedContainer;
+		}
+
+		public final Object getSelectedObject() {
+			return selectedObject;
+		}		
+	}
+
+	private static class AnnotationEditorPanel extends JPanel {
+		private JTextArea textArea = null;
+		private JButton applyButton = new JButton("Apply");
+		private JButton revertButton = new JButton("Revert");
+		public AnnotationEditorPanel() {
+			JPanel p = new JPanel();
+			
+			textArea = new JTextArea("", 8, 60);
+			textArea.setRows(10);
+			textArea.setEditable(true);
+			textArea.setLineWrap(true);
+			textArea.setWrapStyleWord(true);
+
+			p.setLayout(new BorderLayout());
+			JPanel panel = new JPanel();
+			panel.add(new JScrollPane(textArea));
+			p.add(panel, BorderLayout.CENTER);
+			
+			panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
+			panel.add(applyButton);	
+			panel.add(revertButton);			
+			p.add(panel, BorderLayout.SOUTH);
+			
+			add(p);
+		}
+		
+		public void setText(String annot) {
+			textArea.setText(annot);
+		}
+	}
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.TreeSelectionListener, MouseListener {		
+		private static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
+
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == BioModelEditor.this.getCopyMenuItem()) 
-				connEtoC3(e);
-			if (e.getSource() == BioModelEditor.this.getOpenAppMenuItem()) 
-				connEtoC4(e);
-			if (e.getSource() == BioModelEditor.this.getDeleteMenuItem()) 
-				connEtoC5(e);
-			if (e.getSource() == BioModelEditor.this.getRenameMenuItem()) 
-				connEtoC6(e);
-			if (e.getSource() == BioModelEditor.this.getBioModelTreePanel1()) 
-				connEtoC1(e);
-			if (e.getSource() == BioModelEditor.this.getJMenuItemNonStochApp()) 
-				connEtoC7(e);
-			if (e.getSource() == BioModelEditor.this.getJMenuItemStochApp()) 
-				connEtoC2(e);
+			if (e.getSource() == getJMenuItemAppDelete()
+					|| e.getSource() == appNewStochApp
+					|| e.getSource() == appNewDeterministicApp
+					|| e.getSource() == getJMenuItemAppRename()
+					|| e.getSource() == getJMenuItemAppCopy()
+					|| e.getSource() == menuItemAppSpatialCopyAsNonSpatialDeterministic
+					|| e.getSource() == menuItemAppSpatialCopyAsNonSpatialStochastic
+					|| e.getSource() == menuItemAppSpatialCopyAsSpatialDeterministic
+					|| e.getSource() == menuItemAppSpatialCopyAsSpatialStochastic) {
+				applicationMenuItem_ActionPerformed(e)	;	
+			} else if (e.getSource() == getJMenuItemAppAnnotation()) {
+			}
+//			if (e.getSource() == BioModelEditor.this.getCopyMenuItem()) 
+//				connEtoC3(e);
+//			if (e.getSource() == BioModelEditor.this.getOpenAppMenuItem()) 
+//				connEtoC4(e);
+//			if (e.getSource() == BioModelEditor.this.getDeleteMenuItem()) 
+//				connEtoC5(e);
+//			if (e.getSource() == BioModelEditor.this.getRenameMenuItem()) 
+//				connEtoC6(e);
+//			if (e.getSource() == BioModelEditor.this.getBioModelTreePanel1()) 
+//				connEtoC1(e);
+//			if (e.getSource() == BioModelEditor.this.getJMenuItemNonStochApp()) 
+//				connEtoC7(e);
+//			if (e.getSource() == BioModelEditor.this.getJMenuItemStochApp()) 
+//				connEtoC2(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == BioModelEditor.this && (evt.getPropertyName().equals("bioModel"))) 
-				connPtoP3SetTarget();
-			if (evt.getSource() == BioModelEditor.this && (evt.getPropertyName().equals("bioModel"))) 
-				connPtoP1SetTarget();
-			if (evt.getSource() == BioModelEditor.this.getCartoonEditorPanel1() && (evt.getPropertyName().equals("bioModel"))) 
-				connPtoP1SetSource();
-			if (evt.getSource() == BioModelEditor.this && (evt.getPropertyName().equals("documentManager"))) 
-				connPtoP2SetTarget();
-			if (evt.getSource() == BioModelEditor.this.getCartoonEditorPanel1() && (evt.getPropertyName().equals("documentManager"))) 
-				connPtoP2SetSource();
-			if (evt.getSource() == getBioModelTreePanel1() && (evt.getPropertyName().equals(BioModelTreePanel.PROPERTY_NAME_SELECTED_VERSIONABLE))) {
-				updateMenuOnSelectionChange();
-			}
+			if (evt.getSource() == BioModelEditor.this && (evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL))) 
+				onPropertyChange_BioModel();
+//			if (evt.getSource() == BioModelEditor.this && (evt.getPropertyName().equals("bioModel"))) 
+//				connPtoP1SetTarget();
+//			if (evt.getSource() == BioModelEditor.this.getCartoonEditorPanel1() && (evt.getPropertyName().equals("bioModel"))) 
+//				connPtoP1SetSource();
+			if (evt.getSource() == BioModelEditor.this && (evt.getPropertyName().equals(PROPERTY_NAME_DOCUMENT_MANAGER))) 
+				getBioModelEditorStructurePanel().setDocumentManager(getDocumentManager());
+//			if (evt.getSource() == BioModelEditor.this.getCartoonEditorPanel1() && (evt.getPropertyName().equals("documentManager"))) 
+//				connPtoP2SetSource();
+//			if (evt.getSource() == getBioModelTreePanel1() && (evt.getPropertyName().equals(BioModelTreePanel.PROPERTY_NAME_SELECTED_VERSIONABLE))) {
+//				updateMenuOnSelectionChange();
+//			}
+			if (evt.getPropertyName().equals(InitialConditionsPanel.PARAMETER_NAME_SELECTED_SPECIES_CONTEXT)
+					|| evt.getPropertyName().equals(ReactionSpecsPanel.PARAMETER_NAME_SELECTED_REACTION_STEP)
+					|| evt.getPropertyName().equals(ModelParameterPanel.PROPERTY_NAME_SELECTED_MODEL_PARAMETER)
+					|| evt.getPropertyName().equals(OutputFunctionsPanel.PROPERTY_SELECTED_OUTPUT_FUNCTION)) {
+					if (evt.getNewValue() instanceof SelectionEvent) {
+						getBioModelEditorTreeModel().setSelectedValue((SelectionEvent)evt.getNewValue());
+					}
+				}
 		};
+		
+		public void mouseClicked(MouseEvent e) {
+			if (SwingUtilities.isRightMouseButton(e) && e.getSource() == getBioModelEditorTree()) {			
+				Object node = getBioModelEditorTree().getLastSelectedPathComponent();;
+				if (node == null || !(node instanceof BioModelNode)) {
+					return;
+				}
+				Object selectedObject = ((BioModelNode)node).getUserObject();
+				Point mousePoint = e.getPoint();
+				// offer "New" popup menu only for DataSymbols folder
+				if (selectedObject instanceof BioModelEditorTreeFolderNode) {
+					BioModelEditorTreeFolderNode selectedFolder = (BioModelEditorTreeFolderNode)selectedObject;
+					switch(selectedFolder.getFolderClass()) {
+					case APPLICATTIONS_NODE:	// Data Symbols					
+						getAppsPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
+						break;
+					case DATA_SYMBOLS_NODE:	// Data Symbols					
+						getAddDataPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
+						break;
+					}
+				} else {
+					SimulationContext simContext = getSelectedSimulationContext();
+					if (simContext == null) {
+						return;
+					}
+					if (simContext == selectedObject) {
+						getAppPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
+					} else {
+						// deactivate pop-up menu if simulationContext is spatial or stochastic
+						int dimension = simContext.getGeometry().getDimension();
+						if (dimension == 0 && !simContext.isStoch()) {
+							if (selectedObject instanceof BioModelEditorTreeFolderNode) {
+								BioModelEditorTreeFolderNode stfn = (BioModelEditorTreeFolderNode)selectedObject;
+								if (stfn.getFolderClass() == BioModelEditorTreeFolderClass.EVENTS_NODE) { // "Events"
+									getAddEventPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
+								}
+		
+							} else if (selectedObject instanceof BioEvent) {
+								getDeleteEventPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
+							}
+						}
+					}
+				}
+			} 
+		}
+		public void mouseEntered(MouseEvent e) {}
+		public void mouseExited(MouseEvent e) {}
+		public void mousePressed(MouseEvent e) {}
+		public void mouseReleased(MouseEvent e) {}	
+		
+		public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
+			if (e.getSource() == getBioModelEditorTree())
+				treeValueChanged();
+		}
 	};
 
 /**
@@ -115,664 +337,29 @@ public BioModelEditor() {
 	initialize();
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-public void bioModelTreePanel1_ActionPerformed(java.awt.event.ActionEvent e) {
-	String actionCommand = e.getActionCommand();
-	if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION)) {
-		openApplication();
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_MATH)) {
-		openApplication(ApplicationEditor.TAB_IDX_VIEW_MATH);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_GEOMETRY)) {
-		openApplication(ApplicationEditor.TAB_IDX_SPPR);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_SIMULATION)) {
-		openApplication(ApplicationEditor.TAB_IDX_SIMULATION);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_DETSTOCH)) {
-		openApplication();
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION)) {
-		newApplication(e);
-	}  else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION)) {
-		newApplication(e);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_DELETE_APPLICATION)) {
-		deleteApplication();
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_RENAME_APPLICATION)) {
-		renameApplication();
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION)) {
-		copyApplication();
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION)) {
-		copyApplication(false, true);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION)) {
-		copyApplication(false, false);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION)) {
-		copyApplication(false, false);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION)) {
-		copyApplication(false, true);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION)) {
-		copyApplication(true, false);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION)) {
-		copyApplication(true, true);
-	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_NEW_APPLICATION)) {
-		newApplication(e);
-	} 
-}
-
-
-/**
- * connEtoC1:  (BioModelTreePanel1.action.actionPerformed(java.awt.event.ActionEvent) --> BioModelEditor.bioModelTreePanel1_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.bioModelTreePanel1_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC2:  (NewMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> BioModelEditor.newApplication(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newApplication(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC3:  (CopyMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> BioModelEditor.copyApplication(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.copyApplication();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC4:  (OpenAppMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> BioModelEditor.openApplication(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.openApplication();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC5:  (DeleteMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> BioModelEditor.deleteApplication(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.deleteApplication();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC6:  (RenameMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> BioModelEditor.renameApplication(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.renameApplication();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC7:  (JMenuItemNonStochApp.action.actionPerformed(java.awt.event.ActionEvent) --> BioModelEditor.newApplication()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newApplication(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM1:  (BioModelEditor.initialize() --> jInternalFrameApplication.border)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1() {
-	try {
-		// user code begin {1}
-		// user code end
-		getjInternalFrameApplication().setBorder(null);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP1SetSource:  (BioModelEditor.bioModel <--> CartoonEditorPanel1.bioModel)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			this.setBioModel(getCartoonEditorPanel1().getBioModel());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connPtoP1SetTarget:  (BioModelEditor.bioModel <--> CartoonEditorPanel1.bioModel)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			getCartoonEditorPanel1().setBioModel(this.getBioModel());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connPtoP2SetSource:  (BioModelEditor.documentManager <--> CartoonEditorPanel1.documentManager)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP2SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP2Aligning = true;
-			this.setDocumentManager(getCartoonEditorPanel1().getDocumentManager());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP2Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connPtoP2SetTarget:  (BioModelEditor.documentManager <--> CartoonEditorPanel1.documentManager)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP2SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP2Aligning = true;
-			getCartoonEditorPanel1().setDocumentManager(this.getDocumentManager());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP2Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connPtoP3SetTarget:  (BioModelEditor.bioModel <--> BioModelTreePanel1.theBioModel)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetTarget() {
-	/* Set the target from the source */
-	try {
-		getBioModelTreePanel1().setTheBioModel(this.getBioModel());
-		// user code begin {1}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-private void copyApplication() {
-	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
-	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
-	if (selection == null && selectedParent == null) {
-		PopupGenerator.showErrorDialog(this, "Please select an application.");
-		return;
-	}	
-	if(!(selection instanceof SimulationContext)) {
-		PopupGenerator.showWarningDialog(this, "This will copy the whole application.");
-		selection = selectedParent;
-	}
-	SimulationContext selectedSimContext = (SimulationContext)selection;
-	copyApplication(selectedSimContext.getGeometry().getDimension() > 0, selectedSimContext.isStoch());
-}
-/**
- * Comment
- */
-private void copyApplication(final boolean bSpatial, final boolean bStochastic) {
-	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
-	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
-	if (selection == null && selectedParent == null) {
-		PopupGenerator.showErrorDialog(this, "Please select an application.");
-		return;
-	}	
-	if(!(selection instanceof SimulationContext)) {
-		PopupGenerator.showWarningDialog(this, "This will copy the whole application.");
-		selection = selectedParent;
-	}
-
-	final SimulationContext selectedSimContext = (SimulationContext)selection;
-	try {
-		String newApplicationName = null;
-		
-		if (bStochastic) {
-			//check validity if copy to stochastic application
-			String message = getBioModel().getModel().isValidForStochApp();
-			if(!message.equals(""))
-			{
-				throw new Exception(message);
-			}
-		}
-		
-		//get valid application name
-		try{
-			newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
-		}catch(UserCancelException e){
-			return;
-		}
-		if (newApplicationName != null) {
-			if (newApplicationName.equals("")) {
-				PopupGenerator.showErrorDialog(this, "Blank name not allowed");
-			} else {
-				final String newName = newApplicationName;
-				AsynchClientTask task1 = new AsynchClientTask("copying", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-					
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						SimulationContext newSimulationContext = copySimulationContext(selectedSimContext, newName, bSpatial, bStochastic);
-						hashTable.put("newSimulationContext", newSimulationContext);
-					}
-				};
-				AsynchClientTask task2 = new AsynchClientTask("showing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-					
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
-						getBioModel().addSimulationContext(newSimulationContext);
-						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
-					}
-				};
-				ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
-			}
-		}
-	} catch (Throwable exc) {
-		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Failed to Copy Application!\n"+exc.getMessage(), exc);
-	}
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (1/19/01 3:31:00 PM)
- * @param srcSimContext cbit.vcell.mapping.SimulationContext
- * @exception java.beans.PropertyVetoException The exception description.
- * @throws ExpressionException 
- * @throws MappingException 
- */
-private SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, boolean bStoch) throws PropertyVetoException, ExpressionException, MappingException,  GeometryException, ImageException, ExpressionException 
-{
-	//create a geometry for the copy of simulation context
-	Geometry newClonedGeometry = new Geometry(srcSimContext.getGeometry());
-	newClonedGeometry.precomputeAll();
-	//if stoch copy to ode, we need to check is stoch is using particles. If yes, should convert particles to concentraton.
-	//the other 3 cases are fine. ode->ode, ode->stoch, stoch-> stoch 
-	SimulationContext destSimContext = new SimulationContext(srcSimContext,newClonedGeometry, bStoch);
-	if(srcSimContext.isStoch() && !srcSimContext.isUsingConcentration() && !bStoch)
-	{
-		try {
-			destSimContext.convertSpeciesIniCondition(true);
-		} catch (MappingException e) {
-			e.printStackTrace();
-			throw new java.beans.PropertyVetoException(e.getMessage(), null);
-		}
-	}
-	if (srcSimContext.getGeometry().getDimension() > 0 && !bSpatial) { // copy the size over
-		destSimContext.setGeometry(new Geometry("nonspatial", 0));
-		StructureMapping srcStructureMappings[] = srcSimContext.getGeometryContext().getStructureMappings();
-		StructureMapping destStructureMappings[] = destSimContext.getGeometryContext().getStructureMappings();
-		for (StructureMapping destStructureMapping : destStructureMappings) {
-			for (StructureMapping srcStructureMapping : srcStructureMappings) {
-				if (destStructureMapping.getStructure() == srcStructureMapping.getStructure()) {
-					if (srcStructureMapping.getUnitSizeParameter() != null) {
-						Expression sizeRatio = srcStructureMapping.getUnitSizeParameter().getExpression();
-						GeometryClass srcGeometryClass = srcStructureMapping.getGeometryClass();
-						GeometricRegion[] srcGeometricRegions = srcSimContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(srcGeometryClass);
-						if (srcGeometricRegions != null) {
-							double size = 0;
-							for (GeometricRegion srcGeometricRegion : srcGeometricRegions) {
-								size += srcGeometricRegion.getSize();
-							}
-							destStructureMapping.getSizeParameter().setExpression(Expression.mult(sizeRatio, new Expression(size)));
-						}
-					}
-					break;
-				}
-			}
-		}
-	}
-	destSimContext.setName(newSimulationContextName);	
-	return destSimContext;
-}
-
-/**
- * Comment
- */
-private void deleteApplication() {
-	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
-	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
-	if (selection == null && selectedParent == null) {
-		PopupGenerator.showErrorDialog(this, "Please select an application.");
-		return;
-	}	
-	if(!(selection instanceof SimulationContext)) {
-		PopupGenerator.showWarningDialog(this, "This will delete the whole application.");
-		selection = selectedParent;
-	}
-	try {
-		if (selection instanceof SimulationContext) {
-			//
-			// BioModel enforces that there be no orphaned Simulations in BioModel.vetoableChange(...)
-			// Check for no Simulations in SimualtionContext that is to be removed
-			// otherwise a nonsense error message will be generated by BioModel
-			//
-			boolean bHasSims = false;
-			Simulation[] simulations = ((SimulationContext)selection).getSimulations();
-			if(simulations != null && simulations.length != 0){
-				bHasSims = true;
-			}
-	
-			if (bHasSims) {
-				String confirm = PopupGenerator.showWarningDialog(getBioModelWindowManager(), getBioModelWindowManager().getUserPreferences(), UserMessage.warn_DeleteSelectedAppWithSims, ((SimulationContext)selection).getName());
-				if (!confirm.equals(UserMessage.OPTION_CANCEL)) {
-					for (Simulation simulation : simulations) {
-						getBioModel().removeSimulation(simulation);
-					}
-					getBioModel().removeSimulationContext((SimulationContext)selection);
-				}
-			} else {
-				String confirm = PopupGenerator.showWarningDialog(getBioModelWindowManager(), getBioModelWindowManager().getUserPreferences(), UserMessage.warn_DeleteSelectedApp, ((SimulationContext)selection).getName());		
-				if (!confirm.equals(UserMessage.OPTION_CANCEL)) {
-					getBioModel().removeSimulationContext((SimulationContext)selection);
-				}
-			}
-		}
-	} catch (Exception exc) {
-		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Failed to Delete!\n"+exc.getMessage(), exc);
-	}
-}
-
-
-/**
- * Return the ApplicationMenu property value.
- * @return javax.swing.JMenu
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenu getApplicationMenu() {
-	if (ivjApplicationMenu == null) {
-		try {
-			ivjApplicationMenu = new javax.swing.JMenu();
-			ivjApplicationMenu.setName("ApplicationMenu");
-			ivjApplicationMenu.setMnemonic('a');
-			ivjApplicationMenu.setIcon(new DownArrowIcon());
-			ivjApplicationMenu.setText("Applications");
-			ivjApplicationMenu.setHorizontalTextPosition(SwingConstants.LEFT);
-			ivjApplicationMenu.add(getJMenuNew());
-			ivjApplicationMenu.add(getCopyMenuItem());
-			ivjApplicationMenu.add(getJSeparator1());
-			ivjApplicationMenu.add(getOpenAppMenuItem());
-			ivjApplicationMenu.add(getDeleteMenuItem());
-			ivjApplicationMenu.add(getRenameMenuItem());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjApplicationMenu;
-}
-
-/**
- * Gets the bioModel property (cbit.vcell.biomodel.BioModel) value.
- * @return The bioModel property value.
- * @see #setBioModel
- */
-public BioModel getBioModel() {
-	return fieldBioModel;
-}
-
-
-/**
- * Return the BioModelTreePanel1 property value.
- * @return cbit.vcell.desktop.BioModelTreePanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private BioModelTreePanel getBioModelTreePanel1() {
-	if (ivjBioModelTreePanel1 == null) {
-		try {
-			ivjBioModelTreePanel1 = new BioModelTreePanel();
-			ivjBioModelTreePanel1.setName("BioModelTreePanel1");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjBioModelTreePanel1;
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (5/7/2004 5:40:13 PM)
- * @return cbit.vcell.client.desktop.BioModelWindowManager
- */
-public BioModelWindowManager getBioModelWindowManager() {
-	return bioModelWindowManager;
-}
-
-
-/**
- * Return the CartoonEditorPanel1 property value.
- * @return cbit.vcell.graph.CartoonEditorPanelFixed
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private CartoonEditorPanelFixed getCartoonEditorPanel1() {
-	if (ivjCartoonEditorPanel1 == null) {
-		try {
-			ivjCartoonEditorPanel1 = new CartoonEditorPanelFixed();
-			ivjCartoonEditorPanel1.setName("CartoonEditorPanel1");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjCartoonEditorPanel1;
-}
-
-
-/**
- * Return the CopyMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getCopyMenuItem() {
-	if (ivjCopyMenuItem == null) {
-		try {
-			ivjCopyMenuItem = new javax.swing.JMenuItem();
-			ivjCopyMenuItem.setName("CopyMenuItem");
-			ivjCopyMenuItem.setMnemonic('c');
-			ivjCopyMenuItem.setText("Copy");
-			ivjCopyMenuItem.setActionCommand(GuiConstants.ACTIONCMD_COPY_APPLICATION);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjCopyMenuItem;
-}
-
-/**
- * Return the DeleteMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getDeleteMenuItem() {
-	if (ivjDeleteMenuItem == null) {
-		try {
-			ivjDeleteMenuItem = new javax.swing.JMenuItem();
-			ivjDeleteMenuItem.setName("DeleteMenuItem");
-			ivjDeleteMenuItem.setMnemonic('d');
-			ivjDeleteMenuItem.setText("Delete");
-			ivjDeleteMenuItem.setActionCommand(GuiConstants.ACTIONCMD_DELETE_APPLICATION);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjDeleteMenuItem;
-}
-
-/**
- * Gets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @return The documentManager property value.
- * @see #setDocumentManager
- */
 public DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
+/**
+ * Method generated to support the promotion of the optimizationService attribute.
+ * @return cbit.vcell.opt.solvers.OptimizationService
+ */
+public OptimizationService getOptimizationService() {
+	return getoptTestPanel().getOptimizationService();
+}
+
 
 /**
- * Return the jInternalFrameApplication property value.
- * @return cbit.gui.JInternalFrameEnhanced
+ * Return the optTestPanel property value.
+ * @return cbit.vcell.modelopt.gui.OptTestPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public JInternalFrameEnhanced getjInternalFrameApplication() {
-	if (ivjjInternalFrameApplication == null) {
+private OptTestPanel getoptTestPanel() {
+	if (ivjoptTestPanel == null) {
 		try {
-			ivjjInternalFrameApplication = new JInternalFrameEnhanced();
-			ivjjInternalFrameApplication.setName("jInternalFrameApplication");
-			ivjjInternalFrameApplication.setVisible(true);
-			ivjjInternalFrameApplication.setStripped(true);
-			ivjjInternalFrameApplication.setJMenuBar(getjInternalFrameApplicationJMenuBar());
-			getjInternalFrameApplication().add(getJInternalFrameEnhancedContentPane());
+			ivjoptTestPanel = new OptTestPanel();
+			ivjoptTestPanel.setName("optTestPanel");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -781,43 +368,19 @@ public JInternalFrameEnhanced getjInternalFrameApplication() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjjInternalFrameApplication;
-}
-
-/**
- * Return the jInternalFrameApplicationJMenuBar property value.
- * @return javax.swing.JMenuBar
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuBar getjInternalFrameApplicationJMenuBar() {
-	if (ivjjInternalFrameApplicationJMenuBar == null) {
-		try {
-			ivjjInternalFrameApplicationJMenuBar = new javax.swing.JMenuBar();
-			ivjjInternalFrameApplicationJMenuBar.setName("jInternalFrameApplicationJMenuBar");
-			ivjjInternalFrameApplicationJMenuBar.add(getApplicationMenu());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjjInternalFrameApplicationJMenuBar;
+	return ivjoptTestPanel;
 }
 
 
 /**
- * Return the JInternalFrameEnhancedContentPane property value.
+ * Return the ParameterEstimationPanel property value.
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJInternalFrameEnhancedContentPane() {
-	if (ivjJInternalFrameEnhancedContentPane == null) {
+private AnalysisPanel getParameterEstimationPanel() {
+	if (ivjParameterEstimationPanel == null) {
 		try {
-			ivjJInternalFrameEnhancedContentPane = new javax.swing.JPanel();
-			ivjJInternalFrameEnhancedContentPane.setName("JInternalFrameEnhancedContentPane");
-			ivjJInternalFrameEnhancedContentPane.setLayout(null);
+			ivjParameterEstimationPanel = new AnalysisPanel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -826,70 +389,63 @@ private javax.swing.JPanel getJInternalFrameEnhancedContentPane() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJInternalFrameEnhancedContentPane;
+	return ivjParameterEstimationPanel;
 }
 
 /**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
+ * Return the SimulationListPanel1 property value.
+ * @return cbit.vcell.client.desktop.simulation.SimulationListPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel2() {
-	if (ivjJLabel2 == null) {
+private SimulationListPanel getSimulationListPanel() {
+	if (ivjSimulationListPanel == null) {
 		try {
-			ivjJLabel2 = new javax.swing.JLabel();
-			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Physiology");
-			ivjJLabel2.setFont(ivjJLabel2.getFont().deriveFont(Font.BOLD));
-			ivjJLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			// user code begin {1}
-			// user code end
+			ivjSimulationListPanel = new SimulationListPanel();
+			ivjSimulationListPanel.setName("SimulationListPanel");
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
-	return ivjJLabel2;
+	return ivjSimulationListPanel;
 }
 
-
-/**
- * Return the JMenuItemNonStochApp property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getJMenuItemNonStochApp() {
-	if (ivjJMenuItemNonStochApp == null) {
+private BioModelEditorSpeciesPanel getBioModelEditorSpeciesPanel() {
+	if (bioModelEditorSpeciesPanel == null) {
 		try {
-			ivjJMenuItemNonStochApp = new javax.swing.JMenuItem();
-			ivjJMenuItemNonStochApp.setName("JMenuItemNonStochApp");
-			ivjJMenuItemNonStochApp.setText("Deterministic Application");
-			ivjJMenuItemNonStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION);
-			// user code begin {1}
-			// user code end
+			bioModelEditorSpeciesPanel = new BioModelEditorSpeciesPanel();
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
-	return ivjJMenuItemNonStochApp;
+	return bioModelEditorSpeciesPanel;
 }
 
-/**
- * Return the NewMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getJMenuItemStochApp() {
-	if (ivjJMenuItemStochApp == null) {
+private BioModelEditorReactionPanel getBioModelEditorReactionPanel() {
+	if (bioModelEditorReactionPanel == null) {
 		try {
-			ivjJMenuItemStochApp = new javax.swing.JMenuItem();
-			ivjJMenuItemStochApp.setName("JMenuItemStochApp");
-			ivjJMenuItemStochApp.setMnemonic('n');
-			ivjJMenuItemStochApp.setText("Stochastic Application");
-			ivjJMenuItemStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION);
+			bioModelEditorReactionPanel = new BioModelEditorReactionPanel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return bioModelEditorReactionPanel;
+}
+
+private BioModelEditorStructurePanel getBioModelEditorStructurePanel() {
+	if (bioModelEditorStructurePanel == null) {
+		try {
+			bioModelEditorStructurePanel = new BioModelEditorStructurePanel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return bioModelEditorStructurePanel;
+}
+
+private AnnotationEditorPanel getAnnotationEditorPanel() {
+	if (ivjAnnotationEditorPanel  == null) {
+		try {
+			ivjAnnotationEditorPanel = new AnnotationEditorPanel();
+			ivjAnnotationEditorPanel.setName("AnnotationEditorPanel");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -898,156 +454,15 @@ private javax.swing.JMenuItem getJMenuItemStochApp() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJMenuItemStochApp;
+	return ivjAnnotationEditorPanel;
 }
 
 /**
- * Return the JMenuNew property value.
- * @return javax.swing.JMenu
+ * Method generated to support the promotion of the userPreferences attribute.
+ * @return cbit.vcell.client.server.UserPreferences
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenu getJMenuNew() {
-	if (ivjJMenuNew == null) {
-		try {
-			ivjJMenuNew = new javax.swing.JMenu();
-			ivjJMenuNew.setName("JMenuNew");
-			ivjJMenuNew.setMnemonic('N');
-			ivjJMenuNew.setText("New");
-			ivjJMenuNew.add(getJMenuItemNonStochApp());
-			ivjJMenuNew.add(getJMenuItemStochApp());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuNew;
-}
-
-
-/**
- * Return the JPanel1 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel1() {
-	if (ivjJPanel1 == null) {
-		try {
-			ivjJPanel1 = new javax.swing.JPanel();
-			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setPreferredSize(new java.awt.Dimension(50, 385));
-			ivjJPanel1.setBorder(new javax.swing.border.EtchedBorder());
-			ivjJPanel1.setLayout(new java.awt.BorderLayout());
-			ivjJPanel1.setMinimumSize(new java.awt.Dimension(50, 214));
-			getJPanel1().add(getBioModelTreePanel1(), "Center");
-			getJPanel1().add(getjInternalFrameApplication(), "North");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel1;
-}
-
-/**
- * Return the JPanel2 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel2() {
-	if (ivjJPanel2 == null) {
-		try {
-			ivjJPanel2 = new javax.swing.JPanel();
-			ivjJPanel2.setName("JPanel2");
-			ivjJPanel2.setPreferredSize(new java.awt.Dimension(50, 102));
-			ivjJPanel2.setLayout(new java.awt.BorderLayout());
-			ivjJPanel2.setMinimumSize(new java.awt.Dimension(50, 102));
-			getJPanel2().add(getJLabel2(), "North");
-			getJPanel2().add(getCartoonEditorPanel1(), "Center");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel2;
-}
-
-/**
- * Return the JSeparator1 property value.
- * @return javax.swing.JSeparator
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSeparator getJSeparator1() {
-	if (ivjJSeparator1 == null) {
-		try {
-			ivjJSeparator1 = new javax.swing.JSeparator();
-			ivjJSeparator1.setName("JSeparator1");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSeparator1;
-}
-
-
-/**
- * Return the OpenAppMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getOpenAppMenuItem() {
-	if (ivjOpenAppMenuItem == null) {
-		try {
-			ivjOpenAppMenuItem = new javax.swing.JMenuItem();
-			ivjOpenAppMenuItem.setName("OpenAppMenuItem");
-			ivjOpenAppMenuItem.setMnemonic('o');
-			ivjOpenAppMenuItem.setText("Open");
-			ivjOpenAppMenuItem.setActionCommand(GuiConstants.ACTIONCMD_OPEN_APPLICATION);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjOpenAppMenuItem;
-}
-
-/**
- * Return the RenameMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getRenameMenuItem() {
-	if (ivjRenameMenuItem == null) {
-		try {
-			ivjRenameMenuItem = new javax.swing.JMenuItem();
-			ivjRenameMenuItem.setName("RenameMenuItem");
-			ivjRenameMenuItem.setMnemonic('r');
-			ivjRenameMenuItem.setText("Rename");
-			ivjRenameMenuItem.setActionCommand(GuiConstants.ACTIONCMD_RENAME_APPLICATION);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjRenameMenuItem;
+public UserPreferences getUserPreferences() {
+	return getoptTestPanel().getUserPreferences();
 }
 
 /**
@@ -1070,19 +485,29 @@ private void handleException(java.lang.Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
-	getCopyMenuItem().addActionListener(ivjEventHandler);
-	getOpenAppMenuItem().addActionListener(ivjEventHandler);
-	getDeleteMenuItem().addActionListener(ivjEventHandler);
-	getRenameMenuItem().addActionListener(ivjEventHandler);
-	getBioModelTreePanel1().addActionListener(ivjEventHandler);
-	this.addPropertyChangeListener(ivjEventHandler);
-	getCartoonEditorPanel1().addPropertyChangeListener(ivjEventHandler);
-	getJMenuItemNonStochApp().addActionListener(ivjEventHandler);
-	getJMenuItemStochApp().addActionListener(ivjEventHandler);
-	connPtoP3SetTarget();
-	connPtoP1SetTarget();
-	connPtoP2SetTarget();
-	getBioModelTreePanel1().addPropertyChangeListener(ivjEventHandler);
+//	getViewModifyGeometryButton().addActionListener(ivjEventHandler);
+	addPropertyChangeListener(ivjEventHandler);
+	
+	getSimulationListPanel().addPropertyChangeListener(ivjEventHandler);
+	getInitialConditionsPanel().addPropertyChangeListener(ivjEventHandler);
+	getReactionSpecsPanel().addPropertyChangeListener(ivjEventHandler);
+	getModelParameterPanel().addPropertyChangeListener(ivjEventHandler);
+		
+	getGeometrySummaryViewer().addActionListener(ivjEventHandler);
+	getBioModelEditorTree().addTreeSelectionListener(ivjEventHandler);
+	getBioModelEditorTree().addMouseListener(ivjEventHandler);
+	getBioModelEditorTree().addTreeExpansionListener(getBioModelEditorTreeModel());
+	getEventsDisplayPanel().addPropertyChangeListener(ivjEventHandler);
+	getMenuItemAddEvent().addActionListener(ivjEventHandler);
+	getMenuItemDeleteEvent().addActionListener(ivjEventHandler);
+	getMenuItemAddGenericData().addActionListener(ivjEventHandler);
+	getMenuItemAddVFrapData().addActionListener(ivjEventHandler);
+	
+	getJMenuItemAppDelete().addActionListener(ivjEventHandler);
+	getJMenuAppNew().addActionListener(ivjEventHandler);
+	getJMenuItemAppRename().addActionListener(ivjEventHandler);
+	getJMenuAppCopyAs().addActionListener(ivjEventHandler);
+	getJMenuItemAppCopy().addActionListener(ivjEventHandler);
 }
 
 /**
@@ -1091,61 +516,540 @@ private void initConnections() throws java.lang.Exception {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
-		setName("BioModelEditor");
-		setLayout(new java.awt.GridBagLayout());
-		setSize(800, 600);
-
-		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 1; constraintsJPanel1.gridy = 0;
-		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel1.weightx = 1.0;
-		constraintsJPanel1.weighty = 1.0;
-		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel1(), constraintsJPanel1);
-
-		java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
-		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 0;
-		constraintsJPanel2.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel2.weightx = 3.0;
-		constraintsJPanel2.weighty = 1.0;
-		constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel2(), constraintsJPanel2);
+		setName("ApplicationEditor");
+		setLayout(new BorderLayout());		
+		add(getSplitPane(), BorderLayout.CENTER);
+		
 		initConnections();
-		connEtoM1();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
+}
+
+private JSplitPane getSplitPane() {
+	if (splitPane == null) {
+		splitPane = new JSplitPane();
+		splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+		
+		splitPane.setLeftComponent(getTreePanel());
+		splitPane.setRightComponent(getBioModelEditorStructurePanel());
+	}
+	return splitPane;
+}
+
+private javax.swing.JScrollPane getTreePanel() {
+	if (treePanel == null) {
+		try {
+			treePanel = new javax.swing.JScrollPane();
+			treePanel.setName("LeftTreePanel");
+			Dimension dim = new Dimension(200, 20);
+			treePanel.setPreferredSize(dim);
+			treePanel.setViewportView(getBioModelEditorTree());
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return treePanel;
 }
 
 /**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
+ * Insert the method's description here.
+ * Creation date: (6/8/2004 2:27:03 PM)
+ * @param simOwner cbit.vcell.document.SimulationOwner
  */
-public static void main(java.lang.String[] args) {
-	try {
-		JFrame frame = new javax.swing.JFrame();
-		BioModelEditor aBioModelEditor;
-		aBioModelEditor = new BioModelEditor();
-		frame.setContentPane(aBioModelEditor);
-		frame.setSize(aBioModelEditor.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		java.awt.Insets insets = frame.getInsets();
-		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
+void resetSimContext(SimulationContext simContext) {
+//	/* most likely we got the same thing back (e.g. during document reset after save), so keep current selection in simulation panel */
+//	// check whether it looks like same old simcontext; if so, save current selection list
+//	int[] selections = null;
+//	if (getSimulationContext() != null && simContext != null) {
+//		Simulation[] oldValue = getSimulationWorkspace().getSimulationOwner().getSimulations();
+//		Simulation[] simulations = simContext.getSimulations();
+//		if (oldValue != null && simulations != null && oldValue.length == simulations.length) {
+//			boolean sameNames = true;
+//			for (int i = 0; i < oldValue.length; i++){
+//				if(!oldValue[i].getName().equals(simulations[i].getName())) {
+//					sameNames = false;
+//					break;
+//				}
+//			}
+//			if (sameNames) {
+//				selections = getSimulationListPanel().getSelectedRows();
+//			}
+//		}
+//	}
+//	// reset the thing
+//	getSimulationWorkspace().setSimulationOwner(simContext);
+//	// now set the selection back if appropriate
+//	if (selections != null) {
+//		getSimulationListPanel().setSelectedRows(selections);
+//	}
+}
+
+/**
+ * Method generated to support the promotion of the optimizationService attribute.
+ * @param arg1 cbit.vcell.opt.solvers.OptimizationService
+ */
+public void setOptimizationService(OptimizationService arg1) {
+	getoptTestPanel().setOptimizationService(arg1);
+}
+
+
+/**
+ * Sets the simulationWorkspace property (cbit.vcell.client.desktop.simulation.SimulationWorkspace) value.
+ * @param simulationWorkspace The new value for the property.
+ * @see #getSimulationWorkspace
+ */
+public void setSimulationWorkspace(SimulationWorkspace simulationWorkspace) {
+//	SimulationWorkspace oldValue = fieldSimulationWorkspace;
+//	fieldSimulationWorkspace = simulationWorkspace;
+//	firePropertyChange(PROPERTY_NAME_SIMULATION_WORKSPACE, oldValue, simulationWorkspace);
+}
+
+/**
+ * Method generated to support the promotion of the userPreferences attribute.
+ * @param arg1 cbit.vcell.client.server.UserPreferences
+ */
+public void setUserPreferences(UserPreferences arg1) {
+	getoptTestPanel().setUserPreferences(arg1);
+}
+
+private DataSymbolsPanel getDataSymbolsPanel() {
+	if (dataSymbolsPanel == null) {
+		try {
+			dataSymbolsPanel = new DataSymbolsPanel();
+			dataSymbolsPanel.setName("DataSymbolsPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return dataSymbolsPanel;
+}
+
+//------------- Right Panel	-----------------------
+private GeometrySummaryViewer getGeometrySummaryViewer() {
+	if (ivjGeometrySummaryViewer == null) {
+		try {
+			ivjGeometrySummaryViewer = new GeometrySummaryViewer();
+			ivjGeometrySummaryViewer.setName("GeometrySummaryViewer");
+			ivjGeometrySummaryViewer.setPreferredSize(new Dimension(500,500));
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjGeometrySummaryViewer;
+}
+
+private InitialConditionsPanel getInitialConditionsPanel() {
+	if (initialConditionsPanel == null) {
+		try {
+			initialConditionsPanel = new InitialConditionsPanel();
+			initialConditionsPanel.setName("InitialConditionsPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return initialConditionsPanel;
+}
+
+private ModelParameterPanel getModelParameterPanel() {
+	if (modelParameterPanel == null) {
+		try {
+			modelParameterPanel = new ModelParameterPanel(true);
+			modelParameterPanel.setName("ModelParameterPanel");
+			modelParameterPanel.setEditable(false);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return modelParameterPanel;
+}
+
+private ReactionSpecsPanel getReactionSpecsPanel() {
+	if (reactionSpecsPanel == null) {
+		try {
+			reactionSpecsPanel = new ReactionSpecsPanel();
+			reactionSpecsPanel.setName("ReactionSpecsPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return reactionSpecsPanel;
+}
+
+private javax.swing.JTree getBioModelEditorTree() {
+	if (bioModelEditorTree == null) {
+		try {
+			bioModelEditorTree = new javax.swing.JTree();
+			bioModelEditorTree.setName("applicationTree");
+			ToolTipManager.sharedInstance().registerComponent(bioModelEditorTree);
+			bioModelEditorTree.setCellRenderer(new BioModelEditorTreeCellRenderer(bioModelEditorTree));
+			bioModelEditorTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+			bioModelEditorTree.setModel(getBioModelEditorTreeModel());
+			bioModelEditorTree.setRowHeight(bioModelEditorTree.getRowHeight() + 2);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return bioModelEditorTree;
+}
+
+private BioModelEditorTreeModel getBioModelEditorTreeModel() {
+	if (bioModelEditorTreeModel == null) {
+		try {
+			bioModelEditorTreeModel = new BioModelEditorTreeModel(getBioModelEditorTree());
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return bioModelEditorTreeModel;
+}
+
+private StructureMappingCartoonPanel getStructureMappingCartoonPanel() {
+	if (ivjStructureMappingCartoonPanel == null) {
+		try {
+			ivjStructureMappingCartoonPanel = new StructureMappingCartoonPanel();
+			ivjStructureMappingCartoonPanel.setName("StructureMappingCartoonPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjStructureMappingCartoonPanel;
+}
+
+private EventsDisplayPanel getEventsDisplayPanel() {
+	if (eventsDisplayPanel == null) {
+		try {
+			eventsDisplayPanel = new EventsDisplayPanel(true);
+			eventsDisplayPanel.setName("EventsDisplayPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return eventsDisplayPanel;
+}
+
+private MathematicsPanel getMathematicsPanel() {
+	if (mathematicsPanel == null) {
+		try {
+			mathematicsPanel = new MathematicsPanel();
+			mathematicsPanel.setName("MathematicsPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return mathematicsPanel;
+}
+
+private ElectricalMembraneMappingPanel getElectricalMembraneMappingPanel() {
+	if (ivjElectricalMembraneMappingPanel == null) {
+		try {
+			ivjElectricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
+			ivjElectricalMembraneMappingPanel.setName("ElectricalMembraneMappingPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjElectricalMembraneMappingPanel;
+}
+
+private SimulationContext getSelectedSimulationContext() {
+	Object node = getBioModelEditorTree().getLastSelectedPathComponent();;
+	if (!(node instanceof BioModelNode)) {
+		return null;
+	}
+	BioModelNode n = (BioModelNode)node;
+	while (true) {
+		Object userObject = n.getUserObject();
+		if (userObject instanceof SimulationContext) {
+			return (SimulationContext)userObject;
+		}
+		TreeNode parent = n.getParent();
+		if (parent == null || !(parent instanceof BioModelNode)) {
+			return null;
+		}
+		n = (BioModelNode)parent;
 	}
 }
 
+private void treeValueChanged() {
+	try {
+		Object node = getBioModelEditorTree().getLastSelectedPathComponent();;
+		if (node == null || !(node instanceof BioModelNode)) {
+			return;
+		}
+		BioModelNode selectedNode = (BioModelNode)node;
+	    Object userObject = selectedNode.getUserObject();
+	    SimulationContext simulationContext = getSelectedSimulationContext();
+	    if (userObject instanceof BioModel) {
+	    	setRightPanel(null, null, null);
+	    } else if (userObject instanceof BioModelEditorTreeFolderNode) { // it's a folder
+	    	
+	    	setRightPanel((BioModelEditorTreeFolderNode)userObject, null, simulationContext);
+	    } else if (userObject instanceof SimulationContext){
+	    	setRightPanel(null, null, null);
+	    } else {
+	        Object leaf = userObject;
+			BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
+			userObject =  parentNode.getUserObject();
+			BioModelEditorTreeFolderNode parent = (BioModelEditorTreeFolderNode)userObject;
+			setRightPanel(parent, leaf, simulationContext);
+	    }
+	}catch (Exception ex){
+		ex.printStackTrace(System.out);
+	}
+}
+
+private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafObject, SimulationContext simulationContext) {
+	JComponent rightPanel = emptyPanel;
+	if (folderNode != null) {
+		BioModelEditorTreeFolderClass folderClass = folderNode.getFolderClass();
+		if (folderClass == BioModelEditorTreeFolderClass.STRUCTURES_NODE) {
+			if (leafObject == null) {
+				rightPanel = getBioModelEditorStructurePanel();
+			} else {
+				if (leafObject instanceof Feature) {
+					rightPanel = getFeatureEditorPanel();
+					getFeatureEditorPanel().setFeature((Feature)leafObject);
+				} else {
+					rightPanel = getMembraneEditorPanel();
+					getMembraneEditorPanel().setMembrane((Membrane)leafObject);					
+				}
+			}
+		} else if (folderClass == BioModelEditorTreeFolderClass.SPECIES_NODE) {
+			if (leafObject == null) {
+				rightPanel = getBioModelEditorSpeciesPanel();
+			} else {
+				rightPanel = getSpeciesEditorPanel();
+				getSpeciesEditorPanel().setModel(getBioModel().getModel());
+				getSpeciesEditorPanel().setSpeciesContext((SpeciesContext)leafObject);
+			}
+		} else if (folderClass == BioModelEditorTreeFolderClass.REACTIONS_NODE) {
+			if (leafObject == null) {
+				rightPanel = getBioModelEditorReactionPanel();
+			} else if (leafObject instanceof SimpleReaction) {
+				rightPanel = getSimpleReactionPanel();
+				getSimpleReactionPanel().setSimpleReaction((SimpleReaction)leafObject);
+			} else if (leafObject instanceof FluxReaction) {
+				rightPanel = getFluxReactionPanel();
+				getFluxReactionPanel().setFluxReaction((FluxReaction)leafObject);
+			}
+		} else if (folderClass == BioModelEditorTreeFolderClass.ANNOTATION_NODE) {
+			rightPanel = getAnnotationEditorPanel();
+			if (getBioModel() != null) {
+				String annot =  getBioModel().getVCMetaData().getFreeTextAnnotation(getBioModel());
+				getAnnotationEditorPanel().setText(annot);
+			}
+		} else if (folderClass == BioModelEditorTreeFolderClass.MATHEMATICS_NODE) {
+			rightPanel = getMathematicsPanel();
+			getMathematicsPanel().setSimulationContext(simulationContext);
+		} else if (folderClass == BioModelEditorTreeFolderClass.ANALYSIS_NODE) {
+			rightPanel = getParameterEstimationPanel();
+		} else if (folderClass == BioModelEditorTreeFolderClass.GEOMETRY_NODE) {
+			rightPanel = getGeometrySummaryViewer();
+			getGeometrySummaryViewer().setGeometry(simulationContext.getGeometry());
+		} else if(folderClass == BioModelEditorTreeFolderClass.STRUCTURE_MAPPING_NODE) {
+			rightPanel = getStructureMappingCartoonPanel();
+			getStructureMappingCartoonPanel().setSimulationContext(simulationContext);
+		} else if(folderClass == BioModelEditorTreeFolderClass.INITIAL_CONDITIONS_NODE) {
+			rightPanel = getInitialConditionsPanel();
+			getInitialConditionsPanel().setSimulationContext(simulationContext);
+			getInitialConditionsPanel().setScrollPaneTableCurrentRow((SpeciesContext)leafObject);	// notify right panel about selection change
+		} else if(folderClass == BioModelEditorTreeFolderClass.GLOBAL_PARAMETER_NODE) {
+			rightPanel = getModelParameterPanel();
+			getModelParameterPanel().setModel(getBioModel().getModel());
+			getModelParameterPanel().setScrollPaneTableCurrentRow((ModelParameter)leafObject);	// notify right panel about selection change
+		} else if(folderClass == BioModelEditorTreeFolderClass.APP_REACTIONS_NODE) {
+			rightPanel = getReactionSpecsPanel();
+			getReactionSpecsPanel().setSimulationContext(simulationContext);
+			getReactionSpecsPanel().setScrollPaneTableCurrentRow((ReactionStep)leafObject);	// notify right panel about selection change
+		} else if(folderClass == BioModelEditorTreeFolderClass.ELECTRICAL_MAPPING_NODE) {
+			rightPanel = getElectricalMembraneMappingPanel();
+			getElectricalMembraneMappingPanel().setSimulationContext(simulationContext);
+		} else if(folderClass == BioModelEditorTreeFolderClass.EVENTS_NODE) {
+			rightPanel = getReactionSpecsPanel();
+			getEventsDisplayPanel().setSimulationContext(simulationContext);
+			getEventsDisplayPanel().setScrollPaneTableCurrentRow((BioEvent)leafObject);	// notify right panel about selection change
+		} else if(folderClass == BioModelEditorTreeFolderClass.DATA_SYMBOLS_NODE) {
+			rightPanel = getDataSymbolsPanel();
+			getDataSymbolsPanel().setSimulationContext(simulationContext);
+			getDataSymbolsPanel().setScrollPaneTableCurrentRow((DataSymbol)leafObject);	// notify right panel about selection change
+		} else if(folderClass == BioModelEditorTreeFolderClass.SIMULATIONS_NODE) {
+			rightPanel = getSimulationListPanel();
+			if (simWorkspaceHashTable.get(simulationContext) == null) {
+				simWorkspaceHashTable.put(simulationContext, new SimulationWorkspace(getBioModelWindowManager(), simulationContext));
+			}
+			getSimulationListPanel().setSimulationWorkspace(simWorkspaceHashTable.get(simulationContext));
+		} else if(folderClass == BioModelEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE) {
+			rightPanel = getOutputFunctionsPanel();
+			if (simWorkspaceHashTable.get(simulationContext) == null) {
+				simWorkspaceHashTable.put(simulationContext, new SimulationWorkspace(getBioModelWindowManager(), simulationContext));
+			}
+			getOutputFunctionsPanel().setSimulationWorkspace(simWorkspaceHashTable.get(simulationContext));
+		}
+	}
+	if(splitPane.getRightComponent() != rightPanel) {
+		splitPane.setRightComponent(rightPanel);
+	}
+	splitPane.setDividerLocation(220);
+}
+
+private OutputFunctionsPanel getOutputFunctionsPanel() {
+	if (outputFunctionsPanel == null) {
+		try {
+			outputFunctionsPanel  = new OutputFunctionsPanel();
+			outputFunctionsPanel.setName("ObservablesPanel");
+			addPropertyChangeListener(ivjEventHandler);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return outputFunctionsPanel;
+}
+
+private JMenuItem getMenuItemAddEvent() {
+	if (menuItemAddEvent == null) {
+		try {
+			menuItemAddEvent = new javax.swing.JMenuItem();
+			menuItemAddEvent.setName("JMenuItemAddEvent");
+			menuItemAddEvent.setMnemonic('a');
+			menuItemAddEvent.setText("Add Event");
+			menuItemAddEvent.setActionCommand(GuiConstants.ACTIONCMD_ADD_EVENT);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return menuItemAddEvent;
+}
+
+private JPopupMenu getAddEventPopupMenu() {
+	if (addEventPopupMenu == null) {
+		try {
+			addEventPopupMenu = new javax.swing.JPopupMenu();
+			addEventPopupMenu.setName("EventPopupMenu");
+			addEventPopupMenu.add(getMenuItemAddEvent());
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return addEventPopupMenu;
+}
+
+private JPopupMenu getDeleteEventPopupMenu() {
+	if (deleteEventPopupMenu == null) {
+		try {
+			deleteEventPopupMenu = new javax.swing.JPopupMenu();
+			deleteEventPopupMenu.add(getMenuItemDeleteEvent());
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return deleteEventPopupMenu;
+}
+
+private JMenuItem getMenuItemDeleteEvent() {
+	if (menuItemDeleteEvent == null) {
+		try {
+			menuItemDeleteEvent = new javax.swing.JMenuItem();
+			menuItemDeleteEvent.setName("JMenuItemAddEvent");
+			menuItemDeleteEvent.setMnemonic('a');
+			menuItemDeleteEvent.setText("Delete");
+			menuItemDeleteEvent.setActionCommand(GuiConstants.ACTIONCMD_ADD_EVENT);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return menuItemDeleteEvent;
+}
+
+private void addEvent() {
+	SimulationContext simContext = getSelectedSimulationContext();
+	if (simContext == null) {
+		return;
+	}
+	String eventName = simContext.getFreeEventName();
+	try {
+		BioEvent bioEvent = new BioEvent(eventName, simContext);
+		simContext.addBioEvent(bioEvent);
+		getEventsDisplayPanel().selectEvent(bioEvent);
+	} catch (PropertyVetoException e) {
+		e.printStackTrace(System.out);
+		DialogUtils.showErrorDialog(this, "Error adding Event : " + e.getMessage());
+	}
+}
+
+public void deleteEvent() {
+	Object node = getBioModelEditorTree().getLastSelectedPathComponent();;
+	if (node == null || !(node instanceof BioModelNode)) {
+		return;
+	}
+	Object selectedObject = ((BioModelNode)node).getUserObject();
+	if (selectedObject instanceof BioEvent) {
+		BioEvent bioEvent = (BioEvent)selectedObject;
+		SimulationContext simContext = getSelectedSimulationContext();
+		if (simContext == null) {
+			return;
+		}
+		try {
+			simContext.removeBioEvent(bioEvent);
+		} catch (PropertyVetoException ex) {
+			ex.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(this, ex.getMessage());
+		}
+	}		
+}
+
+private JPopupMenu getAddDataPopupMenu() {
+	if (addDataPopupMenu == null) {
+		try {
+			addDataPopupMenu = new javax.swing.JPopupMenu();
+			addDataPopupMenu.setName("DataSymbolPopupMenu");
+			addDataPopupMenu.add(getMenuItemAddGenericData());
+			addDataPopupMenu.add(getMenuItemAddVFrapData());
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return addDataPopupMenu;
+}
+
+private JMenuItem getMenuItemAddGenericData() {
+	if (menuItemAddGenericData == null) {
+		try {
+			menuItemAddGenericData = new javax.swing.JMenuItem();
+			menuItemAddGenericData.setName("JMenuItemAddData");
+			menuItemAddGenericData.setMnemonic('d');
+			menuItemAddGenericData.setText(VFrapConstants.ADD_VFRAP_DATASET_MENU);
+			menuItemAddGenericData.setEnabled(true);
+			menuItemAddGenericData.setActionCommand(GuiConstants.ACTIONCMD_ADD_GENERIC_DATA);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return menuItemAddGenericData;
+}
+private JMenuItem getMenuItemAddVFrapData() {
+	if (menuItemAddVFrapData == null) {
+		try {
+			menuItemAddVFrapData = new javax.swing.JMenuItem();
+			menuItemAddVFrapData.setName("JMenuItemAddVFrapData");
+			menuItemAddVFrapData.setMnemonic('v');
+			menuItemAddVFrapData.setText(VFrapConstants.ADD_VFRAP_SPECIALS_MENU);
+			menuItemAddVFrapData.setEnabled(true);
+			menuItemAddVFrapData.setActionCommand(GuiConstants.ACTIONCMD_ADD_VFRAP_DATA);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return menuItemAddVFrapData;
+}
+
+public BioModelWindowManager getBioModelWindowManager() {
+	return bioModelWindowManager;
+}
+
+public BioModel getBioModel() {
+	return fieldBioModel;
+}
 
 /**
  * Comment
@@ -1209,59 +1113,29 @@ private void newApplication(java.awt.event.ActionEvent event) {
 	}
 }
 
-private void openApplication() {
-	openApplication(-1);
-}
-
-/**
- * Comment
- */
-private void openApplication(int tabIndex) {
-	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
-	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
-	if (selection == null && selectedParent == null) {
-		PopupGenerator.showErrorDialog(this, "Please select an application.");
-		return;
-	}	
-	if(!(selection instanceof SimulationContext)) {
-//		PopupGenerator.showWarningDialog(this, "This will open the whole application.");
-		selection = selectedParent;
-	}
-	if (selection instanceof SimulationContext) {
-		getBioModelWindowManager().showApplicationFrame((SimulationContext)selection, tabIndex);
-	}
-}
-
 /**
  * Comment
  */
 private void renameApplication() {
-	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
-	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
-	if (selection == null && selectedParent == null) {
+	SimulationContext simulationContext = getSelectedSimulationContext();
+	if (simulationContext == null) {
 		PopupGenerator.showErrorDialog(this, "Please select an application.");
 		return;
 	}	
-	if(!(selection instanceof SimulationContext)) {
-		PopupGenerator.showWarningDialog(this, "This will rename the application.");
-		selection = selectedParent;
-	}	
 	try {
-		if (selection instanceof SimulationContext) {
-			String oldApplicationName = selection.getName();
-			String newApplicationName = null;
-			try{
-				newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "New name for the application:");
-			}catch(UserCancelException e){
+		String oldApplicationName = simulationContext.getName();
+		String newApplicationName = null;
+		try{
+			newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "New name for the application:");
+		}catch(UserCancelException e){
+			return;
+		}
+		if (newApplicationName != null) {
+			if (newApplicationName.equals(oldApplicationName)) {
+				PopupGenerator.showErrorDialog(this, "New name provided is the same with the existing name");
 				return;
-			}
-			if (newApplicationName != null) {
-				if (newApplicationName.equals(oldApplicationName)) {
-					PopupGenerator.showErrorDialog(this, "New name provided is the same with the existing name");
-					return;
-				} else {
-					((SimulationContext)selection).setName(newApplicationName);
-				}
+			} else {
+				simulationContext.setName(newApplicationName);
 			}
 		}
 	} catch (Throwable exc) {
@@ -1301,17 +1175,540 @@ public void setBioModelWindowManager(BioModelWindowManager newBioModelWindowMana
 public void setDocumentManager(DocumentManager documentManager) {
 	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
+	firePropertyChange(PROPERTY_NAME_DOCUMENT_MANAGER, oldValue, documentManager);
 }
 
 public void updateMenuOnSelectionChange() {	
-	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
-	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
-	boolean bAppSelected = selection != null && (selection instanceof SimulationContext || selectedParent != null);
-	getCopyMenuItem().setEnabled(bAppSelected);
-	getOpenAppMenuItem().setEnabled(bAppSelected);
-	getRenameMenuItem().setEnabled(bAppSelected);
-	getDeleteMenuItem().setEnabled(bAppSelected);
+//	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
+//	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
+//	boolean bAppSelected = selection != null && (selection instanceof SimulationContext || selectedParent != null);
+//	getCopyMenuItem().setEnabled(bAppSelected);
+//	getOpenAppMenuItem().setEnabled(bAppSelected);
+//	getRenameMenuItem().setEnabled(bAppSelected);
+//	getDeleteMenuItem().setEnabled(bAppSelected);
+}
+
+private void onPropertyChange_BioModel() {
+	getBioModelEditorTreeModel().setBioModel(getBioModel());
+	getBioModelEditorSpeciesPanel().setBioModel(getBioModel());
+	getBioModelEditorStructurePanel().setBioModel(getBioModel());
+	getBioModelEditorReactionPanel().setBioModel(getBioModel());
+}
+
+private javax.swing.JPopupMenu getAppPopupMenu() {
+	if (ivjAppPopupMenu == null) {
+		try {
+			ivjAppPopupMenu = new javax.swing.JPopupMenu();
+			ivjAppPopupMenu.setName("AppPopupMenu");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	ivjAppPopupMenu.removeAll();
+	ivjAppPopupMenu.add(getJMenuItemAppRename());
+	ivjAppPopupMenu.add(getJMenuItemAppDelete());
+	ivjAppPopupMenu.add(getJSeparator1());
+	ivjAppPopupMenu.add(getJMenuItemAppCopy());
+	ivjAppPopupMenu.add(getJMenuAppCopyAs());
+	return ivjAppPopupMenu;
+}
+
+private javax.swing.JPopupMenu getAppsPopupMenu() {
+	if (ivjAppsPopupMenu == null) {
+		try {
+			ivjAppsPopupMenu = new javax.swing.JPopupMenu();
+			ivjAppsPopupMenu.setName("AppPopupMenu");
+			ivjAppsPopupMenu.add(getJMenuAppNew());
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjAppsPopupMenu;
+}
+
+private javax.swing.JSeparator getJSeparator1() {
+	if (ivjJSeparator1 == null) {
+		try {
+			ivjJSeparator1 = new javax.swing.JSeparator();
+			ivjJSeparator1.setName("JSeparator1");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJSeparator1;
+}
+
+//private javax.swing.JSeparator getJSeparator2() {
+//	if (ivjJSeparator2 == null) {
+//		try {
+//			ivjJSeparator2 = new javax.swing.JSeparator();
+//			ivjJSeparator2.setName("JSeparator2");
+//			// user code begin {1}
+//			// user code end
+//		} catch (java.lang.Throwable ivjExc) {
+//			// user code begin {2}
+//			// user code end
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjJSeparator2;
+//}
+
+private javax.swing.JMenuItem getJMenuItemAppAnnotation() {
+	if (ivjJMenuItemAppAnnotation == null) {
+		try {
+			ivjJMenuItemAppAnnotation = new javax.swing.JMenuItem();
+			ivjJMenuItemAppAnnotation.setName("JMenuItemAnnotation");
+			ivjJMenuItemAppAnnotation.setMnemonic('a');
+			ivjJMenuItemAppAnnotation.setText("Edit Application Annotation");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemAppAnnotation;
+}
+
+/**
+ * Return the JMenuItemCopy property value.
+ * @return javax.swing.JMenuItem
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JMenu getJMenuAppCopyAs() {
+	if (ivjJMenuAppCopyAs == null) {
+		try {
+			ivjJMenuAppCopyAs = new javax.swing.JMenu();
+			ivjJMenuAppCopyAs.setName("JMenuCopy");
+			ivjJMenuAppCopyAs.setText("Copy As");
+			//Menu items in Menu-Copy
+			menuItemAppNonSpatialCopyStochastic=new JMenuItem();
+			menuItemAppNonSpatialCopyStochastic.setName("JMenuItemToStochApp");
+			menuItemAppNonSpatialCopyStochastic.setText(MENU_TEXT_STOCHASTIC_APPLICATION);
+			menuItemAppNonSpatialCopyStochastic.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION);
+			menuItemNonSpatialCopyDeterministic = new javax.swing.JMenuItem();
+			menuItemNonSpatialCopyDeterministic.setName("JMenuItemToNonStochApp");
+			menuItemNonSpatialCopyDeterministic.setText(MENU_TEXT_DETERMINISTIC_APPLICATION);
+			menuItemNonSpatialCopyDeterministic.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION);
+			
+			
+			menuAppSpatialCopyAsNonSpatial = new JMenu(MENU_TEXT_NON_SPATIAL_APPLICATION);
+			menuItemAppSpatialCopyAsNonSpatialDeterministic = new JMenuItem(MENU_TEXT_DETERMINISTIC_APPLICATION);
+			menuItemAppSpatialCopyAsNonSpatialDeterministic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION);
+			menuItemAppSpatialCopyAsNonSpatialStochastic = new JMenuItem(MENU_TEXT_STOCHASTIC_APPLICATION);
+			menuItemAppSpatialCopyAsNonSpatialStochastic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION);
+			menuAppSpatialCopyAsNonSpatial.add(menuItemAppSpatialCopyAsNonSpatialDeterministic);
+			menuAppSpatialCopyAsNonSpatial.add(menuItemAppSpatialCopyAsNonSpatialStochastic);
+			
+			menuAppSpatialCopyAsSpatial = new JMenu(MENU_TEXT_SPATIAL_APPLICATION);
+			menuItemAppSpatialCopyAsSpatialDeterministic = new JMenuItem(MENU_TEXT_DETERMINISTIC_APPLICATION);
+			menuItemAppSpatialCopyAsSpatialDeterministic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION);
+			menuItemAppSpatialCopyAsSpatialStochastic = new JMenuItem(MENU_TEXT_STOCHASTIC_APPLICATION);
+			menuItemAppSpatialCopyAsSpatialStochastic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION);
+			menuAppSpatialCopyAsSpatial.add(menuItemAppSpatialCopyAsSpatialDeterministic);
+			menuAppSpatialCopyAsSpatial.add(menuItemAppSpatialCopyAsSpatialStochastic);
+
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	ivjJMenuAppCopyAs.removeAll();
+	SimulationContext selectedSimContext = getSelectedSimulationContext();
+	if (selectedSimContext != null && selectedSimContext.getGeometry().getDimension() == 0) {
+		//add menu items to menu
+		ivjJMenuAppCopyAs.add(menuItemNonSpatialCopyDeterministic);
+		ivjJMenuAppCopyAs.add(menuItemAppNonSpatialCopyStochastic);
+	} else {
+		ivjJMenuAppCopyAs.add(menuAppSpatialCopyAsNonSpatial);
+		ivjJMenuAppCopyAs.add(menuAppSpatialCopyAsSpatial);
+	}
+	return ivjJMenuAppCopyAs;
+}
+
+private javax.swing.JMenuItem getJMenuItemAppCopy() {
+	if (ivjJMenuItemAppCopy == null) {
+		try {
+			ivjJMenuItemAppCopy = new javax.swing.JMenuItem();
+			ivjJMenuItemAppCopy.setName("JMenuItemCopy");
+			ivjJMenuItemAppCopy.setMnemonic('c');
+			ivjJMenuItemAppCopy.setText("Copy");
+			ivjJMenuItemAppCopy.setActionCommand(GuiConstants.ACTIONCMD_COPY_APPLICATION);
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemAppCopy;
+}
+
+/**
+ * Return the JMenuItemDelete property value.
+ * @return javax.swing.JMenuItem
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JMenuItem getJMenuItemAppDelete() {
+	if (ivjJMenuItemAppDelete == null) {
+		try {
+			ivjJMenuItemAppDelete = new javax.swing.JMenuItem();
+			ivjJMenuItemAppDelete.setName("JMenuItemDelete");
+			ivjJMenuItemAppDelete.setMnemonic('d');
+			ivjJMenuItemAppDelete.setText("Delete");
+			ivjJMenuItemAppDelete.setActionCommand(GuiConstants.ACTIONCMD_DELETE_APPLICATION);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemAppDelete;
+}
+
+/**
+ * Return the JMenuItem1 property value.
+ * @return javax.swing.JMenuItem
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JMenuItem getJMenuItemAppRename() {
+	if (ivjJMenuItemAppRename == null) {
+		try {
+			ivjJMenuItemAppRename = new javax.swing.JMenuItem();
+			ivjJMenuItemAppRename.setName("JMenuItemRename");
+			ivjJMenuItemAppRename.setMnemonic('r');
+			ivjJMenuItemAppRename.setText("Rename");
+			ivjJMenuItemAppRename.setActionCommand(GuiConstants.ACTIONCMD_RENAME_APPLICATION);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemAppRename;
+}
+
+
+/**
+ * Return the JMenuItem1 property value.
+ * @return javax.swing.JMenuItem
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JMenu getJMenuAppNew() {
+	if (ivjJMenuAppNew == null) {
+		try {
+			ivjJMenuAppNew = new javax.swing.JMenu("New");
+			ivjJMenuAppNew.setName("JMenuNew");
+			ivjJMenuAppNew.setMnemonic('n');
+			//Menu items in Menu-New
+			appNewStochApp=new JMenuItem();
+			appNewStochApp.setName("JMenuItemStochApp");
+			appNewStochApp.setText(MENU_TEXT_STOCHASTIC_APPLICATION);
+			appNewStochApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION);
+			appNewDeterministicApp = new javax.swing.JMenuItem();
+			appNewDeterministicApp.setName("JMenuItemNonStochApp");
+			appNewDeterministicApp.setText(MENU_TEXT_DETERMINISTIC_APPLICATION);
+			appNewDeterministicApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION);
+			//add menu items to menu
+			ivjJMenuAppNew.add(appNewStochApp);
+			ivjJMenuAppNew.add(appNewDeterministicApp);
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuAppNew;
+}
+
+private void deleteApplication() {
+	SimulationContext simulationContext = getSelectedSimulationContext();
+	if (simulationContext == null) {
+		PopupGenerator.showErrorDialog(this, "Please select an application.");
+		return;
+	}
+	try {
+		//
+		// BioModel enforces that there be no orphaned Simulations in BioModel.vetoableChange(...)
+		// Check for no Simulations in SimualtionContext that is to be removed
+		// otherwise a nonsense error message will be generated by BioModel
+		//
+		boolean bHasSims = false;
+		Simulation[] simulations = simulationContext.getSimulations();
+		if(simulations != null && simulations.length != 0){
+			bHasSims = true;
+		}
+
+		if (bHasSims) {
+			String confirm = PopupGenerator.showWarningDialog(getBioModelWindowManager(), getBioModelWindowManager().getUserPreferences(), UserMessage.warn_DeleteSelectedAppWithSims, simulationContext.getName());
+			if (!confirm.equals(UserMessage.OPTION_CANCEL)) {
+				for (Simulation simulation : simulations) {
+					getBioModel().removeSimulation(simulation);
+				}
+				getBioModel().removeSimulationContext(simulationContext);
+			}
+		} else {
+			String confirm = PopupGenerator.showWarningDialog(getBioModelWindowManager(), getBioModelWindowManager().getUserPreferences(), UserMessage.warn_DeleteSelectedApp, simulationContext.getName());		
+			if (!confirm.equals(UserMessage.OPTION_CANCEL)) {
+				getBioModel().removeSimulationContext(simulationContext);
+			}
+		}
+	} catch (Exception exc) {
+		exc.printStackTrace(System.out);
+		PopupGenerator.showErrorDialog(this, "Failed to Delete!\n"+exc.getMessage(), exc);
+	}
+}
+
+private void copyApplication() {
+	SimulationContext simulationContext = getSelectedSimulationContext();
+	if (simulationContext == null) {
+		PopupGenerator.showErrorDialog(this, "Please select an application.");
+		return;
+	}
+	copyApplication(simulationContext.getGeometry().getDimension() > 0, simulationContext.isStoch());
+}
+/**
+ * Comment
+ */
+private void copyApplication(final boolean bSpatial, final boolean bStochastic) {
+	final SimulationContext simulationContext = getSelectedSimulationContext();
+	if (simulationContext == null) {
+		PopupGenerator.showErrorDialog(this, "Please select an application.");
+		return;
+	}
+
+	try {
+		String newApplicationName = null;
+		
+		if (bStochastic) {
+			//check validity if copy to stochastic application
+			String message = getBioModel().getModel().isValidForStochApp();
+			if(!message.equals(""))
+			{
+				throw new Exception(message);
+			}
+		}
+		
+		//get valid application name
+		try{
+			newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
+		}catch(UserCancelException e){
+			return;
+		}
+		if (newApplicationName != null) {
+			if (newApplicationName.equals("")) {
+				PopupGenerator.showErrorDialog(this, "Blank name not allowed");
+			} else {
+				final String newName = newApplicationName;
+				AsynchClientTask task1 = new AsynchClientTask("copying", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						SimulationContext newSimulationContext = copySimulationContext(simulationContext, newName, bSpatial, bStochastic);
+						hashTable.put("newSimulationContext", newSimulationContext);
+					}
+				};
+				AsynchClientTask task2 = new AsynchClientTask("showing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+					
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
+						getBioModel().addSimulationContext(newSimulationContext);
+						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
+					}
+				};
+				ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
+			}
+		}
+	} catch (Throwable exc) {
+		exc.printStackTrace(System.out);
+		PopupGenerator.showErrorDialog(this, "Failed to Copy Application!\n"+exc.getMessage(), exc);
+	}
+}
+
+private SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, boolean bStoch) throws java.beans.PropertyVetoException, ExpressionException, MappingException, GeometryException, ImageException {
+	Geometry newClonedGeometry = new Geometry(srcSimContext.getGeometry());
+	newClonedGeometry.precomputeAll();
+	//if stoch copy to ode, we need to check is stoch is using particles. If yes, should convert particles to concentraton.
+	//the other 3 cases are fine. ode->ode, ode->stoch, stoch-> stoch 
+	SimulationContext destSimContext = new SimulationContext(srcSimContext,newClonedGeometry, bStoch);
+	if(srcSimContext.isStoch() && !srcSimContext.isUsingConcentration() && !bStoch)
+	{
+		try {
+			destSimContext.convertSpeciesIniCondition(true);
+		} catch (MappingException e) {
+			e.printStackTrace();
+			throw new java.beans.PropertyVetoException(e.getMessage(), null);
+		}
+	}
+	if (srcSimContext.getGeometry().getDimension() > 0 && !bSpatial) { // copy the size over
+		destSimContext.setGeometry(new Geometry("nonspatial", 0));
+		StructureMapping srcStructureMappings[] = srcSimContext.getGeometryContext().getStructureMappings();
+		StructureMapping destStructureMappings[] = destSimContext.getGeometryContext().getStructureMappings();
+		for (StructureMapping destStructureMapping : destStructureMappings) {
+			for (StructureMapping srcStructureMapping : srcStructureMappings) {
+				if (destStructureMapping.getStructure() == srcStructureMapping.getStructure()) {
+					if (srcStructureMapping.getUnitSizeParameter() != null) {
+						Expression sizeRatio = srcStructureMapping.getUnitSizeParameter().getExpression();
+						GeometryClass srcGeometryClass = srcStructureMapping.getGeometryClass();
+						GeometricRegion[] srcGeometricRegions = srcSimContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(srcGeometryClass);
+						if (srcGeometricRegions != null) {
+							double size = 0;
+							for (GeometricRegion srcGeometricRegion : srcGeometricRegions) {
+								size += srcGeometricRegion.getSize();
+							}
+							destStructureMapping.getSizeParameter().setExpression(Expression.mult(sizeRatio, new Expression(size)));
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+	destSimContext.setName(newSimulationContextName);	
+	return destSimContext;
+}
+
+public void applicationMenuItem_ActionPerformed(java.awt.event.ActionEvent e) {
+	String actionCommand = e.getActionCommand();
+//	if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION)) {
+//		openApplication();
+//	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_MATH)) {
+//		openApplication(ApplicationEditor.TAB_IDX_VIEW_MATH);
+//	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_GEOMETRY)) {
+//		openApplication(ApplicationEditor.TAB_IDX_SPPR);
+//	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_SIMULATION)) {
+//		openApplication(ApplicationEditor.TAB_IDX_SIMULATION);
+//	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_OPEN_APPLICATION_DETSTOCH)) {
+//		openApplication();
+//	} else 
+	if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_NON_STOCHASTIC_APPLICATION)) {
+		newApplication(e);
+	}  else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION)) {
+		newApplication(e);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_DELETE_APPLICATION)) {
+		deleteApplication();
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_RENAME_APPLICATION)) {
+		renameApplication();
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION)) {
+		copyApplication();
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION)) {
+		copyApplication(false, true);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION)) {
+		copyApplication(false, false);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION)) {
+		copyApplication(false, false);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION)) {
+		copyApplication(false, true);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION)) {
+		copyApplication(true, false);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION)) {
+		copyApplication(true, true);
+	} else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_NEW_APPLICATION)) {
+		newApplication(e);
+	} 
+}
+
+private SimpleReactionPanel getSimpleReactionPanel() {
+	if (simpleReactionPanel == null) {
+		try {
+			simpleReactionPanel = new SimpleReactionPanel();
+			simpleReactionPanel.setName("SimpleReactionPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	//BeanUtils.enableComponents(simpleReactionPanel, false);
+	return simpleReactionPanel;
+}
+
+private FluxReactionPanel getFluxReactionPanel() {
+	if (fluxReactionPanel == null) {
+		try {
+			fluxReactionPanel = new FluxReactionPanel();
+			fluxReactionPanel.setName("FluxReactionPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	//BeanUtils.enableComponents(fluxReactionPanel, false);
+	return fluxReactionPanel;
+}
+
+private SpeciesEditorPanel getSpeciesEditorPanel() {
+	if (speciesEditorPanel == null) {
+		try {
+			speciesEditorPanel = new SpeciesEditorPanel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return speciesEditorPanel;
+}
+
+private FeatureEditorPanel getFeatureEditorPanel() {
+	if (featureEditorPanel == null) {
+		try {
+			featureEditorPanel = new FeatureEditorPanel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return featureEditorPanel;
+}
+
+private MembraneEditorPanel getMembraneEditorPanel() {
+	if (membraneEditorPanel == null) {
+		try {
+			membraneEditorPanel = new MembraneEditorPanel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return membraneEditorPanel;
+}
+
+/**
+ * main entrypoint - starts the part when it is run as an application
+ * @param args java.lang.String[]
+ */
+public static void main(java.lang.String[] args) {
+	try {
+		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		
+		JFrame frame = new javax.swing.JFrame();
+		BioModelEditor aBioModelEditor = new BioModelEditor();
+		frame.setContentPane(aBioModelEditor);
+		frame.setSize(aBioModelEditor.getSize());
+		frame.addWindowListener(new java.awt.event.WindowAdapter() {
+			public void windowClosing(java.awt.event.WindowEvent e) {
+				System.exit(0);
+			};
+		});
+		frame.pack();
+		frame.setVisible(true);
+	} catch (Throwable exception) {
+		System.err.println("Exception occurred in main() of javax.swing.JPanel");
+		exception.printStackTrace(System.out);
+	}
 }
 
 }

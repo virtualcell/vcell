@@ -1,4 +1,5 @@
 package cbit.vcell.client.desktop.simulation;
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -20,13 +21,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
-import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.TableCellEditor;
-import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
@@ -37,7 +35,6 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.desktop.simulation.SimulationListTreeModel.SimulationListTreeFolderNode;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
@@ -81,8 +78,6 @@ public class SimulationListPanel extends JPanel {
 	private SimulationSummaryPanel ivjSimulationSummaryPanel1 = null;
 	private DefaultCellEditor ivjcellEditor1 = null;
 	private java.awt.Component ivjComponent1 = null;
-	private JTree simulationListTree = null;
-	private SimulationListTreeModel simulationListTreeModel = null;
 	private JButton moreActionsButton = null;
 	private JPopupMenu popupMenuMoreAction = null;
 	private JMenuItem menuItemCopy = new JMenuItem("Copy");
@@ -90,8 +85,8 @@ public class SimulationListPanel extends JPanel {
 	private JMenuItem menuItemStop = new JMenuItem("Stop");
 	private JMenuItem menuItemStatusDetails = new JMenuItem("Status Details...");
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, 
-	java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, javax.swing.event.TableModelListener, TreeSelectionListener, MouseListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, 
+		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, javax.swing.event.TableModelListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == SimulationListPanel.this.getNewButton()) 
 				connEtoC2(e);
@@ -120,14 +115,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == SimulationListPanel.this && (evt.getPropertyName().equals("simulationWorkspace"))) 
-				connEtoM1(evt);
-			if (evt.getSource() == SimulationListPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("selectionModel"))) 
-				connPtoP2SetTarget();
+				onPropertyChange_SimulationWorkspace(evt);
 			if (evt.getSource() == SimulationListPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("cellEditor"))) 
 				connEtoM4(evt);
-			if (evt.getSource() == getOutputFunctionsPanel() && evt.getPropertyName().equals(OutputFunctionsPanel.PROPERTY_SELECTED_OUTPUT_FUNCTION)) {
-				simulationListTreeModel.setSelectedValue(evt.getNewValue());
-			}
 		};
 		public void tableChanged(javax.swing.event.TableModelEvent e) {
 			if (e.getSource() == SimulationListPanel.this.getSimulationListTableModel1()) 
@@ -137,17 +127,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 			if (e.getValueIsAdjusting()) {
 				return;
 			}
-			if (e.getSource() == SimulationListPanel.this.getselectionModel1()) 
+			if (e.getSource() == getScrollPaneTable().getSelectionModel()) 
 				connEtoC9(e);
 			
-			if (e.getSource() == getScrollPaneTable().getSelectionModel()) {
-				simulationListTreeModel.setSelectedValue(getSimulationListTableModel1().getSelectedSimulation());
-			}
-		}
-		public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
-			if (e.getSource() == simulationListTree) {
-				treeValueChanged(e);
-			}
 		}
 		public void mouseClicked(MouseEvent e) {
 			if (e.getSource() == getMoreActionsButton()) { 
@@ -331,12 +313,9 @@ private void connEtoC9(javax.swing.event.ListSelectionEvent arg1) {
  * connEtoM1:  (SimulationListPanel.simulationWorkspace --> SimulationListTableModel1.simulationWorkspace)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
+private void onPropertyChange_SimulationWorkspace(java.beans.PropertyChangeEvent arg1) {
 	try {
 		getSimulationListTableModel1().setSimulationWorkspace(this.getSimulationWorkspace());
-		getOutputFunctionsPanel().setSimulationWorkspace(this.getSimulationWorkspace());
-		simulationListTreeModel.setSimulationWorkspace(getSimulationWorkspace());
-		simulationListTree.setSelectionRow(SimulationListTreeModel.SIMULATIONS_NODE + 1);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -370,20 +349,6 @@ private void connEtoM4(java.beans.PropertyChangeEvent arg1) {
 }
 
 /**
- * connPtoP1SetTarget:  (SimulationListTableModel1.this <--> ScrollPaneTable.model)
- */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		getScrollPaneTable().setModel(getSimulationListTableModel1());
-		getScrollPaneTable().createDefaultColumnsFromModel();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connPtoP2SetSource:  (ScrollPaneTable.selectionModel <--> selectionModel1.this)
  */
 private void connPtoP2SetSource() {
@@ -401,25 +366,6 @@ private void connPtoP2SetSource() {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connPtoP2SetTarget:  (ScrollPaneTable.selectionModel <--> selectionModel1.this)
- */
-private void connPtoP2SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP2Aligning == false) {
-			ivjConnPtoP2Aligning = true;
-			setselectionModel1(getScrollPaneTable().getSelectionModel());
-			ivjConnPtoP2Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP2Aligning = false;
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * Comment
@@ -641,6 +587,7 @@ private ScrollTable getScrollPaneTable() {
 			ivjScrollPaneTable = new ScrollTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
+			ivjScrollPaneTable.setModel(getSimulationListTableModel1());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -756,13 +703,11 @@ private void initConnections() throws java.lang.Exception {
 	getSimulationListTableModel1().addTableModelListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
 	menuItemStatusDetails.addActionListener(ivjEventHandler);
-	connPtoP2SetTarget();
-	connPtoP1SetTarget();
 	
 	getOutputFunctionsPanel().addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
-	simulationListTree.addTreeSelectionListener(ivjEventHandler);
-	simulationListTree.addTreeExpansionListener(simulationListTreeModel);
+//	simulationListTree.addTreeSelectionListener(ivjEventHandler);
+//	simulationListTree.addTreeExpansionListener(simulationListTreeModel);
 }
 
 /**
@@ -774,27 +719,9 @@ private void initialize() {
 		// user code end
 		setName("SimulationListPanel");
 		setSize(750, 560);
-				
-		simulationListTree = new JTree();
-		simulationListTree.setCellRenderer(new SimulationListTreeCellRenderer());				
-		simulationListTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		simulationListTreeModel = new SimulationListTreeModel(simulationListTree);
-		simulationListTree.setModel(simulationListTreeModel);
-		JScrollPane jScrollPane = new JScrollPane(simulationListTree);
-		
-		outerSplitPane = new JSplitPane();
-		outerSplitPane.setLeftComponent(jScrollPane);
-		outerSplitPane.setRightComponent(getInnerSplitPane());
-		outerSplitPane.setDividerLocation(200);
-		
-		setLayout(new GridBagLayout());
-		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.weighty = 1;
-		gridBagConstraints.weightx = 1;
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		add(outerSplitPane, gridBagConstraints);		
+						
+		setLayout(new BorderLayout());
+		add(getInnerSplitPane(), BorderLayout.CENTER);	
 		
 		initConnections();
 		getScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -1266,48 +1193,6 @@ private void stopSimulations() {
 		return buttonsAndSimSummarypanel;
 	}
 	
-	public void treeValueChanged(TreeSelectionEvent e) {
-		try {
-			Object node = simulationListTree.getLastSelectedPathComponent();
-			if (!(node instanceof BioModelNode)) {
-				return;
-			}
-			BioModelNode selectedNode = (BioModelNode)node;
-		    Object userObject = selectedNode.getUserObject();
-		    if (userObject instanceof SimulationListTreeFolderNode) { // it's a folder
-		    	setupRightComponent((SimulationListTreeFolderNode)userObject, null);
-		    } else if (userObject instanceof SimulationWorkspace){
-		    	outerSplitPane.setRightComponent(new JPanel());
-		    	outerSplitPane.setDividerLocation(200);
-		    } else {
-		        Object leaf = userObject;
-				BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
-				userObject =  parentNode.getUserObject();
-				SimulationListTreeFolderNode parent = (SimulationListTreeFolderNode)userObject;
-		        setupRightComponent(parent, leaf);
-		    }
-		}catch (Exception ex){
-			ex.printStackTrace(System.out);
-		}
-	}
-
-	private void setupRightComponent(SimulationListTreeFolderNode parent, Object leaf) {
-		int folderId = parent.getId();
-		if(folderId == SimulationListTreeModel.SIMULATIONS_NODE) {
-			if(outerSplitPane.getRightComponent() != getInnerSplitPane()) {
-				outerSplitPane.setRightComponent(getInnerSplitPane());
-			}
-			setScrollPaneTableCurrentRow((Simulation)leaf);
-		} else if(folderId == SimulationListTreeModel.OUTPUT_FUNCTIONS_NODE) {
-			//  replace right-side panel only if the correct one is not there already
-			if(outerSplitPane.getRightComponent() != getOutputFunctionsPanel()) {
-				outerSplitPane.setRightComponent(getOutputFunctionsPanel());
-			}
-			getOutputFunctionsPanel().setScrollPaneTableCurrentRow((AnnotatedFunction)leaf);
-		}
-		outerSplitPane.setDividerLocation(200);
-	}
-	
 	public void setScrollPaneTableCurrentRow(Simulation selection) {
 		if (selection == null) {
 			getScrollPaneTable().clearSelection();
@@ -1342,11 +1227,7 @@ private void stopSimulations() {
 				moreActionsButton = new JButton("More Actions", new DownArrowIcon());
 				moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);
 				moreActionsButton.setName("MoreActionsButton");
-				// user code begin {1}
-				// user code end
 			} catch (java.lang.Throwable ivjExc) {
-				// user code begin {2}
-				// user code end
 				handleException(ivjExc);
 			}
 		}

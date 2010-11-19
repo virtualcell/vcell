@@ -1,0 +1,181 @@
+package cbit.gui;
+
+import java.util.ArrayList;
+
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Flux;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+
+import com.ibm.icu.util.StringTokenizer;
+
+/**
+ * Insert the type's description here.
+ * Creation date: (9/2/2003 3:26:19 PM)
+ * @author: Jim Schaff
+ */
+public class ReactionEquation {
+	public static final String REACTION_GOESTO = "->";
+	
+	private ReactionStep reactionStep = null;
+	private String equationString = null;
+	private String equationleftHand = null;
+	private String equationRightHand = null;
+	private ExpressionBindingException expressionBindingException = null;
+	
+	public ReactionEquation(ReactionStep reactionStep) {
+		super();
+		this.reactionStep = reactionStep;
+	}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/2/2003 3:28:22 PM)
+ * @return cbit.vcell.parser.NameScope
+ */
+public NameScope getNameScope() {
+	return reactionStep.getNameScope();
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/2/2003 5:39:29 PM)
+ * @return java.lang.String
+ */
+public String toString() {
+	if (equationString == null) {
+		computeEquationString();
+	}
+	return equationString;
+}
+
+private void computeEquationString() {	
+	ReactionParticipant[] reactantParticipants = reactionStep.getReactionParticipants();
+	ArrayList<ReactionParticipant> reactantList = new ArrayList<ReactionParticipant>();
+	ArrayList<ReactionParticipant> productList = new ArrayList<ReactionParticipant>();
+	if (reactionStep instanceof SimpleReaction) {
+		for (ReactionParticipant rp : reactantParticipants) {
+			if (rp instanceof Reactant) {
+				reactantList.add(rp);
+			} else if (rp instanceof Product) {
+				productList.add(rp);
+			}
+		}
+	} else {
+		Membrane membrane = (Membrane) ((FluxReaction)reactionStep).getStructure();
+		for (ReactionParticipant rp : reactantParticipants) {
+			if (rp instanceof Flux) {
+				Flux flux = (Flux)rp;
+				Feature scf = (Feature) flux.getSpeciesContext().getStructure();
+				if (membrane.getInsideFeature() == scf) {
+					productList.add(rp);
+				} else {
+					reactantList.add(rp);
+				}
+			}
+		}
+	}
+	StringBuffer sb = new StringBuffer();
+	for (ReactionParticipant r : reactantList) {
+		if (sb.length() > 0) {
+			sb.append(" + ");
+		}
+		int stoichiometry = r.getStoichiometry();
+		sb.append((stoichiometry>1?stoichiometry:"") + r.getName());
+	}
+	equationleftHand = sb.toString();
+	sb = new StringBuffer();
+	for (ReactionParticipant p : productList) {
+		if (sb.length() > 0) {
+			sb.append(" + ");
+		}
+		int stoichiometry = p.getStoichiometry();
+		sb.append((stoichiometry>1?stoichiometry:"") + p.getName());
+	}
+	equationRightHand = sb.toString();
+	equationString = equationleftHand + " " + REACTION_GOESTO + " " + equationRightHand;
+
+}
+
+public final AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
+	return reactionStep.getAutoCompleteSymbolFilter();
+}
+public final ExpressionBindingException getExpressionBindingException() {
+	return expressionBindingException;
+}
+
+public final String getEquationleftHand() {
+	return equationleftHand;
+}
+
+public final String getEquationRightHand() {
+	return equationRightHand;
+}
+
+public static void parseReaction(SimpleReaction reactionStep, String equationString) throws Exception {
+	int gotoIndex = equationString.indexOf(REACTION_GOESTO);
+	if (gotoIndex < 1 && equationString.length() == 0) {
+		throw new ExpressionException("Syntax error!");
+	}
+	ReactionParticipant[] reactionParticipants = reactionStep.getReactionParticipants();
+	String leftHand = equationString.substring(0, gotoIndex);
+	String rightHand = equationString.substring(gotoIndex + REACTION_GOESTO.length());
+	StringTokenizer st = new StringTokenizer(leftHand, "+");
+	ArrayList<ReactionParticipant> rplist = new ArrayList<ReactionParticipant>();
+	while (st.hasMoreElements()) {
+		String nextToken = st.nextToken().trim();
+		int stoichiIndex = 0;
+		while (true) {
+			if (Character.isDigit(nextToken.charAt(stoichiIndex))) {
+				stoichiIndex ++;
+			} else {
+				break;
+			}
+		}
+		int stoichi = 1;
+		String tmp = nextToken.substring(0, stoichiIndex);
+		if (tmp.length() > 0) {
+			stoichi = Integer.parseInt(tmp);
+		}
+		String var = nextToken.substring(stoichiIndex).trim();
+		SpeciesContext sc = reactionStep.getModel().getSpeciesContext(var);
+		if (sc == null) {
+			throw new ExpressionException("Species '" + var + "' doesn't exist!");
+		}
+		rplist.add(new Reactant(null,reactionStep, sc, stoichi));
+	}
+	st = new StringTokenizer(rightHand, "+");
+	while (st.hasMoreElements()) {
+		String nextToken = st.nextToken().trim();
+		int stoichiIndex = 0;
+		while (true) {
+			if (Character.isDigit(nextToken.charAt(stoichiIndex))) {
+				stoichiIndex ++;
+			} else {
+				break;
+			}
+		}
+		int stoichi = 1;
+		String tmp = nextToken.substring(0, stoichiIndex);
+		if (tmp.length() > 0) {
+			stoichi = Integer.parseInt(tmp);
+		}
+		String var = nextToken.substring(stoichiIndex);
+		SpeciesContext sc = reactionStep.getModel().getSpeciesContext(var);
+		if (sc == null) {
+			throw new ExpressionException("Species '" + var + "' doesn't exist!");
+		}
+		rplist.add(new Product(null,reactionStep, sc, stoichi));
+	}
+	reactionStep.setReactionParticipants(rplist.toArray(new ReactionParticipant[0]));
+}
+}

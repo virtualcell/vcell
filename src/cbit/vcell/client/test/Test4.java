@@ -30,11 +30,9 @@ public static void main(java.lang.String[] args) {
 			};
 		});
 //		aBioModelEditor.getjInternalFrameApplication().setBorder(null);
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
-		System.out.println(aBioModelEditor.getjInternalFrameApplication());
 
 //System.out.println(javax.swing.JOptionPane.UNINITIALIZED_VALUE);
 //System.out.println(cbit.vcell.client.PopupGenerator.showInputDialog(null, "test"));

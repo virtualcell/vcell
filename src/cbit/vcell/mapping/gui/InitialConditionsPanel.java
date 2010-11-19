@@ -28,12 +28,11 @@ import org.vcell.util.gui.ScrollTable.CheckOption;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.desktop.biomodel.SPPRPanel;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
@@ -49,12 +48,13 @@ import cbit.vcell.parser.SymbolTableEntry;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class InitialConditionsPanel extends javax.swing.JPanel {
+	public static final String PARAMETER_NAME_SELECTED_SPECIES_CONTEXT = "selectedSpeciesContextSpec";
 	private SpeciesContextSpecPanel ivjSpeciesContextSpecPanel = null;
 	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private SimulationContext ivjsimulationContext1 = null;
-	private SPPRPanel spprPanel = null;
 	private JPanel scrollPanel = null; // added in July, 2008. Used to accommodate the radio buttons and the ivjJScrollPane1. 
 	private JRadioButton conRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
 	private JRadioButton amtRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
@@ -81,6 +81,7 @@ public class InitialConditionsPanel extends javax.swing.JPanel {
 	private int selectedColumn = -1;
 	private JLabel setDiffConstantLabel;
 	private JLabel pressEnterLabel;
+	private SelectionEvent selectionEvent = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -131,29 +132,17 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 			}
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+			if (e.getValueIsAdjusting()) {
+				return;
+			}
 			if (e.getSource() == InitialConditionsPanel.this.getselectionModel1()) 
-				connEtoM3(e);
+				tableSelectionChanged(e);
 		};
 	};
 
-/**
- * Constructor
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 public InitialConditionsPanel() {
 	super();
-	spprPanel = null;
 	initialize();
-}
-
-public InitialConditionsPanel(SPPRPanel aPanel) {
-	super();
-	spprPanel = aPanel;
-	initialize();
-}
-
-private SPPRPanel getSPPRPanel() {
-	return spprPanel;
 }
 
 /**
@@ -278,21 +267,32 @@ private void connEtoM2(SimulationContext value) {
  * connEtoM3:  (selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> SpeciesContextSpecPanel.setSpeciesContextSpec(Lcbit.vcell.mapping.SpeciesContextSpec;)V)
  * @param arg1 javax.swing.event.ListSelectionEvent
  */
-private void connEtoM3(javax.swing.event.ListSelectionEvent arg1) {
+private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 	try {
+		SpeciesContextSpec newValue = null;
 		int row = getselectionModel1().getMinSelectionIndex();
-		if (row < 0) {
-			getSpeciesContextSpecPanel().setSpeciesContextSpec(null);
-		} else {
-			getSpeciesContextSpecPanel().setSpeciesContextSpec(getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row));
-//			System.out.println("Initial condition selection changed");
-			if(getSPPRPanel() != null) {
-				getSPPRPanel().setScrollPaneTreeCurrentRow(getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row).getSpeciesContext());
-			}
+		if (row >= 0) {
+			newValue = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row);
 		}
+		getSpeciesContextSpecPanel().setSpeciesContextSpec(newValue);
+		setSelectionEvent(new SelectionEvent(getSimulationContext(), newValue == null ? null : newValue.getSpeciesContext()));
+//			getSpeciesContextSpecPanel().setSpeciesContextSpec(null);
+//		} else {
+//			getSpeciesContextSpecPanel().setSpeciesContextSpec(getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row));
+////			System.out.println("Initial condition selection changed");
+//			if(getSPPRPanel() != null) {
+//				getSPPRPanel().setScrollPaneTreeCurrentRow(getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row).getSpeciesContext());
+//			}
+//		}
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+}
+
+private void setSelectionEvent(SelectionEvent newValue) {
+	SelectionEvent oldValue = selectionEvent;
+	selectionEvent = newValue;
+	firePropertyChange(PARAMETER_NAME_SELECTED_SPECIES_CONTEXT, oldValue, newValue);
 }
 
 /**

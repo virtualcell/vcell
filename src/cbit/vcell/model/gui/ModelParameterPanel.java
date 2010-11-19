@@ -1,5 +1,6 @@
 package cbit.vcell.model.gui;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -8,28 +9,29 @@ import java.beans.PropertyVetoException;
 import java.util.Vector;
 
 import javax.swing.JDesktopPane;
+import javax.swing.JTable;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.desktop.biomodel.SPPRPanel;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelQuantity;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Kinetics.KineticsProxyParameter;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -40,15 +42,15 @@ import cbit.vcell.parser.SymbolTableEntry;
  * Creation date: (9/23/2003 12:23:30 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class ModelParameterPanel extends javax.swing.JPanel {
+	public static final String PROPERTY_NAME_SELECTED_MODEL_PARAMETER = "selectedModelParameter";
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private ModelParameterTableModel ivjmodelParameterTableModel = null;
 	private boolean ivjConnPtoP5Aligning = false;
 	private javax.swing.ListSelectionModel ivjselectionModel1 = null;
 	private JSortTable ivjScrollPaneTable = null;
 	private Model fieldModel = null;
-	private SPPRPanel spprPanel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private Model ivjmodel1 = null;
 	private javax.swing.JMenuItem ivjJMenuItemAdd = null;
@@ -61,9 +63,9 @@ public class ModelParameterPanel extends javax.swing.JPanel {
 	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
 	private javax.swing.JPopupMenu ivjJPopupMenuICP = null;
 	private JSortTable ivjthis12 = null;
-	private boolean filterFlag = false;
+	private boolean bGlobalOnly = false;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
+	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
 				if (e.getSource() == ModelParameterPanel.this.getJMenuItemAdd()) 
@@ -104,43 +106,37 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 				connPtoP3SetTarget();
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+			if (e.getValueIsAdjusting()) {
+				return;
+			}
 			if (e.getSource() == ModelParameterPanel.this.getselectionModel1()) 
-				connEtoM3(e);
+				tableSelectionChanged();
 		};
 	};
 	
-	PropertyChangeListener ModelParametersPropertyChangeListener =
-		new PropertyChangeListener(){
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getSource() instanceof Model && evt.getPropertyName().equals(Model.MODEL_PARAMETERS_PROPERTY_NAME)) {
-					ModelParameterTableModel modelparamTableModel = (ModelParameterTableModel)getScrollPaneTable().getModel();
-					modelparamTableModel.setData(modelparamTableModel.getUnsortedParameters());
-				}
+	PropertyChangeListener ModelParametersPropertyChangeListener = new PropertyChangeListener(){
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getSource() instanceof Model && evt.getPropertyName().equals(Model.MODEL_PARAMETERS_PROPERTY_NAME)) {
+				ModelParameterTableModel modelparamTableModel = (ModelParameterTableModel)getScrollPaneTable().getModel();
+				modelparamTableModel.setData(modelparamTableModel.getUnsortedParameters());
 			}
-		};
+		}
+	};
 
 
 /**
  * ModelParameterPanel constructor comment.
  */
-		public ModelParameterPanel() {
-			super();
-			spprPanel = null;
-			filterFlag = false;	// not called from within SPPR panel
-			initialize();
-		}
+	public ModelParameterPanel() {
+		this(false);
+	}
+	
+	public ModelParameterPanel(boolean bGlobalOnly) {
+		super();
+		this.bGlobalOnly = bGlobalOnly;	// not called from within SPPR panel
+		initialize();
+	}
 		
-		public ModelParameterPanel(SPPRPanel aPanel) {
-			super();
-			spprPanel = aPanel;
-			filterFlag = true;
-			initialize();
-		}
-
-		private SPPRPanel getSPPRPanel() {
-			return spprPanel;
-		}
-
 /**
  * Insert the method's description here.
  * Creation date: (8/9/2006 9:10:39 PM)
@@ -236,14 +232,15 @@ private void connPtoP5SetTarget() {
 }
 /**
  */
-private void connEtoM3(javax.swing.event.ListSelectionEvent arg1) {
+private void tableSelectionChanged() {
 	try {
 //		System.out.println("Model Parameter selection changed");
 		int row = getScrollPaneTable().getSelectedRow();
-		if((row >= 0) && (getSPPRPanel() != null)) {
-			getSPPRPanel().setScrollPaneTreeCurrentRow(getmodelParameterTableModel().getValueAt(row));
+		Object newValue = null;
+		if (row >= 0) {
+			newValue = getmodelParameterTableModel().getValueAt(row);
 		}
-
+		firePropertyChange(PROPERTY_NAME_SELECTED_MODEL_PARAMETER, null, newValue);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -457,7 +454,7 @@ private Model getmodel1() {
 private ModelParameterTableModel getmodelParameterTableModel() {
 	if (ivjmodelParameterTableModel == null) {
 		try {
-			ivjmodelParameterTableModel = new ModelParameterTableModel(getScrollPaneTable(), filterFlag);
+			ivjmodelParameterTableModel = new ModelParameterTableModel(getScrollPaneTable(), bGlobalOnly);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -519,6 +516,21 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemPaste().addActionListener(ivjEventHandler);
 	getJMenuItemPasteAll().addActionListener(ivjEventHandler);
 	
+	getScrollPaneTable().setDefaultRenderer(Parameter.class, new DefaultScrollTableCellRenderer() {
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+					row, column);
+			Parameter parameter = (Parameter)value;
+			setText(parameter.getName());
+			return this;
+		}
+		
+	});
+	
 	// for scrollPaneTable, set tableModel and create default columns
 	getScrollPaneTable().setModel(getmodelParameterTableModel());
 	getScrollPaneTable().createDefaultColumnsFromModel();
@@ -554,8 +566,8 @@ public void setScrollPaneTableCurrentRow(ModelParameter selection) {
 
 	int numRows = getScrollPaneTable().getRowCount();
 	for(int i=0; i<numRows; i++) {
-		String valueAt = (String)getScrollPaneTable().getValueAt(i, ModelParameterTableModel.COLUMN_NAME);
-		if(valueAt.equals(selection.getName())) {
+		Parameter valueAt = (Parameter)getScrollPaneTable().getValueAt(i, ModelParameterTableModel.COLUMN_NAME);
+		if(valueAt.equals(selection)) {
 			getScrollPaneTable().changeSelection(i, 0, false, false);
 			return;
 		}

@@ -1017,7 +1017,7 @@ private void setKinetics(Kinetics newValue) {
 			ivjKinetics = newValue;
 			getJComboBox1().setSelectedItem(this.getKineticType(getKinetics()));
 			getReactionElectricalPropertiesPanel1().setKinetics(getKinetics());
-			getKineticsTypeTemplatePanel().setKinetics(getKinetics());
+			getKineticsTypeTemplatePanel().setReactionStep(getFluxReaction1());
 			updateToggleButtonLabel();
 			
 		} catch (java.lang.Throwable ivjExc) {

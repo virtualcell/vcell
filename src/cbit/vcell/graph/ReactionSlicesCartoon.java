@@ -214,9 +214,10 @@ public class ReactionSlicesCartoon extends ModelCartoon{
 				}
 			}
 			if (containerShape == null) {
-				containerShape = new ContainerContainerShape(this, getModel(), reactionContainerShapeList);
+				containerShape = new ContainerContainerShape(this, getModel());
 				addShape(containerShape);
 			}
+			containerShape.setStructureContainers(reactionContainerShapeList);
 			containerShape.refreshLabel();
 			containerShape.setDirty(false);
 			// add all species context shapes within the structures

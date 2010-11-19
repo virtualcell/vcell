@@ -2,6 +2,7 @@ package cbit.vcell.client;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -17,7 +18,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
@@ -25,6 +25,7 @@ import javax.swing.event.InternalFrameListener;
 import org.vcell.sybil.gui.space.DialogParentProvider;
 import org.vcell.sybil.gui.space.GUIJInternalFrameSpace;
 import org.vcell.sybil.init.SybilApplication;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
@@ -239,22 +240,25 @@ private ApplicationComponents findAppComponentsForSimContextGeomViewer(Applicati
  * @param newDocument cbit.vcell.document.VCDocument
  */
 public void addResultsFrame(SimulationWindow simWindow) {
-	if (!getApplicationsHash().containsKey(simWindow.getSimOwner())) {
-		// it shouldn't happen, but check anyway...
-		try {
-			throw new RuntimeException("we are asked to show results but we don't have the simOwner");
-		} catch (Exception exc) {
-			exc.printStackTrace(System.out);
-		}
-	}
-	ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get(simWindow.getSimOwner());
-	appComponents.addDataViewer(simWindow);
-	if (appComponents.getAppEditorFrame().isShowing()) {
-		// should be showing, but you never know...
-		int count = appComponents.getDataViewerFrames().length;
-		simWindow.getFrame().setLocation(appComponents.getAppEditorFrame().getLocation().x + 100 + count * 20, appComponents.getAppEditorFrame().getLocation().y + 100 + count * 15);
-		showFrame(simWindow.getFrame());
-	}
+//	BeanUtils.centerOnComponent(simWindow.getFrame(), getJDesktopPane());
+	showFrame(simWindow.getFrame());
+//	if (!getApplicationsHash().containsKey(simWindow.getSimOwner())) {
+//		// it shouldn't happen, but check anyway...
+//		try {
+//			throw new RuntimeException("we are asked to show results but we don't have the simOwner");
+//		} catch (Exception exc) {
+//			exc.printStackTrace(System.out);
+//		}
+//	}
+	//TODO
+//	ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get(simWindow.getSimOwner());
+//	appComponents.addDataViewer(simWindow);
+//	if (appComponents.getAppEditorFrame().isShowing()) {
+//		// should be showing, but you never know...
+//		int count = appComponents.getDataViewerFrames().length;
+//		simWindow.getFrame().setLocation(appComponents.getAppEditorFrame().getLocation().x + 100 + count * 20, appComponents.getAppEditorFrame().getLocation().y + 100 + count * 15);
+//		showFrame(simWindow.getFrame());
+//	}
 }
 
 
@@ -346,18 +350,18 @@ private void createAppComponents(SimulationContext simContext) {
  * Insert the method's description here.
  * Creation date: (5/5/2004 9:44:15 PM)
  */
-private void createBioModelFrame() {
+private void createBioModelFrame() {	
 	getBioModelEditor().setBioModelWindowManager(this);
 	getBioModelEditor().setBioModel(getBioModel());
 	getBioModelEditor().setDocumentManager(getRequestManager().getDocumentManager());
-	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("Model", true, false, true, true);
+	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("BioModel", true, false, true, true);
 	editorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/bioModel_16x16.gif")));
 	editorFrame.add(bioModelEditor, BorderLayout.CENTER);
 	getJDesktopPane().add(editorFrame);
-	editorFrame.show();
-	editorFrame.setSize(900,600);
+	editorFrame.setSize(750, 550);
 	editorFrame.setMinimumSize(new Dimension(400, 300));
 	editorFrame.setLocation(10,10);
+	editorFrame.show();
 }
 
 
@@ -980,7 +984,7 @@ public void BioModelEditor_ApplicationMenu_ActionPerformed(ActionEvent e)
 {
 	if(getBioModelEditor() != null)
 	{
-		getBioModelEditor().bioModelTreePanel1_ActionPerformed(e);
+		getBioModelEditor().applicationMenuItem_ActionPerformed(e);
 	}
 }
 

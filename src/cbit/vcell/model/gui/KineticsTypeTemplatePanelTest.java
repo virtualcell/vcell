@@ -4,7 +4,13 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.model.*;
+import javax.swing.JFrame;
+
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.GHKKinetics;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Species;
 import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
@@ -16,13 +22,7 @@ public class KineticsTypeTemplatePanelTest {
  */
 public static void main(java.lang.String[] args) {
 	try {
-		java.awt.Frame frame;
-		try {
-			Class aFrameClass = Class.forName("com.ibm.uvm.abt.edit.TestFrame");
-			frame = (java.awt.Frame)aFrameClass.newInstance();
-		} catch (java.lang.Throwable ivjExc) {
-			frame = new java.awt.Frame();
-		}
+		JFrame frame = new JFrame();
 		KineticsTypeTemplatePanel aKineticsTypeTemplatePanel;
 		aKineticsTypeTemplatePanel = new KineticsTypeTemplatePanel();
 		frame.add("Center", aKineticsTypeTemplatePanel);
@@ -57,7 +57,7 @@ public static void main(java.lang.String[] args) {
 		GHKKinetics ghkKinetics = (GHKKinetics)fr.getKinetics();
 
 
-		aKineticsTypeTemplatePanel.setKinetics(ghkKinetics);
+		aKineticsTypeTemplatePanel.setReactionStep(fr);
 		System.out.println("Rate = "+ghkKinetics.getReactionRateParameter().getExpression());
 		System.out.println("Current = "+ghkKinetics.getCurrentDensityParameter().getExpression());
 		

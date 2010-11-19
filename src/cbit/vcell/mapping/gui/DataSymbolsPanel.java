@@ -141,9 +141,9 @@ public class DataSymbolsPanel extends javax.swing.JPanel {
 		};
 	};
 
-public DataSymbolsPanel(SPPRPanel aPanel) {
+public DataSymbolsPanel() {
 	super();
-	spprPanel = aPanel;
+	spprPanel = null;
 	initialize();
 }
 

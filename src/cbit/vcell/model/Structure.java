@@ -24,6 +24,9 @@ import cbit.vcell.units.VCUnitDefinition;
 public abstract class Structure implements Serializable, ScopedSymbolTable, Matchable, Cacheable, VetoableChangeListener,
 		Identifiable
 {
+	public final static String TYPE_NAME_FEATURE = "Compartment";
+	public final static String TYPE_NAME_MEMBRANE = "Membrane";
+	
 	private String fieldName = new String();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -362,4 +365,6 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	getNameScope().getExternalEntries(entryMap);		
 }
+
+public abstract String getTypeName();
 }

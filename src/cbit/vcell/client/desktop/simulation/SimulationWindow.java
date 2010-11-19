@@ -92,7 +92,6 @@ private void initialize(DataViewer dataViewer) {
 	newFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/run2_16x16.gif")));
 	setFrame(newFrame);
 	getFrame().add(dataViewer);
-	getFrame().setSize(850, 650);
 	getSimulation().addPropertyChangeListener(pcl);
 }
 
