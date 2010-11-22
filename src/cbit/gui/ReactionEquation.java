@@ -121,18 +121,20 @@ public final String getEquationRightHand() {
 	return equationRightHand;
 }
 
-public static void parseReaction(SimpleReaction reactionStep, String equationString) throws Exception {
+public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, String equationString) throws ExpressionException {
 	int gotoIndex = equationString.indexOf(REACTION_GOESTO);
 	if (gotoIndex < 1 && equationString.length() == 0) {
 		throw new ExpressionException("Syntax error!");
 	}
-	ReactionParticipant[] reactionParticipants = reactionStep.getReactionParticipants();
 	String leftHand = equationString.substring(0, gotoIndex);
 	String rightHand = equationString.substring(gotoIndex + REACTION_GOESTO.length());
 	StringTokenizer st = new StringTokenizer(leftHand, "+");
 	ArrayList<ReactionParticipant> rplist = new ArrayList<ReactionParticipant>();
 	while (st.hasMoreElements()) {
 		String nextToken = st.nextToken().trim();
+		if (nextToken.length() == 0) {
+			continue;
+		}
 		int stoichiIndex = 0;
 		while (true) {
 			if (Character.isDigit(nextToken.charAt(stoichiIndex))) {
@@ -149,13 +151,20 @@ public static void parseReaction(SimpleReaction reactionStep, String equationStr
 		String var = nextToken.substring(stoichiIndex).trim();
 		SpeciesContext sc = reactionStep.getModel().getSpeciesContext(var);
 		if (sc == null) {
-			throw new ExpressionException("Species '" + var + "' doesn't exist!");
+			throw new ExpressionException("Species '" + var + "' does not exist!");
 		}
-		rplist.add(new Reactant(null,reactionStep, sc, stoichi));
+		if (reactionStep instanceof SimpleReaction) {
+			rplist.add(new Reactant(null,(SimpleReaction) reactionStep, sc, stoichi));
+		} else if (reactionStep instanceof FluxReaction) {
+			rplist.add(new Flux(null, (FluxReaction) reactionStep, sc));
+		}
 	}
 	st = new StringTokenizer(rightHand, "+");
 	while (st.hasMoreElements()) {
 		String nextToken = st.nextToken().trim();
+		if (nextToken.length() == 0) {
+			continue;
+		}
 		int stoichiIndex = 0;
 		while (true) {
 			if (Character.isDigit(nextToken.charAt(stoichiIndex))) {
@@ -174,8 +183,12 @@ public static void parseReaction(SimpleReaction reactionStep, String equationStr
 		if (sc == null) {
 			throw new ExpressionException("Species '" + var + "' doesn't exist!");
 		}
-		rplist.add(new Product(null,reactionStep, sc, stoichi));
+		if (reactionStep instanceof SimpleReaction) {
+			rplist.add(new Product(null,(SimpleReaction) reactionStep, sc, stoichi));
+		} else if (reactionStep instanceof FluxReaction) {
+			rplist.add(new Flux(null, (FluxReaction) reactionStep, sc));
+		}
 	}
-	reactionStep.setReactionParticipants(rplist.toArray(new ReactionParticipant[0]));
+	return rplist.toArray(new ReactionParticipant[0]);
 }
 }

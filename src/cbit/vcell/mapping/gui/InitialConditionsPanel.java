@@ -272,7 +272,7 @@ private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 		SpeciesContextSpec newValue = null;
 		int row = getselectionModel1().getMinSelectionIndex();
 		if (row >= 0) {
-			newValue = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row);
+			newValue = getSpeciesContextSpecsTableModel().getValueAt(row);
 		}
 		getSpeciesContextSpecPanel().setSpeciesContextSpec(newValue);
 		setSelectionEvent(new SelectionEvent(getSimulationContext(), newValue == null ? null : newValue.getSpeciesContext()));
@@ -943,7 +943,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			java.util.Vector<SymbolTableEntry> alternateSymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
 			java.util.Vector<Expression> resolvedValuesV = new java.util.Vector<Expression>();
 			for(int i=0;i<rows.length;i+= 1){
-				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(rows[i]);
+				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getValueAt(rows[i]);
 				if(scs.isConstant()){
 					primarySymbolTableEntriesV.add(scs.getInitialConditionParameter());//need to change
 					if (msm!=null){
@@ -1033,7 +1033,7 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 				//
 				StringBuffer errors = null;
 				for(int i=0;i<rows.length;i+= 1){
-					SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(rows[i]);
+					SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getValueAt(rows[i]);
 					try{
 						if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
 							VCellTransferable.ResolvedValuesSelection rvs = (VCellTransferable.ResolvedValuesSelection)pasteThis;
@@ -1347,7 +1347,7 @@ public void checkBooleanTableColumn(CheckOption b) {
 	boolean bCheck = CheckOption.CheckSelected.equals(b);
 	int[] selectedRows = getScrollPaneTable().getSelectedRows();
 	for (int r = 0; r < selectedRows.length; r ++) {
-		SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSpeciesContextSpec(selectedRows[r]);
+		SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getValueAt(selectedRows[r]);
 		if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_CLAMPED) {
 			scs.setConstant(bCheck);
 		} else if (selectedColumn == SpeciesContextSpecsTableModel.COLUMN_WELLMIXED) {
@@ -1360,7 +1360,7 @@ public void setDiffusionConstant() {
 	getJPopupMenuICP().setVisible(false);
 	int[] selectedRows = getScrollPaneTable().getSelectedRows();
 	for (int r = 0; r < selectedRows.length; r ++) {
-		SpeciesContextSpec scs= getSpeciesContextSpecsTableModel().getSpeciesContextSpec(selectedRows[r]);
+		SpeciesContextSpec scs= getSpeciesContextSpecsTableModel().getValueAt(selectedRows[r]);
 		try {
 			scs.getDiffusionParameter().setExpression(new Expression(getSetDiffConstantTextField().getText()));
 		} catch (ExpressionException e) {

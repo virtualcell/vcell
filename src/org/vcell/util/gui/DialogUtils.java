@@ -31,13 +31,12 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 import org.vcell.util.gui.sorttable.JSortTable;
-import org.vcell.util.gui.sorttable.ManageTableModel;
 
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.test.VCellClientTest;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import edu.stanford.ejalbert.BrowserLauncher;
 import edu.stanford.ejalbert.BrowserLauncherRunner;
 import edu.stanford.ejalbert.exceptionhandler.BrowserLauncherErrorHandler;
@@ -464,7 +463,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 			for (int i = 0; i < sortedRowReference.length; i++) {
 				sortedRowReference[i] = i;
 			}
-			ManageTableModel tableModel = new ManageTableModel(columnNames) {
+			DefaultSortTableModel tableModel = new DefaultSortTableModel(columnNames) {
 				@Override
 				public boolean isSortable(int col) {
 					if (rowSortComparator != null) {

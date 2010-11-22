@@ -631,7 +631,7 @@ public class EventPanel extends JPanel {
 		private void deleteEventAssignment() {
 			int selectedRow = getEventTargetsScrollPaneTable().getSelectedRow();
 			if (selectedRow > -1) {
-				EventAssignment eventAssgn = (EventAssignment)getEventAssignmentsTableModel().getData().get(selectedRow);
+				EventAssignment eventAssgn = getEventAssignmentsTableModel().getValueAt(selectedRow);
 				try {
 					fieldBioEvent.removeEventAssignment(eventAssgn);
 				} catch (PropertyVetoException e1) {

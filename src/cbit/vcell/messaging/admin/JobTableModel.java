@@ -1,14 +1,16 @@
 package cbit.vcell.messaging.admin;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
 
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.ColumnComparator;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 /**
  * Insert the type's description here.
  * Creation date: (8/28/2003 1:38:32 PM)
  * @author: Fei Gao
  */
-public class JobTableModel extends ManageTableModel {
+public class JobTableModel extends DefaultSortTableModel<SimpleJobStatus> {
 	private final static int columnIndex_UserID = 0;
 	private final static int columnIndex_SimID = 1;
 	private final static int columnIndex_JobIndex = 2;
@@ -26,8 +28,7 @@ public class JobTableModel extends ManageTableModel {
  * JobTableModel constructor comment.
  */
 public JobTableModel() {
-	super();
-	columns = new String[]{"User ID", "Sim ID", "Job Index", "Solver Type", "Status", "Compute Host", "Server ID", "Task ID", "Submit Date", "Start Date", "End Date", "Elapsed (h:m:s)"};
+	super(new String[]{"User ID", "Sim ID", "Job Index", "Solver Type", "Status", "Compute Host", "Server ID", "Task ID", "Submit Date", "Start Date", "End Date", "Elapsed (h:m:s)"});
 }
 
 
@@ -77,4 +78,9 @@ public synchronized void remove(int index) {
 		fireTableDataChanged();
 	}
 }
+
+public void sortColumn(int col, boolean ascending) {
+	Collections.sort(rows, new ColumnComparator(col, ascending));
+}
+
 }

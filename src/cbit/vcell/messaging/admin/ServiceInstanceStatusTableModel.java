@@ -1,9 +1,11 @@
 package cbit.vcell.messaging.admin;
 
+import java.util.Collections;
 import java.util.Date;
 
 import org.vcell.util.MessageConstants.ServiceType;
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.ColumnComparator;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 
 /**
@@ -11,11 +13,10 @@ import org.vcell.util.gui.sorttable.ManageTableModel;
  * Creation date: (8/19/2003 10:46:32 AM)
  * @author: Fei Gao
  */
-public class ServiceInstanceStatusTableModel extends ManageTableModel {
+public class ServiceInstanceStatusTableModel extends DefaultSortTableModel<ServiceInstanceStatus> {
 
 public ServiceInstanceStatusTableModel() {
-	super();
-	columns =  new String[]{"Site", "Type", "Ordinal", "Host", "Start Date", "Running"};
+	super(new String[]{"Site", "Type", "Ordinal", "Host", "Start Date", "Running"});
 }
 
 
@@ -51,5 +52,9 @@ public Object getValueAt(int row, int col) {
 	ServiceInstanceStatus status = (ServiceInstanceStatus)rows.get(row);
 	Object[] values = status.toObjects();
 	return values[col];
+}
+
+public void sortColumn(int col, boolean ascending) {
+	Collections.sort(rows, new ColumnComparator(col, ascending));
 }
 }

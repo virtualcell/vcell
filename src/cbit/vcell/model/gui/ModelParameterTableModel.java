@@ -1,25 +1,23 @@
 package cbit.vcell.model.gui;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
@@ -29,7 +27,8 @@ import cbit.vcell.units.VCUnitException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ModelParameterTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
+@SuppressWarnings("serial")
+public class ModelParameterTableModel extends DefaultSortTableModel<Parameter> implements java.beans.PropertyChangeListener {
 
 	private class ParameterColumnComparator implements Comparator<Parameter> {
 		protected int index;
@@ -94,27 +93,25 @@ public class ModelParameterTableModel extends ManageTableModel implements java.b
 			return 1;
 		}
 	}
-	public static final int NUM_COLUMNS = 6;
 	public static final int COLUMN_SCOPE = 0;
 	public static final int COLUMN_NAME = 1;
 	public static final int COLUMN_DESCRIPTION = 2;
 	public static final int COLUMN_VALUE = 3;
 	public static final int COLUMN_UNIT = 4;
 	public static final int COLUMN_ANNOTATION = 5;
-	private String LABELS[] = { "Context", "Name", "Description", "Expression", "Units" , "Annotation" };
+	private static String LABELS[] = { "Context", "Name", "Description", "Expression", "Units" , "Annotation" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Model fieldModel = null;
 	private JTable ownerTable = null;
-	private boolean filterFlag;
-	private boolean bEditable = true;
+	private boolean bGlobalOnly = false;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
 public ModelParameterTableModel(JTable table, boolean flag) {
-	super();
+	super(LABELS);
 	ownerTable = table;
-	filterFlag = flag;
+	bGlobalOnly = flag;
 	addPropertyChangeListener(this);
 }
 
@@ -164,76 +161,13 @@ public Class<?> getColumnClass(int column) {
 	}
 }
 
-
-/**
- * getColumnCount method comment.
- */
-public int getColumnCount() {
-	return NUM_COLUMNS;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/24/01 12:24:35 AM)
- * @return java.lang.Class
- * @param column int
- */
-public String getColumnName(int column) {
-	if (column<0 || column>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	return LABELS[column];
-}
-
-
 /**
  * Gets the model property (cbit.vcell.model.Model) value.
  * @return The model property value.
  * @see #setModel
  */
-public Model getModel() {
+private Model getModel() {
 	return fieldModel;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/23/2003 1:24:52 PM)
- * @return cbit.vcell.model.Parameter
- * @param row int
- */
-private Parameter getParameter(int row) {
-
-	if (getModel()==null){
-		return null;
-	}
-	if (row<0){
-		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range");
-	}
-	int count = getModel().getModelParameters().length;
-	int index = row;
-	if (index<count){
-		return getModel().getModelParameters()[index];
-	}
-	
-	// need to include ReservedSymbols as well ...
-	
-	index -= count;	// not in ModelParameters, subtract offset and move on
-	ReactionStep[] reactionSteps = getModel().getReactionSteps();
-	for (int i = 0; index>=0 && i < reactionSteps.length; i++){
-		count = reactionSteps[i].getKinetics().getUnresolvedParameters().length;
-		if (index < count){
-			return reactionSteps[i].getKinetics().getUnresolvedParameters()[index];
-		}
-		index -= count;
-		count = reactionSteps[i].getKinetics().getKineticsParameters().length;
-		if (index < count){
-			return reactionSteps[i].getKinetics().getKineticsParameters()[index];
-		}
-		index -= count;
-	}
-	throw new RuntimeException("rowIndex = "+row+" not found");
 }
 
 /**
@@ -261,31 +195,26 @@ public int getRowCount() {
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-public List<Parameter> getUnsortedParameters() {
-
-	if (getModel()==null){
-		return null;
+private void refreshData() {
+	rows.clear();
+	if (getModel()== null){
+		return;
 	}
-
-	int count = getModel().getModelParameters().length;
-	ReactionStep[] reactionSteps = getModel().getReactionSteps();
-	for (int i = 0; i < reactionSteps.length; i++){
-		count += reactionSteps[i].getKinetics().getUnresolvedParameters().length;
-		count += reactionSteps[i].getKinetics().getKineticsParameters().length;
+	for (Parameter parameter : getModel().getModelParameters()) {
+		rows.add(parameter);
 	}
-
-	ArrayList<Parameter> list = new ArrayList<Parameter>();
-	for (int i = 0; i < count; i++){
-		Parameter parameter = getParameter(i);
-		if(filterFlag == false) {
-			list.add(parameter);
-		} else {
-			if(parameter instanceof ModelParameter) {
-				list.add(parameter);
+	if (!bGlobalOnly) {
+		for (ReactionStep reactionStep : getModel().getReactionSteps()) {
+			for (Parameter parameter : reactionStep.getKinetics().getUnresolvedParameters()) {
+				rows.add(parameter);
+			}
+			for (Parameter parameter : reactionStep.getKinetics().getKineticsParameters()) {
+				rows.add(parameter);
 			}
 		}
 	}
-	return list;
+	resortColumn();
+	fireTableDataChanged();
 }
 
 
@@ -294,13 +223,13 @@ public List<Parameter> getUnsortedParameters() {
  */
 public Object getValueAt(int row, int col) {
 	try {
-		if (col<0 || col>=NUM_COLUMNS){
-			throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+		if (col<0 || col>=getColumnCount()){
+			throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(getColumnCount()-1)+"]");
 		}
 		if (row<0 || row>=getRowCount()){
 			throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		Parameter parameter = (Parameter)getData().get(row);
+		Parameter parameter = getValueAt(row);
 		switch (col){
 			case COLUMN_NAME:{
 				//return getBioModel().getModel().getNameScope().getSymbolName(parameter);
@@ -385,10 +314,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	if (!bEditable){
-		return false;
-	}
-	Parameter parameter = (Parameter)getData().get(rowIndex);
+	Parameter parameter = getValueAt(rowIndex);
 	if (columnIndex == COLUMN_NAME){
 		return parameter.isNameEditable();
 	}else if (columnIndex == COLUMN_SCOPE){
@@ -408,7 +334,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 
 public ReactionStep getEditableAnnotationReactionStep(int rowIndex){
 
-	Parameter sortedParameter = (Parameter)getData().get(rowIndex);
+	Parameter sortedParameter = getValueAt(rowIndex);
 	if(sortedParameter instanceof Kinetics.KineticsParameter){
 		KineticsParameter param = (KineticsParameter)sortedParameter;
 		if (param.getKinetics().getAuthoritativeParameter() == param){
@@ -469,10 +395,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 			}
 		}
-		setData(getUnsortedParameters());
-		fireTableDataChanged();
+		refreshData();
+	} else if (evt.getSource() == getModel() && evt.getPropertyName().equals(Model.MODEL_PARAMETERS_PROPERTY_NAME)) {
+		refreshData();
 	}
-	if (evt.getSource() instanceof Model && evt.getPropertyName().equals("reactionSteps")) {
+	if (evt.getSource() == getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_REACTION_STEPS)) {
 		ReactionStep[] oldRS = (ReactionStep[])evt.getOldValue();
 		for (int i = 0; oldRS!=null && i < oldRS.length; i++){
 			oldRS[i].removePropertyChangeListener(this);
@@ -501,8 +428,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				newRS[i].getKinetics().getUnresolvedParameters()[j].addPropertyChangeListener(this);
 			}
 		}
-		setData(getUnsortedParameters());
-		fireTableDataChanged();
+		refreshData();
 	}
 	if (evt.getSource() instanceof ReactionStep && evt.getPropertyName().equals("kinetics")) {
 		Kinetics oldValue = (Kinetics)evt.getOldValue();
@@ -531,12 +457,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				newValue.getUnresolvedParameters()[j].addPropertyChangeListener(this);
 			}
 		}
-		setData(getUnsortedParameters());
-		fireTableDataChanged();
+		refreshData();
 	}
 	if (evt.getSource() instanceof Parameter) {
-		setData(getUnsortedParameters());
-		fireTableRowsUpdated(0, getRowCount()-1);
+		fireTableDataChanged();
 	}
 
 	if (evt.getSource() instanceof Kinetics && evt.getPropertyName().equals("kineticsParameters")) {
@@ -548,8 +472,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		for (int i = 0; newVal!=null && i < newVal.length; i++){
 			newVal[i].addPropertyChangeListener(this);
 		}
-		setData(getUnsortedParameters());
-		fireTableRowsUpdated(0, getRowCount()-1);
+		refreshData();
 	}
 	if (evt.getSource() instanceof Kinetics && evt.getPropertyName().equals("proxyParameters")) {
 		KineticsProxyParameter[] old = (KineticsProxyParameter[])evt.getOldValue();
@@ -560,8 +483,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		for (int i = 0; newVal!=null && i < newVal.length; i++){
 			newVal[i].addPropertyChangeListener(this);
 		}
-		setData(getUnsortedParameters());
-		fireTableRowsUpdated(0, getRowCount()-1);
+		refreshData();
 	}
 	if (evt.getSource() instanceof Kinetics && evt.getPropertyName().equals("unresolvedParameters")) {
 		UnresolvedParameter[] old = (UnresolvedParameter[])evt.getOldValue();
@@ -572,11 +494,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		for (int i = 0; newVal!=null && i < newVal.length; i++){
 			newVal[i].addPropertyChangeListener(this);
 		}
-		setData(getUnsortedParameters());
-		fireTableRowsUpdated(0, getRowCount()-1);
+		refreshData();
 	}
 }
-
 
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
@@ -584,15 +504,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
-}
-
 
 /**
  * Sets the model property (cbit.vcell.model.Model) value.
@@ -607,10 +518,10 @@ public void setModel(Model model) {
 
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (columnIndex<0 || columnIndex>=getColumnCount()){
+		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
-	Parameter parameter = (Parameter)getData().get(rowIndex);
+	Parameter parameter = getValueAt(rowIndex);
 //	try {
 		switch (columnIndex){
 			case COLUMN_NAME:{
@@ -727,10 +638,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
   public void sortColumn(int col, boolean ascending)
   {
     Collections.sort(rows, new ParameterColumnComparator(col, ascending));
-    fireTableRowsUpdated(0,rows.size()-1);//Added to make sure formatted table cells display with enough space
   }
 
-public void setEditable(boolean editable) {
-	this.bEditable = editable;
-}
 }

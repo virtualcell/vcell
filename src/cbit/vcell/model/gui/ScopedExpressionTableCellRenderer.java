@@ -7,6 +7,7 @@ import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import javax.imageio.ImageReader;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -31,8 +32,19 @@ import cbit.vcell.parser.ExpressionPrintFormatter;
  */
 @SuppressWarnings("serial")
 public class ScopedExpressionTableCellRenderer implements javax.swing.table.TableCellRenderer {
-	private Hashtable<String, ImageIcon> scopedExpressionImageIconHash = new Hashtable<String, ImageIcon>();//Cache ScopedExpression ImageIcons
-	private Hashtable<String, Boolean> scopedExpressionSelectedHash = new Hashtable<String, Boolean>();//Cache ScopedExpression Selected
+	private class ReusableExpressionIcon {
+		ImageIcon imageIcon;
+		Color background;
+		Color foreground;
+		private ReusableExpressionIcon(ImageIcon imageIcon, Color background,
+				Color foreground) {
+			super();
+			this.imageIcon = imageIcon;
+			this.background = background;
+			this.foreground = foreground;
+		}
+	}
+	private Hashtable<String, ReusableExpressionIcon> scopedExpressionImageIconHash = new Hashtable<String, ReusableExpressionIcon>();//Cache ScopedExpression ImageIcons
 	private int scopedExpressionCacheSize = 0;
 	private static final int CACHE_SIZE_LIMIT = 250000;
 	private DefaultScrollTableCellRenderer stringRenderer = new DefaultScrollTableCellRenderer();
@@ -222,12 +234,12 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 		JLabel renderer = imageRenderer;
 		ScopedExpression scopedExpression = (ScopedExpression)value;
 		String scopedExpressInfix = scopedExpression.infix();
-		if (scopedExpressionImageIconHash.containsKey(scopedExpressInfix) && 
-			scopedExpressionSelectedHash.containsKey(scopedExpressInfix) &&
-			((Boolean)scopedExpressionSelectedHash.get(scopedExpressInfix)).booleanValue() == isSelected){
-			//Re-use existing ImageIcon is it exists and is same select state
-			imageRenderer.setIcon((javax.swing.ImageIcon)scopedExpressionImageIconHash.get(scopedExpressInfix));
-		}else{
+		ReusableExpressionIcon rei = scopedExpressionImageIconHash.get(scopedExpressInfix);
+		if (rei != null && rei.background.equals(imageRenderer.getBackground())
+			&& rei.foreground.equals(imageRenderer.getForeground())) {
+			//Re-use existing ImageIcon is it exists and is same state
+			imageRenderer.setIcon(rei.imageIcon);
+		} else {
 			//Create new ImageIcon
 			try{
 				ExpressionPrintFormatter epf = new ExpressionPrintFormatter(scopedExpression.getRenamedExpression());
@@ -245,8 +257,8 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 				g2d.setClip(0,0,dim.width,dim.height);//epf.paint needs a non-null clipBounds
 				g2d.setFont(italicFont);//set the SAME font used in epf.getSize
 				if(table != null && imageRenderer != null){
-					g2d.setBackground((isSelected ? table.getSelectionBackground() : imageRenderer.getBackground()));
-					g2d.setColor((isSelected ? table.getSelectionForeground() : imageRenderer.getForeground()));
+					g2d.setBackground(imageRenderer.getBackground());
+					g2d.setColor(imageRenderer.getForeground());
 				}
 				g2d.clearRect(0,0,dim.width,dim.height);//paint background
 				epf.paint(g2d);//paint expression into image
@@ -254,14 +266,13 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 				//Limit cacheing in case a large number of DIFFERENT expressions are being serviced by this TableCellRenderer.
 				if((scopedExpressionCacheSize+(dim.width*dim.height)) >= CACHE_SIZE_LIMIT){
 					scopedExpressionImageIconHash.clear();
-					scopedExpressionSelectedHash.clear();
 					scopedExpressionCacheSize = 0;
 				}
 				javax.swing.ImageIcon newImageIcon = new javax.swing.ImageIcon(bi);
-				if(scopedExpressionImageIconHash.put(scopedExpressInfix,newImageIcon) == null){
-					scopedExpressionCacheSize+= dim.width*dim.height;
+				rei = new ReusableExpressionIcon(newImageIcon, imageRenderer.getBackground(), imageRenderer.getForeground());
+				if (scopedExpressionImageIconHash.put(scopedExpressInfix, rei) == null){
+					scopedExpressionCacheSize += dim.width * dim.height;
 				}
-				scopedExpressionSelectedHash.put(scopedExpressInfix,new Boolean(isSelected));
 				imageRenderer.setIcon(newImageIcon);
 			}catch(Exception e){
 				//Fallback to String

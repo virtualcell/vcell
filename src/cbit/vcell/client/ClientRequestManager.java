@@ -125,6 +125,7 @@ import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.Model;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.simdata.MergedDataInfo;
@@ -817,7 +818,8 @@ public void createMathModelFromApplication(final BioModelWindowManager requester
 private BioModel createDefaultBioModelDocument() throws Exception {
 	BioModel bioModel = new BioModel(null);
 	bioModel.setName("BioModel" + (getMdiManager().getNewlyCreatedDesktops() + 1));
-	bioModel.getModel().addFeature("Unnamed compartment", null, "Unnamed membrane");
+	Model model = bioModel.getModel();
+	model.addFeature(model.getFreeFeatureName(), null, model.getFreeMembraneName());
 	return bioModel;
 }
 
@@ -1262,9 +1264,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 			AsynchClientTask task1 = new AsynchClientTask("creating biomodel", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					BioModel bioModel = new BioModel(null);
-					bioModel.setName("BioModel" + (getMdiManager().getNewlyCreatedDesktops() + 1));
-					bioModel.getModel().addFeature("Unnamed compartment", null, "Unnamed membrane");
+					BioModel bioModel = createDefaultBioModelDocument();
 					hashTable.put("doc", bioModel);
 				}			
 			};

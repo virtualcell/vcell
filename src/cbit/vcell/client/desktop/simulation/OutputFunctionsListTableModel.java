@@ -5,7 +5,7 @@ import java.util.Comparator;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
@@ -22,7 +22,8 @@ import cbit.vcell.simdata.VariableType;
  * Creation date: (5/7/2004 4:07:40 PM)
  * @author: Ion Moraru
  */
-public class OutputFunctionsListTableModel extends ManageTableModel implements PropertyChangeListener {
+@SuppressWarnings("serial")
+public class OutputFunctionsListTableModel extends DefaultSortTableModel<AnnotatedFunction> implements PropertyChangeListener {
 	private class FunctionColumnComparator implements Comparator<AnnotatedFunction> {
 		protected int index;
 		protected boolean ascending;
@@ -53,30 +54,24 @@ public class OutputFunctionsListTableModel extends ManageTableModel implements P
 	public final static int COLUMN_OUTPUTFN_VARIABLETYPE = 2;
 	
 	private OutputFunctionContext outputFunctionContext = null;
-	private String[] columnNames = new String[] {"Name", "Expression", "Subdomain"};
+	private static String[] columnNames = new String[] {"Name", "Expression", "Subdomain"};
 	private JTable ownerTable = null;
 
 /**
  * SimulationListTableModel constructor comment.
  */
 public OutputFunctionsListTableModel(JTable table) {
-	super();
+	super(columnNames);
 	ownerTable = table;
 }
 
 /**
  * getColumnCount method comment.
  */
+@Override
 public int getColumnCount() { 
 	return columnNames.length - ((getOutputFunctionContext() == null 
 			|| getOutputFunctionContext().getSimulationOwner().getGeometry().getDimension() > 0) ? 0 : 1);
-}
-
-/**
- * getColumnCount method comment.
- */
-public String getColumnName(int column) {
-	return columnNames[column];
 }
 
 public Class<?> getColumnClass(int column) {
@@ -103,7 +98,7 @@ public Class<?> getColumnClass(int column) {
 public Object getValueAt(int row, int column) {
 	try{
 		if (row >= 0 && row < getRowCount()) {
-			AnnotatedFunction obsFunction = (AnnotatedFunction)getData().get(row);
+			AnnotatedFunction obsFunction = getValueAt(row);
 			switch (column) {
 				case COLUMN_OUTPUTFN_NAME: {
 					return obsFunction.getName();
@@ -182,7 +177,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param columnIndex int
  */
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	AnnotatedFunction outputFunction = (AnnotatedFunction)getData().get(rowIndex);
+	AnnotatedFunction outputFunction = getValueAt(rowIndex);
 	switch (columnIndex){
 		case COLUMN_OUTPUTFN_EXPRESSION:{
 			try {
@@ -241,7 +236,7 @@ public AnnotatedFunction getSelectedOutputFunction() {
 	if (row < 0) {
 		return null;
 	}
-	return (AnnotatedFunction)getData().get(row);
+	return getValueAt(row);
 }
 
 public void selectOutputFunction(AnnotatedFunction annotatedFunction) {

@@ -1,13 +1,15 @@
 package cbit.vcell.messaging.admin;
-import java.util.Date;
+import java.util.Collections;
 
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.ColumnComparator;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 /**
  * Insert the type's description here.
  * Creation date: (2/27/2006 10:21:21 AM)
  * @author: Fei Gao
  */
-public class UserConnectionTableModel extends ManageTableModel {
+@SuppressWarnings("serial")
+public class UserConnectionTableModel extends DefaultSortTableModel<SimpleUserConnection> {
 	private final static int columnIndex_UserID = 0;
 	//private final static int columnIndex_ElapsedTime = 2;
 	//private final static int columnIndex_ConnectedTime = 1;
@@ -16,8 +18,7 @@ public class UserConnectionTableModel extends ManageTableModel {
  * UserConnectionTableModel constructor comment.
  */
 public UserConnectionTableModel() {
-	super();
-	columns = new String[]{"User ID"};
+	super(new String[]{"User ID"});
 }
 
 
@@ -52,5 +53,9 @@ public Object getValueAt(int row, int col) {
 	SimpleUserConnection userconn = (SimpleUserConnection)rows.get(row);
 	Object[] values = userconn.toObjects();
 	return values[col];
+}
+
+public void sortColumn(int col, boolean ascending) {
+	Collections.sort(rows, new ColumnComparator(col, ascending));
 }
 }

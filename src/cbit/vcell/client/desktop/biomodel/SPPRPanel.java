@@ -459,7 +459,6 @@ public class SPPRPanel extends JPanel {
 			try {
 				modelParameterPanel = new ModelParameterPanel();
 				modelParameterPanel.setName("ModelParameterPanel");
-				modelParameterPanel.setEditable(false);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}

@@ -10,24 +10,20 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 
 import javax.swing.ButtonModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import javax.swing.border.BevelBorder;
 
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.JToolBarToggleButton;
 
+import cbit.gui.graph.CartoonTool.Mode;
 import cbit.gui.graph.GraphEmbeddingManager;
 import cbit.gui.graph.GraphPane;
-import cbit.gui.graph.CartoonTool.Mode;
-import cbit.gui.graph.actions.CartoonToolMiscActions;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
@@ -36,10 +32,11 @@ import cbit.vcell.model.Structure;
 @SuppressWarnings("serial")
 public class ReactionSlicesCartoonEditorPanel extends JPanel 
 implements ActionListener, PropertyChangeListener {
+	private static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(15,0);
+	public static final String PROPERTY_NAME_FLOATING = "Floating";
 	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
 	private JPanel featureSizePanel = null;
 	private GraphPane graphPane = null;
-	protected transient PropertyChangeSupport propertyChange;
 	private boolean connPtoP1Aligning = false;
 	private JPanel panel1 = null;
 	private JToolBar toolBar1 = null;
@@ -51,10 +48,8 @@ implements ActionListener, PropertyChangeListener {
 	private JToolBarToggleButton stepButton = null;
 	private ButtonGroupCivilized buttonGroupCivilized = null;
 	private JScrollPane scrollPane1 = null;
-	private JLabel label3 = null;
 	private JButton annealLayoutButton = null;
 	private JButton circleLayoutButton = null;
-	private JLabel label4 = null;
 	private JButton levellerLayoutButton = null;
 	private JButton randomLayoutButton = null;
 	private JButton relaxerLayoutButton = null;
@@ -68,12 +63,11 @@ implements ActionListener, PropertyChangeListener {
 	private ReactionSlicesCartoonTool reactionCartoonTool = null;
 	private Model fieldModel = null;
 
-	private JButton parameterButton = null;
-	private StructureCartoonTool structureCartoonTool = null;
+	private boolean bFloating = false;
+	private JButton floatButton = null;
 
-	public ReactionSlicesCartoonEditorPanel(StructureCartoonTool sct) {
+	public ReactionSlicesCartoonEditorPanel() {
 		super();
-		structureCartoonTool = sct;
 		initialize();
 	}
 
@@ -95,26 +89,16 @@ implements ActionListener, PropertyChangeListener {
 				this.zoomOutButton_ActionPerformed();
 			else if (e.getSource() == getGlgLayoutJButton())
 				getReactionCartoonTool1().layoutGlg();
-			else if (e.getSource() == getParameterButton()) {
-				if (structureCartoonTool != null) {
-					structureCartoonTool.showParametersDialog();
-				}
+			else if (e.getSource() == getFloatButton()) {
+				setFloating(!bFloating);
 			}
 		} catch (Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
 
-	public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-		getPropertyChange().addPropertyChangeListener(listener);
-	}
-
 	public void cleanupOnClose() {
 		getReactionCartoon().cleanupAll();
-	}
-
-	public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 	}
 
 	private JButton getAnnealLayoutButton() {
@@ -241,32 +225,6 @@ implements ActionListener, PropertyChangeListener {
 		return graphPane;
 	}
 
-	private JLabel getJLabel3() {
-		if (label3 == null) {
-			try {
-				label3 = new javax.swing.JLabel();
-				label3.setName("JLabel3");
-				label3.setText(" ");
-			} catch (Throwable ivjExc) {
-				handleException(ivjExc);
-			}
-		}
-		return label3;
-	}
-
-	private JLabel getJLabel4() {
-		if (label4 == null) {
-			try {
-				label4 = new javax.swing.JLabel();
-				label4.setName("JLabel4");
-				label4.setText(" ");
-			} catch (Throwable ivjExc) {
-				handleException(ivjExc);
-			}
-		}
-		return label4;
-	}
-
 	private JPanel getJPanel1() {
 		if (panel1 == null) {
 			try {
@@ -305,25 +263,25 @@ implements ActionListener, PropertyChangeListener {
 				toolBar1.setFloatable(false);
 				toolBar1.setBorder(new javax.swing.border.EtchedBorder());
 				toolBar1.setOrientation(javax.swing.SwingConstants.HORIZONTAL);
+				getJToolBar1().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar1().add(getSelectButton(), getSelectButton().getName());
 				getJToolBar1().add(getSpeciesButton(), getSpeciesButton().getName());
 				getJToolBar1().add(getStepButton(), getStepButton().getName());
 				getJToolBar1().add(getFluxButton(), getFluxButton().getName());
 				getJToolBar1().add(getLineDirectedButton(), getLineDirectedButton().getName());
 				getJToolBar1().add(getLineCatalystButton(), getLineCatalystButton().getName());
-				getJToolBar1().addSeparator(new Dimension(5,10));
-				getJToolBar1().add(getParameterButton());
-				getJToolBar1().addSeparator(new Dimension(5,10));
-				getJToolBar1().add(getJLabel3(), getJLabel3().getName());
+				getJToolBar1().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar1().add(getZoomInButton(), getZoomInButton().getName());
 				getJToolBar1().add(getZoomOutButton(), getZoomOutButton().getName());
-				getJToolBar1().add(getJLabel4(), getJLabel4().getName());
+				getJToolBar1().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar1().add(getRandomLayoutButton(), getRandomLayoutButton().getName());
 				getJToolBar1().add(getCircleLayoutButton(), getCircleLayoutButton().getName());
 				getJToolBar1().add(getAnnealLayoutButton(), getAnnealLayoutButton().getName());
 				getJToolBar1().add(getLevellerLayoutButton(), getLevellerLayoutButton().getName());
 				getJToolBar1().add(getRelaxerLayoutButton(), getRelaxerLayoutButton().getName());
 				getJToolBar1().add(getGlgLayoutJButton(), getGlgLayoutJButton().getName());
+				getJToolBar1().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
+				getJToolBar1().add(getFloatButton(), getFloatButton().getName());
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -395,13 +353,6 @@ implements ActionListener, PropertyChangeListener {
 		return fieldModel;
 	}
 
-	protected PropertyChangeSupport getPropertyChange() {
-		if (propertyChange == null) {
-			propertyChange = new PropertyChangeSupport(this);
-		};
-		return propertyChange;
-	}
-
 	private JButton getRandomLayoutButton() {
 		if (randomLayoutButton == null) {
 			try {
@@ -415,11 +366,7 @@ implements ActionListener, PropertyChangeListener {
 				randomLayoutButton.setFont(new Font("Arial", 1, 10));
 				randomLayoutButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 				randomLayoutButton.setMargin(new Insets(2, 2, 2, 2));
-				// user code begin {1}
-				// user code end
 			} catch (Throwable ivjExc) {
-				// user code begin {2}
-				// user code end
 				handleException(ivjExc);
 			}
 		}
@@ -530,26 +477,6 @@ implements ActionListener, PropertyChangeListener {
 		return stepButton;
 	}
 
-	private JButton getParameterButton() {
-		if (parameterButton == null) {
-			try {
-				parameterButton = new JButton();
-				parameterButton.setToolTipText(CartoonToolMiscActions.ShowParameters.MENU_TEXT);
-				parameterButton.setText("");
-				parameterButton.setActionCommand(CartoonToolMiscActions.ShowParameters.MENU_ACTION);
-				parameterButton.setBorder(new BevelBorder(BevelBorder.RAISED));
-				parameterButton.setMargin(new Insets(2, 2, 2, 2));
-				parameterButton.setIcon(new ImageIcon(getClass().getResource("/icons/parameter.gif")));
-				parameterButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
-				parameterButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
-				parameterButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
-			} catch (Throwable ivjExc) {
-				handleException(ivjExc);
-			}
-		}
-		return parameterButton;
-	}
-
 	public Structure getStructure() {
 		return fieldStructure;
 	}
@@ -572,6 +499,23 @@ implements ActionListener, PropertyChangeListener {
 			}
 		}
 		return zoomInButton;
+	}
+	
+	private JButton getFloatButton() {
+		if (floatButton == null) {
+			try {
+				floatButton = new JButton("\u21b1");
+				floatButton.setName("FloatingButton");
+				floatButton.setToolTipText("\u21b1 Float");
+				floatButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
+				floatButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				floatButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
+				floatButton.setMargin(new Insets(2, 2, 2, 2));
+			} catch (Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return floatButton;
 	}
 
 	private JButton getZoomOutButton() {
@@ -609,6 +553,7 @@ implements ActionListener, PropertyChangeListener {
 		getZoomInButton().addActionListener(this);
 		getZoomOutButton().addActionListener(this);
 		getGlgLayoutJButton().addActionListener(this);
+		getFloatButton().addActionListener(this);
 		this.addPropertyChangeListener(this);
 		try {
 			if (connPtoP1Aligning == false) {
@@ -630,7 +575,6 @@ implements ActionListener, PropertyChangeListener {
 		} catch (Throwable ivjExc) {
 			handleException(ivjExc);
 		}
-		getParameterButton().addActionListener(this);
 	}
 
 	private void initialize() {
@@ -666,7 +610,7 @@ implements ActionListener, PropertyChangeListener {
 		try {
 			java.awt.Frame frame = new java.awt.Frame();
 			ReactionSlicesCartoonEditorPanel aReactionCartoonEditorPanel;
-			aReactionCartoonEditorPanel = new ReactionSlicesCartoonEditorPanel(null);
+			aReactionCartoonEditorPanel = new ReactionSlicesCartoonEditorPanel();
 			frame.add("Center", aReactionCartoonEditorPanel);
 			frame.setSize(aReactionCartoonEditorPanel.getSize());
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -682,7 +626,7 @@ implements ActionListener, PropertyChangeListener {
 	}
 
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
-		if (evt.getSource() == getButtonGroupCivilized() && (evt.getPropertyName().equals("selection")))
+		if (evt.getSource() == getButtonGroupCivilized() && (evt.getPropertyName().equals("selection"))) {
 			try {
 				if (connPtoP1Aligning == false) {
 					connPtoP1Aligning = true;
@@ -693,7 +637,7 @@ implements ActionListener, PropertyChangeListener {
 				connPtoP1Aligning = false;
 				handleException(ivjExc1);
 			}
-		if (evt.getSource() == this && (evt.getPropertyName().equals("structure")))
+		} else if (evt.getSource() == this && (evt.getPropertyName().equals("structure"))) {
 			try {
 				getReactionCartoon().setStructure(this.getStructure());
 				try {
@@ -704,22 +648,22 @@ implements ActionListener, PropertyChangeListener {
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
-		if (evt.getSource() == this && (evt.getPropertyName().equals("documentManager")))
+		} else if (evt.getSource() == this && (evt.getPropertyName().equals("documentManager"))) {
 			try {
 				getReactionCartoonTool1().setDocumentManager(this.getDocumentManager());
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
-		if (evt.getSource() == this && (evt.getPropertyName().equals("model")))
+		} else if (evt.getSource() == this && (evt.getPropertyName().equals("model"))) {
 			try {
 				getReactionCartoon().setModel(this.getModel());
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
-	}
-
-	public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-		getPropertyChange().removePropertyChangeListener(listener);
+		} else if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_NAME_FLOATING))) {
+			floatButton.setText((Boolean)evt.getNewValue() ? "\u21b5" : "\u21b1");
+			floatButton.setToolTipText((Boolean)evt.getNewValue() ? "\u21b5 Dock" : "\u21b1 Float");
+		}
 	}
 
 	public void setDocumentManager(DocumentManager documentManager) {
@@ -879,5 +823,11 @@ implements ActionListener, PropertyChangeListener {
 			}
 			}
 		}
+	}
+
+	private final void setFloating(boolean newValue) {
+		boolean oldValue = bFloating;
+		this.bFloating = newValue;
+		firePropertyChange(PROPERTY_NAME_FLOATING, oldValue, newValue);
 	}
 }

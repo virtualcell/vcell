@@ -4,29 +4,30 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
 import javax.swing.JTable;
-import org.vcell.util.gui.sorttable.ManageTableModel;
+
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.SimulationContext;
 
-public class EventsSummaryTableModel extends ManageTableModel implements PropertyChangeListener{
+@SuppressWarnings("serial")
+public class EventsSummaryTableModel extends DefaultSortTableModel<BioEvent> implements PropertyChangeListener{
 
 	public final static int COLUMN_EVENT_NAME = 0;
 	public final static int COLUMN_EVENT_TRIGGER_EXPR = 1;
 	public final static int COLUMN_EVENT_DELAY_EXPR = 2;
 	public final static int COLUMN_EVENT_ASSIGN_VARS_LIST = 3;
-	private final static int NUM_COLUMNS = 4;
 	
 	private SimulationContext fieldSimContext = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private String[] columnNames = new String[] {"Name", "Trigger", "Delay", "Event Assignment Vars"};
+	private static String[] columnNames = new String[] {"Name", "Trigger", "Delay", "Event Assignment Vars"};
 	private JTable ownerTable = null;
 
 	public EventsSummaryTableModel(JTable table) {
-		super();
+		super(columnNames);
 		ownerTable = table;
 		addPropertyChangeListener(this);
 	}
@@ -44,33 +45,6 @@ public class EventsSummaryTableModel extends ManageTableModel implements Propert
 	 */
 	public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-	}
-
-
-	public int getColumnCount() {
-		return columnNames.length;
-	}
-
-	/**
-	 * getColumnCount method comment.
-	 */
-	public String getColumnName(int column) {
-		return columnNames[column];
-	}
-
-	/**
-	 * getRowCount method comment.
-	 */
-	public int getRowCount() {
-		if (fieldSimContext == null) {
-			return 0;
-		}
-		BioEvent[] bioEvents = fieldSimContext.getBioEvents();
-		if (bioEvents != null) {
-			return bioEvents.length;
-		} else {
-			return 0;
-		}
 	}
 
 	/**
@@ -105,23 +79,22 @@ public class EventsSummaryTableModel extends ManageTableModel implements Propert
 
 	private void refreshData() {
 
+		rows.clear();
 		if (getSimulationContext()==null){
 			return;
 		}
-		int count = getRowCount();
-		rows.clear();
-		for (int i = 0; i < count; i++){
-			rows.add(getSimulationContext().getBioEvents()[i]);
+		for (BioEvent bioEvent : getSimulationContext().getBioEvents()){
+			rows.add(bioEvent);
 		}
 		fireTableDataChanged();
 	}
 
 	public Object getValueAt(int row, int column) {
 		try{
-			if (getData().size() <= row){
+			if (getRowCount() <= row){
 				refreshData();
 			}	
-			BioEvent event = (BioEvent)getData().get(row);
+			BioEvent event = getValueAt(row);
 			if (row >= 0 && row < getRowCount()) {
 				switch (column) {
 					case COLUMN_EVENT_NAME: {
@@ -212,8 +185,8 @@ public class EventsSummaryTableModel extends ManageTableModel implements Propert
 		if (rowIndex<0 || rowIndex>=getRowCount()){
 			throw new RuntimeException("EventsSummaryTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-			throw new RuntimeException("EventsSummaryTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+		if (columnIndex<0 || columnIndex>=getColumnCount()){
+			throw new RuntimeException("EventsSummaryTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 		}
 		// BioEvent event = (BioEvent)getData().get(rowIndex);
 	}
@@ -245,11 +218,7 @@ public class EventsSummaryTableModel extends ManageTableModel implements Propert
 		}
 		firePropertyChange("simulationContext", oldValue, argSimContext);
 	}
-
-	public BioEvent getBioEvent(int row) {
-		return (BioEvent)getData().get(row);
-	}
-
+	
 	public void selectEvent(BioEvent bioEvent) {
 		for (int i = 0; i < getRowCount(); i ++) {
 			BioEvent valueAt = (BioEvent)getValueAt(i, COLUMN_EVENT_NAME);
@@ -258,6 +227,15 @@ public class EventsSummaryTableModel extends ManageTableModel implements Propert
 				break;
 			}
 		}		
+	}
+
+	@Override
+	public void sortColumn(int col, boolean ascending) {
+	}
+
+	@Override
+	public boolean isSortable(int col) {
+		return false;
 	}
 
 }

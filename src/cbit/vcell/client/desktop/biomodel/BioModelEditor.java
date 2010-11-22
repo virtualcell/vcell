@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
@@ -32,6 +34,8 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.ImageException;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
@@ -53,7 +57,6 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
@@ -81,6 +84,7 @@ import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2004 2:55:18 PM)
@@ -88,8 +92,6 @@ import cbit.vcell.solver.Simulation;
  */
 @SuppressWarnings("serial")
 public class BioModelEditor extends JPanel {
-	public static final String ADD_NEW_HERE_TEXT = "(add new here)";
-	
 	private static final String PROPERTY_NAME_DOCUMENT_MANAGER = "documentManager";
 	public static final String PROPERTY_NAME_SELECTED_VERSIONABLE = "selectedVersionable";
 	private static final String MENU_TEXT_SPATIAL_APPLICATION = "Spatial Application";
@@ -103,10 +105,10 @@ public class BioModelEditor extends JPanel {
 	private DocumentManager fieldDocumentManager = null;
 	
 	private JTree bioModelEditorTree = null;
+	private BioModelEditorTreeCellRenderer bioModelEditorTreeCellRenderer = null;
 	private JSplitPane splitPane = null; 
 	private javax.swing.JScrollPane treePanel = null;
 	
-	private CartoonEditorPanelFixed ivjCartoonEditorPanel1 = null;
 	private OptTestPanel ivjoptTestPanel = null;
 	private AnalysisPanel ivjParameterEstimationPanel = null;
 	private SimulationListPanel ivjSimulationListPanel = null;
@@ -189,7 +191,7 @@ public class BioModelEditor extends JPanel {
 		}		
 	}
 
-	private static class AnnotationEditorPanel extends JPanel {
+	private class AnnotationEditorPanel extends JPanel {
 		private JTextArea textArea = null;
 		private JButton applyButton = new JButton("Apply");
 		private JButton revertButton = new JButton("Revert");
@@ -213,6 +215,20 @@ public class BioModelEditor extends JPanel {
 			p.add(panel, BorderLayout.SOUTH);
 			
 			add(p);
+			
+			applyButton.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					getBioModel().getVCMetaData().setFreeTextAnnotation(getBioModel(), textArea.getText());					
+				}
+			});
+			
+			revertButton.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					setText(getBioModel().getVCMetaData().getFreeTextAnnotation(getBioModel()));					
+				}
+			});
 		}
 		
 		public void setText(String annot) {
@@ -275,48 +291,58 @@ public class BioModelEditor extends JPanel {
 		};
 		
 		public void mouseClicked(MouseEvent e) {
-			if (SwingUtilities.isRightMouseButton(e) && e.getSource() == getBioModelEditorTree()) {			
-				Object node = getBioModelEditorTree().getLastSelectedPathComponent();;
-				if (node == null || !(node instanceof BioModelNode)) {
-					return;
-				}
-				Object selectedObject = ((BioModelNode)node).getUserObject();
-				Point mousePoint = e.getPoint();
-				// offer "New" popup menu only for DataSymbols folder
-				if (selectedObject instanceof BioModelEditorTreeFolderNode) {
-					BioModelEditorTreeFolderNode selectedFolder = (BioModelEditorTreeFolderNode)selectedObject;
-					switch(selectedFolder.getFolderClass()) {
-					case APPLICATTIONS_NODE:	// Data Symbols					
-						getAppsPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
-						break;
-					case DATA_SYMBOLS_NODE:	// Data Symbols					
-						getAddDataPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
-						break;
-					}
-				} else {
-					SimulationContext simContext = getSelectedSimulationContext();
-					if (simContext == null) {
+			if (e.getSource() == getBioModelEditorTree()) {
+				if (SwingUtilities.isRightMouseButton(e)) {	// right click		
+					Object node = getBioModelEditorTree().getLastSelectedPathComponent();;
+					if (node == null || !(node instanceof BioModelNode)) {
 						return;
 					}
-					if (simContext == selectedObject) {
-						getAppPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
+					Object selectedObject = ((BioModelNode)node).getUserObject();
+					Point mousePoint = e.getPoint();
+					// offer "New" popup menu only for DataSymbols folder
+					if (selectedObject instanceof BioModelEditorTreeFolderNode) {
+						BioModelEditorTreeFolderNode selectedFolder = (BioModelEditorTreeFolderNode)selectedObject;
+						switch(selectedFolder.getFolderClass()) {
+						case APPLICATTIONS_NODE:	// Data Symbols
+							getAppsPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
+							break;
+						case DATA_SYMBOLS_NODE:	// Data Symbols
+							getAddDataPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
+							break;
+						}
 					} else {
-						// deactivate pop-up menu if simulationContext is spatial or stochastic
-						int dimension = simContext.getGeometry().getDimension();
-						if (dimension == 0 && !simContext.isStoch()) {
-							if (selectedObject instanceof BioModelEditorTreeFolderNode) {
-								BioModelEditorTreeFolderNode stfn = (BioModelEditorTreeFolderNode)selectedObject;
-								if (stfn.getFolderClass() == BioModelEditorTreeFolderClass.EVENTS_NODE) { // "Events"
-									getAddEventPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
+						SimulationContext simContext = getSelectedSimulationContext();
+						if (simContext == null) {
+							return;
+						}
+						if (simContext == selectedObject) {
+							getAppPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
+						} else {
+							// deactivate pop-up menu if simulationContext is spatial or stochastic
+							int dimension = simContext.getGeometry().getDimension();
+							if (dimension == 0 && !simContext.isStoch()) {
+								if (selectedObject instanceof BioModelEditorTreeFolderNode) {
+									BioModelEditorTreeFolderNode stfn = (BioModelEditorTreeFolderNode)selectedObject;
+									if (stfn.getFolderClass() == BioModelEditorTreeFolderClass.EVENTS_NODE) { // "Events"
+										getAddEventPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
+									}
+			
+								} else if (selectedObject instanceof BioEvent) {
+									getDeleteEventPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
 								}
-		
-							} else if (selectedObject instanceof BioEvent) {
-								getDeleteEventPopupMenu().show(getBioModelEditorTree(), mousePoint.x, mousePoint.y);
 							}
 						}
 					}
+				} else if (e.getClickCount() == 2) {
+					Object node = getBioModelEditorTree().getLastSelectedPathComponent();
+					if (node instanceof LinkNode) {
+						String link = ((LinkNode)node).getLink();
+						if (link != null) {
+							DialogUtils.browserLauncher(getBioModelEditorTree(), link, "failed to launch", false);
+						}
+					}
 				}
-			} 
+			}
 		}
 		public void mouseEntered(MouseEvent e) {}
 		public void mouseExited(MouseEvent e) {}
@@ -654,9 +680,8 @@ private InitialConditionsPanel getInitialConditionsPanel() {
 private ModelParameterPanel getModelParameterPanel() {
 	if (modelParameterPanel == null) {
 		try {
-			modelParameterPanel = new ModelParameterPanel(true);
+			modelParameterPanel = new ModelParameterPanel();
 			modelParameterPanel.setName("ModelParameterPanel");
-			modelParameterPanel.setEditable(false);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -676,13 +701,24 @@ private ReactionSpecsPanel getReactionSpecsPanel() {
 	return reactionSpecsPanel;
 }
 
+private BioModelEditorTreeCellRenderer getBioModelEditorTreeCellRender() {
+	if (bioModelEditorTreeCellRenderer == null) {
+		try {
+			bioModelEditorTreeCellRenderer = new BioModelEditorTreeCellRenderer(bioModelEditorTree);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return bioModelEditorTreeCellRenderer;
+}
+
 private javax.swing.JTree getBioModelEditorTree() {
 	if (bioModelEditorTree == null) {
 		try {
 			bioModelEditorTree = new javax.swing.JTree();
-			bioModelEditorTree.setName("applicationTree");
+			bioModelEditorTree.setName("bioModelEditorTree");
 			ToolTipManager.sharedInstance().registerComponent(bioModelEditorTree);
-			bioModelEditorTree.setCellRenderer(new BioModelEditorTreeCellRenderer(bioModelEditorTree));
+			bioModelEditorTree.setCellRenderer(getBioModelEditorTreeCellRender());
 			bioModelEditorTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 			bioModelEditorTree.setModel(getBioModelEditorTreeModel());
 			bioModelEditorTree.setRowHeight(bioModelEditorTree.getRowHeight() + 2);
@@ -782,11 +818,12 @@ private void treeValueChanged() {
 	    SimulationContext simulationContext = getSelectedSimulationContext();
 	    if (userObject instanceof BioModel) {
 	    	setRightPanel(null, null, null);
-	    } else if (userObject instanceof BioModelEditorTreeFolderNode) { // it's a folder
-	    	
+	    } else if (userObject instanceof BioModelEditorTreeFolderNode) { // it's a folder	    	
 	    	setRightPanel((BioModelEditorTreeFolderNode)userObject, null, simulationContext);
 	    } else if (userObject instanceof SimulationContext){
 	    	setRightPanel(null, null, null);
+	    } else if (userObject instanceof VCMetaData || userObject instanceof MiriamResource){
+	    	setRightPanel(null, userObject, null);
 	    } else {
 	        Object leaf = userObject;
 			BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
@@ -801,7 +838,15 @@ private void treeValueChanged() {
 
 private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafObject, SimulationContext simulationContext) {
 	JComponent rightPanel = emptyPanel;
-	if (folderNode != null) {
+	if (folderNode == null) { // could be BioModel or SimulationContext or VCMetaData or MiriamResource,
+		if (leafObject instanceof VCMetaData || leafObject instanceof MiriamResource) {
+			rightPanel = getAnnotationEditorPanel();
+			if (getBioModel() != null) {
+				String annot =  getBioModel().getVCMetaData().getFreeTextAnnotation(getBioModel());
+				getAnnotationEditorPanel().setText(annot);
+			}
+		}
+	} else {
 		BioModelEditorTreeFolderClass folderClass = folderNode.getFolderClass();
 		if (folderClass == BioModelEditorTreeFolderClass.STRUCTURES_NODE) {
 			if (leafObject == null) {
@@ -833,12 +878,10 @@ private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafO
 				rightPanel = getFluxReactionPanel();
 				getFluxReactionPanel().setFluxReaction((FluxReaction)leafObject);
 			}
-		} else if (folderClass == BioModelEditorTreeFolderClass.ANNOTATION_NODE) {
-			rightPanel = getAnnotationEditorPanel();
-			if (getBioModel() != null) {
-				String annot =  getBioModel().getVCMetaData().getFreeTextAnnotation(getBioModel());
-				getAnnotationEditorPanel().setText(annot);
-			}
+		} else if(folderClass == BioModelEditorTreeFolderClass.GLOBAL_PARAMETER_NODE) {
+			rightPanel = getModelParameterPanel();
+			getModelParameterPanel().setModel(getBioModel().getModel());
+			getModelParameterPanel().setScrollPaneTableCurrentRow((ModelParameter)leafObject);	// notify right panel about selection change
 		} else if (folderClass == BioModelEditorTreeFolderClass.MATHEMATICS_NODE) {
 			rightPanel = getMathematicsPanel();
 			getMathematicsPanel().setSimulationContext(simulationContext);
@@ -854,10 +897,6 @@ private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafO
 			rightPanel = getInitialConditionsPanel();
 			getInitialConditionsPanel().setSimulationContext(simulationContext);
 			getInitialConditionsPanel().setScrollPaneTableCurrentRow((SpeciesContext)leafObject);	// notify right panel about selection change
-		} else if(folderClass == BioModelEditorTreeFolderClass.GLOBAL_PARAMETER_NODE) {
-			rightPanel = getModelParameterPanel();
-			getModelParameterPanel().setModel(getBioModel().getModel());
-			getModelParameterPanel().setScrollPaneTableCurrentRow((ModelParameter)leafObject);	// notify right panel about selection change
 		} else if(folderClass == BioModelEditorTreeFolderClass.APP_REACTIONS_NODE) {
 			rightPanel = getReactionSpecsPanel();
 			getReactionSpecsPanel().setSimulationContext(simulationContext);
@@ -1047,7 +1086,7 @@ public BioModelWindowManager getBioModelWindowManager() {
 	return bioModelWindowManager;
 }
 
-public BioModel getBioModel() {
+private BioModel getBioModel() {
 	return fieldBioModel;
 }
 
@@ -1193,6 +1232,7 @@ private void onPropertyChange_BioModel() {
 	getBioModelEditorSpeciesPanel().setBioModel(getBioModel());
 	getBioModelEditorStructurePanel().setBioModel(getBioModel());
 	getBioModelEditorReactionPanel().setBioModel(getBioModel());
+	getBioModelEditorTreeCellRender().setBioModel(getBioModel());
 }
 
 private javax.swing.JPopupMenu getAppPopupMenu() {

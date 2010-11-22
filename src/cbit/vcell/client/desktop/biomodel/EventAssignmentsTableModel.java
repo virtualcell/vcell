@@ -1,23 +1,23 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
 import javax.swing.JTable;
-import org.vcell.util.gui.sorttable.ManageTableModel;
+
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTableEntry;
 
-public class EventAssignmentsTableModel extends ManageTableModel implements PropertyChangeListener {
-		private class VariableColumnComparator implements Comparator<SymbolTableEntry> {
+public class EventAssignmentsTableModel extends DefaultSortTableModel<EventAssignment> implements PropertyChangeListener {
+		private class VariableColumnComparator implements Comparator<EventAssignment> {
 			protected int index;
 			protected boolean ascending;
 
@@ -26,25 +26,25 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 				this.ascending = ascending;
 			}
 			
-			public int compare(SymbolTableEntry parm1, SymbolTableEntry parm2){
+			public int compare(EventAssignment parm1, EventAssignment parm2){
 				
 				switch (index){
 					case COLUMN_EVENTASSGN_VARNAME:{
 						if (ascending){
-							return parm1.getName().compareToIgnoreCase(parm2.getName());
+							return parm1.getTarget().getName().compareToIgnoreCase(parm2.getTarget().getName());
 						}else{
-							return parm2.getName().compareToIgnoreCase(parm1.getName());
+							return parm2.getTarget().getName().compareToIgnoreCase(parm1.getTarget().getName());
 						}
 					}
 				}
-				return 1;
+				return 0;
 			}
 		}
 
 		public final static int COLUMN_EVENTASSGN_VARNAME = 0;
 		public final static int COLUMN_EVENTASSIGN_EXPRESSION = 1;
 		public final static int COLUMN_EVENTASSIGN_UNITS = 2;
-		private String[] columnNames = new String[] {"Variable", "Expression", "Units"};
+		private static String[] columnNames = new String[] {"Variable", "Expression", "Units"};
 		
 		private SimulationContext fieldSimContext = null;
 		private BioEvent fieldBioEvent = null;
@@ -55,27 +55,9 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 	 * SimulationListTableModel constructor comment.
 	 */
 	public EventAssignmentsTableModel(JTable table) {
-		super();
+		super(columnNames);
 		ownerTable = table;
 		addPropertyChangeListener(this);
-	}
-
-	/**
-	 * getColumnCount method comment.
-	 */
-	public int getColumnCount() {
-		return columnNames.length;
-	}
-
-	/**
-	 * getColumnCount method comment.
-	 */
-	public String getColumnName(int column) {
-		if (column<0 || column>=getColumnCount()){
-			throw new RuntimeException("EventAssignmentsTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(getColumnCount()-1)+"]");
-		}
-
-		return columnNames[column];
 	}
 
 	public Class<?> getColumnClass(int column) {
@@ -108,11 +90,11 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 				throw new RuntimeException("EventAssignmentsTableModel.getValueAt(), column = "+column+" out of range ["+0+","+(getColumnCount()-1)+"]");
 			}
 
-			if (getData().size() <= row){
+			if (getRowCount() <= row){
 				refreshData();
 			}
 			
-			EventAssignment eventAssignment = (EventAssignment)getData().get(row);
+			EventAssignment eventAssignment = getValueAt(row);
 			if (row >= 0 && row < getRowCount()) {
 				switch (column) {
 					case COLUMN_EVENTASSGN_VARNAME: {
@@ -194,7 +176,7 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 		if (columnIndex<0 || columnIndex>=getColumnCount()){
 			throw new RuntimeException("EventAssignmentsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 		}
-		EventAssignment eventAssignment = (EventAssignment)getData().get(rowIndex);
+		EventAssignment eventAssignment = (EventAssignment)getValueAt(rowIndex);
 		switch (columnIndex){
 			case COLUMN_EVENTASSIGN_EXPRESSION:{
 				try {
@@ -215,10 +197,6 @@ public class EventAssignmentsTableModel extends ManageTableModel implements Prop
 			}
 
 		}
-	}
-
-	public BioEvent getBioEvent() {
-		return fieldBioEvent;
 	}
 
 	public void setBioEvent(BioEvent argBioEvent) {

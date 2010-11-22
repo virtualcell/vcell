@@ -7,113 +7,48 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.EditorScrollTable;
 
-import cbit.vcell.biomodel.BioModel;
+import cbit.gui.LabelButton;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
-public class BioModelEditorStructurePanel extends JPanel {
-	private static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
-	
-	private JButton addFeatureButton = null;
-	private JButton deleteButton = null;
-	private EditorScrollTable table;
-	private BioModel bioModel;
-	private BioModelEditorStructureTableModel tableModel = null;
-	private JTextField textFieldSearch = null;
+public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<Structure> {	
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private CartoonEditorPanelFixed ivjCartoonEditorPanel1 = null;
-	private JLabel showDiagramLabel = null;
+	private JButton showDiagramButton = null;
 	
-	private class InternalEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, ListSelectionListener, DocumentListener {
+	private class InternalEventHandler implements ActionListener, java.beans.PropertyChangeListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelEditorStructurePanel.this && evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
-				tableModel.setModel(bioModel.getModel());
 				ivjCartoonEditorPanel1.setBioModel(bioModel);
 			}			
 		}
-
+		
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == addFeatureButton) {
-					// TODO
-//				try {
-//					bioModel.getModel().addFeature(bioModel.getModel().getFreeFeatureName());
-//				} catch (PropertyVetoException ex) {
-//					ex.printStackTrace();
-//					DialogUtils.showErrorDialog(BioModelEditorStructurePanel.this, ex.getMessage());
-//				} catch (ModelException ex) {
-//					ex.printStackTrace();
-//					DialogUtils.showErrorDialog(BioModelEditorStructurePanel.this, ex.getMessage());
-//				}
-			} else if (e.getSource() == deleteButton) {
-				int[] rows = table.getSelectedRows();
-				ArrayList<Feature> deleteList = new ArrayList<Feature>();
-				for (int r : rows) {
-					if (r < bioModel.getModel().getNumStructures()) {
-						Structure rowValue = tableModel.getValueAt(r);
-						if (rowValue instanceof Feature) {
-							deleteList.add((Feature) rowValue);
-						}
-					}
+			if (e.getSource() == showDiagramButton) {
+				if (ivjCartoonEditorPanel1.isVisible()) {
+					ivjCartoonEditorPanel1.setVisible(false);
+					showDiagramButton.setText("<html><u>Show Diagram &gt;&gt;</u></html>");
+				} else {
+					ivjCartoonEditorPanel1.setVisible(true);
+					showDiagramButton.setText("<html><u>Hide Diagram &lt;&lt;</u></html>");				
 				}
-				try {
-					for (Feature f : deleteList) {
-						bioModel.getModel().removeFeature(f);
-					}
-				} catch (PropertyVetoException ex) {
-					ex.printStackTrace();
-					DialogUtils.showErrorDialog(BioModelEditorStructurePanel.this, ex.getMessage());
-				}
-			}
+			}			
 		}
-
-		public void valueChanged(ListSelectionEvent e) {
-			if (bioModel == null || e.getValueIsAdjusting()) {
-				return;
-			}
-			if (e.getSource() == table.getSelectionModel()) {
-				int[] rows = table.getSelectedRows();
-				deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < bioModel.getModel().getNumStructures()));
-			}
-			
-		}
-
-		public void insertUpdate(DocumentEvent e) {
-			searchTable();
-		}
-
-		public void removeUpdate(DocumentEvent e) {
-			searchTable();
-		}
-
-		public void changedUpdate(DocumentEvent e) {
-			searchTable();
-		}	
 		
 	}
 	public BioModelEditorStructurePanel() {
@@ -122,13 +57,15 @@ public class BioModelEditorStructurePanel extends JPanel {
 	}
 	
 	private void initialize() {
-		addFeatureButton = new JButton("New " + Structure.TYPE_NAME_FEATURE);
-		deleteButton = new JButton("Delete");
-		table = new EditorScrollTable();
-		textFieldSearch = new JTextField(10);
+		addPropertyChangeListener(eventHandler);
+		tableModel = new BioModelEditorStructureTableModel(table);
+		table.setModel(tableModel);	
+		
+		addButton.setText("New " + Structure.TYPE_NAME_FEATURE);
 		ivjCartoonEditorPanel1  = new CartoonEditorPanelFixed();
-		showDiagramLabel = new JLabel("<html><u>Hide Diagram &lt;&lt;</u></html>");
-		showDiagramLabel.setForeground(Color.blue);
+		showDiagramButton = new LabelButton("<html><u>Hide Diagram &lt;&lt;</u></html>");
+		showDiagramButton.setForeground(Color.blue);
+		showDiagramButton.addActionListener(eventHandler);
 		
 		setLayout(new GridBagLayout());
 		
@@ -153,7 +90,7 @@ public class BioModelEditorStructurePanel extends JPanel {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,10,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(addFeatureButton, gbc);
+		add(addButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 4;
@@ -176,68 +113,24 @@ public class BioModelEditorStructurePanel extends JPanel {
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.insets = new Insets(10,4,5,4);
+		gbc.insets = new Insets(5,4,5,4);
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 5;
+		gbc.ipadx = 50;
 		gbc.anchor = GridBagConstraints.LINE_START;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-		add(showDiagramLabel, gbc);
+		add(showDiagramButton, gbc);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.insets = new Insets(4,4,4,4);
+		gbc.insets = new Insets(0,4,4,4);
 		gbc.gridy = gridy;
 		gbc.weighty = 1.0;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 5;
 		gbc.fill = GridBagConstraints.BOTH;
 		add(ivjCartoonEditorPanel1, gbc);
-		
-		addPropertyChangeListener(eventHandler);
-		tableModel = new BioModelEditorStructureTableModel(table);
-		table.setModel(tableModel);	
-		table.getSelectionModel().addListSelectionListener(eventHandler);
-		
-		addFeatureButton.addActionListener(eventHandler);
-		deleteButton.setEnabled(false);
-		deleteButton.addActionListener(eventHandler);
-		textFieldSearch.getDocument().addDocumentListener(eventHandler);
-		
-		showDiagramLabel.addMouseListener(new MouseListener() {
-			
-			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			public void mouseClicked(MouseEvent e) {
-				if (ivjCartoonEditorPanel1.isVisible()) {
-					ivjCartoonEditorPanel1.setVisible(false);
-					showDiagramLabel.setText("<html><u>Show Diagram &gt;&gt;</u></html>");
-				} else {
-					ivjCartoonEditorPanel1.setVisible(true);
-					showDiagramLabel.setText("<html><u>Hide Diagram &lt;&lt;</u></html>");				
-				}
-				
-			}
-		});
 	}
 	
 	public static void main(java.lang.String[] args) {
@@ -260,36 +153,31 @@ public class BioModelEditorStructurePanel extends JPanel {
 		}
 	}
 	
-	public void setBioModel(BioModel newValue) {
-		BioModel oldValue = bioModel;
-		bioModel = newValue;
-		
-//		if (oldValue != null) {			
-//			oldValue.removePropertyChangeListener(this);
-//			if (oldValue.getBioEvents() != null) {		
-//				for (BioEvent be : oldValue.getBioEvents()) {
-//					be.removePropertyChangeListener(this);
-//				}
-//			}
-//		}
-//			
-//		if (argSimContext != null) {
-//			argSimContext.addPropertyChangeListener(this);
-//			if (argSimContext.getBioEvents() != null) {		
-//				for (BioEvent be : argSimContext.getBioEvents()) {
-//					be.addPropertyChangeListener(this);
-//				}
-//			}
-//		}
-		firePropertyChange(PROPERTY_NAME_BIO_MODEL, oldValue, newValue);
-	}
-	
-	public void searchTable() {
-		String text = textFieldSearch.getText();
-		tableModel.setSearchText(text);
-	}
-
 	public void setDocumentManager(DocumentManager documentManager) {
 		ivjCartoonEditorPanel1.setDocumentManager(documentManager);		
+	}
+
+	protected void newButtonPressed() {		
+	}
+	
+	protected void deleteButtonPressed() {
+		int[] rows = table.getSelectedRows();
+		ArrayList<Feature> deleteList = new ArrayList<Feature>();
+		for (int r : rows) {
+			if (r < bioModel.getModel().getNumStructures()) {
+				Structure rowValue = tableModel.getValueAt(r);
+				if (rowValue instanceof Feature) {
+					deleteList.add((Feature) rowValue);
+				}
+			}
+		}
+		try {
+			for (Feature f : deleteList) {
+				bioModel.getModel().removeFeature(f);
+			}
+		} catch (PropertyVetoException ex) {
+			ex.printStackTrace();
+			DialogUtils.showErrorDialog(BioModelEditorStructurePanel.this, ex.getMessage());
+		}
 	}
 }

@@ -1,84 +1,37 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.EditorScrollTable;
 
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
+import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")
-public class BioModelEditorStructureTableModel extends ManageTableModel<Structure> implements PropertyChangeListener{
+public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTableModel<Structure> {
 
-	private static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
-	private static final String PROPERTY_NAME_MODEL = "model";
 	public final static int COLUMN_NAME = 0;
 	public final static int COLUMN_TYPE = 1;
 	public final static int COLUMN_INSIDE_COMPARTMENT = 2;
-	public final static int COLUMN_OUTSIDE_COMPARTMENT = 3;
-	
-	private Model model = null;
-	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private String[] columnNames = new String[] {"Name", "Type", "Inside Compartment", "Outside Compartment"};
-	private JTable ownerTable = null;
-	private String searchText = null;
+	public final static int COLUMN_OUTSIDE_COMPARTMENT = 3;	
+	private static String[] columnNames = new String[] {"Name", "Type", "Inside", "Outside Parent"};
 
 	public BioModelEditorStructureTableModel(JTable table) {
-		super();
+		super(table);
+		columns = columnNames;
 		ownerTable = table;
 		addPropertyChangeListener(this);
 	}
 	
-	/**
-	 * The addPropertyChangeListener method was generated to support the propertyChange field.
-	 */
-	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-		getPropertyChange().addPropertyChangeListener(listener);
-	}
-
-
-	/**
-	 * The firePropertyChange method was generated to support the propertyChange field.
-	 */
-	public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-	}
-
-
-	public int getColumnCount() {
-		return columnNames.length;
-	}
-
-	/**
-	 * getColumnCount method comment.
-	 */
-	public String getColumnName(int column) {
-		return columnNames[column];
-	}
-
-	/**
-	 * getRowCount method comment.
-	 */
-	@Override
-	public int getRowCount() {
-		return super.getRowCount() + (searchText == null || searchText.length() == 0 ? 1 : 0);
-	}
-	
-	/**
-	 * Accessor for the propertyChange field.
-	 */
-	protected java.beans.PropertyChangeSupport getPropertyChange() {
-		if (propertyChange == null) {
-			propertyChange = new java.beans.PropertyChangeSupport(this);
-		};
-		return propertyChange;
-	}
-
 	public Class<?> getColumnClass(int column) {
 		switch (column){		
 			case COLUMN_NAME:{
@@ -97,12 +50,11 @@ public class BioModelEditorStructureTableModel extends ManageTableModel<Structur
 		return Object.class;
 	}
 
-	private void refreshData() {
-
+	protected void refreshData() {
+		rows.clear();
 		if (model == null){
 			return;
 		}
-		rows.clear();
 		Structure[] structureList = model.getStructures();
 		if (structureList != null) {
 			for (Structure s : structureList){
@@ -119,27 +71,27 @@ public class BioModelEditorStructureTableModel extends ManageTableModel<Structur
 			return null;
 		}
 		try{
-			if (row >= 0 && row < super.getRowCount()) {
-				Structure s = (Structure)getData().get(row);
+			if (row >= 0 && row < rows.size()) {
+				Structure structure = getValueAt(row);
 				switch (column) {
 					case COLUMN_NAME: {
-						return s.getName();
+						return structure.getName();
 					} 
 					case COLUMN_TYPE: {
-						return s.getTypeName();
+						return structure.getTypeName();
 					} 
 					case COLUMN_INSIDE_COMPARTMENT: {
-						Feature insideFeature = s instanceof Membrane ? ((Membrane)s).getInsideFeature() : null;
+						Feature insideFeature = structure instanceof Membrane ? ((Membrane)structure).getInsideFeature() : null;
 						return insideFeature != null ? insideFeature.getName() : "n/a";
 					} 
 					case COLUMN_OUTSIDE_COMPARTMENT: {
-						Feature outsideFeature = s instanceof Membrane ? ((Membrane)s).getOutsideFeature() : null;
-						return outsideFeature != null ? outsideFeature.getName() : "n/a";
+						Structure parentStructure = structure.getParentStructure();
+						return parentStructure != null ? parentStructure.getName() : "";
 					} 
 				}
 			} else {
 				if (column == COLUMN_NAME) {
-					return BioModelEditor.ADD_NEW_HERE_TEXT;
+					return EditorScrollTable.ADD_NEW_HERE_TEXT;
 				} 
 			}
 		} catch(Exception e){
@@ -148,21 +100,14 @@ public class BioModelEditorStructureTableModel extends ManageTableModel<Structur
 		return null;
 	}
 
-	/**
-	 * The hasListeners method was generated to support the propertyChange field.
-	 */
-	public synchronized boolean hasListeners(java.lang.String propertyName) {
-		return getPropertyChange().hasListeners(propertyName);
-	}
-
 	@Override
 	public boolean isCellEditable(int row, int column) {
 		if (column == COLUMN_TYPE) {
 			return false;
 		}
-		if (column == COLUMN_INSIDE_COMPARTMENT || column == COLUMN_OUTSIDE_COMPARTMENT) {	
-			if (row >= 0 && row < super.getRowCount()) {
-				Structure s = (Structure)getData().get(row);
+		if (column == COLUMN_INSIDE_COMPARTMENT) {	
+			if (row >= 0 && row < rows.size()) {
+				Structure s = getValueAt(row);
 				return s instanceof Membrane;
 			}
 		}
@@ -170,34 +115,10 @@ public class BioModelEditorStructureTableModel extends ManageTableModel<Structur
 		return true;
 	}
 
+	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
-		if (evt.getSource() == this) {
-			if (evt.getPropertyName().equals(PROPERTY_NAME_MODEL)) {
-				refreshData();
-				Model oldValue = (Model)evt.getOldValue();
-				if (oldValue != null) {
-					oldValue.removePropertyChangeListener(this);
-					Structure[] structures = oldValue.getStructures();
-					if (structures != null) {
-						for (Structure s : structures) {
-							s.removePropertyChangeListener(this);
-						}
-					}
-				}
-				Model newValue = (Model)evt.getNewValue();
-				if (newValue != null) {
-					newValue.addPropertyChangeListener(this);
-					Structure[] structures = newValue.getStructures();
-					if (structures != null) {
-						for (Structure s : structures) {
-							s.addPropertyChangeListener(this);
-						}
-					}
-				}
-			} else if (evt.getPropertyName().equals(PROPERTY_NAME_SEARCH_TEXT)) {
-				refreshData();
-			}
-		} else if (evt.getSource() == model && evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
+		super.propertyChange(evt);
+		if (evt.getSource() == model && evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
 			Structure[] oldValue = (Structure[]) evt.getOldValue();
 			if (oldValue != null) {
 				for (Structure s : oldValue) {
@@ -215,13 +136,6 @@ public class BioModelEditorStructureTableModel extends ManageTableModel<Structur
 			fireTableDataChanged();
 		}
 	}
-	
-	/**
-	 * The removePropertyChangeListener method was generated to support the propertyChange field.
-	 */
-	public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-		getPropertyChange().removePropertyChangeListener(listener);
-	}
 
 	public void setValueAt(Object value, int row, int column) {
 		if (model == null || value == null || value.toString().length() == 0) {
@@ -229,8 +143,8 @@ public class BioModelEditorStructureTableModel extends ManageTableModel<Structur
 		}
 		try{
 			String newName = (String)value;
-			if (row >= 0 && row < super.getRowCount()) {
-				Structure s = getData().get(row);
+			if (row >= 0 && row < rows.size()) {
+				Structure s = getValueAt(row);
 				switch (column) {
 				case COLUMN_NAME: {
 					if (!value.equals(s.getName())) {
@@ -252,12 +166,11 @@ public class BioModelEditorStructureTableModel extends ManageTableModel<Structur
 					break;
 				} 
 				case COLUMN_OUTSIDE_COMPARTMENT: {
-					Structure outsideFeature = model.getStructure(newName);
-					if (outsideFeature instanceof Membrane) {
-						DialogUtils.showErrorDialog(ownerTable, Structure.TYPE_NAME_FEATURE + " is expected!");
-					} else {
-						((Membrane)s).setOutsideFeature((Feature)outsideFeature);
+					Structure outsideFeature = null;
+					if (newName != null && newName.length() > 0) {
+						outsideFeature = model.getStructure(newName);
 					}
+					s.setParentStructure(outsideFeature);
 					break;
 				} 
 				}
@@ -271,6 +184,9 @@ public class BioModelEditorStructureTableModel extends ManageTableModel<Structur
 							break;
 						}
 					}
+					if (newName.equals(EditorScrollTable.ADD_NEW_HERE_TEXT)) {
+						newName = model.getFreeFeatureName();
+					}
 					model.addFeature(newName, parentFeature, model.getFreeMembraneName());
 					break;
 				} 
@@ -282,20 +198,77 @@ public class BioModelEditorStructureTableModel extends ManageTableModel<Structur
 		}
 	}
 
-	public void setModel(Model newValue) {
-		Model oldValue = model;
-		model = newValue;
-		firePropertyChange(PROPERTY_NAME_MODEL, oldValue, newValue);
-	}
-
-	public void setSearchText(String newValue) {
-		String oldValue = searchText;
-		searchText = newValue;
-		firePropertyChange(PROPERTY_NAME_SEARCH_TEXT, oldValue, newValue);		
-	}
-
 	@Override
 	public boolean isSortable(int col) {
 		return false;
+	}
+	
+	@Override
+	public void sortColumn(int col, boolean ascending) {
+		// TODO Auto-generated method stub		
+	}
+
+	public String checkInputValue(String inputValue, int row, int column) {
+		Structure structure = null;
+		if (row >= 0 && row < rows.size()) {
+			structure = getValueAt(row);
+		}
+		switch (column) {
+		case COLUMN_NAME:
+			if (structure == null || !structure.getName().equals(inputValue)) {
+				if (model.getStructure(inputValue) != null) {
+					return "Structure '" + inputValue + "' already exist!";
+				}
+			}
+			break;
+		case COLUMN_INSIDE_COMPARTMENT: {
+			Structure s = model.getStructure(inputValue);
+			if (s == null) {
+				return "Compartment '" + inputValue + "' does not exist!";
+			} 
+			if (s instanceof Membrane) {
+				return "Structure '" + inputValue + "' is not a compartment!";
+			}
+			break;
+		}
+		case COLUMN_OUTSIDE_COMPARTMENT: {
+			Structure s = model.getStructure(inputValue);
+			if (s == null) {
+				return "Structure '" + inputValue + "' does not exist!";
+			} 
+			if (structure != null){
+				return structure.checkNewParent(s);
+			}
+			break;
+		}
+		}
+		return null;
+	}
+	
+	public SymbolTable getSymbolTable(int row, int column) {
+		return null;
+	}
+	
+	public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(final int row, final int column) {
+		return null;
+	}
+
+	public Set<String> getAutoCompletionWords(int row, int column) {
+		if (column == COLUMN_INSIDE_COMPARTMENT || column == COLUMN_OUTSIDE_COMPARTMENT) {
+			Set<String> words = new HashSet<String>();
+			for (Structure s : model.getStructures()) {
+				if (column == COLUMN_INSIDE_COMPARTMENT && s instanceof Feature) {					
+					words.add(s.getName());
+				} else if (column == COLUMN_OUTSIDE_COMPARTMENT) {
+					Structure structure = getValueAt(row);
+					if (structure instanceof Feature && s instanceof Membrane
+						|| structure instanceof Membrane && s instanceof Feature) {
+						words.add(s.getName());
+					}
+				}
+			}
+			return words;
+		}
+		return null;
 	}
 }

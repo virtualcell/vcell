@@ -14,13 +14,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.NumberUtils;
 
-import cbit.gui.ReactionEquation;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorReactionTableModel;
 
 @SuppressWarnings("serial")
 public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
-	private static final Color hoverColor = new Color(0xFDFCDC);
+	public static final Color hoverColor = new Color(0xFDFCDC);
 	public static final Border DEFAULT_GAP = BorderFactory.createEmptyBorder(2,4,2,4);
 	static final Border focusHighlightBorder = UIManager.getBorder("Table.focusCellHighlightBorder");
 	static final Color uneditableForeground = UIManager.getColor("TextField.inactiveForeground");
@@ -84,14 +82,15 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 			}
 			return jc;
 		}
-		if (value != null && (value.equals(BioModelEditor.ADD_NEW_HERE_TEXT) 
-				|| value.equals(BioModelEditorReactionTableModel.REACTION_CHOOSE_STRUCTURE_TEXT))) {
+		if (value != null && (value.equals(EditorScrollTable.ADD_NEW_HERE_TEXT))) {
 			setText("<html><i>" + value + "</i></html>");
 		} 
-		if (value instanceof ReactionEquation) {
-			ReactionEquation reactionEquation = (ReactionEquation)value;
-			setText("<html>" + reactionEquation.getEquationleftHand() + "<b>" + ReactionEquation.REACTION_GOESTO + "</b>" + reactionEquation.getEquationRightHand());
-		}
+//		if (value instanceof ReactionEquation) {
+//			ReactionEquation reactionEquation = (ReactionEquation)value;
+//			setText("<html>" + reactionEquation.getEquationleftHand() 
+//					+ "&nbsp;<b>" + ReactionEquation.REACTION_GOESTO + "</b>" 
+//					+ reactionEquation.getEquationRightHand()+ "&nbsp;</html>");
+//		}
 		return this;
 	}
 }

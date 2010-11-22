@@ -51,7 +51,7 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 		private MiriamResource miriamResource = null;
 		
 		public LinkNode(MIRIAMQualifier miriamQualifier, MiriamResource miriamResource) {
-			super(miriamResource.getMiriamURN(),false);
+			super(miriamResource,false);
 			this.miriamQualifier = miriamQualifier;
 			this.miriamResource = miriamResource;
 		}

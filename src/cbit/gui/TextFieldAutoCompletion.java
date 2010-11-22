@@ -200,7 +200,9 @@ public class TextFieldAutoCompletion extends JTextField {
 	
 	public void setAutoCompletionWords(Set<String> words) {
 		autoCompWordList.clear();
-		autoCompWordList.addAll(words);
+		if (words != null) {
+			autoCompWordList.addAll(words);
+		}
 	}
 		
 	private class GoToList extends AbstractAction {

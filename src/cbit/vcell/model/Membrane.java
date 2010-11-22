@@ -180,6 +180,14 @@ public void setOutsideFeature(Feature outsideFeature) {
  * @param structure cbit.vcell.model.Structure
  */
 public void setParentStructure(Structure structure) throws ModelException {
+	String err = checkNewParent(structure);
+	if (err != null) {
+		throw new ModelException(err);
+	}
+	setOutsideFeature((Feature) structure);
+}
+
+public String checkNewParent(Structure structure) {
 	if (structure instanceof Feature){
 		Feature feature = (Feature)structure;
 		//
@@ -188,16 +196,15 @@ public void setParentStructure(Structure structure) throws ModelException {
 		Structure s = feature.getParentStructure();
 		while (s!=null){
 			if (s == this){
-				throw new ModelException("cannot make parent relationship cyclic");
+				return "cannot make parent relationship cyclic";
 			}
 			s = s.getParentStructure();
 		}
-		setOutsideFeature(feature);
-	}else{
-		throw new ModelException("parent structure must be a Feature");
+	} else{
+		return "parent structure must be a Feature";
 	}
+	return null;
 }
-
 
 /**
  * This method was created by a SmartGuide.

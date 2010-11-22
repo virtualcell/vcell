@@ -3,9 +3,17 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_DATASET_MENU;
+import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_SPECIALS_MENU;
+import static cbit.vcell.data.VFrapConstants.DELETE_DATA_SYMBOL;
+import static cbit.vcell.xml.VFrapXmlHelper.CreateSaveVFrapDataSymbols;
+import static cbit.vcell.xml.VFrapXmlHelper.LoadVFrapDisplayRoi;
+import static cbit.vcell.xml.VFrapXmlHelper.LoadVFrapSpecialImages;
+import static cbit.vcell.xml.VFrapXmlHelper.SaveVFrapSpecialImagesAsFieldData;
+import static cbit.vcell.xml.VFrapXmlHelper.checkNameAvailability;
+
 import java.awt.AWTException;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Robot;
 import java.awt.event.FocusEvent;
@@ -13,14 +21,11 @@ import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Hashtable;
-import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -30,22 +35,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import oracle.sql.DATE;
-
 import org.jdom.Element;
-import org.junit.runner.Request;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.BioModelChildSummary;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -54,10 +51,8 @@ import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.image.VCImageUncompressed;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.importer.AnnotatedImageDataset;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXmlReader;
 import cbit.vcell.biomodel.BioModel;
@@ -67,10 +62,8 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
-import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
-import static cbit.vcell.data.VFrapConstants.*;
-import static cbit.vcell.xml.VFrapXmlHelper.*;
+import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
@@ -81,8 +74,6 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.xml.XMLTags;
-import cbit.vcell.xml.XmlReader;
 
 /**
  * This type was created in VisualAge.
@@ -115,7 +106,7 @@ public class DataSymbolsPanel extends javax.swing.JPanel {
 				addVFrapDerivedImages();
 			if (e.getSource() == DataSymbolsPanel.this.getJMenuItemDelete()){
 				int selectedIndex = getScrollPaneTable().getSelectionModel().getMaxSelectionIndex();
-				DataSymbol dataSymbol = getDataSymbolsTableModel().getDataSymbol(selectedIndex);
+				DataSymbol dataSymbol = getDataSymbolsTableModel().getValueAt(selectedIndex);
 				removeDataSymbol(dataSymbol);
 			}
 		};
@@ -666,10 +657,10 @@ private void handleListEvent(javax.swing.event.ListSelectionEvent arg1) {
 		if (row < 0) {
 			getDataSymbolsSpecPanel().setDataSymbol(null);
 		} else {
-			getDataSymbolsSpecPanel().setDataSymbol(getDataSymbolsTableModel().getDataSymbol(row));
+			getDataSymbolsSpecPanel().setDataSymbol(getDataSymbolsTableModel().getValueAt(row));
 //			System.out.println("Initial condition selection changed");
 			if(getSPPRPanel() != null) {
-				getSPPRPanel().setScrollPaneTreeCurrentRow(getDataSymbolsTableModel().getDataSymbol(row));
+				getSPPRPanel().setScrollPaneTreeCurrentRow(getDataSymbolsTableModel().getValueAt(row));
 			}
 		}
 	} catch (java.lang.Throwable ivjExc) {

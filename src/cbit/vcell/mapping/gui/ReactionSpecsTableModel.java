@@ -4,7 +4,6 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,7 +11,7 @@ import java.util.List;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
@@ -25,12 +24,12 @@ import cbit.vcell.model.SimpleReaction;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ReactionSpecsTableModel extends ManageTableModel<ReactionSpec> implements java.beans.PropertyChangeListener {
+public class ReactionSpecsTableModel extends DefaultSortTableModel<ReactionSpec> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_NAME = 0;
 	public static final int COLUMN_TYPE = 1;
 	public static final int COLUMN_ENABLED = 2;
 	public static final int COLUMN_FAST = 3;
-	private String LABELS[] = { "Name", "Type", "Enabled", "Fast" };
+	private final static String LABELS[] = { "Name", "Type", "Enabled", "Fast" };
 	
 	private JTable ownerTable = null;
 	
@@ -40,7 +39,7 @@ public class ReactionSpecsTableModel extends ManageTableModel<ReactionSpec> impl
  * ReactionSpecsTableModel constructor comment.
  */
 public ReactionSpecsTableModel(JTable table) {
-	super();
+	super(LABELS);
 	ownerTable = table;
 	addPropertyChangeListener(this);
 }
@@ -69,23 +68,6 @@ public Class<?> getColumnClass(int column) {
 			return Object.class;
 		}
 	}
-}
-
-public String getColumnName(int column) {
-	try {
-		return LABELS[column];
-	} catch (Throwable exc) {
-		System.out.println("WARNING - no such column index: " + column);
-		exc.printStackTrace(System.out);
-		return null;
-	}
-}
-
-/**
- * getColumnCount method comment.
- */
-public int getColumnCount() {
-	return LABELS.length;
 }
 
 /**
