@@ -867,7 +867,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		ReactionSlicesCartoonEditorDialog rced = reactionSlicesEditorHash.get(structureShape.getStructure());
 		if (rced == null) {
 			final ReactionSlicesCartoonEditorDialog reactionCartoonEditorDialog = 
-				new ReactionSlicesCartoonEditorDialog(this);
+				new ReactionSlicesCartoonEditorDialog();
 			reactionCartoonEditorDialog.setIconifiable(true);
 			reactionCartoonEditorDialog.init(structureShape.getModel(),
 					structureShape.getStructure(), getDocumentManager());

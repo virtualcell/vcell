@@ -129,6 +129,14 @@ public void setMembrane(Membrane membrane) {
  * @param structure cbit.vcell.model.Structure
  */
 public void setParentStructure(Structure structure) throws ModelException {
+	String err = checkNewParent(structure);
+	if (err != null) {
+		throw new ModelException(err);
+	}
+	setMembrane((Membrane)structure);
+}
+
+public String checkNewParent(Structure structure) {
 	if (structure instanceof Membrane){
 		Membrane membrane = (Membrane)structure;
 		//
@@ -137,14 +145,14 @@ public void setParentStructure(Structure structure) throws ModelException {
 		Structure s = membrane.getParentStructure();
 		while (s!=null){
 			if (s == this){
-				throw new ModelException("cannot make parent relationship cyclic");
+				return "cannot make parent relationship cyclic";
 			}
 			s = s.getParentStructure();
 		}
-		setMembrane(membrane);
-	}else{
-		throw new ModelException("parent structure must be a Membrane");
+	} else {
+		return "parent structure must be a Membrane";
 	}
+	return null;
 }
 
 

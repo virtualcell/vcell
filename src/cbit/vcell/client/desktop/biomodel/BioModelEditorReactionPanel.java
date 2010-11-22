@@ -1,43 +1,29 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.DownArrowIcon;
-import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
-import org.vcell.util.gui.ScrollTable;
 
-import cbit.gui.LabelButton;
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.graph.ReactionSlicesCartoonEditorPanel;
 import cbit.vcell.model.ReactionStep;
@@ -45,75 +31,22 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.gui.KineticsTypeTemplatePanel;
 
 @SuppressWarnings("serial")
-public class BioModelEditorReactionPanel extends JPanel {
-	private static final int DIAGRAM_VIEW_TAB_INDEX = 1;
-
-	private static final int TABLE_VIEW_TAB_INDEX = 0;
-
-	private static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
-	
-	private JButton addButton = null;
-	private JButton deleteButton = null;
-	private ScrollTable table;
-	private BioModel bioModel;
-	private BioModelEditorReactionTableModel tableModel = null;
-	private JTextField textFieldSearch = null;
+public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<ReactionStep> {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private ReactionSlicesCartoonEditorPanel reactionCartoonEditorPanel = null;
 	private KineticsTypeTemplatePanel kineticsTypeTemplatePanel = null;
 	private JTabbedPane tabbedPane = null;
-	private JButton floatingTabButton = null;
-	private JPopupMenu floatingPopupMenu = null;
-
-	private JMenuItem floatingMenuItem;
-	private JButton dockButton;
 	private JDesktopPaneEnhanced desktopPane = null;
 	private JInternalFrameEnhanced diagramViewInternalFrame = null;
-
-	private JPanel diagramViewTabComponent;
 	
-	private class InternalEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, 
-		ListSelectionListener, DocumentListener {
+	private class InternalEventHandler implements java.beans.PropertyChangeListener, ListSelectionListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelEditorReactionPanel.this && evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
-				tableModel.setModel(bioModel.getModel());
 				reactionCartoonEditorPanel.setModel(bioModel.getModel());
-			}			
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == addButton) {
-				try {
-					ReactionStep reactionStep = new SimpleReaction(bioModel.getModel().getStructures()[0], bioModel.getModel().getFreeReactionStepName());
-					bioModel.getModel().addReactionStep(reactionStep);
-				} catch (PropertyVetoException ex) {
-					ex.printStackTrace();
-					DialogUtils.showErrorDialog(BioModelEditorReactionPanel.this, ex.getMessage());
-				}
-			} else if (e.getSource() == deleteButton) {
-				int[] rows = table.getSelectedRows();
-				ArrayList<ReactionStep> deleteList = new ArrayList<ReactionStep>();
-				for (int r : rows) {
-					if (r < bioModel.getModel().getNumSpeciesContexts()) {
-						deleteList.add(tableModel.getValueAt(r));
-					}
-				}
-				try {
-					for (ReactionStep sc : deleteList) {
-						bioModel.getModel().removeReactionStep(sc);
-					}
-				} catch (PropertyVetoException ex) {
-					ex.printStackTrace();
-					DialogUtils.showErrorDialog(BioModelEditorReactionPanel.this, ex.getMessage());
-				}
-			} else if (e.getSource() == floatingTabButton) {
-				floatingPopupMenu.show(floatingTabButton, 0, (int)(floatingTabButton.getSize().getHeight()));
-			} else if (e.getSource() == floatingMenuItem) {
-				showDiagramView(true);
-			} else if (e.getSource() == dockButton) {
-				showDiagramView(false);
-			} 
+			} else if (evt.getSource() == reactionCartoonEditorPanel && evt.getPropertyName().equals(ReactionSlicesCartoonEditorPanel.PROPERTY_NAME_FLOATING)) {
+				showDiagramView((Boolean) evt.getNewValue());
+			}
 		}
 
 		public void valueChanged(ListSelectionEvent e) {
@@ -122,34 +55,27 @@ public class BioModelEditorReactionPanel extends JPanel {
 			}
 			if (e.getSource() == table.getSelectionModel()) {
 				int[] rows = table.getSelectedRows();
-				deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < bioModel.getModel().getNumSpeciesContexts()));
+				if (rows != null && rows.length == 1 && rows[0] < bioModel.getModel().getNumReactions()) {					
+					kineticsTypeTemplatePanel.setReactionStep(tableModel.getValueAt(rows[0]));
+				} else {
+					kineticsTypeTemplatePanel.setReactionStep(null);
+				}
 			}
 			
-		}
-
-		public void insertUpdate(DocumentEvent e) {
-			searchTable();
-		}
-
-		public void removeUpdate(DocumentEvent e) {
-			searchTable();
-		}
-
-		public void changedUpdate(DocumentEvent e) {
-			searchTable();
 		}
 	}
 	public BioModelEditorReactionPanel() {
 		super();
+		addPropertyChangeListener(eventHandler);
 		initialize();
 	}
         
 	private void initialize() {
-		addButton = new JButton("New");
-		deleteButton = new JButton("Delete");
-		table = new EditorScrollTable();
-		textFieldSearch = new JTextField(10);
-		reactionCartoonEditorPanel = new ReactionSlicesCartoonEditorPanel(null);
+		tableModel = new BioModelEditorReactionTableModel(table);
+		table.setModel(tableModel);
+		table.getSelectionModel().addListSelectionListener(eventHandler);
+		reactionCartoonEditorPanel = new ReactionSlicesCartoonEditorPanel();
+		reactionCartoonEditorPanel.addPropertyChangeListener(eventHandler);
 		kineticsTypeTemplatePanel = new KineticsTypeTemplatePanel();
 		
 		setLayout(new GridBagLayout());
@@ -198,8 +124,8 @@ public class BioModelEditorReactionPanel extends JPanel {
 		add(new JSeparator(), gbc);
 		
 		tabbedPane = new JTabbedPane();
-		tabbedPane.insertTab("Table View", null, table.getEnclosingScrollPane(), "", TABLE_VIEW_TAB_INDEX);
-		tabbedPane.insertTab("Diagram View", null, reactionCartoonEditorPanel, "", DIAGRAM_VIEW_TAB_INDEX);
+		tabbedPane.addTab("Table View", table.getEnclosingScrollPane());
+		tabbedPane.addTab("Diagram View", reactionCartoonEditorPanel);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
@@ -211,15 +137,7 @@ public class BioModelEditorReactionPanel extends JPanel {
 		gbc.gridwidth = 5;
 		gbc.fill = GridBagConstraints.BOTH;
 		add(tabbedPane, gbc);		
-		
-		diagramViewTabComponent = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-		diagramViewTabComponent.setBackground(Color.WHITE);
-		diagramViewTabComponent.add(new JLabel("Diagram View"));
-		floatingTabButton = new LabelButton(new DownArrowIcon());
-		diagramViewTabComponent.add(floatingTabButton);
-		diagramViewTabComponent.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
-		tabbedPane.setTabComponentAt(1, diagramViewTabComponent);
-				
+						
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -230,25 +148,6 @@ public class BioModelEditorReactionPanel extends JPanel {
 		gbc.gridwidth = 5;
 		gbc.fill = GridBagConstraints.BOTH;
 		add(kineticsTypeTemplatePanel, gbc);
-			
-		floatingPopupMenu = new JPopupMenu();
-		floatingMenuItem = new JMenuItem("\u21b1 Floating");
-		floatingPopupMenu.add(floatingMenuItem);
-		dockButton = new LabelButton("\u21b5 Dock");
-
-		addPropertyChangeListener(eventHandler);
-		tableModel = new BioModelEditorReactionTableModel(table);
-		table.setModel(tableModel);	
-		table.getSelectionModel().addListSelectionListener(eventHandler);
-		
-		addButton.addActionListener(eventHandler);
-		deleteButton.setEnabled(false);
-		deleteButton.addActionListener(eventHandler);
-		textFieldSearch.getDocument().addDocumentListener(eventHandler);
-		
-		floatingTabButton.addActionListener(eventHandler);
-		floatingMenuItem.addActionListener(eventHandler);
-		dockButton.addActionListener(eventHandler);
 	}
 	
 	public static void main(java.lang.String[] args) {
@@ -271,35 +170,6 @@ public class BioModelEditorReactionPanel extends JPanel {
 		}
 	}
 	
-	public void setBioModel(BioModel newValue) {
-		BioModel oldValue = bioModel;
-		bioModel = newValue;
-		
-//		if (oldValue != null) {			
-//			oldValue.removePropertyChangeListener(this);
-//			if (oldValue.getBioEvents() != null) {		
-//				for (BioEvent be : oldValue.getBioEvents()) {
-//					be.removePropertyChangeListener(this);
-//				}
-//			}
-//		}
-//			
-//		if (argSimContext != null) {
-//			argSimContext.addPropertyChangeListener(this);
-//			if (argSimContext.getBioEvents() != null) {		
-//				for (BioEvent be : argSimContext.getBioEvents()) {
-//					be.addPropertyChangeListener(this);
-//				}
-//			}
-//		}
-		firePropertyChange(PROPERTY_NAME_BIO_MODEL, oldValue, newValue);
-	}
-	
-	public void searchTable() {
-		String text = textFieldSearch.getText();
-		tableModel.setSearchText(text);
-	}
-	
 	private void showDiagramView(boolean bFloating) {
 		if (desktopPane == null) {
 			desktopPane = (JDesktopPaneEnhanced)JOptionPane.getDesktopPaneForComponent(this);
@@ -308,12 +178,11 @@ public class BioModelEditorReactionPanel extends JPanel {
 			return;
 		}
 		if (bFloating) {
-			diagramViewInternalFrame = new JInternalFrameEnhanced("Diagram View");
-			tabbedPane.remove(1);
+			diagramViewInternalFrame = new JInternalFrameEnhanced("Reaction Diagram View");
+			tabbedPane.remove(reactionCartoonEditorPanel);
 			JPanel panel = new JPanel();
 			panel.setLayout(new BorderLayout());
 			JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			p.add(dockButton);
 			panel.add(p, BorderLayout.NORTH);
 			panel.add(reactionCartoonEditorPanel, BorderLayout.CENTER);
 			diagramViewInternalFrame.setResizable(true);
@@ -321,13 +190,40 @@ public class BioModelEditorReactionPanel extends JPanel {
 			diagramViewInternalFrame.setIconifiable(true);
 			diagramViewInternalFrame.add(panel);
 			diagramViewInternalFrame.pack();
-			BeanUtils.centerOnComponent(diagramViewInternalFrame, table);
+			BeanUtils.centerOnComponent(diagramViewInternalFrame, this);
 			DocumentWindowManager.showFrame(diagramViewInternalFrame, desktopPane);
 		} else {	
 			DocumentWindowManager.close(diagramViewInternalFrame, desktopPane);			
-			tabbedPane.insertTab("Diagram View", null, reactionCartoonEditorPanel, "", DIAGRAM_VIEW_TAB_INDEX);
-			tabbedPane.setTabComponentAt(1, diagramViewTabComponent);
-			tabbedPane.setSelectedIndex(DIAGRAM_VIEW_TAB_INDEX);
+			tabbedPane.addTab("Diagram View", reactionCartoonEditorPanel);
+			tabbedPane.setSelectedComponent(reactionCartoonEditorPanel);
+		}
+	}
+
+	protected void newButtonPressed() {
+		try {
+			ReactionStep reactionStep = new SimpleReaction(bioModel.getModel().getStructures()[0], bioModel.getModel().getFreeReactionStepName());
+			bioModel.getModel().addReactionStep(reactionStep);
+		} catch (PropertyVetoException ex) {
+			ex.printStackTrace();
+			DialogUtils.showErrorDialog(BioModelEditorReactionPanel.this, ex.getMessage());
+		}
+	}
+
+	protected void deleteButtonPressed() {
+		int[] rows = table.getSelectedRows();
+		ArrayList<ReactionStep> deleteList = new ArrayList<ReactionStep>();
+		for (int r : rows) {
+			if (r < bioModel.getModel().getNumReactions()) {
+				deleteList.add(tableModel.getValueAt(r));
+			}
+		}
+		try {
+			for (ReactionStep sc : deleteList) {
+				bioModel.getModel().removeReactionStep(sc);
+			}
+		} catch (PropertyVetoException ex) {
+			ex.printStackTrace();
+			DialogUtils.showErrorDialog(BioModelEditorReactionPanel.this, ex.getMessage());
 		}
 	}
 }

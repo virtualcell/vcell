@@ -13,9 +13,9 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
-import java.util.Map.Entry;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -41,8 +41,8 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 import org.vcell.util.gui.sorttable.JSortTable;
-import org.vcell.util.gui.sorttable.ManageTableModel;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
@@ -74,10 +74,9 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.ParticleMathMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StochMathMapping;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.FilamentRegionVariable;
 import cbit.vcell.math.FilamentVariable;
@@ -85,10 +84,9 @@ import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.numericstest.AddTestCasesOP;
 import cbit.vcell.numericstest.AddTestCasesOPBioModel;
@@ -105,6 +103,7 @@ import cbit.vcell.numericstest.EditTestCriteriaOPMathModel;
 import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
 import cbit.vcell.numericstest.EditTestSuiteOP;
 import cbit.vcell.numericstest.LoadTestInfoOP;
+import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
 import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
 import cbit.vcell.numericstest.RemoveTestCasesOP;
@@ -114,14 +113,13 @@ import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults;
+import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults.CrossRefData;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.numericstest.TestCriteriaNewBioModel;
 import cbit.vcell.numericstest.TestCriteriaNewMathModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOPResults;
-import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
-import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults.CrossRefData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
@@ -2047,7 +2045,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 //				}
 //			);
 		
-		final ManageTableModel tableModel = new ManageTableModel(){
+		final DefaultSortTableModel tableModel = new DefaultSortTableModel(colNames){
 			public Class<?> getColumnClass(int columnIndex) {
 				if(columnIndex==TSDATE_OFFSET){
 					return Date.class;
@@ -2061,12 +2059,6 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 		    }
 			public Object getValueAt(int rowIndex, int columnIndex) {
 				return ((Object[])rows.get(rowIndex))[columnIndex];
-			}
-			public int getColumnCount() {
-				return colNames.length;
-			}
-			public String getColumnName(int column) {
-				return colNames[column];
 			}
 			public void sortColumn(final int col, final boolean ascending) {
 				Collections.sort((List<Object[]>)rows,

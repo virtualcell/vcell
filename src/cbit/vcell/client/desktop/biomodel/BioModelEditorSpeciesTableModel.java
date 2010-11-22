@@ -1,81 +1,32 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.EditorScrollTable;
 
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")
-public class BioModelEditorSpeciesTableModel extends ManageTableModel<SpeciesContext> implements PropertyChangeListener{
-
-	private static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
-	private static final String PROPERTY_NAME_MODEL = "model";
-	public final static int COLUMN_NAME = 0;
-	public final static int COLUMN_STRUCTURE = 1;
+public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTableModel<SpeciesContext> {
 	
-	private Model model = null;
-	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private String[] columnNames = new String[] {"Name", "Structure"};
-	private JTable ownerTable = null;
-	private String searchText = null;
+	public final static int COLUMN_NAME = 0;
+	public final static int COLUMN_STRUCTURE = 1;	
+	private static String[] columnNames = new String[] {"Name", "Structure"};
 
 	public BioModelEditorSpeciesTableModel(JTable table) {
-		super();
-		ownerTable = table;
-		addPropertyChangeListener(this);
+		super(table);
+		columns = columnNames;
 	}
 	
-	/**
-	 * The addPropertyChangeListener method was generated to support the propertyChange field.
-	 */
-	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-		getPropertyChange().addPropertyChangeListener(listener);
-	}
-
-
-	/**
-	 * The firePropertyChange method was generated to support the propertyChange field.
-	 */
-	public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-	}
-
-
-	public int getColumnCount() {
-		return columnNames.length;
-	}
-
-	/**
-	 * getColumnCount method comment.
-	 */
-	public String getColumnName(int column) {
-		return columnNames[column];
-	}
-
-	/**
-	 * getRowCount method comment.
-	 */
-	@Override
-	public int getRowCount() {
-		return super.getRowCount() + (searchText == null || searchText.length() == 0 ? 1 : 0);
-	}
-	
-	/**
-	 * Accessor for the propertyChange field.
-	 */
-	protected java.beans.PropertyChangeSupport getPropertyChange() {
-		if (propertyChange == null) {
-			propertyChange = new java.beans.PropertyChangeSupport(this);
-		};
-		return propertyChange;
-	}
-
 	public Class<?> getColumnClass(int column) {
 		switch (column){
 		
@@ -89,7 +40,7 @@ public class BioModelEditorSpeciesTableModel extends ManageTableModel<SpeciesCon
 		return Object.class;
 	}
 
-	private void refreshData() {
+	protected void refreshData() {
 
 		if (model == null){
 			return;
@@ -111,8 +62,8 @@ public class BioModelEditorSpeciesTableModel extends ManageTableModel<SpeciesCon
 			return null;
 		}
 		try{
-			if (row >= 0 && row < super.getRowCount()) {
-				SpeciesContext speciesContext = (SpeciesContext)getData().get(row);
+			if (row >= 0 && row < rows.size()) {
+				SpeciesContext speciesContext = getValueAt(row);
 				switch (column) {
 					case COLUMN_NAME: {
 						return speciesContext.getName();
@@ -123,7 +74,7 @@ public class BioModelEditorSpeciesTableModel extends ManageTableModel<SpeciesCon
 				}
 			} else {
 				if (column == COLUMN_NAME) {
-					return BioModelEditor.ADD_NEW_HERE_TEXT;
+					return EditorScrollTable.ADD_NEW_HERE_TEXT;
 				} 
 			}
 			return null;
@@ -133,60 +84,31 @@ public class BioModelEditorSpeciesTableModel extends ManageTableModel<SpeciesCon
 		}
 	}
 
-	/**
-	 * The hasListeners method was generated to support the propertyChange field.
-	 */
-	public synchronized boolean hasListeners(java.lang.String propertyName) {
-		return getPropertyChange().hasListeners(propertyName);
-	}
-
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return true;
 	}
 
+	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
-		if (evt.getSource() == this) {
-			if (evt.getPropertyName().equals(PROPERTY_NAME_MODEL)) {
-				refreshData();
-				Model oldValue = (Model)evt.getOldValue();
-				if (oldValue != null) {
-					oldValue.removePropertyChangeListener(this);
-				}
-				Model newValue = (Model)evt.getNewValue();
-				if (newValue != null) {
-					newValue.addPropertyChangeListener(this);
-				}
-			} else if (evt.getPropertyName().equals(PROPERTY_NAME_SEARCH_TEXT)) {
-				refreshData();
-			}
-		}
-		if (evt.getSource() == model) {
-			refreshData();
-		}
+		super.propertyChange(evt);
 	}
 	
-	/**
-	 * The removePropertyChangeListener method was generated to support the propertyChange field.
-	 */
-	public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-		getPropertyChange().removePropertyChangeListener(listener);
-	}
-
 	public void setValueAt(Object value, int row, int column) {
 		if (model == null) {
 			return;
 		}
 		try{
-			if (row >= 0 && row < super.getRowCount()) {
-				SpeciesContext speciesContext = getData().get(row);
+			String newValue = (String)value;
+			if (row >= 0 && row < rows.size()) {
+				SpeciesContext speciesContext = getValueAt(row);
 				switch (column) {
 				case COLUMN_NAME: {
 					speciesContext.setHasOverride(true);
-					speciesContext.setName((String)value);
+					speciesContext.setName(newValue);
 					break;
 				} 
 				case COLUMN_STRUCTURE: {
-					speciesContext.getStructure().setName((String)value);
+					speciesContext.getStructure().setName(newValue);
 					break;
 				} 
 				}
@@ -194,18 +116,19 @@ public class BioModelEditorSpeciesTableModel extends ManageTableModel<SpeciesCon
 				SpeciesContext freeSpeciesContext = new SpeciesContext(new Species(model.getFreeSpeciesName(), null), model.getStructures()[0]);
 				switch (column) {
 				case COLUMN_NAME: {
-					if (!value.equals(BioModelEditor.ADD_NEW_HERE_TEXT)) {
-						freeSpeciesContext.getSpecies().setCommonName((String)value);
-						freeSpeciesContext.setHasOverride(true);
-						freeSpeciesContext.setName((String)value);
+					if (!value.equals(EditorScrollTable.ADD_NEW_HERE_TEXT)) {
+						freeSpeciesContext.getSpecies().setCommonName(newValue);
 					}
 					break;
 				} 
 				case COLUMN_STRUCTURE: {
-					freeSpeciesContext.getStructure().setName((String)value);
+					Structure s = model.getStructure(newValue);
+					freeSpeciesContext = new SpeciesContext(new Species(model.getFreeSpeciesName(), null), s);
 					break;
 				} 
 				}
+				freeSpeciesContext.setHasOverride(true);
+				freeSpeciesContext.setName(freeSpeciesContext.getSpecies().getCommonName());
 				model.addSpecies(freeSpeciesContext.getSpecies());
 				model.addSpeciesContext(freeSpeciesContext);
 			}
@@ -221,9 +144,55 @@ public class BioModelEditorSpeciesTableModel extends ManageTableModel<SpeciesCon
 		firePropertyChange(PROPERTY_NAME_MODEL, oldValue, newValue);
 	}
 
-	public void setSearchText(String newValue) {
-		String oldValue = searchText;
-		searchText = newValue;
-		firePropertyChange(PROPERTY_NAME_SEARCH_TEXT, oldValue, newValue);		
+	@Override
+	public boolean isSortable(int col) {
+		return false;
+	}
+	
+	@Override
+	public void sortColumn(int col, boolean ascending) {
+		// TODO Auto-generated method stub		
+	}
+
+	public String checkInputValue(String inputValue, int row, int column) {
+		SpeciesContext speciesContext = null;
+		if (row >= 0 && row < rows.size()) {
+			speciesContext = getValueAt(row);
+		}
+		String errMsg = null;
+		switch (column) {
+		case COLUMN_NAME:
+			if (speciesContext == null || !speciesContext.getName().equals(inputValue)) {
+				if (model.getSpeciesContext(inputValue) != null) {
+					errMsg = "Species '" + inputValue + "' already exists!";
+				}
+			}
+			break;
+		case COLUMN_STRUCTURE:
+			if (model.getStructure(inputValue) == null) {
+				errMsg = "Structure '" + inputValue + "' does not exist!";
+			}
+			break;
+		}
+		return errMsg;
+	}
+	
+	public SymbolTable getSymbolTable(int row, int column) {
+		return null;
+	}
+	
+	public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(final int row, final int column) {
+		return null;
+	}
+
+	public Set<String> getAutoCompletionWords(int row, int column) {
+		if (column == COLUMN_STRUCTURE) {
+			Set<String> words = new HashSet<String>();
+			for (Structure s : model.getStructures()) {
+				words.add(s.getName());
+			}
+			return words;
+		}
+		return null;
 	}
 }

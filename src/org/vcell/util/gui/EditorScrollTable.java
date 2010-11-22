@@ -1,79 +1,146 @@
 package org.vcell.util.gui;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
-import javax.swing.DefaultCellEditor;
+import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 
-import cbit.gui.ScopedExpression;
+import cbit.gui.ReactionEquation;
 import cbit.gui.TableCellEditorAutoCompletion;
-import cbit.gui.TextFieldAutoCompletion;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 
 /**
- * ScrollTable extends JTable and has a JScrollPane which encloses the table itself. The default cell renderer
- * is {@link DefaultScrollTableCellRenderer} which has special background for noneditable table cells. The cell render
- * for {@link ScopedExpression} is {@link ScopedExpressionTableCellRenderer} and the cell editor for {@link ScopedExpression}
- * is {@link TableCellEditorAutoCompletion}.
+ * EditorScrollTable extends ScrollTable and enables the user to keep editing using key from one cell to another.
  * 
- * The default auto resize mode is AUTO_RESIZE_OFF because most of tables have expression columns. The expression 
- * columns will be formatted nicely automatically. You need to set auto resize mode if you don't want AUTO_RESIZE_OFF.
+ * after a value is typed, check to see if the new value is valid. If not, 
+ * editing is not stopped and tooltip is set to the error message.
  * 
- * By default, when editing an expression, it will automatically try to bind expression to find errors. However, 
- * there are exceptions like in Kinetics Editor, new parameter will be added it is not already defined. Here you 
- * don't want to validate expression bindings. So you need to call ScrollTable.setValidateExpressionBinding(false).
- * 
- * To add ScrollTable to a JPanel, call ScrollTable.getEnclosingScrollPane() and add that to JPanel.
+ * Also it gets auto completion list from table model
+ *  
  * @author fgao
  *
  */
 @SuppressWarnings("serial")
 public class EditorScrollTable extends ScrollTable {
 	
-	protected TextFieldAutoCompletion textFieldCellEditor = null;
-	protected class DefaultScrollTableCellEditor extends DefaultCellEditor {		public DefaultScrollTableCellEditor() {
-			super(new TextFieldAutoCompletion());
-			textFieldCellEditor = (TextFieldAutoCompletion)editorComponent;
-			textFieldCellEditor.setBorder(DefaultScrollTableCellRenderer.DEFAULT_GAP);
-			textFieldCellEditor.addActionListener(new ActionListener() {
-				
-				public void actionPerformed(ActionEvent e) {
-					bEditingStoppedFromKey = true;
-				}
-			});
+	protected class DefaultScrollTableAutoCompleteCellEditor extends TableCellEditorAutoCompletion {
+		public DefaultScrollTableAutoCompleteCellEditor(JTable table) {
+			this(table, false);
 		}
-	}
-	
-	protected class DefaultScrollTableAutoCompleteCellEditor extends TableCellEditorAutoCompletion {		public DefaultScrollTableAutoCompleteCellEditor(JTable table, boolean arg_bValidateBinding) {
+		public DefaultScrollTableAutoCompleteCellEditor(JTable table, boolean arg_bValidateBinding) {
 			super(table, arg_bValidateBinding);
 			textFieldAutoCompletion.addActionListener(new ActionListener() {				
 				public void actionPerformed(ActionEvent e) {
 					if (textFieldAutoCompletion.getSelectedIndex() < 0) {
 						bEditingStoppedFromKey = true;
+					}
+				}
+			});
+			textFieldAutoCompletion.addKeyListener(new KeyListener() {				
+				public void keyTyped(KeyEvent e) {					
+				}
+				
+				public void keyReleased(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+						bEscKeyPressed = true;
 					}					
+				}				
+				public void keyPressed(KeyEvent e) {
 				}
 			});
 		}
+		@Override
+		public boolean stopCellEditing() {
+			if (textFieldAutoCompletion.getSelectedIndex() >= 0) {
+				return false;
+			}
+			
+			String inputValue = textFieldAutoCompletion.getText();
+			boolean bOK = true;
+			if (getModel() instanceof AutoCompleteTableModel) {
+				AutoCompleteTableModel tableModel = (AutoCompleteTableModel)getModel();
+				tableStopEditingErrorMessage = tableModel.checkInputValue(inputValue, getEditingRow(), getEditingColumn()); 
+				if (tableStopEditingErrorMessage != null && tableStopEditingErrorMessage.length() > 0) {
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							int row = getEditingRow();
+							if (row < 0) {
+								return;
+							}
+							requestFocus();
+							setRowSelectionInterval(row, row);
+							((JComponent)getComponent()).setBorder(new LineBorder(Color.red));
+							textFieldAutoCompletion.requestFocus();	
+							textFieldAutoCompletion.setToolTipText(tableStopEditingErrorMessage);
+							ToolTipManager.sharedInstance().mouseMoved(
+							        new MouseEvent(textFieldAutoCompletion, 0, 0, 0,
+							                4, 0, 0, false));
+						}				
+					});
+					bOK = false;
+				}
+			}
+			
+			if (bOK) {
+				bOK = super.stopCellEditing();
+			}
+			return bOK;
+		}
+		
+		@Override
+		public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+			((JComponent)getComponent()).setToolTipText(null);
+			if (getModel() instanceof AutoCompleteTableModel) {
+				AutoCompleteTableModel tableModel = (AutoCompleteTableModel)getModel();			
+				textFieldAutoCompletion.setSymbolTable(tableModel.getSymbolTable(row, column));
+				textFieldAutoCompletion.setAutoCompleteSymbolFilter(tableModel.getAutoCompleteSymbolFilter(row, column));
+				textFieldAutoCompletion.setAutoCompletionWords(tableModel.getAutoCompletionWords(row, column));
+			}
+			return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+		}
+		@Override
+		public void cancelCellEditing() {
+			if (!bEscKeyPressed && tableStopEditingErrorMessage != null && tableStopEditingErrorMessage.length() > 0) {
+				DialogUtils.showWarningDialog(EditorScrollTable.this, "Your last entry was discarded due to the following reason:\n\n    " + tableStopEditingErrorMessage);
+				textFieldAutoCompletion.setToolTipText(null);
+			}
+			super.cancelCellEditing();
+		}
 	}
 	
-	private DefaultScrollTableCellEditor defaultCellEditor = new DefaultScrollTableCellEditor();
 	private boolean bEditingStoppedFromKey = false;
+	public static final String ADD_NEW_HERE_TEXT = "(add new here)";
+	protected String tableStopEditingErrorMessage = null;
+	private boolean bEscKeyPressed = false;
 	
 	public EditorScrollTable() {
 		super();		
 		initialize();
 	}
-	
-	private void initialize() {		
-		setDefaultEditor(Object.class, defaultCellEditor);
+		
+	private void initialize() {
+		setDefaultEditor(Object.class, new DefaultScrollTableAutoCompleteCellEditor(this));
 	}
-
+	
+	@Override
+	public void setValidateExpressionBinding(boolean bValidateExpressionBinding) {
+		super.setValidateExpressionBinding(bValidateExpressionBinding);
+		setDefaultEditor(ReactionEquation.class,new DefaultScrollTableAutoCompleteCellEditor(this, bValidateExpressionBinding));
+	}
+	
 	@Override
 	public void editingStopped(ChangeEvent e) {
 		int editRow = editingRow;
@@ -82,7 +149,6 @@ public class EditorScrollTable extends ScrollTable {
 		if (!bEditingStoppedFromKey) {
 			return;
 		}
-		bEditingStoppedFromKey = false;
 		for (int c = editColumn + 1; c < getColumnCount(); c ++) {
 			if (dataModel.isCellEditable(editRow, c)) {
 				editCellAt(editRow, c);
@@ -103,6 +169,11 @@ public class EditorScrollTable extends ScrollTable {
 	public boolean editCellAt(final int row, final int column, EventObject e) {
 		hoverColumn = -1;
 		hoverRow = -1;
+		bEditingStoppedFromKey = false;
+		bEscKeyPressed = false;
+		tableStopEditingErrorMessage = null;
+		Rectangle rect =  getCellRect(row, column, true);
+		scrollRectToVisible(rect);
 		boolean r = super.editCellAt(row, column, e);
 		if (r) {
 			clearSelection();
@@ -110,20 +181,24 @@ public class EditorScrollTable extends ScrollTable {
 				
 				public void run() {
 					if (getEditorComponent() != null) {
+						getEditorComponent().requestFocusInWindow();
 						if (getEditorComponent() instanceof JTextField) {
 							((JTextField)getEditorComponent()).selectAll();
 						}
-						getEditorComponent().requestFocusInWindow();
-						Rectangle rect =  getCellRect(row, column, true);
-						scrollRectToVisible(rect);
 					}
 				}
 			});
 		}
 		return r;
-	}	
-	
-	public void setEditingStoppedFromKey() {
-		bEditingStoppedFromKey = true;
+	}
+
+	@Override
+	public void removeNotify() {
+		super.removeNotify();
+		if (getCellEditor() != null) {
+			if (!getCellEditor().stopCellEditing()) {
+				getCellEditor().cancelCellEditing();
+			}
+		}
 	}
 }

@@ -113,16 +113,6 @@ public class ModelParameterPanel extends javax.swing.JPanel {
 				tableSelectionChanged();
 		};
 	};
-	
-	PropertyChangeListener ModelParametersPropertyChangeListener = new PropertyChangeListener(){
-		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getSource() instanceof Model && evt.getPropertyName().equals(Model.MODEL_PARAMETERS_PROPERTY_NAME)) {
-				ModelParameterTableModel modelparamTableModel = (ModelParameterTableModel)getScrollPaneTable().getModel();
-				modelparamTableModel.setData(modelparamTableModel.getUnsortedParameters());
-			}
-		}
-	};
-
 
 /**
  * ModelParameterPanel constructor comment.
@@ -598,7 +588,7 @@ private void jMenuItemDelete_ActionPerformed(ActionEvent actionEvent) {
 			return;
 		}
 		// delete the parameter and update the tablemodel.
-		Parameter param = (Parameter)getmodelParameterTableModel().getData().get(rows[0]);
+		Parameter param = (Parameter)getmodelParameterTableModel().getValueAt(rows[0]);
 		if (param instanceof ModelParameter) {
 			try {
 				getModel().removeModelParameter((ModelParameter)param);
@@ -620,7 +610,7 @@ private void jMenuItemPromoteToGlobal_ActionPerformed(ActionEvent actionEvent) t
 		// At this point, all selected rows should be local, user-defined kinetic parameters, so proceed with promoting them.
 		Parameter[] selectedParams = new Parameter[rows.length];
 		for (int i = 0; i < rows.length; i++) {
-			selectedParams[i] = (Parameter)getmodelParameterTableModel().getData().get(rows[i]);
+			selectedParams[i] = getmodelParameterTableModel().getValueAt(rows[i]);
 		}
 		
 		// choose the first selected parameter
@@ -753,7 +743,7 @@ private void jMenuItemConvertToLocal_ActionPerformed(ActionEvent actionEvent) {
 		// At this point, all selected rows should be model parameters, so proceed with converting them to locals
 		Parameter[] selectedParams = new Parameter[rows.length];
 		for (int i = 0; i < rows.length; i++) {
-			selectedParams[i] = (Parameter)getmodelParameterTableModel().getData().get(rows[i]);
+			selectedParams[i] = getmodelParameterTableModel().getValueAt(rows[i]);
 		}
 		
 		// For each selected model parameter, check which reaction kinetics it occurs in, add it as a local;
@@ -852,7 +842,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			StringBuffer sb = new StringBuffer();
 			sb.append("\"Context\"\t\"Description\"\t\"Parameter\"\t\"Expression\"\t\"Units\"\n");
 			for(int i=0;i<rows.length;i+= 1){
-				Parameter parameter = (Parameter)getmodelParameterTableModel().getData().get(rows[i]);
+				Parameter parameter = getmodelParameterTableModel().getValueAt(rows[i]);
 				primarySymbolTableEntriesV.add(parameter);
 				resolvedValuesV.add(new Expression(parameter.getExpression()));
 
@@ -905,7 +895,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			//
 			StringBuffer errors = null;
 			for(int i=0;i<rows.length;i+= 1){
-				Parameter parameter = (Parameter)getmodelParameterTableModel().getData().get(rows[i]);
+				Parameter parameter = getmodelParameterTableModel().getValueAt(rows[i]);
 				try{
 					if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
 						VCellTransferable.ResolvedValuesSelection rvs =
@@ -1018,7 +1008,7 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
 		boolean bIsModelParam = true;
 		int[] rows = getScrollPaneTable().getSelectedRows();
 		for (int i = 0; i < rows.length; i++) {
-			if (getmodelParameterTableModel().getData().get(rows[i]) instanceof ModelParameter) {
+			if (getmodelParameterTableModel().getValueAt(rows[i]) instanceof ModelParameter) {
 				bIsModelParam = bIsModelParam && true; 
 			} else {
 				bIsModelParam = bIsModelParam && false;
@@ -1030,8 +1020,8 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
 		// to enable 'PromoteToGlobal' button - only if all selections are local (kinetic, only user-defined) parameters
 		boolean bIsUserDefinedKinParam = true;
 		for (int i = 0; i < rows.length; i++) {
-			if (getmodelParameterTableModel().getData().get(rows[i]) instanceof KineticsParameter) {
-				KineticsParameter kp = (KineticsParameter)getmodelParameterTableModel().getData().get(rows[i]);
+			if (getmodelParameterTableModel().getValueAt(rows[i]) instanceof KineticsParameter) {
+				KineticsParameter kp = (KineticsParameter)getmodelParameterTableModel().getValueAt(rows[i]);
 				if (kp.getRole() == Kinetics.ROLE_UserDefined) {
 					bIsUserDefinedKinParam = bIsUserDefinedKinParam && true; 
 				} else {
@@ -1055,9 +1045,6 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
  */
 public void setModel(Model model) {
 	Model oldValue = fieldModel;
-	if(oldValue != null){
-		oldValue.removePropertyChangeListener(ModelParametersPropertyChangeListener);
-	}
 	fieldModel = model;
 	firePropertyChange("model", oldValue, model);
 }
@@ -1074,9 +1061,6 @@ private void setmodel1(Model newValue) {
 			ivjmodel1 = newValue;
 			connPtoP3SetSource();
 			getmodelParameterTableModel().setModel(getmodel1());
-			if (getmodel1() != null) {
-				getmodel1().addPropertyChangeListener(ModelParametersPropertyChangeListener);
-			}
 			firePropertyChange("model", oldValue, newValue);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -1132,7 +1116,7 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 			getmodelParameterTableModel().fireTableRowsUpdated(getScrollPaneTable().getSelectedRow(), getScrollPaneTable().getSelectedRow());
 		}
 		// if it is a model (global) parameter - annotation is editable
-		Parameter param = (Parameter)getmodelParameterTableModel().getData().get(getScrollPaneTable().getSelectedRow());
+		Parameter param = (Parameter)getmodelParameterTableModel().getValueAt(getScrollPaneTable().getSelectedRow());
 		if (param != null && param instanceof ModelParameter) {
 			ModelParameter modelParameter = (ModelParameter)param;
 			String newAnnotation = DialogUtils.showAnnotationDialog(this, modelParameter.getModelParameterAnnotation());
@@ -1150,7 +1134,4 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 	}
 }
 
-public void setEditable(boolean bEditable) {
-	getmodelParameterTableModel().setEditable(bEditable);
-}
 }

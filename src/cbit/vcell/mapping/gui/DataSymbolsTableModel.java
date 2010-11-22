@@ -9,9 +9,8 @@ import java.util.Comparator;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
@@ -20,22 +19,22 @@ import cbit.vcell.mapping.SimulationContext;
  * Insert the type's description here.
  * @author: 
  */
-public class DataSymbolsTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
-	public static final int NUM_COLUMNS = 2;
+@SuppressWarnings("serial")
+public class DataSymbolsTableModel extends DefaultSortTableModel<DataSymbol> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_DATA_SYMBOL_NAME = 0;
 	public static final int COLUMN_DATA_SET_NAME = 1;
-	private String LABELS[] = { "Symbol Name", "Dataset Name"};
+	private static String LABELS[] = { "Symbol Name", "Dataset Name"};
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
-	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
+//	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	private JTable ownerTable = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
 public DataSymbolsTableModel(JTable table) {
-	super();
+	super(LABELS);
 	ownerTable = table;
 }
 
@@ -74,23 +73,6 @@ public Class<?> getColumnClass(int column) {
 }
 
 /**
- * getColumnCount method comment.
- */
-public int getColumnCount() {
-	return NUM_COLUMNS;
-}
-
-public String getColumnName(int column) {
-	try {
-		return LABELS[column];
-	} catch (Throwable exc) {
-		System.out.println("WARNING - no such column index: " + column);
-		exc.printStackTrace(System.out);
-		return null;
-	}
-}
-
-/**
  * Accessor for the propertyChange field.
  */
 protected java.beans.PropertyChangeSupport getPropertyChange() {
@@ -98,17 +80,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
 	};
 	return propertyChange;
-}
-
-/**
- * getRowCount method comment.
- */
-public int getRowCount() {
-	if (getSimulationContext()==null){
-		return 0;
-	}else{
-		return getSimulationContext().getDataContext().getDataSymbols().length;
-	}
 }
 
 /**
@@ -121,13 +92,12 @@ private SimulationContext getSimulationContext() {
 }
 
 private void refreshData() {
+	rows.clear();
 	if (getSimulationContext()==null){
 		return;
 	}
-	int count = getRowCount();
-	rows.clear();
-	for (int i = 0; i < count; i++){
-		rows.add(getSimulationContext().getDataContext().getDataSymbols()[i]);
+	for (DataSymbol dataSymbol : getSimulationContext().getDataContext().getDataSymbols()){
+		rows.add(dataSymbol);
 	}
 }
 
@@ -139,13 +109,13 @@ public Object getValueAt(int row, int col) {
 		if (row<0 || row>=getRowCount()){
 			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		if (col<0 || col>=NUM_COLUMNS){
-			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+		if (col<0 || col>=getColumnCount()){
+			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(getColumnCount()-1)+"]");
 		}
-		if (getData().size() <= row){
+		if (getRowCount() <= row){
 			refreshData();
 		}	
-		DataSymbol ds = getDataSymbol(row);
+		DataSymbol ds = getValueAt(row);
 		switch (col){
 			case COLUMN_DATA_SYMBOL_NAME:{
 				return ds.getName();
@@ -185,8 +155,8 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	if (rowIndex<0 || rowIndex>=getRowCount()){
 		throw new RuntimeException("DataSymbolsTableModel.isCellEditable(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("DataSymbolsTableModel.isCellEditable(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (columnIndex<0 || columnIndex>=getColumnCount()){
+		throw new RuntimeException("DataSymbolsTableModel.isCellEditable(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
 	switch (columnIndex){
 		case COLUMN_DATA_SYMBOL_NAME:{
@@ -244,7 +214,7 @@ public void setSimulationContext(SimulationContext simulationContext) {
 		for (DataSymbol ds : simulationContext.getDataContext().getDataSymbols()){
 			ds.addPropertyChangeListener(this);
 		}
-		autoCompleteSymbolFilter  = simulationContext.getAutoCompleteSymbolFilter();
+//		autoCompleteSymbolFilter  = simulationContext.getAutoCompleteSymbolFilter();
 		refreshData();
 	}
 	firePropertyChange("simulationContext", oldValue, simulationContext);
@@ -257,10 +227,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (rowIndex<0 || rowIndex>=getRowCount()){
 		throw new RuntimeException("DataSymbolsTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("DataSymbolsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (columnIndex<0 || columnIndex>=getColumnCount()){
+		throw new RuntimeException("DataSymbolsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
-	DataSymbol dataSymbol = getDataSymbol(rowIndex);
+	DataSymbol dataSymbol = getValueAt(rowIndex);
 	switch (columnIndex){
 		case COLUMN_DATA_SYMBOL_NAME:{
 			dataSymbol.setName((String)aValue);
@@ -272,7 +242,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	}
 }
 
-@SuppressWarnings("unchecked")
 @Override
 public void sortColumn(final int col, final boolean ascending) {
 	Collections.sort(rows, new Comparator<DataSymbol>() {	
@@ -308,11 +277,6 @@ public void sortColumn(final int col, final boolean ascending) {
 			return 1;
 		};
 	});	
-	fireTableDataChanged();
-}
-
-public DataSymbol getDataSymbol(int row) {
-	return (DataSymbol)getData().get(row);
 }
 
 }

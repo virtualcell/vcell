@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.Set;
 
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
@@ -13,7 +14,13 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
+import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
+import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
@@ -30,9 +37,11 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.gui.MiriamTreeModel;
 
 @SuppressWarnings("serial")
-public class BioModelEditorTreeModel extends DefaultTreeModel  implements java.beans.PropertyChangeListener, TreeExpansionListener {
+public class BioModelEditorTreeModel extends DefaultTreeModel  
+	implements java.beans.PropertyChangeListener, TreeExpansionListener, AnnotationEventListener {
 
 	private BioModel bioModel = null;
 	private BioModelNode rootNode = null;
@@ -77,7 +86,6 @@ public class BioModelEditorTreeModel extends DefaultTreeModel  implements java.b
 	}
 	
 	public enum BioModelEditorTreeFolderClass {
-		ANNOTATION_NODE,
 		MODEL_NODE,	
 		APPLICATTIONS_NODE,		
 
@@ -133,26 +141,23 @@ public class BioModelEditorTreeModel extends DefaultTreeModel  implements java.b
 	}
 	
 	// first Level
-	private BioModelEditorTreeFolderNode bioModelFolderNodes[] = {
-			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ANNOTATION_NODE, "Annotation", true),
+	private BioModelEditorTreeFolderNode bioModelChildFolderNodes[] = {
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.MODEL_NODE, "Biological Model", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.APPLICATTIONS_NODE, "Applications", true),
 		};
-	private BioModelNode annotationNode = new BioModelNode(bioModelFolderNodes[0], false);
-	private BioModelNode modelNode = new BioModelNode(bioModelFolderNodes[1], true);
-	private BioModelNode applicationsNode = new BioModelNode(bioModelFolderNodes[2], true);	
+	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[0], true);
+	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[1], true);	
 	private BioModelNode  bioModelChildNodes[] = {
-			annotationNode,
 			modelNode,
 			applicationsNode,
-	};	
-	
+	};
+
 	// Model	
 	private BioModelEditorTreeFolderNode modelChildFolderNodes[] = {			
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.STRUCTURES_NODE, "Structures", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SPECIES_NODE, "Species", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.REACTIONS_NODE, "Reactions", true),			
-			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.GLOBAL_PARAMETER_NODE, "Global Parameters", true),			
+			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.GLOBAL_PARAMETER_NODE, "Global Parameters and Rates", true),			
 		};	
 	private BioModelNode structuresNode = new BioModelNode(modelChildFolderNodes[0], true); 
 	private BioModelNode speciesNode = new BioModelNode(modelChildFolderNodes[1], true); 
@@ -191,8 +196,28 @@ public class BioModelEditorTreeModel extends DefaultTreeModel  implements java.b
 			return;
 		}
 		rootNode.setUserObject(bioModel);
+		populateAnnotationNode();
 		populateModelNode(modelNode);
 		populateApplicationsNode();
+	}
+
+	private void populateAnnotationNode() {
+		int childIndex = 0;
+		rootNode.insert(new BioModelNode(bioModel.getVCMetaData(), false), childIndex ++);
+
+		Set<MiriamRefGroup> isDescribedByAnnotation = bioModel.getVCMetaData().getMiriamManager().getMiriamRefGroups(bioModel, MIRIAMQualifier.MODEL_isDescribedBy);
+		for (MiriamRefGroup refGroup : isDescribedByAnnotation){
+			for (MiriamResource miriamResources : refGroup.getMiriamRefs()){
+				rootNode.insert(new MiriamTreeModel.LinkNode(MIRIAMQualifier.MODEL_isDescribedBy, miriamResources), childIndex ++);
+			}
+		}
+		Set<MiriamRefGroup> isAnnotation = bioModel.getVCMetaData().getMiriamManager().getMiriamRefGroups(bioModel, MIRIAMQualifier.MODEL_is);
+		for (MiriamRefGroup refGroup : isAnnotation){
+			for (MiriamResource miriamResources : refGroup.getMiriamRefs()){
+				rootNode.insert(new MiriamTreeModel.LinkNode(MIRIAMQualifier.MODEL_is, miriamResources), childIndex ++);
+			}
+		}
+
 	}
 
 	private void populateModelNode(BioModelNode argNode) {
@@ -501,6 +526,8 @@ public class BioModelEditorTreeModel extends DefaultTreeModel  implements java.b
 		model.removePropertyChangeListener(this);
 		model.addPropertyChangeListener(this);
 		
+		bioModel.getVCMetaData().removeAnnotationEventListener(this);
+		bioModel.getVCMetaData().addAnnotationEventListener(this);
 		Structure[] structures = model.getStructures();
 		if(structures != null) {
 			for (int i=0;i<structures.length;i++){
@@ -753,5 +780,9 @@ public class BioModelEditorTreeModel extends DefaultTreeModel  implements java.b
 		}
 		BioModelNode leaf = nodeToSearch.findNodeByUserObject(newValue.getSelectedObject());
 		ownerTree.setSelectionPath(new TreePath(leaf.getPath()));
+	}
+
+	public void annotationChanged(AnnotationEvent annotationEvent) {
+		nodeChanged(rootNode);
 	}
 }

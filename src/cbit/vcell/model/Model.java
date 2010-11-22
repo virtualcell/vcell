@@ -784,7 +784,7 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) throws Expre
 public String getFreeFeatureName() {
 	int count=0;
 	while (true) {
-		String featureName = "Feature" + count;
+		String featureName = Structure.TYPE_NAME_FEATURE + count;
 		if (getStructure(featureName) == null){
 			return featureName;
 		}	
@@ -813,7 +813,7 @@ public String getFreeFluxReactionName() {
 public String getFreeMembraneName() {
 	int count=0;
 	while (true) {
-		String memName = "Membrane" + count;
+		String memName = Structure.TYPE_NAME_MEMBRANE + count;
 		if (getStructure(memName) == null) {
 			return memName;
 		}
@@ -1025,6 +1025,10 @@ public int getNumSpeciesContexts() {
  */
 public int getNumStructures() {
 	return fieldStructures.length;
+}
+
+public int getNumReactions() {
+	return fieldReactionSteps.length;
 }
 
 

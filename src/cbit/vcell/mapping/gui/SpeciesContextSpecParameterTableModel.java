@@ -1,18 +1,14 @@
 package cbit.vcell.mapping.gui;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
@@ -27,7 +23,8 @@ import cbit.vcell.parser.ExpressionException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class SpeciesContextSpecParameterTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
+@SuppressWarnings("serial")
+public class SpeciesContextSpecParameterTableModel extends DefaultSortTableModel<Parameter> implements java.beans.PropertyChangeListener {
 
 	static {
 		System.out.println("SpeciesContextSpecParameterTableModel: artifically filtering out membrane diffusion parameters and diffusion/bc's that are not applicable");
@@ -57,7 +54,6 @@ public class SpeciesContextSpecParameterTableModel extends ManageTableModel impl
 					}else{
 						return parm2.getName().compareToIgnoreCase(parm1.getName());
 					}
-					//break;
 				}
 				case COLUMN_VALUE:{
 					String expression1 = parm1.getExpression() != null ? parm1.getExpression().infix() : "";
@@ -67,7 +63,6 @@ public class SpeciesContextSpecParameterTableModel extends ManageTableModel impl
 					}else{
 						return expression2.compareToIgnoreCase(expression1);
 					}
-					//break;
 				}
 				case COLUMN_DESCRIPTION:{
 					if (ascending){
@@ -75,7 +70,6 @@ public class SpeciesContextSpecParameterTableModel extends ManageTableModel impl
 					}else{
 						return parm2.getDescription().compareToIgnoreCase(parm1.getDescription());
 					}
-					//break;
 				}
 				case COLUMN_UNIT:{
 					String unit1 = (parm1.getUnitDefinition()!=null)?(parm1.getUnitDefinition().getSymbol()):"null";
@@ -85,17 +79,16 @@ public class SpeciesContextSpecParameterTableModel extends ManageTableModel impl
 					}else{
 						return unit2.compareToIgnoreCase(unit1);
 					}
-					//break;
 				}
 			}
-			return 1;
+			return 0;
 		}
 	}
 	private static final int COLUMN_DESCRIPTION = 0;
 	private static final int COLUMN_NAME = 1;
 	public static final int COLUMN_VALUE = 2;
-	private final int COLUMN_UNIT = 3;
-	private final String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
+	private static final int COLUMN_UNIT = 3;
+	private final static String columnNames[] = { "Description", "Parameter", "Expression", "Units" };
 	private SpeciesContextSpec fieldSpeciesContextSpec = null;
 	
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
@@ -105,7 +98,7 @@ public class SpeciesContextSpecParameterTableModel extends ManageTableModel impl
  * ReactionSpecsTableModel constructor comment.
  */
 public SpeciesContextSpecParameterTableModel(JTable table) {
-	super();
+	super(columnNames);
 	ownerTable = table;
 	addPropertyChangeListener(this);
 }
@@ -136,26 +129,6 @@ public Class<?> getColumnClass(int column) {
 	}
 }
 
-
-/**
- * getColumnCount method comment.
- */
-public int getColumnCount() {
-	return LABELS.length;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/24/01 12:24:35 AM)
- * @return java.lang.Class
- * @param column int
- */
-public String getColumnName(int column) {
-	return LABELS[column];
-}
-
-
 /**
  * Accessor for the propertyChange field.
  */
@@ -172,40 +145,39 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-private List<Parameter> getUnsortedParameters() {
+private void refreshData() {
+	rows.clear();
 	if (fieldSpeciesContextSpec==null){
-		return null;
+		return;
 	}
-	ArrayList<Parameter> paramList = new ArrayList<Parameter>();
-	paramList.add(fieldSpeciesContextSpec.getInitialConditionParameter());
+	rows.add(fieldSpeciesContextSpec.getInitialConditionParameter());
 	
 	SimulationContext simulationContext = fieldSpeciesContextSpec.getSimulationContext();
 	if (simulationContext==null){
-		return paramList;
+		return;
 	}
 	if (fieldSpeciesContextSpec.isConstant()){
-		return paramList;
+		return;
 	}
 
 	SpeciesContext speciesContext = fieldSpeciesContextSpec.getSpeciesContext();
 	if (speciesContext.getStructure() instanceof Membrane){
-		MembraneMapping membraneMapping = (MembraneMapping)simulationContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
 		if (simulationContext.getGeometry()!=null && !fieldSpeciesContextSpec.isWellMixed()){
 			int dimension = simulationContext.getGeometry().getDimension();
 			if (dimension > 1) {
 				// diffusion
-				paramList.add(fieldSpeciesContextSpec.getDiffusionParameter());
+				rows.add(fieldSpeciesContextSpec.getDiffusionParameter());
 				
 				if (!simulationContext.isStoch()) {
 					// boundary condition
-					paramList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
-					paramList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
-					paramList.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
-					paramList.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
+					rows.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
+					rows.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
+					rows.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
+					rows.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
 					
 					if (dimension > 2) {
-						paramList.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
-						paramList.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
+						rows.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
+						rows.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
 					}
 				}
 			}
@@ -214,31 +186,31 @@ private List<Parameter> getUnsortedParameters() {
 		if (simulationContext.getGeometry()!=null && !fieldSpeciesContextSpec.isWellMixed()){
 			int dimension = simulationContext.getGeometry().getDimension();
 			if (dimension > 0) {
-				paramList.add(fieldSpeciesContextSpec.getDiffusionParameter());
+				rows.add(fieldSpeciesContextSpec.getDiffusionParameter());
 				
 				if (!simulationContext.isStoch()) {
 					// boundary condition
-					paramList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
-					paramList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
+					rows.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
+					rows.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
 				 
 					if (dimension > 1) {
-						paramList.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
-						paramList.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
+						rows.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
+						rows.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
 					
 					
 						if (dimension > 2) {
-							paramList.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
-							paramList.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
+							rows.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
+							rows.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
 						}
 					}
 					
 					// velocity
-					paramList.add(fieldSpeciesContextSpec.getVelocityXParameter());
+					rows.add(fieldSpeciesContextSpec.getVelocityXParameter());
 					if (dimension > 1) {
-						paramList.add(fieldSpeciesContextSpec.getVelocityYParameter());
+						rows.add(fieldSpeciesContextSpec.getVelocityYParameter());
 					
 						if (dimension > 2) {
-							paramList.add(fieldSpeciesContextSpec.getVelocityZParameter());
+							rows.add(fieldSpeciesContextSpec.getVelocityZParameter());
 						}
 					}
 				}
@@ -247,7 +219,7 @@ private List<Parameter> getUnsortedParameters() {
 	} else {
 		throw new RuntimeException("unsupported Structure type '"+speciesContext.getStructure().getClass().getName()+"'");
 	}
-	return paramList;
+	fireTableDataChanged();
 }
 
 
@@ -256,7 +228,7 @@ private List<Parameter> getUnsortedParameters() {
  */
 public Object getValueAt(int row, int col) {
 	try {
-		Parameter parameter = (Parameter)getData().get(row);
+		Parameter parameter = getValueAt(row);
 		switch (col){
 			case COLUMN_NAME:{
 				return parameter.getName();
@@ -298,7 +270,7 @@ public Object getValueAt(int row, int col) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	Parameter parameter = (Parameter)getData().get(rowIndex);
+	Parameter parameter = getValueAt(rowIndex);
 	if (columnIndex == COLUMN_NAME){
 		return parameter.isNameEditable();
 	}else if (columnIndex == COLUMN_VALUE){
@@ -312,7 +284,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
  * isSortable method comment.
  */
 public boolean isSortable(int col) {
-	return true;
+	return false;
 }
 
 
@@ -339,8 +311,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		//
 		if (fieldSpeciesContextSpec != null && evt.getSource() == fieldSpeciesContextSpec.getSimulationContext().getGeometryContext() 
 				&& evt.getPropertyName().equals("geometry")){
-			setData(getUnsortedParameters());
-			fireTableDataChanged();
+			refreshData();
 		}
 		//
 		// if structureMappings array changes (could affect spatially resolved boundaries).
@@ -355,15 +326,13 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			for (int i = 0; newStructureMappings!=null && i < newStructureMappings.length; i++){
 				newStructureMappings[i].addPropertyChangeListener(this);
 			}
-			setData(getUnsortedParameters());
-			fireTableDataChanged();
+			refreshData();
 		}
 		//
 		// if structureMapping changes (could affect spatially resolved boundaries).
 		//
 		if (evt.getSource() instanceof StructureMapping){
-			setData(getUnsortedParameters());
-			fireTableDataChanged();
+			refreshData();
 		}
 		
 		if (evt.getSource() == this && evt.getPropertyName().equals("speciesContextSpec")) {
@@ -408,8 +377,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 			}
 			
-			setData(getUnsortedParameters());
-			fireTableDataChanged();
+			refreshData();
 		}
 		if (evt.getSource() instanceof SpeciesContextSpec){
 			// if parameters changed must update listeners
@@ -430,15 +398,13 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (!evt.getPropertyName().equals(SpeciesContextSpec.PARAMETER_NAME_PROXY_PARAMETERS)) {
 				// for any change to the SpeciesContextSpec, want to update all.
 				// proxy parameters don't affect table
-				setData(getUnsortedParameters());
-				fireTableDataChanged();
+				refreshData();
 			}
 		}
 		if(evt.getSource() instanceof Parameter){
-			setData(getUnsortedParameters());
-			fireTableDataChanged();
+			refreshData();
 		}
-	}catch (Exception e){
+	} catch (Exception e){
 		e.printStackTrace(System.out);
 	}
 }
@@ -456,7 +422,7 @@ public void setSpeciesContextSpec(SpeciesContextSpec speciesContextSpec) {
 
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	Parameter parameter = (Parameter)getData().get(rowIndex);
+	Parameter parameter = getValueAt(rowIndex);
 	switch (columnIndex){
 		case COLUMN_NAME:{
 			try {

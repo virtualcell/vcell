@@ -18,7 +18,7 @@ public class EntitySelectionTable extends JTable {
 	
 	public EntitySelectionTable(SBBox box) {
 		super(new EntitySelectionTableModel(box));
-		super.setAutoCreateRowSorter(true);
+//		super.setAutoCreateRowSorter(true);
 		doColumnSizes();
 	}
 	

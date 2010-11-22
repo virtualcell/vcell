@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
-import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ParameterMapping;
@@ -20,7 +20,7 @@ import cbit.vcell.parser.ExpressionException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ParameterMappingTableModel extends ManageTableModel implements PropertyChangeListener {
+public class ParameterMappingTableModel extends DefaultSortTableModel<ParameterMappingSpec> implements PropertyChangeListener {
 
 	private final static int COLUMN_NAME = 0;
 	private final static int COLUMN_SCOPE = 1;
@@ -133,7 +133,7 @@ public class ParameterMappingTableModel extends ManageTableModel implements Prop
  * ReactionSpecsTableModel constructor comment.
  */
 public ParameterMappingTableModel() {
-	super();
+	super(LABELS);
 	addPropertyChangeListener(this);
 }
 
@@ -197,29 +197,6 @@ public Class<?> getColumnClass(int column) {
 	}
 }
 
-
-/**
- * getColumnCount method comment.
- */
-public int getColumnCount() {
-	return LABELS.length;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/24/01 12:24:35 AM)
- * @return java.lang.Class
- * @param column int
- */
-public String getColumnName(int column) {
-	if (column<0 || column>=getColumnCount()){
-		throw new RuntimeException("ParameterTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(getColumnCount()-1)+"]");
-	}
-	return LABELS[column];
-}
-
-
 /**
  * Gets the parameterEstimationTask property (cbit.vcell.modelopt.ParameterEstimationTask) value.
  * @return The parameterEstimationTask property value.
@@ -238,15 +215,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	};
 	return propertyChange;
 }
-
-
-/**
- * getRowCount method comment.
- */
-public int getRowCount() {
-	return rows.size();
-}
-
 
 /**
  * Insert the method's description here.
@@ -280,7 +248,7 @@ public Object getValueAt(int row, int col) {
 	if (row<0 || row>=getRowCount()){
 		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
-	ParameterMappingSpec parameterMappingSpec = (ParameterMappingSpec)getData().get(row);
+	ParameterMappingSpec parameterMappingSpec = getValueAt(row);
 	switch (col){
 		case COLUMN_NAME:{
 			//return getBioModel().getModel().getNameScope().getSymbolName(parameter);
@@ -534,7 +502,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=getColumnCount()){
 		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
-	ParameterMappingSpec parameterMappingSpec = (ParameterMappingSpec)getData().get(rowIndex);
+	ParameterMappingSpec parameterMappingSpec = getValueAt(rowIndex);
 	//try {
 		switch (columnIndex){
 			case COLUMN_SELECTED:{
@@ -616,10 +584,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	//}
 }
 
-
-  public void sortColumn(int col, boolean ascending)
-  {
-    Collections.sort(rows,
-      new ParameterColumnComparator(col, ascending));
-  }
+	@Override
+	protected void sortColumn(int col, boolean ascending)
+  	{
+    	Collections.sort(rows, new ParameterColumnComparator(col, ascending));
+  	}
 }

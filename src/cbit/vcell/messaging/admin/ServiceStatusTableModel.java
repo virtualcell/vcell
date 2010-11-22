@@ -1,9 +1,13 @@
 package cbit.vcell.messaging.admin;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import org.vcell.util.MessageConstants.ServiceType;
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.ColumnComparator;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 
 /**
@@ -11,13 +15,12 @@ import org.vcell.util.gui.sorttable.ManageTableModel;
  * Creation date: (8/19/2003 2:24:48 PM)
  * @author: Fei Gao
  */
-public class ServiceStatusTableModel extends ManageTableModel {
+public class ServiceStatusTableModel extends DefaultSortTableModel<ServiceStatus> {
 /**
  * ServiceStatusTableModel constructor comment.
  */
 public ServiceStatusTableModel() {
-	super();
-	columns = new String[] {"Site", "Type", "Ordinal", "Startup Type", "MemoryMB", "Date", "Status", "Status Message", "PBS Job ID"};
+	super(new String[] {"Site", "Type", "Ordinal", "Startup Type", "MemoryMB", "Date", "Status", "Status Message", "PBS Job ID"});
 }
 
 /**
@@ -53,8 +56,8 @@ public Object getValueAt(int row, int col) {
  * Creation date: (8/18/2003 8:24:43 AM)
  * @param status cbit.vcell.messaging.admin.PerformanceStatus
  */
-public synchronized void insert(List<Object> serviceList) {
-	for (Object obj : serviceList) {
+public synchronized void insert(List<ServiceStatus> serviceList) {
+	for (ServiceStatus obj : serviceList) {
 		if (!rows.contains(obj)) {
 			rows.add(obj);
 		}
@@ -82,5 +85,9 @@ public synchronized void remove(List serviceList) {
 	}
 
 	fireTableDataChanged();
+}
+
+public void sortColumn(int col, boolean ascending) {
+	Collections.sort(rows, new ColumnComparator(col, ascending));
 }
 }

@@ -457,7 +457,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			);
 			sb.append("\"Parameter Name\"\t\""+(bInitialGuess?"Initial Guess":"Solution")+"\"\n");
 			for(int i=0;i<rows.length;i+= 1){
-				ParameterMappingSpec pms = (ParameterMappingSpec)getparameterMappingTableModel().getData().get(rows[i]);
+				ParameterMappingSpec pms = getparameterMappingTableModel().getValueAt(rows[i]);
 				parameterMappingSpecs[i] = pms;
 				primarySymbolTableEntriesV.add(pms.getModelParameter());
 				if(msm != null){
@@ -545,7 +545,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 			//
 			StringBuffer errors = null;
 			for(int i=0;i<rows.length;i+= 1){
-				ParameterMappingSpec pms = (ParameterMappingSpec)getparameterMappingTableModel().getData().get(rows[i]);
+				ParameterMappingSpec pms = getparameterMappingTableModel().getValueAt(rows[i]);
 				try{
 					if(pasteThis instanceof VCellTransferable.ResolvedValuesSelection){
 						VCellTransferable.ResolvedValuesSelection rvs =

@@ -2,11 +2,10 @@ package cbit.vcell.mapping.gui;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
@@ -22,7 +21,8 @@ import cbit.vcell.parser.ExpressionException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ElectricalStimulusParameterTableModel extends ManageTableModel implements java.beans.PropertyChangeListener {
+@SuppressWarnings("serial")
+public class ElectricalStimulusParameterTableModel extends DefaultSortTableModel<Parameter> implements java.beans.PropertyChangeListener {
 	
 	private class ParameterColumnComparator implements Comparator<Parameter> {
 		protected int index;
@@ -81,12 +81,11 @@ public class ElectricalStimulusParameterTableModel extends ManageTableModel impl
 			return 1;
 		}
 	}
-	final static int NUM_COLUMNS = 4;
 	final static int COLUMN_DESCRIPTION = 0;
 	final static int COLUMN_NAME = 1;
 	final static int COLUMN_VALUE = 2;
 	final static int COLUMN_UNIT = 3;
-	String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
+	private static final String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ElectricalStimulus fieldElectricalStimulus = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
@@ -95,7 +94,7 @@ public class ElectricalStimulusParameterTableModel extends ManageTableModel impl
  * ReactionSpecsTableModel constructor comment.
  */
 public ElectricalStimulusParameterTableModel(JTable table) {
-	super();
+	super(LABELS);
 	ownerTable = table;
 	addPropertyChangeListener(this);
 }
@@ -136,24 +135,7 @@ public Class<?> getColumnClass(int column) {
 		}
 	}
 }
-/**
- * getColumnCount method comment.
- */
-public int getColumnCount() {
-	return NUM_COLUMNS;
-}
-/**
- * Insert the method's description here.
- * Creation date: (2/24/01 12:24:35 AM)
- * @return java.lang.Class
- * @param column int
- */
-public String getColumnName(int column) {
-	if (column<0 || column>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	return LABELS[column];
-}
+
 /**
  * Gets the electricalStimulus property (cbit.vcell.mapping.ElectricalStimulus) value.
  * @return The electricalStimulus property value.
@@ -164,24 +146,6 @@ public ElectricalStimulus getElectricalStimulus() {
 }
 
 /**
- * Insert the method's description here.
- * Creation date: (9/23/2003 1:24:52 PM)
- * @return cbit.vcell.model.Parameter
- * @param row int
- */
-private Parameter getParameter(int row) {
-
-	if (getElectricalStimulus()==null){
-		return null;
-	}
-	Parameter[] parameters = getElectricalStimulus().getParameters();
-	int count = parameters.length;
-	if (row<0 || row>=count){
-		throw new RuntimeException("ElectricalStimulusParameterTableModel.getParameter("+row+") out of range ["+0+","+(count-1)+"]");
-	}
-	return parameters[row];
-}
-/**
  * Accessor for the propertyChange field.
  */
 protected java.beans.PropertyChangeSupport getPropertyChange() {
@@ -190,46 +154,36 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	};
 	return propertyChange;
 }
-/**
- * getRowCount method comment.
- */
-public int getRowCount() {
-	if (getElectricalStimulus()==null){
-		return 0;
-	}else{
-		return getElectricalStimulus().getNumParameters();
-	}
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (9/23/2003 1:24:52 PM)
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-private List<Parameter> getUnsortedParameters() {
-
+private void refreshData() {
+	rows.clear();
 	if (getElectricalStimulus()==null){
-		return null;
+		return;
 	}
-	int count = getRowCount();
-	java.util.ArrayList<Parameter> list = new java.util.ArrayList<Parameter>();
-	for (int i = 0; i < count; i++){
-		list.add(getParameter(i));
+	Parameter[] parameters = getElectricalStimulus().getParameters();
+	for (Parameter p : parameters){
+		rows.add(p);
 	}
-	return list;
+	fireTableDataChanged();
 }
 /**
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
 	try {
-		if (col<0 || col>=NUM_COLUMNS){
-			throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+		if (col<0 || col>=getColumnCount()){
+			throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(getColumnCount()-1)+"]");
 		}
 		if (row<0 || row>=getRowCount()){
 			throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 		}
-		Parameter parameter = (Parameter)getData().get(row);
+		Parameter parameter = getValueAt(row);
 		switch (col){
 			case COLUMN_NAME:{
 				return parameter.getName();
@@ -274,7 +228,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	Parameter parameter = getParameter(rowIndex);
+	Parameter parameter = getValueAt(rowIndex);
 	if (parameter instanceof ProxyParameter) {
 		return false;
 	}
@@ -319,8 +273,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				newParameters[i].addPropertyChangeListener(this);
 			}
 		}
-		setData(getUnsortedParameters());
-		fireTableDataChanged();
+		refreshData();
 	}
 	if (evt.getSource() instanceof ElectricalStimulus && (evt.getPropertyName().equals("localParameters") || evt.getPropertyName().equals("proxyParameters"))) {
 		Parameter oldParameters[] = (Parameter[])evt.getOldValue();
@@ -331,8 +284,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		for (int i = 0; i<newParameters.length; i++){
 			newParameters[i].addPropertyChangeListener(this);
 		}
-		setData(getUnsortedParameters());
-		fireTableDataChanged();
+		refreshData();
 	}
 	if(evt.getSource() instanceof LocalParameter
 		&& evt.getPropertyName().equals("expression")){
@@ -360,10 +312,10 @@ public void setElectricalStimulus(ElectricalStimulus electricalStimulus) {
 }
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+	if (columnIndex<0 || columnIndex>=getColumnCount()){
+		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
-	Parameter parameter = getParameter(rowIndex);
+	Parameter parameter = getValueAt(rowIndex);
 //	try {
 		switch (columnIndex){
 			case COLUMN_VALUE:{

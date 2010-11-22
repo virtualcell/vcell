@@ -16,7 +16,6 @@ import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.ReactionSlicesCartoonEditorPanel;
-import cbit.vcell.graph.StructureCartoonTool;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 
@@ -24,11 +23,9 @@ import cbit.vcell.model.Structure;
 public class ReactionSlicesCartoonEditorDialog extends JInternalFrameEnhanced {
 	private JPanel contentsPane = null;
 	private ReactionSlicesCartoonEditorPanel reactionCartoonEditorPanel = null;
-	private StructureCartoonTool structureCartoonTool = null;
 
-	public ReactionSlicesCartoonEditorDialog(StructureCartoonTool sct) {
+	public ReactionSlicesCartoonEditorDialog() {
 		super();
-		structureCartoonTool = sct;
 		initialize();
 	}
 
@@ -54,7 +51,7 @@ public class ReactionSlicesCartoonEditorDialog extends JInternalFrameEnhanced {
 	private ReactionSlicesCartoonEditorPanel getReactionCartoonEditorPanel() {
 		if (reactionCartoonEditorPanel == null) {
 			try {
-				reactionCartoonEditorPanel = new ReactionSlicesCartoonEditorPanel(structureCartoonTool);
+				reactionCartoonEditorPanel = new ReactionSlicesCartoonEditorPanel();
 				reactionCartoonEditorPanel.setName("ReactionCartoonEditorPanel");
 			} catch (Throwable throwable) {
 				handleException(throwable);
@@ -93,7 +90,7 @@ public class ReactionSlicesCartoonEditorDialog extends JInternalFrameEnhanced {
 		try {
 			JFrame frame = new JFrame();
 			ReactionSlicesCartoonEditorDialog aReactionCartoonEditorDialog;
-			aReactionCartoonEditorDialog = new ReactionSlicesCartoonEditorDialog(null);
+			aReactionCartoonEditorDialog = new ReactionSlicesCartoonEditorDialog();
 			frame.setContentPane(aReactionCartoonEditorDialog);
 			frame.setSize(aReactionCartoonEditorDialog.getSize());
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {

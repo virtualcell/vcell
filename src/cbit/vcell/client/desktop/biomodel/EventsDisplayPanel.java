@@ -183,7 +183,7 @@ public class EventsDisplayPanel extends JPanel {
 		BioEvent selectedBioEvent = null;
 		int row = getScrollPaneTable().getSelectedRow();
 		if (row >= 0) {
-			selectedBioEvent = getEventSummaryTableModel().getBioEvent(row);
+			selectedBioEvent = getEventSummaryTableModel().getValueAt(row);
 		}
 		firePropertyChange("selectedBioEvent", oldValue, selectedBioEvent);   		
    		getEventPanel().setBioEvent(selectedBioEvent);

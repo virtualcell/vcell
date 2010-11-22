@@ -367,4 +367,5 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 }
 
 public abstract String getTypeName();
+public abstract String checkNewParent(Structure structure);
 }

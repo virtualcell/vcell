@@ -498,7 +498,7 @@ public class OutputFunctionsPanel extends JPanel {
 	private void deleteOutputFunction() {
 		int selectedRow = getFnScrollPaneTable().getSelectedRow();
 		if (selectedRow > -1) {
-			AnnotatedFunction function = (AnnotatedFunction)getOutputFnsListTableModel1().getData().get(selectedRow);
+			AnnotatedFunction function = getOutputFnsListTableModel1().getValueAt(selectedRow);
 			try {
 				outputFunctionContext.removeOutputFunction(function);
 			} catch (PropertyVetoException e1) {

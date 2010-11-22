@@ -9,7 +9,7 @@ import java.util.Comparator;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
@@ -30,7 +30,7 @@ import cbit.vcell.parser.ExpressionException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class SpeciesContextSpecsTableModel extends ManageTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
+public class SpeciesContextSpecsTableModel extends DefaultSortTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_SPECIESCONTEXT = 1;
 	public static final int COLUMN_SPECIES = 0;
 	public static final int COLUMN_STRUCTURE = 2;
@@ -38,7 +38,7 @@ public class SpeciesContextSpecsTableModel extends ManageTableModel<SpeciesConte
 	public static final int COLUMN_INITIAL = 4;
 	public static final int COLUMN_WELLMIXED = 5;
 	public static final int COLUMN_DIFFUSION = 6;
-	private String LABELS[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Condition", "Well Mixed", "Diffusion Constant"};
+	private static String columnNames[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Condition", "Well Mixed", "Diffusion Constant"};
 	
 	private SimulationContext fieldSimulationContext = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
@@ -48,7 +48,7 @@ public class SpeciesContextSpecsTableModel extends ManageTableModel<SpeciesConte
  * ReactionSpecsTableModel constructor comment.
  */
 public SpeciesContextSpecsTableModel(JTable table) {
-	super();
+	super(columnNames);
 	ownerTable = table;
 }
 
@@ -87,36 +87,14 @@ public Class<?> getColumnClass(int column) {
 /**
  * getColumnCount method comment.
  */
+@Override
 public int getColumnCount() {
 	if (getSimulationContext() != null && getSimulationContext().getGeometry().getDimension() > 0) {
-		return LABELS.length;
+		return super.getColumnCount();
 	} else {
-		return LABELS.length - 2;
+		return super.getColumnCount() - 2;
 	}
 }
-
-
-public String getColumnName(int column) {
-	try {
-		return LABELS[column];
-	} catch (Throwable exc) {
-		System.out.println("WARNING - no such column index: " + column);
-		exc.printStackTrace(System.out);
-		return null;
-	}
-}
-
-/**
- * getRowCount method comment.
- */
-public int getRowCount() {
-	if (getSimulationContext()==null){
-		return 0;
-	}else{
-		return getSimulationContext().getReactionContext().getSpeciesContextSpecs().length;
-	}
-}
-
 
 /**
  * Gets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
@@ -130,14 +108,16 @@ private SimulationContext getSimulationContext() {
 
 private void refreshData() {
 
+	rows.clear();
 	if (getSimulationContext()==null){
 		return;
 	}
-	int count = getRowCount();
-	rows.clear();
-	for (int i = 0; i < count; i++){
-		rows.add(getSimulationContext().getReactionContext().getSpeciesContextSpecs(i));
+	SpeciesContextSpec[] speciesContextSpecs = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
+	for (SpeciesContextSpec scs : speciesContextSpecs) {
+		rows.add(scs);
 	}
+	resortColumn();
+	fireTableDataChanged();
 }
 
 /**
@@ -151,10 +131,10 @@ public Object getValueAt(int row, int col) {
 		if (col<0 || col>=getColumnCount()){
 			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(getColumnCount()-1)+"]");
 		}
-		if (getData().size() <= row){
+		if (getRowCount() <= row){
 			refreshData();
 		}	
-		SpeciesContextSpec scSpec = getSpeciesContextSpec(row);
+		SpeciesContextSpec scSpec = getValueAt(row);
 		switch (col){
 			case COLUMN_SPECIESCONTEXT:{
 				return scSpec.getSpeciesContext();
@@ -212,7 +192,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=getColumnCount()){
 		throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
-	SpeciesContextSpec speciesContextSpec = getSpeciesContextSpec(rowIndex);
+	SpeciesContextSpec speciesContextSpec = getValueAt(rowIndex);
 	switch (columnIndex){
 		case COLUMN_SPECIESCONTEXT:{
 			return false;
@@ -305,7 +285,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=getColumnCount()){
 		throw new RuntimeException("SpeciesContextSpecsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
-	SpeciesContextSpec scSpec = getSpeciesContextSpec(rowIndex);
+	SpeciesContextSpec scSpec = getValueAt(rowIndex);
 	switch (columnIndex){
 		case COLUMN_CLAMPED:{
 			boolean bFixed = ((Boolean)aValue).booleanValue();
@@ -498,10 +478,6 @@ public void sortColumn(final int col, final boolean ascending) {
 		};
 	});	
 	fireTableDataChanged();
-}
-
-public SpeciesContextSpec getSpeciesContextSpec(int row) {
-	return (SpeciesContextSpec)getData().get(row);
 }
 
 }

@@ -2,6 +2,7 @@ package cbit.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JTable;
@@ -9,6 +10,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -38,22 +40,24 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 		final int row = thisTable.getSelectedRow();
 		textFieldAutoCompletion.stopEditing();
 		boolean bOK = true;
-		if (textFieldAutoCompletion.getSymbolTable() != null) {				
-			String text = textFieldAutoCompletion.getText();
-			if (text.trim().length() > 0) {
-				try {
-					Expression exp = new Expression(text);
-					if (bValidateBinding) {
-						exp.bindExpression(textFieldAutoCompletion.getSymbolTable());
+		if (thisTable.getColumnClass(thisTable.getEditingColumn()).equals(ScopedExpression.class)) {
+			if (textFieldAutoCompletion.getSymbolTable() != null) {
+				String text = textFieldAutoCompletion.getText();
+				if (text.trim().length() > 0) {
+					try {
+						Expression exp = new Expression(text);
+						if (bValidateBinding) {
+							exp.bindExpression(textFieldAutoCompletion.getSymbolTable());
+						}
+					} catch (ExpressionBindingException ex) {
+						ex.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse 'Ctrl-Space' to see a list of available names in your model or 'Esc' to revert to the original expression.");
+						bOK = false;
+					} catch (ExpressionException ex) {
+						ex.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse 'Esc' to revert to the original expression.");
+						bOK = false;
 					}
-				} catch (ExpressionBindingException ex) {
-					ex.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse 'Ctrl-Space' to see a list of available names in your model or 'Esc' to revert to the original expression.");
-					bOK = false;
-				} catch (ExpressionException ex) {
-					ex.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse 'Esc' to revert to the original expression.");
-					bOK = false;
 				}
 			}
 		}
@@ -78,6 +82,12 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 			if (scopedExpression.getNameScope() != null) {
 				textFieldAutoCompletion.setSymbolTable(scopedExpression.getNameScope().getScopedSymbolTable());
 				textFieldAutoCompletion.setAutoCompleteSymbolFilter(scopedExpression.getAutoCompleteSymbolFilter());
+			}
+		} else if (value instanceof ReactionEquation) {
+			ReactionEquation reactionEquation = (ReactionEquation)value;
+			if (reactionEquation.getNameScope() != null) {
+				textFieldAutoCompletion.setSymbolTable(reactionEquation.getNameScope().getScopedSymbolTable());
+				textFieldAutoCompletion.setAutoCompleteSymbolFilter(reactionEquation.getAutoCompleteSymbolFilter());
 			}
 		}
 		((JComponent)getComponent()).setBorder(null);

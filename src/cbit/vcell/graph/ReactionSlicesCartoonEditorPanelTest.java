@@ -20,7 +20,7 @@ public static void main(java.lang.String[] args) {
       	java.awt.Frame frame = new java.awt.Frame();
 		Model model = ModelTest.getExample2();
 		Structure structure = (Structure)model.getStructure("Cytosol");
-		ReactionSlicesCartoonEditorPanel aReactionCartoonEditorPanel = new ReactionSlicesCartoonEditorPanel(null);
+		ReactionSlicesCartoonEditorPanel aReactionCartoonEditorPanel = new ReactionSlicesCartoonEditorPanel();
 		frame.add("Center", aReactionCartoonEditorPanel);
 		frame.setSize(aReactionCartoonEditorPanel.getSize());
 		frame.setVisible(true);

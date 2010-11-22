@@ -80,7 +80,11 @@ public class ScrollTable extends JTable {
 				setBackground(table.getSelectionBackground());
 				setForeground(table.getSelectionForeground());
 			} else {
-				setBackground(row % 2 == 0 ? table.getBackground() : DefaultScrollTableCellRenderer.everyOtherRowColor);
+				if (table instanceof ScrollTable && ((ScrollTable)table).getHoverRow() == row) {
+					setBackground(DefaultScrollTableCellRenderer.hoverColor);
+				} else { 
+					setBackground(row % 2 == 0 ? table.getBackground() : DefaultScrollTableCellRenderer.everyOtherRowColor);
+				}
 				setForeground(table.getForeground());
 			
 				if (table.isEnabled() && table.getModel().isCellEditable(row, column)) {
@@ -199,7 +203,7 @@ public class ScrollTable extends JTable {
 		return enclosingScrollPane;
 	}
 
-	public final void setValidateExpressionBinding(boolean bValidateExpressionBinding) {
+	public void setValidateExpressionBinding(boolean bValidateExpressionBinding) {
 		this.bValidateExpressionBinding = bValidateExpressionBinding;
 		setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(this, bValidateExpressionBinding));
 		setDefaultEditor(ReactionEquation.class,new TableCellEditorAutoCompletion(this, bValidateExpressionBinding));

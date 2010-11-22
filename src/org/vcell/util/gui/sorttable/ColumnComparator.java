@@ -1,18 +1,10 @@
 package org.vcell.util.gui.sorttable;
-/*
-=====================================================================
 
-  ColumnComparator.java
-  
-  Created by Claude Duguay
-  Copyright (c) 2002
-  
-=====================================================================
-*/
+import java.util.Comparator;
 
-import java.util.*;
+import org.vcell.util.ComparableObject;
 
-public class ColumnComparator implements Comparator {
+public class ColumnComparator<T> implements Comparator<T> {
 	protected int index;
 	protected boolean ascending;
 
@@ -22,36 +14,35 @@ public class ColumnComparator implements Comparator {
     this.ascending = ascending;
   }
 
-
-public int compare(Object one, Object two) {
-	if (one instanceof org.vcell.util.ComparableObject && two instanceof org.vcell.util.ComparableObject) {
-		Object[] vOne = ((org.vcell.util.ComparableObject)one).toObjects();
-		Object[] vTwo = ((org.vcell.util.ComparableObject)two).toObjects();
-		Object oOne = vOne[index];
-		Object oTwo = vTwo[index];
-		if (oOne == null) {
-			if (ascending) {
-				return -1;
-			} else {
-				return 1;
+  public int compare(T one, T two) {
+	  if (one instanceof ComparableObject && two instanceof ComparableObject) {
+			Object[] vOne = ((ComparableObject)one).toObjects();
+			Object[] vTwo = ((ComparableObject)two).toObjects();
+			Object oOne = vOne[index];
+			Object oTwo = vTwo[index];
+			if (oOne == null) {
+				if (ascending) {
+					return -1;
+				} else {
+					return 1;
+				}
+			} else if (oTwo == null) {
+				if (ascending) {
+					return 1;
+				} else {
+					return -1;
+				}
+			} else if (oOne instanceof Comparable && oTwo instanceof Comparable) {
+				Comparable cOne = (Comparable) oOne;
+				Comparable cTwo = (Comparable) oTwo;
+				if (ascending) {
+					return cOne.compareTo(cTwo);
+				} else {
+					return cTwo.compareTo(cOne);
+				}
 			}
-		} else if (oTwo == null) {
-			if (ascending) {
-				return 1;
-			} else {
-				return -1;
-			}
-		} else if (oOne instanceof Comparable && oTwo instanceof Comparable) {
-			Comparable cOne = (Comparable) oOne;
-			Comparable cTwo = (Comparable) oTwo;
-			if (ascending) {
-				return cOne.compareTo(cTwo);
-			} else {
-				return cTwo.compareTo(cOne);
-			}
-		}
-	} 
-	
-	return 0;
-}
+		} 
+		
+		return 0;
+	}
 }
