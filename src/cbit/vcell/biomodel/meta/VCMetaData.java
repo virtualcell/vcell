@@ -4,9 +4,11 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -14,7 +16,6 @@ import java.util.Map.Entry;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Namespace;
-import org.vcell.sbml.SBMLUtils;
 import org.vcell.sybil.models.annotate.JDOM2Model;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
@@ -31,8 +32,6 @@ import cbit.vcell.biomodel.meta.registry.VCellThingFactory;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.xml.XMLTags;
-import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
-
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFWriter;
@@ -46,11 +45,12 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
  *
  */
 
+@SuppressWarnings("serial")
 public class VCMetaData implements Serializable {
 	public interface AnnotationEventListener {
 		void annotationChanged(AnnotationEvent annotationEvent);
 	}
-	public static class AnnotationEvent extends java.util.EventObject {
+	public static class AnnotationEvent extends EventObject {
 		public AnnotationEvent(Identifiable identifiable) {
 			super(identifiable);
 		}
@@ -58,7 +58,9 @@ public class VCMetaData implements Serializable {
 			return (Identifiable)getSource();
 		}
 	}
-	private ArrayList<AnnotationEventListener> annotationEventListeners = new ArrayList<AnnotationEventListener>();
+	
+	private List<AnnotationEventListener> annotationEventListeners = 
+		new ArrayList<AnnotationEventListener>();
 	
 	public static final Namespace nsVCML = Namespace.getNamespace("vcml",XMLTags.VCML_NS);
 
@@ -121,7 +123,8 @@ public class VCMetaData implements Serializable {
 		for (VCID vcid : vcidSet) {
 			Identifiable myIdentifiable = identifiableProvider.getIdentifiableObject(vcid);
 			Identifiable otherIdentifiable = vcMetaData.identifiableProvider.getIdentifiableObject(vcid);
-			if (otherIdentifiable == null && myIdentifiable != null || myIdentifiable == null && otherIdentifiable != null) {				
+			if ((otherIdentifiable == null && myIdentifiable != null) || 
+					(myIdentifiable == null && otherIdentifiable != null)) {				
 				return false;
 			}
 			
@@ -129,7 +132,8 @@ public class VCMetaData implements Serializable {
 			if (nonRDFAnnotation == null) {
 				nonRDFAnnotation = emtpyAnnotation;
 			}
-			NonRDFAnnotation otherNonRDFAnnotation = vcMetaData.nonRDFAnnotationMap.get(vcMetaData.registry.getEntry(otherIdentifiable));
+			NonRDFAnnotation otherNonRDFAnnotation = 
+				vcMetaData.nonRDFAnnotationMap.get(vcMetaData.registry.getEntry(otherIdentifiable));
 			if (otherNonRDFAnnotation == null) {
 				otherNonRDFAnnotation = emtpyAnnotation;
 			}
@@ -144,7 +148,13 @@ public class VCMetaData implements Serializable {
 		return identifiableProvider;
 	}
 
-	public NonRDFAnnotation getNonRDFAnnotation(Identifiable identifiable){
+	public NonRDFAnnotation getExistingNonRDFAnnotation(Identifiable identifiable){
+		OpenEntry entry = registry.getEntry(identifiable);
+		NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(entry);
+		return nonRDFAnnotation;
+	}
+		
+	public NonRDFAnnotation getOrCreateNonRDFAnnotation(Identifiable identifiable){
 		OpenEntry entry = registry.getEntry(identifiable);
 		NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(entry);
 		if (nonRDFAnnotation==null){
@@ -168,9 +178,11 @@ public class VCMetaData implements Serializable {
 			if (identifiable == null) {
 				// use miriamManager to remove RDF statements from resource for identifiable
 				try {
-					Map<MiriamRefGroup, MIRIAMQualifier> miriamRefGps = getMiriamManager().getAllMiriamRefGroups(entryIdentifiable);
+					Map<MiriamRefGroup, MIRIAMQualifier> miriamRefGps = 
+						getMiriamManager().getAllMiriamRefGroups(entryIdentifiable);
 					if (miriamRefGps != null) {
-						for (Entry<MiriamRefGroup, MIRIAMQualifier> groupEntry :  miriamRefGps.entrySet()) {
+						for (Entry<MiriamRefGroup, MIRIAMQualifier> groupEntry :  
+							miriamRefGps.entrySet()) {
 							MiriamRefGroup refGroup = groupEntry.getKey();
 							MIRIAMQualifier qualifier = groupEntry.getValue();
 							getMiriamManager().remove(entryIdentifiable, qualifier, refGroup);
@@ -180,11 +192,14 @@ public class VCMetaData implements Serializable {
 					e.printStackTrace(System.out);
 				}
 				// set nonRDF annotatoins to null
-				NonRDFAnnotation nonRDFAnnotation = getNonRDFAnnotation(entryIdentifiable);
-				nonRDFAnnotation.setFreeTextAnnotation(null);
-				nonRDFAnnotation.setXhtmlNotes(null);
-				nonRDFAnnotation.setXmlAnnotations(null);
-				System.err.println("Deleting resource for identifiable '" + entryIdentifiable.toString() + "' since it is not foind in " + identifiableProvider.getClass().getName());
+				NonRDFAnnotation nonRDFAnnotation = getExistingNonRDFAnnotation(entryIdentifiable);
+				if(nonRDFAnnotation != null) {
+					nonRDFAnnotation.setFreeTextAnnotation(null);
+					nonRDFAnnotation.setXhtmlNotes(null);
+					nonRDFAnnotation.setXmlAnnotations(null);					
+				}
+				System.err.println("Deleting resource for identifiable '" + entryIdentifiable.toString() 
+						+ "' since it is not foind in " + identifiableProvider.getClass().getName());
 			}
 		}
 	}
@@ -214,7 +229,7 @@ public class VCMetaData implements Serializable {
 
 	// Accessors for fields of NonRDFAnootations
 	public Element getXhtmlNotes(Identifiable identifiable) {
-		NonRDFAnnotation nonRDFAnnotation = getNonRDFAnnotation(identifiable);
+		NonRDFAnnotation nonRDFAnnotation = getExistingNonRDFAnnotation(identifiable);
 		if (nonRDFAnnotation != null){
 			return nonRDFAnnotation.getXhtmlNotes();
 		}
@@ -222,7 +237,7 @@ public class VCMetaData implements Serializable {
 	}
 
 	public void setXhtmlNotes(Identifiable identifiable, Element xhtmlNotes) {
-		NonRDFAnnotation nonRDFAnnotation = getNonRDFAnnotation(identifiable);
+		NonRDFAnnotation nonRDFAnnotation = getOrCreateNonRDFAnnotation(identifiable);
 		if (nonRDFAnnotation != null){
 			nonRDFAnnotation.setXhtmlNotes(xhtmlNotes);
 			fireAnnotationEventListener(new AnnotationEvent(identifiable));
@@ -230,7 +245,7 @@ public class VCMetaData implements Serializable {
 	}
 	
 	public Element[] getXmlAnnotations(Identifiable identifiable) {
-		NonRDFAnnotation nonRDFAnnotation = getNonRDFAnnotation(identifiable);
+		NonRDFAnnotation nonRDFAnnotation = getExistingNonRDFAnnotation(identifiable);
 		if (nonRDFAnnotation != null){
 			return nonRDFAnnotation.getXmlAnnotations();
 		}
@@ -238,7 +253,7 @@ public class VCMetaData implements Serializable {
 	}
 	
 	public void setXmlAnnotations(Identifiable identifiable, Element[] xmlAnnotations) {
-		NonRDFAnnotation nonRDFAnnotation = getNonRDFAnnotation(identifiable);
+		NonRDFAnnotation nonRDFAnnotation = getOrCreateNonRDFAnnotation(identifiable);
 		if (nonRDFAnnotation != null){
 			nonRDFAnnotation.setXmlAnnotations(xmlAnnotations);
 			fireAnnotationEventListener(new AnnotationEvent(identifiable));
@@ -246,7 +261,7 @@ public class VCMetaData implements Serializable {
 	}
 
 	public String getFreeTextAnnotation(Identifiable identifiable) {
-		NonRDFAnnotation nonRDFAnnotation = getNonRDFAnnotation(identifiable);
+		NonRDFAnnotation nonRDFAnnotation = getExistingNonRDFAnnotation(identifiable);
 		if (nonRDFAnnotation != null){
 			return nonRDFAnnotation.getFreeTextAnnotation();
 		}
@@ -254,7 +269,7 @@ public class VCMetaData implements Serializable {
 	}
 	
 	public void setFreeTextAnnotation(Identifiable identifiable, String text) {
-		NonRDFAnnotation nonRDFAnnotation = getNonRDFAnnotation(identifiable);
+		NonRDFAnnotation nonRDFAnnotation = getOrCreateNonRDFAnnotation(identifiable);
 		if (nonRDFAnnotation != null){
 			nonRDFAnnotation.setFreeTextAnnotation(text);
 		}
