@@ -721,7 +721,9 @@ private javax.swing.JTree getBioModelEditorTree() {
 			bioModelEditorTree.setCellRenderer(getBioModelEditorTreeCellRender());
 			bioModelEditorTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 			bioModelEditorTree.setModel(getBioModelEditorTreeModel());
-			bioModelEditorTree.setRowHeight(bioModelEditorTree.getRowHeight() + 2);
+			int rowHeight = bioModelEditorTree.getRowHeight();
+			if(rowHeight < 10) { rowHeight = 20; }
+			bioModelEditorTree.setRowHeight(rowHeight + 2);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
