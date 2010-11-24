@@ -1295,8 +1295,8 @@ public class FRAPOptData {
 	//first dimension :2 two types of models, second dimension :5 max parameters length(3 for Diff 1, 5 for Diff 2)
 	public ProfileSummaryData[][] getAllProfileSummaryData()
 	{
-		if(allProfileSummaryData == null)
-		{
+//		if(allProfileSummaryData == null)
+//		{
 			ProfileSummaryData[][] summaryData = new ProfileSummaryData[FRAPModel.NUM_MODEL_TYPES-1][FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF];
 			//for parameters from diffusion with one diffusing component
 			if(getExpFrapStudy().getProfileData_oneDiffComponent() !=null )
@@ -1316,7 +1316,7 @@ public class FRAPOptData {
 				}
 			}
 			allProfileSummaryData = summaryData;
-		}
+//		}
 		return allProfileSummaryData;
 	}
 }
