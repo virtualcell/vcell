@@ -1,29 +1,21 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
 
-import javax.help.Map;
-import javax.swing.*;
-
-import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.modelopt.gui.DataSource;
-
-import java.awt.*;
-import java.awt.List;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.dnd.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ObjectOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.*;
+
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.modelopt.gui.DataSource;
 
 /**
  * 
  */
+@SuppressWarnings("serial")
 public class EstParams_CompareResultsPanel extends JPanel implements PropertyChangeListener{
 
     private AnalysisResultsPanel anaResultsPanel;

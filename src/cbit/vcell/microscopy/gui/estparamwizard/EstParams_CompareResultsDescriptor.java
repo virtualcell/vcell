@@ -3,28 +3,20 @@ package cbit.vcell.microscopy.gui.estparamwizard;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.DataVerifyInfo;
-import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptData;
-import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.SpatialAnalysisResults;
-import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_BleachedROIDescriptor;
-import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
-import cbit.vcell.modelopt.gui.DataSource;
-import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-
 import org.vcell.optimization.ConfidenceInterval;
-import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileSummaryData;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPOptimization;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 
 public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
 {
