@@ -1,5 +1,9 @@
 package cbit.vcell.model.gui;
 
+import java.awt.Color;
+
+import javax.swing.JLabel;
+
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ReactionStep;
 
@@ -8,12 +12,12 @@ import cbit.vcell.model.ReactionStep;
  * Creation date: (11/18/2002 2:01:41 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class ReactionElectricalPropertiesPanel extends javax.swing.JPanel {
 	private Kinetics fieldKinetics = null;
 	private javax.swing.JLabel ivjChargeValenceTitleLabel = null;
 	private boolean ivjConnPtoP2Aligning = false;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private javax.swing.JPanel ivjJPanel = null;
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private Kinetics ivjkinetics1 = null;
 	private ChargeValenceComboBoxModel ivjChargeValenceComboBoxModel1 = null;
 	private javax.swing.JComboBox ivjChargeValenceComboBox = null;
@@ -21,7 +25,7 @@ public class ReactionElectricalPropertiesPanel extends javax.swing.JPanel {
 	private javax.swing.JCheckBox ivjCurrentCheckbox = null;
 	private javax.swing.JCheckBox ivjMolecularCheckbox = null;
 
-class IvjEventHandler implements java.awt.event.ItemListener, java.beans.PropertyChangeListener {
+private class IvjEventHandler implements java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == ReactionElectricalPropertiesPanel.this.getMolecularCheckbox()) 
 				connEtoM11(e);
@@ -402,44 +406,6 @@ private javax.swing.JCheckBox getCurrentCheckbox() {
 	return ivjCurrentCheckbox;
 }
 /**
- * Return the JPanel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel() {
-	if (ivjJPanel == null) {
-		try {
-			ivjJPanel = new javax.swing.JPanel();
-			ivjJPanel.setName("JPanel");
-			ivjJPanel.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsCurrentCheckbox = new java.awt.GridBagConstraints();
-			constraintsCurrentCheckbox.gridx = 0; constraintsCurrentCheckbox.gridy = 0;
-			constraintsCurrentCheckbox.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel().add(getCurrentCheckbox(), constraintsCurrentCheckbox);
-
-			java.awt.GridBagConstraints constraintsChargeValenceTitleLabel = new java.awt.GridBagConstraints();
-			constraintsChargeValenceTitleLabel.gridx = 1; constraintsChargeValenceTitleLabel.gridy = 0;
-			constraintsChargeValenceTitleLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel().add(getChargeValenceTitleLabel(), constraintsChargeValenceTitleLabel);
-
-			java.awt.GridBagConstraints constraintsChargeValenceComboBox = new java.awt.GridBagConstraints();
-			constraintsChargeValenceComboBox.gridx = 2; constraintsChargeValenceComboBox.gridy = 0;
-			constraintsChargeValenceComboBox.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsChargeValenceComboBox.weightx = 1.0;
-			constraintsChargeValenceComboBox.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel().add(getChargeValenceComboBox(), constraintsChargeValenceComboBox);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel;
-}
-/**
  * Gets the kinetics property (cbit.vcell.model.Kinetics) value.
  * @return The kinetics property value.
  * @see #setKinetics
@@ -539,21 +505,46 @@ private void initialize() {
 		setName("ReactionElectricalPropertiesPanel");
 		setLayout(new java.awt.GridBagLayout());
 
-		java.awt.GridBagConstraints constraintsMolecularCheckbox = new java.awt.GridBagConstraints();
-		constraintsMolecularCheckbox.gridx = 0; constraintsMolecularCheckbox.gridy = 0;
-		constraintsMolecularCheckbox.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsMolecularCheckbox.anchor = java.awt.GridBagConstraints.WEST;
-		constraintsMolecularCheckbox.weightx = 1.0;
-		constraintsMolecularCheckbox.insets = new java.awt.Insets(4, 0, 4, 4);
-		add(getMolecularCheckbox(), constraintsMolecularCheckbox);
+		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; gbc.gridy = 0;
+		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(new JLabel("<html>Electrical<br>Properties</html>"), gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
+		gbc.gridy = 0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.anchor = java.awt.GridBagConstraints.LINE_START;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getMolecularCheckbox(), gbc);
 
-		java.awt.GridBagConstraints constraintsJPanel = new java.awt.GridBagConstraints();
-		constraintsJPanel.gridx = 1; constraintsJPanel.gridy = 0;
-		constraintsJPanel.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel.weightx = 1.0;
-		constraintsJPanel.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel(), constraintsJPanel);
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 2; 
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getCurrentCheckbox(), gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 3; 
+		gbc.gridy = 0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getChargeValenceTitleLabel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 4; 
+		gbc.gridy = 0;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getChargeValenceComboBox(), gbc);
+		
+		setBackground(Color.white);
+		getMolecularCheckbox().setBackground(Color.white);
+		getCurrentCheckbox().setBackground(Color.white);
 		initConnections();
 		connEtoM1();
 	} catch (java.lang.Throwable ivjExc) {

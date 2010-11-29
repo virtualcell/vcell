@@ -106,7 +106,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	public static final int NUM_ROLES		= 1;
 	public static final String RoleDesc = "user defined";
 	
-	public static final String MODEL_PARAMETERS_PROPERTY_NAME = "modelParameters";
+	public static final String PROPERTY_NAME_MODEL_PARAMETERS = "modelParameters";
 	
 	public class ModelParameter extends Parameter implements ExpressionContainer {
 		
@@ -248,22 +248,23 @@ public Model(String argName) {
  * This method was created by a SmartGuide.
  * @param featureName java.lang.String
  * @param parent cbit.vcell.model.Feature
+ * @throws PropertyVetoException 
  */
-public void addFeature(String featureName, Feature parent, String membraneName) throws Exception {
+public void addFeature(String featureName, Feature parent, String membraneName) throws ModelException, PropertyVetoException {
 	if (featureName.equals(membraneName)) {
-		throw new Exception("Feature and Membrane can not have the same name.");
+		throw new ModelException("Feature and Membrane can not have the same name.");
 	}
 	
 	Structure structure = getStructure(featureName);
 	
 	if (structure!=null) {
-		throw new Exception("adding feature '"+featureName+"', structure already exists with that name");
+		throw new ModelException("adding feature '"+featureName+"', structure already exists with that name");
 	}
 
 	structure = getStructure(membraneName);
 
 	if (structure!=null){
-		throw new Exception("adding membrane '"+membraneName+"', structure already exists with that name");
+		throw new ModelException("adding membrane '"+membraneName+"', structure already exists with that name");
 	}
 
 	//
@@ -1551,7 +1552,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 	}
 	
-	if ((evt.getSource() == this) && evt.getPropertyName().equals(MODEL_PARAMETERS_PROPERTY_NAME)) {
+	if ((evt.getSource() == this) && evt.getPropertyName().equals(PROPERTY_NAME_MODEL_PARAMETERS)) {
 		ModelParameter oldValue[] = (ModelParameter[])evt.getOldValue();
 		if (oldValue!=null){
 			for (int i = 0; i < oldValue.length; i++){
@@ -2022,9 +2023,9 @@ public void setDiagrams(int index, Diagram diagrams) {
  */
 public void setModelParameters(Model.ModelParameter[] modelParameters) throws java.beans.PropertyVetoException {
 	Model.ModelParameter[] oldValue = fieldModelParameters;
-	fireVetoableChange(Model.MODEL_PARAMETERS_PROPERTY_NAME, oldValue, modelParameters);
+	fireVetoableChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
 	fieldModelParameters = modelParameters;
-	firePropertyChange(Model.MODEL_PARAMETERS_PROPERTY_NAME, oldValue, modelParameters);
+	firePropertyChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
 }
 
 
@@ -2038,7 +2039,7 @@ public void setModelParameters(int index, ModelParameter modelParameters) {
 	ModelParameter oldValue = fieldModelParameters[index];
 	fieldModelParameters[index] = modelParameters;
 	if (oldValue != null && !oldValue.equals(modelParameters)) {
-		firePropertyChange(Model.MODEL_PARAMETERS_PROPERTY_NAME, null, fieldModelParameters);
+		firePropertyChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, null, fieldModelParameters);
 	};
 }
 
@@ -2529,7 +2530,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		}
 	}
 
-	if (e.getSource() == this && e.getPropertyName().equals(Model.MODEL_PARAMETERS_PROPERTY_NAME)){
+	if (e.getSource() == this && e.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_PARAMETERS)){
 		ModelParameter[] newModelParams = (ModelParameter[])e.getNewValue();
 		//
 		// check that names are not duplicated and that no common names are ReservedSymbols

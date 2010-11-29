@@ -5,7 +5,6 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -24,6 +23,7 @@ import cbit.vcell.model.SimpleReaction;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class ReactionSpecsTableModel extends DefaultSortTableModel<ReactionSpec> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_NAME = 0;
 	public static final int COLUMN_TYPE = 1;
@@ -82,7 +82,7 @@ public SimulationContext getSimulationContext() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	ReactionSpec reactionSpec = (ReactionSpec)rows.get(row);
+	ReactionSpec reactionSpec = getValueAt(row);
 	switch (col){
 		case COLUMN_NAME:{
 			return reactionSpec.getReactionStep();
@@ -123,7 +123,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	if (columnIndex == COLUMN_ENABLED){
 		return true;
 	}else if (columnIndex == COLUMN_FAST && getSimulationContext()!=null){
-		ReactionSpec reactionSpec = rows.get(rowIndex);
+		ReactionSpec reactionSpec = getValueAt(rowIndex);
 		//
 		// the "fast" column is only editable if not FluxReaction
 		//
@@ -139,10 +139,10 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && evt.getPropertyName().equals("simulationContext")) {
-		populateData();
+		refreshData();
 	}
 	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("reactionSpecs")) {
-		populateData();
+		refreshData();
 	}
 	if (evt.getSource() instanceof ReactionStep && evt.getPropertyName().equals("name")) {
 		fireTableRowsUpdated(0,getRowCount()-1);
@@ -183,7 +183,7 @@ public void setSimulationContext(SimulationContext simulationContext) {
 	firePropertyChange("simulationContext", oldValue, simulationContext);
 }
 
-private void populateData() {
+private void refreshData() {
 	if (getSimulationContext() == null) {
 		setData(null);
 	} else {
@@ -193,7 +193,7 @@ private void populateData() {
 }
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	ReactionSpec reactionSpec = rows.get(rowIndex);
+	ReactionSpec reactionSpec = getValueAt(rowIndex);
 	try {
 		switch (columnIndex){
 			case COLUMN_ENABLED:{
@@ -221,15 +221,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		e.printStackTrace(System.out);
 	}
 }
-@Override
-public void sortColumn(int col, boolean ascending) {
-	  Collections.sort(rows, new ReactionSpecComparator(col, ascending));
-	  fireTableDataChanged();
-}
 
-public ReactionSpec getReactionSpec(int row) {
-	return rows.get(row);
-}
+	public Comparator<ReactionSpec> getComparator(int col, boolean ascending) {
+		return new ReactionSpecComparator(col, ascending);
+	}
 
 private class ReactionSpecComparator implements Comparator<ReactionSpec> {
 	protected int index;

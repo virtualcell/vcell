@@ -1,5 +1,6 @@
 package cbit.vcell.graph;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,6 +30,7 @@ import cbit.vcell.clientdb.DocumentManager;
  */
 @SuppressWarnings("serial")
 public class CartoonEditorPanelFixed extends JPanel {
+	private static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(15,0);
 	private JToolBarToggleButton ivjFeatureButton = null;
 	private javax.swing.JToolBar ivjJToolBar = null;
 	private JToolBarToggleButton ivjSelectButton = null;
@@ -36,7 +38,6 @@ public class CartoonEditorPanelFixed extends JPanel {
 
 	private JButton reactionButton = null;	
 	private JButton reactionSlicesButton = null;	
-	private JButton parameterButton = null;
 
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private StructureCartoon ivjStructureCartoon1 = null;
@@ -71,8 +72,6 @@ public class CartoonEditorPanelFixed extends JPanel {
 				} else {
 					getStructureCartoonTool1().actionPerformed(e);
 				}
-			} else if (e.getSource() == parameterButton) {			
-				getStructureCartoonTool1().actionPerformed(e);
 			}
 		};
 	};
@@ -456,20 +455,15 @@ public class CartoonEditorPanelFixed extends JPanel {
 				ivjJToolBar.setName("JToolBar");
 				ivjJToolBar.setFloatable(false);
 				ivjJToolBar.setBorder(new javax.swing.border.EtchedBorder());
-				ivjJToolBar.setOrientation(javax.swing.SwingConstants.VERTICAL);
+				ivjJToolBar.setOrientation(javax.swing.SwingConstants.HORIZONTAL);
+				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar().add(getSelectButton(), getSelectButton().getName());
 				getJToolBar().add(getFeatureButton(), getFeatureButton().getName());
 				getJToolBar().add(getSpeciesButton(), getSpeciesButton().getName());
-				getJToolBar().addSeparator(new Dimension(5,30));
+				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar().add(getReactionButton());
 				getJToolBar().add(getReactionSlicesButton());
-				getJToolBar().addSeparator();
-				getJToolBar().add(getParameterButton());
-				// user code begin {1}
-				// user code end
 			} catch (java.lang.Throwable ivjExc) {
-				// user code begin {2}
-				// user code end
 				handleException(ivjExc);
 			}
 		}
@@ -596,30 +590,6 @@ public class CartoonEditorPanelFixed extends JPanel {
 		return reactionSlicesButton;
 	}
 
-	private JButton getParameterButton() {
-		if (parameterButton == null) {
-			try {
-				parameterButton = new JButton();
-				parameterButton.setToolTipText(CartoonToolMiscActions.ShowParameters.MENU_TEXT);
-				parameterButton.setText("");
-				parameterButton.setActionCommand(CartoonToolMiscActions.ShowParameters.MENU_ACTION);
-				parameterButton.setBorder(new BevelBorder(BevelBorder.RAISED));
-				parameterButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-				parameterButton.setIcon(new ImageIcon(getClass().getResource("/icons/parameter.gif")));
-				parameterButton.setPreferredSize(new Dimension(28, 28));
-				parameterButton.setMinimumSize(new Dimension(28, 28));
-				parameterButton.setMaximumSize(new Dimension(28, 28));
-				// user code begin {1}
-				// user code end
-			} catch (java.lang.Throwable ivjExc) {
-				// user code begin {2}
-				// user code end
-				handleException(ivjExc);
-			}
-		}
-		return parameterButton;
-	}
-
 	/**
 	 * Return the StructureCartoon1 property value.
 	 * @return cbit.vcell.graph.StructureCartoon
@@ -690,7 +660,6 @@ public class CartoonEditorPanelFixed extends JPanel {
 
 		getReactionButton().addActionListener(ivjEventHandler);
 		getReactionSlicesButton().addActionListener(ivjEventHandler);
-		getParameterButton().addActionListener(ivjEventHandler);
 	}
 
 	/**
@@ -702,22 +671,10 @@ public class CartoonEditorPanelFixed extends JPanel {
 			// user code begin {1}
 			// user code end
 			setName("CartoonEditorPanelFixed");
-			setLayout(new java.awt.GridBagLayout());
-			setSize(632, 512);
+			setLayout(new BorderLayout());
 
-			java.awt.GridBagConstraints constraintsJToolBar = new java.awt.GridBagConstraints();
-			constraintsJToolBar.gridx = 0; constraintsJToolBar.gridy = 0;
-			constraintsJToolBar.fill = java.awt.GridBagConstraints.VERTICAL;
-			constraintsJToolBar.weighty = 1.0;
-			add(getJToolBar(), constraintsJToolBar);
-
-			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
-			constraintsJScrollPane1.gridx = 1; constraintsJScrollPane1.gridy = 0;
-			constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJScrollPane1.weightx = 1.0;
-			constraintsJScrollPane1.weighty = 1.0;
-			constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-			add(getJScrollPane1(), constraintsJScrollPane1);
+			add(getJToolBar(), BorderLayout.NORTH);
+			add(getJScrollPane1(), BorderLayout.CENTER);
 			initConnections();
 			connEtoC1();
 		} catch (java.lang.Throwable ivjExc) {

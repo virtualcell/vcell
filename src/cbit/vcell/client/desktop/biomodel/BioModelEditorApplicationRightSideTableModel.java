@@ -8,8 +8,7 @@ import javax.swing.JTable;
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.model.Model;
+import cbit.vcell.mapping.SimulationContext;
 
 /**
  * BioModelEditorRightSideTableModel extends DefaultSortTableModel and always has an extra row for adding new row.
@@ -32,16 +31,15 @@ import cbit.vcell.model.Model;
  */
 
 @SuppressWarnings("serial")
-public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTableModel<T> implements PropertyChangeListener, AutoCompleteTableModel {
-	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
+public abstract class BioModelEditorApplicationRightSideTableModel<T> extends DefaultSortTableModel<T> implements PropertyChangeListener, AutoCompleteTableModel {
+	protected static final String PROPERTY_NAME_SIMULATOIN_CONTEXT = "simulationContext";
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
 	
-	protected BioModel bioModel = null;
+	protected SimulationContext simulationContext = null;
 	protected JTable ownerTable = null;
 	protected String searchText = null;
-	public static final String ADD_NEW_HERE_TEXT = "(add new here)";
 	
-	public BioModelEditorRightSideTableModel(JTable table) {
+	public BioModelEditorApplicationRightSideTableModel(JTable table) {
 		super(null);
 		ownerTable = table;
 		addPropertyChangeListener(this);
@@ -56,9 +54,6 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 	}
 	
 	protected abstract List<T> computeData();
-	protected boolean containedByModel() {
-		return true;
-	}
 	
 	protected void refreshData() {
 		List<T> newData = computeData();
@@ -67,45 +62,33 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 	
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		if (evt.getSource() == this) {
-			if (evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
+			if (evt.getPropertyName().equals(PROPERTY_NAME_SIMULATOIN_CONTEXT)) {
 				refreshData();
-				BioModel oldValue = (BioModel)evt.getOldValue();
+				SimulationContext oldValue = (SimulationContext)evt.getOldValue();
 				if (oldValue != null) {
-					if (containedByModel()) {
-						oldValue.getModel().removePropertyChangeListener(this);
-					} else {
-						oldValue.removePropertyChangeListener(this);
-					}
+					oldValue.removePropertyChangeListener(this);
 				}
-				BioModel newValue = (BioModel)evt.getNewValue();
+				SimulationContext newValue = (SimulationContext)evt.getNewValue();
 				if (newValue != null) {
-					if (containedByModel()) {
-						newValue.getModel().addPropertyChangeListener(this);
-					} else {
-						newValue.addPropertyChangeListener(this);
-					}
+					newValue.addPropertyChangeListener(this);
 				}
 			} else if (evt.getPropertyName().equals(PROPERTY_NAME_SEARCH_TEXT)) {
 				refreshData();
 			}
-		} else if (containedByModel() && evt.getSource() == bioModel.getModel() || evt.getSource() == bioModel) {
+		} else if (evt.getSource() == simulationContext) {
 			refreshData();
 		}
 	}
 	
-	public void setBioModel(BioModel newValue) {
-		BioModel oldValue = bioModel;
-		bioModel = newValue;
-		firePropertyChange(PROPERTY_NAME_BIO_MODEL, oldValue, newValue);
+	public void setSimulationContext(SimulationContext newValue) {
+		SimulationContext oldValue = simulationContext;
+		simulationContext = newValue;
+		firePropertyChange(PROPERTY_NAME_SIMULATOIN_CONTEXT, oldValue, newValue);
 	}
 
 	public void setSearchText(String newValue) {
 		String oldValue = searchText;
 		searchText = newValue;
 		firePropertyChange(PROPERTY_NAME_SEARCH_TEXT, oldValue, newValue);		
-	}
-	
-	protected Model getModel() {
-		return bioModel == null ? null : bioModel.getModel();
 	}
 }

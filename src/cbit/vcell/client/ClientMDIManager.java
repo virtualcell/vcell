@@ -153,8 +153,7 @@ public static String createCanonicalTitle(VCDocument vcDocument) {
 private DocumentWindow createDocumentWindow() {	
 	DocumentWindow documentWindow = new DocumentWindow();
 	// stagger 90% screen size windows
-	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-	documentWindow.setSize(800, 700);
+	documentWindow.setSize(800, 750);
 	BeanUtils.centerOnScreen(documentWindow);
 	if (getNewlyCreatedDesktops() == 0) {
 		// first window

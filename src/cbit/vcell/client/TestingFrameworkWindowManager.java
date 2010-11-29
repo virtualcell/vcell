@@ -7,12 +7,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
@@ -2045,7 +2043,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 //				}
 //			);
 		
-		final DefaultSortTableModel tableModel = new DefaultSortTableModel(colNames){
+		final DefaultSortTableModel<Object[]> tableModel = new DefaultSortTableModel<Object[]>(colNames){
 			public Class<?> getColumnClass(int columnIndex) {
 				if(columnIndex==TSDATE_OFFSET){
 					return Date.class;
@@ -2058,22 +2056,21 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 		        return false;
 		    }
 			public Object getValueAt(int rowIndex, int columnIndex) {
-				return ((Object[])rows.get(rowIndex))[columnIndex];
+				return getValueAt(rowIndex)[columnIndex];
 			}
-			public void sortColumn(final int col, final boolean ascending) {
-				Collections.sort((List<Object[]>)rows,
-						new Comparator<Object[]>(){
-							public int compare(Object[] o1, Object[] o2) {
-								if(o1[col] == null && o2[col] == null){
-									return 0;
-								}
+			public Comparator<Object[]> getComparator(final int col, final boolean ascending) {
+				return new Comparator<Object[]>(){
+						public int compare(Object[] o1, Object[] o2) {
+							if(o1[col] == null && o2[col] == null){
+								return 0;
+							}
 //								if(ascending){
-									if(o1[col] == null){
-										return 1;
-									}
-									if(o2[col] == null){
-										return -1;
-									}
+								if(o1[col] == null){
+									return 1;
+								}
+								if(o2[col] == null){
+									return -1;
+								}
 //								}else{
 //									if(o1[col] == null){
 //										return -1;
@@ -2082,29 +2079,28 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 //										return 1;
 //									}
 //								}
-								if(getColumnClass(col).equals(String.class)){
-									if(ascending){
-										return ((String)o1[col]).compareToIgnoreCase(((String)o2[col]));
-									}else{
-										return ((String)o2[col]).compareToIgnoreCase(((String)o1[col]));
-									}
-								}else if(getColumnClass(col).equals(Date.class)){
-									if(ascending){
-										return ((Date)o1[col]).compareTo(((Date)o2[col]));
-									}
-									return ((Date)o2[col]).compareTo(((Date)o1[col]));
-								}else if(getColumnClass(col).equals(Double.class)){
-									if(ascending){
-										return ((Double)o1[col]).compareTo(((Double)o2[col]));
-									}
-									return ((Double)o2[col]).compareTo(((Double)o1[col]));
-									
+							if(getColumnClass(col).equals(String.class)){
+								if(ascending){
+									return ((String)o1[col]).compareToIgnoreCase(((String)o2[col]));
+								}else{
+									return ((String)o2[col]).compareToIgnoreCase(((String)o1[col]));
 								}
-								throw new RuntimeException("TestSuite XRef Query unexpecte column class "+getColumnClass(col).getName());
+							}else if(getColumnClass(col).equals(Date.class)){
+								if(ascending){
+									return ((Date)o1[col]).compareTo(((Date)o2[col]));
+								}
+								return ((Date)o2[col]).compareTo(((Date)o1[col]));
+							}else if(getColumnClass(col).equals(Double.class)){
+								if(ascending){
+									return ((Double)o1[col]).compareTo(((Double)o2[col]));
+								}
+								return ((Double)o2[col]).compareTo(((Double)o1[col]));
+								
 							}
+							throw new RuntimeException("TestSuite XRef Query unexpecte column class "+getColumnClass(col).getName());
 						}
-					);
-			}
+					};
+			};
 
 		};
 		tableModel.setData(Arrays.asList(sourceRows));

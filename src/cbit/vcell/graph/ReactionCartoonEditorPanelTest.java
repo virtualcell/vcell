@@ -20,7 +20,7 @@ public class ReactionCartoonEditorPanelTest extends cbit.vcell.client.test.Clien
 			java.awt.Frame frame = new java.awt.Frame();
 			Model model = ModelTest.getExample2();
 			Structure structure = model.getStructure("Cytosol");
-			ReactionCartoonEditorPanel aReactionCartoonEditorPanel = new ReactionCartoonEditorPanel(null);
+			ReactionCartoonEditorPanel aReactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
 			frame.add("Center", aReactionCartoonEditorPanel);
 			frame.setSize(aReactionCartoonEditorPanel.getSize());
 			frame.setVisible(true);

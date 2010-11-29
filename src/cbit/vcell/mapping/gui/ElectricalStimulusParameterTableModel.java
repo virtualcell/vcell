@@ -1,6 +1,6 @@
 package cbit.vcell.mapping.gui;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Comparator;
 
 import javax.swing.JTable;
@@ -86,7 +86,6 @@ public class ElectricalStimulusParameterTableModel extends DefaultSortTableModel
 	final static int COLUMN_VALUE = 2;
 	final static int COLUMN_UNIT = 3;
 	private static final String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
-	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ElectricalStimulus fieldElectricalStimulus = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	private JTable ownerTable = null;
@@ -97,18 +96,6 @@ public ElectricalStimulusParameterTableModel(JTable table) {
 	super(LABELS);
 	ownerTable = table;
 	addPropertyChangeListener(this);
-}
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 /**
  * Insert the method's description here.
@@ -146,31 +133,17 @@ public ElectricalStimulus getElectricalStimulus() {
 }
 
 /**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-
-/**
  * Insert the method's description here.
  * Creation date: (9/23/2003 1:24:52 PM)
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
 private void refreshData() {
-	rows.clear();
-	if (getElectricalStimulus()==null){
-		return;
+	if (getElectricalStimulus()== null){
+		setData(null);
+	} else {
+		setData(Arrays.asList(getElectricalStimulus().getParameters()));
 	}
-	Parameter[] parameters = getElectricalStimulus().getParameters();
-	for (Parameter p : parameters){
-		rows.add(p);
-	}
-	fireTableDataChanged();
 }
 /**
  * getValueAt method comment.
@@ -213,12 +186,6 @@ public Object getValueAt(int row, int col) {
 		ex.printStackTrace(System.out);
 		return null;
 	}
-}
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
 }
 /**
  * Insert the method's description here.
@@ -292,12 +259,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 }
 /**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
-}
-/**
  * Sets the electricalStimulus property (cbit.vcell.mapping.ElectricalStimulus) value.
  * @param electricalStimulus The new value for the property.
  * @see #getElectricalStimulus
@@ -348,8 +309,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 //		e.printStackTrace(System.out);
 //	}
 }
-	public void sortColumn(int col, boolean ascending)
-	{
-		Collections.sort(rows, new ParameterColumnComparator(col, ascending));
+	public Comparator<Parameter> getComparator(int col, boolean ascending) {
+		return new ParameterColumnComparator(col, ascending);
 	}
 }

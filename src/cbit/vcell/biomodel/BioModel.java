@@ -37,8 +37,11 @@ import cbit.vcell.solver.Simulation;
  * Creation date: (10/17/00 3:12:16 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class BioModel implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable, IdentifiableProvider
 {
+	public static final String PROPERTY_NAME_SIMULATION_CONTEXTS = "simulationContexts";
+	public final static String SIMULATION_CONTEXT_DISPLAY_NAME = "Application";
 	private Version fieldVersion = null;
 	private String fieldName = null;
 	protected transient VetoableChangeSupport vetoPropertyChange;
@@ -557,7 +560,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			}
 		}
 	}
-	if (evt.getSource() == this && evt.getPropertyName().equals("simulationContexts") && evt.getNewValue()!=null){
+	if (evt.getSource() == this && evt.getPropertyName().equals(PROPERTY_NAME_SIMULATION_CONTEXTS) && evt.getNewValue()!=null){
 		//
 		// unregister for old
 		//
@@ -712,7 +715,7 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  */
 public void setSimulationContexts(SimulationContext[] simulationContexts) throws java.beans.PropertyVetoException {
 	SimulationContext[] oldValue = fieldSimulationContexts;
-	fireVetoableChange("simulationContexts", oldValue, simulationContexts);
+	fireVetoableChange(PROPERTY_NAME_SIMULATION_CONTEXTS, oldValue, simulationContexts);
 	for (int i = 0; oldValue!=null && i < oldValue.length; i++){
 //		oldValue[i].removePropertyChangeListener(this);
 //		oldValue[i].removeVetoableChangeListener(this);
@@ -725,7 +728,7 @@ public void setSimulationContexts(SimulationContext[] simulationContexts) throws
 //		simulationContexts[i].addVetoableChangeListener(this);
 		simulationContexts[i].setBioModel(this);
 	}
-	firePropertyChange("simulationContexts", oldValue, simulationContexts);
+	firePropertyChange(PROPERTY_NAME_SIMULATION_CONTEXTS, oldValue, simulationContexts);
 }
 
 
@@ -859,7 +862,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			}
 		}
 	}
-	if (evt.getSource() == this && evt.getPropertyName().equals("simulationContexts") && evt.getNewValue()!=null){
+	if (evt.getSource() == this && evt.getPropertyName().equals(PROPERTY_NAME_SIMULATION_CONTEXTS) && evt.getNewValue()!=null){
 		//
 		// check for name duplication
 		//
@@ -982,4 +985,23 @@ public Set<Identifiable> getAllIdentifiables() {
 	return allIdenfiables;
 }
 
+public String getFreeSimulationContextName() {
+	int count=0;
+	while (true) {
+		String name = SIMULATION_CONTEXT_DISPLAY_NAME + count;
+		if (getSimulationContext(name) == null){
+			return name;
+		}	
+		count++;
+	}
+}
+
+public SimulationContext getSimulationContext(String name) {
+	for (SimulationContext simulationContext : fieldSimulationContexts){
+		if (simulationContext.getName().equals(name)) {
+			return simulationContext;
+		}
+	}
+	return null;
+}
 }

@@ -1,196 +1,143 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Component;
+import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.beans.PropertyChangeListener;
+import java.awt.Insets;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
-import org.vcell.util.gui.ScrollTable;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.SimulationContext;
 
-public class EventsDisplayPanel extends JPanel {
+@SuppressWarnings("serial")
+public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<BioEvent> {
 	private JSplitPane outerSplitPane = null;
-	private ScrollTable scrollPaneTable = null;
-	private EventsSummaryTableModel eventsSummaryTableModel = null;
 	private EventPanel eventPanel = null;
-	private SimulationContext fieldSimContext = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-
-	class IvjEventHandler implements PropertyChangeListener, ListSelectionListener {
-		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == EventsDisplayPanel.this && (evt.getPropertyName().equals("simulationContext"))) {
-				getEventSummaryTableModel().setSimulationContext(fieldSimContext);
-			}
-		}
-
-		public void valueChanged(ListSelectionEvent e) {
-			if (e.getValueIsAdjusting()) {
-				return;
-			}
-			if (e.getSource() == getScrollPaneTable().getSelectionModel()) {
-				updateEventPanel();
-			}
-
-		};
-	};
 
 	public EventsDisplayPanel() {
 		super();
-		initialize(false);
+		initialize();
 	}
+	
+	private void initialize() {
+		setName("EventsPanel");
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new GridBagLayout());
 
-	public EventsDisplayPanel(boolean expanded) {
-		super();
-		initialize(expanded);
-	}
-
-	private void initConnections() {
-		this.addPropertyChangeListener(ivjEventHandler);
-
-		// for scrollPaneTable, set tableModel and create default columns
-		getScrollPaneTable().setModel(getEventSummaryTableModel());
-		getScrollPaneTable().createDefaultColumnsFromModel();
-		getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
+		int gridy = 0;
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,4,4,4);
+		topPanel.add(new JLabel("Search "), gbc);
 		
-		// cellRenderer for table (name column)
-		getScrollPaneTable().setDefaultRenderer(BioEvent.class, new DefaultScrollTableCellRenderer() {
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
-			{
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				if (value instanceof BioEvent) {
-					setText(((BioEvent)value).getName());
-				}
-				return this;
-			}
-		});
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4,4,4,4);
+		topPanel.add(textFieldSearch, gbc);
+				
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,100,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		addButton.setPreferredSize(deleteButton.getPreferredSize());
+		topPanel.add(addButton, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.insets = new Insets(4,4,4,20);
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		topPanel.add(deleteButton, gbc);
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.gridy = gridy;
+		gbc.weighty = 1.0;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = 4;
+		gbc.fill = GridBagConstraints.BOTH;
+		topPanel.add(table.getEnclosingScrollPane(), gbc);
+		
+		outerSplitPane = new JSplitPane();
+		outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		outerSplitPane.setDividerLocation(300);			
+		outerSplitPane.setTopComponent(topPanel);
+		outerSplitPane.setBottomComponent(getEventPanel());
+		setLayout(new BorderLayout());			
+		add(outerSplitPane, BorderLayout.CENTER);		
 	}
 	
-	private void initialize(boolean expanded) {
-		try {
-			setName("EventsPanel");
-			setLayout(new GridBagLayout());
-			// setSize(450, 530);
-
-			java.awt.GridBagConstraints constraintsJSplitPane1 = new java.awt.GridBagConstraints();
-			constraintsJSplitPane1.gridx = 0; constraintsJSplitPane1.gridy = 0;
-			constraintsJSplitPane1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJSplitPane1.weightx = 1.0;
-			constraintsJSplitPane1.weighty = 1.0;
-			constraintsJSplitPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-			add(getOuterSplitPane(expanded), constraintsJSplitPane1);
-			initConnections();
-			
-			getScrollPaneTable().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-
-		} catch (java.lang.Throwable e) {
-			e.printStackTrace(System.out);
-		}
-	}
-	
-	private ScrollTable getScrollPaneTable() {
-		if (scrollPaneTable == null) {
-			try {
-				scrollPaneTable = new ScrollTable();
-				scrollPaneTable.setName("ScrollPaneTable");
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace(System.out);
-			}
-		}
-		return scrollPaneTable;
-	}
-	
-	private EventsSummaryTableModel getEventSummaryTableModel() {
-		if (eventsSummaryTableModel == null) {
-			try {
-				eventsSummaryTableModel = new EventsSummaryTableModel(getScrollPaneTable());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace(System.out);
-			}
-		}
-		return eventsSummaryTableModel;
-	}
-
 	private EventPanel getEventPanel() {
 		if (eventPanel == null) {
-			try {
-				eventPanel = new EventPanel();
-				eventPanel.setName("EventPanel");
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace(System.out);
-			}
+			eventPanel = new EventPanel();
+			eventPanel.setName("EventPanel");
 		}
 		
 		return eventPanel;
 	}
-
-	protected JSplitPane getOuterSplitPane(boolean expanded) {
-		if (outerSplitPane == null) {
-			outerSplitPane = new JSplitPane();
-			outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-			outerSplitPane.setDividerLocation(300);
-			outerSplitPane.setTopComponent(getScrollPaneTable().getEnclosingScrollPane());
-			if(expanded) {
-				outerSplitPane.setBottomComponent(getEventPanel());	// reaction kinetics editor
-			} else {
-				outerSplitPane.setBottomComponent(null);
-			}
-		}
-		return outerSplitPane;
-	}
-
-	public SimulationContext getSimulationContext() {
-		return fieldSimContext;
-	}
-
-	public void setSimulationContext(SimulationContext simulationContext) {
-		SimulationContext oldValue = fieldSimContext;
-		fieldSimContext = simulationContext;
-		firePropertyChange("simulationContext", oldValue, simulationContext);
-	}
-
-	public void setScrollPaneTableCurrentRow(BioEvent selectedEvent) {
-		// if 'Event' node is selected, EventSummary table should have no selection & panel below should not be visible.
-		if (selectedEvent == null) {
-			getScrollPaneTable().clearSelection();
-			getEventPanel().setEnabled(false);
+	
+	@Override
+	protected void newButtonPressed() {
+		if (simulationContext == null) {
 			return;
 		}
-		
-		getEventPanel().setEnabled(true);
-		outerSplitPane.setDividerLocation(300);
-		// 'selectedEvent' is the leaf selection in the SPRR Panel tree, so change the row in table to reflect 'selectedEvent'
-		int numRows = getScrollPaneTable().getRowCount();
-		for(int i=0; i<numRows; i++) {
-			BioEvent bioevent = (BioEvent)getScrollPaneTable().getValueAt(i, EventsSummaryTableModel.COLUMN_EVENT_NAME);
-			if(bioevent.equals(selectedEvent)) {
-				getScrollPaneTable().changeSelection(i, 0, false, false);
-				break;
-			}
-		}
+		String eventName = simulationContext.getFreeEventName();
+		try {
+			BioEvent bioEvent = new BioEvent(eventName, simulationContext);
+			simulationContext.addBioEvent(bioEvent);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(this, "Error adding Event : " + e.getMessage());
+		}		
 	}
 
-	private void updateEventPanel() {
-		BioEvent oldValue = getEventPanel().getBioEvent();
-		BioEvent selectedBioEvent = null;
-		int row = getScrollPaneTable().getSelectedRow();
-		if (row >= 0) {
-			selectedBioEvent = getEventSummaryTableModel().getValueAt(row);
+	@Override
+	protected void deleteButtonPressed() {
+		int[] rows = table.getSelectedRows();
+		ArrayList<BioEvent> deleteList = new ArrayList<BioEvent>();
+		for (int r : rows) {
+			if (r < tableModel.getDataSize()) {
+				deleteList.add(tableModel.getValueAt(r));
+			}
 		}
-		firePropertyChange("selectedBioEvent", oldValue, selectedBioEvent);   		
-   		getEventPanel().setBioEvent(selectedBioEvent);
-   	}
+		try {
+			for (BioEvent bioEvent : deleteList) {
+				simulationContext.removeBioEvent(bioEvent);
+			}
+		} catch (PropertyVetoException ex) {
+			ex.printStackTrace();
+			DialogUtils.showErrorDialog(this, ex.getMessage());
+		}		
+	}
 
-	public void selectEvent(BioEvent bioEvent) {
-		getEventSummaryTableModel().selectEvent(bioEvent);		
+	@Override
+	protected BioModelEditorApplicationRightSideTableModel<BioEvent> createTableModel() {
+		return new EventsSummaryTableModel(table);
+	}
+
+	@Override
+	protected void tableSelectionChanged() {
+		super.tableSelectionChanged();
+		int[] rows = table.getSelectedRows();
+		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {
+			getEventPanel().setBioEvent(tableModel.getValueAt(rows[0]));
+		} else {
+			getEventPanel().setBioEvent(null);
+		}
 	}
 	
 }

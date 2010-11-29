@@ -6,12 +6,6 @@ package org.vcell.util.gui.sorttable;
  */
 public interface SortTableModel extends javax.swing.table.TableModel {
 	public void setSortPreference(SortPreference sortPreference);
-
 	public SortPreference getSortPreference();
-
-
 	public boolean isSortable(int col);
-
-
-	public void resortColumn();
 }

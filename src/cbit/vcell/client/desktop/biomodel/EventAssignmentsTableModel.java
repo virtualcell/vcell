@@ -1,7 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeListener;
-import java.util.Collections;
 import java.util.Comparator;
 
 import javax.swing.JTable;
@@ -16,6 +15,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
+@SuppressWarnings("serial")
 public class EventAssignmentsTableModel extends DefaultSortTableModel<EventAssignment> implements PropertyChangeListener {
 		private class VariableColumnComparator implements Comparator<EventAssignment> {
 			protected int index;
@@ -162,11 +162,11 @@ public class EventAssignmentsTableModel extends DefaultSortTableModel<EventAssig
 	}
 
 	private void refreshData() {
-		rows.clear();
-		if (getSimulationContext() != null && fieldBioEvent != null){
-			rows.addAll(fieldBioEvent.getEventAssignments());
+		if (getSimulationContext() == null || fieldBioEvent == null){
+			setData(null);
+		} else {
+			setData(fieldBioEvent.getEventAssignments());
 		}
-		fireTableDataChanged();
 	}
 	
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
@@ -211,7 +211,7 @@ public class EventAssignmentsTableModel extends DefaultSortTableModel<EventAssig
 		firePropertyChange("bioEvent", oldValue, argBioEvent);
 	}
 
-	public SimulationContext getSimulationContext() {
+	private SimulationContext getSimulationContext() {
 		return fieldSimContext;
 	}
 
@@ -225,10 +225,9 @@ public class EventAssignmentsTableModel extends DefaultSortTableModel<EventAssig
 		// fireTableDataChanged();
 	}
 
-	public void sortColumn(int col, boolean ascending)
+	public Comparator<EventAssignment> getComparator(int col, boolean ascending)
 	{
-	  Collections.sort(rows, new VariableColumnComparator(col, ascending));
-	  fireTableDataChanged();
+	  return new VariableColumnComparator(col, ascending);
 	}
 
 }

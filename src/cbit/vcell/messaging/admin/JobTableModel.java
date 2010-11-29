@@ -1,7 +1,9 @@
 package cbit.vcell.messaging.admin;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 
+import org.vcell.util.ComparableObject;
 import org.vcell.util.gui.sorttable.ColumnComparator;
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
@@ -10,7 +12,7 @@ import org.vcell.util.gui.sorttable.DefaultSortTableModel;
  * Creation date: (8/28/2003 1:38:32 PM)
  * @author: Fei Gao
  */
-public class JobTableModel extends DefaultSortTableModel<SimpleJobStatus> {
+public class JobTableModel extends DefaultSortTableModel<ComparableObject> {
 	private final static int columnIndex_UserID = 0;
 	private final static int columnIndex_SimID = 1;
 	private final static int columnIndex_JobIndex = 2;
@@ -50,37 +52,17 @@ public Class getColumnClass(int columnIndex) {
 	}
 }
 
-
 /**
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	if (row >= rows.size() || row < 0 || col < 0 || col >= columns.length) {
-		return null;
-	}
-
-	SimpleJobStatus jobStatus = (SimpleJobStatus)rows.get(row);
+	ComparableObject jobStatus = getValueAt(row);
 	Object[] values = jobStatus.toObjects();
 	return values[col];
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (8/18/2003 8:24:43 AM)
- * @param status cbit.vcell.messaging.admin.PerformanceStatus
- */
-public synchronized void remove(int index) {
-	if (index >= rows.size() || index < 0) {
-		System.out.println("Array index out of bound " + index);		
-	} else {
-		rows.remove(index);
-		fireTableDataChanged();
-	}
-}
-
-public void sortColumn(int col, boolean ascending) {
-	Collections.sort(rows, new ColumnComparator(col, ascending));
+public Comparator<ComparableObject> getComparator(int col, boolean ascending) {
+	return new ColumnComparator(col, ascending);
 }
 
 }

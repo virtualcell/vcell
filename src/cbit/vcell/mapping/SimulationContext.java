@@ -65,9 +65,12 @@ import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class SimulationContext implements SimulationOwner, Versionable, Matchable, 
 	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable,FieldFunctionContainer {
 
+	public static final String PROPERTY_NAME_ANALYSIS_TASKS = "analysisTasks";
+	public static final String PROPERTY_NAME_BIOEVENTS = "bioevents";
 	public static final String PROPERTY_NAME_USE_CONCENTRATION = "UseConcentration";
 
 	public class SimulationContextNameScope extends BioNameScope {
@@ -1544,16 +1547,16 @@ public void setAnalysisTasks(AnalysisTask[] analysisTasks) throws java.beans.Pro
 		return;
 	}
 	AnalysisTask[] oldValue = fieldAnalysisTasks;
-	fireVetoableChange("analysisTasks", oldValue, analysisTasks);
+	fireVetoableChange(PROPERTY_NAME_ANALYSIS_TASKS, oldValue, analysisTasks);
 	fieldAnalysisTasks = analysisTasks;
-	firePropertyChange("analysisTasks", oldValue, analysisTasks);
+	firePropertyChange(PROPERTY_NAME_ANALYSIS_TASKS, oldValue, analysisTasks);
 }
 
 public void setBioEvents(BioEvent[] bioEvents) throws java.beans.PropertyVetoException {
 	BioEvent[] oldValue = fieldBioEvents;
-	fireVetoableChange("bioevents", oldValue, bioEvents);
+	fireVetoableChange(PROPERTY_NAME_BIOEVENTS, oldValue, bioEvents);
 	fieldBioEvents = bioEvents;
-	firePropertyChange("bioevents", oldValue, bioEvents);
+	firePropertyChange(PROPERTY_NAME_BIOEVENTS, oldValue, bioEvents);
 }
 
 /**
@@ -1806,7 +1809,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		fireVetoableChange("simulations",oldSimulations,newSimulations);
 	}
 	
-	if (evt.getSource() == this && evt.getPropertyName().equals("bioevents")) {
+	if (evt.getSource() == this && evt.getPropertyName().equals(PROPERTY_NAME_BIOEVENTS)) {
 		BioEvent newBioevents[] = (BioEvent[])evt.getNewValue();
 		if (newBioevents==null){
 			return;
@@ -2006,7 +2009,6 @@ protected boolean hasEventAssignment(SpeciesContext speciesContext) {
 		return false;
 	}
 
-	SpeciesContextSpec speciesContextSpec = getReactionContext().getSpeciesContextSpec(speciesContext);
 	//
 	// check if speciesContext is a target variable in the (bio)events in the simContext
 	//

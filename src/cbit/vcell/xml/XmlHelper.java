@@ -157,7 +157,7 @@ public class XmlHelper {
 //			Element element = xmlProducer.getXML(bioModel);
 //			element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS));		
 //			xmlString = XmlUtil.xmlToString(element);
-		} catch (ExpressionException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new XmlParseException("Unable to generate Biomodel XML: " + e.getMessage());
 		} 

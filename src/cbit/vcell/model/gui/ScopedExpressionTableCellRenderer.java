@@ -7,13 +7,11 @@ import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import javax.imageio.ImageReader;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -168,18 +166,14 @@ public static void formatTableCellSizes(final javax.swing.JTable targetTable) {
 				TableColumnModel tcm = targetTable.getColumnModel();
 				int total_columns = tcm.getColumnCount();
 				for (int i = 0; i < total_columns; i++)	{
-					if (!expressionColumnList.contains(i)) {
-						TableColumn column = tcm.getColumn(i);
-						extraWidth = extraWidth - column.getPreferredWidth();
-					}
+					TableColumn column = tcm.getColumn(i);
+					extraWidth = extraWidth - column.getPreferredWidth();
 				}
 	
 				extraWidth /= expressionColumnList.size();
 				for (int c : expressionColumnList) {
 					TableColumn exprColumn = tcm.getColumn(c);
-					if (extraWidth > exprColumn.getPreferredWidth()) {
-						exprColumn.setPreferredWidth(extraWidth);
-					}
+					exprColumn.setPreferredWidth(exprColumn.getPreferredWidth() + extraWidth);
 				}
 			}
 		}

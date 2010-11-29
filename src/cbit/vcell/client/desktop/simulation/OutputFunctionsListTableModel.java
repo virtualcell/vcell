@@ -155,7 +155,6 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == getOutputFunctionContext() && evt.getPropertyName().equals("outputFunctions")) {
 		setData(outputFunctionContext.getOutputFunctionsList());
-		fireTableRowsUpdated(0, getRowCount());
 	}
 	if (evt.getPropertyName().equals("geometry")) {
 		Geometry oldGeometry = (Geometry)evt.getOldValue();
@@ -205,7 +204,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	}
 }
 
-public OutputFunctionContext getOutputFunctionContext() {
+private OutputFunctionContext getOutputFunctionContext() {
 	return outputFunctionContext;
 }
 
@@ -225,10 +224,9 @@ public void setOutputFunctionContext(OutputFunctionContext argOutputFnContext) {
 	}
 }
 
-public void sortColumn(int col, boolean ascending)
+public Comparator<AnnotatedFunction> getComparator(int col, boolean ascending)
 {
-  Collections.sort(rows, new FunctionColumnComparator(col, ascending));
-  fireTableDataChanged();
+  return new FunctionColumnComparator(col, ascending);
 }
 
 public AnnotatedFunction getSelectedOutputFunction() {

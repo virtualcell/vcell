@@ -4,7 +4,7 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Comparator;
 
 import javax.swing.JTable;
@@ -25,7 +25,6 @@ public class DataSymbolsTableModel extends DefaultSortTableModel<DataSymbol> imp
 	public static final int COLUMN_DATA_SET_NAME = 1;
 	private static String LABELS[] = { "Symbol Name", "Dataset Name"};
 	
-	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationContext fieldSimulationContext = null;
 //	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	private JTable ownerTable = null;
@@ -36,20 +35,6 @@ public class DataSymbolsTableModel extends DefaultSortTableModel<DataSymbol> imp
 public DataSymbolsTableModel(JTable table) {
 	super(LABELS);
 	ownerTable = table;
-}
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
 /**
@@ -73,16 +58,6 @@ public Class<?> getColumnClass(int column) {
 }
 
 /**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-
-/**
  * Gets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
  * @return The simulationContext property value.
  * @see #setSimulationContext
@@ -92,12 +67,10 @@ private SimulationContext getSimulationContext() {
 }
 
 private void refreshData() {
-	rows.clear();
-	if (getSimulationContext()==null){
-		return;
-	}
-	for (DataSymbol dataSymbol : getSimulationContext().getDataContext().getDataSymbols()){
-		rows.add(dataSymbol);
+	if (getSimulationContext() == null){
+		setData(null);
+	} else {
+		setData(Arrays.asList(getSimulationContext().getDataContext().getDataSymbols()));
 	}
 }
 
@@ -135,13 +108,6 @@ public Object getValueAt(int row, int col) {
 		ex.printStackTrace(System.out);
 		return null;
 	}		
-}
-
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
 }
 
 /**
@@ -186,13 +152,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof DataSymbol && evt.getPropertyName().equals("name")) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
-}
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
 }
 
 /**
@@ -243,8 +202,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 }
 
 @Override
-public void sortColumn(final int col, final boolean ascending) {
-	Collections.sort(rows, new Comparator<DataSymbol>() {	
+public Comparator<DataSymbol> getComparator(final int col, final boolean ascending) {
+	return new Comparator<DataSymbol>() {	
 		/**
 		 * Compares its two arguments for order.  Returns a negative integer,
 		 * zero, or a positive integer as the first argument is less than, equal
@@ -276,7 +235,7 @@ public void sortColumn(final int col, final boolean ascending) {
 			}
 			return 1;
 		};
-	});	
+	};	
 }
 
 }

@@ -9,6 +9,7 @@ import java.util.Vector;
 
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.vcell.util.BeanUtils;
@@ -936,7 +937,9 @@ public static void showFrame(JInternalFrame frame, JDesktopPaneEnhanced pane) {
 		} catch (java.beans.PropertyVetoException exc) {
 		}
 	}
-	frame.pack();
+	//frame.pack();
+	frame.setSize(600,500);
+	BeanUtils.centerOnComponent(frame, pane);
 	frame.show();
 	try {
 		frame.setSelected(true);

@@ -1,6 +1,7 @@
 package org.vcell.util.gui.sorttable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -8,10 +9,10 @@ import javax.swing.table.AbstractTableModel;
 @SuppressWarnings("serial")
 public abstract class DefaultSortTableModel<T>  extends AbstractTableModel  implements SortTableModel {
 	private static final String PROPERTY_NAME_SORT_PREFERENCE = "sortPreference";
-	protected transient java.beans.PropertyChangeSupport propertyChange;
+	private transient java.beans.PropertyChangeSupport propertyChange;
 	private SortPreference fieldSortPreference = new SortPreference(true, -1);
-	protected List<T> rows = Collections.synchronizedList(new ArrayList<T>());
-	protected String columns[] = null;		
+	private List<T> rows = Collections.synchronizedList(new ArrayList<T>());
+	private String columns[] = null;		
 
 	public DefaultSortTableModel(String[] cols) {
 		super();
@@ -34,7 +35,7 @@ public abstract class DefaultSortTableModel<T>  extends AbstractTableModel  impl
 	 * getRowCount method comment.
 	 */
 	public int getRowCount() {
-		return rows.size();
+		return getDataSize();
 	}
 
 
@@ -44,13 +45,18 @@ public abstract class DefaultSortTableModel<T>  extends AbstractTableModel  impl
 	public T getValueAt(int row) {
 		return rows.get(row);
 	}
+	
+	public void removeValueAt(int row) {
+		rows.remove(row);
+		fireTableDataChanged();
+	}
 
 	/**
 	 * Insert the method's description here.
 	 * Creation date: (8/19/2003 10:50:18 AM)
 	 * @param list java.util.List
 	 */
-	public void setData(List<T> list) {
+	public void setData(List<? extends T> list) {
 		rows.clear();	
 		if (list != null) {
 			rows.addAll(list);
@@ -59,9 +65,13 @@ public abstract class DefaultSortTableModel<T>  extends AbstractTableModel  impl
 		fireTableDataChanged();
 	}
 
-	public void clear() {
-		rows.clear();
-		fireTableDataChanged();
+	public int getDataSize() {
+		return rows.size();
+	}
+	
+	public void setColumns(String[] newValue) {
+		columns = newValue;
+		fireTableStructureChanged();
 	}
 
 /**
@@ -81,7 +91,7 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
 /**
  * Accessor for the propertyChange field.
  */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
+private java.beans.PropertyChangeSupport getPropertyChange() {
 	if (propertyChange == null) {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
 	};
@@ -120,9 +130,9 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 }
 
 
-public void resortColumn() {
+private void resortColumn() {
 	if (getSortPreference() != null && getSortPreference().getSortedColumnIndex() != -1) {
-		sortColumn(getSortPreference().getSortedColumnIndex(), getSortPreference().isSortedColumnAscending());
+		Collections.sort(rows, getComparator(getSortPreference().getSortedColumnIndex(), getSortPreference().isSortedColumnAscending()));
 	}	
 }
 
@@ -139,6 +149,5 @@ public void setSortPreference(SortPreference sortPreference) {
 	firePropertyChange(PROPERTY_NAME_SORT_PREFERENCE, oldValue, sortPreference);
 }
 
-
-protected abstract void sortColumn(int col, boolean ascending);
+protected abstract Comparator<T> getComparator(int col, boolean ascending);
 }

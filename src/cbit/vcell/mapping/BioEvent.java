@@ -14,14 +14,18 @@ import org.vcell.util.Matchable;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.ReservedBioSymbolEntries;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
+@SuppressWarnings("serial")
 public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
 	
+	private static final String PROPERTY_NAME_NAME = "name";
+
 	public class BioEventNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
 		public BioEventNameScope(){
@@ -216,17 +220,20 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	public ScopedSymbolTable getScopedSymbolTable(){
 		return parameterContext;
 	}
-	
-//	public void setSimulationContext(SimulationContext simulationContext) {
-//		this.simulationContext = simulationContext;
-//	}
+
+	public void setName(String newValue) throws PropertyVetoException {
+		String oldValue = name;
+		fireVetoableChange(PROPERTY_NAME_NAME, oldValue, newValue);
+		this.name = newValue;
+		firePropertyChange(PROPERTY_NAME_NAME, oldValue, newValue);
+	}
 
 	public void setTriggerExpression(Expression triggerExpr) {
 		Expression oldValue = triggerExpression;
 		this.triggerExpression = triggerExpr;
 		firePropertyChange("trigger", oldValue, triggerExpr);
 	}
-
+	
 	public void setDelay(Delay newDelay) {
 		Delay oldValue = delay;
 		this.delay = newDelay;
@@ -355,6 +362,15 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	}
 	
 	public void vetoableChange(PropertyChangeEvent evt)	throws PropertyVetoException {
+		if (evt.getSource() == this && evt.getPropertyName().equals(PROPERTY_NAME_NAME)) {
+			String newName = (String) evt.getNewValue();
+			if (simulationContext.getBioEvent(newName) != null) {
+				throw new PropertyVetoException("An event with name '" + newName + "' already exists!",evt);
+			}
+			if (ReservedBioSymbolEntries.getEntry(newName)!=null){
+				throw new PropertyVetoException("Cannot use reserved symbol '" + newName + "' as an event name",evt);
+			}
+		}
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
