@@ -51,8 +51,8 @@ public class FRAPOptData {
 	public static final Parameter REF_SECOND_MOBILE_FRACTION_PARAM =
 		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION], 0, 1, 1.0, 1.0);
 	//The time bounds for reference simulation, simulation will stop at spatial uniform or the ending time(if uniform hasn't reached yet). 
-	private static double REF_STARTINGTIME = 0;
-	private static double REF_ENDINGTIME = 500;
+	public static double REF_STARTINGTIME = 0;
+	public static double REF_MIN_ENDINGTIME = 40;
 	//Variable reference diffusion rate actually used in simulation in order to reach spatial uniform faster
 	//after the simulation, the results will convert to the results as if it was run by diffusion rate  1.
 	public static final double REFERENCE_DIFF_DELTAT = 0.05;
@@ -106,12 +106,6 @@ public class FRAPOptData {
 		setNumEstimatedParams(numberOfEstimatedParams);
 		localWorkspace = argLocalWorkSpace;
 		dimensionReducedRefData = getDimensionReducedRefData(null, simRefData); 
-	}
-	
-	public TimeBounds getRefTimeBounds()
-	{
-		TimeBounds refTimeBounds = new TimeBounds(FRAPOptData.REF_STARTINGTIME, FRAPOptData.REF_ENDINGTIME);
-		return refTimeBounds;
 	}
 	
 	public TimeStep getRefTimeStep()

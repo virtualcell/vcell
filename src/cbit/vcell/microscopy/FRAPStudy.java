@@ -225,7 +225,7 @@ public class FRAPStudy implements Matchable{
 		Extent extent = sourceFrapStudy.getFrapData().getImageDataset().getExtent();
 
 		double[] timeStamps = sourceFrapStudy.getFrapData().getImageDataset().getImageTimeStamps();
-		TimeBounds timeBounds = new TimeBounds(0.0,timeStamps[timeStamps.length-1]-timeStamps[startingIndexForRecovery]);
+		TimeBounds timeBounds = new TimeBounds(FRAPOptData.REF_STARTINGTIME, Math.max(FRAPOptData.REF_MIN_ENDINGTIME,(timeStamps[timeStamps.length-1]-timeStamps[startingIndexForRecovery])));
 		double timeStepVal = FRAPOptData.REFERENCE_DIFF_DELTAT;
 		
 		int numX = cellROI_2D.getRoiImages()[0].getNumX();
@@ -330,7 +330,7 @@ public class FRAPStudy implements Matchable{
 				
 		SimulationVersion simVersion = new SimulationVersion(simKey,"sim1",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
 		Simulation newSimulation = new Simulation(simVersion,simContext.getMathDescription());
-		newSimulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
+		newSimulation.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolumeStandalone);
 		newSimulation.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(timeStepVal));
 		simContext.addSimulation(newSimulation);
 		newSimulation.getSolverTaskDescription().setTimeBounds(timeBounds);
