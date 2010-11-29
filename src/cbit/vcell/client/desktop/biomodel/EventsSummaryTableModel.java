@@ -2,65 +2,42 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
+import org.vcell.util.gui.DialogUtils;
 
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.ReservedBioSymbolEntries;
+import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")
-public class EventsSummaryTableModel extends DefaultSortTableModel<BioEvent> implements PropertyChangeListener{
+public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideTableModel<BioEvent> implements PropertyChangeListener{
 
 	public final static int COLUMN_EVENT_NAME = 0;
 	public final static int COLUMN_EVENT_TRIGGER_EXPR = 1;
 	public final static int COLUMN_EVENT_DELAY_EXPR = 2;
 	public final static int COLUMN_EVENT_ASSIGN_VARS_LIST = 3;
 	
-	private SimulationContext fieldSimContext = null;
-	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private static String[] columnNames = new String[] {"Name", "Trigger", "Delay", "Event Assignment Vars"};
-	private JTable ownerTable = null;
 
 	public EventsSummaryTableModel(JTable table) {
-		super(columnNames);
-		ownerTable = table;
-		addPropertyChangeListener(this);
+		super(table);
+		setColumns(columnNames);
 	}
 	
-	/**
-	 * The addPropertyChangeListener method was generated to support the propertyChange field.
-	 */
-	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-		getPropertyChange().addPropertyChangeListener(listener);
-	}
-
-
-	/**
-	 * The firePropertyChange method was generated to support the propertyChange field.
-	 */
-	public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-	}
-
-	/**
-	 * Accessor for the propertyChange field.
-	 */
-	protected java.beans.PropertyChangeSupport getPropertyChange() {
-		if (propertyChange == null) {
-			propertyChange = new java.beans.PropertyChangeSupport(this);
-		};
-		return propertyChange;
-	}
-
 	public Class<?> getColumnClass(int column) {
 		switch (column){
 			case COLUMN_EVENT_NAME:{
-				return BioEvent.class;
+				return String.class;
 			}
 			case COLUMN_EVENT_TRIGGER_EXPR:{
 				return ScopedExpression.class;
@@ -77,28 +54,21 @@ public class EventsSummaryTableModel extends DefaultSortTableModel<BioEvent> imp
 		}
 	}
 
-	private void refreshData() {
-
-		rows.clear();
-		if (getSimulationContext()==null){
-			return;
+	protected List<BioEvent> computeData() {
+		if (simulationContext == null || simulationContext.getBioEvents() == null){
+			return null;
 		}
-		for (BioEvent bioEvent : getSimulationContext().getBioEvents()){
-			rows.add(bioEvent);
-		}
-		fireTableDataChanged();
+		
+		return Arrays.asList(simulationContext.getBioEvents());
 	}
 
 	public Object getValueAt(int row, int column) {
 		try{
-			if (getRowCount() <= row){
-				refreshData();
-			}	
-			BioEvent event = getValueAt(row);
-			if (row >= 0 && row < getRowCount()) {
+			if (row >= 0 && row < getDataSize()) {
+				BioEvent event = getValueAt(row);
 				switch (column) {
 					case COLUMN_EVENT_NAME: {
-						return event;
+						return event.getName();
 					} 
 					case COLUMN_EVENT_TRIGGER_EXPR: {
 						if (event.getTriggerExpression() == null) {
@@ -127,32 +97,26 @@ public class EventsSummaryTableModel extends DefaultSortTableModel<BioEvent> imp
 						varNames = varNames.substring(0, varNames.lastIndexOf(","));
 						return varNames;
 					} 
-					default: {
-						return null;
-					}
 				}
 			} else {
-				return null;
+				if (column == COLUMN_EVENT_NAME) {
+					return BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT;
+				}
 			}
 		} catch(Exception e){
 			e.printStackTrace(System.out);
-			return null;
 		}
-	}
-
-	/**
-	 * The hasListeners method was generated to support the propertyChange field.
-	 */
-	public synchronized boolean hasListeners(java.lang.String propertyName) {
-		return getPropertyChange().hasListeners(propertyName);
+		return null;
 	}
 
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		// for now make all cells uneditable ?
-		return false;
+		return columnIndex == COLUMN_EVENT_NAME;
 	}
 
+	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
+		super.propertyChange(evt);
+		
 		if (evt.getPropertyName().equals("trigger") || evt.getPropertyName().equals("delay") || evt.getPropertyName().equals("eventAssignments")) {
 			fireTableRowsUpdated(0, getRowCount()-1);
 		} else {
@@ -174,63 +138,30 @@ public class EventsSummaryTableModel extends DefaultSortTableModel<BioEvent> imp
 		}
 	}
 	
-	/**
-	 * The removePropertyChangeListener method was generated to support the propertyChange field.
-	 */
-	public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-		getPropertyChange().removePropertyChangeListener(listener);
+	public void setValueAt(Object value, int row, int column) {
+		try{
+			BioEvent bioEvent = null;
+			if (row >= 0 && row < getDataSize()) {
+				bioEvent = getValueAt(row);
+			} else {
+				bioEvent = new BioEvent(simulationContext.getFreeEventName(), simulationContext);
+			}
+			switch (column) {
+				case COLUMN_EVENT_NAME: {
+					bioEvent.setName((String)value);
+				} 
+			}
+			if (row >= getDataSize()) {
+				simulationContext.addBioEvent(bioEvent);
+			}
+		} catch(Exception e){
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(ownerTable, e.getMessage());
+		}
 	}
 
-	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		if (rowIndex<0 || rowIndex>=getRowCount()){
-			throw new RuntimeException("EventsSummaryTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
-		}
-		if (columnIndex<0 || columnIndex>=getColumnCount()){
-			throw new RuntimeException("EventsSummaryTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
-		}
-		// BioEvent event = (BioEvent)getData().get(rowIndex);
-	}
-	
-	public SimulationContext getSimulationContext() {
-		return fieldSimContext;
-	}
-
-	public void setSimulationContext(SimulationContext argSimContext) {
-		SimulationContext oldValue = fieldSimContext;
-		fieldSimContext = argSimContext;
-		
-		if (oldValue != null) {			
-			oldValue.removePropertyChangeListener(this);
-			if (oldValue.getBioEvents() != null) {		
-				for (BioEvent be : oldValue.getBioEvents()) {
-					be.removePropertyChangeListener(this);
-				}
-			}
-		}
-			
-		if (argSimContext != null) {
-			argSimContext.addPropertyChangeListener(this);
-			if (argSimContext.getBioEvents() != null) {		
-				for (BioEvent be : argSimContext.getBioEvents()) {
-					be.addPropertyChangeListener(this);
-				}
-			}
-		}
-		firePropertyChange("simulationContext", oldValue, argSimContext);
-	}
-	
-	public void selectEvent(BioEvent bioEvent) {
-		for (int i = 0; i < getRowCount(); i ++) {
-			BioEvent valueAt = (BioEvent)getValueAt(i, COLUMN_EVENT_NAME);
-			if (valueAt.getName().equals(bioEvent.getName())) {
-				ownerTable.changeSelection(i, 0, false, false);
-				break;
-			}
-		}		
-	}
-
-	@Override
-	public void sortColumn(int col, boolean ascending) {
+	public Comparator<BioEvent> getComparator(int col, boolean ascending) {
+		return null;
 	}
 
 	@Override
@@ -238,4 +169,35 @@ public class EventsSummaryTableModel extends DefaultSortTableModel<BioEvent> imp
 		return false;
 	}
 
+	public String checkInputValue(String inputValue, int row, int column) {
+		BioEvent bioEvent = null;
+		if (row >= 0 && row < getDataSize()) {
+			bioEvent = getValueAt(row);
+		}
+		switch (column) {
+		case COLUMN_EVENT_NAME: {
+			if (bioEvent == null || !bioEvent.getName().equals(inputValue)) {
+				if (simulationContext.getBioEvent(inputValue) != null) {
+					return "An event with name '" + inputValue + "' already exists!";
+				}
+				if (ReservedBioSymbolEntries.getEntry(inputValue) != null) {
+					return "Cannot use reserved symbol '" + inputValue + "' as an event name";
+				}
+			}
+		}
+		}
+		return null;
+	}
+
+	public SymbolTable getSymbolTable(int row, int column) {
+		return null;
+	}
+
+	public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(int row, int column) {
+		return null;
+	}
+
+	public Set<String> getAutoCompletionWords(int row, int column) {
+		return null;
+	}
 }

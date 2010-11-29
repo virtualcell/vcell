@@ -356,7 +356,7 @@ public class SPPRPanel extends JPanel {
 				if(outerSplitPane.getRightComponent() != getEventsDisplayPanel()) {
 					outerSplitPane.setRightComponent(getEventsDisplayPanel());
 				}
-				getEventsDisplayPanel().setScrollPaneTableCurrentRow((BioEvent)leaf);	// notify right panel about selection change
+//				getEventsDisplayPanel().setScrollPaneTableCurrentRow((BioEvent)leaf);	// notify right panel about selection change
 			} else if(folderId == SPPRTreeModel.ELECTRICAL_MAPPING_NODE) {
 				if(outerSplitPane.getRightComponent() != getElectricalMembraneMappingPanel()) {
 					outerSplitPane.setRightComponent(getElectricalMembraneMappingPanel());
@@ -481,7 +481,7 @@ public class SPPRPanel extends JPanel {
 	private EventsDisplayPanel getEventsDisplayPanel() {
 		if (eventsDisplayPanel == null) {
 			try {
-				eventsDisplayPanel = new EventsDisplayPanel(true);
+				eventsDisplayPanel = new EventsDisplayPanel();
 				eventsDisplayPanel.setName("EventsDisplayPanel");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -634,7 +634,7 @@ public class SPPRPanel extends JPanel {
 		try {
 			BioEvent bioEvent = new BioEvent(eventName, fieldSimulationContext);
 			fieldSimulationContext.addBioEvent(bioEvent);
-			getEventsDisplayPanel().selectEvent(bioEvent);
+//			getEventsDisplayPanel().selectEvent(bioEvent);
 		} catch (PropertyVetoException e) {
 			e.printStackTrace(System.out);
 			DialogUtils.showErrorDialog(this, "Error adding Event : " + e.getMessage());

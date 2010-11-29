@@ -4,7 +4,7 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Comparator;
 
 import javax.swing.JTable;
@@ -30,6 +30,7 @@ import cbit.vcell.parser.ExpressionException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class SpeciesContextSpecsTableModel extends DefaultSortTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_SPECIESCONTEXT = 1;
 	public static final int COLUMN_SPECIES = 0;
@@ -107,17 +108,11 @@ private SimulationContext getSimulationContext() {
 
 
 private void refreshData() {
-
-	rows.clear();
-	if (getSimulationContext()==null){
-		return;
+	if (getSimulationContext()== null){
+		setData(null);
+	} else {
+		setData(Arrays.asList(getSimulationContext().getReactionContext().getSpeciesContextSpecs()));
 	}
-	SpeciesContextSpec[] speciesContextSpecs = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
-	for (SpeciesContextSpec scs : speciesContextSpecs) {
-		rows.add(scs);
-	}
-	resortColumn();
-	fireTableDataChanged();
 }
 
 /**
@@ -393,9 +388,8 @@ private void updateListenersReactionContext(ReactionContext reactionContext,bool
 }
 
 
-@Override
-public void sortColumn(final int col, final boolean ascending) {
-	Collections.sort(rows, new Comparator<SpeciesContextSpec>() {	
+public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean ascending) {
+	return new Comparator<SpeciesContextSpec>() {	
 		/**
 		 * Compares its two arguments for order.  Returns a negative integer,
 		 * zero, or a positive integer as the first argument is less than, equal
@@ -475,9 +469,8 @@ public void sortColumn(final int col, final boolean ascending) {
 				}	
 			}
 			return 1;
-		};
-	});	
-	fireTableDataChanged();
+		}
+	};
 }
 
 }

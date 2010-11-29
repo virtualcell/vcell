@@ -33,7 +33,7 @@ import cbit.vcell.model.Structure;
 public class ReactionSlicesCartoonEditorPanel extends JPanel 
 implements ActionListener, PropertyChangeListener {
 	private static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(15,0);
-	public static final String PROPERTY_NAME_FLOATING = "Floating";
+	public static final String PROPERTY_NAME_FLOATING_REQUESTED = "floatingRequested";
 	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
 	private JPanel featureSizePanel = null;
 	private GraphPane graphPane = null;
@@ -63,7 +63,7 @@ implements ActionListener, PropertyChangeListener {
 	private ReactionSlicesCartoonTool reactionCartoonTool = null;
 	private Model fieldModel = null;
 
-	private boolean bFloating = false;
+	private boolean bFloatingRequested = false;
 	private JButton floatButton = null;
 
 	public ReactionSlicesCartoonEditorPanel() {
@@ -90,7 +90,7 @@ implements ActionListener, PropertyChangeListener {
 			else if (e.getSource() == getGlgLayoutJButton())
 				getReactionCartoonTool1().layoutGlg();
 			else if (e.getSource() == getFloatButton()) {
-				setFloating(!bFloating);
+				setFloatingRequested(!bFloatingRequested);
 			}
 		} catch (Throwable ivjExc) {
 			handleException(ivjExc);
@@ -660,7 +660,7 @@ implements ActionListener, PropertyChangeListener {
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
-		} else if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_NAME_FLOATING))) {
+		} else if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_NAME_FLOATING_REQUESTED))) {
 			floatButton.setText((Boolean)evt.getNewValue() ? "\u21b5" : "\u21b1");
 			floatButton.setToolTipText((Boolean)evt.getNewValue() ? "\u21b5 Dock" : "\u21b1 Float");
 		}
@@ -825,9 +825,9 @@ implements ActionListener, PropertyChangeListener {
 		}
 	}
 
-	private final void setFloating(boolean newValue) {
-		boolean oldValue = bFloating;
-		this.bFloating = newValue;
-		firePropertyChange(PROPERTY_NAME_FLOATING, oldValue, newValue);
+	private final void setFloatingRequested(boolean newValue) {
+		boolean oldValue = bFloatingRequested;
+		this.bFloatingRequested = newValue;
+		firePropertyChange(PROPERTY_NAME_FLOATING_REQUESTED, oldValue, newValue);
 	}
 }

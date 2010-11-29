@@ -14,6 +14,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -136,10 +137,10 @@ public class ScrollTable extends JTable {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				Component component = defaultTableCellHeaderRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (component instanceof JLabel){
-					((JLabel)component).setHorizontalAlignment(SwingConstants.CENTER);
-					((JLabel)component).setBackground(tableHeaderColor);
-					((JLabel)component).setPreferredSize(new Dimension(50, 25));
-					((JLabel)component).setBorder(tableCellHeaderBorder);
+					JLabel label = (JLabel)component;
+					label.setHorizontalAlignment(SwingConstants.CENTER);
+					label.setBackground(tableHeaderColor);
+					label.setBorder(BorderFactory.createCompoundBorder(tableCellHeaderBorder, new EmptyBorderBean(2, 0, 2, 0)));
 				}
 				return component;
 			}			

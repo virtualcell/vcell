@@ -1,15 +1,15 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -24,7 +24,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 
 	public BioModelEditorSpeciesTableModel(JTable table) {
 		super(table);
-		columns = columnNames;
+		setColumns(columnNames);
 	}
 	
 	public Class<?> getColumnClass(int column) {
@@ -40,29 +40,24 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		return Object.class;
 	}
 
-	protected void refreshData() {
-
-		if (model == null){
-			return;
-		}
-		rows.clear();
-		SpeciesContext[] speciesContextList = model.getSpeciesContexts();
-		if (speciesContextList != null) {
-			for (SpeciesContext s : speciesContextList){
+	protected ArrayList<SpeciesContext> computeData() {
+		ArrayList<SpeciesContext> speciesContextList = new ArrayList<SpeciesContext>();
+		if (getModel() != null){
+			for (SpeciesContext s : getModel().getSpeciesContexts()){
 				if (searchText == null || searchText.length() == 0 || s.getName().startsWith(searchText)) {
-					rows.add(s);
+					speciesContextList.add(s);
 				}
 			}
 		}
-		fireTableDataChanged();
+		return speciesContextList;
 	}
 
 	public Object getValueAt(int row, int column) {
-		if (model == null) {
+		if (getModel() == null) {
 			return null;
 		}
 		try{
-			if (row >= 0 && row < rows.size()) {
+			if (row >= 0 && row < getDataSize()) {
 				SpeciesContext speciesContext = getValueAt(row);
 				switch (column) {
 					case COLUMN_NAME: {
@@ -74,7 +69,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 				}
 			} else {
 				if (column == COLUMN_NAME) {
-					return EditorScrollTable.ADD_NEW_HERE_TEXT;
+					return ADD_NEW_HERE_TEXT;
 				} 
 			}
 			return null;
@@ -94,54 +89,51 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	}
 	
 	public void setValueAt(Object value, int row, int column) {
-		if (model == null) {
+		if (getModel() == null) {
 			return;
 		}
 		try{
 			String newValue = (String)value;
-			if (row >= 0 && row < rows.size()) {
+			if (row >= 0 && row < getDataSize()) {
 				SpeciesContext speciesContext = getValueAt(row);
 				switch (column) {
 				case COLUMN_NAME: {
+					speciesContext.getSpecies().setCommonName(newValue);
 					speciesContext.setHasOverride(true);
 					speciesContext.setName(newValue);
 					break;
 				} 
 				case COLUMN_STRUCTURE: {
-					speciesContext.getStructure().setName(newValue);
+					Structure structure = getModel().getStructure(newValue);
+					// TODO
+//					speciesContext;
 					break;
 				} 
 				}
 			} else {
-				SpeciesContext freeSpeciesContext = new SpeciesContext(new Species(model.getFreeSpeciesName(), null), model.getStructures()[0]);
+				SpeciesContext freeSpeciesContext = new SpeciesContext(new Species(getModel().getFreeSpeciesName(), null), getModel().getStructures()[0]);
 				switch (column) {
 				case COLUMN_NAME: {
-					if (!value.equals(EditorScrollTable.ADD_NEW_HERE_TEXT)) {
+					if (!value.equals(ADD_NEW_HERE_TEXT)) {
 						freeSpeciesContext.getSpecies().setCommonName(newValue);
 					}
 					break;
 				} 
 				case COLUMN_STRUCTURE: {
-					Structure s = model.getStructure(newValue);
-					freeSpeciesContext = new SpeciesContext(new Species(model.getFreeSpeciesName(), null), s);
+					Structure s = getModel().getStructure(newValue);
+					freeSpeciesContext = new SpeciesContext(new Species(getModel().getFreeSpeciesName(), null), s);
 					break;
 				} 
 				}
 				freeSpeciesContext.setHasOverride(true);
 				freeSpeciesContext.setName(freeSpeciesContext.getSpecies().getCommonName());
-				model.addSpecies(freeSpeciesContext.getSpecies());
-				model.addSpeciesContext(freeSpeciesContext);
+				getModel().addSpecies(freeSpeciesContext.getSpecies());
+				getModel().addSpeciesContext(freeSpeciesContext);
 			}
 		} catch(Exception e){
 			e.printStackTrace(System.out);
 			DialogUtils.showErrorDialog(ownerTable, e.getMessage(), e);
 		}
-	}
-
-	public void setModel(Model newValue) {
-		Model oldValue = model;
-		model = newValue;
-		firePropertyChange(PROPERTY_NAME_MODEL, oldValue, newValue);
 	}
 
 	@Override
@@ -150,26 +142,27 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	}
 	
 	@Override
-	public void sortColumn(int col, boolean ascending) {
-		// TODO Auto-generated method stub		
+	public Comparator<SpeciesContext> getComparator(int col, boolean ascending) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	public String checkInputValue(String inputValue, int row, int column) {
 		SpeciesContext speciesContext = null;
-		if (row >= 0 && row < rows.size()) {
+		if (row >= 0 && row < getDataSize()) {
 			speciesContext = getValueAt(row);
 		}
 		String errMsg = null;
 		switch (column) {
 		case COLUMN_NAME:
 			if (speciesContext == null || !speciesContext.getName().equals(inputValue)) {
-				if (model.getSpeciesContext(inputValue) != null) {
+				if (getModel().getSpeciesContext(inputValue) != null) {
 					errMsg = "Species '" + inputValue + "' already exists!";
 				}
 			}
 			break;
 		case COLUMN_STRUCTURE:
-			if (model.getStructure(inputValue) == null) {
+			if (getModel().getStructure(inputValue) == null) {
 				errMsg = "Structure '" + inputValue + "' does not exist!";
 			}
 			break;
@@ -188,7 +181,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	public Set<String> getAutoCompletionWords(int row, int column) {
 		if (column == COLUMN_STRUCTURE) {
 			Set<String> words = new HashSet<String>();
-			for (Structure s : model.getStructures()) {
+			for (Structure s : getModel().getStructures()) {
 				words.add(s.getName());
 			}
 			return words;

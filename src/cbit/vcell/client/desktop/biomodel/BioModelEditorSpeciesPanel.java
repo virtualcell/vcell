@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -8,33 +9,37 @@ import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.UIManager;
 
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.gui.SpeciesEditorPanel;
 
 @SuppressWarnings("serial")
 public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<SpeciesContext> {	
-	
+	private SpeciesEditorPanel speciesEditorPanel = null;
 	public BioModelEditorSpeciesPanel() {
 		super();
 		initialize();
 	}
 
 	private void initialize() {	
-		tableModel = new BioModelEditorSpeciesTableModel(table);
-		table.setModel(tableModel);			
+		speciesEditorPanel = new SpeciesEditorPanel();
+		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
-		setLayout(new GridBagLayout());
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new GridBagLayout());
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,4,4,4);
-		add(new JLabel("Search "), gbc);
+		topPanel.add(new JLabel("Search "), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -43,22 +48,22 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
-		add(textFieldSearch, gbc);
+		topPanel.add(textFieldSearch, gbc);
 				
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,100,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		addButton.setPreferredSize(deleteButton.getPreferredSize());
-		add(addButton, gbc);
+		newButton.setPreferredSize(deleteButton.getPreferredSize());
+		topPanel.add(newButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
 		gbc.insets = new Insets(4,4,4,20);
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(deleteButton, gbc);
+		topPanel.add(deleteButton, gbc);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
@@ -69,7 +74,13 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 4;
 		gbc.fill = GridBagConstraints.BOTH;
-		add(table.getEnclosingScrollPane(), gbc);
+		topPanel.add(table.getEnclosingScrollPane(), gbc);
+		
+		splitPane.setDividerLocation(350);
+		splitPane.setTopComponent(topPanel);
+		splitPane.setBottomComponent(speciesEditorPanel);
+		setLayout(new BorderLayout());
+		add(splitPane, BorderLayout.CENTER);
 	}
 	
 	public static void main(java.lang.String[] args) {
@@ -96,6 +107,8 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 		SpeciesContext speciesContext = new SpeciesContext(new Species(bioModel.getModel().getFreeSpeciesName(), null), bioModel.getModel().getStructures()[0]);
 		try {
 			bioModel.getModel().addSpecies(speciesContext.getSpecies());
+			speciesContext.setHasOverride(true);
+			speciesContext.setName(speciesContext.getSpecies().getCommonName());
 			bioModel.getModel().addSpeciesContext(speciesContext);
 		} catch (PropertyVetoException ex) {
 			ex.printStackTrace();
@@ -107,7 +120,7 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 		int[] rows = table.getSelectedRows();
 		ArrayList<SpeciesContext> deleteList = new ArrayList<SpeciesContext>();
 		for (int r : rows) {
-			if (r < bioModel.getModel().getNumSpeciesContexts()) {
+			if (r < tableModel.getDataSize()) {
 				deleteList.add(tableModel.getValueAt(r));
 			}
 		}
@@ -118,6 +131,28 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 		} catch (PropertyVetoException ex) {
 			ex.printStackTrace();
 			DialogUtils.showErrorDialog(BioModelEditorSpeciesPanel.this, ex.getMessage());
+		}
+	}
+
+	@Override
+	protected BioModelEditorRightSideTableModel<SpeciesContext> createTableModel() {
+		return new BioModelEditorSpeciesTableModel(table);
+	}
+	
+	@Override
+	protected void bioModelChanged() {
+		super.bioModelChanged();
+		speciesEditorPanel.setModel(bioModel.getModel());
+	}
+	
+	@Override
+	protected void tableSelectionChanged() {
+		super.tableSelectionChanged();
+		int[] rows = table.getSelectedRows();
+		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
+			speciesEditorPanel.setSpeciesContext(tableModel.getValueAt(rows[0]));
+		} else {
+			speciesEditorPanel.setSpeciesContext(null);
 		}
 	}
 }

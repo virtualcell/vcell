@@ -22,12 +22,8 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.gui.FluxReactionPanel;
 import cbit.vcell.model.gui.KineticsTypeTemplatePanel;
-import cbit.vcell.model.gui.SimpleReactionPanel;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -38,6 +34,7 @@ import cbit.vcell.model.gui.SimpleReactionPanel;
  * Creation date: (2/23/01 10:31:14 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class ReactionSpecsPanel extends javax.swing.JPanel {
 	public static final String PARAMETER_NAME_SELECTED_REACTION_STEP = "selectedReactionStep";
 	private JSplitPane outerSplitPane;
@@ -192,7 +189,7 @@ public void checkBooleanTableColumn(CheckOption b) {
 	boolean bCheck = CheckOption.CheckSelected.equals(b);
 	int[] selectedRows = getScrollPaneTable().getSelectedRows();
 	for (int r = 0; r < selectedRows.length; r ++) {
-		ReactionSpec rs = getReactionSpecsTableModel().getReactionSpec(selectedRows[r]);
+		ReactionSpec rs = getReactionSpecsTableModel().getValueAt(selectedRows[r]);
 		try {
 			if (selectedColumn == ReactionSpecsTableModel.COLUMN_ENABLED) {
 				rs.setReactionMapping(bCheck ? ReactionSpec.INCLUDED : ReactionSpec.EXCLUDED);

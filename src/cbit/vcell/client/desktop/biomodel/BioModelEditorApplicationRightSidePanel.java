@@ -15,18 +15,18 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.gui.EditorScrollTable;
 
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
+import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
-public abstract class BioModelEditorRightSidePanel<T> extends JPanel {
-	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
+public abstract class BioModelEditorApplicationRightSidePanel<T> extends JPanel {
+	protected static final String PROPERTY_NAME_SIMULATION_CONTEXT = "simulationContext";
 	
-	protected JButton newButton = null;
+	protected JButton addButton = null;
 	protected JButton deleteButton = null;
 	protected EditorScrollTable table;
-	protected BioModelEditorRightSideTableModel<T> tableModel = null;
-	protected BioModel bioModel;
+	protected BioModelEditorApplicationRightSideTableModel<T> tableModel = null;
+	protected SimulationContext simulationContext;
 	protected JTextField textFieldSearch = null;
 	protected SelectionEvent selectionEvent = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
@@ -34,8 +34,8 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel {
 	private class InternalEventHandler implements ActionListener, PropertyChangeListener, DocumentListener, ListSelectionListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getSource() == BioModelEditorRightSidePanel.this && evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
-				bioModelChanged();
+			if (evt.getSource() == BioModelEditorApplicationRightSidePanel.this && evt.getPropertyName().equals(PROPERTY_NAME_SIMULATION_CONTEXT)) {
+				simulationContextChanged();
 			}
 		}
 		
@@ -52,7 +52,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel {
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == newButton) {
+			if (e.getSource() == addButton) {
 				newButtonPressed();
 			} else if (e.getSource() == deleteButton) {
 				deleteButtonPressed();
@@ -60,40 +60,41 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel {
 		}
 		
 		public void valueChanged(ListSelectionEvent e) {
-			if (bioModel == null || e.getValueIsAdjusting()) {
+			if (simulationContext == null || e.getValueIsAdjusting()) {
 				return;
 			}
 			if (e.getSource() == table.getSelectionModel()) {
 				tableSelectionChanged();
 			}
+			
 		}
 	}
 	
-	public BioModelEditorRightSidePanel() {
+	public BioModelEditorApplicationRightSidePanel() {
 		super();
 		addPropertyChangeListener(eventHandler);
 		initialize();
 	}
 
 	private void initialize(){
-		newButton = new JButton("New");
+		addButton = new JButton("New");
 		deleteButton = new JButton("Delete");
 		textFieldSearch = new JTextField(10);
 		table = new EditorScrollTable();
 		tableModel = createTableModel();
 		table.setModel(tableModel);
-		
-		newButton.addActionListener(eventHandler);
+
+		addButton.addActionListener(eventHandler);
 		deleteButton.addActionListener(eventHandler);
 		deleteButton.setEnabled(false);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
 		table.getSelectionModel().addListSelectionListener(eventHandler);
 	}
 	
-	public void setBioModel(BioModel newValue) {
-		BioModel oldValue = bioModel;
-		bioModel = newValue;		
-		firePropertyChange(PROPERTY_NAME_BIO_MODEL, oldValue, newValue);
+	public void setSimulationContext(SimulationContext newValue) {
+		SimulationContext oldValue = simulationContext;
+		simulationContext = newValue;		
+		firePropertyChange(PROPERTY_NAME_SIMULATION_CONTEXT, oldValue, newValue);
 	}
 	
 	private void searchTable() {
@@ -101,19 +102,19 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel {
 		tableModel.setSearchText(text);
 	}
 	
-	protected abstract BioModelEditorRightSideTableModel<T> createTableModel();
+	protected abstract BioModelEditorApplicationRightSideTableModel<T> createTableModel();
 	protected abstract void newButtonPressed();
 	protected abstract void deleteButtonPressed();
 	
-	protected void bioModelChanged() {
-		tableModel.setBioModel(bioModel);
+	protected void simulationContextChanged() {
+		tableModel.setSimulationContext(simulationContext);
 	}
 
 	protected void tableSelectionChanged() {
 		int[] rows = table.getSelectedRows();
 		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < tableModel.getDataSize()));
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {
-			setSelectionEvent(new SelectionEvent(tableModel.containedByModel() ? bioModel.getModel() : bioModel, tableModel.getValueAt(rows[0])));
+			setSelectionEvent(new SelectionEvent(simulationContext, tableModel.getValueAt(rows[0])));
 		} else {
 			setSelectionEvent(null);
 		}

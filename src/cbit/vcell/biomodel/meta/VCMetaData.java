@@ -148,13 +148,13 @@ public class VCMetaData implements Serializable {
 		return identifiableProvider;
 	}
 
-	public NonRDFAnnotation getExistingNonRDFAnnotation(Identifiable identifiable){
+	private NonRDFAnnotation getExistingNonRDFAnnotation(Identifiable identifiable){
 		OpenEntry entry = registry.getEntry(identifiable);
 		NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(entry);
 		return nonRDFAnnotation;
 	}
 		
-	public NonRDFAnnotation getOrCreateNonRDFAnnotation(Identifiable identifiable){
+	private NonRDFAnnotation getOrCreateNonRDFAnnotation(Identifiable identifiable){
 		OpenEntry entry = registry.getEntry(identifiable);
 		NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(entry);
 		if (nonRDFAnnotation==null){

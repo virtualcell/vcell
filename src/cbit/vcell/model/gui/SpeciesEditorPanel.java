@@ -1,5 +1,6 @@
 package cbit.vcell.model.gui;
 
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -28,6 +29,7 @@ import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.http.uniprot.UniProtConstants;
 import org.vcell.sybil.util.miriam.XRefToURN;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 
 import uk.ac.ebi.miriam.lib.MiriamLink;
@@ -51,8 +53,6 @@ import cbit.vcell.model.Structure;
 public class SpeciesEditorPanel extends JPanel {
 	private SpeciesContext fieldSpeciesContext = null;
 	private javax.swing.JButton ivjRevertButton = null;
-	private javax.swing.JLabel ivjNameJLabel = null;
-	private javax.swing.JTextField ivjNameValueJTextField = null;
 	private javax.swing.JButton ivjApplyJButton = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP1Aligning = false;
@@ -60,7 +60,6 @@ public class SpeciesEditorPanel extends JPanel {
 	private Model fieldModel = null;
 	private JTextArea annotationTextArea;
 	private JButton pathwayDBJButton = null;
-	private JLabel PCLinkJlabel = null;
 	private JEditorPane PCLinkValueEditorPane = null;
 	
 	public void saveSelectedXRef(XRef selectedXRef, MIRIAMQualifier miriamQualifier) {
@@ -247,40 +246,6 @@ public Model getModel() {
 	return fieldModel;
 }
 
-
-/**
- * Return the NameJLabel property value.
- * @return javax.swing.JLabel
- */
-private javax.swing.JLabel getNameJLabel() {
-	if (ivjNameJLabel == null) {
-		try {
-			ivjNameJLabel = new javax.swing.JLabel();
-			ivjNameJLabel.setName("NameJLabel");
-			ivjNameJLabel.setText("Name");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjNameJLabel;
-}
-
-/**
- * Return the NameValueJTextField property value.
- * @return javax.swing.JTextField
- */
-private javax.swing.JTextField getNameValueJTextField() {
-	if (ivjNameValueJTextField == null) {
-		try {
-			ivjNameValueJTextField = new javax.swing.JTextField();
-			ivjNameValueJTextField.setName("NameValueJTextField");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjNameValueJTextField;
-}
-
 /**
  * Return the OKJButton property value.
  * @return javax.swing.JButton
@@ -348,7 +313,6 @@ public void initAddSpecies(Model argModel, Structure argStructure) {
  * @exception java.lang.Exception The exception description.
  */
 private void initConnections() throws java.lang.Exception {
-	getNameValueJTextField().addPropertyChangeListener(ivjEventHandler);
 	getRevertJButton().addActionListener(ivjEventHandler);
 	getApplyJButton().addActionListener(ivjEventHandler);
 	getPathwayDBbutton().addActionListener(ivjEventHandler);
@@ -356,18 +320,6 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (5/20/2003 7:55:25 AM)
- * @param argSpeciesContext cbit.vcell.model.SpeciesContext
- * @param argDocumentManager cbit.vcell.clientdb.DocumentManager
- */
-public void initEditSpecies(SpeciesContext argSpeciesContext, Model argModel) {
-	setModel(argModel);
-	setSpeciesContext(argSpeciesContext);
-}
-
 
 /**
  * Initialize the class.
@@ -378,87 +330,64 @@ private void initialize() {
 		setLayout(new GridBagLayout());
 		
 		int gridy = 0;
-		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.anchor = java.awt.GridBagConstraints.EAST;
-		gbc.insets = new Insets(20, 20, 4, 4);
-		add(getNameJLabel(), gbc);
-
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 1; 
-		gbc.gridy = gridy;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(20, 4, 4, 20);
-		add(getNameValueJTextField(), gbc);
-		
-		gridy ++;
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(4, 20, 4, 4);
-		gbc.anchor = GridBagConstraints.NORTHEAST;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;
 		add(new JLabel("Annotation"), gbc);
 
-		annotationTextArea = new javax.swing.JTextArea("", 3, 30);
+		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
 		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
+		gbc.weighty = 0.2;
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4, 4, 4, 20);
-		gbc.ipady = 10;
-		add(jsp, gbc);
-
-		gridy ++;
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 1; 
-		gbc.gridy = gridy;
-		gbc.gridwidth = 2;
-		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		add(getPathwayDBbutton(), gbc);
+		add(jsp, gbc);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.anchor = GridBagConstraints.EAST;
-		gbc.insets = new Insets(4, 20, 4, 4);
+		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		add(getPCLinkJlabel(), gbc);
+		add(getPathwayDBbutton(), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
-		gbc.ipady = 100;
-		gbc.insets = new Insets(4, 4, 4, 20);
+		gbc.insets = new Insets(4, 4, 4, 4);
 		JScrollPane scollPane = new JScrollPane(getPCLinkValueEditorPane());
 		add(scollPane, gbc);
 
 		gridy ++;
-		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 4));
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 4));
 		panel.add(getApplyJButton());
 		panel.add(getRevertJButton());
 		
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 1; gbc.gridy = gridy;
-		gbc.weighty = 1.0;
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 20);
+		gbc.insets = new java.awt.Insets(4, 4, 0, 4);
 		gbc.anchor = GridBagConstraints.PAGE_START;
 		add(panel, gbc);
 		
+		setBackground(Color.white);
+		panel.setBackground(Color.white);
 		initConnections();
-		setSize(580,404);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -491,15 +420,10 @@ public static void main(java.lang.String[] args) {
  */
 private void apply(java.awt.event.ActionEvent actionEvent) {
 	try{
-		getSpeciesContext().getSpecies().setCommonName(getNameValueJTextField().getText());				
 
 		// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
 		VCMetaData vcMetaData = getModel().getVcMetaData();
-		vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), annotationTextArea.getText());
-		
-		getSpeciesContext().setHasOverride(true);
-		getSpeciesContext().setName(getNameValueJTextField().getText());
-				
+		vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), annotationTextArea.getText());				
 	} catch(Exception e){
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage(), e);
@@ -562,13 +486,12 @@ private void showPCKeywordQueryPanel() {
  */
 private void updateInterface() {
 	if (fieldSpeciesContext == null || fieldModel == null) {
-		return;
+		annotationTextArea.setText(null);
+		getPCLinkValueEditorPane().setText(null);
+	} else {
+		annotationTextArea.setText(getModel().getVcMetaData().getFreeTextAnnotation(getSpeciesContext().getSpecies()));	
+		updatePCLink();
 	}
-	
-	getNameValueJTextField().setText(getSpeciesContext().getName());	
-	annotationTextArea.setText(getModel().getVcMetaData().getFreeTextAnnotation(getSpeciesContext().getSpecies()));
-	
-//	updatePCLink();	
 }
 
 private JButton getPathwayDBbutton() {
@@ -576,28 +499,21 @@ private JButton getPathwayDBbutton() {
 		try {
 			pathwayDBJButton = new javax.swing.JButton();
 			pathwayDBJButton.setName("pathwayDBJButton");
-			pathwayDBJButton.setText("Add Links to Databases");
-			// pathwayDBJButton.setEnabled(false);
+			pathwayDBJButton.setText("<html>Add Links<br> to Databases</html>");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
 	return pathwayDBJButton;
 }
-	private JLabel getPCLinkJlabel() {
-		if (PCLinkJlabel == null) {
-			PCLinkJlabel = new JLabel();
-			PCLinkJlabel.setText("Database Links");
-			PCLinkJlabel.setName("LinkJLabel");
-		}
-		return PCLinkJlabel;
-	}
+
 	private JEditorPane getPCLinkValueEditorPane() {
 		if (PCLinkValueEditorPane == null) {
 			PCLinkValueEditorPane = new JEditorPane();
 			PCLinkValueEditorPane.setContentType("text/html");
 			PCLinkValueEditorPane.setEditable(false);
-			PCLinkValueEditorPane.setBackground(getBackground());
+			PCLinkValueEditorPane.setBackground(Color.white);
+			PCLinkValueEditorPane.setForeground(DefaultScrollTableCellRenderer.uneditableForeground);
 			PCLinkValueEditorPane.setText(null);
 		}
 		return PCLinkValueEditorPane;

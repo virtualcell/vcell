@@ -782,7 +782,7 @@ public void convertSpeciesIniCondition(boolean bUseConcentration) throws Express
 
 public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
 	
-	if (evt.getSource() == getModel() && evt.getPropertyName().equals(Model.MODEL_PARAMETERS_PROPERTY_NAME)) {
+	if (evt.getSource() == getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_PARAMETERS)) {
 		// check for speciesContextSpec proxy parameters, if any exists, veto 
 		
 		ModelParameter[] newModelParams = (ModelParameter[])evt.getNewValue();

@@ -1,24 +1,18 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.LabelButton;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.model.Feature;
@@ -26,49 +20,18 @@ import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<Structure> {	
-	private InternalEventHandler eventHandler = new InternalEventHandler();
-	private CartoonEditorPanelFixed ivjCartoonEditorPanel1 = null;
-	private JButton showDiagramButton = null;
+	private CartoonEditorPanelFixed ivjCartoonEditorPanel = null;
 	
-	private class InternalEventHandler implements ActionListener, java.beans.PropertyChangeListener {
-
-		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getSource() == BioModelEditorStructurePanel.this && evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
-				ivjCartoonEditorPanel1.setBioModel(bioModel);
-			}			
-		}
-		
-		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == showDiagramButton) {
-				if (ivjCartoonEditorPanel1.isVisible()) {
-					ivjCartoonEditorPanel1.setVisible(false);
-					showDiagramButton.setText("<html><u>Show Diagram &gt;&gt;</u></html>");
-				} else {
-					ivjCartoonEditorPanel1.setVisible(true);
-					showDiagramButton.setText("<html><u>Hide Diagram &lt;&lt;</u></html>");				
-				}
-			}			
-		}
-		
-	}
 	public BioModelEditorStructurePanel() {
 		super();
 		initialize();
 	}
 	
-	private void initialize() {
-		addPropertyChangeListener(eventHandler);
-		tableModel = new BioModelEditorStructureTableModel(table);
-		table.setModel(tableModel);	
-		
-		addButton.setText("New " + Structure.TYPE_NAME_FEATURE);
-		ivjCartoonEditorPanel1  = new CartoonEditorPanelFixed();
-		showDiagramButton = new LabelButton("<html><u>Hide Diagram &lt;&lt;</u></html>");
-		showDiagramButton.setForeground(Color.blue);
-		showDiagramButton.addActionListener(eventHandler);
+	private void initialize() {		
+		newButton.setText("New " + Structure.TYPE_NAME_FEATURE);
+		ivjCartoonEditorPanel  = new CartoonEditorPanelFixed();
 		
 		setLayout(new GridBagLayout());
-		
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -90,7 +53,7 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,10,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		add(addButton, gbc);
+		add(newButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 4;
@@ -99,6 +62,9 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(deleteButton, gbc);
 		
+		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.addTab("Table View", table.getEnclosingScrollPane());
+		tabbedPane.addTab("Diagram View", ivjCartoonEditorPanel);
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -108,29 +74,7 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 5;
 		gbc.fill = GridBagConstraints.BOTH;
-		add(table.getEnclosingScrollPane(), gbc);
-
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.insets = new Insets(5,4,5,4);
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 5;
-		gbc.ipadx = 50;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		add(showDiagramButton, gbc);
-		
-		gridy ++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.insets = new Insets(0,4,4,4);
-		gbc.gridy = gridy;
-		gbc.weighty = 1.0;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 5;
-		gbc.fill = GridBagConstraints.BOTH;
-		add(ivjCartoonEditorPanel1, gbc);
+		add(tabbedPane, gbc);
 	}
 	
 	public static void main(java.lang.String[] args) {
@@ -154,17 +98,30 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 	}
 	
 	public void setDocumentManager(DocumentManager documentManager) {
-		ivjCartoonEditorPanel1.setDocumentManager(documentManager);		
+		ivjCartoonEditorPanel.setDocumentManager(documentManager);		
 	}
 
-	protected void newButtonPressed() {		
+	protected void newButtonPressed() {
+		Feature parentFeature = null;
+		for (int i = bioModel.getModel().getNumStructures() - 1; i >= 0; i --) {
+			if (bioModel.getModel().getStructures()[i] instanceof Feature) {
+				parentFeature = (Feature)bioModel.getModel().getStructures()[i];
+				break;
+			}
+		}
+		try {
+			bioModel.getModel().addFeature(bioModel.getModel().getFreeFeatureName(), parentFeature, bioModel.getModel().getFreeMembraneName());
+		} catch (Exception e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, e.getMessage(), e);
+		}
 	}
 	
 	protected void deleteButtonPressed() {
 		int[] rows = table.getSelectedRows();
 		ArrayList<Feature> deleteList = new ArrayList<Feature>();
 		for (int r : rows) {
-			if (r < bioModel.getModel().getNumStructures()) {
+			if (r < tableModel.getDataSize()) {
 				Structure rowValue = tableModel.getValueAt(r);
 				if (rowValue instanceof Feature) {
 					deleteList.add((Feature) rowValue);
@@ -179,5 +136,16 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 			ex.printStackTrace();
 			DialogUtils.showErrorDialog(BioModelEditorStructurePanel.this, ex.getMessage());
 		}
+	}
+
+	@Override
+	protected void bioModelChanged() {
+		super.bioModelChanged();
+		ivjCartoonEditorPanel.setBioModel(bioModel);
+	}
+
+	@Override
+	protected BioModelEditorRightSideTableModel<Structure> createTableModel() {
+		return new BioModelEditorStructureTableModel(table);
 	}
 }

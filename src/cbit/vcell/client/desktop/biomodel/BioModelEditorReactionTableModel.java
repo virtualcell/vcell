@@ -1,12 +1,13 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ReactionEquation;
@@ -26,8 +27,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 
 	public BioModelEditorReactionTableModel(JTable table) {
 		super(table);
-		columns = columnNames;
-		ownerTable = table;
+		setColumns(columnNames);
 		addPropertyChangeListener(this);
 	}
 
@@ -46,28 +46,24 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		return Object.class;
 	}
 
-	protected void refreshData() {
-		rows.clear();
-		if (model == null){
-			return;
-		}
-		ReactionStep[] reactionStepList = model.getReactionSteps();
-		if (reactionStepList != null) {
-			for (ReactionStep rs : reactionStepList){
+	protected ArrayList<ReactionStep> computeData() {
+		ArrayList<ReactionStep> reactionStepList = new ArrayList<ReactionStep>();
+		if (getModel() != null){
+			for (ReactionStep rs : getModel().getReactionSteps()){
 				if (searchText == null || searchText.length() == 0 || rs.getName().startsWith(searchText)) {
-					rows.add(rs);
+					reactionStepList.add(rs);
 				}
 			}
 		}
-		fireTableDataChanged();
+		return reactionStepList;
 	}
 
 	public Object getValueAt(int row, int column) {
-		if (model == null) {
+		if (getModel() == null) {
 			return null;
 		}
 		try{
-			if (row >= 0 && row < rows.size()) {
+			if (row >= 0 && row < getDataSize()) {
 				ReactionStep reactionStep = getValueAt(row);
 				switch (column) {
 					case COLUMN_NAME: {
@@ -82,7 +78,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 				}
 			} else {
 				if (column == COLUMN_NAME) {
-					return EditorScrollTable.ADD_NEW_HERE_TEXT;
+					return ADD_NEW_HERE_TEXT;
 				} 
 			}
 			return null;
@@ -102,43 +98,36 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	}
 	
 	public void setValueAt(Object value, int row, int column) {
-		if (model == null) {
+		if (getModel() == null) {
 			return;
 		}
 		try{
-			String inputValue = (String)value;
-			if (row >= 0 && row < rows.size()) {
-				ReactionStep rs = getValueAt(row);
-				switch (column) {
-				case COLUMN_NAME: {
-					rs.setName(inputValue);
-					break;
-				} 
-				case COLUMN_EQUATION: {
-					if (rs instanceof SimpleReaction) {
-						rs.setReactionParticipants(ReactionEquation.parseReaction((SimpleReaction) rs, inputValue));
-					}
-					break;
-				} 
-				}
+			ReactionStep reactionStep = null;
+			if (row < getDataSize()) {
+				reactionStep = getValueAt(row);
 			} else {
-				SimpleReaction reactionStep = new SimpleReaction(model.getStructures()[0], model.getFreeReactionStepName());
-				model.addReactionStep(reactionStep);
-				switch (column) {
-				case COLUMN_NAME: {
+				reactionStep = new SimpleReaction(getModel().getStructures()[0], getModel().getFreeReactionStepName());
+			}
+			String inputValue = (String)value;
+			switch (column) {
+			case COLUMN_NAME: {
+				if (!inputValue.equals(ADD_NEW_HERE_TEXT)) {
 					reactionStep.setName(inputValue);
-					break;
-				} 
-				case COLUMN_EQUATION: {
-					ReactionEquation.parseReaction(reactionStep, inputValue);
-					break;
-				} 
-				case COLUMN_STRUCTURE: {
-					Structure s = model.getStructure(inputValue);
-					reactionStep.setStructure(s);
-					break;
-				} 
 				}
+				break;
+			} 
+			case COLUMN_EQUATION: {
+				reactionStep.setReactionParticipants(ReactionEquation.parseReaction(reactionStep, inputValue));
+				break;
+			}
+			case COLUMN_STRUCTURE: {
+				Structure s = getModel().getStructure(inputValue);
+				reactionStep.setStructure(s);
+				break;
+			} 
+			}
+			if (row == getDataSize()) {
+				getModel().addReactionStep(reactionStep);
 			}
 		} catch(Exception e){
 			e.printStackTrace(System.out);
@@ -152,22 +141,22 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	}
 	
 	@Override
-	public void sortColumn(int col, boolean ascending) {
+	public Comparator<ReactionStep> getComparator(int col, boolean ascending) {
 		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	public String checkInputValue(String inputValue, int row, int column) {
 		ReactionStep reactionStep = null;
-		if (row >= 0 && row < rows.size()) {
+		if (row >= 0 && row < getDataSize()) {
 			reactionStep = getValueAt(row);
 		}
 		switch (column) {
 		case COLUMN_NAME:
-			if (reactionStep != null && reactionStep.getName().equals(inputValue)) {
-				return null; // name did not change
-			}
-			if (model.getReactionStep(inputValue) != null) {
-				return "Reaction '" + inputValue + "' already exist!";
+			if (reactionStep == null || !reactionStep.getName().equals(inputValue)) {
+				if (getModel().getReactionStep(inputValue) != null) {
+					return "Reaction '" + inputValue + "' already exist!";
+				}
 			}
 			break;
 		case COLUMN_EQUATION:
@@ -178,7 +167,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			}
 			break;
 		case COLUMN_STRUCTURE:
-			if (model.getStructure(inputValue) == null) {
+			if (getModel().getStructure(inputValue) == null) {
 				return "Structure '" + inputValue + "' does not exist!";
 			}
 			break;
@@ -197,7 +186,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	public Set<String> getAutoCompletionWords(int row, int column) {
 		if (column == COLUMN_STRUCTURE) {
 			Set<String> words = new HashSet<String>();
-			for (Structure s : model.getStructures()) {
+			for (Structure s : getModel().getStructures()) {
 				words.add(s.getName());
 			}
 			return words;

@@ -47,7 +47,7 @@ public void cleanupOnClose() {
 private ReactionCartoonEditorPanel getReactionCartoonEditorPanel() {
 	if (ivjReactionCartoonEditorPanel == null) {
 		try {
-			ivjReactionCartoonEditorPanel = new ReactionCartoonEditorPanel(structureCartoonTool);
+			ivjReactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
 			ivjReactionCartoonEditorPanel.setName("ReactionCartoonEditorPanel");
 			// user code begin {1}
 			// user code end

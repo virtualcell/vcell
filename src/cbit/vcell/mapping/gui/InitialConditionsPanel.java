@@ -28,6 +28,7 @@ import org.vcell.util.gui.ScrollTable.CheckOption;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -50,7 +51,6 @@ import cbit.vcell.parser.SymbolTableEntry;
  */
 @SuppressWarnings("serial")
 public class InitialConditionsPanel extends javax.swing.JPanel {
-	public static final String PARAMETER_NAME_SELECTED_SPECIES_CONTEXT = "selectedSpeciesContextSpec";
 	private SpeciesContextSpecPanel ivjSpeciesContextSpecPanel = null;
 	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP3Aligning = false;
@@ -292,7 +292,7 @@ private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 private void setSelectionEvent(SelectionEvent newValue) {
 	SelectionEvent oldValue = selectionEvent;
 	selectionEvent = newValue;
-	firePropertyChange(PARAMETER_NAME_SELECTED_SPECIES_CONTEXT, oldValue, newValue);
+	firePropertyChange(BioModelEditor.PROPERTY_NAME_SELECTION_EVENT, oldValue, newValue);
 }
 
 /**

@@ -1,9 +1,7 @@
 package cbit.vcell.modelopt.gui;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
@@ -20,6 +18,7 @@ import cbit.vcell.parser.ExpressionException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class ParameterMappingTableModel extends DefaultSortTableModel<ParameterMappingSpec> implements PropertyChangeListener {
 
 	private final static int COLUMN_NAME = 0;
@@ -31,7 +30,6 @@ public class ParameterMappingTableModel extends DefaultSortTableModel<ParameterM
 	private final static int COLUMN_HIGHVALUE = 6;
 	public final static int COLUMN_SOLUTION = 7;
 	private final static String LABELS[] = { "Parameter", "Context",  "Model Value", "Optimize", "Initial Guess", "Lower", "Upper", "Solution"  };
-	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ParameterEstimationTask fieldParameterEstimationTask = null;
 
 	private class ParameterColumnComparator implements Comparator<ParameterMappingSpec> {
@@ -137,22 +135,6 @@ public ParameterMappingTableModel() {
 	addPropertyChangeListener(this);
 }
 
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:24:35 AM)
@@ -207,34 +189,17 @@ public ParameterEstimationTask getParameterEstimationTask() {
 }
 
 /**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-
-/**
  * Insert the method's description here.
  * Creation date: (9/23/2003 1:24:52 PM)
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-private List<ParameterMappingSpec> getUnsortedParameters() {
-
-	if (getParameterEstimationTask()==null){
-		return null;
+private void refreshData() {
+	if (getParameterEstimationTask() == null) {
+		setData(null);
+	} else {
+		setData(Arrays.asList(getParameterEstimationTask().getModelOptimizationSpec().getParameterMappingSpecs()));
 	}
-	
-	ParameterMappingSpec[] parameterMappingSpecs = getParameterEstimationTask().getModelOptimizationSpec().getParameterMappingSpecs();
-
-	ArrayList<ParameterMappingSpec> list = new ArrayList<ParameterMappingSpec>();
-	for (ParameterMappingSpec pms : parameterMappingSpecs){
-		list.add(pms);
-	}
-	return list;
 }
 
 
@@ -326,14 +291,6 @@ public Object getValueAt(int row, int col) {
 			return null;
 		}
 	}
-}
-
-
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
 }
 
 
@@ -439,14 +396,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				newPMS[i].addPropertyChangeListener(this);
 			}
 		}
-		setData(getUnsortedParameters());
-		fireTableDataChanged();
-	}
-	if (evt.getSource() == getParameterEstimationTask() && evt.getPropertyName().equals("optimizationResultSet")) {
-		setData(getUnsortedParameters());
-		fireTableDataChanged();
-	}
-	if (evt.getSource() instanceof ModelOptimizationSpec && evt.getPropertyName().equals("parameterMappingSpecs")) {
+		refreshData();
+	} else if (evt.getSource() == getParameterEstimationTask() && evt.getPropertyName().equals("optimizationResultSet")) {
+		refreshData();
+	} else if (evt.getSource() instanceof ModelOptimizationSpec && evt.getPropertyName().equals("parameterMappingSpecs")) {
 		ParameterMappingSpec[] oldValues = (ParameterMappingSpec[])evt.getOldValue();
 		if (oldValues!=null){
 			for (int i = 0; i < oldValues.length; i++){
@@ -459,30 +412,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				newValues[i].addPropertyChangeListener(this);
 			}
 		}
-		setData(getUnsortedParameters());
+		refreshData();
+	} else if (evt.getSource() instanceof ParameterMappingSpec) {
 		fireTableDataChanged();
 	}
-	
-	if (evt.getSource() instanceof ParameterMappingSpec) {
-		setData(getUnsortedParameters());
-		fireTableDataChanged();
-	}
-}
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
-}
-
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(propertyName, listener);
 }
 
 
@@ -584,9 +517,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	//}
 }
 
-	@Override
-	protected void sortColumn(int col, boolean ascending)
+	protected Comparator<ParameterMappingSpec> getComparator(int col, boolean ascending)
   	{
-    	Collections.sort(rows, new ParameterColumnComparator(col, ascending));
+    	return new ParameterColumnComparator(col, ascending);
   	}
 }

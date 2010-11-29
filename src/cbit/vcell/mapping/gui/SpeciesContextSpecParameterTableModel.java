@@ -1,5 +1,5 @@
 package cbit.vcell.mapping.gui;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
 
 import javax.swing.JTable;
@@ -11,6 +11,7 @@ import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
@@ -24,14 +25,14 @@ import cbit.vcell.parser.ExpressionException;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class SpeciesContextSpecParameterTableModel extends DefaultSortTableModel<Parameter> implements java.beans.PropertyChangeListener {
+public class SpeciesContextSpecParameterTableModel extends DefaultSortTableModel<SpeciesContextSpecParameter> implements java.beans.PropertyChangeListener {
 
 	static {
 		System.out.println("SpeciesContextSpecParameterTableModel: artifically filtering out membrane diffusion parameters and diffusion/bc's that are not applicable");
 	}
 
 	
-	private class ParameterColumnComparator implements Comparator<Parameter> {
+	private class ParameterColumnComparator implements Comparator<SpeciesContextSpecParameter> {
 		protected int index;
 		protected boolean ascending;
 
@@ -45,7 +46,7 @@ public class SpeciesContextSpecParameterTableModel extends DefaultSortTableModel
 		 * zero, or a positive integer as the first argument is less than, equal
 		 * to, or greater than the second.<p>
 		 */
-		public int compare(Parameter parm1, Parameter parm2){	
+		public int compare(SpeciesContextSpecParameter parm1, SpeciesContextSpecParameter parm2){	
 			
 			switch (index){
 				case COLUMN_NAME:{
@@ -130,96 +131,80 @@ public Class<?> getColumnClass(int column) {
 }
 
 /**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-
-/**
  * Insert the method's description here.
  * Creation date: (9/23/2003 1:24:52 PM)
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
 private void refreshData() {
-	rows.clear();
-	if (fieldSpeciesContextSpec==null){
-		return;
-	}
-	rows.add(fieldSpeciesContextSpec.getInitialConditionParameter());
+	ArrayList<SpeciesContextSpecParameter> speciesContextSpecParameterList = new ArrayList<SpeciesContextSpecParameter>();
+	if (fieldSpeciesContextSpec != null){
+		speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getInitialConditionParameter());
 	
-	SimulationContext simulationContext = fieldSpeciesContextSpec.getSimulationContext();
-	if (simulationContext==null){
-		return;
-	}
-	if (fieldSpeciesContextSpec.isConstant()){
-		return;
-	}
-
-	SpeciesContext speciesContext = fieldSpeciesContextSpec.getSpeciesContext();
-	if (speciesContext.getStructure() instanceof Membrane){
-		if (simulationContext.getGeometry()!=null && !fieldSpeciesContextSpec.isWellMixed()){
-			int dimension = simulationContext.getGeometry().getDimension();
-			if (dimension > 1) {
-				// diffusion
-				rows.add(fieldSpeciesContextSpec.getDiffusionParameter());
-				
-				if (!simulationContext.isStoch()) {
-					// boundary condition
-					rows.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
-					rows.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
-					rows.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
-					rows.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
-					
-					if (dimension > 2) {
-						rows.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
-						rows.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
-					}
-				}
-			}
-		}		
-	} else if (speciesContext.getStructure() instanceof Feature){
-		if (simulationContext.getGeometry()!=null && !fieldSpeciesContextSpec.isWellMixed()){
-			int dimension = simulationContext.getGeometry().getDimension();
-			if (dimension > 0) {
-				rows.add(fieldSpeciesContextSpec.getDiffusionParameter());
-				
-				if (!simulationContext.isStoch()) {
-					// boundary condition
-					rows.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
-					rows.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
-				 
+		SimulationContext simulationContext = fieldSpeciesContextSpec.getSimulationContext();
+		if (simulationContext!=null && !fieldSpeciesContextSpec.isConstant()){
+			SpeciesContext speciesContext = fieldSpeciesContextSpec.getSpeciesContext();
+			if (speciesContext.getStructure() instanceof Membrane){
+				if (simulationContext.getGeometry() != null && !fieldSpeciesContextSpec.isWellMixed()){
+					int dimension = simulationContext.getGeometry().getDimension();
 					if (dimension > 1) {
-						rows.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
-						rows.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
+						// diffusion
+						speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getDiffusionParameter());
+						
+						if (!simulationContext.isStoch()) {
+							// boundary condition
+							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
+							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
+							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
+							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
 					
-					
-						if (dimension > 2) {
-							rows.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
-							rows.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
-						}
-					}
-					
-					// velocity
-					rows.add(fieldSpeciesContextSpec.getVelocityXParameter());
-					if (dimension > 1) {
-						rows.add(fieldSpeciesContextSpec.getVelocityYParameter());
-					
-						if (dimension > 2) {
-							rows.add(fieldSpeciesContextSpec.getVelocityZParameter());
+							if (dimension > 2) {
+								speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
+								speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
+							}
 						}
 					}
 				}
+			} else if (speciesContext.getStructure() instanceof Feature){
+				if (simulationContext.getGeometry() != null && !fieldSpeciesContextSpec.isWellMixed()){
+					int dimension = simulationContext.getGeometry().getDimension();
+					if (dimension > 0) {
+						speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getDiffusionParameter());
+						
+						if (!simulationContext.isStoch()) {
+							// boundary condition
+							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryXmParameter());
+							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryXpParameter());
+						 
+							if (dimension > 1) {
+								speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryYmParameter());
+								speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryYpParameter());
+							
+							
+								if (dimension > 2) {
+									speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryZmParameter());
+									speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getBoundaryZpParameter());
+								}
+							}
+							
+							// velocity
+							speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getVelocityXParameter());
+							if (dimension > 1) {
+								speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getVelocityYParameter());
+							
+								if (dimension > 2) {
+									speciesContextSpecParameterList.add(fieldSpeciesContextSpec.getVelocityZParameter());
+								}
+							}
+						}
+					}
+				}
+			} else {
+				throw new RuntimeException("unsupported Structure type '"+speciesContext.getStructure().getClass().getName()+"'");
 			}
 		}
-	} else {
-		throw new RuntimeException("unsupported Structure type '"+speciesContext.getStructure().getClass().getName()+"'");
 	}
-	fireTableDataChanged();
+	setData(speciesContextSpecParameterList);
 }
 
 
@@ -480,7 +465,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 }
 
 
-  public void sortColumn(int col, boolean ascending) {
-    Collections.sort(rows, new ParameterColumnComparator(col, ascending));
+  public Comparator<SpeciesContextSpecParameter> getComparator(int col, boolean ascending) {
+    return new ParameterColumnComparator(col, ascending);
   }
 }

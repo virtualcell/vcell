@@ -61,16 +61,12 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 	private ReactionCartoonTool ivjReactionCartoonTool1 = null;
 	private Model fieldModel = null;
 
-	private JButton parameterButton = null;
-	private StructureCartoonTool structureCartoonTool = null;
-
 	/**
 	 * Constructor
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	public ReactionCartoonEditorPanel(StructureCartoonTool sct) {
+	public ReactionCartoonEditorPanel() {
 		super();
-		structureCartoonTool = sct;
 		initialize();
 	}
 
@@ -98,13 +94,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 			connEtoC2(e);
 		if (e.getSource() == getGlgLayoutJButton()) 
 			connEtoM9(e);
-		if (e.getSource() == getParameterButton()) {
-			if (structureCartoonTool != null) {
-				structureCartoonTool.showParametersDialog();
-			}
-		}
-		// user code begin {2}
-		// user code end
 	}
 
 	/**
@@ -915,8 +904,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 				getJToolBar1().add(getFluxButton(), getFluxButton().getName());
 				getJToolBar1().add(getLineButton(), getLineButton().getName());
 				getJToolBar1().addSeparator(new Dimension(5,10));
-				getJToolBar1().add(getParameterButton());
-				getJToolBar1().addSeparator(new Dimension(5,10));
 				getJToolBar1().add(getJLabel3(), getJLabel3().getName());
 				getJToolBar1().add(getZoomInButton(), getZoomInButton().getName());
 				getJToolBar1().add(getZoomOutButton(), getZoomOutButton().getName());
@@ -1222,30 +1209,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 		return ivjStepButton;
 	}
 
-	private JButton getParameterButton() {
-		if (parameterButton == null) {
-			try {
-				parameterButton = new JButton();
-				parameterButton.setToolTipText(CartoonToolMiscActions.ShowParameters.MENU_TEXT);
-				parameterButton.setText("");
-				parameterButton.setActionCommand(CartoonToolMiscActions.ShowParameters.MENU_ACTION);
-				parameterButton.setBorder(new BevelBorder(BevelBorder.RAISED));
-				parameterButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-				parameterButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/parameter.gif")));
-				parameterButton.setPreferredSize(new java.awt.Dimension(28, 28));
-				parameterButton.setMinimumSize(new java.awt.Dimension(28, 28));
-				parameterButton.setMaximumSize(new java.awt.Dimension(28, 28));
-				// user code begin {1}
-				// user code end
-			} catch (java.lang.Throwable ivjExc) {
-				// user code begin {2}
-				// user code end
-				handleException(ivjExc);
-			}
-		}
-		return parameterButton;
-	}
-
 	/**
 	 * Gets the structure property (cbit.vcell.model.Structure) value.
 	 * @return The structure property value.
@@ -1343,7 +1306,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 		this.addPropertyChangeListener(this);
 		connPtoP1SetTarget();
 		connPtoP2SetTarget();
-		getParameterButton().addActionListener(this);
 	}
 
 	/**
@@ -1394,7 +1356,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 		try {
 			java.awt.Frame frame = new java.awt.Frame();
 			ReactionCartoonEditorPanel aReactionCartoonEditorPanel;
-			aReactionCartoonEditorPanel = new ReactionCartoonEditorPanel(null);
+			aReactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
 			frame.add("Center", aReactionCartoonEditorPanel);
 			frame.setSize(aReactionCartoonEditorPanel.getSize());
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {

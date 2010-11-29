@@ -1,6 +1,6 @@
 package cbit.vcell.model.gui;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
 
 import javax.swing.JTable;
@@ -100,7 +100,6 @@ public class ModelParameterTableModel extends DefaultSortTableModel<Parameter> i
 	public static final int COLUMN_UNIT = 4;
 	public static final int COLUMN_ANNOTATION = 5;
 	private static String LABELS[] = { "Context", "Name", "Description", "Expression", "Units" , "Annotation" };
-	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Model fieldModel = null;
 	private JTable ownerTable = null;
 	private boolean bGlobalOnly = false;
@@ -113,20 +112,6 @@ public ModelParameterTableModel(JTable table, boolean flag) {
 	ownerTable = table;
 	bGlobalOnly = flag;
 	addPropertyChangeListener(this);
-}
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
 /**
@@ -171,50 +156,29 @@ private Model getModel() {
 }
 
 /**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-
-
-/**
- * getRowCount method comment.
- */
-public int getRowCount() {
-	return rows.size();
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (9/23/2003 1:24:52 PM)
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
 private void refreshData() {
-	rows.clear();
-	if (getModel()== null){
-		return;
-	}
-	for (Parameter parameter : getModel().getModelParameters()) {
-		rows.add(parameter);
-	}
-	if (!bGlobalOnly) {
-		for (ReactionStep reactionStep : getModel().getReactionSteps()) {
-			for (Parameter parameter : reactionStep.getKinetics().getUnresolvedParameters()) {
-				rows.add(parameter);
-			}
-			for (Parameter parameter : reactionStep.getKinetics().getKineticsParameters()) {
-				rows.add(parameter);
+	ArrayList<Parameter> parameterList = new ArrayList<Parameter>();
+	if (getModel()!= null){
+		for (Parameter parameter : getModel().getModelParameters()) {
+			parameterList.add(parameter);
+		}
+		if (!bGlobalOnly) {
+			for (ReactionStep reactionStep : getModel().getReactionSteps()) {
+				for (Parameter parameter : reactionStep.getKinetics().getUnresolvedParameters()) {
+					parameterList.add(parameter);
+				}
+				for (Parameter parameter : reactionStep.getKinetics().getKineticsParameters()) {
+					parameterList.add(parameter);
+				}
 			}
 		}
 	}
-	resortColumn();
-	fireTableDataChanged();
+	setData(parameterList);
 }
 
 
@@ -295,14 +259,6 @@ public Object getValueAt(int row, int col) {
 		ex.printStackTrace(System.out);
 		return null;
 	}		
-}
-
-
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
 }
 
 
@@ -396,7 +352,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			}
 		}
 		refreshData();
-	} else if (evt.getSource() == getModel() && evt.getPropertyName().equals(Model.MODEL_PARAMETERS_PROPERTY_NAME)) {
+	} else if (evt.getSource() == getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_PARAMETERS)) {
 		refreshData();
 	}
 	if (evt.getSource() == getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_REACTION_STEPS)) {
@@ -496,13 +452,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 		refreshData();
 	}
-}
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
 }
 
 /**
@@ -635,9 +584,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 }
 
 
-  public void sortColumn(int col, boolean ascending)
-  {
-    Collections.sort(rows, new ParameterColumnComparator(col, ascending));
+  public Comparator<Parameter> getComparator(int col, boolean ascending) {
+    return new ParameterColumnComparator(col, ascending);
   }
-
 }

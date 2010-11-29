@@ -463,7 +463,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 			for (int i = 0; i < sortedRowReference.length; i++) {
 				sortedRowReference[i] = i;
 			}
-			DefaultSortTableModel tableModel = new DefaultSortTableModel(columnNames) {
+			DefaultSortTableModel<Object[]> tableModel = new DefaultSortTableModel<Object[]>(columnNames) {
 				@Override
 				public boolean isSortable(int col) {
 					if (rowSortComparator != null) {
@@ -473,21 +473,19 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 				}
 
 				public Object getValueAt(int row, int column) {
-					return rowData[sortedRowReference[row]][column];
+					return getValueAt(row)[column];
 				}
 
 				@Override
-				public void sortColumn(final int col, final boolean ascending) {
-					Arrays.sort(sortedRowReference, 
-							new Comparator<Integer>() {
-								public int compare(Integer o1,Integer o2) {
-									if(ascending){
-										return rowSortComparator.compare(rowData[o1][col], rowData[o2][col]);
-									}
-									return rowSortComparator.compare(rowData[o2][col],rowData[o1][col]);
-								}
+				public Comparator<Object[]> getComparator(final int col, final boolean ascending) {
+					return new Comparator<Object[]>() {
+						public int compare(Object[] o1,Object[] o2) {
+							if(ascending){
+								return rowSortComparator.compare(o1[col], o2[col]);
 							}
-						);
+							return rowSortComparator.compare(o2[col],o1[col]);
+						}
+					};
 				}
 			};
 			tableModel.setData(Arrays.asList(rowData));

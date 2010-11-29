@@ -464,7 +464,7 @@ private void updateSubdomainComboBox() {
 			if (value instanceof GeometryClass) {
 				GeometryClass gc = (GeometryClass)value;
 				setText(gc.getName());
-				setIcon(gc instanceof SubVolume ? StructureMappingTableRenderer.volumeIcon : StructureMappingTableRenderer.surfaceIcon);
+//				setIcon(gc instanceof SubVolume ? StructureMappingTableRenderer.volumeIcon : StructureMappingTableRenderer.surfaceIcon);
 			}
 			return this;
 		}

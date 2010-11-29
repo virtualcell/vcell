@@ -35,7 +35,6 @@ public class SimpleReactionPanel extends javax.swing.JPanel {
 
 	private boolean ivjConnPtoP2Aligning = false;
 	private JTextArea annotationTextArea = null;
-	private JLabel reactoinElectrialPropertiesLabel = null;
 	private boolean bSubset = false;
 
 	private class IvjEventHandler implements java.beans.PropertyChangeListener, FocusListener {
@@ -455,17 +454,10 @@ private void initialize() {
 			constraintsSimpleReactionNameLabel.insets = new java.awt.Insets(4, 5, 4, 5);
 			add(getSimpleReactionNameTextField(), constraintsSimpleReactionNameLabel);
 			gridy ++;
-	
-			// Electrical Properties
-			GridBagConstraints gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 0; gbc.gridy = gridy;
-			gbc.anchor = java.awt.GridBagConstraints.EAST;
-			gbc.insets = new java.awt.Insets(4, 10, 4, 4);
-			add(getReactionElectricalPropertiesLabel(), gbc);
-			
+				
 			java.awt.GridBagConstraints constraintsReactionElectricalPropertiesPanel1 = new java.awt.GridBagConstraints();
-			constraintsReactionElectricalPropertiesPanel1.gridx = 1; constraintsReactionElectricalPropertiesPanel1.gridy = gridy;
-			constraintsReactionElectricalPropertiesPanel1.gridwidth = 2;
+			constraintsReactionElectricalPropertiesPanel1.gridx = 0; constraintsReactionElectricalPropertiesPanel1.gridy = gridy;
+			constraintsReactionElectricalPropertiesPanel1.gridwidth = 3;
 			constraintsReactionElectricalPropertiesPanel1.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsReactionElectricalPropertiesPanel1.weightx = 1.0;
 			constraintsReactionElectricalPropertiesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -473,7 +465,7 @@ private void initialize() {
 			gridy ++;
 			
 			// Annotation
-			gbc = new java.awt.GridBagConstraints();
+			GridBagConstraints gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; gbc.gridy = gridy;
 			gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 			gbc.anchor = GridBagConstraints.NORTHEAST;
@@ -517,14 +509,6 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-}
-
-private JLabel getReactionElectricalPropertiesLabel() {
-	if (reactoinElectrialPropertiesLabel == null) {
-		reactoinElectrialPropertiesLabel = new JLabel("<html>&nbsp;&nbsp;Electrical<br>Properties</html>");
-		reactoinElectrialPropertiesLabel.setFont(reactoinElectrialPropertiesLabel.getFont().deriveFont(Font.BOLD));
-	}
-	return reactoinElectrialPropertiesLabel;
 }
 
 /**
@@ -603,7 +587,6 @@ private void setTornOffSimpleReaction(SimpleReaction newValue) {
 			getReactionElectricalPropertiesPanel1().setKinetics(ivjTornOffSimpleReaction.getKinetics());
 			boolean electricalPropertiesVisible = ivjTornOffSimpleReaction != null && ivjTornOffSimpleReaction.getStructure() instanceof Membrane;			
 			getReactionElectricalPropertiesPanel1().setVisible(electricalPropertiesVisible);
-			getReactionElectricalPropertiesLabel().setVisible(electricalPropertiesVisible);
 			
 			getKineticsTypeTemplatePanel().setReactionStep(getSimpleReaction());
 			

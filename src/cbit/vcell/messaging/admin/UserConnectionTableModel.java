@@ -1,6 +1,7 @@
 package cbit.vcell.messaging.admin;
-import java.util.Collections;
+import java.util.Comparator;
 
+import org.vcell.util.ComparableObject;
 import org.vcell.util.gui.sorttable.ColumnComparator;
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 /**
@@ -9,7 +10,7 @@ import org.vcell.util.gui.sorttable.DefaultSortTableModel;
  * @author: Fei Gao
  */
 @SuppressWarnings("serial")
-public class UserConnectionTableModel extends DefaultSortTableModel<SimpleUserConnection> {
+public class UserConnectionTableModel extends DefaultSortTableModel<ComparableObject> {
 	private final static int columnIndex_UserID = 0;
 	//private final static int columnIndex_ElapsedTime = 2;
 	//private final static int columnIndex_ConnectedTime = 1;
@@ -28,7 +29,7 @@ public UserConnectionTableModel() {
  * @return java.lang.Class
  * @param columnIndex int
  */
-public Class getColumnClass(int columnIndex) {
+public Class<?> getColumnClass(int columnIndex) {
 	if (columnIndex == columnIndex_UserID) {
 		return String.class;
 	}
@@ -46,16 +47,12 @@ public Class getColumnClass(int columnIndex) {
 	 * @return	the value Object at the specified cell
 	 */
 public Object getValueAt(int row, int col) {
-	if (row >= rows.size() || row < 0 || col < 0 || col >= columns.length) {
-		return null;
-	}
-
-	SimpleUserConnection userconn = (SimpleUserConnection)rows.get(row);
+	ComparableObject userconn = getValueAt(row);
 	Object[] values = userconn.toObjects();
 	return values[col];
 }
 
-public void sortColumn(int col, boolean ascending) {
-	Collections.sort(rows, new ColumnComparator(col, ascending));
+public Comparator<ComparableObject> getComparator(int col, boolean ascending) {
+	return new ColumnComparator(col, ascending);
 }
 }

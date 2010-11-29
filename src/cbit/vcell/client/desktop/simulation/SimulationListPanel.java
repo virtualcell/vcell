@@ -23,7 +23,6 @@ import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.TreeSelectionEvent;
 import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.BeanUtils;
@@ -35,12 +34,13 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ParticleProperties;
@@ -84,7 +84,8 @@ public class SimulationListPanel extends JPanel {
 	private JMenuItem menuItemDelete = new JMenuItem("Delete");			
 	private JMenuItem menuItemStop = new JMenuItem("Stop");
 	private JMenuItem menuItemStatusDetails = new JMenuItem("Status Details...");
-
+	private SelectionEvent selectionEvent = null;
+	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, 
 		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, javax.swing.event.TableModelListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -128,7 +129,7 @@ public class SimulationListPanel extends JPanel {
 				return;
 			}
 			if (e.getSource() == getScrollPaneTable().getSelectionModel()) 
-				connEtoC9(e);
+				tableSelectionChanged(e);
 			
 		}
 		public void mouseClicked(MouseEvent e) {
@@ -301,12 +302,18 @@ private void connEtoC8(java.awt.event.ActionEvent arg1) {
  * connEtoC9:  (selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> SimulationListPanel.refreshButtons()V)
  * @param arg1 javax.swing.event.ListSelectionEvent
  */
-private void connEtoC9(javax.swing.event.ListSelectionEvent arg1) {
+private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 	try {
 		this.refreshButtonsAndSummary();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+}
+
+private void setSelectionEvent(SelectionEvent newValue) {
+	SelectionEvent oldValue = selectionEvent;
+	selectionEvent = newValue;
+	firePropertyChange(BioModelEditor.PROPERTY_NAME_SELECTION_EVENT, oldValue, newValue);
 }
 
 /**
@@ -788,8 +795,11 @@ private void refreshButtonsAndSummary() {
 	refreshButtonsLax(selections);
 	if (selections.length != 1) {
 		getSimulationSummaryPanel1().setSimulation(null);
+		setSelectionEvent(null);
 	} else {
-		getSimulationSummaryPanel1().setSimulation(getSimulationWorkspace().getSimulations()[selections[0]]);
+		Simulation newValue = getSimulationWorkspace().getSimulations()[selections[0]];
+		getSimulationSummaryPanel1().setSimulation(newValue);	
+		setSelectionEvent(new SelectionEvent(getSimulationWorkspace().getSimulationOwner(), newValue));
 	}
 }
 

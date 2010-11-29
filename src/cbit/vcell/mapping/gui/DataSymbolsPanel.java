@@ -57,7 +57,6 @@ import cbit.vcell.VirtualMicroscopy.importer.AnnotatedImageDataset;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXmlReader;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindow;
-import cbit.vcell.client.desktop.biomodel.SPPRPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
@@ -78,6 +77,7 @@ import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class DataSymbolsPanel extends javax.swing.JPanel {
 	
 	static final String fluorStaticName = "fluor";
@@ -86,7 +86,6 @@ public class DataSymbolsPanel extends javax.swing.JPanel {
 	private DataSymbolsSpecPanel ivjDataSymbolsSpecPanel = null;
 	private SimulationContext fieldSimulationContext = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
-	private SPPRPanel spprPanel = null;
 	private JPanel scrollPanel = null; // added in July, 2008. Used to accommodate the radio buttons and the ivjJScrollPane1. 
 	private JSortTable ivjScrollPaneTable = null;
 	private NewDataSymbolPanel ivjNewDataSymbolPanel = null;
@@ -134,12 +133,7 @@ public class DataSymbolsPanel extends javax.swing.JPanel {
 
 public DataSymbolsPanel() {
 	super();
-	spprPanel = null;
 	initialize();
-}
-
-private SPPRPanel getSPPRPanel() {
-	return spprPanel;
 }
 
 /**
@@ -659,9 +653,9 @@ private void handleListEvent(javax.swing.event.ListSelectionEvent arg1) {
 		} else {
 			getDataSymbolsSpecPanel().setDataSymbol(getDataSymbolsTableModel().getValueAt(row));
 //			System.out.println("Initial condition selection changed");
-			if(getSPPRPanel() != null) {
-				getSPPRPanel().setScrollPaneTreeCurrentRow(getDataSymbolsTableModel().getValueAt(row));
-			}
+//			if(getSPPRPanel() != null) {
+//				getSPPRPanel().setScrollPaneTreeCurrentRow(getDataSymbolsTableModel().getValueAt(row));
+//			}
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

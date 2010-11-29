@@ -2787,7 +2787,7 @@ private void refresh () {
 			t1.setName("Refresh Thread");
 			t1.start();			
 		} else {		
-			((ServiceInstanceStatusTableModel)getServiceStatusTable().getModel()).clear();
+			((ServiceInstanceStatusTableModel)getServiceStatusTable().getModel()).setData(null);
 			serviceInstanceStatusList.clear();
 			
 			for (int i = 0; i < serviceConfigList.size(); i ++) {
@@ -2849,7 +2849,7 @@ public void refreshButton_ActionPerformed(ActionEvent actionEvent) {
 public void removeFromListButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	int[] indexes = getQueryResultTable().getSelectedRows();
 	for (int i = 0; i < indexes.length; i ++) {
-		((JobTableModel)getQueryResultTable().getModel()).remove(indexes[i] - i);
+		((JobTableModel)getQueryResultTable().getModel()).removeValueAt(indexes[i] - i);
 	}
 	getNumResultsLabel().setText("" + getQueryResultTable().getRowCount());
 	getNumSelectedLabel().setText("0");

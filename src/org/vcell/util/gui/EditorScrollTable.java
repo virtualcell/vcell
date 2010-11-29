@@ -122,7 +122,6 @@ public class EditorScrollTable extends ScrollTable {
 	}
 	
 	private boolean bEditingStoppedFromKey = false;
-	public static final String ADD_NEW_HERE_TEXT = "(add new here)";
 	protected String tableStopEditingErrorMessage = null;
 	private boolean bEscKeyPressed = false;
 	

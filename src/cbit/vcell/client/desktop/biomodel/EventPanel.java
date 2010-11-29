@@ -285,7 +285,6 @@ public class EventPanel extends JPanel {
 					labels_n_textfields_Panel = new javax.swing.JPanel();
 					labels_n_textfields_Panel.setName("labelsTextfieldsPanel");
 					labels_n_textfields_Panel.setLayout(new java.awt.GridBagLayout());
-//					labels_n_textfields_Panel.setBounds(401, 308, 407, 85);
 
 					java.awt.GridBagConstraints constraintsTriggerLabel = new java.awt.GridBagConstraints();
 					constraintsTriggerLabel.gridx = 0; constraintsTriggerLabel.gridy = 0;
@@ -320,8 +319,6 @@ public class EventPanel extends JPanel {
 					gbc.gridx = 3; gbc.gridy = 1;
 					gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 					labels_n_textfields_Panel.add(getUseValuesAtTriggerTimeCheckBox(), gbc);
-					
-					
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -335,7 +332,7 @@ public class EventPanel extends JPanel {
 					buttons_n_label_Panel = new javax.swing.JPanel();
 					buttons_n_label_Panel.setAlignmentX(Component.RIGHT_ALIGNMENT);
 					buttons_n_label_Panel.setAlignmentY(Component.TOP_ALIGNMENT);
-					buttons_n_label_Panel.setPreferredSize(new Dimension(750, 40));
+//					buttons_n_label_Panel.setPreferredSize(new Dimension(750, 40));
 					buttons_n_label_Panel.setName("ButtonPanel");
 					buttons_n_label_Panel.setLayout(new BoxLayout(buttons_n_label_Panel, BoxLayout.X_AXIS));
 					buttons_n_label_Panel.add(getEventAssgnLabel());
@@ -651,24 +648,22 @@ public class EventPanel extends JPanel {
 		 *  & then sets bioevent and fires propertychange. This is the only way the tree and table selections work in coordination
 		 *  when values have been changed in an individually selected event. 
 		 */
-			final BioEvent oldValue = this.fieldBioEvent; 
-			if (hasFocus()) {
+			BioEvent oldValue = this.fieldBioEvent; 
+//			if (hasFocus()) {
 				fieldBioEvent = argBioEvent;
 				firePropertyChange("bioEvent", oldValue, argBioEvent);
-				return;
-			} else {
-				requestFocusInWindow();
-				addFocusListener(new FocusListener() {					
-					public void focusLost(FocusEvent e) {						
-					}					
-					public void focusGained(FocusEvent e) {
-						removeFocusListener(this);
-						fieldBioEvent = argBioEvent;
-						firePropertyChange("bioEvent", oldValue, argBioEvent);
-						return;
-					}
-				});				
-			}			
+//			} else {
+//				requestFocusInWindow();
+//				addFocusListener(new FocusListener() {					
+//					public void focusLost(FocusEvent e) {						
+//					}					
+//					public void focusGained(FocusEvent e) {
+//						removeFocusListener(this);
+//						fieldBioEvent = argBioEvent;
+//						firePropertyChange("bioEvent", oldValue, argBioEvent);
+//					}
+//				});				
+//			}			
 			
 		}
 

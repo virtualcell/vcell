@@ -15,13 +15,14 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.vcell.util.NumberUtils;
 
 import cbit.vcell.client.desktop.biomodel.BioModelEditorReactionTableModel;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 
 @SuppressWarnings("serial")
 public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	public static final Color hoverColor = new Color(0xFDFCDC);
 	public static final Border DEFAULT_GAP = BorderFactory.createEmptyBorder(2,4,2,4);
 	static final Border focusHighlightBorder = UIManager.getBorder("Table.focusCellHighlightBorder");
-	static final Color uneditableForeground = UIManager.getColor("TextField.inactiveForeground");
+	public static final Color uneditableForeground = UIManager.getColor("TextField.inactiveForeground");
 	static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
 	static final Color everyOtherRowColor = new Color(0xe8edff);
 	static Font regularFont = null;
@@ -82,7 +83,7 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 			}
 			return jc;
 		}
-		if (value != null && (value.equals(EditorScrollTable.ADD_NEW_HERE_TEXT))) {
+		if (value != null && (value.equals(BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT))) {
 			setText("<html><i>" + value + "</i></html>");
 		} 
 //		if (value instanceof ReactionEquation) {
