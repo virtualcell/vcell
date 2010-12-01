@@ -3,9 +3,13 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionListener;
+import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ZEnforcer;
@@ -16,13 +20,16 @@ import cbit.image.ImagePaneModel;
 import cbit.image.ImagePlaneManagerPanel;
 import cbit.image.SourceDataInfo;
 import cbit.image.VCImage;
+import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 /**
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class GeometryViewer extends javax.swing.JPanel implements ActionListener, java.beans.PropertyChangeListener {
+public class GeometryViewer extends javax.swing.JPanel implements ActionListener, java.beans.PropertyChangeListener, ChangeListener {
 	private GeometrySubVolumePanel ivjGeometrySubVolumePanel = null;
 	private javax.swing.JLabel ivjSizeLabel = null;
 	private Geometry ivjGeometry = null;
@@ -32,9 +39,10 @@ public class GeometryViewer extends javax.swing.JPanel implements ActionListener
 	private GeometryFilamentCurveDialog ivjGeometryFilamentCurveDialog1 = null;
 	private ImagePlaneManagerPanel ivjImagePlaneManagerPanel1 = null;
 	private GeometrySizeDialog ivjGeometrySizeDialog1 = null;
-	private GeometrySpec ivjGeometrySpec = null;
 	private javax.swing.JButton ivjJButtonChangeDomain = null;
-
+	private SurfaceViewerPanel surfaceViewer = null;
+	private JTabbedPane tabbedPane = null;
+	private ResolvedLocationTablePanel resolvedLocationTablePanel = null;
 
 /**
  * Constructor
@@ -67,26 +75,6 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-
-/**
- * connEtoC1:  (Geometry.this --> GeometryViewer.refreshSize()V)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.refreshSize();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
 }
 
 /**
@@ -195,28 +183,7 @@ private void connEtoM11(Geometry value) {
 	try {
 		// user code begin {1}
 		// user code end
-		getJButtonChangeDomain().setEnabled(this.isGeometryNotNull());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM12:  (Geometry.this --> GeometrySpec.this)
- * @param value cbit.vcell.geometry.Geometry
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM12(Geometry value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getGeometry() != null)) {
-			setGeometrySpec(getGeometry().getGeometrySpec());
-		}
+		getJButtonChangeDomain().setEnabled(getGeometry() != null);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -451,18 +418,6 @@ private GeometrySizeDialog getGeometrySizeDialog1() {
 }
 
 /**
- * Return the GeometrySpec property value.
- * @return cbit.vcell.geometry.GeometrySpec
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private GeometrySpec getGeometrySpec() {
-	// user code begin {1}
-	// user code end
-	return ivjGeometrySpec;
-}
-
-
-/**
  * Return the GeometrySubVolumePanel property value.
  * @return cbit.vcell.geometry.GeometrySubVolumePanel
  */
@@ -608,6 +563,7 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	getJButtonChangeDomain().addActionListener(this);
 	connPtoP1SetTarget();
+	tabbedPane.addChangeListener(this);
 }
 
 /**
@@ -649,14 +605,23 @@ private void initialize() {
 		constraintsJLabel1.insets = new java.awt.Insets(5, 5, 5, 5);
 		add(getJLabel1(), constraintsJLabel1);
 
-		java.awt.GridBagConstraints constraintsImagePlaneManagerPanel1 = new java.awt.GridBagConstraints();
-		constraintsImagePlaneManagerPanel1.gridx = 0; constraintsImagePlaneManagerPanel1.gridy = 2;
-		constraintsImagePlaneManagerPanel1.gridwidth = 4;
-		constraintsImagePlaneManagerPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsImagePlaneManagerPanel1.weightx = 1.0;
-		constraintsImagePlaneManagerPanel1.weighty = 1.0;
-		constraintsImagePlaneManagerPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getImagePlaneManagerPanel1(), constraintsImagePlaneManagerPanel1);
+		resolvedLocationTablePanel = new ResolvedLocationTablePanel();
+		surfaceViewer = new SurfaceViewerPanel();
+		tabbedPane = new JTabbedPane();
+		tabbedPane.add("Slice View", getImagePlaneManagerPanel1());
+		tabbedPane.add("Surface View", surfaceViewer);
+		tabbedPane.add("Geometric Region Details", resolvedLocationTablePanel);
+		
+		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = 2;
+		gbc.gridwidth = 4;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(tabbedPane, gbc);
+		
 		initConnections();
 		connEtoC7();
 		connEtoM5();
@@ -667,14 +632,6 @@ private void initialize() {
 	// user code begin {2}
 	// user code end
 }
-
-/**
- * Comment
- */
-private boolean isGeometryNotNull() {
-	return getGeometry() != null;
-}
-
 
 /**
  * main entrypoint - starts the part when it is run as an application
@@ -716,11 +673,11 @@ private int meshmode() {
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	// user code begin {1}
 	// user code end
-	if (evt.getSource() == getGeometrySpec() && (evt.getPropertyName().equals("origin"))) 
+	if (evt.getSource() == getGeometry().getGeometrySpec() && (evt.getPropertyName().equals("origin"))) 
 		connEtoC4(evt);
-	if (evt.getSource() == getGeometrySpec() && (evt.getPropertyName().equals("extent"))) 
+	if (evt.getSource() == getGeometry().getGeometrySpec() && (evt.getPropertyName().equals("extent"))) 
 		connEtoC5(evt);
-	if (evt.getSource() == getGeometrySpec() && (evt.getPropertyName().equals("sampledImage"))){
+	if (evt.getSource() == getGeometry().getGeometrySpec() && (evt.getPropertyName().equals("sampledImage"))){
 		refreshSourceDataInfo();
 	}
 	// user code begin {2}
@@ -783,14 +740,21 @@ public void setGeometry(Geometry newValue) {
 	if (ivjGeometry != newValue) {
 		try {
 			Geometry oldValue = getGeometry();
+			if (oldValue != null) {
+				oldValue.getGeometrySpec().removePropertyChangeListener(this);
+			}
 			ivjGeometry = newValue;
-			connEtoC1(ivjGeometry);
-			connEtoM6(ivjGeometry);
-			connEtoM8(ivjGeometry);
-			refreshSourceDataInfo();
-			connEtoM3(ivjGeometry);
-			connEtoM11(ivjGeometry);
-			connEtoM12(ivjGeometry);
+			if (newValue != null) {
+				refreshSize();
+				getImagePlaneManagerPanel1().setSourceDataInfo(null);
+				refreshSourceDataInfo();
+				getGeometrySubVolumePanel().setGeometry(getGeometry());
+				getCurveRendererGeometry1().setGeometry(getGeometry());
+				getJButtonChangeDomain().setEnabled(getGeometry() != null);
+				surfaceViewer.setGeometry(ivjGeometry);
+				resolvedLocationTablePanel.setGeometrySurfaceDescription(ivjGeometry.getGeometrySurfaceDescription());
+				newValue.getGeometrySpec().addPropertyChangeListener(this);
+			}
 			firePropertyChange("geometry", oldValue, newValue);
 			// user code begin {1}
 			// user code end
@@ -803,58 +767,6 @@ public void setGeometry(Geometry newValue) {
 	// user code begin {3}
 	// user code end
 }
-
-/**
- * Set the GeometrySizeDialog2 to a new value.
- * @param newValue cbit.vcell.geometry.gui.GeometrySizeDialog
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setGeometrySizeDialog1(GeometrySizeDialog newValue) {
-	if (ivjGeometrySizeDialog1 != newValue) {
-		try {
-			ivjGeometrySizeDialog1 = newValue;
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-/**
- * Set the GeometrySpec to a new value.
- * @param newValue cbit.vcell.geometry.GeometrySpec
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setGeometrySpec(GeometrySpec newValue) {
-	if (ivjGeometrySpec != newValue) {
-		try {
-			/* Stop listening for events from the current object */
-			if (ivjGeometrySpec != null) {
-				ivjGeometrySpec.removePropertyChangeListener(this);
-			}
-			ivjGeometrySpec = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjGeometrySpec != null) {
-				ivjGeometrySpec.addPropertyChangeListener(this);
-			}
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
 
 /**
  * Comment
@@ -882,6 +794,27 @@ public void viewSurface() {
 	panel.setMinimumSize(new Dimension(900,900));
 	panel.setPreferredSize(new Dimension(900,900));
 	javax.swing.JOptionPane.showMessageDialog(this,panel,"Surface Viewer",javax.swing.JOptionPane.INFORMATION_MESSAGE);
+}
+
+
+public void stateChanged(ChangeEvent e) {
+	if (e.getSource() == tabbedPane) {
+		if (tabbedPane.getSelectedComponent() == surfaceViewer) {
+			try {
+				AsynchClientTask surfaceGenerationTask = new AsynchClientTask ("creating new smoothed surface", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+					
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						getGeometry().precomputeAll(true);
+					}
+				};
+				AsynchClientTask tasks[] = new AsynchClientTask[] {surfaceGenerationTask};
+				ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);
+			} catch (Exception e1) {
+				DialogUtils.showErrorDialog(this, e1.getMessage());
+				e1.printStackTrace();
+			}
+		}
+	}
 }
 
 }

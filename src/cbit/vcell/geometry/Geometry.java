@@ -451,8 +451,12 @@ public String toString() {
 }
 
 public void precomputeAll() throws GeometryException, ImageException, ExpressionException {
+	precomputeAll(false);
+}
+
+public void precomputeAll(boolean bForcePrecomputeSurfaces) throws GeometryException, ImageException, ExpressionException {
 	getGeometrySpec().updateSampledImage();
-	if (getDimension()>0 && getGeometrySurfaceDescription().getGeometricRegions()==null){
+	if (getDimension()>0 && (bForcePrecomputeSurfaces || getGeometrySurfaceDescription().getGeometricRegions()==null)) {
 		getGeometrySurfaceDescription().updateAll();					
 	}
 	

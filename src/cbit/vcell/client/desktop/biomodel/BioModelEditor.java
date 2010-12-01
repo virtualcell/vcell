@@ -52,6 +52,7 @@ import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
@@ -114,7 +115,7 @@ public class BioModelEditor extends JPanel {
 	
 	private JPopupMenu popupMenu = null;
 	private JMenuItem expandAllMenuItem = null;
-	
+		
 	public static class SelectionEvent {
 		private Object selectedContainer;
 		private Object selectedObject;
@@ -185,7 +186,7 @@ public class BioModelEditor extends JPanel {
 				if (lastSelectedPathComponent instanceof BioModelNode) {
 					expandAll((BioModelNode)lastSelectedPathComponent);
 				}
-			}
+			} 
 //			if (e.getSource() == BioModelEditor.this.getCopyMenuItem()) 
 //				connEtoC3(e);
 //			if (e.getSource() == BioModelEditor.this.getOpenAppMenuItem()) 
@@ -275,7 +276,7 @@ public BioModelEditor() {
 	initialize();
 }
 
-public DocumentManager getDocumentManager() {
+private DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -436,8 +437,7 @@ private void initConnections() throws java.lang.Exception {
 	getReactionSpecsPanel().addPropertyChangeListener(ivjEventHandler);
 	getBioModelEditorGlobalParameterPanel().addPropertyChangeListener(ivjEventHandler);
 	getBioModelEditorApplicationsPanel().addPropertyChangeListener(ivjEventHandler);
-		
-	getGeometrySummaryViewer().addActionListener(ivjEventHandler);
+
 	getBioModelEditorTree().addTreeSelectionListener(ivjEventHandler);
 	getBioModelEditorTree().addMouseListener(ivjEventHandler);
 	getBioModelEditorTree().addTreeExpansionListener(getBioModelEditorTreeModel());
@@ -488,39 +488,6 @@ private javax.swing.JScrollPane getTreePanel() {
 		}
 	}
 	return treePanel;
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2004 2:27:03 PM)
- * @param simOwner cbit.vcell.document.SimulationOwner
- */
-void resetSimContext(SimulationContext simContext) {
-//	/* most likely we got the same thing back (e.g. during document reset after save), so keep current selection in simulation panel */
-//	// check whether it looks like same old simcontext; if so, save current selection list
-//	int[] selections = null;
-//	if (getSimulationContext() != null && simContext != null) {
-//		Simulation[] oldValue = getSimulationWorkspace().getSimulationOwner().getSimulations();
-//		Simulation[] simulations = simContext.getSimulations();
-//		if (oldValue != null && simulations != null && oldValue.length == simulations.length) {
-//			boolean sameNames = true;
-//			for (int i = 0; i < oldValue.length; i++){
-//				if(!oldValue[i].getName().equals(simulations[i].getName())) {
-//					sameNames = false;
-//					break;
-//				}
-//			}
-//			if (sameNames) {
-//				selections = getSimulationListPanel().getSelectedRows();
-//			}
-//		}
-//	}
-//	// reset the thing
-//	getSimulationWorkspace().setSimulationOwner(simContext);
-//	// now set the selection back if appropriate
-//	if (selections != null) {
-//		getSimulationListPanel().setSelectedRows(selections);
-//	}
 }
 
 /**
@@ -730,7 +697,7 @@ private void treeValueChanged() {
 		BioModelNode selectedNode = (BioModelNode)node;
 	    Object selectedObject = selectedNode.getUserObject();
 	    SimulationContext simulationContext = getSelectedSimulationContext();
-	    if (selectedObject instanceof BioModel) {
+	    if (selectedObject instanceof BioModel || selectedObject instanceof Model) {
 	    	setRightPanel(null, null, null);
 	    } else if (selectedObject instanceof BioModelEditorTreeFolderNode) { // it's a folder	    	
 	    	setRightPanel((BioModelEditorTreeFolderNode)selectedObject, null, simulationContext);

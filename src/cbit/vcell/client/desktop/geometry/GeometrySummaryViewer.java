@@ -39,23 +39,18 @@ public class GeometrySummaryViewer extends JPanel {
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JButton ivjJButtonReplace = null;
     protected transient ActionListener actionListener = null;
-	private JButton ivjJButtonViewSurfaces = null;
 	private Geometry fieldGeometry = null;
 
 private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == GeometrySummaryViewer.this.getJButtonReplace()) 
 				connEtoC1(e);
-			if (e.getSource() == GeometrySummaryViewer.this.getJButtonViewSurfaces()) 
-				connEtoC2(e);
 			if (e.getSource() == GeometrySummaryViewer.this.getJButtonCreateGeometry()) 
 				connEtoC4(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == GeometrySummaryViewer.this && (evt.getPropertyName().equals("geometry"))) 
 				connEtoM1(evt);
-			if (evt.getSource() == GeometrySummaryViewer.this && (evt.getPropertyName().equals("geometry"))) 
-				connEtoC3(evt);
 		};
 	};
 	private JButton ivjJButtonCreateGeometry = null;
@@ -108,27 +103,6 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC3:  (GeometrySummaryViewer.geometry --> GeometrySummaryViewer.initSurfaceButton()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.initButtons();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC4:  (JButton2.action.actionPerformed(java.awt.event.ActionEvent) --> GeometrySummaryViewer.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
@@ -259,29 +233,6 @@ private javax.swing.JButton getJButtonCreateGeometry() {
 }
 
 /**
- * Return the JButton2 property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonViewSurfaces() {
-	if (ivjJButtonViewSurfaces == null) {
-		try {
-			ivjJButtonViewSurfaces = new javax.swing.JButton();
-			ivjJButtonViewSurfaces.setName("JButtonViewSurfaces");
-			ivjJButtonViewSurfaces.setText("View Surfaces...");
-			ivjJButtonViewSurfaces.setActionCommand(GuiConstants.ACTIONCMD_VIEW_SURFACES);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonViewSurfaces;
-}
-
-/**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
  */
@@ -302,7 +253,6 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	getJButtonReplace().addActionListener(ivjEventHandler);
-	getJButtonViewSurfaces().addActionListener(ivjEventHandler);
 	getJButtonCreateGeometry().addActionListener(ivjEventHandler);
 //	getBtnEditGeometry().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
@@ -329,23 +279,11 @@ private void initialize() {
 		constraintsGeometrySummaryPanel1.weighty = 1.0;
 		constraintsGeometrySummaryPanel1.insets = new Insets(4, 4, 5, 4);
 		add(getGeometryViewer(), constraintsGeometrySummaryPanel1);
-//		GridBagConstraints gbc_btnEditGeometry = new GridBagConstraints();
-//		gbc_btnEditGeometry.insets = new Insets(0, 0, 0, 5);
-//		gbc_btnEditGeometry.gridx = 1;
-//		gbc_btnEditGeometry.gridy = 1;
-//		add(getBtnEditGeometry(), gbc_btnEditGeometry);
 
 		java.awt.GridBagConstraints gbc_ivjJButtonReplace = new java.awt.GridBagConstraints();
 		gbc_ivjJButtonReplace.gridx = 0; gbc_ivjJButtonReplace.gridy = 1;
 		gbc_ivjJButtonReplace.insets = new Insets(4, 4, 4, 5);
 		add(getJButtonReplace(), gbc_ivjJButtonReplace);
-
-		java.awt.GridBagConstraints constraintsJButtonViewSurfaces = new java.awt.GridBagConstraints();
-		constraintsJButtonViewSurfaces.anchor = GridBagConstraints.EAST;
-		constraintsJButtonViewSurfaces.weightx = 1.0;
-		constraintsJButtonViewSurfaces.gridx = 2; constraintsJButtonViewSurfaces.gridy = 1;
-		constraintsJButtonViewSurfaces.insets = new Insets(4, 4, 4, 5);
-		add(getJButtonViewSurfaces(), constraintsJButtonViewSurfaces);
 
 		java.awt.GridBagConstraints gbc_ivjJButtonCreateGeometry = new java.awt.GridBagConstraints();
 		gbc_ivjJButtonCreateGeometry.gridx = 1; gbc_ivjJButtonCreateGeometry.gridy = 1;
@@ -360,15 +298,6 @@ private void initialize() {
 	// user code begin {2}
 	// user code end
 }
-
-/**
- * Comment
- */
-private void initButtons() {
-	boolean bSpatial = (getGeometry() != null) && (getGeometry().getDimension() > 0);
-	getJButtonViewSurfaces().setEnabled(bSpatial);
-}
-
 
 /**
  * main entrypoint - starts the part when it is run as an application

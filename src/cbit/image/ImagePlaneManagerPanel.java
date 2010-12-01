@@ -1,8 +1,11 @@
 package cbit.image;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
+
+import javax.swing.border.LineBorder;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -891,7 +894,7 @@ public ImagePlaneManager getImagePlaneManager() {
 private ImagePlanePanel getImagePlanePanel1() {
 	if (ivjImagePlanePanel1 == null) {
 		try {
-			ivjImagePlanePanel1 = new cbit.image.ImagePlanePanel();
+			ivjImagePlanePanel1 = new ImagePlanePanel();
 			ivjImagePlanePanel1.setName("ImagePlanePanel1");
 			// user code begin {1}
 			// user code end
@@ -913,7 +916,7 @@ private javax.swing.JLabel getInfoJlabel() {
 		try {
 			ivjInfoJlabel = new javax.swing.JLabel();
 			ivjInfoJlabel.setName("InfoJlabel");
-			ivjInfoJlabel.setBorder(new org.vcell.util.gui.LineBorderBean());
+			ivjInfoJlabel.setBorder(new LineBorder(Color.black));
 			ivjInfoJlabel.setText("Info");
 			ivjInfoJlabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
 			// user code begin {1}
@@ -926,56 +929,7 @@ private javax.swing.JLabel getInfoJlabel() {
 	}
 	return ivjInfoJlabel;
 }
-/**
- * Return the JPanel1 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel1() {
-	if (ivjJPanel1 == null) {
-		try {
-			ivjJPanel1 = new javax.swing.JPanel();
-			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setLayout(new java.awt.BorderLayout());
-			getJPanel1().add(getJToolBar1(), "North");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel1;
-}
-/**
- * Return the JPanel2 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel2() {
-	if (ivjJPanel2 == null) {
-		try {
-			ivjJPanel2 = new javax.swing.JPanel();
-			ivjJPanel2.setName("JPanel2");
-			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
 
-			java.awt.GridBagConstraints constraintsImagePaneScroller1 = new java.awt.GridBagConstraints();
-			constraintsImagePaneScroller1.gridx = 0; constraintsImagePaneScroller1.gridy = 0;
-			constraintsImagePaneScroller1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsImagePaneScroller1.weightx = 1.0;
-			constraintsImagePaneScroller1.weighty = 1.0;
-			getJPanel2().add(getImagePaneScroller1(), constraintsImagePaneScroller1);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel2;
-}
 /**
  * Return the JPanel3 property value.
  * @return javax.swing.JPanel
@@ -1007,7 +961,7 @@ private javax.swing.JPanel getJPanel3() {
 			constraintsJPanel1.weightx = 1.0;
 			constraintsJPanel1.weighty = 1.0;
 			constraintsJPanel1.insets = new java.awt.Insets(0, 4, 0, 4);
-			getJPanel3().add(getJPanel1(), constraintsJPanel1);
+			getJPanel3().add(getJToolBar1(), constraintsJPanel1);
 
 			java.awt.GridBagConstraints constraintsImagePlanePanel1 = new java.awt.GridBagConstraints();
 			constraintsImagePlanePanel1.gridx = 0; constraintsImagePlanePanel1.gridy = 4;
@@ -1123,7 +1077,7 @@ private void initialize() {
 		constraintsJPanel2.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel2.weightx = 1.0;
 		constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel2(), constraintsJPanel2);
+		add(getImagePaneScroller1(), constraintsJPanel2);
 
 		java.awt.GridBagConstraints constraintsJPanel3 = new java.awt.GridBagConstraints();
 		constraintsJPanel3.gridx = 1; constraintsJPanel3.gridy = 0;

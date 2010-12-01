@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -17,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 import org.vcell.util.gui.DialogUtils;
@@ -192,7 +194,16 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	}
 
 	private void moreActionsButtonPressed() {
-		getMoreActionsPopupMenu().show(moreActionsButton, 0, newButton.getHeight());
+		int[] rows = table.getSelectedRows();
+		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
+			getMoreActionsPopupMenu().show(moreActionsButton, 0, newButton.getHeight());
+			moreActionsButton.setToolTipText(null);
+		} else {
+			moreActionsButton.setToolTipText("select an application first");
+			ToolTipManager.sharedInstance().mouseMoved(
+			        new MouseEvent(moreActionsButton, 0, 0, 0,
+			                4, 0, 0, false));
+		}
 	}
 	
 	protected void deleteButtonPressed() {
@@ -224,7 +235,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		super.tableSelectionChanged();
 		int[] rows = table.getSelectedRows();
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
-			applicationPropertiesPanel.setSimulationContext(tableModel.getValueAt(rows[0]));
+			applicationPropertiesPanel.setSimulationContext(tableModel.getValueAt(rows[0]));			
 		} else {
 			applicationPropertiesPanel.setSimulationContext(null);
 		}

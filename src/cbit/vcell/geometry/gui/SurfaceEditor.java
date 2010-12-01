@@ -1,8 +1,15 @@
 package cbit.vcell.geometry.gui;
 
 import java.util.Hashtable;
+
+import cbit.image.ImageException;
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceCollection;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (5/25/2004 4:45:55 PM)
@@ -27,8 +34,6 @@ public class SurfaceEditor extends javax.swing.JPanel {
 	private cbit.vcell.geometry.surface.SurfaceCollection ivjsurfaceCollection = null;
 	private javax.swing.JPanel ivjJPanel3 = null;
 	private javax.swing.JButton ivjApplyButton = null;
-//	private java.awt.BorderLayout ivjSurfaceEditorBorderLayout = null;
-	private ResolvedLocationTablePanel ivjResolvedLocationTablePanel1 = null;
 	private javax.swing.JButton ivjhomeButton = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
@@ -93,26 +98,6 @@ private void connEtoC2(cbit.vcell.geometry.surface.GeometrySurfaceDescription va
 		// user code begin {1}
 		// user code end
 		this.onNewGeometrySurfaceDescription();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC3:  (surfaceCollection.this --> SurfaceEditor.onNewSurfaceCollection(Lcbit.vcell.geometry.surface.SurfaceCollection;)V)
- * @param value cbit.vcell.geometry.surface.SurfaceCollection
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(cbit.vcell.geometry.surface.SurfaceCollection value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.onNewSurfaceCollection(getsurfaceCollection());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -277,27 +262,6 @@ private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 
-
-/**
- * connEtoM9:  (geometrySurfaceDescription1.this --> ResolvedLocationTablePanel1.geometrySurfaceDescription)
- * @param value cbit.vcell.geometry.surface.GeometrySurfaceDescription
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM9(cbit.vcell.geometry.surface.GeometrySurfaceDescription value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getResolvedLocationTablePanel1().setGeometrySurfaceDescription(getgeometrySurfaceDescription1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connPtoP1SetSource:  (SurfaceEditor.geometrySurfaceDescription <--> geometrySurfaceDescription1.this)
  */
@@ -457,7 +421,7 @@ private javax.swing.JButton gethomeButton() {
 		try {
 			ivjhomeButton = new javax.swing.JButton();
 			ivjhomeButton.setName("homeButton");
-			ivjhomeButton.setText("home");
+			ivjhomeButton.setText("Reset");
 			ivjhomeButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 			// user code begin {1}
 			// user code end
@@ -584,7 +548,7 @@ private javax.swing.JPanel getJPanel1() {
 			java.awt.GridBagConstraints constraintshomeButton = new java.awt.GridBagConstraints();
 			constraintshomeButton.gridx = 0; constraintshomeButton.gridy = 0;
 			constraintshomeButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintshomeButton.anchor = java.awt.GridBagConstraints.NORTH;
+//			constraintshomeButton.anchor = java.awt.GridBagConstraints.NORTH;
 			constraintshomeButton.weighty = 1.0;
 			getJPanel1().add(gethomeButton(), constraintshomeButton);
 			// user code begin {1}
@@ -633,7 +597,7 @@ private javax.swing.JPanel getJPanel2() {
 			java.awt.GridBagConstraints constraintsJPanel3 = new java.awt.GridBagConstraints();
 			constraintsJPanel3.gridx = 1; constraintsJPanel3.gridy = 1;
 			constraintsJPanel3.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJPanel3.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsJPanel3.insets = new java.awt.Insets(0, 4, 0, 4);
 			getJPanel2().add(getJPanel3(), constraintsJPanel3);
 			// user code begin {1}
 			// user code end
@@ -662,18 +626,18 @@ private javax.swing.JPanel getJPanel3() {
 
 			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
 			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 0;
-			constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
+//			constraintsJLabel2.insets = new java.awt.Insets(0, 0, 0, 0);
 			getJPanel3().add(getJLabel2(), constraintsJLabel2);
 
 			java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
 			constraintsJLabel3.gridx = 1; constraintsJLabel3.gridy = 0;
 			constraintsJLabel3.weightx = 1.0;
-			constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
+//			constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel3().add(getJLabel3(), constraintsJLabel3);
 
 			java.awt.GridBagConstraints constraintsJLabel = new java.awt.GridBagConstraints();
 			constraintsJLabel.gridx = 2; constraintsJLabel.gridy = 0;
-			constraintsJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+//			constraintsJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel3().add(getJLabel(), constraintsJLabel);
 			// user code begin {1}
 			// user code end
@@ -723,31 +687,6 @@ private javax.swing.BoundedRangeModel getmodel1() {
 	// user code end
 	return ivjmodel1;
 }
-
-
-/**
- * Return the ResolvedLocationTablePanel1 property value.
- * @return cbit.vcell.geometry.gui.ResolvedLocationTablePanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private ResolvedLocationTablePanel getResolvedLocationTablePanel1() {
-	if (ivjResolvedLocationTablePanel1 == null) {
-		try {
-			ivjResolvedLocationTablePanel1 = new cbit.vcell.geometry.gui.ResolvedLocationTablePanel();
-			ivjResolvedLocationTablePanel1.setName("ResolvedLocationTablePanel1");
-			ivjResolvedLocationTablePanel1.setPreferredSize(new java.awt.Dimension(300, 100));
-			ivjResolvedLocationTablePanel1.setMinimumSize(new java.awt.Dimension(100, 100));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjResolvedLocationTablePanel1;
-}
-
 
 /**
  * Comment
@@ -903,8 +842,7 @@ private void initialize() {
 		setSize(543, 572);
 		add(getSurfaceCanvas1(), "Center");
 		add(getJPanel1(), "West");
-		add(getJPanel2(), "North");
-		add(getResolvedLocationTablePanel1(), "South");
+//		add(getJPanel2(), "North");
 		initConnections();
 		connEtoM3();
 	} catch (java.lang.Throwable ivjExc) {
@@ -975,7 +913,7 @@ private void onNewSurfaceCollection(SurfaceCollection argSurfaceCollection) {
 
 	//Set Geometry handle colors
 	if(argSurfaceCollection != null){
-		java.awt.image.IndexColorModel colorModel = (java.awt.image.IndexColorModel)cbit.vcell.geometry.GeometrySpec.getHandleColorMap();
+		java.awt.image.IndexColorModel colorModel = (java.awt.image.IndexColorModel)GeometrySpec.getHandleColorMap();
 		int[][] surfaceColors = new int[argSurfaceCollection.getSurfaceCount()][1];
 		final int colorOffset = 1;
 		for (int i = 0; i < argSurfaceCollection.getSurfaceCount(); i++){
@@ -986,6 +924,7 @@ private void onNewSurfaceCollection(SurfaceCollection argSurfaceCollection) {
 				(0x000000FF & (colorModel.getBlue(Math.min(255, i+colorOffset))));
 		}
 		getSurfaceCanvas1().setSurfacesColors(surfaceColors);
+		getSurfaceViewerTool1().resetView();
 	}
 }
 
@@ -1018,10 +957,10 @@ public void setGeometrySurfaceDescription(cbit.vcell.geometry.surface.GeometrySu
  * @param newValue cbit.vcell.geometry.surface.GeometrySurfaceDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setgeometrySurfaceDescription1(cbit.vcell.geometry.surface.GeometrySurfaceDescription newValue) {
+private void setgeometrySurfaceDescription1(GeometrySurfaceDescription newValue) {
 	if (ivjgeometrySurfaceDescription1 != newValue) {
 		try {
-			cbit.vcell.geometry.surface.GeometrySurfaceDescription oldValue = getgeometrySurfaceDescription1();
+			GeometrySurfaceDescription oldValue = getgeometrySurfaceDescription1();
 			/* Stop listening for events from the current object */
 			if (ivjgeometrySurfaceDescription1 != null) {
 				ivjgeometrySurfaceDescription1.removePropertyChangeListener(ivjEventHandler);
@@ -1035,7 +974,6 @@ private void setgeometrySurfaceDescription1(cbit.vcell.geometry.surface.Geometry
 			connPtoP1SetSource();
 			connEtoM1(ivjgeometrySurfaceDescription1);
 			connEtoM6(ivjgeometrySurfaceDescription1);
-			connEtoM9(ivjgeometrySurfaceDescription1);
 			connEtoC2(ivjgeometrySurfaceDescription1);
 			firePropertyChange("geometrySurfaceDescription", oldValue, newValue);
 			// user code begin {1}
@@ -1086,29 +1024,22 @@ private void setmodel1(javax.swing.BoundedRangeModel newValue) {
  * Set the surfaceCollection to a new value.
  * @param newValue cbit.vcell.geometry.surface.SurfaceCollection
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsurfaceCollection(cbit.vcell.geometry.surface.SurfaceCollection newValue) {
+private void setsurfaceCollection(SurfaceCollection newValue) {
 	if (ivjsurfaceCollection != newValue) {
 		try {
 			ivjsurfaceCollection = newValue;
-			connEtoC3(ivjsurfaceCollection);
-			// user code begin {1}
-			// user code end
+			this.onNewSurfaceCollection(getsurfaceCollection());
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 
 /**
  * Comment
  */
-public void updateSurface() throws java.beans.PropertyVetoException, cbit.image.ImageException, cbit.vcell.geometry.GeometryException, cbit.vcell.parser.ExpressionException {
+public void updateSurface() throws java.beans.PropertyVetoException, ImageException, GeometryException, ExpressionException {
 	if (getGeometrySurfaceDescription()==null){
 		javax.swing.SwingUtilities.invokeLater(new Runnable (){
 			public void run(){
@@ -1117,36 +1048,19 @@ public void updateSurface() throws java.beans.PropertyVetoException, cbit.image.
 			}
 		});
 		return;
-	}
-	
-	final boolean bResetAfterGenerate = (getGeometrySurfaceDescription().getSurfaceCollection()==null);
+	}	
 	
 	getSurfaceCanvas1().setOrigin(getGeometrySurfaceDescription().getGeometry().getOrigin());
 	getSurfaceCanvas1().setExtent(getGeometrySurfaceDescription().getGeometry().getExtent());
 	getSurfaceViewerTool1().setDimension(new Integer(getGeometrySurfaceDescription().getGeometry().getDimension()));
 	getGeometrySurfaceDescription().setFilterCutoffFrequency(new Double(getTaubinParameterFromSliderValue()));
 	
-	Hashtable<String, Object> hash = new Hashtable<String, Object>();
-
-	hash.put("geometrySurfaceDescription",getGeometrySurfaceDescription());
-	
-	AsynchClientTask repaintViewTask = new AsynchClientTask("Repainting view", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING, false, false) {
-		public void run(Hashtable<String, Object> hash) throws Exception{
-			getSurfaceCanvas1().setDisableRepaint(false);
-			if(bResetAfterGenerate){
-				getSurfaceViewerTool1().resetView();
-			}else{
-				getSurfaceViewerTool1().fullRepaint();
-				//getSurfaceCanvas1().repaint();
-			}
-		}
-	};
-
-	AsynchClientTask tasks[] = null;
-	tasks = new AsynchClientTask[] { new SurfaceGenerationTask(),repaintViewTask};
-
-	getSurfaceCanvas1().setDisableRepaint(true);
-
-	cbit.vcell.client.task.ClientTaskDispatcher.dispatch(this, hash, tasks, false);
+	getSurfaceCanvas1().setDisableRepaint(false);
+//	if (bResetAfterGenerate){	
+		getSurfaceViewerTool1().resetView();
+//	}else{
+//		getSurfaceViewerTool1().fullRepaint();
+//		//getSurfaceCanvas1().repaint();
+//	}
 }
 }

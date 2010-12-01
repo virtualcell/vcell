@@ -1,10 +1,8 @@
 package cbit.vcell.client.desktop.biomodel;
-import java.awt.Dimension;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.ImageIcon;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 
@@ -13,8 +11,6 @@ import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ClientSimManager;
-import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.mapping.SimulationContext;
@@ -26,8 +22,6 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  * @author: Ion Moraru
  */
 public class ApplicationComponents {
-	private JInternalFrameEnhanced surfaceViewerFrame = null;	
-	private SurfaceViewerPanel surfaceViewer = null;
 	private Hashtable<VCSimulationIdentifier, SimulationWindow> simulationWindowsHash = new Hashtable<VCSimulationIdentifier, SimulationWindow>();
 	private SimulationWorkspace simulationWorkspace = null;
 
@@ -39,9 +33,6 @@ public class ApplicationComponents {
 public ApplicationComponents(SimulationContext simContext, BioModelWindowManager bioModelWindowManager, final JDesktopPane pane) {
 	// make the surface viewer
 	simulationWorkspace = new SimulationWorkspace(bioModelWindowManager, simContext);
-	setSurfaceViewer(new SurfaceViewerPanel());
-	getSurfaceViewer().setGeometry(simContext.getGeometry());
-	setSurfaceViewerFrame(DocumentWindowManager.createDefaultFrame(getSurfaceViewer()));
 }
 
 
@@ -104,27 +95,6 @@ public SimulationWindow[] getSimulationWindows() {
 	return (SimulationWindow[])BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/4/2004 1:26:00 AM)
- * @return cbit.vcell.client.desktop.biomodel.MathViewer
- */
-public SurfaceViewerPanel getSurfaceViewer() {
-	return surfaceViewer;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/3/2004 4:40:40 PM)
- * @return cbit.gui.JInternalFrameEnhanced
- */
-public JInternalFrameEnhanced getSurfaceViewerFrame() {
-	return surfaceViewerFrame;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 7:55:48 AM)
@@ -137,36 +107,6 @@ public SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulation
 	} else {
 		return null;
 	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/3/2004 4:41:32 PM)
- * @param simContext cbit.vcell.mapping.SimulationContext
- */
-public void resetSimulationContext(SimulationContext simContext) {
-	getSurfaceViewer().setGeometry(simContext.getGeometry());
-	
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (6/4/2004 1:26:00 AM)
- * @param newMathViewer cbit.vcell.client.desktop.biomodel.MathViewer
- */
-private void setSurfaceViewer(SurfaceViewerPanel newSurfaceViewer) {
-	surfaceViewer = newSurfaceViewer;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/3/2004 4:40:40 PM)
- * @param newMathViewerFrame cbit.gui.JInternalFrameEnhanced
- */
-private void setSurfaceViewerFrame(JInternalFrameEnhanced newSurfaceViewerFrame) {
-	surfaceViewerFrame = newSurfaceViewerFrame;
 }
 
 public void preloadSimulationStatus(Simulation[] simulations) {

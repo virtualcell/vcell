@@ -99,9 +99,9 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		REACTIONS_NODE,
 		GLOBAL_PARAMETER_NODE,
 		
-		SPECIFICATIONS_NODE,
+//		SPECIFICATIONS_NODE,
 		MATHEMATICS_NODE,
-		RUN_SIMULATIONS_NODE,
+//		RUN_SIMULATIONS_NODE,
 		ANALYSIS_NODE,
 		
 		GEOMETRY_NODE,
@@ -342,17 +342,6 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 				BioModelNode appNode = new BioModelNode(simulationContext, true);
 				applicationsNode.add(appNode);
 				applicationsChildNodes.add(appNode);
-				
-				BioModelNode specificationNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SPECIFICATIONS_NODE, "Specifications", true), true); 
-				BioModelNode mathematicsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.MATHEMATICS_NODE, "View Math", true), false); 
-				BioModelNode runSimulationsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.RUN_SIMULATIONS_NODE, "Run Simulations", true), true); 
-				BioModelNode analysisNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ANALYSIS_NODE, "Analysis", true), true); 
-				BioModelNode applicationChildNodes[] = new BioModelNode[] {
-						specificationNode,
-						mathematicsNode,
-						runSimulationsNode,
-						analysisNode,
-				};
 	
 				BioModelNode geometryNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.GEOMETRY_NODE, "Geometry"), false);
 				BioModelNode structureMappingNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.STRUCTURE_MAPPING_NODE, "Structure Mapping"), false);
@@ -361,8 +350,12 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 				BioModelNode eventsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.EVENTS_NODE, "Events"), true);
 				BioModelNode electricalNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ELECTRICAL_MAPPING_NODE, "Electrical"), false);
 				BioModelNode dataSymbolNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.DATA_SYMBOLS_NODE, "Data Symbols"), true);
+				BioModelNode mathematicsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.MATHEMATICS_NODE, "View Math"), false); 
+				BioModelNode analysisNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ANALYSIS_NODE, "Analysis"), true); 
+				BioModelNode simulationsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SIMULATIONS_NODE, "Simulations"), true);
+				BioModelNode outputFunctionsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE, "Output Functions"), true);
 				
-				BioModelNode[] specificationChildNodes = new BioModelNode[] {
+				BioModelNode[] applicationChildNodes = new BioModelNode[] {
 						geometryNode,
 						structureMappingNode,
 						initialConditionNode,
@@ -370,23 +363,14 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 						eventsNode,
 						electricalNode,
 						dataSymbolNode,
-				};	
-				
-				BioModelNode simulationsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SIMULATIONS_NODE, "Simulations"), true);
-				BioModelNode outputFunctionsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE, "Output Functions"), true);
-				BioModelNode[] runSimulationsChildNodes = new BioModelNode[] {
+						mathematicsNode,
+						analysisNode,
 						simulationsNode,
 						outputFunctionsNode,
 				};
 				for (BioModelNode node : applicationChildNodes) {
 					appNode.add(node);
 				}
-				for (BioModelNode node : specificationChildNodes) {
-					specificationNode.add(node);
-				}
-				for (BioModelNode node : runSimulationsChildNodes) {
-					runSimulationsNode.add(node);
-				}			
 				populateApplicationNode(appNode, BioModelEditorTreeFolderClass.INITIAL_CONDITIONS_NODE);
 				populateApplicationNode(appNode, BioModelEditorTreeFolderClass.APP_REACTIONS_NODE);
 				populateApplicationNode(appNode, BioModelEditorTreeFolderClass.EVENTS_NODE);

@@ -1,4 +1,9 @@
 package cbit.vcell.geometry.gui;
+
+import org.vcell.util.gui.ScrollTable;
+
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/26/2004 1:59:21 PM)
@@ -6,11 +11,11 @@ package cbit.vcell.geometry.gui;
  */
 public class ResolvedLocationTablePanel extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
-	private javax.swing.JTable ivjScrollPaneTable = null;
+	private ScrollTable ivjScrollPaneTable = null;
 	private cbit.vcell.geometry.surface.GeometrySurfaceDescription fieldGeometrySurfaceDescription = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.vcell.geometry.surface.GeometrySurfaceDescription ivjgeometrySurfaceDescription1 = null;
+	private GeometrySurfaceDescription ivjgeometrySurfaceDescription1 = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -167,32 +172,6 @@ private cbit.vcell.geometry.surface.GeometrySurfaceDescription getgeometrySurfac
 	return ivjgeometrySurfaceDescription1;
 }
 
-
-/**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			getJScrollPane1().setViewportView(getScrollPaneTable());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
-
-
 /**
  * Return the ResolvedLocationTableModel1 property value.
  * @return cbit.vcell.geometry.gui.ResolvedLocationTableModel
@@ -219,14 +198,11 @@ private ResolvedLocationTableModel getResolvedLocationTableModel1() {
  * @return javax.swing.JTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTable getScrollPaneTable() {
+private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new javax.swing.JTable();
+			ivjScrollPaneTable = new ScrollTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
-			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -272,11 +248,11 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("ResolvedLocationTablePanel");
-		setPreferredSize(new java.awt.Dimension(200, 300));
+//		setPreferredSize(new java.awt.Dimension(200, 300));
 		setLayout(new java.awt.BorderLayout());
 		setSize(420, 205);
-		setMinimumSize(new java.awt.Dimension(100, 200));
-		add(getJScrollPane1(), "Center");
+//		setMinimumSize(new java.awt.Dimension(100, 200));
+		add(getScrollPaneTable().getEnclosingScrollPane(), "Center");
 		initConnections();
 		connEtoM1();
 	} catch (java.lang.Throwable ivjExc) {
