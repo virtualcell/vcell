@@ -562,12 +562,7 @@ private GeometrySubVolumeTableModel getgeometrySubVolumeTableModel() {
 	if (ivjgeometrySubVolumeTableModel == null) {
 		try {
 			ivjgeometrySubVolumeTableModel = new GeometrySubVolumeTableModel(getScrollPaneTable());
-			getScrollPaneTable().createDefaultColumnsFromModel();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}

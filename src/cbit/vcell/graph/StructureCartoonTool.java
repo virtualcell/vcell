@@ -10,6 +10,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.FileOutputStream;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
@@ -148,9 +149,6 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 	 */
 	@Override
 	protected void menuAction(Shape shape, String menuAction) {
-		if (menuAction.equals(CartoonToolMiscActions.ShowParameters.MENU_ACTION)) {
-			showParametersDialog();
-		}
 		//
 		if (shape == null) {
 			return;
@@ -195,12 +193,6 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				showEditSpeciesDialog(getGraphPane(), getStructureCartoon().getModel(), 
 						((SpeciesContextShape) shape).getSpeciesContext());
 			}
-
-		} else if (menuAction.equals(CartoonToolMiscActions.ShowParameters.MENU_ACTION)) {
-			if (shape instanceof FeatureShape || shape instanceof MembraneShape) {
-				showParametersDialog();
-			}
-
 		} else if (menuAction.equals(CartoonToolMiscActions.AddGlobalParameter.MENU_ACTION)) {
 			if (shape instanceof FeatureShape || shape instanceof MembraneShape) {
 				Point locationOnScreen = shape.getSpaceManager().getAbsLoc();
@@ -213,9 +205,21 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 
 		} else if (menuAction.equals(CartoonToolMiscActions.AddSpecies.MENU_ACTION)) {
 			if (shape instanceof StructureShape) {
-				showCreateSpeciesContextDialog(getGraphPane(),
-						getStructureCartoon().getModel(),
-						((StructureShape) shape).getStructure(), null);
+				Species species = new Species(getStructureCartoon().getModel().getFreeSpeciesName(), "");
+				SpeciesContext speciesContext = new SpeciesContext(species, ((StructureShape) shape).getStructure());
+				try {
+					speciesContext.setHasOverride(true);
+					speciesContext.setName(species.getCommonName());
+					getStructureCartoon().getModel().addSpecies(species);
+					getStructureCartoon().getModel().addSpeciesContext(speciesContext);
+					getGraphModel().getShapeFromModelObject(speciesContext).select();
+				} catch (PropertyVetoException e) {
+					e.printStackTrace();
+					generateErrorDialog(e, 0, 0);
+				}
+//				showCreateSpeciesContextDialog(getGraphPane(),
+//						getStructureCartoon().getModel(),
+//						((StructureShape) shape).getStructure(), null);
 			}
 
 		} else if (menuAction.equals(CartoonToolMiscActions.AddFeature.MENU_ACTION)) {
@@ -808,22 +812,6 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		} catch (Throwable e) {
 			DialogUtils.showErrorDialog(getGraphPane(), e.getMessage(), e);
 		}
-	}
-
-	public void showParametersDialog() {
-		if (getGraphModel() == null || getDocumentManager() == null
-				|| getJDesktopPane() == null) {
-			return;
-		}
-
-		if (modelParametersDialog == null) {
-			modelParametersDialog = new ModelParametersDialog();
-			modelParametersDialog.setIconifiable(true);
-			modelParametersDialog.init(((StructureCartoon) getGraphModel()).getModel());
-			BeanUtils.centerOnComponent(modelParametersDialog, getJDesktopPane());
-		}
-
-		DocumentWindowManager.showFrame(modelParametersDialog, getJDesktopPane());
 	}
 	
 	public void showReactionCartoonEditorPanel(

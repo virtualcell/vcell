@@ -19,13 +19,13 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
+import javax.swing.plaf.basic.BasicInternalFrameUI;
 
 import org.vcell.sybil.gui.space.DialogParentProvider;
 import org.vcell.sybil.gui.space.GUIJInternalFrameSpace;
 import org.vcell.sybil.init.SybilApplication;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.JTaskBar;
@@ -33,7 +33,6 @@ import org.vcell.util.gui.JTaskBar;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
-import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -198,8 +197,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 //			getRequestManager().changeGeometry(this,(SimulationContext)applicationComponents.getAppEditor().getSimulationWorkspace().getSimulationOwner());
 //		}
 //	}
-//	if (source instanceof ApplicationEditor && actionCommand.equals(GuiConstants.ACTIONCMD_VIEW_SURFACES)) {
-//		ApplicationComponents applicationComponents = findAppComponentsForSimContextGeomViewer((ApplicationEditor)source);
+//	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_VIEW_SURFACES)) {
+//		ApplicationComponents applicationComponents = findAppComponentsForSimContextGeomViewer((GeometrySummaryViewer)source);
 //		if(applicationComponents != null){
 //			applicationComponents.getSurfaceViewer().setGeometry(((ApplicationEditor)source).getSimulationWorkspace().getSimulationOwner().getGeometry());
 //			showSurfaceViewerFrame((SimulationContext)applicationComponents.getAppEditor().getSimulationWorkspace().getSimulationOwner(),true);
@@ -209,12 +208,12 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 }
 
 
-//private ApplicationComponents findAppComponentsForSimContextGeomViewer(ApplicationEditor applicationEditor){
+//private ApplicationComponents findAppComponentsForSimContextGeomViewer(GeometrySummaryViewer geometrySummaryViewer){
 //		Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
 //		while (appComponentsEnum.hasMoreElements()) {
 //			ApplicationComponents appComponents = (ApplicationComponents)appComponentsEnum.nextElement();
 //			ApplicationEditor appEditor = appComponents.getAppEditor();
-//			if (appEditor == applicationEditor) {
+//			if (appComponents.get == applicationEditor) {
 //				SimulationOwner simOwner  = (SimulationOwner)appComponents.getAppEditor().getSimulationWorkspace().getSimulationOwner();
 //				if (simOwner instanceof SimulationContext) {
 //					return appComponents;
@@ -223,7 +222,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 //		}
 //		Geometry geom = applicationEditor.getSimulationWorkspace().getSimulationOwner().getGeometry();
 //		DialogUtils.showErrorDialog(getComponent(), "Geometry "+(geom!= null?geom.getName():null)+" key="+(geom != null?geom.getVersion().getVersionKey():null)+" not found in application hash");
-
+//
 //		return null;
 //}
 /**
@@ -268,8 +267,6 @@ private void checkValidApplicationFrames(boolean reset) {
 					}
 				}
 				if (found != null) {
-					// reset the sc everywhere
-					appComponents.resetSimulationContext(found);
 					// check simulation data windows
 					checkValidSimulationDataViewerFrames(appComponents, found);
 					// rewire listener
@@ -337,7 +334,11 @@ private void createBioModelFrame() {
 	getBioModelEditor().setBioModel(getBioModel());
 	getBioModelEditor().setDocumentManager(getRequestManager().getDocumentManager());
 	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("BioModel", true, false, true, true);
-	editorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/bioModel_16x16.gif")));
+	//if (editorFrame.getUI() instanceof BasicInternalFrameUI) {
+		//((BasicInternalFrameUI)editorFrame.getUI()).setNorthPane(null);
+	//} else {
+		editorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/bioModel_16x16.gif")));
+	//}
 	editorFrame.add(bioModelEditor, BorderLayout.CENTER);
 	getJDesktopPane().add(editorFrame);
 	editorFrame.setSize(780, 620);
@@ -468,15 +469,7 @@ public boolean isRecyclable() {
 	 * @param evt A PropertyChangeEvent object describing the event source 
 	 *   	and the property that has changed.
 	 */
-public void propertyChange(java.beans.PropertyChangeEvent evt) {
-
-	if(evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("geometry")){
-		ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get((SimulationContext)evt.getSource());
-
-		appComponents.getSurfaceViewer().setGeometry(null);
-		close(appComponents.getSurfaceViewerFrame(),getJDesktopPane());
-	}
-	
+public void propertyChange(java.beans.PropertyChangeEvent evt) {	
 	if (evt.getSource() == getBioModel() && evt.getPropertyName().equals("simulationContexts")) {
 		// close any window we should not have anymore
 		checkValidApplicationFrames(false);
@@ -491,11 +484,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			appComponents.cleanSimWindowsHash();
 		}
 	}
-	if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("name")) {
-		SimulationContext simContext = (SimulationContext)evt.getSource();
-		JInternalFrameEnhanced surfaceFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getSurfaceViewerFrame();
-		surfaceFrame.setTitle("Surface for: "+simContext.getName()+"'s Geometry");
-	}
 }
 
 
@@ -506,7 +494,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 private void remove(ApplicationComponents appComponents, SimulationContext sc) {
 	sc.removePropertyChangeListener(this);
 	getApplicationsHash().remove(sc);
-	close(appComponents.getSurfaceViewerFrame(), getJDesktopPane());
 	close(appComponents.getDataViewerFrames(), getJDesktopPane());
 }
 
@@ -524,12 +511,6 @@ public void resetDocument(VCDocument newDocument) {
 	Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
 	while (en.hasMoreElements()) {
 		close((JInternalFrame)en.nextElement(), getJDesktopPane());
-	}
-	Enumeration<ApplicationComponents> enumAppComp = applicationsHash.elements();
-	while (enumAppComp.hasMoreElements()){
-		ApplicationComponents appcomp = (ApplicationComponents)enumAppComp.nextElement();
-//		setDefaultTitle(appcomp.getGeometrySummaryViewerFrame());
-		setDefaultTitle(appcomp.getSurfaceViewerFrame());
 	}
 	getRequestManager().updateStatusNow();
 }
@@ -654,42 +635,6 @@ public void showFrame(javax.swing.JInternalFrame frame) {
 //	}
 //	editorFrame.requestFocus();
 //}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-private void showSurfaceViewerFrame(SimulationContext simContext,boolean bOpen) {
-	JInternalFrameEnhanced editorFrame = null;
-	if (getApplicationsHash().containsKey(simContext)) {
-		editorFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getSurfaceViewerFrame();
-		if(!bOpen){
-			close(editorFrame, getJDesktopPane());
-			return;
-		}
-		showFrame(editorFrame);
-	}
-
-
-	//Generate surfaces if necessary
-	if(editorFrame != null){
-		editorFrame.requestFocus();
-		try{
-			SurfaceViewerPanel surfaceViewerPanel = ((ApplicationComponents)getApplicationsHash().get(simContext)).getSurfaceViewer();
-
-			if(simContext.getGeometry().getGeometrySurfaceDescription() != null &&
-				simContext.getGeometry().getGeometrySurfaceDescription().getSurfaceCollection() == null){
-
-					surfaceViewerPanel.updateSurfaces();
-			}
-			
-		}catch(Exception e){
-			DialogUtils.showErrorDialog(getComponent(), "Error Generating Surfaces\n"+e.getMessage(), e);
-		}
-	}
-}
-
 
 /**
  * Insert the method's description here.

@@ -4,15 +4,27 @@ package cbit.vcell.geometry.gui;
  * All rights reserved.
 ©*/
 
+import java.awt.Color;
 import java.awt.image.MemoryImageSource;
+
+import javax.swing.border.LineBorder;
+
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
-import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.gui.ColorIcon;
 
+import cbit.image.DisplayAdapterService;
+import cbit.image.GIFImage;
+import cbit.image.ImageException;
+import cbit.image.ImagePaneModel;
+import cbit.image.ImagePlaneManagerPanel;
+import cbit.image.SourceDataInfo;
+import cbit.image.VCImage;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.geometry.*;
-import cbit.image.*;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.SubVolume;
 /**
  * Insert the type's description here.
  * Creation date: (4/9/01 8:06:53 AM)
@@ -591,7 +603,7 @@ private javax.swing.JLabel getGeometryVersionLabel() {
 		try {
 			ivjGeometryVersionLabel = new javax.swing.JLabel();
 			ivjGeometryVersionLabel.setName("GeometryVersionLabel");
-			ivjGeometryVersionLabel.setBorder(new org.vcell.util.gui.LineBorderBean());
+			ivjGeometryVersionLabel.setBorder(new LineBorder(Color.black));
 			ivjGeometryVersionLabel.setText("GeometryName");
 			// user code begin {1}
 			// user code end

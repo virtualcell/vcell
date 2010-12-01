@@ -1,5 +1,7 @@
 package cbit.image;
 
+import java.awt.BorderLayout;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -580,18 +582,9 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("ImagePaneScroller");
-		setLayout(new java.awt.GridBagLayout());
+		setLayout(new BorderLayout());
 		setSize(354, 305);
-
-		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
-		constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 0;
-		constraintsJScrollPane1.gridwidth = 4;
-		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJScrollPane1.anchor = java.awt.GridBagConstraints.NORTHWEST;
-		constraintsJScrollPane1.weightx = 1.0;
-		constraintsJScrollPane1.weighty = 1.0;
-		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJScrollPane1(), constraintsJScrollPane1);
+		add(getJScrollPane1(), BorderLayout.CENTER);
 		initConnections();
 		connEtoC3();
 	} catch (java.lang.Throwable ivjExc) {
