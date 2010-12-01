@@ -17,9 +17,10 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
+import cbit.vcell.model.Model;
 
 @SuppressWarnings("serial")
-public abstract class BioModelEditorRightSidePanel<T> extends JPanel {
+public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	
 	protected JButton newButton = null;
@@ -94,6 +95,10 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel {
 		BioModel oldValue = bioModel;
 		bioModel = newValue;		
 		firePropertyChange(PROPERTY_NAME_BIO_MODEL, oldValue, newValue);
+	}
+	
+	public Model getModel() {
+		return bioModel.getModel();
 	}
 	
 	private void searchTable() {

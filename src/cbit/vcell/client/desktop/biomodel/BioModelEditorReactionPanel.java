@@ -23,7 +23,8 @@ import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.graph.ReactionSlicesCartoonEditorPanel;
+import cbit.vcell.graph.ReactionCartoonEditorPanel;
+import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.gui.SimpleReactionPropertiesPanel;
@@ -31,7 +32,7 @@ import cbit.vcell.model.gui.SimpleReactionPropertiesPanel;
 @SuppressWarnings("serial")
 public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<ReactionStep> {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
-	private ReactionSlicesCartoonEditorPanel reactionCartoonEditorPanel = null;
+	private ReactionCartoonEditorPanel reactionCartoonEditorPanel = null;
 	private SimpleReactionPropertiesPanel reactionStepPropertiesPanel = null;
 	private JTabbedPane tabbedPane = null;
 	private JDesktopPaneEnhanced desktopPane = null;
@@ -40,7 +41,13 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 	private class InternalEventHandler implements java.beans.PropertyChangeListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getSource() == reactionCartoonEditorPanel && evt.getPropertyName().equals(ReactionSlicesCartoonEditorPanel.PROPERTY_NAME_FLOATING_REQUESTED)) {
+			if (evt.getSource() == BioModelEditorReactionPanel.this && evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
+				if(bioModel != null) {
+					reactionCartoonEditorPanel.setModel(bioModel.getModel());
+					reactionCartoonEditorPanel.setStructureSuite(
+							new AllStructureSuite(BioModelEditorReactionPanel.this));
+				}
+			} else if (evt.getSource() == reactionCartoonEditorPanel && evt.getPropertyName().equals(ReactionCartoonEditorPanel.PROPERTY_NAME_FLOATING)) {
 				showDiagramView((Boolean) evt.getNewValue());
 			}
 		}
@@ -52,7 +59,7 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 	}
         
 	private void initialize() {
-		reactionCartoonEditorPanel = new ReactionSlicesCartoonEditorPanel();
+		reactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
 		reactionCartoonEditorPanel.addPropertyChangeListener(eventHandler);
 		reactionStepPropertiesPanel = new SimpleReactionPropertiesPanel();
 		

@@ -45,6 +45,11 @@ import cbit.vcell.units.VCUnitException;
 
 @SuppressWarnings("serial")
 public class Model implements Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, ScopedSymbolTable {
+	
+	public static interface Owner {
+		public Model getModel();
+	}
+	
 	public static final String PROPERTY_NAME_REACTION_STEPS = "reactionSteps";
 	public static final String PROPERTY_NAME_STRUCTURES = "structures";
 	public static final String PROPERTY_NAME_SPECIES_CONTEXTS = "speciesContexts";

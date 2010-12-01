@@ -11,20 +11,20 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.WindowConstants;
 
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
-import cbit.vcell.graph.StructureCartoonTool;
+import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class ReactionCartoonEditorDialog extends JInternalFrameEnhanced {
 	private ReactionCartoonEditorPanel reactionCartoonEditorPanel = null;
 
-	public ReactionCartoonEditorDialog(StructureCartoonTool sct) {
+	public ReactionCartoonEditorDialog() {
 		super();
 		initialize();
 	}
@@ -44,23 +44,24 @@ public class ReactionCartoonEditorDialog extends JInternalFrameEnhanced {
 		}
 		return reactionCartoonEditorPanel;
 	}
-	private void handleException(java.lang.Throwable exception) {
+
+	private void handleException(Throwable exception) {
 		System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 		exception.printStackTrace(System.out);
 	}
 
-	public void init(Model model, Structure structure, DocumentManager documentManager) {
+	public void init(Model model, StructureSuite structureSuite, DocumentManager documentManager) {
 		getReactionCartoonEditorPanel().setModel(model);
-		getReactionCartoonEditorPanel().setStructure(structure);
+		getReactionCartoonEditorPanel().setStructureSuite(structureSuite);
 		getReactionCartoonEditorPanel().setDocumentManager(documentManager);
-		setTitle("Reactions for " + structure.getName());
+		setTitle(structureSuite.getTitle());
 	}
 
 	private void initialize() {
 		try {
 			setFrameIcon(new ImageIcon(getClass().getResource("/images/step.gif")));
 			setName("ReactionCartoonEditorDialog");
-			setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			setClosable(true);
 			setSize(600, 495);
 			setResizable(true);
@@ -74,7 +75,7 @@ public class ReactionCartoonEditorDialog extends JInternalFrameEnhanced {
 		try {
 			JFrame frame = new JFrame();
 			ReactionCartoonEditorDialog aReactionCartoonEditorDialog;
-			aReactionCartoonEditorDialog = new ReactionCartoonEditorDialog(null);
+			aReactionCartoonEditorDialog = new ReactionCartoonEditorDialog();
 			frame.setContentPane(aReactionCartoonEditorDialog);
 			frame.setSize(aReactionCartoonEditorDialog.getSize());
 			frame.addWindowListener(new WindowAdapter() {
@@ -90,5 +91,4 @@ public class ReactionCartoonEditorDialog extends JInternalFrameEnhanced {
 			exception.printStackTrace(System.out);
 		}
 	}
-
 }
