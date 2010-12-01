@@ -34,6 +34,9 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.graph.ReactionCartoon;
 import cbit.vcell.graph.StructureCartoon;
+import cbit.vcell.graph.structures.MembraneStructureSuite;
+import cbit.vcell.graph.structures.SingleStructureSuite;
+import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
@@ -395,7 +398,14 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 	    ByteArrayOutputStream bos;
 		ReactionCartoon rcartoon = new ReactionCartoon();
 		rcartoon.setModel(model);
-		rcartoon.setStructure(struct);
+		StructureSuite layout;
+		if(struct instanceof Membrane) {
+			layout = new MembraneStructureSuite(((Membrane) struct));
+		} else {
+			layout = new SingleStructureSuite(struct);
+		}
+		StructureSuite structureSuite = layout;
+		rcartoon.setStructureSuite(structureSuite);
 		rcartoon.refreshAll();
 		//dummy settings to get the real dimensions.
 		BufferedImage dummyBufferedImage = new BufferedImage(DEF_IMAGE_WIDTH, DEF_IMAGE_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
@@ -729,7 +739,14 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 	    ByteArrayOutputStream bos;
 		ReactionCartoon rcartoon = new ReactionCartoon();
 		rcartoon.setModel(model);
-		rcartoon.setStructure(struct);
+		StructureSuite layout;
+		if(struct instanceof Membrane) {
+			layout = new MembraneStructureSuite(((Membrane) struct));
+		} else {
+			layout = new SingleStructureSuite(struct);
+		}
+		StructureSuite structureSuite = layout;
+		rcartoon.setStructureSuite(structureSuite);
 		rcartoon.refreshAll();
 		int zoom = ITextWriter.getZoom(resolution);
 		System.out.println(resolution + " " + zoom);

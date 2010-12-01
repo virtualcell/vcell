@@ -1,9 +1,9 @@
 package cbit.vcell.model;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
@@ -11,6 +11,7 @@ import org.vcell.util.document.KeyValue;
 import cbit.vcell.parser.Expression;
 
 
+@SuppressWarnings("serial")
 public class SimpleReaction extends ReactionStep
 {
 public SimpleReaction(Structure structure,KeyValue key,String name) throws java.beans.PropertyVetoException {

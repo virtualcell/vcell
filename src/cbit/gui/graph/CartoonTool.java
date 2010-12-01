@@ -6,7 +6,6 @@ package cbit.gui.graph;
  */
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 
 import cbit.gui.graph.actions.CartoonToolEditActions;
@@ -33,6 +32,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
@@ -47,7 +47,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		MouseMotionListener, ActionListener, KeyListener {
 
 	private GraphPane graphPane = null;
-	private ButtonGroupCivilized buttonGroup = null;
+	private ButtonGroup buttonGroup = null;
 	
 	protected final GraphEmbeddingManager graphEmbeddingManager = new GraphEmbeddingManager(this);
 	protected final VCGroupManager groupManager = new VCGroupManager(this);
@@ -129,7 +129,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		menuAction(popupMenuShape, event.getActionCommand());
 	}
 
-	public ButtonGroupCivilized getButtonGroup() {
+	public ButtonGroup getButtonGroup() {
 		return buttonGroup;
 	}
 
@@ -343,7 +343,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 				(int) (screenPoint.y * zoomUnscaling));
 	}
 
-	public void setButtonGroup(ButtonGroupCivilized newButtonGroup) {
+	public void setButtonGroup(ButtonGroup newButtonGroup) {
 		buttonGroup = newButtonGroup;
 		setMode(Mode.SELECT);
 	}
@@ -379,7 +379,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 	public abstract boolean shapeHasMenuActionEnabled(Shape shape,
 			String menuAction);
 
-	public final void updateButtonGroup(ButtonGroupCivilized buttonGroup,
+	public final void updateButtonGroup(ButtonGroup buttonGroup,
 			String actionCommand) {
 		if (buttonGroup == null) {
 			return;
@@ -397,7 +397,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		while (buttons.hasMoreElements()) {
 			ButtonModel button = buttons.nextElement().getModel();
 			if (button.getActionCommand().equals(actionCommand)) {
-				buttonGroup.setSelection(button);
+				button.setSelected(true);
 				return;
 			}
 		}

@@ -4,6 +4,9 @@ package org.vcell.sybil.util.debug;
  *   A few simple static methods to support debugging
  */
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Map;
@@ -66,6 +69,21 @@ public class Debug {
 			}
 		} else {
 			message("Reasoner " + reasoner.toString() + " not recognized as a rule reasoner.");
+		}
+	}
+	
+	public static void printComponentHierarchy(Component component) {
+		printComponentHierarchy(component, "");
+	}
+	
+	public static void printComponentHierarchy(Component component, String prefix) {
+		Dimension size = component.getSize();
+		message(prefix + "(" + size.width + ", " + size.height + ") - " + component);
+		if(component instanceof Container) {
+			Container container = (Container) component;
+			for(Component child : container.getComponents()) {
+				printComponentHierarchy(child, prefix + "  ");
+			}
 		}
 	}
 	

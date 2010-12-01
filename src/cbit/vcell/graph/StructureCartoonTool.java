@@ -35,7 +35,12 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.graph.structures.AllStructureSuite;
+import cbit.vcell.graph.structures.MembraneStructureSuite;
+import cbit.vcell.graph.structures.SingleStructureSuite;
+import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
@@ -43,7 +48,6 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.ModelParametersDialog;
 import cbit.vcell.model.gui.ReactionCartoonEditorDialog;
-import cbit.vcell.model.gui.ReactionSlicesCartoonEditorDialog;
 import cbit.vcell.publish.ITextWriter;
 
 /**
@@ -59,8 +63,8 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 	// private Point movingPointWorld = null;
 	// private Point movingOffsetWorld = null;
 	private Mode mode = null;
-	private Hashtable<Structure, ReactionCartoonEditorDialog> reactionEditorHash = new Hashtable<Structure, ReactionCartoonEditorDialog>();
-	private Hashtable<Structure, ReactionSlicesCartoonEditorDialog> reactionSlicesEditorHash = new Hashtable<Structure, ReactionSlicesCartoonEditorDialog>();
+	private Hashtable<String, ReactionCartoonEditorDialog> reactionEditorHash = 
+		new Hashtable<String, ReactionCartoonEditorDialog>();
 	private ModelParametersDialog modelParametersDialog = null;
 
 	/**
@@ -824,19 +828,25 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		// See propertyChange method for related code that closes
 		// ReactionEditorCartoonDialog when appropriate
 		//
-		ReactionCartoonEditorDialog rced = reactionEditorHash.get(structureShape.getStructure());
+		Structure structure = structureShape.getStructure();
+		StructureSuite layout;
+		if(structure instanceof Membrane) {
+			layout = new MembraneStructureSuite(((Membrane) structure));
+		} else {
+			layout = new SingleStructureSuite(structure);
+		}
+		StructureSuite structureSuite = layout;
+		ReactionCartoonEditorDialog rced = reactionEditorHash.get(structureSuite.getTitle());
 		if (rced == null) {
 			final ReactionCartoonEditorDialog reactionCartoonEditorDialog = 
-				new ReactionCartoonEditorDialog(this);
+				new ReactionCartoonEditorDialog();
 			reactionCartoonEditorDialog.setIconifiable(true);
 			reactionCartoonEditorDialog.init(structureShape.getModel(),
-					structureShape.getStructure(), getDocumentManager());
-			reactionEditorHash.put(structureShape.getStructure(),
-					reactionCartoonEditorDialog);
+					structureSuite, getDocumentManager());
+			reactionEditorHash.put(structureSuite.getTitle(), reactionCartoonEditorDialog);
 			rced = reactionCartoonEditorDialog;
-			rced.setLocation(rced.getLocation().x
-					+ reactionEditorHash.size() * 15, rced.getLocation().y
-					+ reactionEditorHash.size() * 15);
+			rced.setLocation(rced.getLocation().x + reactionEditorHash.size() * 15, 
+					rced.getLocation().y + reactionEditorHash.size() * 15);
 		}
 		BeanUtils.centerOnComponent(rced, getJDesktopPane());
 		DocumentWindowManager.showFrame(rced, getJDesktopPane());
@@ -852,19 +862,19 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		// See propertyChange method for related code that closes
 		// ReactionEditorCartoonDialog when appropriate
 		//
-		ReactionSlicesCartoonEditorDialog rced = reactionSlicesEditorHash.get(structureShape.getStructure());
+		StructureSuite structureSuite = 
+			new AllStructureSuite(getStructureCartoon());
+		ReactionCartoonEditorDialog rced = reactionEditorHash.get(structureSuite.getTitle());
 		if (rced == null) {
-			final ReactionSlicesCartoonEditorDialog reactionCartoonEditorDialog = 
-				new ReactionSlicesCartoonEditorDialog();
+			final ReactionCartoonEditorDialog reactionCartoonEditorDialog = 
+				new ReactionCartoonEditorDialog();
 			reactionCartoonEditorDialog.setIconifiable(true);
 			reactionCartoonEditorDialog.init(structureShape.getModel(),
-					structureShape.getStructure(), getDocumentManager());
-			reactionSlicesEditorHash.put(structureShape.getStructure(),
-					reactionCartoonEditorDialog);
+				structureSuite, getDocumentManager());
+			reactionEditorHash.put(structureSuite.getTitle(), reactionCartoonEditorDialog);
 			rced = reactionCartoonEditorDialog;
-			rced.setLocation(rced.getLocation().x
-					+ reactionSlicesEditorHash.size() * 15, rced.getLocation().y
-					+ reactionSlicesEditorHash.size() * 15);
+			rced.setLocation(rced.getLocation().x + reactionEditorHash.size() * 15, 
+					rced.getLocation().y + reactionEditorHash.size() * 15);
 		}
 		BeanUtils.centerOnComponent(rced, getJDesktopPane());
 		DocumentWindowManager.showFrame(rced, getJDesktopPane());

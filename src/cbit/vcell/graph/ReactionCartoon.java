@@ -8,6 +8,7 @@ import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.Shape;
+import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Feature;
@@ -23,42 +24,21 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 
-import java.awt.Point;
+import java.awt.Graphics2D;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class ReactionCartoon extends ModelCartoon {
 
-	private Structure structure = null;
+	protected StructureSuite structureSuite = null;
 
 	public ReactionCartoon() {
 		setResizable(false);
 	}
 
-	void addShape(Object modelObject, Point location) throws Exception {
-		if (getShapeFromModelObject(modelObject) != null) {
-			throw new Exception("Shape object already defined for this object");
-		}
-
-		ReactionContainerShape reactionContainerShape = (ReactionContainerShape) getShapeFromModelObject(structure);
-
-		Shape shape = null;
-		if (modelObject instanceof SimpleReaction) {
-			shape = new SimpleReactionShape((SimpleReaction) modelObject, this);
-			reactionContainerShape.addChildShape(shape);
-		} else if (modelObject instanceof FluxReaction) {
-			shape = new FluxReactionShape((FluxReaction) modelObject, this);
-			reactionContainerShape.addChildShape(shape);
-		} else {
-			throw new Exception("unknown type of ReactionStep '"
-					+ modelObject.getClass().toString());
-		}
-		Point origin = reactionContainerShape.getSpaceManager().getAbsLoc();
-		shape.getSpaceManager().setRelPos(location.x - origin.x, location.y - origin.y);
-		addShape(shape);
-		shape.setDirty(false);
-		fireGraphChanged(new GraphEvent(this));
+	public StructureSuite getStructureSuite() {
+		return structureSuite;
 	}
 
 	public void applyDefaults(Diagram diagram) {
@@ -100,28 +80,21 @@ public class ReactionCartoon extends ModelCartoon {
 	}
 
 	public void cleanupAll() {
-		if (getStructure() != null) {
-			getStructure().removePropertyChangeListener(this);
-			if (getStructure() instanceof Membrane) {
-				Membrane membrane = (Membrane) getStructure();
-				if (membrane.getMembraneVoltage() != null) {
-					membrane.getMembraneVoltage().removePropertyChangeListener(
-							this);
-				}
-				Feature inside = membrane.getInsideFeature();
-				if (inside != null) {
-					inside.removePropertyChangeListener(this);
-				}
-				Feature outside = membrane.getOutsideFeature();
-				if (outside != null) {
-					outside.removePropertyChangeListener(this);
+		if (getStructureSuite() != null) {
+			for(Structure structure : getStructureSuite().getStructures()) {
+				structure.removePropertyChangeListener(this);
+				if (structure instanceof Membrane) {
+					Membrane membrane = (Membrane) structure;
+					if (membrane.getMembraneVoltage() != null) {
+						membrane.getMembraneVoltage().removePropertyChangeListener(
+								this);
+					}
 				}
 			}
 		}
 		if (getModel() != null) {
 			getModel().removePropertyChangeListener(this);
-			SpeciesContext structSpeciesContext[] = getModel()
-					.getSpeciesContexts(structure);
+			SpeciesContext structSpeciesContext[] = getModel().getSpeciesContexts();
 			if (structSpeciesContext != null) {
 				for (int i = 0; i < structSpeciesContext.length; i++) {
 					structSpeciesContext[i].removePropertyChangeListener(this);
@@ -138,117 +111,81 @@ public class ReactionCartoon extends ModelCartoon {
 		}
 	}
 
-	public Structure getStructure() {
-		return structure;
-	}
-
-	@Override
-	public void paint(java.awt.Graphics2D g, GraphPane canvas) {
+	public void paint(Graphics2D g, GraphPane canvas) {
 		super.paint(g, canvas);
 		setRandomLayout(false);
 	}
-
-	public void propertyChange(java.beans.PropertyChangeEvent event) {
+	
+	public void propertyChange(PropertyChangeEvent event) {
 		refreshAll();
 	}
 
 	@Override
 	public void refreshAll() {
 		try {
-			if (getModel() == null || getStructure() == null) {
+			if (getModel() == null || getStructureSuite() == null) {
 				return;
 			}
 			for(Shape shape : getShapes()) {
 				shape.setDirty(true);
 			}
 			ContainerContainerShape containerShape = (ContainerContainerShape) getShapeFromModelObject(getModel());
+			List<ReactionContainerShape> reactionContainerShapeList = 
+				new ArrayList<ReactionContainerShape>();
 			// create all ReactionContainerShapes (one for each Structure)
-			List<Structure> structList = new ArrayList<Structure>();
-			if (getStructure() instanceof Membrane) {
-				// add outside/membrane/inside containers (and add to a
-				// ContainerContainerShape)
-				Membrane membrane = (Membrane) getStructure();
-				ReactionContainerShape membraneShape = (ReactionContainerShape) getShapeFromModelObject(membrane);
-				if (membraneShape == null) {
-					membraneShape = new ReactionContainerShape(membrane, this);
-					addShape(membraneShape);
-					membrane.removePropertyChangeListener(this);
-					membrane.addPropertyChangeListener(this);
-					membrane.getMembraneVoltage().removePropertyChangeListener(
-							this);
-					membrane.getMembraneVoltage().addPropertyChangeListener(
-							this);
+			for(Structure structure : getStructureSuite().getStructures()) {
+				if (structure instanceof Membrane) {
+					Membrane membrane = (Membrane) structure;
+					ReactionContainerShape membraneShape = 
+						(ReactionContainerShape) getShapeFromModelObject(membrane);
+					if (membraneShape == null) {
+						membraneShape = new ReactionContainerShape(membrane, this);
+						addShape(membraneShape);
+						membrane.removePropertyChangeListener(this);
+						membrane.addPropertyChangeListener(this);
+						membrane.getMembraneVoltage().removePropertyChangeListener(this);
+						membrane.getMembraneVoltage().addPropertyChangeListener(this);
+					}
+					membraneShape.refreshLabel();
+					membraneShape.setDirty(false);
+					reactionContainerShapeList.add(membraneShape);
+				}else if (structure instanceof Feature){
+					Feature feature = (Feature) structure;
+					ReactionContainerShape featureShape = 
+						(ReactionContainerShape) getShapeFromModelObject(feature);
+					if (featureShape == null) {
+						featureShape = new ReactionContainerShape(feature, this);
+						addShape(featureShape);
+						feature.removePropertyChangeListener(this);
+						feature.addPropertyChangeListener(this);
+					}
+					featureShape.refreshLabel();
+					featureShape.setDirty(false);
+					reactionContainerShapeList.add(featureShape);
 				}
-				membraneShape.refreshLabel();
-				membraneShape.setDirty(false);
-				structList.add(membrane);
-
-				Feature inside = membrane.getInsideFeature();
-				ReactionContainerShape insideShape = (ReactionContainerShape) getShapeFromModelObject(inside);
-				if (insideShape == null) {
-					insideShape = new ReactionContainerShape(inside, this);
-					addShape(insideShape);
-					inside.removePropertyChangeListener(this);
-					inside.addPropertyChangeListener(this);
-				}
-				insideShape.refreshLabel();
-				insideShape.setDirty(false);
-				structList.add(inside);
-				Feature outside = membrane.getOutsideFeature();
-				ReactionContainerShape outsideShape = (ReactionContainerShape) getShapeFromModelObject(outside);
-				if (outsideShape == null) {
-					outsideShape = new ReactionContainerShape(outside, this);
-					addShape(outsideShape);
-					outside.removePropertyChangeListener(this);
-					outside.addPropertyChangeListener(this);
-				}
-				outsideShape.refreshLabel();
-				outsideShape.setDirty(false);
-				structList.add(outside);
-				if (containerShape == null) {
-					containerShape = new ContainerContainerShape(this,
-							getModel(), insideShape, membraneShape,
-							outsideShape);
-					addShape(containerShape);
-				}
+			}
+			if (containerShape == null) {
+				containerShape = new ContainerContainerShape(this, getModel(), reactionContainerShapeList);
+				addShape(containerShape);
 			} else {
-				ReactionContainerShape featureShape = (ReactionContainerShape) getShapeFromModelObject(getStructure());
-				if (featureShape == null) {
-					featureShape = new ReactionContainerShape(getStructure(),
-							this);
-					addShape(featureShape);
-					getStructure().removePropertyChangeListener(this);
-					getStructure().addPropertyChangeListener(this);
-				}
-				featureShape.refreshLabel();
-				featureShape.setDirty(false);
-				structList.add(getStructure());
-				if (containerShape == null) {
-					containerShape = new ContainerContainerShape(this,
-							getModel(), featureShape);
-					addShape(containerShape);
-				}
+				containerShape.setReactionContainerShapeList(reactionContainerShapeList);
 			}
 			containerShape.refreshLabel();
 			containerShape.setDirty(false);
-			//
 			// add all species context shapes within the structures
-			//
-			Iterator<Structure> structIter = structList.listIterator();
-			while (structIter.hasNext()) {
-				Structure structure = structIter.next();
-				ReactionContainerShape reactionContainerShape = (ReactionContainerShape) getShapeFromModelObject(structure);
-				SpeciesContext structSpeciesContext[] = getModel()
-						.getSpeciesContexts(structure);
-				for (int i = 0; i < structSpeciesContext.length; i++) {
-					SpeciesContextShape ss = (SpeciesContextShape) getShapeFromModelObject(structSpeciesContext[i]);
+			for(Structure structure : getStructureSuite().getStructures()) {
+				ReactionContainerShape reactionContainerShape = 
+					(ReactionContainerShape) getShapeFromModelObject(structure);
+				for(SpeciesContext structSpeciesContext : getModel().getSpeciesContexts(structure)) {
+					SpeciesContextShape ss = 
+						(SpeciesContextShape) getShapeFromModelObject(structSpeciesContext);
 					if (ss == null) {
-						ss = new SpeciesContextShape(structSpeciesContext[i], this);
+						ss = new SpeciesContextShape(structSpeciesContext, this);
 						ss.truncateLabelName(false);
-						structSpeciesContext[i].removePropertyChangeListener(this);
-						structSpeciesContext[i].addPropertyChangeListener(this);
-						structSpeciesContext[i].getSpecies().removePropertyChangeListener(this);
-						structSpeciesContext[i].getSpecies().addPropertyChangeListener(this);
+						structSpeciesContext.removePropertyChangeListener(this);
+						structSpeciesContext.addPropertyChangeListener(this);
+						structSpeciesContext.getSpecies().removePropertyChangeListener(this);
+						structSpeciesContext.getSpecies().addPropertyChangeListener(this);
 						reactionContainerShape.addChildShape(ss);
 						addShape(ss);
 						ss.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
@@ -257,21 +194,20 @@ public class ReactionCartoon extends ModelCartoon {
 					ss.setDirty(false);
 				}
 			}
-
-			//
-			// add all reactionSteps that are in this structure
-			// (ReactionContainerShape), and draw the lines
-			//
-			//
+			// add all reactionSteps that are in this structure (ReactionContainerShape), and draw the lines
 			getModel().removePropertyChangeListener(this);
 			getModel().addPropertyChangeListener(this);
-			ReactionStep reactionSteps[] = getModel().getReactionSteps();
-			for (int i = 0; i < reactionSteps.length; i++) {
-				ReactionStep reactionStep = reactionSteps[i];
-				ReactionContainerShape reactionContainerShape = (ReactionContainerShape) getShapeFromModelObject(getStructure());
-				if (reactionStep.getStructure() == getStructure()) {
-					// add reaction steps as 'kinetic nodes'
-					ReactionStepShape reactionStepShape = (ReactionStepShape) getShapeFromModelObject(reactionStep);
+			for(ReactionStep reactionStep : getModel().getReactionSteps()) {
+				Structure structure = reactionStep.getStructure();
+				if(getStructureSuite().areReactionsShownFor(structure)) {
+					ReactionContainerShape reactionContainerShape = 
+						(ReactionContainerShape) getShapeFromModelObject(structure);
+					if(reactionContainerShape == null) {
+						System.out.println("Reaction container shape is null for structure " + structure +
+								" for reaction step " + reactionStep);
+					}
+					ReactionStepShape reactionStepShape =
+						(ReactionStepShape) getShapeFromModelObject(reactionStep);
 					if (reactionStepShape == null) {
 						if (reactionStep instanceof SimpleReaction) {
 							reactionStepShape = new SimpleReactionShape(
@@ -282,67 +218,72 @@ public class ReactionCartoon extends ModelCartoon {
 						} else {
 							throw new RuntimeException(
 									"unknown type of ReactionStep '"
-											+ reactionStep.getClass()
-													.toString());
+									+ reactionStep.getClass()
+									.toString());
 						}
 						addShape(reactionStepShape);
 						reactionStep.addPropertyChangeListener(this);
-						reactionStepShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
+						reactionStepShape.getSpaceManager().setRelPos(
+								reactionContainerShape.getRandomPosition());
 						reactionContainerShape.addChildShape(reactionStepShape);
 					}
 					reactionStepShape.refreshLabel();
 					reactionStepShape.setDirty(false);
 					// add reaction participants as edges
-					ReactionParticipant rp_Array[] = reactionStep.getReactionParticipants();
-					for (int j = 0; j < rp_Array.length; j++) {
-						SpeciesContext speciesContext = getModel()
-								.getSpeciesContext(rp_Array[j].getSpecies(),
-										rp_Array[j].getStructure());
-						// add speciesContextShapes that are not in this
-						// structure, but are referenced from the
-						// reactionParticipants
-						// these are only when reactionParticipants are from
-						// features that are outside of the membrane being
-						// displayed
-						SpeciesContextShape speciesContextShape = (SpeciesContextShape) getShapeFromModelObject(speciesContext);
-						if (speciesContextShape == null) {
-							speciesContextShape = new SpeciesContextShape(
-									speciesContext, this);
-							speciesContextShape.truncateLabelName(false);
-							reactionContainerShape.addChildShape(speciesContextShape);
-							addShape(speciesContextShape);
-							speciesContextShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
-						}
-						speciesContextShape.refreshLabel();
-						speciesContextShape.setDirty(false);
-						ReactionParticipantShape reactionParticipantShape = (ReactionParticipantShape) getShapeFromModelObject(rp_Array[j]);
-						if (reactionParticipantShape == null) {
-							if (rp_Array[j] instanceof Reactant) {
-								reactionParticipantShape = new ReactantShape(
-										(Reactant) rp_Array[j],
-										reactionStepShape, speciesContextShape, this);
-							} else if (rp_Array[j] instanceof Product) {
-								reactionParticipantShape = new ProductShape(
-										(Product) rp_Array[j],
-										reactionStepShape, speciesContextShape, this);
-							} else if (rp_Array[j] instanceof Catalyst) {
-								reactionParticipantShape = new CatalystShape(
-										(Catalyst) rp_Array[j],
-										reactionStepShape, speciesContextShape, this);
-							} else if (rp_Array[j] instanceof Flux) {
-								reactionParticipantShape = new FluxShape(
-										(Flux) rp_Array[j], reactionStepShape,
-										speciesContextShape, this);
-							} else {
-								throw new RuntimeException(
-										"unsupported ReactionParticipant "
-												+ rp_Array[j].getClass());
+					for(ReactionParticipant participant : reactionStep.getReactionParticipants()) {
+						Structure speciesStructure = participant.getStructure();
+						Structure reactionStructure = reactionStep.getStructure();
+						if(getStructureSuite().getStructures().contains(speciesStructure) &&
+								getStructureSuite().areReactionsShownFor(reactionStructure)) {
+							SpeciesContext speciesContext = 
+								getModel().getSpeciesContext(participant.getSpecies(),
+										speciesStructure);
+							// add speciesContextShapes that are not in this structure, but are referenced from the reactionParticipants
+							// these are only when reactionParticipants are from features that are outside of the membrane being displayed
+							SpeciesContextShape speciesContextShape = 
+								(SpeciesContextShape) getShapeFromModelObject(speciesContext);
+							if (speciesContextShape == null) {
+								speciesContextShape = new SpeciesContextShape(
+										speciesContext, this);
+								speciesContextShape.truncateLabelName(false);
+								reactionContainerShape.addChildShape(speciesContextShape);
+								addShape(speciesContextShape);
+								speciesContextShape.getSpaceManager().setRelPos(
+										reactionContainerShape.getRandomPosition());
 							}
-							addShape(reactionParticipantShape);
-							reactionContainerShape.addChildShape(reactionParticipantShape);
+							speciesContextShape.refreshLabel();
+							speciesContextShape.setDirty(false);
+							ReactionParticipantShape reactionParticipantShape = 
+								(ReactionParticipantShape) getShapeFromModelObject(participant);
+							if (reactionParticipantShape == null) {
+								if (participant instanceof Reactant) {
+									reactionParticipantShape = 
+										new ReactantShape((Reactant) participant, reactionStepShape, 
+												speciesContextShape, this);
+								} else if (participant instanceof Product) {
+									reactionParticipantShape = 
+										new ProductShape((Product) participant, reactionStepShape, 
+												speciesContextShape, this);
+								} else if (participant instanceof Catalyst) {
+									reactionParticipantShape = 
+										new CatalystShape((Catalyst) participant, reactionStepShape, 
+												speciesContextShape, this);
+								} else if (participant instanceof Flux) {
+									reactionParticipantShape = 
+										new FluxShape((Flux) participant, reactionStepShape, speciesContextShape, 
+												this);
+								} else {
+									throw new RuntimeException("unsupported ReactionParticipant " + 
+											participant.getClass());
+								}
+								addShape(reactionParticipantShape);
+							}
+							if(!containerShape.getChildren().contains(reactionParticipantShape)) {
+								containerShape.addChildShape(reactionParticipantShape);								
+							}
+							reactionParticipantShape.setDirty(false);
+							reactionParticipantShape.refreshLabel();
 						}
-						reactionParticipantShape.setDirty(false);
-						reactionParticipantShape.refreshLabel();
 					}
 				}
 			}
@@ -352,13 +293,15 @@ public class ReactionCartoon extends ModelCartoon {
 					deleteList.add(shape);
 				}
 			}
-			for (int i = 0; i < deleteList.size(); i++) {
-				removeShape(deleteList.get(i));
+			for(Shape shape : deleteList) {
+				removeShape(shape);
 			}
-			// update diagram
-			Diagram diagram = getModel().getDiagram(getStructure());
-			if (diagram != null) {
-				applyDefaults(diagram);
+			// update diagrams
+			for(Structure structure : structureSuite.getStructures()) {
+				Diagram diagram = getModel().getDiagram(structure);
+				if (diagram != null) {
+					applyDefaults(diagram);
+				}				
 			}
 			fireGraphChanged(new GraphEvent(this));
 		} catch (Throwable e) {
@@ -396,18 +339,17 @@ public class ReactionCartoon extends ModelCartoon {
 				ContainerShape containerShape = (ContainerShape) topShape;
 				containerShape.setRandomLayout(bRandomize);
 			}
-
-		} catch (Exception e) {
+		} catch (Exception e){
 			System.out.println("top shape not found");
 			e.printStackTrace(System.out);
 		}
 	}
 
-	public void setStructure(Structure newStructure) {
-		if (this.structure != null) {
+	public void setStructureSuite(StructureSuite structureSuite) {
+		if(this.structureSuite != null){
 			cleanupAll();
 		}
-		this.structure = newStructure;
+		this.structureSuite = structureSuite;
 		refreshAll();
 	}
 
