@@ -1,9 +1,9 @@
 package org.vcell.util.gui;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.*;
 import javax.swing.border.*;
 /**
@@ -14,6 +14,7 @@ import javax.swing.border.*;
  * Creation date: (2/11/2001 10:08:40 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class EmptyBorderBean extends EmptyBorder {
 /**
  * Insert the method's description here.

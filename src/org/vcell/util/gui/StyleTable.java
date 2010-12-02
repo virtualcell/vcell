@@ -14,6 +14,7 @@ import java.awt.*;
  * author: Tracy Li
  * version: 1.0
  */
+@SuppressWarnings("serial")
 public class StyleTable extends JTable {
 
     public static Color color = new Color(166, 166, 255); // light blue

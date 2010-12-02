@@ -28,6 +28,7 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
 
+@SuppressWarnings("serial")
 public class JTaskBar extends JPanel {
 	class EqualSizesLayout implements LayoutManager, SwingConstants {
 

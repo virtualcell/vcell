@@ -7,6 +7,7 @@ import javax.swing.SwingUtilities;
  * Creation date: (9/20/2004 4:26:26 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class VCFileChooser extends javax.swing.JFileChooser implements java.awt.event.ActionListener {
 	private String localDialogTitle = null;
 	javax.swing.JDialog localDialog = null;

@@ -1,17 +1,23 @@
 package org.vcell.util.gui;
 
-import javax.swing.*;
-import javax.swing.plaf.metal.MetalInternalFrameUI;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Insets;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.border.Border;
-
-
-import java.awt.*;
-import java.awt.event.FocusListener;
-import java.awt.event.FocusEvent;
 
 /**
  * A base panel with its contentPane serves as the container of other panels on top. 
  */
+@SuppressWarnings("serial")
 public abstract class BoxPanel extends JPanel {
 
     protected String title;

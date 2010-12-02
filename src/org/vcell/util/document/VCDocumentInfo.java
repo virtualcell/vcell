@@ -1,8 +1,4 @@
 package org.vcell.util.document;
-import java.io.*;
-
-import org.vcell.util.Extent;
-import org.vcell.util.Origin;
 
 public interface VCDocumentInfo extends VersionInfo {
 

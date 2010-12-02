@@ -4,6 +4,7 @@ package org.vcell.util.gui;
  * Creation date: (3/19/2004 4:43:18 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class JTreeFancy extends javax.swing.JTree {
 /**
  * Insert the method's description here.

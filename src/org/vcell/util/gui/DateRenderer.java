@@ -6,6 +6,7 @@ import java.util.Date;
  * Creation date: (7/8/2004 2:17:40 PM)
  * @author: Fei Gao
  */
+@SuppressWarnings("serial")
 public class DateRenderer extends DefaultScrollTableCellRenderer {
 /**
  * DateRenderer constructor comment.

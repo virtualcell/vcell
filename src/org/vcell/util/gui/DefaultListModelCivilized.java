@@ -1,9 +1,9 @@
 package org.vcell.util.gui;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
- ©*/
+ ï¿½*/
 import javax.swing.AbstractListModel;
 
 
@@ -50,6 +50,7 @@ import java.util.Enumeration;
  * @version 1.21 10/06/98
  * @author Hans Muller
  */
+@SuppressWarnings("serial")
 public class DefaultListModelCivilized extends AbstractListModel {
 	private Vector<Object> delegate = new Vector<Object>();
 

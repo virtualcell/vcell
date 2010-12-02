@@ -8,6 +8,7 @@ import org.vcell.util.TokenMangler;
  * Creation date: (8/20/2004 2:11:48 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class BioModelChildSummary implements java.io.Serializable {
 //	public static final boolean debug = true;
 	private String scNames[] = new String[0];

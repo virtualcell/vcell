@@ -6,6 +6,7 @@ package org.vcell.util.document;
  * Creation date: (11/15/2001 3:34:49 PM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public class GroupAccessNone extends GroupAccess {
 /**
  * Insert the method's description here.

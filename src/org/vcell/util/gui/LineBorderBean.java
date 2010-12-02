@@ -1,9 +1,9 @@
 package org.vcell.util.gui;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import javax.swing.border.*;
 import java.awt.*;
 /**
@@ -14,6 +14,7 @@ import java.awt.*;
  * Creation date: (2/11/2001 10:05:15 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class LineBorderBean extends LineBorder {
 /**
  * Insert the method's description here.

@@ -24,7 +24,7 @@ protected SimpleTransferable(Object obj) {
  * Creation date: (9/9/2004 1:23:34 PM)
  * @return java.lang.Class
  */
-public Class getDataObjectClass() {
+public Class<?> getDataObjectClass() {
 	return xferObject.getClass();
 }
 

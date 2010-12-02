@@ -1,9 +1,9 @@
 package org.vcell.util.gui;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /*
  * @(#)ImageButton.java
  *
@@ -13,10 +13,8 @@ package org.vcell.util.gui;
  * for NON-COMMERCIAL purpose and without fee is hereby granted.
  */
 
-import java.applet.*;
 import java.awt.*;
 import java.awt.image.*;
-import java.net.*;
 
 class HSBImageFilter extends RGBImageFilter {
 	private float[] hsb = new float[3];

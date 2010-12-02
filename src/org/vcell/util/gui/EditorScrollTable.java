@@ -20,7 +20,6 @@ import javax.swing.event.ChangeEvent;
 
 import cbit.gui.ReactionEquation;
 import cbit.gui.TableCellEditorAutoCompletion;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 
 /**
  * EditorScrollTable extends ScrollTable and enables the user to keep editing using key from one cell to another.

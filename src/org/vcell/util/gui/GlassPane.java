@@ -8,6 +8,7 @@ import javax.swing.event.*;
  * Creation date: (5/23/2004 10:49:12 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class GlassPane extends JComponent {
 	// defaults
 	private float opacity = 0.3f;

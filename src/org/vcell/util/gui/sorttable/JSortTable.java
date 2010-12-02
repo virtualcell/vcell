@@ -18,6 +18,7 @@ import javax.swing.table.TableColumnModel;
 
 import org.vcell.util.gui.ScrollTable;
 
+@SuppressWarnings("serial")
 public class JSortTable extends ScrollTable
   implements MouseListener
 {  

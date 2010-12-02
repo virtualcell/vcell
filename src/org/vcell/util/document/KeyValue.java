@@ -1,15 +1,16 @@
 package org.vcell.util.document;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import org.vcell.util.Matchable;
 /**
  * This class is Immutable (must stay immutable).
  *
  * encapsuates primary keys in the database (oracle)
  */
+@SuppressWarnings("serial")
 public class KeyValue implements java.io.Serializable, Matchable {
 	private java.math.BigDecimal value = null;
 /**

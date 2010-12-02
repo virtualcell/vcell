@@ -4,6 +4,7 @@ package org.vcell.util.document;
  * Creation date: (5/23/2006 9:32:49 AM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public class CurateSpec implements java.io.Serializable{
 
 	public static final int ARCHIVE = 0;

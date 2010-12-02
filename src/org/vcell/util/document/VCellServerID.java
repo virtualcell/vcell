@@ -4,6 +4,7 @@ package org.vcell.util.document;
  * Creation date: (4/27/2005 2:00:13 PM)
  * @author: Fei Gao
  */
+@SuppressWarnings("serial")
 public class VCellServerID implements java.io.Serializable {
 	private java.lang.String serverID = null;
 

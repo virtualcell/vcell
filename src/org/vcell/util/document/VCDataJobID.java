@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.rmi.dgc.VMID;
 
 
+@SuppressWarnings("serial")
 public class VCDataJobID implements Serializable{
 
 	private VMID jobID;

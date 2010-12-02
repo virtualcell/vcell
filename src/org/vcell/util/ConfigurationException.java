@@ -1,12 +1,13 @@
 package org.vcell.util;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class ConfigurationException extends RuntimeException {
 /**
  * ConfigurationException constructor comment.

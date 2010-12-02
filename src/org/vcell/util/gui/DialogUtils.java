@@ -51,6 +51,7 @@ public class DialogUtils {
 
 		private Object returnValue = null;
 		
+		@SuppressWarnings("serial")
 		static class SwingDispatchException extends RuntimeException{
 			public SwingDispatchException(Throwable e){
 				super(e);
@@ -463,6 +464,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 			for (int i = 0; i < sortedRowReference.length; i++) {
 				sortedRowReference[i] = i;
 			}
+			@SuppressWarnings("serial")
 			DefaultSortTableModel<Object[]> tableModel = new DefaultSortTableModel<Object[]>(columnNames) {
 				@Override
 				public boolean isSortable(int col) {

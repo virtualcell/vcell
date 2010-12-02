@@ -12,6 +12,7 @@ import java.io.Serializable;
  * author: Tracy Li
  * version: 1.0
  */
+@SuppressWarnings({ "serial" })
 public class HyperLinkLabel extends JLabel implements MouseListener {
     private Color color = Color.blue;
     private ActionListener listener;

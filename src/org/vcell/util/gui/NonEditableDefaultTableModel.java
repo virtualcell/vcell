@@ -1,14 +1,17 @@
 package org.vcell.util.gui;
 
-/*©
+import java.util.Vector;
+
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /**
  * Insert the type's description here.
  * Creation date: (8/16/00 12:49:31 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class NonEditableDefaultTableModel extends javax.swing.table.DefaultTableModel {
 /**
  * NonEditableDefaultTableModel constructor comment.
@@ -42,18 +45,18 @@ public NonEditableDefaultTableModel(int numRows, int numColumns) {
 }
 /**
  * NonEditableDefaultTableModel constructor comment.
- * @param columnNames java.util.Vector
+ * @param columnNames Vector
  * @param numRows int
  */
-public NonEditableDefaultTableModel(java.util.Vector columnNames, int numRows) {
+public NonEditableDefaultTableModel(Vector<String> columnNames, int numRows) {
 	super(columnNames, numRows);
 }
 /**
  * NonEditableDefaultTableModel constructor comment.
- * @param data java.util.Vector
- * @param columnNames java.util.Vector
+ * @param data Vector
+ * @param columnNames Vector
  */
-public NonEditableDefaultTableModel(java.util.Vector data, java.util.Vector columnNames) {
+public NonEditableDefaultTableModel(Vector<String> data, Vector<String> columnNames) {
 	super(data, columnNames);
 }
 /**

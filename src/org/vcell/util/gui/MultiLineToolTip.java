@@ -1,14 +1,6 @@
 package org.vcell.util.gui;
 
 import javax.swing.*;
-import javax.swing.plaf.*;
-
-import java.awt.*;
-import java.awt.font.*;
-import java.awt.event.*;
-import javax.swing.plaf.*;
-import javax.swing.plaf.basic.BasicToolTipUI;
-import javax.swing.text.*;
 
 
 /**
@@ -21,11 +13,8 @@ import javax.swing.text.*;
  * @ Original author :  Zafir Anjum
  */
 
+@SuppressWarnings("serial")
 public class MultiLineToolTip extends javax.swing.JToolTip {
-/**
- * MultiLineToolTip constructor comment.
- */
-	private static final String uiClassID = "ToolTipUI";
 	
 	String tipText;
 	JComponent component;

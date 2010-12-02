@@ -1,14 +1,15 @@
 package org.vcell.util.document;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import org.vcell.util.Immutable;
 import org.vcell.util.Matchable;
 
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class User implements java.io.Serializable, Matchable, Immutable {
 	private String userName = null;
 	private KeyValue key = null;

@@ -2,14 +2,12 @@ package org.vcell.util.document;
 
 import java.util.BitSet;
 
-
-import cbit.vcell.solvers.CartesianMesh;
-
 /**
  * Insert the type's description here.
  * Creation date: (12/22/2004 7:34:33 AM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public class TimeSeriesJobSpec implements java.io.Serializable{
 	
 	private String[] variableNames;

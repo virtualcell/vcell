@@ -1,11 +1,7 @@
 package org.vcell.util;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 
@@ -24,6 +20,7 @@ import java.io.Serializable;
  * One trick is we only decompress strings when toString() is called. In this way, in the trip from client to RMI to JMS to server,
  * there is only one compression and one decompression.
  */
+@SuppressWarnings("serial")
 public class BigString implements Serializable {
 	private byte[] compressedStrBytes = null;
 	private transient String str = null;

@@ -1,9 +1,9 @@
 package org.vcell.util.document;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.util.Date;
 import java.math.BigDecimal;
 
@@ -13,6 +13,7 @@ import org.vcell.util.Matchable;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class Version implements java.io.Serializable, Matchable{
 	private KeyValue		versionKey = null;
 	private String			versionName = null;

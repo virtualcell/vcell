@@ -7,11 +7,19 @@
 
 package uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices;
 
-public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.Stub implements uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices {
-    private java.util.Vector cachedSerClasses = new java.util.Vector();
-    private java.util.Vector cachedSerQNames = new java.util.Vector();
-    private java.util.Vector cachedSerFactories = new java.util.Vector();
-    private java.util.Vector cachedDeserFactories = new java.util.Vector();
+import java.util.Enumeration;
+import java.util.Vector;
+
+import javax.xml.namespace.QName;
+
+import org.apache.axis.client.Stub;
+import org.apache.axis.encoding.ser.ArraySerializerFactory;
+
+public class BioModelsWebServicesSoapBindingStub extends Stub implements BioModelsWebServices {
+    private Vector<Class<?>> cachedSerClasses = new Vector<Class<?>>();
+    private Vector<QName> cachedSerQNames = new Vector<QName>();
+    private Vector<Object> cachedSerFactories = new Vector<Object>();
+    private Vector<Object> cachedDeserFactories = new Vector<Object>();
 
     static org.apache.axis.description.OperationDesc [] _operations;
 
@@ -27,100 +35,100 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         org.apache.axis.description.ParameterDesc param;
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getSimpleModelsByReactomeIds");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "ReactomeIds"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"), java.lang.String[].class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "ReactomeIds"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"), java.lang.String[].class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getSimpleModelsByReactomeIdsReturn"));
+        oper.setReturnQName(new QName("", "getSimpleModelsByReactomeIdsReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[0] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getSimpleModelsRelatedWithChEBI");
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getSimpleModelsRelatedWithChEBIReturn"));
+        oper.setReturnQName(new QName("", "getSimpleModelsRelatedWithChEBIReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[1] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getSimpleModelsByChEBIIds");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "ChEBIIds"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"), java.lang.String[].class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "ChEBIIds"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"), java.lang.String[].class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getSimpleModelsByChEBIIdsReturn"));
+        oper.setReturnQName(new QName("", "getSimpleModelsByChEBIIdsReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[2] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("helloBioModels");
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "helloBioModelsReturn"));
+        oper.setReturnQName(new QName("", "helloBioModelsReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[3] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getAllModelsId");
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getAllModelsIdReturn"));
+        oper.setReturnQName(new QName("", "getAllModelsIdReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[4] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getAllCuratedModelsId");
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getAllCuratedModelsIdReturn"));
+        oper.setReturnQName(new QName("", "getAllCuratedModelsIdReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[5] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getAllNonCuratedModelsId");
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getAllNonCuratedModelsIdReturn"));
+        oper.setReturnQName(new QName("", "getAllNonCuratedModelsIdReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[6] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelById");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "id"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "id"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelByIdReturn"));
+        oper.setReturnQName(new QName("", "getModelByIdReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[7] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelSBMLById");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "id"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "id"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelSBMLByIdReturn"));
+        oper.setReturnQName(new QName("", "getModelSBMLByIdReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[8] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getSimpleModelById");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "id"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "id"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getSimpleModelByIdReturn"));
+        oper.setReturnQName(new QName("", "getSimpleModelByIdReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[9] = oper;
@@ -132,110 +140,110 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         org.apache.axis.description.ParameterDesc param;
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelNameById");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "id"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "id"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelNameByIdReturn"));
+        oper.setReturnQName(new QName("", "getModelNameByIdReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[10] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByName");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "modelName"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "modelName"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByNameReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByNameReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[11] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByPublication");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "publicationIdOrText"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "publicationIdOrText"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByPublicationReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByPublicationReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[12] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByPerson");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "personName"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "personName"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByPersonReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByPersonReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[13] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByChEBIId");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "ChEBIId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "ChEBIId"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByChEBIIdReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByChEBIIdReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[14] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByChEBI");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "text"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "text"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByChEBIReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByChEBIReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[15] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByUniprotId");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "uniprotId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "uniprotId"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByUniprotIdReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByUniprotIdReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[16] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByUniprotIds");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "uniprotIds"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"), java.lang.String[].class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "uniprotIds"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"), java.lang.String[].class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByUniprotIdsReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByUniprotIdsReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[17] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getSimpleModelsByUniprotIds");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "UniProtIds"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"), java.lang.String[].class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "UniProtIds"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"), java.lang.String[].class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getSimpleModelsByUniprotIdsReturn"));
+        oper.setReturnQName(new QName("", "getSimpleModelsByUniprotIdsReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[18] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByUniprot");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "text"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "text"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByUniprotReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByUniprotReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[19] = oper;
@@ -247,57 +255,57 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         org.apache.axis.description.ParameterDesc param;
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByGOId");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "GOId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "GOId"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByGOIdReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByGOIdReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[20] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByGO");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "text"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "text"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByGOReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByGOReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[21] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByTaxonomyId");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "taxonomyId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "taxonomyId"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByTaxonomyIdReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByTaxonomyIdReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[22] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getModelsIdByTaxonomy");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "text"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "text"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
+        oper.setReturnType(new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getModelsIdByTaxonomyReturn"));
+        oper.setReturnQName(new QName("", "getModelsIdByTaxonomyReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[23] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getSubModelSBML");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "modelId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "modelId"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "elementsIds"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"), java.lang.String[].class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new QName("", "elementsIds"), org.apache.axis.description.ParameterDesc.IN, new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string"), java.lang.String[].class, false, false);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getSubModelSBMLReturn"));
+        oper.setReturnQName(new QName("", "getSubModelSBMLReturn"));
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[24] = oper;
@@ -320,26 +328,16 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
             super.service = service;
         }
         ((org.apache.axis.client.Service)super.service).setTypeMappingVersion("1.2");
-            java.lang.Class cls;
-            javax.xml.namespace.QName qName;
-            javax.xml.namespace.QName qName2;
-            java.lang.Class beansf = org.apache.axis.encoding.ser.BeanSerializerFactory.class;
-            java.lang.Class beandf = org.apache.axis.encoding.ser.BeanDeserializerFactory.class;
-            java.lang.Class enumsf = org.apache.axis.encoding.ser.EnumSerializerFactory.class;
-            java.lang.Class enumdf = org.apache.axis.encoding.ser.EnumDeserializerFactory.class;
-            java.lang.Class arraysf = org.apache.axis.encoding.ser.ArraySerializerFactory.class;
-            java.lang.Class arraydf = org.apache.axis.encoding.ser.ArrayDeserializerFactory.class;
-            java.lang.Class simplesf = org.apache.axis.encoding.ser.SimpleSerializerFactory.class;
-            java.lang.Class simpledf = org.apache.axis.encoding.ser.SimpleDeserializerFactory.class;
-            java.lang.Class simplelistsf = org.apache.axis.encoding.ser.SimpleListSerializerFactory.class;
-            java.lang.Class simplelistdf = org.apache.axis.encoding.ser.SimpleListDeserializerFactory.class;
-            qName = new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string");
+            Class<?> cls;
+            QName qName;
+            QName qName2;
+            qName = new QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "ArrayOf_xsd_string");
             cachedSerQNames.add(qName);
             cls = java.lang.String[].class;
             cachedSerClasses.add(cls);
-            qName = new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string");
+            qName = new QName("http://www.w3.org/2001/XMLSchema", "string");
             qName2 = null;
-            cachedSerFactories.add(new org.apache.axis.encoding.ser.ArraySerializerFactory(qName, qName2));
+            cachedSerFactories.add(new ArraySerializerFactory(qName, qName2));
             cachedDeserFactories.add(new org.apache.axis.encoding.ser.ArrayDeserializerFactory());
 
     }
@@ -365,7 +363,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
             if (super.cachedPortName != null) {
                 _call.setPortName(super.cachedPortName);
             }
-            java.util.Enumeration keys = super.cachedProperties.keys();
+            Enumeration<?> keys = super.cachedProperties.keys();
             while (keys.hasMoreElements()) {
                 java.lang.String key = (java.lang.String) keys.nextElement();
                 _call.setProperty(key, super.cachedProperties.get(key));
@@ -381,14 +379,14 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
                     _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
                     _call.setEncodingStyle(org.apache.axis.Constants.URI_SOAP11_ENC);
                     for (int i = 0; i < cachedSerFactories.size(); ++i) {
-                        java.lang.Class cls = (java.lang.Class) cachedSerClasses.get(i);
-                        javax.xml.namespace.QName qName =
-                                (javax.xml.namespace.QName) cachedSerQNames.get(i);
+                        Class<?> cls = cachedSerClasses.get(i);
+                        QName qName =
+                                (QName) cachedSerQNames.get(i);
                         java.lang.Object x = cachedSerFactories.get(i);
-                        if (x instanceof Class) {
-                            java.lang.Class sf = (java.lang.Class)
+                        if (x instanceof Class<?>) {
+                            Class<?> sf = (Class<?>)
                                  cachedSerFactories.get(i);
-                            java.lang.Class df = (java.lang.Class)
+                            Class<?> df = (Class<?>)
                                  cachedDeserFactories.get(i);
                             _call.registerTypeMapping(cls, qName, sf, df, false);
                         }
@@ -418,7 +416,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getSimpleModelsByReactomeIds"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getSimpleModelsByReactomeIds"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -449,7 +447,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getSimpleModelsRelatedWithChEBI"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getSimpleModelsRelatedWithChEBI"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -480,7 +478,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getSimpleModelsByChEBIIds"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getSimpleModelsByChEBIIds"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -511,7 +509,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "helloBioModels"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "helloBioModels"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -542,7 +540,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getAllModelsId"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getAllModelsId"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -573,7 +571,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getAllCuratedModelsId"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getAllCuratedModelsId"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -604,7 +602,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getAllNonCuratedModelsId"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getAllNonCuratedModelsId"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -635,7 +633,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelById"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelById"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -666,7 +664,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelSBMLById"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelSBMLById"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -697,7 +695,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getSimpleModelById"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getSimpleModelById"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -728,7 +726,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelNameById"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelNameById"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -759,7 +757,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByName"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByName"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -790,7 +788,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByPublication"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByPublication"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -821,7 +819,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByPerson"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByPerson"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -852,7 +850,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByChEBIId"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByChEBIId"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -883,7 +881,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByChEBI"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByChEBI"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -914,7 +912,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByUniprotId"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByUniprotId"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -945,7 +943,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByUniprotIds"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByUniprotIds"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -976,7 +974,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getSimpleModelsByUniprotIds"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getSimpleModelsByUniprotIds"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -1007,7 +1005,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByUniprot"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByUniprot"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -1038,7 +1036,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByGOId"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByGOId"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -1069,7 +1067,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByGO"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByGO"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -1100,7 +1098,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByTaxonomyId"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByTaxonomyId"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -1131,7 +1129,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getModelsIdByTaxonomy"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getModelsIdByTaxonomy"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -1162,7 +1160,7 @@ public class BioModelsWebServicesSoapBindingStub extends org.apache.axis.client.
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://biomodels.ebi.ac.uk", "getSubModelSBML"));
+        _call.setOperationName(new QName("http://biomodels.ebi.ac.uk", "getSubModelSBML"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
