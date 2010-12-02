@@ -4,6 +4,7 @@ package org.vcell.util.document;
  * Creation date: (2/21/2006 1:43:07 PM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public class TSJobResultsNoStats extends TimeSeriesJobResults {
 
 	//

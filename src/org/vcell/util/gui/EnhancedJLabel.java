@@ -1,18 +1,18 @@
 package org.vcell.util.gui;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import javax.swing.plaf.*;
 import java.awt.*;
 import javax.swing.*;
-import java.awt.geom.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/10/2001 1:15:48 AM)
  * @author: Ion Moraru
  */
+@SuppressWarnings({ "serial" })
 public class EnhancedJLabel extends JLabel {
 	private boolean fieldVertical = false;
 	private boolean fieldAntialiased = false;

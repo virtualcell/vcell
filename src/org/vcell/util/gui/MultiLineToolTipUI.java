@@ -6,11 +6,7 @@ import javax.swing.*;
 import javax.swing.plaf.*;
 
 import java.awt.*;
-import java.awt.font.*;
-import java.awt.event.*;
-import javax.swing.plaf.*;
 import javax.swing.plaf.basic.BasicToolTipUI;
-import javax.swing.text.*;
 
 /**
  * Insert the type's description here.
@@ -48,7 +44,7 @@ public String[] getLinesInTipText(String tiptext) {
 	String newLineDelimiters = "\n\r";
 	StringTokenizer lineTokenizer = new StringTokenizer(stringBuffer.toString(),newLineDelimiters);
 	String token = new String("");
-	Vector linesVector = new Vector();
+	Vector<String> linesVector = new Vector<String>();
 	int j=0;
 
 	//

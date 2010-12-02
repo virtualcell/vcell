@@ -1,13 +1,14 @@
 package org.vcell.util.document;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class UserInfo implements java.io.Serializable,java.lang.Cloneable {	
 	public KeyValue id = null;
 	public String userid = null;

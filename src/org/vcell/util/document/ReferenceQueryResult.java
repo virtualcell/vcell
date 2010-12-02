@@ -6,6 +6,7 @@ package org.vcell.util.document;
  * Creation date: (11/6/2005 9:38:17 AM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public class ReferenceQueryResult implements java.io.Serializable{
 
 	VersionableFamily versionableFamily;

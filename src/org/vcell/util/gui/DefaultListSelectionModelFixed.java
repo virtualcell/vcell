@@ -1,15 +1,16 @@
 package org.vcell.util.gui;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import javax.swing.*;
 /**
  * Insert the type's description here.
  * Creation date: (6/25/2001 5:56:09 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class DefaultListSelectionModelFixed extends DefaultListSelectionModel {
 /**
  * DefaultListSelectionModelFixed constructor comment.

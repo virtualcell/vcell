@@ -211,7 +211,6 @@ public class Wizard extends WindowAdapter implements PropertyChangeListener {
             close(ERROR_RETURN_CODE);
             return;
         }
-        WizardPanelDescriptor oldPanelDescriptor = wizardModel.getCurrentPanelDescriptor();
         try{
         	wizardModel.setCurrentPanel(id);
         	wizardModel.getCurrentPanelDescriptor().aboutToDisplayPanel();

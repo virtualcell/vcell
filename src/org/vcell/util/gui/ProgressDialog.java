@@ -6,6 +6,7 @@ import javax.swing.*;
  * Creation date: (5/18/2004 1:14:29 AM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class ProgressDialog extends JDialog {
 	private JPanel ivjJDialogContentPane = null;
 	private JLabel ivjJLabel1 = null;

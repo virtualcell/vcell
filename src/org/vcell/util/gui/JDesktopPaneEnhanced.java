@@ -1,26 +1,22 @@
 package org.vcell.util.gui;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.HierarchyBoundsListener;
 import java.awt.event.HierarchyEvent;
-import java.util.ArrayList;
-
 import javax.swing.DefaultDesktopManager;
-import javax.swing.DesktopManager;
 import javax.swing.JInternalFrame;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /**
  * Insert the type's description here.
  * Creation date: (3/19/01 4:04:38 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class JDesktopPaneEnhanced extends javax.swing.JDesktopPane {
 	
 	private class InternalEventHandler implements HierarchyBoundsListener {

@@ -1,9 +1,9 @@
 package org.vcell.util.gui;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import javax.swing.border.*;
 /**
  * Dummy subclass of TitledBorder that has a no-parameter constructor so it can
@@ -11,6 +11,7 @@ import javax.swing.border.*;
  * Creation date: (2/11/2001 6:21:38 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class TitledBorderBean extends TitledBorder implements Border {
 /**
  * Insert the method's description here.

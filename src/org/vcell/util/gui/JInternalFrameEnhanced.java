@@ -1,15 +1,16 @@
 package org.vcell.util.gui;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.awt.*;
 /**
  * Insert the type's description here.
  * Creation date: (1/30/2001 2:23:33 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class JInternalFrameEnhanced extends javax.swing.JInternalFrame {
 	private boolean stripped = false;
 	public boolean isDragging = false;

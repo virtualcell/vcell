@@ -1,18 +1,17 @@
 package org.vcell.util.gui;
 
 import javax.swing.BorderFactory;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /**
  * Insert the type's description here.
  * Creation date: (7/12/2000 1:35:57 AM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class JToolBarToggleButton extends javax.swing.JToggleButton implements java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 	private boolean ivjConnPtoP1Aligning = false;
 	private javax.swing.ButtonModel ivjmodel1 = null;

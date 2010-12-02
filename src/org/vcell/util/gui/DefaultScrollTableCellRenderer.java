@@ -14,7 +14,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.NumberUtils;
 
-import cbit.vcell.client.desktop.biomodel.BioModelEditorReactionTableModel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 
 @SuppressWarnings("serial")

@@ -1,13 +1,14 @@
 package org.vcell.util.gui;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2000 11:43:11 AM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class ExtensionFilter extends javax.swing.filechooser.FileFilter implements java.io.Serializable {
 	private String[] extensions;
 	private String description;

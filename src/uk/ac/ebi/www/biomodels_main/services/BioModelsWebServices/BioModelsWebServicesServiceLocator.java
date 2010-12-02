@@ -7,6 +7,9 @@
 
 package uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices;
 
+import javax.xml.namespace.QName;
+
+@SuppressWarnings("serial")
 public class BioModelsWebServicesServiceLocator extends org.apache.axis.client.Service implements uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesService {
 
     public BioModelsWebServicesServiceLocator() {
@@ -70,7 +73,8 @@ public class BioModelsWebServicesServiceLocator extends org.apache.axis.client.S
      * If this service has no port for the given interface,
      * then ServiceException is thrown.
      */
-    public java.rmi.Remote getPort(Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
+    @SuppressWarnings("rawtypes")
+	public java.rmi.Remote getPort(Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
         try {
             if (uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices.class.isAssignableFrom(serviceEndpointInterface)) {
                 uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesSoapBindingStub _stub = new uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesSoapBindingStub(new java.net.URL(BioModelsWebServices_address), this);
@@ -89,7 +93,8 @@ public class BioModelsWebServicesServiceLocator extends org.apache.axis.client.S
      * If this service has no port for the given interface,
      * then ServiceException is thrown.
      */
-    public java.rmi.Remote getPort(javax.xml.namespace.QName portName, Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
+    @SuppressWarnings("rawtypes")
+	public java.rmi.Remote getPort(javax.xml.namespace.QName portName, Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
         if (portName == null) {
             return getPort(serviceEndpointInterface);
         }
@@ -108,11 +113,11 @@ public class BioModelsWebServicesServiceLocator extends org.apache.axis.client.S
         return new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "BioModelsWebServicesService");
     }
 
-    private java.util.HashSet ports = null;
+    private java.util.HashSet<QName> ports = null;
 
-    public java.util.Iterator getPorts() {
+    public java.util.Iterator<QName> getPorts() {
         if (ports == null) {
-            ports = new java.util.HashSet();
+            ports = new java.util.HashSet<QName>();
             ports.add(new javax.xml.namespace.QName("http://www.ebi.ac.uk/biomodels-main/services/BioModelsWebServices", "BioModelsWebServices"));
         }
         return ports.iterator();

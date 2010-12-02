@@ -8,6 +8,7 @@ import org.vcell.util.Matchable;
  * Creation date: (9/18/2006 12:55:46 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class ExternalDataIdentifier implements java.io.Serializable,VCDataIdentifier,Matchable{
 	private org.vcell.util.document.KeyValue key;
 	private org.vcell.util.document.User owner;

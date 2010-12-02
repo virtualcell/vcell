@@ -6,6 +6,7 @@ package org.vcell.util.document;
  * Creation date: (7/12/2004 11:53:58 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class SimulationVersion extends Version {
 	private KeyValue parentSimulationReference = null;
 

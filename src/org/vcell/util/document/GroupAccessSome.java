@@ -7,6 +7,7 @@ import java.util.Vector;
  * Creation date: (11/15/2001 3:34:49 PM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public class GroupAccessSome extends GroupAccess {
 		private java.math.BigDecimal    hash			= null;
 		private User[] 					groupMembers 	= null;
@@ -120,7 +121,7 @@ public User[] getHiddenGroupMembers() {
 	if(hiddenMembers == null){
 		return null;
 	}
-	Vector v = new Vector();
+	Vector<User> v = new Vector<User>();
 	for(int c = 0;c < groupMembers.length;c+= 1){
 		if(hiddenMembers[c] == true){
 			v.add(groupMembers[c]);
@@ -141,7 +142,7 @@ public User[] getNormalGroupMembers() {
 	if(hiddenMembers == null){
 		return groupMembers;
 	}
-	Vector v = new Vector();
+	Vector<User> v = new Vector<User>();
 	for(int c = 0;c < groupMembers.length;c+= 1){
 		if(hiddenMembers[c] == false){
 			v.add(groupMembers[c]);

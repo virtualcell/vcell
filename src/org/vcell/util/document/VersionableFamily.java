@@ -1,13 +1,14 @@
 package org.vcell.util.document;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.util.Vector;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class VersionableFamily extends java.lang.Object implements java.io.Serializable {
 	private Vector familyMembers = new Vector();	// Unique members of this family, all other objects reference familyMembers.  
 													// Maintained so object references are same (==)

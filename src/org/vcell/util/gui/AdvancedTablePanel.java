@@ -19,6 +19,7 @@ import javax.swing.SwingUtilities;
  * author: Tracy Li
  * version: 1.0
  */
+@SuppressWarnings("serial")
 public class AdvancedTablePanel  extends JPanel
 {
 	private JMenuItem copyMenu = null;

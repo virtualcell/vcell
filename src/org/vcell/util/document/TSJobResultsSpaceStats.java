@@ -4,6 +4,7 @@ package org.vcell.util.document;
  * Creation date: (2/22/2006 7:45:09 AM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public class TSJobResultsSpaceStats extends TimeSeriesJobResults {
 	
 	private double[][] min;

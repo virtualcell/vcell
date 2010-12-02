@@ -1,12 +1,13 @@
 package org.vcell.util.document;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class VersionableRelationship implements java.io.Serializable {
 	private VersionableTypeVersion from = null;
 	private VersionableTypeVersion to = null;

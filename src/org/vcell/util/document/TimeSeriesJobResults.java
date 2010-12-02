@@ -4,6 +4,7 @@ package org.vcell.util.document;
  * Creation date: (12/22/2004 7:35:26 AM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public abstract class TimeSeriesJobResults implements java.io.Serializable{
 
 	private String[] variableNames;

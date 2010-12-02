@@ -1,16 +1,17 @@
 package org.vcell.util.document;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class VersionableType implements java.io.Serializable {
 	private int vType;
 	private String name;
-	private Class vClass;
+	private Class<?> vClass;
 	private boolean bTopLevel;
 
 	public static final VersionableType VCImage				= new VersionableType(0,"VCImage", "cbit.image.VCImage",true);
@@ -76,7 +77,7 @@ public String getTypeName() {
  * This method was created in VisualAge.
  * @return java.lang.Class
  */
-public Class getVersionClass() {
+public Class<?> getVersionClass() {
 	return vClass;
 }
 /**

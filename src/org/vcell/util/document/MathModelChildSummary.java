@@ -4,14 +4,12 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.vcell.util.TokenMangler;
-
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (8/20/2004 2:11:48 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class MathModelChildSummary implements java.io.Serializable {
 	private String geoName = null;
 	private int geoDim = 0;

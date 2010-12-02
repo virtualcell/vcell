@@ -1,9 +1,9 @@
 package org.vcell.util.gui;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.util.*;
 import javax.swing.*;
 /**
@@ -11,6 +11,7 @@ import javax.swing.*;
  * Creation date: (7/13/00 2:23:46 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class ButtonGroupCivilized extends javax.swing.ButtonGroup {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 /**
@@ -70,7 +71,7 @@ public void firePropertyChange(String propertyName, boolean oldValue, boolean ne
  * @param actionCommand java.lang.String
  */
 public AbstractButton getButton(String actionCommand) {
-	Enumeration enumButtons = getElements();
+	Enumeration<AbstractButton> enumButtons = getElements();
 	while (enumButtons.hasMoreElements()) {
 		AbstractButton button = (AbstractButton) enumButtons.nextElement();
 		if (button.getActionCommand().equals(actionCommand)) {
@@ -132,7 +133,7 @@ public void setSelection(String actionCommand) {
 		}
 	}
 	ButtonModel buttonModel = null;
-	Enumeration buttons = getElements();
+	Enumeration<AbstractButton> buttons = getElements();
 	while (buttons.hasMoreElements()) {
 		buttonModel = ((AbstractButton)buttons.nextElement()).getModel();
 		if (buttonModel.getActionCommand().equals(actionCommand)) {

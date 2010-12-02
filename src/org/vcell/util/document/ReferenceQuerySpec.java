@@ -6,6 +6,7 @@ package org.vcell.util.document;
  * Creation date: (11/6/2005 9:37:17 AM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public class ReferenceQuerySpec implements java.io.Serializable{
 
 	private org.vcell.util.document.VersionableType versionableType;

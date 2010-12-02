@@ -1,15 +1,12 @@
 package org.vcell.util;
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
-
-import cbit.vcell.parser.ASTFloatNode;
-import cbit.vcell.parser.ExpressionException;
 
 
 /**

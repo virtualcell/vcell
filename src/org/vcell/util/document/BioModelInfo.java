@@ -1,15 +1,16 @@
 package org.vcell.util.document;
 
-/*©
+/*ï¿½
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+ï¿½*/
 
 /**
  * Insert the type's description here.
  * Creation date: (11/13/00 4:54:24 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class BioModelInfo implements org.vcell.util.document.VCDocumentInfo {
 	private Version version = null;
 	private KeyValue modelKey = null;
