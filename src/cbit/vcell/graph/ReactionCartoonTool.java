@@ -920,14 +920,12 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							break;
 						}
 						case LINE_TYPE_NULL: {
-							getGraphPane().repaint();
 							break;
 						}
 						}
-					} else {
-						getGraphPane().repaint();
 					}
 				}
+				getGraphPane().repaint();
 				break;
 			}
 			case LINEDIRECTED: {
@@ -960,7 +958,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								simpleReaction.addReactant(speciesContext, stoichiometry);								
 							}
 							getReactionCartoon().notifyChangeEvent();
-							resetMouseActionHistory();
 							break;
 						}
 						// add reactionParticipant to model
@@ -1039,23 +1036,17 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								reactionCartoon.getModel().addSpeciesContext(
 										speciesContext.getSpecies(), feature);
 							}
-
 							fluxReaction.setFluxCarrier(speciesContext.getSpecies(), reactionCartoon.getModel());
 							getReactionCartoon().notifyChangeEvent();
-							resetMouseActionHistory();
 							break;
 						}
 						case LINE_TYPE_NULL: {
-							getGraphPane().repaint();
 							break;
 						}
 						}
 						// remove temporary edge
 						getReactionCartoon().removeShape(edgeShape);
 						edgeShape = null;
-
-					}else{
-						getGraphPane().repaint();
 					}
 				}
 				break;
@@ -1094,7 +1085,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					} else{
 						getGraphPane().repaint();
 					}
-					resetMouseActionHistory();
 				}
 				break;
 			}
@@ -1106,7 +1096,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			System.out.println("CartoonTool.mouseReleased: uncaught exception");
 			e.printStackTrace(System.out);
 		}
-
+		resetMouseActionHistory();
+		getGraphPane().repaint();
 	}
 
 	public void saveDiagram() throws Exception {
@@ -1116,8 +1107,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 	}
 
-	private void selectEventFromWorld(Point worldPoint, boolean bShift,
-			boolean bCntrl) {
+	private void selectEventFromWorld(Point worldPoint, boolean bShift, boolean bCntrl) {
 		if (getReactionCartoon() == null) {
 			return;
 		}
@@ -1516,7 +1506,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		this.mode = newMode;
 		if(getGraphPane() != null){
 			switch (mode){
-			case LINEDIRECTED: case LINECATALYST: case STEP: case FLUX:{
+			case LINE: case LINEDIRECTED: case LINECATALYST: case STEP: case FLUX:{
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 				break;
 			}
