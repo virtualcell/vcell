@@ -15,6 +15,7 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
@@ -117,6 +118,23 @@ public class ReactionCartoon extends ModelCartoon {
 	}
 	
 	public void propertyChange(PropertyChangeEvent event) {
+		if(event.getPropertyName().equals(Model.PROPERTY_NAME_REACTION_STEPS)) {
+			Object oldValue = event.getOldValue();
+			if(oldValue instanceof ReactionStep[]) {
+				for(ReactionStep reactionStep : (ReactionStep[]) oldValue) {
+					reactionStep.removePropertyChangeListener(this);
+				}
+			}
+		}
+		if(event.getPropertyName().equals(Model.PROPERTY_NAME_REACTION_STEPS)) {
+			Object newValue = event.getNewValue();
+			if(newValue instanceof ReactionStep[]) {
+				for(ReactionStep reactionStep : (ReactionStep[]) newValue) {
+					reactionStep.removePropertyChangeListener(this);
+					reactionStep.addPropertyChangeListener(this);
+				}
+			}
+		}
 		refreshAll();
 	}
 

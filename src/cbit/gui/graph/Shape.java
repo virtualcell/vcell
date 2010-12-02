@@ -142,7 +142,6 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 			attachType = ATTACH_RIGHT;
 			attachDistance = d2Right;
 		}
-
 		return attachType;
 	}
 
