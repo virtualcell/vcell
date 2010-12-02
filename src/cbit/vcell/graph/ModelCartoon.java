@@ -11,6 +11,7 @@ import cbit.vcell.model.*;
  */
 public abstract class ModelCartoon extends GraphModel 
 implements java.beans.PropertyChangeListener, Model.Owner {
+	public static final String PROPERTY_NAME_MODEL = "model";
 	private Model fieldModel = null;
 
 	/**
@@ -48,6 +49,6 @@ implements java.beans.PropertyChangeListener, Model.Owner {
 			fieldModel.addPropertyChangeListener(this);
 		}
 		refreshAll();
-		firePropertyChange("model",oldModel,newFieldModel);
+		firePropertyChange(PROPERTY_NAME_MODEL, oldModel, newFieldModel);
 	}
 }
