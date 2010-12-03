@@ -13,6 +13,8 @@ import javax.swing.UIManager;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.model.Feature;
@@ -119,6 +121,13 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 	
 	protected void deleteButtonPressed() {
 		int[] rows = table.getSelectedRows();
+		if (rows == null || rows.length == 0) {
+			return;
+		}
+		String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete selected structure(s)?");
+		if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+			return;
+		}
 		ArrayList<Feature> deleteList = new ArrayList<Feature>();
 		for (int r : rows) {
 			if (r < tableModel.getDataSize()) {

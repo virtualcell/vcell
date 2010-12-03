@@ -124,7 +124,7 @@ public class SPPRPanel extends JPanel {
 				getSpprTreeModel().setSelectedValue(evt.getNewValue());
 			}
 			if (evt.getSource() == fieldSimulationContext && evt.getPropertyName().equals("geometry")) {
-				getGeometrySummaryViewer().setGeometry(fieldSimulationContext.getGeometry());
+				getGeometrySummaryViewer().setGeometryOwner(fieldSimulationContext);
 			}
 			if ((evt.getPropertyName().equals("simulationWorkspace"))) 
 			{
@@ -186,9 +186,9 @@ public class SPPRPanel extends JPanel {
 		fieldSimulationContext = simulationContext;
 		if (fieldSimulationContext!=null){
 			fieldSimulationContext.addPropertyChangeListener(ivjEventHandler); // listen to the new simlation context.
-			getGeometrySummaryViewer().setGeometry(fieldSimulationContext.getGeometry());
+			getGeometrySummaryViewer().setGeometryOwner(fieldSimulationContext);
 		}else{
-			getGeometrySummaryViewer().setGeometry(null);
+			getGeometrySummaryViewer().setGeometryOwner(null);
 		}
 		getStructureMappingCartoonPanel().setSimulationContext(fieldSimulationContext);
 		getInitialConditionsPanel().setSimulationContext(fieldSimulationContext);

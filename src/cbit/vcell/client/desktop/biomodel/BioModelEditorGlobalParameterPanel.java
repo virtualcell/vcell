@@ -4,16 +4,17 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 
 import javax.swing.JLabel;
 
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.gui.ModelParameterTableModel;
-import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.units.VCUnitDefinition;
 
@@ -116,23 +117,26 @@ protected void newButtonPressed() {
 
 protected void deleteButtonPressed() {
 	int[] rows = table.getSelectedRows();
-	if (rows.length < 1) {
-		PopupGenerator.showErrorDialog(this, "No Global parameter selected for deletion.");
-		return;
-	} else if (rows.length > 1) {
-		PopupGenerator.showErrorDialog(this, "Cannot delete more than one global parameter at a time!");
+	if (rows == null || rows.length == 0) {
 		return;
 	}
-	// delete the parameter and update the tablemodel.
-	Parameter param = tableModel.getValueAt(rows[0]);
-	if (param instanceof ModelParameter) {
-		try {
-			bioModel.getModel().removeModelParameter((ModelParameter)param);
-		} catch (PropertyVetoException e) {
-			//e.printStackTrace();
-			PopupGenerator.showErrorDialog(this, e.getMessage());
+	String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete selected global parameter(s)?");
+	if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+		return;
+	}
+	ArrayList<ModelParameter> deleteList = new ArrayList<ModelParameter>();
+	for (int r : rows) {
+		if (r < tableModel.getDataSize()) {
+			deleteList.add(tableModel.getValueAt(r));
 		}
-	}
+	}	
+	try {
+		for (ModelParameter param : deleteList) {
+			bioModel.getModel().removeModelParameter(param);
+		}
+	} catch (PropertyVetoException e) {
+		PopupGenerator.showErrorDialog(this, e.getMessage());
+	}	
 }
 
 /**

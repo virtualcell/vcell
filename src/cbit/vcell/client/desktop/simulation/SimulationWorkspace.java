@@ -6,10 +6,8 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Vector;
 
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
@@ -742,7 +740,7 @@ int newSimulation() throws java.beans.PropertyVetoException {
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == getSimulationOwner() && evt.getPropertyName().equals("simulations")) {
+	if (evt.getSource() == getSimulationOwner() && evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME_SIMULATIONS)) {
 		setSimulations(getSimulationOwner().getSimulations());
 	}
 }
@@ -779,7 +777,7 @@ public void setSimulationOwner(SimulationOwner newSimulationOwner) {
 	}
 	simulationOwner = newSimulationOwner;
 	setSimulations(getSimulationOwner() == null ? null : getSimulationOwner().getSimulations());
-	firePropertyChange(new java.beans.PropertyChangeEvent(this, GuiConstants.PROPERTY_SIMULATION_OWNER, oldSimulationOwner, newSimulationOwner));
+	firePropertyChange(new java.beans.PropertyChangeEvent(this, GuiConstants.PROPERTY_NAME_SIMULATION_OWNER, oldSimulationOwner, newSimulationOwner));
 }
 
 

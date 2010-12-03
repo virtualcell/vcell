@@ -126,8 +126,10 @@ public class BioModelEditorTreeCellRenderer extends DefaultTreeCellRenderer  {
         			break;
 	        	}
 	    	} else if (userObj instanceof VCMetaData) { 	// --- species context
-	    		VCMetaData vcMetaData = (VCMetaData)userObj;
-	    		labelText = vcMetaData.getFreeTextAnnotation(bioModel);
+	    		if (bioModel != null) {
+	    			VCMetaData vcMetaData = (VCMetaData)userObj;
+	    			labelText = vcMetaData.getFreeTextAnnotation(bioModel);
+	    		}
 	        	if (labelText == null || labelText.length() == 0) {
 	        		labelText = "(click to edit notes)";
 	        	}

@@ -24,6 +24,7 @@ import javax.swing.table.TableCellRenderer;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -598,7 +599,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 		update();
 	}
-	if (evt.getSource() == getGeometryContext() && evt.getPropertyName().equals(GeometryContext.PROPERTY_GEOMETRY)) {
+	if (evt.getSource() == getGeometryContext() && evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)) {
 		SubVolume[] subvols = ((Geometry)evt.getOldValue()).getGeometrySpec().getSubVolumes();
 		for (int i = 0; i < subvols.length; i++) {
 			subvols[i].removePropertyChangeListener(this);

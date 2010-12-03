@@ -66,7 +66,6 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	private JMenuItem menuItemAppSpatialCopyAsSpatialStochastic = null;
 	private JMenuItem menuItemAppSpatialCopyAsSpatialDeterministic = null;
 	
-	private JMenuItem ivjJMenuItemAppDelete = null;
 	private JMenuItem appNewStochApp = null;
 	private JMenuItem appNewDeterministicApp = null;
 	private JMenuItem ivjJMenuItemAppCopy = null;	
@@ -78,8 +77,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == moreActionsButton) {
 				moreActionsButtonPressed();
-			} else if (e.getSource() == getJMenuItemAppDelete()
-					|| e.getSource() == appNewStochApp
+			} else if (e.getSource() == appNewStochApp
 					|| e.getSource() == appNewDeterministicApp
 					|| e.getSource() == getJMenuItemAppCopy()
 					|| e.getSource() == menuItemAppSpatialCopyAsNonSpatialDeterministic
@@ -163,8 +161,8 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		setLayout(new BorderLayout());
 		add(splitPane, BorderLayout.CENTER);
 		
+		moreActionsButton.setEnabled(false);
 		moreActionsButton.addActionListener(eventHandler);		
-		getJMenuItemAppDelete().addActionListener(eventHandler);
 		getJMenuAppCopyAs().addActionListener(eventHandler);
 		getJMenuItemAppCopy().addActionListener(eventHandler);
 	}
@@ -197,17 +195,18 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		int[] rows = table.getSelectedRows();
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
 			getMoreActionsPopupMenu().show(moreActionsButton, 0, newButton.getHeight());
-			moreActionsButton.setToolTipText(null);
-		} else {
-			moreActionsButton.setToolTipText("select an application first");
-			ToolTipManager.sharedInstance().mouseMoved(
-			        new MouseEvent(moreActionsButton, 0, 0, 0,
-			                4, 0, 0, false));
 		}
 	}
 	
 	protected void deleteButtonPressed() {
 		int[] rows = table.getSelectedRows();
+		if (rows == null || rows.length == 0) {
+			return;
+		}
+		String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete selected application(s)?");
+		if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+			return;
+		}
 		ArrayList<SimulationContext> deleteList = new ArrayList<SimulationContext>();
 		for (int r : rows) {
 			if (r < tableModel.getDataSize()) {
@@ -216,7 +215,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		}
 		try {
 			for (SimulationContext sc : deleteList) {
-				bioModel.removeSimulationContext(sc);
+				deleteApplication(sc);
 			}
 			applicationPropertiesPanel.setSimulationContext(null);
 		} catch (PropertyVetoException ex) {
@@ -236,7 +235,9 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		int[] rows = table.getSelectedRows();
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
 			applicationPropertiesPanel.setSimulationContext(tableModel.getValueAt(rows[0]));			
+			moreActionsButton.setEnabled(true);
 		} else {
+			moreActionsButton.setEnabled(false);
 			applicationPropertiesPanel.setSimulationContext(null);
 		}
 	}
@@ -373,30 +374,6 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		return ivjJMenuItemAppCopy;
 	}
 
-	/**
-	 * Return the JMenuItemDelete property value.
-	 * @return javax.swing.JMenuItem
-	 */
-	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private javax.swing.JMenuItem getJMenuItemAppDelete() {
-		if (ivjJMenuItemAppDelete == null) {
-			try {
-				ivjJMenuItemAppDelete = new javax.swing.JMenuItem();
-				ivjJMenuItemAppDelete.setName("JMenuItemDelete");
-				ivjJMenuItemAppDelete.setMnemonic('d');
-				ivjJMenuItemAppDelete.setText("Delete");
-				ivjJMenuItemAppDelete.setActionCommand(GuiConstants.ACTIONCMD_DELETE_APPLICATION);
-				// user code begin {1}
-				// user code end
-			} catch (java.lang.Throwable ivjExc) {
-				// user code begin {2}
-				// user code end
-				handleException(ivjExc);
-			}
-		}
-		return ivjJMenuItemAppDelete;
-	}
-
 	private void handleException(java.lang.Throwable exception) {
 
 		/* Uncomment the following lines to print uncaught exceptions to stdout */
@@ -410,8 +387,6 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 			newApplication(e);
 		}  else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION)) {
 			newApplication(e);
-		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_DELETE_APPLICATION)) {
-			deleteApplication();
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION)) {
 			copyApplication();
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION)) {
@@ -597,42 +572,19 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		}
 	}
 
-	private void deleteApplication() {
-		SimulationContext simulationContext = getSelectedSimulationContext();
-		if (simulationContext == null) {
-			PopupGenerator.showErrorDialog(this, "Please select an application.");
-			return;
-		}
-		try {
-			//
-			// BioModel enforces that there be no orphaned Simulations in BioModel.vetoableChange(...)
-			// Check for no Simulations in SimualtionContext that is to be removed
-			// otherwise a nonsense error message will be generated by BioModel
-			//
-			boolean bHasSims = false;
-			Simulation[] simulations = simulationContext.getSimulations();
-			if(simulations != null && simulations.length != 0){
-				bHasSims = true;
+	private void deleteApplication(SimulationContext simulationContext) throws PropertyVetoException {
+		//
+		// BioModel enforces that there be no orphaned Simulations in BioModel.vetoableChange(...)
+		// Check for no Simulations in SimualtionContext that is to be removed
+		// otherwise a nonsense error message will be generated by BioModel
+		//
+		Simulation[] simulations = simulationContext.getSimulations();
+		if(simulations != null && simulations.length != 0){
+			for (Simulation simulation : simulations) {
+				bioModel.removeSimulation(simulation);
 			}
-	
-			if (bHasSims) {
-				String confirm = PopupGenerator.showWarningDialog(this, bioModelWindowManager.getUserPreferences(), UserMessage.warn_DeleteSelectedAppWithSims, simulationContext.getName());
-				if (!confirm.equals(UserMessage.OPTION_CANCEL)) {
-					for (Simulation simulation : simulations) {
-						bioModel.removeSimulation(simulation);
-					}
-					bioModel.removeSimulationContext(simulationContext);
-				}
-			} else {
-				String confirm = PopupGenerator.showWarningDialog(this, bioModelWindowManager.getUserPreferences(), UserMessage.warn_DeleteSelectedApp, simulationContext.getName());		
-				if (!confirm.equals(UserMessage.OPTION_CANCEL)) {
-					bioModel.removeSimulationContext(simulationContext);
-				}
-			}
-		} catch (Exception exc) {
-			exc.printStackTrace(System.out);
-			PopupGenerator.showErrorDialog(this, "Failed to Delete!\n"+exc.getMessage(), exc);
 		}
+		bioModel.removeSimulationContext(simulationContext);
 	}
 	
 	public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager) {

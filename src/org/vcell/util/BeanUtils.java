@@ -834,15 +834,24 @@ public final class BeanUtils {
 		if (exception == null) {
 			throw new RemoteException("Send Error Report, exception is null");
 		}
-		String smtpHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName);
-		int smtpPort = new Integer(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)).intValue();
+		String smtpHost = PropertyLoader.getProperty(PropertyLoader.vcellSMTPHostName, null);
+		if (smtpHost == null) {
+			return;
+		}
+		String smtpPort = PropertyLoader.getProperty(PropertyLoader.vcellSMTPPort, null);
+		if (smtpPort == null) {
+			return;
+		}
 		String from = "VCell";
-		String to = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress);
+		String to = PropertyLoader.getProperty(PropertyLoader.vcellSMTPEmailAddress, null);
+		if (to == null) {
+			return;
+		}
 		String subject = "VCell Error Report from " + PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
 		String content = BeanUtils.getStackTrace(exception);
 
 		try {
-			BeanUtils.sendSMTP(smtpHost, smtpPort, from, to, subject, content);
+			BeanUtils.sendSMTP(smtpHost, Integer.parseInt(smtpPort), from, to, subject, content);
 		} catch (AddressException e) {
 			e.printStackTrace();
 			throw new RemoteException(e.getMessage());

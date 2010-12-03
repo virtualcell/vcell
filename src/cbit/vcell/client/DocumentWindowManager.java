@@ -448,7 +448,7 @@ public static void setDefaultTitle(JInternalFrame jif) {
 
 	Container contentPane = jif.getContentPane();
 	if(contentPane instanceof GeometrySummaryViewer){
-		Geometry geom = ((GeometrySummaryViewer)contentPane).getGeometry();
+		Geometry geom = ((GeometrySummaryViewer)contentPane).getGeometryOwner().getGeometry();
 		jif.setTitle("Viewer/Editor for Geometry "+
 				(geom != null?"'"+geom.getName()+"'"+(geom.getVersion() != null?" "+geom.getVersion().getDate():""):""));
 	}else if(contentPane instanceof SurfaceViewerPanel){

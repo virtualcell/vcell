@@ -25,9 +25,9 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
+import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
-import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
@@ -2981,10 +2981,10 @@ public void setDescription(java.lang.String description) throws java.beans.Prope
  */
 public void setGeometry(Geometry argGeometry) throws java.beans.PropertyVetoException {
 	Geometry oldValue = this.geometry;
-	fireVetoableChange("geometry", oldValue, argGeometry);
+	fireVetoableChange(GeometryOwner.PROPERTY_NAME_GEOMETRY, oldValue, argGeometry);
 //	this.geometry = argGeometry;
 	setGeometry0(argGeometry);
-	firePropertyChange("geometry", oldValue, argGeometry);
+	firePropertyChange(GeometryOwner.PROPERTY_NAME_GEOMETRY, oldValue, argGeometry);
 	fireStateChanged();
 	//
 	// compute warning string (if necessary)
