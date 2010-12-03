@@ -1495,7 +1495,6 @@ protected void addSpecies(VCMetaData metaData) {
 			Structure spStructure = simContext.getModel().getStructure(compartmentId);
 			simContext.getModel().addSpeciesContext(vcSpecies, spStructure);
 			vcSpeciesContexts[i] = simContext.getModel().getSpeciesContext(vcSpecies, spStructure);
-			vcSpeciesContexts[i].setHasOverride(true);
 			vcSpeciesContexts[i].setName(speciesName);
 
 			// Adjust units of species, convert to VC units.

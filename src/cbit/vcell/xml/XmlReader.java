@@ -4644,10 +4644,6 @@ private SpeciesContext getSpeciesContext(Element param, Model model) throws XmlP
 	//retrieve its information
 	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	String hasOverrideString = param.getAttributeValue(XMLTags.HasOverrideAttrTag);
-	boolean bHasOverride = true; // default (safety) is name has been overridden
-	if (hasOverrideString!=null && hasOverrideString.length()>0){
-		bHasOverride = Boolean.valueOf(hasOverrideString).booleanValue();
-	}
 	String speciesName = unMangle(param.getAttributeValue(XMLTags.SpeciesRefAttrTag));
 	Species specieref= (Species)model.getSpecies(speciesName);	
 	if (specieref == null) {
@@ -4671,7 +4667,7 @@ private SpeciesContext getSpeciesContext(Element param, Model model) throws XmlP
 
 	//---try to create the speciesContext---
 	SpeciesContext speciecontext = null;
-	speciecontext = new SpeciesContext( key, name, specieref, structureref, bHasOverride);
+	speciecontext = new SpeciesContext( key, name, specieref, structureref);
 	
 	return speciecontext;
 }

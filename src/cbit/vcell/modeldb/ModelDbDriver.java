@@ -379,7 +379,7 @@ private SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, Res
 	//
 	Structure structure = reactStepDB.getStructureHeirarchy(dbc, con,structKey);
 	Species species = reactStepDB.getSpecies(dbc, con,speciesKey);
-	speciesContext = new SpeciesContext(scKey,speciesContext.getName(),species,structure,speciesContext.getHasOverride());
+	speciesContext = new SpeciesContext(scKey,speciesContext.getName(),species,structure);
 
 	//
 	// put SpeciesContext into object cache

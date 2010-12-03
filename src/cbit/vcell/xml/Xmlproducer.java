@@ -3220,7 +3220,7 @@ private Element getXML(SpeciesContext param) {
 	speciecontext.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	speciecontext.setAttribute(XMLTags.SpeciesRefAttrTag, mangle(param.getSpecies().getCommonName()));
 	speciecontext.setAttribute( XMLTags.StructureAttrTag, mangle(param.getStructure().getName()) );
-	speciecontext.setAttribute( XMLTags.HasOverrideAttrTag, String.valueOf(param.getHasOverride()) );
+	speciecontext.setAttribute( XMLTags.HasOverrideAttrTag, true + "" );
 
 	//If keyFlag is on print the Keyvalue
 	if (param.getKey() !=null && this.printKeysFlag) {

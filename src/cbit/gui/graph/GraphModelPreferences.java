@@ -20,7 +20,7 @@ public class GraphModelPreferences {
 	public static final int DISPLAY_COMMON_NAME = 1000;
 	public static final int DISPLAY_CONTEXT_NAME = 1001;
 	// actual values; initialized to system defaults
-	private int speciesContextDisplayName = DISPLAY_COMMON_NAME;
+	private int speciesContextDisplayName = DISPLAY_CONTEXT_NAME;
 
 	/**
 	 * GraphModelPreferences constructor comment.

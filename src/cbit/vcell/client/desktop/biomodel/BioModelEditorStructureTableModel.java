@@ -23,7 +23,9 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	public final static int COLUMN_TYPE = 1;
 	public final static int COLUMN_INSIDE_COMPARTMENT = 2;
 	public final static int COLUMN_OUTSIDE_COMPARTMENT = 3;	
-	private static String[] columnNames = new String[] {"Name", "Type", "Inside", "Outside Parent"};
+	public final static int COLUMN_OUTSIDE_SIZE_NAME = 4;	
+	public final static int COLUMN_OUTSIDE_VOLTAGE_NAME = 5;	
+	private static String[] columnNames = new String[] {"Name", "Type", "Inside", "Outside Parent", "Size Name", "Voltage Name"};
 
 	public BioModelEditorStructureTableModel(JTable table) {
 		super(table);
@@ -43,6 +45,12 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				return String.class;
 			}
 			case COLUMN_OUTSIDE_COMPARTMENT:{
+				return String.class;
+			}
+			case COLUMN_OUTSIDE_SIZE_NAME:{
+				return String.class;
+			}
+			case COLUMN_OUTSIDE_VOLTAGE_NAME:{
 				return String.class;
 			}
 		}
@@ -82,7 +90,17 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					case COLUMN_OUTSIDE_COMPARTMENT: {
 						Structure parentStructure = structure.getParentStructure();
 						return parentStructure != null ? parentStructure.getName() : "";
-					} 
+					}
+					case COLUMN_OUTSIDE_SIZE_NAME:
+						return structure.getStructureSize().getName();
+						
+					case COLUMN_OUTSIDE_VOLTAGE_NAME:
+						if (structure instanceof Feature) {
+							return "n/a";
+						}
+						if (structure instanceof Membrane) {
+							return  ((Membrane)structure).getMembraneVoltage().getName();
+						}
 				}
 			} else {
 				if (column == COLUMN_NAME) {
@@ -97,7 +115,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 
 	@Override
 	public boolean isCellEditable(int row, int column) {
-		if (column == COLUMN_TYPE) {
+		if (column == COLUMN_TYPE || column == COLUMN_OUTSIDE_SIZE_NAME || column == COLUMN_OUTSIDE_VOLTAGE_NAME) {
 			return false;
 		}
 		if (column == COLUMN_INSIDE_COMPARTMENT) {	

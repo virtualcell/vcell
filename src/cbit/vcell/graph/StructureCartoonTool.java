@@ -212,7 +212,6 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				Species species = new Species(getStructureCartoon().getModel().getFreeSpeciesName(), "");
 				SpeciesContext speciesContext = new SpeciesContext(species, ((StructureShape) shape).getStructure());
 				try {
-					speciesContext.setHasOverride(true);
 					speciesContext.setName(species.getCommonName());
 					getStructureCartoon().getModel().addSpecies(species);
 					getStructureCartoon().getModel().addSpeciesContext(speciesContext);
