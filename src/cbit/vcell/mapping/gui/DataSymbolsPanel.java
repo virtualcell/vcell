@@ -633,7 +633,7 @@ public void addVFrapDerivedImages() {		// add special (computed) images from vFr
 	ClientTaskDispatcher.dispatch(this, hash, taskArray, false, true, null);
 }
 
-private void removeDataSymbol(DataSymbol dataSymbol) {
+public void removeDataSymbol(DataSymbol dataSymbol) {
 	try {
 		getSimulationContext().getDataContext().removeDataSymbol(dataSymbol);
 	} catch (java.lang.Throwable ivjExc) {
@@ -780,7 +780,7 @@ private JPanel getScrollPanel()
  * Return the ScrollPaneTable property value.
  * @return javax.swing.JTable
  */
-private JSortTable getScrollPaneTable() {
+public JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new JSortTable();
@@ -830,7 +830,7 @@ private DataSymbolsSpecPanel getDataSymbolsSpecPanel() {
  * @return cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private DataSymbolsTableModel getDataSymbolsTableModel() {
+public DataSymbolsTableModel getDataSymbolsTableModel() {
 	if (ivjDataSymbolsTableModel == null) {
 		try {
 			ivjDataSymbolsTableModel = new DataSymbolsTableModel(getScrollPaneTable());
@@ -1006,7 +1006,7 @@ public void setSimulationContext(SimulationContext simulationContext) {
 	getDataSymbolsTableModel().setSimulationContext(simulationContext);
 }
 
-public class Utils {
+public class ExtensionsManagement {
     public final static String jpeg = "jpeg";
     public final static String jpg = "jpg";
     public final static String gif = "gif";
@@ -1033,10 +1033,10 @@ public class vFrapFieldDataFilter extends FileFilter {
         if (f.isDirectory()) {
             return true;
         }
-        Utils u = new Utils();
+        ExtensionsManagement u = new ExtensionsManagement();
         String extension = u.getExtension(f);
         if (extension != null) {
-            if (extension.equals(Utils.vfrap) ) {
+            if (extension.equals(ExtensionsManagement.vfrap) ) {
                     return true;
             } else {
                 return false;

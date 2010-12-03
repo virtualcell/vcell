@@ -11,10 +11,12 @@ import javax.swing.JTable;
 
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
+import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * @author: 
@@ -22,8 +24,11 @@ import cbit.vcell.mapping.SimulationContext;
 @SuppressWarnings("serial")
 public class DataSymbolsTableModel extends DefaultSortTableModel<DataSymbol> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_DATA_SYMBOL_NAME = 0;
-	public static final int COLUMN_DATA_SET_NAME = 1;
-	private static String LABELS[] = { "Symbol Name", "Dataset Name"};
+	public static final int COLUMN_DATA_SYMBOL_TYPE = 1;
+	public static final int COLUMN_DATA_SET_NAME = 2;
+	public static final int COLUMN_DATA_CHANNEL_NAME = 3;
+	public static final int COLUMN_DATA_CHANNEL_TYPE = 4;
+	private final static String LABELS[] = { "Symbol Name", "Symbol Type", "Dataset Name", "Channel Name", "Channel Type"};
 	
 	private SimulationContext fieldSimulationContext = null;
 //	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
@@ -45,12 +50,21 @@ public DataSymbolsTableModel(JTable table) {
  */
 public Class<?> getColumnClass(int column) {
 	switch (column){
-		case COLUMN_DATA_SYMBOL_NAME:{
-			return String.class;
-		}
-		case COLUMN_DATA_SET_NAME:{
-			return String.class;
-		}
+	case COLUMN_DATA_SYMBOL_NAME:{
+		return String.class;
+	}
+	case COLUMN_DATA_SYMBOL_TYPE:{
+		return String.class;
+	}
+	case COLUMN_DATA_SET_NAME:{
+		return String.class;
+	}
+	case COLUMN_DATA_CHANNEL_NAME:{
+		return String.class;
+	}
+	case COLUMN_DATA_CHANNEL_TYPE:{
+		return String.class;
+	}
 		default:{
 			return Object.class;
 		}
@@ -93,9 +107,26 @@ public Object getValueAt(int row, int col) {
 			case COLUMN_DATA_SYMBOL_NAME:{
 				return ds.getName();
 			}
+			case COLUMN_DATA_SYMBOL_TYPE:{
+				return ds.getDataSymbolType().getDisplayName();
+			}
 			case COLUMN_DATA_SET_NAME:{
 				if (ds instanceof FieldDataSymbol) {
 					return ((FieldDataSymbol)ds).getExternalDataIdentifier().getName();
+				} else {
+					return null;
+				}
+			}
+			case COLUMN_DATA_CHANNEL_NAME:{
+				if (ds instanceof FieldDataSymbol) {
+					return ((FieldDataSymbol)ds).getFieldDataVarName();
+				} else {
+					return null;
+				}
+			}
+			case COLUMN_DATA_CHANNEL_TYPE:{
+				if (ds instanceof FieldDataSymbol) {
+					return ((FieldDataSymbol)ds).getFieldDataVarType();
 				} else {
 					return null;
 				}
@@ -125,12 +156,21 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		throw new RuntimeException("DataSymbolsTableModel.isCellEditable(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
 	}
 	switch (columnIndex){
-		case COLUMN_DATA_SYMBOL_NAME:{
-			return false;
-		}
-		case COLUMN_DATA_SET_NAME:{
-			return false;
-		}
+	case COLUMN_DATA_SYMBOL_NAME:{
+		return false;
+	}
+	case COLUMN_DATA_SYMBOL_TYPE:{
+		return false;
+	}
+	case COLUMN_DATA_SET_NAME:{
+		return false;
+	}
+	case COLUMN_DATA_CHANNEL_NAME:{
+		return false;
+	}
+	case COLUMN_DATA_CHANNEL_TYPE:{
+		return false;
+	}
 		default:{
 			return false;
 		}
@@ -150,6 +190,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		fireTableDataChanged();
 	}
 	if (evt.getSource() instanceof DataSymbol && evt.getPropertyName().equals("name")) {
+		fireTableRowsUpdated(0,getRowCount()-1);
+	}
+	if (evt.getSource() instanceof DataSymbol && evt.getPropertyName().equals("type")) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
 }
@@ -195,7 +238,17 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			dataSymbol.setName((String)aValue);
 			break;
 		}
+		case COLUMN_DATA_SYMBOL_TYPE:{
+			break;
+		}
 		case COLUMN_DATA_SET_NAME:{
+			break;
+		}
+// TODO: anything to do here?
+		case COLUMN_DATA_CHANNEL_NAME:{
+			break;
+		}
+		case COLUMN_DATA_CHANNEL_TYPE:{
 			break;
 		}
 	}
@@ -222,10 +275,40 @@ public Comparator<DataSymbol> getComparator(final int col, final boolean ascendi
 						return name2.compareToIgnoreCase(name1);
 					}
 				}
+				case COLUMN_DATA_SYMBOL_TYPE:
+				{
+					String name1 = ds1.getDataSymbolType().getDisplayName();
+					String name2 = ds2.getDataSymbolType().getDisplayName();
+					if (ascending){
+						return name1.compareToIgnoreCase(name2);
+					}else{
+						return name2.compareToIgnoreCase(name1);
+					}
+				}
 				case COLUMN_DATA_SET_NAME:
 				{
 					String name1 = ((FieldDataSymbol)ds1).getExternalDataIdentifier().getName();
 					String name2 = ((FieldDataSymbol)ds2).getExternalDataIdentifier().getName();
+					if (ascending){
+						return name1.compareToIgnoreCase(name2);
+					}else{
+						return name2.compareToIgnoreCase(name1);
+					}
+				}
+				case COLUMN_DATA_CHANNEL_NAME:
+				{
+					String name1 = ((FieldDataSymbol)ds1).getFieldDataVarName();
+					String name2 = ((FieldDataSymbol)ds2).getFieldDataVarName();
+					if (ascending){
+						return name1.compareToIgnoreCase(name2);
+					}else{
+						return name2.compareToIgnoreCase(name1);
+					}
+				}
+				case COLUMN_DATA_CHANNEL_TYPE:
+				{
+					String name1 = ((FieldDataSymbol)ds1).getFieldDataVarType();
+					String name2 = ((FieldDataSymbol)ds2).getFieldDataVarType();
 					if (ascending){
 						return name1.compareToIgnoreCase(name2);
 					}else{

@@ -49,6 +49,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.DataSymbolsPanel;
 import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
+import cbit.vcell.mapping.gui.MicroscopeMeasurementPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
 import cbit.vcell.math.AnnotatedFunction;
@@ -101,6 +102,7 @@ public class BioModelEditor extends JPanel {
 	private BioModelEditorStructurePanel bioModelEditorStructurePanel = null;
 	private BioModelEditorReactionPanel bioModelEditorReactionPanel = null;
 	private BioModelEditorGlobalParameterPanel bioModelEditorGlobalParameterPanel = null;
+	private MicroscopeMeasurementPanel microscopeMeasurementPanel = null;
 	
 	private BioModelEditorTreeModel bioModelEditorTreeModel = null;
 	private JPanel emptyPanel = new JPanel();
@@ -367,6 +369,17 @@ private BioModelEditorReactionPanel getBioModelEditorReactionPanel() {
 		}
 	}
 	return bioModelEditorReactionPanel;
+}
+
+private MicroscopeMeasurementPanel getMicroscopeMeasurementPanel() {
+	if (microscopeMeasurementPanel == null) {
+		try {
+			microscopeMeasurementPanel = new MicroscopeMeasurementPanel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return microscopeMeasurementPanel;
 }
 
 private BioModelEditorStructurePanel getBioModelEditorStructurePanel() {
@@ -789,7 +802,11 @@ private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafO
 		} else if(folderClass == BioModelEditorTreeFolderClass.DATA_SYMBOLS_NODE) {
 			rightPanel = getDataSymbolsPanel();
 			getDataSymbolsPanel().setSimulationContext(simulationContext);
-			getDataSymbolsPanel().setScrollPaneTableCurrentRow((DataSymbol)leafObject);
+			getDataSymbolsPanel().setScrollPaneTableCurrentRow((DataSymbol)leafObject);	// notify right panel about selection change
+		} else if(folderClass == BioModelEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE) {
+			rightPanel = getMicroscopeMeasurementPanel();
+			getMicroscopeMeasurementPanel().setSimulationContext(simulationContext);
+			getMicroscopeMeasurementPanel().setMicroscopeMeasurement(simulationContext.getMicroscopeMeasurement());
 		} else {
 			ApplicationComponents applicationComponents = bioModelWindowManager.getApplicationComponents(simulationContext);
 			SimulationWorkspace simulationWorkspace = applicationComponents.getSimulationWorkspace();
@@ -881,7 +898,7 @@ private JMenuItem getMenuItemAddGenericData() {
 			menuItemAddGenericData.setMnemonic('d');
 			menuItemAddGenericData.setText(VFrapConstants.ADD_VFRAP_DATASET_MENU);
 			menuItemAddGenericData.setEnabled(true);
-			menuItemAddGenericData.setActionCommand(GuiConstants.ACTIONCMD_ADD_GENERIC_DATA);
+			menuItemAddGenericData.setActionCommand(GuiConstants.ACTIONCMD_ADD_VFAP_DATASET);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -896,7 +913,7 @@ private JMenuItem getMenuItemAddVFrapData() {
 			menuItemAddVFrapData.setMnemonic('v');
 			menuItemAddVFrapData.setText(VFrapConstants.ADD_VFRAP_SPECIALS_MENU);
 			menuItemAddVFrapData.setEnabled(true);
-			menuItemAddVFrapData.setActionCommand(GuiConstants.ACTIONCMD_ADD_VFRAP_DATA);
+			menuItemAddVFrapData.setActionCommand(GuiConstants.ACTIONCMD_ADD_VFRAP_DERIVED_DATA);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

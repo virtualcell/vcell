@@ -66,6 +66,11 @@ public abstract class DataSymbol implements SymbolTableEntry,Matchable {
 	public DataSymbolType getDataSymbolType() {
 		return dataSymbolType;
 	}
+	public void setDataSymbolType(DataSymbolType newType) {
+		DataSymbolType oldDataSymbolType = this.dataSymbolType;
+		this.dataSymbolType = newType;
+		firePropertyChange("type", oldDataSymbolType, newType);
+	}
 	public final double getConstantValue() throws ExpressionException {
 		throw new ExpressionException("cannot get constant value from a data symbol");
 	}
@@ -104,10 +109,11 @@ public abstract class DataSymbol implements SymbolTableEntry,Matchable {
 	public enum DataSymbolType {
 	    UNKNOWN					("Unknown",						"UNKNOWN"),
 	    GENERIC_SYMBOL			("Generic",						"GENERIC"),
-	    VFRAP_TIMEPOINT			("VFRAP time point", 			"VFRAP_TIMEPOINT"),
-	    VFRAP_PREBLEACH_AVG		("VFRAP prebleach average",		"VFRAP_PREBLEACH_AVERAGE"),
-	    VFRAP_FIRST_POSTBLEACH	("VFRAP first postbleach",		"VFRAP_FIRST_POSTBLEACH"),
-	    VFRAP_ROI				("VFRAP ROI",					"VFRAP_ROI");
+	    POINT_SPREAD_FUNCTION	("Point Spread Function",		"POINT_SPREAD_FUNCTION"),
+	    VFRAP_TIMEPOINT			("vFrap Time Point", 			"VFRAP_TIMEPOINT"),
+	    VFRAP_PREBLEACH_AVG		("vFrap Prebleach Avg",			"VFRAP_PREBLEACH_AVERAGE"),
+	    VFRAP_FIRST_POSTBLEACH	("vFrap Postbleach",			"VFRAP_FIRST_POSTBLEACH"),
+	    VFRAP_ROI				("vFrap ROI",					"VFRAP_ROI");
 
 	    private final String displayName;
 	    private final String databaseName; // DON'T Change

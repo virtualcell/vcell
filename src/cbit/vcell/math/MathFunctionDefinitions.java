@@ -25,6 +25,7 @@ public class MathFunctionDefinitions {
 	public final static String FUNCTION_regionarea_current	= "vcRegionArea(StructureName:LITERAL)";
 	public final static String FUNCTION_regionvolume_indexed	= "vcRegionVolume(StructureName:LITERAL,RegionIndex:NUMERIC)";
 	public final static String FUNCTION_regionvolume_current	= "vcRegionVolume(StructureName:LITERAL)";
+	public final static String FUNCTION_convolution			= "vcConv(Function:NUMERIC,Kernel:NUMERIC)";
 	public final static String FunctionName_field_old		= "field";
 	public final static String FunctionName_grad_old		= "grad";
 	
@@ -32,6 +33,7 @@ public class MathFunctionDefinitions {
 	public final static SymbolTableFunctionEntry Function_regionArea_current = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionarea_current, VCUnitDefinition.UNIT_um2, null);
 	public final static SymbolTableFunctionEntry Function_regionVolume_indexed = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionvolume_indexed, VCUnitDefinition.UNIT_um3, null);
 	public final static SymbolTableFunctionEntry Function_regionVolume_current = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_regionvolume_current, VCUnitDefinition.UNIT_um3, null);
+	public final static SymbolTableFunctionEntry Function_convolution = createDeferedFunctionEntry(MathFunctionDefinitions.FUNCTION_convolution, VCUnitDefinition.UNIT_DIMENSIONLESS, null);
 	
 	private static SymbolTableFunctionEntry createDeferedFunctionEntry(String formalDefinition, VCUnitDefinition vcUnitDefinition, NameScope nameScope){
 		StringTokenizer tokens = new StringTokenizer(formalDefinition,"(),", false);

@@ -57,6 +57,7 @@ public class ReservedMathSymbolEntries {
 			symbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionArea_indexed.getName(),MathFunctionDefinitions.Function_regionArea_indexed);
 			symbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionVolume_current.getName(),MathFunctionDefinitions.Function_regionVolume_current);
 			symbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionVolume_indexed.getName(),MathFunctionDefinitions.Function_regionVolume_indexed);
+			symbolTableFunctionEntries.put(MathFunctionDefinitions.Function_convolution.getName(),MathFunctionDefinitions.Function_convolution);
 			symbolTableFunctionEntries.put(FieldFunctionDefinition.fieldFunctionDefinition.getName(),FieldFunctionDefinition.fieldFunctionDefinition);
 			symbolTableFunctionEntries.put(GradientFunctionDefinition.gradientFunctionDefinition.getName(),GradientFunctionDefinition.gradientFunctionDefinition);
 		}

@@ -13,6 +13,10 @@ public class VFrapConstants
 	//menus
 	public static final String ADD_VFRAP_DATASET_MENU = "Add Dataset (normal images) from vFrap";
 	public static final String ADD_VFRAP_SPECIALS_MENU = "Add Special (computed) images from vFrap";
+	public static final String ADD_ASSOCIATE_EXISTING_FD_MENU = "Associate with existing Field Data item";
+	public static final String ADD_PSF_MENU = "Import Point Spread Function";
+	public static final String ADD_IMAGE_FILE_MENU = "Import from .lsm file";
+	public static final String ADD_COPY_FROM_BIOMODEL_MENU = "Copy from existing biomodel";
 	public static final String DELETE_DATA_SYMBOL = "Delete data symbol";
 	
 	// importing related - the names of the special objects

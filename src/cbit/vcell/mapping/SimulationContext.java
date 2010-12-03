@@ -32,12 +32,14 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.document.GeometryOwner;
+import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -249,6 +251,16 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private boolean bStoch;
 	private boolean bConcentration = true;
 	private DataContext dataContext = new DataContext(getNameScope());
+	private MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement("fluor",new ProjectionZKernel(),new Expression(0.0));
+
+	public MicroscopeMeasurement getMicroscopeMeasurement() {
+		return microscopeMeasurement;
+	}
+
+
+	public void setMicroscopeMeasurement(MicroscopeMeasurement microscopeMeasurement) {
+		this.microscopeMeasurement = microscopeMeasurement;
+	}
 
 /**
  * Construct a new SimulationContext from an old SimulationContext.

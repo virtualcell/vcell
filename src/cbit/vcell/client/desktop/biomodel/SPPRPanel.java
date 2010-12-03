@@ -305,6 +305,7 @@ public class SPPRPanel extends JPanel {
 		        setupRightComponent((SPPRTreeFolderNode)userObject, null);
 		    } else if (userObject instanceof SimulationContext){
 		    	outerSplitPane.setRightComponent(new JPanel());
+		    	// TODO: prolly a bad idea, this overrides user changes each time it's called
 		    	outerSplitPane.setDividerLocation(200);
 		    } else {
 		        Object leaf = userObject;
@@ -510,7 +511,7 @@ public class SPPRPanel extends JPanel {
 				menuItemAddGenericData.setMnemonic('d');
 				menuItemAddGenericData.setText(ADD_VFRAP_DATASET_MENU);
 				menuItemAddGenericData.setEnabled(true);
-				menuItemAddGenericData.setActionCommand(GuiConstants.ACTIONCMD_ADD_GENERIC_DATA);
+				menuItemAddGenericData.setActionCommand(GuiConstants.ACTIONCMD_ADD_VFAP_DATASET);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -525,7 +526,7 @@ public class SPPRPanel extends JPanel {
 				menuItemAddVFrapData.setMnemonic('v');
 				menuItemAddVFrapData.setText(ADD_VFRAP_SPECIALS_MENU);
 				menuItemAddVFrapData.setEnabled(true);
-				menuItemAddVFrapData.setActionCommand(GuiConstants.ACTIONCMD_ADD_VFRAP_DATA);
+				menuItemAddVFrapData.setActionCommand(GuiConstants.ACTIONCMD_ADD_VFRAP_DERIVED_DATA);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}

@@ -448,7 +448,7 @@ public class SPPRTreeModel extends DefaultTreeModel  implements java.beans.Prope
 						oldValue[i].removePropertyChangeListener(this);
 					}
 				}
-				ModelParameter newValue[] = (ModelParameter[])evt.getOldValue();
+				ModelParameter newValue[] = (ModelParameter[])evt.getNewValue();
 				if (newValue!=null){
 					for (int i = 0; i < newValue.length; i++){
 						newValue[i].addPropertyChangeListener(this);
