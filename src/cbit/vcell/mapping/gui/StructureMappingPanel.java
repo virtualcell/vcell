@@ -10,6 +10,7 @@ import javax.swing.UIManager;
 
 import org.vcell.util.gui.ScrollTable;
 
+import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.math.BoundaryConditionType;
@@ -33,7 +34,7 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == StructureMappingPanel.this && (evt.getPropertyName().equals(PROPERTY_GEOMETRY_CONTEXT))) 
 				connPtoP3SetTarget();
-			if (evt.getSource() == StructureMappingPanel.this.getgeometryContext1() && (evt.getPropertyName().equals(GeometryContext.PROPERTY_GEOMETRY))) {
+			if (evt.getSource() == StructureMappingPanel.this.getgeometryContext1() && (evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY))) {
 				getVolumeSurfaceCalculatorPanel().setVisible(getGeometryContext().getGeometry().getDimension() == 0);
 			}
 		}

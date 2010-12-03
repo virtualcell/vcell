@@ -27,9 +27,11 @@ import org.vcell.util.document.Versionable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.PropertyChangeListenerProxyVCell;
+import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.data.DataContext;
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.data.DataContext;
+import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
@@ -265,7 +267,8 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 	} else {
 		this.bConcentration = true; //deterministic method use concentration only.
 	}
-	this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this, newClonedGeometry);		
+	this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this, newClonedGeometry);
+	geoContext.addPropertyChangeListener(this);
 	this.reactionContext = new ReactionContext(simulationContext.getReactionContext(),this);
 	this.version = null;
 	this.characteristicSize = simulationContext.getCharacteristicSize();
@@ -348,11 +351,14 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
 
 	addVetoableChangeListener(this);
 	setIsStoch(bStoch);
-	setGeometryContext(new GeometryContext(model,geometry,this));
+	
+	geoContext = new GeometryContext(model,geometry,this);
+	geoContext.addPropertyChangeListener(this);
+	refreshCharacteristicSize();
+	
 	this.reactionContext = new ReactionContext(model,this);
 	this.mathDesc = argMathDesc;
 	this.version = argVersion;
-	getGeometryContext().addPropertyChangeListener(this);
 	geometry.getGeometrySpec().addPropertyChangeListener(this);
 	if (argVersion!=null){
 		this.fieldName = argVersion.getName();
@@ -371,9 +377,12 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
 public SimulationContext(Model model, Geometry geometry, boolean bStoch) throws PropertyVetoException {
 
 	addVetoableChangeListener(this);
-
 	setIsStoch(bStoch);
-	setGeometryContext(new GeometryContext(model,geometry,this));
+	
+	geoContext = new GeometryContext(model,geometry,this);
+	geoContext.addPropertyChangeListener(this);
+	refreshCharacteristicSize();
+	
 	this.reactionContext = new ReactionContext(model,this);
 	this.version = null;
 	getGeometryContext().addPropertyChangeListener(this);
@@ -1224,16 +1233,37 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 		refreshElectrodes();
 	}
 // we propagate events from geometryContext
-	if (event.getSource() == getGeometryContext() && event.getPropertyName().equals("geometry")){
-		firePropertyChange("geometry", event.getOldValue(), event.getNewValue());
+	if (event.getSource() == getGeometryContext() && event.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)){
+		firePropertyChange(GeometryOwner.PROPERTY_NAME_GEOMETRY, event.getOldValue(), event.getNewValue());
 	}
 	if (event.getSource() == getGeometryContext() && event.getPropertyName().equals("model")){
 		firePropertyChange("model", event.getOldValue(), event.getNewValue());
 	}
-	if (event.getSource() == getBioModel() && event.getPropertyName().equals(GuiConstants.PROPERTY_SIMULATIONS)){
+	if (event.getSource() == getBioModel() && event.getPropertyName().equals(GuiConstants.PROPERTY_NAME_SIMULATIONS)){
 		Simulation oldSimulations[] = extractLocalSimulations((Simulation[])event.getOldValue());
 		Simulation newSimulations[] = extractLocalSimulations((Simulation[])event.getNewValue());
-		firePropertyChange(GuiConstants.PROPERTY_SIMULATIONS,oldSimulations,newSimulations);
+		boolean bShouldFire = false;
+		if (oldSimulations != null || newSimulations != null) {
+			if (oldSimulations == null || newSimulations == null) {
+				bShouldFire = true;
+			}
+			if (!bShouldFire) {
+				if (oldSimulations.length != newSimulations.length) {
+					bShouldFire = true;
+				}
+			}
+			if (!bShouldFire) {
+				for (int i = 0; i < oldSimulations.length; i ++) {
+					if (oldSimulations[i] != newSimulations[i]) {
+						bShouldFire = true;
+						break;
+					}
+				}
+			}
+		}
+		if (bShouldFire) {
+			firePropertyChange(GuiConstants.PROPERTY_NAME_SIMULATIONS,oldSimulations,newSimulations);
+		}
 	}
 }
 
@@ -1256,7 +1286,7 @@ private void refreshCharacteristicSize() throws PropertyVetoException {
 		//
 		// if characteristicSize is not specified, estimate a 'good' value
 		//
-		cbit.image.VCImage image = geo.getGeometrySpec().getImage();
+		VCImage image = geo.getGeometrySpec().getImage();
 		if (image != null){
 			double pixelSizeX = extent.getX()/image.getNumX();
 			double pixelSizeY = extent.getY()/image.getNumY();
@@ -1671,17 +1701,6 @@ public void setGeometry(Geometry geometry) throws MappingException {
 	}
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param geoContext cbit.vcell.mapping.GeometryContext
- */
-private void setGeometryContext(GeometryContext argGeoContext) throws java.beans.PropertyVetoException {
-	this.geoContext = argGeoContext;
-	refreshCharacteristicSize();
-}
-
-
 /**
  * Sets the groundElectrode property (cbit.vcell.mapping.Electrode) value.
  * @param groundElectrode The new value for the property.
@@ -2050,14 +2069,6 @@ public String getFreeEventName() {
 
 public DataContext getDataContext() {
 	return dataContext;
-}
-
-public void addGeometryPropertyChangeListener(PropertyChangeListener listener) {
-	getGeometryContext().addPropertyChangeListener(listener);
-}
-
-public void removeGeometryPropertyChangeListener(PropertyChangeListener listener) {
-	getGeometryContext().removePropertyChangeListener(listener);
 }
 
 public MathMapping createNewMathMapping() {

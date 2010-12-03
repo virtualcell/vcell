@@ -23,6 +23,8 @@ import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.model.ReactionStep;
@@ -183,6 +185,13 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 
 	protected void deleteButtonPressed() {
 		int[] rows = table.getSelectedRows();
+		if (rows == null || rows.length == 0) {
+			return;
+		}
+		String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete selected reaction(s)?");
+		if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+			return;
+		}
 		ArrayList<ReactionStep> deleteList = new ArrayList<ReactionStep>();
 		for (int r : rows) {
 			if (r < tableModel.getDataSize()) {

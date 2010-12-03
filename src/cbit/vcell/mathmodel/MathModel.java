@@ -16,6 +16,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
@@ -448,25 +449,43 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	//
 	// propagate mathDescription changes from SimulationContexts to Simulations
 	//
-	if (evt.getSource() == this && evt.getPropertyName().equals("mathDescription") && evt.getNewValue()!=null){
-		if (fieldSimulations!=null){
-			for (int i=0;i<fieldSimulations.length;i++){
-				if (fieldSimulations[i].getMathDescription() == evt.getOldValue()){
-					try {
-						fieldSimulations[i].setMathDescription((MathDescription)evt.getNewValue());
-					}catch (PropertyVetoException e){
-						System.out.println("error propagating math to Simulation '"+fieldSimulations[i].getName());
-						e.printStackTrace(System.out);
+	if (evt.getSource() == this && evt.getPropertyName().equals("mathDescription")){
+		Geometry oldGeometry = null;
+		Geometry newGeometry = null;
+		MathDescription oldValue = (MathDescription)evt.getOldValue();
+		if (oldValue != null) {
+			oldValue.removePropertyChangeListener(this);
+			oldGeometry = oldValue.getGeometry();
+		}
+		MathDescription newValue = (MathDescription)evt.getNewValue();
+		if (newValue != null) {
+			newValue.addPropertyChangeListener(this);
+			newGeometry = newValue.getGeometry();
+			if (fieldSimulations!=null){
+				for (int i=0;i<fieldSimulations.length;i++){
+					if (fieldSimulations[i].getMathDescription() == evt.getOldValue()){
+						try {
+							fieldSimulations[i].setMathDescription((MathDescription)evt.getNewValue());
+						}catch (PropertyVetoException e){
+							System.out.println("error propagating math to Simulation '"+fieldSimulations[i].getName());
+							e.printStackTrace(System.out);
+						}
 					}
 				}
 			}
 		}
+		if (oldGeometry != newGeometry) {
+			firePropertyChange(GeometryOwner.PROPERTY_NAME_GEOMETRY, oldGeometry, newGeometry);
+		}
+	}
+	if (evt.getSource() == getMathDescription() && evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)) {
+		firePropertyChange(GeometryOwner.PROPERTY_NAME_GEOMETRY, evt.getOldValue(), evt.getNewValue());
 	}
 
 	//
 	// make sure that simulations and simulationContexts are listened to
 	//
-	if (evt.getSource() == this && evt.getPropertyName().equals(GuiConstants.PROPERTY_SIMULATIONS) && evt.getNewValue()!=null){
+	if (evt.getSource() == this && evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME_SIMULATIONS) && evt.getNewValue()!=null){
 		//
 		// unregister for old
 		//
@@ -501,6 +520,10 @@ public void refreshDependencies() {
 	removeVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	addVetoableChangeListener(this);
+	if (getMathDescription() != null) {
+		getMathDescription().removePropertyChangeListener(this);
+		getMathDescription().addPropertyChangeListener(this);
+	}
 
 	
 	fieldMathDescription.refreshDependencies();
@@ -599,9 +622,9 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  */
 public void setSimulations(Simulation[] simulations) throws java.beans.PropertyVetoException {
 	Simulation[] oldValue = fieldSimulations;
-	fireVetoableChange(GuiConstants.PROPERTY_SIMULATIONS, oldValue, simulations);
+	fireVetoableChange(GuiConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
 	fieldSimulations = simulations;
-	firePropertyChange(GuiConstants.PROPERTY_SIMULATIONS, oldValue, simulations);
+	firePropertyChange(GuiConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
 }
 
 
@@ -638,7 +661,7 @@ public String toString() {
 	 *              change to be rolled back.
 	 */
 public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	if (evt.getSource() == this && evt.getPropertyName().equals(GuiConstants.PROPERTY_SIMULATIONS) && evt.getNewValue()!=null){
+	if (evt.getSource() == this && evt.getPropertyName().equals(GuiConstants.PROPERTY_NAME_SIMULATIONS) && evt.getNewValue()!=null){
 		//
 		// check for name duplication
 		//
@@ -674,15 +697,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	public Geometry getGeometry() {
 		return getMathDescription().getGeometry();
 	}
-
-	public void addGeometryPropertyChangeListener(PropertyChangeListener listener) {
-		getMathDescription().addPropertyChangeListener(listener);
-	}
-
-	public void removeGeometryPropertyChangeListener(PropertyChangeListener listener) {
-		getMathDescription().removePropertyChangeListener(listener);
-	}
-
 
 	public void refreshMathDescription() {
 		// do nothing. math description always exists		

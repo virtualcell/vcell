@@ -4,13 +4,19 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingConstants;
+
+import org.vcell.util.gui.DownArrowIcon;
 
 import cbit.vcell.client.GuiConstants;
-import cbit.vcell.geometry.Geometry;
+import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.gui.GeometryViewer;
 
 
@@ -23,37 +29,45 @@ import cbit.vcell.geometry.gui.GeometryViewer;
 public class GeometrySummaryViewer extends JPanel {
 
 	//
-	public static class GeometrySummaryViewerEvent extends ActionEvent{
-
-		private Geometry geometry;
-		
-		public GeometrySummaryViewerEvent(Geometry argGeom,Object source, int id, String command,int modifiers) {
-			super(source, id, command, modifiers);
-			geometry = argGeom;
-		}
-		public Geometry getGeometry(){
-			return geometry;
-		}
-	}
+//	public static class GeometrySummaryViewerEvent extends ActionEvent {
+//
+//		private Geometry geometry;
+//		
+//		public GeometrySummaryViewerEvent(Geometry argGeom,Object source, int id, String command,int modifiers) {
+//			super(source, id, command, modifiers);
+//			geometry = argGeom;
+//		}
+//		public Geometry getGeometry(){
+//			return geometry;
+//		}
+//	}
 	private GeometryViewer geometryViewer = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JButton ivjJButtonReplace = null;
     protected transient ActionListener actionListener = null;
-	private Geometry fieldGeometry = null;
+	private GeometryOwner geometryOwner = null;
+	private JMenuItem newGeometryMenuItem = null;
+	private JMenuItem existingGeometryMenuItem = null;
+	private JPopupMenu popupMenu = null;
 
-private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == GeometrySummaryViewer.this.getJButtonReplace()) 
-				connEtoC1(e);
-			if (e.getSource() == GeometrySummaryViewer.this.getJButtonCreateGeometry()) 
-				connEtoC4(e);
-		};
+			if (e.getSource() == newGeometryMenuItem
+					|| e.getSource() == existingGeometryMenuItem) {
+				refireActionPerformed(e);
+			} else if (e.getSource() == getJButtonReplace()) {
+				getPopupMenu().show(getJButtonReplace(), getJButtonReplace().getWidth()/2, getJButtonReplace().getHeight());
+			}
+		}
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == GeometrySummaryViewer.this && (evt.getPropertyName().equals("geometry"))) 
-				connEtoM1(evt);
-		};
-	};
-	private JButton ivjJButtonCreateGeometry = null;
+			if (evt.getSource() == GeometrySummaryViewer.this && (evt.getPropertyName().equals("geometryOwner"))) {
+				onGeometryOwnerChange(evt);
+			}
+			if (evt.getSource() == geometryOwner && evt.getPropertyName().equals("geometry")) {
+				onGeometryChange();
+			}
+		}
+	}
 
 public GeometrySummaryViewer() {
 	super();
@@ -64,102 +78,11 @@ public synchronized void addActionListener(ActionListener l) {
 	actionListener = AWTEventMulticaster.add(actionListener, l);
 }
 
-
-/**
- * connEtoC1:  (JButton1.action.actionPerformed(java.awt.event.ActionEvent) --> GeometrySummaryViewer.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.refireActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC2:  (JButtonViewSurfaces.action.actionPerformed(java.awt.event.ActionEvent) --> GeometrySummaryViewer.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.refireActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC4:  (JButton2.action.actionPerformed(java.awt.event.ActionEvent) --> GeometrySummaryViewer.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.refireActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM1:  (GeometrySummaryViewer.geometry --> GeometrySummaryPanel1.geometry)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getGeometryViewer().setGeometry(this.getGeometry());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 protected void fireActionPerformed(ActionEvent e) {
 	if (actionListener != null) {
 		actionListener.actionPerformed(e);
 	}         
 }
-
-
-/**
- * Gets the geometry property (cbit.vcell.geometry.Geometry) value.
- * @return The geometry property value.
- * @see #setGeometry
- */
-public Geometry getGeometry() {
-	return fieldGeometry;
-}
-
 
 /**
  * Return the GeometrySummaryPanel1 property value.
@@ -183,8 +106,8 @@ private GeometryViewer getGeometryViewer() {
 }
 
 
-public static final String REPLACE_GEOMETRY_LABEL = "Select Different Geometry...";
-public static final String NEW_GEOMETRY_LABEL = "Create New Geometry...";
+public static final String REPLACE_GEOMETRY_SPATIAL_LABEL = "Select Different Geometry";
+public static final String REPLACE_GEOMETRY_NONSPATIAL_LABEL = "Add Geometry";
 /**
  * Return the JButton1 property value.
  * @return javax.swing.JButton
@@ -195,8 +118,9 @@ private javax.swing.JButton getJButtonReplace() {
 		try {
 			ivjJButtonReplace = new javax.swing.JButton();
 			ivjJButtonReplace.setName("JButton1");
-			ivjJButtonReplace.setText(REPLACE_GEOMETRY_LABEL);
-			ivjJButtonReplace.setActionCommand(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY);
+			ivjJButtonReplace.setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
+			ivjJButtonReplace.setIcon(new DownArrowIcon());
+			ivjJButtonReplace.setHorizontalTextPosition(SwingConstants.LEFT);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -214,13 +138,18 @@ private javax.swing.JButton getJButtonReplace() {
  * @return javax.swing.JButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getJButtonCreateGeometry() {
-	if (ivjJButtonCreateGeometry == null) {
+private JPopupMenu getPopupMenu() {
+	if (popupMenu == null) {
 		try {
-			ivjJButtonCreateGeometry = new javax.swing.JButton();
-			ivjJButtonCreateGeometry.setName("JButtonCreateGeometry");
-			ivjJButtonCreateGeometry.setText(NEW_GEOMETRY_LABEL);
-			ivjJButtonCreateGeometry.setActionCommand(GuiConstants.ACTIONCMD_CREATE_GEOMETRY);
+			popupMenu = new JPopupMenu();
+			newGeometryMenuItem = new JMenuItem("New...");
+			newGeometryMenuItem.setActionCommand(GuiConstants.ACTIONCMD_CREATE_GEOMETRY);
+			newGeometryMenuItem.addActionListener(ivjEventHandler);
+			existingGeometryMenuItem = new JMenuItem("Open...");
+			existingGeometryMenuItem.setActionCommand(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY);
+			existingGeometryMenuItem.addActionListener(ivjEventHandler);
+			popupMenu.add(newGeometryMenuItem);
+			popupMenu.add(existingGeometryMenuItem);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -229,7 +158,7 @@ private javax.swing.JButton getJButtonCreateGeometry() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJButtonCreateGeometry;
+	return popupMenu;
 }
 
 /**
@@ -253,7 +182,6 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	getJButtonReplace().addActionListener(ivjEventHandler);
-	getJButtonCreateGeometry().addActionListener(ivjEventHandler);
 //	getBtnEditGeometry().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getGeometryViewer().addPropertyChangeListener(ivjEventHandler);
@@ -282,15 +210,11 @@ private void initialize() {
 
 		java.awt.GridBagConstraints gbc_ivjJButtonReplace = new java.awt.GridBagConstraints();
 		gbc_ivjJButtonReplace.gridx = 0; gbc_ivjJButtonReplace.gridy = 1;
+		gbc_ivjJButtonReplace.weightx = 1.0;
+		gbc_ivjJButtonReplace.anchor = GridBagConstraints.LINE_START;
 		gbc_ivjJButtonReplace.insets = new Insets(4, 4, 4, 5);
 		add(getJButtonReplace(), gbc_ivjJButtonReplace);
 
-		java.awt.GridBagConstraints gbc_ivjJButtonCreateGeometry = new java.awt.GridBagConstraints();
-		gbc_ivjJButtonCreateGeometry.gridx = 1; gbc_ivjJButtonCreateGeometry.gridy = 1;
-		gbc_ivjJButtonCreateGeometry.anchor = java.awt.GridBagConstraints.WEST;
-		gbc_ivjJButtonCreateGeometry.weightx = 1.0;
-		gbc_ivjJButtonCreateGeometry.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJButtonCreateGeometry(), gbc_ivjJButtonCreateGeometry);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -327,8 +251,8 @@ public static void main(java.lang.String[] args) {
 
 private void refireActionPerformed(ActionEvent e) {
 	// relays an action event with this as the source
-	//fireActionPerformed(new ActionEvent(this, e.getID(), e.getActionCommand(), e.getModifiers()));
-	fireActionPerformed(new GeometrySummaryViewerEvent(getGeometry(),this, e.getID(), e.getActionCommand(), e.getModifiers()));
+	fireActionPerformed(new ActionEvent(this, e.getID(), e.getActionCommand(), e.getModifiers()));
+//	fireActionPerformed(new GeometrySummaryViewerEvent(getGeometry(),this, e.getID(), e.getActionCommand(), e.getModifiers()));
 }
 
 
@@ -336,33 +260,46 @@ public synchronized void removeActionListener(ActionListener l) {
 	actionListener = AWTEventMulticaster.remove(actionListener, l);
 }
 
-
+public GeometryOwner getGeometryOwner() {
+	return geometryOwner; 
+}
 /**
  * Sets the geometry property (cbit.vcell.geometry.Geometry) value.
  * @param geometry The new value for the property.
  * @see #getGeometry
  */
-public void setGeometry(Geometry geometry) {
-	Geometry oldValue = fieldGeometry;
-	if(oldValue != null){
-		if(oldValue.getGeometrySpec() != null){
-			oldValue.getGeometrySpec().removePropertyChangeListener(ivjEventHandler);
-		}
-	}
-	fieldGeometry = geometry;
-	if(fieldGeometry != null ){
-		if(fieldGeometry.getGeometrySpec() != null){
-			fieldGeometry.getGeometrySpec().removePropertyChangeListener(ivjEventHandler);
-			fieldGeometry.getGeometrySpec().addPropertyChangeListener(ivjEventHandler);
-		}
-		if (geometry.getDimension()<1){
-			getGeometryViewer().setVisible(false);
-		}else{
-			getGeometryViewer().setVisible(true);
-		}
-	}
-
-	firePropertyChange("geometry", oldValue, geometry);
+public void setGeometryOwner(GeometryOwner newValue) {
+	GeometryOwner oldValue = geometryOwner;
+	geometryOwner = newValue;
+	firePropertyChange("geometryOwner", oldValue, newValue);
 }
 
+private void onGeometryOwnerChange(PropertyChangeEvent evt) {
+	GeometryOwner oldValue = (GeometryOwner) evt.getOldValue();
+	if (oldValue != null){
+		oldValue.removePropertyChangeListener(ivjEventHandler);
+		if (oldValue.getGeometry() != null && oldValue.getGeometry().getGeometrySpec() != null){
+			oldValue.getGeometry().getGeometrySpec().removePropertyChangeListener(ivjEventHandler);
+		}
+	}
+	GeometryOwner newValue = (GeometryOwner) evt.getNewValue();
+	if (newValue != null ){
+		newValue.addPropertyChangeListener(ivjEventHandler);
+		if (newValue.getGeometry() != null && newValue.getGeometry().getGeometrySpec() != null){		
+			newValue.getGeometry().getGeometrySpec().removePropertyChangeListener(ivjEventHandler);
+			newValue.getGeometry().getGeometrySpec().addPropertyChangeListener(ivjEventHandler);			
+		}
+	}
+	onGeometryChange();
+}
+private void onGeometryChange() {
+	if (geometryOwner.getGeometry() == null || geometryOwner.getGeometry().getDimension() < 1){
+		getGeometryViewer().setVisible(false);
+		getJButtonReplace().setText(REPLACE_GEOMETRY_NONSPATIAL_LABEL);
+	} else {	
+		getJButtonReplace().setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
+		getGeometryViewer().setVisible(true);
+	}
+	getGeometryViewer().setGeometry(geometryOwner.getGeometry());
+}
 }

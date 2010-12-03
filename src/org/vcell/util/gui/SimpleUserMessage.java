@@ -14,7 +14,7 @@ public class SimpleUserMessage {
 	public final static String OPTION_REVERT_TO_SAVED = "Revert to saved";
 	public final static String OPTION_YES = "Yes";
 	public final static String OPTION_NO = "No";
-	public final static String OPTION_OK = "Ok";
+	public final static String OPTION_OK = "OK";
 	public final static String OPTION_CANCEL = "Cancel";
 	public final static String OPTION_DISCARD_CHANGES = "Discard changes";
 	public final static String OPTION_OVERWRITE_FILE = "Overwrite file";

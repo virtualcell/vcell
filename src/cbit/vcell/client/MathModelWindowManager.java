@@ -412,7 +412,7 @@ private void initializeInternalFrames() {
 		};
 	});
 	// Initialize Geometry Viewer internal frame
-	geoViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
+	geoViewer.setGeometryOwner(getMathModel());
 	
 	geometryViewerEditorFrame = createDefaultFrame(geoViewer);
 	geometryViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
@@ -474,8 +474,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		if(surfaceViewerFrame != null){
 			close(surfaceViewerFrame,getJDesktopPane());
 		}
-		Geometry geom = ((MathDescription)evt.getSource()).getGeometry();
-		geoViewer.setGeometry(geom);
 		setDefaultTitle(geometryViewerEditorFrame);
 	}
 	
@@ -551,13 +549,13 @@ private void resetGeometryListeners(Geometry oldGeometry, Geometry newGeometry){
  * Creation date: (5/28/2004 3:40:45 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(org.vcell.util.document.VCDocument newDocument) {
+public void resetDocument(VCDocument newDocument) {
 	setMathModel((MathModel)newDocument);
 	setDocumentID(getMathModel());
 	setMathModel((MathModel)newDocument);
 	vcmlEditor.setMathModel(getMathModel());
 	equnsViewer.setMathModel(getMathModel());
-	geoViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
+	geoViewer.setGeometryOwner(getMathModel());
 	SimulationWorkspace simWorkspace = simsPanel.getSimulationWorkspace();
 	if (simWorkspace==null){
 		simsPanel.setSimulationWorkspace(new SimulationWorkspace(this, getMathModel()));

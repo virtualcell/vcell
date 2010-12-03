@@ -761,9 +761,9 @@ public void setMeshSpecification(MeshSpecification meshSpecification) throws jav
  */
 public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 	java.lang.String oldValue = fieldName;
-	fireVetoableChange(GuiConstants.PROPERTY_NAME, oldValue, name);
+	fireVetoableChange(GuiConstants.PROPERTY_NAME_NAME, oldValue, name);
 	fieldName = name;
-	firePropertyChange(GuiConstants.PROPERTY_NAME, oldValue, name);
+	firePropertyChange(GuiConstants.PROPERTY_NAME_NAME, oldValue, name);
 }
 
 

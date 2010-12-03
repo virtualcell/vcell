@@ -5,8 +5,6 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
@@ -18,24 +16,19 @@ import java.util.Set;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.gui.ScopedExpression;
-import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -43,21 +36,20 @@ import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.VariableType;
 
+@SuppressWarnings("serial")
 public class OutputFunctionsPanel extends JPanel {
 	public static final String PROPERTY_SELECTED_OUTPUT_FUNCTION = "selectedOutputFunction";
 	private JPanel buttons_n_label_Panel = null;
 	private JButton addButton = null;
 	private JButton deleteButton = null;
-	private JScrollPane fnTableScrollPane = null;
 	private JSortTable outputFnsScrollPaneTable = null;
 	private JLabel functionExprLabel = null;
 	private JLabel functionNameLabel = null;
@@ -98,11 +90,11 @@ public class OutputFunctionsPanel extends JPanel {
 				SimulationWorkspace sw_new = (SimulationWorkspace)evt.getNewValue();
 				if (sw_old != null) {
 					sw_old.removePropertyChangeListener(this);
-					sw_old.getSimulationOwner().removeGeometryPropertyChangeListener(this);
+					sw_old.getSimulationOwner().removePropertyChangeListener(this);
 				} 
 				if (sw_new != null) {
 					sw_new.addPropertyChangeListener(this);
-					sw_new.getSimulationOwner().addGeometryPropertyChangeListener(this);
+					sw_new.getSimulationOwner().addPropertyChangeListener(this);
 					if (sw_new.getSimulationOwner() != null) {
 						setOutputFunctionContext(sw_new.getSimulationOwner().getOutputFunctionContext());
 					} else {
@@ -117,16 +109,12 @@ public class OutputFunctionsPanel extends JPanel {
 			if (evt.getSource() == getSimulationWorkspace() && (evt.getPropertyName().equals("simulationOwner"))) {
 				SimulationOwner so_new = (SimulationOwner)evt.getNewValue();
 				if (so_new != null) {
-					if (so_new != null) {
-						setOutputFunctionContext(so_new.getOutputFunctionContext());
-					} else {
-						setOutputFunctionContext(null);
-					}
+					setOutputFunctionContext(so_new.getOutputFunctionContext());
 				} else {
 					setOutputFunctionContext(null);
 				}
 			}
-		};
+		}
 
 		public void valueChanged(ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()) {
@@ -381,8 +369,6 @@ public class OutputFunctionsPanel extends JPanel {
 		getFnScrollPaneTable().createDefaultColumnsFromModel();
 	}
 
-	private static ImageIcon function_icon = null;
-	
 	private void initialize() {
 		try {
 			setName("OutputFunctionsListPanel");
@@ -558,15 +544,15 @@ public class OutputFunctionsPanel extends JPanel {
 		return new Domain((GeometryClass)(getSubdomainComboBox().getSelectedItem()));
 	}
 
-	public void setScrollPaneTableCurrentRow(AnnotatedFunction selection) {
+	public void select(AnnotatedFunction selection) {
 		if (selection == null) {
 			getFnScrollPaneTable().clearSelection();
 			return;
 		}
 		int numRows = getFnScrollPaneTable().getRowCount();
 		for(int i=0; i<numRows; i++) {
-			String valueAt = (String)getFnScrollPaneTable().getValueAt(i, OutputFunctionsListTableModel.COLUMN_OUTPUTFN_NAME);
-			if(selection.getName().equals(valueAt)) {
+			AnnotatedFunction valueAt = getOutputFnsListTableModel1().getValueAt(i);
+			if (selection == valueAt) {
 				getFnScrollPaneTable().changeSelection(i, 0, false, false);
 				return;
 			}

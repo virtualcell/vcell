@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.AWTEventMulticaster;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Font;
@@ -7,6 +8,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Hashtable;
@@ -46,6 +48,7 @@ public class MathematicsPanel extends JPanel {
 	private SimulationContext simulationContext = null;
 	private MultiPurposeTextPanel ivjVCMLPanel = null;
 	private CardLayout cardLayout = new CardLayout();
+	protected transient ActionListener actionListener = null;
 	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, PropertyChangeListener {
 			
@@ -96,7 +99,7 @@ public class MathematicsPanel extends JPanel {
 			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 			panel.add(getViewEqunsRadioButton());
 			panel.add(getViewVCMDLRadioButton());
-			panel.setBorder(BorderFactory.createEtchedBorder());
+			//panel.setBorder(BorderFactory.createEtchedBorder());
 			
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0;
@@ -105,7 +108,7 @@ public class MathematicsPanel extends JPanel {
 			gbc.gridheight = 2;
 			gbc.anchor = GridBagConstraints.FIRST_LINE_END;
 			gbc.gridheight = 2;
-			JLabel label = new JLabel("Choose View");
+			JLabel label = new JLabel("Choose View :");
 			label.setFont(label.getFont().deriveFont(Font.BOLD));
 			ivjButtonsPanel.add(label, gbc);
 			
@@ -280,9 +283,23 @@ public class MathematicsPanel extends JPanel {
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks, false);
 	}
 	
+	public synchronized void addActionListener(ActionListener l) {
+		actionListener = AWTEventMulticaster.add(actionListener, l);
+	}
+
+	protected void fireActionPerformed(ActionEvent e) {
+		if (actionListener != null) {
+			actionListener.actionPerformed(e);
+		}         
+	}
+	
 	private void refireActionPerformed(ActionEvent e) {
 		// relays an action event with this as the source
-		//fireActionPerformed(new ActionEvent(this, e.getID(), e.getActionCommand(), e.getModifiers()));
+		fireActionPerformed(new ActionEvent(this, e.getID(), e.getActionCommand(), e.getModifiers()));
+	}
+	
+	public SimulationContext getSimulationContext() {
+		return simulationContext;
 	}
 	
 	public void setSimulationContext(SimulationContext newValue) {

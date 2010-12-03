@@ -72,11 +72,9 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton glgLayoutJButton = null;
 	private ReactionCartoon reactionCartoon = null;
 	private ReactionCartoonTool reactionCartoonTool = null;
-	private JButton parameterButton = null;
-	private ModelParametersDialog modelParametersDialog = null;
 
-	private boolean bFloating = false;
-	private JButton floatButton = null;
+	private boolean bFloatingRequested = false;
+	private JButton floatRequestButton = null;
 	
 	public ReactionCartoonEditorPanel() {
 		super();
@@ -105,10 +103,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			else if (source == getGlgLayoutJButton())
 				getReactionCartoonTool().layoutGlg();
 			else if (source == getFloatButton()) 
-				setFloating(!bFloating);
-			else if (source == getParameterButton()) {
-				showParametersDialog();
-			}
+				setFloatingRequested(!bFloatingRequested);
 		} catch (Throwable throwable) {
 			handleException(throwable);
 		}
@@ -288,8 +283,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				getJToolBar().add(getLineButton(), getLineButton().getName());
 				getJToolBar().add(getLineDirectedButton(), getLineDirectedButton().getName());
 				getJToolBar().add(getLineCatalystButton(), getLineCatalystButton().getName());
-				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
-				getJToolBar().add(getParameterButton());
 				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar().add(getZoomInButton(), getZoomInButton().getName());
 				getJToolBar().add(getZoomOutButton(), getZoomOutButton().getName());
@@ -524,26 +517,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return stepButton;
 	}
 
-	private JButton getParameterButton() {
-		if (parameterButton == null) {
-			try {
-				parameterButton = new JButton();
-				parameterButton.setToolTipText(CartoonToolMiscActions.ShowParameters.MENU_TEXT);
-				parameterButton.setText("");
-				parameterButton.setActionCommand(CartoonToolMiscActions.ShowParameters.MENU_ACTION);
-				parameterButton.setBorder(new BevelBorder(BevelBorder.RAISED));
-				parameterButton.setMargin(new Insets(2, 2, 2, 2));
-				parameterButton.setIcon(new ImageIcon(getClass().getResource("/icons/parameter.gif")));
-				parameterButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				parameterButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-				parameterButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return parameterButton;
-	}
-
 	private JButton getZoomInButton() {
 		if (zoomInButton == null) {
 			try {
@@ -565,20 +538,20 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	}
 	
 	private JButton getFloatButton() {
-		if (floatButton == null) {
+		if (floatRequestButton == null) {
 			try {
-				floatButton = new JButton("\u21b1");
-				floatButton.setName("FloatingButton");
-				floatButton.setToolTipText("\u21b1 Float");
-				floatButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
-				floatButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-				floatButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-				floatButton.setMargin(new Insets(2, 2, 2, 2));
+				floatRequestButton = new JButton("\u21b1");
+				floatRequestButton.setName("FloatingButton");
+				floatRequestButton.setToolTipText("\u21b1 Float");
+				floatRequestButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+				floatRequestButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
+				floatRequestButton.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
+				floatRequestButton.setMargin(new Insets(2, 2, 2, 2));
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
-		return floatButton;
+		return floatRequestButton;
 	}
 
 	private JButton getZoomOutButton() {
@@ -625,7 +598,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		getZoomOutButton().addActionListener(this);
 		getGlgLayoutJButton().addActionListener(this);
 		getFloatButton().addActionListener(this);
-		getParameterButton().addActionListener(this);
 	}
 
 	private void initialize() {
@@ -796,25 +768,10 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		}
 	}
 	
-	public void showParametersDialog() {
-		Container container = BeanUtils.findTypeParentOfComponent(this, JDesktopPaneEnhanced.class);
-		if (getReactionCartoon() != null || getDocumentManager() != null
-				|| container instanceof JDesktopPaneEnhanced) {
-			JDesktopPaneEnhanced desktopPane = (JDesktopPaneEnhanced) container;
-			if (modelParametersDialog == null) {
-				modelParametersDialog = new ModelParametersDialog();
-				modelParametersDialog.setIconifiable(true);
-				modelParametersDialog.init(getReactionCartoon().getModel());
-				BeanUtils.centerOnComponent(modelParametersDialog, desktopPane);
-			}
-			DocumentWindowManager.showFrame(modelParametersDialog, desktopPane);
-		}
-	}
-	
-	private final void setFloating(boolean newValue) {
-		boolean oldValue = bFloating;
-		this.bFloating = newValue;
-		System.out.println("Set floating: " + bFloating);
+	private final void setFloatingRequested(boolean newValue) {
+		boolean oldValue = bFloatingRequested;
+		this.bFloatingRequested = newValue;
+//		System.out.println("Set floating: " + bFloatingRequested);
 		firePropertyChange(PROPERTY_NAME_FLOATING, oldValue, newValue);
 	}
 	

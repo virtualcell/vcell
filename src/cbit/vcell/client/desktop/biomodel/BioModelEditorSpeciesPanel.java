@@ -15,6 +15,8 @@ import javax.swing.UIManager;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.gui.SpeciesEditorPanel;
@@ -118,6 +120,13 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 	
 	protected void deleteButtonPressed() {
 		int[] rows = table.getSelectedRows();
+		if (rows == null || rows.length == 0) {
+			return;
+		}
+		String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete selected species?");
+		if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+			return;
+		}
 		ArrayList<SpeciesContext> deleteList = new ArrayList<SpeciesContext>();
 		for (int r : rows) {
 			if (r < tableModel.getDataSize()) {

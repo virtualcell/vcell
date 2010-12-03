@@ -166,7 +166,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 			Geometry oldGeometry = (Geometry)event.getOldValue();
 			Geometry newGeometry = (Geometry)event.getNewValue();
 			// changing from ode to pde
-			if (oldGeometry.getDimension() == 0 && newGeometry.getDimension() > 0) {
+			if (oldGeometry != null && oldGeometry.getDimension() == 0 && newGeometry.getDimension() > 0) {
 				ArrayList<AnnotatedFunction> newFuncList = new ArrayList<AnnotatedFunction>();
 				for (AnnotatedFunction function : outputFunctionsList) {
 					try {

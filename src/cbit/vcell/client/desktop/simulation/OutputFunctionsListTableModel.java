@@ -211,12 +211,12 @@ private OutputFunctionContext getOutputFunctionContext() {
 public void setOutputFunctionContext(OutputFunctionContext argOutputFnContext) {
 	if (argOutputFnContext!=null){
 		argOutputFnContext.removePropertyChangeListener(this);
-		argOutputFnContext.getSimulationOwner().removeGeometryPropertyChangeListener(this);
+		argOutputFnContext.getSimulationOwner().removePropertyChangeListener(this);
 	}
 	this.outputFunctionContext = argOutputFnContext;
 	if (this.outputFunctionContext!=null){
 		this.outputFunctionContext.addPropertyChangeListener(this);
-		argOutputFnContext.getSimulationOwner().addGeometryPropertyChangeListener(this);
+		argOutputFnContext.getSimulationOwner().addPropertyChangeListener(this);
 	}
 	if (argOutputFnContext != null) {
 		fireTableStructureChanged();

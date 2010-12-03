@@ -45,7 +45,7 @@ public class GuiConstants {
 	public static final String VCELL_SUPPORT_ACCOUNT_ID = "VCellSupport";
 	
 	public static final Border ProblematicTextFieldBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.red), BorderFactory.createEmptyBorder(2, 2, 2, 2));
-	public static final String PROPERTY_SIMULATIONS = "simulations";
-	public static final String PROPERTY_SIMULATION_OWNER = "simulationOwner";
-	public static final String PROPERTY_NAME = "name";
+	public static final String PROPERTY_NAME_SIMULATIONS = "simulations";
+	public static final String PROPERTY_NAME_SIMULATION_OWNER = "simulationOwner";
+	public static final String PROPERTY_NAME_NAME = "name";
 }

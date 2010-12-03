@@ -885,4 +885,17 @@ public static String showWarningDialog(final Component parentComponent,final  St
 	}.dispatchWrapRuntime();
 
 }
+public static String showOKCancelWarningDialog(final Component parentComponent, final String message) {
+	return (String)
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
+			if (parentComponent==null){
+				throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
+			}
+			SimpleUserMessage simpleUserMessage = new SimpleUserMessage(message, new String[] {SimpleUserMessage.OPTION_OK, SimpleUserMessage.OPTION_CANCEL}, SimpleUserMessage.OPTION_OK);
+			return showDialog(parentComponent, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
+		}
+	}.dispatchWrapRuntime();	
+}
+
 }

@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
@@ -22,6 +21,7 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
+import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
@@ -43,20 +43,20 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 
 @SuppressWarnings("serial")
-public class BioModelEditorTreeModel extends DefaultTreeModel  
-	implements java.beans.PropertyChangeListener, TreeExpansionListener, AnnotationEventListener {
+public class BioModelEditorTreeModel extends DefaultTreeModel
+	implements java.beans.PropertyChangeListener, TreeExpansionListener, AnnotationEventListener, TreeSelectionListener {
 
 	private static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	private BioModel bioModel = null;
 	private BioModelNode rootNode = null;
 	private JTree ownerTree = null;
 	private transient java.beans.PropertyChangeSupport propertyChange;
-		
+	private BioModelNode selectedBioModelNode = null;
+	
 	public static class BioModelEditorTreeFolderNode {
 		private BioModelEditorTreeFolderClass folderClass;
 		private String name;
 		private boolean bFirstLevel;
-		boolean bExpanded = false;
 		boolean bSupported = true;
 		
 		public BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass c, String name) {
@@ -79,12 +79,6 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		public final BioModelEditorTreeFolderClass getFolderClass() {
 			return folderClass;
 		}
-		public void setExpanded(boolean expanded) {
-			bExpanded = expanded;
-		}
-		public boolean isExpanded() {
-			return bExpanded;
-		}
 		public boolean isFirstLevel() {
 			return bFirstLevel;
 		}
@@ -99,9 +93,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		REACTIONS_NODE,
 		GLOBAL_PARAMETER_NODE,
 		
-//		SPECIFICATIONS_NODE,
 		MATHEMATICS_NODE,
-//		RUN_SIMULATIONS_NODE,
 		ANALYSIS_NODE,
 		
 		GEOMETRY_NODE,
@@ -206,10 +198,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		modelNode.setUserObject(bioModel.getModel());
 		populateModelNode(modelNode);
 		populateApplicationsNode();
-		
 		nodeStructureChanged(rootNode);
-		ownerTree.setSelectionPath(new TreePath(new Object[] {rootNode, modelNode, structuresNode}));
-		ownerTree.expandPath(new TreePath(new Object[] {rootNode, applicationsNode}));
+		ownerTree.expandPath(new TreePath(applicationsNode.getPath()));
+		if (selectedBioModelNode == null) {
+			ownerTree.setSelectionPath(new TreePath(structuresNode.getPath()));
+		} else {
+			restoreTreeExpansion();
+		}
 	}
 
 	private void populateAnnotationNode() {
@@ -320,9 +315,6 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		
 		nodeStructureChanged(argNode); 
 		restoreTreeExpansion();
-		if (argNode != modelNode) {
-			ownerTree.expandPath(new TreePath(argNode.getPath()));			
-		}
 	}
 	
 	private void populateApplicationsNode() {
@@ -351,7 +343,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 				BioModelNode electricalNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ELECTRICAL_MAPPING_NODE, "Electrical"), false);
 				BioModelNode dataSymbolNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.DATA_SYMBOLS_NODE, "Data Symbols"), true);
 				BioModelNode mathematicsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.MATHEMATICS_NODE, "View Math"), false); 
-				BioModelNode analysisNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ANALYSIS_NODE, "Analysis"), true); 
+				BioModelNode analysisNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ANALYSIS_NODE, "Parameter Estimations"), true); 
 				BioModelNode simulationsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SIMULATIONS_NODE, "Simulations"), true);
 				BioModelNode outputFunctionsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE, "Output Functions"), true);
 				
@@ -381,7 +373,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 			}
 		}
 		nodeStructureChanged(applicationsNode);
-		ownerTree.expandPath(new TreePath(applicationsNode.getPath()));
+		restoreTreeExpansion();
 	}
 
 	private BioModelNode findApplicationChildNode(BioModelNode appNode, BioModelEditorTreeFolderClass folderClass) {
@@ -666,8 +658,10 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 					}
 				}
 			} else if (source instanceof SimulationContext) {
-				if (propertyName.equals(SimulationContext.PROPERTY_NAME_BIOEVENTS)) {
-					populateApplicationNode((SimulationContext)source, BioModelEditorTreeFolderClass.EVENTS_NODE);
+				if (propertyName.equals(GuiConstants.PROPERTY_NAME_SIMULATIONS)) {
+					populateApplicationNode((SimulationContext)source, BioModelEditorTreeFolderClass.SIMULATIONS_NODE);
+				} else if (propertyName.equals(SimulationContext.PROPERTY_NAME_BIOEVENTS)) {
+						populateApplicationNode((SimulationContext)source, BioModelEditorTreeFolderClass.EVENTS_NODE);
 				} else if (propertyName.equals(SimulationContext.PROPERTY_NAME_ANALYSIS_TASKS)) {
 					populateApplicationNode((SimulationContext)source, BioModelEditorTreeFolderClass.ANALYSIS_NODE);
 				}
@@ -680,52 +674,35 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	}
 
 	public void treeCollapsed(TreeExpansionEvent e) {
-		if (e.getSource() == ownerTree) {
-			TreePath path = e.getPath();
-			Object lastComp = ((BioModelNode)path.getLastPathComponent()).getUserObject();
-			if (lastComp instanceof BioModelEditorTreeFolderNode) {
-				((BioModelEditorTreeFolderNode)lastComp).setExpanded(false);
-			}
-		}
+//		if (e.getSource() == ownerTree) {
+//			TreePath path = e.getPath();
+//			BioModelNode lastComp = (BioModelNode) path.getLastPathComponent();
+//			expandedObject.remove(lastComp);
+//		}
 	}
 	
 	public void treeExpanded(TreeExpansionEvent e) {
-		if (e.getSource() == ownerTree) {
-			TreePath path = e.getPath();
-			Object lastComp = ((BioModelNode)path.getLastPathComponent()).getUserObject();
-			if (lastComp instanceof BioModelEditorTreeFolderNode) {
-				((BioModelEditorTreeFolderNode)lastComp).setExpanded(true);
-			}
-		}
+//		if (e.getSource() == ownerTree) {
+//			TreePath path = e.getPath();
+//			BioModelNode lastComp = (BioModelNode) path.getLastPathComponent();
+//			expandedObject.add(lastComp);
+//		}
 	}
 	
 	public void restoreTreeExpansion() {
-		for (int i = 0; i < rootNode.getChildCount(); i ++) {
-			BioModelNode node = (BioModelNode)rootNode.getChildAt(i);
-			if (node.getUserObject() instanceof BioModelEditorTreeFolderNode) {
-				if (node.getAllowsChildren() && ((BioModelEditorTreeFolderNode)node.getUserObject()).isExpanded()) {
-					ownerTree.expandPath(findTreePath(node));
+		if (selectedBioModelNode != null) {
+			while (true) {
+				if (getIndexOfChild(rootNode, selectedBioModelNode) > 0) {
+					break;
 				}
+				selectedBioModelNode = (BioModelNode) selectedBioModelNode.getParent();
 			}
+			ownerTree.setSelectionPath(new TreePath(selectedBioModelNode.getPath()));
 		}
 	}
 	
-	private TreePath findTreePath(TreeNode node) {
-		LinkedList<TreeNode> nodeList = new LinkedList<TreeNode>();
-		TreeNode n = node;
-		while (true) {
-			if (n == null) {
-				break;
-			}
-			nodeList.add(0, n);
-			n = n.getParent();
-		}
-		return new TreePath(nodeList.toArray(new Object[0]));
-	}
-
 	public void select(SelectionEvent newValue) {
 		if (newValue == null || newValue.getSelectedObject() == null) {
-			ownerTree.clearSelection();
 			return;
 		}
 		BioModelNode nodeToSearch = null;
@@ -737,10 +714,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		}
 		BioModelNode leaf = nodeToSearch.findNodeByUserObject(newValue.getSelectedObject());
 		TreePath path = new TreePath(leaf.getPath());
-		if (!ownerTree.isPathSelected(path)) {
+		if (!ownerTree.isVisible(path)) {
+			path = path.getParentPath();
+		}
+		if (path != null && !ownerTree.isPathSelected(path)) {
 			ownerTree.setSelectionPath(path);
-		}		
-		ownerTree.scrollPathToVisible(path);
+			ownerTree.scrollPathToVisible(path);
+		}
 	}
 
 	public void annotationChanged(AnnotationEvent annotationEvent) {
@@ -764,5 +744,20 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 			propertyChange = new java.beans.PropertyChangeSupport(this);
 		};
 		return propertyChange;
+	}
+	
+	public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
+		if (e.getSource() == ownerTree) {
+			try {
+				Object node = ownerTree.getLastSelectedPathComponent();;
+				if (node == null || !(node instanceof BioModelNode)) {
+					restoreTreeExpansion();
+				} else {
+					selectedBioModelNode = (BioModelNode) node;
+				}				
+			} catch (Exception ex){
+				ex.printStackTrace(System.out);
+			}
+		}
 	}
 }

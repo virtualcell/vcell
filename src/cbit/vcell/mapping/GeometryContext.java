@@ -18,6 +18,7 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
 import cbit.gui.PropertyChangeListenerProxyVCell;
+import cbit.vcell.document.GeometryOwner;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
@@ -38,8 +39,7 @@ import cbit.vcell.parser.ExpressionException;
  * 
  */
 public  class GeometryContext implements Serializable, Matchable, PropertyChangeListener {
-	public static final String PROPERTY_STRUCTURE_MAPPINGS = "structureMappings";
-	public static final String PROPERTY_GEOMETRY = "geometry";
+	public static final String PROPERTY_STRUCTURE_MAPPINGS = "structureMappings";	
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Model fieldModel = null;
@@ -854,7 +854,7 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
  * @param geometry The new value for the property.
  * @see #getGeometry
  */
-public void setGeometry(Geometry geometry) throws MappingException {
+void setGeometry(Geometry geometry) throws MappingException {
 	
 	Geometry oldValue = fieldGeometry;
 	fieldGeometry = geometry;
@@ -865,7 +865,7 @@ public void setGeometry(Geometry geometry) throws MappingException {
 		e.printStackTrace(System.out);
 		throw new MappingException(e.getMessage());
 	}
-	firePropertyChange(PROPERTY_GEOMETRY, oldValue, geometry);
+	firePropertyChange(GeometryOwner.PROPERTY_NAME_GEOMETRY, oldValue, geometry);
 }
 /**
  * Sets the model property (cbit.vcell.model.Model) value.

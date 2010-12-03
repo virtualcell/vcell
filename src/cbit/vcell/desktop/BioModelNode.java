@@ -3,15 +3,14 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.*;
-import cbit.vcell.biomodel.*;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 1:04:38 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class BioModelNode extends javax.swing.tree.DefaultMutableTreeNode {
-	private java.util.Hashtable renderHintHash = new java.util.Hashtable();
+	private java.util.Hashtable<String, Object> renderHintHash = new java.util.Hashtable<String, Object>();
 
 	public static final String MAX_ERROR_LEVEL = "MaxErrorLevel";
 	public static final int ERROR_NONE = 0;
@@ -129,4 +128,5 @@ public String toString() {
 		return userObject.toString() + " " + renderHintHash.toString();
 	}
 }
+
 }

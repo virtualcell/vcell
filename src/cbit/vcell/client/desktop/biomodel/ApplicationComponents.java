@@ -7,7 +7,6 @@ import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.JInternalFrameEnhanced;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ClientSimManager;
@@ -44,6 +43,13 @@ public void addDataViewer(SimulationWindow simWindow) {
 	simulationWindowsHash.put(simWindow.getVcSimulationIdentifier(), simWindow);
 }
 
+public SimulationWorkspace getSimulationWorkspace() {
+	return simulationWorkspace;
+}
+
+public void resetSimulationContext(SimulationContext simContext) {
+	getSimulationWorkspace().setSimulationOwner(simContext);	
+}
 
 /**
  * Insert the method's description here.

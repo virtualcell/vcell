@@ -1416,7 +1416,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	for (int i = 0; i < structures.length; i++){
 		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(structures[i]);
 		if (sm==null || (sm.getGeometryClass() == null)){
-			throw new MappingException("model structure '"+structures[i].getName()+"' not mapped to a geometry subdomain");
+			throw new MappingException("In Application '" + simContext.getName() + "', model structure '"+structures[i].getName()+"' not mapped to a geometry subdomain");
 		}
 		if (sm!=null && (sm instanceof MembraneMapping) && ((MembraneMapping)sm).getVolumeFractionParameter()!=null){
 			Expression volFractExp = ((MembraneMapping)sm).getVolumeFractionParameter().getExpression();
@@ -1425,7 +1425,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				try {
 					double volFract = volFractExp.evaluateConstant();
 					if (volFract>=1.0){
-						throw new MappingException("model structure '"+((MembraneMapping)sm).getMembrane().getInsideFeature().getName()+"' has volume fraction >= 1.0");
+						throw new MappingException("In Application '" + simContext.getName() + "', model structure '"+((MembraneMapping)sm).getMembrane().getInsideFeature().getName()+"' has volume fraction >= 1.0");
 					}
 				}catch (ExpressionException e){
 				}
@@ -1436,7 +1436,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	for (int i = 0; i < subVolumes.length; i++){
 		Structure[] mappedStructures = simContext.getGeometryContext().getStructuresFromGeometryClass(subVolumes[i]);
 		if (mappedStructures==null || mappedStructures.length==0){
-			throw new MappingException("geometry subVolume '"+subVolumes[i].getName()+"' not mapped from a model structure");
+			throw new MappingException("In Application '" + simContext.getName() + "', geometry subVolume '"+subVolumes[i].getName()+"' not mapped from a model structure");
 		}
 	}
 
@@ -1501,7 +1501,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			Expression exp = new Expression(ffs.infix());
 			varHash.addVariable(newFunctionOrConstant(getMathSymbol(dataSymbol, geometryClass),getIdentifierSubstitutions(exp,dataSymbol.getUnitDefinition(),geometryClass),geometryClass));
 		}else{
-			throw new RuntimeException("dataSymbol type '"+dataSymbol.getClass().getName()+"' not yet supported for math generation");
+			throw new RuntimeException("In Application '" + simContext.getName() + "', dataSymbol type '"+dataSymbol.getClass().getName()+"' not yet supported for math generation");
 		}
 	}
 	//
@@ -1530,7 +1530,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				}
 				buffer.append(unresolvedParameters[j].getName());
 			}
-			throw new MappingException(reactionSteps[i].getTerm()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
+			throw new MappingException("In Application '" + simContext.getName() + "', " + reactionSteps[i].getTerm()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
 		}
 	}
 	

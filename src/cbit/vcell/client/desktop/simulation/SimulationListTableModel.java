@@ -11,8 +11,9 @@ import cbit.vcell.solver.Simulation;
  * Creation date: (5/7/2004 4:07:40 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class SimulationListTableModel extends AbstractTableModel implements PropertyChangeListener {
-	public final static int COLUMN_NAME = 0;
+	private final static int COLUMN_NAME = 0;
 	private final static int COLUMN_LASTSAVED = 1;
 	private final static int COLUMN_STATUS = 2;
 	private final static int COLUMN_RESULTS = 3;
@@ -67,6 +68,9 @@ private SimulationWorkspace getSimulationWorkspace() {
 	return simulationWorkspace;
 }
 
+public Simulation getValueAt(int row) {
+	return getSimulationWorkspace().getSimulations(row);
+}
 /**
  * getValueAt method comment.
  */

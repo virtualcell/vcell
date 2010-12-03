@@ -8,7 +8,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Hashtable;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -52,6 +51,7 @@ import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 import cbit.vcell.mapping.gui.StructureMappingCartoonPanel;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ReactionStep;
@@ -59,6 +59,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modelopt.gui.OptTestPanel;
 import cbit.vcell.opt.solvers.OptimizationService;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
  * Insert the type's description here.
@@ -109,7 +110,6 @@ public class BioModelEditor extends JPanel {
 	private JMenuItem menuItemAddGenericData = null;
 	private JMenuItem menuItemAddVFrapData = null;
 
-	private Hashtable<SimulationContext, SimulationWorkspace> simWorkspaceHashTable = new Hashtable<SimulationContext, SimulationWorkspace>();
 	private AnnotationEditorPanel ivjAnnotationEditorPanel = null;	
 	private BioModelEditorApplicationsPanel bioModelEditorApplicationsPanel = null;
 	
@@ -439,6 +439,7 @@ private void initConnections() throws java.lang.Exception {
 	getBioModelEditorApplicationsPanel().addPropertyChangeListener(ivjEventHandler);
 
 	getBioModelEditorTree().addTreeSelectionListener(ivjEventHandler);
+	getBioModelEditorTree().addTreeSelectionListener(getBioModelEditorTreeModel());
 	getBioModelEditorTree().addMouseListener(ivjEventHandler);
 	getBioModelEditorTree().addTreeExpansionListener(getBioModelEditorTreeModel());
 	getEventsDisplayPanel().addPropertyChangeListener(ivjEventHandler);
@@ -690,7 +691,7 @@ private SimulationContext getSelectedSimulationContext() {
 
 private void treeValueChanged() {
 	try {
-		Object node = getBioModelEditorTree().getLastSelectedPathComponent();;
+		Object node = getBioModelEditorTree().getLastSelectedPathComponent();
 		if (node == null || !(node instanceof BioModelNode)) {
 			return;
 		}
@@ -764,7 +765,7 @@ private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafO
 			rightPanel = getParameterEstimationPanel();
 		} else if (folderClass == BioModelEditorTreeFolderClass.GEOMETRY_NODE) {
 			rightPanel = getGeometrySummaryViewer();
-			getGeometrySummaryViewer().setGeometry(simulationContext.getGeometry());
+			getGeometrySummaryViewer().setGeometryOwner(simulationContext);
 		} else if(folderClass == BioModelEditorTreeFolderClass.STRUCTURE_MAPPING_NODE) {
 			rightPanel = getStructureMappingCartoonPanel();
 			getStructureMappingCartoonPanel().setSimulationContext(simulationContext);
@@ -789,18 +790,22 @@ private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafO
 			rightPanel = getDataSymbolsPanel();
 			getDataSymbolsPanel().setSimulationContext(simulationContext);
 			getDataSymbolsPanel().setScrollPaneTableCurrentRow((DataSymbol)leafObject);
-		} else if(folderClass == BioModelEditorTreeFolderClass.SIMULATIONS_NODE) {
-			rightPanel = getSimulationListPanel();
-			if (simWorkspaceHashTable.get(simulationContext) == null) {
-				simWorkspaceHashTable.put(simulationContext, new SimulationWorkspace(getBioModelWindowManager(), simulationContext));
+		} else {
+			ApplicationComponents applicationComponents = bioModelWindowManager.getApplicationComponents(simulationContext);
+			SimulationWorkspace simulationWorkspace = applicationComponents.getSimulationWorkspace();
+			if(folderClass == BioModelEditorTreeFolderClass.SIMULATIONS_NODE) {
+				rightPanel = getSimulationListPanel();
+				getSimulationListPanel().setSimulationWorkspace(simulationWorkspace);
+				if (leafObject != null) {
+					getSimulationListPanel().select((Simulation) leafObject);
+				}
+			} else if(folderClass == BioModelEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE) {
+				rightPanel = getOutputFunctionsPanel();
+				getOutputFunctionsPanel().setSimulationWorkspace(simulationWorkspace);
+				if (leafObject != null) {
+					getOutputFunctionsPanel().select((AnnotatedFunction) leafObject);
+				}
 			}
-			getSimulationListPanel().setSimulationWorkspace(simWorkspaceHashTable.get(simulationContext));
-		} else if(folderClass == BioModelEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE) {
-			rightPanel = getOutputFunctionsPanel();
-			if (simWorkspaceHashTable.get(simulationContext) == null) {
-				simWorkspaceHashTable.put(simulationContext, new SimulationWorkspace(getBioModelWindowManager(), simulationContext));
-			}
-			getOutputFunctionsPanel().setSimulationWorkspace(simWorkspaceHashTable.get(simulationContext));
 		}
 	}
 	if(splitPane.getRightComponent() != rightPanel) {
@@ -927,6 +932,8 @@ public void setBioModel(BioModel bioModel) {
 public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager) {
 	this.bioModelWindowManager = bioModelWindowManager;
 	getBioModelEditorApplicationsPanel().setBioModelWindowManager(bioModelWindowManager);
+	getGeometrySummaryViewer().addActionListener(getBioModelWindowManager());
+	getMathematicsPanel().addActionListener(bioModelWindowManager);
 }
 
 
