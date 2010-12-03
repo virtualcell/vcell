@@ -80,6 +80,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	}
 
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
+//		return columnIndex != COLUMN_STRUCTURE;
 		return true;
 	}
 
@@ -99,14 +100,12 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 				switch (column) {
 				case COLUMN_NAME: {
 					speciesContext.getSpecies().setCommonName(newValue);
-					speciesContext.setHasOverride(true);
 					speciesContext.setName(newValue);
 					break;
 				} 
 				case COLUMN_STRUCTURE: {
 					Structure structure = getModel().getStructure(newValue);
-					// TODO
-//					speciesContext;
+					speciesContext.setStructure(structure);
 					break;
 				} 
 				}
@@ -125,7 +124,6 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 					break;
 				} 
 				}
-				freeSpeciesContext.setHasOverride(true);
 				freeSpeciesContext.setName(freeSpeciesContext.getSpecies().getCommonName());
 				getModel().addSpecies(freeSpeciesContext.getSpecies());
 				getModel().addSpeciesContext(freeSpeciesContext);

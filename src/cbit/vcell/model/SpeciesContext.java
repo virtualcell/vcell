@@ -21,7 +21,7 @@ import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
-public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, PropertyChangeListener {
+public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener {
 	private KeyValue key = null;
 
 	private transient Model model = null;
@@ -30,29 +30,26 @@ public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, V
 	private String fieldName = null/*new String()*/;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private boolean fieldHasOverride = false;
 
-public SpeciesContext(KeyValue key, String name, Species species, Structure structure, boolean argHasOverride) {
+public SpeciesContext(KeyValue key, String name, Species species, Structure structure) {
 	
 	this.key = key;
 	
 	addVetoableChangeListener(this);
-	addPropertyChangeListener(this);
 
-	setHasOverride(argHasOverride);
 	try {
-		setName0(name);
+		setName(name);
 	}catch (PropertyVetoException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
-	setSpecies(species);
+	this.species = species;
 	setStructure(structure);
 }                  
 
 
 public SpeciesContext(Species species, Structure structure) {
-	this(null,createContextName(species,structure),species,structure,false);
+	this(null,createContextName(species,structure),species,structure);
 }                  
 
 public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -74,9 +71,6 @@ public boolean compareEqual(Matchable obj) {
 			return false;
 		}
 		if (!Compare.isEqual(getName(),sc.getName())){
-			return false;
-		}
-		if (!(getHasOverride() == sc.getHasOverride())){
 			return false;
 		}
 		return true;
@@ -115,10 +109,6 @@ public double getConstantValue() throws ExpressionException {
 
 public Expression getExpression() {
 	return null;
-}
-
-public boolean getHasOverride() {
-	return fieldHasOverride;
 }
 
 public int getIndex() {
@@ -182,57 +172,10 @@ public boolean isConstant() {
 	return false;
 }
 
-public void propertyChange(PropertyChangeEvent evt) {
-	if (evt.getSource() == getSpecies() && evt.getPropertyName().equals("commonName")){
-		try {
-			// if not a user supplied SpeciesContext name, then propagate "cannonical" speciesContext name
-			if (getHasOverride()==false){
-				setName0(createContextName(getSpecies(), getStructure()));
-			}
-		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-		}
-	}
-	
-	if (evt.getSource() == getStructure() && evt.getPropertyName().equals("name")){
-		try {
-			//
-			// if not a user supplied SpeciesContext name, then propagate "cannonical" speciesContext name
-			//
-			if (getHasOverride()==false){
-				setName0(createContextName(getSpecies(), getStructure()));
-			}
-		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-		}
-	}
-	if (evt.getSource() == this && evt.getPropertyName().equals("hasOverride")){
-		try {
-			//
-			// if not a user supplied SpeciesContext name, then propagate "cannonical" speciesContext name
-			//
-			if (getHasOverride()==false){
-				setName0(createContextName(getSpecies(), getStructure()));
-			}
-		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-		}
-	}
-}
-
 public void refreshDependencies() {
-	
-	species.removePropertyChangeListener(this);
-	species.addPropertyChangeListener(this);
-	
-	removePropertyChangeListener(this);
-	addPropertyChangeListener(this);
 	
 	removeVetoableChangeListener(this);
 	addVetoableChangeListener(this);
-	
-	structure.removePropertyChangeListener(this);
-	structure.addPropertyChangeListener(this);
 }
 
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
@@ -243,51 +186,21 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
 }
 
-public void setHasOverride(boolean hasOverride) {
-	boolean oldValue = fieldHasOverride;
-	fieldHasOverride = hasOverride;
-	firePropertyChange("hasOverride", new Boolean(oldValue), new Boolean(hasOverride));
-}
-
 public void setModel(Model argModel) {
 	model = argModel;
 }
 
 public void setName(String name) throws PropertyVetoException {
-	if (getHasOverride()==false){
-		throw new PropertyVetoException("cannot override SpeciesContext.name, hasOverride is false",new PropertyChangeEvent(this,"name",getName(),name));
-	}
-	setName0(name);
-}
-
-
-private void setName0(String name) throws java.beans.PropertyVetoException {
 	String oldValue = fieldName;
 	fireVetoableChange("name", oldValue, name);
 	fieldName = name;
 	firePropertyChange("name", oldValue, name);
 }
 
-private void setSpecies(Species newSpecies){
-	Species oldValue = this.species;
-	if (oldValue != null){
-		oldValue.removePropertyChangeListener(this);
-	}
-	this.species = newSpecies;
-	if (this.species != null){
-		this.species.addPropertyChangeListener(this);
-	}
-}
-
-private void setStructure(Structure structure) {
-	
-	if(this.structure != null){
-		this.structure.removePropertyChangeListener(this);
-	}
+public void setStructure(Structure structure) {
+	Structure oldValue = this.structure;
 	this.structure = structure;
-	if(structure != null){
-		this.structure.addPropertyChangeListener(this);
-	}
+	firePropertyChange("structuure", oldValue, structure);
 }
 
 public String toString() {
@@ -296,24 +209,14 @@ public String toString() {
 	sb.append("SpeciesContext@"+Integer.toHexString(hashCode())+"(id="+getKey()+", name='"+getName()+"'");
 	if (species != null){ sb.append(", species='"+species.getCommonName()+"'"); }
 	if (structure != null){ sb.append(", structure='"+structure.getName()+"'"); }
-	sb.append(", hasOverride="+getHasOverride()+")");
+	sb.append(")");
 	
 	return sb.toString();
 }
 
 public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 	if (e.getSource()==this){
-		if (e.getPropertyName().equals("diffusionRate")){
-			double newValue = ((Double)e.getNewValue()).doubleValue();
-			if (newValue<0.0){
-				throw new PropertyVetoException("diffusionRate must be non-negative",e);
-			}
-		}else if (e.getPropertyName().equals("initialValue")){
-			double newValue = ((Double)e.getNewValue()).doubleValue();
-			if (newValue<0.0){
-				throw new PropertyVetoException("initialValue must be non-negative",e);
-			}
-		}else if (e.getPropertyName().equals("name")){
+		if (e.getPropertyName().equals("name")){
 			String newName = (String)e.getNewValue();
 			if (newName == null){
 				throw new PropertyVetoException("species context name is null",e);

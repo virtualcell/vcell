@@ -77,7 +77,6 @@ public class EditSpeciesDialog extends JDialog {
 	private String ivjAnnotationString = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private SpeciesContext ivjspeciesContext1 = null;
-	private javax.swing.JCheckBox ivjJCheckBoxHasOverride = null;
 	private javax.swing.JTextField ivjContextNameValueTextField = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private javax.swing.text.Document ivjdocument2 = null;
@@ -172,8 +171,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC2(e);
 			if (e.getSource() == EditSpeciesDialog.this.getPathwayDBbutton()) 
 				showPCKeywordQueryPanel();
-			if (e.getSource() == EditSpeciesDialog.this.getJCheckBoxHasOverride()) 
-				connEtoC10(e);
 		};
 		private void onDocumentChanged(DocumentEvent e) {
 			if (e.getDocument() == EditSpeciesDialog.this.getdocument1()) 
@@ -203,8 +200,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 			onDocumentChanged(e);
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
-			if (e.getSource() == EditSpeciesDialog.this.getJCheckBoxHasOverride()) 
-				connEtoM9(e);
 		}
 		// @Override
 		public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -351,34 +346,6 @@ private void connEtoM6(SpeciesContext value) {
 		if ((getspeciesContext1() != null)) {
 			setspecies1(getspeciesContext1().getSpecies());
 		}
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM7:  (speciesContext1.this --> JCheckBoxHasOverride.selected)
- * @param value cbit.vcell.model.SpeciesContext
- */
-private void connEtoM7(SpeciesContext value) {
-	try {
-		if ((getspeciesContext1() != null)) {
-			getJCheckBoxHasOverride().setSelected(getspeciesContext1().getHasOverride());
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM9:  (JCheckBoxHasOverride.change.stateChanged(javax.swing.event.ChangeEvent) --> ContextNameValueJLabel.enabled)
- * @param arg1 javax.swing.event.ChangeEvent
- */
-private void connEtoM9(javax.swing.event.ChangeEvent arg1) {
-	try {
-		getContextNameValueTextField().setEditable(getJCheckBoxHasOverride().isSelected());
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -552,7 +519,6 @@ private javax.swing.JTextField getContextNameValueTextField() {
 			ivjContextNameValueTextField = new javax.swing.JTextField();
 			ivjContextNameValueTextField.setName("ContextNameValueTextField");
 			ivjContextNameValueTextField.setText("ContextName");
-			ivjContextNameValueTextField.setEditable(false);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -577,25 +543,6 @@ private javax.swing.text.Document getdocument1() {
 private javax.swing.text.Document getdocument2() {
 	return ivjdocument2;
 }
-
-
-/**
- * Return the JCheckBoxHasOverride property value.
- * @return javax.swing.JCheckBox
- */
-private javax.swing.JCheckBox getJCheckBoxHasOverride() {
-	if (ivjJCheckBoxHasOverride == null) {
-		try {
-			ivjJCheckBoxHasOverride = new javax.swing.JCheckBox();
-			ivjJCheckBoxHasOverride.setName("JCheckBoxHasOverride");
-			ivjJCheckBoxHasOverride.setText("Override");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJCheckBoxHasOverride;
-}
-
 
 /**
  * Return the JInternalFrameEnhancedContentPane property value.
@@ -647,11 +594,6 @@ private javax.swing.JPanel getJDialogContentPane() {
 //			constraintsContextNameValueTextField.weightx = 1.0;
 			constraintsContextNameValueTextField.insets = new Insets(4, 4, 5, 5);
 			getJDialogContentPane().add(getContextNameValueTextField(), constraintsContextNameValueTextField);
-
-			java.awt.GridBagConstraints constraintsJCheckBoxHasOverride = new java.awt.GridBagConstraints();
-			constraintsJCheckBoxHasOverride.gridx = 3; constraintsJCheckBoxHasOverride.gridy = 1;
-			constraintsJCheckBoxHasOverride.insets = new Insets(4, 4, 5, 4);
-			getJDialogContentPane().add(getJCheckBoxHasOverride(), constraintsJCheckBoxHasOverride);
 
 			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; gbc.gridy = 2;
@@ -886,8 +828,6 @@ private void initConnections() throws java.lang.Exception {
 	getPathwayDBbutton().addActionListener(ivjEventHandler);
 	getPCLinkValueEditorPane().addHyperlinkListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
-	getJCheckBoxHasOverride().addChangeListener(ivjEventHandler);
-	getJCheckBoxHasOverride().addActionListener(ivjEventHandler);
 	getContextNameValueTextField().addPropertyChangeListener(ivjEventHandler);
 	annotationTextArea.getDocument().addDocumentListener(ivjEventHandler);
 	connPtoP3SetTarget();
@@ -969,10 +909,8 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 				VCMetaData vcMetaData = getModel().getVcMetaData();
 				vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), getAnnotationString());
 				
-				getSpeciesContext().setHasOverride(getJCheckBoxHasOverride().isSelected());
-				if (getJCheckBoxHasOverride().isSelected()){
-					getSpeciesContext().setName(getContextNameValueTextField().getText());
-				}
+				getSpeciesContext().setName(getContextNameValueTextField().getText());
+
 				// if there is a Pathway commons reference to this species, add it as an RDF statement to VCMetadata
 				if(mode == ADD_SPECIES_MODE && getModel() != null){
 					Species existingSpecies = getModel().getSpecies(getSpeciesContext().getSpecies().getCommonName());
@@ -1012,8 +950,7 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 							SpeciesContext newSC = new SpeciesContext(	null,
 																		getSpeciesContext().getName(),
 																		getModel().getSpecies(getSpeciesContext().getSpecies().getCommonName()),
-																		getSpeciesContext().getStructure(),
-																		getSpeciesContext().getHasOverride());
+																		getSpeciesContext().getStructure());
 							getModel().addSpeciesContext(newSC);
 							setSpeciesContext(newSC);
 						}
@@ -1145,9 +1082,9 @@ private void setspeciesContext1(SpeciesContext newValue) {
 			SpeciesContext oldValue = getspeciesContext1();
 			ivjspeciesContext1 = newValue;
 			connPtoP1SetSource();
-			connEtoM7(ivjspeciesContext1);
 			connEtoM6(ivjspeciesContext1);
 			connEtoM1(ivjspeciesContext1);
+			getContextNameValueTextField().setText(newValue.getName());
 			annotationTextArea.setText(getAnnotationString());
 			firePropertyChange("speciesContext", oldValue, newValue);
 		} catch (java.lang.Throwable ivjExc) {
@@ -1187,29 +1124,6 @@ private void updateInterface() {
 				(getSpeciesContext().getSpecies() != null) &&
 				(getNameValueJTextField().getText() != null) &&
 				(getNameValueJTextField().getText().length() >0));
-
-	if (!getJCheckBoxHasOverride().isSelected()){
-		String contextName = null;
-		if(	(getSpeciesContext() != null) &&
-			(getSpeciesContext().getStructure() != null) &&
-			(getNameValueJTextField().getText() != null) && 
-			(getNameValueJTextField().getText().length() > 0)){
-			
-			contextName = TokenMangler.fixTokenStrict(
-				getNameValueJTextField().getText()+"_"+
-				getSpeciesContext().getStructure().getName()
-			);
-		}
-
-		getContextNameValueTextField().setEditable(true);
-		getContextNameValueTextField().setText(contextName);
-	}
-	getContextNameValueTextField().setEditable(
-		(getSpeciesContext() != null) &&
-		(getSpeciesContext().getStructure() != null) &&
-		getJCheckBoxHasOverride().isSelected()
-		);
-
 	
 	updatePCLink();
 	
@@ -1222,12 +1136,9 @@ private void updateOKButton() {
 	(getContextNameValueTextField().getText() != null) && (getContextNameValueTextField().getText().length() > 0) && 
 		(
 			mode == ADD_SPECIES_MODE ||
-			!Compare.isEqualOrNull(getNameValueJTextField().getText(),getSpeciesContext().getSpecies().getCommonName()) ||
-//			!Compare.isEqualOrNull(getSpeciesContext().getSpecies().getAnnotation(),getAnnotationString()) ||
-			getSpeciesContext().getHasOverride() != getJCheckBoxHasOverride().isSelected() ||
+			!Compare.isEqualOrNull(getNameValueJTextField().getText(),getSpeciesContext().getSpecies().getCommonName()) ||			
 			!Compare.isEqualOrNull(getSpeciesContext().getName(),getContextNameValueTextField().getText()) ||
-			!Compare.isEqualOrNull(getAnnotationString(),annotationTextArea.getText()) 
-//			!Compare.isEqualOrNull(getPCLink(),getPCLinkValueEditorPane().getText())
+			!Compare.isEqualOrNull(getAnnotationString(),annotationTextArea.getText())
 		);
 	getOKJButton().setEnabled(bEnabled);
 }

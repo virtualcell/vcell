@@ -32,14 +32,13 @@ import cbit.vcell.parser.ExpressionException;
  */
 @SuppressWarnings("serial")
 public class SpeciesContextSpecsTableModel extends DefaultSortTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
-	public static final int COLUMN_SPECIESCONTEXT = 1;
-	public static final int COLUMN_SPECIES = 0;
-	public static final int COLUMN_STRUCTURE = 2;
-	public static final int COLUMN_CLAMPED = 3;
-	public static final int COLUMN_INITIAL = 4;
-	public static final int COLUMN_WELLMIXED = 5;
-	public static final int COLUMN_DIFFUSION = 6;
-	private static String columnNames[] = { "Species", "Species Context", "Structure", "Clamped", "Initial Condition", "Well Mixed", "Diffusion Constant"};
+	public static final int COLUMN_SPECIESCONTEXT = 0;
+	public static final int COLUMN_STRUCTURE = 1;
+	public static final int COLUMN_CLAMPED = 2;
+	public static final int COLUMN_INITIAL = 3;
+	public static final int COLUMN_WELLMIXED = 4;
+	public static final int COLUMN_DIFFUSION = 5;
+	private static String columnNames[] = { "Species", "Structure", "Clamped", "Initial Condition", "Well Mixed", "Diffusion Constant"};
 	
 	private SimulationContext fieldSimulationContext = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
@@ -63,9 +62,6 @@ public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_SPECIESCONTEXT:{
 			return SpeciesContext.class;
-		}
-		case COLUMN_SPECIES:{
-			return Species.class;
 		}
 		case COLUMN_STRUCTURE:{
 			return Structure.class;
@@ -134,9 +130,6 @@ public Object getValueAt(int row, int col) {
 			case COLUMN_SPECIESCONTEXT:{
 				return scSpec.getSpeciesContext();
 			}
-			case COLUMN_SPECIES:{
-				return scSpec.getSpeciesContext().getSpecies();
-			}
 			case COLUMN_STRUCTURE:{
 				return scSpec.getSpeciesContext().getStructure();
 			}
@@ -190,9 +183,6 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	SpeciesContextSpec speciesContextSpec = getValueAt(rowIndex);
 	switch (columnIndex){
 		case COLUMN_SPECIESCONTEXT:{
-			return false;
-		}
-		case COLUMN_SPECIES:{
 			return false;
 		}
 		case COLUMN_STRUCTURE:{
@@ -407,15 +397,6 @@ public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean
 						return name1.compareToIgnoreCase(name2);
 					}else{
 						return name2.compareToIgnoreCase(name1);
-					}
-				}
-				case COLUMN_SPECIES:{
-					String commonName1 = speciesContext1.getSpecies().getCommonName();
-					String commonName2 = speciesContext2.getSpecies().getCommonName();
-					if (ascending){
-						return commonName1.compareToIgnoreCase(commonName2);
-					}else{
-						return commonName2.compareToIgnoreCase(commonName1);
 					}
 				}
 				case COLUMN_STRUCTURE:{

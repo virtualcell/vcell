@@ -50,13 +50,10 @@ public SpeciesContext getSpeciesContext(java.sql.ResultSet rset, SessionLog log,
 
 	//try {
 		String nameStr = rset.getString(name.toString());
-		//Expression initValueExp = new Expression(rset.getString(initCond.toString()));
-		//Expression diffValueExp = new Expression(rset.getString(diffRate.toString()));
-		boolean bHasOverride = (rset.getString(hasOverride.toString()).equals(OVERRIDE_TRUE)?true:false);
 		
 		SpeciesContext speciesContext = null;
 		//try {
-			speciesContext = new SpeciesContext(keyValue,nameStr,null,null,bHasOverride);
+			speciesContext = new SpeciesContext(keyValue,nameStr,null,null);
 			//speciesContext.setInitialValue(initValueExp.evaluateConstant());
 			//speciesContext.setDiffusionRate(diffValueExp.evaluateConstant());
 			return speciesContext;
@@ -92,7 +89,7 @@ public String getSQLValueList(InsertHashtable hash, KeyValue key, SpeciesContext
 	buffer.append("'"+speciesContext.getName()+"',");
 	//buffer.append("'"+speciesContext.getDiffusionRate()+"'" + ",");
 	//buffer.append("'"+speciesContext.getInitialValue()+"'" + ",");
-	buffer.append((speciesContext.getHasOverride() ? "'"+OVERRIDE_TRUE+"'" : "'"+OVERRIDE_FALSE+"'"));
+	buffer.append("'"+OVERRIDE_TRUE+"'");
 	buffer.append(")");
 
 	return buffer.toString();

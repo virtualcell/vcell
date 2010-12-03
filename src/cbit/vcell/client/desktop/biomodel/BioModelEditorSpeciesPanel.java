@@ -109,7 +109,6 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 		SpeciesContext speciesContext = new SpeciesContext(new Species(bioModel.getModel().getFreeSpeciesName(), null), bioModel.getModel().getStructures()[0]);
 		try {
 			bioModel.getModel().addSpecies(speciesContext.getSpecies());
-			speciesContext.setHasOverride(true);
 			speciesContext.setName(speciesContext.getSpecies().getCommonName());
 			bioModel.getModel().addSpeciesContext(speciesContext);
 		} catch (PropertyVetoException ex) {
