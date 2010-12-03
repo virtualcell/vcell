@@ -729,7 +729,7 @@ private cbit.vcell.geometry.gui.CurveEditorTool getCurveEditorTool() {
  * @return cbit.vcell.geometry.gui.CurveEditorToolPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.geometry.gui.CurveEditorToolPanel getCurveEditorToolPanel1() {
+public cbit.vcell.geometry.gui.CurveEditorToolPanel getCurveEditorToolPanel1() {
 	if (ivjCurveEditorToolPanel1 == null) {
 		try {
 			ivjCurveEditorToolPanel1 = new cbit.vcell.geometry.gui.CurveEditorToolPanel();

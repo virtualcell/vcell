@@ -18,11 +18,14 @@ import cbit.vcell.client.server.VCellThreadChecker;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldFunctionDefinition;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
+import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
@@ -34,6 +37,7 @@ import cbit.vcell.mapping.potential.PotentialMapping;
 import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.ConvFunctionDefinition;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.Event;
 import cbit.vcell.math.FastInvariant;
@@ -1487,6 +1491,37 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			modelParamExpr = getIdentifierSubstitutions(modelParamExpr, modelParameters[j].getUnitDefinition(), geometryClass);
 			varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], geometryClass), modelParamExpr,geometryClass));
 		}
+	}
+	
+	if (simContext.getMicroscopeMeasurement()!=null && simContext.getMicroscopeMeasurement().getFluorescentSpecies().size()>0){
+		MicroscopeMeasurement measurement = simContext.getMicroscopeMeasurement();
+		ConvolutionKernel kernel = measurement.getConvolutionKernel();
+		if (kernel instanceof ExperimentalPSF){
+			ExperimentalPSF psf = (ExperimentalPSF)kernel;
+			DataSymbol psfDataSymbol = psf.getPSFDataSymbol();
+			if (psfDataSymbol instanceof FieldDataSymbol){
+				FieldDataSymbol fieldDataSymbol = (FieldDataSymbol)psfDataSymbol;
+				String fieldDataName = ((FieldDataSymbol) psfDataSymbol).getExternalDataIdentifier().getName();
+				
+				Expression psfExp = Expression.function(
+						FieldFunctionDefinition.FUNCTION_name, 
+						new Expression("'"+fieldDataName+"'"), 
+						new Expression("'"+fieldDataSymbol.getFieldDataVarName()+"'"), 
+						new Expression(fieldDataSymbol.getFieldDataVarTime()), 
+						new Expression("'"+fieldDataSymbol.getFieldDataVarType()+"'"));
+				varHash.addVariable(new Function("__PSF__",psfExp,null));
+			}
+		}else{
+			varHash.addVariable(new Function("__PSF__",new Expression("z"),null));
+		}
+		Expression concExp = new Expression(0.0);
+		for (SpeciesContext sc : measurement.getFluorescentSpecies()){
+			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
+			concExp = Expression.add(concExp,new Expression(getMathSymbol(sc, geometryClass)));
+		}
+		Expression convExp = Expression.function(ConvFunctionDefinition.FUNCTION_name,concExp,new Expression("__PSF__"));
+		
+		varHash.addVariable(newFunctionOrConstant(measurement.getName(),convExp,null));
 	}
 	
 	//

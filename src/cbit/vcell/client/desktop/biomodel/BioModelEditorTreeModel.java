@@ -105,7 +105,9 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		DATA_SYMBOLS_NODE,
 		
 		SIMULATIONS_NODE,
-		OUTPUT_FUNCTIONS_NODE;		
+		OUTPUT_FUNCTIONS_NODE,
+		
+		MICROSCOPE_MEASUREMENT_NODE;		
 	}
 	
 	enum ModelNodeID {		
@@ -342,6 +344,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 				BioModelNode eventsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.EVENTS_NODE, "Events"), true);
 				BioModelNode electricalNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ELECTRICAL_MAPPING_NODE, "Electrical"), false);
 				BioModelNode dataSymbolNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.DATA_SYMBOLS_NODE, "Data Symbols"), true);
+				BioModelNode microscopeMeasurmentNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE, "Microscope Measurements"), true);
 				BioModelNode mathematicsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.MATHEMATICS_NODE, "View Math"), false); 
 				BioModelNode analysisNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ANALYSIS_NODE, "Parameter Estimations"), true); 
 				BioModelNode simulationsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SIMULATIONS_NODE, "Simulations"), true);
@@ -355,6 +358,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 						eventsNode,
 						electricalNode,
 						dataSymbolNode,
+						microscopeMeasurmentNode,
 						mathematicsNode,
 						analysisNode,
 						simulationsNode,
@@ -367,6 +371,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 				populateApplicationNode(appNode, BioModelEditorTreeFolderClass.APP_REACTIONS_NODE);
 				populateApplicationNode(appNode, BioModelEditorTreeFolderClass.EVENTS_NODE);
 				populateApplicationNode(appNode, BioModelEditorTreeFolderClass.DATA_SYMBOLS_NODE);
+				populateApplicationNode(appNode, BioModelEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE);
 				populateApplicationNode(appNode, BioModelEditorTreeFolderClass.SIMULATIONS_NODE);
 				populateApplicationNode(appNode, BioModelEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE);
 				populateApplicationNode(appNode, BioModelEditorTreeFolderClass.ANALYSIS_NODE);

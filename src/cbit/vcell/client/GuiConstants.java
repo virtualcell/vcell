@@ -39,8 +39,11 @@ public class GuiConstants {
 
 	public static final String ACTIONCMD_ADD_EVENT = "Add Event";
 	
-	public static final String ACTIONCMD_ADD_GENERIC_DATA = "Add Generic DataSymbol";
-	public static final String ACTIONCMD_ADD_VFRAP_DATA = "Add vFrap DataSymbol";
+	public static final String ACTIONCMD_CREATE_DATA_SYMBOL = "CreateDataSymbol";
+	public static final String ACTIONCMD_DELETE_DATA_SYMBOL = "DeleteDataSymbol";
+	public static final String ACTIONCMD_VIEW_FIELD_DATA = "OpenFieldDataManager";
+	public static final String ACTIONCMD_ADD_VFAP_DATASET = "AddDatasetFromvFrap";
+	public static final String ACTIONCMD_ADD_VFRAP_DERIVED_DATA = "AddDerivedDataFromvFrap";
 	
 	public static final String VCELL_SUPPORT_ACCOUNT_ID = "VCellSupport";
 	
