@@ -33,8 +33,6 @@ public class FluorescenceSpeciesContextListModel extends DefaultListModelCiviliz
 			for (SpeciesContext sc : microscopeMeasurement.getFluorescentSpecies()){
 				addElement(sc);		// add all elements
 			}
-			this.microscopeMeasurement.addPropertyChangeListener(this);
 		}
 	}
-
 }

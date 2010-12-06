@@ -19,6 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
@@ -61,6 +62,7 @@ public class SpeciesEditorPanel extends JPanel {
 	private JTextArea annotationTextArea;
 	private JButton pathwayDBJButton = null;
 	private JEditorPane PCLinkValueEditorPane = null;
+	private JTextField speciesNameTextField = null;
 	
 	public void saveSelectedXRef(XRef selectedXRef, MIRIAMQualifier miriamQualifier) {
 		String urn = XRefToURN.createURN(selectedXRef.db(), selectedXRef.id());
@@ -329,8 +331,29 @@ private void initialize() {
 		setName("SpeciesEditorPanel");
 		setLayout(new GridBagLayout());
 		
+		speciesNameTextField = new JTextField();
+		speciesNameTextField.setEditable(false);
+		speciesNameTextField.setBackground(Color.WHITE);
+		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;		
+		JLabel label = new JLabel("Species");
+		add(label, gbc);
+		
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;		
+		add(speciesNameTextField, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
@@ -488,7 +511,9 @@ private void updateInterface() {
 	if (fieldSpeciesContext == null || fieldModel == null) {
 		annotationTextArea.setText(null);
 		getPCLinkValueEditorPane().setText(null);
+		speciesNameTextField.setText(null);
 	} else {
+		speciesNameTextField.setText(getSpeciesContext().getName());
 		annotationTextArea.setText(getModel().getVcMetaData().getFreeTextAnnotation(getSpeciesContext().getSpecies()));	
 		updatePCLink();
 	}
@@ -499,7 +524,7 @@ private JButton getPathwayDBbutton() {
 		try {
 			pathwayDBJButton = new javax.swing.JButton();
 			pathwayDBJButton.setName("pathwayDBJButton");
-			pathwayDBJButton.setText("<html>Add Links<br> to Databases</html>");
+			pathwayDBJButton.setText("<html><center>Add Links<br> to Databases</center></html>");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

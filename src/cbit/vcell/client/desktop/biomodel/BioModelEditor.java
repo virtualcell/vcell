@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
@@ -806,7 +807,6 @@ private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafO
 		} else if(folderClass == BioModelEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE) {
 			rightPanel = getMicroscopeMeasurementPanel();
 			getMicroscopeMeasurementPanel().setSimulationContext(simulationContext);
-			getMicroscopeMeasurementPanel().setMicroscopeMeasurement(simulationContext.getMicroscopeMeasurement());
 		} else {
 			ApplicationComponents applicationComponents = bioModelWindowManager.getApplicationComponents(simulationContext);
 			SimulationWorkspace simulationWorkspace = applicationComponents.getSimulationWorkspace();
@@ -825,10 +825,15 @@ private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafO
 			}
 		}
 	}
-	if(splitPane.getRightComponent() != rightPanel) {
+	Component rightComponent = splitPane.getRightComponent();
+	if (rightComponent != rightPanel) {
 		splitPane.setRightComponent(rightPanel);
 	}
-	splitPane.setDividerLocation(220);
+	if (splitPane.isShowing()) {	
+		splitPane.setDividerLocation(0.3);
+	} else {		
+		splitPane.setDividerLocation(220);
+	}
 }
 
 private OutputFunctionsPanel getOutputFunctionsPanel() {
@@ -983,6 +988,7 @@ private void onPropertyChange_BioModel() {
 	getBioModelEditorTreeCellRender().setBioModel(getBioModel());
 	getBioModelEditorGlobalParameterPanel().setBioModel(getBioModel()); 
 	getBioModelEditorApplicationsPanel().setBioModel(getBioModel()); 
+	getBioModelEditorTreeModel().restoreTreeExpansion();
 }
 
 /**

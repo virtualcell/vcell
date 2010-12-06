@@ -12,15 +12,13 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextArea;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
 
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
-
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
@@ -80,16 +78,6 @@ public SimpleReactionPropertiesPanel() {
  */
 public void cleanupOnClose() {
 	getParameterTableModel().setKinetics(null);
-}
-
-
-/**
- * Gets the kinetics property (cbit.vcell.model.Kinetics) value.
- * @return The kinetics property value.
- * @see #setKinetics
- */
-public Kinetics getKinetics() {
-	return reactionStep == null ? null : reactionStep.getKinetics();
 }
 
 private ScrollTable getScrollPaneTable() {
@@ -261,45 +249,59 @@ private javax.swing.JComboBox getKineticsTypeComboBox() {
 				private final static String MICROMOLAR = MU+"M";
 				private final static String SQUARED = "\u00B2";
 				private final static String SQUAREMICRON = MU+"m"+SQUARED;
+				private final static String MICRON = MU+"m";
 
 				public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 					java.awt.Component component = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
 					
 					if (value instanceof KineticsDescription) {
 						KineticsDescription kineticsDescription = (KineticsDescription)value;
-						if (getKinetics()!=null && getKinetics().getReactionStep()!=null){
-							if (getKinetics().getReactionStep().getStructure() instanceof Feature){
-								if (kineticsDescription.equals(KineticsDescription.General)){
-									setText("General ["+MICROMOLAR+"/s]");
-								}else if (kineticsDescription.equals(KineticsDescription.MassAction)){
-									setText("Mass Action ["+MICROMOLAR+"/s] (recommended for stochastic application)");
-								}else if (kineticsDescription.equals(KineticsDescription.GeneralLumped)){
-									setText("General [molecules/s]");
-								}else if (kineticsDescription.equals(KineticsDescription.HMM_irreversible)){
-									setText("Henri-Michaelis-Menten (Irreversible) ["+MICROMOLAR+"/s]");
-								}else if (kineticsDescription.equals(KineticsDescription.HMM_reversible)){
-									setText("Henri-Michaelis-Menten (Reversible) ["+MICROMOLAR+"/s]");
-								}else{
-									setText(kineticsDescription.getDescription());
+						setText(kineticsDescription.getDescription());
+						if (reactionStep != null){
+							if (reactionStep instanceof SimpleReaction) {
+								if (reactionStep.getStructure() instanceof Feature){
+									if (kineticsDescription.equals(KineticsDescription.General)){
+										setText("General ["+MICROMOLAR+"/s]");
+									} else if (kineticsDescription.equals(KineticsDescription.MassAction)){
+										setText("Mass Action ["+MICROMOLAR+"/s] (recommended for stochastic application)");
+									} else if (kineticsDescription.equals(KineticsDescription.GeneralLumped)){
+										setText("General [molecules/s]");
+									} else if (kineticsDescription.equals(KineticsDescription.HMM_irreversible)){
+										setText("Henri-Michaelis-Menten (Irreversible) ["+MICROMOLAR+"/s]");
+									} else if (kineticsDescription.equals(KineticsDescription.HMM_reversible)){
+										setText("Henri-Michaelis-Menten (Reversible) ["+MICROMOLAR+"/s]");
+									} else{
+										setText(kineticsDescription.getDescription());
+									}
+								}else if (reactionStep.getStructure() instanceof Membrane){
+									if (kineticsDescription.equals(KineticsDescription.General)){
+										setText("General [molecules/("+SQUAREMICRON+" s)]");
+									} else if (kineticsDescription.equals(KineticsDescription.MassAction)){
+										setText("Mass Action [molecules/("+SQUAREMICRON+" s)]");
+									} else if (kineticsDescription.equals(KineticsDescription.GeneralLumped)){
+										setText("General [molecules/s)]");
+									} else if (kineticsDescription.equals(KineticsDescription.HMM_irreversible)){
+										setText("Henri-Michaelis-Menten (Irreversible) [molecules/("+SQUAREMICRON+" s)]");
+									} else if (kineticsDescription.equals(KineticsDescription.HMM_reversible)){
+										setText("Henri-Michaelis-Menten (Reversible) [molecules/("+SQUAREMICRON+" s)]");
+									}
 								}
-							}else if (getKinetics().getReactionStep().getStructure() instanceof Membrane){
+							} else if (reactionStep instanceof FluxReaction) {
 								if (kineticsDescription.equals(KineticsDescription.General)){
-									setText("General [molecules/("+SQUAREMICRON+" s)]");
-								}else if (kineticsDescription.equals(KineticsDescription.MassAction)){
-									setText("Mass Action [molecules/("+SQUAREMICRON+" s)]");
-								}else if (kineticsDescription.equals(KineticsDescription.GeneralLumped)){
-									setText("General [molecules/s)]");
-								}else if (kineticsDescription.equals(KineticsDescription.HMM_irreversible)){
-									setText("Henri-Michaelis-Menten (Irreversible) [molecules/("+SQUAREMICRON+" s)]");
-								}else if (kineticsDescription.equals(KineticsDescription.HMM_reversible)){
-									setText("Henri-Michaelis-Menten (Reversible) [molecules/("+SQUAREMICRON+" s)]");
-								}else{
-									setText(kineticsDescription.getDescription());
+									setText("General Flux Density ("+MICROMOLAR+"-"+MICRON+"/s)");
+								} else if (kineticsDescription.equals(KineticsDescription.GeneralLumped)){
+									setText("General Flux (molecules/s)");
+								} else if (kineticsDescription.equals(KineticsDescription.GeneralCurrent)){
+									setText("General Current Density (pA/"+SQUAREMICRON+")");
+								} else if (kineticsDescription.equals(KineticsDescription.GeneralCurrentLumped)){
+									setText("General Current (pA)");
+								} else if (kineticsDescription.equals(KineticsDescription.GHK)){
+									setText("Goldman-Hodgkin-Katz Current Density (pA/"+SQUAREMICRON+") - permeability in "+MICRON+"/s");
+								} else if (kineticsDescription.equals(KineticsDescription.Nernst)){
+									setText("Nernst Current Density (pA/"+SQUAREMICRON+") - conductance in nS/"+SQUAREMICRON);
 								}
 							}
-						}else{
-							setText(kineticsDescription.getDescription());
-						}
+						} 
 					}
 
 					return component;
@@ -332,7 +334,7 @@ private void updateKineticChoice(KineticsDescription newKineticChoice) {
 	//
 	// if same as current kinetics, don't create new one
 	//
-	if (getKinetics()!=null && getKinetics().getKineticsDescription().equals(newKineticChoice)){
+	if (reactionStep!=null && reactionStep.getKinetics().getKineticsDescription().equals(newKineticChoice)){
 		return;
 	}
 	if (!getKineticsTypeComboBox().getSelectedItem().equals(newKineticChoice)) {
@@ -340,7 +342,7 @@ private void updateKineticChoice(KineticsDescription newKineticChoice) {
 	}
 	if (reactionStep != null) {
 		try {
-			if (getKinetics()==null || !getKinetics().getKineticsDescription().equals(newKineticChoice)){
+			if (!reactionStep.getKinetics().getKineticsDescription().equals(newKineticChoice)){
 				reactionStep.setKinetics(newKineticChoice.createKinetics(reactionStep));
 			}
 		} catch (Exception exc) {
@@ -352,10 +354,10 @@ private void updateKineticChoice(KineticsDescription newKineticChoice) {
 private void updateToggleButtonLabel(){
 	final String MU = "\u03BC";
 	final String MICROMOLAR = MU+"M";
-	if (getKinetics() instanceof DistributedKinetics){
+	if (reactionStep.getKinetics() instanceof DistributedKinetics){
 		getJToggleButton().setText("Convert to [molecules/s]");
 		getJToggleButton().setToolTipText("convert kinetics to be in terms of molecules rather than concentration");
-	}else if (getKinetics() instanceof LumpedKinetics){
+	}else if (reactionStep.getKinetics() instanceof LumpedKinetics){
 		getJToggleButton().setText("Convert to ["+MICROMOLAR+"/s]");
 		getJToggleButton().setToolTipText("convert kinetics to be in terms of concentration rather than molecules");
 	}
@@ -379,34 +381,35 @@ private JButton getJToggleButton() {
 				final String SQUARED = "\u00B2";
 				final String CUBED = "\u00B3";
 				String sizeUnits = MU+"m"+SQUARED;
-				if (getKinetics()!=null && getKinetics().getReactionStep()!=null && getKinetics().getReactionStep().getStructure() instanceof Feature){
+				Kinetics kinetics = reactionStep.getKinetics();
+				if (kinetics!=null && kinetics.getReactionStep()!=null && kinetics.getReactionStep().getStructure() instanceof Feature){
 					sizeUnits = MU+"m"+CUBED;
 				}
 
-				if (getKinetics() instanceof DistributedKinetics){
+				if (kinetics instanceof DistributedKinetics){
 					try {
 						String response = DialogUtils.showInputDialog0(SimpleReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
 						double size = Double.parseDouble(response);
-						reactionStep.setKinetics(LumpedKinetics.toLumpedKinetics((DistributedKinetics)getKinetics(), size));
+						reactionStep.setKinetics(LumpedKinetics.toLumpedKinetics((DistributedKinetics)kinetics, size));
 					} catch (UtilCancelException e1) {
 					} catch (Exception e2){
-						if (getKinetics().getKineticsDescription().isElectrical()){
+						if (kinetics.getKineticsDescription().isElectrical()){
 							DialogUtils.showErrorDialog(SimpleReactionPropertiesPanel.this,"failed to translate into General Current Kinetics [pA]: "+e2.getMessage(), e2);
 						}else{
 							DialogUtils.showErrorDialog(SimpleReactionPropertiesPanel.this,"failed to translate into General Lumped Kinetics [molecules/s]: "+e2.getMessage(), e2);
 						}
 					}
- 				}else if (getKinetics() instanceof LumpedKinetics){
+ 				}else if (kinetics instanceof LumpedKinetics){
 					try {
 						String response = DialogUtils.showInputDialog0(SimpleReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
 						double size = Double.parseDouble(response);
-						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)getKinetics(), size));
+						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics, size));
 					} catch (UtilCancelException e1) {
 					} catch (Exception e2){
-						if (getKinetics().getKineticsDescription().isElectrical()){
+						if (kinetics.getKineticsDescription().isElectrical()){
 							DialogUtils.showErrorDialog(SimpleReactionPropertiesPanel.this,"failed to translate into General Current Density Kinetics [pA/"+MU+"m"+SQUARED+"]: "+e2.getMessage(), e2);
 						}else{
-							if (getKinetics().getReactionStep().getStructure() instanceof Feature){
+							if (kinetics.getReactionStep().getStructure() instanceof Feature){
 								DialogUtils.showErrorDialog(SimpleReactionPropertiesPanel.this,"failed to translate into General Kinetics ["+MU+"M/s]: "+e2.getMessage(), e2);
 							}else{
 								DialogUtils.showErrorDialog(SimpleReactionPropertiesPanel.this,"failed to translate into General Kinetics [molecules/"+MU+"m"+SQUARED+".s]: "+e2.getMessage(), e2);
@@ -435,10 +438,11 @@ protected void updateInterface() {
 	if (reactionStep == null) {
 		return;
 	}
+	initKineticChoices();
 	reactionElectricalPropertiesPanel.setVisible(reactionStep.getStructure() instanceof Membrane);		
-	reactionElectricalPropertiesPanel.setKinetics(getKinetics());
-	getParameterTableModel().setKinetics(getKinetics());
-	getKineticsTypeComboBox().setSelectedItem(getKineticType(getKinetics()));
+	reactionElectricalPropertiesPanel.setKinetics(reactionStep.getKinetics());
+	getParameterTableModel().setKinetics(reactionStep.getKinetics());
+	getKineticsTypeComboBox().setSelectedItem(getKineticType(reactionStep.getKinetics()));
 	updateToggleButtonLabel();
 }
 

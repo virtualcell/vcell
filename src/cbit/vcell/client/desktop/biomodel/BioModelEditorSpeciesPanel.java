@@ -78,7 +78,7 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 		gbc.fill = GridBagConstraints.BOTH;
 		topPanel.add(table.getEnclosingScrollPane(), gbc);
 		
-		splitPane.setDividerLocation(350);
+		splitPane.setDividerLocation(400);
 		splitPane.setTopComponent(topPanel);
 		splitPane.setBottomComponent(speciesEditorPanel);
 		setLayout(new BorderLayout());
@@ -111,6 +111,7 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 			bioModel.getModel().addSpecies(speciesContext.getSpecies());
 			speciesContext.setName(speciesContext.getSpecies().getCommonName());
 			bioModel.getModel().addSpeciesContext(speciesContext);
+			select(speciesContext);
 		} catch (PropertyVetoException ex) {
 			ex.printStackTrace();
 			DialogUtils.showErrorDialog(BioModelEditorSpeciesPanel.this, ex.getMessage());
@@ -148,8 +149,8 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 	}
 	
 	@Override
-	protected void bioModelChanged() {
-		super.bioModelChanged();
+	protected void bioModelChange() {
+		super.bioModelChange();
 		speciesEditorPanel.setModel(bioModel.getModel());
 	}
 	

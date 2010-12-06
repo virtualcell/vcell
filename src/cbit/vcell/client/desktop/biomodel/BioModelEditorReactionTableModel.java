@@ -1,16 +1,19 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ReactionEquation;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Structure;
@@ -40,7 +43,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 				return ReactionEquation.class;
 			}
 			case COLUMN_STRUCTURE:{
-				return String.class;
+				return Structure.class;
 			}
 		}
 		return Object.class;
@@ -73,7 +76,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 						return new ReactionEquation(reactionStep);
 					} 
 					case COLUMN_STRUCTURE: {
-						return reactionStep.getStructure().getName();
+						return reactionStep.getStructure();
 					} 
 				}
 			} else {
@@ -88,13 +91,16 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		}
 	}
 
-	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		return true;
+	public boolean isCellEditable(int row, int column) {
+		return row < getDataSize() || column == COLUMN_NAME;
 	}
 	
 	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		super.propertyChange(evt);
+		if (evt.getSource() == bioModel.getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
+			updateStructureComboBox();
+		}
 	}
 	
 	public void setValueAt(Object value, int row, int column) {
@@ -108,20 +114,21 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			} else {
 				reactionStep = new SimpleReaction(getModel().getStructures()[0], getModel().getFreeReactionStepName());
 			}
-			String inputValue = (String)value;
 			switch (column) {
 			case COLUMN_NAME: {
+				String inputValue = (String)value;
 				if (!inputValue.equals(ADD_NEW_HERE_TEXT)) {
 					reactionStep.setName(inputValue);
 				}
 				break;
 			} 
 			case COLUMN_EQUATION: {
+				String inputValue = (String)value;
 				reactionStep.setReactionParticipants(ReactionEquation.parseReaction(reactionStep, inputValue));
 				break;
 			}
 			case COLUMN_STRUCTURE: {
-				Structure s = getModel().getStructure(inputValue);
+				Structure s = (Structure)value;
 				reactionStep.setStructure(s);
 				break;
 			} 
@@ -192,5 +199,12 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			return words;
 		}
 		return null;
+	}
+	
+	@Override
+	protected void bioModelChange(PropertyChangeEvent evt) {		
+		super.bioModelChange(evt);
+		updateStructureComboBox();
+		ownerTable.getColumnModel().getColumn(COLUMN_STRUCTURE).setCellEditor(new DefaultCellEditor(structureComboBoxCellEditor));
 	}
 }

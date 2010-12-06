@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -7,17 +8,20 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements Model.Owner {
@@ -36,7 +40,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements 
 
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelEditorRightSidePanel.this && evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
-				bioModelChanged();
+				bioModelChange();
 			}
 		}
 		
@@ -83,6 +87,20 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements 
 		table = new EditorScrollTable();
 		tableModel = createTableModel();
 		table.setModel(tableModel);
+		table.setDefaultRenderer(Structure.class, new DefaultScrollTableCellRenderer(){
+
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+						row, column);
+				if (value instanceof Structure) {
+					setText(((Structure)value).getName());
+				}
+				return this;
+			}			
+		});
 		
 		newButton.addActionListener(eventHandler);
 		deleteButton.addActionListener(eventHandler);
@@ -110,7 +128,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements 
 	protected abstract void newButtonPressed();
 	protected abstract void deleteButtonPressed();
 	
-	protected void bioModelChanged() {
+	protected void bioModelChange() {
 		tableModel.setBioModel(bioModel);
 	}
 
@@ -120,7 +138,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements 
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {
 			setSelectionEvent(new SelectionEvent(tableModel.containedByModel() ? bioModel.getModel() : bioModel, tableModel.getValueAt(rows[0])));
 		} else {
-			setSelectionEvent(null);
+			setSelectionEvent(new SelectionEvent(tableModel.containedByModel() ? bioModel.getModel() : bioModel, null));
 		}
 	}
 	

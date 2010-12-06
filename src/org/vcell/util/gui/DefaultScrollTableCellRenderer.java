@@ -33,7 +33,7 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		super();
 		setOpaque(true);
 		regularFont = getFont();
-		uneditableFont = regularFont.deriveFont(Font.BOLD);
+		uneditableFont = regularFont/*.deriveFont(Font.BOLD)*/;
 	}
 	/**
 	 * Insert the method's description here.

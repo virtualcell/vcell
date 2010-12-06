@@ -109,6 +109,7 @@ protected void newButtonPressed() {
 	ModelParameter modelParameter = bioModel.getModel().new ModelParameter(bioModel.getModel().getFreeModelParamName(), new Expression(0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
 	try {
 		bioModel.getModel().addModelParameter(modelParameter);
+		select(modelParameter);
 	} catch (PropertyVetoException e) {
 		e.printStackTrace(System.out);
 		DialogUtils.showErrorDialog(this, e.getMessage());
