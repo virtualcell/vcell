@@ -1,10 +1,11 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
@@ -23,9 +24,9 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	public final static int COLUMN_TYPE = 1;
 	public final static int COLUMN_INSIDE_COMPARTMENT = 2;
 	public final static int COLUMN_OUTSIDE_COMPARTMENT = 3;	
-	public final static int COLUMN_OUTSIDE_SIZE_NAME = 4;	
+	public final static int COLUMN_SIZE_NAME = 4;	
 	public final static int COLUMN_OUTSIDE_VOLTAGE_NAME = 5;	
-	private static String[] columnNames = new String[] {"Name", "Type", "Inside", "Outside Parent", "Size Name", "Voltage Name"};
+	private static String[] columnNames = new String[] {"Name", "Type", "Inside", "Outside Parent", "Size", "Voltage"};
 
 	public BioModelEditorStructureTableModel(JTable table) {
 		super(table);
@@ -42,12 +43,12 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				return String.class;
 			}
 			case COLUMN_INSIDE_COMPARTMENT:{
-				return String.class;
+				return Structure.class;
 			}
 			case COLUMN_OUTSIDE_COMPARTMENT:{
-				return String.class;
+				return Structure.class;
 			}
-			case COLUMN_OUTSIDE_SIZE_NAME:{
+			case COLUMN_SIZE_NAME:{
 				return String.class;
 			}
 			case COLUMN_OUTSIDE_VOLTAGE_NAME:{
@@ -84,14 +85,12 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 						return structure.getTypeName();
 					} 
 					case COLUMN_INSIDE_COMPARTMENT: {
-						Feature insideFeature = structure instanceof Membrane ? ((Membrane)structure).getInsideFeature() : null;
-						return insideFeature != null ? insideFeature.getName() : "n/a";
+						return structure instanceof Membrane ? ((Membrane)structure).getInsideFeature() : null;
 					} 
 					case COLUMN_OUTSIDE_COMPARTMENT: {
-						Structure parentStructure = structure.getParentStructure();
-						return parentStructure != null ? parentStructure.getName() : "";
+						return structure.getParentStructure();
 					}
-					case COLUMN_OUTSIDE_SIZE_NAME:
+					case COLUMN_SIZE_NAME:
 						return structure.getStructureSize().getName();
 						
 					case COLUMN_OUTSIDE_VOLTAGE_NAME:
@@ -115,17 +114,25 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 
 	@Override
 	public boolean isCellEditable(int row, int column) {
-		if (column == COLUMN_TYPE || column == COLUMN_OUTSIDE_SIZE_NAME || column == COLUMN_OUTSIDE_VOLTAGE_NAME) {
-			return false;
+		if (column == COLUMN_NAME) {
+			return true;
 		}
-		if (column == COLUMN_INSIDE_COMPARTMENT) {	
-			if (row >= 0 && row < getDataSize()) {
-				Structure s = getValueAt(row);
-				return s instanceof Membrane;
+		if (row < getDataSize()) {
+			if (column == COLUMN_TYPE || column == COLUMN_SIZE_NAME || column == COLUMN_OUTSIDE_VOLTAGE_NAME) {
+				return false;
 			}
+			if (bioModel != null && bioModel.getModel().getNumStructures() < 2) {
+				return false;
+			}
+			if (column == COLUMN_INSIDE_COMPARTMENT) {	
+				if (row >= 0 && row < getDataSize()) {
+					Structure s = getValueAt(row);
+					return s instanceof Membrane;
+				}
+			}
+			return true;
 		}
-			
-		return true;
+		return false;
 	}
 
 	@Override
@@ -145,6 +152,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				}
 			}
 			refreshData();
+			updateStructureComboBox();
 		} else if (evt.getSource() instanceof Structure) {
 			fireTableDataChanged();
 		}
@@ -155,11 +163,11 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			return;
 		}
 		try{
-			String inputValue = (String)value;
 			if (row >= 0 && row < getDataSize()) {
 				Structure structure = getValueAt(row);
 				switch (column) {
 				case COLUMN_NAME: {
+					String inputValue = (String)value;
 					if (!inputValue.equals(structure.getName())) {
 						structure.setName(inputValue);
 						structure.getStructureSize().setName(Structure.getDefaultStructureSizeName(inputValue));
@@ -170,7 +178,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					break;
 				} 
 				case COLUMN_INSIDE_COMPARTMENT: {
-					Structure insideFeature = getModel().getStructure(inputValue);
+					Structure insideFeature = (Structure)value;
 					if (insideFeature instanceof Membrane) {
 						DialogUtils.showErrorDialog(ownerTable, Structure.TYPE_NAME_FEATURE + " is expected!");
 					} else {
@@ -179,10 +187,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					break;
 				} 
 				case COLUMN_OUTSIDE_COMPARTMENT: {
-					Structure outsideFeature = null;
-					if (inputValue != null && inputValue.length() > 0) {
-						outsideFeature = getModel().getStructure(inputValue);
-					}
+					Structure outsideFeature = (Structure)value;
 					structure.setParentStructure(outsideFeature);
 					break;
 				} 
@@ -190,6 +195,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			} else {
 				switch (column) {
 				case COLUMN_NAME: {
+					String inputValue = (String)value;
 					Feature parentFeature = null;
 					for (int i = getModel().getNumStructures() - 1; i >= 0; i --) {
 						if (getModel().getStructures()[i] instanceof Feature) {
@@ -268,21 +274,14 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	}
 
 	public Set<String> getAutoCompletionWords(int row, int column) {
-		if (column == COLUMN_INSIDE_COMPARTMENT || column == COLUMN_OUTSIDE_COMPARTMENT) {
-			Set<String> words = new HashSet<String>();
-			for (Structure s : getModel().getStructures()) {
-				if (column == COLUMN_INSIDE_COMPARTMENT && s instanceof Feature) {					
-					words.add(s.getName());
-				} else if (column == COLUMN_OUTSIDE_COMPARTMENT) {
-					Structure structure = getValueAt(row);
-					if (structure instanceof Feature && s instanceof Membrane
-						|| structure instanceof Membrane && s instanceof Feature) {
-						words.add(s.getName());
-					}
-				}
-			}
-			return words;
-		}
 		return null;
+	}
+
+	@Override
+	protected void bioModelChange(PropertyChangeEvent evt) {		
+		super.bioModelChange(evt);
+		updateStructureComboBox();
+		ownerTable.getColumnModel().getColumn(COLUMN_INSIDE_COMPARTMENT).setCellEditor(new DefaultCellEditor(structureComboBoxCellEditor));
+		ownerTable.getColumnModel().getColumn(COLUMN_OUTSIDE_COMPARTMENT).setCellEditor(new DefaultCellEditor(structureComboBoxCellEditor));
 	}
 }

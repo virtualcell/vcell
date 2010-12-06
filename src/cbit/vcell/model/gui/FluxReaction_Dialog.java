@@ -50,7 +50,7 @@ public class FluxReaction_Dialog extends JDialog {
 	private ReactionCanvas ivjReactionCanvas1 = null;
 	private JScrollPane ivjJScrollPane1 = null;
 	private Species ivjfluxCarrier1 = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JComboBox ivjJComboBox1 = null;
 	private JLabel ivjJLabel8 = null;
 	private KineticsTypeTemplatePanel ivjKineticsTypeTemplatePanel = null;
@@ -72,7 +72,7 @@ public class FluxReaction_Dialog extends JDialog {
 	private JTextArea annotationTextArea = null;
 	private JComboBox carrierComboBox = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, FocusListener, ItemListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, FocusListener, ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == FluxReaction_Dialog.this.getJComboBox1()) 
 				connEtoC3();

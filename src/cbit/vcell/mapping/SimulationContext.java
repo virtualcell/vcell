@@ -397,7 +397,6 @@ public SimulationContext(Model model, Geometry geometry, boolean bStoch) throws 
 	
 	this.reactionContext = new ReactionContext(model,this);
 	this.version = null;
-	getGeometryContext().addPropertyChangeListener(this);
 	geometry.getGeometrySpec().addPropertyChangeListener(this);
 	this.fieldName = "Application_with_"+geometry.getName();
 }

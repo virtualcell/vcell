@@ -1,15 +1,22 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Structure;
 
 /**
  * BioModelEditorRightSideTableModel extends DefaultSortTableModel and always has an extra row for adding new row.
@@ -68,28 +75,32 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		if (evt.getSource() == this) {
 			if (evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
-				refreshData();
-				BioModel oldValue = (BioModel)evt.getOldValue();
-				if (oldValue != null) {
-					if (containedByModel()) {
-						oldValue.getModel().removePropertyChangeListener(this);
-					} else {
-						oldValue.removePropertyChangeListener(this);
-					}
-				}
-				BioModel newValue = (BioModel)evt.getNewValue();
-				if (newValue != null) {
-					if (containedByModel()) {
-						newValue.getModel().addPropertyChangeListener(this);
-					} else {
-						newValue.addPropertyChangeListener(this);
-					}
-				}
+				bioModelChange(evt);
 			} else if (evt.getPropertyName().equals(PROPERTY_NAME_SEARCH_TEXT)) {
 				refreshData();
 			}
 		} else if (containedByModel() && evt.getSource() == bioModel.getModel() || evt.getSource() == bioModel) {
 			refreshData();
+		}
+	}
+
+	protected void bioModelChange(java.beans.PropertyChangeEvent evt) {
+		refreshData();
+		BioModel oldValue = (BioModel)evt.getOldValue();
+		if (oldValue != null) {
+			if (containedByModel()) {
+				oldValue.getModel().removePropertyChangeListener(this);
+			} else {
+				oldValue.removePropertyChangeListener(this);
+			}
+		}
+		BioModel newValue = (BioModel)evt.getNewValue();
+		if (newValue != null) {
+			if (containedByModel()) {
+				newValue.getModel().addPropertyChangeListener(this);
+			} else {
+				newValue.addPropertyChangeListener(this);
+			}
 		}
 	}
 	
@@ -108,4 +119,29 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 	protected Model getModel() {
 		return bioModel == null ? null : bioModel.getModel();
 	}
+	
+	protected JComboBox structureComboBoxCellEditor = null;
+	protected void updateStructureComboBox() {
+		if (structureComboBoxCellEditor == null) {
+			structureComboBoxCellEditor = new JComboBox();
+		}
+		Structure[] structures = bioModel.getModel().getStructures();
+		DefaultComboBoxModel aModel = new DefaultComboBoxModel();
+		for (Structure s : structures) {
+			aModel.addElement(s);
+		}
+		structureComboBoxCellEditor.setRenderer(new DefaultListCellRenderer() {
+			
+			public Component getListCellRendererComponent(JList list, Object value,
+					int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				setHorizontalTextPosition(SwingConstants.LEFT);
+				if (value instanceof Structure) {
+					setText(((Structure)value).getName());
+				}
+				return this;
+			}
+		});
+		structureComboBoxCellEditor.setModel(aModel);
+	}	
 }

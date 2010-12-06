@@ -177,6 +177,7 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 		try {
 			ReactionStep reactionStep = new SimpleReaction(bioModel.getModel().getStructures()[0], bioModel.getModel().getFreeReactionStepName());
 			bioModel.getModel().addReactionStep(reactionStep);
+			select(reactionStep);
 		} catch (PropertyVetoException ex) {
 			ex.printStackTrace();
 			DialogUtils.showErrorDialog(BioModelEditorReactionPanel.this, ex.getMessage());
@@ -209,8 +210,8 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 	}
 
 	@Override
-	protected void bioModelChanged() {
-		super.bioModelChanged();
+	protected void bioModelChange() {
+		super.bioModelChange();
 		reactionCartoonEditorPanel.setModel(bioModel.getModel());
 	}
 

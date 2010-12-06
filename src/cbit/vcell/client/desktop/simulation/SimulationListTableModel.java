@@ -13,10 +13,13 @@ import cbit.vcell.solver.Simulation;
  */
 @SuppressWarnings("serial")
 public class SimulationListTableModel extends AbstractTableModel implements PropertyChangeListener {
+	private static final String PROPERTY_NAME_SIMULATION_WORKSPACE = "simulationWorkspace";
 	private final static int COLUMN_NAME = 0;
 	private final static int COLUMN_LASTSAVED = 1;
 	private final static int COLUMN_STATUS = 2;
 	private final static int COLUMN_RESULTS = 3;
+	
+	private transient java.beans.PropertyChangeSupport propertyChange;	
 	
 	private String[] columnNames = new String[] {"Name", "Last Saved", "Running Status", "Results"};
 	private SimulationWorkspace simulationWorkspace = null;
@@ -28,8 +31,27 @@ public class SimulationListTableModel extends AbstractTableModel implements Prop
 public SimulationListTableModel(JTable table) {
 	super();
 	ownerTable = table;
+	addPropertyChangeListener(this);
 }
 
+public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+	getPropertyChange().addPropertyChangeListener(listener);
+}
+
+public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
+	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
+}
+
+public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+	getPropertyChange().removePropertyChangeListener(listener);
+}
+
+private java.beans.PropertyChangeSupport getPropertyChange() {
+	if (propertyChange == null) {
+		propertyChange = new java.beans.PropertyChangeSupport(this);
+	};
+	return propertyChange;
+}
 
 /**
  * getColumnCount method comment.
@@ -53,9 +75,9 @@ public String getColumnName(int column) {
 public int getRowCount() {
 	if (getSimulationWorkspace() != null && getSimulationWorkspace().getSimulations() != null) {
 		return getSimulationWorkspace().getSimulations().length;
-	} else {
-		return 0;
 	}
+	
+	return 0;
 }
 
 
@@ -95,17 +117,12 @@ public Object getValueAt(int row, int column) {
 				case COLUMN_RESULTS: {
 					return getSimulationWorkspace().getSimulationStatus(simulation).getHasData() ? "yes" : "no";
 				} 
-				default: {
-					return null;
-				}
 			}
-		} else {
-			return null;
 		}
-	}catch(Exception e){
+	} catch(Exception e){
 		e.printStackTrace();
-		return null;
 	}
+	return null;
 }
 
 
@@ -134,6 +151,17 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
+	if (evt.getSource() == this && evt.getPropertyName().equals(PROPERTY_NAME_SIMULATION_WORKSPACE)) {
+		SimulationWorkspace oldValue = (SimulationWorkspace) evt.getOldValue();
+		if (oldValue != null) {
+			oldValue.removePropertyChangeListener(this);
+		}
+		SimulationWorkspace newValue = (SimulationWorkspace) evt.getNewValue();
+		if (newValue != null) {
+			newValue.addPropertyChangeListener(this);
+		}
+		fireTableDataChanged();
+	}
 	if (evt.getSource() == getSimulationWorkspace() && evt.getPropertyName().equals("simulations")) {
 		fireTableDataChanged();
 	}
@@ -149,13 +177,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param newSimContext cbit.vcell.mapping.SimulationContext
  */
 public void setSimulationWorkspace(SimulationWorkspace newSimulationWorkspace) {
-	if (getSimulationWorkspace() != null) {
-		getSimulationWorkspace().removePropertyChangeListener(this);
-	}
+	SimulationWorkspace oldValue = this.simulationWorkspace;
 	simulationWorkspace = newSimulationWorkspace;
-	if (newSimulationWorkspace != null) {
-		newSimulationWorkspace.addPropertyChangeListener(this);
-	}
+	firePropertyChange(PROPERTY_NAME_SIMULATION_WORKSPACE, oldValue, newSimulationWorkspace);
 }
 
 

@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -18,7 +17,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.SwingConstants;
-import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 import org.vcell.util.gui.DialogUtils;
@@ -458,6 +456,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					SimulationContext newSimulationContext = copySimulationContext(simulationContext, newName, bSpatial, bStochastic);
+					newSimulationContext.getGeometry().precomputeAll();
 					hashTable.put("newSimulationContext", newSimulationContext);
 				}
 			};
@@ -467,7 +466,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
 					bioModel.addSimulationContext(newSimulationContext);
-					bioModelWindowManager.showApplicationFrame(newSimulationContext);
+					//bioModelWindowManager.showApplicationFrame(newSimulationContext);
 					select(newSimulationContext);
 				}
 			};
@@ -560,7 +559,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
-						bioModelWindowManager.showApplicationFrame(newSimulationContext);
+						//bioModelWindowManager.showApplicationFrame(newSimulationContext);
 						select(newSimulationContext);
 					}
 				};

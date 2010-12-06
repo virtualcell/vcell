@@ -116,7 +116,7 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends JPanel 
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {
 			setSelectionEvent(new SelectionEvent(simulationContext, tableModel.getValueAt(rows[0])));
 		} else {
-			setSelectionEvent(null);
+			setSelectionEvent(new SelectionEvent(simulationContext, null));
 		}
 	}
 	

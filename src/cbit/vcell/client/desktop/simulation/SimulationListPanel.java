@@ -84,25 +84,25 @@ public class SimulationListPanel extends JPanel {
 	private SelectionEvent selectionEvent = null;
 	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, 
-		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, javax.swing.event.TableModelListener, MouseListener {
+		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == SimulationListPanel.this.getNewButton()) 
-				connEtoC2(e);
-			if (e.getSource() == SimulationListPanel.this.getEditButton()) 
-				connEtoC3(e);
-			if (e.getSource() == menuItemCopy) 
-				connEtoC4(e);
-			if (e.getSource() == getDeleteButton()) 
+			if (e.getSource() == getNewButton()) {
+				newSimulation();
+			} else if (e.getSource() == SimulationListPanel.this.getEditButton()) {
+				editSimulation();
+			} else if (e.getSource() == menuItemCopy) {
+				copySimulations();
+			} else if (e.getSource() == getDeleteButton()) { 
 				deleteSimulations();
-			if (e.getSource() == SimulationListPanel.this.getRunButton()) 
-				connEtoC6(e);
-			if (e.getSource() == SimulationListPanel.this.menuItemStop) 
-				connEtoC7(e);
-			if (e.getSource() == SimulationListPanel.this.getResultsButton()) 
-				connEtoC8(e);
-			if (e.getSource() == SimulationListPanel.this.menuItemStatusDetails) 
-				connEtoC13(e);
-			if (e.getSource() == moreActionsButton) {
+			} else if (e.getSource() == getRunButton()) {
+				runSimulations();
+			} else if (e.getSource() == menuItemStop) {
+				stopSimulations();
+			} else if (e.getSource() == getResultsButton()) {
+				showSimulationResults();
+			} else if (e.getSource() == menuItemStatusDetails) {
+				showSimulationStatusDetails();
+			} else if (e.getSource() == moreActionsButton) {
 				getPopupMenuMore().show(moreActionsButton, 0, moreActionsButton.getHeight());
 			}
 		};
@@ -116,10 +116,6 @@ public class SimulationListPanel extends JPanel {
 				onPropertyChange_SimulationWorkspace(evt);
 			if (evt.getSource() == SimulationListPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("cellEditor"))) 
 				connEtoM4(evt);
-		};
-		public void tableChanged(javax.swing.event.TableModelEvent e) {
-			if (e.getSource() == SimulationListPanel.this.getSimulationListTableModel1()) 
-				connEtoC10(e);
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()) {
@@ -158,20 +154,6 @@ private void component1_FocusLost(java.awt.event.FocusEvent focusEvent) {
 	}
 }
 
-
-/**
- * connEtoC10:  (SimulationListTableModel1.tableModel.tableChanged(javax.swing.event.TableModelEvent) --> SimulationListPanel.refreshButtonsAndSummary()V)
- * @param arg1 javax.swing.event.TableModelEvent
- */
-private void connEtoC10(javax.swing.event.TableModelEvent arg1) {
-	try {
-		this.refreshButtonsAndSummary();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connEtoC11:  (Component1.focus.focusLost(java.awt.event.FocusEvent) --> SimulationListPanel.component1_FocusLost(Ljava.awt.event.FocusEvent;)V)
  * @param arg1 java.awt.event.FocusEvent
@@ -179,104 +161,6 @@ private void connEtoC10(javax.swing.event.TableModelEvent arg1) {
 private void connEtoC11(java.awt.event.FocusEvent arg1) {
 	try {
 		this.component1_FocusLost(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC12:  ( (EditButton,action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel,editSimulation()V).normalResult --> SimulationListPanel.refreshButtonsAndSummary()V)
- */
-private void connEtoC12() {
-	try {
-		this.refreshSimListTable();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC13:  (StatusDetailsButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.showStatusDetails(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-private void connEtoC13(java.awt.event.ActionEvent arg1) {
-	try {
-		this.showSimulationStatusDetails(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC2:  (NewButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.newSimulation()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-private void connEtoC2(java.awt.event.ActionEvent arg1) {
-	try {
-		this.newSimulation();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC3:  (EditButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.editSimulation()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-private void connEtoC3(java.awt.event.ActionEvent arg1) {
-	try {
-		this.editSimulation();
-		connEtoC12();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC4:  (CopyButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.copySimulation()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-private void connEtoC4(java.awt.event.ActionEvent arg1) {
-	try {
-		this.copySimulations();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC6:  (RunButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.runSimulation()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-private void connEtoC6(java.awt.event.ActionEvent arg1) {
-	try {
-		this.runSimulations();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC7:  (StopButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.stopSimulation()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-private void connEtoC7(java.awt.event.ActionEvent arg1) {
-	try {
-		this.stopSimulations();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC8:  (ResultsButton.action.actionPerformed(java.awt.event.ActionEvent) --> SimulationListPanel.showSimulationResults()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-private void connEtoC8(java.awt.event.ActionEvent arg1) {
-	try {
-		this.showSimulationResults();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -680,14 +564,11 @@ private void initConnections() throws java.lang.Exception {
 	getResultsButton().addActionListener(ivjEventHandler);
 	getMoreActionsButton().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
-	getSimulationListTableModel1().addTableModelListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
 	menuItemStatusDetails.addActionListener(ivjEventHandler);
 	
 	getOutputFunctionsPanel().addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
-//	simulationListTree.addTreeSelectionListener(ivjEventHandler);
-//	simulationListTree.addTreeExpansionListener(simulationListTreeModel);
 }
 
 /**
@@ -766,14 +647,12 @@ private void newSimulation() {
 private void refreshButtonsAndSummary() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	refreshButtonsLax(selections);
-	if (selections.length != 1) {
-		getSimulationSummaryPanel1().setSimulation(null);
-		setSelectionEvent(null);
-	} else {
-		Simulation newValue = getSimulationWorkspace().getSimulations()[selections[0]];
-		getSimulationSummaryPanel1().setSimulation(newValue);	
-		setSelectionEvent(new SelectionEvent(getSimulationWorkspace().getSimulationOwner(), newValue));
+	Simulation newValue = null;
+	if (selections.length == 1) {
+		newValue = getSimulationWorkspace().getSimulations()[selections[0]];
 	}
+	getSimulationSummaryPanel1().setSimulation(newValue);	
+	setSelectionEvent(new SelectionEvent(getSimulationWorkspace().getSimulationOwner(), newValue));	
 }
 
 
@@ -810,14 +689,6 @@ private void refreshButtonsLax(int[] selections) {
 	menuItemStatusDetails.setEnabled(bStatusDetails);
 	menuItemStop.setEnabled(bStoppable);
 	getResultsButton().setEnabled(bHasData);
-}
-
-
-/**
- * Comment
- */
-private void refreshSimListTable() {
-	getScrollPaneTable().repaint();
 }
 
 private boolean isSmoldynTimeStepOK(Simulation sim) {
@@ -1074,7 +945,7 @@ private void showSimulationResults() {
 /**
  * Comment
  */
-public void showSimulationStatusDetails(java.awt.event.ActionEvent actionEvent) {
+private void showSimulationStatusDetails() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
@@ -1082,7 +953,6 @@ public void showSimulationStatusDetails(java.awt.event.ActionEvent actionEvent) 
 	}
 	Simulation[] sims = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().showSimulationStatusDetails(sims);
-	return;
 }
 
 

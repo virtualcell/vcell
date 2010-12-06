@@ -1,15 +1,18 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -34,7 +37,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 				return String.class;
 			}
 			case COLUMN_STRUCTURE:{
-				return String.class;
+				return Structure.class;
 			}
 		}
 		return Object.class;
@@ -64,7 +67,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 						return speciesContext.getName();
 					} 
 					case COLUMN_STRUCTURE: {
-						return speciesContext.getStructure().getName();
+						return speciesContext.getStructure();
 					} 
 				}
 			} else {
@@ -79,14 +82,19 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		}
 	}
 
-	public boolean isCellEditable(int rowIndex, int columnIndex) {
-//		return columnIndex != COLUMN_STRUCTURE;
-		return true;
+	public boolean isCellEditable(int row, int column) {
+		if (row < getDataSize()) {
+			return column != COLUMN_STRUCTURE;
+		}
+		return column == COLUMN_NAME;
 	}
 
 	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		super.propertyChange(evt);
+		if (evt.getSource() == bioModel.getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
+			updateStructureComboBox();
+		}
 	}
 	
 	public void setValueAt(Object value, int row, int column) {
@@ -94,17 +102,17 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 			return;
 		}
 		try{
-			String newValue = (String)value;
 			if (row >= 0 && row < getDataSize()) {
 				SpeciesContext speciesContext = getValueAt(row);
 				switch (column) {
 				case COLUMN_NAME: {
+					String newValue = (String)value;
 					speciesContext.getSpecies().setCommonName(newValue);
 					speciesContext.setName(newValue);
 					break;
 				} 
 				case COLUMN_STRUCTURE: {
-					Structure structure = getModel().getStructure(newValue);
+					Structure structure = (Structure)value;
 					speciesContext.setStructure(structure);
 					break;
 				} 
@@ -113,16 +121,12 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 				SpeciesContext freeSpeciesContext = new SpeciesContext(new Species(getModel().getFreeSpeciesName(), null), getModel().getStructures()[0]);
 				switch (column) {
 				case COLUMN_NAME: {
+					String newValue = (String)value;
 					if (!value.equals(ADD_NEW_HERE_TEXT)) {
 						freeSpeciesContext.getSpecies().setCommonName(newValue);
 					}
 					break;
-				} 
-				case COLUMN_STRUCTURE: {
-					Structure s = getModel().getStructure(newValue);
-					freeSpeciesContext = new SpeciesContext(new Species(getModel().getFreeSpeciesName(), null), s);
-					break;
-				} 
+				}
 				}
 				freeSpeciesContext.setName(freeSpeciesContext.getSpecies().getCommonName());
 				getModel().addSpecies(freeSpeciesContext.getSpecies());
@@ -185,5 +189,12 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 			return words;
 		}
 		return null;
+	}
+	
+	@Override
+	protected void bioModelChange(PropertyChangeEvent evt) {		
+		super.bioModelChange(evt);
+		updateStructureComboBox();
+		ownerTable.getColumnModel().getColumn(COLUMN_STRUCTURE).setCellEditor(new DefaultCellEditor(structureComboBoxCellEditor));
 	}
 }

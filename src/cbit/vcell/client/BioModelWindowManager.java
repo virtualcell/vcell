@@ -217,12 +217,12 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
  * @param newDocument cbit.vcell.document.VCDocument
  */
 public void addResultsFrame(SimulationWindow simWindow) {
-	if (!getApplicationsHash().containsKey(simWindow.getSimOwner())) {
-			// create components
-		createAppComponents((SimulationContext) simWindow.getSimOwner());
-	}
+//	if (!getApplicationsHash().containsKey(simWindow.getSimOwner())) {
+//			// create components
+//		createAppComponents((SimulationContext) simWindow.getSimOwner());
+//	}
 	
-	ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get(simWindow.getSimOwner());
+	ApplicationComponents appComponents = getApplicationsHash().get(simWindow.getSimOwner());
 	appComponents.addDataViewer(simWindow);
 	simWindow.getFrame().setLocation(10,10);
 	showFrame(simWindow.getFrame());
@@ -239,7 +239,7 @@ private void checkValidApplicationFrames(boolean reset) {
 	Enumeration<SimulationContext> en = getApplicationsHash().keys();
 	while (en.hasMoreElements()) {
 		SimulationContext sc = (SimulationContext)en.nextElement();
-		ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get(sc);
+		ApplicationComponents appComponents = getApplicationsHash().get(sc);
 		if (!getBioModel().contains(sc)) {
 			if (reset) {
 				// find one with the same name, if available
@@ -425,7 +425,7 @@ public VCDocument getVCDocument() {
 SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
 	Enumeration<ApplicationComponents> en = getApplicationsHash().elements();
 	while (en.hasMoreElements()) {
-		ApplicationComponents appComponents = (ApplicationComponents)en.nextElement();
+		ApplicationComponents appComponents = en.nextElement();
 		SimulationWindow window = appComponents.haveSimulationWindow(vcSimulationIdentifier);
 		if (window != null) {
 			return window;
@@ -464,7 +464,7 @@ public boolean isRecyclable() {
 	 * @param evt A PropertyChangeEvent object describing the event source 
 	 *   	and the property that has changed.
 	 */
-public void propertyChange(java.beans.PropertyChangeEvent evt) {	
+public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == getBioModel() && evt.getPropertyName().equals("simulationContexts")) {
 		// close any window we should not have anymore
 		checkValidApplicationFrames(false);
@@ -474,7 +474,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		Enumeration<SimulationContext> en = getApplicationsHash().keys();
 		while (en.hasMoreElements()) {
 			SimulationContext sc = (SimulationContext)en.nextElement();
-			ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get(sc);
+			ApplicationComponents appComponents = getApplicationsHash().get(sc);
 			checkValidSimulationDataViewerFrames(appComponents, sc);
 			appComponents.cleanSimWindowsHash();
 		}
@@ -516,6 +516,9 @@ public void resetDocument(VCDocument newDocument) {
  * @param newBioModel cbit.vcell.biomodel.BioModel
  */
 private void setBioModel(BioModel newBioModel) {
+	if(getBioModel() == newBioModel) {
+		return;
+	}
 	refreshMIRIAMDependencies(getBioModel(), newBioModel);
 	if (getBioModel() != null) {
 		getBioModel().removePropertyChangeListener(this);
@@ -524,6 +527,7 @@ private void setBioModel(BioModel newBioModel) {
 	if (getBioModel() != null) {
 		getBioModel().addPropertyChangeListener(this);
 	}
+	checkValidApplicationFrames(false);
 }
 
 
@@ -546,41 +550,41 @@ private void setJDesktopPane(JDesktopPaneEnhanced newJDesktopPane) {
 	jDesktopPane = newJDesktopPane;
 }
 
-public void showApplicationFrame(final SimulationContext simContext) {
-	AsynchClientTask task1 = new AsynchClientTask("preload the application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if (!getApplicationsHash().containsKey(simContext)) {
-				simContext.getGeometry().precomputeAll();
-				Simulation[] simulations = simContext.getSimulations();
-				if (simulations != null) {
-					// preload simulation status
-					ArrayList<VCSimulationIdentifier> simIDs = new ArrayList<VCSimulationIdentifier>();
-					for (int i = 0; i < simulations.length; i++){
-						if (simulations[i].getSimulationInfo()!=null){
-							simIDs.add(simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier());
-						}
-					}
-					getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs.toArray(new VCSimulationIdentifier[simIDs.size()]));
-				}
-			}
-		}
-	};
-		
-	AsynchClientTask task2 = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if (! getApplicationsHash().containsKey(simContext)) {
-				// create components
-				createAppComponents(simContext);
-			}
-		}
-	};
-	ClientTaskDispatcher.dispatch(getJDesktopPane(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });		
-	
-}
+//public void showApplicationFrame(final SimulationContext simContext) {
+//	AsynchClientTask task1 = new AsynchClientTask("preload the application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//		
+//		@Override
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			if (!getApplicationsHash().containsKey(simContext)) {
+//				simContext.getGeometry().precomputeAll();
+//				Simulation[] simulations = simContext.getSimulations();
+//				if (simulations != null) {
+//					// preload simulation status
+//					ArrayList<VCSimulationIdentifier> simIDs = new ArrayList<VCSimulationIdentifier>();
+//					for (int i = 0; i < simulations.length; i++){
+//						if (simulations[i].getSimulationInfo()!=null){
+//							simIDs.add(simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier());
+//						}
+//					}
+//					getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs.toArray(new VCSimulationIdentifier[simIDs.size()]));
+//				}
+//			}
+//		}
+//	};
+//		
+//	AsynchClientTask task2 = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//		
+//		@Override
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			if (! getApplicationsHash().containsKey(simContext)) {
+//				// create components
+//				createAppComponents(simContext);
+//			}
+//		}
+//	};
+//	ClientTaskDispatcher.dispatch(getJDesktopPane(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });		
+//	
+//}
 
 /**
  * Insert the method's description here.

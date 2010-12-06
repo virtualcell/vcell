@@ -112,7 +112,9 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 			}
 		}
 		try {
-			bioModel.getModel().addFeature(bioModel.getModel().getFreeFeatureName(), parentFeature, bioModel.getModel().getFreeMembraneName());
+			String freeFeatureName = bioModel.getModel().getFreeFeatureName();
+			bioModel.getModel().addFeature(freeFeatureName, parentFeature, bioModel.getModel().getFreeMembraneName());
+			select(bioModel.getModel().getStructure(freeFeatureName));
 		} catch (Exception e) {
 			e.printStackTrace();
 			DialogUtils.showErrorDialog(this, e.getMessage(), e);
@@ -148,8 +150,8 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 	}
 
 	@Override
-	protected void bioModelChanged() {
-		super.bioModelChanged();
+	protected void bioModelChange() {
+		super.bioModelChange();
 		ivjCartoonEditorPanel.setBioModel(bioModel);
 	}
 

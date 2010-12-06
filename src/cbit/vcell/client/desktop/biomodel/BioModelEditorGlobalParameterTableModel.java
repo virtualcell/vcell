@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -11,12 +12,15 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTable;
@@ -185,17 +189,10 @@ public Object getValueAt(int row, int col) {
 	return null;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/24/01 12:27:46 AM)
- * @return boolean
- * @param rowIndex int
- * @param columnIndex int
- */
-public boolean isCellEditable(int rowIndex, int columnIndex) {
-	return true;
+public boolean isCellEditable(int row, int column) {
+	return row < getDataSize() || column == COLUMN_NAME;
 }
+
 
 public ReactionStep getEditableAnnotationReactionStep(int rowIndex){
 
@@ -216,52 +213,10 @@ public boolean isSortable(int col) {
 	return (col != COLUMN_ANNOTATION);
 }
 
-
-/**
-	 * This method gets called when a bound property is changed.
-	 * @param evt A PropertyChangeEvent object describing the event source 
-	 *   and the property that has changed.
-	 */
+@Override
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == this && evt.getPropertyName().equals("model")) {
-		Model oldValue = (Model)evt.getOldValue();
-		if (oldValue!=null){
-			oldValue.removePropertyChangeListener(this);
-			ReactionStep[] oldRS = oldValue.getReactionSteps();
-			for (int i = 0; oldRS!=null && i < oldRS.length; i++){
-				oldRS[i].removePropertyChangeListener(this);
-				oldRS[i].getKinetics().removePropertyChangeListener(this);
-				for (int j = 0; j < oldRS[i].getKinetics().getKineticsParameters().length; j++) {
-					oldRS[i].getKinetics().getKineticsParameters()[j].removePropertyChangeListener(this);
-				}
-				for (int j = 0; j < oldRS[i].getKinetics().getProxyParameters().length; j++) {
-					oldRS[i].getKinetics().getProxyParameters()[j].removePropertyChangeListener(this);
-				}
-				for (int j = 0; j < oldRS[i].getKinetics().getUnresolvedParameters().length; j++) {
-					oldRS[i].getKinetics().getUnresolvedParameters()[j].removePropertyChangeListener(this);
-				}
-			}
-		}
-		Model newValue = (Model)evt.getNewValue();
-		if (newValue!=null){
-			newValue.addPropertyChangeListener(this);
-			ReactionStep[] newRS = newValue.getReactionSteps();
-			for (int i = 0; newRS!=null && i < newRS.length; i++){
-				newRS[i].addPropertyChangeListener(this);
-				newRS[i].getKinetics().addPropertyChangeListener(this);
-				for (int j = 0; j < newRS[i].getKinetics().getKineticsParameters().length; j++) {
-					newRS[i].getKinetics().getKineticsParameters()[j].addPropertyChangeListener(this);
-				}
-				for (int j = 0; j < newRS[i].getKinetics().getProxyParameters().length; j++) {
-					newRS[i].getKinetics().getProxyParameters()[j].addPropertyChangeListener(this);
-				}
-				for (int j = 0; j < newRS[i].getKinetics().getUnresolvedParameters().length; j++) {
-					newRS[i].getKinetics().getUnresolvedParameters()[j].addPropertyChangeListener(this);
-				}
-			}
-		}
-		refreshData();
-	} else if (evt.getSource() == getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_PARAMETERS)) {
+	super.propertyChange(evt);
+	if (evt.getSource() == getModel() && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_PARAMETERS)) {
 		refreshData();
 	}
 	if (evt.getSource() instanceof Parameter) {
@@ -346,5 +301,48 @@ public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(int row, int column)
 public Set<String> getAutoCompletionWords(int row, int column) {
 	// TODO Auto-generated method stub
 	return null;
+}
+
+@Override
+protected void bioModelChange(PropertyChangeEvent evt) {
+	super.bioModelChange(evt);
+	BioModel oldValue = (BioModel)evt.getOldValue();
+	if (oldValue!=null){
+		for (ModelParameter modelParameter : oldValue.getModel().getModelParameters()) {
+			modelParameter.removePropertyChangeListener(this);
+		}
+		for (ReactionStep reactionStep : oldValue.getModel().getReactionSteps()){
+			reactionStep.removePropertyChangeListener(this);
+			reactionStep.getKinetics().removePropertyChangeListener(this);
+			for (KineticsParameter kineticsParameter : reactionStep.getKinetics().getKineticsParameters()) {
+				kineticsParameter.removePropertyChangeListener(this);
+			}
+			for (ProxyParameter proxyParameter : reactionStep.getKinetics().getProxyParameters()) {
+				proxyParameter.removePropertyChangeListener(this);
+			}
+			for (UnresolvedParameter unresolvedParameter: reactionStep.getKinetics().getUnresolvedParameters()) {
+				unresolvedParameter.removePropertyChangeListener(this);
+			}
+		}
+	}
+	BioModel newValue = (BioModel)evt.getNewValue();
+	if (newValue!=null){
+		for (ModelParameter modelParameter : newValue.getModel().getModelParameters()) {
+			modelParameter.addPropertyChangeListener(this);
+		}
+		for (ReactionStep reactionStep : newValue.getModel().getReactionSteps()){
+			reactionStep.addPropertyChangeListener(this);
+			reactionStep.getKinetics().addPropertyChangeListener(this);
+			for (KineticsParameter kineticsParameter : reactionStep.getKinetics().getKineticsParameters()) {
+				kineticsParameter.addPropertyChangeListener(this);
+			}
+			for (ProxyParameter proxyParameter : reactionStep.getKinetics().getProxyParameters()) {
+				proxyParameter.addPropertyChangeListener(this);
+			}
+			for (UnresolvedParameter unresolvedParameter: reactionStep.getKinetics().getUnresolvedParameters()) {
+				unresolvedParameter.addPropertyChangeListener(this);
+			}
+		}
+	}
 }
 }

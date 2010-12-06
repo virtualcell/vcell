@@ -652,7 +652,7 @@ public cbit.vcell.solver.Simulation[] getSimulations() {
  * @param index The index value into the property array.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation getSimulations(int index) {
+public Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
 
