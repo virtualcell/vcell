@@ -1004,9 +1004,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								Point startShapePos = startShape.getSpaceManager().getAbsLoc();
 								Shape reactionShape = 
 									getReactionCartoon().getShapeFromModelObject(reaction);
-								reactionShape.getSpaceManager().setRelPos(
+								reactionShape.getSpaceManager().setAbsLoc(new Point(
 										(pickedShapePos.x + startShapePos.x)/2, 
-										(pickedShapePos.y + startShapePos.y)/2);
+										(pickedShapePos.y + startShapePos.y)/2));
 								getReactionCartoon().notifyChangeEvent();
 							}
 						}
