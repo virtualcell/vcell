@@ -233,7 +233,7 @@ public void addResultsFrame(SimulationWindow simWindow) {
  * Insert the method's description here.
  * Creation date: (6/1/2004 2:33:41 AM)
  */
-private void checkValidApplicationFrames(boolean reset) {
+private void updateApplicationHash(boolean reset) {
 	SimulationContext[] scs = getBioModel().getSimulationContexts();
 	
 	Enumeration<SimulationContext> en = getApplicationsHash().keys();
@@ -259,7 +259,7 @@ private void checkValidApplicationFrames(boolean reset) {
 					
 					appComponents.resetSimulationContext(found);
 					// check simulation data windows
-					checkValidSimulationDataViewerFrames(appComponents, found);
+					updateSimulationDataViewers(appComponents, found);
 					// rewire listener
 					sc.removePropertyChangeListener(this);
 					found.removePropertyChangeListener(this);
@@ -280,7 +280,7 @@ private void checkValidApplicationFrames(boolean reset) {
  * Insert the method's description here.
  * Creation date: (7/20/2004 1:13:06 PM)
  */
-private void checkValidSimulationDataViewerFrames(ApplicationComponents appComponents, SimulationContext found) {
+private void updateSimulationDataViewers(ApplicationComponents appComponents, SimulationContext found) {
 	SimulationWindow[] simWindows = appComponents.getSimulationWindows();
 	Simulation[] sims = found.getSimulations();
 	Hashtable<VCSimulationIdentifier, Simulation> hash = new Hashtable<VCSimulationIdentifier, Simulation>();
@@ -358,7 +358,10 @@ private BioModel getBioModel() {
 public ApplicationComponents getApplicationComponents(SimulationContext simulationContext) {
 	if (!getApplicationsHash().containsKey(simulationContext)) {
 		// create components
-		createAppComponents(simulationContext);
+		updateApplicationHash(true);
+		if (!getApplicationsHash().containsKey(simulationContext)) {
+			createAppComponents(simulationContext);
+		}
 	}
 	return getApplicationsHash().get(simulationContext);
 }
@@ -467,7 +470,7 @@ public boolean isRecyclable() {
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == getBioModel() && evt.getPropertyName().equals("simulationContexts")) {
 		// close any window we should not have anymore
-		checkValidApplicationFrames(false);
+		updateApplicationHash(false);
 	}
 	if (evt.getSource() == getBioModel() && evt.getPropertyName().equals("simulations")) {
 		// close any window we should not have anymore
@@ -475,7 +478,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		while (en.hasMoreElements()) {
 			SimulationContext sc = (SimulationContext)en.nextElement();
 			ApplicationComponents appComponents = getApplicationsHash().get(sc);
-			checkValidSimulationDataViewerFrames(appComponents, sc);
+			updateSimulationDataViewers(appComponents, sc);
 			appComponents.cleanSimWindowsHash();
 		}
 	}
@@ -502,7 +505,7 @@ public void resetDocument(VCDocument newDocument) {
 	setBioModel((BioModel)newDocument);
 	setDocumentID(getBioModel());
 	getBioModelEditor().setBioModel(getBioModel());
-	checkValidApplicationFrames(true);
+	updateApplicationHash(true);
 	Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
 	while (en.hasMoreElements()) {
 		close((JInternalFrame)en.nextElement(), getJDesktopPane());
@@ -527,7 +530,6 @@ private void setBioModel(BioModel newBioModel) {
 	if (getBioModel() != null) {
 		getBioModel().addPropertyChangeListener(this);
 	}
-	checkValidApplicationFrames(false);
 }
 
 
