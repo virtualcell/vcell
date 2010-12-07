@@ -10,6 +10,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -34,6 +36,28 @@ import cbit.gui.TableCellEditorAutoCompletion;
  */
 @SuppressWarnings("serial")
 public class EditorScrollTable extends ScrollTable {
+	
+	public class DefaultScrollTableComboBoxEditor extends DefaultCellEditor {
+		private JComboBox comboBox = null;
+		public DefaultScrollTableComboBoxEditor(JComboBox comboBox) {
+			super(comboBox);
+			this.comboBox = (JComboBox) getComponent();
+			this.comboBox.addKeyListener(new KeyListener() {
+				public void keyTyped(KeyEvent e) {					
+				}
+				
+				public void keyReleased(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+						bEscKeyPressed = true;
+					} else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						bEditingStoppedFromKey = true;
+					}
+				}				
+				public void keyPressed(KeyEvent e) {
+				}
+			});
+		}
+	}
 	
 	protected class DefaultScrollTableAutoCompleteCellEditor extends TableCellEditorAutoCompletion {
 		public DefaultScrollTableAutoCompleteCellEditor(JTable table) {

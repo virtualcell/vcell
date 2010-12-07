@@ -6,9 +6,9 @@ import java.util.Comparator;
 import java.util.Set;
 
 import javax.swing.DefaultCellEditor;
-import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.model.Feature;
@@ -28,7 +28,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	public final static int COLUMN_OUTSIDE_VOLTAGE_NAME = 5;	
 	private static String[] columnNames = new String[] {"Name", "Type", "Inside", "Outside Parent", "Size", "Voltage"};
 
-	public BioModelEditorStructureTableModel(JTable table) {
+	public BioModelEditorStructureTableModel(EditorScrollTable table) {
 		super(table);
 		setColumns(columnNames);
 		addPropertyChangeListener(this);
@@ -196,15 +196,15 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				switch (column) {
 				case COLUMN_NAME: {
 					String inputValue = (String)value;
+					if (inputValue.equals(ADD_NEW_HERE_TEXT)) {
+						return;
+					}
 					Feature parentFeature = null;
 					for (int i = getModel().getNumStructures() - 1; i >= 0; i --) {
 						if (getModel().getStructures()[i] instanceof Feature) {
 							parentFeature = (Feature) getModel().getStructures()[i];
 							break;
 						}
-					}
-					if (inputValue.equals(ADD_NEW_HERE_TEXT)) {
-						inputValue = getModel().getFreeFeatureName();
 					}
 					getModel().addFeature(inputValue, parentFeature, getModel().getFreeMembraneName());
 					break;
@@ -280,8 +280,8 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	@Override
 	protected void bioModelChange(PropertyChangeEvent evt) {		
 		super.bioModelChange(evt);
+		ownerTable.getColumnModel().getColumn(COLUMN_INSIDE_COMPARTMENT).setCellEditor(getStructureComboBoxEditor());
+		ownerTable.getColumnModel().getColumn(COLUMN_OUTSIDE_COMPARTMENT).setCellEditor(getStructureComboBoxEditor());
 		updateStructureComboBox();
-		ownerTable.getColumnModel().getColumn(COLUMN_INSIDE_COMPARTMENT).setCellEditor(new DefaultCellEditor(structureComboBoxCellEditor));
-		ownerTable.getColumnModel().getColumn(COLUMN_OUTSIDE_COMPARTMENT).setCellEditor(new DefaultCellEditor(structureComboBoxCellEditor));
 	}
 }

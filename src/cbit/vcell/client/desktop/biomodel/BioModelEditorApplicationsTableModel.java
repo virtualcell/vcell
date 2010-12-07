@@ -2,18 +2,13 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.JTable;
-
-import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.desktop.Annotation;
-import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.parser.SymbolTable;
 
@@ -26,7 +21,7 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private static String[] columnNames = new String[] {"Name", "Math Type", "Annotation"};
 
-	public BioModelEditorApplicationsTableModel(JTable table) {
+	public BioModelEditorApplicationsTableModel(EditorScrollTable table) {
 		super(table);
 		setColumns(columnNames);
 		addPropertyChangeListener(this);

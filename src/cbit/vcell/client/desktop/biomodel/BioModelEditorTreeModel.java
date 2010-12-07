@@ -248,6 +248,10 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	private void populateModelNode(BioModelNode argNode) {
 		Model model = bioModel.getModel();
 		boolean bFoundSelected = false;
+		Object selectedUserObject = null;
+		if (selectedBioModelNode != null) {
+			selectedUserObject = selectedBioModelNode.getUserObject();
+		}
 		if (argNode == modelNode || argNode == modelChildNodes[ModelNodeID.STRUCTURES_NODE.ordinal()]) {
 			boolean bSelected = false;
 			BioModelNode popNode = modelChildNodes[ModelNodeID.STRUCTURES_NODE.ordinal()];
@@ -271,13 +275,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		    	for (Structure structure : structures) {
 		    		BioModelNode node = new BioModelNode(structure, false);
 		    		popNode.add(node);
-		    		if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof Structure
-		    				&& ((Structure)selectedBioModelNode.getUserObject()).getName().equals(structure.getName())) {
+		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof Structure
+		    				&& ((Structure)selectedUserObject).getName().equals(structure.getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 		    	}
-		    	if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof Structure) {
+		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof Structure) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -301,13 +305,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		    	for (SpeciesContext sc : speciesContexts) {
 		    		BioModelNode node = new BioModelNode(sc, false);
 		    		popNode.add(node);
-		    		if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof SpeciesContext
-		    				&& ((SpeciesContext)selectedBioModelNode.getUserObject()).getName().equals(sc.getName())) {
+		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof SpeciesContext
+		    				&& ((SpeciesContext)selectedUserObject).getName().equals(sc.getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 		    	}
-		    	if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof SpeciesContext) {
+		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof SpeciesContext) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -331,13 +335,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		    	for (ReactionStep rs : reactionSteps) {
 		    		BioModelNode node = new BioModelNode(rs, false);;
 		    		popNode.add(node);
-		    		if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof ReactionStep
-		    				&& ((ReactionStep)selectedBioModelNode.getUserObject()).getName().equals(rs.getName())) {
+		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof ReactionStep
+		    				&& ((ReactionStep)selectedUserObject).getName().equals(rs.getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 		    	}
-		    	if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof ReactionStep) {
+		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof ReactionStep) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -361,13 +365,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		    	for (ModelParameter mp : modelParameters) {
 		    		BioModelNode node = new BioModelNode(mp, false);
 		    		popNode.add(node);
-		    		if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof ModelParameter
-		    				&& ((ModelParameter)selectedBioModelNode.getUserObject()).getName().equals(mp.getName())) {
+		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof ModelParameter
+		    				&& ((ModelParameter)selectedUserObject).getName().equals(mp.getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 		    	}
-		    	if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof ModelParameter) {
+		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof ModelParameter) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -375,6 +379,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		}
 		
 		nodeStructureChanged(argNode); 
+		ownerTree.expandPath(new TreePath(modelNode.getPath()));
 		if (argNode != modelNode && bFoundSelected) {
 			restoreTreeExpansion();
 		}
@@ -386,9 +391,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		if (selectedBioModelNode != null && applicationsNode.isNodeDescendant(selectedBioModelNode)) {
 			bSelected = true;
 		}
-		for (BioModelNode node : applicationsChildNodes) {
-			applicationsNode.remove(node);
-		}
+		applicationsNode.removeAllChildren();
 		applicationsChildNodes.clear();
 		SimulationContext[] simulationContexts = bioModel.getSimulationContexts();
 		if (simulationContexts != null && simulationContexts.length > 0) {
@@ -402,6 +405,15 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 				BioModelNode appNode = new BioModelNode(simulationContext, true);
 				applicationsNode.add(appNode);
 				applicationsChildNodes.add(appNode);
+				Object selectedUserObject = null;
+				if (selectedBioModelNode != null) {
+					selectedUserObject = selectedBioModelNode.getUserObject();
+				}
+				if (bSelected && !bFoundSelected && selectedUserObject instanceof SimulationContext
+						&& ((SimulationContext)selectedUserObject).getName().equals(((SimulationContext)appNode.getUserObject()).getName())) {
+					bFoundSelected = true;
+					selectedBioModelNode = appNode;
+				}
 	
 				BioModelNode geometryNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.GEOMETRY_NODE, "Geometry"), false);
 				BioModelNode structureMappingNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.STRUCTURE_MAPPING_NODE, "Structure Mapping"), false);
@@ -432,8 +444,8 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 				};
 				for (BioModelNode node : applicationChildNodes) {
 					appNode.add(node);
-					if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof BioModelEditorTreeFolderNode
-							&& ((BioModelEditorTreeFolderNode)selectedBioModelNode.getUserObject()).getName().equals(((BioModelEditorTreeFolderNode)node.getUserObject()).getName())) {
+					if (bSelected && !bFoundSelected && selectedUserObject instanceof BioModelEditorTreeFolderNode
+							&& ((BioModelEditorTreeFolderNode)selectedUserObject).getName().equals(((BioModelEditorTreeFolderNode)node.getUserObject()).getName())) {
 						bFoundSelected = true;
 						selectedBioModelNode = node;
 					}
@@ -449,6 +461,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 			}
 		}
 		nodeStructureChanged(applicationsNode);
+		ownerTree.expandPath(new TreePath(applicationsNode.getPath()));
 		if (!bFromRoot && bSelected && bFoundSelected) {
 			restoreTreeExpansion();
 		}
@@ -491,6 +504,10 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 			bSelected = true;
 		}
 		popNode.removeAllChildren();
+		Object selectedUserObject = null;
+		if (selectedBioModelNode != null) {
+			selectedUserObject = selectedBioModelNode.getUserObject();
+		}
 		switch (folderClass) {
 		case INITIAL_CONDITIONS_NODE: {
 		    SpeciesContext[] speciesContexts = simulationContext.getModel().getSpeciesContexts().clone();
@@ -503,13 +520,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		    	for (SpeciesContext sc : speciesContexts) {
 		    		BioModelNode node = new BioModelNode(sc, false);
 		    		popNode.add(node);
-		    		if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof SpeciesContext 
-		    				&& ((SpeciesContext)selectedBioModelNode.getUserObject()).getName().equals(sc.getName())) {
+		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof SpeciesContext 
+		    				&& ((SpeciesContext)selectedUserObject).getName().equals(sc.getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 		    	}
-		    	if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof SpeciesContext) {
+		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof SpeciesContext) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -527,13 +544,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		    	for (ReactionStep rs : reactionSteps) {
 		    		BioModelNode node = new BioModelNode(rs, false);;
 		    		popNode.add(node);
-		    		if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof ReactionStep
-		    				&& ((ReactionStep)selectedBioModelNode.getUserObject()).getName().equals(rs.getName())) {
+		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof ReactionStep
+		    				&& ((ReactionStep)selectedUserObject).getName().equals(rs.getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 		    	}
-		    	if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof ReactionStep) {
+		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof ReactionStep) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -561,13 +578,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 				    	for (BioEvent bevnt : bioEvents) {
 				    		BioModelNode node = new BioModelNode(bevnt, false);
 				    		popNode.add(node);
-				    		if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof BioEvent
-				    				&& ((BioEvent)selectedBioModelNode.getUserObject()).getName().equals(bevnt.getName())) {
+				    		if (bSelected && !bFoundSelected && selectedUserObject instanceof BioEvent
+				    				&& ((BioEvent)selectedUserObject).getName().equals(bevnt.getName())) {
 				    			selectedBioModelNode = node;
 				    			bFoundSelected = true;
 				    		}
 				    	}
-				    	if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof BioEvent) {
+				    	if (bSelected && !bFoundSelected && selectedUserObject instanceof BioEvent) {
 				    		selectedBioModelNode = popNode;
 				    		bFoundSelected = true;
 				    	}
@@ -587,13 +604,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		    	for (DataSymbol ds : dataSymbol) {
 		    		BioModelNode node = new BioModelNode(ds, false);
 		    		popNode.add(node);
-		    		if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof DataSymbol
-		    				&& ((DataSymbol)selectedBioModelNode.getUserObject()).getName().equals(ds.getName())) {
+		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof DataSymbol
+		    				&& ((DataSymbol)selectedUserObject).getName().equals(ds.getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 		    	}
-		    	if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof DataSymbol) {
+		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof DataSymbol) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -611,13 +628,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		    	for (Simulation s : simulations) {
 		    		BioModelNode node = new BioModelNode(s, false);
 		    		popNode.add(node);
-		    		if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof Simulation
-		    				&& ((Simulation)selectedBioModelNode.getUserObject()).getName().equals(s.getName())) {
+		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof Simulation
+		    				&& ((Simulation)selectedUserObject).getName().equals(s.getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 		    	}
-		    	if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof Simulation) {
+		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof Simulation) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -635,13 +652,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		    	for (AnnotatedFunction outputFunction : outputFunctions) {
 		    		BioModelNode node = new BioModelNode(outputFunction, false);
 		    		popNode.add(node);
-		    		if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof AnnotatedFunction
-		    				&& ((AnnotatedFunction)selectedBioModelNode.getUserObject()).getName().equals(outputFunction.getName())) {
+		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof AnnotatedFunction
+		    				&& ((AnnotatedFunction)selectedUserObject).getName().equals(outputFunction.getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 		    	}
-		    	if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof AnnotatedFunction) {
+		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof AnnotatedFunction) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -660,13 +677,13 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 				for (AnalysisTask analysisTask : analysisTasks) {
 					BioModelNode node = new BioModelNode(analysisTask, false);
 					popNode.add(node);
-					if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof AnalysisTask
-		    				&& ((AnalysisTask)selectedBioModelNode.getUserObject()).getName().equals(analysisTask.getName())) {
+					if (bSelected && !bFoundSelected && selectedUserObject instanceof AnalysisTask
+		    				&& ((AnalysisTask)selectedUserObject).getName().equals(analysisTask.getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 				}
-				if (bSelected && !bFoundSelected && selectedBioModelNode.getUserObject() instanceof AnalysisTask) {
+				if (bSelected && !bFoundSelected && selectedUserObject instanceof AnalysisTask) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -884,7 +901,9 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	}
 
 	public void annotationChanged(AnnotationEvent annotationEvent) {
-		nodeChanged(rootNode);
+		if (annotationEvent.getIdentifiable() == bioModel) {
+			nodeChanged(rootNode);
+		}
 	}
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {

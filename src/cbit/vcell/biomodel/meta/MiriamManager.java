@@ -1,6 +1,8 @@
 package cbit.vcell.biomodel.meta;
 
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -41,7 +43,11 @@ public interface MiriamManager {
 	
 	void remove(Identifiable identifiable, MIRIAMQualifier miriamQualifier, MiriamRefGroup miriamRefGroup) throws URNParseFailureException;
 
-	Set<URL> getStoredCrossReferencedLinks(MiriamResource miriamResource);
+	List<URL> getStoredCrossReferencedLinks(MiriamResource miriamResource) throws MalformedURLException;
+	void addStoredCrossReferencedLink(MiriamResource miriamResource, URL url);
+	void removeStoredCrossReferencedLink(MiriamResource miriamResource, URL url);
+	void setPrettyName(MiriamResource miriamResource, String prettyName);
+	String getPrettyName(MiriamResource miriamResource);
 	
 	MiriamResource createMiriamResource(String urnString) throws URNParseFailureException;
 	
