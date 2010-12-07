@@ -49,7 +49,7 @@ public class CurveFitting {
 		modelExp.substituteInPlace(new Expression("cell_firstPostBleach"), new Expression(cellFirstPostBleach));
 		// initialize starting guess, arguments in Parameter are name, Lower Bound, Upper Bound, Scale, Initial Guess
 		Parameter parameters[] = new Parameter[] {new Parameter("bleachRate",0,0.1,1,0.001)};
-
+		// estimate blech while monitoring rate by minimizing the error between funtion values and reference data
 		optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
 		OptSolverResultSet optSolverResultSet = optResultSet.getOptSolverResultSet();
 		paramNames = optSolverResultSet.getParameterNames();
@@ -128,18 +128,10 @@ public class CurveFitting {
 			//inputparam[0] is the bleach while monitoring rate.
 			double bleachWhileMonitoringRate = inputparam[0];
 			modelExp = modelExp.getSubstitutedExpression(new Expression(FRAPDataAnalysis.symbol_bwmRate), new Expression(bleachWhileMonitoringRate));
-			cbit.vcell.opt.Parameter parameters[] = new cbit.vcell.opt.Parameter[] {
-					FRAPDataAnalysis.para_If, FRAPDataAnalysis.para_Io, FRAPDataAnalysis.para_tau};
-
-			try {
-				optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
-			} catch (OptimizationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			Parameter parameters[] = new Parameter[] {FRAPDataAnalysis.para_If, FRAPDataAnalysis.para_Io, FRAPDataAnalysis.para_tau};
+			//estimate parameters by minimizing the errors between function values and reference data
+			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
+			
 			optSolverResultSet = optResultSet.getOptSolverResultSet();
 			paramNames = optSolverResultSet.getParameterNames();
 			paramValues = optSolverResultSet.getBestEstimates();

@@ -52,7 +52,7 @@ public class FRAPOptData {
 		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION], 0, 1, 1.0, 1.0);
 	//The time bounds for reference simulation, simulation will stop at spatial uniform or the ending time(if uniform hasn't reached yet). 
 	public static double REF_STARTINGTIME = 0;
-	public static double REF_MIN_ENDINGTIME = 40;
+	public static double MAX_DIFF_RATE_FOR_TIMEBOUNDS = 50;
 	//Variable reference diffusion rate actually used in simulation in order to reach spatial uniform faster
 	//after the simulation, the results will convert to the results as if it was run by diffusion rate  1.
 	public static final double REFERENCE_DIFF_DELTAT = 0.05;
@@ -108,7 +108,7 @@ public class FRAPOptData {
 		dimensionReducedRefData = getDimensionReducedRefData(null, simRefData); 
 	}
 	
-	public TimeStep getRefTimeStep()
+	public static TimeStep getRefTimeStep()
 	{
 		//time step is estimated as deltaX^2/(4*D)
 //		if(refTimeStep == null)
@@ -123,7 +123,7 @@ public class FRAPOptData {
 		return new TimeStep(timeStep, timeStep, timeStep);
 	}
 	
-	public DefaultOutputTimeSpec getRefTimeSpec()
+	public static DefaultOutputTimeSpec getRefTimeSpec()
 	{
 //		if(refTimeSpec == null)
 //		{
@@ -143,6 +143,20 @@ public class FRAPOptData {
 //		int startIdx = FRAPDataAnalysis.getRecoveryIndex(getExpFrapStudy().getFrapData());
 //		double[] timeStamps = getExpFrapStudy().getFrapData().getImageDataset().getImageTimeStamps();
 //		return new UniformOutputTimeSpec(timeStamps[startIdx+1]-timeStamps[startIdx]);
+	}
+	
+	//estimated timebounds by knowing the image data time bounds 
+	//and the possible diffusion rate upper bound (e.g 50)
+	// g[0..n] = time points for diff =1, t[0..n) = time points for adaptive diff rate from ref sim, a=deltaT time interval in ref sim which is 0.05 by default
+	// g_n = g_0 + (a^2*n +a^2*n^2)/2, solve n then use n*deltaT to get ref sim time bounds
+	public static TimeBounds getEstimatedRefTimeBound(FRAPStudy fStudy)
+	{
+		int startIdx = fStudy.getStartingIndexForRecovery();
+		double[] timeStamps = fStudy.getFrapData().getImageDataset().getImageTimeStamps();
+		double imgTimePeriod = timeStamps[timeStamps.length -1] - timeStamps[startIdx];
+		double timePeriod_D1 = MAX_DIFF_RATE_FOR_TIMEBOUNDS * imgTimePeriod;
+		double refEndTime = REFERENCE_DIFF_DELTAT * Math.sqrt((timePeriod_D1 * 2)/(REFERENCE_DIFF_DELTAT * REFERENCE_DIFF_DELTAT));
+		return new TimeBounds(REF_STARTINGTIME, refEndTime);
 	}
 	
 	public double[] getRefDataTimePoints() {

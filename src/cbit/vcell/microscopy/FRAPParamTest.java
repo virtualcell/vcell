@@ -74,7 +74,7 @@ public class FRAPParamTest
 		FRAPStudy newFRAPStudy = null;
 		File inFile = new File(fileName);
 		try {
-			newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, varName, bleachedMaskVarName, new Double(50000), null);
+			newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, varName, bleachedMaskVarName, new Double(50000), true, null);
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 		}
@@ -228,6 +228,7 @@ public class FRAPParamTest
 						frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].setModelParameters(bestParameters);
 					}
 				}
+				
 				if(frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]== null)
 				{
 					frapStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] = new FRAPModel(FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS], null, null, null);

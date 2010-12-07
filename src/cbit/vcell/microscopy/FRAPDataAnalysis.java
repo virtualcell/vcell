@@ -22,12 +22,12 @@ public class FRAPDataAnalysis {
 	public final static String symbol_bwmRate = "monitorBleachRate";
 	public final static String symbol_preBlchAvg = "preBlchAvg";
 	
-	public final static Parameter para_Ii = new cbit.vcell.opt.Parameter("Ii", -1, 1, 1.0, 0.0); 
-	public final static Parameter para_A = new cbit.vcell.opt.Parameter("A", 0.1, 4, 1.0, 1.0); 
+	public final static Parameter para_Ii = new Parameter("Ii", -1, 1, 1.0, 0.0); 
+	public final static Parameter para_A = new Parameter("A", 0.1, 4, 1.0, 1.0); 
 //	public final static Parameter para_CicularDisk_Tau = new cbit.vcell.opt.Parameter("Tau",0.1, 50.0, 1.0, 1.0);
-	public final static Parameter para_If = new cbit.vcell.opt.Parameter("If", 0, 1, 1.0, 0.1);
-	public final static Parameter para_Io = new cbit.vcell.opt.Parameter("Io", 0, 1, 1.0, 0.1);
-	public final static Parameter para_tau = new cbit.vcell.opt.Parameter("tau", 0.1, 50.0, 1.0, 1.0);
+	public final static Parameter para_If = new Parameter("If", 0, 1, 1.0, 0.1);
+	public final static Parameter para_Io = new Parameter("Io", 0, 1, 1.0, 0.1);
+	public final static Parameter para_tau = new Parameter("tau", 0.1, 50.0, 1.0, 1.0);
 //	public final static Parameter para_R = new cbit.vcell.opt.Parameter("R", 0.01, 1.0, 1.0, 0.1);
 	
 	public final static String circularDisk_IntensityFunc = "Ii + A*(1-exp(-t/"+symbol_tau+"))";

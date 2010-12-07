@@ -237,6 +237,7 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 			setResultsButtonEnabled(false); //enable it after loading frap data/doc(if sim data exists).
 			buttonPanel.add(getRunSimButton(), BorderLayout.WEST);
 			buttonPanel.add(new JLabel("             "), BorderLayout.CENTER); //used to nicely arrange buttons
+			buttonPanel.setBackground(Color.white);
 		}
 		return buttonPanel;
 	}

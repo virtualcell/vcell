@@ -115,7 +115,7 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 									{
 										maxIntensity = new Double(scalePanel.getInputScaleString());
 									}
-									newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, selectedIdentifiers.get(selectedIndexArr[0]), null, maxIntensity, this.getClientTaskStatusSupport());
+									newFRAPStudy = FRAPWorkspace.loadFRAPDataFromVcellLogFile(inFile, selectedIdentifiers.get(selectedIndexArr[0]), null, maxIntensity, true, this.getClientTaskStatusSupport());
 									isFileLoaded = true;
 								}
 								else

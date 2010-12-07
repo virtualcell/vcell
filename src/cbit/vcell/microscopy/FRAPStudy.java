@@ -225,7 +225,7 @@ public class FRAPStudy implements Matchable{
 		Extent extent = sourceFrapStudy.getFrapData().getImageDataset().getExtent();
 
 		double[] timeStamps = sourceFrapStudy.getFrapData().getImageDataset().getImageTimeStamps();
-		TimeBounds timeBounds = new TimeBounds(FRAPOptData.REF_STARTINGTIME, Math.max(FRAPOptData.REF_MIN_ENDINGTIME,(timeStamps[timeStamps.length-1]-timeStamps[startingIndexForRecovery])));
+		TimeBounds timeBounds = FRAPOptData.getEstimatedRefTimeBound(sourceFrapStudy);
 		double timeStepVal = FRAPOptData.REFERENCE_DIFF_DELTAT;
 		
 		int numX = cellROI_2D.getRoiImages()[0].getNumX();

@@ -136,7 +136,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		return new VCSimulationIdentifier(simulationKey,getDotUser());
 
 	}
-	public static FRAPData importFRAPDataFromVCellSimulationData(File vcellSimLogFile,String variableName, String bleachedMaskVarName, Double maxIntensity,
+	public static FRAPData importFRAPDataFromVCellSimulationData(File vcellSimLogFile,String variableName, String bleachedMaskVarName, Double maxIntensity, boolean bNoise,
 			final ClientTaskStatusSupport progressListener) throws Exception
 	{
 //		bleachedMaskVarName = "laserMask_cell";
@@ -218,14 +218,22 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 			short[] scaledDataShort = new short[rawData.length];
 			for (int j = 0; j < scaledDataShort.length; j++) {
 				double scaledRawDataJ = rawData[j]*linearaScaleFactor;
-				double ran = rnd.nextGaussian();
-				double scaledRawDataJ_withNoise = Math.max(0, (scaledRawDataJ + ran*Math.sqrt(scaledRawDataJ)));
-				scaledRawDataJ_withNoise = Math.min(shortMax, scaledRawDataJ_withNoise);
-				int scaledValue = (int)(scaledRawDataJ_withNoise);
-				scaledDataShort[j]&= 0x0000;
-				scaledDataShort[j]|= 0x0000FFFF & scaledValue;
+				if(bNoise)
+				{
+					double ran = rnd.nextGaussian();
+					double scaledRawDataJ_withNoise = Math.max(0, (scaledRawDataJ + ran*Math.sqrt(scaledRawDataJ)));
+					scaledRawDataJ_withNoise = Math.min(shortMax, scaledRawDataJ_withNoise);
+					int scaledValue = (int)(scaledRawDataJ_withNoise);
+					scaledDataShort[j]&= 0x0000;
+					scaledDataShort[j]|= 0x0000FFFF & scaledValue;
+				}
+				else
+				{
+					int scaledValue = (int)(scaledRawDataJ);
+					scaledDataShort[j]&= 0x0000;
+					scaledDataShort[j]|= 0x0000FFFF & scaledValue;
+				}
 			}
-//			}
 			scaledDataImages[i] =
 				new UShortImage(
 					scaledDataShort,
