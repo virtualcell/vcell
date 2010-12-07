@@ -102,7 +102,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				this.zoomOutButton_ActionPerformed();
 			else if (source == getGlgLayoutJButton())
 				getReactionCartoonTool().layoutGlg();
-			else if (source == getFloatButton()) 
+			else if (source == getFloatRequestButton()) 
 				setFloatingRequested(!bFloatingRequested);
 		} catch (Throwable throwable) {
 			handleException(throwable);
@@ -292,7 +292,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				getJToolBar().add(getLevellerLayoutButton(), getLevellerLayoutButton().getName());
 				getJToolBar().add(getRelaxerLayoutButton(), getRelaxerLayoutButton().getName());
 				getJToolBar().add(getGlgLayoutJButton(), getGlgLayoutJButton().getName());
-				getJToolBar().add(getFloatButton(), getFloatButton().getName());
+				getJToolBar().add(getFloatRequestButton(), getFloatRequestButton().getName());
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -537,7 +537,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return zoomInButton;
 	}
 	
-	private JButton getFloatButton() {
+	private JButton getFloatRequestButton() {
 		if (floatRequestButton == null) {
 			try {
 				floatRequestButton = new JButton("\u21b1");
@@ -597,7 +597,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		getZoomInButton().addActionListener(this);
 		getZoomOutButton().addActionListener(this);
 		getGlgLayoutJButton().addActionListener(this);
-		getFloatButton().addActionListener(this);
+		getFloatRequestButton().addActionListener(this);
 	}
 
 	private void initialize() {
@@ -771,6 +771,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private final void setFloatingRequested(boolean newValue) {
 		boolean oldValue = bFloatingRequested;
 		this.bFloatingRequested = newValue;
+		getFloatRequestButton().setText(bFloatingRequested ? "\u21b5" : "\u21b1");
+		getFloatRequestButton().setToolTipText(bFloatingRequested ? "\u21b5 Dock" : "\u21b1 Float");
 //		System.out.println("Set floating: " + bFloatingRequested);
 		firePropertyChange(PROPERTY_NAME_FLOATING, oldValue, newValue);
 	}

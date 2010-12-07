@@ -1,14 +1,16 @@
 package cbit.vcell.model.gui;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,8 +55,6 @@ import cbit.vcell.model.Structure;
 @SuppressWarnings("serial")
 public class SpeciesEditorPanel extends JPanel {
 	private SpeciesContext fieldSpeciesContext = null;
-	private javax.swing.JButton ivjRevertButton = null;
-	private javax.swing.JButton ivjApplyJButton = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP1Aligning = false;
 	private SpeciesContext ivjspeciesContext1 = null;
@@ -64,89 +64,94 @@ public class SpeciesEditorPanel extends JPanel {
 	private JEditorPane PCLinkValueEditorPane = null;
 	private JTextField speciesNameTextField = null;
 	
-	public void saveSelectedXRef(XRef selectedXRef, MIRIAMQualifier miriamQualifier) {
-		String urn = XRefToURN.createURN(selectedXRef.db(), selectedXRef.id());
-		try {
-			MiriamManager miriamManager = getModel().getVcMetaData().getMiriamManager();
-			MiriamResource resource = miriamManager.createMiriamResource(urn);
-			Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
-			miriamResources.add(resource);
-			miriamManager.addMiriamRefGroup(getSpeciesContext().getSpecies(), miriamQualifier, miriamResources);
-		} catch (URNParseFailureException e) {
-			e.printStackTrace();
-			DialogUtils.showErrorDialog(this, e.getMessage());
-		}
-		updatePCLink();
-	}
-
-	private void updatePCLink() {
+	public void saveSelectedXRef(final XRef selectedXRef, final MIRIAMQualifier miriamQualifier) {
 		AsynchClientTask task1 = new AsynchClientTask("retrieving metadata", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				String htmlText = null;
-				MiriamLink link = new MiriamLink();
-				if (!link.isLibraryUpdated()) {
-					System.err.println("MirianLink library is not up to date!");
-				}
-				ArrayList<String> pcLinkStr = getPCLinks();
-				if (pcLinkStr != null && pcLinkStr.size() > 0) {
-					StringBuffer buffer = new StringBuffer("<html>");
-					for(String pcLink : pcLinkStr){
-						String preferredName = " "; 
-						if (pcLink.toLowerCase().contains("uniprot")) {
-							preferredName = "[" + UniProtConstants.getNameFromID(pcLink) + "]";	
-						}
-						String prettyResourceName = pcLink.replaceFirst("urn:miriam:", "");
-						if (pcLink != null && pcLink.length() > 0) {
-							buffer.append("&#x95;&nbsp;" + prettyResourceName + "  <b>" + preferredName + "</b><br>");
-							String[] locations = link.getLocations(pcLink);
-							if (locations!=null){
-								for(String url : link.getLocations(pcLink)) {
-									buffer.append("&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;<a href=\"" + url + "\">" + url + "</a><br>");
+				String urn = XRefToURN.createURN(selectedXRef.db(), selectedXRef.id());
+				try {
+					MiriamManager miriamManager = getModel().getVcMetaData().getMiriamManager();
+					MiriamResource resource = miriamManager.createMiriamResource(urn);
+					String urnstr = resource.getMiriamURN(); 
+					if (urnstr != null && urnstr.toLowerCase().contains("uniprot")) {
+						String prettyName = UniProtConstants.getNameFromID(urnstr);	
+						miriamManager.setPrettyName(resource, prettyName);
+					}
+
+					Set<MiriamResource> miriamResources = new HashSet<MiriamResource>();
+					miriamResources.add(resource);
+					miriamManager.addMiriamRefGroup(getSpeciesContext().getSpecies(), miriamQualifier, miriamResources);
+					
+					MiriamLink link = new MiriamLink();
+					if (!link.isLibraryUpdated()) {
+						System.err.println("MirianLink library is not up to date!");
+					}
+					String pcLink = resource.getMiriamURN();
+					if (pcLink != null && pcLink.length() > 0) {
+						String[] locations = link.getLocations(pcLink);
+						if (locations != null){
+							for(String url : locations) {
+								try {
+									miriamManager.addStoredCrossReferencedLink(resource, new URL(url));
+								} catch (MalformedURLException e) {
+									e.printStackTrace(System.out);
 								}
 							}
 						}
 					}
-					buffer.append("</html>");
-					htmlText = buffer.toString();
-					hashTable.put("htmlText", htmlText);
+				} catch (URNParseFailureException e) {
+					e.printStackTrace();
+					DialogUtils.showErrorDialog(SpeciesEditorPanel.this, e.getMessage());
 				}
 			}
 		};
-
-		AsynchClientTask task2 = new AsynchClientTask("displaying metadata", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {			
+		AsynchClientTask task2 = new AsynchClientTask("displaying metadata", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				String htmlText = (String)hashTable.get("htmlText");			
-				getPCLinkValueEditorPane().setText(htmlText);
-				getPCLinkValueEditorPane().setCaretPosition(0);
-			};
-
+				updatePCLink();
+			}
 		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2 });
 	}
 
-	private ArrayList<String> getPCLinks() {
-		ArrayList<String> pcLinkStrings = new ArrayList<String>();
-		MiriamManager miriamManager = getModel().getVcMetaData().getMiriamManager();
-		Map<MiriamRefGroup,MIRIAMQualifier> refGroups = miriamManager.getAllMiriamRefGroups(getSpeciesContext().getSpecies());
-		if (refGroups != null && refGroups.size()>0) {
-			for (MiriamRefGroup refGroup : refGroups.keySet()){
-				Set<MiriamResource> miriamResources = refGroup.getMiriamRefs();
-				for (MiriamResource resource : miriamResources){
-					pcLinkStrings.add(resource.getMiriamURN());
+	private void updatePCLink() {
+		try {
+			StringBuffer buffer = new StringBuffer("<html>");
+			MiriamManager miriamManager = getModel().getVcMetaData().getMiriamManager();
+			Map<MiriamRefGroup,MIRIAMQualifier> refGroups = miriamManager.getAllMiriamRefGroups(getSpeciesContext().getSpecies());
+			if (refGroups != null && refGroups.size()>0) {
+				for (MiriamRefGroup refGroup : refGroups.keySet()){
+					Set<MiriamResource> miriamResources = refGroup.getMiriamRefs();
+					for (MiriamResource resource : miriamResources){
+						String urn = resource.getMiriamURN();
+						String preferredName = ""; 
+						if (urn != null && urn.length() > 0) {
+							String prettyName = miriamManager.getPrettyName(resource);
+							if (prettyName != null) {
+								preferredName = "[" + prettyName + "]";	
+							}
+							String prettyResourceName = urn.replaceFirst("urn:miriam:", "");
+							buffer.append("&#x95;&nbsp;" + prettyResourceName + "&nbsp;<b>" + preferredName + "</b><br>");
+							List<URL> linkURLs = miriamManager.getStoredCrossReferencedLinks(resource);
+							for (URL url : linkURLs) {
+								buffer.append("&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;<a href=\"" + url.toString() + "\">" + url.toString() + "</a><br>");
+							}
+						}
+					}
 				}
 			}
+			buffer.append("</html>");
+			getPCLinkValueEditorPane().setText(buffer.toString());
+			getPCLinkValueEditorPane().setCaretPosition(0);
+		} catch (Exception ex) {
+			ex.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(this, ex.getMessage());
 		}
-		return pcLinkStrings;
+
 	}
 
-	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, HyperlinkListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, HyperlinkListener, FocusListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == getRevertJButton()) 
-				updateInterface();
-			if (e.getSource() == getApplyJButton()) 
-				connEtoC2(e);
 			if (e.getSource() == getPathwayDBbutton()) 
 				showPCKeywordQueryPanel();
 		};
@@ -162,6 +167,11 @@ public class SpeciesEditorPanel extends JPanel {
 					DialogUtils.browserLauncher(SpeciesEditorPanel.this, link.toExternalForm(), "failed to launch", false);
 				}
 			}
+		}
+		public void focusGained(FocusEvent e) {
+		}
+		public void focusLost(FocusEvent e) {
+			changeFreeTextAnnotation();
 		};
 	};
 
@@ -171,18 +181,6 @@ public class SpeciesEditorPanel extends JPanel {
 public SpeciesEditorPanel() {
 	super();
 	initialize();
-}
-
-/**
- * connEtoC2:  (OKJButton.action.actionPerformed(java.awt.event.ActionEvent) --> EditSpeciesDialog.oK(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-private void connEtoC2(java.awt.event.ActionEvent arg1) {
-	try {
-		this.apply(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
 }
 
 /**
@@ -223,46 +221,12 @@ private void connPtoP1SetTarget() {
 }
 
 /**
- * Return the CancelJButton property value.
- * @return javax.swing.JButton
- */
-private javax.swing.JButton getRevertJButton() {
-	if (ivjRevertButton == null) {
-		try {
-			ivjRevertButton = new javax.swing.JButton();
-			ivjRevertButton.setName("CancelJButton");
-			ivjRevertButton.setText("Revert");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjRevertButton;
-}
-
-/**
  * Gets the model property (cbit.vcell.model.Model) value.
  * @return The model property value.
  * @see #setModel
  */
 public Model getModel() {
 	return fieldModel;
-}
-
-/**
- * Return the OKJButton property value.
- * @return javax.swing.JButton
- */
-private javax.swing.JButton getApplyJButton() {
-	if (ivjApplyJButton == null) {
-		try {
-			ivjApplyJButton = new javax.swing.JButton();
-			ivjApplyJButton.setName("OKJButton");
-			ivjApplyJButton.setText("Apply");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjApplyJButton;
 }
 
 /**
@@ -315,8 +279,7 @@ public void initAddSpecies(Model argModel, Structure argStructure) {
  * @exception java.lang.Exception The exception description.
  */
 private void initConnections() throws java.lang.Exception {
-	getRevertJButton().addActionListener(ivjEventHandler);
-	getApplyJButton().addActionListener(ivjEventHandler);
+	annotationTextArea.addFocusListener(ivjEventHandler);
 	getPathwayDBbutton().addActionListener(ivjEventHandler);
 	getPCLinkValueEditorPane().addHyperlinkListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
@@ -393,23 +356,8 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		JScrollPane scollPane = new JScrollPane(getPCLinkValueEditorPane());
 		add(scollPane, gbc);
-
-		gridy ++;
-		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 4));
-		panel.add(getApplyJButton());
-		panel.add(getRevertJButton());
-		
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 1; 
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
-		gbc.insets = new java.awt.Insets(4, 4, 0, 4);
-		gbc.anchor = GridBagConstraints.PAGE_START;
-		add(panel, gbc);
 		
 		setBackground(Color.white);
-		panel.setBackground(Color.white);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -441,7 +389,7 @@ public static void main(java.lang.String[] args) {
 /**
  * Comment
  */
-private void apply(java.awt.event.ActionEvent actionEvent) {
+private void changeFreeTextAnnotation() {
 	try{
 
 		// set text from annotationTextField in free text annotation for species in vcMetaData (from model)

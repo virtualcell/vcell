@@ -1029,7 +1029,7 @@ private void stopSimulations() {
 		for(int i=0; i<numRows; i++) {
 			Simulation simulation = getSimulationListTableModel1().getValueAt(i);
 			if (simulation == selection) {
-				getScrollPaneTable().changeSelection(i, 0, false, false);
+				getScrollPaneTable().setRowSelectionInterval(i, i);
 				return;
 			}
 		}

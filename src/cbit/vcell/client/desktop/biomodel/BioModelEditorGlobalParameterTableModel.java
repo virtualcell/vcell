@@ -6,9 +6,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JTable;
-
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
@@ -89,7 +88,7 @@ public class BioModelEditorGlobalParameterTableModel extends BioModelEditorRight
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public BioModelEditorGlobalParameterTableModel(JTable table) {
+public BioModelEditorGlobalParameterTableModel(EditorScrollTable table) {
 	super(table);
 	setColumns(LABELS);
 	addPropertyChangeListener(this);
@@ -227,38 +226,42 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 public void setValueAt(Object value, int row, int column) {
 	try {
 		ModelParameter parameter = null;
+		String inputValue = (String)value;
 		if (row < getDataSize()) {
 			parameter = getValueAt(row);
-		} else {
-			parameter = getModel().new ModelParameter(getModel().getFreeModelParamName(), new Expression(0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
-		}
-		String inputValue = (String)value;
-		switch (column){
-			case COLUMN_NAME:{
-				if (!inputValue.equals(ADD_NEW_HERE_TEXT)) {
+			switch (column){
+				case COLUMN_NAME:{
 					parameter.setName(inputValue);
+					break;
 				}
-				break;
-			}
-			case COLUMN_EXPRESSION:{
-				Expression exp1 = new Expression(inputValue);
-				exp1.bindExpression(getModel());
-				parameter.setExpression(exp1);
-				break;
-			}
-			case COLUMN_UNIT:{	
-				if (!parameter.getUnitDefinition().getSymbol().equals(inputValue)){
-					parameter.setUnitDefinition(VCUnitDefinition.getInstance(inputValue));
+				case COLUMN_EXPRESSION:{
+					Expression exp1 = new Expression(inputValue);
+					exp1.bindExpression(getModel());
+					parameter.setExpression(exp1);
+					break;
 				}
+				case COLUMN_UNIT:{	
+					if (!parameter.getUnitDefinition().getSymbol().equals(inputValue)){
+						parameter.setUnitDefinition(VCUnitDefinition.getInstance(inputValue));
+					}
+					break;
+				}
+				case COLUMN_ANNOTATION:{
+					parameter.setModelParameterAnnotation(inputValue);
+					break;
+				}
+			}
+		} else {
+			switch (column) {
+			case COLUMN_NAME: {
+				if (inputValue.equals(ADD_NEW_HERE_TEXT)) {
+					return;
+				}
+				parameter = getModel().new ModelParameter(inputValue, new Expression(0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
+				getModel().addModelParameter(parameter);
 				break;
 			}
-			case COLUMN_ANNOTATION:{
-				parameter.setModelParameterAnnotation(inputValue);
-				break;
 			}
-		}
-		if (row == getDataSize()) {
-			getModel().addModelParameter(parameter);
 		}
 	} catch (Exception e){
 		e.printStackTrace(System.out);

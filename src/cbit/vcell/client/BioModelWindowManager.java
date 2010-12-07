@@ -40,7 +40,6 @@ import cbit.vcell.client.desktop.biomodel.MathematicsPanel;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.gui.GeometryViewer;
@@ -504,8 +503,8 @@ private void remove(ApplicationComponents appComponents, SimulationContext sc) {
 public void resetDocument(VCDocument newDocument) {
 	setBioModel((BioModel)newDocument);
 	setDocumentID(getBioModel());
-	getBioModelEditor().setBioModel(getBioModel());
 	updateApplicationHash(true);
+	getBioModelEditor().setBioModel(getBioModel());
 	Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
 	while (en.hasMoreElements()) {
 		close((JInternalFrame)en.nextElement(), getJDesktopPane());

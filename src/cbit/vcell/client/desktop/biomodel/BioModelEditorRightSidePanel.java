@@ -145,7 +145,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements 
 	public void select(T selection) {
 		for (int i = 0; i < tableModel.getDataSize(); i ++) {
 			if (tableModel.getValueAt(i) == selection) {
-				table.changeSelection(i, 0, false, false);
+				table.setRowSelectionInterval(i, i);
 				break;
 			}
 		}

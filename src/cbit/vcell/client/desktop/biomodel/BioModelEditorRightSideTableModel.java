@@ -8,10 +8,11 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
-import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
 import org.vcell.util.gui.AutoCompleteTableModel;
+import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
 import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.vcell.biomodel.BioModel;
@@ -44,11 +45,11 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
 	
 	protected BioModel bioModel = null;
-	protected JTable ownerTable = null;
+	protected EditorScrollTable ownerTable = null;
 	protected String searchText = null;
 	public static final String ADD_NEW_HERE_TEXT = "(add new here)";
 	
-	public BioModelEditorRightSideTableModel(JTable table) {
+	public BioModelEditorRightSideTableModel(EditorScrollTable table) {
 		super(null);
 		ownerTable = table;
 		addPropertyChangeListener(this);
@@ -120,8 +121,9 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 		return bioModel == null ? null : bioModel.getModel();
 	}
 	
-	protected JComboBox structureComboBoxCellEditor = null;
+	private DefaultScrollTableComboBoxEditor defaultScrollTableComboBoxEditor = null;
 	protected void updateStructureComboBox() {
+		JComboBox structureComboBoxCellEditor = (JComboBox) getStructureComboBoxEditor().getComponent();
 		if (structureComboBoxCellEditor == null) {
 			structureComboBoxCellEditor = new JComboBox();
 		}
@@ -143,5 +145,13 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 			}
 		});
 		structureComboBoxCellEditor.setModel(aModel);
-	}	
+		structureComboBoxCellEditor.setSelectedIndex(0);
+	}
+	
+	protected DefaultScrollTableComboBoxEditor getStructureComboBoxEditor() {
+		if (defaultScrollTableComboBoxEditor == null) {
+			defaultScrollTableComboBoxEditor = ownerTable.new DefaultScrollTableComboBoxEditor(new JComboBox());
+		}
+		return defaultScrollTableComboBoxEditor;
+	}
 }

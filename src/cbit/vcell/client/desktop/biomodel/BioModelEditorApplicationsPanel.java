@@ -78,6 +78,8 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 			} else if (e.getSource() == appNewStochApp
 					|| e.getSource() == appNewDeterministicApp
 					|| e.getSource() == getJMenuItemAppCopy()
+					|| e.getSource() == menuItemAppNonSpatialCopyStochastic
+					|| e.getSource() == menuItemNonSpatialCopyDeterministic
 					|| e.getSource() == menuItemAppSpatialCopyAsNonSpatialDeterministic
 					|| e.getSource() == menuItemAppSpatialCopyAsNonSpatialStochastic
 					|| e.getSource() == menuItemAppSpatialCopyAsSpatialDeterministic

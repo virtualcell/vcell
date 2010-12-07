@@ -1,10 +1,13 @@
 package cbit.vcell.biomodel.meta;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -15,11 +18,13 @@ import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier.DateQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef;
+import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.models.miriam.MIRIAMizer;
 import org.vcell.sybil.models.miriam.RefGroup;
-import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.models.miriam.imp.MIRIAMizerImp;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
+import org.vcell.sybil.rdf.schemas.MIRIAM;
+import org.vcell.sybil.rdf.schemas.ProtegeDC;
 
 import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.biomodel.meta.registry.Registry.Entry;
@@ -28,9 +33,11 @@ import cbit.vcell.xml.gui.MiriamTreeModel;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
+@SuppressWarnings("serial")
 public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	
 	public static class VCMetaDataDataType implements DataType {
@@ -300,8 +307,30 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		vcMetaData.fireAnnotationEventListener(new VCMetaData.AnnotationEvent(identifiable));
 	}
 
-	public Set<URL> getStoredCrossReferencedLinks(MiriamResource miriamResource) {
-		throw new RuntimeException("not yet implemented");
+	public List<URL> getStoredCrossReferencedLinks(MiriamResource miriamResource) throws MalformedURLException {
+		Resource resource = vcMetaData.getRdfData().getResource(miriamResource.getMiriamURN());
+		RDFNode node = null;
+		StmtIterator iter = vcMetaData.getRdfData().listStatements(resource, MIRIAM.BioProperties.isDescribedBy, node);
+		List<URL> urlList = new ArrayList<URL>();
+		while (iter.hasNext()){
+			Statement statement = iter.next();
+			URL url = new URL(statement.getObject().toString());
+			urlList.add(url);
+		}
+		return urlList;
+	}
+	
+	public void addStoredCrossReferencedLink(MiriamResource miriamResource, URL url) {
+		Resource resource = vcMetaData.getRdfData().getResource(miriamResource.getMiriamURN());
+		vcMetaData.getRdfData().add(resource, MIRIAM.BioProperties.isDescribedBy, url.toString());
+	}
+
+	public void removeStoredCrossReferencedLink(MiriamResource miriamResource, URL url) {
+		Resource resource = vcMetaData.getRdfData().getResource(miriamResource.getMiriamURN());
+		StmtIterator iter = vcMetaData.getRdfData().listStatements(resource, MIRIAM.BioProperties.isDescribedBy, url.toString());
+		while (iter.hasNext()){
+			iter.remove();
+		}
 	}
 
 	public MiriamResource createMiriamResource(String urnString) throws URNParseFailureException{
@@ -373,6 +402,22 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	public void addCreatorToAnnotation(Identifiable identifiable, String familyName, String givenName, String email, String organization) {
 		throw new RuntimeException("support for 'Creator' annotation not yet implemented");
 		//vcMetaData.fireAnnotationEventListener(new AnnotationEvent(identifiable));
+	}
+
+	public void setPrettyName(MiriamResource miriamResource, String prettyName) {
+		Resource resource = vcMetaData.getRdfData().getResource(miriamResource.getMiriamURN());
+		vcMetaData.getRdfData().add(resource, ProtegeDC.description, prettyName);		
+	}
+
+	public String getPrettyName(MiriamResource miriamResource) {
+		Resource resource = vcMetaData.getRdfData().getResource(miriamResource.getMiriamURN());
+		RDFNode node = null;
+		StmtIterator iter = vcMetaData.getRdfData().listStatements(resource, ProtegeDC.description, node);
+		while (iter.hasNext()){
+			Statement statement = iter.next();
+			return statement.getObject().toString();
+		}
+		return null;
 	}
 
 }

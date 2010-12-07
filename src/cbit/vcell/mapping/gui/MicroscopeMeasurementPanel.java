@@ -1,5 +1,6 @@
 package cbit.vcell.mapping.gui;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -80,10 +81,10 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			
 			// top panel
 			JPanel topPanel = new JPanel();
-			JLabel lblFluoescenceFunctionName = new JLabel("fluoescence function name");			
+			JLabel lblFluoescenceFunctionName = new JLabel("fluorescence function name ");			
 			topPanel.add(lblFluoescenceFunctionName);			
 			nameTextField = new JTextField();
-			nameTextField.setColumns(10);
+			nameTextField.setColumns(20);
 			topPanel.add(nameTextField);
 			
 			// middle panel
@@ -119,7 +120,9 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			gbc_allSpeciesContextList.fill = GridBagConstraints.BOTH;
 			gbc_allSpeciesContextList.gridx = 0;
 			gbc_allSpeciesContextList.gridy = 1;
-			middlePanel.add(new JScrollPane(allSpeciesContextList), gbc_allSpeciesContextList);
+			JScrollPane allSpeciesScrollPane = new JScrollPane(allSpeciesContextList);
+			allSpeciesScrollPane.setPreferredSize(new Dimension(250, 80));
+			middlePanel.add(allSpeciesScrollPane, gbc_allSpeciesContextList);
 			
 			JPanel buttonPanel = new JPanel(new GridBagLayout());
 			addButton = new JButton(">>");
@@ -133,6 +136,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			gbc_button.fill = GridBagConstraints.HORIZONTAL;
 			gbc_button.gridx = 0;
 			gbc_button.gridy = 0;
+			gbc_button.insets = new Insets(4, 4, 4, 4);
 			buttonPanel.add(addButton, gbc_button);
 			
 			removeButton = new JButton("<<");
@@ -146,6 +150,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			gbc_removeButton.fill = GridBagConstraints.HORIZONTAL;
 			gbc_removeButton.gridx = 0;
 			gbc_removeButton.gridy = 1;
+			gbc_removeButton.insets = new Insets(4, 4, 4, 4);
 			buttonPanel.add(removeButton, gbc_removeButton);
 			
 			GridBagConstraints gbc_panel_buttons = new GridBagConstraints();
@@ -169,7 +174,9 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			gbc_fluorescentSpeciesContextList.gridx = 2;
 			gbc_fluorescentSpeciesContextList.gridy = 1;
 			gbc_fluorescentSpeciesContextList.insets = new Insets(4, 4, 4, 4);
-			middlePanel.add(new JScrollPane(fluorescentSpeciesContextList), gbc_fluorescentSpeciesContextList);
+			JScrollPane fluorSpeciesScrollPane = new JScrollPane(fluorescentSpeciesContextList);
+			fluorSpeciesScrollPane.setPreferredSize(new Dimension(250, 80));
+			middlePanel.add(fluorSpeciesScrollPane, gbc_fluorescentSpeciesContextList);
 					
 			// bottom panel
 			JPanel bottomPanel = new JPanel();
@@ -252,8 +259,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			
 			ButtonGroup buttonGroup = new ButtonGroup();
 			buttonGroup.add(rdbtnZprojection);
-			buttonGroup.add(rdbtnExperimental);		
-			
+			buttonGroup.add(rdbtnExperimental);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
