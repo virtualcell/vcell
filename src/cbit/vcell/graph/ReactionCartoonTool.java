@@ -755,6 +755,20 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								getReactionCartoon().getZoomPercent() * 0.01);
 						edgeShape.paint(g, 0, 0);
 						g.setTransform(oldTransform);
+					} else if((Mode.LINEDIRECTED.equals(mode) || Mode.LINECATALYST.equals(mode)) 
+							&& startShape instanceof ContainerShape) {
+						bLineStretch = true;
+						endPointWorld = worldPoint;
+						edgeShape = new RubberBandEdgeShape((ElipseShape) null, null, getReactionCartoon());
+						edgeShape.setStart(worldPoint);
+						edgeShape.setEnd(worldPoint);
+						Graphics2D g = (Graphics2D)getGraphPane().getGraphics();
+						g.setXORMode(Color.white);
+						AffineTransform oldTransform = g.getTransform();
+						g.scale(getReactionCartoon().getZoomPercent() * 0.01,
+								getReactionCartoon().getZoomPercent() * 0.01);
+						edgeShape.paint(g, 0, 0);
+						g.setTransform(oldTransform);						
 					}
 				}
 				break;
@@ -937,7 +951,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					int lineType = getLineTypeFromDirection(startShape,worldPoint);
 					if (pickedShape instanceof SimpleReactionShape){
 						SimpleReaction simpleReaction = (SimpleReaction)pickedShape.getModelObject();
-						Object startShapeObject = startShape.getModelObject();
+						Object startShapeObject = null;						
+						if(startShape != null) {
+							startShapeObject = startShape.getModelObject();
+						}
 						if(startShapeObject instanceof SpeciesContext) {
 							SpeciesContext speciesContext = (SpeciesContext) startShapeObject;
 							int stoichiometry = 1;
@@ -960,11 +977,60 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							}
 							getReactionCartoon().notifyChangeEvent();
 							break;
+						} else if(startShapeObject instanceof SimpleReaction) {
+							SimpleReaction simpleReactionStart = (SimpleReaction) startShapeObject;
+							Structure structureReaction = simpleReaction.getStructure();
+							Structure structureReactionStart = simpleReactionStart.getStructure();
+							Structure structureSpecies = null;
+							if(structureReaction != null && structureReactionStart != null && 
+									structureReaction.equals(structureReactionStart)) {
+								structureSpecies = structureReaction;
+							} else if(structureReaction != null && structureReactionStart == null) {
+								structureSpecies = structureReaction;
+							} else if(structureReactionStart != null && structureReaction == null) {
+								structureSpecies = structureReactionStart;
+							}
+							if(structureSpecies != null) {
+								Model model = getReactionCartoon().getModel();
+								String speciesName = model.getFreeSpeciesName();
+								Species species = new Species(speciesName, null);
+								model.addSpecies(species);
+								SpeciesContext speciesContext = 
+									new SpeciesContext(species, structureSpecies);
+								model.addSpeciesContext(speciesContext);
+								simpleReactionStart.addProduct(speciesContext, 1);
+								simpleReaction.addReactant(speciesContext, 1);
+								getReactionCartoon().notifyChangeEvent();
+								Shape speciesContextShape = 
+									getReactionCartoon().getShapeFromModelObject(speciesContext);
+								Point startLoc = startShape.getSpaceManager().getAbsLoc();
+								Point endLoc = pickedShape.getSpaceManager().getAbsLoc();
+								speciesContextShape.getSpaceManager().setAbsLoc(new Point(
+										(startLoc.x + endLoc.x) / 2, (startLoc.y + endLoc.y) / 2));
+							}
+						} else {
+							Structure structure = simpleReaction.getStructure();
+							if(structure != null) {
+								Model model = getReactionCartoon().getModel();
+								String speciesName = model.getFreeSpeciesName();
+								Species species = new Species(speciesName, null);
+								model.addSpecies(species);								
+								SpeciesContext speciesContext = 
+									new SpeciesContext(species, structure);
+								model.addSpeciesContext(speciesContext);
+								simpleReaction.addReactant(speciesContext, 1);
+								getReactionCartoon().notifyChangeEvent();
+								Shape speciesContextShape = 
+									getReactionCartoon().getShapeFromModelObject(speciesContext);
+								speciesContextShape.getSpaceManager().setAbsLoc(edgeShape.getStart());
+							}								
 						}
 					} else if (pickedShape instanceof SpeciesContextShape) {
 						SpeciesContext speciesContext = (SpeciesContext) pickedShape.getModelObject();
-						Object startShapeObject = startShape.getModelObject();
-						System.out.println(startShapeObject);
+						Object startShapeObject = null;
+						if(startShape != null) {
+							startShapeObject = startShape.getModelObject();							
+						}
 						if(startShapeObject instanceof SimpleReaction) {
 							SimpleReaction simpleReaction = (SimpleReaction) startShapeObject;
 							int stoichiometry = 1;
@@ -1008,6 +1074,17 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										(pickedShapePos.y + startShapePos.y)/2));
 								getReactionCartoon().notifyChangeEvent();
 							}
+						} else {
+							Structure structure = speciesContext.getStructure();
+							Model model = getReactionCartoon().getModel();
+							String reactionName = model.getFreeReactionStepName();
+							SimpleReaction reaction = new SimpleReaction(structure, reactionName);
+							model.addReactionStep(reaction);
+							reaction.addProduct(speciesContext, 1);
+							getReactionCartoon().notifyChangeEvent();
+							Shape reactionShape = 
+								getReactionCartoon().getShapeFromModelObject(reaction);
+							reactionShape.getSpaceManager().setAbsLoc(edgeShape.getStart());
 						}
 					} else if (pickedShape instanceof FluxReactionShape){
 						FluxReaction fluxReaction = (FluxReaction)pickedShape.getModelObject();
@@ -1046,6 +1123,21 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						// remove temporary edge
 						getReactionCartoon().removeShape(edgeShape);
 						edgeShape = null;
+					} else {
+						Object modelObject = null;
+						if(startShape != null) {
+							modelObject = startShape.getModelObject();
+						}
+						Model model = getReactionCartoon().getModel();
+						if(modelObject instanceof SimpleReaction) {
+							String speciesName = model.getFreeSpeciesName();
+							System.out.println("Species name : " + speciesName);
+							// TODO								
+						} else if(modelObject instanceof SpeciesContext) {
+							// TODO
+						} else {
+							// TODO								
+						}
 					}
 				}
 				break;
