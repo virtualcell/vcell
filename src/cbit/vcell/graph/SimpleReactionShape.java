@@ -18,13 +18,16 @@ public class SimpleReactionShape extends ReactionStepShape {
 
 	@Override
 	public Point getAttachmentLocation(int attachmentType) {
+		int centerX = getSpaceManager().getSize().width / 2;
+		int centerY = getSpaceManager().getSize().height / 2;
+		int offsetX = getSpaceManager().getSize().width / 4;
 		switch (attachmentType) {
 		case ATTACH_CENTER:
-			return new Point(getSpaceManager().getSize().width / 2, getSpaceManager().getSize().height / 2);
+			return new Point(centerX, centerY);
 		case ATTACH_LEFT:
-			return new Point(getSpaceManager().getSize().height / 2, getSpaceManager().getSize().height / 2);
+			return new Point(centerX - offsetX, centerY);
 		case ATTACH_RIGHT:
-			return new Point(getSpaceManager().getSize().width - getSpaceManager().getSize().height / 2, getSpaceManager().getSize().height / 2);
+			return new Point(centerX + offsetX, centerY);
 		}
 		return null;
 	}
@@ -36,17 +39,19 @@ public class SimpleReactionShape extends ReactionStepShape {
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY) {
 		// draw elipse and two circles
-		int diameter = getSpaceManager().getSize().height;
+		int diameter = getSpaceManager().getSize().height / 2;
+		int offsetX = getSpaceManager().getSize().width / 4;
+		int offsetY = getSpaceManager().getSize().height / 4;
 		int hOval = diameter / 2;
 		Graphics2D g2D = g;
 		g2D.setColor(forgroundColor);
 		if (icon == null) {
 			icon = new Area();
-			icon.add(new Area(new Ellipse2D.Double(0, 0 + hOval / 2,
-					getSpaceManager().getSizePreferred().width, hOval)));
-			icon.add(new Area(new Ellipse2D.Double(0, 0, diameter, diameter)));
-			icon.add(new Area(new Ellipse2D.Double(0 + getSpaceManager().getSizePreferred().width
-					- diameter, 0, diameter, diameter)));
+			icon.add(new Area(new Ellipse2D.Double(offsetX, offsetY + hOval / 2,
+					getSpaceManager().getSizePreferred().width / 2, hOval)));
+			icon.add(new Area(new Ellipse2D.Double(offsetX, offsetY, diameter, diameter)));
+			icon.add(new Area(new Ellipse2D.Double(offsetX + getSpaceManager().getSizePreferred().width /2
+					- diameter, offsetY, diameter, diameter)));
 		}
 		Area movedIcon = icon.createTransformedArea(
 			AffineTransform.getTranslateInstance(absPosX, absPosY));
@@ -58,8 +63,9 @@ public class SimpleReactionShape extends ReactionStepShape {
 		if (getDisplayLabels() || isSelected()) {
 			g.setColor(forgroundColor);
 			// java.awt.FontMetrics fm = g.getFontMetrics();
-			int textX = absPosX + getSpaceManager().getSize().width / 2 - getLabelSize().width / 2;
-			int textY = absPosY + getLabelSize().height - diameter;
+			int textX = absPosX + offsetX + getSpaceManager().getSize().width / 2 
+			- getLabelSize().width / 2;
+			int textY = absPosY + offsetY + getLabelSize().height - diameter;
 			if (getLabel() != null && getLabel().length() > 0) {
 				if (isSelected()) {
 					drawRaisedOutline(textX - 5, textY - getLabelSize().height + 3,

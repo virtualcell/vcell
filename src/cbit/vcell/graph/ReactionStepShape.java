@@ -8,6 +8,8 @@ import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.MutableVisualState;
 import cbit.vcell.model.ReactionStep;
+
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -16,15 +18,14 @@ import java.awt.geom.Area;
 
 public abstract class ReactionStepShape extends ElipseShape {
 	ReactionStep reactionStep = null;
-	int radius = 5;
 	Area icon = null;
 	private static boolean bDisplayLabels = false;
 
 	public ReactionStepShape(ReactionStep reactionStep, GraphModel graphModel) {
 		super(graphModel);
 		this.reactionStep = reactionStep;
-		defaultBG = java.awt.Color.yellow;
-		defaultFGselect = java.awt.Color.black;
+		defaultBG = Color.BLACK;
+		defaultFGselect = Color.BLACK;
 		backgroundColor = defaultBG;
 	}
 
@@ -44,7 +45,7 @@ public abstract class ReactionStepShape extends ElipseShape {
 
 	@Override
 	public Dimension getPreferedSize(Graphics2D g) {
-		getSpaceManager().setSizePreferred(20, 16);
+		getSpaceManager().setSizePreferred(12, 12);
 		if(getLabel() != null && getLabel().length() > 0){
 			FontMetrics fontMetrics = g.getFontMetrics();
 			setLabelSize(fontMetrics.stringWidth(getLabel()), 
