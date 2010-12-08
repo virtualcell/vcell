@@ -215,7 +215,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 					speciesContext.setName(species.getCommonName());
 					getStructureCartoon().getModel().addSpecies(species);
 					getStructureCartoon().getModel().addSpeciesContext(speciesContext);
-					getGraphModel().getShapeFromModelObject(speciesContext).select();
+					getGraphModel().select(speciesContext);
 				} catch (PropertyVetoException e) {
 					e.printStackTrace();
 					generateErrorDialog(e, 0, 0);
@@ -590,7 +590,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 			return;
 		}
 		//
-		getStructureCartoon().select(pickedShape);
+		getStructureCartoon().selectShape(pickedShape);
 	}
 
 	public void setGraphModel(StructureCartoon newCartoon) {

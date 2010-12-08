@@ -251,7 +251,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 
 		if (pickedShape==null) return;
 		//	if (pickedShape!=selectedShape){
-		getStructureMappingCartoon().select(pickedShape);
+		getStructureMappingCartoon().selectShape(pickedShape);
 		//	}	
 	}
 

@@ -751,7 +751,7 @@ private void selectEventFromWorld(Point worldPoint, boolean bShift, boolean bCnt
 			}
 		}
 		if(pickedShape != null){
-			getConstraintsGraphModel().select(pickedShape);
+			getConstraintsGraphModel().selectShape(pickedShape);
 		}
 
 	}else if (bShift){
@@ -765,7 +765,7 @@ private void selectEventFromWorld(Point worldPoint, boolean bShift, boolean bCnt
 		if(getConstraintsGraphModel().getSelectedShape() instanceof ContainerShape){
 			getConstraintsGraphModel().clearSelection();
 		}
-		getConstraintsGraphModel().select(pickedShape);
+		getConstraintsGraphModel().selectShape(pickedShape);
 	}else if (bCntrl){
 		Shape pickedShape = getConstraintsGraphModel().pickWorld(worldPoint);
 		if (pickedShape==null){
@@ -775,9 +775,9 @@ private void selectEventFromWorld(Point worldPoint, boolean bShift, boolean bCnt
 			return;
 		}
 		if (pickedShape.isSelected()){
-			getConstraintsGraphModel().deselect(pickedShape);
+			getConstraintsGraphModel().deselectShape(pickedShape);
 		}else{
-			getConstraintsGraphModel().select(pickedShape);
+			getConstraintsGraphModel().selectShape(pickedShape);
 		}
 	}
 }
@@ -795,7 +795,7 @@ private void selectEventFromWorld(Rectangle rect, boolean bShift, boolean bCntrl
 		List<Shape> shapes = getConstraintsGraphModel().pickWorld(rect);
 		for (Shape shape : shapes){
 			if (ShapeUtil.isMovable(shape)){
-				getConstraintsGraphModel().select(shape);
+				getConstraintsGraphModel().selectShape(shape);
 			}
 		}
 	} else if (bShift) {
@@ -805,7 +805,7 @@ private void selectEventFromWorld(Rectangle rect, boolean bShift, boolean bCntrl
 		List<Shape> shapes = getConstraintsGraphModel().pickWorld(rect);
 		for (Shape shape : shapes){
 			if (ShapeUtil.isMovable(shape)){
-				getConstraintsGraphModel().select(shape);
+				getConstraintsGraphModel().selectShape(shape);
 			}
 		}
 	}else if (bCntrl){
@@ -816,9 +816,9 @@ private void selectEventFromWorld(Rectangle rect, boolean bShift, boolean bCntrl
 		for (Shape shape : shapes){
 			if (ShapeUtil.isMovable(shape)){
 				if (shape.isSelected()){
-					getConstraintsGraphModel().deselect(shape);
+					getConstraintsGraphModel().deselectShape(shape);
 				} else {
-					getConstraintsGraphModel().select(shape);
+					getConstraintsGraphModel().selectShape(shape);
 				}
 			}
 		}

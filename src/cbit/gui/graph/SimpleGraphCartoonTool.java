@@ -541,7 +541,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 				}
 			}
 			if (pickedShape != null) {
-				getGraphModel().select(pickedShape);
+				getGraphModel().selectShape(pickedShape);
 			}
 
 		} else if (bShift) {
@@ -555,7 +555,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 			if (getGraphModel().getSelectedShape() instanceof ContainerShape) {
 				getGraphModel().clearSelection();
 			}
-			getGraphModel().select(pickedShape);
+			getGraphModel().selectShape(pickedShape);
 		} else if (bCntrl) {
 			Shape pickedShape = getGraphModel().pickWorld(worldPoint);
 			if (pickedShape == null) {
@@ -565,9 +565,9 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 				return;
 			}
 			if (pickedShape.isSelected()) {
-				getGraphModel().deselect(pickedShape);
+				getGraphModel().deselectShape(pickedShape);
 			} else {
-				getGraphModel().select(pickedShape);
+				getGraphModel().selectShape(pickedShape);
 			}
 		}
 	}
@@ -579,7 +579,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 			List<Shape> shapes = getGraphModel().pickWorld(rect);
 			for (Shape shape : shapes) {
 				if (ShapeUtil.isMovable(shape)) {
-					getGraphModel().select(shape);
+					getGraphModel().selectShape(shape);
 				}
 			}
 		} else if (bShift) {
@@ -589,7 +589,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 			List<Shape> shapes = getGraphModel().pickWorld(rect);
 			for (Shape shape : shapes) {
 				if (ShapeUtil.isMovable(shape)) {
-					getGraphModel().select(shape);
+					getGraphModel().selectShape(shape);
 				}
 			}
 		} else if (bCntrl) {
@@ -600,9 +600,9 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 			for (Shape shape : shapes) {
 				if (ShapeUtil.isMovable(shape)) {
 					if (shape.isSelected()) {
-						getGraphModel().deselect(shape);
+						getGraphModel().deselectShape(shape);
 					} else {
-						getGraphModel().select(shape);
+						getGraphModel().selectShape(shape);
 					}
 				}
 			}

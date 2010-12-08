@@ -4,7 +4,6 @@ package cbit.vcell.graph;
  * All rights reserved.
  */
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
@@ -26,22 +25,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.gui.graph.GraphEmbeddingManager;
 import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.CartoonTool.Mode;
-import cbit.gui.graph.actions.CartoonToolMiscActions;
-import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.gui.ModelParametersDialog;
 
 @SuppressWarnings("serial")
 public class ReactionCartoonEditorPanel extends JPanel implements ActionListener {
