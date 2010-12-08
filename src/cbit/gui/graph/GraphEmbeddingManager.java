@@ -2,6 +2,7 @@ package cbit.gui.graph;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
@@ -172,7 +173,7 @@ public class GraphEmbeddingManager {
 		graphDim.p2 = newPoint;
 		graph.dimensions = graphDim;
 		// Add nodes (Vertex) to the graph
-		List<Shape> shapeEnum = graphView.getGraphModel().getShapes();
+		Collection<Shape> shapeEnum = graphView.getGraphModel().getShapes();
 		GlgGraphNode graphNode;
 		HashMap<Shape, GlgGraphNode> nodeMap = new HashMap<Shape, GlgGraphNode>();
 		for(Shape shape : shapeEnum) {

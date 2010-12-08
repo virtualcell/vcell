@@ -289,4 +289,19 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 		endShape = null;
 		refreshLayout();
 	}
+
+	public void setStart(Point end) throws Exception {
+		this.start = end;
+		startShape = null;
+		refreshLayout();
+	}
+	
+	public Point getStart() {
+		return start;
+	}
+	
+	public Point getEnd() {
+		return end;
+	}
+	
 }

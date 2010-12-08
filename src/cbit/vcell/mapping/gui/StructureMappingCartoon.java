@@ -1,12 +1,7 @@
 package cbit.vcell.mapping.gui;
-/*
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
- */
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
+import java.util.Collection;
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
@@ -130,7 +125,7 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 		}	
 		// assign children to shapes according to heirarchy in Model
 		int nullParentCount=0;
-		List<Shape> shapes = getShapes();
+		Collection<Shape> shapes = getShapes();
 		for(Shape shape : shapes) {
 			// for each featureShape, find corresponding featureShape
 			if (shape instanceof FeatureShape){

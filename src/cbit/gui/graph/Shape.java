@@ -43,7 +43,6 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 	protected Color backgroundColor = defaultBG;
 	protected Color forgroundColor = defaultFG;
 
-	private boolean bSelected = false;
 	protected GraphModel graphModel = null;
 
 	private Font boldFont = null;
@@ -213,7 +212,7 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 	protected abstract boolean isInside(Point p);
 
 	public boolean isSelected() {
-		return bSelected;
+		return graphModel.isShapeSelected(this);
 	}
 
 	public abstract void refreshLayout() throws LayoutException;
@@ -300,11 +299,14 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 		refreshLayout();
 	}
 
-	public void select() {
+	public void notifySelected() {
 		backgroundColor = defaultBGselect;
 		forgroundColor = defaultFGselect;
-		bSelected = true;
-		return;
+	}
+
+	public void notifyUnselected() {
+		backgroundColor = defaultBG;
+		forgroundColor = defaultFG;
 	}
 
 	public void setDirty(boolean isDirty) {
@@ -320,12 +322,6 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 		return getClass().getName() + "@" + Integer.toHexString(hashCode())
 				+ "(" + getLabel() + ")";
 		// ="+getModelObject();
-	}
-
-	public void unselect() {
-		backgroundColor = defaultBG;
-		forgroundColor = defaultFG;
-		bSelected = false;
 	}
 
 }

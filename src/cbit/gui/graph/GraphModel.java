@@ -14,18 +14,26 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import cbit.gui.graph.GraphListener;
 
 public abstract class GraphModel {
 
-	private List<Shape> shapeList = new ArrayList<Shape>();
+	public static final String PROPERTY_NAME_SELECTED = "selected";
+	
 	protected transient GraphListener aGraphListener = null;
 	protected transient PropertyChangeSupport propertyChange;
 	private int fieldZoomPercent = 100;
 	private boolean fieldResizable = true;
+	protected Set<Object> selectedObjects = new HashSet<Object>();
+	protected Map<Object, Shape> objectShapeMap = new HashMap<Object, Shape>();
 
 	public void addGraphListener(GraphListener newListener) {
 		aGraphListener = GraphEventMulticaster.add(aGraphListener, newListener);
@@ -41,27 +49,66 @@ public abstract class GraphModel {
 	}
 
 	public final void addShape(Shape shape) {
-		shapeList.add(shape);
+		objectShapeMap.put(shape.getModelObject(), shape);
 	}
 
 	protected final void clearAllShapes() {
-		shapeList.clear();
+		clearSelection();
+		objectShapeMap.clear();
 	}
 
 	public void clearSelection() {
-		for (Shape fs : shapeList) {
-			if (fs.isSelected()) {
-				fs.unselect();
-			}
+		Object[] selectedOld = selectedObjects.toArray();
+		selectedObjects.clear();
+		for(Object object : selectedOld) {
+			Shape shape = objectShapeMap.get(object);
+			shape.notifyUnselected();
 		}
 		fireGraphChanged(new GraphEvent(this));
+		Object[] selectedNew = selectedObjects.toArray();
+		firePropertyChange(PROPERTY_NAME_SELECTED, selectedOld, selectedNew);
 	}
 
-	public void deselect(Shape shape) {
-		if (shape.isSelected()) {
-			shape.unselect();
-			fireGraphChanged(new GraphEvent(this));
+	public void selectShape(Shape shape) {
+		if (shape != null) {
+			select(shape.getModelObject());
 		}
+	}
+	
+	public void select(Object object) {
+		if(!selectedObjects.contains(object)) {
+			Object[] selectedOld = selectedObjects.toArray();
+			selectedObjects.add(object);
+			objectShapeMap.get(object).notifySelected();
+			Object[] selectedNew = selectedObjects.toArray();
+			fireGraphChanged(new GraphEvent(this));
+			firePropertyChange(PROPERTY_NAME_SELECTED, selectedOld, selectedNew);
+		}
+	}
+	
+	public void deselectShape(Shape shape) {
+		if (shape != null) {
+			deselect(shape.getModelObject());
+		}
+	}
+	
+	public void deselect(Object object) {
+		if(selectedObjects.contains(object)) {
+			Object[] selectedOld = selectedObjects.toArray();
+			selectedObjects.remove(object);
+			objectShapeMap.get(object).notifyUnselected();
+			Object[] selectedNew = selectedObjects.toArray();
+			fireGraphChanged(new GraphEvent(this));
+			firePropertyChange(PROPERTY_NAME_SELECTED, selectedOld, selectedNew);
+		}
+	}
+	
+	public boolean isShapeSelected(Shape shape) {
+		return isSelected(shape.getModelObject());
+	}
+	
+	public boolean isSelected(Object object) {
+		return selectedObjects.contains(object);
 	}
 
 	public void fireGraphChanged() {
@@ -89,35 +136,6 @@ public abstract class GraphModel {
 
 	public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
 		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-	}
-
-	ElipseShape firstNode() {
-		for (Shape fs : shapeList) {
-			if (fs instanceof ElipseShape) {
-				return (ElipseShape) fs;
-			}
-		}
-		return null;
-	}
-
-	int getIndexFromNode(ElipseShape shape) {
-		return shapeList.indexOf(shape);
-	}
-
-	ElipseShape getNodeFromIndex(int index) {
-		if (index < 0 || index >= shapeList.size()) {
-			return null;
-		}
-		Shape shape = shapeList.get(index);
-		if (shape instanceof ElipseShape) {
-			return (ElipseShape) shape;
-		} else {
-			return null;
-		}
-	}
-
-	public int getNumShapes() {
-		return shapeList.size();
 	}
 
 	public Dimension getPreferedSize(Graphics2D g) {
@@ -157,8 +175,9 @@ public abstract class GraphModel {
 
 	public List<Shape> getSelectedShapes() {
 		List<Shape> selectedShapes = new ArrayList<Shape>();
-		for (Shape fs : shapeList) {
-			if (fs.isSelected() && fs.getVisualState().isShowingItself()) {
+		for(Object selectedObject : selectedObjects) {
+			Shape fs = objectShapeMap.get(selectedObject);
+			if (fs.getVisualState().isShowingItself()) {
 				selectedShapes.add(fs);
 			}
 		}
@@ -166,8 +185,7 @@ public abstract class GraphModel {
 	}
 
 	public Shape getShapeFromLabel(String label) {
-		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.get(i);
+		for(Shape fs : objectShapeMap.values()) {
 			if (label.equals(fs.getLabel())) {
 				return fs;
 			}
@@ -176,29 +194,27 @@ public abstract class GraphModel {
 	}
 
 	public Shape getShapeFromModelObject(Object obj) {
-		for (int i = 0; i < shapeList.size(); i++) {
-			Shape fs = shapeList.get(i);
-			if (fs.getModelObject() == obj) {
-				return fs;
-			}
-		}
-		return null;
+		return objectShapeMap.get(obj);
 	}
 
-	public List<Shape> getShapes() {
-		return shapeList;
+	public Collection<Shape> getShapes() {
+		return objectShapeMap.values();
+	}
+	
+	public Set<Object> getObjects() {
+		return objectShapeMap.keySet();
 	}
 
 	public Shape getTopShape() {
-		if (shapeList == null) {
+		if (objectShapeMap == null) {
 			return null;
 		}
-		int numShapes = shapeList.size();
+		int numShapes = objectShapeMap.size();
 		if (numShapes == 0) {
 			return null;
 		}
 		Shape topShape = null;
-		for (Shape fs : shapeList) {
+		for (Shape fs : objectShapeMap.values()) {
 			if (fs.getParent() == null) {
 				if (topShape != null) {
 					showShapeHierarchyBottomUp();
@@ -228,7 +244,7 @@ public abstract class GraphModel {
 	}
 
 	boolean hasEdge(ElipseShape node1, ElipseShape node2) {
-		for (Shape fs : shapeList) {
+		for (Shape fs : objectShapeMap.values()) {
 			if (fs instanceof EdgeShape) {
 				EdgeShape edge = (EdgeShape) fs;
 				if ((edge.startShape == node1 && edge.endShape == node2)
@@ -244,41 +260,8 @@ public abstract class GraphModel {
 		return getPropertyChange().hasListeners(propertyName);
 	}
 
-	ElipseShape nextNode(ElipseShape shape) {
-		int startIndex = shapeList.indexOf(shape) + 1;
-		if (startIndex >= shapeList.size()) {
-			return null;
-		}
-		for (Shape fs : shapeList) {
-			if (fs instanceof ElipseShape) {
-				return (ElipseShape) fs;
-			}
-		}
-		return null;
-	}
-
 	public void notifyChangeEvent() {
 		fireGraphChanged(new GraphEvent(this));
-	}
-
-	int numberOfEdges() {
-		int nodeCount = 0;
-		for (Shape fs : shapeList) {
-			if (fs instanceof EdgeShape) {
-				nodeCount++;
-			}
-		}
-		return nodeCount;
-	}
-
-	int numberOfNodes() {
-		int nodeCount = 0;
-		for (Shape fs : shapeList) {
-			if (fs instanceof ElipseShape) {
-				nodeCount++;
-			}
-		}
-		return nodeCount;
 	}
 
 	public void paint(java.awt.Graphics2D g, GraphPane canvas) {
@@ -294,7 +277,7 @@ public abstract class GraphModel {
 				// return;
 			}
 			Shape topShape = getTopShape();
-			if (shapeList == null && canvas != null) {
+			if (objectShapeMap == null && canvas != null) {
 				canvas.clear(g);
 				return;
 			} else if (topShape != null) {
@@ -313,7 +296,7 @@ public abstract class GraphModel {
 	}
 
 	public Shape pickEdgeWorld(Point point) {
-		for (Shape fs : shapeList) {
+		for (Shape fs : objectShapeMap.values()) {
 			if (fs instanceof EdgeShape) {
 				Shape pickedShape = fs.pick(point);
 				if (pickedShape == fs) {
@@ -336,7 +319,7 @@ public abstract class GraphModel {
 		if (topShape == null)
 			return null;
 		List<Shape> pickedList = new ArrayList<Shape>();
-		for (Shape shape : shapeList) {
+		for (Shape shape : objectShapeMap.values()) {
 			if (argRectWorld.contains(shape.spaceManager.getAbsLoc())) {
 				pickedList.add(shape);
 			}
@@ -361,9 +344,8 @@ public abstract class GraphModel {
 	}
 
 	public void removeShape(Shape shape) {
-		if (shapeList.contains(shape)) {
-			shapeList.remove(shape);
-		}
+		deselectShape(shape);
+		objectShapeMap.remove(shape.getModelObject());
 		Shape parent = shape.getParent();
 		if (parent != null) {
 			parent.removeChild(shape);
@@ -378,16 +360,6 @@ public abstract class GraphModel {
 			double newHeight = (100.0 / fieldZoomPercent) * newSize.getHeight();
 			getTopShape().resize(g,
 					new Dimension((int) newWidth, (int) newHeight));
-		}
-	}
-
-	public void select(Shape shape) {
-		if (shape == null) {
-			return;
-		}
-		if (!shape.isSelected()) {
-			shape.select();
-			fireGraphChanged(new GraphEvent(this));
 		}
 	}
 
@@ -411,7 +383,7 @@ public abstract class GraphModel {
 
 	public void showShapeHierarchyBottomUp() {
 		System.out.println("<<<<<<<<<Shape Hierarchy Bottom Up>>>>>>>>>");
-		List<Shape> shapes = new ArrayList<Shape>(shapeList);
+		List<Shape> shapes = new ArrayList<Shape>(objectShapeMap.values());
 		// gather top(s) ... should only have one
 		List<Shape> topList = new ArrayList<Shape>();
 		for (int i = 0; i < shapes.size(); i++) {
@@ -461,7 +433,7 @@ public abstract class GraphModel {
 
 	public void showShapeHierarchyTopDown() {
 		System.out.println("<<<<<<<<<Shape Hierarchy Top Down>>>>>>>>>");
-		List<Shape> shapes = new ArrayList<Shape>(shapeList);
+		List<Shape> shapes = new ArrayList<Shape>(objectShapeMap.values());
 		// gather top(s) ... should only have one
 		List<Shape> topList = new ArrayList<Shape>();
 		for (int i = 0; i < shapes.size(); i++) {

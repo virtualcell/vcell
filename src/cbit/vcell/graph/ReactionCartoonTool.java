@@ -33,6 +33,7 @@ import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.ZEnforcer;
 
+import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphEmbeddingManager;
 import cbit.gui.graph.GraphModel;
@@ -960,7 +961,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							getReactionCartoon().notifyChangeEvent();
 							break;
 						}
-						// add reactionParticipant to model
 					} else if (pickedShape instanceof SpeciesContextShape) {
 						SpeciesContext speciesContext = (SpeciesContext) pickedShape.getModelObject();
 						Object startShapeObject = startShape.getModelObject();
@@ -992,13 +992,12 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							SpeciesContext speciesContextStart = (SpeciesContext) startShapeObject;
 							Structure structure = speciesContext.getStructure();
 							if(structure.equals(speciesContextStart.getStructure())) {
-								Model model = reactionCartoon.getModel();
+								Model model = getReactionCartoon().getModel();
 								String reactionName = model.getFreeReactionStepName();
 								SimpleReaction reaction = new SimpleReaction(structure, reactionName);
 								model.addReactionStep(reaction);
 								reaction.addReactant(speciesContextStart, 1);
 								reaction.addProduct(speciesContext, 1);
-								resetMouseActionHistory();
 								getReactionCartoon().notifyChangeEvent();
 								Point pickedShapePos = pickedShape.getSpaceManager().getAbsLoc();
 								Point startShapePos = startShape.getSpaceManager().getAbsLoc();
@@ -1120,7 +1119,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				return;
 			}
 			if (pickedShape != null) {
-				getReactionCartoon().select(pickedShape);
+				getReactionCartoon().selectShape(pickedShape);
 			}
 
 		} else if (bShift) {
@@ -1134,7 +1133,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			if (getReactionCartoon().getSelectedShape() instanceof ReactionContainerShape) {
 				getReactionCartoon().clearSelection();
 			}
-			getReactionCartoon().select(pickedShape);
+			getReactionCartoon().selectShape(pickedShape);
 		} else if (bCntrl) {
 			Shape pickedShape = getReactionCartoon().pickWorld(worldPoint);
 			if (pickedShape == null) {
@@ -1144,9 +1143,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				return;
 			}
 			if (pickedShape.isSelected()) {
-				getReactionCartoon().deselect(pickedShape);
+				getReactionCartoon().deselectShape(pickedShape);
 			} else {
-				getReactionCartoon().select(pickedShape);
+				getReactionCartoon().selectShape(pickedShape);
 			}
 		}
 	}
@@ -1158,7 +1157,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			List<Shape> shapes = getReactionCartoon().pickWorld(rect);
 			for (Shape shape : shapes) {
 				if (ShapeUtil.isMovable(shape)) {
-					getReactionCartoon().select(shape);
+					getReactionCartoon().selectShape(shape);
 				}
 			}
 		} else if (bShift) {
@@ -1168,7 +1167,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			List<Shape> shapes = getReactionCartoon().pickWorld(rect);
 			for (Shape shape : shapes) {
 				if (ShapeUtil.isMovable(shape)) {
-					getReactionCartoon().select(shape);
+					getReactionCartoon().selectShape(shape);
 				}
 			}
 		} else if (bCntrl) {
@@ -1179,9 +1178,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			for (Shape shape : shapes) {
 				if (ShapeUtil.isMovable(shape)) {
 					if (shape.isSelected()) {
-						getReactionCartoon().deselect(shape);
+						getReactionCartoon().deselectShape(shape);
 					} else {
-						getReactionCartoon().select(shape);
+						getReactionCartoon().selectShape(shape);
 					}
 				}
 			}
