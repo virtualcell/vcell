@@ -1,12 +1,17 @@
 package cbit.vcell.modelopt.gui;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -945,36 +950,6 @@ public class OptTestPanel extends javax.swing.JPanel {
 	}
 
 	/**
-	 * Return the JLabel1 property value.
-	 * @return javax.swing.JLabel
-	 */
-	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private javax.swing.JLabel getJLabel1() {
-		if (ivjJLabel1 == null) {
-			try {
-				ivjJLabel1 = new javax.swing.JLabel();
-				ivjJLabel1.setName("JLabel1");
-				ivjJLabel1.setAlignmentY(java.awt.Component.CENTER_ALIGNMENT);
-				ivjJLabel1.setText("Parameters");
-				ivjJLabel1.setMaximumSize(new java.awt.Dimension(68, 30));
-				ivjJLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-				ivjJLabel1.setPreferredSize(new java.awt.Dimension(68, 30));
-				ivjJLabel1.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
-				ivjJLabel1.setFont(new java.awt.Font("Arial", 1, 14));
-				ivjJLabel1.setMinimumSize(new java.awt.Dimension(68, 30));
-				ivjJLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-				// user code begin {1}
-				// user code end
-			} catch (java.lang.Throwable ivjExc) {
-				// user code begin {2}
-				// user code end
-				handleException(ivjExc);
-			}
-		}
-		return ivjJLabel1;
-	}
-
-	/**
 	 * Return the JLabel2 property value.
 	 * @return javax.swing.JLabel
 	 */
@@ -1025,34 +1000,10 @@ public class OptTestPanel extends javax.swing.JPanel {
 		return ivjJLabel3;
 	}
 
-
-	/**
-	 * Return the JPanel1 property value.
-	 * @return javax.swing.JPanel
-	 */
-	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private javax.swing.JPanel getJPanel1() {
-		if (ivjJPanel1 == null) {
-			try {
-				ivjJPanel1 = new javax.swing.JPanel();
-				ivjJPanel1.setName("JPanel1");
-				ivjJPanel1.setLayout(new java.awt.FlowLayout());
-				// user code begin {1}
-				// user code end
-			} catch (java.lang.Throwable ivjExc) {
-				// user code begin {2}
-				// user code end
-				handleException(ivjExc);
-			}
-		}
-		return ivjJPanel1;
-	}
-
 	/**
 	 * Return the JPanel10 property value.
 	 * @return javax.swing.JPanel
 	 */
-	/* WARNING: THIS METHOD WILL BE REGENERATED. */
 	private javax.swing.JPanel getJPanel10() {
 		if (ivjJPanel10 == null) {
 			try {
@@ -1195,13 +1146,14 @@ public class OptTestPanel extends javax.swing.JPanel {
 			try {
 				ivjJPanel4 = new javax.swing.JPanel();
 				ivjJPanel4.setName("JPanel4");
-				ivjJPanel4.setPreferredSize(new java.awt.Dimension(500, 200));
+//				ivjJPanel4.setPreferredSize(new java.awt.Dimension(500, 200));
 				ivjJPanel4.setLayout(new java.awt.BorderLayout());
-				getJPanel4().add(getparameterMappingPanel(), "Center");
-				getJPanel4().add(getJPanel1(), "South");
-				getJPanel4().add(getJLabel1(), "North");
-				// user code begin {1}
-				// user code end
+				getJPanel4().add(getparameterMappingPanel(), BorderLayout.CENTER);	
+				JLabel ivjJLabel1 = new javax.swing.JLabel("Parameters");
+				ivjJLabel1.setHorizontalAlignment(SwingConstants.CENTER);
+				ivjJLabel1.setBorder(BorderFactory.createEmptyBorder(4,0,4,0));
+				ivjJLabel1.setFont(ivjJLabel1.getFont().deriveFont(Font.BOLD, ivjJLabel1.getFont().getSize2D() + 1));				
+				getJPanel4().add(ivjJLabel1, BorderLayout.NORTH);
 			} catch (java.lang.Throwable ivjExc) {
 				// user code begin {2}
 				// user code end
@@ -1212,41 +1164,9 @@ public class OptTestPanel extends javax.swing.JPanel {
 	}
 
 	/**
-	 * Return the JPanel5 property value.
-	 * @return javax.swing.JPanel
-	 */
-	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private javax.swing.JPanel getJPanel5() {
-		if (ivjJPanel5 == null) {
-			try {
-				ivjJPanel5 = new javax.swing.JPanel();
-				ivjJPanel5.setName("JPanel5");
-				ivjJPanel5.setLayout(new java.awt.GridBagLayout());
-				ivjJPanel5.setMinimumSize(new java.awt.Dimension(500, 200));
-
-				java.awt.GridBagConstraints constraintsJTabbedPane1 = new java.awt.GridBagConstraints();
-				constraintsJTabbedPane1.gridx = -1; constraintsJTabbedPane1.gridy = -1;
-				constraintsJTabbedPane1.fill = java.awt.GridBagConstraints.BOTH;
-				constraintsJTabbedPane1.weightx = 1.0;
-				constraintsJTabbedPane1.weighty = 1.0;
-				constraintsJTabbedPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-				getJPanel5().add(getJTabbedPane1(), constraintsJTabbedPane1);
-				// user code begin {1}
-				// user code end
-			} catch (java.lang.Throwable ivjExc) {
-				// user code begin {2}
-				// user code end
-				handleException(ivjExc);
-			}
-		}
-		return ivjJPanel5;
-	}
-
-	/**
 	 * Return the JPanel6 property value.
 	 * @return javax.swing.JPanel
 	 */
-	/* WARNING: THIS METHOD WILL BE REGENERATED. */
 	private javax.swing.JPanel getJPanel6() {
 		if (ivjJPanel6 == null) {
 			try {
@@ -1444,7 +1364,7 @@ public class OptTestPanel extends javax.swing.JPanel {
 				ivjJSplitPane1.setDividerLocation(200);
 				ivjJSplitPane1.setLastDividerLocation(1);
 				getJSplitPane1().add(getJPanel4(), "top");
-				getJSplitPane1().add(getJPanel5(), "bottom");
+				getJSplitPane1().add(getJTabbedPane1(), "bottom");
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -1466,9 +1386,9 @@ public class OptTestPanel extends javax.swing.JPanel {
 			try {
 				ivjJTabbedPane1 = new javax.swing.JTabbedPane();
 				ivjJTabbedPane1.setName("JTabbedPane1");
-				ivjJTabbedPane1.insertTab("Reference Data", null, getJPanel2(), null, 0);
-				ivjJTabbedPane1.insertTab("Optimization", null, getJPanel3(), null, 1);
-				ivjJTabbedPane1.insertTab("Annotation", null, getAnnotationPanel(), null, 2);
+				ivjJTabbedPane1.addTab("Reference Data", getJPanel2());
+				ivjJTabbedPane1.addTab("Optimization", getJPanel3());
+				ivjJTabbedPane1.addTab("Annotation", getAnnotationPanel());
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -1997,18 +1917,14 @@ public class OptTestPanel extends javax.swing.JPanel {
 	private void initialize() {
 		try {
 			setName("OptTestPanel");
-			setPreferredSize(new java.awt.Dimension(800, 700));
+			//setPreferredSize(new java.awt.Dimension(800, 700));
 			setLayout(new java.awt.GridBagLayout());
 			setSize(936, 559);
-			setMinimumSize(new java.awt.Dimension(700, 700));
+			//setMinimumSize(new java.awt.Dimension(700, 700));
 
-			java.awt.GridBagConstraints constraintsJSplitPane1 = new java.awt.GridBagConstraints();
-			constraintsJSplitPane1.gridx = 0; constraintsJSplitPane1.gridy = 0;
-			constraintsJSplitPane1.fill = java.awt.GridBagConstraints.BOTH;
-			constraintsJSplitPane1.weightx = 1.0;
-			constraintsJSplitPane1.weighty = 1.0;
-			constraintsJSplitPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-			add(getJSplitPane1(), constraintsJSplitPane1);
+			setLayout(new BorderLayout());
+			add(getJSplitPane1(), BorderLayout.CENTER);
+			
 			initConnections();
 			connEtoC7();
 			connEtoM8();

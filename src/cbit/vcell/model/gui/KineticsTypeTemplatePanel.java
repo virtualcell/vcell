@@ -116,7 +116,7 @@ private ScrollTable getScrollPaneTable() {
 private ParameterTableModel getParameterTableModel() {
 	if (ivjParameterTableModel == null) {
 		try {
-			ivjParameterTableModel = new ParameterTableModel(getScrollPaneTable());
+			ivjParameterTableModel = new ParameterTableModel(getScrollPaneTable(), bEditable);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -171,7 +171,7 @@ private void initialize() {
 		constraintsJComboBox1.weightx = 1.0;
 		constraintsJComboBox1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getKineticsTypeComboBox(), constraintsJComboBox1);
-
+		getKineticsTypeComboBox().setEnabled(bEditable);
 		
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 2;
@@ -191,13 +191,6 @@ private void initialize() {
 				
 		initConnections();
 		initKineticChoices();
-		
-		if (!bEditable) {
-			for (Component c : getComponents()) {
-				c.setEnabled(false);
-			}
-			label.setEnabled(true);
-		}
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

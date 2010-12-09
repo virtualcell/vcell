@@ -5,8 +5,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
@@ -30,35 +28,30 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.function.DefaultScalarFunctionTest;
 import cbit.gui.AutoCompleteSymbolFilter;
-import cbit.gui.ScopedExpression;
-import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContextTest;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContextTest;
 import cbit.vcell.model.ReservedBioSymbolEntries;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 
+@SuppressWarnings("serial")
 public class EventPanel extends JPanel {
 		// for trigger and delay 
 		private JPanel labels_n_textfields_Panel = null;
@@ -73,7 +66,6 @@ public class EventPanel extends JPanel {
 		private JButton addButton = null;
 		private JButton deleteButton = null;
 		// for table to display event assignment variables and expressions and units
-		private JScrollPane eventTargetsTableScrollPane = null;
 		private JSortTable eventTargetsScrollPaneTable = null;
 		private EventAssignmentsTableModel eventAssgnListTableModel1 = null;
 		// for adding an event assignment - var and expression

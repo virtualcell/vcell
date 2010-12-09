@@ -1,5 +1,6 @@
 package cbit.vcell.mapping.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -100,16 +101,9 @@ public ReactionSpecsPanel() {
 private void initialize() {
 	try {
 		setName("ReactionSpecsPanel");
-		setLayout(new java.awt.GridBagLayout());
+		setLayout(new BorderLayout());
 		//setSize(456, 539);
-
-		java.awt.GridBagConstraints constraintsJSplitPane1 = new java.awt.GridBagConstraints();
-		constraintsJSplitPane1.gridx = 0; constraintsJSplitPane1.gridy = 0;
-		constraintsJSplitPane1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJSplitPane1.weightx = 1.0;
-		constraintsJSplitPane1.weighty = 1.0;
-		constraintsJSplitPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getOuterSplitPane(), constraintsJSplitPane1);
+		add(getOuterSplitPane(), BorderLayout.CENTER);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -223,7 +217,7 @@ private JSplitPane getOuterSplitPane() {
 	if (outerSplitPane == null) {
 		outerSplitPane = new JSplitPane();
 		outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		outerSplitPane.setDividerLocation(300);
+		outerSplitPane.setDividerLocation(350);
 		outerSplitPane.setTopComponent(getScrollPaneTable().getEnclosingScrollPane());
 		outerSplitPane.setBottomComponent(getKineticsTypeTemplatePanel());	// reaction kinetics editor
 	}
@@ -386,7 +380,7 @@ private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 		} else {
 			getKineticsTypeTemplatePanel().setReactionStep((ReactionStep)newValue);
 		}
-		outerSplitPane.setDividerLocation(250);
+		outerSplitPane.setDividerLocation(350);
 		firePropertyChange(PARAMETER_NAME_SELECTED_REACTION_STEP, null, newValue);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

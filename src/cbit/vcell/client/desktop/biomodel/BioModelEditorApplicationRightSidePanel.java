@@ -15,7 +15,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.gui.EditorScrollTable;
 
-import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor.BioModelEditorSelection;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
@@ -28,7 +28,7 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends JPanel 
 	protected BioModelEditorApplicationRightSideTableModel<T> tableModel = null;
 	protected SimulationContext simulationContext;
 	protected JTextField textFieldSearch = null;
-	protected SelectionEvent selectionEvent = null;
+	protected BioModelEditorSelection bioModelEditorSelection = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
 	private class InternalEventHandler implements ActionListener, PropertyChangeListener, DocumentListener, ListSelectionListener {
@@ -114,9 +114,9 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends JPanel 
 		int[] rows = table.getSelectedRows();
 		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < tableModel.getDataSize()));
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {
-			setSelectionEvent(new SelectionEvent(simulationContext, tableModel.getValueAt(rows[0])));
+			setBioModelEditorSelection(new BioModelEditorSelection(simulationContext, tableModel.getValueAt(rows[0])));
 		} else {
-			setSelectionEvent(new SelectionEvent(simulationContext, null));
+			setBioModelEditorSelection(new BioModelEditorSelection(simulationContext, null));
 		}
 	}
 	
@@ -129,9 +129,9 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends JPanel 
 		}
 	}
 
-	public final void setSelectionEvent(SelectionEvent newValue) {
-		SelectionEvent oldValue = this.selectionEvent;
-		this.selectionEvent = newValue;
-		firePropertyChange(BioModelEditor.PROPERTY_NAME_SELECTION_EVENT, oldValue, newValue);
+	public final void setBioModelEditorSelection(BioModelEditorSelection newValue) {
+		BioModelEditorSelection oldValue = this.bioModelEditorSelection;
+		this.bioModelEditorSelection = newValue;
+		firePropertyChange(BioModelEditor.PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION, oldValue, newValue);
 	}
 }

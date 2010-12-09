@@ -19,7 +19,6 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.gui.SpeciesEditorPanel;
 
 @SuppressWarnings("serial")
 public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<SpeciesContext> {	
@@ -78,7 +77,8 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 		gbc.fill = GridBagConstraints.BOTH;
 		topPanel.add(table.getEnclosingScrollPane(), gbc);
 		
-		splitPane.setDividerLocation(400);
+		splitPane.setDividerLocation(450);
+		splitPane.setResizeWeight(1.0);
 		splitPane.setTopComponent(topPanel);
 		splitPane.setBottomComponent(speciesEditorPanel);
 		setLayout(new BorderLayout());

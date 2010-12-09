@@ -1,8 +1,9 @@
-package cbit.vcell.model.gui;
+package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 
 import javax.swing.DefaultComboBoxModel;
@@ -12,6 +13,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextArea;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
@@ -25,6 +28,8 @@ import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.gui.ParameterTableModel;
+import cbit.vcell.model.gui.ReactionElectricalPropertiesPanel;
 
 @SuppressWarnings("serial")
 public class SimpleReactionPropertiesPanel extends javax.swing.JPanel {
@@ -96,7 +101,7 @@ private ScrollTable getScrollPaneTable() {
 private ParameterTableModel getParameterTableModel() {
 	if (ivjParameterTableModel == null) {
 		try {
-			ivjParameterTableModel = new ParameterTableModel(getScrollPaneTable());
+			ivjParameterTableModel = new ParameterTableModel(getScrollPaneTable(), true);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -132,31 +137,18 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		
 		reactionElectricalPropertiesPanel = new ReactionElectricalPropertiesPanel();
+		reactionElectricalPropertiesPanel.setVisible(false);
 		
 		int gridy = 0;
 		// Annotation
+//		GridBagConstraints gbc = new java.awt.GridBagConstraints();
+//		gbc.gridx = 0; gbc.gridy = gridy;
+//		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+//		gbc.anchor = GridBagConstraints.LINE_END;
+//		JLabel label = new JLabel("Annotation");
+//		add(label, gbc);
+		
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; gbc.gridy = gridy;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		JLabel label = new JLabel("Annotation");
-		add(label, gbc);
-		
-		annotationTextArea = new javax.swing.JTextArea();
-		annotationTextArea.setLineWrap(true);
-		annotationTextArea.setWrapStyleWord(true);
-		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 1; gbc.gridy = gridy;
-		gbc.gridwidth = 2;
-		gbc.weightx = 1.0;
-		gbc.weighty = 0.1;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(jsp, gbc);
-		
-		gridy ++;		
-		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; gbc.gridy = gridy;
 		gbc.gridwidth = 4;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
@@ -194,6 +186,27 @@ private void initialize() {
 		constraintsParameterPanel.weighty = 1.0;
 		constraintsParameterPanel.gridwidth = 3;
 		add(getScrollPaneTable().getEnclosingScrollPane(), constraintsParameterPanel);
+		
+		gridy ++;
+		annotationTextArea = new javax.swing.JTextArea(2,20);
+		annotationTextArea.setLineWrap(true);
+		annotationTextArea.setWrapStyleWord(true);
+		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Add Annotation Here", false);
+		collapsiblePanel.setLayout(new GridBagLayout());
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		collapsiblePanel.add(jsp, gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; gbc.gridy = gridy;
+		gbc.gridwidth = 3;
+		gbc.weightx = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		add(collapsiblePanel, gbc);
 		
 		setBackground(Color.white);
 		initConnections();
@@ -435,7 +448,12 @@ private void initKineticChoices() {
 }
 
 protected void updateInterface() {
-	if (reactionStep == null) {
+	boolean bEnabled = reactionStep != null;
+	getParameterTableModel().setEditable(bEnabled);
+	kineticsTypeComboBox.setEnabled(bEnabled);
+	BeanUtils.enableComponents(reactionElectricalPropertiesPanel, bEnabled);
+	jToggleButton.setEnabled(bEnabled);
+	if (!bEnabled) {
 		return;
 	}
 	initKineticChoices();

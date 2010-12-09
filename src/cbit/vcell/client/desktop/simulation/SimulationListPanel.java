@@ -35,7 +35,7 @@ import org.vcell.util.gui.ScrollTable;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor.BioModelEditorSelection;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.Geometry;
@@ -81,7 +81,7 @@ public class SimulationListPanel extends JPanel {
 	private JMenuItem menuItemCopy = new JMenuItem("Copy");
 	private JMenuItem menuItemStop = new JMenuItem("Stop");
 	private JMenuItem menuItemStatusDetails = new JMenuItem("Status Details...");
-	private SelectionEvent selectionEvent = null;
+	private BioModelEditorSelection bioModelEditorSelection = null;
 	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, 
 		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, MouseListener {
@@ -179,10 +179,10 @@ private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 	}
 }
 
-private void setSelectionEvent(SelectionEvent newValue) {
-	SelectionEvent oldValue = selectionEvent;
-	selectionEvent = newValue;
-	firePropertyChange(BioModelEditor.PROPERTY_NAME_SELECTION_EVENT, oldValue, newValue);
+private void setBioModelEditorSelection(BioModelEditorSelection newValue) {
+	BioModelEditorSelection oldValue = bioModelEditorSelection;
+	bioModelEditorSelection = newValue;
+	firePropertyChange(BioModelEditor.PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION, oldValue, newValue);
 }
 
 /**
@@ -652,7 +652,7 @@ private void refreshButtonsAndSummary() {
 		newValue = getSimulationWorkspace().getSimulations()[selections[0]];
 	}
 	getSimulationSummaryPanel1().setSimulation(newValue);	
-	setSelectionEvent(new SelectionEvent(getSimulationWorkspace().getSimulationOwner(), newValue));	
+	setBioModelEditorSelection(new BioModelEditorSelection(getSimulationWorkspace().getSimulationOwner(), newValue));	
 }
 
 

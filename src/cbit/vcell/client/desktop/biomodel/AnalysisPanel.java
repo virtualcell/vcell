@@ -3,9 +3,6 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 
@@ -19,6 +16,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor.BioModelEditorSelection;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -42,6 +40,7 @@ public class AnalysisPanel extends JPanel {
 	private JButton ivjCopyButton;
 	private JComboBox ivjAnalysisTaskComboBox = null;	
 	private AnalysisTaskComboBoxModel ivjAnalysisTaskComboBoxModel = null;
+	private BioModelEditorSelection bioModelEditorSelection = null;
 	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -246,8 +245,16 @@ public class AnalysisPanel extends JPanel {
 	}
 	
 	private void analysisTaskComboBox_ActionPerformed() {
-		getOptTestPanel().setParameterEstimationTask((ParameterEstimationTask)getAnalysisTaskComboBox().getSelectedItem());
+		ParameterEstimationTask selectedItem = (ParameterEstimationTask)getAnalysisTaskComboBox().getSelectedItem();
+		getOptTestPanel().setParameterEstimationTask(selectedItem);
+		setBioModelEditorSelection(new BioModelEditorSelection(simulationContext, selectedItem));
 		return;
+	}
+	
+	private final void setBioModelEditorSelection(BioModelEditorSelection newValue) {
+		BioModelEditorSelection oldValue = this.bioModelEditorSelection;
+		this.bioModelEditorSelection = newValue;
+		firePropertyChange(BioModelEditor.PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION, oldValue, newValue);
 	}
 	
 	private void refreshAnalysisTaskEnables() {
@@ -269,5 +276,9 @@ public class AnalysisPanel extends JPanel {
 
 	public void setUserPreferences(UserPreferences arg1) {
 		getOptTestPanel().setUserPreferences(arg1);
+	}
+
+	public void select(ParameterEstimationTask parameterEstimationTask) {
+		getAnalysisTaskComboBox().setSelectedItem(parameterEstimationTask);
 	}
 }

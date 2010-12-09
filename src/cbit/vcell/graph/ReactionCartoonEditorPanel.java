@@ -7,7 +7,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,15 +22,14 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 
 import org.vcell.util.gui.JToolBarToggleButton;
 
+import cbit.gui.graph.CartoonTool.Mode;
 import cbit.gui.graph.GraphEmbeddingManager;
 import cbit.gui.graph.GraphPane;
-import cbit.gui.graph.CartoonTool.Mode;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Model;
@@ -41,9 +39,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	public static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(5,10);
 	public static final String PROPERTY_NAME_FLOATING = "Floating";
 	private static final Dimension TOOL_BAR_BUTTON_SIZE = new Dimension(28, 28);
-	private JPanel featureSizePanel = null;
 	private GraphPane graphPane = null;
-	private JPanel panel = null;
 	private JToolBar toolBar = null;
 	private JToolBarToggleButton speciesButton = null;
 	private JToolBarToggleButton fluxButton = null;
@@ -161,23 +157,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return getReactionCartoonTool().getDocumentManager();
 	}
 
-	private JPanel getFeatureSizePanel() {
-		if (featureSizePanel == null) {
-			try {
-				featureSizePanel = new JPanel();
-				featureSizePanel.setName("FeatureSizePanel");
-				featureSizePanel.setPreferredSize(new Dimension(22, 396));
-				featureSizePanel.setLayout(new BorderLayout());
-				featureSizePanel.setMinimumSize(new Dimension(22, 396));
-				getFeatureSizePanel().add(getJPanel1(), "South");
-				getFeatureSizePanel().add(getJScrollPane(), "Center");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return featureSizePanel;
-	}
-
 	private JToolBarToggleButton getFluxButton() {
 		if (fluxButton == null) {
 			try {
@@ -230,28 +209,15 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return graphPane;
 	}
 
-	private JPanel getJPanel1() {
-		if (panel == null) {
-			try {
-				panel = new JPanel();
-				panel.setName("JPanel1");
-				panel.setLayout(new GridBagLayout());
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return panel;
-	}
-
 	private JScrollPane getJScrollPane() {
 		if (scrollPane == null) {
 			try {
 				scrollPane = new JScrollPane();
 				scrollPane.setName("JScrollPane1");
 				scrollPane.setPreferredSize(new Dimension(22, 396));
-				scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-				scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-				scrollPane.setMinimumSize(new Dimension(22, 396));
+//				scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+//				scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+//				scrollPane.setMinimumSize(new Dimension(22, 396));
 				getJScrollPane().setViewportView(getGraphPane());
 			} catch (Throwable throwable) {
 				handleException(throwable);
@@ -396,7 +362,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return randomLayoutButton;
 	}
 
-	private ReactionCartoon getReactionCartoon() {
+	public ReactionCartoon getReactionCartoon() {
 		if (reactionCartoon == null) {
 			try {
 				reactionCartoon = new ReactionCartoon();
@@ -599,8 +565,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			setPreferredSize(new Dimension(54, 425));
 			setLayout(new BorderLayout());
 			setSize(472, 422);
-			setMinimumSize(new Dimension(54, 425));
-			add(getFeatureSizePanel(), BorderLayout.CENTER);
+//			setMinimumSize(new Dimension(54, 425));
+			add(getJScrollPane(), BorderLayout.CENTER);
 			add(getJToolBar(), BorderLayout.NORTH);
 			initConnections();
 			getModeButtonGroup().add(getStepButton());

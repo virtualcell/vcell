@@ -26,6 +26,7 @@ import cbit.vcell.units.VCUnitException;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class ParameterTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
 	private final int NUM_COLUMNS = 5;
 	public final static int COLUMN_NAME = 0;
@@ -38,9 +39,11 @@ public class ParameterTableModel extends javax.swing.table.AbstractTableModel im
 	private Kinetics fieldKinetics = null;
 	private JTable fieldParentComponentTable = null;		// needed for DialogUtils.showWarningDialog() 
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
-
-public ParameterTableModel(JTable argParentComponent) {
+	private boolean bEditable = true;
+	
+public ParameterTableModel(JTable argParentComponent, boolean bEditable) {
 	super();
+	this.bEditable = bEditable;
 	addPropertyChangeListener(this);
 	fieldParentComponentTable = argParentComponent;
 }
@@ -51,12 +54,7 @@ public ParameterTableModel(JTable argParentComponent) {
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
@@ -157,9 +155,7 @@ public int getRowCount() {
 		return getKinetics().getKineticsParameters().length + getKinetics().getUnresolvedParameters().length + getKinetics().getProxyParameters().length;
 	}
 }
-/**
- * getValueAt method comment.
- */
+
 public Object getValueAt(int row, int col) {
 	try {
 		if (col<0 || col>=NUM_COLUMNS){
@@ -182,7 +178,6 @@ public Object getValueAt(int row, int col) {
 				Expression exp = parameter.getExpression();
 				if (exp!=null){
 					if ((parameter instanceof KineticsProxyParameter) && (((KineticsProxyParameter)parameter).getTarget() instanceof ReservedSymbol)) {
-						ReservedSymbol rs = (ReservedSymbol)(((KineticsProxyParameter)parameter).getTarget());
 						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);						
 					} else {
 						return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable(), autoCompleteSymbolFilter);
@@ -224,6 +219,9 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
+	if (!bEditable) {
+		return false;
+	}
 	Parameter parameter = getParameter(rowIndex);
 	if (columnIndex == COLUMN_NAME){
 		return parameter.isNameEditable();
@@ -464,5 +462,10 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 //	}catch (java.beans.PropertyVetoException e){
 //		e.printStackTrace(System.out);
 //	}
+}
+
+public void setEditable(boolean bNewValue) {
+	bEditable = bNewValue;
+	fireTableDataChanged();
 }
 }

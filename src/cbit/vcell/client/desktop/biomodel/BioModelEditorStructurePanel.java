@@ -22,7 +22,7 @@ import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<Structure> {	
-	private CartoonEditorPanelFixed ivjCartoonEditorPanel = null;
+	private CartoonEditorPanelFixed cartoonEditorPanel = null;
 	
 	public BioModelEditorStructurePanel() {
 		super();
@@ -31,7 +31,7 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 	
 	private void initialize() {		
 		newButton.setText("New " + Structure.TYPE_NAME_FEATURE);
-		ivjCartoonEditorPanel  = new CartoonEditorPanelFixed();
+		cartoonEditorPanel  = new CartoonEditorPanelFixed();
 		
 		setLayout(new GridBagLayout());
 		int gridy = 0;
@@ -65,8 +65,8 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 		add(deleteButton, gbc);
 		
 		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.addTab("Diagram View", cartoonEditorPanel);
 		tabbedPane.addTab("Table View", table.getEnclosingScrollPane());
-		tabbedPane.addTab("Diagram View", ivjCartoonEditorPanel);
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -100,7 +100,7 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 	}
 	
 	public void setDocumentManager(DocumentManager documentManager) {
-		ivjCartoonEditorPanel.setDocumentManager(documentManager);		
+		cartoonEditorPanel.setDocumentManager(documentManager);		
 	}
 
 	protected void newButtonPressed() {
@@ -152,7 +152,7 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 	@Override
 	protected void bioModelChange() {
 		super.bioModelChange();
-		ivjCartoonEditorPanel.setBioModel(bioModel);
+		cartoonEditorPanel.setBioModel(bioModel);
 	}
 
 	@Override

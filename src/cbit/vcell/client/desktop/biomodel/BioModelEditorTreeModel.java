@@ -1,7 +1,5 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,7 +10,6 @@ import java.util.Set;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -25,7 +22,7 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
 import cbit.vcell.client.GuiConstants;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor.BioModelEditorSelection;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.document.SimulationOwner;
@@ -92,8 +89,8 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		APPLICATTIONS_NODE,		
 
 		STRUCTURES_NODE,
-		SPECIES_NODE,		
 		REACTIONS_NODE,
+		SPECIES_NODE,
 		GLOBAL_PARAMETER_NODE,
 		
 		MATHEMATICS_NODE,
@@ -115,8 +112,8 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	
 	enum ModelNodeID {		
 		STRUCTURES_NODE,
-		SPECIES_NODE,
 		REACTIONS_NODE,
+		SPECIES_NODE,
 		GLOBAL_PARAMETER_NODE,
 	}
 	
@@ -159,18 +156,18 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	// Model	
 	private BioModelEditorTreeFolderNode modelChildFolderNodes[] = {			
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.STRUCTURES_NODE, "Structures", true),
-			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SPECIES_NODE, "Species", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.REACTIONS_NODE, "Reactions", true),			
+			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SPECIES_NODE, "Species", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.GLOBAL_PARAMETER_NODE, "Global Parameters", true),			
 		};	
 	private BioModelNode structuresNode = new BioModelNode(modelChildFolderNodes[0], true); 
-	private BioModelNode speciesNode = new BioModelNode(modelChildFolderNodes[1], true); 
-	private BioModelNode reactionsNode = new BioModelNode(modelChildFolderNodes[2], true); 
+	private BioModelNode reactionsNode = new BioModelNode(modelChildFolderNodes[1], true); 
+	private BioModelNode speciesNode = new BioModelNode(modelChildFolderNodes[2], true); 
 	private BioModelNode globalParametersNode = new BioModelNode(modelChildFolderNodes[3], true); 
 	private BioModelNode modelChildNodes[] = new BioModelNode[] {
 			structuresNode,
-			speciesNode,
 			reactionsNode,
+			speciesNode,
 			globalParametersNode,
 	};
 		
@@ -882,7 +879,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		}
 	}
 	
-	public void select(SelectionEvent newValue) {
+	public void select(BioModelEditorSelection newValue) {
 		if (newValue == null) {
 			return;
 		}

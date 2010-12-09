@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JPanel;
-import javax.swing.ScrollPaneConstants;
 
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.JToolBarToggleButton;
@@ -23,6 +22,7 @@ import cbit.vcell.clientdb.DocumentManager;
  */
 @SuppressWarnings("serial")
 public class CartoonEditorPanelFixed extends JPanel {
+	private static final Dimension TOOLBAR_BUTTON_SIZE = new Dimension(28, 28);
 	private static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(15,0);
 	private JToolBarToggleButton ivjFeatureButton = null;
 	private javax.swing.JToolBar ivjJToolBar = null;
@@ -357,13 +357,13 @@ public class CartoonEditorPanelFixed extends JPanel {
 			try {
 				ivjFeatureButton = new JToolBarToggleButton();
 				ivjFeatureButton.setName("FeatureButton");
-				ivjFeatureButton.setToolTipText("Feature Tool");
+				ivjFeatureButton.setToolTipText("Compartment Tool");
 				ivjFeatureButton.setText("");
-				ivjFeatureButton.setMaximumSize(new Dimension(28, 28));
+				ivjFeatureButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				ivjFeatureButton.setActionCommand(Mode.FEATURE.getActionCommand());
 				ivjFeatureButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/feature.gif")));
-				ivjFeatureButton.setPreferredSize(new Dimension(28, 28));
-				ivjFeatureButton.setMinimumSize(new Dimension(28, 28));
+				ivjFeatureButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				ivjFeatureButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -409,8 +409,8 @@ public class CartoonEditorPanelFixed extends JPanel {
 			try {
 				ivjJScrollPane1 = new javax.swing.JScrollPane();
 				ivjJScrollPane1.setName("JScrollPane1");
-				ivjJScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-				ivjJScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+//				ivjJScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+//				ivjJScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 				getJScrollPane1().setViewportView(getGraphPane1());
 				// user code begin {1}
 				// user code end
@@ -460,12 +460,12 @@ public class CartoonEditorPanelFixed extends JPanel {
 				ivjSelectButton.setName("SelectButton");
 				ivjSelectButton.setToolTipText("Select Tool");
 				ivjSelectButton.setText("");
-				ivjSelectButton.setMaximumSize(new Dimension(28, 28));
+				ivjSelectButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				ivjSelectButton.setActionCommand(Mode.SELECT.getActionCommand());
 				ivjSelectButton.setSelected(true);
 				ivjSelectButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/select.gif")));
-				ivjSelectButton.setPreferredSize(new Dimension(28, 28));
-				ivjSelectButton.setMinimumSize(new Dimension(28, 28));
+				ivjSelectButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				ivjSelectButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -502,11 +502,11 @@ public class CartoonEditorPanelFixed extends JPanel {
 				ivjSpeciesButton.setName("SpeciesButton");
 				ivjSpeciesButton.setToolTipText("Species Tool");
 				ivjSpeciesButton.setText("");
-				ivjSpeciesButton.setMaximumSize(new Dimension(28, 28));
+				ivjSpeciesButton.setMaximumSize(TOOLBAR_BUTTON_SIZE);
 				ivjSpeciesButton.setActionCommand(Mode.SPECIES.getActionCommand());
 				ivjSpeciesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/species.gif")));
-				ivjSpeciesButton.setPreferredSize(new Dimension(28, 28));
-				ivjSpeciesButton.setMinimumSize(new Dimension(28, 28));
+				ivjSpeciesButton.setPreferredSize(TOOLBAR_BUTTON_SIZE);
+				ivjSpeciesButton.setMinimumSize(TOOLBAR_BUTTON_SIZE);
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
