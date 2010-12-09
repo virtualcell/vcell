@@ -29,7 +29,7 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor.BioModelEditorSelection;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
@@ -81,7 +81,7 @@ public class InitialConditionsPanel extends javax.swing.JPanel {
 	private int selectedColumn = -1;
 	private JLabel setDiffConstantLabel;
 	private JLabel pressEnterLabel;
-	private SelectionEvent selectionEvent = null;
+	private BioModelEditorSelection bioModelEditorSelection = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -275,7 +275,7 @@ private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 			newValue = getSpeciesContextSpecsTableModel().getValueAt(row);
 		}
 		getSpeciesContextSpecPanel().setSpeciesContextSpec(newValue);
-		setSelectionEvent(new SelectionEvent(getSimulationContext(), newValue == null ? null : newValue.getSpeciesContext()));
+		setBioModelEditorSelection(new BioModelEditorSelection(getSimulationContext(), newValue == null ? null : newValue.getSpeciesContext()));
 //			getSpeciesContextSpecPanel().setSpeciesContextSpec(null);
 //		} else {
 //			getSpeciesContextSpecPanel().setSpeciesContextSpec(getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row));
@@ -289,10 +289,10 @@ private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 	}
 }
 
-private void setSelectionEvent(SelectionEvent newValue) {
-	SelectionEvent oldValue = selectionEvent;
-	selectionEvent = newValue;
-	firePropertyChange(BioModelEditor.PROPERTY_NAME_SELECTION_EVENT, oldValue, newValue);
+private void setBioModelEditorSelection(BioModelEditorSelection newValue) {
+	BioModelEditorSelection oldValue = bioModelEditorSelection;
+	bioModelEditorSelection = newValue;
+	firePropertyChange(BioModelEditor.PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION, oldValue, newValue);
 }
 
 /**

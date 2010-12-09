@@ -328,9 +328,9 @@ private void createBioModelFrame() {
 	editorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/bioModel_16x16.gif")));	
 	editorFrame.add(bioModelEditor, BorderLayout.CENTER);
 	getJDesktopPane().add(editorFrame);
-	editorFrame.setSize(780, 620);
+	editorFrame.setSize(850, 680);
 	editorFrame.setMinimumSize(new Dimension(400, 300));
-	editorFrame.setLocation(10,10);
+	editorFrame.setLocation(0,0);
 	editorFrame.show();
 }
 
@@ -824,9 +824,9 @@ public void showMIRIAMWindow() {
 					public void internalFrameActivated(InternalFrameEvent e) {
 					}
 					public void internalFrameClosed(InternalFrameEvent e) {
-						close(mIRIAMAnnotationEditorFrame, getJDesktopPane());
 					}
 					public void internalFrameClosing(InternalFrameEvent e) {
+						close(mIRIAMAnnotationEditorFrame, getJDesktopPane());
 					}
 					public void internalFrameDeactivated(InternalFrameEvent e) {
 					}

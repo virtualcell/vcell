@@ -10,6 +10,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -122,16 +124,9 @@ public class CollapsiblePanel extends JPanel {
 				expand();				
 			}			
 		});
-		addComponentListener(new ComponentListener() {			
-			public void componentShown(ComponentEvent e) {
+		addHierarchyListener(new HierarchyListener() {			
+			public void hierarchyChanged(HierarchyEvent e) {
 				expand();
-			}			
-			public void componentResized(ComponentEvent e) {
-				expand();
-			}			
-			public void componentMoved(ComponentEvent e) {				
-			}			
-			public void componentHidden(ComponentEvent e) {
 			}
 		});
 	}
@@ -144,6 +139,7 @@ public class CollapsiblePanel extends JPanel {
 		for (Component child : getComponents()) {
 			child.setVisible(bExpanded);
 		}
+		revalidate();
 	}
 	
 	@Override

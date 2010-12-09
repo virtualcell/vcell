@@ -19,7 +19,7 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor.SelectionEvent;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor.BioModelEditorSelection;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 
@@ -33,7 +33,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements 
 	protected BioModelEditorRightSideTableModel<T> tableModel = null;
 	protected BioModel bioModel;
 	protected JTextField textFieldSearch = null;
-	protected SelectionEvent selectionEvent = null;
+	protected BioModelEditorSelection bioModelEditorSelection = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
 	private class InternalEventHandler implements ActionListener, PropertyChangeListener, DocumentListener, ListSelectionListener {
@@ -136,13 +136,17 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements 
 		int[] rows = table.getSelectedRows();
 		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < tableModel.getDataSize()));
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {
-			setSelectionEvent(new SelectionEvent(tableModel.containedByModel() ? bioModel.getModel() : bioModel, tableModel.getValueAt(rows[0])));
+			setBioModelEditorSelection(new BioModelEditorSelection(tableModel.containedByModel() ? bioModel.getModel() : bioModel, tableModel.getValueAt(rows[0])));
 		} else {
-			setSelectionEvent(new SelectionEvent(tableModel.containedByModel() ? bioModel.getModel() : bioModel, null));
+			setBioModelEditorSelection(new BioModelEditorSelection(tableModel.containedByModel() ? bioModel.getModel() : bioModel, null));
 		}
 	}
 	
 	public void select(T selection) {
+		if (selection == null) {
+			table.clearSelection();
+			return;
+		}
 		for (int i = 0; i < tableModel.getDataSize(); i ++) {
 			if (tableModel.getValueAt(i) == selection) {
 				table.setRowSelectionInterval(i, i);
@@ -151,9 +155,9 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements 
 		}
 	}
 
-	public final void setSelectionEvent(SelectionEvent newValue) {
-		SelectionEvent oldValue = this.selectionEvent;
-		this.selectionEvent = newValue;
-		firePropertyChange(BioModelEditor.PROPERTY_NAME_SELECTION_EVENT, oldValue, newValue);
+	public final void setBioModelEditorSelection(BioModelEditorSelection newValue) {
+		BioModelEditorSelection oldValue = this.bioModelEditorSelection;
+		this.bioModelEditorSelection = newValue;
+		firePropertyChange(BioModelEditor.PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION, oldValue, newValue);
 	}
 }

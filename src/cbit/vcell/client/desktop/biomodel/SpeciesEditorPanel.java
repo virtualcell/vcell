@@ -1,4 +1,4 @@
-package cbit.vcell.model.gui;
+package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
 import java.awt.GridBagConstraints;
@@ -391,7 +391,9 @@ public static void main(java.lang.String[] args) {
  */
 private void changeFreeTextAnnotation() {
 	try{
-
+		if (getSpeciesContext() == null) {
+			return;
+		}
 		// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
 		VCMetaData vcMetaData = getModel().getVcMetaData();
 		vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), annotationTextArea.getText());				

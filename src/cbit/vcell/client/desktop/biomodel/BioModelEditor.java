@@ -5,14 +5,14 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -20,6 +20,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
@@ -59,6 +60,7 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.gui.OptTestPanel;
 import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
@@ -71,7 +73,7 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 @SuppressWarnings("serial")
 public class BioModelEditor extends JPanel {
 	private static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
-	public static final String PROPERTY_NAME_SELECTION_EVENT = "selectionEvent";
+	public static final String PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION = "bioModelEditorSelection";
 	private static final String PROPERTY_NAME_DOCUMENT_MANAGER = "documentManager";
 	public static final String PROPERTY_NAME_SELECTED_VERSIONABLE = "selectedVersionable";
 	
@@ -119,11 +121,11 @@ public class BioModelEditor extends JPanel {
 	private JPopupMenu popupMenu = null;
 	private JMenuItem expandAllMenuItem = null;
 		
-	public static class SelectionEvent {
+	public static class BioModelEditorSelection {
 		private Object selectedContainer;
 		private Object selectedObject;
 		
-		public SelectionEvent(Object selectedContainer, Object selectedObject) {
+		public BioModelEditorSelection(Object selectedContainer, Object selectedObject) {
 			super();
 			this.selectedContainer = selectedContainer;
 			this.selectedObject = selectedObject;
@@ -140,40 +142,33 @@ public class BioModelEditor extends JPanel {
 
 	private class AnnotationEditorPanel extends JPanel {
 		private JTextArea textArea = null;
-		private JButton applyButton = new JButton("Apply");
-		private JButton revertButton = new JButton("Revert");
 		public AnnotationEditorPanel() {
-			JPanel p = new JPanel();
 			
-			textArea = new JTextArea("", 8, 60);
-			textArea.setRows(10);
+			textArea = new JTextArea("", 10, 45);
 			textArea.setEditable(true);
 			textArea.setLineWrap(true);
 			textArea.setWrapStyleWord(true);
 
-			p.setLayout(new BorderLayout());
-			JPanel panel = new JPanel();
+			JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 10));
+			JLabel label = new JLabel("Edit Notes: ");
+			label.setVerticalAlignment(SwingConstants.TOP);
+			label.setAlignmentY(TOP_ALIGNMENT);
+			panel.add(label);
 			panel.add(new JScrollPane(textArea));
-			p.add(panel, BorderLayout.CENTER);
 			
-			panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
-			panel.add(applyButton);	
-			panel.add(revertButton);			
-			p.add(panel, BorderLayout.SOUTH);
+			setLayout(new BorderLayout());
+			add(panel, BorderLayout.CENTER);
 			
-			add(p);
-			
-			applyButton.addActionListener(new ActionListener() {
+			textArea.addFocusListener(new FocusListener() {
 				
-				public void actionPerformed(ActionEvent e) {
-					getBioModel().getVCMetaData().setFreeTextAnnotation(getBioModel(), textArea.getText());					
+				public void focusLost(FocusEvent e) {
+					if (getBioModel() == null) {
+						return;
+					}
+					getBioModel().getVCMetaData().setFreeTextAnnotation(getBioModel(), textArea.getText());						
 				}
-			});
-			
-			revertButton.addActionListener(new ActionListener() {
 				
-				public void actionPerformed(ActionEvent e) {
-					setText(getBioModel().getVCMetaData().getFreeTextAnnotation(getBioModel()));					
+				public void focusGained(FocusEvent e) {
 				}
 			});
 		}
@@ -219,8 +214,8 @@ public class BioModelEditor extends JPanel {
 //			if (evt.getSource() == getBioModelTreePanel1() && (evt.getPropertyName().equals(BioModelTreePanel.PROPERTY_NAME_SELECTED_VERSIONABLE))) {
 //				updateMenuOnSelectionChange();
 //			}
-			if (evt.getPropertyName().equals(PROPERTY_NAME_SELECTION_EVENT)) {
-				getBioModelEditorTreeModel().select((SelectionEvent)evt.getNewValue());
+			if (evt.getPropertyName().equals(PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION)) {
+				getBioModelEditorTreeModel().select((BioModelEditorSelection)evt.getNewValue());
 			}
 		};
 		
@@ -318,7 +313,6 @@ private OptTestPanel getoptTestPanel() {
  * Return the ParameterEstimationPanel property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private AnalysisPanel getParameterEstimationPanel() {
 	if (ivjParameterEstimationPanel == null) {
 		try {
@@ -451,6 +445,7 @@ private void initConnections() throws java.lang.Exception {
 	getReactionSpecsPanel().addPropertyChangeListener(ivjEventHandler);
 	getBioModelEditorGlobalParameterPanel().addPropertyChangeListener(ivjEventHandler);
 	getBioModelEditorApplicationsPanel().addPropertyChangeListener(ivjEventHandler);
+	getParameterEstimationPanel().addPropertyChangeListener(ivjEventHandler);
 
 	getBioModelEditorTree().addTreeSelectionListener(ivjEventHandler);
 	getBioModelEditorTree().addTreeSelectionListener(getBioModelEditorTreeModel());
@@ -777,6 +772,10 @@ private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafO
 			getMathematicsPanel().setSimulationContext(simulationContext);
 		} else if (folderClass == BioModelEditorTreeFolderClass.ANALYSIS_NODE) {
 			rightPanel = getParameterEstimationPanel();
+			getParameterEstimationPanel().setSimulationContext(simulationContext);
+			if (leafObject != null) {
+				getParameterEstimationPanel().select((ParameterEstimationTask)leafObject);
+			}
 		} else if (folderClass == BioModelEditorTreeFolderClass.GEOMETRY_NODE) {
 			rightPanel = getGeometrySummaryViewer();
 			getGeometrySummaryViewer().setGeometryOwner(simulationContext);

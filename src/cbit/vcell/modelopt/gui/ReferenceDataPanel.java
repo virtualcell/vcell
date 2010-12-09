@@ -1,10 +1,11 @@
 package cbit.vcell.modelopt.gui;
 import java.io.File;
 
+import javax.swing.border.TitledBorder;
+
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
-import org.vcell.util.gui.TitledBorderBean;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 
@@ -22,6 +23,7 @@ import cbit.vcell.util.RowColumnResultSet;
  * Creation date: (8/23/2005 4:26:30 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class ReferenceDataPanel extends javax.swing.JPanel {
 	private cbit.vcell.opt.ReferenceData fieldReferenceData = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -423,22 +425,13 @@ private javax.swing.JPanel getJPanel1() {
  * Return the multisourcePlotPane property value.
  * @return cbit.vcell.modelopt.gui.MultisourcePlotPane
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private MultisourcePlotPane getmultisourcePlotPane() {
 	if (ivjmultisourcePlotPane == null) {
 		try {
-			TitledBorderBean ivjLocalBorder = new TitledBorderBean();
-			ivjLocalBorder.setTitleJustification(javax.swing.border.TitledBorder.CENTER);
-			ivjLocalBorder.setTitle("Time Series Data");
 			ivjmultisourcePlotPane = new MultisourcePlotPane();
 			ivjmultisourcePlotPane.setName("multisourcePlotPane");
-			ivjmultisourcePlotPane.setBorder(ivjLocalBorder);
 			ivjmultisourcePlotPane.setListVisible(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -585,6 +578,9 @@ private void initialize() {
 		setName("ReferenceDataPanel");
 		setLayout(new java.awt.GridBagLayout());
 		setSize(670, 222);
+		TitledBorder ivjLocalBorder = new TitledBorder("Time Series Data");
+		ivjLocalBorder.setTitleJustification(javax.swing.border.TitledBorder.CENTER);
+		setBorder(ivjLocalBorder);
 
 		java.awt.GridBagConstraints constraintsmultisourcePlotPane = new java.awt.GridBagConstraints();
 		constraintsmultisourcePlotPane.gridx = 0; constraintsmultisourcePlotPane.gridy = 0;

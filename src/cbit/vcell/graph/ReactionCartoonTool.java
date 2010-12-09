@@ -19,7 +19,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JViewport;
@@ -31,7 +30,6 @@ import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.SimpleTransferable;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
-import org.vcell.util.gui.ZEnforcer;
 
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.ElipseShape;
@@ -65,8 +63,6 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.DBReactionWizardPanel;
-import cbit.vcell.model.gui.FluxReaction_Dialog;
-import cbit.vcell.model.gui.SimpleReactionPanelDialog;
 import cbit.vcell.publish.ITextWriter;
 
 public class ReactionCartoonTool extends BioCartoonTool {
@@ -549,9 +545,17 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					Point parentLocation = pickedShape.getSpaceManager().getAbsLoc();
 					Point scShapeLocation = new Point(worldPoint.x
 							- parentLocation.x, worldPoint.y - parentLocation.y);
-					showCreateSpeciesContextDialog(getGraphPane(),
-							getReactionCartoon().getModel(),
-							((ReactionContainerShape) pickedShape).getStructure(), scShapeLocation);
+					Species species = new Species(getReactionCartoon().getModel().getFreeSpeciesName(), "");
+					SpeciesContext speciesContext = new SpeciesContext(species, ((ReactionContainerShape) pickedShape).getStructure());
+					speciesContext.setName(species.getCommonName());
+					getReactionCartoon().getModel().addSpecies(species);
+					getReactionCartoon().getModel().addSpeciesContext(speciesContext);
+					getGraphModel().select(speciesContext);
+					Shape scShape = getGraphModel().getShapeFromModelObject(speciesContext);
+					scShape.getSpaceManager().setRelPos(scShapeLocation);
+//					showCreateSpeciesContextDialog(getGraphPane(),
+//							getReactionCartoon().getModel(),
+//							((ReactionContainerShape) pickedShape).getStructure(), scShapeLocation);
 				}
 			}
 			default:
@@ -1418,21 +1422,20 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		return true;
 	}
 
-	public void showFluxReactionPropertiesDialog(
-			FluxReactionShape fluxReactionShape) {
-		if (getReactionCartoon() == null) {
-			return;
-		}
-		JFrame parent = (JFrame) BeanUtils.findTypeParentOfComponent(
-				getGraphPane(), JFrame.class);
-		FluxReaction_Dialog fluxReaction_Dialog = new FluxReaction_Dialog(parent, true);
-		fluxReaction_Dialog.init(fluxReactionShape.getFluxReaction(),
-				getReactionCartoon().getModel());
-		fluxReaction_Dialog.setTitle("Flux Reaction Editor");
-		ZEnforcer.showModalDialogOnTop(fluxReaction_Dialog, getJDesktopPane());
-		// update in case of name change (should really be a listener)
-		fluxReactionShape.refreshLabel();
-		getReactionCartoon().fireGraphChanged();
+	public void showFluxReactionPropertiesDialog(FluxReactionShape fluxReactionShape) {
+//		if (getReactionCartoon() == null) {
+//			return;
+//		}
+//		JFrame parent = (JFrame) BeanUtils.findTypeParentOfComponent(
+//				getGraphPane(), JFrame.class);
+//		FluxReaction_Dialog fluxReaction_Dialog = new FluxReaction_Dialog(parent, true);
+//		fluxReaction_Dialog.init(fluxReactionShape.getFluxReaction(),
+//				getReactionCartoon().getModel());
+//		fluxReaction_Dialog.setTitle("Flux Reaction Editor");
+//		ZEnforcer.showModalDialogOnTop(fluxReaction_Dialog, getJDesktopPane());
+//		// update in case of name change (should really be a listener)
+//		fluxReactionShape.refreshLabel();
+//		getReactionCartoon().fireGraphChanged();
 	}
 
 	public void showProductPropertiesDialog(ProductShape productShape, Point location) {
@@ -1569,20 +1572,19 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		} 
 	}
 
-	public void showSimpleReactionPropertiesDialog(
-			SimpleReactionShape simpleReactionShape) {
-		JFrame parent = (JFrame) BeanUtils.findTypeParentOfComponent(
-				getGraphPane(), JFrame.class);
-		SimpleReactionPanelDialog simpleReactionDialog = new SimpleReactionPanelDialog(
-				parent, true);
-		simpleReactionDialog.setSimpleReaction(simpleReactionShape.getSimpleReaction());
-		simpleReactionDialog.setTitle("Reaction Kinetics Editor");
-		ZEnforcer.showModalDialogOnTop(simpleReactionDialog, getJDesktopPane());
-		// cleanup listeners after window closed for GC
-		simpleReactionDialog.cleanupOnClose();
-		// update in case of name change (should really be a listener)
-		simpleReactionShape.refreshLabel();
-		getReactionCartoon().fireGraphChanged();
+	public void showSimpleReactionPropertiesDialog(SimpleReactionShape simpleReactionShape) {
+//		JFrame parent = (JFrame) BeanUtils.findTypeParentOfComponent(
+//				getGraphPane(), JFrame.class);
+//		SimpleReactionPanelDialog simpleReactionDialog = new SimpleReactionPanelDialog(
+//				parent, true);
+//		simpleReactionDialog.setSimpleReaction(simpleReactionShape.getSimpleReaction());
+//		simpleReactionDialog.setTitle("Reaction Kinetics Editor");
+//		ZEnforcer.showModalDialogOnTop(simpleReactionDialog, getJDesktopPane());
+//		// cleanup listeners after window closed for GC
+//		simpleReactionDialog.cleanupOnClose();
+//		// update in case of name change (should really be a listener)
+//		simpleReactionShape.refreshLabel();
+//		getReactionCartoon().fireGraphChanged();
 	}
 
 	@Override

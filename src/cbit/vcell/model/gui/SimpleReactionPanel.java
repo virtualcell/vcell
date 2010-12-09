@@ -12,7 +12,6 @@ import javax.swing.SwingConstants;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.SimpleReaction;
 /**
@@ -20,6 +19,7 @@ import cbit.vcell.model.SimpleReaction;
  * Creation date: (7/24/2002 2:30:19 PM)
  * @author: Anuradha Lakshminarayana
  */
+@SuppressWarnings("serial")
 public class SimpleReactionPanel extends javax.swing.JPanel {
 	private SimpleReaction fieldSimpleReaction = null;
 	private boolean ivjConnPtoP1Aligning = false;

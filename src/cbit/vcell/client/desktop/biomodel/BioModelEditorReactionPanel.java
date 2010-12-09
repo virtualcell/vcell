@@ -22,6 +22,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
 
+import cbit.gui.graph.GraphModel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -29,7 +30,6 @@ import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.gui.SimpleReactionPropertiesPanel;
 
 @SuppressWarnings("serial")
 public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<ReactionStep> {
@@ -51,6 +51,13 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 				}
 			} else if (evt.getSource() == reactionCartoonEditorPanel && evt.getPropertyName().equals(ReactionCartoonEditorPanel.PROPERTY_NAME_FLOATING)) {
 				showDiagramView((Boolean) evt.getNewValue());
+			} else if (evt.getSource() == reactionCartoonEditorPanel.getReactionCartoon() && evt.getPropertyName().equals(GraphModel.PROPERTY_NAME_SELECTED)) {
+				Object[] selectedObject = (Object[]) evt.getNewValue();
+				if (selectedObject != null && selectedObject.length == 1 && selectedObject[0] instanceof ReactionStep) {
+					select((ReactionStep) selectedObject[0]);
+				} else {
+					select(null);
+				}
 			}
 		}
 	}
@@ -62,7 +69,9 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
         
 	private void initialize() {
 		reactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
+		reactionCartoonEditorPanel.setName("Diagram View");
 		reactionCartoonEditorPanel.addPropertyChangeListener(eventHandler);
+		reactionCartoonEditorPanel.getReactionCartoon().addPropertyChangeListener(eventHandler);
 		reactionStepPropertiesPanel = new SimpleReactionPropertiesPanel();
 		
 		JPanel topPanel = new JPanel();
@@ -101,8 +110,8 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 		topPanel.add(deleteButton, gbc);
 		
 		tabbedPane = new JTabbedPane();
-		tabbedPane.addTab("Table View", table.getEnclosingScrollPane());
 		tabbedPane.addTab("Diagram View", reactionCartoonEditorPanel);
+		tabbedPane.addTab("Table View", table.getEnclosingScrollPane());
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
@@ -121,7 +130,8 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 
 		setLayout(new BorderLayout());
 		add(splitPane, BorderLayout.CENTER);
-		splitPane.setDividerLocation(300);
+		splitPane.setDividerLocation(450);
+		splitPane.setResizeWeight(0.7);
 	}
 	
 	public static void main(java.lang.String[] args) {
@@ -168,7 +178,7 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 			DocumentWindowManager.showFrame(diagramViewInternalFrame, desktopPane);
 		} else {	
 			DocumentWindowManager.close(diagramViewInternalFrame, desktopPane);			
-			tabbedPane.addTab("Diagram View", reactionCartoonEditorPanel);
+			tabbedPane.add(reactionCartoonEditorPanel, 0);
 			tabbedPane.setSelectedComponent(reactionCartoonEditorPanel);
 		}
 	}

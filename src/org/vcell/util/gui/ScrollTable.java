@@ -87,12 +87,11 @@ public class ScrollTable extends JTable {
 					setBackground(row % 2 == 0 ? table.getBackground() : DefaultScrollTableCellRenderer.everyOtherRowColor);
 				}
 				setForeground(table.getForeground());
-			
-				if (table.isEnabled() && table.getModel().isCellEditable(row, column)) {
-					setEnabled(true);
-				} else {
-					setEnabled(false);
-				}
+			}
+			if (table.isEnabled() && table.getModel().isCellEditable(row, column)) {
+				setEnabled(true);
+			} else {
+				setEnabled(false);
 			}
 			 
 			setSelected((value != null && ((Boolean) value).booleanValue()));			

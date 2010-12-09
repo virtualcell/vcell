@@ -13,7 +13,6 @@ import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Hashtable;
 
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
