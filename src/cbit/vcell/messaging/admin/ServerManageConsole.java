@@ -1,15 +1,19 @@
 package cbit.vcell.messaging.admin;
-import static cbit.vcell.messaging.admin.ManageConstants.*;
-import cbit.vcell.server.ServerInfo;
-import cbit.vcell.server.VCellBootstrap;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.vcell.server.VCellServer;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.messaging.server.RpcDbServerProxy;
-import java.awt.*;
-import java.awt.event.*;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_PROPERTY;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_STARTSERVICE_VALUE;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -20,44 +24,77 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import javax.jms.*;
-import javax.swing.*;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
-import org.vcell.util.PropertyLoader;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.MessageConstants.ServiceType;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.gui.DateRenderer;
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.vcell.messaging.*;
-import cbit.vcell.messaging.db.*;
+import cbit.sql.ConnectionFactory;
+import cbit.sql.KeyFactory;
+import cbit.vcell.messaging.ControlMessageCollector;
+import cbit.vcell.messaging.ControlTopicListener;
+import cbit.vcell.messaging.JmsClientMessaging;
+import cbit.vcell.messaging.JmsConnection;
+import cbit.vcell.messaging.JmsConnectionFactory;
+import cbit.vcell.messaging.JmsConnectionFactoryImpl;
+import cbit.vcell.messaging.JmsSession;
+import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.messaging.db.SimulationJobTable;
+import cbit.vcell.messaging.server.RpcDbServerProxy;
 import cbit.vcell.messaging.server.RpcSimServerProxy;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.server.ServerInfo;
+import cbit.vcell.server.VCellBootstrap;
+import cbit.vcell.server.VCellServer;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.XmlHelper;
 
 /**
  * Insert the type's description here.
  * Creation date: (8/15/2003 4:19:19 PM)
  * @author: Fei Gao
  */
+@SuppressWarnings("serial")
 public class ServerManageConsole extends JFrame implements ControlTopicListener {
 	private VCellBootstrap vcellBootstrap = null;
 	private VCellServer vcellServer = null;
-	private org.vcell.util.SessionLog log = null;
+	private SessionLog log = null;
 	private List<SimpleUserConnection> userList = Collections.synchronizedList(new LinkedList<SimpleUserConnection>());
 	private List<ServiceStatus> serviceConfigList = Collections.synchronizedList(new LinkedList<ServiceStatus>());
 	private List<ServiceInstanceStatus> serviceInstanceStatusList = Collections.synchronizedList(new LinkedList<ServiceInstanceStatus>());
 	private JPanel ivjJFrameContentPane = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JmsConnection jmsConn = null;
 	private JmsSession topicSession = null;
 	private JmsConnectionFactory jmsConnFactory = null;
@@ -103,12 +140,6 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private JCheckBox ivjQueryQueuedCheck = null;
 	private JCheckBox ivjQueryStoppedCheck = null;
 	private JCheckBox ivjQueryDispatchedCheck = null;
-	private JButton ivjFilterServiceGoButton = null;
-	private JComboBox ivjFilterServiceNameCombo = null;
-	private JRadioButton ivjFilterServiceRadioButton = null;
-	private JComboBox ivjFilterServiceValueCombo = null;
-	private JLabel ivjFilterServiceEqualLabel = null;
-	private JRadioButton ivjFilterServiceShowAllRadioButton = null;
 	private HashMap<User, RpcDbServerProxy> dbProxyHash = null;
 	private HashMap<User, RpcSimServerProxy> simProxyHash = null;
 	private JButton ivjExitButton = null;
@@ -133,7 +164,7 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	
 	private JButton ivjStopSelectedButton = null;
 	
-	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.awt.event.MouseListener, javax.swing.event.ChangeListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.awt.event.MouseListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
 				if (e.getSource() == ServerManageConsole.this.getStopServiceButton()) 
@@ -144,8 +175,6 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 					queryGoButton_ActionPerformed(e);
 				if (e.getSource() == ServerManageConsole.this.getQueryResetButton()) 
 					queryResetButton_ActionPerformed(e);
-				if (e.getSource() == ServerManageConsole.this.getFilterServiceGoButton()) 
-					filterServiceGoButton_ActionPerformed(e);
 				if (e.getSource() == ServerManageConsole.this.getRefreshButton()) 
 					refreshButton_ActionPerformed(e);
 				if (e.getSource() == ServerManageConsole.this.getExitButton()) 
@@ -199,10 +228,6 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 					queryStartDateCheck_ItemStateChanged(e);
 				if (e.getSource() == ServerManageConsole.this.getQueryEndDateCheck()) 
 					queryEndDateSubmit_ItemStateChanged(e);
-				if (e.getSource() == ServerManageConsole.this.getFilterServiceRadioButton()) 
-					filterServiceRadioButton_ItemStateChanged(e);
-				if (e.getSource() == ServerManageConsole.this.getFilterServiceShowAllRadioButton()) 
-					filterServiceShowAllRadioButton_ItemStateChanged(e);
 				if (e.getSource() == ServerManageConsole.this.getQueryDispatchedCheck()) 
 					queryDispatchedCheck_ItemStateChanged(e);
 			} catch (java.lang.Throwable ivjExc) {
@@ -325,74 +350,6 @@ public void exitButton_ActionPerformed(ActionEvent actionEvent) {
 	System.exit(0);
 	return;
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (2/17/2004 1:05:24 PM)
- */
-private void filterService() {
-	if (getFilterServiceShowAllRadioButton().isSelected()) {
-		showServices(serviceInstanceStatusList);
-	} else {
-//		String name = (String)getFilterServiceNameCombo().getSelectedItem();
-//		String value = (String)getFilterServiceValueCombo().getSelectedItem();
-//		List<VCServiceInfo> newList = new ArrayList<VCServiceInfo>();
-//		
-//		if (name.equals("Alive")) {
-//			boolean realValue = value.equals("true") ? true : false;
-//			Iterator iter = serviceList.iterator();
-//			while (iter.hasNext()) {
-//				VCServiceInfo serviceInfo = (VCServiceInfo)iter.next();
-//				if (serviceInfo.isAlive() == realValue) {
-//					newList.add(serviceInfo);
-//				}
-//			}
-//			showService(newList);
-//		}
-	}
-}
-
-
-/**
- * Comment
- */
-public void filterServiceGoButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	filterService();
-	return;
-}
-
-
-/**
- * Comment
- */
-public void filterServiceRadioButton_ItemStateChanged(java.awt.event.ItemEvent itemEvent) {
-	if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
-		getFilterServiceEqualLabel().setEnabled(false);
-		getFilterServiceNameCombo().setEnabled(false);
-		getFilterServiceValueCombo().setEnabled(false);
-		getFilterServiceGoButton().setEnabled(false);
-	} else if (itemEvent.getStateChange() == ItemEvent.SELECTED) {		
-		getFilterServiceEqualLabel().setEnabled(true);
-		getFilterServiceNameCombo().setEnabled(true);
-		getFilterServiceValueCombo().setEnabled(true);
-		getFilterServiceGoButton().setEnabled(true);
-	}
-	
-	return;
-}
-
-
-/**
- * Comment
- */
-public void filterServiceShowAllRadioButton_ItemStateChanged(java.awt.event.ItemEvent itemEvent) {
-	if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
-		filterService();
-	} else {
-	}
-	return;
-}
-
 
 /**
  * Return the BroadcastMessageTextArea property value.
@@ -538,148 +495,6 @@ private javax.swing.JButton getExitButton() {
 		}
 	}
 	return ivjExitButton;
-}
-
-/**
- * Return the JLabel21 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getFilterServiceEqualLabel() {
-	if (ivjFilterServiceEqualLabel == null) {
-		try {
-			ivjFilterServiceEqualLabel = new javax.swing.JLabel();
-			ivjFilterServiceEqualLabel.setName("FilterServiceEqualLabel");
-			ivjFilterServiceEqualLabel.setFont(new java.awt.Font("Arial", 1, 14));
-			ivjFilterServiceEqualLabel.setText("=");
-			ivjFilterServiceEqualLabel.setEnabled(false);
-			ivjFilterServiceEqualLabel.setForeground(java.awt.Color.black);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFilterServiceEqualLabel;
-}
-
-/**
- * Return the FilterGoButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getFilterServiceGoButton() {
-	if (ivjFilterServiceGoButton == null) {
-		try {
-			ivjFilterServiceGoButton = new javax.swing.JButton();
-			ivjFilterServiceGoButton.setName("FilterServiceGoButton");
-			ivjFilterServiceGoButton.setText("Go");
-			ivjFilterServiceGoButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFilterServiceGoButton;
-}
-
-/**
- * Return the JComboBox1 property value.
- * @return javax.swing.JComboBox
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JComboBox getFilterServiceNameCombo() {
-	if (ivjFilterServiceNameCombo == null) {
-		try {
-			ivjFilterServiceNameCombo = new javax.swing.JComboBox();
-			ivjFilterServiceNameCombo.setName("FilterServiceNameCombo");
-			ivjFilterServiceNameCombo.setPreferredSize(new java.awt.Dimension(131, 23));
-			ivjFilterServiceNameCombo.setSelectedIndex(-1);
-			ivjFilterServiceNameCombo.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFilterServiceNameCombo;
-}
-
-/**
- * Return the FilterRadioButton property value.
- * @return javax.swing.JRadioButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getFilterServiceRadioButton() {
-	if (ivjFilterServiceRadioButton == null) {
-		try {
-			ivjFilterServiceRadioButton = new javax.swing.JRadioButton();
-			ivjFilterServiceRadioButton.setName("FilterServiceRadioButton");
-			ivjFilterServiceRadioButton.setText("Filter: ");
-			ivjFilterServiceRadioButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFilterServiceRadioButton;
-}
-
-/**
- * Return the FilterShowAllRadioButton property value.
- * @return javax.swing.JRadioButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getFilterServiceShowAllRadioButton() {
-	if (ivjFilterServiceShowAllRadioButton == null) {
-		try {
-			ivjFilterServiceShowAllRadioButton = new javax.swing.JRadioButton();
-			ivjFilterServiceShowAllRadioButton.setName("FilterServiceShowAllRadioButton");
-			ivjFilterServiceShowAllRadioButton.setSelected(true);
-			ivjFilterServiceShowAllRadioButton.setText("Show All");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFilterServiceShowAllRadioButton;
-}
-
-/**
- * Return the JComboBox2 property value.
- * @return javax.swing.JComboBox
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JComboBox getFilterServiceValueCombo() {
-	if (ivjFilterServiceValueCombo == null) {
-		try {
-			ivjFilterServiceValueCombo = new javax.swing.JComboBox();
-			ivjFilterServiceValueCombo.setName("FilterServiceValueCombo");
-			ivjFilterServiceValueCombo.setPreferredSize(new java.awt.Dimension(131, 23));
-			ivjFilterServiceValueCombo.setEnabled(false);
-			ivjFilterServiceValueCombo.setEditable(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFilterServiceValueCombo;
 }
 
 /**
@@ -1305,7 +1120,7 @@ private JSortTable getQueryResultTable() {
 			ivjQueryResultTable = new JSortTable();
 			ivjQueryResultTable.setName("QueryResultTable");
 			ivjQueryResultTable.setModel(new JobTableModel());
-			ivjQueryResultTable.setBounds(0, 0, 200, 200);
+			ivjQueryResultTable.disableUneditableForeground();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1802,12 +1617,6 @@ private javax.swing.JPanel getServiceStatusPage() {
 			label.setForeground(java.awt.Color.red);			
 			panel.add(label);
 			panel.add(getNumServiceLabel());
-			panel.add(getFilterServiceShowAllRadioButton());
-			panel.add(getFilterServiceRadioButton());
-			panel.add(getFilterServiceNameCombo());
-			panel.add(getFilterServiceEqualLabel());
-			panel.add(getFilterServiceValueCombo());
-			panel.add(getFilterServiceGoButton());			
 			ivjServiceStatusPage.add(panel, "North");
 			
 			ivjServiceStatusPage.add(getServiceStatusTable().getEnclosingScrollPane(), "Center");
@@ -1838,6 +1647,7 @@ private JSortTable getConfigTable() {
 		try {
 			ivjConfigTable = new JSortTable();
 			ivjConfigTable.setModel(new ServiceStatusTableModel());
+			ivjConfigTable.disableUneditableForeground();
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -1855,6 +1665,7 @@ private JSortTable getServiceStatusTable() {
 		try {
 			ivjServiceStatusTable = new JSortTable();
 			ivjServiceStatusTable.setModel(new ServiceInstanceStatusTableModel());
+			ivjServiceStatusTable.disableUneditableForeground();
 			//ivjServiceStatusTable.setBounds(0, 0, 200, 200);
 			// user code begin {1}
 			// user code end
@@ -2096,7 +1907,8 @@ private JSortTable getUserConnectionTable() {
 	if (ivjUserConnectionTable == null) {
 		try {
 			ivjUserConnectionTable = new JSortTable();
-			getUserConnectionTable().setModel(new UserConnectionTableModel());
+			ivjUserConnectionTable.setModel(new UserConnectionTableModel());
+			ivjUserConnectionTable.disableUneditableForeground();
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -2143,9 +1955,6 @@ private void initConnections() throws java.lang.Exception {
 	getQuerySubmitDateCheck().addItemListener(ivjEventHandler);
 	getQueryStartDateCheck().addItemListener(ivjEventHandler);
 	getQueryEndDateCheck().addItemListener(ivjEventHandler);
-	getFilterServiceRadioButton().addItemListener(ivjEventHandler);
-	getFilterServiceGoButton().addActionListener(ivjEventHandler);
-	getFilterServiceShowAllRadioButton().addItemListener(ivjEventHandler);
 	getQueryDispatchedCheck().addItemListener(ivjEventHandler);
 	getRefreshButton().addActionListener(ivjEventHandler);
 	getExitButton().addActionListener(ivjEventHandler);
@@ -2158,20 +1967,6 @@ private void initConnections() throws java.lang.Exception {
 	getModifyServiceButton().addActionListener(ivjEventHandler);
 	getRefreshServerManagerButton().addActionListener(ivjEventHandler);
 	getStopSelectedButton().addActionListener(ivjEventHandler);
-}
-
-/**
- * Initialize the class.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initFilter() {
-	ButtonGroup bg = new ButtonGroup();
-	bg.add(getFilterServiceShowAllRadioButton());
-	bg.add(getFilterServiceRadioButton());
-	
-	getFilterServiceNameCombo().addItem("Alive");
-	getFilterServiceValueCombo().addItem("true");
-	getFilterServiceValueCombo().addItem("false");	
 }
 
 /**
@@ -2207,8 +2002,6 @@ private void initialize() {
 		setSize(1200, 700);
 		add(getJFrameContentPane());
 		
-		initFilter();
-		
 		statusChecks.add(getQueryWaitingCheck());
 		statusChecks.add(getQueryQueuedCheck());
 		statusChecks.add(getQueryDispatchedCheck());
@@ -2217,13 +2010,12 @@ private void initialize() {
 		statusChecks.add(getQueryStoppedCheck());
 		statusChecks.add(getQueryFailedCheck());
 
-		getQueryResultTable().setDefaultRenderer(Date.class, new DateRenderer());
-		getQueryResultTable().setDefaultRenderer(Long.class, new DateRenderer());
-		
-		getConfigTable().setDefaultRenderer(Date.class, new DateRenderer());
-		
-		getServiceStatusTable().setDefaultRenderer(Date.class, new DateRenderer());
-		
+		DateRenderer dateRenderer = new DateRenderer();
+		dateRenderer.disableUneditableForeground();
+		getQueryResultTable().setDefaultRenderer(Date.class, dateRenderer);
+		getQueryResultTable().setDefaultRenderer(Long.class, dateRenderer);
+		getConfigTable().setDefaultRenderer(Date.class, dateRenderer);
+		getServiceStatusTable().setDefaultRenderer(Date.class, dateRenderer);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -2278,7 +2070,6 @@ public void messageResetButton_ActionEvents() {
 private void onArrivingService(ServiceInstanceStatus arrivingService) {
 	if (arrivingService.getType().equals(ServiceType.SERVERMANAGER)) {
 		serviceInstanceStatusList.add(0, arrivingService);
-		filterService();
 		return;
 	}	
 
@@ -2299,7 +2090,6 @@ private void onArrivingService(ServiceInstanceStatus arrivingService) {
 	if (!bDefined) {
 		serviceInstanceStatusList.add(arrivingService);		
 	}
-	filterService();
 }
 
 

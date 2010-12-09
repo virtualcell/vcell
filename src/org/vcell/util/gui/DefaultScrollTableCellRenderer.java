@@ -26,6 +26,7 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	static final Color everyOtherRowColor = new Color(0xe8edff);
 	static Font regularFont = null;
 	static Font uneditableFont = null;
+	private boolean bEnableUneditableForeground = true;
 	/**
 	 * DefaultTableCellRendererEnhanced constructor comment.
 	 */
@@ -34,6 +35,10 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		setOpaque(true);
 		regularFont = getFont();
 		uneditableFont = regularFont/*.deriveFont(Font.BOLD)*/;
+	}
+	
+	public void disableUneditableForeground() {
+		bEnableUneditableForeground = false;
 	}
 	/**
 	 * Insert the method's description here.
@@ -61,7 +66,7 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 			setForeground(table.getForeground());
 		}
 		
-		if (!table.isEnabled() || !table.getModel().isCellEditable(row, column)) {
+		if (bEnableUneditableForeground && (!table.isEnabled() || !table.getModel().isCellEditable(row, column))) {
 			setForeground(uneditableForeground);
 			setFont(uneditableFont);
 		}
