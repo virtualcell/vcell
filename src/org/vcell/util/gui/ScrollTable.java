@@ -109,10 +109,15 @@ public class ScrollTable extends JTable {
 	private boolean bValidateExpressionBinding = true;
 	private ComponentAdapter componentListener = null;
 	protected int hoverRow = -1, hoverColumn = -1;
+	private DefaultScrollTableCellRenderer defaultTableCellRenderer = null;
 	
 	public ScrollTable() {
 		super();		
 		initialize();
+	}
+	
+	public void disableUneditableForeground() {
+		defaultTableCellRenderer.disableUneditableForeground();
 	}
 	
 	private void initialize() {		
@@ -126,9 +131,10 @@ public class ScrollTable extends JTable {
 		setPreferredScrollableViewportSize(new Dimension(200,100));
 		setIntercellSpacing(new Dimension(2,2));
 		
-		setDefaultRenderer(Object.class, new DefaultScrollTableCellRenderer());		
-		setDefaultRenderer(Number.class, new DefaultScrollTableCellRenderer());		
-		setDefaultRenderer(Double.class, new DefaultScrollTableCellRenderer());		
+		defaultTableCellRenderer = new DefaultScrollTableCellRenderer();
+		setDefaultRenderer(Object.class, defaultTableCellRenderer);		
+		setDefaultRenderer(Number.class, defaultTableCellRenderer);		
+		setDefaultRenderer(Double.class, defaultTableCellRenderer);		
 		setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
 		final TableCellRenderer defaultTableCellHeaderRenderer = getTableHeader().getDefaultRenderer();
 		getTableHeader().setDefaultRenderer(new TableCellRenderer() {

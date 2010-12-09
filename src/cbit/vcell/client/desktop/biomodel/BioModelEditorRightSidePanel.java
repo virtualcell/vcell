@@ -155,7 +155,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements 
 		}
 	}
 
-	public final void setBioModelEditorSelection(BioModelEditorSelection newValue) {
+	private final void setBioModelEditorSelection(BioModelEditorSelection newValue) {
 		BioModelEditorSelection oldValue = this.bioModelEditorSelection;
 		this.bioModelEditorSelection = newValue;
 		firePropertyChange(BioModelEditor.PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION, oldValue, newValue);
