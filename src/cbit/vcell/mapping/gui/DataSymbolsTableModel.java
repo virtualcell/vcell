@@ -6,23 +6,24 @@ package cbit.vcell.mapping.gui;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.JTable;
 
-import org.vcell.util.gui.sorttable.DefaultSortTableModel;
-
 import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationRightSideTableModel;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
 /**
  * Insert the type's description here.
  * @author: 
  */
 @SuppressWarnings("serial")
-public class DataSymbolsTableModel extends DefaultSortTableModel<DataSymbol> implements java.beans.PropertyChangeListener {
+public class DataSymbolsTableModel extends BioModelEditorApplicationRightSideTableModel<DataSymbol> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_DATA_SYMBOL_NAME = 0;
 	public static final int COLUMN_DATA_SYMBOL_TYPE = 1;
 	public static final int COLUMN_DATA_SET_NAME = 2;
@@ -30,16 +31,13 @@ public class DataSymbolsTableModel extends DefaultSortTableModel<DataSymbol> imp
 	public static final int COLUMN_DATA_CHANNEL_TYPE = 4;
 	private final static String LABELS[] = { "Symbol Name", "Symbol Type", "Dataset Name", "Channel Name", "Channel Type"};
 	
-	private SimulationContext fieldSimulationContext = null;
-//	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
-	private JTable ownerTable = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
 public DataSymbolsTableModel(JTable table) {
-	super(LABELS);
-	ownerTable = table;
+	super(table);
+	setColumns(LABELS);
 }
 
 /**
@@ -71,21 +69,18 @@ public Class<?> getColumnClass(int column) {
 	}
 }
 
-/**
- * Gets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
- * @return The simulationContext property value.
- * @see #setSimulationContext
- */
-private SimulationContext getSimulationContext() {
-	return fieldSimulationContext;
+@Override
+public int getRowCount() {
+	return getDataSize();
 }
 
-private void refreshData() {
-	if (getSimulationContext() == null){
-		setData(null);
-	} else {
-		setData(Arrays.asList(getSimulationContext().getDataContext().getDataSymbols()));
-	}
+protected List<DataSymbol> computeData() {
+	if (simulationContext == null){
+		return null;
+	} 
+	
+	return (Arrays.asList(simulationContext.getDataContext().getDataSymbols()));
+	
 }
 
 /**
@@ -93,15 +88,6 @@ private void refreshData() {
  */
 public Object getValueAt(int row, int col) {
 	try {
-		if (row<0 || row>=getRowCount()){
-			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-		}
-		if (col<0 || col>=getColumnCount()){
-			throw new RuntimeException("SpeciesContextSpecsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(getColumnCount()-1)+"]");
-		}
-		if (getRowCount() <= row){
-			refreshData();
-		}	
 		DataSymbol ds = getValueAt(row);
 		switch (col){
 			case COLUMN_DATA_SYMBOL_NAME:{
@@ -130,15 +116,12 @@ public Object getValueAt(int row, int col) {
 				} else {
 					return null;
 				}
-			}
-			default:{
-				return null;
-			}
+			}			
 		}
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
-		return null;
 	}		
+	return null;
 }
 
 /**
@@ -182,18 +165,18 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 * @param evt A PropertyChangeEvent object describing the event source 
 	 *   and the property that has changed.
 	 */
+@Override
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() instanceof DataContext
-		&& evt.getPropertyName().equals("dataSymbols")) {
-
+	super.propertyChange(evt);
+	if (evt.getSource() instanceof DataContext && evt.getPropertyName().equals("dataSymbols")) {
 		refreshData();
 		fireTableDataChanged();
 	}
 	if (evt.getSource() instanceof DataSymbol && evt.getPropertyName().equals("name")) {
-		fireTableRowsUpdated(0,getRowCount()-1);
+		fireTableDataChanged();
 	}
 	if (evt.getSource() instanceof DataSymbol && evt.getPropertyName().equals("type")) {
-		fireTableRowsUpdated(0,getRowCount()-1);
+		fireTableDataChanged();
 	}
 }
 
@@ -202,36 +185,27 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(SimulationContext simulationContext) {
-	SimulationContext oldValue = fieldSimulationContext;
+@Override
+protected void simulationContextChange(java.beans.PropertyChangeEvent evt) {
+	super.simulationContextChange(evt);
+	SimulationContext oldValue = (SimulationContext) evt.getOldValue();
 	if (oldValue != null){
 		oldValue.getDataContext().removePropertyChangeListener(this);
 		for (DataSymbol ds : oldValue.getDataContext().getDataSymbols()){
 			ds.removePropertyChangeListener(this);
 		}
-	}
-	fieldSimulationContext = simulationContext;	
-	if (simulationContext!=null){
-		simulationContext.getDataContext().addPropertyChangeListener(this);
-		for (DataSymbol ds : simulationContext.getDataContext().getDataSymbols()){
+	}	
+	SimulationContext newValue = (SimulationContext) evt.getNewValue();
+	if (newValue!=null){
+		newValue.getDataContext().addPropertyChangeListener(this);
+		for (DataSymbol ds : newValue.getDataContext().getDataSymbols()){
 			ds.addPropertyChangeListener(this);
 		}
-//		autoCompleteSymbolFilter  = simulationContext.getAutoCompleteSymbolFilter();
-		refreshData();
 	}
-	firePropertyChange("simulationContext", oldValue, simulationContext);
-	fireTableStructureChanged();
-	fireTableDataChanged();
 }
 
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	if (rowIndex<0 || rowIndex>=getRowCount()){
-		throw new RuntimeException("DataSymbolsTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (columnIndex<0 || columnIndex>=getColumnCount()){
-		throw new RuntimeException("DataSymbolsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(getColumnCount()-1)+"]");
-	}
 	DataSymbol dataSymbol = getValueAt(rowIndex);
 	switch (columnIndex){
 		case COLUMN_DATA_SYMBOL_NAME:{
@@ -319,6 +293,26 @@ public Comparator<DataSymbol> getComparator(final int col, final boolean ascendi
 			return 1;
 		};
 	};	
+}
+
+public String checkInputValue(String inputValue, int row, int column) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+public SymbolTable getSymbolTable(int row, int column) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(int row, int column) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+public Set<String> getAutoCompletionWords(int row, int column) {
+	// TODO Auto-generated method stub
+	return null;
 }
 
 }

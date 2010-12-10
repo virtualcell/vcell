@@ -4,72 +4,56 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
+import static cbit.vcell.data.VFrapConstants.ADD_ASSOCIATE_EXISTING_FD_MENU;
+import static cbit.vcell.data.VFrapConstants.ADD_COPY_FROM_BIOMODEL_MENU;
+import static cbit.vcell.data.VFrapConstants.ADD_IMAGE_FILE_MENU;
+import static cbit.vcell.data.VFrapConstants.ADD_PSF_MENU;
+import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_DATASET_MENU;
+import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_SPECIALS_MENU;
+
 import java.awt.AWTEventMulticaster;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.zip.DataFormatException;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.filechooser.FileFilter;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.gui.ScopedExpression;
-import cbit.gui.TableCellEditorAutoCompletion;
-import cbit.image.DisplayAdapterService;
 import cbit.image.ImageFile;
 import cbit.image.ImagePaneModel;
-import cbit.image.ImagePaneScroller;
 import cbit.image.ImagePaneScrollerTest;
 import cbit.image.ImagePlaneManagerPanel;
 import cbit.image.SourceDataInfo;
 import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.GuiConstants;
-import cbit.vcell.client.RequestManager;
-import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
-import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
+import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.gui.DataSymbolsPanel.vFrapFieldDataFilter;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.units.VCUnitDefinition;
 
-import static cbit.vcell.data.VFrapConstants.*;
-import javax.swing.JCheckBox;
-
-/**
- * This type was created in VisualAge.
- */
-//public class DataSymbolsSpecPanel extends javax.swing.JPanel {
+@SuppressWarnings("serial")
 public class DataSymbolsSpecPanel extends DataViewer {
 	@Override
 	public ExportMonitorPanel getExportMonitorPanel() {
@@ -77,7 +61,7 @@ public class DataSymbolsSpecPanel extends DataViewer {
 		return null;
 	}
 
-	JFileChooser fc = null;
+	private JFileChooser fc = null;
 	private DataSymbolsPanel ivjDataSymbolsPanel = null;
 	private SimulationContext fieldSimulationContext = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -85,9 +69,7 @@ public class DataSymbolsSpecPanel extends DataViewer {
 	private JButton ivjJButtonDeleteDataSymbol = null;
 	private JButton ivjJButtonViewFieldData = null;
 	private JCheckBox chckbxPointSpreadFunction = null;
-//	private ImagePaneScroller ivjImagePaneScroller = null;
 	ImagePlaneManagerPanel ivjImagePlaneManagerPanel = null;
-	private ImagePaneModel ivjImagePaneModel = null;
     protected transient ActionListener actionListener = null;
     
     DataSymbol ivjCurrentSymbol = null;
@@ -120,7 +102,7 @@ public class DataSymbolsSpecPanel extends DataViewer {
 				this.createDataSymbol();
 			}
 			if (arg1.getSource() == DataSymbolsSpecPanel.this.getJButtonDeleteDataSymbol()) {
-				getDataSymbolsPanel().removeDataSymbol(ivjCurrentSymbol); 
+				fieldSimulationContext.getDataContext().removeDataSymbol(ivjCurrentSymbol);
 			}
 			if (arg1.getSource() == DataSymbolsSpecPanel.this.getJButtonViewFieldData()) {
 				Component requesterComponent = DataSymbolsSpecPanel.this;
@@ -172,18 +154,6 @@ public ImagePlaneManagerPanel getImagePlaneManagerPanel() {
 	}
 	return ivjImagePlaneManagerPanel;
 }
-
-private ImagePaneModel getImagePaneModel() {
-	if (ivjImagePaneModel == null) {
-		try {
-			ivjImagePaneModel = new ImagePaneModel(/*getScrollPaneTable()*/);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjImagePaneModel;
-}
-
 
 /**
  * Called whenever the part throws an exception.

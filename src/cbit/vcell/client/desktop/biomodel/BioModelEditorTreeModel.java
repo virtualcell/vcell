@@ -420,10 +420,10 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 				BioModelNode electricalNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ELECTRICAL_MAPPING_NODE, "Electrical"), false);
 				BioModelNode dataSymbolNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.DATA_SYMBOLS_NODE, "Data Symbols"), true);
 				BioModelNode microscopeMeasurmentNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE, "Microscope Measurements"), true);
-				BioModelNode mathematicsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.MATHEMATICS_NODE, "View Math"), false); 
-				BioModelNode analysisNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ANALYSIS_NODE, "Parameter Estimations"), true); 
+				BioModelNode mathematicsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.MATHEMATICS_NODE, "View Math"), false);
 				BioModelNode simulationsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SIMULATIONS_NODE, "Simulations"), true);
 				BioModelNode outputFunctionsNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.OUTPUT_FUNCTIONS_NODE, "Output Functions"), true);
+				BioModelNode analysisNode = new BioModelNode(new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.ANALYSIS_NODE, "Parameter Estimation"), true); 
 				
 				BioModelNode[] applicationChildNodes = new BioModelNode[] {
 						geometryNode,
@@ -435,9 +435,9 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 						dataSymbolNode,
 						microscopeMeasurmentNode,
 						mathematicsNode,
-						analysisNode,
 						simulationsNode,
 						outputFunctionsNode,
+						analysisNode,
 				};
 				for (BioModelNode node : applicationChildNodes) {
 					appNode.add(node);
@@ -856,7 +856,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		}
 	}
 	
-	public void restoreTreeExpansion() {
+	private void restoreTreeExpansion() {
 		if (selectedBioModelNode != null) {
 			while (true) {
 				if (rootNode.isNodeDescendant(selectedBioModelNode)) {

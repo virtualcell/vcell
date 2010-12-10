@@ -72,7 +72,6 @@ public class BioModelEditorTreeCellRenderer extends DefaultTreeCellRenderer  {
                         boolean leaf,
                         int row,
                         boolean hasFocus) {
-
 		super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 		if (regularFont == null) {
 			regularFont = getFont();
@@ -194,14 +193,16 @@ public class BioModelEditorTreeCellRenderer extends DefaultTreeCellRenderer  {
 	@Override
 	protected void paintComponent(Graphics g) {
 		if (getForeground() == getTextSelectionColor()) {
-			FontMetrics metrics = getFontMetrics(getFont());
 			String text = getText();
-			// empty border 2
-			int startX = 2 + (getIcon() == null ? 0 : getIcon().getIconWidth() + getIconTextGap());
-			int startY = 0; //You probably have some vertical offset to add here.
-			int length = metrics.stringWidth(text);
-			int height = ownerTree.getRowHeight();
-			g.fillRect(startX + length + 1, startY, getWidth() - length - startX, height);
+			if (text != null) {
+				FontMetrics metrics = getFontMetrics(getFont());
+				// empty border 2
+				int startX = 2 + (getIcon() == null ? 0 : getIcon().getIconWidth() + getIconTextGap());
+				int startY = 0; //You probably have some vertical offset to add here.
+				int length = metrics.stringWidth(text);
+				int height = ownerTree.getRowHeight();
+				g.fillRect(startX + length + 1, startY, getWidth() - length - startX, height);
+			}
 		}
 		super.paintComponent(g);
 	}

@@ -14,6 +14,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,6 +74,24 @@ public abstract class GraphModel {
 		if (shape != null) {
 			select(shape.getModelObject());
 		}
+	}
+	
+	public Object[] getSelectedObjects() {
+		return selectedObjects.toArray();
+	}
+	
+	public void setSelectedObjects(Object[] objects) {
+		Set<Object> keySet = objectShapeMap.keySet();
+		Set<Object> selectedOld = this.selectedObjects;
+		Set<Object> selectedNew = new HashSet<Object>(Arrays.asList(objects));
+		selectedNew.retainAll(keySet);
+		if (selectedOld.containsAll(selectedNew) || selectedNew.containsAll(selectedOld)) {
+			return;
+		}
+		
+		selectedObjects = selectedNew;
+		fireGraphChanged(new GraphEvent(this));
+		firePropertyChange(PROPERTY_NAME_SELECTED, selectedOld.toArray(), selectedObjects.toArray());
 	}
 	
 	public void select(Object object) {

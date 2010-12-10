@@ -342,7 +342,7 @@ public class SPPRPanel extends JPanel {
 				if(outerSplitPane.getRightComponent() != getDataSymbolsPanel()) {
 					outerSplitPane.setRightComponent(getDataSymbolsPanel());
 				}
-				getDataSymbolsPanel().setScrollPaneTableCurrentRow((DataSymbol)leaf);	// notify right panel about selection change
+				getDataSymbolsPanel().select((DataSymbol)leaf);	// notify right panel about selection change
 			} else if(folderId == SPPRTreeModel.GLOBAL_PARAMETER_NODE) {
 				if(outerSplitPane.getRightComponent() != getModelParameterPanel()) {
 					outerSplitPane.setRightComponent(getModelParameterPanel());

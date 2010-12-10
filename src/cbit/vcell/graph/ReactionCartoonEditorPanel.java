@@ -218,7 +218,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				scrollPane.setPreferredSize(new Dimension(22, 396));
 				scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 				scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-				scrollPane.setMinimumSize(new Dimension(22, 396));
+//				scrollPane.setMinimumSize(new Dimension(22, 396));
 				getJScrollPane().setViewportView(getGraphPane());
 			} catch (Throwable throwable) {
 				handleException(throwable);

@@ -229,8 +229,16 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 	protected void tableSelectionChanged() {
 		super.tableSelectionChanged();
 		int[] rows = table.getSelectedRows();
+		Object[] objects = new Object[rows.length];
+		int i = 0;
+		for (int row : rows) {
+			objects[i ++] = tableModel.getValueAt(row);
+		}
+		reactionCartoonEditorPanel.getReactionCartoon().setSelectedObjects(objects);
+		
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
-			reactionStepPropertiesPanel.setReactionStep(tableModel.getValueAt(rows[0]));
+			ReactionStep reactionStep = tableModel.getValueAt(rows[0]);
+			reactionStepPropertiesPanel.setReactionStep(reactionStep);
 		} else {
 			reactionStepPropertiesPanel.setReactionStep(null);
 		}

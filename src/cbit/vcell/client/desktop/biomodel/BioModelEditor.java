@@ -480,6 +480,7 @@ private JSplitPane getSplitPane() {
 		splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
 		
 		splitPane.setLeftComponent(getTreePanel());
+		splitPane.setResizeWeight(0.3);
 		splitPane.setRightComponent(getBioModelEditorStructurePanel());
 	}
 	return splitPane;
@@ -722,6 +723,9 @@ private void treeValueChanged() {
 	        Object leafObject = selectedObject;
 			BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
 			Object parentObject =  parentNode.getUserObject();
+			if (!(parentObject instanceof BioModelEditorTreeFolderNode)) {
+				return;
+			}
 			BioModelEditorTreeFolderNode parent = (BioModelEditorTreeFolderNode)parentObject;
 			setRightPanel(parent, leafObject, simulationContext);
 	    }
@@ -802,7 +806,9 @@ private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafO
 		} else if(folderClass == BioModelEditorTreeFolderClass.DATA_SYMBOLS_NODE) {
 			rightPanel = getDataSymbolsPanel();
 			getDataSymbolsPanel().setSimulationContext(simulationContext);
-			getDataSymbolsPanel().setScrollPaneTableCurrentRow((DataSymbol)leafObject);	// notify right panel about selection change
+			if (leafObject != null) {
+				getDataSymbolsPanel().select((DataSymbol)leafObject);	// notify right panel about selection change
+			}
 		} else if(folderClass == BioModelEditorTreeFolderClass.MICROSCOPE_MEASUREMENT_NODE) {
 			rightPanel = getMicroscopeMeasurementPanel();
 			getMicroscopeMeasurementPanel().setSimulationContext(simulationContext);
@@ -969,25 +975,14 @@ public void setDocumentManager(DocumentManager documentManager) {
 	firePropertyChange(PROPERTY_NAME_DOCUMENT_MANAGER, oldValue, documentManager);
 }
 
-public void updateMenuOnSelectionChange() {	
-//	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
-//	SimulationContext selectedParent = getBioModelTreePanel1().getSelectedApplicationParent();
-//	boolean bAppSelected = selection != null && (selection instanceof SimulationContext || selectedParent != null);
-//	getCopyMenuItem().setEnabled(bAppSelected);
-//	getOpenAppMenuItem().setEnabled(bAppSelected);
-//	getRenameMenuItem().setEnabled(bAppSelected);
-//	getDeleteMenuItem().setEnabled(bAppSelected);
-}
-
 private void onPropertyChange_BioModel() {
-	getBioModelEditorTreeModel().setBioModel(getBioModel());
 	getBioModelEditorSpeciesPanel().setBioModel(getBioModel());
 	getBioModelEditorStructurePanel().setBioModel(getBioModel());
 	getBioModelEditorReactionPanel().setBioModel(getBioModel());
 	getBioModelEditorTreeCellRender().setBioModel(getBioModel());
 	getBioModelEditorGlobalParameterPanel().setBioModel(getBioModel()); 
-	getBioModelEditorApplicationsPanel().setBioModel(getBioModel()); 
-	getBioModelEditorTreeModel().restoreTreeExpansion();
+	getBioModelEditorApplicationsPanel().setBioModel(getBioModel());
+	getBioModelEditorTreeModel().setBioModel(getBioModel());
 }
 
 /**

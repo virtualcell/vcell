@@ -5,21 +5,17 @@ package cbit.vcell.mapping.gui;
 ©*/
 import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_DATASET_MENU;
 import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_SPECIALS_MENU;
-import static cbit.vcell.data.VFrapConstants.DELETE_DATA_SYMBOL;
 import static cbit.vcell.xml.VFrapXmlHelper.CreateSaveVFrapDataSymbols;
 import static cbit.vcell.xml.VFrapXmlHelper.LoadVFrapDisplayRoi;
 import static cbit.vcell.xml.VFrapXmlHelper.LoadVFrapSpecialImages;
 import static cbit.vcell.xml.VFrapXmlHelper.SaveVFrapSpecialImagesAsFieldData;
 import static cbit.vcell.xml.VFrapXmlHelper.checkNameAvailability;
 
-import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Robot;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.DecimalFormat;
@@ -28,12 +24,11 @@ import java.util.Calendar;
 import java.util.Hashtable;
 
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.table.DefaultTableCellRenderer;
 
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
@@ -45,10 +40,8 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.sorttable.JSortTable;
+import org.vcell.util.gui.DownArrowIcon;
 
-import cbit.gui.ScopedExpression;
-import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.image.VCImageUncompressed;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -57,6 +50,8 @@ import cbit.vcell.VirtualMicroscopy.importer.AnnotatedImageDataset;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXmlReader;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationRightSidePanel;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationRightSideTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
@@ -66,10 +61,6 @@ import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.units.VCUnitDefinition;
@@ -78,87 +69,36 @@ import cbit.vcell.units.VCUnitDefinition;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class DataSymbolsPanel extends javax.swing.JPanel {
+public class DataSymbolsPanel extends BioModelEditorApplicationRightSidePanel<DataSymbol> {
 	
 	static final String fluorStaticName = "fluor";
-	JFileChooser fc = null;
-//	private SpeciesContextSpecPanel ivjSpeciesContextSpecPanel = null;
+	private JFileChooser fc = null;
 	private DataSymbolsSpecPanel ivjDataSymbolsSpecPanel = null;
-	private SimulationContext fieldSimulationContext = null;
-	private javax.swing.JScrollPane ivjJScrollPane1 = null;
-	private JPanel scrollPanel = null; // added in July, 2008. Used to accommodate the radio buttons and the ivjJScrollPane1. 
-	private JSortTable ivjScrollPaneTable = null;
-	private NewDataSymbolPanel ivjNewDataSymbolPanel = null;
-	private DataSymbolsTableModel ivjDataSymbolsTableModel = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JSplitPane ivjJSplitPane1 = null;
 	private javax.swing.JMenuItem ivjJMenuItemGenericAdd = null;
 	private javax.swing.JMenuItem ivjJMenuItemVFrapAdd = null;
 	private javax.swing.JPopupMenu ivjJPopupMenuICP = null;
-	private javax.swing.JMenuItem ivjJMenuItemDelete = null;
 	
-	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == DataSymbolsPanel.this.getJMenuItemGenericAdd()) 
 				addVFrapOriginalImages();
 			if (e.getSource() == DataSymbolsPanel.this.getJMenuItemVFrapAdd()) 
 				addVFrapDerivedImages();
-			if (e.getSource() == DataSymbolsPanel.this.getJMenuItemDelete()){
-				int selectedIndex = getScrollPaneTable().getSelectionModel().getMaxSelectionIndex();
-				DataSymbol dataSymbol = getDataSymbolsTableModel().getValueAt(selectedIndex);
-				removeDataSymbol(dataSymbol);
-			}
-		};
-		public void mouseClicked(java.awt.event.MouseEvent e) {
-		};
-		public void mouseEntered(java.awt.event.MouseEvent e) {};
-		public void mouseExited(java.awt.event.MouseEvent e) {};
-		public void mousePressed(java.awt.event.MouseEvent e) {
-		};
-		public void mouseReleased(java.awt.event.MouseEvent e) {
-			if (e.getSource() == DataSymbolsPanel.this.getScrollPaneTable()) 
-				connEtoC4(e);
-		};
+		}
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-			if (e.getSource() == DataSymbolsPanel.this.getScrollPaneTable().getSelectionModel()) 
+			if (e.getValueIsAdjusting()) {
+				return;
+			}
+			if (e.getSource() == DataSymbolsPanel.this.table.getSelectionModel()) 
 				handleListEvent(e);
 		}
-		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == DataSymbolsPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
-			{
-				setSimulationContext((SimulationContext)evt.getNewValue());
-			}
-		};
-	};
+	}
 
 public DataSymbolsPanel() {
 	super();
 	initialize();
-}
-
-/**
- * connEtoC4:  (ScrollPaneTable.mouse.mouseReleased(java.awt.event.MouseEvent) --> DataSymbolsPanel.scrollPaneTable_MouseClicked(Ljava.awt.event.MouseEvent;)V)
- * @param arg1 java.awt.event.MouseEvent
- */
-private void connEtoC4(java.awt.event.MouseEvent arg1) {
-	try {
-		this.scrollPaneTable_MouseButton(arg1);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-public NewDataSymbolPanel getNewDataSymbolPanel() {
-	if (ivjNewDataSymbolPanel == null) {
-		try {
-			ivjNewDataSymbolPanel = new NewDataSymbolPanel();
-			ivjNewDataSymbolPanel.setName("NewDataSymbolPanel");
-			ivjNewDataSymbolPanel.setLocation(328, 460);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjNewDataSymbolPanel;
 }
 
 private void ChooseVFrapFile(Hashtable<String, Object> hashTable) {
@@ -279,11 +219,11 @@ public void addVFrapOriginalImages() {		// add dataset (normal images) from vFra
 			}
 			
 			User owner = null;
-			Version version = fieldSimulationContext.getVersion();
+			Version version = simulationContext.getVersion();
 			if(version == null) {		// new document, so the owner is the user
 				owner = dm.getUser();
 			} else {
-				owner = fieldSimulationContext.getVersion().getOwner();
+				owner = simulationContext.getVersion().getOwner();
 			}
 
 			// mesh
@@ -347,13 +287,12 @@ public void addVFrapOriginalImages() {		// add dataset (normal images) from vFra
 			
 	   		// --- create the data symbols associated with the time series
 			String initialFieldDataName = (String)hashTable.get("initialFieldDataName");
-			String formattedDate = (String)hashTable.get("formattedDate");
 			ImageDataset imageDataset = (ImageDataset)hashTable.get("imageDataset");
 			ExternalDataIdentifier timeSeriesEDI = (ExternalDataIdentifier)hashTable.get("timeSeriesEDI");
 			
 	   		for (double time : imageDataset.getImageTimeStamps()){
 //	   			String fluorName = TokenMangler.fixTokenStrict("fluor_"+time+"_");
-//				while (getSimulationContext().getDataContext().getDataSymbol(fluorName)!=null){
+//				while (simulationContext.getDataContext().getDataSymbol(fluorName)!=null){
 //					fluorName = TokenMangler.getNextEnumeratedToken(fluorName);
 //	   			}
 	   	        DecimalFormat df = new  DecimalFormat("###000.00");		// max time interval we can display is about 11 days
@@ -361,9 +300,9 @@ public void addVFrapOriginalImages() {		// add dataset (normal images) from vFra
 	   			String fluorName = "fluor_" + df.format(time).substring(0, df.format(time).indexOf(".")) + "s" + df.format(time).substring(1+df.format(time).indexOf(".")) + "_" + initialFieldDataName;
 //				FieldFunctionArguments fluorFFArgs = new FieldFunctionArguments(timeSeriesEDI.getName(), fluorName, new Expression(time), VariableType.VOLUME);
 				DataSymbol fluorDataSymbol = new FieldDataSymbol( fluorName, DataSymbolType.VFRAP_TIMEPOINT, 
-						getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD,
+						simulationContext.getDataContext(), VCUnitDefinition.UNIT_TBD,
 						timeSeriesEDI, fluorStaticName, VariableType.VOLUME.getTypeName(), time);
-				getSimulationContext().getDataContext().addDataSymbol(fluorDataSymbol); 
+				simulationContext.getDataContext().addDataSymbol(fluorDataSymbol); 
 	   		}
 		}
 	};
@@ -382,11 +321,11 @@ public void addVFrapOriginalImages() {		// add dataset (normal images) from vFra
 //			Expression exp = new Expression(expression);
 //			FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(null);
 ////			DataSymbol ds = new FieldDataSymbol(DataSymbolType.GENERIC_SYMBOL, name, "",
-////					getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD, 
+////					simulationContext.getDataContext(), VCUnitDefinition.UNIT_TBD, 
 ////					new FieldFunctionArguments(functionInvocations[0]));
 //			DataSymbol ds = new FieldDataSymbol(name, DataSymbolType.GENERIC_SYMBOL,
-//					getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD);
-//			getSimulationContext().getDataContext().addDataSymbol(ds);
+//					simulationContext.getDataContext(), VCUnitDefinition.UNIT_TBD);
+//			simulationContext.getDataContext().addDataSymbol(ds);
 //		}
 //	} catch (java.lang.Throwable ivjExc) {
 //		DialogUtils.showErrorDialog(this, "Data symbol " + name + " already exists");
@@ -497,7 +436,7 @@ public void addVFrapDerivedImages() {		// add special (computed) images from vFr
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 
 			ExternalDataIdentifier derivedEDI = (ExternalDataIdentifier)hashTable.get("derivedEDI");
-			BioModel bioModel = getSimulationContext().getBioModel();
+			BioModel bioModel = simulationContext.getBioModel();
 			CreateSaveVFrapDataSymbols(hashTable, bioModel, derivedEDI);
 		}
 	};
@@ -597,7 +536,7 @@ public void addVFrapDerivedImages() {		// add special (computed) images from vFr
 //			
 //	   		for (double time : imageDataset.getImageTimeStamps()){
 ////	   			String fluorName = TokenMangler.fixTokenStrict("fluor_"+time+"_");
-////				while (getSimulationContext().getDataContext().getDataSymbol(fluorName)!=null){
+////				while (simulationContext.getDataContext().getDataSymbol(fluorName)!=null){
 ////					fluorName = TokenMangler.getNextEnumeratedToken(fluorName);
 ////	   			}
 //	   	        DecimalFormat df = new  DecimalFormat("0.##");
@@ -605,9 +544,9 @@ public void addVFrapDerivedImages() {		// add special (computed) images from vFr
 //	   			String fluorName = "fluor_" + df.format(time) + "_" + initialFieldDataName;
 ////				FieldFunctionArguments fluorFFArgs = new FieldFunctionArguments(timeSeriesEDI.getName(), fluorName, new Expression(time), VariableType.VOLUME);
 //				DataSymbol fluorDataSymbol = new FieldDataSymbol( fluorName, DataSymbolType.VFRAP_TIMEPOINT, 
-//						getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD,
+//						simulationContext.getDataContext(), VCUnitDefinition.UNIT_TBD,
 //						timeSeriesEDI, fluorName, VariableType.VOLUME.getTypeName(), time);
-//				getSimulationContext().getDataContext().addDataSymbol(fluorDataSymbol);
+//				simulationContext.getDataContext().addDataSymbol(fluorDataSymbol);
 //	   		}
 //	   		// --- create the vFrap-specific symbols (ROIs, first postbleach, prebleach average)
 //			String[] channelNames = (String[])hashTable.get("channelNames");
@@ -616,29 +555,21 @@ public void addVFrapDerivedImages() {		// add special (computed) images from vFr
 //
 //			for (int i=0; i<channelNames.length; i++) {
 //	   			String dataSymbolID = channelNames[i] + "_" + mixedFieldDataName;
-////				while (getSimulationContext().getDataContext().getDataSymbol(dataSymbolID)!=null){
+////				while (simulationContext.getDataContext().getDataSymbol(dataSymbolID)!=null){
 ////					dataSymbolID = TokenMangler.getNextEnumeratedToken(dataSymbolID);
 ////				}
 ////				FieldFunctionArguments prebleachFFArgs = new FieldFunctionArguments(vfrapMisc.getName(), channelNames[i], new Expression(0.0), VariableType.VOLUME);
 ////				DataSymbol dataSymbol = new FieldDataSymbol(channelNames[i], channelVFrapImageType[i],
 ////				DataSymbol dataSymbol = new FieldDataSymbol(dataSymbolID + "_" + formattedDate, channelVFrapImageType[i],
 //				DataSymbol dataSymbol = new FieldDataSymbol(dataSymbolID, channelVFrapImageType[i],
-//						getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD,
+//						simulationContext.getDataContext(), VCUnitDefinition.UNIT_TBD,
 //						vfrapMisc, channelNames[i], VariableType.VOLUME.getTypeName(), 0D);
-//				getSimulationContext().getDataContext().addDataSymbol(dataSymbol);
+//				simulationContext.getDataContext().addDataSymbol(dataSymbol);
 //	   		}
 //		}
 //	};
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	ClientTaskDispatcher.dispatch(this, hash, taskArray, false, true, null);
-}
-
-public void removeDataSymbol(DataSymbol dataSymbol) {
-	try {
-		getSimulationContext().getDataContext().removeDataSymbol(dataSymbol);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
 }
 
 /**
@@ -647,11 +578,11 @@ public void removeDataSymbol(DataSymbol dataSymbol) {
  */
 private void handleListEvent(javax.swing.event.ListSelectionEvent arg1) {
 	try {
-		int row = getScrollPaneTable().getSelectionModel().getMinSelectionIndex();
+		int row = table.getSelectionModel().getMinSelectionIndex();
 		if (row < 0) {
 			getDataSymbolsSpecPanel().setDataSymbol(null);
 		} else {
-			getDataSymbolsSpecPanel().setDataSymbol(getDataSymbolsTableModel().getValueAt(row));
+			getDataSymbolsSpecPanel().setDataSymbol(tableModel.getValueAt(row));
 //			System.out.println("Initial condition selection changed");
 //			if(getSPPRPanel() != null) {
 //				getSPPRPanel().setScrollPaneTreeCurrentRow(getDataSymbolsTableModel().getValueAt(row));
@@ -687,20 +618,6 @@ private javax.swing.JMenuItem getJMenuItemVFrapAdd() {
 	return ivjJMenuItemVFrapAdd;
 }
 
-private javax.swing.JMenuItem getJMenuItemDelete() {
-	if (ivjJMenuItemDelete == null) {
-		try {
-			ivjJMenuItemDelete = new javax.swing.JMenuItem();
-			ivjJMenuItemDelete.setName("JMenuItemDelete");
-			ivjJMenuItemDelete.setText(DELETE_DATA_SYMBOL);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemDelete;
-}
-
-
 /**
  * Return the JPopupMenu1 property value.
  * @return javax.swing.JPopupMenu
@@ -713,100 +630,12 @@ private javax.swing.JPopupMenu getJPopupMenuICP() {
 			ivjJPopupMenuICP.setLabel("DataSymbols");
 			ivjJPopupMenuICP.add(getJMenuItemGenericAdd());
 			ivjJPopupMenuICP.add(getJMenuItemVFrapAdd());
-			ivjJPopupMenuICP.add(getJMenuItemDelete());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
 	return ivjJPopupMenuICP;
 }
-
-/**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
- */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
-		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			getJScrollPane1().setViewportView(getScrollPaneTable());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane1;
-}
-
-/**
- * Return the JSplitPane1 property value.
- * @return javax.swing.JSplitPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSplitPane getJSplitPane1() {
-	if (ivjJSplitPane1 == null) {
-		try {
-			ivjJSplitPane1 = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT);
-			ivjJSplitPane1.setName("JSplitPane1");
-			ivjJSplitPane1.setDividerLocation(300);
-			getJSplitPane1().add(getScrollPanel(), "top");
-			getJSplitPane1().add(getDataSymbolsSpecPanel(), "bottom");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSplitPane1;
-}
-
-// added in july 2008, to accommodate the radio buttons and the scrolltablepane when it is stochastic application.
-private JPanel getScrollPanel()
-{
-	if(scrollPanel == null)
-	{
-		scrollPanel = new JPanel(new BorderLayout());
-		scrollPanel.add(getJScrollPane1(), BorderLayout.CENTER);
-	}
-	
-	return scrollPanel;
-}
-
-/**
- * Return the ScrollPaneTable property value.
- * @return javax.swing.JTable
- */
-public JSortTable getScrollPaneTable() {
-	if (ivjScrollPaneTable == null) {
-		try {
-			ivjScrollPaneTable = new JSortTable();
-			ivjScrollPaneTable.setName("ScrollPaneTable");
-			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
-			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			ivjScrollPaneTable.setAutoCreateColumnsFromModel(true);
-			ivjScrollPaneTable.setRowHeight(ivjScrollPaneTable.getRowHeight() + 2);
-			getScrollPaneTable().setSelectionModel(getScrollPaneTable().getSelectionModel());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjScrollPaneTable;
-}
-
-
-/**
- * Gets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
- * @return The simulationContext property value.
- * @see #setSimulationContext
- */
-public SimulationContext getSimulationContext() {
-	return fieldSimulationContext;
-}
-
 
 /**
  * Return the SpeciesContextSpecPanel property value.
@@ -829,16 +658,9 @@ private DataSymbolsSpecPanel getDataSymbolsSpecPanel() {
  * Return the SpeciesContextSpecsTableModel property value.
  * @return cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-public DataSymbolsTableModel getDataSymbolsTableModel() {
-	if (ivjDataSymbolsTableModel == null) {
-		try {
-			ivjDataSymbolsTableModel = new DataSymbolsTableModel(getScrollPaneTable());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjDataSymbolsTableModel;
+@Override
+protected BioModelEditorApplicationRightSideTableModel<DataSymbol> createTableModel() {
+	return new DataSymbolsTableModel(table);
 }
 
 
@@ -859,34 +681,8 @@ private void handleException(Throwable exception) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	this.addPropertyChangeListener(ivjEventHandler);
-	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
-	getScrollPaneTable().addMouseListener(ivjEventHandler);
 	getJMenuItemGenericAdd().addActionListener(ivjEventHandler);
 	getJMenuItemVFrapAdd().addActionListener(ivjEventHandler);
-	getJMenuItemDelete().addActionListener(ivjEventHandler);
-	getScrollPaneTable().setModel(getDataSymbolsTableModel());
-	getScrollPaneTable().createDefaultColumnsFromModel();
-	getScrollPaneTable().setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(getScrollPaneTable(), true));
-	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
-
-	DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
-		{
-			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			if (value instanceof Species) {
-				setText(((Species)value).getCommonName());
-			} else if (value instanceof SpeciesContext) {
-				setText(((SpeciesContext)value).getName());
-			} else if (value instanceof Structure) {
-				setText(((Structure)value).getName());
-			}
-			return this;
-		}
-	};
-	getScrollPaneTable().setDefaultRenderer(SpeciesContext.class, renderer);
-	getScrollPaneTable().setDefaultRenderer(Structure.class, renderer);
-	getScrollPaneTable().setDefaultRenderer(Species.class, renderer);
 }
 
 /**
@@ -896,7 +692,8 @@ private void initConnections() throws java.lang.Exception {
 private void initialize() {
 	try {
 		setName("DataSymbolsPanel");
-		setLayout(new java.awt.GridBagLayout());
+		addButton.setIcon(new DownArrowIcon());
+		addButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		//setSize(456, 539);
 
 		//Create a file chooser
@@ -904,33 +701,63 @@ private void initialize() {
 		vFrapFieldDataFilter filter = new vFrapFieldDataFilter();
 		fc.setFileFilter(filter);
 
-		java.awt.GridBagConstraints constraintsJSplitPane1 = new java.awt.GridBagConstraints();
-		constraintsJSplitPane1.gridx = 0; constraintsJSplitPane1.gridy = 0;
-		constraintsJSplitPane1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJSplitPane1.weightx = 1.0;
-		constraintsJSplitPane1.weighty = 1.0;
-		constraintsJSplitPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJSplitPane1(), constraintsJSplitPane1);
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new GridBagLayout());
+		int gridy = 0;
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,4,4,4);
+		topPanel.add(new JLabel("Search "), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4,4,4,4);
+		topPanel.add(textFieldSearch, gbc);
+				
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,100,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		topPanel.add(addButton, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.insets = new Insets(4,4,4,20);
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		topPanel.add(deleteButton, gbc);
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.gridy = gridy;
+		gbc.weighty = 1.0;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = 4;
+		gbc.fill = GridBagConstraints.BOTH;
+		topPanel.add(table.getEnclosingScrollPane(), gbc);
+		
+		ivjJSplitPane1 = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT);
+		ivjJSplitPane1.setDividerLocation(300);
+		ivjJSplitPane1.setTopComponent(topPanel);
+		ivjJSplitPane1.setBottomComponent(getDataSymbolsSpecPanel());
+
+		setLayout(new BorderLayout());			
+		add(ivjJSplitPane1, BorderLayout.CENTER);		
+
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
 }
 
-public void setScrollPaneTableCurrentRow(DataSymbol selection) {
-	if (selection == null) {
-		return;
-	}
-	int numRows = getScrollPaneTable().getRowCount();
-	for(int i=0; i<numRows; i++) {
-		String valueAt = (String)getScrollPaneTable().getValueAt(i, DataSymbolsTableModel.COLUMN_DATA_SYMBOL_NAME);
-		DataSymbol dataSymbol = getSimulationContext().getDataContext().getDataSymbol(valueAt);
-		if(dataSymbol!=null && dataSymbol.equals(selection)) {
-			getScrollPaneTable().changeSelection(i, 0, false, false);
-			return;
-		}
-	}
-}
 /*
 public static void main(java.lang.String[] args) {
 	try {
@@ -953,58 +780,6 @@ public static void main(java.lang.String[] args) {
 	}
 }
 */
-
-/**
- * Comment
- */
-private void scrollPaneTable_MouseButton(final java.awt.event.MouseEvent mouseEvent) {
-	if (!getScrollPaneTable().hasFocus()) {
-		SwingUtilities.invokeLater(new Runnable() {
-			
-			public void run() {
-				if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
-					getScrollPaneTable().addFocusListener(new FocusListener() {
-						
-						public void focusLost(FocusEvent e) {
-						}
-						
-						public void focusGained(FocusEvent e) {
-							getScrollPaneTable().removeFocusListener(this);
-							Robot robot;
-							try {
-								robot = new Robot();
-								robot.mousePress(InputEvent.BUTTON1_MASK);
-								robot.mouseRelease(InputEvent.BUTTON1_MASK);
-							} catch (AWTException ex) {
-								ex.printStackTrace();
-							}													
-						}
-					});
-				}
-				getScrollPaneTable().requestFocus();
-			}
-		});	
-	}
-	if(mouseEvent.isPopupTrigger()){		
-		boolean bSomethingSelected = getScrollPaneTable().getSelectedRows() != null && getScrollPaneTable().getSelectedRows().length > 0;
-		getJMenuItemGenericAdd().setEnabled(true);
-		getJMenuItemVFrapAdd().setEnabled(true);
-		getJMenuItemDelete().setEnabled(bSomethingSelected);
-		getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
-	}
-}
-
-/**
- * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
- * @param simulationContext The new value for the property.
- * @see #getSimulationContext
- */
-public void setSimulationContext(SimulationContext simulationContext) {
-	SimulationContext oldValue = fieldSimulationContext;
-	fieldSimulationContext = simulationContext;
-	firePropertyChange("simulationContext", oldValue, simulationContext);
-	getDataSymbolsTableModel().setSimulationContext(simulationContext);
-}
 
 public class ExtensionsManagement {
     public final static String jpeg = "jpeg";
@@ -1049,4 +824,27 @@ public class vFrapFieldDataFilter extends FileFilter {
         return "File Formats accepted as Field Data from vFrap";
     }
 }
+
+@Override
+protected void newButtonPressed() {
+	getJPopupMenuICP().show(addButton, 0, addButton.getHeight());
+}
+
+@Override
+protected void deleteButtonPressed() {
+	int selectedIndex = table.getSelectionModel().getMaxSelectionIndex();
+	DataSymbol dataSymbol = tableModel.getValueAt(selectedIndex);
+	try {
+		simulationContext.getDataContext().removeDataSymbol(dataSymbol);
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+}
+
+@Override
+protected void simulationContextChanged() {
+	super.simulationContextChanged();
+	getDataSymbolsSpecPanel().setSimulationContext(simulationContext);
+}
+
 }

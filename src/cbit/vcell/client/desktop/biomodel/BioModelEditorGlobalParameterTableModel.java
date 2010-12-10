@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -22,6 +23,7 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -30,9 +32,9 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class BioModelEditorGlobalParameterTableModel extends BioModelEditorRightSideTableModel<ModelParameter> implements java.beans.PropertyChangeListener {
+public class BioModelEditorGlobalParameterTableModel extends BioModelEditorRightSideTableModel<Parameter> implements java.beans.PropertyChangeListener {
 
-	private class ParameterColumnComparator implements Comparator<ModelParameter> {
+	private class ParameterColumnComparator implements Comparator<Parameter> {
 		protected int index;
 		protected boolean ascending;
 
@@ -46,7 +48,7 @@ public class BioModelEditorGlobalParameterTableModel extends BioModelEditorRight
 		 * zero, or a positive integer as the first argument is less than, equal
 		 * to, or greater than the second.<p>
 		 */
-		public int compare(ModelParameter parm1, ModelParameter parm2){
+public int compare(Parameter parm1, Parameter parm2){
 			
 			switch (index){
 				case COLUMN_NAME:{
@@ -57,11 +59,27 @@ public class BioModelEditorGlobalParameterTableModel extends BioModelEditorRight
 					}
 					//break;
 				}
+				case COLUMN_DESCRIPTION:{
+					if (ascending){
+						return parm1.getDescription().compareToIgnoreCase(parm2.getDescription());
+					}else{
+						return parm2.getDescription().compareToIgnoreCase(parm1.getDescription());
+					}
+					//break;
+				}
 				case COLUMN_EXPRESSION:{
 					if (ascending){
 						return parm1.getExpression().infix().compareToIgnoreCase(parm2.getExpression().infix());
 					}else{
 						return parm2.getExpression().infix().compareToIgnoreCase(parm1.getExpression().infix());
+					}
+					//break;
+				}
+				case COLUMN_SCOPE:{
+					if (ascending){
+						return parm1.getNameScope().getName().compareToIgnoreCase(parm2.getNameScope().getName());
+					}else{
+						return parm2.getNameScope().getName().compareToIgnoreCase(parm1.getNameScope().getName());
 					}
 					//break;
 				}
@@ -79,18 +97,22 @@ public class BioModelEditorGlobalParameterTableModel extends BioModelEditorRight
 			return 1;
 		}
 	}
-	public static final int COLUMN_NAME = 0;
-	public static final int COLUMN_EXPRESSION = 1;
-	public static final int COLUMN_UNIT = 2;
-	public static final int COLUMN_ANNOTATION = 3;
-	private static String LABELS[] = {"Name", "Expression", "Unit" , "Annotation" };
-
+	public static final int COLUMN_SCOPE = 0;
+	public static final int COLUMN_NAME = 1;
+	public static final int COLUMN_DESCRIPTION = 2;
+	public static final int COLUMN_EXPRESSION = 3;
+	public static final int COLUMN_UNIT = 4;
+	public static final int COLUMN_ANNOTATION = 5;
+	private static String LABELS[] = { "Context", "Name", "Description", "Expression", "Units" , "Annotation" };
+	private boolean bGlobalOnly = false;
+	
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public BioModelEditorGlobalParameterTableModel(EditorScrollTable table) {
+public BioModelEditorGlobalParameterTableModel(EditorScrollTable table, boolean bGlobalOnly) {
 	super(table);
 	setColumns(LABELS);
+	this.bGlobalOnly = bGlobalOnly;
 	addPropertyChangeListener(this);
 }
 
@@ -102,7 +124,13 @@ public BioModelEditorGlobalParameterTableModel(EditorScrollTable table) {
  */
 public Class<?> getColumnClass(int column) {
 	switch (column){
+		case COLUMN_SCOPE:{
+			return NameScope.class;
+		}
 		case COLUMN_NAME:{
+			return String.class;
+		}
+		case COLUMN_DESCRIPTION:{
 			return String.class;
 		}
 		case COLUMN_EXPRESSION:{
@@ -114,10 +142,8 @@ public Class<?> getColumnClass(int column) {
 		case COLUMN_ANNOTATION:{
 			return String.class;
 		}
-		default:{
-			return Object.class;
-		}
 	}
+	return Object.class;
 }
 
 /**
@@ -126,12 +152,25 @@ public Class<?> getColumnClass(int column) {
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-protected List<ModelParameter> computeData() {
+protected List<Parameter> computeData() {
 	if (getModel() == null){
 		return null;
-	} else {
-		return Arrays.asList(getModel().getModelParameters());
+	} 
+	ArrayList<Parameter> parameterList = new ArrayList<Parameter>();
+	for (Parameter parameter : getModel().getModelParameters()) {
+		parameterList.add(parameter);
 	}
+	if (!bGlobalOnly) {
+		for (ReactionStep reactionStep : getModel().getReactionSteps()) {
+			for (Parameter parameter : reactionStep.getKinetics().getUnresolvedParameters()) {
+				parameterList.add(parameter);
+			}
+			for (Parameter parameter : reactionStep.getKinetics().getKineticsParameters()) {
+				parameterList.add(parameter);
+			}
+		}
+	}
+	return parameterList;
 }
 
 
@@ -143,6 +182,9 @@ public Object getValueAt(int row, int col) {
 		if (row < getDataSize()) {
 			Parameter parameter = getValueAt(row);
 			switch (col){
+				case COLUMN_SCOPE:{
+					return parameter.getNameScope();					
+				}
 				case COLUMN_NAME:{
 					return parameter.getName();
 				}
@@ -178,6 +220,9 @@ public Object getValueAt(int row, int col) {
 				}
 			}
 		} else {
+			if (col == COLUMN_SCOPE) {
+				return bioModel.getModel().getNameScope();
+			}
 			if (col == COLUMN_NAME) {
 				return ADD_NEW_HERE_TEXT;
 			}			
@@ -189,7 +234,27 @@ public Object getValueAt(int row, int col) {
 }
 
 public boolean isCellEditable(int row, int column) {
-	return row < getDataSize() || column == COLUMN_NAME;
+	if (row < getDataSize()) {
+		Parameter parameter = getValueAt(row);
+		if (column == COLUMN_SCOPE || column == COLUMN_DESCRIPTION){
+			return false;
+		}
+		if (column == COLUMN_NAME) {
+			return parameter.isNameEditable();
+		}
+		
+		if (column == COLUMN_EXPRESSION) {
+			return parameter.isExpressionEditable();
+		}
+		if (column == COLUMN_UNIT){
+			return parameter.isUnitEditable();
+		}
+		if (column == COLUMN_ANNOTATION) {
+			return parameter instanceof ModelParameter;
+		}
+		return false;
+	} 
+	return column == COLUMN_NAME;
 }
 
 
@@ -225,10 +290,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 
 public void setValueAt(Object value, int row, int column) {
 	try {
-		ModelParameter parameter = null;
 		String inputValue = (String)value;
 		if (row < getDataSize()) {
-			parameter = getValueAt(row);
+			Parameter parameter = getValueAt(row);
 			switch (column){
 				case COLUMN_NAME:{
 					parameter.setName(inputValue);
@@ -247,7 +311,9 @@ public void setValueAt(Object value, int row, int column) {
 					break;
 				}
 				case COLUMN_ANNOTATION:{
-					parameter.setModelParameterAnnotation(inputValue);
+					if (parameter instanceof ModelParameter) {
+						((ModelParameter)parameter).setModelParameterAnnotation(inputValue);
+					}
 					break;
 				}
 			}
@@ -257,8 +323,8 @@ public void setValueAt(Object value, int row, int column) {
 				if (inputValue.equals(ADD_NEW_HERE_TEXT)) {
 					return;
 				}
-				parameter = getModel().new ModelParameter(inputValue, new Expression(0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
-				getModel().addModelParameter(parameter);
+				ModelParameter modelParameter = getModel().new ModelParameter(inputValue, new Expression(0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
+				getModel().addModelParameter(modelParameter);
 				break;
 			}
 			}
@@ -270,18 +336,18 @@ public void setValueAt(Object value, int row, int column) {
 }
 
 
-  public Comparator<ModelParameter> getComparator(int col, boolean ascending) {
+  public Comparator<Parameter> getComparator(int col, boolean ascending) {
     return new ParameterColumnComparator(col, ascending);
   }
 
 public String checkInputValue(String inputValue, int row, int column) {
-	ModelParameter modelParameter = null;
+	Parameter parameter = null;
 	if (row >= 0 && row < getDataSize()) {
-		modelParameter = getValueAt(row);
+		parameter = getValueAt(row);
 	}
 	switch (column) {
 	case COLUMN_NAME:
-		if (modelParameter == null || !modelParameter.getName().equals(inputValue)) {
+		if (parameter == null || !parameter.getName().equals(inputValue)) {
 			if (getModel().getModelParameter(inputValue) != null) {
 				return "Global parameter '" + inputValue + "' already exists!";
 			}
