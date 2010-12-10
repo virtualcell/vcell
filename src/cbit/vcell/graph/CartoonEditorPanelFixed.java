@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JPanel;
+import javax.swing.ScrollPaneConstants;
 
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.JToolBarToggleButton;
@@ -409,8 +410,8 @@ public class CartoonEditorPanelFixed extends JPanel {
 			try {
 				ivjJScrollPane1 = new javax.swing.JScrollPane();
 				ivjJScrollPane1.setName("JScrollPane1");
-//				ivjJScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-//				ivjJScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+				ivjJScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+				ivjJScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 				getJScrollPane1().setViewportView(getGraphPane1());
 				// user code begin {1}
 				// user code end

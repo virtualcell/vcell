@@ -22,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 
@@ -215,9 +216,9 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				scrollPane = new JScrollPane();
 				scrollPane.setName("JScrollPane1");
 				scrollPane.setPreferredSize(new Dimension(22, 396));
-//				scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-//				scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-//				scrollPane.setMinimumSize(new Dimension(22, 396));
+				scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+				scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+				scrollPane.setMinimumSize(new Dimension(22, 396));
 				getJScrollPane().setViewportView(getGraphPane());
 			} catch (Throwable throwable) {
 				handleException(throwable);
