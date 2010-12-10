@@ -50,6 +50,7 @@ import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.psf.PointSpreadFunctionManagement;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.units.VCUnitDefinition;
 
@@ -61,7 +62,6 @@ public class DataSymbolsSpecPanel extends DataViewer {
 		return null;
 	}
 
-	private JFileChooser fc = null;
 	private DataSymbolsPanel ivjDataSymbolsPanel = null;
 	private SimulationContext fieldSimulationContext = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -188,11 +188,6 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		setSize(572, 196);
 		
-		//Create a file chooser
-		fc = new JFileChooser();
-		PointSpreadFunctionDataFilter filter = new PointSpreadFunctionDataFilter();
-		fc.setFileFilter(filter);
-
 		GridBagConstraints constraintsDataSymbolImagePanel = new GridBagConstraints();
 		constraintsDataSymbolImagePanel.gridx = 0; constraintsDataSymbolImagePanel.gridy = 0;
 		constraintsDataSymbolImagePanel.gridwidth = 5;
@@ -330,47 +325,9 @@ public void createDataSymbol() throws Exception, UserCancelException{
 			}
 		});
 	}else if(dataSymbolSource[0] == POINT_SPREAD_FUNCTION){
-		
-		int returnVal = fc.showOpenDialog(DataSymbolsSpecPanel.this);
-
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File filePSF = fc.getSelectedFile();
-			if (filePSF == null) {
-				throw new RuntimeException("Unable to open vFrap file.");
-			}
-			String filePSFPath = filePSF.getCanonicalPath();
-			String filePSFNameExtended = filePSF.getName();
-			String filePSFName = filePSFNameExtended.substring(0, filePSFNameExtended.indexOf("."));
-	
-			System.out.println("Reading file: "+filePSFPath);
-			ImageFile imageFile = new ImageFile(filePSFPath);
-			
-			FieldDataFileOperationSpec fdos = null;
-			try {
-				fdos = ClientRequestManager.createFDOSFromImageFile(filePSF,false,null);
-			} catch (DataFormatException ex) {
-				throw new Exception("Cannot read image " + filePSF.getAbsolutePath()+"\n"+ex.getMessage());
-			}
-			
-			Component requesterComponent = DataSymbolsSpecPanel.this;
-			DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
-			DocumentManager documentManager = documentWindow.getTopLevelWindowManager().getRequestManager().getDocumentManager();
-			if(documentManager == null){
-				throw new RuntimeException("Not connected to server.");
-			}
-			fdos.owner = documentManager.getUser();
-			fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
-
-
-//			System.out.println("Writing Image "+filePSFName+".tif");
-//			imageFile.writeAsTIFF(filePSFName+".tif");	// no path specified, writes in current dir (vCell)
-
-//			hashTable.put("vFrapFile", vFrapFile);
-		} else {
-			throw UserCancelException.CANCEL_GENERIC;
-		}
-
-		
+		PointSpreadFunctionManagement psfManager = new PointSpreadFunctionManagement(DataSymbolsSpecPanel.this,
+				getSimulationContext());
+		psfManager.importPointSpreadFunction();
 	}else if(dataSymbolSource[0] == IMAGE_FILE){
 		throw new RuntimeException("Option not yet implemented."); 
 	}else if(dataSymbolSource[0] == COPY_FROM_BIOMODEL){
@@ -465,49 +422,4 @@ public DataSymbol getDataSymbol() {
 		}
 	}
 
-	public class PointSpreadFunctionDataFilter extends FileFilter {
-
-	    public boolean accept(File f) {
-	        if (f.isDirectory()) {
-	            return true;
-	        }
-	        ExtensionsManagement u = new ExtensionsManagement();
-	        String extension = u.getExtension(f);
-	        if (extension != null) {
-	            if (extension.equals(ExtensionsManagement.jpeg)
-	                	|| extension.equals(ExtensionsManagement.jpg)
-	                	|| extension.equals(ExtensionsManagement.png)
-	            		) {
-	                    return true;
-	            } else {
-	                return false;
-	            }
-	        }
-	        return false;
-	    }
-	    //The description of this filter
-	    public String getDescription() {
-	        return "File Formats accepted as Field Data for Point Spread Functions";
-	    }
-	}
-	public class ExtensionsManagement {
-	    public final static String jpeg = "jpeg";
-	    public final static String jpg = "jpg";
-	    public final static String gif = "gif";
-	    public final static String tiff = "tiff";
-	    public final static String tif = "tif";
-	    public final static String png = "png";
-	    public final static String vfrap = "vfrap";
-	    
-	    public String getExtension(File f) {
-	        String ext = null;
-	        String s = f.getName();
-	        int i = s.lastIndexOf('.');
-
-	        if (i > 0 &&  i < s.length() - 1) {
-	            ext = s.substring(i+1).toLowerCase();
-	        }
-	        return ext;
-	    }
-	}
 }

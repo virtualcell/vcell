@@ -6,38 +6,50 @@ import java.beans.PropertyChangeListener;
 import org.vcell.util.gui.DefaultListModelCivilized;
 
 import cbit.vcell.mapping.MicroscopeMeasurement;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.SpeciesContext;
 
 @SuppressWarnings("serial")
 public class FluorescenceSpeciesContextListModel extends DefaultListModelCivilized implements PropertyChangeListener {
 	
-	private MicroscopeMeasurement microscopeMeasurement = null;
 	
+	private SimulationContext simulationContext = null;
 
-	public void setMicroscopeMeasurement(MicroscopeMeasurement argMicroscopeMeasurement) {
-		if (this.microscopeMeasurement == argMicroscopeMeasurement) {
+	public SimulationContext getSimulationContext() {
+		return simulationContext;
+	}
+
+	public void setSimulationContext(SimulationContext argSimulationContext) {
+		if (simulationContext == argSimulationContext) {
 			return;
 		}
-		if (this.microscopeMeasurement!=null){
-			this.microscopeMeasurement.removePropertyChangeListener(this);
+		if (simulationContext != null) {
+			simulationContext.removePropertyChangeListener(this);
+			if (simulationContext.getMicroscopeMeasurement() != null) {		
+				simulationContext.getMicroscopeMeasurement().removePropertyChangeListener(this);
+			}
 		}
-		this.microscopeMeasurement = argMicroscopeMeasurement;
-		if (this.microscopeMeasurement!=null){
-			this.microscopeMeasurement.addPropertyChangeListener(this);
+		this.simulationContext = argSimulationContext;
+		if (simulationContext != null) {
+			simulationContext.addPropertyChangeListener(this);
+			if (simulationContext.getMicroscopeMeasurement() != null) {		
+				simulationContext.getMicroscopeMeasurement().addPropertyChangeListener(this);
+			}
 		}
 		refresh();
+	}
+
+	public void refresh() {
+		removeAllElements();
+		if (simulationContext!=null && simulationContext.getMicroscopeMeasurement()!=null){
+			for (SpeciesContext sc : simulationContext.getMicroscopeMeasurement().getFluorescentSpecies()){
+				addElement(sc);
+			}
+		}
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		refresh();
 	}
-	
-	private void refresh(){
-		removeAllElements();
-		if (microscopeMeasurement!=null){
-			for (SpeciesContext sc : microscopeMeasurement.getFluorescentSpecies()){
-				addElement(sc);		// add all elements
-			}
-		}
-	}
+
 }

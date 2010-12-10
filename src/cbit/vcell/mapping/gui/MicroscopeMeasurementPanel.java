@@ -6,6 +6,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
@@ -29,9 +31,11 @@ import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.psf.PointSpreadFunctionManagement;
 
 @SuppressWarnings("serial")
 public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
+	
 	private JTextField nameTextField;
 	private JRadioButton rdbtnZprojection = null;
 	private JRadioButton rdbtnExperimental = null;
@@ -42,6 +46,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 	private FluorescenceSpeciesContextListModel fluorescenceSpeciesContextListModel = new FluorescenceSpeciesContextListModel();
 	private JButton removeButton;
 	private JButton addButton;
+	private JButton importPsfButton;
 	private JList allSpeciesContextList;
 	private JList fluorescentSpeciesContextList;
 	private ListCellRenderer speciesContextCellRenderer = new DefaultListCellRenderer(){
@@ -55,7 +60,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			return component;
 		}
 	};
-
+	
 	public SimulationContext getSimulationContext() {
 		return simulationContext;
 	}
@@ -66,8 +71,10 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 		}
 		this.simulationContext = simulationContext;
 		allSpeciesContextListModel.setSimulationContext(simulationContext);
+		fluorescenceSpeciesContextListModel.setSimulationContext(simulationContext);
+
 		pointSpreadFunctionsComboModel.setSimulationContext(simulationContext);
-		fluorescenceSpeciesContextListModel.setMicroscopeMeasurement(simulationContext.getMicroscopeMeasurement());
+
 		refreshButtons();
 	}
 
@@ -78,7 +85,6 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 	
 	private void initialize() {
 		try {
-			
 			// top panel
 			JPanel topPanel = new JPanel();
 			JLabel lblFluoescenceFunctionName = new JLabel("fluorescence function name ");			
@@ -131,13 +137,13 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 					addButtonActionPerformed();
 				}
 			});
-			GridBagConstraints gbc_button = new GridBagConstraints();
-			gbc_button.weightx = 1.0;
-			gbc_button.fill = GridBagConstraints.HORIZONTAL;
-			gbc_button.gridx = 0;
-			gbc_button.gridy = 0;
-			gbc_button.insets = new Insets(4, 4, 4, 4);
-			buttonPanel.add(addButton, gbc_button);
+			GridBagConstraints gbc_btnAddButton = new GridBagConstraints();
+			gbc_btnAddButton.weightx = 1.0;
+			gbc_btnAddButton.fill = GridBagConstraints.HORIZONTAL;
+			gbc_btnAddButton.gridx = 0;
+			gbc_btnAddButton.gridy = 0;
+			gbc_btnAddButton.insets = new Insets(4, 4, 4, 4);
+			buttonPanel.add(addButton, gbc_btnAddButton);
 			
 			removeButton = new JButton("<<");
 			removeButton.addActionListener(new ActionListener() {
@@ -185,7 +191,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			GridBagConstraints gbc_lblConvolutionKernel = new GridBagConstraints();
 			gbc_lblConvolutionKernel.gridx = 0;
 			gbc_lblConvolutionKernel.gridy = 0;
-			gbc_lblConvolutionKernel.insets = new Insets(4, 4, 4, 4);
+			gbc_lblConvolutionKernel.insets = new Insets(4, 4, 5, 5);
 			bottomPanel.add(lblConvolutionKernel, gbc_lblConvolutionKernel);		
 			
 			rdbtnZprojection = new JRadioButton("z-projection");
@@ -199,7 +205,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			gbc_rdbtnZprojection.gridx = 1;
 			gbc_rdbtnZprojection.gridy = 0;
 			gbc_rdbtnZprojection.anchor = GridBagConstraints.LINE_START;
-			gbc_rdbtnZprojection.insets = new Insets(4, 4, 4, 4);
+			gbc_rdbtnZprojection.insets = new Insets(4, 4, 5, 5);
 			bottomPanel.add(rdbtnZprojection, gbc_rdbtnZprojection);
 			
 			rdbtnExperimental = new JRadioButton("experimental");
@@ -213,7 +219,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			gbc_rdbtnExperimental.gridx = 1;
 			gbc_rdbtnExperimental.gridy = 1;
 			gbc_rdbtnExperimental.anchor = GridBagConstraints.LINE_START;
-			gbc_rdbtnExperimental.insets = new Insets(4, 4, 4, 4);
+			gbc_rdbtnExperimental.insets = new Insets(4, 4, 4, 5);
 			bottomPanel.add(rdbtnExperimental, gbc_rdbtnExperimental);		
 			
 			pointSpreadFunctionsComboBox = new JComboBox();
@@ -223,11 +229,17 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 					pointSpreadFunctionsComboBoxActionPerformed(e);
 				}
 			});
+			pointSpreadFunctionsComboBox.addPropertyChangeListener(new PropertyChangeListener() {
+				public void propertyChange(PropertyChangeEvent e) {
+					pointSpreadFunctionsComboBoxPropertyChange(e);
+					
+				}
+			});
 			pointSpreadFunctionsComboBox.setEnabled(false);
 			GridBagConstraints gbc_comboBox = new GridBagConstraints();
 			gbc_comboBox.gridx = 2;
 			gbc_comboBox.gridy = 1;
-			gbc_comboBox.insets = new Insets(4, 4, 4, 4);
+			gbc_comboBox.insets = new Insets(4, 4, 4, 5);
 			gbc_comboBox.ipadx = 30;
 			bottomPanel.add(pointSpreadFunctionsComboBox, gbc_comboBox);
 
@@ -260,56 +272,93 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			ButtonGroup buttonGroup = new ButtonGroup();
 			buttonGroup.add(rdbtnZprojection);
 			buttonGroup.add(rdbtnExperimental);
+			
+			importPsfButton = new JButton("Import PSF");
+			importPsfButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					importPSFButtonActionPerformed();
+				}
+			});
+			GridBagConstraints gbc_btnImportPsf = new GridBagConstraints();
+			gbc_btnImportPsf.gridx = 3;
+			gbc_btnImportPsf.gridy = 1;
+			bottomPanel.add(importPsfButton, gbc_btnImportPsf);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
 	
-
+	// selection changed in combobox
 	protected void pointSpreadFunctionsComboBoxActionPerformed(ActionEvent e) {
+//		System.out.println("ComboBoxActionPerformed   source:  " + e.getSource().getClass().getName() + ",  name: " + e.getActionCommand());
 		if(pointSpreadFunctionsComboModel.getSize() == 0) {
-			rdbtnZprojection.setSelected(true);
-			rdbtnExperimental.setEnabled(false);
-			pointSpreadFunctionsComboBox.setEnabled(false);
-			createMicroscopeMeasurementProjectionJ();	// new MicroscopeMeasurement object using ProjectionZ kernel
-			return;
+			if(!rdbtnZprojection.isSelected()) {
+				rdbtnZprojection.setSelected(true);
+			}
+			if(rdbtnExperimental.isEnabled()) {
+				rdbtnExperimental.setEnabled(false);
+			}
+			if(pointSpreadFunctionsComboBox.isEnabled()) {
+				pointSpreadFunctionsComboBox.setEnabled(false);
+			}
+//			createProjectionZConvolutionKernel();	// new ProjectionZ kernel
 		} else {
-//			createMicroscopeMeasurementExperimental();	// new MicroscopeMeasurement object using ExperimentalPSF kernel
-			rdbtnExperimental.setEnabled(true);
+			if(!rdbtnExperimental.isEnabled()) {
+				rdbtnExperimental.setEnabled(true);
+			}
+//			createExperimentalConvolutionKernel();	// new ExperimentalPSF kernel
 		}
 	}
-
-	// new MicroscopeMeasurement object using ProjectionJ kernel
-	private void createMicroscopeMeasurementProjectionJ() {
-		simulationContext.setMicroscopeMeasurement(new MicroscopeMeasurement("fluor",
-				new ProjectionZKernel(),new Expression(0.0)));
-		microscopeMeasurementAddAllFluorescentSpecies();
+	
+	// combo content needs to be updated
+	public void pointSpreadFunctionsComboBoxPropertyChange(PropertyChangeEvent e) {
+//		System.out.println("ComboBoxPropertyChange   source:  " + e.getSource().getClass().getName() + ",  name: " + e.getPropertyName());
+		pointSpreadFunctionsComboModel.refresh();
+		if(pointSpreadFunctionsComboModel.getSize() == 0) {
+			if(!rdbtnZprojection.isSelected()) {
+				rdbtnZprojection.setSelected(true);
+			}
+			if(rdbtnExperimental.isEnabled()) {
+				rdbtnExperimental.setEnabled(false);
+			}
+			if(pointSpreadFunctionsComboBox.isEnabled()) {
+				pointSpreadFunctionsComboBox.setEnabled(false);
+			}
+		} else {
+			if(!rdbtnExperimental.isEnabled()) {
+				rdbtnExperimental.setEnabled(true);
+			}
+		}
 	}
-	// new MicroscopeMeasurement object using ExperimentalPSF kernel
-	private void createMicroscopeMeasurementExperimental() {
+	
+	// new ProjectionZ kernel
+	private void createProjectionZConvolutionKernel() {
+		simulationContext.getMicroscopeMeasurement().setConvolutionKernel(new ProjectionZKernel());
+//		System.out.println("       create ProjectionZ kernel");
+	}
+	// new ExperimentalPSF kernel
+	private void createExperimentalConvolutionKernel() {
 		String psfName = (String)pointSpreadFunctionsComboBox.getSelectedItem();
 		for (DataSymbol dataSymbol : simulationContext.getDataContext().getDataSymbols()){
 			if (dataSymbol.getName().equals(psfName)){
-				simulationContext.setMicroscopeMeasurement(new MicroscopeMeasurement("fluor",
-						new ExperimentalPSF(dataSymbol),new Expression(0.0)));
+				simulationContext.getMicroscopeMeasurement().setConvolutionKernel(new ExperimentalPSF(dataSymbol));
+//				System.out.println("       create Experimental kernel");
+				break;
 			}
-		}
-		microscopeMeasurementAddAllFluorescentSpecies();
-	}
-	private void microscopeMeasurementAddAllFluorescentSpecies() {
-		for(int i=0; i<fluorescenceSpeciesContextListModel.size(); i++) {
-			SpeciesContext sc = (SpeciesContext)fluorescenceSpeciesContextListModel.getElementAt(i);
-			simulationContext.getMicroscopeMeasurement().addFluorescentSpecies(sc);
 		}
 	}
 	
 	protected void rdbtnZprojectionActionPerformed(ActionEvent e) {
-		createMicroscopeMeasurementProjectionJ();	// new MicroscopeMeasurement object using ProjectionZ kernel
-		pointSpreadFunctionsComboBox.setEnabled(false);
+		createProjectionZConvolutionKernel();	// new ProjectionZ kernel
+		if(pointSpreadFunctionsComboBox.isEnabled()) {
+			pointSpreadFunctionsComboBox.setEnabled(false);
+		}
 	}
 	protected void rdbtnExperimentalActionPerformed(ActionEvent e) {
-		createMicroscopeMeasurementExperimental();	// new MicroscopeMeasurement object using ExperimentalPSF kernel
-		pointSpreadFunctionsComboBox.setEnabled(true);
+		createExperimentalConvolutionKernel();	// new ExperimentalPSF kernel
+		if(!pointSpreadFunctionsComboBox.isEnabled()) {
+			pointSpreadFunctionsComboBox.setEnabled(true);
+		}
 	}
 
 	protected void refreshButtons() {
@@ -332,6 +381,13 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			simulationContext.getMicroscopeMeasurement().removeFluorescentSpecies(selectedSpeciesContext);
 		}
 	}
+	
+	protected void importPSFButtonActionPerformed() {
+		PointSpreadFunctionManagement psfManager = new PointSpreadFunctionManagement(MicroscopeMeasurementPanel.this, 
+				getSimulationContext());
+		psfManager.importPointSpreadFunction();
+	}
+
 
 	private void handleException(Throwable exception) {
 		System.out.println("--------- UNCAUGHT EXCEPTION --------- in MicroscopeMeasurementPanel");
@@ -358,5 +414,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
 			exception.printStackTrace(System.out);
 		}
 	}
+
+
 	
 }

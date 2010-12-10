@@ -31,23 +31,18 @@ public class MicroscopeMeasurement implements Serializable  {
 		public ExperimentalPSF(DataSymbol arg_psfDataSymbol){
 			this.psfDataSymbol = arg_psfDataSymbol;
 		}
-		public void setDataSymbol(DataSymbol argDataSymbol) {
+		public void setPSFDataSymbol(DataSymbol argDataSymbol) {
 			this.psfDataSymbol = argDataSymbol;
 		}
 		public DataSymbol getPSFDataSymbol(){
 			return this.psfDataSymbol;
 		}
 	}
-	
-	public static class ProjectionZKernel extends ConvolutionKernel {
+		public static class ProjectionZKernel extends ConvolutionKernel {
 	}
-	
-	
-	public MicroscopeMeasurement(String argName, ExperimentalPSF argConvolutionKernel, Expression argFluorescentMoleculeExpression) {
-		this.name = argName;
-		this.convolutionKernel = argConvolutionKernel;
-	}
-	public MicroscopeMeasurement(String argName, ProjectionZKernel argConvolutionKernel, Expression argFluorescentMoleculeExpression) {
+		
+		
+	public MicroscopeMeasurement(String argName, ConvolutionKernel argConvolutionKernel, Expression argFluorescentMoleculeExpression) {
 		this.name = argName;
 		this.convolutionKernel = argConvolutionKernel;
 	}
@@ -61,15 +56,19 @@ public class MicroscopeMeasurement implements Serializable  {
 	public ArrayList<SpeciesContext> getFluorescentSpecies(){
 		return fluorescentSpecies;
 	}
-	public void update(Model model){
-		
-	}
+
 	public ConvolutionKernel getConvolutionKernel() {
 		return convolutionKernel;
 	}
-	public void setConvolutionKernel(ConvolutionKernel convolutionKernel) {
+	public void setConvolutionKernel(ConvolutionKernel argConvolutionKernel) {
+		if(argConvolutionKernel == null) {
+			return;
+		}
+		if(argConvolutionKernel.equals(this.convolutionKernel)) {
+			return;
+		}
 		ConvolutionKernel oldValue = this.convolutionKernel;
-		this.convolutionKernel = convolutionKernel;
+		this.convolutionKernel = argConvolutionKernel;
 		getPropertyChangeSupport().firePropertyChange(CONVOLUTION_KERNEL_PROPERTYNAME, oldValue, this.convolutionKernel);
 	}
 
