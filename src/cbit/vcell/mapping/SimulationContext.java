@@ -29,6 +29,7 @@ import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.PropertyChangeListenerProxyVCell;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.document.GeometryOwner;
@@ -254,6 +255,9 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement("fluor",new ProjectionZKernel(),new Expression(0.0));
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
+		if(microscopeMeasurement == null) {
+			microscopeMeasurement = new MicroscopeMeasurement("fluor", new ProjectionZKernel(), new Expression(0.0));
+		}
 		return microscopeMeasurement;
 	}
 

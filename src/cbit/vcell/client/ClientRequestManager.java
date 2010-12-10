@@ -3042,7 +3042,7 @@ public void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff d
 //}
 
 
-public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,boolean bCropOutBlack,Integer saveOnlyThisTimePointIndex) throws DataFormatException,ImageException{
+public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile, boolean bCropOutBlack, Integer saveOnlyThisTimePointIndex) throws DataFormatException,ImageException{
 	try{
 		ImageDataset imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath(),null);
 		if (imagedataSet!=null && bCropOutBlack){

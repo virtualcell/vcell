@@ -72,7 +72,7 @@ public class AllPointSpreadFunctionsComboModel extends DefaultComboBoxModel impl
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
-		System.out.println(evt.getPropertyName());
+//		System.out.println(evt.getPropertyName());
 		refresh();
 	}
 }
