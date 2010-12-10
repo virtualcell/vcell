@@ -5,6 +5,7 @@ package org.vcell.sybil.gui.bpimport;
  */
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 
@@ -66,9 +67,9 @@ public class ImportPanel extends JPanel implements RequestPanel.Container, Impor
 			tabPanel.addTab(requestPanel.request().shortTitle(), requestPanel);
 			tabPanel.setSelectedComponent(requestPanel);
 			// wei's code
+			// adding tool tips
 			int idx = tabPanel.getTabCount()-1;
 			tabPanel.setToolTipTextAt(idx, requestPanel.request().description());
-			
 			//done
 			if(!tabPanelAdded) { 
 				remove(emptyLabel);
@@ -93,7 +94,9 @@ public class ImportPanel extends JPanel implements RequestPanel.Container, Impor
 			panel = panelNew;
 		}
 		
-		public void actionPerformed(ActionEvent event) { panel.performSearch(panel.request(), false); }
+		public void actionPerformed(ActionEvent event) { 
+			panel.performSearch(panel.request(), false); 
+		}
 
 	}
 

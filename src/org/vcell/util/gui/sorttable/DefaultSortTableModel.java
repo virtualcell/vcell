@@ -14,6 +14,8 @@ public abstract class DefaultSortTableModel<T>  extends AbstractTableModel  impl
 	private List<T> rows = Collections.synchronizedList(new ArrayList<T>());
 	private String columns[] = null;		
 
+	public DefaultSortTableModel() {}
+	  
 	public DefaultSortTableModel(String[] cols) {
 		super();
 		columns = cols;
@@ -130,7 +132,7 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 }
 
 
-private void resortColumn() {
+protected void resortColumn() {
 	if (getSortPreference() != null && getSortPreference().getSortedColumnIndex() != -1) {
 		Collections.sort(rows, getComparator(getSortPreference().getSortedColumnIndex(), getSortPreference().isSortedColumnAscending()));
 	}	

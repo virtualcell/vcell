@@ -109,13 +109,17 @@ public class GraphEditorPanel extends JPanel {
 	
 	protected JSplitPane createInnerSplitPane(JComponent panel1, JComponent panel2) {
 		JSplitPane pane =  new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel1, panel2);
-		pane.setDividerLocation((int)(0.6*Sizer.initialSize().getWidth()));
+		pane.setDividerLocation((int)(0.5*Sizer.initialSize().getWidth())); 
+		// only the left panel can be resized
+		pane.setResizeWeight(1.0);//wei's code
 		return pane;
 	}
 	
 	protected JSplitPane createOuterSplitPane(JComponent panel1, JComponent panel2) {
 		JSplitPane pane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panel1, panel2);
-		pane.setDividerLocation((int)(0.6*Sizer.initialSize().getHeight()));
+		pane.setDividerLocation((int)(0.45*Sizer.initialSize().getHeight()));//wei's code
+		// only the top panel can be resized 
+		pane.setResizeWeight(1.0);//wei's code
 		return pane;
 	}
 	

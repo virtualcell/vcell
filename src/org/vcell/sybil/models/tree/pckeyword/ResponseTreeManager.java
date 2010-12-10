@@ -23,7 +23,10 @@ public class ResponseTreeManager implements Accepter<PathwayCommonsResponse> {
 		public String toString() {
 			int nChildren = treeMan.rootNode.getChildCount();
 			String message;
-			if(nChildren > 0) { message = nChildren + " responses. Expand to view."; }
+			if(nChildren > 0) { 
+//wei				message = nChildren + " responses. Expand to view."; 
+				message = nChildren + " responses. "; // wei's code
+			}
 			else { message = "No responses yet. Start search or wait for response."; }
 			return message;
 		}

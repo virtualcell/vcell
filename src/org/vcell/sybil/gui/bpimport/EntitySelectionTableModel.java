@@ -4,22 +4,20 @@ package org.vcell.sybil.gui.bpimport;
  *   Model for table to select entities from an SBBox
  */
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-
-import javax.swing.table.AbstractTableModel;
 
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.models.sbbox.SBBox.RDFType;
 import org.vcell.sybil.models.sbbox.factories.ThingFactory;
 import org.vcell.sybil.models.sbbox.factories.ThingFactory.ThingWithType;
-import com.hp.hpl.jena.rdf.model.Resource;
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
-public class EntitySelectionTableModel extends AbstractTableModel {
+public class EntitySelectionTableModel extends DefaultSortTableModel<EntitySelectionTableRow> {
 
 	private static final long serialVersionUID = 8218151513808885665L;
 
@@ -27,32 +25,16 @@ public class EntitySelectionTableModel extends AbstractTableModel {
 	public static final int iColSelected = 0;
 	public static final int iColEntity = 1;
 	public static final int iColType = 2;
-	
-	public static class Row {
-		protected NamedThing thing;
-		protected RDFType type;
-		protected Boolean selected = new Boolean(false);
-		
-		public Row(NamedThing thing, RDFType typeNew) {
-			this.thing = thing;
-			this.type = typeNew;
-		}
-		
-		public Boolean selected() { return selected; }
-		public void setSelected(Boolean selectedNew) { selected = selectedNew; }
-		public NamedThing thing() { return thing; }
-		public RDFType type() { return type; }
-		
-	}
 
-	protected Vector<Row> rows = new Vector<Row>();
 
 	public EntitySelectionTableModel(SBBox box) {
-		addRows(box.factories().processFactory());
-		addRows(box.factories().substanceFactory());
+		setColumns(new String[] {"Get?", "Entity Name", "Type"});
+		List<EntitySelectionTableRow> rowList = addRows(box.factories().processFactory());
+		rowList.addAll(addRows(box.factories().substanceFactory()));
+		setData(rowList);
 	}
 	
-	protected <T extends NamedThing> void addRows(ThingFactory<T> factory) {
+	protected  <T extends NamedThing> List<EntitySelectionTableRow> addRows(ThingFactory<T> factory) {
 		Map<T, ThingWithType<? extends T>> thingMap = new HashMap<T, ThingWithType<? extends T>>();
 		Map<RDFType, Integer> typeToRank = new HashMap<RDFType, Integer>();
 		for(ThingWithType<? extends T> thingWithType : factory.openThingsWithTypes()) {
@@ -68,44 +50,37 @@ public class EntitySelectionTableModel extends AbstractTableModel {
 				thingMap.put(thing, thingWithType);				
 			}
 		}
+		List<EntitySelectionTableRow> rowList = new ArrayList<EntitySelectionTableRow>();
 		for(T thing: thingMap.keySet()) {
 			ThingWithType<? extends T> thingWithType = thingMap.get(thing);
 			if(thingWithType != null) {
 				RDFType type = thingWithType.type();
-				rows.add(new Row(thing, type));				
+				rowList.add(new EntitySelectionTableRow(thing, type));				
 			}
 		}
+		return rowList;
 	}
 	
-	// TODO switch to things
-	public Set<Resource> selectedEntities() {
-		HashSet<Resource> selectedEntities = new HashSet<Resource>();
-		for(Row row : rows) { if(row.selected()) { selectedEntities.add(row.thing().resource()); } }
-		return selectedEntities;
-	}
-	
-	public int getColumnCount() { return colCount; }
-	public int getRowCount() { return rows.size(); }
-
 	public Class<?> getColumnClass(int iCol) {
 		if(iCol == iColSelected) { return Boolean.class; }
 		else { return String.class; }
 	}
 	
-	public String getColumnName(int iCol) {
-		switch(iCol) {
-		case iColSelected: return "Get?";
-		case iColEntity: return "Entity Name";
-		case iColType: return "Type";
-		default: return null;
-		}
-	}
+//	public String getColumnName(int iCol) {
+//		switch(iCol) {
+//		case iColSelected: return "Get?";
+//		case iColEntity: return "Entity Name";
+//		case iColType: return "Type";
+//		default: return null;
+//		}
+//	}
 	
 	public Object getValueAt(int iRow, int iCol) {
-		switch(iCol) {
-		case iColSelected: return rows.get(iRow).selected();
-		case iColEntity: return rows.get(iRow).thing().label();
-		case iColType: return rows.get(iRow).type().label();
+		EntitySelectionTableRow entitySelectionTableRow = getValueAt(iRow);
+		switch(iCol) {		
+		case iColSelected: return entitySelectionTableRow.selected();
+		case iColEntity: return entitySelectionTableRow.thing().label();
+		case iColType: return entitySelectionTableRow.type().label();
 		default: return null;
 		}
 	}
@@ -116,8 +91,33 @@ public class EntitySelectionTableModel extends AbstractTableModel {
 	
 	public void setValueAt(Object valueNew, int iRow, int iCol) {
 		if(valueNew instanceof Boolean && iCol == iColSelected) {
-			rows.get(iRow).setSelected((Boolean) valueNew);
+			EntitySelectionTableRow entitySelectionTableRow = getValueAt(iRow);
+			entitySelectionTableRow.setSelected((Boolean) valueNew);
 		}
+	}
+	
+	// generate the sortable table. Set up the functions for each column
+	public Comparator<EntitySelectionTableRow> getComparator(final int col, final boolean ascending) {
+		return new Comparator<EntitySelectionTableRow>() {
+		    public int compare(EntitySelectionTableRow o1, EntitySelectionTableRow o2){
+		    	if (col == iColSelected) {
+		    		int c  = o1.selected().compareTo(o2.selected());
+		    		return ascending ? c : -c;
+		    	} else 
+
+		    	if (col == iColEntity) {// only sortable on entity column
+		    		int c  = o1.thing().label().compareToIgnoreCase(o2.thing().label());
+		    		return ascending ? c : -c;
+		    	} else 
+		    		
+		    	if (col == iColType) {
+		    		int c  = o1.type().label().compareTo(o2.type().label());
+		    		return ascending ? c : -c;
+		    	}
+
+		    	return 0;
+		    }
+		};
 	}
 	
 }

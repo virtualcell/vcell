@@ -9,6 +9,7 @@ import org.vcell.sybil.actions.CoreManager;
 import org.vcell.sybil.models.graph.UIGraph;
 import org.vcell.sybil.models.graph.UIShape;
 import org.vcell.sybil.models.graph.manipulator.categorizer.ReactionsManipulator;
+import org.vcell.sybil.util.graphlayout.LayoutType;
 
 import org.vcell.sybil.actions.graph.ModelGraphManager;
 import org.vcell.sybil.actions.graph.manipulations.EvaluatorManipulationAction;
@@ -29,6 +30,7 @@ EvaluatorManipulationAction<S, G, ReactionsManipulator<S, G>> {
 		manip.setWithComponents(false);
 		manip.setCollapseSubProcesses(true);
 		manip.setCollapseParticipants(true);
+		super.coreManager.graphSpace().layoutGraph(LayoutType.Randomizer);// show in random layout by default
 		return manip;
 	}
 

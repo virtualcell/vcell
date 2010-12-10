@@ -20,11 +20,11 @@ public class PathwayWrapper extends NodeDataWrapper<Pathway> {
 	public String toString() {
 		String primaryId = pathway().primaryId();
 		DataSource dataSource = pathway().dataSource();
-		String dataSourceText = "";
-		if(dataSource != null) {
-			dataSourceText = ", " + dataSource.name();
-		}
-		return primaryId +":"+pathway().name() + " ("  + dataSourceText + ")";
+//wei		String dataSourceText = "";
+//wei		if(dataSource != null) {
+//wei			dataSourceText = ", " + dataSource.name();
+//wei		}
+		return primaryId + ":  " + pathway().name() + "  [" + dataSource.name() + "]"; //wei's code
 	}
 	
 }

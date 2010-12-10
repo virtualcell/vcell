@@ -7,8 +7,6 @@ package org.vcell.sybil.util.state;
 import java.awt.Component;
 import java.util.Hashtable;
 
-import com.hp.hpl.jena.rdf.model.Model;
-
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 
@@ -51,8 +49,6 @@ public abstract class SystemWorker {
 		AsynchClientTask nonswingTask = new AsynchClientTask(getNonSwingTaskName(), AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,true,true) {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				result = doConstruct();
-//				Model m = (Model)result;
-//				m.
 			}
 		};
 		AsynchClientTask swingTask = new AsynchClientTask(getNonSwingTaskName(), AsynchClientTask.TASKTYPE_SWING_BLOCKING,true,true) {

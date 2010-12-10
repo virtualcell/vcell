@@ -4,21 +4,19 @@ package org.vcell.sybil.gui.bpimport;
  *   Table to select entities from an SBBox
  */
 
-import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
-
 import org.vcell.sybil.models.sbbox.SBBox;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-public class EntitySelectionTable extends JTable {
+public class EntitySelectionTable extends JSortTable {
 
 	private static final long serialVersionUID = 247675989150878417L;
 
 	protected boolean columnLayoutManual = false;
 	
 	public EntitySelectionTable(SBBox box) {
-		super(new EntitySelectionTableModel(box));
-//		super.setAutoCreateRowSorter(true);
+		super();
+		setModel(new EntitySelectionTableModel(box));// sortable table
 		doColumnSizes();
 	}
 	
@@ -27,7 +25,7 @@ public class EntitySelectionTable extends JTable {
 		super.doLayout(); 
 	}
 	
-	public EntitySelectionTableModel getModel() { return (EntitySelectionTableModel) super.getModel(); }
+	//public EntitySelectionTableModel getModel() { return (EntitySelectionTableModel) super.getModel(); }
 	
 	public void doColumnSizes() {
 		getModel();

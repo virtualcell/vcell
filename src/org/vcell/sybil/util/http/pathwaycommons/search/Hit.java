@@ -32,6 +32,7 @@ public class Hit {
 		xRefs = new Vector<XRef>();
 		for(Element xRefElement : xRefElements) { xRefs.add(new XRef(xRefElement)); }
 		excerpts = DOMUtil.childContents(element, "excerpt");
+		excerpts = cleanUp(excerpts); // wei's code: Clean up the <B> and <b> letters in the text of the response tree
 		Element organismElement = DOMUtil.firstChildElement(element, "organism");
 		if(organismElement != null) { organism = new Organism(organismElement); }
 		Element pathwayListElement = DOMUtil.firstChildElement(element, "pathway_list");
@@ -65,5 +66,17 @@ public class Hit {
 		"pathways=(" + StringUtil.concat(pathways, ",\n", "\"", "\"") + ");\n" + 
 		"]";
 	}
-	
+	// wei's code: remove the <b></b> and <B></B> from excerpts 
+	private List<String> cleanUp(List<String> excerpts){
+		String str = new String();	
+		for (int i = 0; i < excerpts.size(); i++){
+			str = excerpts.get(i);
+			String res = str.replaceAll("<B><b>", "");
+			String res1 = res.replaceAll("</b></B>", "");
+			excerpts.set(i, res1);
+		}
+		return excerpts;
+	}
+	// done
+
 }
