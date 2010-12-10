@@ -510,7 +510,7 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP5SetTarget();
 }
 
-public void setScrollPaneTableCurrentRow(ReactionStep selection) {
+public void setScrollPaneTableCurrentRow(ReactionSpec selection) {
 	if (selection == null) {
 		getScrollPaneTable().clearSelection();
 		return;
@@ -518,9 +518,9 @@ public void setScrollPaneTableCurrentRow(ReactionStep selection) {
 
 	int numRows = getScrollPaneTable().getRowCount();
 	for(int i=0; i<numRows; i++) {
-		ReactionStep valueAt = (ReactionStep)getScrollPaneTable().getValueAt(i, ReactionSpecsTableModel.COLUMN_NAME);
-		if(valueAt.equals(selection)) {
-			getScrollPaneTable().changeSelection(i, 0, false, false);
+		ReactionSpec valueAt = getReactionSpecsTableModel().getValueAt(i);
+		if(valueAt == selection) {
+			getScrollPaneTable().setRowSelectionInterval(i, i);
 			break;
 		}
 	}

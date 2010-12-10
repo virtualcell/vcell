@@ -337,7 +337,7 @@ public class SPPRPanel extends JPanel {
 				if(outerSplitPane.getRightComponent() != getInitialConditionsPanel()) {
 					outerSplitPane.setRightComponent(getInitialConditionsPanel());
 				}
-				getInitialConditionsPanel().setScrollPaneTableCurrentRow((SpeciesContext)leaf);	// notify right panel about selection change
+//				getInitialConditionsPanel().setScrollPaneTableCurrentRow((SpeciesContext)leaf);	// notify right panel about selection change
 			} else if(folderId == SPPRTreeModel.DATA_SYMBOLS_NODE) {
 				if(outerSplitPane.getRightComponent() != getDataSymbolsPanel()) {
 					outerSplitPane.setRightComponent(getDataSymbolsPanel());
@@ -352,7 +352,7 @@ public class SPPRPanel extends JPanel {
 				if(outerSplitPane.getRightComponent() != getReactionSpecsPanel()) {
 					outerSplitPane.setRightComponent(getReactionSpecsPanel());
 				}
-				getReactionSpecsPanel().setScrollPaneTableCurrentRow((ReactionStep)leaf);	// notify right panel about selection change
+//				getReactionSpecsPanel().setScrollPaneTableCurrentRow((ReactionStep)leaf);	// notify right panel about selection change
 			} else if(folderId == SPPRTreeModel.EVENTS_NODE) {
 				if(outerSplitPane.getRightComponent() != getEventsDisplayPanel()) {
 					outerSplitPane.setRightComponent(getEventsDisplayPanel());

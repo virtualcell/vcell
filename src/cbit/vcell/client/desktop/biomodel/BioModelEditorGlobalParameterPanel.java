@@ -13,8 +13,6 @@ import javax.swing.JTable;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 
-import com.hp.hpl.jena.sparql.function.library.namespace;
-
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.model.Model;
@@ -155,7 +153,7 @@ protected void deleteButtonPressed() {
 	}
 	ArrayList<ModelParameter> deleteList = new ArrayList<ModelParameter>();
 	for (int r : rows) {
-		if (r < tableModel.getDataSize()) {			
+		if (r < tableModel.getDataSize()) {
 			Parameter parameter = tableModel.getValueAt(r);
 			if (parameter instanceof ModelParameter) {
 				deleteList.add((ModelParameter)parameter);
@@ -198,6 +196,6 @@ public static void main(java.lang.String[] args) {
 
 @Override
 protected BioModelEditorRightSideTableModel<Parameter> createTableModel() {
-	return new BioModelEditorGlobalParameterTableModel(table, false);
+	return new BioModelEditorGlobalParameterTableModel(table, true);
 }
 }

@@ -24,7 +24,9 @@ import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Model;
@@ -136,6 +138,10 @@ public class BioModelEditorTreeCellRenderer extends DefaultTreeCellRenderer  {
 	    		labelText = ((SpeciesContext)userObj).getName();
 	    		toolTipPrefix = "Species: ";
 	    		toolTipSuffix = labelText;
+	    	} else if (userObj instanceof SpeciesContextSpec) { 	// --- species context
+	    		labelText = ((SpeciesContextSpec)userObj).getSpeciesContext().getName();
+	    		toolTipPrefix = "Species Parameters: ";
+	    		toolTipSuffix = labelText;
 	        } else if (userObj instanceof ModelParameter) {		// --- global parameter
 	        	labelText = ((ModelParameter)userObj).getName();
 	        	toolTipPrefix = "Global Parameter: ";
@@ -148,6 +154,10 @@ public class BioModelEditorTreeCellRenderer extends DefaultTreeCellRenderer  {
 	        	labelText = ((ReactionStep)userObj).getName();
 	        	toolTipPrefix = "Flux Reaction: ";
 				toolTipSuffix = labelText;
+	        } else if (userObj instanceof ReactionSpec) {
+	        	labelText = ((ReactionSpec)userObj).getReactionStep().getName();
+	        	toolTipPrefix = "Reaction Settings: ";
+	        	toolTipSuffix = labelText;
 	        } else if (userObj instanceof DataSymbol) {			// --- field data
 	        	labelText = ((DataSymbol)userObj).getName();
 	        	toolTipPrefix = "Dataset: " + ((FieldDataSymbol)userObj).getExternalDataIdentifier().getName();

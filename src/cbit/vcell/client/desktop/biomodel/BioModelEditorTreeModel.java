@@ -27,7 +27,9 @@ import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.model.Feature;
@@ -88,8 +90,8 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		MODEL_NODE,	
 		APPLICATTIONS_NODE,		
 
-		STRUCTURES_NODE,
 		REACTIONS_NODE,
+		STRUCTURES_NODE,
 		SPECIES_NODE,
 		GLOBAL_PARAMETER_NODE,
 		
@@ -111,8 +113,8 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	}
 	
 	enum ModelNodeID {		
-		STRUCTURES_NODE,
 		REACTIONS_NODE,
+		STRUCTURES_NODE,
 		SPECIES_NODE,
 		GLOBAL_PARAMETER_NODE,
 	}
@@ -155,18 +157,18 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 
 	// Model	
 	private BioModelEditorTreeFolderNode modelChildFolderNodes[] = {			
-			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.STRUCTURES_NODE, "Structures", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.REACTIONS_NODE, "Reactions", true),			
+			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.STRUCTURES_NODE, "Structures", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SPECIES_NODE, "Species", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.GLOBAL_PARAMETER_NODE, "Global Parameters", true),			
 		};	
-	private BioModelNode structuresNode = new BioModelNode(modelChildFolderNodes[0], true); 
-	private BioModelNode reactionsNode = new BioModelNode(modelChildFolderNodes[1], true); 
+	private BioModelNode reactionsNode = new BioModelNode(modelChildFolderNodes[0], true); 
+	private BioModelNode structuresNode = new BioModelNode(modelChildFolderNodes[1], true); 
 	private BioModelNode speciesNode = new BioModelNode(modelChildFolderNodes[2], true); 
 	private BioModelNode globalParametersNode = new BioModelNode(modelChildFolderNodes[3], true); 
 	private BioModelNode modelChildNodes[] = new BioModelNode[] {
-			structuresNode,
 			reactionsNode,
+			structuresNode,
 			speciesNode,
 			globalParametersNode,
 	};
@@ -204,8 +206,8 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		ownerTree.expandPath(new TreePath(modelNode.getPath()));
 		ownerTree.expandPath(new TreePath(applicationsNode.getPath()));
 		if (selectedBioModelNode == null) {
-			ownerTree.setSelectionPath(new TreePath(structuresNode.getPath()));
-			selectedBioModelNode = structuresNode;
+			ownerTree.setSelectionPath(new TreePath(reactionsNode.getPath()));
+			selectedBioModelNode = reactionsNode;
 		}
 	}
 
@@ -507,23 +509,23 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		}
 		switch (folderClass) {
 		case INITIAL_CONDITIONS_NODE: {
-		    SpeciesContext[] speciesContexts = simulationContext.getModel().getSpeciesContexts().clone();
-		    if(speciesContexts.length > 0) {
-		    	Arrays.sort(speciesContexts, new Comparator<SpeciesContext>() {
-					public int compare(SpeciesContext o1, SpeciesContext o2) {
-						return o1.getName().compareToIgnoreCase(o2.getName());
+		    SpeciesContextSpec[] speciesContextSpecs = simulationContext.getReactionContext().getSpeciesContextSpecs().clone();
+		    if(speciesContextSpecs.length > 0) {
+		    	Arrays.sort(speciesContextSpecs, new Comparator<SpeciesContextSpec>() {
+					public int compare(SpeciesContextSpec o1, SpeciesContextSpec o2) {
+						return o1.getSpeciesContext().getName().compareToIgnoreCase(o2.getSpeciesContext().getName());
 					}
 				});
-		    	for (SpeciesContext sc : speciesContexts) {
-		    		BioModelNode node = new BioModelNode(sc, false);
+		    	for (SpeciesContextSpec scs : speciesContextSpecs) {
+		    		BioModelNode node = new BioModelNode(scs, false);
 		    		popNode.add(node);
-		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof SpeciesContext 
-		    				&& ((SpeciesContext)selectedUserObject).getName().equals(sc.getName())) {
+		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof SpeciesContextSpec
+		    				&& ((SpeciesContextSpec)selectedUserObject).getSpeciesContext().getName().equals(scs.getSpeciesContext().getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 		    	}
-		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof SpeciesContext) {
+		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof SpeciesContextSpec) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -531,23 +533,23 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		    break;
 		}
 		case APP_REACTIONS_NODE: {
-		    ReactionStep[] reactionSteps = simulationContext.getModel().getReactionSteps().clone();
-		    if(reactionSteps.length != 0) {
-		    	Arrays.sort(reactionSteps, new Comparator<ReactionStep>() {
-					public int compare(ReactionStep o1, ReactionStep o2) {
-						return o1.getName().compareToIgnoreCase(o2.getName());
+		    ReactionSpec[] reactionSpecs = simulationContext.getReactionContext().getReactionSpecs().clone();
+		    if(reactionSpecs.length != 0) {
+		    	Arrays.sort(reactionSpecs, new Comparator<ReactionSpec>() {
+					public int compare(ReactionSpec o1, ReactionSpec o2) {
+						return o1.getReactionStep().getName().compareToIgnoreCase(o2.getReactionStep().getName());
 					}
 				});
-		    	for (ReactionStep rs : reactionSteps) {
+		    	for (ReactionSpec rs : reactionSpecs) {
 		    		BioModelNode node = new BioModelNode(rs, false);;
 		    		popNode.add(node);
-		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof ReactionStep
-		    				&& ((ReactionStep)selectedUserObject).getName().equals(rs.getName())) {
+		    		if (bSelected && !bFoundSelected && selectedUserObject instanceof ReactionSpec
+		    				&& ((ReactionSpec)selectedUserObject).getReactionStep().getName().equals(rs.getReactionStep().getName())) {
 		    			selectedBioModelNode = node;
 		    			bFoundSelected = true;
 		    		}
 		    	}
-		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof ReactionStep) {
+		    	if (bSelected && !bFoundSelected && selectedUserObject instanceof ReactionSpec) {
 		    		selectedBioModelNode = popNode;
 		    		bFoundSelected = true;
 		    	}
@@ -751,7 +753,10 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 			Object source = evt.getSource();
 			String propertyName = evt.getPropertyName();
 			
-			if (source == this && propertyName.equals(PROPERTY_NAME_BIO_MODEL)) {
+			if (source instanceof SelectionManager) {
+				Object[] selectedObject = ((SelectionManager)source).getSelectedObjects();
+				select(selectedObject);
+			} else if (source == this && propertyName.equals(PROPERTY_NAME_BIO_MODEL)) {
 				populateRoot();
 			    refreshListeners((BioModel) evt.getOldValue(), (BioModel) evt.getNewValue());
 			} else if (propertyName.equals("name")){
@@ -879,6 +884,17 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 		}
 	}
 	
+	private void select(Object[] selectedObjects) {
+		ownerTree.clearSelection();
+		if (selectedObjects != null) {
+			for (Object object : selectedObjects) {
+				BioModelNode node = rootNode.findNodeByUserObject(object);
+				if (node != null) {
+					ownerTree.addSelectionPath(new TreePath(node.getPath()));
+				}
+			}
+		}
+	}
 	public void select(BioModelEditorSelection newValue) {
 		if (newValue == null) {
 			return;

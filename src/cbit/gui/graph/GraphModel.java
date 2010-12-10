@@ -85,11 +85,17 @@ public abstract class GraphModel {
 		Set<Object> selectedOld = this.selectedObjects;
 		Set<Object> selectedNew = new HashSet<Object>(Arrays.asList(objects));
 		selectedNew.retainAll(keySet);
-		if (selectedOld.containsAll(selectedNew) || selectedNew.containsAll(selectedOld)) {
+		if (selectedOld.containsAll(selectedNew) && selectedNew.containsAll(selectedOld)) {
 			return;
 		}
 		
 		selectedObjects = selectedNew;
+		for (Object object : selectedOld) {
+			objectShapeMap.get(object).notifyUnselected();
+		}
+		for (Object object : selectedNew) {
+			objectShapeMap.get(object).notifySelected();
+		}
 		fireGraphChanged(new GraphEvent(this));
 		firePropertyChange(PROPERTY_NAME_SELECTED, selectedOld.toArray(), selectedObjects.toArray());
 	}

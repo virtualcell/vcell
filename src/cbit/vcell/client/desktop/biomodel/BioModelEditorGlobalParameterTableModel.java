@@ -221,7 +221,9 @@ public Object getValueAt(int row, int col) {
 			}
 		} else {
 			if (col == COLUMN_SCOPE) {
-				return bioModel.getModel().getNameScope();
+				if (bioModel != null) {
+					return bioModel.getModel().getNameScope();
+				}
 			}
 			if (col == COLUMN_NAME) {
 				return ADD_NEW_HERE_TEXT;

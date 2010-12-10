@@ -102,10 +102,10 @@ public class CartoonEditorPanelFixed extends JPanel {
 		getButtonGroupCivilized1().add(getSpeciesButton());
 		getSelectButton().setSelected(true);
 
-		getStructureCartoonTool1().setGraphModel(getStructureCartoon1());
+		getStructureCartoonTool1().setGraphModel(getStructureCartoon());
 		getStructureCartoonTool1().setButtonGroup(getButtonGroupCivilized1());
 		getStructureCartoonTool1().setGraphPane(getGraphPane1());
-		getGraphPane1().setGraphModel(getStructureCartoon1());
+		getGraphPane1().setGraphModel(getStructureCartoon());
 
 	}
 
@@ -159,7 +159,7 @@ public class CartoonEditorPanelFixed extends JPanel {
 			// user code begin {1}
 			// user code end
 			if ((getbioModel1() != null)) {
-				getStructureCartoon1().setModel(getbioModel1().getModel());
+				getStructureCartoon().setModel(getbioModel1().getModel());
 			}
 			// user code begin {2}
 			// user code end
@@ -524,7 +524,7 @@ public class CartoonEditorPanelFixed extends JPanel {
 	 * @return cbit.vcell.graph.StructureCartoon
 	 */
 	/* WARNING: THIS METHOD WILL BE REGENERATED. */
-	private StructureCartoon getStructureCartoon1() {
+	public StructureCartoon getStructureCartoon() {
 		if (ivjStructureCartoon1 == null) {
 			try {
 				ivjStructureCartoon1 = new StructureCartoon();

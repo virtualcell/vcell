@@ -6,6 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.beans.PropertyVetoException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -44,20 +45,16 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2003 2:07:01 PM)
  * @author: Frank Morgan
  */
 @SuppressWarnings("serial")
-public class SpeciesEditorPanel extends JPanel {
+public class SpeciesPropertiesPanel extends JPanel {
 	private SpeciesContext fieldSpeciesContext = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private boolean ivjConnPtoP1Aligning = false;
-	private SpeciesContext ivjspeciesContext1 = null;
 	private Model fieldModel = null;
 	private JTextArea annotationTextArea;
 	private JButton pathwayDBJButton = null;
@@ -101,7 +98,7 @@ public class SpeciesEditorPanel extends JPanel {
 					}
 				} catch (URNParseFailureException e) {
 					e.printStackTrace();
-					DialogUtils.showErrorDialog(SpeciesEditorPanel.this, e.getMessage());
+					DialogUtils.showErrorDialog(SpeciesPropertiesPanel.this, e.getMessage());
 				}
 			}
 		};
@@ -150,74 +147,37 @@ public class SpeciesEditorPanel extends JPanel {
 
 	}
 
-	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, HyperlinkListener, FocusListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, HyperlinkListener, FocusListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getPathwayDBbutton()) 
 				showPCKeywordQueryPanel();
-		};
-		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == SpeciesEditorPanel.this && (evt.getPropertyName().equals("speciesContext"))) 
-				connPtoP1SetTarget();
 		};
 		// @Override
 		public void hyperlinkUpdate(HyperlinkEvent e) {
 			if (e.getEventType() == EventType.ACTIVATED) {
 				URL link = e.getURL();
 				if (link != null) {
-					DialogUtils.browserLauncher(SpeciesEditorPanel.this, link.toExternalForm(), "failed to launch", false);
+					DialogUtils.browserLauncher(SpeciesPropertiesPanel.this, link.toExternalForm(), "failed to launch", false);
 				}
 			}
 		}
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
-			changeFreeTextAnnotation();
+			if (e.getSource() == annotationTextArea) {
+				changeFreeTextAnnotation();
+			} else if (e.getSource() == speciesNameTextField) {
+				changeName();
+			}
 		};
 	};
 
 /**
  * EditSpeciesDialog constructor comment.
  */
-public SpeciesEditorPanel() {
+public SpeciesPropertiesPanel() {
 	super();
 	initialize();
-}
-
-/**
- * connPtoP1SetSource:  (EditSpeciesDialog.speciesContext <--> speciesContext1.this)
- */
-private void connPtoP1SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			ivjConnPtoP1Aligning = true;
-			if ((getspeciesContext1() != null)) {
-				this.setSpeciesContext(getspeciesContext1());
-			}
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP1SetTarget:  (EditSpeciesDialog.speciesContext <--> speciesContext1.this)
- */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			ivjConnPtoP1Aligning = true;
-			setspeciesContext1(this.getSpeciesContext());
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		handleException(ivjExc);
-	}
 }
 
 /**
@@ -225,7 +185,7 @@ private void connPtoP1SetTarget() {
  * @return The model property value.
  * @see #setModel
  */
-public Model getModel() {
+private Model getModel() {
 	return fieldModel;
 }
 
@@ -238,16 +198,6 @@ public SpeciesContext getSpeciesContext() {
 	return fieldSpeciesContext;
 }
 
-
-/**
- * Return the speciesContext1 property value.
- * @return cbit.vcell.model.SpeciesContext
- */
-private SpeciesContext getspeciesContext1() {
-	return ivjspeciesContext1;
-}
-
-
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -259,31 +209,15 @@ private void handleException(java.lang.Throwable exception) {
 	exception.printStackTrace(System.out);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/20/2003 7:55:25 AM)
- * @param argSpeciesContext cbit.vcell.model.SpeciesContext
- * @param argDocumentManager cbit.vcell.clientdb.DocumentManager
- */
-public void initAddSpecies(Model argModel, Structure argStructure) {
-	setModel(argModel);
-	Species newSpecies = new Species(argModel.getFreeSpeciesName(),null);
-	SpeciesContext newSpeciesContext = new SpeciesContext(newSpecies,argStructure);
-	setSpeciesContext(newSpeciesContext);
-}
-
-
 /**
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
 private void initConnections() throws java.lang.Exception {
 	annotationTextArea.addFocusListener(ivjEventHandler);
+	speciesNameTextField.addFocusListener(ivjEventHandler);
 	getPathwayDBbutton().addActionListener(ivjEventHandler);
 	getPCLinkValueEditorPane().addHyperlinkListener(ivjEventHandler);
-	this.addPropertyChangeListener(ivjEventHandler);
-	connPtoP1SetTarget();
 }
 
 /**
@@ -295,8 +229,6 @@ private void initialize() {
 		setLayout(new GridBagLayout());
 		
 		speciesNameTextField = new JTextField();
-		speciesNameTextField.setEditable(false);
-		speciesNameTextField.setBackground(Color.WHITE);
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -304,7 +236,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
-		JLabel label = new JLabel("Species");
+		JLabel label = new JLabel("Species Name");
 		add(label, gbc);
 		
 		gbc.gridx = 1; 
@@ -371,7 +303,7 @@ private void initialize() {
 public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
-		SpeciesEditorPanel aEditSpeciesPanel = new SpeciesEditorPanel();
+		SpeciesPropertiesPanel aEditSpeciesPanel = new SpeciesPropertiesPanel();
 		frame.add(aEditSpeciesPanel);
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
@@ -409,9 +341,7 @@ private void changeFreeTextAnnotation() {
  * @see #getModel
  */
 public void setModel(Model model) {
-	Model oldValue = fieldModel;
 	fieldModel = model;
-	firePropertyChange("model", oldValue, model);
 }
 
 /**
@@ -420,28 +350,11 @@ public void setModel(Model model) {
  * @see #getSpeciesContext
  */
 public void setSpeciesContext(SpeciesContext speciesContext) {
-	SpeciesContext oldValue = fieldSpeciesContext;
+	if (fieldSpeciesContext == speciesContext) {
+		return;
+	}
 	fieldSpeciesContext = speciesContext;
-	firePropertyChange("speciesContext", oldValue, speciesContext);
-}
-
-
-/**
- * Set the speciesContext1 to a new value.
- * @param newValue cbit.vcell.model.SpeciesContext
- */
-private void setspeciesContext1(SpeciesContext newValue) {
-	if (ivjspeciesContext1 != newValue) {
-		try {
-			SpeciesContext oldValue = getspeciesContext1();
-			ivjspeciesContext1 = newValue;
-			connPtoP1SetSource();
-			updateInterface();
-			firePropertyChange("speciesContext", oldValue, newValue);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	};
+	updateInterface();
 }
 
 private void showPCKeywordQueryPanel() {
@@ -492,6 +405,23 @@ private JButton getPathwayDBbutton() {
 			PCLinkValueEditorPane.setText(null);
 		}
 		return PCLinkValueEditorPane;
+	}
+
+	private void changeName() {
+		if (fieldSpeciesContext == null) {
+			return;
+		}
+		String newName = speciesNameTextField.getText();
+		if (newName == null || newName.length() == 0) {
+			speciesNameTextField.setText(getSpeciesContext().getName());
+			return;
+		}
+		try {
+			getSpeciesContext().setName(speciesNameTextField.getText());
+		} catch (PropertyVetoException e1) {
+			e1.printStackTrace();
+			DialogUtils.showErrorDialog(SpeciesPropertiesPanel.this, e1.getMessage());
+		}
 	}
 
 }

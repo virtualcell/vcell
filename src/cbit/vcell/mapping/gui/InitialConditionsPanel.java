@@ -894,16 +894,16 @@ private void initialize() {
 	// user code end
 }
 
-public void setScrollPaneTableCurrentRow(SpeciesContext selection) {
+public void setScrollPaneTableCurrentRow(SpeciesContextSpec selection) {
 	if (selection == null) {
 		getScrollPaneTable().clearSelection();
 		return;
 	}
 	int numRows = getScrollPaneTable().getRowCount();
 	for(int i=0; i<numRows; i++) {
-		SpeciesContext valueAt = (SpeciesContext)getScrollPaneTable().getValueAt(i, SpeciesContextSpecsTableModel.COLUMN_SPECIESCONTEXT);
-		if(valueAt.equals(selection)) {
-			getScrollPaneTable().changeSelection(i, 0, false, false);
+		SpeciesContextSpec valueAt = getSpeciesContextSpecsTableModel().getValueAt(i);
+		if(valueAt == selection) {
+			getScrollPaneTable().setRowSelectionInterval(i, i);
 			return;
 		}
 	}

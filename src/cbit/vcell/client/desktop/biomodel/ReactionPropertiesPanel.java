@@ -32,7 +32,7 @@ import cbit.vcell.model.gui.ParameterTableModel;
 import cbit.vcell.model.gui.ReactionElectricalPropertiesPanel;
 
 @SuppressWarnings("serial")
-public class SimpleReactionPropertiesPanel extends javax.swing.JPanel {
+public class ReactionPropertiesPanel extends javax.swing.JPanel {
 	private static final String PROPERTY_NAME_REACTION_STEP = "reactionStep";
 	private ReactionStep reactionStep = null;
 	private javax.swing.JComboBox kineticsTypeComboBox = null;
@@ -62,7 +62,7 @@ public class SimpleReactionPropertiesPanel extends javax.swing.JPanel {
 	
 class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == SimpleReactionPropertiesPanel.this && (evt.getPropertyName().equals(PROPERTY_NAME_REACTION_STEP))) { 
+			if (evt.getSource() == ReactionPropertiesPanel.this && (evt.getPropertyName().equals(PROPERTY_NAME_REACTION_STEP))) { 
 				updateInterface();
 			}			
 		}
@@ -72,7 +72,7 @@ class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListen
 		}
 	}
 	
-public SimpleReactionPropertiesPanel() {
+public ReactionPropertiesPanel() {
 	super();
 	initialize();
 }
@@ -224,8 +224,8 @@ private void initialize() {
 public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
-		SimpleReactionPropertiesPanel aKineticsTypeTemplatePanel;
-		aKineticsTypeTemplatePanel = new SimpleReactionPropertiesPanel();
+		ReactionPropertiesPanel aKineticsTypeTemplatePanel;
+		aKineticsTypeTemplatePanel = new ReactionPropertiesPanel();
 		frame.setContentPane(aKineticsTypeTemplatePanel);
 		frame.setSize(aKineticsTypeTemplatePanel.getSize());
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -401,31 +401,31 @@ private JButton getJToggleButton() {
 
 				if (kinetics instanceof DistributedKinetics){
 					try {
-						String response = DialogUtils.showInputDialog0(SimpleReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
+						String response = DialogUtils.showInputDialog0(ReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
 						double size = Double.parseDouble(response);
 						reactionStep.setKinetics(LumpedKinetics.toLumpedKinetics((DistributedKinetics)kinetics, size));
 					} catch (UtilCancelException e1) {
 					} catch (Exception e2){
 						if (kinetics.getKineticsDescription().isElectrical()){
-							DialogUtils.showErrorDialog(SimpleReactionPropertiesPanel.this,"failed to translate into General Current Kinetics [pA]: "+e2.getMessage(), e2);
+							DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Current Kinetics [pA]: "+e2.getMessage(), e2);
 						}else{
-							DialogUtils.showErrorDialog(SimpleReactionPropertiesPanel.this,"failed to translate into General Lumped Kinetics [molecules/s]: "+e2.getMessage(), e2);
+							DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Lumped Kinetics [molecules/s]: "+e2.getMessage(), e2);
 						}
 					}
  				}else if (kinetics instanceof LumpedKinetics){
 					try {
-						String response = DialogUtils.showInputDialog0(SimpleReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
+						String response = DialogUtils.showInputDialog0(ReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
 						double size = Double.parseDouble(response);
 						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics, size));
 					} catch (UtilCancelException e1) {
 					} catch (Exception e2){
 						if (kinetics.getKineticsDescription().isElectrical()){
-							DialogUtils.showErrorDialog(SimpleReactionPropertiesPanel.this,"failed to translate into General Current Density Kinetics [pA/"+MU+"m"+SQUARED+"]: "+e2.getMessage(), e2);
+							DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Current Density Kinetics [pA/"+MU+"m"+SQUARED+"]: "+e2.getMessage(), e2);
 						}else{
 							if (kinetics.getReactionStep().getStructure() instanceof Feature){
-								DialogUtils.showErrorDialog(SimpleReactionPropertiesPanel.this,"failed to translate into General Kinetics ["+MU+"M/s]: "+e2.getMessage(), e2);
+								DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Kinetics ["+MU+"M/s]: "+e2.getMessage(), e2);
 							}else{
-								DialogUtils.showErrorDialog(SimpleReactionPropertiesPanel.this,"failed to translate into General Kinetics [molecules/"+MU+"m"+SQUARED+".s]: "+e2.getMessage(), e2);
+								DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Kinetics [molecules/"+MU+"m"+SQUARED+".s]: "+e2.getMessage(), e2);
 							}
 						}
 					}
