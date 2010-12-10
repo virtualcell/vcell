@@ -133,7 +133,11 @@ public static void formatTableCellSizes(final javax.swing.JTable targetTable) {
 				maxColumnWidths[columnIndex] = Math.max(maxColumnWidths[columnIndex],comp.getPreferredSize().width);
 			}
 			for(int rowIndex=0;rowIndex<targetTable.getRowCount();rowIndex+= 1){
-				java.awt.Component comp = targetTable.getCellRenderer(rowIndex,columnIndex).getTableCellRendererComponent(
+				TableCellRenderer cellRenderer = targetTable.getCellRenderer(rowIndex,columnIndex);
+				if (cellRenderer == null) {
+					continue;
+				}
+				java.awt.Component comp = cellRenderer.getTableCellRendererComponent(
 						targetTable,targetTable.getValueAt(rowIndex,columnIndex),false,false,rowIndex,columnIndex);					
 				maxColumnWidths[columnIndex] = Math.max(maxColumnWidths[columnIndex],comp.getPreferredSize().width);
 				maxRowHeights[rowIndex] = Math.max(maxRowHeights[rowIndex],comp.getPreferredSize().height);

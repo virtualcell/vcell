@@ -63,20 +63,24 @@ public abstract class BioModelEditorApplicationRightSideTableModel<T> extends De
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		if (evt.getSource() == this) {
 			if (evt.getPropertyName().equals(PROPERTY_NAME_SIMULATOIN_CONTEXT)) {
-				refreshData();
-				SimulationContext oldValue = (SimulationContext)evt.getOldValue();
-				if (oldValue != null) {
-					oldValue.removePropertyChangeListener(this);
-				}
-				SimulationContext newValue = (SimulationContext)evt.getNewValue();
-				if (newValue != null) {
-					newValue.addPropertyChangeListener(this);
-				}
+				simulationContextChange(evt);
 			} else if (evt.getPropertyName().equals(PROPERTY_NAME_SEARCH_TEXT)) {
 				refreshData();
 			}
 		} else if (evt.getSource() == simulationContext) {
 			refreshData();
+		}
+	}
+
+	protected void simulationContextChange(java.beans.PropertyChangeEvent evt) {
+		refreshData();
+		SimulationContext oldValue = (SimulationContext)evt.getOldValue();
+		if (oldValue != null) {
+			oldValue.removePropertyChangeListener(this);
+		}
+		SimulationContext newValue = (SimulationContext)evt.getNewValue();
+		if (newValue != null) {
+			newValue.addPropertyChangeListener(this);
 		}
 	}
 	

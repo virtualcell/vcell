@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -7,15 +8,21 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
+import javax.swing.JTable;
 
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
+
+import com.hp.hpl.jena.sparql.function.library.namespace;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.gui.ModelParameterTableModel;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.NameScope;
 import cbit.vcell.units.VCUnitDefinition;
 
 /**
@@ -24,7 +31,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class BioModelEditorGlobalParameterPanel extends BioModelEditorRightSidePanel<ModelParameter> {
+public class BioModelEditorGlobalParameterPanel extends BioModelEditorRightSidePanel<Parameter> {
 
 	public BioModelEditorGlobalParameterPanel() {
 		super();
@@ -44,6 +51,7 @@ public void cleanupOnClose() {
  * Initialize the class.
  */
 private void initialize() {
+	newButton.setText("New Global Parameter");
 	setLayout(new GridBagLayout());
 	
 	int gridy = 0;
@@ -67,7 +75,6 @@ private void initialize() {
 	gbc.gridy = gridy;
 	gbc.insets = new Insets(4,100,4,4);
 	gbc.anchor = GridBagConstraints.LINE_END;
-	newButton.setPreferredSize(deleteButton.getPreferredSize());
 	add(newButton, gbc);
 	
 	gbc = new GridBagConstraints();
@@ -86,7 +93,28 @@ private void initialize() {
 	gbc.weightx = 1.0;
 	gbc.gridwidth = 4;
 	gbc.fill = GridBagConstraints.BOTH;
-	add(table.getEnclosingScrollPane(), gbc);	
+	add(table.getEnclosingScrollPane(), gbc);
+	
+	table.setDefaultRenderer(NameScope.class, new DefaultScrollTableCellRenderer(){
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+					row, column);
+			if (value instanceof NameScope) {
+				NameScope nameScope = (NameScope)value;
+				String text = nameScope.getName();
+				if (nameScope instanceof Model.ModelNameScope) {
+					text = "Global";
+				}
+				setText(text);
+			}
+			return this;
+		}
+		
+	});
 }
 
 public void setScrollPaneTableCurrentRow(ModelParameter selection) {
@@ -127,8 +155,11 @@ protected void deleteButtonPressed() {
 	}
 	ArrayList<ModelParameter> deleteList = new ArrayList<ModelParameter>();
 	for (int r : rows) {
-		if (r < tableModel.getDataSize()) {
-			deleteList.add(tableModel.getValueAt(r));
+		if (r < tableModel.getDataSize()) {			
+			Parameter parameter = tableModel.getValueAt(r);
+			if (parameter instanceof ModelParameter) {
+				deleteList.add((ModelParameter)parameter);
+			}
 		}
 	}	
 	try {
@@ -166,7 +197,7 @@ public static void main(java.lang.String[] args) {
 }
 
 @Override
-protected BioModelEditorRightSideTableModel<ModelParameter> createTableModel() {
-	return new BioModelEditorGlobalParameterTableModel(table);
+protected BioModelEditorRightSideTableModel<Parameter> createTableModel() {
+	return new BioModelEditorGlobalParameterTableModel(table, false);
 }
 }
