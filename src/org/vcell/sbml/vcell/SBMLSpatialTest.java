@@ -5,27 +5,38 @@ import java.io.FileWriter;
 
 import org.sbml.libsbml.ASTNode;
 import org.sbml.libsbml.AdjacentDomains;
+import org.sbml.libsbml.AdvectionCoefficient;
 import org.sbml.libsbml.AnalyticGeometry;
 import org.sbml.libsbml.AnalyticVolume;
 import org.sbml.libsbml.AssignmentRule;
+import org.sbml.libsbml.BoundaryCondition;
+import org.sbml.libsbml.BoundaryMax;
+import org.sbml.libsbml.BoundaryMin;
 import org.sbml.libsbml.Compartment;
 import org.sbml.libsbml.CompartmentMapping;
 import org.sbml.libsbml.CoordinateComponent;
+import org.sbml.libsbml.DiffusionCoefficient;
 import org.sbml.libsbml.Domain;
 import org.sbml.libsbml.DomainType;
 import org.sbml.libsbml.Geometry;
 import org.sbml.libsbml.GeometryDefinition;
+import org.sbml.libsbml.ImageData;
+import org.sbml.libsbml.InteriorPoint;
 import org.sbml.libsbml.Model;
 import org.sbml.libsbml.Parameter;
 import org.sbml.libsbml.RequiredElementsPkgNamespaces;
 import org.sbml.libsbml.RequiredElementsSBasePlugin;
 import org.sbml.libsbml.SBMLDocument;
+import org.sbml.libsbml.SBMLDocumentPlugin;
 import org.sbml.libsbml.SBMLReader;
 import org.sbml.libsbml.SBMLWriter;
-import org.sbml.libsbml.SBasePlugin;
+import org.sbml.libsbml.SampledField;
+import org.sbml.libsbml.SampledFieldGeometry;
+import org.sbml.libsbml.SampledVolume;
+import org.sbml.libsbml.SpatialCompartmentPlugin;
 import org.sbml.libsbml.SpatialModelPlugin;
 import org.sbml.libsbml.SpatialParameterPlugin;
-import org.sbml.libsbml.SpatialPoint;
+import org.sbml.libsbml.SpatialSpeciesRxnPlugin;
 import org.sbml.libsbml.SpatialSymbolReference;
 import org.sbml.libsbml.Species;
 import org.sbml.libsbml.libsbml;
@@ -48,11 +59,11 @@ public static void	main(String argv[])
 {
 	ResourceUtil.loadlibSbmlLibray();
 	
-	File sbmlFile = testVCSBMLSpatialExporter(new File("C:\\\\Temp\\\\CaDiffusion_Tutorial.vcml"));
-	testVCSBMLSpatialImporter(sbmlFile);
+//	File sbmlFile = testVCSBMLSpatialExporter(new File("C:\\\\Temp\\\\CaDiffusion_Tutorial.vcml"));
+//	testVCSBMLSpatialImporter(sbmlFile);
 	
- 	// writeSpatialSBML();
-	// readSpatialSBML();
+ 	 writeSpatialSBML();
+ 	 readSpatialSBML();
 
 	//	writeLayoutSBML();
 }
@@ -72,6 +83,13 @@ private static void writeSpatialSBML() {
 
   // create the L3V1 document with spatial package
   SBMLDocument document = new SBMLDocument(sbmlns);	
+  
+  // set 'required' attribute on document for 'spatial' and 'req' packages to 'T'??
+	SBMLDocumentPlugin dplugin = (SBMLDocumentPlugin)document.getPlugin("req");
+	dplugin.setRequired(true);
+	dplugin = (SBMLDocumentPlugin)document.getPlugin("spatial");
+	dplugin.setRequired(true);
+
 
   // create the Model 
   Model model = document.createModel();
@@ -79,13 +97,11 @@ private static void writeSpatialSBML() {
   model.setName("trial_spatial");
 
   // create the Compartments
-
   Compartment compartment = model.createCompartment();
   compartment.setId("cytosol");
   compartment.setConstant(true);
 
   // create the Species
-
   Species species1 = model.createSpecies();
   species1.setId("ATPc");
   species1.setCompartment("cytosol");
@@ -93,6 +109,49 @@ private static void writeSpatialSBML() {
   species1.setHasOnlySubstanceUnits(false);
   species1.setBoundaryCondition(false);
   species1.setConstant(false);
+  SpatialSpeciesRxnPlugin srplugin = (SpatialSpeciesRxnPlugin)species1.getPlugin("spatial");
+  srplugin.setIsSpatial(true);
+  
+  // param for species1 diff coeff
+  Parameter param = model.createParameter();
+  param.setId("paramDC");
+  param.setValue(0);
+  param.setConstant(false);
+  RequiredElementsSBasePlugin reqPlugin = (RequiredElementsSBasePlugin)param.getPlugin("req");
+  reqPlugin.setMathOverridden("spatial");
+  reqPlugin.setCoreHasAlternateMath(true);
+  SpatialParameterPlugin spplugin = (SpatialParameterPlugin)param.getPlugin("spatial");
+  DiffusionCoefficient diffCoeff = spplugin.getDiffusionCoefficient();
+  diffCoeff.setVariable(species1.getId());
+  diffCoeff.setCoordinateIndex(0);
+
+  // param for species1 adv coeff
+  param = model.createParameter();
+  param.setId("paramAC");
+  param.setValue(0);
+  param.setConstant(false);
+  reqPlugin = (RequiredElementsSBasePlugin)param.getPlugin("req");
+  reqPlugin.setMathOverridden("spatial");
+  reqPlugin.setCoreHasAlternateMath(true);
+  spplugin = (SpatialParameterPlugin)param.getPlugin("spatial");
+  AdvectionCoefficient advCoeff = spplugin.getAdvectionCoefficient();
+  advCoeff.setVariable(species1.getId());
+  advCoeff.setCoordinateIndex(0);
+  
+  // param for species1 boundary conditions
+  param = model.createParameter();
+  param.setId("paramBC");
+  param.setValue(0);
+  param.setConstant(false);
+  reqPlugin = (RequiredElementsSBasePlugin)param.getPlugin("req");
+  reqPlugin.setMathOverridden("spatial");
+  reqPlugin.setCoreHasAlternateMath(true);
+  spplugin = (SpatialParameterPlugin)param.getPlugin("spatial");
+  BoundaryCondition bc = spplugin.getBoundaryCondition();
+  bc.setVariable(species1.getId());
+  bc.setCoordinateBoundary("Xmin");
+  bc.setType("value");
+  
   
   Species species2 = model.createSpecies();
   species2.setId("ATPc");
@@ -102,8 +161,8 @@ private static void writeSpatialSBML() {
   species2.setBoundaryCondition(false);
   species2.setConstant(false);
   
-  // create a parameter
-  Parameter param = model.createParameter();
+  // create a general parameter
+  param = model.createParameter();
   param.setId("k_1");
   param.setValue(0.24);
   param.setConstant(true);
@@ -120,11 +179,13 @@ private static void writeSpatialSBML() {
   // SBasePlugin*, and thus the value needs to be casted for the 
   // corresponding derived class.
   //
+  /*
   SBasePlugin plugin = model.getPlugin("spatial");
   SpatialModelPlugin mplugin = null;
   if (plugin instanceof SpatialModelPlugin) {
 	  mplugin = (SpatialModelPlugin)plugin;
-  }
+  } */
+  SpatialModelPlugin mplugin = (SpatialModelPlugin)model.getPlugin("spatial");
 
   //
   // Creates a geometry object via SpatialModelPlugin object.
@@ -137,24 +198,20 @@ private static void writeSpatialSBML() {
   coordComp.setComponentType("cartesian");
   coordComp.setSbmlUnit("umeter");
   coordComp.setIndex(1);
-  coordComp.setMin(0.0);
-  coordComp.setMax(10.0);
+  BoundaryMin minX = coordComp.createBoundaryMin();
+  minX.setSpatialId("minX");
+  minX.setValue(0.0);
+  BoundaryMax maxX = coordComp.createBoundaryMax();
+  maxX.setSpatialId("maxX");
+  maxX.setValue(10.0);
   
   // create a parameter in core package for each coord component
   Parameter paramX = model.createParameter();
   paramX.setId("x");
-  RequiredElementsSBasePlugin reqPlugin = null;
-  plugin = paramX.getPlugin("req");
-  if (plugin instanceof RequiredElementsSBasePlugin) {
-	  reqPlugin = (RequiredElementsSBasePlugin)plugin;
-  }
+  reqPlugin = (RequiredElementsSBasePlugin)paramX.getPlugin("req");
   reqPlugin.setMathOverridden("spatial");
   reqPlugin.setCoreHasAlternateMath(true);
-  plugin = paramX.getPlugin("spatial");
-  SpatialParameterPlugin spplugin = null;
-  if (plugin instanceof SpatialParameterPlugin) {
-	  spplugin = (SpatialParameterPlugin)plugin;
-  }
+  spplugin = (SpatialParameterPlugin)paramX.getPlugin("spatial");
   SpatialSymbolReference spSymRef = spplugin.getSpatialSymbolReference();
   spSymRef.setSpatialId(coordComp.getSpatialId());
   spSymRef.setType(coordComp.getElementName());
@@ -164,8 +221,12 @@ private static void writeSpatialSBML() {
   domainType.setSpatialId("dtype1");
   domainType.setSpatialDimensions(3);
 
-  // add CompartmentMapping
-  CompartmentMapping compMapping = geometry.createCompartmentMapping();
+  // create a compartmentMapping plugin for each compartment in model
+  reqPlugin = (RequiredElementsSBasePlugin)compartment.getPlugin("req");
+  reqPlugin.setMathOverridden("spatial");
+  reqPlugin.setCoreHasAlternateMath(true);
+  SpatialCompartmentPlugin cplugin = (SpatialCompartmentPlugin)compartment.getPlugin("spatial");
+  CompartmentMapping compMapping = cplugin.getCompartmentMapping();
   compMapping.setSpatialId("compMap1");
   compMapping.setCompartment(compartment.getId());
   compMapping.setDomainType(domainType.getSpatialId());
@@ -177,8 +238,7 @@ private static void writeSpatialSBML() {
   domain.setDomainType("dtype1");
   domain.setImplicit(false);
   domain.setShapeId("circle");
-  SpatialPoint intPt = domain.createInteriorPoint();
-  intPt.setSpatialId("intPoint");
+  InteriorPoint intPt = domain.createInteriorPoint();
   intPt.setCoord1(1.0);
 
   domain = geometry.createDomain();
@@ -187,7 +247,6 @@ private static void writeSpatialSBML() {
   domain.setImplicit(false);
   domain.setShapeId("square");
   intPt = domain.createInteriorPoint();
-  intPt.setSpatialId("pt_1");
   intPt.setCoord1(2.0);
 
   // add adjacentDomains
@@ -207,6 +266,40 @@ private static void writeSpatialSBML() {
   String mathFormulaStr = "x*x-1";
   ASTNode mathMLNode = libsbml.parseFormula(mathFormulaStr);
   analyticVol.setMath(mathMLNode);
+  
+  // add sampledfieldGeometry
+  SampledFieldGeometry sfg = geometry.createSampledFieldGeometry();
+  sfg.setSpatialId("sampledFieldGeom1");
+  SampledField sampledField = sfg.createSampledField();
+  sampledField.setSpatialId("sampledField1");
+  sampledField.setNumSamples1(4);
+  sampledField.setNumSamples2(4);
+  sampledField.setNumSamples3(2);
+  sampledField.setDataType("double");
+  sampledField.setInterpolationType("linear");
+  sampledField.setEncoding("encoding1");
+  
+  int samples[] = {
+          // z=0
+          0,0,0,0,
+          0,1,1,0,
+			 0,1,1,0,
+			 0,0,0,0,
+			 // z=1
+			 0,0,0,0,
+			 0,1,1,0,
+			 0,1,1,0,
+			 0,0,0,0
+  };
+  ImageData id = sampledField.createImageData();
+  id.setSamples(samples, samples.length);
+  
+  SampledVolume sampledVol = sfg.createSampledVolume();
+  sampledVol.setSpatialId("sv_1");
+  sampledVol.setDomainType(domainType.getSpatialId());
+  sampledVol.setSampledValue(128.0);
+  sampledVol.setMinValue(0.0);
+  sampledVol.setMaxValue(255.0);
   
 /* ======= Alternative to above 3 lines of code =====  
   String mathMLStr = null;
@@ -228,23 +321,49 @@ private static void readSpatialSBML() {
 	SBMLReader reader = new SBMLReader();
 	SBMLDocument document = reader.readSBML("C:\\Temp\\spatial_example_J.xml");
   
-	// model and compartment(s)
+	// model 
 	Model model = document.getModel();
+	
+	// Compartment(s)
+	Compartment c;
+	RequiredElementsSBasePlugin reqPlugin = null;
+	SpatialCompartmentPlugin cplugin = null;
 	for (int i = 0; i < model.getNumCompartments(); i++) {
-		Compartment comp = model.getCompartment(i);
-		System.out.println("Compartment" + i + " : " + comp.getId());
+		c = model.getCompartment(i);
+		System.out.println("Compartment" + i + " : " + c.getId());
+		reqPlugin = (RequiredElementsSBasePlugin)c.getPlugin("req");
+		if (!reqPlugin.getMathOverridden().equals("")) {
+			System.out.print("\t req:MO = " + reqPlugin.getMathOverridden() + "\t req:CoreAltMath = " + reqPlugin.getCoreHasAlternateMath());
+		}
+		cplugin = (SpatialCompartmentPlugin)c.getPlugin("spatial");
+		CompartmentMapping compMapping = cplugin.getCompartmentMapping();
+		if (compMapping.isSetSpatialId()) {
+			System.out.print("\t cm:id = " + compMapping.getSpatialId() + "\t cm:c = " + compMapping.getCompartment() +
+							 "\t cm:dt = " + compMapping.getDomainType() + "\t cm:u = " + compMapping.getUnitSize());
+		}		
+		System.out.println("\n");
 	}
 
 	// species
+	Species sp;
+	SpatialSpeciesRxnPlugin srplugin = null;
 	for (int i = 0; i < model.getNumSpecies(); i++) {
-		Species sp = model.getSpecies(i);
+		sp = model.getSpecies(i);
 		System.out.println("Species" + i + " : " + sp.getId());
+		reqPlugin = (RequiredElementsSBasePlugin)sp.getPlugin("req");
+		if (!reqPlugin.getMathOverridden().equals("")) {
+			System.out.print("\t req:MO = " + reqPlugin.getMathOverridden() + "\t req:CoreAltMath = " + reqPlugin.getCoreHasAlternateMath());
+		}
+		srplugin = (SpatialSpeciesRxnPlugin)sp.getPlugin("spatial");
+		if (srplugin.getIsSpatial()) {
+			System.out.print("\t isSpatial = " + srplugin.getIsSpatial());
+		}
+		System.out.println("\n");
 	}
 
 	// parameters
 	SpatialParameterPlugin spplugin = null;
-	RequiredElementsSBasePlugin reqPlugin = null; 
-	for (int i = 0; i < model.getNumSpecies(); i++) {
+	for (int i = 0; i < model.getNumParameters(); i++) {
 		Parameter p = model.getParameter(i);
 		System.out.print("Parameter" + i + " : " + p.getId());
 		reqPlugin = (RequiredElementsSBasePlugin)p.getPlugin("req");
@@ -252,8 +371,21 @@ private static void readSpatialSBML() {
 			System.out.print("\t req:MO = " + reqPlugin.getMathOverridden() + "\t req:CoreAltMath = " + reqPlugin.getCoreHasAlternateMath());
 		}
 		spplugin = (SpatialParameterPlugin)p.getPlugin("spatial");
-		if (spplugin.getSpatialSymbolReference().isSetSpatialId()) {
-			System.out.print("\t ssr:id = " + spplugin.getSpatialSymbolReference().getSpatialId() + "\t ssr:type = " + spplugin.getSpatialSymbolReference().getType());
+		SpatialSymbolReference spSymRef = spplugin.getSpatialSymbolReference();
+		if (spSymRef.isSetSpatialId()) {
+			System.out.print("\t ssr:id = " + spSymRef.getSpatialId() + "\t ssr:type = " + spSymRef.getType());
+		}
+		DiffusionCoefficient diffCoeff = spplugin.getDiffusionCoefficient();
+		if (diffCoeff.isSetVariable()) {
+			System.out.print("\t dc:var = " + diffCoeff.getVariable() + "\t dc:indx = " + diffCoeff.getCoordinateIndex());
+		}
+		AdvectionCoefficient advCoeff = spplugin.getAdvectionCoefficient();
+		if (advCoeff.isSetVariable()) {
+			System.out.print("\t ac:var = " + advCoeff.getVariable() + "\t ac:indx = " + advCoeff.getCoordinateIndex());
+		}
+		BoundaryCondition bc = spplugin.getBoundaryCondition();
+		if (bc.isSetVariable()) {
+			System.out.print("\t bc:var = " + bc.getVariable() + "\t bc:coordBoundary = " + bc.getCoordinateBoundary() + "\t bc:Type = " + bc.getType());
 		}
 		System.out.println("\n");
 	}
@@ -275,18 +407,15 @@ private static void readSpatialSBML() {
 	// get a CoordComponent object via the Geometry object.	
 	CoordinateComponent coordComp = geometry.getCoordinateComponent(0);
 	System.out.println("CoordComp spatialId: " + coordComp.getSpatialId() + ";  compType: " + coordComp.getComponentType() +
-			";  sbmlUnit: " + coordComp.getSbmlUnit() + ";  index: " + coordComp.getIndex() + 
-			";  Min: " + coordComp.getMin() + ";  Max: " + coordComp.getMax());
-
+			";  sbmlUnit: " + coordComp.getSbmlUnit() + ";  index: " + coordComp.getIndex());
+	BoundaryMin minX = coordComp.getBoundaryMin();
+	System.out.println("Min name: " + minX.getSpatialId() + "; Min value : " + minX.getValue());
+	BoundaryMax maxX = coordComp.getBoundaryMax();
+	System.out.println("Max name: " + maxX.getSpatialId() + "; Max value : " + maxX.getValue());
 
 	// get a DomainType object via the Geometry object.	
 	DomainType domainType = geometry.getDomainType(0);
 	System.out.println("DomainType spatialId: " + domainType.getSpatialId() + ";  spDim: " + domainType.getSpatialDimensions());
-
-	// get a CompartmentMapping object via the Geometry object.	
-	CompartmentMapping compMapping = geometry.getCompartmentMapping(0);
-	System.out.println("CompMap spatialId: " + compMapping.getSpatialId() + ";  compartment: " + compMapping.getCompartment() +
-			";  domainType: " + compMapping.getDomainType() + ";  UnitSize: " + compMapping.getUnitSize());
 	
 	// get a Domain object via the Geometry object.	
 	Domain domain = geometry.getDomain(0);
@@ -294,8 +423,8 @@ private static void readSpatialSBML() {
 			";  domainType: " + domain.getDomainType() + ";  ShapeId: " + domain.getShapeId());
 	
 	// get an interior Point object via the Domain object.	
-	SpatialPoint intPt = domain.getInteriorPoint(0);
-	System.out.println("Point spatialId: " + intPt.getSpatialId() + ";  coord1: " + intPt.getCoord1());
+	InteriorPoint intPt = domain.getInteriorPoint(0);
+	System.out.println("Point coord1: " + intPt.getCoord1());
 
 	domain = geometry.getDomain(1);
 	System.out.println("Domain spatialId: " + domain.getSpatialId() + ";  implicit: " + domain.getImplicit() +
@@ -303,7 +432,7 @@ private static void readSpatialSBML() {
 
 	// get an interior Point object via the Domain object.	
 	intPt = domain.getInteriorPoint(0);
-	System.out.println("Point spatialId: " + intPt.getSpatialId() + ";  coord1: " + intPt.getCoord1());
+	System.out.println("Point coord1: " + intPt.getCoord1());
 
 	// get an AdjacentDomains object via the Geometry object.	
 	AdjacentDomains adjDomains = geometry.getAdjacentDomains(0);
@@ -311,15 +440,48 @@ private static void readSpatialSBML() {
 			";  domain2: " + adjDomains.getDomain2());
 	
 	// get an AnalyticGeometry object via the Geometry object.
-	GeometryDefinition gd = geometry.getGeometryDefinition();
-	if (gd.isAnalyticGeometry()) {
-		AnalyticGeometry ag = (AnalyticGeometry)gd;
-		System.out.println("AnalyticGeom spatialId: " + ag.getSpatialId());
-		AnalyticVolume av = ag.getAnalyticVolume(0);
-		System.out.println("AnalyticVol spatialId: " + av.getSpatialId() + ";  domainType: " + av.getDomainType() +
-				";  FuncType: " + av.getFunctionType() + ";  ordinal: " + av.getOrdinal());
-		String mathFormulaStr = libsbml.formulaToString(av.getMath());
-		System.out.println("AnalyticVol Math : " + mathFormulaStr);
+	GeometryDefinition gd;
+	for (int i = 0; i < geometry.getNumGeometryDefinitions(); i++) {
+		gd = geometry.getGeometryDefinition(i);
+
+		if (gd instanceof AnalyticGeometry) {
+			AnalyticGeometry ag = (AnalyticGeometry)gd;
+			System.out.println("AnalyticGeom spatialId: " + ag.getSpatialId());
+			AnalyticVolume av = ag.getAnalyticVolume(0);
+			System.out.println("AnalyticVol spatialId: " + av.getSpatialId() + ";  domainType: " + av.getDomainType() +
+					";  FuncType: " + av.getFunctionType() + ";  ordinal: " + av.getOrdinal());
+			String mathFormulaStr = libsbml.formulaToString(av.getMath());
+			System.out.println("AnalyticVol Math : " + mathFormulaStr);
+		}
+		if (gd instanceof SampledFieldGeometry) {
+			SampledFieldGeometry sfGeom = (SampledFieldGeometry)gd;
+			System.out.println("SampledFieldGeom spatialId: " + sfGeom.getSpatialId());
+			
+			// sampledField from sfGeom
+			SampledField sf = sfGeom.getSampledField();
+			System.out.println("SampledField spatialId: " + sf.getSpatialId());
+			System.out.println("SampledField dataType: " + sf.getDataType());
+			System.out.println("SampledField interpolation: " + sf.getInterpolationType());
+			System.out.println("SampledField encoding: " + sf.getEncoding());
+			System.out.println("SampledField numSamples1: " + sf.getNumSamples1());
+			System.out.println("SampledField numSamples2: " + sf.getNumSamples2());
+			System.out.println("SampledField numSamples3: " + sf.getNumSamples3());
+
+			ImageData id = sf.getImageData();
+			int[] samples = new int[(int) id.getSamplesLength()];
+			id.getSamples(samples);
+			System.out.println("ImageData samples[0]: " + samples[0]);
+			System.out.println("ImageData samplesLen: " + id.getSamplesLength());
+
+			// sampledVolVol from sfGeom.
+			SampledVolume sv = sfGeom.getSampledVolume(0);
+			System.out.println("SampledVol spatialId: " + sv.getSpatialId());
+			System.out.println("SampledVol domainType: " + sv.getDomainType());
+			System.out.println("SampledVol sampledVal: " + sv.getSampledValue());
+			System.out.println("SampledVol min: " + sv.getMinValue());
+			System.out.println("SampledVol max: " + sv.getMaxValue());
+		}
+
 	}
 	
 	document.delete();
