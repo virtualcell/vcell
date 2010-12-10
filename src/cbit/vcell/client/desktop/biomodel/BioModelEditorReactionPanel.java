@@ -35,7 +35,7 @@ import cbit.vcell.model.SimpleReaction;
 public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<ReactionStep> {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private ReactionCartoonEditorPanel reactionCartoonEditorPanel = null;
-	private SimpleReactionPropertiesPanel reactionStepPropertiesPanel = null;
+	private ReactionPropertiesPanel reactionStepPropertiesPanel = null;
 	private JTabbedPane tabbedPane = null;
 	private JDesktopPaneEnhanced desktopPane = null;
 	private JInternalFrameEnhanced diagramViewInternalFrame = null;
@@ -72,7 +72,7 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 		reactionCartoonEditorPanel.setName("Diagram View");
 		reactionCartoonEditorPanel.addPropertyChangeListener(eventHandler);
 		reactionCartoonEditorPanel.getReactionCartoon().addPropertyChangeListener(eventHandler);
-		reactionStepPropertiesPanel = new SimpleReactionPropertiesPanel();
+		reactionStepPropertiesPanel = new ReactionPropertiesPanel();
 		
 		JPanel topPanel = new JPanel();
 		topPanel.setLayout(new GridBagLayout());

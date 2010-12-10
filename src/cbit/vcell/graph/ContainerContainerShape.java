@@ -235,4 +235,9 @@ public class ContainerContainerShape extends ContainerShape {
 			structureContainer.setRandomLayout(isRandom);
 		}
 	}
+
+	@Override
+	public void notifySelected() {
+		notifyUnselected();
+	}
 }

@@ -22,14 +22,14 @@ import cbit.vcell.model.SpeciesContext;
 
 @SuppressWarnings("serial")
 public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<SpeciesContext> {	
-	private SpeciesEditorPanel speciesEditorPanel = null;
+	private SpeciesPropertiesPanel speciesEditorPanel = null;
 	public BioModelEditorSpeciesPanel() {
 		super();
 		initialize();
 	}
 
 	private void initialize() {	
-		speciesEditorPanel = new SpeciesEditorPanel();
+		speciesEditorPanel = new SpeciesPropertiesPanel();
 		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
 		JPanel topPanel = new JPanel();

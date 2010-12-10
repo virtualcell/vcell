@@ -186,16 +186,16 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 				// 2) parent==null and child!=null
 				// upon ok, edits the feature name
 				//
-				showFeaturePropertiesDialog(getGraphPane(),
-						(getStructureCartoon().getModel() == null ? null
-								: getStructureCartoon().getModel()), null,
-								((FeatureShape) shape).getFeature());
+//				showFeaturePropertiesDialog(getGraphPane(),
+//						(getStructureCartoon().getModel() == null ? null
+//								: getStructureCartoon().getModel()), null,
+//								((FeatureShape) shape).getFeature());
 			} else if (shape instanceof MembraneShape) {
-				showMembranePropertiesDialog(getGraphPane(),
-						((MembraneShape) shape).getMembrane());
+//				showMembranePropertiesDialog(getGraphPane(),
+//						((MembraneShape) shape).getMembrane());
 			} else if (shape instanceof SpeciesContextShape) {
-				showEditSpeciesDialog(getGraphPane(), getStructureCartoon().getModel(), 
-						((SpeciesContextShape) shape).getSpeciesContext());
+//				showEditSpeciesDialog(getGraphPane(), getStructureCartoon().getModel(), 
+//						((SpeciesContextShape) shape).getSpeciesContext());
 			}
 		} else if (menuAction.equals(CartoonToolMiscActions.AddGlobalParameter.MENU_ACTION)) {
 			if (shape instanceof FeatureShape || shape instanceof MembraneShape) {
