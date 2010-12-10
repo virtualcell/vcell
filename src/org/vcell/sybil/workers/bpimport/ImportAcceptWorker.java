@@ -6,7 +6,6 @@ package org.vcell.sybil.workers.bpimport;
 
 import java.util.Set;
 
-
 import org.vcell.sybil.models.io.FileEvent;
 import org.vcell.sybil.models.io.FileManager;
 import org.vcell.sybil.models.io.selection.ModelSelector;

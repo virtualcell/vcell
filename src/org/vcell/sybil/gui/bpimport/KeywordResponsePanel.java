@@ -6,6 +6,7 @@ package org.vcell.sybil.gui.bpimport;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -17,10 +18,14 @@ import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.vcell.sybil.actions.ActionSpecs;
@@ -80,7 +85,7 @@ public class KeywordResponsePanel extends ResponsePanel {
 	protected ImportManager importManager;
 	protected ResponseTreeManager treeManager = new ResponseTreeManager();
 	protected JTree responseTree = new JTree(treeManager.tree());
-
+	private int mouseOverRow = -1;// wei's
 	public KeywordResponsePanel(ImportManager importManNew, PCKeywordResponse responseNew) {
 		super(responseNew);
 		importManager = importManNew;
@@ -99,26 +104,64 @@ public class KeywordResponsePanel extends ResponsePanel {
 		    	TreePath path = responseTree.getPathForLocation(e.getX(), e.getY());
 		    	if(path != null){
 		    		if(responseTree.getModel().isLeaf(path.getLastPathComponent())){
-		    			responseTree.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		    			//show tooltip when mouse on the leaves
 		    			String tip = generateTIP(path.getLastPathComponent().toString());
-		    			// check whether clickable
+		    			// check whether tree leaves are clickable
 		    			String url = generateURL(path);
-		    			if(url.indexOf("http")>=0){
-		    				DefaultTreeCellRenderer cellRenderer = (DefaultTreeCellRenderer)responseTree.getCellRenderer(); 
-		    				cellRenderer.setTextSelectionColor(Color.red);
-		    			}
-		    			
-		    			responseTree.setToolTipText(tip);	    			
-		    		}else{
+		    			if(url.indexOf("http")>=0){ // contain URL, 
+		    				// change mouse to hand cursor
+		    				responseTree.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		    				int currentRow = responseTree.getClosestRowForLocation(e.getX(), e.getY());
+		    				if(currentRow != mouseOverRow){
+		    					mouseOverRow = currentRow;
+		    					repaint();
+		    				}
+		    				// set tooltips
+		    				responseTree.setToolTipText("Double click to launch the web page");
+		    			}else{ // no URLs
+		    				//set tooltips
+		    				responseTree.setToolTipText(tip);	
+		    				mouseOverRow = -1;
+		    				repaint();
+		    			}		    			    			
+		    		}else{ // when mouse is over the non-leaf node
 		    			responseTree.setCursor(Cursor.getDefaultCursor());
+		    			mouseOverRow = -1;
+		    			repaint();
 		    		}
+		    		((DefaultTreeModel)responseTree.getModel()).nodeChanged((TreeNode)path.getLastPathComponent());
 		    	}else{
+		    		// set mouse to default shape
 		    		responseTree.setCursor(Cursor.getDefaultCursor());
+		    		mouseOverRow = -1;
+		    		repaint();
 		    	}
 		    } 
 		});
+		// highlight the hyperlink notes when mouse is on
+		responseTree.setCellRenderer(new DefaultTreeCellRenderer(){
+			/**
+			 * Changing color and font of text when the node is clickable
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Component getTreeCellRendererComponent(JTree tree, Object value, 
+					boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus){
+				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+				if(row == mouseOverRow){
+					setForeground(Color.BLUE);
+					setFont(new java.awt.Font("Helvetca", java.awt.Font.BOLD, 12));
+					
+				}else{
+					setFont(UIManager.getFont("Tree.font"));
+				}
+				return this;
+			}
+		});
+		
 		// adding hyperlink to tree leaves
+		// when double clicking the node, a web browser will be launched
 		responseTree.addMouseListener( new MouseAdapter(){
 			public void mouseClicked(MouseEvent e){
 				TreePath path = responseTree.getPathForLocation(e.getX(), e.getY());
@@ -128,7 +171,6 @@ public class KeywordResponsePanel extends ResponsePanel {
 		    			if(e.getClickCount()>1){
 							try{
 								String url = generateURL(path);
-								//System.out.println("true"+url);
 								if (url.indexOf("http")>=0){ // only launch a webpage if a valid url exists
 									Process pc = Runtime.getRuntime().exec("cmd.exe /c start "+url);
 								}
@@ -147,7 +189,9 @@ public class KeywordResponsePanel extends ResponsePanel {
 		JToolBar getPathwayToolbar = new JToolBar();
 		JButton buttonGet = new JButton(getPathwayAction);
 		ButtonFormatter.format(buttonGet);
+		getPathwayToolbar.add(new JLabel("Double click the responses icon to view.              "));//wei
 		getPathwayToolbar.add(buttonGet);
+		getPathwayToolbar.add(new JLabel("              "));//wei
 		JCheckBox checkBox = new JCheckBox("Try to Fix Non-Standard Data", true);
 		checkBox.addItemListener(getPathwayAction);
 		getPathwayAction.setRequestSmelting(checkBox.isSelected());
@@ -172,7 +216,6 @@ public class KeywordResponsePanel extends ResponsePanel {
 		String path = long_path.getLastPathComponent().toString();
 		String l_path = long_path.toString();
 		String url;
-		//System.out.println(long_path.toString());
 		// different webpages have different ways of their url. they also be updated so frequently.
 		// make sure to change them here
 		// for instance the NCBI using the new ways to create its urls.
@@ -188,7 +231,6 @@ public class KeywordResponsePanel extends ResponsePanel {
 					url = "http://www.ncbi.nlm.nih.gov/omim/" + path.substring(path.length()-6);
 				}else{
 					url = path.substring(path.indexOf("http"));
-					//System.out.println("**"+url+"**");
 				}
 			}else{
 				if(path.indexOf("Organism")>=0){

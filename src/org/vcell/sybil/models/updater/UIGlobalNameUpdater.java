@@ -21,7 +21,7 @@ public class UIGlobalNameUpdater implements FileEvent.Listener {
 	
 	public void fileEvent(FileEvent event) { 
 		File file = event.fileManager().file();
-		String name = "[new file]";
+		String name = "SyBil"; // the title of the Sybil panel
 		if(file != null) { name = file.getName(); }
 		ui.setTitle(name); 
 	}

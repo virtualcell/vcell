@@ -10,7 +10,7 @@ public class PCIDPathwayRequest extends PCIDRequest {
 	
 	public PCIDPathwayRequest(String id)  { super(id); }
 
-	public String description() { return "CPath id search for pathway " + id+"..."+str; }
+	public String description() { return "CPath id search for pathway " + id; }
 	@Override public String shortTitle() { return "Pathway " + id; }
 	
 }

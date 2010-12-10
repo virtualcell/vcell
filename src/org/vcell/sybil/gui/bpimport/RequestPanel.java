@@ -5,6 +5,7 @@ package org.vcell.sybil.gui.bpimport;
  */
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.util.Set;
 
@@ -47,13 +48,12 @@ public class RequestPanel extends JPanel implements PathwayCommonsWorker.Client 
 		setLayout(new BorderLayout());
 		new PathwayCommonsWorker(this).run(this);
 		busyLabel.setHorizontalAlignment(JLabel.CENTER);
+		this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));// set a waiting cursor
 		add(busyLabel);
-		toolBar.add(new JLabel("Results for " + request.description()));
-		toolBar.addSeparator();
 		JButton buttonRemove = new JButton(new RemoveAction(this));
 		toolBar.add(buttonRemove);
 		ButtonFormatter.format(buttonRemove);
-		add(toolBar, "North");
+		add(toolBar, "South"); // wei's code
 	}
 	
 	public FileManager fileMan() { return importManager.fileManager(); }
@@ -63,8 +63,7 @@ public class RequestPanel extends JPanel implements PathwayCommonsWorker.Client 
 	public void setResponse(PathwayCommonsResponse response) { 
 		ResponsePanel responsePanel;
 		if(response instanceof PCTextModelResponse) {
-			PCTextModelResponse textModelResponse = (PCTextModelResponse) response;
-			toolBar.add(new JLabel("(Size: " + textModelResponse.text().length() + ")"));
+			toolBar.add(new JLabel("         "));// wei's code
 		}
 		if(response instanceof PCKeywordResponse) {
 			responsePanel = new KeywordResponsePanel(importManager, (PCKeywordResponse) response);
@@ -81,6 +80,7 @@ public class RequestPanel extends JPanel implements PathwayCommonsWorker.Client 
 		}
 		remove(busyLabel);
 		add(responsePanel);
+		this.setCursor(Cursor.getDefaultCursor());// change the waiting cursor back to default setting
 		revalidate();
 	}
 	
@@ -113,19 +113,24 @@ public class RequestPanel extends JPanel implements PathwayCommonsWorker.Client 
 			panel = panelNew;
 		}
 		
-		public void actionPerformed(ActionEvent event) { new ImportAcceptWorker(this).run(panel); }
+		public void actionPerformed(ActionEvent event) { 
+			//wei's code
+			// Import Selected verification:
+			// give a warning message if user did not select any entity before clicking "Import" button
+			if(selectedResources().isEmpty()){
+				JOptionPane.showMessageDialog(new JFrame(), "Check a box to select an entity please!!!", 
+						"Warning", JOptionPane.WARNING_MESSAGE); 
+			}
+			else{
+				panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));// add a waiting cursor
+				new ImportAcceptWorker(this).run(panel);
+			}
+			// done
+		}
 		public FileManager fileManager() { return importManager.fileManager(); }
 		public PCTextModelResponse response() { return panel.response(); }
 		public Set<Resource> selectedResources() { 
-			// wei's code
-			// display a warning if no entities are selected
-//			if(panel.selectedEntities().size()==0){
-//				JOptionPane.showMessageDialog(new JFrame(), "NO entities are selected.\n"+
-//						"Please select an entity to import!"); 
-//				System.out.println("NO entities are selected!");
-//			}
-			// done
-			return panel.selectedEntities(); 
+			return panel.selectedEntities(); 			
 		}
 
 		public boolean requestsSmelting() { return panel.requestsSmelting(); }

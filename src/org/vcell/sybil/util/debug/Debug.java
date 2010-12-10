@@ -5,7 +5,6 @@ package org.vcell.sybil.util.debug;
  */
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.io.PrintStream;
 import java.util.Iterator;
@@ -71,13 +70,14 @@ public class Debug {
 			message("Reasoner " + reasoner.toString() + " not recognized as a rule reasoner.");
 		}
 	}
-	
+
+	/*
 	public static void printComponentHierarchy(Component component) {
 		printComponentHierarchy(component, "");
 	}
 	
 	public static void printComponentHierarchy(Component component, String prefix) {
-		Dimension size = component.getSize();
+		Dimensionn size = component.getSize();
 		message(prefix + "(" + size.width + ", " + size.height + ") - " + component);
 		if(component instanceof Container) {
 			Container container = (Container) component;
@@ -86,5 +86,6 @@ public class Debug {
 			}
 		}
 	}
+	*/
 	
 }
