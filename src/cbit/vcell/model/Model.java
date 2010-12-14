@@ -255,7 +255,7 @@ public Model(String argName) {
  * @param parent cbit.vcell.model.Feature
  * @throws PropertyVetoException 
  */
-public void addFeature(String featureName, Feature parent, String membraneName) throws ModelException, PropertyVetoException {
+public Feature addFeature(String featureName, Feature parent, String membraneName) throws ModelException, PropertyVetoException {
 	if (featureName.equals(membraneName)) {
 		throw new ModelException("Feature and Membrane can not have the same name.");
 	}
@@ -316,6 +316,7 @@ public void addFeature(String featureName, Feature parent, String membraneName) 
 		newFeature.setMembrane(membrane);
 	}	
 	setStructures(newStructures);
+	return newFeature;
 }
 
 //public ModelParameter createModelParameter(String name, Expression expr, int role, VCUnitDefinition units) {
@@ -323,11 +324,12 @@ public void addFeature(String featureName, Feature parent, String membraneName) 
 //	return modelParameter;
 //}   
 
-public void addModelParameter(Model.ModelParameter modelParameter) throws PropertyVetoException {
+public ModelParameter addModelParameter(Model.ModelParameter modelParameter) throws PropertyVetoException {
 //	if (!contains(modelParameter)){
 		Model.ModelParameter newModelParameters[] = (Model.ModelParameter[])BeanUtils.addElement(fieldModelParameters,modelParameter);
 		setModelParameters(newModelParameters);
 //	}	
+	return modelParameter;
 }   
 
 
@@ -338,27 +340,20 @@ public synchronized void addPropertyChangeListener(PropertyChangeListener listen
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-public void addReactionStep(ReactionStep reactionStep) throws PropertyVetoException {
+public ReactionStep addReactionStep(ReactionStep reactionStep) throws PropertyVetoException {
 	if (!contains(reactionStep)) {
 		setReactionSteps((ReactionStep[])BeanUtils.addElement(fieldReactionSteps,reactionStep));
 	}
+	return reactionStep;
 }
 
 
-public void addSpecies(Species species) throws PropertyVetoException {
+public Species addSpecies(Species species) throws PropertyVetoException {
 	if (!contains(species)){
 		Species newSpecies[] = (Species[])BeanUtils.addElement(fieldSpecies,species);
 		setSpecies(newSpecies);
-	}	
+	}
+	return species;
 }   
 
 
@@ -366,7 +361,7 @@ public void addSpecies(Species species) throws PropertyVetoException {
  * This method was created by a SmartGuide.
  * @param species cbit.vcell.model.Species
  */
-public void addSpeciesContext(Species species, Structure structure) throws Exception {
+public SpeciesContext addSpeciesContext(Species species, Structure structure) throws Exception {
 	if (species != getSpecies(species.getCommonName())){
 		throw new Exception("species "+species.getCommonName()+" not found in model");
 	}
@@ -376,7 +371,7 @@ public void addSpeciesContext(Species species, Structure structure) throws Excep
 	}
 	speciesContext = new SpeciesContext(species,structure);
 	speciesContext.setModel(this);
-	addSpeciesContext(speciesContext);
+	return addSpeciesContext(speciesContext);
 }
 
 
@@ -384,7 +379,7 @@ public void addSpeciesContext(Species species, Structure structure) throws Excep
  * This method was created by a SmartGuide.
  * @param structure cbit.vcell.model.Structure
  */
-public void addSpeciesContext(SpeciesContext speciesContext) throws PropertyVetoException {
+public SpeciesContext addSpeciesContext(SpeciesContext speciesContext) throws PropertyVetoException {
 	
 	if (!contains(speciesContext.getSpecies())){
 		throw new RuntimeException("species "+speciesContext.getSpecies().getCommonName()+" not found in model");
@@ -401,6 +396,7 @@ public void addSpeciesContext(SpeciesContext speciesContext) throws PropertyVeto
 		speciesContext.setModel(this);
 		setSpeciesContexts(newArray);
 	}
+	return speciesContext;
 }
 
 
@@ -787,36 +783,32 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) throws Expre
  * This method was created in VisualAge.
  * @return java.lang.String
  */
-public String getFreeFeatureName() {
+public Feature createFeature(Feature parent) {
 	int count=0;
+	String featureName = null;
 	while (true) {
-		String featureName = Structure.TYPE_NAME_FEATURE + count;
+		featureName = "c" + count;
 		if (getStructure(featureName) == null){
-			return featureName;
+			break;
 		}	
 		count++;
 	}
-}
-
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public String getFreeFluxReactionName() {
-	String fluxStepName = "flux";
-	int count=0;
-	while (getReactionStep(fluxStepName+count)!=null){
-		count++;
+	try {
+		return addFeature(featureName, parent, getFreeMembraneName());
+	} catch (ModelException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
+	} catch (PropertyVetoException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
 	}
-	return fluxStepName+count;
 }
-
 
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
  */
-public String getFreeMembraneName() {
+private String getFreeMembraneName() {
 	int count=0;
 	while (true) {
 		String memName = Structure.TYPE_NAME_MEMBRANE + count;
@@ -827,44 +819,95 @@ public String getFreeMembraneName() {
 	}
 }
 
-
 /**
  * @return java.lang.String
  */
-public String getFreeReactionStepName() {
+public SimpleReaction createSimpleReaction(Structure structure) {
 	int count=0;
+	String reactionStepName = null;
 	while (true) {
-		String reactionStepName = "reaction" + count;
+		reactionStepName = "r" + count;
 		if (getReactionStep(reactionStepName) == null){
-			return reactionStepName;
+			break;
 		}
 	
 		count++;
 	}
+	try {
+		SimpleReaction simpleReaction = new SimpleReaction(structure, reactionStepName);
+		addReactionStep(simpleReaction);
+		return simpleReaction;
+	} catch (PropertyVetoException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
+	}
 }
 
+public FluxReaction createFluxReaction(Membrane membrane) {
+	int count=0;
+	String reactionStepName = null;
+	while (true) {
+		reactionStepName = "flux" + count;
+		if (getReactionStep(reactionStepName) == null){
+			break;
+		}
+	
+		count++;
+	}
+	try {
+		FluxReaction fluxReaction = new FluxReaction(membrane, null, reactionStepName);
+		addReactionStep(fluxReaction);
+		return fluxReaction;
+	} catch (PropertyVetoException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
+	}
+}
 
 /**
  * @return java.lang.String
+ * @throws PropertyVetoException 
  */
-public String getFreeSpeciesName() {
+public SpeciesContext createSpeciesContext(Structure structure) {
 	int count=0;
+	String speciesName = null;
 	while (true) {
-		String speciesName = "species" + count;	
-		if (getSpecies(speciesName) == null) {
-			return speciesName;
+		speciesName = "s" + count;	
+		if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null) {
+			break;
 		}	
 		count++;
 	}
+	try {
+		SpeciesContext speciesContext = new SpeciesContext(new Species(speciesName, null), structure);
+		speciesContext.setName(speciesName);
+		addSpecies(speciesContext.getSpecies());
+		addSpeciesContext(speciesContext);
+		return speciesContext;
+	} catch (PropertyVetoException ex) {
+		ex.printStackTrace(System.out);
+		throw new RuntimeException(ex.getMessage());
+	}
 }
 
-public String getFreeModelParamName() {
-	String globalParamName = "global";
+public ModelParameter createModelParameter() {
+	String globalParamName = null;
 	int count=0;
-	while (getModelParameter(globalParamName+count)!=null){
+	while (true){
+		globalParamName = "g" + count;
+		if (getModelParameter(globalParamName)==null) {
+			break;
+		}
 		count++;
 	}
-	return globalParamName+count;
+	try {
+		ModelParameter modelParameter = new ModelParameter(globalParamName, new Expression(0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
+		addModelParameter(modelParameter);
+		return modelParameter;
+	} catch (PropertyVetoException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
+	}
 }
 
 /**

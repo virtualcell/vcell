@@ -37,11 +37,9 @@ implements java.beans.PropertyChangeListener, Model.Owner {
 	 * @param newFieldModel cbit.vcell.model.Model
 	 */
 	public void setModel(Model newFieldModel) {
-
 		Model oldModel = fieldModel;
-
-		if(oldModel != null){
-			fieldModel.removePropertyChangeListener(this);
+		if (oldModel != null){
+			oldModel.removePropertyChangeListener(this);
 		}
 		fieldModel = newFieldModel;
 		if(fieldModel != null){

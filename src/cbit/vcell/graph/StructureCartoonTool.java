@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.SimpleFilenameFilter;
@@ -209,17 +210,8 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 
 		} else if (menuAction.equals(CartoonToolMiscActions.AddSpecies.MENU_ACTION)) {
 			if (shape instanceof StructureShape) {
-				Species species = new Species(getStructureCartoon().getModel().getFreeSpeciesName(), "");
-				SpeciesContext speciesContext = new SpeciesContext(species, ((StructureShape) shape).getStructure());
-				try {
-					speciesContext.setName(species.getCommonName());
-					getStructureCartoon().getModel().addSpecies(species);
-					getStructureCartoon().getModel().addSpeciesContext(speciesContext);
-					getGraphModel().select(speciesContext);
-				} catch (PropertyVetoException e) {
-					e.printStackTrace();
-					generateErrorDialog(e, 0, 0);
-				}
+				SpeciesContext speciesContext = getStructureCartoon().getModel().createSpeciesContext(((StructureShape) shape).getStructure());
+				getGraphModel().select(speciesContext);
 //				showCreateSpeciesContextDialog(getGraphPane(),
 //						getStructureCartoon().getModel(),
 //						((StructureShape) shape).getStructure(), null);
@@ -228,10 +220,12 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		} else if (menuAction.equals(CartoonToolMiscActions.AddFeature.MENU_ACTION)) {
 			try {
 				if (shape instanceof FeatureShape) {
-					showFeaturePropertiesDialog(getGraphPane(),
-							(getStructureCartoon().getModel() == null ? null
-									: getStructureCartoon().getModel()),
-									((FeatureShape) shape).getFeature(), null);
+					final Feature feature = getStructureCartoon().getModel().createFeature(((FeatureShape) shape).getFeature());
+					getGraphModel().select(feature);
+//					showFeaturePropertiesDialog(getGraphPane(),
+//							(getStructureCartoon().getModel() == null ? null
+//									: getStructureCartoon().getModel()),
+//									((FeatureShape) shape).getFeature(), null);
 				}
 			} catch (Exception e) {
 				generateErrorDialog(e, 0, 0);

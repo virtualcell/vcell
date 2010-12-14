@@ -184,14 +184,8 @@ public class BioModelEditorReactionPanel extends BioModelEditorRightSidePanel<Re
 	}
 
 	protected void newButtonPressed() {
-		try {
-			ReactionStep reactionStep = new SimpleReaction(bioModel.getModel().getStructures()[0], bioModel.getModel().getFreeReactionStepName());
-			bioModel.getModel().addReactionStep(reactionStep);
-			select(reactionStep);
-		} catch (PropertyVetoException ex) {
-			ex.printStackTrace();
-			DialogUtils.showErrorDialog(BioModelEditorReactionPanel.this, ex.getMessage());
-		}
+		SimpleReaction reactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructures()[0]);
+		select(reactionStep);
 	}
 
 	protected void deleteButtonPressed() {

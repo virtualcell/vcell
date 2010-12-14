@@ -2,7 +2,6 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -158,15 +157,27 @@ protected List<Parameter> computeData() {
 	} 
 	ArrayList<Parameter> parameterList = new ArrayList<Parameter>();
 	for (Parameter parameter : getModel().getModelParameters()) {
-		parameterList.add(parameter);
+		if (searchText == null || searchText.length() == 0 || parameter.getName().indexOf(searchText) >= 0
+				|| parameter.getExpression() != null && parameter.getExpression().infix().indexOf(searchText) >= 0
+				|| parameter.getDescription().indexOf(searchText) >= 0) {
+			parameterList.add(parameter);
+		}
 	}
 	if (!bGlobalOnly) {
 		for (ReactionStep reactionStep : getModel().getReactionSteps()) {
 			for (Parameter parameter : reactionStep.getKinetics().getUnresolvedParameters()) {
-				parameterList.add(parameter);
+				if (searchText == null || searchText.length() == 0 || parameter.getName().indexOf(searchText) >= 0
+						|| parameter.getExpression() != null && parameter.getExpression().infix().indexOf(searchText) >= 0
+						|| parameter.getDescription().indexOf(searchText) >= 0) {
+					parameterList.add(parameter);
+				}
 			}
 			for (Parameter parameter : reactionStep.getKinetics().getKineticsParameters()) {
-				parameterList.add(parameter);
+				if (searchText == null || searchText.length() == 0 || parameter.getName().indexOf(searchText) >= 0
+						|| parameter.getExpression() != null && parameter.getExpression().infix().indexOf(searchText) >= 0
+						|| parameter.getDescription().indexOf(searchText) >= 0) {
+					parameterList.add(parameter);
+				}
 			}
 		}
 	}
@@ -188,6 +199,9 @@ public Object getValueAt(int row, int col) {
 				case COLUMN_NAME:{
 					return parameter.getName();
 				}
+				case COLUMN_DESCRIPTION: {
+					return parameter.getDescription();
+				}					
 				case COLUMN_EXPRESSION:{					
 					if (parameter.getExpression() == null) {
 						return ""; 

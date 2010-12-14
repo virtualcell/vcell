@@ -34,7 +34,7 @@ public class GeometryDbTreeModel extends javax.swing.tree.DefaultTreeModel imple
  * @param root javax.swing.tree.TreeNode
  */
 public GeometryDbTreeModel() {
-	super(new BioModelNode("empty",false),true);
+	super(new BioModelNode("not connected",false),true);
 }
 
 
@@ -362,7 +362,7 @@ public void refreshTree() {
 			e.printStackTrace(System.out);
 		}
 	}else{
-		setRoot(new BioModelNode("empty"));
+		setRoot(new BioModelNode("not connected"));
 	}	
 }
 

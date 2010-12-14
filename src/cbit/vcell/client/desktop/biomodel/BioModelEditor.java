@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
@@ -30,12 +31,15 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorTreeModel.BioModelEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorTreeModel.BioModelEditorTreeFolderNode;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
@@ -72,13 +76,11 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 public class BioModelEditor extends JPanel {
 	private static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	public static final String PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION = "bioModelEditorSelection";
-	private static final String PROPERTY_NAME_DOCUMENT_MANAGER = "documentManager";
 	public static final String PROPERTY_NAME_SELECTED_VERSIONABLE = "selectedVersionable";
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private BioModelWindowManager bioModelWindowManager = null;
 	private BioModel fieldBioModel = new BioModel(null);
-	private DocumentManager fieldDocumentManager = null;
 	
 	private JTree bioModelEditorTree = null;
 	private BioModelEditorTreeCellRenderer bioModelEditorTreeCellRenderer = null;
@@ -105,6 +107,7 @@ public class BioModelEditor extends JPanel {
 	private BioModelEditorGlobalParameterPanel bioModelEditorGlobalParameterPanel = null;
 	private BioModelEditorModelPanel bioModelEditorModelPanel = null;
 	private MicroscopeMeasurementPanel microscopeMeasurementPanel = null;
+	private ScriptingPanel scriptingPanel = null;
 	
 	private BioModelEditorTreeModel bioModelEditorTreeModel = null;
 	private JPanel emptyPanel = new JPanel();
@@ -115,6 +118,7 @@ public class BioModelEditor extends JPanel {
 	private JPopupMenu popupMenu = null;
 	private JMenuItem expandAllMenuItem = null;
 	private SelectionManager selectionManager = new SelectionManager();
+	private DatabaseWindowPanel databaseWindowPanel;
 		
 	public static class BioModelEditorSelection {
 		private Object selectedContainer;
@@ -184,19 +188,10 @@ public class BioModelEditor extends JPanel {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelEditor.this && (evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL))) 
 				onPropertyChange_BioModel();
-//			if (evt.getSource() == BioModelEditor.this && (evt.getPropertyName().equals("bioModel"))) 
-//				connPtoP1SetTarget();
-//			if (evt.getSource() == BioModelEditor.this.getCartoonEditorPanel1() && (evt.getPropertyName().equals("bioModel"))) 
-//				connPtoP1SetSource();
-			if (evt.getSource() == BioModelEditor.this && (evt.getPropertyName().equals(PROPERTY_NAME_DOCUMENT_MANAGER))) 
-				getBioModelEditorModelPanel().setDocumentManager(getDocumentManager());
-//			if (evt.getSource() == BioModelEditor.this.getCartoonEditorPanel1() && (evt.getPropertyName().equals("documentManager"))) 
-//				connPtoP2SetSource();
-//			if (evt.getSource() == getBioModelTreePanel1() && (evt.getPropertyName().equals(BioModelTreePanel.PROPERTY_NAME_SELECTED_VERSIONABLE))) {
-//				updateMenuOnSelectionChange();
-//			}
 			if (evt.getPropertyName().equals(PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION)) {
 				getBioModelEditorTreeModel().select((BioModelEditorSelection)evt.getNewValue());
+			} else if (evt.getSource() == selectionManager) {
+				setSelectedObject();
 			}
 		};
 		
@@ -243,8 +238,24 @@ public BioModelEditor() {
 	initialize();
 }
 
-private DocumentManager getDocumentManager() {
-	return fieldDocumentManager;
+public void setSelectedObject() {
+	Object[] selectedObjects = selectionManager.getSelectedObjects();
+	if (selectedObjects == null || selectedObjects.length == 0 || selectedObjects.length > 1) {
+		return;
+	} 
+	
+	if (selectedObjects[0] instanceof VCDocumentInfo) {
+		JPanel rightPanel = getBioModelEditorModelPanel();
+		Component rightComponent = splitPane.getRightComponent();
+		if (rightComponent != rightPanel) {
+			splitPane.setRightComponent(rightPanel);
+		}
+		if (splitPane.isShowing()) {	
+			splitPane.setDividerLocation(0.25);
+		} else {		
+			splitPane.setDividerLocation(220);
+		}
+	}		
 }
 
 /**
@@ -403,8 +414,10 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 //	getViewModifyGeometryButton().addActionListener(ivjEventHandler);
 	addPropertyChangeListener(ivjEventHandler);
-		
+	selectionManager.addPropertyChangeListener(ivjEventHandler);
+	
 	getBioModelEditorModelPanel().setSelectionManager(selectionManager);
+	databaseWindowPanel.setSelectionManager(selectionManager);
 //	getBioModelEditorModelPanel().addPropertyChangeListener(ivjEventHandler);
 	getSimulationListPanel().addPropertyChangeListener(ivjEventHandler);
 	getInitialConditionsPanel().addPropertyChangeListener(ivjEventHandler);
@@ -429,25 +442,29 @@ private void initConnections() throws java.lang.Exception {
 private void initialize() {
 	try {
 		setName("ApplicationEditor");
-		setLayout(new BorderLayout());		
-		add(getSplitPane(), BorderLayout.CENTER);
+		setLayout(new BorderLayout());
 		
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		
+		JSplitPane leftSplitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		leftSplitPanel.setTopComponent(getTreePanel());
+		
+		JTabbedPane tabbedPane = new JTabbedPane();
+		databaseWindowPanel = new DatabaseWindowPanel(false, false);
+		tabbedPane.addTab("VCell Database", databaseWindowPanel);
+		leftSplitPanel.add(tabbedPane);
+		leftSplitPanel.setResizeWeight(0.5);
+		leftSplitPanel.setDividerLocation(300);
+		
+		splitPane.setLeftComponent(leftSplitPanel);
+		splitPane.setResizeWeight(0.3);
+		splitPane.setRightComponent(getBioModelEditorModelPanel());
+		
+		add(splitPane, BorderLayout.CENTER);		
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-}
-
-private JSplitPane getSplitPane() {
-	if (splitPane == null) {
-		splitPane = new JSplitPane();
-		splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
-		
-		splitPane.setLeftComponent(getTreePanel());
-		splitPane.setResizeWeight(0.3);
-		splitPane.setRightComponent(getBioModelEditorModelPanel());
-	}
-	return splitPane;
 }
 
 private javax.swing.JScrollPane getTreePanel() {
@@ -541,6 +558,17 @@ private BioModelEditorModelPanel getBioModelEditorModelPanel() {
 		}
 	}
 	return bioModelEditorModelPanel;
+}
+
+private ScriptingPanel getScriptingPanel() {
+	if (scriptingPanel == null) {
+		try {
+			scriptingPanel = new ScriptingPanel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return scriptingPanel;
 }
 
 private BioModelEditorGlobalParameterPanel getBioModelEditorGlobalParameterPanel() {
@@ -747,6 +775,9 @@ private void setRightPanel(BioModelEditorTreeFolderNode folderNode, Object leafO
 			if (leafObject != null) {
 				getBioModelEditorApplicationsPanel().select((SimulationContext) leafObject);
 			}
+		} else if (folderClass == BioModelEditorTreeFolderClass.SCRIPTING_NODE) {
+			rightPanel = getScriptingPanel();
+			getScriptingPanel().setBioModel(getBioModel());
 		} else if (folderClass == BioModelEditorTreeFolderClass.MATHEMATICS_NODE) {
 			rightPanel = getMathematicsPanel();
 			getMathematicsPanel().setSimulationContext(simulationContext);
@@ -889,28 +920,21 @@ public void setBioModel(BioModel bioModel) {
  * @param newBioModelWindowManager cbit.vcell.client.desktop.BioModelWindowManager
  */
 public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager) {
+	if (this.bioModelWindowManager == bioModelWindowManager) {
+		return;
+	}
 	this.bioModelWindowManager = bioModelWindowManager;
 	getBioModelEditorApplicationsPanel().setBioModelWindowManager(bioModelWindowManager);
 	getGeometrySummaryViewer().addActionListener(getBioModelWindowManager());
 	getMathematicsPanel().addActionListener(bioModelWindowManager);
-}
-
-
-/**
- * Sets the documentManager property (cbit.vcell.clientdb.DocumentManager) value.
- * @param documentManager The new value for the property.
- * @see #getDocumentManager
- */
-public void setDocumentManager(DocumentManager documentManager) {
-	DocumentManager oldValue = fieldDocumentManager;
-	fieldDocumentManager = documentManager;
-	firePropertyChange(PROPERTY_NAME_DOCUMENT_MANAGER, oldValue, documentManager);
+	DatabaseWindowManager windowManager = new DatabaseWindowManager(databaseWindowPanel, bioModelWindowManager.getRequestManager());
+	databaseWindowPanel.setDatabaseWindowManager(windowManager);
+	DocumentManager documentManager = bioModelWindowManager.getRequestManager().getDocumentManager();
+	databaseWindowPanel.setDocumentManager(documentManager);
+	getBioModelEditorModelPanel().setDocumentManager(documentManager);
 }
 
 private void onPropertyChange_BioModel() {
-//	getBioModelEditorSpeciesPanel().setBioModel(getBioModel());
-//	getBioModelEditorStructurePanel().setBioModel(getBioModel());
-//	getBioModelEditorReactionPanel().setBioModel(getBioModel());
 	getBioModelEditorModelPanel().setBioModel(getBioModel());
 	getBioModelEditorTreeCellRender().setBioModel(getBioModel());
 	getBioModelEditorGlobalParameterPanel().setBioModel(getBioModel()); 
@@ -959,4 +983,5 @@ private void expandAll(BioModelNode treeNode) {
 		}
 	}
 }
+
 }

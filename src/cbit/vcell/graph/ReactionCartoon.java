@@ -233,6 +233,8 @@ public class ReactionCartoon extends ModelCartoon {
 					reactionStepShape.setDirty(false);
 					// add reaction participants as edges
 					for(ReactionParticipant participant : reactionStep.getReactionParticipants()) {
+						participant.removePropertyChangeListener(this);
+						participant.addPropertyChangeListener(this);
 						Structure speciesStructure = participant.getStructure();
 						Structure reactionStructure = reactionStep.getStructure();
 						if(getStructureSuite().getStructures().contains(speciesStructure) &&

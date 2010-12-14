@@ -9,6 +9,7 @@ import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 
 
 @SuppressWarnings("serial")
@@ -18,13 +19,16 @@ public SimpleReaction(Structure structure,KeyValue key,String name) throws java.
 	super(structure,key,name);
 	try {
 		setKinetics(new MassActionKinetics(this));
-	}catch (Exception e){
+	} catch (ExpressionException e){
 		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
 	}
-}   
+}
+
 public SimpleReaction(Structure structure,String name) throws java.beans.PropertyVetoException {
 	this(structure,null,name);
-}   
+}
+
 public void addProduct(SpeciesContext speciesContext,int stoichiometry) throws Exception {
 
 	int count = countNumReactionParticipants(speciesContext);

@@ -28,36 +28,6 @@ public BioModelCellRenderer(User argSessionUser) {
 	this.sessionUser = argSessionUser;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/6/2002 4:41:23 PM)
- * @return int
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @deprecated
- */
-int getMaxErrorLevel(BioModelInfo bioModelInfo) {
-	//if (workspace!=null && workspace.getDocumentManager()!=null){
-		//int worstErrorLevel = cbit.vcell.modeldb.SimContextStatus.ERROR_NONE;
-		//cbit.vcell.clientdb.DocumentManager docManager = workspace.getDocumentManager();
-		//try {
-			//BioModelMetaData bmMetaData = docManager.getBioModelMetaData(bioModelInfo);
-			//java.util.Enumeration enum1 = bmMetaData.getSimulationContextInfos();
-			//while (enum1.hasMoreElements()){
-				//SimulationContextInfo scInfo = (SimulationContextInfo)enum1.nextElement();
-				//if (scInfo.getSimContextStatus()!=null){
-					//worstErrorLevel = Math.max(worstErrorLevel,scInfo.getSimContextStatus().getErrorLevel());
-				//}
-			//}
-			//return worstErrorLevel;
-		//}catch (cbit.vcell.server.DataAccessException e){
-			//e.printStackTrace();
-		//}
-	//}
-	return BioModelNode.ERROR_NONE;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (7/27/2000 6:41:57 PM)
@@ -67,7 +37,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 	JLabel component = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 	//
 	try {
-
+		setIcon(null);
 		if (value instanceof DateNode){
 			DateNode dateNode = (DateNode)value;
 			AnnotationQualifier qualifier = dateNode.getDateQualifier();

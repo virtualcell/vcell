@@ -1628,13 +1628,24 @@ private void handleRemoteException(RemoteException e) {
 }
 
 
+private void clear() {
+	xmlHash.clear();
+	geoInfoHash.clear();
+	imgInfoHash.clear();
+	mathModelInfoHash.clear();
+	bioModelInfoHash.clear();
+	simulationStatusHash.clear();	
+	preferences = null;
+
+}
 /**
  * Insert the method's description here.
  * Creation date: (9/25/2003 7:45:19 AM)
  * @return cbit.vcell.modeldb.VCInfoContainer
  */
 public synchronized void initAllDatabaseInfos() throws DataAccessException {
-
+	clear();
+	
 	VCInfoContainer vcInfoContainer = null;
 	try{
 		System.out.println("ClientDocumentManager.initAllDatabaseInfos()");

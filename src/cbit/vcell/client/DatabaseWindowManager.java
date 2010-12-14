@@ -723,7 +723,7 @@ private VCDocumentInfo[] getDocumentVersionDates(VCDocumentInfo thisDocumentInfo
 	 	}
  	}
 
- 	if (documentBranchList == null) {
+ 	if (documentBranchList.size() == 0) {
 	 	PopupGenerator.showErrorDialog(this, "Error comparing BioModels : No Versions of document ");
 	 	return new VCDocumentInfo[0];
  	}

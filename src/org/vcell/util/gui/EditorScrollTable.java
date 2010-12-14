@@ -41,6 +41,7 @@ public class EditorScrollTable extends ScrollTable {
 		private JComboBox comboBox = null;
 		public DefaultScrollTableComboBoxEditor(JComboBox comboBox) {
 			super(comboBox);
+			this.clickCountToStart = 2;
 			this.comboBox = (JComboBox) getComponent();
 			this.comboBox.addKeyListener(new KeyListener() {
 				public void keyTyped(KeyEvent e) {					

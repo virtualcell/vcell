@@ -28,12 +28,10 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
@@ -42,6 +40,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
+import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
@@ -51,6 +50,7 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
  * Creation date: (11/28/00 11:34:01 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class MathModelDbTreePanel extends JPanel {
 	private JTree ivjJTree1 = null;
 	private boolean ivjConnPtoP2Aligning = false;
@@ -69,14 +69,9 @@ public class MathModelDbTreePanel extends JPanel {
 	private JSeparator ivjJSeparator1 = null;
 	private MathModelDbTreeModel ivjMathModelDbTreeModel = null;
 	private JPopupMenu ivjMathModelPopupMenu = null;
-	private JPanel ivjJPanel1 = null;
 	private MathModelMetaDataPanel ivjMathModelMetaDataPanel = null;
-	private JLabel ivjJLabel2 = null;
-	private JPanel ivjJPanel2 = null;
-	private JScrollPane ivjJScrollPane2 = null;
-	private JSplitPane ivjJSplitPane1 = null;
-	private JLabel ivjJLabel3 = null;
-	private JPanel ivjJPanel3 = null;
+	private JPanel bottomPanel = null;
+	private JPanel topPanel = null;
 	private JMenuItem ivjJMenuItemPermission = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JMenuItem ivjJMenuItemExport = null;
@@ -151,6 +146,9 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 				connPtoP3SetSource();
 			if (evt.getSource() == MathModelDbTreePanel.this && (evt.getPropertyName().equals("documentManager"))) 
 				connEtoM5(evt);
+			if (evt.getSource() == selectionManager) {
+				setSelectedObject();
+			}
 		};
 		public void treeNodesChanged(javax.swing.event.TreeModelEvent e) {
 			if (e.getSource() == MathModelDbTreePanel.this.getMathModelDbTreeModel()) 
@@ -165,12 +163,36 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 		};
 	};
 
+	private boolean bShowMetadata = true;
+	private SelectionManager selectionManager = null;
+	public MathModelDbTreePanel() {
+		this(true);
+	}
+	
 /**
  * BioModelTreePanel constructor comment.
  */
-public MathModelDbTreePanel() {
+public MathModelDbTreePanel(boolean bMetadata) {
 	super();
+	this.bShowMetadata = bMetadata;
 	initialize();
+}
+
+public void setSelectedObject() {
+	Object[] selectedObjects = selectionManager.getSelectedObjects();
+	if (selectedObjects == null || selectedObjects.length == 0 || selectedObjects.length > 1) {
+		getJTree1().clearSelection();
+	} else {
+		if (selectedObjects[0] instanceof MathModelInfo) {
+			BioModelNode node = ((BioModelNode)getMathModelDbTreeModel().getRoot()).findNodeByUserObject(selectedObjects[0]);
+			if (node != null) {
+				getJTree1().setSelectionPath(new TreePath(node.getPath()));
+			}
+		} else {
+			getJTree1().clearSelection();
+		}
+	}
+	
 }
 
 /**
@@ -660,26 +682,6 @@ private void connEtoC7(java.awt.event.ActionEvent arg1) {
 	}
 }
 
-
-/**
- * connEtoC8:  (MathModelDbTreePanel.initialize() --> MathModelDbTreePanel.splitPaneResizeWeight()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.splitPaneResizeWeight();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connEtoC9:  (JMenuItemExport.action.actionPerformed(java.awt.event.ActionEvent) --> MathModelDbTreePanel.exportData()V)
  * @param arg1 java.awt.event.ActionEvent
@@ -748,26 +750,6 @@ private void connEtoM5(java.beans.PropertyChangeEvent arg1) {
 		// user code begin {1}
 		// user code end
 		getMathModelMetaDataPanel().setDocumentManager(this.getDocumentManager());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM7:  (DocumentManager.this --> JTree1.model)
- * @param value cbit.vcell.clientdb.DocumentManager
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(DocumentManager value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJTree1().setCellRenderer(this.getMathModelCellRenderer());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1103,51 +1085,6 @@ private javax.swing.JLabel getJLabel1() {
 }
 
 /**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel2() {
-	if (ivjJLabel2 == null) {
-		try {
-			ivjJLabel2 = new javax.swing.JLabel();
-			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Selected MathModel Summary");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel2;
-}
-
-/**
- * Return the JLabel3 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel3() {
-	if (ivjJLabel3 == null) {
-		try {
-			ivjJLabel3 = new javax.swing.JLabel();
-			ivjJLabel3.setName("JLabel3");
-			ivjJLabel3.setText("MathModel Database");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel3;
-}
-
-
-/**
  * Return the JLatestEditionMenuItem property value.
  * @return javax.swing.JMenuItem
  */
@@ -1362,47 +1299,22 @@ private javax.swing.JMenuItem getJMenuItemPublish() {
 }
 
 /**
- * Return the JPanel1 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel1() {
-	if (ivjJPanel1 == null) {
-		try {
-			ivjJPanel1 = new javax.swing.JPanel();
-			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setLayout(new java.awt.BorderLayout());
-			ivjJPanel1.setBounds(0, 0, 232, 41);
-			ivjJPanel1.setEnabled(false);
-			getJPanel1().add(getMathModelMetaDataPanel(), "Center");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel1;
-}
-
-/**
  * Return the JPanel2 property value.
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel2() {
-	if (ivjJPanel2 == null) {
+private javax.swing.JPanel getBottomPanel() {
+	if (bottomPanel == null) {
 		try {
-			ivjJPanel2 = new javax.swing.JPanel();
-			ivjJPanel2.setName("JPanel2");
-			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
-			ivjJPanel2.setMinimumSize(new java.awt.Dimension(171, 300));
+			bottomPanel = new javax.swing.JPanel();
+			bottomPanel.setName("JPanel2");
+			bottomPanel.setLayout(new java.awt.GridBagLayout());
+			bottomPanel.setMinimumSize(new java.awt.Dimension(171, 300));
 
 			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
 			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 0;
 			constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel2().add(getJLabel2(), constraintsJLabel2);
+			bottomPanel.add(new JLabel("Selected MathModel Summary"), constraintsJLabel2);
 
 			java.awt.GridBagConstraints constraintsJScrollPane2 = new java.awt.GridBagConstraints();
 			constraintsJScrollPane2.gridx = 0; constraintsJScrollPane2.gridy = 1;
@@ -1410,7 +1322,7 @@ private javax.swing.JPanel getJPanel2() {
 			constraintsJScrollPane2.weightx = 1.0;
 			constraintsJScrollPane2.weighty = 1.0;
 			constraintsJScrollPane2.insets = new java.awt.Insets(0, 4, 4, 4);
-			getJPanel2().add(getJScrollPane2(), constraintsJScrollPane2);
+			bottomPanel.add(getMathModelMetaDataPanel(), constraintsJScrollPane2);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1419,7 +1331,7 @@ private javax.swing.JPanel getJPanel2() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel2;
+	return bottomPanel;
 }
 
 /**
@@ -1427,18 +1339,18 @@ private javax.swing.JPanel getJPanel2() {
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel3() {
-	if (ivjJPanel3 == null) {
+private javax.swing.JPanel getTopPanel() {
+	if (topPanel == null) {
 		try {
-			ivjJPanel3 = new javax.swing.JPanel();
-			ivjJPanel3.setName("JPanel3");
-			ivjJPanel3.setLayout(new java.awt.GridBagLayout());
-			ivjJPanel3.setMinimumSize(new java.awt.Dimension(196, 450));
+			topPanel = new javax.swing.JPanel();
+			topPanel.setName("JPanel3");
+			topPanel.setLayout(new java.awt.GridBagLayout());
+			topPanel.setMinimumSize(new java.awt.Dimension(196, 450));
 
 			java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
 			constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 0;
 			constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJLabel3(), constraintsJLabel3);
+			topPanel.add(new JLabel("MathModel Database"), constraintsJLabel3);
 
 			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 			constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 1;
@@ -1446,7 +1358,7 @@ private javax.swing.JPanel getJPanel3() {
 			constraintsJScrollPane1.weightx = 1.0;
 			constraintsJScrollPane1.weighty = 1.0;
 			constraintsJScrollPane1.insets = new java.awt.Insets(0, 4, 4, 4);
-			getJPanel3().add(getJScrollPane1(), constraintsJScrollPane1);
+			topPanel.add(getJScrollPane1(), constraintsJScrollPane1);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1455,7 +1367,7 @@ private javax.swing.JPanel getJPanel3() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel3;
+	return topPanel;
 }
 
 /**
@@ -1505,28 +1417,6 @@ private javax.swing.JScrollPane getJScrollPane1() {
 }
 
 /**
- * Return the JScrollPane2 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane2() {
-	if (ivjJScrollPane2 == null) {
-		try {
-			ivjJScrollPane2 = new javax.swing.JScrollPane();
-			ivjJScrollPane2.setName("JScrollPane2");
-			getJScrollPane2().setViewportView(getJPanel1());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane2;
-}
-
-/**
  * Return the JSeparator1 property value.
  * @return javax.swing.JSeparator
  */
@@ -1567,33 +1457,6 @@ private javax.swing.JSeparator getJSeparator3() {
 		}
 	}
 	return ivjJSeparator3;
-}
-
-
-/**
- * Return the JSplitPane1 property value.
- * @return javax.swing.JSplitPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSplitPane getJSplitPane1() {
-	if (ivjJSplitPane1 == null) {
-		try {
-			ivjJSplitPane1 = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT);
-			ivjJSplitPane1.setName("JSplitPane1");
-			ivjJSplitPane1.setDividerLocation(350);
-			ivjJSplitPane1.setOneTouchExpandable(true);
-			ivjJSplitPane1.setContinuousLayout(true);
-			getJSplitPane1().add(getJPanel3(), "top");
-			getJSplitPane1().add(getJPanel2(), "bottom");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSplitPane1;
 }
 
 /**
@@ -1749,7 +1612,7 @@ private MathModelInfo[] getMathModelVersionDates(MathModelInfo thisMathModelInfo
 	 	}
  	}
 
- 	if (mathModelBranchList == null) {
+ 	if (mathModelBranchList.size() == 0) {
 		JOptionPane.showMessageDialog(this,"No Versions in Mathmodel","Error comparing MathModels",JOptionPane.ERROR_MESSAGE);
 	 	throw new NullPointerException("No Versions in Mathmodel!");
  	}
@@ -1876,15 +1739,23 @@ private void initialize() {
 		setLayout(new BorderLayout());
 		setPreferredSize(new java.awt.Dimension(200, 150));
 		setSize(240, 453);
-		setMinimumSize(new java.awt.Dimension(198, 148));
+//		setMinimumSize(new java.awt.Dimension(198, 148));
 		
 		add(getDatabaseSearchPanel(), BorderLayout.NORTH);
-		add(getJSplitPane1(), BorderLayout.CENTER);
+		if (bShowMetadata) {
+			JSplitPane splitPane = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT);
+			splitPane.setDividerLocation(350);
+			splitPane.setResizeWeight(0.6);
+			splitPane.setTopComponent(getTopPanel());
+			splitPane.setBottomComponent(getBottomPanel());
+			add(splitPane, BorderLayout.CENTER);
+		} else {
+			add(getTopPanel(), BorderLayout.CENTER);
+		}
 		
 		initConnections();
 		connEtoM4();
 		connEtoC12();
-		connEtoC8();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -2022,6 +1893,7 @@ public void refresh(ArrayList<SearchCriterion> newFilterList) throws DataAccessE
  */
 private void refresh() throws DataAccessException{
 	getMathModelDbTreeModel().refreshTree();
+	getJTree1().setCellRenderer(this.getMathModelCellRenderer());
 	expandTreeToOwner();
 }
 
@@ -2053,7 +1925,7 @@ public void setDocumentManager(DocumentManager newValue) {
 			connPtoP2SetSource();
 			connPtoP3SetTarget();
 			connEtoC2(ivjDocumentManager);
-			connEtoM7(ivjDocumentManager);
+			getJTree1().setCellRenderer(this.getMathModelCellRenderer());
 			firePropertyChange("documentManager", oldValue, newValue);
 			// user code begin {1}
 			// user code end
@@ -2171,14 +2043,6 @@ private void setselectionModel1(javax.swing.tree.TreeSelectionModel newValue) {
 /**
  * Comment
  */
-private void splitPaneResizeWeight() {
-	BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
-}
-
-
-/**
- * Comment
- */
 private void treeSelection() {
 	TreeSelectionModel treeSelectionModel = getselectionModel1();
 	TreePath treePath = treeSelectionModel.getSelectionPath();
@@ -2200,7 +2064,7 @@ private void treeSelection() {
 
 private DatabaseSearchPanel getDatabaseSearchPanel() {
 	if (dbSearchPanel == null) {
-		dbSearchPanel = new DatabaseSearchPanel(VCDocument.MATHMODEL_DOC);
+		dbSearchPanel = new DatabaseSearchPanel();
 	}
 	return dbSearchPanel;
 }
@@ -2215,12 +2079,16 @@ public void search(boolean bShowAll) {
 	}
 }
 
-public void setSearchPanelVisible(boolean bVisible) {
-	getDatabaseSearchPanel().setVisible(bVisible);
+
+public void expandSearchPanel(boolean bExpand) {
+	getDatabaseSearchPanel().expand(bExpand);
 }
 
-public boolean isSearchPanelVisible() {
-	return getDatabaseSearchPanel().isVisible();
+public final void setSelectionManager(SelectionManager selectionManager) {
+	this.selectionManager = selectionManager;
+	if (selectionManager != null) {
+		selectionManager.removePropertyChangeListener(ivjEventHandler);
+		selectionManager.addPropertyChangeListener(ivjEventHandler);
+	}
 }
-
 }

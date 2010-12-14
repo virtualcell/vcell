@@ -11,7 +11,6 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.SymbolTable;
@@ -45,7 +44,8 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		ArrayList<SpeciesContext> speciesContextList = new ArrayList<SpeciesContext>();
 		if (getModel() != null){
 			for (SpeciesContext s : getModel().getSpeciesContexts()){
-				if (searchText == null || searchText.length() == 0 || s.getName().startsWith(searchText)) {
+				if (searchText == null || searchText.length() == 0 || s.getName().indexOf(searchText) >= 0
+						|| s.getStructure().getName().indexOf(searchText) >= 0) {
 					speciesContextList.add(s);
 				}
 			}
@@ -127,10 +127,8 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 						return;
 					}
 					String newValue = (String)value;
-					SpeciesContext freeSpeciesContext = new SpeciesContext(new Species(newValue, null), getModel().getStructures()[0]);
+					SpeciesContext freeSpeciesContext = getModel().createSpeciesContext(getModel().getStructures()[0]);
 					freeSpeciesContext.setName(newValue);
-					getModel().addSpecies(freeSpeciesContext.getSpecies());
-					getModel().addSpeciesContext(freeSpeciesContext);
 					break;
 				}
 				}
@@ -199,5 +197,6 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		super.bioModelChange(evt);
 		ownerTable.getColumnModel().getColumn(COLUMN_STRUCTURE).setCellEditor(getStructureComboBoxEditor());
 		updateStructureComboBox();
+//		Model model = evt.getOldValue().
 	}
 }

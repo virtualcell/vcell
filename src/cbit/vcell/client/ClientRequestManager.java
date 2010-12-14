@@ -819,7 +819,7 @@ private BioModel createDefaultBioModelDocument() throws Exception {
 	BioModel bioModel = new BioModel(null);
 	bioModel.setName("BioModel" + (getMdiManager().getNewlyCreatedDesktops() + 1));
 	Model model = bioModel.getModel();
-	model.addFeature(model.getFreeFeatureName(), null, model.getFreeMembraneName());
+	model.createFeature(null);
 	return bioModel;
 }
 

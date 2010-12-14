@@ -12,6 +12,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -25,13 +27,14 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.JDesktopPaneEnhanced;
 import org.vcell.util.gui.JInternalFrameEnhanced;
@@ -39,15 +42,25 @@ import org.vcell.util.gui.JInternalFrameEnhanced;
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor.BioModelEditorSelection;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.BioModelMetaDataPanel;
+import cbit.vcell.desktop.GeometryMetaDataPanel;
+import cbit.vcell.desktop.MathModelMetaDataPanel;
+import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.structures.AllStructureSuite;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.NameScope;
@@ -80,6 +93,8 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 	}
 	private JButton newButton = null;
 	private JButton deleteButton = null;
+	private JButton searchButton = null;
+	private JButton showAllButton = null;
 	private EditorScrollTable structuresTable = null;
 	private EditorScrollTable reactionsTable = null;
 	private EditorScrollTable speciesTable = null;
@@ -90,7 +105,6 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 	private BioModelEditorGlobalParameterTableModel parametersTableModel = null;
 	private BioModel bioModel;
 	private JTextField textFieldSearch = null;
-	private BioModelEditorSelection bioModelEditorSelection = null;
 	private JTabbedPane tabbedPane = null;
 	private JPanel emptyPanel = null;
 	
@@ -100,13 +114,15 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 	private SpeciesPropertiesPanel speciesPropertiesPanel = null;
 	private StructurePropertiesPanel structurePropertiesPanel = null;
 	private ModelParameterPropertiesPanel modelParameterPropertiesPanel = null;
+	private ReactionParticipantPropertiesPanel reactionParticipantPropertiesPanel = null;
 	private JSplitPane splitPane = null;
 	private JDesktopPaneEnhanced desktopPane = null;
 	private JInternalFrameEnhanced diagramViewInternalFrame = null;	
-	private SelectionManager selectionManager = null;
+	private SelectionManager selectionManager = null;
+	private BioModelMetaDataPanel bioModelMetaDataPanel = null;	private MathModelMetaDataPanel mathModelMetaDataPanel = null;	private GeometryMetaDataPanel geometryMetaDataPanel = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
-	private class InternalEventHandler implements ActionListener, PropertyChangeListener, DocumentListener, ListSelectionListener, ChangeListener {
+	private class InternalEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener, ChangeListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelEditorModelPanel.this && evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
@@ -121,26 +137,18 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 			}
 		}
 		
-		public void insertUpdate(DocumentEvent e) {
-			searchTable();
-		}
-
-		public void removeUpdate(DocumentEvent e) {
-			searchTable();
-		}
-
-		public void changedUpdate(DocumentEvent e) {
-			searchTable();
-		}
-		
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == newButton) {
 				newButtonPressed();
 			} else if (e.getSource() == deleteButton) {
 				deleteButtonPressed();
+			} else if (e.getSource() == showAllButton) {
+				showAllButtonPressed();
+			} else if (e.getSource() == textFieldSearch || e.getSource() == searchButton) {
+				searchTable();
 			}
 		}
-		
+
 		public void valueChanged(ListSelectionEvent e) {
 			if (bioModel == null || e.getValueIsAdjusting()) {
 				return;
@@ -166,9 +174,34 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 
 	public void tabbedPaneSelectionChanged() {
 		Component component = tabbedPane.getSelectedComponent();
-		newButton.setEnabled(component != ModelPanelTab.reaction_diagram.getComponent()
-				&& component != ModelPanelTab.structure_diagram.getComponent());
-		
+		if (component == ModelPanelTab.reaction_diagram.getComponent()
+				|| component == ModelPanelTab.structure_diagram.getComponent()) {
+			newButton.setEnabled(false);
+			deleteButton.setEnabled(false);
+			searchButton.setEnabled(false);
+			showAllButton.setEnabled(false);
+			textFieldSearch.setEditable(false);
+		} else {
+			newButton.setEnabled(true);
+			showAllButton.setEnabled(true);
+			searchButton.setEnabled(true);
+			textFieldSearch.setEditable(true);
+			computeCurrentSelectedTable();
+			if (currentSelectedTableModel != null) {
+				int[] rows = currentSelectedTable.getSelectedRows();
+				if (currentSelectedTable == parametersTable) {
+					deleteButton.setEnabled(false);
+					for (int i = 0; i < rows.length; i ++) {
+						if (currentSelectedTableModel.getValueAt(rows[i]) instanceof ModelParameter) {
+							deleteButton.setEnabled(true);
+							break;
+						}
+					}
+				} else {
+					deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < currentSelectedTableModel.getDataSize()));
+				}			
+			}
+		}
 	}
 
 	public void propogateSelections() {
@@ -176,7 +209,7 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 			return;
 		}
 		Object[] selectedObjects = selectionManager.getSelectedObjects();
-		deleteButton.setEnabled(selectedObjects != null && selectedObjects.length > 0);
+//		deleteButton.setEnabled(selectedObjects != null && selectedObjects.length > 0);
 		setBottomPanelOnSelection(selectedObjects);
 		reactionCartoonEditorPanel.getReactionCartoon().setSelectedObjects(selectedObjects);
 		cartoonEditorPanel.getStructureCartoon().setSelectedObjects(selectedObjects);
@@ -219,8 +252,10 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 
 	private void initialize(){
 		newButton = new JButton("New");
+		searchButton = new JButton("Search");
+		showAllButton = new JButton("Show All");
 		deleteButton = new JButton("Delete");
-		textFieldSearch = new JTextField(10);
+		textFieldSearch = new JTextField(15);
 		
 		structuresTable = new EditorScrollTable();
 		reactionsTable = new EditorScrollTable();
@@ -238,7 +273,6 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		reactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
 		reactionCartoonEditorPanel.addPropertyChangeListener(eventHandler);
 		reactionCartoonEditorPanel.getReactionCartoon().addPropertyChangeListener(eventHandler);
-		reactionStepPropertiesPanel = new ReactionPropertiesPanel();
 		cartoonEditorPanel  = new CartoonEditorPanelFixed();
 		cartoonEditorPanel.getStructureCartoon().addPropertyChangeListener(eventHandler);
 		
@@ -248,31 +282,38 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(4,4,4,4);
-		topPanel.add(new JLabel("Search "), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
 		topPanel.add(textFieldSearch, gbc);
-				
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4,4,4,4);
+		topPanel.add(searchButton, gbc);
+		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4,100,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4,4,4,4);
+		topPanel.add(showAllButton, gbc);
+				
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,20,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		newButton.setPreferredSize(deleteButton.getPreferredSize());
 		topPanel.add(newButton, gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.insets = new Insets(4,4,4,20);
+		gbc.gridx = 5;
+		gbc.insets = new Insets(4,4,4,10);
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		topPanel.add(deleteButton, gbc);
@@ -296,13 +337,13 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		gbc.gridy = gridy;
 		gbc.weighty = 1.0;
 		gbc.weightx = 1.0;
-		gbc.gridwidth = 5;
+		gbc.gridwidth = 6;
 		gbc.fill = GridBagConstraints.BOTH;
 		topPanel.add(tabbedPane, gbc);		
 		
 		emptyPanel = new JPanel(new GridBagLayout());
 		emptyPanel.setBackground(Color.white);
-		JLabel label = new JLabel("Select one reaction, structure or species to show properties.");
+		JLabel label = new JLabel("Select only one object (e.g. species, reaction) to show properties.");
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -324,9 +365,12 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		splitPane.setResizeWeight(0.7);
 		
 		newButton.addActionListener(eventHandler);
+		newButton.setEnabled(false);
 		deleteButton.addActionListener(eventHandler);
 		deleteButton.setEnabled(false);
-		textFieldSearch.getDocument().addDocumentListener(eventHandler);
+		textFieldSearch.addActionListener(eventHandler);
+		searchButton.addActionListener(eventHandler);
+		showAllButton.addActionListener(eventHandler);
 		structuresTable.getSelectionModel().addListSelectionListener(eventHandler);
 		reactionsTable.getSelectionModel().addListSelectionListener(eventHandler);
 		speciesTable.getSelectionModel().addListSelectionListener(eventHandler);
@@ -384,15 +428,137 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 	}
 	
 	private void searchTable() {
-		String text = textFieldSearch.getText();
-//		tableModel.setSearchText(text);
+		String searchText = textFieldSearch.getText();
+		computeCurrentSelectedTable();
+		currentSelectedTableModel.setSearchText(searchText);
+	}
+	
+	private void showAllButtonPressed() {
+		if (textFieldSearch.getText() == null || textFieldSearch.getText().length() == 0) {
+			return;
+		}
+		textFieldSearch.setText(null);
+		computeCurrentSelectedTable();
+		currentSelectedTableModel.setSearchText(null);
 	}
 	
 	private void newButtonPressed() {
-		
+		computeCurrentSelectedTable();
+		Object newObject = null;
+		if (currentSelectedTable == speciesTable) {
+			newObject = bioModel.getModel().createSpeciesContext(bioModel.getModel().getStructures()[0]);
+		} else if (currentSelectedTable == structuresTable) {
+			Feature parentFeature = null;
+			for (int i = bioModel.getModel().getNumStructures() - 1; i >= 0; i --) {
+				if (bioModel.getModel().getStructures()[i] instanceof Feature) {
+					parentFeature = (Feature)bioModel.getModel().getStructures()[i];
+					break;
+				}
+			}
+			try {
+				Feature feature = bioModel.getModel().createFeature(parentFeature);
+				newObject = feature;
+			} catch (Exception e) {
+				e.printStackTrace();
+				DialogUtils.showErrorDialog(this, e.getMessage(), e);
+			}
+		} else if (currentSelectedTable == reactionsTable) {
+			SimpleReaction reactionStep = bioModel.getModel().createSimpleReaction(bioModel.getModel().getStructures()[0]);
+			newObject = reactionStep;
+		} else if (currentSelectedTable == parametersTable) {
+			ModelParameter modelParameter = bioModel.getModel().createModelParameter();
+			newObject = modelParameter;
+		}
+		if (newObject != null) {
+			for (int i = 0; i < currentSelectedTableModel.getDataSize(); i ++) {
+				if (currentSelectedTableModel.getValueAt(i) == newObject) {
+					currentSelectedTable.setRowSelectionInterval(i, i);
+					break;
+				}
+			}
+		}
 	}
 	private void deleteButtonPressed() {
-		
+		computeCurrentSelectedTable();
+		try {
+			int[] rows = currentSelectedTable.getSelectedRows();
+			if (rows == null || rows.length == 0) {
+				return;
+			}
+			String deleteListText = "";
+			if (currentSelectedTable == speciesTable) {
+				ArrayList<SpeciesContext> deleteList = new ArrayList<SpeciesContext>();
+				for (int r : rows) {
+					if (r < speciesTableModel.getDataSize()) {
+						SpeciesContext speciesContext = speciesTableModel.getValueAt(r);
+						deleteList.add(speciesContext);
+						deleteListText += speciesContext.getName() + "\n"; 
+					}
+				}
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "You are going to delete the following species:\n\n " + deleteListText + "\n Continue?");
+				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+					return;
+				}
+				for (SpeciesContext sc : deleteList) {
+					bioModel.getModel().removeSpeciesContext(sc);
+				}
+			} else if (currentSelectedTable == structuresTable) {
+				ArrayList<Feature> deleteList = new ArrayList<Feature>();
+				for (int r : rows) {
+					if (r < structureTableModel.getDataSize()) {
+						Structure rowValue = structureTableModel.getValueAt(r);
+						if (rowValue instanceof Feature) {
+							deleteList.add((Feature) rowValue);
+							deleteListText += ((Feature)rowValue).getName() + "\n"; 
+						}
+					}
+				}
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete the following structure(s):\n\n " + deleteListText + "\n Continue?");
+				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+					return;
+				}
+				for (Feature f : deleteList) {
+					bioModel.getModel().removeFeature(f);
+				}
+			} else if (currentSelectedTable == reactionsTable) {
+				ArrayList<ReactionStep> deleteList = new ArrayList<ReactionStep>();
+				for (int r : rows) {
+					if (r < reactionTableModel.getDataSize()) {
+						ReactionStep reaction = reactionTableModel.getValueAt(r);
+						deleteList.add(reaction);
+						deleteListText += reaction.getName() + "\n"; 
+					}
+				}
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete the following reaction(s):\n\n " + deleteListText + "\n Continue?");
+				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+					return;
+				}
+				for (ReactionStep sc : deleteList) {
+					bioModel.getModel().removeReactionStep(sc);
+				}
+			} else if (currentSelectedTable == parametersTable) {
+				ArrayList<ModelParameter> deleteList = new ArrayList<ModelParameter>();
+				for (int r : rows) {
+					if (r < parametersTableModel.getDataSize()) {
+						Parameter parameter = parametersTableModel.getValueAt(r);
+						if (parameter instanceof ModelParameter) {
+							deleteList.add((ModelParameter)parameter);
+							deleteListText += ((ModelParameter)parameter).getName() + "\n"; 
+						}
+					}
+				}	
+				String confirm = PopupGenerator.showOKCancelWarningDialog(this, "Are you sure you want to delete the following global parameter(s):\n\n " + deleteListText + "\n Continue?");
+				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+					return;
+				}
+				for (ModelParameter param : deleteList) {
+					bioModel.getModel().removeModelParameter(param);
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			DialogUtils.showErrorDialog(this, ex.getMessage());
+		}
 	}
 	
 	private void bioModelChange() {
@@ -408,9 +574,11 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		parametersTableModel.setBioModel(bioModel);	
 	}
 
-	private void tableSelectionChanged() {
-		JTable currentSelectedTable = null;
-		BioModelEditorRightSideTableModel<?> currentSelectedTableModel = null;
+	JTable currentSelectedTable = null;
+	BioModelEditorRightSideTableModel<?> currentSelectedTableModel = null;
+	private void computeCurrentSelectedTable() {
+		currentSelectedTable = null;
+		currentSelectedTableModel = null;
 		Component selectedTabComponent = tabbedPane.getSelectedComponent();
 		if (selectedTabComponent == reactionsTable.getEnclosingScrollPane()) {
 			currentSelectedTable = reactionsTable;
@@ -424,20 +592,44 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		} else if (selectedTabComponent == parametersTable.getEnclosingScrollPane()) {
 			currentSelectedTable = parametersTable;
 			currentSelectedTableModel = parametersTableModel;
-		}	
+		}
+	}
 	
+	private void tableSelectionChanged() {
+		computeCurrentSelectedTable();
 		if (currentSelectedTableModel != null) {
 			int[] rows = currentSelectedTable.getSelectedRows();
 			if (rows != null) {
-				Object[] selectedObjects = new Object[rows.length];
-				for (int i = 0; i < rows.length; i ++) {
-					selectedObjects[i] = currentSelectedTableModel.getValueAt(rows[i]);
+				ArrayList<Object> selectedObjects = new ArrayList<Object>();
+				for (int row : rows) {
+					if (row < currentSelectedTableModel.getDataSize()) {
+						selectedObjects.add(currentSelectedTableModel.getValueAt(row));
+					}
 				}
-				selectionManager.setSelectedObjects(selectedObjects);
+				selectionManager.setSelectedObjects(selectedObjects.toArray());
+			}
+			if (currentSelectedTable == parametersTable) {
+				deleteButton.setEnabled(false);
+				for (int row : rows) {
+					if (row < currentSelectedTableModel.getDataSize()) {
+						if (currentSelectedTableModel.getValueAt(row) instanceof ModelParameter) {
+							deleteButton.setEnabled(true);
+							break;
+						}
+					}
+				}
+			} else {
+				deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < currentSelectedTableModel.getDataSize()));
 			}
 		}
 	}
 	
+	private ReactionParticipantPropertiesPanel getReactionParticipantPropertiesPanel() {
+		if (reactionParticipantPropertiesPanel == null) {
+			reactionParticipantPropertiesPanel = new ReactionParticipantPropertiesPanel();
+		}
+		return reactionParticipantPropertiesPanel;
+	}
 	private ReactionPropertiesPanel getReactionPropertiesPanel() {
 		if (reactionStepPropertiesPanel == null) {
 			reactionStepPropertiesPanel = new ReactionPropertiesPanel();
@@ -478,11 +670,34 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 				bottomComponent = getStructurePropertiesPanel();
 				getStructurePropertiesPanel().setModel(bioModel.getModel());
 				getStructurePropertiesPanel().setStructure((Structure) singleSelection);
-			} else 	if (singleSelection instanceof ModelParameter) {
+			} else if (singleSelection instanceof ModelParameter) {
 				bottomComponent = getModelParameterPropertiesPanel();
 				getModelParameterPropertiesPanel().setModelParameter((ModelParameter) singleSelection);
+			} else if (singleSelection instanceof Product || singleSelection instanceof Reactant) {
+				bottomComponent = getReactionParticipantPropertiesPanel();
+				getReactionParticipantPropertiesPanel().setReactionParticipant((ReactionParticipant) singleSelection);
+			} else if (singleSelection instanceof BioModelInfo) {
+				if (bioModelMetaDataPanel == null) {
+					bioModelMetaDataPanel = new BioModelMetaDataPanel();
+					bioModelMetaDataPanel.setDocumentManager(cartoonEditorPanel.getDocumentManager());
+				}
+				bioModelMetaDataPanel.setBioModelInfo((BioModelInfo) singleSelection);
+				bottomComponent = bioModelMetaDataPanel;
+			} else if (singleSelection instanceof MathModelInfo) {
+				if (mathModelMetaDataPanel == null) {
+					mathModelMetaDataPanel = new MathModelMetaDataPanel();
+					mathModelMetaDataPanel.setDocumentManager(cartoonEditorPanel.getDocumentManager());
+				}
+				mathModelMetaDataPanel.setMathModelInfo((MathModelInfo) singleSelection);
+				bottomComponent = mathModelMetaDataPanel;
+			} else if (singleSelection instanceof GeometryInfo) {
+				if (geometryMetaDataPanel == null) {
+					geometryMetaDataPanel = new GeometryMetaDataPanel();
+					geometryMetaDataPanel.setDocumentManager(cartoonEditorPanel.getDocumentManager());
+				}
+				geometryMetaDataPanel.setGeometryInfo((GeometryInfo) singleSelection);
+				bottomComponent = geometryMetaDataPanel;
 			}
-
 		}
 		if (splitPane.getBottomComponent() != bottomComponent) {
 			splitPane.setBottomComponent(bottomComponent);
@@ -490,21 +705,8 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		splitPane.setDividerLocation(0.7);
 	}
 
-	private final void setBioModelEditorSelection(BioModelEditorSelection newValue) {
-		BioModelEditorSelection oldValue = this.bioModelEditorSelection;
-		this.bioModelEditorSelection = newValue;
-		firePropertyChange(BioModelEditor.PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION, oldValue, newValue);
-	}
-	
 	public void setDocumentManager(DocumentManager documentManager) {
 		cartoonEditorPanel.setDocumentManager(documentManager);		
-	}
-	
-	public void selectTab(ModelPanelTab tab) {
-		if (tab == null) {
-			return;
-		}
-		tabbedPane.setSelectedComponent(tab.getComponent());
 	}
 	
 	private void floatDiagramView(boolean bFloating) {

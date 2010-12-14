@@ -112,9 +112,8 @@ public class BioModelEditorStructurePanel extends BioModelEditorRightSidePanel<S
 			}
 		}
 		try {
-			String freeFeatureName = bioModel.getModel().getFreeFeatureName();
-			bioModel.getModel().addFeature(freeFeatureName, parentFeature, bioModel.getModel().getFreeMembraneName());
-			select(bioModel.getModel().getStructure(freeFeatureName));
+			Feature feature = bioModel.getModel().createFeature(parentFeature);
+			select(feature);
 		} catch (Exception e) {
 			e.printStackTrace();
 			DialogUtils.showErrorDialog(this, e.getMessage(), e);

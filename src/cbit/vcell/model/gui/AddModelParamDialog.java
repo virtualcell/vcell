@@ -534,32 +534,14 @@ private void handleException(java.lang.Throwable exception) {
 	 exception.printStackTrace(System.out);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/20/2003 7:55:25 AM)
- * @param argModel cbit.vcell.model.Model
- * @param argDocumentManager cbit.vcell.clientdb.DocumentManager
- */
-public void initAddGlobalParam(Model argModel, DocumentManager argDocumentManager) {
-	if(argModel != null){
-		setTitle("Add New Global Parameter: ");
-		getOKJButton().setText("Add");
-	}
-	ModelParameter newModelParam = argModel.new ModelParameter(argModel.getFreeModelParamName(),new Expression(0.0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
-	setModelParameter(newModelParam);
-	setModel(argModel);
-	setDocumentManager(argDocumentManager);
-}
-
 public void initAddModelParam(Model argModel) {
-	if(argModel != null){
-		setTitle("Add New Global Parameter: ");
-		getOKJButton().setText("Add");
-	}
-	ModelParameter newModelParam = argModel.new ModelParameter(argModel.getFreeModelParamName(),new Expression(0.0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
-	setModelParameter(newModelParam);
-	setModel(argModel);
+//	if(argModel != null){
+//		setTitle("Add New Global Parameter: ");
+//		getOKJButton().setText("Add");
+//	}
+//	ModelParameter newModelParam = argModel.new ModelParameter(argModel.getFreeModelParamName(),new Expression(0.0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
+//	setModelParameter(newModelParam);
+//	setModel(argModel);
 }
 
 /**

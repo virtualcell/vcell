@@ -106,16 +106,8 @@ public class BioModelEditorSpeciesPanel extends BioModelEditorRightSidePanel<Spe
 	}
 
 	protected void newButtonPressed() {
-		SpeciesContext speciesContext = new SpeciesContext(new Species(bioModel.getModel().getFreeSpeciesName(), null), bioModel.getModel().getStructures()[0]);
-		try {
-			bioModel.getModel().addSpecies(speciesContext.getSpecies());
-			speciesContext.setName(speciesContext.getSpecies().getCommonName());
-			bioModel.getModel().addSpeciesContext(speciesContext);
-			select(speciesContext);
-		} catch (PropertyVetoException ex) {
-			ex.printStackTrace();
-			DialogUtils.showErrorDialog(BioModelEditorSpeciesPanel.this, ex.getMessage());
-		}
+		SpeciesContext speciesContext = bioModel.getModel().createSpeciesContext(bioModel.getModel().getStructures()[0]);
+		select(speciesContext);
 	}
 	
 	protected void deleteButtonPressed() {

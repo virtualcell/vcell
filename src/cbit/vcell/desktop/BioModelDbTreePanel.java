@@ -21,15 +21,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
@@ -39,6 +38,7 @@ import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
+import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
@@ -48,6 +48,7 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
  * Creation date: (11/28/00 11:34:01 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class BioModelDbTreePanel extends JPanel {
 	private JTree ivjJTree1 = null;
 	private boolean ivjConnPtoP2Aligning = false;
@@ -68,11 +69,8 @@ public class BioModelDbTreePanel extends JPanel {
 	private BioModelDbTreeModel ivjBioModelDbTreeModel = null;
 	private JPopupMenu ivjBioModelPopupMenu = null;
 	private BioModelMetaDataPanel ivjBioModelMetaDataPanel = null;
-	private JPanel ivjJPanel1 = null;
-	private JLabel ivjJLabel2 = null;
-	private JPanel ivjJPanel2 = null;
+	private JPanel bottomPanel = null;
 	private JScrollPane ivjJScrollPane2 = null;
-	private JSplitPane ivjJSplitPane1 = null;
 	private JMenuItem ivjAnotherEditionMenuItem = null;
 	private JMenuItem ivjAnotherModelMenuItem = null;
 	private JMenu ivjJMenu1 = null;
@@ -82,8 +80,7 @@ public class BioModelDbTreePanel extends JPanel {
 	private JSeparator ivjJSeparator3 = null;
 	private JMenuItem ivjJPreviousEditionMenuItem = null;
 	private boolean fieldPopupMenuDisabled = false;
-	private JLabel ivjJLabel3 = null;
-	private JPanel ivjJPanel3 = null;
+	private JPanel topPanel = null;
 	private JMenuItem ivjJMenuItemArchive = null;
 	private JMenuItem ivjJMenuItemPublish = null;
 	private DatabaseSearchPanel dbSearchPanel = null;
@@ -120,8 +117,8 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 		};
 		public void databaseInsert(DatabaseEvent event) {};
 		public void databaseRefresh(DatabaseEvent event) {
-			if (event.getSource() == BioModelDbTreePanel.this.getDocumentManager()) 
-				connEtoC9(event);
+			if (event.getSource() == BioModelDbTreePanel.this.getDocumentManager())
+				refresh();
 		};
 		public void databaseUpdate(DatabaseEvent event) {
 			if (event.getSource() == BioModelDbTreePanel.this.getDocumentManager()) 
@@ -148,6 +145,9 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 				connEtoC4(evt);
 			if (evt.getSource() == BioModelDbTreePanel.this && (evt.getPropertyName().equals("documentManager"))) 
 				connEtoM2(evt);
+			if (evt.getSource() == selectionManager) {
+				setSelectedObject();
+			}
 		};
 		public void treeNodesChanged(javax.swing.event.TreeModelEvent e) {
 			if (e.getSource() == BioModelDbTreePanel.this.getBioModelDbTreeModel()) 
@@ -162,11 +162,35 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 		};
 	};
 
+	private boolean bShowMetadata = true;
+	private SelectionManager selectionManager = null;
 /**
  * BioModelTreePanel constructor comment.
  */
 public BioModelDbTreePanel() {
+	this(true);
+}
+
+public void setSelectedObject() {
+	Object[] selectedObjects = selectionManager.getSelectedObjects();
+	if (selectedObjects == null || selectedObjects.length == 0 || selectedObjects.length > 1) {
+		getJTree1().clearSelection();
+	} else {
+		if (selectedObjects[0] instanceof BioModelInfo) {
+			BioModelNode node = ((BioModelNode)getBioModelDbTreeModel().getRoot()).findNodeByUserObject(selectedObjects[0]);
+			if (node != null) {
+				getJTree1().setSelectionPath(new TreePath(node.getPath()));
+			}
+		} else {
+			getJTree1().clearSelection();
+		}
+	}
+	
+}
+
+public BioModelDbTreePanel(boolean bMetadata) {
 	super();
+	this.bShowMetadata = bMetadata;
 	initialize();
 }
 
@@ -654,46 +678,6 @@ private void connEtoC7(java.awt.event.ActionEvent arg1) {
 	}
 }
 
-
-/**
- * connEtoC8:  (BioModelDbTreePanel.initialize() --> BioModelDbTreePanel.splitPaneResizeWeight()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.splitPaneResizeWeight();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC9:  (DocumentManager.database.databaseRefresh(cbit.vcell.clientdb.DatabaseEvent) --> BioModelDbTreePanel.refresh()V)
- * @param arg1 cbit.vcell.clientdb.DatabaseEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(DatabaseEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.refresh();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connEtoM1:  (selectedVersionInfo1.this --> BioModelMetaDataPanel.bioModelInfo)
  * @param value cbit.sql.VersionInfo
@@ -744,44 +728,6 @@ private void connEtoM4() {
 		// user code end
 		getJTree1().putClientProperty("JTree.lineStyle", "Angled");
 		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM7:  (DocumentManager.this --> JTree1.cellRenderer)
- * @param value cbit.vcell.clientdb.DocumentManager
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(DocumentManager value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getJTree1().setCellRenderer(this.getBioModelCellRenderer());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP1SetTarget:  (JTree1.model <--> TreeModel.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		getJTree1().setModel(getBioModelDbTreeModel());
-		// user code begin {1}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
@@ -1196,7 +1142,7 @@ private BioModelInfo[] getBioModelVersionDates(BioModelInfo thisBioModelInfo) th
 	 	}
  	}
 
- 	if (bioModelBranchList == null) {
+ 	if (bioModelBranchList.size() == 0) {
 		JOptionPane.showMessageDialog(this,"No Versions in biomodel","Error comparing BioModels",JOptionPane.ERROR_MESSAGE);
 	 	throw new NullPointerException("No Versions in biomodel!");
  	}
@@ -1258,51 +1204,6 @@ private javax.swing.JLabel getJLabel1() {
 	}
 	return ivjJLabel1;
 }
-
-/**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel2() {
-	if (ivjJLabel2 == null) {
-		try {
-			ivjJLabel2 = new javax.swing.JLabel();
-			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Selected BioModel Summary");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel2;
-}
-
-/**
- * Return the JLabel3 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel3() {
-	if (ivjJLabel3 == null) {
-		try {
-			ivjJLabel3 = new javax.swing.JLabel();
-			ivjJLabel3.setName("JLabel3");
-			ivjJLabel3.setText("BioModel Database");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel3;
-}
-
 
 /**
  * Return the JMenu1 property value.
@@ -1471,47 +1372,22 @@ private javax.swing.JMenuItem getJMenuItemPublish() {
 }
 
 /**
- * Return the JPanel1 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel1() {
-	if (ivjJPanel1 == null) {
-		try {
-			ivjJPanel1 = new javax.swing.JPanel();
-			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setLayout(new java.awt.BorderLayout());
-			ivjJPanel1.setBounds(0, 0, 232, 41);
-			ivjJPanel1.setEnabled(false);
-			getJPanel1().add(getBioModelMetaDataPanel(), "Center");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel1;
-}
-
-/**
  * Return the JPanel2 property value.
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel2() {
-	if (ivjJPanel2 == null) {
+private javax.swing.JPanel getBottomPanel() {
+	if (bottomPanel == null) {
 		try {
-			ivjJPanel2 = new javax.swing.JPanel();
-			ivjJPanel2.setName("JPanel2");
-			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
-			ivjJPanel2.setMinimumSize(new java.awt.Dimension(171, 300));
+			bottomPanel = new javax.swing.JPanel();
+			bottomPanel.setName("JPanel2");
+			bottomPanel.setLayout(new java.awt.GridBagLayout());
+//			bottomPanel.setMinimumSize(new java.awt.Dimension(171, 300));
 
 			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
 			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 0;
 			constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel2().add(getJLabel2(), constraintsJLabel2);
+			bottomPanel.add(new JLabel("Selected BioModel Summary"), constraintsJLabel2);
 
 			java.awt.GridBagConstraints constraintsJScrollPane2 = new java.awt.GridBagConstraints();
 			constraintsJScrollPane2.gridx = 0; constraintsJScrollPane2.gridy = 1;
@@ -1519,7 +1395,7 @@ private javax.swing.JPanel getJPanel2() {
 			constraintsJScrollPane2.weightx = 1.0;
 			constraintsJScrollPane2.weighty = 1.0;
 			constraintsJScrollPane2.insets = new java.awt.Insets(0, 4, 4, 4);
-			getJPanel2().add(getJScrollPane2(), constraintsJScrollPane2);
+			bottomPanel.add(getBioModelMetaDataPanel(), constraintsJScrollPane2);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1528,7 +1404,7 @@ private javax.swing.JPanel getJPanel2() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel2;
+	return bottomPanel;
 }
 
 /**
@@ -1536,13 +1412,13 @@ private javax.swing.JPanel getJPanel2() {
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel3() {
-	if (ivjJPanel3 == null) {
+private javax.swing.JPanel getTopPanel() {
+	if (topPanel == null) {
 		try {
-			ivjJPanel3 = new javax.swing.JPanel();
-			ivjJPanel3.setName("JPanel3");
-			ivjJPanel3.setLayout(new java.awt.GridBagLayout());
-			ivjJPanel3.setMinimumSize(new java.awt.Dimension(196, 450));
+			topPanel = new javax.swing.JPanel();
+			topPanel.setName("JPanel3");
+			topPanel.setLayout(new java.awt.GridBagLayout());
+			topPanel.setMinimumSize(new java.awt.Dimension(196, 450));
 
 			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 			constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 1;
@@ -1550,12 +1426,12 @@ private javax.swing.JPanel getJPanel3() {
 			constraintsJScrollPane1.weightx = 1.0;
 			constraintsJScrollPane1.weighty = 1.0;
 			constraintsJScrollPane1.insets = new java.awt.Insets(0, 4, 4, 4);
-			getJPanel3().add(getJScrollPane1(), constraintsJScrollPane1);
+			topPanel.add(getJScrollPane1(), constraintsJScrollPane1);
 
 			java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
 			constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 0;
 			constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJLabel3(), constraintsJLabel3);
+			topPanel.add(new javax.swing.JLabel("BioModel Database"), constraintsJLabel3);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1564,7 +1440,7 @@ private javax.swing.JPanel getJPanel3() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel3;
+	return topPanel;
 }
 
 /**
@@ -1614,30 +1490,6 @@ private javax.swing.JScrollPane getJScrollPane1() {
 }
 
 /**
- * Return the JScrollPane2 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane2() {
-	if (ivjJScrollPane2 == null) {
-		try {
-			ivjJScrollPane2 = new javax.swing.JScrollPane();
-			ivjJScrollPane2.setName("JScrollPane2");
-			ivjJScrollPane2.setPreferredSize(new java.awt.Dimension(110, 48));
-			ivjJScrollPane2.setMinimumSize(new java.awt.Dimension(110, 48));
-			getJScrollPane2().setViewportView(getJPanel1());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane2;
-}
-
-/**
  * Return the JSeparator1 property value.
  * @return javax.swing.JSeparator
  */
@@ -1678,33 +1530,6 @@ private javax.swing.JSeparator getJSeparator3() {
 		}
 	}
 	return ivjJSeparator3;
-}
-
-
-/**
- * Return the JSplitPane1 property value.
- * @return javax.swing.JSplitPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSplitPane getJSplitPane1() {
-	if (ivjJSplitPane1 == null) {
-		try {
-			ivjJSplitPane1 = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT);
-			ivjJSplitPane1.setName("JSplitPane1");
-			ivjJSplitPane1.setDividerLocation(350);
-			ivjJSplitPane1.setOneTouchExpandable(true);
-			ivjJSplitPane1.setContinuousLayout(true);
-			getJSplitPane1().add(getJPanel2(), "bottom");
-			getJSplitPane1().add(getJPanel3(), "top");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSplitPane1;
 }
 
 /**
@@ -1858,7 +1683,7 @@ private void initConnections() throws java.lang.Exception {
 	getJPreviousEditionMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemArchive().addActionListener(ivjEventHandler);
 	getJMenuItemPublish().addActionListener(ivjEventHandler);
-	connPtoP1SetTarget();
+	getJTree1().setModel(getBioModelDbTreeModel());
 	connPtoP2SetTarget();
 	connPtoP4SetTarget();
 	connPtoP5SetTarget();
@@ -1879,15 +1704,23 @@ private void initialize() {
 		setPreferredSize(new java.awt.Dimension(200, 150));
 		setLayout(new BorderLayout());
 		setSize(240, 453);
-		setMinimumSize(new java.awt.Dimension(198, 148));
+//		setMinimumSize(new java.awt.Dimension(198, 148));
 		
 		add(getDatabaseSearchPanel(), BorderLayout.NORTH);
-		add(getJSplitPane1(), BorderLayout.CENTER);
+		if (bShowMetadata) {
+			JSplitPane splitPane = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT);
+			splitPane.setDividerLocation(350);
+			splitPane.setResizeWeight(1);
+			splitPane.setBottomComponent(getBottomPanel());
+			splitPane.setTopComponent(getTopPanel());
+			add(splitPane, BorderLayout.CENTER);
+		} else {
+			add(getTopPanel(), BorderLayout.CENTER);
+		}
 
 		initConnections();
 		connEtoM4();
 		connEtoC12();
-		connEtoC8();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -2007,8 +1840,9 @@ private void refireActionPerformed(ActionEvent e) {
 	fireActionPerformed(new ActionEvent(this, e.getID(), e.getActionCommand(), e.getModifiers()));
 }
 
-private void refresh() throws DataAccessException {
+private void refresh() {
 	getBioModelDbTreeModel().refreshTree();
+	getJTree1().setCellRenderer(this.getBioModelCellRenderer());
 	expandTreeToOwner();
 }
 /**
@@ -2049,7 +1883,7 @@ public void setDocumentManager(DocumentManager newValue) {
 			connPtoP2SetSource();
 			connPtoP3SetTarget();
 			connEtoC2(ivjDocumentManager);
-			connEtoM7(ivjDocumentManager);
+			getJTree1().setCellRenderer(this.getBioModelCellRenderer());
 			firePropertyChange("documentManager", oldValue, newValue);
 			// user code begin {1}
 			// user code end
@@ -2157,14 +1991,6 @@ private void setselectionModel1(javax.swing.tree.TreeSelectionModel newValue) {
 /**
  * Comment
  */
-private void splitPaneResizeWeight() {
-	BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
-}
-
-
-/**
- * Comment
- */
 private void treeSelection() {
 	TreeSelectionModel treeSelectionModel = getselectionModel1();
 	TreePath treePath = treeSelectionModel.getSelectionPath();
@@ -2189,7 +2015,7 @@ private void treeSelection() {
 
 private DatabaseSearchPanel getDatabaseSearchPanel() {
 	if (dbSearchPanel == null) {
-		dbSearchPanel = new DatabaseSearchPanel(VCDocument.BIOMODEL_DOC);
+		dbSearchPanel = new DatabaseSearchPanel();
 	}
 	return dbSearchPanel;
 }
@@ -2204,11 +2030,16 @@ public void search(boolean bShowAll) {
 	}
 }
 
-public void setSearchPanelVisible(boolean bVisible) {
-	getDatabaseSearchPanel().setVisible(bVisible);
+public void expandSearchPanel(boolean bExpand) {
+	getDatabaseSearchPanel().expand(bExpand);
 }
 
-public boolean isSearchPanelVisible() {
-	return getDatabaseSearchPanel().isVisible();
+public final void setSelectionManager(SelectionManager selectionManager) {
+	this.selectionManager = selectionManager;
+	if (selectionManager != null) {
+		selectionManager.removePropertyChangeListener(ivjEventHandler);
+		selectionManager.addPropertyChangeListener(ivjEventHandler);
+	}
 }
+
 }

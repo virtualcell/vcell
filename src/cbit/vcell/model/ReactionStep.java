@@ -524,9 +524,29 @@ public void rebindAllToModel(Model model) throws ExpressionException, ModelExcep
 	if (getName() == null){
 		try {
 			if (this instanceof FluxReaction){
-				setName(model.getFreeFluxReactionName());
+				int count=0;
+				String reactionStepName = null;
+				while (true) {
+					reactionStepName = "flux" + count;
+					if (model.getReactionStep(reactionStepName) == null){
+						break;
+					}
+				
+					count++;
+				}
+				setName(reactionStepName);
 			}else if (this instanceof SimpleReaction){
-				setName(model.getFreeReactionStepName());
+				int count=0;
+				String reactionStepName = null;
+				while (true) {
+					reactionStepName = "r" + count;
+					if (model.getReactionStep(reactionStepName) == null){
+						break;
+					}
+				
+					count++;
+				}
+				setName(reactionStepName);
 			}else{
 				throw new RuntimeException("ReactionStep of type "+getClass().toString()+" cannot be named by model");
 			}
