@@ -47,6 +47,7 @@ import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -350,6 +351,9 @@ private void writeReactions() throws ExpressionException, MathException {
 					printWriter.print(" + " + getVariableName(products.get(i),subdomain));
 				}
 			}
+			if (reactants.size() == 2) {
+				macroscopicRateConstant *= ReservedSymbol.KMOLE.getExpression().evaluateConstant();
+			}
 			printWriter.println(" " + macroscopicRateConstant);
 		}
 	}
@@ -526,8 +530,13 @@ private void writeSurfacesAndCompartments() throws SolverException {
 	}
 	printWriter.println("# geometry");
 	printWriter.println(SmoldynKeyword.dim + " " + dimension);
-	printWriter.println(SmoldynKeyword.max_compartment + " " + (subVolumes.length + 1));
-	printWriter.println(SmoldynKeyword.max_surface + " " + (surfaceClasses.length + dimension)); // plus the surface which are bounding walls
+	if (bHasNoSurface) {
+		printWriter.println(SmoldynKeyword.max_compartment + " " + subVolumes.length);
+		printWriter.println(SmoldynKeyword.max_surface + " 0 ");
+	} else {
+		printWriter.println(SmoldynKeyword.max_compartment + " " + (subVolumes.length + 1));
+		printWriter.println(SmoldynKeyword.max_surface + " " + (surfaceClasses.length + dimension)); // plus the surface which are bounding walls
+	}
 	printWriter.println();
 
 	// write boundaries and wall surfaces
