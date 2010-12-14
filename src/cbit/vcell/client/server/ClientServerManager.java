@@ -174,7 +174,7 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 	// gotten from call to vcellConnection
 	private User user = null;
 	
-	private DocumentManager documentManager = null;
+	private DocumentManager documentManager = new ClientDocumentManager(this, 10000000L);;
 	private JobManager jobManager = null;
 	private ExportController exportController = null;
 	private AsynchMessageManager asynchMessageManager = null;
@@ -189,15 +189,6 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
-
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
 
 /**
  * Insert the method's description here.
@@ -215,8 +206,6 @@ private void changeConnection(TopLevelWindowManager requester, VCellConnection n
 			//if (! reconnect) {
 				/* new credentials; need full init */
 				// throw it away; doesn't properly support full reinits
-				documentManager = null;
-				
 				// preload the document manager cache
 				((ClientDocumentManager)getDocumentManager()).initAllDatabaseInfos();
 				
@@ -473,9 +462,6 @@ public synchronized DataSetController getDataSetController() throws DataAccessEx
  * @return cbit.vcell.clientdb.DocumentManager
  */
 public DocumentManager getDocumentManager() {
-	if (documentManager == null) {
-		documentManager = new ClientDocumentManager(this, 10000000L);
-	}
 	return documentManager;
 }
 

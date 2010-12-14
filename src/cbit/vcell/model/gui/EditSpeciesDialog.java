@@ -811,8 +811,7 @@ public void initAddSpecies(Model argModel, Structure argStructure) {
 	}
 	mode = ADD_SPECIES_MODE;
 	setModel(argModel);
-	Species newSpecies = new Species(argModel.getFreeSpeciesName(),null);
-	SpeciesContext newSpeciesContext = new SpeciesContext(newSpecies,argStructure);
+	SpeciesContext newSpeciesContext = argModel.createSpeciesContext(argStructure);
 	setSpeciesContext(newSpeciesContext);
 }
 

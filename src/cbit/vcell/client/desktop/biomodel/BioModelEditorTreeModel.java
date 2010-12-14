@@ -88,7 +88,8 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	
 	public enum BioModelEditorTreeFolderClass {
 		MODEL_NODE,	
-		APPLICATTIONS_NODE,		
+		APPLICATTIONS_NODE,	
+		SCRIPTING_NODE,
 
 		REACTIONS_NODE,
 		STRUCTURES_NODE,
@@ -145,12 +146,15 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	private BioModelEditorTreeFolderNode bioModelChildFolderNodes[] = {
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.MODEL_NODE, "Biological Model", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.APPLICATTIONS_NODE, "Applications", true),
+			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SCRIPTING_NODE, "Scripting", true),
 		};
 	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[0], true);
 	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[1], true);	
+	private BioModelNode scriptingNode = new BioModelNode(bioModelChildFolderNodes[2], false);	
 	private BioModelNode  bioModelChildNodes[] = {
 			modelNode,
 			applicationsNode,
+			scriptingNode,
 	};
 	List<BioModelNode> annotationNodes = new ArrayList<BioModelNode>();
 	List<BioModelNode> applicationsChildNodes = new ArrayList<BioModelNode>();
@@ -885,14 +889,21 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	}
 	
 	private void select(Object[] selectedObjects) {
-		ownerTree.clearSelection();
-		if (selectedObjects != null) {
+		if (selectedObjects != null && selectedObjects.length > 0) {
+			ArrayList<TreePath> newPathList = new ArrayList<TreePath>();
 			for (Object object : selectedObjects) {
 				BioModelNode node = rootNode.findNodeByUserObject(object);
 				if (node != null) {
-					ownerTree.addSelectionPath(new TreePath(node.getPath()));
+					newPathList.add(new TreePath(node.getPath()));
 				}
 			}
+			ownerTree.setSelectionPaths(newPathList.toArray(new TreePath[0]));
+			if (newPathList.size() > 0) {
+				TreePath path = newPathList.get(0);
+				ownerTree.scrollPathToVisible(path);
+			}
+		} else {
+			ownerTree.clearSelection();
 		}
 	}
 	public void select(BioModelEditorSelection newValue) {

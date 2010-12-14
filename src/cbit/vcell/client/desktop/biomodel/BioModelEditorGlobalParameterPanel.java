@@ -11,17 +11,13 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
-import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.model.gui.ModelParameterTableModel;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.NameScope;
-import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.
@@ -115,31 +111,9 @@ private void initialize() {
 	});
 }
 
-public void setScrollPaneTableCurrentRow(ModelParameter selection) {
-	if (selection == null) {
-		table.clearSelection();
-		return;
-	}
-
-	int numRows = table.getRowCount();
-	for(int i=0; i<numRows; i++) {
-		ModelParameter valueAt = (ModelParameter) tableModel.getValueAt(i, ModelParameterTableModel.COLUMN_NAME);
-		if(valueAt.equals(selection)) {
-			table.changeSelection(i, 0, false, false);
-			return;
-		}
-	}
-}
-
 protected void newButtonPressed() {
-	ModelParameter modelParameter = bioModel.getModel().new ModelParameter(bioModel.getModel().getFreeModelParamName(), new Expression(0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);
-	try {
-		bioModel.getModel().addModelParameter(modelParameter);
-		select(modelParameter);
-	} catch (PropertyVetoException e) {
-		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(this, e.getMessage());
-	}
+	ModelParameter modelParameter = bioModel.getModel().createModelParameter();
+	select(modelParameter);
 }
 
 protected void deleteButtonPressed() {

@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -20,16 +19,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.EventListenerList;
 
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.gui.CollapsiblePanel;
 
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.messaging.admin.DatePanel;
 
-public class DatabaseSearchPanel extends JPanel {
+public class DatabaseSearchPanel extends CollapsiblePanel {
 	public static interface SearchCriterion {
 		boolean meetCriterion(VCDocumentInfo docInfo);
 	}	
@@ -83,7 +81,6 @@ public class DatabaseSearchPanel extends JPanel {
 	private JButton searchButton = null;
 	private JButton cancelButton = null;
 	private JLabel advancedButton = null;
-	private int docType = 0;
 	private DatePanel startDatePanel = null;
 	private DatePanel endDatePanel = null;
 	private ArrayList<JComponent> advancedOptions = new ArrayList<JComponent>();
@@ -117,9 +114,8 @@ public class DatabaseSearchPanel extends JPanel {
 			}
 		}
 	}
-	public DatabaseSearchPanel(int ti) {
-		super();
-		docType = ti;
+	public DatabaseSearchPanel() {
+		super("Search", true);
 		initialize();
 		setAdvancedOptionsVisible(false);
 	}
@@ -155,7 +151,7 @@ public class DatabaseSearchPanel extends JPanel {
 	}
 	
 	private void initialize() {
-		JLabel nameLabel = new JLabel("Name Containing : ");
+//		JLabel nameLabel = new JLabel("Search ");
 		nameSearchTextField = new TextFieldAutoCompletion();
 		textFieldAutoComSet.add(nameSearchTextField);
 		
@@ -164,16 +160,16 @@ public class DatabaseSearchPanel extends JPanel {
 		advancedButton.setForeground(Color.blue);
 		advancedButton.setVerticalAlignment(SwingConstants.BOTTOM);
 		
-		JLabel dateLabel = new JLabel("Modified Between : ");
+		JLabel dateLabel = new JLabel("Modified Between ");
 		advancedOptions.add(dateLabel);
 		startDatePanel = new DatePanel();
 		advancedOptions.add(startDatePanel);
-		JLabel andLabel = new JLabel("and");
-		advancedOptions.add(andLabel);
+//		JLabel andLabel = new JLabel("and");
+//		advancedOptions.add(andLabel);
 		endDatePanel = new DatePanel();
 		advancedOptions.add(endDatePanel);
 		
-		searchButton = new JButton("Search " + Search_Doc_Type[docType] + "s");		
+		searchButton = new JButton("Search");		
 		searchButton.setActionCommand(SEARCH_Command);
 		cancelButton = new JButton("Show All");
 		cancelButton.setActionCommand(SEARCH_SHOW_ALL_COMMAND);
@@ -182,73 +178,87 @@ public class DatabaseSearchPanel extends JPanel {
 		mainPanel.setLayout(new GridBagLayout());
 
 		// 0
+		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.insets = new Insets(0, 5, 0, 0);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		mainPanel.add(nameLabel, gbc);
+//		gbc.gridx = 0;
+//		gbc.gridy = gridy;
+//		gbc.insets = new Insets(4, 5, 0, 0);
+//		gbc.anchor = GridBagConstraints.LINE_END;
+//		mainPanel.add(nameLabel, gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		gbc.gridwidth = 3;
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = 2;
+		gbc.insets = new Insets(2, 4, 0, 0);
+		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		mainPanel.add(nameSearchTextField, gbc);
 		
+		gridy ++;
 		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.gridy = 0;
-		gbc.weightx = 1.0;
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
 		gbc.insets = new Insets(0, 5, 0, 0);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		mainPanel.add(advancedButton, gbc);
-		
-		// 1
+
+		gridy ++;		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.gridy = 1;
+		gbc.gridy = gridy;
 		gbc.insets = new Insets(2, 5, 0, 0);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		mainPanel.add(dateLabel, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
-		gbc.gridy = 1;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(2, 0, 0, 0);
 		mainPanel.add(startDatePanel, gbc);
 		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = 1;
-		gbc.insets = new Insets(2, 5, 0, 5);
-		mainPanel.add(andLabel, gbc);
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 2;
+//		gbc.gridy = 1;
+//		gbc.insets = new Insets(2, 5, 0, 5);
+//		mainPanel.add(andLabel, gbc);
 
+		gridy ++;
 		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
-		gbc.gridy = 1;
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(2, 0, 0, 0);
 		mainPanel.add(endDatePanel, gbc);			
 		
-		// 2
+		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.gridy = 2;
-		gbc.gridwidth = 2;
+		gbc.gridy = gridy;
 		gbc.insets = new Insets(10, 5, 0, 0);
 		mainPanel.add(searchButton, gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = 2;
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
 		gbc.insets = new Insets(10, 5, 0, 0);
+		gbc.anchor = GridBagConstraints.LINE_START;
 		mainPanel.add(cancelButton, gbc);
 
 		JScrollPane scroll = new JScrollPane(mainPanel);		
-		scroll.setViewportBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED),"Search", TitledBorder.DEFAULT_JUSTIFICATION,
-				TitledBorder.DEFAULT_POSITION, getFont()));
-		setLayout(new BorderLayout());
-		add(scroll, BorderLayout.CENTER);
+//		scroll.setViewportBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED),"Search", TitledBorder.DEFAULT_JUSTIFICATION,
+//				TitledBorder.DEFAULT_POSITION, getFont()));
+		setLayout(new GridBagLayout());
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.insets = new Insets(0, 0, 0, 0);
+		gbc.fill = GridBagConstraints.BOTH;
+		add(scroll, gbc);
 		
 		initConnections();
 	}

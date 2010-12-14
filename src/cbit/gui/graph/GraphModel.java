@@ -59,6 +59,9 @@ public abstract class GraphModel {
 	}
 
 	public void clearSelection() {
+		if (selectedObjects.size() == 0) {
+			return;
+		}
 		Object[] selectedOld = selectedObjects.toArray();
 		selectedObjects.clear();
 		for(Object object : selectedOld) {

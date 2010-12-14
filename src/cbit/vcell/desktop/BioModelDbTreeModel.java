@@ -22,6 +22,7 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
  * Creation date: (2/14/01 3:33:23 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class BioModelDbTreeModel extends javax.swing.tree.DefaultTreeModel implements DatabaseListener {
 	private boolean fieldLatestOnly = false;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -32,7 +33,7 @@ public class BioModelDbTreeModel extends javax.swing.tree.DefaultTreeModel imple
  * @param root javax.swing.tree.TreeNode
  */
 public BioModelDbTreeModel() {
-	super(new BioModelNode("empty",false),true);
+	super(new BioModelNode("not connected",false),true);
 }
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -333,7 +334,7 @@ public void refreshTree() {
 			e.printStackTrace(System.out);
 		}
 	}else{
-		setRoot(new BioModelNode("empty"));
+		setRoot(new BioModelNode("not connected"));
 	}
 }
 /**

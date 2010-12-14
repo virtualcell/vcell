@@ -34,7 +34,7 @@ public class MathModelDbTreeModel extends javax.swing.tree.DefaultTreeModel impl
  * @param root javax.swing.tree.TreeNode
  */
 public MathModelDbTreeModel() {
-	super(new BioModelNode("empty",false),true);
+	super(new BioModelNode("not connected",false),true);
 }
 
 
@@ -362,7 +362,7 @@ public void refreshTree() {
 			e.printStackTrace(System.out);
 		}
 	}else{
-		setRoot(new BioModelNode("empty"));
+		setRoot(new BioModelNode("not connected"));
 	}
 }
 

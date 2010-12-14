@@ -320,7 +320,6 @@ private void createAppComponents(SimulationContext simContext) {
 private void createBioModelFrame() {	
 	getBioModelEditor().setBioModelWindowManager(this);
 	getBioModelEditor().setBioModel(getBioModel());
-	getBioModelEditor().setDocumentManager(getRequestManager().getDocumentManager());
 	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("BioModel", true, false, true, true);
 	if (editorFrame.getUI() instanceof BasicInternalFrameUI) {
 		((BasicInternalFrameUI)editorFrame.getUI()).setNorthPane(null);

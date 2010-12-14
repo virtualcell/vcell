@@ -204,7 +204,8 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 							break;
 						}
 					}
-					getModel().addFeature(inputValue, parentFeature, getModel().getFreeMembraneName());
+					Feature feature = getModel().createFeature(parentFeature);
+					feature.setName(inputValue);
 					break;
 				} 
 				}

@@ -1,19 +1,10 @@
 package cbit.vcell.client.desktop;
 import java.awt.BorderLayout;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
 import javax.swing.UIManager;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.BioModelInfo;
@@ -22,6 +13,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelDbTreePanel;
 import cbit.vcell.desktop.GeometryTreePanel;
@@ -32,7 +24,9 @@ import cbit.vcell.geometry.GeometryInfo;
  * Creation date: (5/24/2004 1:13:39 PM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class DatabaseWindowPanel extends JPanel {
+	public static final String PROPERTY_NAME_SELECTED_DOCUMENT_INFO = "selectedDocumentInfo";
 	private BioModelDbTreePanel ivjBioModelDbTreePanel1 = null;
 	private GeometryTreePanel ivjGeometryTreePanel1 = null;
 	private JTabbedPane ivjJTabbedPane1 = null;
@@ -44,10 +38,8 @@ public class DatabaseWindowPanel extends JPanel {
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private DatabaseWindowManager fieldDatabaseWindowManager = null;
 	private VCDocumentInfo fieldSelectedDocumentInfo = null;
-	
-	private JToggleButton searchToolBarButton = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, ItemListener {
+class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == DatabaseWindowPanel.this.getBioModelDbTreePanel1()) 
 				connEtoC1(e);
@@ -68,74 +60,46 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connPtoP2SetSource();
 			if (evt.getSource() == DatabaseWindowPanel.this.getGeometryTreePanel1() && (evt.getPropertyName().equals("documentManager"))) 
 				connPtoP3SetSource();
-			if (evt.getSource() == DatabaseWindowPanel.this.getGeometryTreePanel1() && (evt.getPropertyName().equals("selectedVersionInfo"))) 
-				connEtoC5(evt);
+			if (evt.getSource() == DatabaseWindowPanel.this.getGeometryTreePanel1() && (evt.getPropertyName().equals("selectedVersionInfo")))
+				currentDocumentInfo();
 			if (evt.getSource() == DatabaseWindowPanel.this.getMathModelDbTreePanel1() && (evt.getPropertyName().equals("selectedVersionInfo"))) 
-				connEtoC6(evt);
+				currentDocumentInfo();
 			if (evt.getSource() == DatabaseWindowPanel.this.getBioModelDbTreePanel1() && (evt.getPropertyName().equals("selectedVersionInfo"))) 
-				connEtoC7(evt);
+				currentDocumentInfo();
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
 			if (e.getSource() == DatabaseWindowPanel.this.getJTabbedPane1()) {
-				connEtoC4(e);
-				final int selectedIndex = getJTabbedPane1().getSelectedIndex();
-				boolean bSelected = true;
-				switch (selectedIndex) {
-					case 0 :
-						bSelected = getBioModelDbTreePanel1().isSearchPanelVisible();
-						break;
-					case 1:
-						bSelected = getMathModelDbTreePanel1().isSearchPanelVisible();
-						break;
-					case 2:
-						bSelected = getGeometryTreePanel1().isSearchPanelVisible();
-						break;
-				}
-				getSearchToolBarButton().setSelected(bSelected);
+				currentDocumentInfo();
 			}			
-		}
-		public void itemStateChanged(ItemEvent e) {
-			if (e.getSource() == getSearchToolBarButton()) {
-				boolean selected = getSearchToolBarButton().isSelected();
-				Border border = null;
-				Border emptyBorder = BorderFactory.createEmptyBorder(0, 0, 0, 4);
-				final int selectedIndex = getJTabbedPane1().getSelectedIndex();
-				if (selected) {
-					border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), emptyBorder);
-				} else {
-					border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED), emptyBorder);
-				}
-				getSearchToolBarButton().setBorder(border);
-				switch (selectedIndex) {
-				case 0 :
-					getBioModelDbTreePanel1().setSearchPanelVisible(selected);
-					if (!selected) {
-						getBioModelDbTreePanel1().search(true);
-					}
-					break;
-				case 1:
-					getMathModelDbTreePanel1().setSearchPanelVisible(selected);
-					if (!selected) {
-						getMathModelDbTreePanel1().search(true);
-					}
-					break;
-				case 2:
-					getGeometryTreePanel1().setSearchPanelVisible(selected);
-					if (!selected) {
-						getGeometryTreePanel1().search(true);
-					}
-					break;
-				}
-			}
 		}
 	}
 
+private boolean bShowMetadata = true;
+private boolean bShowSearchPanel = true;
+private SelectionManager selectionManager = null;
 /**
  * DatabaseWindowPanel constructor comment.
  */
 public DatabaseWindowPanel() {
+	this(true, true);
+}
+
+public DatabaseWindowPanel(boolean bMetadata, boolean bSearchPanel) {
 	super();
+	bShowMetadata = bMetadata;
+	bShowSearchPanel = bSearchPanel;
 	initialize();
+}
+
+public final void setSelectionManager(SelectionManager selectionManager) {
+	this.selectionManager  = selectionManager;
+	if (selectionManager != null) {
+		selectionManager.removePropertyChangeListener(ivjEventHandler);
+		selectionManager.addPropertyChangeListener(ivjEventHandler);
+		getBioModelDbTreePanel1().setSelectionManager(selectionManager);
+		getMathModelDbTreePanel1().setSelectionManager(selectionManager);
+		getGeometryTreePanel1().setSelectionManager(selectionManager);
+	}
 }
 
 /**
@@ -194,85 +158,6 @@ private void connEtoC3(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-/**
- * connEtoC4:  (JTabbedPane1.change.stateChanged(javax.swing.event.ChangeEvent) --> DatabaseWindowPanel.tabbedPaneStateChanged(Ljavax.swing.event.ChangeEvent;)V)
- * @param arg1 javax.swing.event.ChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(javax.swing.event.ChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.currentDocumentInfo();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC5:  (GeometryTreePanel1.selectedVersionInfo --> DatabaseWindowPanel.currentDocumentInfo()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.currentDocumentInfo();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC6:  (MathModelDbTreePanel1.selectedVersionInfo --> DatabaseWindowPanel.currentDocumentInfo()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.currentDocumentInfo();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC7:  (BioModelDbTreePanel1.selectedVersionInfo --> DatabaseWindowPanel.currentDocumentInfo()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.currentDocumentInfo();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connPtoP1SetSource:  (DatabaseWindowPanel.documentManager <--> BioModelDbTreePanel1.documentManager)
@@ -489,7 +374,7 @@ private void dbTreePanelActionPerformed(java.awt.event.ActionEvent e) {
 private BioModelDbTreePanel getBioModelDbTreePanel1() {
 	if (ivjBioModelDbTreePanel1 == null) {
 		try {
-			ivjBioModelDbTreePanel1 = new BioModelDbTreePanel();
+			ivjBioModelDbTreePanel1 = new BioModelDbTreePanel(bShowMetadata);
 			ivjBioModelDbTreePanel1.setName("BioModelDbTreePanel1");
 			// user code begin {1}
 			// user code end
@@ -576,7 +461,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 private MathModelDbTreePanel getMathModelDbTreePanel1() {
 	if (ivjMathModelDbTreePanel1 == null) {
 		try {
-			ivjMathModelDbTreePanel1 = new MathModelDbTreePanel();
+			ivjMathModelDbTreePanel1 = new MathModelDbTreePanel(bShowMetadata);
 			ivjMathModelDbTreePanel1.setName("MathModelDbTreePanel1");
 			// user code begin {1}
 			// user code end
@@ -627,7 +512,6 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP3SetTarget();
-	getSearchToolBarButton().addItemListener(ivjEventHandler);
 }
 
 /**
@@ -638,31 +522,21 @@ private void initialize() {
 	try {
 		setLayout(new java.awt.BorderLayout());
 		setSize(662, 657);
-		JToolBar toolBar = new JToolBar();
-		toolBar.setFloatable(false);
-		toolBar.add(getSearchToolBarButton());
-		add(toolBar, BorderLayout.PAGE_START);
+//		JToolBar toolBar = new JToolBar();
+//		toolBar.setFloatable(false);
+//		toolBar.add(getSearchToolBarButton());
+//		add(toolBar, BorderLayout.PAGE_START);
 		add(getJTabbedPane1(), BorderLayout.CENTER);
 		
-		getBioModelDbTreePanel1().setSearchPanelVisible(false);
-		getMathModelDbTreePanel1().setSearchPanelVisible(false);
-		getGeometryTreePanel1().setSearchPanelVisible(false);
+		if (!bShowSearchPanel) {
+			getBioModelDbTreePanel1().expandSearchPanel(false);
+			getMathModelDbTreePanel1().expandSearchPanel(false);
+			getGeometryTreePanel1().expandSearchPanel(false);
+		}
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-}
-
-private JToggleButton getSearchToolBarButton() {
-	if (searchToolBarButton == null) {
-		searchToolBarButton = new JToggleButton("Search");
-		Icon searchIcon = new ImageIcon(getClass().getResource("/icons/search_icon.gif"));
-		searchToolBarButton.setIcon(searchIcon);
-		Border emptyBorder = BorderFactory.createEmptyBorder(0, 0, 0, 4);
-		Border border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED), emptyBorder);
-		getSearchToolBarButton().setBorder(border);
-	}
-	return searchToolBarButton;
 }
 
 /**
@@ -735,7 +609,8 @@ public void setLatestOnly(boolean latestOnly) {
 private void setSelectedDocumentInfo(VCDocumentInfo selectedDocumentInfo) {
 	VCDocumentInfo oldValue = fieldSelectedDocumentInfo;
 	fieldSelectedDocumentInfo = selectedDocumentInfo;
-	firePropertyChange("selectedDocumentInfo", oldValue, selectedDocumentInfo);
+	firePropertyChange(PROPERTY_NAME_SELECTED_DOCUMENT_INFO, oldValue, selectedDocumentInfo);
+	selectionManager.setSelectedObjects(new Object[] {fieldSelectedDocumentInfo});
 }
 
 }

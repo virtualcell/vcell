@@ -26,15 +26,15 @@ import javax.swing.tree.TreeSelectionModel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
-import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
+import cbit.vcell.client.desktop.DatabaseWindowPanel;
+import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
@@ -45,12 +45,13 @@ import cbit.vcell.geometry.GeometryInfo;
  * Creation date: (11/28/00 11:34:01 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class GeometryTreePanel extends JPanel {
 	private JTree ivjJTree1 = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private DocumentManager ivjDocumentManager = null;
 	private JScrollPane ivjJScrollPane1 = null;
-	private org.vcell.util.document.VersionInfo fieldSelectedVersionInfo = null;
+	private VersionInfo fieldSelectedVersionInfo = null;
 	private boolean ivjConnPtoP4Aligning = false;
 	private TreeSelectionModel ivjselectionModel1 = null;
 	private JLabel ivjJLabel1 = null;
@@ -61,26 +62,20 @@ public class GeometryTreePanel extends JPanel {
 	private JSeparator ivjJSeparator1 = null;
 	private JSeparator ivjJSeparator2 = null;
 	protected transient java.awt.event.ActionListener aActionListener = null;
-	private GeometryCellRenderer ivjgeometryCellRenderer = null;
 	private boolean fieldPopupMenuDisabled = false;
 	private JPopupMenu ivjGeometryPopupMenu = null;
 	private GeometryDbTreeModel ivjGeometryDbTreeModel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private GeometryMetaDataPanel ivjgeometryMetaDataPanel = null;
-	private JPanel ivjJPanel1 = null;
-	private org.vcell.util.document.VersionInfo ivjselectedVersionInfo1 = null;
-	private JLabel ivjJLabel2 = null;
-	private JPanel ivjJPanel2 = null;
-	private JScrollPane ivjJScrollPane2 = null;
-	private JSplitPane ivjJSplitPane1 = null;
+	private VersionInfo ivjselectedVersionInfo1 = null;
+	private JPanel bottomPanel = null;
 	private JMenuItem ivjJMenuItemPermission = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private JLabel ivjJLabel3 = null;
-	private JPanel ivjJPanel3 = null;
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private JPanel topPanel = null;
 	private JMenuItem ivjJMenuItemGeomRefs = null;
 	private DatabaseSearchPanel dbSearchPanel = null;
 
-class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
+private class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemCreateNewGeometry()) 
 				refireActionPerformed(e);
@@ -132,6 +127,9 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 				connPtoP3SetTarget();
 			if (evt.getSource() == GeometryTreePanel.this && (evt.getPropertyName().equals("documentManager"))) 
 				connEtoM11(evt);
+			if (evt.getSource() == selectionManager) {
+				setSelectedObject();
+			}
 		};
 		public void treeNodesChanged(javax.swing.event.TreeModelEvent e) {
 			if (e.getSource() == GeometryTreePanel.this.getGeometryDbTreeModel()) 
@@ -145,14 +143,38 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 				connEtoC1();
 		};
 	};
+	
+	private boolean bShowMetadata = true;
+	private SelectionManager selectionManager = null;
+	/**
+	 * BioModelTreePanel constructor comment.
+	 */
+	public GeometryTreePanel() {
+		this(true);
+	}
 
-/**
- * BioModelTreePanel constructor comment.
- */
-public GeometryTreePanel() {
-	super();
-	initialize();
-}
+	public GeometryTreePanel(boolean bMetadata) {
+		super();
+		this.bShowMetadata = bMetadata;
+		initialize();
+	}
+	
+	public void setSelectedObject() {
+		Object[] selectedObjects = selectionManager.getSelectedObjects();
+		if (selectedObjects == null || selectedObjects.length == 0 || selectedObjects.length > 1) {
+			getJTree1().clearSelection();
+		} else {
+			if (selectedObjects[0] instanceof GeometryInfo) {
+				BioModelNode node = ((BioModelNode)getGeometryDbTreeModel().getRoot()).findNodeByUserObject(selectedObjects[0]);
+				if (node != null) {
+					getJTree1().setSelectionPath(new TreePath(node.getPath()));
+				}
+			} else {
+				getJTree1().clearSelection();
+			}
+		}
+		
+	}
 
 /**
  * Comment
@@ -294,26 +316,6 @@ private void connEtoC13(DatabaseEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC14:  (GeometryTreePanel.initialize() --> GeometryTreePanel.splitPaneResizeWeight()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC14() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.splitPaneResizeWeight();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC15:  (JMenuItemGeomRefs.action.actionPerformed(java.awt.event.ActionEvent) --> GeometryTreePanel.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
@@ -616,47 +618,6 @@ private void connEtoM5(VersionInfo value) {
 	}
 }
 
-
-/**
- * connEtoM6:  (geometryCellRenderer.this --> JTree1.cellRenderer)
- * @param value cbit.vcell.desktop.GeometryCellRenderer
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(GeometryCellRenderer value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getgeometryCellRenderer() != null)) {
-			getJTree1().setCellRenderer(getgeometryCellRenderer());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM8:  (DocumentManager.this --> geometryCellRenderer.this)
- * @param value cbit.vcell.clientdb.DocumentManager
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(DocumentManager value) {
-	try {
-		// user code begin {1}
-		// user code end
-		setgeometryCellRenderer(this.createCellRenderer());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 /**
  * connPtoP1SetTarget:  (JTree1.model <--> TreeModel.this)
  */
@@ -806,7 +767,7 @@ private void connPtoP4SetTarget() {
 /**
  * Comment
  */
-private GeometryCellRenderer createCellRenderer() {
+private GeometryCellRenderer getGeometryCellRenderer() {
 	if (getDocumentManager()!=null){
 		return new GeometryCellRenderer(getDocumentManager().getUser());
 	}else{
@@ -893,18 +854,6 @@ public DocumentManager getDocumentManager() {
 	// user code end
 	return ivjDocumentManager;
 }
-
-/**
- * Return the geometryCellRenderer property value.
- * @return cbit.vcell.desktop.GeometryCellRenderer
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private GeometryCellRenderer getgeometryCellRenderer() {
-	// user code begin {1}
-	// user code end
-	return ivjgeometryCellRenderer;
-}
-
 
 /**
  * Return the TreeModel property value.
@@ -1002,52 +951,6 @@ private javax.swing.JLabel getJLabel1() {
 	}
 	return ivjJLabel1;
 }
-
-
-/**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel2() {
-	if (ivjJLabel2 == null) {
-		try {
-			ivjJLabel2 = new javax.swing.JLabel();
-			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Selected Geometry Summary");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel2;
-}
-
-/**
- * Return the JLabel3 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel3() {
-	if (ivjJLabel3 == null) {
-		try {
-			ivjJLabel3 = new javax.swing.JLabel();
-			ivjJLabel3.setName("JLabel3");
-			ivjJLabel3.setText("Geometry Database");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel3;
-}
-
 
 /**
  * Return the JMenuItemDelete property value.
@@ -1187,46 +1090,22 @@ private javax.swing.JMenuItem getJMenuItemPermission() {
 }
 
 /**
- * Return the JPanel1 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel1() {
-	if (ivjJPanel1 == null) {
-		try {
-			ivjJPanel1 = new javax.swing.JPanel();
-			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setLayout(new java.awt.BorderLayout());
-			ivjJPanel1.setBounds(0, 0, 192, 43);
-			getJPanel1().add(getgeometryMetaDataPanel(), "Center");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel1;
-}
-
-/**
  * Return the JPanel2 property value.
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel2() {
-	if (ivjJPanel2 == null) {
+private javax.swing.JPanel getBottomPanel() {
+	if (bottomPanel == null) {
 		try {
-			ivjJPanel2 = new javax.swing.JPanel();
-			ivjJPanel2.setName("JPanel2");
-			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
-			ivjJPanel2.setMinimumSize(new java.awt.Dimension(171, 300));
+			bottomPanel = new javax.swing.JPanel();
+			bottomPanel.setName("JPanel2");
+			bottomPanel.setLayout(new java.awt.GridBagLayout());
+			bottomPanel.setMinimumSize(new java.awt.Dimension(171, 300));
 
 			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
 			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 0;
 			constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel2().add(getJLabel2(), constraintsJLabel2);
+			bottomPanel.add(new JLabel("Selected Geometry Summary"), constraintsJLabel2);
 
 			java.awt.GridBagConstraints constraintsJScrollPane2 = new java.awt.GridBagConstraints();
 			constraintsJScrollPane2.gridx = 0; constraintsJScrollPane2.gridy = 1;
@@ -1234,7 +1113,7 @@ private javax.swing.JPanel getJPanel2() {
 			constraintsJScrollPane2.weightx = 1.0;
 			constraintsJScrollPane2.weighty = 1.0;
 			constraintsJScrollPane2.insets = new java.awt.Insets(0, 4, 4, 4);
-			getJPanel2().add(getJScrollPane2(), constraintsJScrollPane2);
+			bottomPanel.add(getgeometryMetaDataPanel(), constraintsJScrollPane2);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1243,7 +1122,7 @@ private javax.swing.JPanel getJPanel2() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel2;
+	return bottomPanel;
 }
 
 /**
@@ -1251,13 +1130,13 @@ private javax.swing.JPanel getJPanel2() {
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel3() {
-	if (ivjJPanel3 == null) {
+private javax.swing.JPanel getTopPanel() {
+	if (topPanel == null) {
 		try {
-			ivjJPanel3 = new javax.swing.JPanel();
-			ivjJPanel3.setName("JPanel3");
-			ivjJPanel3.setLayout(new java.awt.GridBagLayout());
-			ivjJPanel3.setMinimumSize(new java.awt.Dimension(196, 450));
+			topPanel = new javax.swing.JPanel();
+			topPanel.setName("JPanel3");
+			topPanel.setLayout(new java.awt.GridBagLayout());
+			topPanel.setMinimumSize(new java.awt.Dimension(196, 450));
 
 			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 			constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 1;
@@ -1265,12 +1144,12 @@ private javax.swing.JPanel getJPanel3() {
 			constraintsJScrollPane1.weightx = 1.0;
 			constraintsJScrollPane1.weighty = 1.0;
 			constraintsJScrollPane1.insets = new java.awt.Insets(0, 4, 4, 4);
-			getJPanel3().add(getJScrollPane1(), constraintsJScrollPane1);
+			topPanel.add(getJScrollPane1(), constraintsJScrollPane1);
 
 			java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
 			constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 0;
 			constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getJLabel3(), constraintsJLabel3);
+			topPanel.add(new JLabel("Geometry Database"), constraintsJLabel3);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1279,7 +1158,7 @@ private javax.swing.JPanel getJPanel3() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJPanel3;
+	return topPanel;
 }
 
 /**
@@ -1303,30 +1182,6 @@ private javax.swing.JScrollPane getJScrollPane1() {
 	}
 	return ivjJScrollPane1;
 }
-
-
-/**
- * Return the JScrollPane2 property value.
- * @return javax.swing.JScrollPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane2() {
-	if (ivjJScrollPane2 == null) {
-		try {
-			ivjJScrollPane2 = new javax.swing.JScrollPane();
-			ivjJScrollPane2.setName("JScrollPane2");
-			getJScrollPane2().setViewportView(getJPanel1());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJScrollPane2;
-}
-
 
 /**
  * Return the JSeparator1 property value.
@@ -1369,33 +1224,6 @@ private javax.swing.JSeparator getJSeparator2() {
 		}
 	}
 	return ivjJSeparator2;
-}
-
-
-/**
- * Return the JSplitPane1 property value.
- * @return javax.swing.JSplitPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSplitPane getJSplitPane1() {
-	if (ivjJSplitPane1 == null) {
-		try {
-			ivjJSplitPane1 = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT);
-			ivjJSplitPane1.setName("JSplitPane1");
-			ivjJSplitPane1.setDividerLocation(350);
-			ivjJSplitPane1.setOneTouchExpandable(true);
-			ivjJSplitPane1.setContinuousLayout(true);
-			getJSplitPane1().add(getJPanel2(), "bottom");
-			getJSplitPane1().add(getJPanel3(), "top");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSplitPane1;
 }
 
 /**
@@ -1554,12 +1382,21 @@ private void initialize() {
 		setMinimumSize(new java.awt.Dimension(198, 148));
 
 		add(getDatabaseSearchPanel(), BorderLayout.NORTH);
-		add(getJSplitPane1(), BorderLayout.CENTER);
+		if (bShowMetadata) {
+			JSplitPane splitPane = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT);			
+			splitPane.setDividerLocation(350);
+			splitPane.setResizeWeight(0.6);
+			splitPane.setBottomComponent(getBottomPanel());
+			splitPane.setTopComponent(getTopPanel());		
+			add(splitPane, BorderLayout.CENTER);
+		} else {
+			add(getTopPanel(), BorderLayout.CENTER);
+		}
+			
 
 		initConnections();
 		connEtoM2();
 		connEtoC11();
-		connEtoC14();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -1611,6 +1448,7 @@ public void refresh(ArrayList<SearchCriterion> newFilterList) throws DataAccessE
  */
 private void refresh() throws DataAccessException {
 	getGeometryDbTreeModel().refreshTree();
+	getJTree1().setCellRenderer(getGeometryCellRenderer());
 	expandTreeToUser();
 }
 
@@ -1643,30 +1481,8 @@ public void setDocumentManager(DocumentManager newValue) {
 			connEtoM1(ivjDocumentManager);
 			connEtoM3(ivjDocumentManager);
 			connEtoC12(ivjDocumentManager);
-			connEtoM8(ivjDocumentManager);
+			getJTree1().setCellRenderer(getGeometryCellRenderer());
 			firePropertyChange("documentManager", oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-/**
- * Set the geometryCellRenderer to a new value.
- * @param newValue cbit.vcell.desktop.GeometryCellRenderer
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setgeometryCellRenderer(GeometryCellRenderer newValue) {
-	if (ivjgeometryCellRenderer != newValue) {
-		try {
-			ivjgeometryCellRenderer = newValue;
-			connEtoM6(ivjgeometryCellRenderer);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1781,14 +1597,6 @@ private void setselectionModel1(javax.swing.tree.TreeSelectionModel newValue) {
 /**
  * Comment
  */
-private void splitPaneResizeWeight() {
-	BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
-}
-
-
-/**
- * Comment
- */
 private void treeSelection() {
 	TreeSelectionModel treeSelectionModel = getselectionModel1();
 	TreePath treePath = treeSelectionModel.getSelectionPath();
@@ -1822,7 +1630,7 @@ private void treeSelection() {
 
 private DatabaseSearchPanel getDatabaseSearchPanel() {
 	if (dbSearchPanel == null) {
-		dbSearchPanel = new DatabaseSearchPanel(VCDocument.GEOMETRY_DOC);
+		dbSearchPanel = new DatabaseSearchPanel();
 	}
 	return dbSearchPanel;
 }
@@ -1837,12 +1645,16 @@ public void search(boolean bShowAll) {
 	}
 }
 
-public void setSearchPanelVisible(boolean bVisible) {
-	getDatabaseSearchPanel().setVisible(bVisible);
+
+public void expandSearchPanel(boolean bExpand) {
+	getDatabaseSearchPanel().expand(bExpand);
 }
 
-public boolean isSearchPanelVisible() {
-	return getDatabaseSearchPanel().isVisible();
+public final void setSelectionManager(SelectionManager selectionManager) {
+	this.selectionManager = selectionManager;
+	if (selectionManager != null) {
+		selectionManager.removePropertyChangeListener(ivjEventHandler);
+		selectionManager.addPropertyChangeListener(ivjEventHandler);
+	}
 }
-
 }

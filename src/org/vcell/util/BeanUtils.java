@@ -139,28 +139,6 @@ public final class BeanUtils {
 		}
 	}
 
-	public static void attemptResizeWeight(JSplitPane pane, double weight) {
-		// not supported on all platforms
-		// not supported by JRE's 1.2.x and earlier
-		// when not supported, pane will stay unchanged
-		Method[] ms = pane.getClass().getMethods();
-		Method m = null;
-		for (int i = 0; i < ms.length; i++){
-			if (ms[i].getName().equals("setResizeWeight")) {
-				m = ms[i];
-				break;
-			}
-		}
-		if (m != null) {
-			try {
-				m.invoke(pane, new Object[] {new Double(weight)});
-			} catch (Exception e) {
-				System.out.println(e);
-				e.printStackTrace(System.out);
-			}
-		}
-	}
-
 	public static void centerOnComponent(Component c, Component reference) {
 		if (c == null) {
 			return;

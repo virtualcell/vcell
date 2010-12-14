@@ -8,8 +8,6 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.awt.event.MouseAdapter;
@@ -121,17 +119,17 @@ public class CollapsiblePanel extends JPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				bExpanded = !bExpanded;
-				expand();				
+				toggleExpand();
 			}			
 		});
 		addHierarchyListener(new HierarchyListener() {			
 			public void hierarchyChanged(HierarchyEvent e) {
-				expand();
+				toggleExpand();
 			}
 		});
 	}
 	
-	private void expand() {
+	private void toggleExpand() {
 		if (!isVisible()) {
 			return;
 		}
@@ -140,6 +138,14 @@ public class CollapsiblePanel extends JPanel {
 			child.setVisible(bExpanded);
 		}
 		revalidate();
+	}
+	
+	public void expand(boolean bexpand) {
+		if (bExpanded == bexpand) {
+			return;
+		}
+		bExpanded = bexpand;
+		toggleExpand();
 	}
 	
 	@Override

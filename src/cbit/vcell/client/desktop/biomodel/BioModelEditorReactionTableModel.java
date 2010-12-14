@@ -51,7 +51,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		ArrayList<ReactionStep> reactionStepList = new ArrayList<ReactionStep>();
 		if (getModel() != null){
 			for (ReactionStep rs : getModel().getReactionSteps()){
-				if (searchText == null || searchText.length() == 0 || rs.getName().startsWith(searchText)) {
+				if (searchText == null || searchText.length() == 0 || rs.getName().indexOf(searchText) >= 0
+						|| new ReactionEquation(rs).toString().indexOf(searchText) >= 0) {
 					reactionStepList.add(rs);
 				}
 			}
