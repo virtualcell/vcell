@@ -444,20 +444,23 @@ private void initialize() {
 		setName("ApplicationEditor");
 		setLayout(new BorderLayout());
 		
-		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		
-		JSplitPane leftSplitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		leftSplitPanel.setTopComponent(getTreePanel());
-		
+		JSplitPane leftSplitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);		
 		JTabbedPane tabbedPane = new JTabbedPane();
 		databaseWindowPanel = new DatabaseWindowPanel(false, false);
 		tabbedPane.addTab("VCell Database", databaseWindowPanel);
-		leftSplitPanel.add(tabbedPane);
+		
+		getTreePanel().setMinimumSize(new java.awt.Dimension(198, 148));
+		leftSplitPanel.setTopComponent(getTreePanel());
+		tabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));
+		leftSplitPanel.setBottomComponent(tabbedPane);
 		leftSplitPanel.setResizeWeight(0.5);
 		leftSplitPanel.setDividerLocation(300);
+		leftSplitPanel.setOneTouchExpandable(true);
 		
-		splitPane.setLeftComponent(leftSplitPanel);
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		splitPane.setOneTouchExpandable(true);
 		splitPane.setResizeWeight(0.3);
+		splitPane.setLeftComponent(leftSplitPanel);
 		splitPane.setRightComponent(getBioModelEditorModelPanel());
 		
 		add(splitPane, BorderLayout.CENTER);		
