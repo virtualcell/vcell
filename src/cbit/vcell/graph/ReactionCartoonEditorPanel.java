@@ -64,7 +64,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private ReactionCartoonTool reactionCartoonTool = null;
 
 	private boolean bFloatingRequested = false;
-	private JButton floatRequestButton = null;
+	private JToolBarToggleButton floatRequestButton = null;
 	
 	public ReactionCartoonEditorPanel() {
 		super();
@@ -497,11 +497,13 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return zoomInButton;
 	}
 	
-	private JButton getFloatRequestButton() {
+	private JToolBarToggleButton getFloatRequestButton() {
 		if (floatRequestButton == null) {
 			try {
-				floatRequestButton = new JButton("\u21b1");
+				floatRequestButton = new JToolBarToggleButton();
+				floatRequestButton.setText("\u21b1");
 				floatRequestButton.setName("FloatingButton");
+				floatRequestButton.setFont(floatRequestButton.getFont().deriveFont(Font.BOLD));
 				floatRequestButton.setToolTipText("\u21b1 Float");
 				floatRequestButton.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
 				floatRequestButton.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
