@@ -1,8 +1,6 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -12,17 +10,12 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Hashtable;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
@@ -32,29 +25,24 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.plot.Plot2DPanel;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.batchrun.BatchRunXmlReader;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.ROIImagePanel;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.xml.XmlParseException;
 
+@SuppressWarnings("serial")
 public class EstParams_TwoDiffComponentPanel extends JPanel {
 	
 	
@@ -274,9 +262,6 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 //					}
 					columncounter++;
 				}
-				boolean hasSimData = false;
-				
-				
 				DataSource[] selectedRowDataSourceArr = allDataHash.get(anaParams[0]);//anaParams[0] is the key in allDataHash to get the dataSource[]:exp & sim
 				if(selectedRowDataSourceArr != null)
 				{   //referenceData is the exp data
@@ -432,7 +417,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 				String choice = DialogUtils.showWarningDialog(this, paramMsg, new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
 				if(choice == UserMessage.OPTION_OK)
 				{
-					FRAPStudy fStudy = frapWorkspace.getWorkingFrapStudy();
+					frapWorkspace.getWorkingFrapStudy();
 					getPureDiffusionPanel().setParameterValues(parameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess(),
 															   parameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess(), 
 															   parameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess(),

@@ -1,19 +1,14 @@
 package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Label;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Hashtable;
@@ -35,7 +30,6 @@ import javax.swing.SwingUtilities;
 import org.vcell.util.FileUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.ZEnforcer;
 
 import cbit.vcell.client.task.AsynchClientTask;
@@ -45,6 +39,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
  * To play a movie with Java Media Framework. Used in VFrap to show the
  * QuickTime movie of both exp and sim data.
  */
+@SuppressWarnings("serial")
 public class JMFPlayer extends JPanel implements ControllerListener {
 
 	/** The player object */

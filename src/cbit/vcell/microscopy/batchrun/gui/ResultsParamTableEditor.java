@@ -8,19 +8,15 @@ import java.beans.PropertyChangeSupport;
 import java.util.EventObject;
 
 import javax.swing.AbstractCellEditor;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.DescriptiveStatistics;
-import org.vcell.util.gui.HyperLinkLabel;
 
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 
+@SuppressWarnings("serial")
 public class ResultsParamTableEditor extends AbstractCellEditor implements TableCellEditor, ActionListener
 
 {

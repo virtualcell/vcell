@@ -3,7 +3,6 @@ package cbit.vcell.microscopy.batchrun.gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Cursor;
-import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -12,7 +11,6 @@ import java.util.Hashtable;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
@@ -29,6 +27,7 @@ import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 
+@SuppressWarnings("serial")
 public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListener
 {
 	public final static String DISPLAY_PARAM_ID = "DISPLAY_PARAM";
@@ -184,7 +183,7 @@ public class BatchRunDisplayPanel extends JPanel implements PropertyChangeListen
 		}
 		else if(evt.getPropertyName().equals(JobStatusPanel.STATUSPANEL_PROPERTY_CHANGE))
 		{
-			((VirtualFrapBatchRunFrame)parentFrame).setViewJobMenuSelected(false);
+			(parentFrame).setViewJobMenuSelected(false);
 		}
 	}
 	

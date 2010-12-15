@@ -1,6 +1,5 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.table.AbstractTableModel;
@@ -8,11 +7,11 @@ import javax.swing.table.AbstractTableModel;
 import org.vcell.util.DescriptiveStatistics;
 
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptimization;
+import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.opt.Parameter;
 
+@SuppressWarnings("serial")
 public class BatchRunResultsStatTableModel extends AbstractTableModel 
 {
 	public final static int NUM_COLUMNS = 7;
@@ -90,7 +89,7 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
     	{
     		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
     		{
-    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
+    			if(stat[row][col-1] != FRAPOptimizationUtils.largeNumber)
     			{
     				return stat[row][col-1];//stat array doesn't have name at the first column
     			}
@@ -100,7 +99,7 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
     	{
     		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
     		{
-    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
+    			if(stat[row][col-1] != FRAPOptimizationUtils.largeNumber)
     			{
     				return stat[row][col-1];//stat array doesn't have name at the first column
     			}
@@ -112,7 +111,7 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
     		{
 	    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
 	    		{
-	    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
+	    			if(stat[row][col-1] != FRAPOptimizationUtils.largeNumber)
 	    			{
 	    				return stat[row][col-1];//stat array doesn't have name at the first column
 	    			}
@@ -126,7 +125,7 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
     		
 	    		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
 	    		{
-	    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
+	    			if(stat[row][col-1] != FRAPOptimizationUtils.largeNumber)
 	    			{
 	    				return stat[row][col-1];//stat array doesn't have name at the first column
 	    			}
@@ -137,7 +136,7 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
     	{
     		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
     		{
-    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
+    			if(stat[row][col-1] != FRAPOptimizationUtils.largeNumber)
     			{
     				return stat[row][col-1];//stat array doesn't have name at the first column
     			}
@@ -147,7 +146,7 @@ public class BatchRunResultsStatTableModel extends AbstractTableModel
     	{
     		if(ROW_IDX_AVERAGE <= row && row <= ROW_IDX_MAX )
     		{
-    			if(stat[row][col-1] != FRAPOptimization.largeNumber)
+    			if(stat[row][col-1] != FRAPOptimizationUtils.largeNumber)
     			{
     				return stat[row][col-1];//stat array doesn't have name at the first column
     			}

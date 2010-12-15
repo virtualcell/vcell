@@ -1,38 +1,18 @@
 package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.util.Hashtable;
 
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.undo.AbstractUndoableEdit;
-import javax.swing.undo.CannotUndoException;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ZEnforcer;
-
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.FRAPDataPanel;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.simdata.DataSetControllerImpl;
 
+@SuppressWarnings("serial")
 public class BatchRunROIImgPanel extends JPanel implements PropertyChangeListener
 {
 	ROITopTitlePanel topPanel = null;

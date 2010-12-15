@@ -1,34 +1,20 @@
 package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.wizard.WizardPanelDescriptor;
 
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
-import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VariableType;
-
-import org.vcell.util.UserCancelException;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.wizard.WizardPanelDescriptor;
 
 public class MultiFileDescriptor extends WizardPanelDescriptor {
     
@@ -131,7 +117,7 @@ public class MultiFileDescriptor extends WizardPanelDescriptor {
     {
     	//create AsynchClientTask arraylist
 		ArrayList<AsynchClientTask> taskArrayList = new ArrayList<AsynchClientTask>();
-		WizardPanelDescriptor newDescriptor = getWizardModel().getCurrentPanelDescriptor();
+		getWizardModel().getCurrentPanelDescriptor();
 		
 		return taskArrayList;
     }

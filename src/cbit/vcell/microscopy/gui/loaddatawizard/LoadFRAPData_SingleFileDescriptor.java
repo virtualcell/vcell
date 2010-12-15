@@ -2,8 +2,6 @@ package cbit.vcell.microscopy.gui.loaddatawizard;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -20,12 +18,10 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.WizardPanelDescriptor;
 
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
@@ -186,6 +182,7 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 		this.frapWorkspace = frapWorkspace;
 	}
 	
+	@SuppressWarnings("serial")
 	class ScalePanel extends JPanel implements ActionListener
 	{
 		JRadioButton noScaleButton = new JRadioButton("Use original intensity value");

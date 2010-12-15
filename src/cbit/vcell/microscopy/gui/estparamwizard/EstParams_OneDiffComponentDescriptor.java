@@ -3,17 +3,14 @@ package cbit.vcell.microscopy.gui.estparamwizard;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
-import cbit.vcell.opt.Parameter;
-import cbit.vcell.parser.ExpressionException;
-
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.WizardPanelDescriptor;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.opt.Parameter;
 
 public class EstParams_OneDiffComponentDescriptor extends WizardPanelDescriptor
 {
@@ -37,7 +34,7 @@ public class EstParams_OneDiffComponentDescriptor extends WizardPanelDescriptor
     	}catch(Exception ex)
     	{
     		ex.printStackTrace(System.out);
-    		DialogUtils.showErrorDialog(((EstParams_OneDiffComponentPanel)getPanelComponent()), "Error getting parameters for diffusion with one diffusing component model.");
+    		DialogUtils.showErrorDialog((getPanelComponent()), "Error getting parameters for diffusion with one diffusing component model.");
     	}
 	}
     

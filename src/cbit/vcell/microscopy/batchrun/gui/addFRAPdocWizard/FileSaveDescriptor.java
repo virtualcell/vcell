@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import javax.swing.JFileChooser;
-
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
@@ -14,26 +12,20 @@ import org.vcell.wizard.WizardPanelDescriptor;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
-import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.gui.PDEPlotControlPanel.DataIdentifierFilter;
 
 public class FileSaveDescriptor extends WizardPanelDescriptor {
 
     public static final String IDENTIFIER = "BATCHRUN_SAVE_FILE";
     //    private FRAPStudy localFrapStudy = null;
     private FileSavePanel saveFilePanel = new FileSavePanel();
-    private boolean isFileLoaded = false;
     private FRAPBatchRunWorkspace batchRunWorkspace = null;
     private LocalWorkspace localWorkspace = null;
    
@@ -69,9 +61,6 @@ public class FileSaveDescriptor extends WizardPanelDescriptor {
 		
     	if(saveFilePanel.getFileName().length() > 0)
     	{
-    		final String fileStr = saveFilePanel.getFileName();
-    		final String SAVING_MESSAGE = "Saving "+fileStr+"...";
-    		
     		AsynchClientTask beforeSaveTask = new AsynchClientTask("Saving file ...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) 
     		{
     			public void run(Hashtable<String, Object> hashTable) throws Exception
@@ -149,7 +138,7 @@ public class FileSaveDescriptor extends WizardPanelDescriptor {
     		{
     			public void run(Hashtable<String, Object> hashTable) throws Exception
     			{
-    				File outFile = (File)hashTable.get(FRAPStudyPanel.SAVE_FILE_NAME_KEY);
+    				hashTable.get(FRAPStudyPanel.SAVE_FILE_NAME_KEY);
     			}
     		};
 

@@ -4,18 +4,15 @@ import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.VFRAPPreference;
-import cbit.vcell.microscopy.gui.FRAPDataPanel;
-import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.WizardPanelDescriptor;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.VFRAPPreference;
+import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 
 public class DefineROI_BleachedROIDescriptor extends WizardPanelDescriptor {
     
@@ -45,11 +42,11 @@ public class DefineROI_BleachedROIDescriptor extends WizardPanelDescriptor {
     	((JPanel)getPanelComponent()).removeAll();
     	((JPanel)getPanelComponent()).add(imgPanel);
     	((DefineROI_Panel)imgPanel).adjustComponents(VFrap_OverlayEditorPanelJAI.DEFINE_BLEACHEDROI);
-    	((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().setROIAssistVisible(false);
+    	(((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().setROIAssistVisible(false);
     	if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 		   ((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getNonzeroPixelsCount()<1)
 		{
-			((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+			(((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
 		}
     }
     
@@ -80,10 +77,10 @@ public class DefineROI_BleachedROIDescriptor extends WizardPanelDescriptor {
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				if(((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().isROIAssistVisible() &&
+				if((((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().isROIAssistVisible() &&
 				   ((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getNonzeroPixelsCount()<1)
 				{
-					DialogUtils.showWarningDialog(((DefineROI_Panel)imgPanel), "Bleached ROI is not applied. Please complete the following actions to apply: \n \'Resolve...\' -> \'Fill Voids\' -> \'Apply and Close\'. ");
+					DialogUtils.showWarningDialog((imgPanel), "Bleached ROI is not applied. Please complete the following actions to apply: \n \'Resolve...\' -> \'Fill Voids\' -> \'Apply and Close\'. ");
 				}
 			}
 		};

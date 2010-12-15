@@ -1,21 +1,18 @@
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 
-import cbit.vcell.geometry.gui.AddShapeJPanel;
 import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 
+@SuppressWarnings("serial")
 public class DefineROITopTitlePanel extends JPanel
 {
 	public URL arrowUrl = getClass().getResource("/images/arrow.gif");

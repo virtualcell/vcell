@@ -18,6 +18,7 @@ import javax.swing.JToolBar;
  */
 
 
+@SuppressWarnings("serial")
 public class ToolBar extends JToolBar {
     // the image of the shortcut button appearance
 	public final static int BUT_NEW = 0;

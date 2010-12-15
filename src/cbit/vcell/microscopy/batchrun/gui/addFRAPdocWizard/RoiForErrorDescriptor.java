@@ -3,15 +3,10 @@ package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.ModelTypesDescriptor;
-import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
-
-import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 
 public class RoiForErrorDescriptor extends WizardPanelDescriptor{
     

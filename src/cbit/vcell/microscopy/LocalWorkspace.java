@@ -2,17 +2,18 @@ package cbit.vcell.microscopy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.client.server.DataSetControllerProvider;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.DataSetController;
-import org.vcell.util.document.User;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.LocalDataSetController;
@@ -57,8 +58,9 @@ public class LocalWorkspace {
 		return new KeyValue(LAST_GENERATED_KEY+"");
 	}
 
-	public static String getFinitVolumeExecutableFullPathname(){
-		return URLDecoder.decode(LocalWorkspace.class.getResource(FINITE_VOLUME_EXECUTABLE_CLASSPATH).getFile());
+	public static String getFinitVolumeExecutableFullPathname() throws UnsupportedEncodingException
+	{
+		return URLDecoder.decode(LocalWorkspace.class.getResource(FINITE_VOLUME_EXECUTABLE_CLASSPATH).getFile(), "UTF-8");
 
 	}
 	/**

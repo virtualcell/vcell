@@ -1,21 +1,21 @@
 package cbit.vcell.microscopy.gui;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.text.NumberFormat;
+
+import javax.swing.BorderFactory;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.Border;
-import javax.swing.*;
 
 import org.vcell.util.DescriptiveStatistics;
 
-import cbit.vcell.microscopy.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.batchrun.gui.BatchRunResultsParamTableModel;
-
-import java.awt.*;
-import java.text.NumberFormat;
 
 /**
  */
+@SuppressWarnings("serial")
 public class NumericTableCellRenderer  extends DefaultTableCellRenderer {
 	
 	private NumberFormat format;

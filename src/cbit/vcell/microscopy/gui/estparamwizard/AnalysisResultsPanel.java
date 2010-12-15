@@ -1,14 +1,12 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-
 import javax.swing.BoxLayout;
 
 import org.vcell.util.gui.BoxPanel;
 
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 
+@SuppressWarnings("serial")
 public class AnalysisResultsPanel extends BoxPanel
 {
 	private AnalysisResultsTablePanel anaResultsTablePanel;

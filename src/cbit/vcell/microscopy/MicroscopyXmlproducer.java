@@ -508,7 +508,7 @@ private static Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) 
 			{
 				boolean[] selectedROIs = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
 				Arrays.fill(selectedROIs, true);
-				SimpleReferenceData diffReacData = FRAPOptimization.doubleArrayToSimpleRefData(param.getData(), param.getTimepoints(), 0, selectedROIs);
+				SimpleReferenceData diffReacData = FRAPOptimizationUtils.doubleArrayToSimpleRefData(param.getData(), param.getTimepoints(), 0, selectedROIs);
 				reacDiffModelNode.addContent(getXML(diffReacData, MicroscopyXMLTags.ModelDataTag)); //TODO: store as simple reference data
 			}
 			return reacDiffModelNode;

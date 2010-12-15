@@ -1,35 +1,18 @@
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
 import java.awt.BorderLayout;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.ListSelectionModel;
 
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
-import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.VFRAPPreference;
-import cbit.vcell.microscopy.gui.FRAPDataPanel;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SingleFileDescriptor;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VariableType;
-
-import org.vcell.util.BeanUtils;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ZEnforcer;
 import org.vcell.wizard.WizardPanelDescriptor;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.VFRAPPreference;
+import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
 
 public class DefineROI_CellROIDescriptor extends WizardPanelDescriptor {
     
@@ -59,11 +42,11 @@ public class DefineROI_CellROIDescriptor extends WizardPanelDescriptor {
     	((JPanel)getPanelComponent()).removeAll();
     	((JPanel)getPanelComponent()).add(imgPanel);
     	((DefineROI_Panel)imgPanel).adjustComponents(VFrap_OverlayEditorPanelJAI.DEFINE_CELLROI);
-    	((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().setROIAssistVisible(false);
+    	(((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().setROIAssistVisible(false);
     	if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 			((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)
 		{
-			((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+			(((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
 		}
     }
     
@@ -94,10 +77,10 @@ public class DefineROI_CellROIDescriptor extends WizardPanelDescriptor {
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				if(((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().isROIAssistVisible() &&
+				if((((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().isROIAssistVisible() &&
 				   ((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)
 				{
-					DialogUtils.showWarningDialog(((DefineROI_Panel)imgPanel), "Cell ROI is not applied. Please complete the following actions to apply: \n \'Resolve...\' -> \'Fill Voids\' -> \'Apply and Close\'. ");
+					DialogUtils.showWarningDialog((imgPanel), "Cell ROI is not applied. Please complete the following actions to apply: \n \'Resolve...\' -> \'Fill Voids\' -> \'Apply and Close\'. ");
 				}
 			}
 		};

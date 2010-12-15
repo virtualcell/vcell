@@ -6,23 +6,17 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
-import org.vcell.util.gui.StyleTable;
-
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.estparamwizard.MSEPanel;
 
+@SuppressWarnings("serial")
 public class BatchRunResultsPanel extends JPanel
 {
 	public final static String MODEL_TYPE_PREFIX = "  Selected Model Type : ";
-	private FRAPBatchRunWorkspace batchRunWorkspace = null;
 	private BatchRunResultsParameterPanel batchRunParamPanel = null;
 	private BatchRunMSEPanel batchRunMSEPanel = null;
 	private JScrollPane scrollPane = null;
@@ -105,7 +99,6 @@ public class BatchRunResultsPanel extends JPanel
 	
 	 public void setBatchRunWorkspace(FRAPBatchRunWorkspace batchRunWorkspace)
     {
-    	this.batchRunWorkspace = batchRunWorkspace;
     	getBatchRunResultsParameterPanel().setBatchRunWorkspace(batchRunWorkspace);
     	getBatchRunMSEPanel().setBatchRunWorkspace(batchRunWorkspace);
     }

@@ -1,24 +1,18 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.Toolkit;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 
+@SuppressWarnings("serial")
 public class BatchRunTree extends JTree {
 	public final static String TREE_ROOT_STR = "FRAP Batch Run";
 	public final static String TREE_DOC_STR = "Documents";
@@ -28,7 +22,6 @@ public class BatchRunTree extends JTree {
     public final static DefaultMutableTreeNode FRAP_BATCHRUN_RESULT_NODE = new DefaultMutableTreeNode(TREE_RESULT_STR); //second to root
 
     protected DefaultTreeModel treeModel;
-    private Toolkit toolkit = Toolkit.getDefaultToolkit();
     
     public BatchRunTree() 
     {
@@ -129,7 +122,7 @@ public class BatchRunTree extends JTree {
 			}
 			Collections.sort(children, nodeComparator);
 			FRAP_BATCHRUN_DOC_NODE.removeAllChildren();
-			int size = children.size();
+			children.size();
 			for(int i=0; i < children.size(); i++ )
 			{
 				if(((File)newNode.getUserObject()).getAbsolutePath().equals(((File)children.get(i).getUserObject()).getAbsolutePath()))

@@ -1,7 +1,6 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -9,12 +8,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.NumberFormat;
 
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -23,19 +19,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.mapping.gui.StructureMappingTableRenderer;
 import cbit.vcell.microscopy.EstimatedParameter;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.EstimatedParameterTableRenderer;
@@ -47,6 +36,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
 
+@SuppressWarnings("serial")
 public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 	private JTextField mobileTotalFracTextField;
 	private JTextField diffEffectiveTextField;
@@ -68,7 +58,6 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 	private EstimatedParameterTableModel paramTableModel = new EstimatedParameterTableModel(FRAPReacDiffEstimationGuidePanel.this);
 	
 	public static final double PI = 3.14159;
-	private static final String piStr = "PI";
 	public static final double RELATIVE_TOTAL_CONCENTRATION = 1;
 	//The following parameters are used to store parameters from pure diffusion
 	double effDiffRate;
@@ -115,7 +104,6 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 	public FRAPReacDiffEstimationGuidePanel() {
 		super();
 		setPreferredSize(new Dimension(580, 450));
-		final GridBagLayout gridBagLayout = new GridBagLayout();
 		this.setLayout(new GridBagLayout());
 
 		//the top panel
@@ -157,9 +145,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		gridBagConstraints_dtl.gridx = 0;
 		gridBagConstraints_dtl.gridwidth = 5;
 		diffTypePanel.add(diffTypeLabel, gridBagConstraints_dtl);
- 
-		ButtonGroup bg = new ButtonGroup();
-		
+ 		
 		//the mid panel
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
 		gridBagLayout_1.rowHeights = new int[] {7,7,7};

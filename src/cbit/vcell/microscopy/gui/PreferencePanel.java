@@ -3,7 +3,6 @@ package cbit.vcell.microscopy.gui;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
@@ -12,6 +11,7 @@ import javax.swing.JTabbedPane;
 
 import cbit.vcell.microscopy.VFRAPPreference;
 
+@SuppressWarnings("serial")
 public class PreferencePanel extends JPanel
 {
 	private JTabbedPane tabbedPane = null; 

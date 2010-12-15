@@ -1,18 +1,16 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.table.AbstractTableModel;
 
 import org.vcell.optimization.ConfidenceInterval;
 import org.vcell.optimization.ProfileSummaryData;
 
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptData;
-import cbit.vcell.microscopy.FRAPOptimization;
+import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.opt.Parameter;
 
+@SuppressWarnings("serial")
 public class AnalysisTableModel extends AbstractTableModel 
 {
 	public final static int NUM_ROWS = FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF + 2; //add one row for immobile fraction and one for model significance
@@ -89,11 +87,11 @@ public class AnalysisTableModel extends AbstractTableModel
     			{
     				double ff = params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
     				double fimm = 1-ff;
-    				if(fimm < FRAPOptimization.epsilon && fimm > (0 - FRAPOptimization.epsilon))
+    				if(fimm < FRAPOptimizationUtils.epsilon && fimm > (0 - FRAPOptimizationUtils.epsilon))
     				{
     					fimm = 0;
     				}
-    				if(fimm < (1+FRAPOptimization.epsilon) && fimm > (1 - FRAPOptimization.epsilon))
+    				if(fimm < (1+FRAPOptimizationUtils.epsilon) && fimm > (1 - FRAPOptimizationUtils.epsilon))
     				{
     					fimm = 1;
     				}
@@ -148,11 +146,11 @@ public class AnalysisTableModel extends AbstractTableModel
     				double ff = params[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess();
     				double fc =params[FRAPModel.INDEX_SECONDARY_FRACTION].getInitialGuess();
     				double fimm = 1-ff-fc;
-    				if(fimm < FRAPOptimization.epsilon && fimm > (0 - FRAPOptimization.epsilon))
+    				if(fimm < FRAPOptimizationUtils.epsilon && fimm > (0 - FRAPOptimizationUtils.epsilon))
     				{
     					fimm = 0;
     				}
-    				if(fimm < (1+FRAPOptimization.epsilon) && fimm > (1 - FRAPOptimization.epsilon))
+    				if(fimm < (1+FRAPOptimizationUtils.epsilon) && fimm > (1 - FRAPOptimizationUtils.epsilon))
     				{
     					fimm = 1;
     				}

@@ -7,7 +7,6 @@ import java.util.Iterator;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.jdom.filter.ElementFilter;
 import org.jdom.input.SAXBuilder;
 /**
  * A container pattern class, wraps around a Hashtable, used by the XMLReader. The format of the keys is:
@@ -25,12 +24,12 @@ import org.jdom.input.SAXBuilder;
 public class XMLDict {
 
 	private static final String XPATH_SEP = "/";
-    private static Hashtable reHashBio;
-    private static Hashtable reHashMath;
-    private Hashtable hash;
+    private static Hashtable<String, String> reHashBio;
+    private static Hashtable<String, String> reHashMath;
+    private Hashtable<String, Object> hash;
         
     static {
-		reHashBio = new Hashtable(15);
+		reHashBio = new Hashtable<String, String>(15);
 		reHashBio.put(XMLTags.SpeciesTag, XMLTags.ModelTag + XPATH_SEP + XMLTags.SpeciesTag);
 		reHashBio.put(XMLTags.SpeciesContextTag, XMLTags.BioModelTag + XPATH_SEP + XMLTags.ModelTag + XPATH_SEP + XMLTags.SpeciesContextTag);
 		reHashBio.put(XMLTags.FeatureTag, XMLTags.BioModelTag + XPATH_SEP + XMLTags.ModelTag + XPATH_SEP + XMLTags.FeatureTag);
@@ -45,7 +44,7 @@ public class XMLDict {
 		reHashBio.put(XMLTags.VolumeRegionVariableTag, XMLTags.SimulationSpecTag + XPATH_SEP + XMLTags.MathDescriptionTag + XPATH_SEP + XMLTags.VolumeRegionVariableTag);
 	    reHashBio.put(XMLTags.MembraneRegionVariableTag, XMLTags.SimulationSpecTag + XPATH_SEP + XMLTags.MathDescriptionTag + XPATH_SEP + XMLTags.MembraneRegionVariableTag);
 		reHashBio.put(XMLTags.FilamentRegionVariableTag, XMLTags.SimulationSpecTag + XPATH_SEP + XMLTags.MathDescriptionTag + XPATH_SEP + XMLTags.FilamentRegionVariableTag);
-		reHashMath = new Hashtable(10);
+		reHashMath = new Hashtable<String, String>(10);
 		reHashMath.put(XMLTags.SubVolumeTag, XMLTags.MathModelTag + XPATH_SEP + XMLTags.GeometryTag + XPATH_SEP + XMLTags.SubVolumeTag);	  
 	    reHashMath.put(XMLTags.CompartmentSubDomainTag, XMLTags.MathModelTag + XPATH_SEP + XMLTags.MathDescriptionTag + XPATH_SEP + XMLTags.CompartmentSubDomainTag);
 	    reHashMath.put(XMLTags.VolumeVariableTag, XMLTags.MathModelTag + XPATH_SEP + XMLTags.MathDescriptionTag + XPATH_SEP + XMLTags.VolumeVariableTag);
@@ -58,7 +57,7 @@ public class XMLDict {
 
 public XMLDict() {
 	super();
-	hash = new Hashtable();
+	hash = new Hashtable<String, Object>();
 }
 
 
@@ -113,10 +112,11 @@ public XMLDict() {
 	   }
 	   String resElementName = tokenizer.nextToken();
 	   //System.out.println(resElementName);
-	   Iterator iterator = root.getChildren(resElementName, ns).iterator();              //last 2 tokens (direct parent, and element to resolve)
+	   @SuppressWarnings("unchecked")
+	   Iterator<Element> iterator = root.getChildren(resElementName, ns).iterator();              //last 2 tokens (direct parent, and element to resolve)
 	   Element temp = null;
 	   while (iterator.hasNext()) {
-	   		temp = (Element)iterator.next();
+	   		temp = iterator.next();
 	   		if (attValue.equals(temp.getAttributeValue(attName))) {
 				break;
 	   		} else {
@@ -128,11 +128,12 @@ public XMLDict() {
    }
 
 
-   private static Element getMatchingElementGeneric(Element root, String reName, String attName, String attValue) {
+   
+private static Element getMatchingElementGeneric(Element root, String reName, String attName, String attValue) {
 
 	   Element curElement = null;
-	   
-   	   Iterator i = root.getChildren().iterator();
+	   @SuppressWarnings("unchecked")
+   	   Iterator<Element> i = root.getChildren().iterator();
    	   while (i.hasNext()) {
 	   	   curElement = (Element)i.next();
 	   	   if (curElement.getName().equals(reName)) {
@@ -226,14 +227,15 @@ public XMLDict() {
    }
 
 
-   private Enumeration keys() {
+   private Enumeration<String> keys() {
 
 	   return hash.keys();
    }
 
 
    //tests the x-path functionality
-   public static void main (String args []) throws Exception {
+   @SuppressWarnings("unchecked")
+public static void main (String args []) throws Exception {
 
 	   if (args.length < 1)
 	   		System.out.println("Test Usage: XMLDict test_BioModel_File");
@@ -244,14 +246,15 @@ public XMLDict() {
 		XMLDict dict = new XMLDict();
 		//add just one round
 	   	dict.put(root, root.getClass().getName() + ":" + root.getAttributeValue(XMLTags.NameTag), root);
-	   	Iterator i = root.getChildren().iterator();
+	   	
+	   	Iterator<Element> i = root.getChildren().iterator();
 		while (i.hasNext()) {
-			Element temp = (Element)i.next();
+			Element temp = i.next();
 			dict.put(temp, temp.getClass().getName() + ":" + temp.getAttributeValue(XMLTags.NameTag), temp);
 	   	}
-		Enumeration e = dict.keys();
+		Enumeration<String> e = dict.keys();
 		while (e.hasMoreElements()) {
-			String key = (String)e.nextElement();
+			String key = e.nextElement();
 			Object value = dict.get(key);
 			System.out.println("key: " + key + " value: " + value);
 		}

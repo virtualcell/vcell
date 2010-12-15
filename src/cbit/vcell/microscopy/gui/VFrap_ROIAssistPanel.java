@@ -1,6 +1,5 @@
 package cbit.vcell.microscopy.gui;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -31,9 +30,6 @@ import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -54,6 +50,7 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.microscopy.VFrap_ROISourceData;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 
+@SuppressWarnings("serial")
 public class VFrap_ROIAssistPanel extends JPanel {
 	
 	private static final int MAX_SCALE = 0x0000FFFF;
@@ -512,7 +509,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		}
 		int binTotal = 0;
 		for (int i = 0; i < binThis.length; i++) {
-			int index = (int)(binThis[i]&0x0000FFFF);
+			int index = (binThis[i]&0x0000FFFF);
 			boolean bSet = isSet(roiName, binThis[i], MAX_SCALE, tempLookup,(bMaskWithCell?cellMaskArr[i] != 0:true));
 			bins[index]+= (bSet?1:0);
 			binTotal+= (bSet?1:0);
@@ -568,10 +565,8 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		new Thread(new Runnable(){public void run(){
 		try{			
 			
-			boolean bIgnoreMask = false;
 			boolean bInvert = !frapData.getCurrentlyDisplayedROI().getROIName().equals(VFrap_ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name());
 
-			boolean bBackground = frapData.getCurrentlyDisplayedROI().getROIName().equals(VFrap_ROISourceData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name());
 			short[] cellMask = null;
 			if(bInvert){
 				cellMask = frapData.getRoi(VFrap_ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name()).getPixelsXYZ();
@@ -607,7 +602,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 
 	private boolean isSet(String roiName,short roiSourceDataUnsignedShort,int thresholdIndex,int[] thresholdLookupArr,boolean cellMask){
 		if(!roiName.equals(VFrap_ROISourceData.VFRAP_ROI_ENUM.ROI_CELL.name())){
-			if(((int)(roiSourceDataUnsignedShort&0x0000FFFF)) >/*=*/ thresholdLookupArr[thresholdIndex]){
+			if(((roiSourceDataUnsignedShort&0x0000FFFF)) >/*=*/ thresholdLookupArr[thresholdIndex]){
 				return false;//shortPixels[i] = 0;
 			}else{
 				if(roiName.equals(VFrap_ROISourceData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name())){
@@ -619,7 +614,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 				}
 			}
 		}else{
-			if(((int)(roiSourceDataUnsignedShort&0x0000FFFF)) < thresholdLookupArr[thresholdLookupArr.length-1-thresholdIndex]){
+			if(((roiSourceDataUnsignedShort&0x0000FFFF)) < thresholdLookupArr[thresholdLookupArr.length-1-thresholdIndex]){
 				return false;//shortPixels[i] = 0;
 			}else{
 				return true;//shortPixels[i]|= 0xFFFF;

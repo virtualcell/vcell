@@ -7,18 +7,14 @@ import java.util.Hashtable;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import cbit.vcell.VirtualMicroscopy.ROI;
+import org.vcell.wizard.WizardPanelDescriptor;
+
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
-import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_Panel;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RequireAssistPanel;
-
-import org.vcell.wizard.WizardPanelDescriptor;
 
 public class CropDescriptor extends WizardPanelDescriptor {
     
@@ -82,7 +78,7 @@ public class CropDescriptor extends WizardPanelDescriptor {
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				String test = VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET); 
+				VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET); 
 				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET).equals(VFRAPPreference.ROI_ASSIST_PREF_NOT_SET))
 				{
 					DefineROI_RequireAssistPanel assistPanel = new DefineROI_RequireAssistPanel();
@@ -91,7 +87,7 @@ public class CropDescriptor extends WizardPanelDescriptor {
 					if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 						((BatchRunROIImgPanel)imgPanel).getBatchRunWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)
 					{
-						((FRAPDataPanel)((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+						(((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
 					}
 				}
 				else
@@ -99,7 +95,7 @@ public class CropDescriptor extends WizardPanelDescriptor {
 					if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 					   ((BatchRunROIImgPanel)imgPanel).getBatchRunWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)
 					{
-						((FRAPDataPanel)((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+						(((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
 					}
 				}
 			}

@@ -1,10 +1,20 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
+
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 
 /**
  * A Panel shows the information of the running status.
@@ -12,6 +22,7 @@ import java.net.URL;
  * @author Tracy Li 
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class JobStatusPanel extends JPanel implements ActionListener
 {
 	public static final String STATUSPANEL_PROPERTY_CHANGE = "STATUSPANEL_PROPERTY";

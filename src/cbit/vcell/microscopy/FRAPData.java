@@ -46,7 +46,6 @@ import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -241,7 +240,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 					cartesianMesh.getExtent(),
 					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
 			if(progressListener != null){
-				progressListener.setProgress((int)(((i+1)/times.length))*100);
+				progressListener.setProgress((((i+1)/times.length))*100);
 			}
 		}
 	
@@ -426,7 +425,7 @@ private PlanarImage binarize(BufferedImage source)
 {
 	PlanarImage planarSource = PlanarImage.wrapRenderedImage(source);
 	double[][] minmaxArr = (double[][])ExtremaDescriptor.create(planarSource, null, 1, 1, false, 1,null).getProperty("extrema");
-	short[] lookupData = new short[(int)0x010000];
+	short[] lookupData = new short[0x010000];
 	lookupData[(int)minmaxArr[1][0]] = 1;
 	LookupTableJAI lookupTable = new LookupTableJAI(lookupData,true);
 	planarSource = LookupDescriptor.create(planarSource, lookupTable, null).createInstance();

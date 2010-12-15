@@ -1,8 +1,6 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -12,16 +10,12 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Arrays;
 import java.util.Hashtable;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
@@ -30,29 +24,24 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.plot.Plot2DPanel;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.batchrun.BatchRunXmlReader;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.ROIImagePanel;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 
+@SuppressWarnings("serial")
 public class EstParams_OneDiffComponentPanel extends JPanel {
 	
 	private SpatialAnalysisResults spatialAnalysisResults; //will be initialized in setData
@@ -76,7 +65,6 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		gridBagLayout.columnWidths = new int[] {7};
 		setLayout(gridBagLayout);
 		
-		JPanel buttonPanel = new JPanel(new FlowLayout());
 		//set up tabbed pane for two kinds of models.
 		paramPanel=new JPanel(new GridBagLayout());
 		paramPanel.setForeground(new Color(0,0,244));
@@ -429,7 +417,6 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 				String choice = DialogUtils.showWarningDialog(this, paramMsg, new String[]{UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
 				if(choice == UserMessage.OPTION_OK)
 				{
-					FRAPStudy fStudy = frapWorkspace.getWorkingFrapStudy();
 					getPureDiffusionPanel().setParameterValues(parameters[FRAPModel.INDEX_PRIMARY_DIFF_RATE].getInitialGuess(),
 															   parameters[FRAPModel.INDEX_PRIMARY_FRACTION].getInitialGuess(), 
 															   parameters[FRAPModel.INDEX_BLEACH_MONITOR_RATE].getInitialGuess());

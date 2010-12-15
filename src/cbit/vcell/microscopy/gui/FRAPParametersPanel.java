@@ -1,11 +1,6 @@
 package cbit.vcell.microscopy.gui;
 
 import java.awt.Color;
-
-import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
-
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -22,8 +17,12 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
-import cbit.vcell.microscopy.gui.FRAPEstimationPanel;
 
+import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
+
+@SuppressWarnings("serial")
 public class FRAPParametersPanel extends JPanel {
 	private FRAPEstimationPanel estimationPanel;
 	private JComboBox frapDataTimesComboBox;
@@ -39,10 +38,6 @@ public class FRAPParametersPanel extends JPanel {
 	private static String MONITOR_BLEACH_RATE_DESCRIPTION = "Monitor Bleach Rate";
 	private static String MOBILE_FRACTION_DESCRIPTION = "Primary Mobile Fraction";
 	private static String DIFFUSION_RATE_DESCRIPTION = "Primary Diffusion Rate";
-	private static String SEC_DIFFUSION_RATE_DESCRIPTION = "Secondary Diffusion Rate";
-	private static String SEC_MOBILE_FRACTION_DESCRIPTION = "Secondary Mobile Fraction";
-
-	
 	public FRAPParametersPanel() {
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -424,9 +419,9 @@ public class FRAPParametersPanel extends JPanel {
 		}
 		try
 		{
-			double dr = Double.parseDouble(diffusionRateTextField.getText());
-			double mf = Double.parseDouble(mobileFractionTextField.getText());
-			double bwmr = Double.parseDouble(monitorBleachRateTextField.getText());
+			Double.parseDouble(diffusionRateTextField.getText());
+			Double.parseDouble(mobileFractionTextField.getText());
+			Double.parseDouble(monitorBleachRateTextField.getText());
 		}catch(NumberFormatException e)
 		{
 			return false;

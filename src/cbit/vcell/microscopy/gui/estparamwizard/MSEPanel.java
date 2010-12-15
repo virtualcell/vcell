@@ -1,13 +1,12 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
-import java.awt.BorderLayout;
-
 import javax.swing.BoxLayout;
 
 import org.vcell.util.gui.BoxPanel;
 
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 
+@SuppressWarnings("serial")
 public class MSEPanel extends BoxPanel
 {
 	private MSETablePanel mseTablePanel;

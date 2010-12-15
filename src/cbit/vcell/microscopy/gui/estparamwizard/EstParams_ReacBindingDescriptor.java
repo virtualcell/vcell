@@ -3,15 +3,15 @@ package cbit.vcell.microscopy.gui.estparamwizard;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.LocalWorkspace;
-import cbit.vcell.opt.Parameter;
-
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.WizardPanelDescriptor;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.LocalWorkspace;
+import cbit.vcell.opt.Parameter;
 
 public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
 {
@@ -53,7 +53,7 @@ public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
 		    	}catch(Exception ex)
 		    	{
 		    		ex.printStackTrace(System.out);
-		    		DialogUtils.showErrorDialog(((EstParams_ReacBindingPanel)getPanelComponent()), "Error getting parameters for diffusion plus binding model." + ex.getMessage());
+		    		DialogUtils.showErrorDialog((getPanelComponent()), "Error getting parameters for diffusion plus binding model." + ex.getMessage());
 		    	}
 			}
 		}
@@ -62,7 +62,7 @@ public class EstParams_ReacBindingDescriptor extends WizardPanelDescriptor
 			((EstParams_ReacBindingPanel)getPanelComponent()).setData(fStudy.getFrapData(), params, fStudy.getFrapData().getImageDataset().getImageTimeStamps(), fStudy.getStartingIndexForRecovery(), fStudy.getSelectedROIsForErrorCalculation());
 		} catch (Exception ex) {
 			ex.printStackTrace(System.out);
-    		DialogUtils.showErrorDialog(((EstParams_ReacBindingPanel)getPanelComponent()), "Error plotting data for diffusion plus binding model." + ex.getMessage());
+    		DialogUtils.showErrorDialog((getPanelComponent()), "Error plotting data for diffusion plus binding model." + ex.getMessage());
 		}
 	}    
     

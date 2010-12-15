@@ -9,16 +9,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 
 import org.vcell.util.gui.HyperLinkLabel;
 
@@ -28,6 +22,7 @@ import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 
+@SuppressWarnings("serial")
 public class SubPlotPanel extends JPanel
 {
     private SummaryPlotPanel parent;

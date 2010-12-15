@@ -2,7 +2,6 @@ package cbit.vcell.microscopy.gui.loaddatawizard;
 
 import javax.swing.JPanel;
 
-import cbit.vcell.client.task.AsynchClientTask;
 import org.vcell.wizard.WizardPanelDescriptor;
 
 public class LoadFRAPData_FileTypeDescriptor extends WizardPanelDescriptor {

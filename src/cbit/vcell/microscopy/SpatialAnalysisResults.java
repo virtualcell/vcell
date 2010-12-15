@@ -4,7 +4,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 
-import cbit.vcell.microscopy.CurveInfo;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;

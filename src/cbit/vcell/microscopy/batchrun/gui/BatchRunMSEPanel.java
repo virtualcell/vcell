@@ -2,12 +2,11 @@ package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.BorderLayout;
 
-import javax.swing.BoxLayout;
-
 import org.vcell.util.gui.BoxPanel;
 
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 
+@SuppressWarnings("serial")
 public class BatchRunMSEPanel extends BoxPanel
 {
 	private BatchRunMSETablePanel mseTablePanel;

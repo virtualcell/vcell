@@ -2,17 +2,14 @@ package cbit.vcell.microscopy.batchrun.gui.chooseModelWizard;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Vector;
+
+import org.vcell.wizard.Wizard;
+import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-
-import org.vcell.wizard.Wizard;
-import org.vcell.wizard.WizardPanelDescriptor;
 
 public class ModelTypesDescriptor extends WizardPanelDescriptor {
     

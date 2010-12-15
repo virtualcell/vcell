@@ -14,12 +14,14 @@ public class FRAPModel implements Matchable
 {
 	public static final String[] MODEL_TYPE_ARRAY = new String[]{"Diffusion with One Diffusing Component", 
 		                                                       "Diffusion with Two Diffusing Components",
+		                                                       "Reaction Off Rate",
 		                                                       "Diffusion plus Binding"};
 	//different model types
-	public static final int NUM_MODEL_TYPES = 3;
+	public static final int NUM_MODEL_TYPES = 4;
 	public static final int IDX_MODEL_DIFF_ONE_COMPONENT = 0;
 	public static final int IDX_MODEL_DIFF_TWO_COMPONENTS = 1;
-	public static final int IDX_MODEL_DIFF_BINDING = 2;
+	public static final int IDX_MODEL_REACTION_OFF_RATE = 2;
+	public static final int IDX_MODEL_DIFF_BINDING = 3;
 	
 	//different model parameters
 	public static String[] MODEL_PARAMETER_NAMES = new String[]{"Primary_diffusion_rate",
@@ -40,19 +42,44 @@ public class FRAPModel implements Matchable
 																VCUnitDefinition.UNIT_DIMENSIONLESS,//ratio of total fluorescence?
 																VCUnitDefinition.UNIT_per_um_per_s,
 																VCUnitDefinition.UNIT_per_s};
+	//referenced parameters
+	public static final Parameter REF_DIFFUSION_RATE_PARAM =
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 0, 200, 1.0, 1.0);
+	public static final Parameter REF_MOBILE_FRACTION_PARAM =
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION], 0, 1, 1.0, 1.0);
+	public static final Parameter REF_BLEACH_WHILE_MONITOR_PARAM =
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 0, 1, 1.0,  0);
+	public static final Parameter REF_SECOND_DIFFUSION_RATE_PARAM =
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE], 0, 100, 1.0, 1.0);
+	public static final Parameter REF_SECOND_MOBILE_FRACTION_PARAM =
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION], 0, 1, 1.0, 1.0);
+	//concentration parameter is used for reaction off rate model to store unuseful parameter A.
+	public static final Parameter REF_BS_CONCENTRATION_OR_A = 
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION], 0, 1000, 1.0, 1.0);
+	public static final Parameter REF_REACTION_ON_RATE = 
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION], 0.01, 100, 1.0, 1.0);
+	public static final Parameter REF_REACTION_OFF_RATE = 
+		new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE], 0.01, 100, 1.0, 1.0);
+	//used in parameter panels to show log scale of the bleach monitoring rate slider.
+	public static final int REF_BWM_LOG_VAL_MIN = -5;
+	public static final int REF_BWM_LOG_VAL_MAX = 0;
+	
+	//other contants
 	public static int NUM_MODEL_PARAMETERS_ONE_DIFF = 3;
 	public static int NUM_MODEL_PARAMETERS_TWO_DIFF = 5;
+	//reaction off rate model will use full diffusion-reaction model parameter. 
+	//only bwmRate, offRate and concentration(store value for fitting param A) totally 3 parameters will be used.
+	public static int NUM_MODEL_PARAMETERS_REACTION_OFF_RATE = 8;
 	public static int NUM_MODEL_PARAMETERS_BINDING = 8;
 	public static int INDEX_PRIMARY_DIFF_RATE = 0;
 	public static int INDEX_PRIMARY_FRACTION = 1;
 	public static int INDEX_BLEACH_MONITOR_RATE = 2;
 	public static int INDEX_SECONDARY_DIFF_RATE = 3;
 	public static int INDEX_SECONDARY_FRACTION = 4;
-//	public static int INDEX_IMMOBILE_FRACTION = 5;
 	public static int INDEX_BINDING_SITE_CONCENTRATION = 5;
 	public static int INDEX_ON_RATE = 6;
 	public static int INDEX_OFF_RATE = 7;
-	
+
 	private String modelIdentifer = null;
 	private double[][] data = null;
 	private double[] timepoints = null;
@@ -106,38 +133,38 @@ public class FRAPModel implements Matchable
 		//get estimated bleach type
 		double bleachFraction = FRAPDataAnalysis.getCellAreaBleachedFraction(frapData);
 		int bleachType = (bleachFraction > FRAPDataAnalysis.THRESHOLD_BLEACH_TYPE)? 
-				         FrapDataAnalysisResults.BleachType_HalfCell : FrapDataAnalysisResults.BleachType_GaussianSpot;
+				         FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_HalfCell : FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_GaussianSpot;
 		//get analytical results 
-		FrapDataAnalysisResults analysisResults = FRAPDataAnalysis.fitRecovery(frapData, bleachType);
+		FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults analysisResults = FRAPDataAnalysis.fitRecovery_diffusionOnly(frapData, bleachType);
 		
 		//constrain the parameters in upper and lower bounds, analytic solution may get weird results sometimes(e.g. once got diffRate = 2819000.674223344)
 		double diffusionRate = analysisResults.getRecoveryDiffusionRate();
-		diffusionRate = (diffusionRate > FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound())?FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound():diffusionRate;
-		diffusionRate = (diffusionRate < FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound())?FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound():diffusionRate;
+		diffusionRate = (diffusionRate > REF_DIFFUSION_RATE_PARAM.getUpperBound())?REF_DIFFUSION_RATE_PARAM.getUpperBound():diffusionRate;
+		diffusionRate = (diffusionRate < REF_DIFFUSION_RATE_PARAM.getLowerBound())?REF_DIFFUSION_RATE_PARAM.getLowerBound():diffusionRate;
 		
 		double mobileFraction = analysisResults.getMobilefraction();
-		mobileFraction = (mobileFraction > FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound())?FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound():mobileFraction;
-		mobileFraction = (mobileFraction < FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound())?FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound():mobileFraction;
+		mobileFraction = (mobileFraction > REF_MOBILE_FRACTION_PARAM.getUpperBound())?REF_MOBILE_FRACTION_PARAM.getUpperBound():mobileFraction;
+		mobileFraction = (mobileFraction < REF_MOBILE_FRACTION_PARAM.getLowerBound())?REF_MOBILE_FRACTION_PARAM.getLowerBound():mobileFraction;
 		
 		double bwmRate = analysisResults.getBleachWhileMonitoringTau();
-		bwmRate = (bwmRate > FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound())?FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound():bwmRate;
-		bwmRate = (bwmRate < FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound())?FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound():bwmRate;
+		bwmRate = (bwmRate > REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound())?REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound():bwmRate;
+		bwmRate = (bwmRate < REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound())?REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound():bwmRate;
 		
 		//create parameter array
 		if(modelIdentifier.equals(MODEL_TYPE_ARRAY[IDX_MODEL_DIFF_ONE_COMPONENT]))
 		{
 			Parameter diff = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_DIFF_RATE],
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),diffusionRate);
+			                    REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
+			                    REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+			                    REF_DIFFUSION_RATE_PARAM.getScale(),diffusionRate);
 			Parameter mobileFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_FRACTION],
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),mobileFraction);
+			                    REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+			                    REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+			                    REF_MOBILE_FRACTION_PARAM.getScale(),mobileFraction);
 			Parameter bleachWhileMonitoringRate = new Parameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE],
-			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),bwmRate);
+			                    REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+			                    REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+			                    REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),bwmRate);
 			
 			params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF];
 			params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = diff;
@@ -147,25 +174,25 @@ public class FRAPModel implements Matchable
 		else if(modelIdentifier.equals(MODEL_TYPE_ARRAY[IDX_MODEL_DIFF_TWO_COMPONENTS]))
 		{
 			Parameter diff = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_DIFF_RATE], 
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), diffusionRate);
+			                    REF_DIFFUSION_RATE_PARAM.getLowerBound(),
+			                    REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+			                    REF_DIFFUSION_RATE_PARAM.getScale(), diffusionRate);
 			Parameter mobileFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_FRACTION],
-                                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-                                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-                                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), mobileFraction);
+                                REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+                                REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+                                REF_MOBILE_FRACTION_PARAM.getScale(), mobileFraction);
 			Parameter monitorRate = new Parameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE], 
-                                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-                                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-                                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), bwmRate);
+                                REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+                                REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+                                REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), bwmRate);
 			Parameter secDiffRate = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_DIFF_RATE],
-			                    FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 0);
+			                    REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
+			                    REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
+			                    REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 0);
 			Parameter secMobileFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_FRACTION],
-			                    FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(), 0);
+			                    REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
+			                    REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
+			                    REF_SECOND_MOBILE_FRACTION_PARAM.getScale(), 0);
 			
 			params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF];
 			params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = diff;
@@ -177,29 +204,29 @@ public class FRAPModel implements Matchable
 		else if(modelIdentifier.equals(MODEL_TYPE_ARRAY[IDX_MODEL_DIFF_BINDING]))
 		{
 			Parameter primaryDiff = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_DIFF_RATE],
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
+			                    REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
+			                    REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+			                    REF_DIFFUSION_RATE_PARAM.getScale(),
 			                    analysisResults.getRecoveryDiffusionRate());
 			Parameter primaryFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_FRACTION],
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),
+			                    REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+			                    REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+			                    REF_MOBILE_FRACTION_PARAM.getScale(),
 			                    analysisResults.getMobilefraction());
 			Parameter bleachWhileMonitoringRate = new Parameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE],
-			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
+			                    REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+			                    REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+			                    REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 			                    analysisResults.getBleachWhileMonitoringTau());
 			Parameter secondaryDiff = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_DIFF_RATE], 
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
+			                    REF_DIFFUSION_RATE_PARAM.getLowerBound(),
+			                    REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+			                    REF_DIFFUSION_RATE_PARAM.getScale(), 
 			                    0);
 			Parameter secondaryFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_FRACTION],
-								FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+								REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+			                    REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+			                    REF_MOBILE_FRACTION_PARAM.getScale(), 
 			                    0);
 			Parameter bsConcentration = new Parameter(MODEL_PARAMETER_NAMES[INDEX_BINDING_SITE_CONCENTRATION],
 			                    0,
@@ -236,33 +263,33 @@ public class FRAPModel implements Matchable
 		Parameter[] params = new Parameter[NUM_MODEL_PARAMETERS_BINDING];
 		
 		Parameter primaryDiff = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_DIFF_RATE],
-		                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
-		                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-		                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
+		                REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
+		                REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+		                REF_DIFFUSION_RATE_PARAM.getScale(),
 		                origParams[INDEX_PRIMARY_DIFF_RATE].getInitialGuess());
 		Parameter primaryFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_FRACTION],
-		                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-		                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-		                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),
+		                REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+		                REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+		                REF_MOBILE_FRACTION_PARAM.getScale(),
 		                origParams[INDEX_PRIMARY_FRACTION].getInitialGuess());
 		Parameter bleachWhileMonitoringRate = new Parameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE],
-		                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-		                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-		                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
+		                REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+		                REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+		                REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 		                origParams[INDEX_BLEACH_MONITOR_RATE].getInitialGuess());
 		
 		Parameter secondaryDiff = null;
 		Parameter secondaryFrac = null;
 		
 		secondaryDiff = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_DIFF_RATE], 
-                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
+                REF_DIFFUSION_RATE_PARAM.getLowerBound(),
+                REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+                REF_DIFFUSION_RATE_PARAM.getScale(), 
                 0);
 		secondaryFrac = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_FRACTION],
-				FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+				REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+                REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+                REF_MOBILE_FRACTION_PARAM.getScale(), 
                 0);
 		
 		Parameter bsConcentration = new Parameter(MODEL_PARAMETER_NAMES[INDEX_BINDING_SITE_CONCENTRATION],

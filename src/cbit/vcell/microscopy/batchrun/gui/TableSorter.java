@@ -1,14 +1,29 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 /*
  * TableSorter registers itself as a listener to the underlying model,
@@ -31,6 +46,7 @@ import javax.swing.table.*;
  *
  */
 
+@SuppressWarnings("serial")
 public class TableSorter extends AbstractTableModel {
     protected TableModel tableModel;
 
@@ -40,12 +56,14 @@ public class TableSorter extends AbstractTableModel {
 
     private static Directive EMPTY_DIRECTIVE = new Directive(-1, NOT_SORTED);
 
-    public static final Comparator COMPARABLE_COMAPRATOR = new Comparator() {
-        public int compare(Object o1, Object o2) {
-            return ((Comparable) o1).compareTo(o2);
+    public static final Comparator<Object> COMPARABLE_COMPARATOR = new Comparator<Object>() {
+        @SuppressWarnings("unchecked")
+		public int compare(Object o1, Object o2) {
+            return ((Comparable<Object>)o1).compareTo(o2);
         }
     };
-    public static final Comparator LEXICAL_COMPARATOR = new Comparator() {
+    
+    public static final Comparator<Object> LEXICAL_COMPARATOR = new Comparator<Object>() {
         public int compare(Object o1, Object o2) {
             return o1.toString().compareTo(o2.toString());
         }
@@ -57,8 +75,8 @@ public class TableSorter extends AbstractTableModel {
     private JTableHeader tableHeader;
     private MouseListener mouseListener;
     private TableModelListener tableModelListener;
-    private Map columnComparators = new HashMap();
-    public List sortingColumns = new ArrayList();
+    private Map<Class<?>, Comparator<Object>> columnComparators = new HashMap<Class<?>, Comparator<Object>>();
+    public List<Directive> sortingColumns = new ArrayList<Directive>();
 
     public TableSorter() {
         this.mouseListener = new MouseHandler();
@@ -124,8 +142,8 @@ public class TableSorter extends AbstractTableModel {
 
     private Directive getDirective(int column) {
         for (int i = 0; i < sortingColumns.size(); i++) {
-            Directive directive = (Directive)sortingColumns.get(i);
-            if (directive.column == column) {
+            Directive directive = sortingColumns.get(i);
+            if (TableSorter.Directive.column == column) {
                 return directive;
             }
         }
@@ -168,22 +186,22 @@ public class TableSorter extends AbstractTableModel {
         sortingStatusChanged();
     }
 
-    public void setColumnComparator(Class type, Comparator comparator) {
-        if (comparator == null) {
-            columnComparators.remove(type);
-        } else {
-            columnComparators.put(type, comparator);
-        }
-    }
+//    public void setColumnComparator(Class<?> type, Comparator comparator) {
+//        if (comparator == null) {
+//            columnComparators.remove(type);
+//        } else {
+//            columnComparators.put(type, comparator);
+//        }
+//    }
 
-    protected Comparator getComparator(int column) {
-        Class columnType = tableModel.getColumnClass(column);
-        Comparator comparator = (Comparator) columnComparators.get(columnType);
+    protected Comparator<Object> getComparator(int column) {
+        Class<?> columnType = tableModel.getColumnClass(column);
+        Comparator<Object> comparator = columnComparators.get(columnType);
         if (comparator != null) {
             return comparator;
         }
         if (Comparable.class.isAssignableFrom(columnType)) {
-            return COMPARABLE_COMAPRATOR;
+            return COMPARABLE_COMPARATOR;
         }
         return LEXICAL_COMPARATOR;
     }
@@ -232,7 +250,7 @@ public class TableSorter extends AbstractTableModel {
         return tableModel.getColumnName(column);
     }
 
-    public Class getColumnClass(int column) {
+    public Class<?> getColumnClass(int column) {
         return tableModel.getColumnClass(column);
     }
 
@@ -250,7 +268,7 @@ public class TableSorter extends AbstractTableModel {
 
     // Helper classes
     
-    private class Row implements Comparable {
+    private class Row implements Comparable<Object> {
         private int modelIndex;
 
         public Row(int index) {
@@ -261,9 +279,9 @@ public class TableSorter extends AbstractTableModel {
             int row1 = modelIndex;
             int row2 = ((Row) o).modelIndex;
 
-            for (Iterator it = sortingColumns.iterator(); it.hasNext();) {
-                Directive directive = (Directive) it.next();
-                int column = directive.column;
+            for (Iterator<Directive> it = sortingColumns.iterator(); it.hasNext();) {
+                Directive directive = it.next();
+                int column = TableSorter.Directive.column;
                 Object o1 = tableModel.getValueAt(row1, column);
                 Object o2 = tableModel.getValueAt(row2, column);
 
@@ -449,10 +467,8 @@ public class TableSorter extends AbstractTableModel {
         private int direction;
 
         public Directive(int column, int direction) {
-            this.column = column;
+            Directive.column = column;
             this.direction = direction;
         }
-
-        public static int getColumn() {return column;}
     }
 }

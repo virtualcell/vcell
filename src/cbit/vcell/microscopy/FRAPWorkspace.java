@@ -3,9 +3,10 @@ package cbit.vcell.microscopy;
 import java.io.File;
 import java.io.IOException;
 
+import loci.formats.FormatException;
+
 import org.vcell.util.document.KeyValue;
 
-import loci.formats.FormatException;
 import cbit.image.ImageException;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;

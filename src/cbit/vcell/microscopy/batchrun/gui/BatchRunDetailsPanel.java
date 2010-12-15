@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -37,7 +36,6 @@ import org.vcell.wizard.WizardPanelDescriptor;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.BackgroundROIDescriptor;
@@ -56,6 +54,7 @@ import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypePanel;
 import cbit.vcell.opt.Parameter;
 
 
+@SuppressWarnings("serial")
 public class BatchRunDetailsPanel extends JPanel implements ActionListener, PropertyChangeListener
 {
 	public URL[] iconFiles = {getClass().getResource("/images/add.gif"),

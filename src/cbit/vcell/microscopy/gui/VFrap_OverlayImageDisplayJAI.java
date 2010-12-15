@@ -6,10 +6,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
-import java.util.Arrays;
-import java.util.Random;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
@@ -23,11 +20,11 @@ import javax.media.jai.operator.ScaleDescriptor;
 
 import org.vcell.util.Range;
 
-
 import com.sun.media.jai.widget.DisplayJAI;
 
 /**
  */
+@SuppressWarnings("serial")
 public class VFrap_OverlayImageDisplayJAI extends DisplayJAI {
 	private BufferedImage underlyingImage = null;
 	private BufferedImage highlightImage = null;
@@ -186,7 +183,7 @@ public class VFrap_OverlayImageDisplayJAI extends DisplayJAI {
 
 		     sourceOverlay =
 				ScaleDescriptor.create(
-					sourceOverlay, (float)zoom, (float)zoom, 0f, 0f,
+					sourceOverlay, zoom, zoom, 0f, 0f,
 					Interpolation.getInstance(Interpolation.INTERP_NEAREST),null);
 
 			set(sourceOverlay, 0, 0);

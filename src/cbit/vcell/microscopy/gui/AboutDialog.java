@@ -1,10 +1,16 @@
 package cbit.vcell.microscopy.gui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
+
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JWindow;
 
 /**
  * The AbuoutDialog is the same as splash screen. It will only be
@@ -14,6 +20,7 @@ import java.net.URL;
  * @version 1.0 Alpha
  */
 
+@SuppressWarnings("serial")
 public class AboutDialog extends JWindow
 {
     public AboutDialog(URL filename, Frame f)

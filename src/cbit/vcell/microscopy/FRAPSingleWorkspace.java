@@ -3,15 +3,9 @@ package cbit.vcell.microscopy;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.io.IOException;
 
-import loci.formats.FormatException;
-import cbit.image.ImageException;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
 
 
 public class FRAPSingleWorkspace extends FRAPWorkspace implements PropertyChangeListener{

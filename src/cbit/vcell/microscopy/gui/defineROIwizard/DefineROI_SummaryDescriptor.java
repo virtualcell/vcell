@@ -1,29 +1,18 @@
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
-import java.awt.BorderLayout;
 import java.awt.Point;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.JPanel;
 
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
+import cbit.vcell.microscopy.FRAPStudy;
 
 public class DefineROI_SummaryDescriptor extends WizardPanelDescriptor {
 	public static final String IDENTIFIER = "DefineROI_Summary";

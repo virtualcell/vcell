@@ -7,15 +7,12 @@ import java.util.Hashtable;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import cbit.vcell.VirtualMicroscopy.ROI;
+import org.vcell.wizard.WizardPanelDescriptor;
+
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.VFRAPPreference;
-import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
-
-import org.vcell.wizard.WizardPanelDescriptor;
 
 public class DefineROI_CropDescriptor extends WizardPanelDescriptor {
     
@@ -46,7 +43,7 @@ public class DefineROI_CropDescriptor extends WizardPanelDescriptor {
     	((JPanel)getPanelComponent()).add(imgPanel);
     	((DefineROI_Panel)imgPanel).adjustComponents(VFrap_OverlayEditorPanelJAI.DEFINE_CROP);
     	((DefineROI_Panel)imgPanel).setCurrentROI(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(), false);
-    	((FRAPDataPanel)((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().setROIAssistVisible(false);
+    	(((DefineROI_Panel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().setROIAssistVisible(false);
     	
     }
     
@@ -77,7 +74,7 @@ public class DefineROI_CropDescriptor extends WizardPanelDescriptor {
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				String test = VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET); 
+				VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET); 
 				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET).equals(VFRAPPreference.ROI_ASSIST_PREF_NOT_SET))
 				{
 					DefineROI_RequireAssistPanel assistPanel = new DefineROI_RequireAssistPanel();

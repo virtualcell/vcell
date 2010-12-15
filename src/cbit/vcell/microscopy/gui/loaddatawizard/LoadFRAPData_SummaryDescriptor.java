@@ -1,22 +1,14 @@
 package cbit.vcell.microscopy.gui.loaddatawizard;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.DataVerifyInfo;
-import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.DataVerifyInfo;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 
 public class LoadFRAPData_SummaryDescriptor extends WizardPanelDescriptor{
     

@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.Vector;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
@@ -13,8 +11,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPStudy;
 
+@SuppressWarnings("serial")
 public class ModelTypesPanel extends JPanel
 {
 	private JCheckBox diffOneCheckBox = null;

@@ -1,6 +1,5 @@
 package cbit.vcell.microscopy;
 
-import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,12 +11,13 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import loci.formats.gui.AWTImageTools;
+import loci.formats.out.TiffWriter;
+
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.util.StdoutSessionLog;
 
-import loci.formats.gui.AWTImageTools;
-import loci.formats.out.TiffWriter;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
@@ -33,7 +33,6 @@ import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
@@ -254,7 +253,7 @@ public class NonGUIFRAPTest {
 		tempF.deleteOnExit();
 		tifWriter.setId(tempF.getAbsolutePath());
 		tifWriter.setCompression("Uncompressed");
-		BufferedImage timePointBufferedImage = AWTImageTools.makeImage(shortPixels, width, height,false);
+		AWTImageTools.makeImage(shortPixels, width, height,false);
 //		tifWriter.saveImage(timePointBufferedImage, true);
 		tifWriter.close();
 		return tempF;
@@ -358,7 +357,6 @@ public class NonGUIFRAPTest {
 //				:null);
 		
 		double fd,ff,bwmr,cd,cf,imf,bs,on,off;
-		Parameter[] params = null;
 		try
 		{
 			fd = Double.parseDouble(freeDiffusionRateStr);
@@ -386,15 +384,6 @@ public class NonGUIFRAPTest {
 				LocalWorkspace.getDefaultOwner(),
 				new Integer(frapStudy.getStartingIndexForRecovery()));
 		frapStudy.setBioModel(bioModel);
-		DataSetControllerImpl.ProgressListener progressListener =
-			new DataSetControllerImpl.ProgressListener(){
-				public void updateProgress(double progress){
-					System.out.println((int)Math.round(progress*100));
-				}
-				public void updateMessage(String message) {
-					System.out.println(message);
-				}
-			};
 		MicroscopyXmlproducer.writeXMLFile(frapStudy, new File(outputXMLFileName), true, null,false);//no progress listener, need to change
 		FRAPStudy.runFVSolverStandalone(
 			new File(localWorkspace.getDefaultSimDataDirectory()),
@@ -517,36 +506,36 @@ public class NonGUIFRAPTest {
 		
 		Parameter freeDiff =
 			new cbit.vcell.opt.Parameter(FRAPReactionDiffusionParamPanel.STR_FREE_DIFF_RATE,
-					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
-					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
+										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
+										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getScale(),
 					                     freeDiffRate);
 		Parameter freeFrac =
 			new cbit.vcell.opt.Parameter(FRAPReactionDiffusionParamPanel.STR_FREE_FRACTION,
-					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),
+										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(),
 					                     freeFraction);
 		Parameter bleachWhileMonitoringRate =
 			new cbit.vcell.opt.Parameter(FRAPReactionDiffusionParamPanel.STR_BLEACH_MONITOR_RATE,
-					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
+										 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+										 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+										 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 					                     monitorBleachRate);
 		Parameter complexdiff = new Parameter(FRAPReactionDiffusionParamPanel.STR_COMPLEX_DIFF_RATE, 
-      			                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-				                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-				                         FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
+										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
+										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getScale(), 
 				                         complexDifffRate);
 		Parameter complexFrac = new Parameter(FRAPReactionDiffusionParamPanel.STR_COMPLEX_FRACTION,
-				   						 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-                                         FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-                                         FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(), 
                                          complexFraction);
 		Parameter immFrac = new Parameter(FRAPReactionDiffusionParamPanel.STR_IMMOBILE_FRACTION,
-						                 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-						                 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-						                 FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+										 FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(), 
 						                 immFraction);
 		Parameter bsConcentration = new Parameter(FRAPReactionDiffusionParamPanel.STR_BINDING_SITE_CONCENTRATION,
                                          0,

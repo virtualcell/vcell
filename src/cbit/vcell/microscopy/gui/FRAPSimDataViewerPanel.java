@@ -1,18 +1,14 @@
 package cbit.vcell.microscopy.gui;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import cbit.vcell.client.data.PDEDataViewer;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-
 import javax.swing.border.EmptyBorder;
 
+import cbit.vcell.client.data.PDEDataViewer;
+
+@SuppressWarnings("serial")
 public class FRAPSimDataViewerPanel extends JPanel {
 //	private final PDEDataViewer simulationDataViewer;
 	private final PDEDataViewer originalDataViewer;
@@ -38,8 +34,6 @@ public class FRAPSimDataViewerPanel extends JPanel {
 			originalDataViewer.setDataViewerManager(expDataViewerManager);
 			expDataViewerManager.addDataJobListener(originalDataViewer);
 			expDataViewerManager.addExportListener(originalDataViewer);
-			
-			VirtualFrapWindowManager simulationDataViewerManager = new VirtualFrapWindowManager();
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage(),e);

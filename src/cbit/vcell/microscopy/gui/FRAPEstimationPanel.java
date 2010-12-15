@@ -1,12 +1,33 @@
 package cbit.vcell.microscopy.gui;
 
-import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.border.EtchedBorder;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
+
+import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FrapDataAnalysisResults;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
@@ -18,28 +39,7 @@ import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
-
-import org.vcell.util.UserCancelException;
-import org.vcell.util.gui.DialogUtils;
-
+@SuppressWarnings("serial")
 public class FRAPEstimationPanel extends JPanel {
 	private JTable table;
 	private FRAPData initFRAPData;
@@ -82,7 +82,6 @@ public class FRAPEstimationPanel extends JPanel {
 	};
 
 	private static int PARAMETER_TYPE_COLUMN = 0;
-	private static int VALUE_COLUMN = 1;
 	private static int UNIT_COLUMN = 2;
 	private static String[] FRAP_ESTIMATE_COLUMN_NAMES = new String[] {"Paramter Type","Estimated Value","Unit"};
 	
@@ -340,8 +339,8 @@ public class FRAPEstimationPanel extends JPanel {
 	private void initialize(){
 		initTable();
 		
-		for (int i = 0; i < FrapDataAnalysisResults.BLEACH_TYPE_NAMES.length; i++) {
-			bleachEstimationComboBox.addItem(FrapDataAnalysisResults.BLEACH_TYPE_NAMES[i]);
+		for (int i = 0; i < FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BLEACH_TYPE_NAMES.length; i++) {
+			bleachEstimationComboBox.addItem(FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BLEACH_TYPE_NAMES[i]);
 //			bleachEstimationComboBox.insertItemAt(/*"Estimation method '"+*/"'"+FrapDataAnalysisResults.BLEACH_TYPE_NAMES[i]+"'", i);
 		}
 		bleachEstimationComboBox.addActionListener(new ActionListener() {
@@ -357,7 +356,7 @@ public class FRAPEstimationPanel extends JPanel {
 //						e2.printStackTrace(System.out);
 //					}					
 //				}else
-				if(bleachEstimationComboBox.getSelectedItem().equals(FrapDataAnalysisResults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.BleachType_GaussianSpot])){
+				if(bleachEstimationComboBox.getSelectedItem().equals(FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_GaussianSpot])){
 					//expression on canvas
 					try{
 						String[] prefixes = new String[] { "I(t) = ", "u(t)= ","D = " };
@@ -368,7 +367,7 @@ public class FRAPEstimationPanel extends JPanel {
 						e2.printStackTrace(System.out);
 					}
 					
-				}else if(bleachEstimationComboBox.getSelectedItem().equals(FrapDataAnalysisResults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.BleachType_HalfCell])){
+				}else if(bleachEstimationComboBox.getSelectedItem().equals(FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_HalfCell])){
 					//expression on canvas
 					try{
 						String[] prefixes = new String[] { "I(t) = ", "u(t)= ","D = " };
@@ -391,16 +390,16 @@ public class FRAPEstimationPanel extends JPanel {
 					e2.printStackTrace();
 					DialogUtils.showErrorDialog(FRAPEstimationPanel.this,
 						"Error setting estimation method "+
-						FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+
+						FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+
 						"\n"+e2.getMessage());
 				}
 			}
 		});
-		bleachEstimationComboBox.setSelectedItem(FrapDataAnalysisResults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.BleachType_GaussianSpot]);
+		bleachEstimationComboBox.setSelectedItem(FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_GaussianSpot]);
 	}
 
-	private void displayFit(FrapDataAnalysisResults frapDataAnalysisResults,double[] frapDataTimeStamps){
-		if (frapDataAnalysisResults == null){
+	private void displayFit(FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults diffAnalysisResults,double[] frapDataTimeStamps){
+		if (diffAnalysisResults == null){
 			FRAPParameterEstimateEnum.DIFFUSION_RATE.value = null;
 			FRAPParameterEstimateEnum.MOBILE_FRACTION.value = null;
 			FRAPParameterEstimateEnum.IMMOBILE_FRATION.value = null;
@@ -409,30 +408,31 @@ public class FRAPEstimationPanel extends JPanel {
 			multisourcePlotPane.setDataSources(null);
 		}else{
 			FRAPParameterEstimateEnum.DIFFUSION_RATE.value =
-				(frapDataAnalysisResults.getRecoveryDiffusionRate() == null
+				(diffAnalysisResults.getRecoveryDiffusionRate() == null
 					?null
-					:frapDataAnalysisResults.getRecoveryDiffusionRate());
+					:diffAnalysisResults.getRecoveryDiffusionRate());
 			FRAPParameterEstimateEnum.MOBILE_FRACTION.value =
-					(frapDataAnalysisResults.getMobilefraction() == null
+					(diffAnalysisResults.getMobilefraction() == null
 						?null
-						:frapDataAnalysisResults.getMobilefraction());
+						:diffAnalysisResults.getMobilefraction());
 			FRAPParameterEstimateEnum.IMMOBILE_FRATION.value =
 				(FRAPParameterEstimateEnum.MOBILE_FRACTION.value == null
 					?null
 					:1.0 - FRAPParameterEstimateEnum.MOBILE_FRACTION.value);
 			FRAPParameterEstimateEnum.BLEACH_RATE_MONITOR.value =
-				(frapDataAnalysisResults.getBleachWhileMonitoringTau() == null
+				(diffAnalysisResults.getBleachWhileMonitoringTau() == null
 					?null
-					:frapDataAnalysisResults.getBleachWhileMonitoringTau());
+					:diffAnalysisResults.getBleachWhileMonitoringTau());
 			
 			
 			
-			int startIndexForRecovery = frapDataAnalysisResults.getStartingIndexForRecovery();
+			int startIndexForRecovery = FRAPDataAnalysis.getRecoveryIndex(initFRAPData);
 			//
 			//Experiment - Cell ROI Average
 			//
-			double[] cellRegionData = frapDataAnalysisResults.getCellRegionData();
-			Expression bleachWhileMonitorCurve = frapDataAnalysisResults.getFitBleachWhileMonitorExpression();
+			double[] temp_background = initFRAPData.getAvgBackGroundIntensity();
+			double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(initFRAPData, startIndexForRecovery);
+			double[] cellRegionData = FRAPDataAnalysis.getAverageROIIntensity(initFRAPData, initFRAPData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
 			ReferenceData expCellAvgData =
 				new SimpleReferenceData(new String[] { "t", "CellROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, cellRegionData });
 			DataSource expCellAvgDataSource = new DataSource.DataSourceReferenceData("expCellAvg", expCellAvgData);
@@ -444,7 +444,7 @@ public class FRAPEstimationPanel extends JPanel {
 			try {
 				bleachWhileMonitorOdeSolverResultSet.addFunctionColumn(
 					new FunctionColumnDescription(
-						frapDataAnalysisResults.getFitBleachWhileMonitorExpression(),
+						diffAnalysisResults.getFitBleachWhileMonitorExpression(),
 						"CellROI_BleachWhileMonitor",
 						null,"bleachWhileMonitorFit",true));
 			} catch (ExpressionException e) {
@@ -459,7 +459,7 @@ public class FRAPEstimationPanel extends JPanel {
 			{
 			double T = frapDataTimeStamps[frapDataTimeStamps.length-1];
 			double deltaT = frapDataTimeStamps[frapDataTimeStamps.length-1]-frapDataTimeStamps[frapDataTimeStamps.length-2];
-			while (T+deltaT < 6*frapDataAnalysisResults.getRecoveryTau()){
+			while (T+deltaT < 6*diffAnalysisResults.getRecoveryTau()){
 				bleachWhileMonitorOdeSolverResultSet.addRow(new double[] { T } );
 				T += deltaT;
 			}
@@ -467,8 +467,7 @@ public class FRAPEstimationPanel extends JPanel {
 			DataSource bleachWhileMonitorDataSource = new DataSource.DataSourceOdeSolverResultSet("bleachwm", bleachWhileMonitorOdeSolverResultSet);
 
 			//Recovery curve
-			double[] bleachRegionData = frapDataAnalysisResults.getBleachRegionData();
-			Expression fittedCurve = frapDataAnalysisResults.getFitExpression();
+			double[] bleachRegionData = FRAPDataAnalysis.getAverageROIIntensity(initFRAPData, initFRAPData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background);;
 			ReferenceData expRefData = new SimpleReferenceData(new String[] { "t", "BleachROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, bleachRegionData });
 			DataSource expDataSource = new DataSource.DataSourceReferenceData("experiment", expRefData);
 			ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
@@ -476,7 +475,7 @@ public class FRAPEstimationPanel extends JPanel {
 			try {
 				fitOdeSolverResultSet.addFunctionColumn(
 					new FunctionColumnDescription(
-						fittedCurve,
+						diffAnalysisResults.getDiffFitExpression(),
 						"BleachROI_Recovery",//"('"+FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+"')",
 						null,"recoveryFit",true));
 			} catch (ExpressionException e) {
@@ -491,7 +490,7 @@ public class FRAPEstimationPanel extends JPanel {
 			double T = frapDataTimeStamps[frapDataTimeStamps.length-1];
 			double deltaT = frapDataTimeStamps[frapDataTimeStamps.length-1]-frapDataTimeStamps[frapDataTimeStamps.length-2];
 
-			while (T+deltaT < 6*frapDataAnalysisResults.getRecoveryTau()){
+			while (T+deltaT < 6*diffAnalysisResults.getRecoveryTau()){
 				fitOdeSolverResultSet.addRow(new double[] { T } );
 				T += deltaT;
 			}
@@ -504,7 +503,7 @@ public class FRAPEstimationPanel extends JPanel {
 	
 	public void refreshFRAPModelParameterEstimates(FRAPData frapData) throws Exception {
 		this.initFRAPData = frapData;
-		FrapDataAnalysisResults frapDataAnalysisResults = null;
+		FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults diffAnalysisResults = null;
 		double[] frapDataTimeStamps = null;
 		bleachEstimationComboBox.setEnabled(false);
 		if(frapData != null){
@@ -515,13 +514,13 @@ public class FRAPEstimationPanel extends JPanel {
 					"Use ROI tools under '"+FRAPStudyPanel.FRAPSTUDYPANEL_TABNAME_IMAGES+"' tab to define.");
 			}
 			frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
-			frapDataAnalysisResults =
-				FRAPDataAnalysis.fitRecovery(frapData,
-					FrapDataAnalysisResults.getBleachTypeFromBleachTypeName(bleachEstimationComboBox.getSelectedItem().toString()));
-			FRAPParameterEstimateEnum.START_TIME_RECOVERY.value = frapDataTimeStamps[frapDataAnalysisResults.getStartingIndexForRecovery()];
+			diffAnalysisResults =
+				FRAPDataAnalysis.fitRecovery_diffusionOnly(frapData,
+					FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.getBleachTypeFromBleachTypeName(bleachEstimationComboBox.getSelectedItem().toString()));
+			FRAPParameterEstimateEnum.START_TIME_RECOVERY.value = frapDataTimeStamps[FRAPDataAnalysis.getRecoveryIndex(initFRAPData)];
 			bleachEstimationComboBox.setEnabled(true);
 		}
 
-		displayFit(frapDataAnalysisResults,frapDataTimeStamps);
+		displayFit(diffAnalysisResults,frapDataTimeStamps);
 	}
 }

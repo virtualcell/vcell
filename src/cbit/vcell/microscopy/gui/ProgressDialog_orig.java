@@ -1,6 +1,11 @@
 package cbit.vcell.microscopy.gui;
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Frame;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 
 import org.vcell.util.gui.ProgressDialogListener;
 import org.vcell.util.gui.ProgressDialogListenerEventMulticaster;
@@ -9,6 +14,7 @@ import org.vcell.util.gui.ProgressDialogListenerEventMulticaster;
  * Creation date: (5/18/2004 1:14:29 AM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class ProgressDialog_orig extends JDialog {
 	private JPanel ivjJDialogContentPane = null;
 	private JLabel ivjJLabel1 = null;
@@ -261,7 +267,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		aProgressDialog.show();
+		aProgressDialog.setVisible(true);
 		java.awt.Insets insets = aProgressDialog.getInsets();
 		aProgressDialog.setSize(aProgressDialog.getWidth() + insets.left + insets.right, aProgressDialog.getHeight() + insets.top + insets.bottom);
 		aProgressDialog.setVisible(true);

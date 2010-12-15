@@ -1,14 +1,12 @@
 package cbit.vcell.microscopy.batchrun.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-
-import javax.swing.BoxLayout;
 
 import org.vcell.util.gui.BoxPanel;
 
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 
+@SuppressWarnings("serial")
 public class BatchRunResultsParameterPanel extends BoxPanel
 {
 	private BatchRunResultsParamTablePanel paramTablePanel;

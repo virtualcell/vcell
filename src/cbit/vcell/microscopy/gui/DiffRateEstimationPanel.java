@@ -16,6 +16,7 @@ import javax.swing.JTextField;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 
+@SuppressWarnings("serial")
 public class DiffRateEstimationPanel extends JPanel
 {
 	private static final double gfpWeight = 27;

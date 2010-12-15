@@ -7,12 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import org.vcell.optimization.OptSolverResultSet;
-import org.vcell.optimization.ProfileData;
-import org.vcell.optimization.ProfileDataElement;
 import org.vcell.optimization.OptSolverResultSet.OptRunResultSet;
 import org.vcell.optimization.OptSolverResultSet.ProfileDistribution;
-
 
 import cbit.vcell.opt.ExplicitFitObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
@@ -52,8 +48,6 @@ public class ReactionDominantTest
 	private double[] t = null;
 	private double[] data_bleached = null;
 	private double[] data_unbleached = null;
-	private static final int maxIteration = 50;
-	private ProfileData[] profileData = new ProfileData[3];
 	private String fileDir = "C:\\VirtualMicroscopy\\testReactionDominant\\";
 	
 	public final String inFilename = fileDir + "\\test1_diffusionfast.txt";
@@ -88,7 +82,6 @@ public class ReactionDominantTest
 		Fbleached_bleachFastExp.substituteInPlace(Omega_cExp, new Expression(Omega_c));
 		Fbleached_bleachFastExp.substituteInPlace(WExp, new Expression(W));
 		
-		String parameterNames[] = new String[] {"alpha", "Kon_star", "Koff"};
 		Parameter parameters[] = new Parameter[] {para_alpha, para_Kon_star, para_Koff};
 //		Expression Fbleached_bleachFast = Fbleached_bleachFastExp.flatten();
 		
@@ -162,13 +155,7 @@ public class ReactionDominantTest
 		{
 			ReactionDominantTest test = new ReactionDominantTest();
 			test.readData();
-			OptimizationResultSet optResultSet = test.solve();
-//			OptSolverResultSet optSolverResultSet = optResultSet.getOptSolverResultSet();
-//			String[] paramNames = optSolverResultSet.getParameterNames();
-//			double[] paramValues = optSolverResultSet.getBestEstimates();
-//			for (int i = 0; i < paramNames.length; i++) {
-//				System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
-//			}
+			test.solve();
 			
 		}
 		catch(Exception e)

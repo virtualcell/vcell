@@ -134,6 +134,7 @@ public class NetCDFRefDataReader {
 		{
 			Variable regionVars = getRegionVariable();
 			int[] shape = regionVars.getShape();
+			@SuppressWarnings("unused")
 			ArrayDouble.D2 data = null;
 			try{
 				data = (ArrayDouble.D2)regionVars.read();

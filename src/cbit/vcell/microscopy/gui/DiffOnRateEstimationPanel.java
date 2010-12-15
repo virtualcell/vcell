@@ -2,7 +2,6 @@ package cbit.vcell.microscopy.gui;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -16,18 +15,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.table.TableColumn;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.microscopy.EstimatedParameterTableRenderer;
 import cbit.vcell.microscopy.gui.estparamwizard.FRAPReacDiffEstimationGuidePanel;
 
+@SuppressWarnings("serial")
 public class DiffOnRateEstimationPanel extends JPanel 
 {
 	private JPanel calculationPanel;

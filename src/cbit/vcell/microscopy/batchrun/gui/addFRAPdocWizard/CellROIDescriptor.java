@@ -1,38 +1,18 @@
 package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 
 import java.awt.BorderLayout;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.ListSelectionModel;
 
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import org.vcell.wizard.WizardPanelDescriptor;
+
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.FRAPDataPanel;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.ROIImagePanel;
 import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_Panel;
-import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SingleFileDescriptor;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VariableType;
-
-import org.vcell.util.BeanUtils;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ZEnforcer;
-import org.vcell.wizard.WizardPanelDescriptor;
 
 public class CellROIDescriptor extends WizardPanelDescriptor {
     
@@ -98,7 +78,7 @@ public class CellROIDescriptor extends WizardPanelDescriptor {
 				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 				   ((BatchRunROIImgPanel)imgPanel).getBatchRunWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()).getNonzeroPixelsCount()<1)
 				{
-					((FRAPDataPanel)((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+					(((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
 				}
 			}
 		};
