@@ -17,8 +17,6 @@ public class ImplicitObjectiveFunction extends ObjectiveFunction
 	}
 	@Override
 	public void gatherIssues(Vector<Issue> issueList) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
