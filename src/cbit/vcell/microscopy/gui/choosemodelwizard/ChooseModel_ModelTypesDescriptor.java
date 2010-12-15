@@ -2,12 +2,14 @@ package cbit.vcell.microscopy.gui.choosemodelwizard;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
+
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.FRAPModel;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
 
 public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
     
@@ -50,10 +52,10 @@ public class ChooseModel_ModelTypesDescriptor extends WizardPanelDescriptor {
 			{
 				modelTypesPanel.setDiffTwoSelected(true);
 			}
-//			if(models[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
-//			{
-//				modelTypesPanel.setDiffBindingSelected(true);
-//			}
+			if(models[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] != null)
+			{
+				modelTypesPanel.setReactionOffRateSelected(true);
+			}
     	}
     	else //new frap document
     	{

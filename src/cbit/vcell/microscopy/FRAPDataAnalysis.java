@@ -61,68 +61,14 @@ public class FRAPDataAnalysis {
 		return averageROIIntensity;
 	}
 	
-//	/**
-//	 * Method fitRecovery.
-//	 * @param frapData FRAPData
-//	 * @throws ExpressionException
-//	 */
-//	public static void fitRecovery(FRAPData frapData,double[] normFactor) throws ExpressionException{
-//		double[] temp_fluor = getAverageROIIntensity(frapData,frapData.getRoi(RoiType.ROI_BLEACHED),normFactor); 
-//		double[] temp_background = getAverageROIIntensity(frapData,frapData.getRoi(RoiType.ROI_BACKGROUND),normFactor); 
-//		double[] temp_time = frapData.getImageDataset().getImageTimeStamps();
-//		//
-//		// get average background fluorescence
-//		//
-//		double averageBackground = 0.0;
-//		for (int i = 0; i < temp_background.length; i++) {
-//			averageBackground += temp_background[i];
-//		}
-//		averageBackground /= temp_background.length;
-//		
-//		//
-//		// background subtract the bleached region
-//		//
-//		for (int i = 0; i < temp_fluor.length; i++) {
-//			temp_fluor[i] -= averageBackground;
-//		}
-//		//
-//		// determine index of first post bleach (index of smallest fluorescence)
-//		//
-//		int startIndexForRecovery = 0;
-//		double minFluorValue = Double.MAX_VALUE;
-//		for (int i = 0; i < temp_fluor.length; i++) {
-//			if (minFluorValue>temp_fluor[i]){
-//				minFluorValue = temp_fluor[i];
-//				startIndexForRecovery = i;
-//			}
-//		}
-//		double[] fluor = new double[temp_fluor.length-startIndexForRecovery];
-//		double[] time = new double[temp_time.length-startIndexForRecovery];
-//		System.arraycopy(temp_fluor, startIndexForRecovery, fluor, 0, fluor.length);
-//		System.arraycopy(temp_time, startIndexForRecovery, time, 0, time.length);
-//		double[] paramValues = new double[3];
-//		double[] inputParams = null;
-//		Expression fittedCurve = CurveFitting.fitRecovery(time,fluor,FrapDataAnalysisResults.BleachType_CirularDisk, inputParams, paramValues);
-//		SimpleSymbolTable symbolTable = new SimpleSymbolTable(new String[] { "t" });
-//		fittedCurve.bindExpression(symbolTable);
-//		double[] values = new double[1];
-//		double[] curveValues = new double[fluor.length];
-//		double[] asymptote = new double[fluor.length];
-//		for (int i = 0; i < curveValues.length; i++) {
-//			values[0] = time[i];
-//			curveValues[i] = fittedCurve.evaluateVector(values);
-//			values[0] = time[time.length-1]*100;
-//			asymptote[i] = fittedCurve.evaluateVector(values);
-//		}
-//	}
-	
 	/**
 	 * Method fitRecovery2.
-	 * @param frapData FRAPData
-	 * @return FrapDataAnalysisResults
+	 * @param frapData, the original image info.
+	 * @param arg_bleachType, the gaussian spot or half cell bleaching types.
+	 * @return FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults
 	 * @throws ExpressionException
 	 */
-	public static FrapDataAnalysisResults fitRecovery(FRAPData frapData, int arg_bleachType) throws ExpressionException, OptimizationException, IOException
+	public static FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults fitRecovery_diffusionOnly(FRAPData frapData, int arg_bleachType) throws ExpressionException, OptimizationException, IOException
 	{
 		
 		int startIndexForRecovery = getRecoveryIndex(frapData);
@@ -164,11 +110,11 @@ public class FRAPDataAnalysis {
 		System.arraycopy(temp_fluor, startIndexForRecovery, fluor, 0, fluor.length);
 		System.arraycopy(temp_time, startIndexForRecovery, time, 0, time.length);
 		
-		FrapDataAnalysisResults frapDataAnalysisResults = new FrapDataAnalysisResults();
-		frapDataAnalysisResults.setBleachWidth(bleachRadius);
-		frapDataAnalysisResults.setStartingIndexForRecovery(startIndexForRecovery);
-		frapDataAnalysisResults.setBleachRegionData(temp_fluor);// average intensity under bleached region accroding to time points
-		frapDataAnalysisResults.setBleachType(arg_bleachType);
+		FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults diffAnalysisResults = new FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults();
+//		frapDataAnalysisResults.setBleachWidth(bleachRadius);
+//		frapDataAnalysisResults.setStartingIndexForRecovery(startIndexForRecovery);
+//		frapDataAnalysisResults.setBleachRegionData(temp_fluor);// average intensity under bleached region accroding to time points
+		diffAnalysisResults.setBleachType(arg_bleachType);
 		//curve fitting according to different bleach types
 		double[] inputParamValues = null;
 		double[] outputParamValues = null;
@@ -177,9 +123,6 @@ public class FRAPDataAnalysis {
 		//Bleach while monitoring fit
 		//
 		double[] tempCellROIAverage = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
-//		for (int i = 0; i < temp_fluor.length; i++) {
-//			tempCellROIAverage[i] -= averageBackground;
-//		}
 		double[] cellROIAverage = new double[tempCellROIAverage.length-startIndexForRecovery];
 		//Cell Avg. points start from the first post bleach
 		System.arraycopy(tempCellROIAverage, startIndexForRecovery, cellROIAverage, 0, cellROIAverage.length);
@@ -187,59 +130,15 @@ public class FRAPDataAnalysis {
 		outputParamValues = new double[1];
 		Expression bleachWhileMonitorFitExpression = CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues);
 		double bleachWhileMonitoringRate = outputParamValues[0];
-		frapDataAnalysisResults.setBleachWhileMonitoringTau(bleachWhileMonitoringRate);
-		frapDataAnalysisResults.setFitBleachWhileMonitorExpression(bleachWhileMonitorFitExpression.flatten());
-		frapDataAnalysisResults.setCellRegionData(tempCellROIAverage);
-		
-		//
-		//Recovery after Bleach fit
-		//
-//		if(arg_bleachType == FrapDataAnalysisResults.BleachType_CirularDisk)
-//		{
-//			outputParamValues = new double[4];// the array is used to get Ii, A, fitRecoveryTau back, unnormalized Ii + A. (Note: Ii=Io, A=If-Io, Ii+A = If)
-//			Expression fittedCurve = CurveFitting.fitRecovery(time, fluor, FrapDataAnalysisResults.BleachType_CirularDisk, inputParamValues, outputParamValues);
-//			double fittedRecoveryTau = outputParamValues[2];
-//			Expression diffExp = new Expression(FRAPDataAnalysis.circularDisk_DiffFunc);
-//			diffExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_w), new Expression(bleachRadius));
-//			diffExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_tau), new Expression(fittedRecoveryTau));
-//			double fittedDiffusionRate =  diffExp.evaluateConstant();
-////			double fittedDiffusionRate = bleachRadius*bleachRadius/(4.0*fittedRecoveryTau);
-//			frapDataAnalysisResults.setFitExpression(fittedCurve.flatten());
-//			frapDataAnalysisResults.setRecoveryTau(fittedRecoveryTau);
-//			frapDataAnalysisResults.setRecoveryDiffusionRate(fittedDiffusionRate);
-////			//calculate mobile fraction
-////			// get pre bleach average under bleach ROI region, if no prebleach available
-////			double preBleachAvg = 0;
-////			if(startIndexForRecovery > 0)
-////			{
-////				for(int i=0; i<startIndexForRecovery; i++)
-////				{
-////					preBleachAvg = preBleachAvg + temp_fluor[i];
-////				}
-////				preBleachAvg = preBleachAvg/startIndexForRecovery;
-////			}
-////			else //if there is not prebleach images, we'll use the last recovery image * 1.2 as prebleach value if user agrees.
-////			{
-////				preBleachAvg = temp_fluor[temp_fluor.length - 1];//* ratio
-////				System.err.println("need to determine factor for prebleach average if no pre bleach images.");
-////			}
-////			// get unnormalized Ii and A
-////			double intensityFinal = outputParamValues[3]; // Ii+A
-////			// calculate mobile fraction
-////			double mobileFrac = intensityFinal/preBleachAvg;
-////			frapDataAnalysisResults.setMobilefraction(mobileFrac);
-//			double mobileFrac = outputParamValues[3];
-//			frapDataAnalysisResults.setMobilefraction(mobileFrac);
-//
-//			
-//		}
-//		else 
-		if(arg_bleachType == FrapDataAnalysisResults.BleachType_GaussianSpot)
+		diffAnalysisResults.setBleachWhileMonitoringTau(bleachWhileMonitoringRate);
+		diffAnalysisResults.setFitBleachWhileMonitorExpression(bleachWhileMonitorFitExpression.flatten());
+		//to fit If, Io and recovery tau by fitting expressions based on bleaching types
+		if(arg_bleachType == FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_GaussianSpot)
 		{
 			double cellAreaBleached = getCellAreaBleachedFraction(frapData);
 			inputParamValues = new double[]{bleachWhileMonitoringRate}; // the input parameter is the bleach while monitoring rate
 			outputParamValues = new double[3];// the array is used to get If, Io, and tau back.
-			Expression fittedCurve = CurveFitting.fitRecovery(time, fluor, FrapDataAnalysisResults.BleachType_GaussianSpot, inputParamValues, outputParamValues);
+			Expression fittedCurve = CurveFitting.fitRecovery_diffOnly(time, fluor, FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_GaussianSpot, inputParamValues, outputParamValues);
 			//get diffusion rate
 			double fittedRecoveryTau = outputParamValues[2];
 			Expression diffExp = new Expression(FRAPDataAnalysis.gaussianSpot_DiffFunc);
@@ -260,18 +159,18 @@ public class FRAPDataAnalysis {
 			mobileFrac = Math.min(1,mobileFrac);
 			mobileFrac = Math.max(0, mobileFrac);
 			//set frap data analysis results
-			frapDataAnalysisResults.setFitExpression(fittedCurve.flatten());
-			frapDataAnalysisResults.setRecoveryTau(fittedRecoveryTau);
-			frapDataAnalysisResults.setRecoveryDiffusionRate(fittedDiffusionRate);
-			frapDataAnalysisResults.setMobilefraction(mobileFrac);
+			diffAnalysisResults.setDiffFitExpression(fittedCurve.flatten());
+			diffAnalysisResults.setRecoveryTau(fittedRecoveryTau);
+			diffAnalysisResults.setRecoveryDiffusionRate(fittedDiffusionRate);
+			diffAnalysisResults.setMobilefraction(mobileFrac);
 		}
-		else if(arg_bleachType == FrapDataAnalysisResults.BleachType_HalfCell)
+		else if(arg_bleachType == FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_HalfCell)
 		{
 			
 			double cellAreaBleached = getCellAreaBleachedFraction(frapData);
 			inputParamValues = new double[]{bleachWhileMonitoringRate}; // the input parameter is the bleach while monitoring rate
 			outputParamValues = new double[3];// the array is used get If, Io, and tau back.
-			Expression fittedCurve = CurveFitting.fitRecovery(time, fluor, FrapDataAnalysisResults.BleachType_HalfCell, inputParamValues, outputParamValues);
+			Expression fittedCurve = CurveFitting.fitRecovery_diffOnly(time, fluor, FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_HalfCell, inputParamValues, outputParamValues);
 			//get diffusion rate
 			double fittedRecoveryTau = outputParamValues[2];
 			Expression diffExp = new Expression(FRAPDataAnalysis.halfCell_DiffFunc);
@@ -289,15 +188,84 @@ public class FRAPDataAnalysis {
 			mFracExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_preBlchAvg), new Expression(preBleachAverage_bleachedArea));
 			mFracExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_fB), new Expression(cellAreaBleached));
 			double mobileFrac = mFracExp.evaluateConstant();
-			//set frap data analysis results
-			frapDataAnalysisResults.setFitExpression(fittedCurve.flatten());
-			frapDataAnalysisResults.setRecoveryTau(fittedRecoveryTau);
-			frapDataAnalysisResults.setRecoveryDiffusionRate(fittedDiffusionRate);
-			frapDataAnalysisResults.setMobilefraction(mobileFrac);
+			//set diffusion only analysis results
+			diffAnalysisResults.setDiffFitExpression(fittedCurve.flatten());
+			diffAnalysisResults.setRecoveryTau(fittedRecoveryTau);
+			diffAnalysisResults.setRecoveryDiffusionRate(fittedDiffusionRate);
+			diffAnalysisResults.setMobilefraction(mobileFrac);
 		}else{
 			throw new IllegalArgumentException("Unknown Bleach Type "+arg_bleachType);
 		}
-		return frapDataAnalysisResults;
+		return diffAnalysisResults;
+	}
+	
+	/**
+	 * Method fitRecovery2.
+	 * @param frapData, the original image info.
+	 * @param arg_bleachType, the gaussian spot or half cell bleaching types.
+	 * @return FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults
+	 * @throws ExpressionException
+	 */
+	public static FrapDataAnalysisResults.ReactionOnlyAnalysisRestults fitRecovery_reacOffRateOnly(FRAPData frapData) throws ExpressionException, OptimizationException, IOException
+	{
+		
+		int startIndexForRecovery = getRecoveryIndex(frapData);
+		//
+		// get unnormalized average background fluorescence at each time point
+		//
+		double[] temp_background = frapData.getAvgBackGroundIntensity();
+		//the prebleachAvg has backgroud subtracted.
+		double[] preBleachAvgXYZ = FRAPStudy.calculatePreBleachAverageXYZ(frapData, startIndexForRecovery);
+		//temp_fluor has subtracted background and divided by prebleach average.
+		double[] temp_fluor = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background); //get average intensity under the bleached area according to each time point
+		double[] temp_time = frapData.getImageDataset().getImageTimeStamps();
+
+		//get nomalized preBleachAverage under bleached area.
+		double preBleachAverage_bleachedArea = 0.0;
+		for (int i = 0; i < startIndexForRecovery; i++) {
+			preBleachAverage_bleachedArea += temp_fluor[i];
+		}
+		preBleachAverage_bleachedArea /= startIndexForRecovery;
+		//average intensity under bleached area. The time points start from the first post bleach
+		double[] fluor = new double[temp_fluor.length-startIndexForRecovery];
+		//Time points stat from the first post bleach
+		double[] time = new double[temp_time.length-startIndexForRecovery];
+		System.arraycopy(temp_fluor, startIndexForRecovery, fluor, 0, fluor.length);
+		System.arraycopy(temp_time, startIndexForRecovery, time, 0, time.length);
+		
+		FrapDataAnalysisResults.ReactionOnlyAnalysisRestults offRateAnalysisResults = new FrapDataAnalysisResults.ReactionOnlyAnalysisRestults();
+
+		//curve fitting 
+		double[] inputParamValues = null; //bleaching while monitoring rate
+		double[] outputParamValues = null; // koff rate
+		
+		//
+		//Bleach while monitoring fit
+		//
+		double[] tempCellROIAverage = getAverageROIIntensity(frapData,frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
+		double[] cellROIAverage = new double[tempCellROIAverage.length-startIndexForRecovery];
+		//Cell Avg. points start from the first post bleach
+		System.arraycopy(tempCellROIAverage, startIndexForRecovery, cellROIAverage, 0, cellROIAverage.length);
+
+		outputParamValues = new double[2];
+		Expression bleachWhileMonitorFitExpression = CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues);
+		double bleachWhileMonitoringRate = outputParamValues[0];
+		offRateAnalysisResults.setBleachWhileMonitoringTau(bleachWhileMonitoringRate);
+		offRateAnalysisResults.setFitBleachWhileMonitorExpression(bleachWhileMonitorFitExpression.flatten());
+
+		//to fit reaction koff rate expression
+		inputParamValues = new double[]{fluor[0], bleachWhileMonitoringRate}; // the input parameter is the initial intensity under bleached area(first post bleach), bleach while monitoring rate
+		outputParamValues = new double[2];// the array is used to get koff rate and fitting parameter A back.
+		Expression offRateExp = CurveFitting.fitRecovery_reacKoffRateOnly(time, fluor, inputParamValues, outputParamValues);
+		//get reaction off rate
+		double koffRate = outputParamValues[0];
+		double fittingParamA = outputParamValues[1];
+		//set reaction only off rate analysis results
+		offRateAnalysisResults.setOffRate(koffRate);
+		offRateAnalysisResults.setFittingParamA(fittingParamA);
+		offRateAnalysisResults.setOffRateFitExpression(offRateExp);
+		
+		return offRateAnalysisResults;
 	}
 	
 	public static int getRecoveryIndex(FRAPData frapData)

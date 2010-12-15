@@ -123,6 +123,8 @@ public class FRAPStudy implements Matchable{
 	PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	//temporary data structure for reference data used in optimization
 	private transient FRAPOptData frapOptData = null;
+	//temporary data structure for optimization with explicit functions
+	private transient FRAPOptFunctions frapOptFunc = null;
 	//temporary data structure to store MSE for different models under different ROIs. (may not be all the models with all ROIs)
 	//first dimentsion: 3 models, second dimension: bleahed + 8 Rings + sum of MSE, any element that is not applicable should fill with 1e8.
 	private transient double[][] analysisMSESummaryData = null; 
@@ -224,7 +226,6 @@ public class FRAPStudy implements Matchable{
 		ROI cellROI_2D = sourceFrapStudy.getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 		Extent extent = sourceFrapStudy.getFrapData().getImageDataset().getExtent();
 
-		double[] timeStamps = sourceFrapStudy.getFrapData().getImageDataset().getImageTimeStamps();
 		TimeBounds timeBounds = FRAPOptData.getEstimatedRefTimeBound(sourceFrapStudy);
 		double timeStepVal = FRAPOptData.REFERENCE_DIFF_DELTAT;
 		
@@ -281,7 +282,7 @@ public class FRAPStudy implements Matchable{
 		species[MOBILE_SPECIES_INDEX] =
 				new Species(SPECIES_NAME_PREFIX_MOBILE, "Mobile bleachable species");
 		speciesContexts[MOBILE_SPECIES_INDEX] = 
-				new SpeciesContext(null,species[MOBILE_SPECIES_INDEX].getCommonName(),species[MOBILE_SPECIES_INDEX],cytosol,true);
+				new SpeciesContext(null,species[MOBILE_SPECIES_INDEX].getCommonName(),species[MOBILE_SPECIES_INDEX],cytosol);
 		FieldFunctionArguments postBleach_first = new FieldFunctionArguments(roiDataName,"postbleach_first", new Expression(0), VariableType.VOLUME);
 		FieldFunctionArguments prebleach_avg = new FieldFunctionArguments(roiDataName,"prebleach_avg", new Expression(0), VariableType.VOLUME);
 		Expression expPostBleach_first = new Expression(postBleach_first.infix());
@@ -376,11 +377,11 @@ public class FRAPStudy implements Matchable{
 		} 
 		//immobile fraction
 		double fimm = 1-ff-fc;
-		if(fimm < FRAPOptimization.epsilon && fimm > (0 - FRAPOptimization.epsilon))
+		if(fimm < FRAPOptimizationUtils.epsilon && fimm > (0 - FRAPOptimizationUtils.epsilon))
 		{
 			fimm = 0;
 		}
-		if(fimm < (1+FRAPOptimization.epsilon) && fimm > (1 - FRAPOptimization.epsilon))
+		if(fimm < (1+FRAPOptimizationUtils.epsilon) && fimm > (1 - FRAPOptimizationUtils.epsilon))
 		{
 			fimm = 1;
 		}
@@ -457,7 +458,7 @@ public class FRAPStudy implements Matchable{
 		//Free Species
 		diffusionConstants[FREE_SPECIES_INDEX] = new Expression(df);
 		species[FREE_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_MOBILE,	"Mobile bleachable species");
-		speciesContexts[FREE_SPECIES_INDEX] = new SpeciesContext(null,species[FREE_SPECIES_INDEX].getCommonName(),species[FREE_SPECIES_INDEX],cytosol,true);
+		speciesContexts[FREE_SPECIES_INDEX] = new SpeciesContext(null,species[FREE_SPECIES_INDEX].getCommonName(),species[FREE_SPECIES_INDEX],cytosol);
 		initialConditions[FREE_SPECIES_INDEX] = Expression.mult(new Expression(ff), totalIniCondition);
 		
 		//Immobile Species (No diffusion)
@@ -466,19 +467,19 @@ public class FRAPStudy implements Matchable{
 		final String IMMOBILE_DIFFUSION_KLUDGE = "1e-14";
 		diffusionConstants[IMMOBILE_SPECIES_INDEX] = new Expression(IMMOBILE_DIFFUSION_KLUDGE);
 		species[IMMOBILE_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE,"Immobile bleachable species");
-		speciesContexts[IMMOBILE_SPECIES_INDEX] = new SpeciesContext(null,species[IMMOBILE_SPECIES_INDEX].getCommonName(),species[IMMOBILE_SPECIES_INDEX],cytosol,true);
+		speciesContexts[IMMOBILE_SPECIES_INDEX] = new SpeciesContext(null,species[IMMOBILE_SPECIES_INDEX].getCommonName(),species[IMMOBILE_SPECIES_INDEX],cytosol);
 		initialConditions[IMMOBILE_SPECIES_INDEX] = Expression.mult(new Expression(fimm), totalIniCondition);
 
 		//BS Species
 		diffusionConstants[BS_SPECIES_INDEX] = new Expression(IMMOBILE_DIFFUSION_KLUDGE);
 		species[BS_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_BINDING_SITE,"Binding Site species");
-		speciesContexts[BS_SPECIES_INDEX] = new SpeciesContext(null,species[BS_SPECIES_INDEX].getCommonName(),species[BS_SPECIES_INDEX],cytosol,true);
+		speciesContexts[BS_SPECIES_INDEX] = new SpeciesContext(null,species[BS_SPECIES_INDEX].getCommonName(),species[BS_SPECIES_INDEX],cytosol);
 		initialConditions[BS_SPECIES_INDEX] = Expression.mult(new Expression(bs), totalIniCondition);
 	
 		//Complex species
 		diffusionConstants[COMPLEX_SPECIES_INDEX] = new Expression(dc);
 		species[COMPLEX_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE, "Slower mobile bleachable species");
-		speciesContexts[COMPLEX_SPECIES_INDEX] = new SpeciesContext(null,species[COMPLEX_SPECIES_INDEX].getCommonName(),species[COMPLEX_SPECIES_INDEX],cytosol,true);
+		speciesContexts[COMPLEX_SPECIES_INDEX] = new SpeciesContext(null,species[COMPLEX_SPECIES_INDEX].getCommonName(),species[COMPLEX_SPECIES_INDEX],cytosol);
 		initialConditions[COMPLEX_SPECIES_INDEX] = Expression.mult(new Expression(fc), totalIniCondition);
 	
 		// add reactions to species if there is bleachWhileMonitoring rate.
@@ -1039,12 +1040,12 @@ public class FRAPStudy implements Matchable{
 		//for each pixel if it's grater than 0, we add 1 offset to it. 
 		//if it is smaller or equal to 0 , we set it to 1.
 		for (int i = 0; i < avgPrebleachDouble.length; i++) {
-			if(avgPrebleachDouble[i] <= FRAPOptimization.epsilon){
+			if(avgPrebleachDouble[i] <= FRAPOptimizationUtils.epsilon){
 				avgPrebleachDouble[i] = 1;
 			}
 			else
 			{
-				avgPrebleachDouble[i]=avgPrebleachDouble[i] - FRAPOptimization.epsilon +1;
+				avgPrebleachDouble[i]=avgPrebleachDouble[i] - FRAPOptimizationUtils.epsilon +1;
 			}
 		}
 		return avgPrebleachDouble;
@@ -1278,13 +1279,13 @@ public class FRAPStudy implements Matchable{
 			doubleData[i] = ((0x0000FFFF&shortData[i]) - bkGround);
 			if(isOffset1ProcessNeeded)
 			{
-				if(doubleData[i] <= FRAPOptimization.epsilon)
+				if(doubleData[i] <= FRAPOptimizationUtils.epsilon)
 				{
 					doubleData[i] = 1;
 				}
 				else
 				{
-					doubleData[i] = doubleData[i] - FRAPOptimization.epsilon + 1;
+					doubleData[i] = doubleData[i] - FRAPOptimizationUtils.epsilon + 1;
 				}
 			}
 		}
@@ -1431,6 +1432,18 @@ public class FRAPStudy implements Matchable{
 		return frapOptData;
 	}
 
+	public void setFrapOptData(FRAPOptData frapOptData) {
+		this.frapOptData = frapOptData;
+	}
+	
+	public FRAPOptFunctions getFrapOptFunc() {
+		return frapOptFunc;
+	}
+
+	public void setFrapOptFunc(FRAPOptFunctions frapOptFunc) {
+		this.frapOptFunc = frapOptFunc;
+	}
+	
 	public ProfileData[] getProfileData_oneDiffComponent() {
 		return profileData_oneDiffComponent;
 	}
@@ -1449,11 +1462,6 @@ public class FRAPStudy implements Matchable{
 		this.profileData_twoDiffComponents = profileData;
 	}
 	
-	
-	public void setFrapOptData(FRAPOptData frapOptData) {
-		this.frapOptData = frapOptData;
-	}
-
 	public Integer getStartingIndexForRecovery() {
 		return startingIndexForRecovery;
 	}
@@ -1473,13 +1481,42 @@ public class FRAPStudy implements Matchable{
 		return selectedROIsForErrCalculation;
 	}
 	
-	public boolean hasOptModel()
+	public boolean[] getSelectedROIsForReactionOffRateModel()
+	{
+		boolean[] selectedROIs = new boolean[FRAPData.VFRAP_ROI_ENUM.values().length];
+		int bleachedIdx = 0;
+		for(FRAPData.VFRAP_ROI_ENUM enu: FRAPData.VFRAP_ROI_ENUM.values())
+		{
+			if(enu.equals(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED))
+			{
+				break;
+			}
+			else
+			{
+				bleachedIdx ++;
+			}
+		}
+		selectedROIs[bleachedIdx] = true;
+		
+		return selectedROIs;
+	}
+	
+	public boolean hasDiffusionOnlyModel()
 	{
 		if(getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null)
 		{
 			return true;
 		}
 		if(getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean hasReactionOnlyOffRateModel()
+	{
+		if(getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] != null)
 		{
 			return true;
 		}
@@ -1500,7 +1537,7 @@ public class FRAPStudy implements Matchable{
 		{
 			int startRecoveryIndex = getStartingIndexForRecovery();
 			double[] prebleachAvg = FRAPStudy.calculatePreBleachAverageXYZ(getFrapData(), startRecoveryIndex);
-			dimensionReducedExpData = FRAPOptimization.dataReduction(getFrapData(),startRecoveryIndex, getFrapData().getRois(), prebleachAvg);
+			dimensionReducedExpData = FRAPOptimizationUtils.dataReduction(getFrapData(),startRecoveryIndex, getFrapData().getRois(), prebleachAvg);
 		}
 		return dimensionReducedExpData;
 	}
@@ -1513,7 +1550,7 @@ public class FRAPStudy implements Matchable{
 		if(reducedExpTimePoints == null)
 		{
 			int startRecoveryIndex = getStartingIndexForRecovery();
-			reducedExpTimePoints = FRAPOptimization.timeReduction(getFrapData().getImageDataset().getImageTimeStamps(), startRecoveryIndex); 
+			reducedExpTimePoints = FRAPOptimizationUtils.timeReduction(getFrapData().getImageDataset().getImageTimeStamps(), startRecoveryIndex); 
 		}
 		return reducedExpTimePoints;
 	}
@@ -1553,22 +1590,29 @@ public class FRAPStudy implements Matchable{
 	//the summary is for errors of different models under ROIs
 	public void createAnalysisMSESummaryData()
 	{
-		double[][] sumData = new double[FRAPModel.NUM_MODEL_TYPES][getFrapData().getROILength()-2+1];
-		
-		//get dimension reduced exp data
-		double[][] expData = getDimensionReducedExpData();
-		//calculate summary data
-		for(int i=0; i < FRAPModel.NUM_MODEL_TYPES; i++)
+		if(getFrapOptData() != null)
 		{
-			//fill all elements with 1e8 first
-			Arrays.fill(sumData[i], FRAPOptimization.largeNumber);
+			double[][] sumData = new double[FRAPModel.NUM_MODEL_TYPES][getFrapData().getROILength()-2+1];
 			
-			if(getFrapModel(i) != null && getFrapModel(i).getData() != null)
+			//get dimension reduced exp data
+			double[][] expData = getDimensionReducedExpData();
+			//calculate summary data
+			for(int i=0; i < FRAPModel.NUM_MODEL_TYPES; i++)
 			{
-				sumData[i]=calculateMSE_OneParamSet(expData, getFrapModel(i).getData());
+				//fill all elements with 1e8 first
+				Arrays.fill(sumData[i], FRAPOptimizationUtils.largeNumber);
+				
+				if(getFrapModel(i) != null && getFrapModel(i).getData() != null)
+				{
+					sumData[i]=calculateMSE_OneParamSet(expData, getFrapModel(i).getData());
+				}
 			}
+			setAnalysisMSESummaryData(sumData);
 		}
-		setAnalysisMSESummaryData(sumData);
+		else
+		{
+			setAnalysisMSESummaryData(null);
+		}
 	}
 	
 	//called by createAnalysisMSESummaryData, calculate MSE for one frap model
@@ -1576,7 +1620,7 @@ public class FRAPStudy implements Matchable{
 	{
 		double[] result = new double[getFrapData().getROILength()-2+1];//len: all ROIS except cellROI and bkgroundROI, plus a sum of error field
 		//fill all elements with 1e8 first
-		Arrays.fill(result, FRAPOptimization.largeNumber);
+		Arrays.fill(result, FRAPOptimizationUtils.largeNumber);
 		
 		boolean[] selectedROIS = getSelectedROIsForErrorCalculation();
 		int noSelectedROIs = 0;

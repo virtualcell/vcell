@@ -11,7 +11,7 @@ import org.vcell.wizard.WizardPanelDescriptor;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptimization;
+import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.modelopt.gui.DataSource;
@@ -65,62 +65,69 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
 	    			}
 	    		}
 	    	}
+	    	else
+	    	{
+	    		bestModel = FRAPModel.IDX_MODEL_REACTION_OFF_RATE;
+	    	}
 	    	//check model significance if more than one model
 	    	if(fStudy.getSelectedModels().size() > 1)
 	    	{	
-		    	ProfileSummaryData[][] allProfileSumData = frapWorkspace.getWorkingFrapStudy().getFrapOptData().getAllProfileSummaryData();
-				FRAPModel[] frapModels = frapWorkspace.getWorkingFrapStudy().getModels();
-				int confidenceIdx = ((EstParams_CompareResultsPanel)this.getPanelComponent()).getSelectedConfidenceIndex();
-				boolean diffOneModelSignificance = true;
-				boolean diffTwoModelSignificance = true;
-				if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null &&
-				   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null && 
-				   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][0] != null)
-				{
-					for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF; i++)
+	    		if(getFrapWorkspace().getWorkingFrapStudy().getFrapOptData() != null)
+	    		{
+			    	ProfileSummaryData[][] allProfileSumData = frapWorkspace.getWorkingFrapStudy().getFrapOptData().getAllProfileSummaryData();
+					FRAPModel[] frapModels = frapWorkspace.getWorkingFrapStudy().getModels();
+					int confidenceIdx = ((EstParams_CompareResultsPanel)this.getPanelComponent()).getSelectedConfidenceIndex();
+					boolean diffOneModelSignificance = true;
+					boolean diffTwoModelSignificance = true;
+					if(frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null &&
+					   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]!= null && 
+					   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][0] != null)
 					{
-						ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i].getConfidenceIntervals();
-						if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getUpperBound() && 
-						   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getLowerBound())
+						for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF; i++)
 						{
-							diffOneModelSignificance = false;
-							break;
+							ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT][i].getConfidenceIntervals();
+							if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getUpperBound() && 
+							   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters()[i].getLowerBound())
+							{
+								diffOneModelSignificance = false;
+								break;
+							}
 						}
 					}
-				}
-				if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
-				   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null && 
-				   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][0] != null)
-				{
-					for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF; i++)
+					if(frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
+					   allProfileSumData != null && allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]!= null && 
+					   allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][0] != null)
 					{
-						ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i].getConfidenceIntervals();
-						if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getUpperBound() && 
-						   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getLowerBound())
+						for(int i=0; i<FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF; i++)
 						{
-							diffTwoModelSignificance = false;
-							break;
+							ConfidenceInterval[] intervals = allProfileSumData[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS][i].getConfidenceIntervals();
+							if(intervals[confidenceIdx].getUpperBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getUpperBound() && 
+							   intervals[confidenceIdx].getLowerBound() == frapModels[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters()[i].getLowerBound())
+							{
+								diffTwoModelSignificance = false;
+								break;
+							}
 						}
 					}
-				}
-				if((diffOneModelSignificance && !diffTwoModelSignificance) || (! diffOneModelSignificance && diffTwoModelSignificance))
-				{
-					if(diffOneModelSignificance)
+					if((diffOneModelSignificance && !diffTwoModelSignificance) || (! diffOneModelSignificance && diffTwoModelSignificance))
 					{
-						bestModel = FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT;
+						if(diffOneModelSignificance)
+						{
+							bestModel = FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT;
+						}
+						else if(diffTwoModelSignificance)
+						{
+							bestModel = FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS;
+						}
 					}
-					else if(diffTwoModelSignificance)
-					{
-						bestModel = FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS;
-					}
-				}
+	    		}
 	    	}
     	}
     	((EstParams_CompareResultsPanel)this.getPanelComponent()).setBestModelRadioButton(bestModel);
     	//set data source to multiSourcePlotPane
     	ArrayList<DataSource> comparableDataSource = new ArrayList<DataSource>(); // length shoulf be fStudy.getSelectedModels().size()+1, however, reaction binding may not have data
     	//add exp data
-    	ReferenceData expReferenceData = FRAPOptimization.doubleArrayToSimpleRefData(fStudy.getDimensionReducedExpData(),
+    	ReferenceData expReferenceData = FRAPOptimizationUtils.doubleArrayToSimpleRefData(fStudy.getDimensionReducedExpData(),
                                          fStudy.getFrapData().getImageDataset().getImageTimeStamps(), 
                                          fStudy.getStartingIndexForRecovery(), 
                                          fStudy.getSelectedROIsForErrorCalculation());
@@ -144,7 +151,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     			int startingIndex = fStudy.getStartingIndexForRecovery();
     			double[] truncatedTimes = new double[timePoints.length-startingIndex];
     			System.arraycopy(timePoints, startingIndex, truncatedTimes, 0, truncatedTimes.length);
-    			ODESolverResultSet temSolverResultSet = FRAPOptimization.doubleArrayToSolverResultSet(temModel.getData(), 
+    			ODESolverResultSet temSolverResultSet = FRAPOptimizationUtils.doubleArrayToSolverResultSet(temModel.getData(), 
     					             truncatedTimes,
     					             0,
     					             fStudy.getSelectedROIsForErrorCalculation());
@@ -158,7 +165,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     			int startingIndex = fStudy.getStartingIndexForRecovery();
     			double[] truncatedTimes = new double[timePoints.length-startingIndex];
     			System.arraycopy(timePoints, startingIndex, truncatedTimes, 0, truncatedTimes.length);
-    			ODESolverResultSet temSolverResultSet = FRAPOptimization.doubleArrayToSolverResultSet(temModel.getData(), 
+    			ODESolverResultSet temSolverResultSet = FRAPOptimizationUtils.doubleArrayToSolverResultSet(temModel.getData(), 
     								 truncatedTimes,
     					             0,
     					             fStudy.getSelectedROIsForErrorCalculation());
@@ -171,7 +178,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     			double startTimePoint = expTimePoints[fStudy.getStartingIndexForRecovery()];
     			if(temModel.getData() != null)
     			{
-	    			ODESolverResultSet temSolverResultSet = FRAPOptimization.doubleArrayToSolverResultSet(temModel.getData(), 
+	    			ODESolverResultSet temSolverResultSet = FRAPOptimizationUtils.doubleArrayToSolverResultSet(temModel.getData(), 
 	    					             temModel.getTimepoints(),
 	    					             startTimePoint,
 	    					             fStudy.getSelectedROIsForErrorCalculation());
