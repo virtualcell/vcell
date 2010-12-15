@@ -1,30 +1,31 @@
 package cbit.vcell.microscopy.gui.choosemodelwizard;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.Vector;
 
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.border.EtchedBorder;
 
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPStudy;
 
+@SuppressWarnings("serial")
 public class ChooseModel_ModelTypesPanel extends JPanel
 {
 	private JCheckBox diffOneCheckBox = null;
 	private JCheckBox diffTwoCheckBox = null;
+	private JCheckBox koffCheckBox = null;
 //	private JCheckBox diffBindingCheckBox = null;
 	
 	public ChooseModel_ModelTypesPanel() {
 		super();
-		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowHeights = new int[] {0,7,7,7,7,7,7,7,7,0,7};
-		setLayout(gridBagLayout);
+		setLayout(new GridBagLayout());
 
 		final JLabel choosePossibleModelLabel = new JLabel();
 		choosePossibleModelLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 16));
@@ -45,7 +46,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		add(chooseOneOrLabel, gridBagConstraints_1);
 
 		final JLabel selectedModelsWillLabel = new JLabel();
-		selectedModelsWillLabel.setText("selected models will be given after 'Parameter Estimation'. The possible models are:");
+		selectedModelsWillLabel.setText("selected models will be given after  'Parameter Estimation'.  The possible models are");
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
 		gridBagConstraints_2.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_2.gridy = 5;
@@ -53,27 +54,37 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		add(selectedModelsWillLabel, gridBagConstraints_2);
 
 		final JLabel diffusionWithOneLabel = new JLabel();
-		diffusionWithOneLabel.setText("Diffusion with One Diffusing Component, Diffusion with two diffusing components.");
+		diffusionWithOneLabel.setText("listed below :");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_3.gridy = 6;
 		gridBagConstraints_3.gridx = 0;
 		add(diffusionWithOneLabel, gridBagConstraints_3);
 
-//		final JLabel diffusionPlusBindingLabel = new JLabel();
-//		diffusionPlusBindingLabel.setText("Diffusion plus binding reaction.");
-//		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-//		gridBagConstraints_4.anchor = GridBagConstraints.WEST;
-//		gridBagConstraints_4.gridy = 7;
-//		gridBagConstraints_4.gridx = 0;
-//		add(diffusionPlusBindingLabel, gridBagConstraints_4);
-
+		JSeparator separator = new JSeparator();
+		separator.setPreferredSize(new Dimension(450, 3));
+		separator.setBorder(BorderFactory.createCompoundBorder(new EtchedBorder(EtchedBorder.RAISED),new EtchedBorder(EtchedBorder.LOWERED)));
+		GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
+		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
+		gridBagConstraints_8.gridy = 8;
+		gridBagConstraints_8.gridx = 0;
+		add(separator, gridBagConstraints_8);
+		
+		JLabel diffustionOnlyLabel = new JLabel("Diffusion only models :");
+		diffustionOnlyLabel.setFont(new Font("", Font.BOLD, 12));
+		diffustionOnlyLabel.setForeground(new Color(0, 0, 128));
+		GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
+		gridBagConstraints_7.anchor = GridBagConstraints.WEST;
+		gridBagConstraints_7.gridy = 13;
+		gridBagConstraints_7.gridx = 0;
+		add(diffustionOnlyLabel, gridBagConstraints_7);
+		
 		diffOneCheckBox = new JCheckBox();
 		diffOneCheckBox.setSelected(true);
 		diffOneCheckBox.setText("Diffusion with One Diffusing Component");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_5.gridy = 13;
+		gridBagConstraints_5.gridy = 14;
 		gridBagConstraints_5.gridx = 0;
 		add(diffOneCheckBox, gridBagConstraints_5);
 
@@ -81,10 +92,27 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		diffTwoCheckBox.setText("Diffusion with Two Diffusing Components");
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
 		gridBagConstraints_6.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_6.gridy = 14;
+		gridBagConstraints_6.gridy = 15;
 		gridBagConstraints_6.gridx = 0;
 		add(diffTwoCheckBox, gridBagConstraints_6);
-
+		
+		JLabel reactionOnlyLabel = new JLabel("Reaction only models :");
+		reactionOnlyLabel.setFont(new Font("", Font.BOLD, 12));
+		reactionOnlyLabel.setForeground(new Color(0, 0, 128));
+		GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
+		gridBagConstraints_9.anchor = GridBagConstraints.WEST;
+		gridBagConstraints_9.gridy = 19;
+		gridBagConstraints_9.gridx = 0;
+		add(reactionOnlyLabel, gridBagConstraints_9);
+		
+		koffCheckBox = new JCheckBox();
+		koffCheckBox.setText("Finding reaction off rate");
+		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
+		gridBagConstraints_10.anchor = GridBagConstraints.WEST;
+		gridBagConstraints_10.gridy = 20;
+		gridBagConstraints_10.gridx = 0;
+		add(koffCheckBox, gridBagConstraints_10);
+		
 		/*diffBindingCheckBox = new JCheckBox();
 		diffBindingCheckBox.setText("Diffusion plus Binding");
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
@@ -105,10 +133,10 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		{
 			result[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] = true;
 		}
-//		if(diffBindingCheckBox.isSelected())
-//		{
-//			result[FRAPModel.IDX_MODEL_DIFF_BINDING] = true;
-//		}
+		if(koffCheckBox.isSelected())
+		{
+			result[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] = true;
+		}
 		return result;
 	}
 	
@@ -116,6 +144,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 	{
 		diffOneCheckBox.setSelected(false);
 		diffTwoCheckBox.setSelected(false);
+		koffCheckBox.setSelected(false);
 //		diffBindingCheckBox.setSelected(false);
 	}
 	
@@ -129,6 +158,10 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		diffTwoCheckBox.setSelected(bSelected);
 	}
 	
+	public void setReactionOffRateSelected(boolean bSelected)
+	{
+		koffCheckBox.setSelected(bSelected);
+	}
 //	public void setDiffBindingSelected(boolean bSelected)
 //	{
 //		diffBindingCheckBox.setSelected(bSelected);

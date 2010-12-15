@@ -45,10 +45,14 @@ public class CurveFitting {
 		double[] paramValues = null;
 
 		double cellFirstPostBleach = normalized_fluor[0];
-		modelExp = new Expression("cell_firstPostBleach*exp(-bleachRate*t)");
-		modelExp.substituteInPlace(new Expression("cell_firstPostBleach"), new Expression(cellFirstPostBleach));
+		modelExp = new Expression(FRAPOptFunctions.FUNC_CELL_INTENSITY);
+		modelExp.substituteInPlace(new Expression(FRAPOptFunctions.SYMBOL_I_inicell), new Expression(cellFirstPostBleach));
 		// initialize starting guess, arguments in Parameter are name, Lower Bound, Upper Bound, Scale, Initial Guess
-		Parameter parameters[] = new Parameter[] {new Parameter("bleachRate",0,0.1,1,0.001)};
+		Parameter parameters[] = new Parameter[] {new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE],
+																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
+																FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getInitialGuess())};
 		// estimate blech while monitoring rate by minimizing the error between funtion values and reference data
 		optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
 		OptSolverResultSet optSolverResultSet = optResultSet.getOptSolverResultSet();
@@ -90,11 +94,13 @@ public class CurveFitting {
 	}
 
 	/*
-	 * @para: time, time points since the first post bleach
-	 * @para: flour, average intensities under bleached region according to time points since the first post bleach
-	 * @para: parameterValues, the array which will pass results back 
+	 * @para: time, time points since the first post bleach.
+	 * @para: flour, average intensities under bleached region according to time points since the first post bleach.
+	 * @para: bleachType, gaussian spot of half cell bleaching. model expressions vary based on bleaching type.
+	 * @para: inputparam, bleaching while monitoring rate, will be substituted in the model expression.
+	 * @para: outputParam, the array which will pass results back. 
 	 */
-	public static Expression fitRecovery(double[] time, double[] normalized_fluor, int bleachType, double[] inputparam, double[] outputParam) throws ExpressionException, OptimizationException, IOException
+	public static Expression fitRecovery_diffOnly(double[] time, double[] normalized_fluor, int bleachType, double[] inputparam, double[] outputParam) throws ExpressionException, OptimizationException, IOException
 	{
 
 		if (time.length!=normalized_fluor.length){
@@ -112,8 +118,8 @@ public class CurveFitting {
 		String[] paramNames = null;
 		double[] paramValues = null;
 
-		if(bleachType == FrapDataAnalysisResults.BleachType_GaussianSpot || bleachType == FrapDataAnalysisResults.BleachType_HalfCell){
-			if(bleachType == FrapDataAnalysisResults.BleachType_GaussianSpot)
+		if(bleachType == FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_GaussianSpot || bleachType == FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_HalfCell){
+			if(bleachType == FrapDataAnalysisResults.DiffusionOnlyAnalysisRestults.BleachType_GaussianSpot)
 			{
 				Expression muExp = new Expression(FRAPDataAnalysis.gaussianSpot_MuFunc);
 				modelExp = new Expression(FRAPDataAnalysis.gaussianSpot_IntensityFunc);
@@ -144,16 +150,15 @@ public class CurveFitting {
 			throw new IllegalArgumentException("Unknown bleach type "+bleachType);
 		}
 
-		System.out.println(optSolverResultSet.getOptimizationStatus().toString());
 		for (int i = 0; i < paramNames.length; i++) {
 			System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
 		}
 		if (optSolverResultSet.getOptimizationStatus().isFailed()){
-			//throw new OptimizationException("optimization failed",paramValues);
+			throw new OptimizationException("optimization failed",paramValues);
 		}
 
 		//
-		// construct final equation
+		// construct recovery under bleached region by diffusion only expression
 		// 
 		Expression fit = new Expression(modelExp);
 
@@ -175,6 +180,92 @@ public class CurveFitting {
 		return fit;
 	}
 
+	/*
+	 * @para: time, time points since the first post bleach.
+	 * @para: flour, average intensities under bleached region according to time points since the first post bleach.
+	 * @para: inputparam, bleaching while monitoring rate, will be substituted in the model expression.
+	 * @para: outputParam, the array which will pass results back. 
+	 */
+	public static Expression fitRecovery_reacKoffRateOnly(double[] time, double[] normalized_fluor, double[] inputparam, double[] outputParam) throws ExpressionException, OptimizationException, IOException
+	{
+
+		if (time.length!=normalized_fluor.length){
+			throw new RuntimeException("Fluorecence and time arrays must be the same length");
+		}
+
+		//normaliztion for time by subtracting the starting time: time[0]
+		double[] normalized_time = new double[time.length];
+		for (int i = 0; i < time.length; i++){
+			normalized_time[i] = time[i]-time[0];
+		}
+		Expression koffRateExp = null;
+		OptimizationResultSet optResultSet = null;
+		OptSolverResultSet optSolverResultSet = null;
+		String[] paramNames = null;//estimated results' names.
+		double[] paramValues = null;//estimated results' values for output.
+
+		koffRateExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
+		//inputparam[0] is the first post bleach, inputparam[1] is the  bleach while monitoring rate.
+		//substitute first post bleach and bleach while monitoring rate in the off rate expression.
+		double iniBleachedIntensity = inputparam[0];
+		double bleachWhileMonitoringRate = inputparam[1];
+		koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPOptFunctions.SYMBOL_I_inibleached), new Expression(iniBleachedIntensity));
+		koffRateExp = koffRateExp.getSubstitutedExpression(new Expression(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]), new Expression(bleachWhileMonitoringRate));
+		
+		Parameter koffParam = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_OFF_RATE],
+											FRAPModel.REF_REACTION_OFF_RATE.getLowerBound(),
+											FRAPModel.REF_REACTION_OFF_RATE.getUpperBound(),
+											FRAPModel.REF_REACTION_OFF_RATE.getScale(),
+											FRAPModel.REF_REACTION_OFF_RATE.getInitialGuess());
+		Parameter fittingParamA = new Parameter(FRAPOptFunctions.SYMBOL_A, /*binding site concentration is reused to store fitting parameter A, but the name can not be reused*/
+												FRAPModel.REF_BS_CONCENTRATION_OR_A.getLowerBound(),
+												FRAPModel.REF_BS_CONCENTRATION_OR_A.getUpperBound(),
+												FRAPModel.REF_BS_CONCENTRATION_OR_A.getScale(),
+												FRAPModel.REF_BS_CONCENTRATION_OR_A.getInitialGuess());
+		Parameter parameters[] = new Parameter[]{koffParam, fittingParamA};
+		//estimate parameters by minimizing the errors between function values and reference data
+		optResultSet = solve(koffRateExp.flatten(), parameters, normalized_time, normalized_fluor);
+		
+		optSolverResultSet = optResultSet.getOptSolverResultSet();
+		paramNames = optSolverResultSet.getParameterNames();
+		paramValues = optSolverResultSet.getBestEstimates();
+
+		// copy into "output" buffer from parameter values.
+		for (int i = 0; i < paramValues.length; i++) {
+			outputParam[i] = paramValues[i]; 
+		}
+
+		for (int i = 0; i < paramNames.length; i++) {
+			System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
+		}
+		
+		if (optSolverResultSet.getOptimizationStatus().isFailed()){
+			throw new OptimizationException("optimization failed",paramValues);
+		}
+
+		//
+		// construct recovery under bleached region by reaction only expression
+		// 
+		Expression fit = new Expression(koffRateExp);
+
+		System.out.println("fit before subsituting parameters:"+fit.infix());
+		//
+		// substitute parameter values
+		//
+		for (int i = 0; i < paramValues.length; i++) {
+			fit.substituteInPlace(new Expression(paramNames[i]), new Expression(paramValues[i]));
+		}
+		//
+		// undo time shift
+		//
+		fit.substituteInPlace(new Expression("t"), new Expression("t-"+time[0]));
+		//
+		// undo fluorescence normalization
+		//
+		System.out.println("fit equation after unnorm:" + fit.infix());
+		return fit;
+	}
+	
 	public static OptimizationResultSet solve(Expression modelExp, Parameter[] parameters, double[] time, double[] data) throws ExpressionException, OptimizationException, IOException {
 
 		if (time.length!=data.length){

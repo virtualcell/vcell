@@ -46,7 +46,6 @@ import org.vcell.util.Range;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
@@ -81,6 +80,7 @@ import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
+import cbit.vcell.microscopy.FRAPOptFunctions;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
@@ -97,7 +97,7 @@ import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorDescriptor
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_SummaryDescriptor;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_CompareResultsDescriptor;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentDescriptor;
-import cbit.vcell.microscopy.gui.estparamwizard.EstParams_ReacBindingDescriptor;
+import cbit.vcell.microscopy.gui.estparamwizard.EstParams_ReactionOffRateDescriptor;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_TwoDiffComponentDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypeDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypePanel;
@@ -191,7 +191,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private DefineROI_Panel imgPanel = null;
 	private EstParams_OneDiffComponentDescriptor diffOneDescriptor = null;
 	private EstParams_TwoDiffComponentDescriptor diffTwoDescriptor = null;
-	private EstParams_ReacBindingDescriptor bindingDescriptor = null;
+	private EstParams_ReactionOffRateDescriptor  offRateDescriptor = null;
 	private EstParams_CompareResultsDescriptor compareResultsDescriptor = null;
 	//show result dialog
 	JDialog result2DDialog = null;
@@ -609,8 +609,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	{
 		WorkFlowButtonHandler wfButtonHandler = new WorkFlowButtonHandler();
 		ResultPanelButtonHandler resultButtonHandler = new ResultPanelButtonHandler();
-		((AnalysisProcedurePanel)analysisProcedurePanel).addButtonHandler(wfButtonHandler);
-		((ResultDisplayPanel)analysisRestultsPanel).addButtonHandler(resultButtonHandler);
+		analysisProcedurePanel.addButtonHandler(wfButtonHandler);
+		analysisRestultsPanel.addButtonHandler(resultButtonHandler);
 	}
 	
 	/**
@@ -1048,14 +1048,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
-				if(fStudy.hasOptModel())
+				if(fStudy.hasDiffusionOnlyModel())
 				{
 					//create optdata
 					if(fStudy.getFrapOptData() == null)
 					{
 						if(fStudy.getStoredRefData() != null)
 						{
-							getFrapWorkspace().getWorkingFrapStudy().setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, getLocalWorkspace(), fStudy.getStoredRefData()));
+							getFrapWorkspace().getWorkingFrapStudy().setFrapOptData(new FRAPOptData(fStudy, FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF, getLocalWorkspace(), fStudy.getStoredRefData()));
 						}
 						else
 						{
@@ -1070,9 +1070,16 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								fStudy.saveImageDatasetAsExternalData(localWorkspace, fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
 							}
 							//run ref sim
-							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, localWorkspace, this.getClientTaskStatusSupport()));
+							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF, localWorkspace, this.getClientTaskStatusSupport()));
 							fStudy.setSaveNeeded(true);
 						}
+					}
+				}
+				if(fStudy.hasReactionOnlyOffRateModel())
+				{
+					if(fStudy.getFrapOptFunc() == null)
+					{
+						fStudy.setFrapOptFunc(new FRAPOptFunctions(fStudy));
 					}
 				}
 			}
@@ -1084,12 +1091,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
-				if(fStudy.hasOptModel())
+				if(fStudy.hasDiffusionOnlyModel())
 				{
 					ArrayList<Integer> models = fStudy.getSelectedModels();
 					for(int i = 0; i<models.size(); i++)
 					{
-						if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+						if((models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
 						{
 							if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() == null)
 							{
@@ -1100,13 +1107,22 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								fStudy.setSaveNeeded(true);
 							}
 						}
-						else if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+						else if((models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
 						{
 							if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() == null)
 							{
 								fStudy.getFrapOptData().setNumEstimatedParams(FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF);
 								Parameter[] initialParams = FRAPModel.getInitialParameters(fStudy.getFrapData(), FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
 								Parameter[] bestParameters = fStudy.getFrapOptData().getBestParamters(initialParams, fStudy.getSelectedROIsForErrorCalculation());
+								fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
+								fStudy.setSaveNeeded(true);
+							}
+						}
+						else if((models.get(i)).intValue() == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
+						{
+							if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() == null)
+							{
+								Parameter[] bestParameters = fStudy.getFrapOptFunc().getBestParamters(fStudy.getFrapData());
 								fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].setModelParameters(bestParameters);
 								fStudy.setSaveNeeded(true);
 							}
@@ -1122,12 +1138,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
-				if(fStudy.hasOptModel())
+				if(fStudy.hasDiffusionOnlyModel())
 				{
 					ArrayList<Integer> models = fStudy.getSelectedModels();
 					for(int i = 0; i<models.size(); i++)
 					{
-						if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
+						if((models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
 						{
 							if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters() != null &&
 							   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT].getModelParameters().length > 0)
@@ -1147,7 +1163,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								}
 							}
 						}
-						else if(((Integer)models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
+						else if((models.get(i)).intValue() == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
 						{
 							if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters() != null &&
 							   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS].getModelParameters().length > 0)
@@ -1488,7 +1504,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			if(evt.getNewValue() instanceof Integer)
 			{
 				int newBestModelIdx = ((Integer)evt.getNewValue()).intValue();
-				((ResultDisplayPanel)getAnalysisResultsPanel()).setBestModel(newBestModelIdx, getLocalWorkspace());
+				(getAnalysisResultsPanel()).setBestModel(newBestModelIdx, getLocalWorkspace());
 			}
 		}
 	}
@@ -1514,7 +1530,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						fStudy.saveImageDatasetAsExternalData(getLocalWorkspace(), fStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),fStudy.getStartingIndexForRecovery());
 					}catch(Exception e){
 						e.printStackTrace(System.out);
-						((ResultDisplayPanel)getAnalysisResultsPanel()).setResultsButtonEnabled(false);
+						(getAnalysisResultsPanel()).setResultsButtonEnabled(false);
 						throw e;
 					}
 				}
@@ -1535,12 +1551,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}
 				else
 				{
-					KeyValue oldSimKey = null;
 					if(fStudy != null && fStudy.getBioModel() != null && fStudy.getBioModel().getSimulations()!=null &&
 							fStudy.getBioModel().getSimulations().length > 0 && fStudy.getBioModel().getSimulations()[0].getVersion()!= null &&
 							fStudy.getBioModel().getSimulations()[0].getVersion().getVersionKey() != null)
 					{
-						oldSimKey = fStudy.getBioModel().getSimulations()[0].getVersion().getVersionKey();
+						fStudy.getBioModel().getSimulations()[0].getVersion().getVersionKey();
 					}
 					
 					BioModel bioModel = null;
@@ -1564,7 +1579,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					}catch(Exception e){
 						if(bioModel != null && bioModel.getSimulations() != null){
 							FRAPStudy.removeExternalDataAndSimulationFiles(bioModel.getSimulations()[0].getVersion().getVersionKey(), null, null, getLocalWorkspace());
-							((ResultDisplayPanel)getAnalysisResultsPanel()).setResultsButtonEnabled(false);
+							(getAnalysisResultsPanel()).setResultsButtonEnabled(false);
 						}
 						throw e;
 					}
@@ -1577,7 +1592,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
 				VirtualFrapMainFrame.updateStatus("Simulation Done. Click on \'View Spatial Results\' to see simulation results.");
-				((ResultDisplayPanel)getAnalysisResultsPanel()).setResultsButtonEnabled(true);
+				(getAnalysisResultsPanel()).setResultsButtonEnabled(true);
 			}
 		};
 		
@@ -1625,11 +1640,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	        
 	        LoadFRAPData_SingleFileDescriptor singleFileDescriptor = new LoadFRAPData_SingleFileDescriptor();
 	        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_SingleFileDescriptor.IDENTIFIER, singleFileDescriptor);
-	        ((LoadFRAPData_SingleFileDescriptor)singleFileDescriptor).setFrapWorkspace(getFrapWorkspace());
+	        (singleFileDescriptor).setFrapWorkspace(getFrapWorkspace());
 	
 	        LoadFRAPData_MultiFileDescriptor multiFileDescriptor = new LoadFRAPData_MultiFileDescriptor();
 	        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_MultiFileDescriptor.IDENTIFIER, multiFileDescriptor);
-	        ((LoadFRAPData_MultiFileDescriptor)multiFileDescriptor).setFrapWorkspace(getFrapWorkspace());
+	        (multiFileDescriptor).setFrapWorkspace(getFrapWorkspace());
 	        
 	        LoadFRAPData_SummaryDescriptor fSummaryDescriptor = new LoadFRAPData_SummaryDescriptor();
 	        fSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER); //goes back to single file input by default
@@ -1714,7 +1729,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	        
 	        DefineROI_RoiForErrorDescriptor roiForErrorDescriptor = new DefineROI_RoiForErrorDescriptor();
 	        defineROIWizard.registerWizardPanel(DefineROI_RoiForErrorDescriptor.IDENTIFIER, roiForErrorDescriptor);
-	        ((DefineROI_RoiForErrorDescriptor)roiForErrorDescriptor).setFrapWorkspace(getFrapWorkspace());
+	        (roiForErrorDescriptor).setFrapWorkspace(getFrapWorkspace());
 		}
 		//always start from the first page
 		defineROIWizard.setCurrentPanel(DefineROI_CropDescriptor.IDENTIFIER);
@@ -1732,7 +1747,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	        
 			ChooseModel_ModelTypesDescriptor modelTypesDescriptor = new ChooseModel_ModelTypesDescriptor();
 	        modelTypeWizard.registerWizardPanel(ChooseModel_ModelTypesDescriptor.IDENTIFIER, modelTypesDescriptor);
-	        ((ChooseModel_ModelTypesDescriptor)modelTypesDescriptor).setFrapWorkspace(getFrapWorkspace());
+	        (modelTypesDescriptor).setFrapWorkspace(getFrapWorkspace());
 		}
 		//always start from the first page
 		modelTypeWizard.setCurrentPanel(ChooseModel_ModelTypesDescriptor.IDENTIFIER);
@@ -1758,132 +1773,70 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				diffTwoDescriptor = new EstParams_TwoDiffComponentDescriptor();
 				diffTwoDescriptor.setFrapWorkspace(getFrapWorkspace());
 				
-				bindingDescriptor = new EstParams_ReacBindingDescriptor();
-				bindingDescriptor.setFrapWorkspace(getFrapWorkspace());
-				bindingDescriptor.setLocalWorkspace(getLocalWorkspace());
+				offRateDescriptor = new EstParams_ReactionOffRateDescriptor();
+				offRateDescriptor.setFrapWorkspace(getFrapWorkspace());
 				compareResultsDescriptor = new EstParams_CompareResultsDescriptor();
 				compareResultsDescriptor.setFrapWorkspace(getFrapWorkspace());
 			}
 				
 			//Dynamicly link the wizard pages according to the selected models.
 			estimateParamWizard.clearAllPanels(); //clear all first
-			if(fStudy.getSelectedModels().size() == 1)
+			WizardPanelDescriptor lastDescriptor = null;
+
+			for(int i = 0; i < fStudy.getSelectedModels().size(); i++)
 			{
-				if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null)
+				int modelType = fStudy.getSelectedModels().get(i).intValue();
+				if(modelType == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
 				{
-			        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
-			        diffOneDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-			        diffOneDescriptor.setBackPanelDescriptorID(null);
-			        
-			        //the last one should always be the compare page	        
-			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
+					estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
+					diffOneDescriptor.setBackPanelDescriptorID((lastDescriptor == null)? null:lastDescriptor.getPanelDescriptorIdentifier());
+					if(i > 0) //not the first wizard page
+					{
+						lastDescriptor.setNextPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
+					}
+			        lastDescriptor = diffOneDescriptor;
 				}
-				else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null)
+				else if(modelType == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
 				{
 			        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
-			        diffTwoDescriptor.setBackPanelDescriptorID(null);
-			        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-			        
-			        //the last one should always be the compare page	        
-			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+			        diffTwoDescriptor.setBackPanelDescriptorID((lastDescriptor == null)? null:lastDescriptor.getPanelDescriptorIdentifier());
+			        if(i > 0)
+			        {
+			        	lastDescriptor.setNextPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
+			        }
+			        lastDescriptor = diffTwoDescriptor;
 				}
-				else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
+				else if(modelType == FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
 				{
-			        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
-			        bindingDescriptor.setBackPanelDescriptorID(null);
-			        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-			       
-			        //the last one should always be the compare page	        
-			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
+			        estimateParamWizard.registerWizardPanel(EstParams_ReactionOffRateDescriptor.IDENTIFIER, offRateDescriptor);
+			        offRateDescriptor.setBackPanelDescriptorID((lastDescriptor == null)? null:lastDescriptor.getPanelDescriptorIdentifier());
+			        if(i > 0)
+			        {
+			        	lastDescriptor.setNextPanelDescriptorID(EstParams_ReactionOffRateDescriptor.IDENTIFIER);
+			        }
+			        lastDescriptor = offRateDescriptor;
 				}
 			}
-			else if(fStudy.getSelectedModels().size() == 2)
-			{
-				if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null &&
-				   fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null)
-				{
-			        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
-			        diffOneDescriptor.setBackPanelDescriptorID(null);
-			        diffOneDescriptor.setNextPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-			        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
-			        diffTwoDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
-			        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-			        
-  			        //the last one should always be the compare page	        
-			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-				}
-				else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null &&
-						fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
-				{
-			        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
-			        diffOneDescriptor.setBackPanelDescriptorID(null);
-			        diffOneDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
-			        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
-			        bindingDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
-			        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-			        
-			        //the last one should always be the compare page	        
-			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
-				}
-				else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null &&
-						fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
-				{
-			        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
-			        diffTwoDescriptor.setBackPanelDescriptorID(null);
-			        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
-			        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
-			        bindingDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-			        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-			       
-			        //the last one should always be the compare page	        
-			        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-			        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
-				}
-			}
-			else if(fStudy.getSelectedModels().size() == 3)
-			{
-		        estimateParamWizard.registerWizardPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER, diffOneDescriptor);
-		        diffOneDescriptor.setBackPanelDescriptorID(null);
-		        diffOneDescriptor.setNextPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-		        
-		        estimateParamWizard.registerWizardPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER, diffTwoDescriptor);
-		        diffTwoDescriptor.setBackPanelDescriptorID(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
-		        diffTwoDescriptor.setNextPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
-		        
-		        estimateParamWizard.registerWizardPanel(EstParams_ReacBindingDescriptor.IDENTIFIER, bindingDescriptor);
-		        bindingDescriptor.setBackPanelDescriptorID(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-		        bindingDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
-		        
-		        //the last one should always be the compare page	        
-		        estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
-		        compareResultsDescriptor.setBackPanelDescriptorID(EstParams_ReacBindingDescriptor.IDENTIFIER);
-			}
+			//the last one should always be the compare page
+			estimateParamWizard.registerWizardPanel(EstParams_CompareResultsDescriptor.IDENTIFIER, compareResultsDescriptor);
+			lastDescriptor.setNextPanelDescriptorID(EstParams_CompareResultsDescriptor.IDENTIFIER);
+	        compareResultsDescriptor.setBackPanelDescriptorID(lastDescriptor.getPanelDescriptorIdentifier());
 			
 			//each time when load the wizard, it should start from the first possible page.
 			if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT] != null)
 			{
 				estimateParamWizard.setCurrentPanel(EstParams_OneDiffComponentDescriptor.IDENTIFIER);
-				return estimateParamWizard;
 			}
 			else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS] != null)
 			{
 				estimateParamWizard.setCurrentPanel(EstParams_TwoDiffComponentDescriptor.IDENTIFIER);
-				return estimateParamWizard;
 			}
-			else if(fStudy.getModels()[FRAPModel.IDX_MODEL_DIFF_BINDING] != null)
+			else if(fStudy.getModels()[FRAPModel.IDX_MODEL_REACTION_OFF_RATE] != null)
 			{
-				estimateParamWizard.setCurrentPanel(EstParams_ReacBindingDescriptor.IDENTIFIER);
-				return estimateParamWizard;
+				estimateParamWizard.setCurrentPanel(EstParams_ReactionOffRateDescriptor.IDENTIFIER);
 			}
-			else //this should not happen though
-			{
-				return estimateParamWizard;
-			}
+			
+			return estimateParamWizard;
 		}
 	}
 
