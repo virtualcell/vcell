@@ -2070,26 +2070,26 @@ public void messageResetButton_ActionEvents() {
 private void onArrivingService(ServiceInstanceStatus arrivingService) {
 	if (arrivingService.getType().equals(ServiceType.SERVERMANAGER)) {
 		serviceInstanceStatusList.add(0, arrivingService);
-		return;
-	}	
-
-	boolean bDefined = false;
-	List<ServiceInstanceStatus> tempList = new ArrayList<ServiceInstanceStatus>(serviceInstanceStatusList);
-	for (int i = 0; i < tempList.size(); i ++) {
-		ServiceInstanceStatus sis = tempList.get(i);
-		if (sis.getSpecID().equals(arrivingService.getSpecID())) {
-			if (sis.isRunning()) {
-				serviceInstanceStatusList.add(arrivingService);			
-			} else {
-				serviceInstanceStatusList.set(i, arrivingService);				
-			}
-			bDefined = true;
-			break;
-		} 
+	} else {
+		boolean bDefined = false;
+		List<ServiceInstanceStatus> tempList = new ArrayList<ServiceInstanceStatus>(serviceInstanceStatusList);
+		for (int i = 0; i < tempList.size(); i ++) {
+			ServiceInstanceStatus sis = tempList.get(i);
+			if (sis.getSpecID().equals(arrivingService.getSpecID())) {
+				if (sis.isRunning()) {
+					serviceInstanceStatusList.add(arrivingService);
+				} else {
+					serviceInstanceStatusList.set(i, arrivingService);
+				}
+				bDefined = true;
+				break;
+			} 
+		}
+		if (!bDefined) {
+			serviceInstanceStatusList.add(arrivingService);
+		}
 	}
-	if (!bDefined) {
-		serviceInstanceStatusList.add(arrivingService);		
-	}
+	showServices(serviceInstanceStatusList);
 }
 
 

@@ -305,12 +305,19 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 }
 
 public void setValueAt(Object value, int row, int column) {
+	if (value == null) {
+		return;
+	}
 	try {
 		String inputValue = (String)value;
+		inputValue = inputValue.trim();
 		if (row < getDataSize()) {
 			Parameter parameter = getValueAt(row);
 			switch (column){
 				case COLUMN_NAME:{
+					if (inputValue.length() == 0) {
+						return;
+					}
 					parameter.setName(inputValue);
 					break;
 				}
@@ -320,8 +327,10 @@ public void setValueAt(Object value, int row, int column) {
 					parameter.setExpression(exp1);
 					break;
 				}
-				case COLUMN_UNIT:{	
-					if (!parameter.getUnitDefinition().getSymbol().equals(inputValue)){
+				case COLUMN_UNIT:{
+					if (inputValue.length() == 0) {
+						parameter.setUnitDefinition(VCUnitDefinition.UNIT_TBD);
+					} else if (!parameter.getUnitDefinition().getSymbol().equals(inputValue)){
 						parameter.setUnitDefinition(VCUnitDefinition.getInstance(inputValue));
 					}
 					break;
@@ -336,7 +345,7 @@ public void setValueAt(Object value, int row, int column) {
 		} else {
 			switch (column) {
 			case COLUMN_NAME: {
-				if (inputValue.equals(ADD_NEW_HERE_TEXT)) {
+				if (inputValue.length() == 0 || inputValue.equals(ADD_NEW_HERE_TEXT)) {
 					return;
 				}
 				ModelParameter modelParameter = getModel().new ModelParameter(inputValue, new Expression(0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_TBD);

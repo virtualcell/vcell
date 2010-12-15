@@ -370,15 +370,15 @@ private void connPtoP5SetTarget() {
  */
 private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 	try {
-		Object newValue = null;		
+		ReactionSpec newValue = null;
 		int row = getScrollPaneTable().getSelectedRow();
 		if((row >= 0)) {
-			newValue = getReactionSpecsTableModel().getValueAt(row, 0);
+			newValue = getReactionSpecsTableModel().getValueAt(row);
 		}
 		if (newValue == null) {
 			getKineticsTypeTemplatePanel().setReactionStep(null);
 		} else {
-			getKineticsTypeTemplatePanel().setReactionStep((ReactionStep)newValue);
+			getKineticsTypeTemplatePanel().setReactionStep(newValue.getReactionStep());
 		}
 		outerSplitPane.setDividerLocation(350);
 		firePropertyChange(PARAMETER_NAME_SELECTED_REACTION_STEP, null, newValue);

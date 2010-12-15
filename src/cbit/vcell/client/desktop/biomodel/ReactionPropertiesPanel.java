@@ -12,6 +12,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextArea;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.CollapsiblePanel;
@@ -23,6 +25,7 @@ import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
@@ -32,7 +35,7 @@ import cbit.vcell.model.gui.ParameterTableModel;
 import cbit.vcell.model.gui.ReactionElectricalPropertiesPanel;
 
 @SuppressWarnings("serial")
-public class ReactionPropertiesPanel extends javax.swing.JPanel {
+public class ReactionPropertiesPanel extends BioModelEditorSubPanel {
 	private static final String PROPERTY_NAME_REACTION_STEP = "reactionStep";
 	private ReactionStep reactionStep = null;
 	private javax.swing.JComboBox kineticsTypeComboBox = null;
@@ -60,7 +63,7 @@ public class ReactionPropertiesPanel extends javax.swing.JPanel {
 			KineticsDescription.Nernst
 	};
 	
-class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListener {
+class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListener, ListSelectionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ReactionPropertiesPanel.this && (evt.getPropertyName().equals(PROPERTY_NAME_REACTION_STEP))) { 
 				updateInterface();
@@ -70,11 +73,25 @@ class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListen
 			if (e.getSource() == getKineticsTypeComboBox()) 
 				updateKineticChoice((KineticsDescription)getKineticsTypeComboBox().getSelectedItem());
 		}
+		public void valueChanged(ListSelectionEvent e) {
+			tableSelectionChanged();			
+		}
 	}
 	
 public ReactionPropertiesPanel() {
 	super();
 	initialize();
+}
+
+private void tableSelectionChanged() {
+	int[] rows = getScrollPaneTable().getSelectedRows();
+	if (rows != null) {
+		Object[] selectedObjects = new Object[rows.length];
+		for (int i = 0; i < rows.length; i++) {
+			selectedObjects[i] = getParameterTableModel().getValueAt(rows[i]);
+		}
+		setSelectedObjects(selectedObjects);
+	}
 }
 
 /**
@@ -211,6 +228,8 @@ private void initialize() {
 		setBackground(Color.white);
 		initConnections();
 		initKineticChoices();
+		
+		getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -246,7 +265,7 @@ public static void main(java.lang.String[] args) {
  * @param kinetics The new value for the property.
  * @see #getKinetics
  */
-public void setReactionStep(ReactionStep newValue) {
+private void setReactionStep(ReactionStep newValue) {
 	ReactionStep oldValue = reactionStep;
 	reactionStep = newValue;
 	firePropertyChange(PROPERTY_NAME_REACTION_STEP, oldValue, newValue);
@@ -464,4 +483,22 @@ protected void updateInterface() {
 	updateToggleButtonLabel();
 }
 
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	if (selectedObjects == null || selectedObjects.length != 1) {
+		return;
+	}
+	if (selectedObjects[0] instanceof ReactionStep) {
+		setReactionStep((ReactionStep) selectedObjects[0]);
+	} else if (selectedObjects[0] instanceof KineticsParameter) {
+		KineticsParameter kineticsParameter = (KineticsParameter) selectedObjects[0];
+		setReactionStep(kineticsParameter.getKinetics().getReactionStep());
+		for (int i = 0; i < getParameterTableModel().getDataSize(); i ++) {
+			if (kineticsParameter == getParameterTableModel().getValueAt(i)) {
+				getScrollPaneTable().setRowSelectionInterval(i, i);
+				break;
+			}
+		}
+	}
+}
 }

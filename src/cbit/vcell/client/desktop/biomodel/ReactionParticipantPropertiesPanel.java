@@ -13,6 +13,7 @@ import javax.swing.JTextField;
 
 import cbit.vcell.model.ReactionParticipant;
 
+@SuppressWarnings("serial")
 public class ReactionParticipantPropertiesPanel extends JPanel {
 	private JTextField stoichiometryTextField = new JTextField();
 	private ReactionParticipant reactionParticipant;

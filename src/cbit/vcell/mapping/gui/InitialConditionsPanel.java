@@ -275,7 +275,7 @@ private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 			newValue = getSpeciesContextSpecsTableModel().getValueAt(row);
 		}
 		getSpeciesContextSpecPanel().setSpeciesContextSpec(newValue);
-		setBioModelEditorSelection(new BioModelEditorSelection(getSimulationContext(), newValue == null ? null : newValue.getSpeciesContext()));
+		setBioModelEditorSelection(new BioModelEditorSelection(getSimulationContext(), newValue == null ? null : newValue));
 //			getSpeciesContextSpecPanel().setSpeciesContextSpec(null);
 //		} else {
 //			getSpeciesContextSpecPanel().setSpeciesContextSpec(getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row));

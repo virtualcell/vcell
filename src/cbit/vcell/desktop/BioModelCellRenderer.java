@@ -16,6 +16,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.gui.MiriamTreeModel.DateNode;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  
+@SuppressWarnings("serial")
 public class BioModelCellRenderer extends VCellBasicCellRenderer {
 	
 	private User sessionUser = null;
@@ -37,7 +38,6 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 	JLabel component = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 	//
 	try {
-		setIcon(null);
 		if (value instanceof DateNode){
 			DateNode dateNode = (DateNode)value;
 			AnnotationQualifier qualifier = dateNode.getDateQualifier();

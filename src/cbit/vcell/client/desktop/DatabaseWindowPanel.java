@@ -13,6 +13,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 
 import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelDbTreePanel;
@@ -25,7 +26,7 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public class DatabaseWindowPanel extends JPanel {
+public class DatabaseWindowPanel extends BioModelEditorSubPanel {
 	public static final String PROPERTY_NAME_SELECTED_DOCUMENT_INFO = "selectedDocumentInfo";
 	private BioModelDbTreePanel ivjBioModelDbTreePanel1 = null;
 	private GeometryTreePanel ivjGeometryTreePanel1 = null;
@@ -76,7 +77,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 
 private boolean bShowMetadata = true;
 private boolean bShowSearchPanel = true;
-private SelectionManager selectionManager = null;
 /**
  * DatabaseWindowPanel constructor comment.
  */
@@ -91,11 +91,10 @@ public DatabaseWindowPanel(boolean bMetadata, boolean bSearchPanel) {
 	initialize();
 }
 
-public final void setSelectionManager(SelectionManager selectionManager) {
-	this.selectionManager  = selectionManager;
+@Override
+public void setSelectionManager(SelectionManager selectionManager) {
+	super.setSelectionManager(selectionManager);
 	if (selectionManager != null) {
-		selectionManager.removePropertyChangeListener(ivjEventHandler);
-		selectionManager.addPropertyChangeListener(ivjEventHandler);
 		getBioModelDbTreePanel1().setSelectionManager(selectionManager);
 		getMathModelDbTreePanel1().setSelectionManager(selectionManager);
 		getGeometryTreePanel1().setSelectionManager(selectionManager);
@@ -610,7 +609,13 @@ private void setSelectedDocumentInfo(VCDocumentInfo selectedDocumentInfo) {
 	VCDocumentInfo oldValue = fieldSelectedDocumentInfo;
 	fieldSelectedDocumentInfo = selectedDocumentInfo;
 	firePropertyChange(PROPERTY_NAME_SELECTED_DOCUMENT_INFO, oldValue, selectedDocumentInfo);
-	selectionManager.setSelectedObjects(new Object[] {fieldSelectedDocumentInfo});
+	setSelectedObjects(new Object[] {fieldSelectedDocumentInfo});
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	// do nothing
+	
 }
 
 }

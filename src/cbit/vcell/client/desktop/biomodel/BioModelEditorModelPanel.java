@@ -1,38 +1,37 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
@@ -45,10 +44,6 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.desktop.BioModelMetaDataPanel;
-import cbit.vcell.desktop.GeometryMetaDataPanel;
-import cbit.vcell.desktop.MathModelMetaDataPanel;
-import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.structures.AllStructureSuite;
@@ -56,9 +51,6 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
@@ -66,7 +58,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.NameScope;
 
 @SuppressWarnings("serial")
-public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
+public class BioModelEditorModelPanel extends BioModelEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	public enum ModelPanelTab {
 		reaction_diagram("Reaction Diagram"),
@@ -106,32 +98,22 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 	private BioModel bioModel;
 	private JTextField textFieldSearch = null;
 	private JTabbedPane tabbedPane = null;
-	private JPanel emptyPanel = null;
 	
 	private CartoonEditorPanelFixed cartoonEditorPanel = null;
 	private ReactionCartoonEditorPanel reactionCartoonEditorPanel = null;
-	private ReactionPropertiesPanel reactionStepPropertiesPanel = null;
-	private SpeciesPropertiesPanel speciesPropertiesPanel = null;
-	private StructurePropertiesPanel structurePropertiesPanel = null;
-	private ModelParameterPropertiesPanel modelParameterPropertiesPanel = null;
-	private ReactionParticipantPropertiesPanel reactionParticipantPropertiesPanel = null;
-	private JSplitPane splitPane = null;
 	private JDesktopPaneEnhanced desktopPane = null;
 	private JInternalFrameEnhanced diagramViewInternalFrame = null;	
-	private SelectionManager selectionManager = null;
-	private BioModelMetaDataPanel bioModelMetaDataPanel = null;	private MathModelMetaDataPanel mathModelMetaDataPanel = null;	private GeometryMetaDataPanel geometryMetaDataPanel = null;
+
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
-	private class InternalEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener, ChangeListener {
+	private class InternalEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener, ChangeListener, MouseListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelEditorModelPanel.this && evt.getPropertyName().equals(PROPERTY_NAME_BIO_MODEL)) {
 				bioModelChange();
-			} else if (evt.getSource() == selectionManager && evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
-				propogateSelections();
 			} else if (evt.getPropertyName().equals(GraphModel.PROPERTY_NAME_SELECTED)) {
 				Object[] selectedObjects = (Object[]) evt.getNewValue();
-				selectionManager.setSelectedObjects(selectedObjects);
+				setSelectedObjects(selectedObjects);
 			} else if (evt.getSource() == reactionCartoonEditorPanel && evt.getPropertyName().equals(ReactionCartoonEditorPanel.PROPERTY_NAME_FLOATING)) {
 				floatDiagramView((Boolean) evt.getNewValue());
 			}
@@ -164,6 +146,32 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 			}
 			
 		}
+
+		public void mouseClicked(MouseEvent e) {
+			if (e.getSource() == tabbedPane) {
+				showDiagramView();
+			}			
+		}
+
+		public void mousePressed(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void mouseReleased(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void mouseEntered(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
 	}
 	
 	public BioModelEditorModelPanel() {
@@ -174,7 +182,7 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 
 	public void tabbedPaneSelectionChanged() {
 		Component component = tabbedPane.getSelectedComponent();
-		if (component == ModelPanelTab.reaction_diagram.getComponent()
+		if (tabbedPane.getSelectedIndex() == ModelPanelTab.reaction_diagram.ordinal()
 				|| component == ModelPanelTab.structure_diagram.getComponent()) {
 			newButton.setEnabled(false);
 			deleteButton.setEnabled(false);
@@ -204,13 +212,7 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		}
 	}
 
-	public void propogateSelections() {
-		if (selectionManager == null) {
-			return;
-		}
-		Object[] selectedObjects = selectionManager.getSelectedObjects();
-//		deleteButton.setEnabled(selectedObjects != null && selectedObjects.length > 0);
-		setBottomPanelOnSelection(selectedObjects);
+	public void onSelectedObjectsChange(Object[] selectedObjects) {
 		reactionCartoonEditorPanel.getReactionCartoon().setSelectedObjects(selectedObjects);
 		cartoonEditorPanel.getStructureCartoon().setSelectedObjects(selectedObjects);
 		structuresTable.clearSelection();
@@ -276,8 +278,7 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		cartoonEditorPanel  = new CartoonEditorPanelFixed();
 		cartoonEditorPanel.getStructureCartoon().addPropertyChangeListener(eventHandler);
 		
-		JPanel topPanel = new JPanel();
-		topPanel.setLayout(new GridBagLayout());
+		setLayout(new GridBagLayout());
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -287,21 +288,21 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
-		topPanel.add(textFieldSearch, gbc);
+		add(textFieldSearch, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
-		topPanel.add(searchButton, gbc);
+		add(searchButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
-		topPanel.add(showAllButton, gbc);
+		add(showAllButton, gbc);
 				
 		gbc = new GridBagConstraints();
 		gbc.gridx = 4;
@@ -309,14 +310,14 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		gbc.insets = new Insets(4,20,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		newButton.setPreferredSize(deleteButton.getPreferredSize());
-		topPanel.add(newButton, gbc);
+		add(newButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 5;
 		gbc.insets = new Insets(4,4,4,10);
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		topPanel.add(deleteButton, gbc);
+		add(deleteButton, gbc);
 		
 		tabbedPane = new JTabbedPane();
 		ModelPanelTab.reaction_diagram.setComponent(reactionCartoonEditorPanel);
@@ -326,6 +327,7 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		ModelPanelTab.species_table.setComponent(speciesTable.getEnclosingScrollPane());
 		ModelPanelTab.global_parameter_table.setComponent(parametersTable.getEnclosingScrollPane());
 		tabbedPane.addChangeListener(eventHandler);
+		tabbedPane.addMouseListener(eventHandler);
 		
 		for (ModelPanelTab tab : ModelPanelTab.values()) {
 			tabbedPane.addTab(tab.getName(), tab.getComponent());
@@ -339,31 +341,8 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 6;
 		gbc.fill = GridBagConstraints.BOTH;
-		topPanel.add(tabbedPane, gbc);		
-		
-		emptyPanel = new JPanel(new GridBagLayout());
-		emptyPanel.setBackground(Color.white);
-		JLabel label = new JLabel("Select only one object (e.g. species, reaction) to show properties.");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.insets = new Insets(10,10,4,4);
-		gbc.gridy = 0;
-		gbc.weighty = 1.0;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.PAGE_START;
-		emptyPanel.add(label, gbc);
-		
-		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		splitPane.setTopComponent(topPanel);
-		splitPane.setBottomComponent(emptyPanel);
-
-		setLayout(new BorderLayout());
-		add(splitPane, BorderLayout.CENTER);
-		splitPane.setDividerLocation(450);
-		splitPane.setResizeWeight(0.7);
-		
+		add(tabbedPane, gbc);		
+						
 		newButton.addActionListener(eventHandler);
 		newButton.setEnabled(false);
 		deleteButton.addActionListener(eventHandler);
@@ -606,7 +585,7 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 						selectedObjects.add(currentSelectedTableModel.getValueAt(row));
 					}
 				}
-				selectionManager.setSelectedObjects(selectedObjects.toArray());
+				setSelectedObjects(selectedObjects.toArray());
 			}
 			if (currentSelectedTable == parametersTable) {
 				deleteButton.setEnabled(false);
@@ -624,89 +603,20 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		}
 	}
 	
-	private ReactionParticipantPropertiesPanel getReactionParticipantPropertiesPanel() {
-		if (reactionParticipantPropertiesPanel == null) {
-			reactionParticipantPropertiesPanel = new ReactionParticipantPropertiesPanel();
-		}
-		return reactionParticipantPropertiesPanel;
-	}
-	private ReactionPropertiesPanel getReactionPropertiesPanel() {
-		if (reactionStepPropertiesPanel == null) {
-			reactionStepPropertiesPanel = new ReactionPropertiesPanel();
-		}
-		return reactionStepPropertiesPanel;
-	}
-	private SpeciesPropertiesPanel getSpeciesPropertiesPanel() {
-		if (speciesPropertiesPanel == null) {
-			speciesPropertiesPanel = new SpeciesPropertiesPanel();
-		}
-		return speciesPropertiesPanel;
-	}
-	private StructurePropertiesPanel getStructurePropertiesPanel() {
-		if (structurePropertiesPanel == null) {
-			structurePropertiesPanel = new StructurePropertiesPanel();
-		}
-		return structurePropertiesPanel;
-	}
-	private ModelParameterPropertiesPanel getModelParameterPropertiesPanel() {
-		if (modelParameterPropertiesPanel == null) {
-			modelParameterPropertiesPanel = new ModelParameterPropertiesPanel();
-		}
-		return modelParameterPropertiesPanel;
-	}
-	
-	public void setBottomPanelOnSelection(Object[] selections) {
-		JComponent bottomComponent = emptyPanel;
-		if (selections != null && selections.length == 1) {
-			Object singleSelection = selections[0];
-			if (singleSelection instanceof ReactionStep) {
-				bottomComponent = getReactionPropertiesPanel();
-				getReactionPropertiesPanel().setReactionStep((ReactionStep)singleSelection);
-			} else if (singleSelection instanceof SpeciesContext) {
-				bottomComponent = getSpeciesPropertiesPanel();
-				getSpeciesPropertiesPanel().setModel(bioModel.getModel());
-				getSpeciesPropertiesPanel().setSpeciesContext((SpeciesContext) singleSelection);
-			} else if (singleSelection instanceof Structure) {
-				bottomComponent = getStructurePropertiesPanel();
-				getStructurePropertiesPanel().setModel(bioModel.getModel());
-				getStructurePropertiesPanel().setStructure((Structure) singleSelection);
-			} else if (singleSelection instanceof ModelParameter) {
-				bottomComponent = getModelParameterPropertiesPanel();
-				getModelParameterPropertiesPanel().setModelParameter((ModelParameter) singleSelection);
-			} else if (singleSelection instanceof Product || singleSelection instanceof Reactant) {
-				bottomComponent = getReactionParticipantPropertiesPanel();
-				getReactionParticipantPropertiesPanel().setReactionParticipant((ReactionParticipant) singleSelection);
-			} else if (singleSelection instanceof BioModelInfo) {
-				if (bioModelMetaDataPanel == null) {
-					bioModelMetaDataPanel = new BioModelMetaDataPanel();
-					bioModelMetaDataPanel.setDocumentManager(cartoonEditorPanel.getDocumentManager());
-				}
-				bioModelMetaDataPanel.setBioModelInfo((BioModelInfo) singleSelection);
-				bottomComponent = bioModelMetaDataPanel;
-			} else if (singleSelection instanceof MathModelInfo) {
-				if (mathModelMetaDataPanel == null) {
-					mathModelMetaDataPanel = new MathModelMetaDataPanel();
-					mathModelMetaDataPanel.setDocumentManager(cartoonEditorPanel.getDocumentManager());
-				}
-				mathModelMetaDataPanel.setMathModelInfo((MathModelInfo) singleSelection);
-				bottomComponent = mathModelMetaDataPanel;
-			} else if (singleSelection instanceof GeometryInfo) {
-				if (geometryMetaDataPanel == null) {
-					geometryMetaDataPanel = new GeometryMetaDataPanel();
-					geometryMetaDataPanel.setDocumentManager(cartoonEditorPanel.getDocumentManager());
-				}
-				geometryMetaDataPanel.setGeometryInfo((GeometryInfo) singleSelection);
-				bottomComponent = geometryMetaDataPanel;
-			}
-		}
-		if (splitPane.getBottomComponent() != bottomComponent) {
-			splitPane.setBottomComponent(bottomComponent);
-		}
-		splitPane.setDividerLocation(0.7);
-	}
-
 	public void setDocumentManager(DocumentManager documentManager) {
 		cartoonEditorPanel.setDocumentManager(documentManager);		
+	}
+	
+	private void showDiagramView() {
+		if (tabbedPane.getSelectedIndex() == ModelPanelTab.reaction_diagram.ordinal()) {
+			if (tabbedPane.getComponent(ModelPanelTab.reaction_diagram.ordinal()) != ModelPanelTab.reaction_diagram.getComponent()) {
+				try {
+					diagramViewInternalFrame.setSelected(true);
+				} catch (PropertyVetoException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 	private void floatDiagramView(boolean bFloating) {
@@ -718,31 +628,33 @@ public class BioModelEditorModelPanel extends JPanel implements Model.Owner {
 		}
 		if (bFloating) {
 			diagramViewInternalFrame = new JInternalFrameEnhanced("Reaction Diagram View");
-			tabbedPane.remove(ModelPanelTab.reaction_diagram.getComponent());
+			tabbedPane.setComponentAt(0, new JPanel());
 			JPanel panel = new JPanel();
 			panel.setLayout(new BorderLayout());
 			JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			panel.add(p, BorderLayout.NORTH);
 			panel.add(reactionCartoonEditorPanel, BorderLayout.CENTER);
 			diagramViewInternalFrame.setResizable(true);
+			diagramViewInternalFrame.setClosable(true);
+			diagramViewInternalFrame.addInternalFrameListener(new InternalFrameAdapter() {
+
+				@Override
+				public void internalFrameClosing(InternalFrameEvent e) {					
+					reactionCartoonEditorPanel.setFloatingRequested(false);
+				}
+				
+			});
 			diagramViewInternalFrame.setMaximizable(true);
 			diagramViewInternalFrame.setIconifiable(true);
 			diagramViewInternalFrame.add(panel);
+			diagramViewInternalFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/step.gif")));
 			diagramViewInternalFrame.pack();
 			BeanUtils.centerOnComponent(diagramViewInternalFrame, this);
 			DocumentWindowManager.showFrame(diagramViewInternalFrame, desktopPane);
-		} else {	
+		} else {
 			DocumentWindowManager.close(diagramViewInternalFrame, desktopPane);			
-			tabbedPane.insertTab(ModelPanelTab.reaction_diagram.getName(), null, ModelPanelTab.reaction_diagram.getComponent(), null, 0);
+			tabbedPane.setComponentAt(0, ModelPanelTab.reaction_diagram.getComponent());
 			tabbedPane.setSelectedComponent(ModelPanelTab.reaction_diagram.getComponent());
-		}
-	}
-
-	public final void setSelectionManager(SelectionManager selectionManager) {
-		this.selectionManager = selectionManager;
-		if (selectionManager != null) {
-			selectionManager.removePropertyChangeListener(eventHandler);
-			selectionManager.addPropertyChangeListener(eventHandler);
 		}
 	}
 }

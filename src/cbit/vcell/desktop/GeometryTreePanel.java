@@ -34,7 +34,7 @@ import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
-import cbit.vcell.client.desktop.biomodel.SelectionManager;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
@@ -46,7 +46,7 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class GeometryTreePanel extends JPanel {
+public class GeometryTreePanel extends BioModelEditorSubPanel {
 	private JTree ivjJTree1 = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private DocumentManager ivjDocumentManager = null;
@@ -127,9 +127,6 @@ private class IvjEventHandler implements DatabaseListener, java.awt.event.Action
 				connPtoP3SetTarget();
 			if (evt.getSource() == GeometryTreePanel.this && (evt.getPropertyName().equals("documentManager"))) 
 				connEtoM11(evt);
-			if (evt.getSource() == selectionManager) {
-				setSelectedObject();
-			}
 		};
 		public void treeNodesChanged(javax.swing.event.TreeModelEvent e) {
 			if (e.getSource() == GeometryTreePanel.this.getGeometryDbTreeModel()) 
@@ -145,7 +142,6 @@ private class IvjEventHandler implements DatabaseListener, java.awt.event.Action
 	};
 	
 	private boolean bShowMetadata = true;
-	private SelectionManager selectionManager = null;
 	/**
 	 * BioModelTreePanel constructor comment.
 	 */
@@ -159,8 +155,7 @@ private class IvjEventHandler implements DatabaseListener, java.awt.event.Action
 		initialize();
 	}
 	
-	public void setSelectedObject() {
-		Object[] selectedObjects = selectionManager.getSelectedObjects();
+	public void onSelectedObjectsChange(Object[] selectedObjects) {
 		if (selectedObjects == null || selectedObjects.length == 0 || selectedObjects.length > 1) {
 			getJTree1().clearSelection();
 		} else {
@@ -1377,8 +1372,8 @@ private void initialize() {
 		// user code end
 		setName("GeometryTreePanel");
 		setLayout(new BorderLayout());
-		setPreferredSize(new java.awt.Dimension(200, 150));
-		setSize(240, 453);
+//		setPreferredSize(new java.awt.Dimension(200, 150));
+//		setSize(240, 453);
 		setMinimumSize(new java.awt.Dimension(198, 148));
 
 		add(getDatabaseSearchPanel(), BorderLayout.NORTH);
@@ -1449,6 +1444,7 @@ public void refresh(ArrayList<SearchCriterion> newFilterList) throws DataAccessE
 private void refresh() throws DataAccessException {
 	getGeometryDbTreeModel().refreshTree();
 	getJTree1().setCellRenderer(getGeometryCellRenderer());
+	getJTree1().setRootVisible(false);
 	expandTreeToUser();
 }
 
@@ -1482,6 +1478,7 @@ public void setDocumentManager(DocumentManager newValue) {
 			connEtoM3(ivjDocumentManager);
 			connEtoC12(ivjDocumentManager);
 			getJTree1().setCellRenderer(getGeometryCellRenderer());
+			getJTree1().setRootVisible(false);
 			firePropertyChange("documentManager", oldValue, newValue);
 			// user code begin {1}
 			// user code end
@@ -1650,11 +1647,4 @@ public void expandSearchPanel(boolean bExpand) {
 	getDatabaseSearchPanel().expand(bExpand);
 }
 
-public final void setSelectionManager(SelectionManager selectionManager) {
-	this.selectionManager = selectionManager;
-	if (selectionManager != null) {
-		selectionManager.removePropertyChangeListener(ivjEventHandler);
-		selectionManager.addPropertyChangeListener(ivjEventHandler);
-	}
-}
 }

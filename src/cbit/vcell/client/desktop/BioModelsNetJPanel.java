@@ -46,6 +46,7 @@ import java.awt.Color;
 import javax.swing.JTextField;
 import java.awt.Dimension;
 
+@SuppressWarnings("serial")
 public class BioModelsNetJPanel extends JPanel {
 	private DocumentWindow documentWindow;
 	private static final String BIOMODELS_DATABASE_URL = "http://www.ebi.ac.uk/biomodels/";

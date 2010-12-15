@@ -1,16 +1,19 @@
 package cbit.gui;
 
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -121,7 +124,7 @@ public final String getEquationRightHand() {
 	return equationRightHand;
 }
 
-public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, String equationString) throws ExpressionException {
+public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Model model, String equationString) throws ExpressionException, PropertyVetoException {
 	int gotoIndex = equationString.indexOf(REACTION_GOESTO);
 	if (gotoIndex < 1 && equationString.length() == 0) {
 		throw new ExpressionException("Syntax error!");
@@ -149,9 +152,14 @@ public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Str
 			stoichi = Integer.parseInt(tmp);
 		}
 		String var = nextToken.substring(stoichiIndex).trim();
-		SpeciesContext sc = reactionStep.getModel().getSpeciesContext(var);
+		SpeciesContext sc = model.getSpeciesContext(var);
 		if (sc == null) {
-			throw new ExpressionException("Species '" + var + "' does not exist!");
+			Species species = model.getSpecies(var);
+			if (species == null) {
+				species = new Species(var, null);
+			}
+			sc = new SpeciesContext(species, reactionStep.getStructure());
+			sc.setName(var);
 		}
 		if (reactionStep instanceof SimpleReaction) {
 			rplist.add(new Reactant(null,(SimpleReaction) reactionStep, sc, stoichi));
@@ -179,9 +187,14 @@ public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Str
 			stoichi = Integer.parseInt(tmp);
 		}
 		String var = nextToken.substring(stoichiIndex);
-		SpeciesContext sc = reactionStep.getModel().getSpeciesContext(var);
+		SpeciesContext sc = model.getSpeciesContext(var);
 		if (sc == null) {
-			throw new ExpressionException("Species '" + var + "' doesn't exist!");
+			Species species = model.getSpecies(var);
+			if (species == null) {
+				species = new Species(var, null);
+			}
+			sc = new SpeciesContext(species, reactionStep.getStructure());
+			sc.setName(var);
 		}
 		if (reactionStep instanceof SimpleReaction) {
 			rplist.add(new Product(null,(SimpleReaction) reactionStep, sc, stoichi));

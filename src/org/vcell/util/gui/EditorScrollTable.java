@@ -55,6 +55,12 @@ public class EditorScrollTable extends ScrollTable {
 					}
 				}				
 				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+						bEscKeyPressed = true;
+					} else if (e.getKeyCode() == KeyEvent.VK_ENTER
+						|| e.getKeyCode() == KeyEvent.VK_TAB) {
+						bEditingStoppedFromKey = true;
+					}
 				}
 			});
 		}
@@ -80,9 +86,17 @@ public class EditorScrollTable extends ScrollTable {
 				public void keyReleased(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 						bEscKeyPressed = true;
-					}					
+					} else if (e.getKeyCode() == KeyEvent.VK_TAB) {
+						bEditingStoppedFromKey = true;
+					}
 				}				
 				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+						bEscKeyPressed = true;
+					} else if (e.getKeyCode() == KeyEvent.VK_ENTER
+							|| e.getKeyCode() == KeyEvent.VK_TAB) {
+						bEditingStoppedFromKey = true;
+					}
 				}
 			});
 		}

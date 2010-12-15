@@ -48,6 +48,9 @@ public abstract class BioModelEditorRightSideTableModel<T> extends DefaultSortTa
 	protected EditorScrollTable ownerTable = null;
 	protected String searchText = null;
 	public static final String ADD_NEW_HERE_TEXT = "(add new here)";
+	public static final String ADD_NEW_HERE_HTML = "<html><i>(add new here)</i></html>";
+	public static final String ADD_NEW_HERE_REACTION_TEXT = "a+b->c";
+	public static final String ADD_NEW_HERE_REACTION_HTML = "<html><i>(add new here, e.g. <font color=blue><b>a+b->c</b></font>)</i></html>";
 	
 	public BioModelEditorRightSideTableModel(EditorScrollTable table) {
 		super(null);
