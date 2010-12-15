@@ -9,6 +9,7 @@ import javax.swing.JTree;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
  
+@SuppressWarnings("serial")
 public class MathModelCellRenderer extends VCellBasicCellRenderer {
 	private User sessionUser = null;
 
@@ -30,7 +31,6 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 	JLabel component = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 	//
 	try {
-		setIcon(null);
 		if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			Object userObject = node.getUserObject();

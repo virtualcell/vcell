@@ -40,7 +40,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
-import cbit.vcell.client.desktop.biomodel.SelectionManager;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
@@ -51,7 +51,7 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class MathModelDbTreePanel extends JPanel {
+public class MathModelDbTreePanel extends BioModelEditorSubPanel {
 	private JTree ivjJTree1 = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private DocumentManager ivjDocumentManager = null;
@@ -146,9 +146,6 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 				connPtoP3SetSource();
 			if (evt.getSource() == MathModelDbTreePanel.this && (evt.getPropertyName().equals("documentManager"))) 
 				connEtoM5(evt);
-			if (evt.getSource() == selectionManager) {
-				setSelectedObject();
-			}
 		};
 		public void treeNodesChanged(javax.swing.event.TreeModelEvent e) {
 			if (e.getSource() == MathModelDbTreePanel.this.getMathModelDbTreeModel()) 
@@ -164,7 +161,6 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 	};
 
 	private boolean bShowMetadata = true;
-	private SelectionManager selectionManager = null;
 	public MathModelDbTreePanel() {
 		this(true);
 	}
@@ -178,8 +174,7 @@ public MathModelDbTreePanel(boolean bMetadata) {
 	initialize();
 }
 
-public void setSelectedObject() {
-	Object[] selectedObjects = selectionManager.getSelectedObjects();
+public void onSelectedObjectsChange(Object[] selectedObjects) {
 	if (selectedObjects == null || selectedObjects.length == 0 || selectedObjects.length > 1) {
 		getJTree1().clearSelection();
 	} else {
@@ -1737,8 +1732,8 @@ private void initialize() {
 		// user code end
 		setName("MathModelTreePanel");
 		setLayout(new BorderLayout());
-		setPreferredSize(new java.awt.Dimension(200, 150));
-		setSize(240, 453);
+//		setPreferredSize(new java.awt.Dimension(200, 150));
+//		setSize(240, 453);
 //		setMinimumSize(new java.awt.Dimension(198, 148));
 		
 		add(getDatabaseSearchPanel(), BorderLayout.NORTH);
@@ -2084,11 +2079,4 @@ public void expandSearchPanel(boolean bExpand) {
 	getDatabaseSearchPanel().expand(bExpand);
 }
 
-public final void setSelectionManager(SelectionManager selectionManager) {
-	this.selectionManager = selectionManager;
-	if (selectionManager != null) {
-		selectionManager.removePropertyChangeListener(ivjEventHandler);
-		selectionManager.addPropertyChangeListener(ivjEventHandler);
-	}
-}
 }

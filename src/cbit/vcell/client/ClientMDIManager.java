@@ -6,6 +6,7 @@ import cbit.vcell.client.server.*;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import java.awt.*;
+
 import cbit.vcell.client.desktop.*;
 import javax.swing.*;
 import org.vcell.util.BeanUtils;
@@ -155,10 +156,19 @@ private DocumentWindow createDocumentWindow() {
 	// stagger 90% screen size windows
 	documentWindow.setSize(900, 800);
 	BeanUtils.centerOnScreen(documentWindow);
-	if (getNewlyCreatedDesktops() == 0) {
-		// first window
-		// cbit.util.BeanUtils.attemptMaximize(documentWindow);	
+	Point p = documentWindow.getLocation();
+	int numDocWindow = getWindowsHash().size() - 3;
+	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	int offset = 20;
+	int newX = p.x + offset * numDocWindow;
+	int newY = p.y + offset * numDocWindow;
+	if (newX < screenSize.width && newY < screenSize.height) {
+		documentWindow.setLocation(newX, newY);
 	}
+//	if (getNewlyCreatedDesktops() == 0) {
+//		// first window
+//		// cbit.util.BeanUtils.attemptMaximize(documentWindow);	
+//	}
 	return documentWindow;
 }
 

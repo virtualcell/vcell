@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,9 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JSplitPane;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
@@ -23,7 +20,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 
 import cbit.image.ImageException;
-import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -47,7 +43,6 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	private static final String MENU_TEXT_DETERMINISTIC_APPLICATION = "Deterministic";
 	private static final String MENU_TEXT_STOCHASTIC_APPLICATION = "Stochastic";
 
-	private ApplicationPropertiesPanel applicationPropertiesPanel = null;
 	private JButton moreActionsButton = null;
 	// application popup menu items
 	private JPopupMenu ivjAppsPopupMenu = null;
@@ -67,7 +62,6 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	private JMenuItem appNewStochApp = null;
 	private JMenuItem appNewDeterministicApp = null;
 	private JMenuItem ivjJMenuItemAppCopy = null;	
-	private BioModelWindowManager bioModelWindowManager = null;
 	
 	private EventHandler eventHandler = new EventHandler();
 	
@@ -95,23 +89,20 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	}
         
 	private void initialize() {
-		applicationPropertiesPanel = new ApplicationPropertiesPanel();
 		newButton.setIcon(new DownArrowIcon());
 		newButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		moreActionsButton = new JButton("More Actions");
 		moreActionsButton.setIcon(new DownArrowIcon());
 		moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		
-		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);		
-		JPanel topPanel = new JPanel();
-		topPanel.setLayout(new GridBagLayout());
+		setLayout(new GridBagLayout());
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
-		topPanel.add(new JLabel("Search "), gbc);
+		add(new JLabel("Search "), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -121,28 +112,28 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
-		topPanel.add(textFieldSearch, gbc);
+		add(textFieldSearch, gbc);
 				
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,50,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		topPanel.add(newButton, gbc);
+		add(newButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 4;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		topPanel.add(deleteButton, gbc);
+		add(deleteButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 5;
 		gbc.insets = new Insets(4,4,4,20);
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		topPanel.add(moreActionsButton, gbc);
+		add(moreActionsButton, gbc);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
@@ -153,14 +144,8 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 6;
 		gbc.fill = GridBagConstraints.BOTH;
-		topPanel.add(table.getEnclosingScrollPane(), gbc);
-		
-		splitPane.setDividerLocation(350);
-		splitPane.setTopComponent(topPanel);
-		splitPane.setBottomComponent(applicationPropertiesPanel);
-		setLayout(new BorderLayout());
-		add(splitPane, BorderLayout.CENTER);
-		
+		add(table.getEnclosingScrollPane(), gbc);
+				
 		moreActionsButton.setEnabled(false);
 		moreActionsButton.addActionListener(eventHandler);		
 		getJMenuAppCopyAs().addActionListener(eventHandler);
@@ -217,7 +202,6 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 			for (SimulationContext sc : deleteList) {
 				deleteApplication(sc);
 			}
-			applicationPropertiesPanel.setSimulationContext(null);
 		} catch (PropertyVetoException ex) {
 			ex.printStackTrace();
 			DialogUtils.showErrorDialog(BioModelEditorApplicationsPanel.this, ex.getMessage());
@@ -234,11 +218,9 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		super.tableSelectionChanged();
 		int[] rows = table.getSelectedRows();
 		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {					
-			applicationPropertiesPanel.setSimulationContext(tableModel.getValueAt(rows[0]));			
 			moreActionsButton.setEnabled(true);
 		} else {
 			moreActionsButton.setEnabled(false);
-			applicationPropertiesPanel.setSimulationContext(null);
 		}
 	}
 
@@ -469,7 +451,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 					SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
 					bioModel.addSimulationContext(newSimulationContext);
 					//bioModelWindowManager.showApplicationFrame(newSimulationContext);
-					select(newSimulationContext);
+					setSelectedObjects(new Object[]{newSimulationContext});
 				}
 			};
 			ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
@@ -562,7 +544,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
 						//bioModelWindowManager.showApplicationFrame(newSimulationContext);
-						select(newSimulationContext);
+						setSelectedObjects(new Object[]{newSimulationContext});
 					}
 				};
 				ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task0, task1, task2});				
@@ -588,7 +570,18 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		bioModel.removeSimulationContext(simulationContext);
 	}
 	
-	public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager) {
-		this.bioModelWindowManager = bioModelWindowManager;
+	public void onSelectedObjectsChange(Object[] selectedObjects) {
+		table.clearSelection();
+		if (selectedObjects == null || selectedObjects.length != 1) {
+			return;
+		}
+		for (Object object : selectedObjects) {
+			for (int i = 0; i < tableModel.getDataSize(); i ++) {
+				if (tableModel.getValueAt(i) == object) {
+					table.addRowSelectionInterval(i, i);
+					break;
+				}
+			}
+		}
 	}
 }

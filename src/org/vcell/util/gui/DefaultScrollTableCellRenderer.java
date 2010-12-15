@@ -87,8 +87,10 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 			}
 			return jc;
 		}
-		if (value != null && (value.equals(BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT))) {
-			setText("<html><i>" + value + "</i></html>");
+		if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
+			setText(BioModelEditorRightSideTableModel.ADD_NEW_HERE_HTML);
+		} else if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(value)) {
+			setText(BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_HTML);
 		} 
 //		if (value instanceof ReactionEquation) {
 //			ReactionEquation reactionEquation = (ReactionEquation)value;

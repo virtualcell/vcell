@@ -669,11 +669,45 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					}
 				}
 			}
+			
+			//
+			// insert conversion factors to go from micromolar to molecules/um^3.  ... KMOLE.
+			//
+//			if (forwardRate!=null){
+//				if (forwardRateUnit==null){
+//					throw new MappingException("units not known");
+//				}
+//				if (forwardRateUnit.equals(VCUnitDefinition.UNIT_per_s)){
+//					// do nothing
+//				}else if (forwardRateUnit.equals(VCUnitDefinition.UNIT_pper_s)){
+//					// do nothing
+//				}else if (forwardRateUnit.equals(VCUnitDefinition.UNIT_per_s)){
+//					// do nothing
+//				}else if (forwardRateUnit.equals(VCUnitDefinition.UNIT_per_s)){
+//					// do nothing
+//				}else if (forwardRateUnit.equals(VCUnitDefinition.UNIT_per_s)){
+//					// do nothing
+//				}else if (forwardRateUnit.equals(VCUnitDefinition.UNIT_per_s)){
+//					// do nothing
+//				}else if (forwardRateUnit.equals(VCUnitDefinition.UNIT_per_s)){
+//					// do nothing
+//				}else if (forwardRateUnit.equals(VCUnitDefinition.UNIT_per_s)){
+//					// do nothing
+//				}else if (forwardRateUnit.equals(VCUnitDefinition.UNIT_per_s)){
+//					// do nothing
+//				}else if (forwardRateUnit.equals(VCUnitDefinition.UNIT_per_s)){
+//					// do nothing
+//				}else if (forwardRateUnit.equals(VCUnitDefinition.UNIT_per_s)){
+//					// do nothing
+//				}else 
+//			}
 		    
 			// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)
 			// we process it as forward reaction
 			List<ParticleVariable> reactantParticles = new ArrayList<ParticleVariable>();
 			List<ParticleVariable> productParticles = new ArrayList<ParticleVariable>();
+			List<Action> forwardActions = new ArrayList<Action>();
+			List<Action> reverseActions = new ArrayList<Action>();
 			for (ReactionParticipant rp : reactionStep.getReactionParticipants()){
 				SpeciesContext sc = rp.getSpeciesContext();
 				GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
@@ -686,6 +720,22 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					}else if (rp instanceof Product){
 						productParticles.add(particle);
 					}
+					for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
+						if (forwardRate!=null) {
+							if (rp instanceof Reactant){
+								forwardActions.add(Action.createDestroyAction(particle));
+							} else if (rp instanceof Product){
+								forwardActions.add(Action.createCreateAction(particle));
+							}
+						}					 
+						if (reverseRate!=null) {
+							if (rp instanceof Reactant){
+								reverseActions.add(Action.createCreateAction(particle));
+							} else if (rp instanceof Product){
+								reverseActions.add(Action.createDestroyAction(particle));
+							}
+						}
+					}
 				}else{
 					throw new MappingException("particle variable '"+varName+"' not found");
 				}
@@ -697,14 +747,14 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				Expression exp = getIdentifierSubstitutions(forwardRate, forwardRateUnit, reactionStepGeometryClass);
 				ParticleProbabilityRate partProbRate = new MacroscopicRateConstant(exp);
 				
-				List<Action> actions = new ArrayList<Action>();
-				for (ParticleVariable reactantVar : reactantParticles){
-					actions.add(Action.createDestroyAction(reactantVar));
-				}
-				for (ParticleVariable productVar : productParticles){
-					actions.add(Action.createCreateAction(productVar));
-				}
-				ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, partProbRate, actions);
+//				List<Action> actions = new ArrayList<Action>();
+//				for (ParticleVariable reactantVar : reactantParticles){
+//					actions.add(Action.createDestroyAction(reactantVar));
+//				}
+//				for (ParticleVariable productVar : productParticles){
+//					actions.add(Action.createCreateAction(productVar));
+//				}
+				ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, partProbRate, forwardActions);
 				subdomain.addParticleJumpProcess(forwardProcess);
 			}
 			if (reverseRate!=null)
@@ -716,14 +766,14 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				Expression exp = getIdentifierSubstitutions(reverseRate, reverseRateUnit, reactionStepGeometryClass);
 				ParticleProbabilityRate partProbRate = new MacroscopicRateConstant(exp);
 				
-				List<Action> actions = new ArrayList<Action>();
-				for (ParticleVariable productVar : productParticles){
-					actions.add(Action.createDestroyAction(productVar));
-				}
-				for (ParticleVariable reactantVar : reactantParticles){
-					actions.add(Action.createCreateAction(reactantVar));
-				}
-				ParticleJumpProcess reverseProcess = new ParticleJumpProcess(jpName, productParticles, partProbRate, actions);
+//				List<Action> actions = new ArrayList<Action>();
+//				for (ParticleVariable productVar : productParticles){
+//					actions.add(Action.createDestroyAction(productVar));
+//				}
+//				for (ParticleVariable reactantVar : reactantParticles){
+//					actions.add(Action.createCreateAction(reactantVar));
+//				}
+				ParticleJumpProcess reverseProcess = new ParticleJumpProcess(jpName, productParticles, partProbRate, reverseActions);
 				subdomain.addParticleJumpProcess(reverseProcess);
 			}
 		}

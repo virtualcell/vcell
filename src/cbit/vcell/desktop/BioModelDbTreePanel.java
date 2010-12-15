@@ -21,7 +21,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -38,7 +37,7 @@ import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
-import cbit.vcell.client.desktop.biomodel.SelectionManager;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
@@ -49,7 +48,7 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class BioModelDbTreePanel extends JPanel {
+public class BioModelDbTreePanel extends BioModelEditorSubPanel {
 	private JTree ivjJTree1 = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private DocumentManager ivjDocumentManager = null;
@@ -65,12 +64,11 @@ public class BioModelDbTreePanel extends JPanel {
 	protected transient ActionListener aActionListener = null;
 	private JLabel ivjJLabel1 = null;
 	private JSeparator ivjJSeparator1 = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private BioModelDbTreeModel ivjBioModelDbTreeModel = null;
 	private JPopupMenu ivjBioModelPopupMenu = null;
 	private BioModelMetaDataPanel ivjBioModelMetaDataPanel = null;
 	private JPanel bottomPanel = null;
-	private JScrollPane ivjJScrollPane2 = null;
 	private JMenuItem ivjAnotherEditionMenuItem = null;
 	private JMenuItem ivjAnotherModelMenuItem = null;
 	private JMenu ivjJMenu1 = null;
@@ -145,9 +143,6 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 				connEtoC4(evt);
 			if (evt.getSource() == BioModelDbTreePanel.this && (evt.getPropertyName().equals("documentManager"))) 
 				connEtoM2(evt);
-			if (evt.getSource() == selectionManager) {
-				setSelectedObject();
-			}
 		};
 		public void treeNodesChanged(javax.swing.event.TreeModelEvent e) {
 			if (e.getSource() == BioModelDbTreePanel.this.getBioModelDbTreeModel()) 
@@ -163,7 +158,6 @@ class IvjEventHandler implements DatabaseListener, java.awt.event.ActionListener
 	};
 
 	private boolean bShowMetadata = true;
-	private SelectionManager selectionManager = null;
 /**
  * BioModelTreePanel constructor comment.
  */
@@ -171,8 +165,7 @@ public BioModelDbTreePanel() {
 	this(true);
 }
 
-public void setSelectedObject() {
-	Object[] selectedObjects = selectionManager.getSelectedObjects();
+public void onSelectedObjectsChange(Object[] selectedObjects) {
 	if (selectedObjects == null || selectedObjects.length == 0 || selectedObjects.length > 1) {
 		getJTree1().clearSelection();
 	} else {
@@ -1551,7 +1544,6 @@ private javax.swing.JTree getJTree1() {
 			ivjJTree1.setBounds(0, 0, 357, 405);
 			ivjJTree1.setMinimumSize(new java.awt.Dimension(100, 72));
 			ivjJTree1.setSelectionModel(ivjLocalSelectionModel);
-			ivjJTree1.setRowHeight(0);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1701,9 +1693,9 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("BioModelTreePanel");
-		setPreferredSize(new java.awt.Dimension(200, 150));
+//		setPreferredSize(new java.awt.Dimension(200, 150));
 		setLayout(new BorderLayout());
-		setSize(240, 453);
+//		setSize(240, 453);
 //		setMinimumSize(new java.awt.Dimension(198, 148));
 		
 		add(getDatabaseSearchPanel(), BorderLayout.NORTH);
@@ -2032,14 +2024,6 @@ public void search(boolean bShowAll) {
 
 public void expandSearchPanel(boolean bExpand) {
 	getDatabaseSearchPanel().expand(bExpand);
-}
-
-public final void setSelectionManager(SelectionManager selectionManager) {
-	this.selectionManager = selectionManager;
-	if (selectionManager != null) {
-		selectionManager.removePropertyChangeListener(ivjEventHandler);
-		selectionManager.addPropertyChangeListener(ivjEventHandler);
-	}
 }
 
 }

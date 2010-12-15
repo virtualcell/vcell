@@ -1,20 +1,26 @@
 package cbit.vcell.model.gui;
 
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.swing.JTable;
+
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.KineticsProxyParameter;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelQuantity;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Kinetics.KineticsProxyParameter;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -27,15 +33,13 @@ import cbit.vcell.units.VCUnitException;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class ParameterTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
-	private final int NUM_COLUMNS = 5;
+public class ParameterTableModel extends DefaultSortTableModel<Parameter> implements java.beans.PropertyChangeListener {
 	public final static int COLUMN_NAME = 0;
 	public final static int COLUMN_DESCRIPTION = 1;
 	public final static int COLUMN_IS_GLOBAL = 2;
 	public final static int COLUMN_VALUE = 3;
 	public final static int COLUMN_UNITS = 4;
 	private String LABELS[] = { "Name", "Description", "Global", "Expression", "Units" };
-	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Kinetics fieldKinetics = null;
 	private JTable fieldParentComponentTable = null;		// needed for DialogUtils.showWarningDialog() 
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
@@ -43,24 +47,12 @@ public class ParameterTableModel extends javax.swing.table.AbstractTableModel im
 	
 public ParameterTableModel(JTable argParentComponent, boolean bEditable) {
 	super();
+	setColumns(LABELS);
 	this.bEditable = bEditable;
 	addPropertyChangeListener(this);
 	fieldParentComponentTable = argParentComponent;
 }
 
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:24:35 AM)
@@ -89,24 +81,7 @@ public Class<?> getColumnClass(int column) {
 		}
 	}
 }
-/**
- * getColumnCount method comment.
- */
-public int getColumnCount() {
-	return NUM_COLUMNS;
-}
-/**
- * Insert the method's description here.
- * Creation date: (2/24/01 12:24:35 AM)
- * @return java.lang.Class
- * @param column int
- */
-public String getColumnName(int column) {
-	if (column<0 || column>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	return LABELS[column];
-}
+
 /**
  * Gets the geometry property (cbit.vcell.geometry.Geometry) value.
  * @return The geometry property value.
@@ -118,33 +93,14 @@ public Kinetics getKinetics() {
 /**
  * getValueAt method comment.
  */
-private Parameter getParameter(int row) {
-	if (row<0 || row>=getRowCount()){
-		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	int index = row;
-	if (index<getKinetics().getKineticsParameters().length){
-		return getKinetics().getKineticsParameters()[index];
-	}
-	index = index - getKinetics().getKineticsParameters().length;
-	if (index<getKinetics().getProxyParameters().length){
-		return getKinetics().getProxyParameters()[index];
-	}
-	index = index - getKinetics().getProxyParameters().length;
-	if (index<getKinetics().getUnresolvedParameters().length){
-		return getKinetics().getUnresolvedParameters()[index];
-	}
-	return null;
+private void refreshData() {
+	List<Parameter> parameterList = new ArrayList<Parameter>();
+	parameterList.addAll(Arrays.asList(getKinetics().getKineticsParameters()));
+	parameterList.addAll(Arrays.asList(getKinetics().getProxyParameters()));
+	parameterList.addAll(Arrays.asList(getKinetics().getUnresolvedParameters()));
+	setData(parameterList);
 }
-/**
- * Accessor for the propertyChange field.
- */
-protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
+
 /**
  * getRowCount method comment.
  */
@@ -158,10 +114,7 @@ public int getRowCount() {
 
 public Object getValueAt(int row, int col) {
 	try {
-		if (col<0 || col>=NUM_COLUMNS){
-			throw new RuntimeException("ParameterTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-		}
-		Parameter parameter = getParameter(row);
+		Parameter parameter = getValueAt(row);
 		switch (col){
 			case COLUMN_NAME:{
 				return new Expression(parameter, getKinetics().getReactionStep().getNameScope()).infix();
@@ -205,12 +158,7 @@ public Object getValueAt(int row, int col) {
 		return null;
 	}		
 }
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
-public synchronized boolean hasListeners(java.lang.String propertyName) {
-	return getPropertyChange().hasListeners(propertyName);
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:27:46 AM)
@@ -222,7 +170,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	if (!bEditable) {
 		return false;
 	}
-	Parameter parameter = getParameter(rowIndex);
+	Parameter parameter = getValueAt(rowIndex);
 	if (columnIndex == COLUMN_NAME){
 		return parameter.isNameEditable();
 	}else if (columnIndex == COLUMN_UNITS){
@@ -274,7 +222,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				newKinetics.getProxyParameters()[i].addPropertyChangeListener(this);
 			}
 		}
-		fireTableDataChanged();
+		refreshData();
 	}
 	if (evt.getSource() instanceof Kinetics && 
 			(evt.getPropertyName().equals("kineticsParameters") ||  evt.getPropertyName().equals("proxyParameters"))) {
@@ -286,17 +234,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		for (int i = 0; newParams!=null && i < newParams.length; i++){
 			newParams[i].addPropertyChangeListener(this);
 		}
-		fireTableDataChanged();
+		refreshData();
 	}
 	if (evt.getSource() instanceof Parameter) {
 		fireTableDataChanged();
 	}
-}
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
 }
 
 /**
@@ -314,13 +256,7 @@ public void setKinetics(Kinetics kinetics) {
 }
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	if (rowIndex<0 || rowIndex>=getRowCount()){
-		throw new RuntimeException("ParameterTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
-	}
-	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
-	}
-	Parameter parameter = getParameter(rowIndex);
+	Parameter parameter = getValueAt(rowIndex);
 //	try {
 		switch (columnIndex){
 			case COLUMN_NAME:{
@@ -467,5 +403,15 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 public void setEditable(boolean bNewValue) {
 	bEditable = bNewValue;
 	fireTableDataChanged();
+}
+
+@Override
+protected Comparator<Parameter> getComparator(int col, boolean ascending) {
+	return null;
+}
+
+@Override
+public boolean isSortable(int col) {
+	return false;
 }
 }

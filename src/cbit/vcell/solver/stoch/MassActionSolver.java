@@ -43,7 +43,7 @@ public class MassActionSolver {
 			return fRate;
 		}
 
-		public void setForwardRate(Expression rate) {
+		private void setForwardRate(Expression rate) {
 			fRate = rate;
 		}
 
@@ -51,7 +51,7 @@ public class MassActionSolver {
 			return rRate;
 		}
 
-		public void setReverseRate(Expression rate) {
+		private void setReverseRate(Expression rate) {
 			rRate = rate;
 		}
 		public VCUnitDefinition getForwardRateUnit() {

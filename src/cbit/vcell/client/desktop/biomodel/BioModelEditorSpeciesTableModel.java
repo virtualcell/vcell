@@ -97,7 +97,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	}
 	
 	public void setValueAt(Object value, int row, int column) {
-		if (getModel() == null) {
+		if (getModel() == null || value == null) {
 			return;
 		}
 		try{
@@ -105,16 +105,17 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 				SpeciesContext speciesContext = getValueAt(row);
 				switch (column) {
 				case COLUMN_NAME: {
-					String newValue = (String)value;
-					speciesContext.setName(newValue);
+					String inputValue = ((String)value);
+					inputValue = inputValue.trim();
+					if (inputValue.length() == 0) {
+						return;
+					}
+					speciesContext.setName(inputValue);
 					break;
 				} 
 				case COLUMN_STRUCTURE: {
 					// value might be null because no popup in JCombo editor ui.
 					// the first time.
-					if (value == null) {
-						return;
-					}
 					Structure structure = (Structure)value;
 					speciesContext.setStructure(structure);
 					break;
@@ -123,12 +124,13 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 			} else {
 				switch (column) {
 				case COLUMN_NAME: {
-					if (value.equals(ADD_NEW_HERE_TEXT)) {
+					String inputValue = ((String)value);
+					if (inputValue.length() == 0 || inputValue.equals(ADD_NEW_HERE_TEXT)) {
 						return;
 					}
-					String newValue = (String)value;
+					inputValue = inputValue.trim();
 					SpeciesContext freeSpeciesContext = getModel().createSpeciesContext(getModel().getStructures()[0]);
-					freeSpeciesContext.setName(newValue);
+					freeSpeciesContext.setName(inputValue);
 					break;
 				}
 				}

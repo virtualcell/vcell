@@ -30,10 +30,13 @@ public class SelectionManager {
 			return;
 		}
 		bBusy = true;
-		Object[] oldValue = this.selectedObjects;
-		this.selectedObjects = newValue;
-		firePropertyChange(PROPERTY_NAME_SELECTED_OBJECTS, oldValue, newValue);
-		bBusy = false;
+		try {
+			Object[] oldValue = this.selectedObjects;
+			this.selectedObjects = newValue;
+			firePropertyChange(PROPERTY_NAME_SELECTED_OBJECTS, oldValue, newValue);
+		} finally {
+			bBusy = false;
+		}
 	}
  
 	public final Object[] getSelectedObjects() {

@@ -60,8 +60,6 @@ import cbit.vcell.model.gui.TransformMassActionPanel;
 @SuppressWarnings("serial")
 public class DocumentWindow extends JFrame implements TopLevelWindow {	
 
-	private JMenuItem bioModelsNetMenuItem;
-	private JMenu resourcesMenu;
 	private JDialog compareDialog = null;
 	private LoginDialog loginDialog = null;
 	private JMenuItem ivjAbout_BoxMenuItem = null;
@@ -1109,7 +1107,6 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar.add(getWindowMenu());
 			ivjDocumentWindowJMenuBar.add(getPluginMenu());
 			ivjDocumentWindowJMenuBar.add(getToolMenu());
-			ivjDocumentWindowJMenuBar.add(getResourcesMenu());
 			ivjDocumentWindowJMenuBar.add(getHelpMenu());
 			// user code begin {1}
 			// user code end
@@ -3229,35 +3226,5 @@ public void showTransMADialog()
 		}
 	}
 }
-	/**
-	 * @return
-	 */
-	protected JMenu getResourcesMenu() {
-		if (resourcesMenu == null) {
-			resourcesMenu = new JMenu();
-			resourcesMenu.setText("Resources");
-			resourcesMenu.add(getBioModelsNetMenuItem());
-		}
-		return resourcesMenu;
-	}
-	/**
-	 * @return
-	 */
-	protected JMenuItem getBioModelsNetMenuItem() {
-		if (bioModelsNetMenuItem == null) {
-			bioModelsNetMenuItem = new JMenuItem();
-			bioModelsNetMenuItem.addActionListener(new ActionListener() {
-				public void actionPerformed(final ActionEvent e) {
-					BioModelsNetJPanel bioModelsNetJPanel = new BioModelsNetJPanel();
-					bioModelsNetJPanel.setDocumentWindow(DocumentWindow.this);
-					PopupGenerator.showComponentCloseDialog(
-							DocumentWindow.this,
-							bioModelsNetJPanel,
-							"VCell Collaboration -- BioModels.net Resource");
-				}
-			});
-			bioModelsNetMenuItem.setText("BioModels.net...");
-		}
-		return bioModelsNetMenuItem;
-	}
+
 }

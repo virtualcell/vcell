@@ -2116,7 +2116,6 @@ public void setReactionSteps(ReactionStep[] reactionSteps) throws java.beans.Pro
 	ReactionStep[] oldValue = fieldReactionSteps;
 	fireVetoableChange(PROPERTY_NAME_REACTION_STEPS, oldValue, reactionSteps);
 	fieldReactionSteps = reactionSteps;
-	firePropertyChange(PROPERTY_NAME_REACTION_STEPS, oldValue, reactionSteps);
 
 	ReactionStep newValue[] = reactionSteps;
 	for (int i=0;i<oldValue.length;i++){	
@@ -2138,6 +2137,7 @@ public void setReactionSteps(ReactionStep[] reactionSteps) throws java.beans.Pro
 			e.printStackTrace(System.out);
 		}
 	}
+	firePropertyChange(PROPERTY_NAME_REACTION_STEPS, oldValue, reactionSteps);
 }
 
 

@@ -7,7 +7,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -24,7 +23,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
-public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements Model.Owner {
+public abstract class BioModelEditorRightSidePanel<T> extends BioModelEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	
 	protected JButton newButton = null;
@@ -35,7 +34,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements 
 	protected JTextField textFieldSearch = null;
 	protected BioModelEditorSelection bioModelEditorSelection = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
-	
+
 	private class InternalEventHandler implements ActionListener, PropertyChangeListener, DocumentListener, ListSelectionListener {
 
 		public void propertyChange(PropertyChangeEvent evt) {
@@ -135,29 +134,13 @@ public abstract class BioModelEditorRightSidePanel<T> extends JPanel implements 
 	protected void tableSelectionChanged() {
 		int[] rows = table.getSelectedRows();
 		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || rows[0] < tableModel.getDataSize()));
-		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {
-			setBioModelEditorSelection(new BioModelEditorSelection(tableModel.containedByModel() ? bioModel.getModel() : bioModel, tableModel.getValueAt(rows[0])));
-		} else {
-			setBioModelEditorSelection(new BioModelEditorSelection(tableModel.containedByModel() ? bioModel.getModel() : bioModel, null));
+		Object[] selectedObjects = null;
+		if (rows != null) {
+			selectedObjects = new Object[rows.length];
+			for (int i = 0; i < selectedObjects.length; i++) {
+				selectedObjects[i] = tableModel.getValueAt(rows[i]);
+			}		
 		}
-	}
-	
-	public void select(T selection) {
-		if (selection == null) {
-			table.clearSelection();
-			return;
-		}
-		for (int i = 0; i < tableModel.getDataSize(); i ++) {
-			if (tableModel.getValueAt(i) == selection) {
-				table.setRowSelectionInterval(i, i);
-				break;
-			}
-		}
-	}
-
-	private final void setBioModelEditorSelection(BioModelEditorSelection newValue) {
-		BioModelEditorSelection oldValue = this.bioModelEditorSelection;
-		this.bioModelEditorSelection = newValue;
-		firePropertyChange(BioModelEditor.PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION, oldValue, newValue);
+		setSelectedObjects(selectedObjects);
 	}
 }

@@ -7,6 +7,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,7 +39,7 @@ import cbit.vcell.model.Model;
 
 @SuppressWarnings("serial")
 public class ReactionCartoonEditorPanel extends JPanel implements ActionListener {
-	public static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(5,10);
+	public static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(5,0);
 	public static final String PROPERTY_NAME_FLOATING = "Floating";
 	private static final Dimension TOOL_BAR_BUTTON_SIZE = new Dimension(28, 28);
 	private GraphPane graphPane = null;
@@ -64,7 +66,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private ReactionCartoonTool reactionCartoonTool = null;
 
 	private boolean bFloatingRequested = false;
-	private JToolBarToggleButton floatRequestButton = null;
+	private JButton floatRequestButton = null;
 	
 	public ReactionCartoonEditorPanel() {
 		super();
@@ -235,6 +237,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.setFloatable(false);
 				toolBar.setBorder(new EtchedBorder());
 				toolBar.setOrientation(SwingConstants.HORIZONTAL);
+				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar().add(getSelectButton(), getSelectButton().getName());
 				getJToolBar().addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				getJToolBar().add(getSpeciesButton(), getSpeciesButton().getName());
@@ -252,7 +255,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				getJToolBar().add(getLevellerLayoutButton(), getLevellerLayoutButton().getName());
 				getJToolBar().add(getRelaxerLayoutButton(), getRelaxerLayoutButton().getName());
 				getJToolBar().add(getGlgLayoutJButton(), getGlgLayoutJButton().getName());
-				getJToolBar().add(getFloatRequestButton(), getFloatRequestButton().getName());
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -497,10 +499,10 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return zoomInButton;
 	}
 	
-	private JToolBarToggleButton getFloatRequestButton() {
+	private JButton getFloatRequestButton() {
 		if (floatRequestButton == null) {
 			try {
-				floatRequestButton = new JToolBarToggleButton();
+				floatRequestButton = new JButton();
 				floatRequestButton.setText("\u21b1");
 				floatRequestButton.setName("FloatingButton");
 				floatRequestButton.setFont(floatRequestButton.getFont().deriveFont(Font.BOLD));
@@ -570,7 +572,25 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			setSize(472, 422);
 //			setMinimumSize(new Dimension(54, 425));
 			add(getJScrollPane(), BorderLayout.CENTER);
-			add(getJToolBar(), BorderLayout.NORTH);
+			
+			getJToolBar().setBorder(null);
+			
+			JPanel panel = new JPanel(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.weightx = 1.0;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			panel.add(getJToolBar(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 0;
+			gbc.weightx = 1.0;
+			gbc.anchor = GridBagConstraints.LINE_END;
+			panel.add(getFloatRequestButton(), gbc);
+			
+			add(panel, BorderLayout.NORTH);
 			initConnections();
 			getModeButtonGroup().add(getStepButton());
 			getModeButtonGroup().add(getFluxButton());
@@ -730,11 +750,10 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		}
 	}
 	
-	private final void setFloatingRequested(boolean newValue) {
+	public final void setFloatingRequested(boolean newValue) {
 		boolean oldValue = bFloatingRequested;
 		this.bFloatingRequested = newValue;
-		getFloatRequestButton().setText(bFloatingRequested ? "\u21b5" : "\u21b1");
-		getFloatRequestButton().setToolTipText(bFloatingRequested ? "\u21b5 Dock" : "\u21b1 Float");
+		floatRequestButton.setVisible(!bFloatingRequested);
 //		System.out.println("Set floating: " + bFloatingRequested);
 		firePropertyChange(PROPERTY_NAME_FLOATING, oldValue, newValue);
 	}

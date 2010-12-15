@@ -157,7 +157,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	}
 
 	public void setValueAt(Object value, int row, int column) {
-		if (getModel() == null || value == null || value.toString().length() == 0) {
+		if (getModel() == null || value == null) {
 			return;
 		}
 		try{
@@ -166,6 +166,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				switch (column) {
 				case COLUMN_NAME: {
 					String inputValue = (String)value;
+					inputValue = inputValue.trim();
 					if (!inputValue.equals(structure.getName())) {
 						structure.setName(inputValue);
 						structure.getStructureSize().setName(Structure.getDefaultStructureSizeName(inputValue));
@@ -193,10 +194,11 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			} else {
 				switch (column) {
 				case COLUMN_NAME: {
-					String inputValue = (String)value;
+					String inputValue = ((String)value);
 					if (inputValue.equals(ADD_NEW_HERE_TEXT)) {
 						return;
 					}
+					inputValue = inputValue.trim();
 					Feature parentFeature = null;
 					for (int i = getModel().getNumStructures() - 1; i >= 0; i --) {
 						if (getModel().getStructures()[i] instanceof Feature) {

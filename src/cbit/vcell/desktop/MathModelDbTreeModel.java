@@ -23,7 +23,9 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
  * Creation date: (2/14/01 3:33:23 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class MathModelDbTreeModel extends javax.swing.tree.DefaultTreeModel implements DatabaseListener {
+	public static final String SHARED_MATH_MODELS = "Shared MathModels";
 	private boolean fieldLatestOnly = false;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private DocumentManager fieldDocumentManager = null;
@@ -81,7 +83,7 @@ private BioModelNode createBaseTree() throws DataAccessException {
 	// create final tree
 	//
 	rootRootNode.add((BioModelNode)treeMap.remove(loginUser.getName().toLowerCase()));	
-	BioModelNode otherUsersNode = new BioModelNode("Shared MathModels",true);
+	BioModelNode otherUsersNode = new BioModelNode(SHARED_MATH_MODELS,true);
 	rootRootNode.add(otherUsersNode);
 	for (BioModelNode userNode : treeMap.values()) {
 		for (int c = 0; c < userNode.getChildCount();) {

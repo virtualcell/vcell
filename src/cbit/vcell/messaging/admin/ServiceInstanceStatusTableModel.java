@@ -14,6 +14,7 @@ import org.vcell.util.gui.sorttable.DefaultSortTableModel;
  * Creation date: (8/19/2003 10:46:32 AM)
  * @author: Fei Gao
  */
+@SuppressWarnings("serial")
 public class ServiceInstanceStatusTableModel extends DefaultSortTableModel<ComparableObject> {
 
 public ServiceInstanceStatusTableModel() {
@@ -33,7 +34,7 @@ public Class<?> getColumnClass(int columnIndex) {
 	if (columnIndex == 2) {
 		return Number.class;
 	}
-	if (columnIndex == 2) {
+	if (columnIndex == 4) {
 		return Date.class;
 	}
 	return Object.class;

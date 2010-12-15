@@ -10,6 +10,7 @@ import org.vcell.util.document.User;
 
 import cbit.vcell.geometry.GeometryInfo;
  
+@SuppressWarnings("serial")
 public class GeometryCellRenderer extends VCellBasicCellRenderer {
 	private User sessionUser = null;
 
@@ -31,7 +32,6 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 	JLabel component = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 	//
 	try {
-		setIcon(null);
 		if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			Object userObject = node.getUserObject();
