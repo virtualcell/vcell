@@ -115,7 +115,7 @@ public class VisitProcess {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+    	}
 	}
 	
 	public static void waitNSecs(int n){for (int i=1;i<n;i++) {waitASec();}}
@@ -132,11 +132,10 @@ public class VisitProcess {
 	}*/
 
 	public static void main(String[] args){
-		
-		//String execCommand = "env DYLD_LIBRARY_PATH=/Users/edboyce/visit/current/darwin-i386/lib python -i";
-		String execCommand = "/Users/edboyce/visit/2.0.2/darwin-i386/bin/python.exe -i";
-		//String execCommand = "python -i";
-		 try {
+
+		String execCommand = "python -i";
+		//String execCommand = "/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/bin/cli"; 
+		try {
 			myProcessInfo = VisitProcess.spawnProcess(execCommand);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -146,18 +145,18 @@ public class VisitProcess {
 		waitASec();
 		sendCommandAndNoteResponse("import sys\n");
 		sendCommandAndNoteResponse("import os\n");
-		sendCommandAndNoteResponse("sys.path.append(\"/Users/edboyce/visit/current/darwin-i386/lib/\")\n");
+		sendCommandAndNoteResponse("sys.path.append(\"/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/\")\n");
 		sendCommandAndNoteResponse("import visit\n");
 		sendCommandAndNoteResponse("from visit import *\n");
-		sendCommandAndNoteResponse("visit.AddArgument(\"-cli\")\n");
-		sendCommandAndNoteResponse("os.environ[\"PATH\"]=\"/Users/edboyce/visit/bin:/usr/bin:/bin:/usr/sbin:/sbin\"\n");
 		waitASec();
-		sendCommandAndNoteResponse("visit.Launch()\n");
+		//System.out.println("About to execute visit.Launch()");
 		
+		sendCommandAndNoteResponse("Launch()\n");
+	
 		waitNSecs(10);
 		sendCommandAndNoteResponse("isCLI = True\n");
 		waitASec();
-		sendCommandAndNoteResponse("visit.OpenDatabase(\"/Users/edboyce/visit/data/multi_rect3d.silo\")\n");
+		sendCommandAndNoteResponse("visit.OpenDatabase(\"/home/VCELL/eboyce/visit2_1_1/data/multi_rect3d.silo\")\n");
 		waitNSecs(4);
 		sendCommandAndNoteResponse("visit.AddPlot(\"Pseudocolor\", \"u\")\n");
 		waitASec();
