@@ -6,8 +6,8 @@ import org.vcell.util.gui.BoxPanel;
 
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.modelopt.gui.DataSource;
-import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 
+@SuppressWarnings("serial")
 public class SummaryPlotPanel extends BoxPanel
 {
 	private SubPlotPanel plotPanel;

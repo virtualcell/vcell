@@ -3,17 +3,13 @@ package cbit.vcell.microscopy.batchrun.gui;
 import java.io.File;
 import java.util.ArrayList;
 
-import javax.swing.JLabel;
 import javax.swing.table.AbstractTableModel;
 
-import sun.security.action.GetBooleanAction;
-
-import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 
+@SuppressWarnings("serial")
 public class BatchRunMSETableModel extends AbstractTableModel{
 	
 	public final static String COL_LABELS[] = { "File Name", "ROI_Bleached", "ROI_Ring1", "ROI_Ring2", "ROI_Ring3",
@@ -73,7 +69,7 @@ public class BatchRunMSETableModel extends AbstractTableModel{
 		else
 		{
 			//in mseSummaryData there is no model name col, therefore we use col-1 here.
-			if(mseSummaryData[row][col-1] != FRAPOptimization.largeNumber)
+			if(mseSummaryData[row][col-1] != FRAPOptimizationUtils.largeNumber)
 			{
 				return mseSummaryData[row][col-1];
 			}

@@ -6,13 +6,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EventObject;
+
+import loci.formats.FormatException;
 
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
-import org.vcell.util.gui.ProgressDialogListener;
 
-import loci.formats.FormatException;
 import cbit.image.ImageException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -26,11 +25,7 @@ import cbit.vcell.resource.ResourceUtil;
 
 public class FRAPParamTest
 {
-	private static final double stepIncrease = 1.001; //increase 0.01 based on last step value
-	private static final double stepDecrease = 0.999; //decrease 0.1 based on last step value
 	private static final String SUB_DIRECTORY = "paramTest\\";
-	private static final int maxIteration = 100; 
-	private ArrayList<ProfileDataElement> profileData = new ArrayList<ProfileDataElement>();
 		
 	private LocalWorkspace localWorkspace = null;
 	private FRAPStudy frapStudy = null;
@@ -94,7 +89,7 @@ public class FRAPParamTest
 			newFRAPStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null).getRootElement(),null);
 			newFRAPStudy.setXmlFilename(fileName);
 			//create optData
-			newFRAPStudy.setFrapOptData(new FRAPOptData(newFRAPStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, getLocalWorkspace(), newFRAPStudy.getStoredRefData()));
+			newFRAPStudy.setFrapOptData(new FRAPOptData(newFRAPStudy, FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF, getLocalWorkspace(), newFRAPStudy.getStoredRefData()));
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 		} 
@@ -212,7 +207,7 @@ public class FRAPParamTest
 					}
 					
 					//run ref sim
-					frapStudy.setFrapOptData(new FRAPOptData(frapStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, localWorkspace, ctss));
+					frapStudy.setFrapOptData(new FRAPOptData(frapStudy, FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF, localWorkspace, ctss));
 				}
 				
 				FRAPOptData optData = frapStudy.getFrapOptData();

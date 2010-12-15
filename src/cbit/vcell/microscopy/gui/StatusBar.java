@@ -1,9 +1,13 @@
 package cbit.vcell.microscopy.gui;
 
-import java.awt.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.border.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.border.EtchedBorder;
 
 /**
  * The StatusBar is located at the bottom of VirtualFrapMainFrame. It has the following
@@ -16,6 +20,7 @@ import javax.swing.border.*;
  * Created in Jan 2008.
  */
 
+@SuppressWarnings("serial")
 public class StatusBar extends JPanel implements Runnable 
 {
   // instance variables

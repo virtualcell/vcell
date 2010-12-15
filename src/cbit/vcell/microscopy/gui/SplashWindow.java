@@ -1,10 +1,17 @@
 package cbit.vcell.microscopy.gui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
+
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JWindow;
+import javax.swing.SwingUtilities;
 
 /**
  * The first slash screen when the application is launched.
@@ -12,6 +19,7 @@ import java.net.URL;
  * @version 1.0 Alpha
  *
  */
+@SuppressWarnings("serial")
 class SplashWindow extends JWindow
 {
     public SplashWindow(URL filename, Frame f, int waitTime)

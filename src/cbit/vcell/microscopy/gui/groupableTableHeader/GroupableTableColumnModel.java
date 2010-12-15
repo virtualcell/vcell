@@ -2,6 +2,7 @@ package cbit.vcell.microscopy.gui.groupableTableHeader;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 
@@ -44,7 +45,7 @@ public class GroupableTableColumnModel extends DefaultTableColumnModel {
      */    
     public ColumnGroup getColumnGroup(int index) {
         if(index >= 0 && index < columnGroups.size()) {
-            return (ColumnGroup)columnGroups.get(index);
+            return columnGroups.get(index);
         }
         return null;
     }
@@ -59,8 +60,8 @@ public class GroupableTableColumnModel extends DefaultTableColumnModel {
         if (columnGroups.isEmpty()) return null;
         Iterator<ColumnGroup> iter = columnGroups.iterator();
         while (iter.hasNext()) {
-            ColumnGroup cGroup = (ColumnGroup)iter.next();
-            ArrayList<ColumnGroup> v_ret = (ArrayList<ColumnGroup>)cGroup.getColumnGroups(col,new ArrayList<ColumnGroup>());
+            ColumnGroup cGroup = iter.next();
+            ArrayList<ColumnGroup> v_ret = cGroup.getColumnGroups(col,new ArrayList<ColumnGroup>());
             if (v_ret != null) {
                 return v_ret.iterator();
             }

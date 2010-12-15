@@ -8,13 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -26,6 +20,7 @@ import org.vcell.util.gui.StyleTable;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.NumericTableCellRenderer;
 
+@SuppressWarnings("serial")
 public class BatchRunMSETablePanel extends AdvancedTablePanel
 {
     private BatchRunMSEPanel parent;

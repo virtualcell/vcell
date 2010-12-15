@@ -1,7 +1,5 @@
 package cbit.vcell.microscopy;
 
-import org.vcell.util.Matchable;
-
 import cbit.vcell.opt.Parameter;
 
 public class AnalysisParameters 
@@ -21,12 +19,11 @@ public class AnalysisParameters
 		parameters = arg_parameters;
 	}
 
-	public boolean compareEqual(Matchable obj)
+	/*public boolean compareEqual(Matchable obj)
 	{
-		AnalysisParameters anaParameter = (AnalysisParameters)obj;
 		//should make Parameter implements matchable
 //		Compare.isEqualOrNull(getParameters(), anaParameter.getParameters());
 		return false;
-	}
+	}*/
 
 }

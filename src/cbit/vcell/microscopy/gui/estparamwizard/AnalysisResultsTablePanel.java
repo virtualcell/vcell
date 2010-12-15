@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -26,7 +25,6 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.vcell.optimization.ConfidenceInterval;
@@ -41,9 +39,7 @@ import org.vcell.util.gui.StyleTable;
 
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.groupableTableHeader.ColumnGroup;
 import cbit.vcell.microscopy.gui.groupableTableHeader.GroupableTableColumnModel;
 import cbit.vcell.microscopy.gui.groupableTableHeader.GroupableTableHeader;
@@ -51,6 +47,7 @@ import cbit.vcell.microscopy.gui.groupableTableHeader.GroupableTableHeader;
 /**
  * Species information panel
  */
+@SuppressWarnings("serial")
 public class AnalysisResultsTablePanel extends AdvancedTablePanel implements ActionListener, PropertyChangeListener
 {
     private AnalysisTableModel anaTableModel;

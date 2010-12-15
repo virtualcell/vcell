@@ -1,24 +1,21 @@
 package cbit.vcell.microscopy.gui;
 
-import javax.swing.AbstractButton;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
-
-import cbit.vcell.microscopy.gui.FRAPStudyPanel.WorkFlowButtonHandler;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.net.URL;
 
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import cbit.vcell.microscopy.gui.FRAPStudyPanel.WorkFlowButtonHandler;
+
+@SuppressWarnings("serial")
 public class AnalysisProcedurePanel extends JPanel
 {
 	public final static int STAGE_LOAD_FRAP = 0;

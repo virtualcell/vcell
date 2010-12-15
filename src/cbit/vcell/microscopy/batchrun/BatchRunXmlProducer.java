@@ -1,35 +1,17 @@
 package cbit.vcell.microscopy.batchrun;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.zip.DeflaterOutputStream;
 
 import org.jdom.Element;
-import org.vcell.util.document.ExternalDataIdentifier;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.client.task.ClientTaskStatusSupport;
-import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.MicroscopyXMLTags;
-import cbit.vcell.microscopy.FRAPData.VFRAP_ROI_ENUM;
-import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.xml.Xmlproducer;
 
 public class BatchRunXmlProducer 
 {

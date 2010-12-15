@@ -11,6 +11,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 /**
  * The class MyTreeRenderer is written for customize the tree cell renderers.
  */
+@SuppressWarnings("serial")
 public class BatchRunTreeRenderer extends DefaultTreeCellRenderer
 {
     private final ImageIcon rootIcon = new ImageIcon(getClass().getResource("/images/project.gif"));

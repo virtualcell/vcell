@@ -13,19 +13,13 @@ import java.io.File;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 
 import org.vcell.util.gui.AdvancedTablePanel;
 import org.vcell.util.gui.DialogUtils;
@@ -36,10 +30,10 @@ import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.NumericTableCellRenderer;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_OneDiffComponentPanel;
 import cbit.vcell.microscopy.gui.estparamwizard.EstParams_TwoDiffComponentPanel;
 
+@SuppressWarnings("serial")
 public class BatchRunResultsParamTablePanel extends JPanel implements PropertyChangeListener
 {
 	private AdvancedTablePanel paramTablePanel;

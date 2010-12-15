@@ -48,7 +48,7 @@ public class GroupableTableHeader extends JTableHeader {
         int columnMargin = getColumnModel().getColumnMargin();
         Iterator<ColumnGroup> iter = ((GroupableTableColumnModel)columnModel).columnGroupIterator();
         while (iter.hasNext()) {
-            ColumnGroup cGroup = (ColumnGroup)iter.next();
+            ColumnGroup cGroup = iter.next();
             cGroup.setColumnMargin(columnMargin);
         }
     }

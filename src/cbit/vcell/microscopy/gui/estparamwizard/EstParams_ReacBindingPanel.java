@@ -1,8 +1,6 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -12,24 +10,15 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Hashtable;
 
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
-import org.jdom.CDATA;
-import org.vcell.optimization.OptXmlTags;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ISize;
 import org.vcell.util.Range;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
@@ -40,15 +29,13 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
@@ -57,16 +44,12 @@ import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.solvers.FiniteVolumeFileWriter;
 
+@SuppressWarnings("serial")
 public class EstParams_ReacBindingPanel extends JPanel {
 	
 	private SpatialAnalysisResults spatialAnalysisResults; //will be initialized in setData
@@ -729,7 +712,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 //					};
 					
 					double[][] results =
-						FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID,rawSimTimePoints,
+						FRAPOptimizationUtils.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID,rawSimTimePoints,
 								fStudy.getFrapData().getRois(),this.getClientTaskStatusSupport(), false);
 					//to store data in frap model.
 					setCurrentSimResults(results);

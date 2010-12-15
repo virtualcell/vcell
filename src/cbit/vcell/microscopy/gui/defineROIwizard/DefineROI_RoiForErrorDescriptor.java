@@ -3,11 +3,11 @@ package cbit.vcell.microscopy.gui.defineROIwizard;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
-
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.microscopy.FRAPSingleWorkspace;
 
 public class DefineROI_RoiForErrorDescriptor extends WizardPanelDescriptor{
     

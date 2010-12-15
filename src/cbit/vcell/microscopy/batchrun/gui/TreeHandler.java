@@ -1,18 +1,15 @@
 package cbit.vcell.microscopy.batchrun.gui; 
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+
+import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.*;
 
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-
-
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.*;
-import java.io.File;
 
 /**
  * The Class handles action events, which is triggered by both
@@ -22,7 +19,6 @@ import java.io.File;
  */
 public class TreeHandler extends MouseAdapter implements TreeSelectionListener
 {
-    private DefaultMutableTreeNode parent;
     private Object parentInfo;
     private Object selectedInfo;
     private FRAPBatchRunWorkspace batchRunWorkspace = null;
@@ -59,21 +55,6 @@ public class TreeHandler extends MouseAdapter implements TreeSelectionListener
     public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() == 2) {
         	e.toString();
-        	boolean f = e.getSource() instanceof String;
-//            TreePath path = detailsFrame.cellWareViewTree.getSelectionPath();
-//            Object node = path.getLastPathComponent();
-//            // DefaultMutableTreeNode node = (DefaultMutableTreeNode)detailsFrame.cellWareViewTree.getLastSelectedPathComponent();
-//            if (node instanceof Experiment) {
-//                Experiment exp = (Experiment) node;
-//                StandardInternalFrame report = exp.getReprot();
-//                MainFrame.mf.workingFrame.desktop.moveToFront(report);
-//                try{
-//                    if (report.isIcon()) report.setIcon(false);
-//                    report.setSelected(true);
-//                }catch (java.beans.PropertyVetoException ex) {ex.printStackTrace();}
-//                // MainFrame.mf.workingFrame.desktop.setSelectedFrame(report); // TODO: XXX doesn't work?
-//
-//            }
 
         }
     }

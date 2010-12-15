@@ -1,9 +1,7 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
@@ -11,6 +9,7 @@ import javax.swing.JRadioButton;
 
 import cbit.vcell.microscopy.FRAPModel;
 
+@SuppressWarnings("serial")
 public class FitModelRadioButtonPanel extends JPanel
 {
 	private JRadioButton diffOneRadioButton = null;

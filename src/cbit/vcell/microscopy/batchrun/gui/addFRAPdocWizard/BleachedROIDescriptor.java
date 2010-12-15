@@ -4,19 +4,15 @@ import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.VFRAPPreference;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.FRAPDataPanel;
 import cbit.vcell.microscopy.gui.VFrap_OverlayEditorPanelJAI;
-import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_Panel;
-
-import org.vcell.wizard.WizardPanelDescriptor;
 
 public class BleachedROIDescriptor extends WizardPanelDescriptor {
     
@@ -82,7 +78,7 @@ public class BleachedROIDescriptor extends WizardPanelDescriptor {
 				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 					((BatchRunROIImgPanel)imgPanel).getBatchRunWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()).getNonzeroPixelsCount()<1)
 				{
-					((FRAPDataPanel)((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+					(((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
 				}
 			}
 		};
@@ -120,7 +116,7 @@ public class BleachedROIDescriptor extends WizardPanelDescriptor {
 				if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 				   ((BatchRunROIImgPanel)imgPanel).getBatchRunWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)
 				{
-					((FRAPDataPanel)((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
+					(((BatchRunROIImgPanel)imgPanel).getCenterPanel()).getOverlayEditorPanelJAI().showROIAssist();
 				}
 			}
 		};

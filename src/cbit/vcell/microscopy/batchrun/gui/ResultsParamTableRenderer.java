@@ -8,13 +8,12 @@ import java.io.File;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JTable;
-import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.DescriptiveStatistics;
-import org.vcell.util.gui.HyperLinkLabel;
 
 
+@SuppressWarnings("serial")
 public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 {
 	private JButton button = new JButton("Details...");

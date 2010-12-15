@@ -23,12 +23,10 @@ public class LookupTableObjectiveFunction extends DefaultScalarFunction {
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage(),e);
 		}
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public int getNumArgs() {
-		// TODO Auto-generated method stub
 		return 1;
 	}
 }

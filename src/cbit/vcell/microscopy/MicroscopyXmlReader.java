@@ -176,7 +176,7 @@ public class MicroscopyXmlReader {
 	 */
 	private ImageDataset getImageDataset(Element param, ClientTaskStatusSupport progressListener) throws XmlParseException{
 	
-		
+		@SuppressWarnings("unchecked")
 		List<Element> ushortImageElementList = param.getChildren(MicroscopyXMLTags.UShortImageTag);
 		Iterator<Element> imageElementIter = ushortImageElementList.iterator();
 		UShortImage[] images = new UShortImage[ushortImageElementList.size()];
@@ -218,7 +218,7 @@ public class MicroscopyXmlReader {
 	private ROI getROI(Element param) throws XmlParseException{
 	
 		String roiName = param.getAttributeValue(MicroscopyXMLTags.ROITypeAttrTag);
-		
+		@SuppressWarnings("unchecked")
 		List<Element> ushortImageElementList = param.getChildren(MicroscopyXMLTags.UShortImageTag);
 		Iterator<Element> imageElementIter = ushortImageElementList.iterator();
 		UShortImage[] images = new UShortImage[ushortImageElementList.size()];
@@ -247,6 +247,7 @@ public class MicroscopyXmlReader {
 		if (imageDatasetElement!=null){
 			imageDataset = getImageDataset(imageDatasetElement,progressListener);
 		}
+		@SuppressWarnings("unchecked")
 		List<Element> roiList = param.getChildren(MicroscopyXMLTags.ROITag);
 		ROI[] rois = null;
 		int numROIs = roiList.size();
@@ -450,49 +451,27 @@ public class MicroscopyXmlReader {
 		return frapModels;
 	}
 	
-	private double[] getBindingReacTimePoints(Element timePointsElement)
-	{
-		int timePointsLen = Integer.parseInt(timePointsElement.getAttributeValue(MicroscopyXMLTags.ModelTimePointsLengthAttTag));
-	    double[] timePoints = new double[timePointsLen];
-	    String timePointsStr = timePointsElement.getText();
-	    if(timePointsStr != null)
-	    {
-		    CommentStringTokenizer tokens = new CommentStringTokenizer(timePointsStr);
-		    for (int i = 0; i < timePointsLen; i++)
-		    {
-		        if (tokens.hasMoreTokens())
-		        {
-		            String token = tokens.nextToken();
-		            timePoints[i] = Double.parseDouble(token);
-		        }else{
-		            throw new RuntimeException("failed to read time points value for reaction diffusion model.");
-		        }
-		    }
-	    }
-	    return timePoints;
-	}
-	
 	private Parameter[] getModelParameters(Element paramElement, int modelType) {
 		if(modelType == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
 		{
 			Parameter[] params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF];
 			double primaryDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryRateAttrTag));
 			params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE],
-	                									FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
-	                									FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-	                									FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
+														FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
+														FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+														FRAPModel.REF_DIFFUSION_RATE_PARAM.getScale(),
 	                									primaryDiffRate);
 			double primaryFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryFractionAttTag));
 			params[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
-														FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(), 
-														FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-														FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),
+														FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(), 
+														FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+														FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(),
 														primaryFraction);
 			double bwmRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag));
 			params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE],
-										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
+														FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+														FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+														FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 										                bwmRate); 
 			return params;
 		}
@@ -501,33 +480,33 @@ public class MicroscopyXmlReader {
 			Parameter[] params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF];
 			double primaryDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryRateAttrTag));
 			params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 
-										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
+														FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
+														FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+														FRAPModel.REF_DIFFUSION_RATE_PARAM.getScale(), 
 										                primaryDiffRate);
 			double primaryFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryFractionAttTag));
 			params[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
-										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+					    								FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+					    								FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+					    								FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(), 
 										                primaryFraction);
 			double bwmRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag));
 			params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
-										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
+														FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+														FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+														FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
 										                bwmRate);
 			double secDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag));
 			params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE],
-										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
-										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
-										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
+														FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
+														FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
+														FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
 										                secDiffRate);
 			double secFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag));
 			params[FRAPModel.INDEX_SECONDARY_FRACTION]= new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
-										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
-										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
-										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
+														FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
+														FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
+														FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
 										                secFraction);
 			
 			
@@ -539,33 +518,33 @@ public class MicroscopyXmlReader {
 			Parameter[] params = new Parameter[FRAPModel.NUM_MODEL_PARAMETERS_BINDING];
 			double primaryDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryRateAttrTag));
 			params[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 
-										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-										                FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(), 
+														FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
+														FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+														FRAPModel.REF_DIFFUSION_RATE_PARAM.getScale(), 
 										                primaryDiffRate);
 			double primaryFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.PrimaryFractionAttTag));
 			params[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
-										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-										                FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+														FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+														FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+														FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(), 
 										                primaryFraction);
 			double bwmRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag));
 			params[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
-										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-										                FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
+														FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+										                FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+										                FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
 										                bwmRate);
 			double secDiffRate = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondRateAttrTag));
 			params[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE],
-										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
-										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
-										                FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
+														FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
+										                FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
+										                FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
 										                secDiffRate);
 			double secFraction = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.SecondFractionAttTag));
 			params[FRAPModel.INDEX_SECONDARY_FRACTION]= new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
-										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
-										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
-										                FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
+														FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
+														FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
+														FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
 										                secFraction);
 			double bsConcentration = Double.parseDouble(paramElement.getAttributeValue(MicroscopyXMLTags.BindingSiteConcentrationAttTag));
 			params[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION] = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION],
@@ -608,10 +587,6 @@ public class MicroscopyXmlReader {
 	}
 	
 	private SimpleReferenceData getSimpleReferenceData(Element referenceDataElement/*, Namespace ns*/){
-	    //
-	    // read ReferenceData
-	    //
-	    String numRowsText = referenceDataElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NumRowsAttribute);
 	    String numColsText = referenceDataElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NumColumnsAttribute);
 	    int numCols = Integer.parseInt(numColsText);
 	    //
@@ -620,6 +595,7 @@ public class MicroscopyXmlReader {
 	    String[] columnNames = new String[numCols];
 	    double[] columnWeights = new double[numCols];
 	    Element dataColumnListElement = referenceDataElement.getChild(ParameterEstimationTaskXMLPersistence.DataColumnListTag/*, ns*/);
+	    @SuppressWarnings("unchecked")
 	    List<Element> dataColumnList = dataColumnListElement.getChildren(ParameterEstimationTaskXMLPersistence.DataColumnTag/*, ns*/);
 	    for (int i = 0; i < dataColumnList.size(); i++){
 	          Element dataColumnElement = dataColumnList.get(i);
@@ -631,6 +607,7 @@ public class MicroscopyXmlReader {
 	    //
 	    Vector<double[]> rowDataVector = new Vector<double[]>();
 	    Element dataRowListElement = referenceDataElement.getChild(ParameterEstimationTaskXMLPersistence.DataRowListTag/*, ns*/);
+	    @SuppressWarnings("unchecked")
 	    List<Element> dataRowList = dataRowListElement.getChildren(ParameterEstimationTaskXMLPersistence.DataRowTag/*, ns*/);
 	    for (int i = 0; i < dataRowList.size(); i++){
 	          Element dataRowElement = dataRowList.get(i);
@@ -658,6 +635,7 @@ public class MicroscopyXmlReader {
 		//read the list of profile data
 		if(profileDataListElement !=  null)
 		{
+			@SuppressWarnings("unchecked")
 			List<Element> profileDataList = profileDataListElement.getChildren(MicroscopyXMLTags.ProfileDataTag);
 			profileDataArray = new ProfileData[profileDataList.size()];
 			for(int i=0; i < profileDataList.size(); i++)//loop through each profile data
@@ -675,6 +653,7 @@ public class MicroscopyXmlReader {
 		if(profileDataElement != null)
 		{
 			profileData = new ProfileData();
+			@SuppressWarnings("unchecked")
 			List<Element> profileDataElementList = profileDataElement.getChildren(MicroscopyXMLTags.ProfieDataElementTag);
 			for(int i=0; i < profileDataElementList.size(); i++)//loop through each profile data element
 			{
@@ -692,6 +671,7 @@ public class MicroscopyXmlReader {
 			String paramName = unMangle(profileDataElementElement.getAttributeValue(MicroscopyXMLTags.profileDataElementParameterNameAttrTag));
 			double paramVal = new Double(unMangle(profileDataElementElement.getAttributeValue(MicroscopyXMLTags.profileDataElementParameterValueAttrTag)));
 			double likelihood = new Double(unMangle(profileDataElementElement.getAttributeValue(MicroscopyXMLTags.profileDataElementLikelihoodAttrTag)));
+			@SuppressWarnings("unchecked")
 			List<Element> parameterElementList = profileDataElementElement.getChildren(OptXmlTags.Parameter_Tag);
 			Parameter[] parameters = new Parameter[parameterElementList.size()];
 			for(int i = 0; i < parameters.length; i++)

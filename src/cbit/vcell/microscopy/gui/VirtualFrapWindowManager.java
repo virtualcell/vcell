@@ -1,8 +1,17 @@
 package cbit.vcell.microscopy.gui;
 
 import java.io.FileNotFoundException;
+import java.util.Vector;
+
+import javax.swing.JInternalFrame;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.User;
 
 import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.client.DataViewerManager;
@@ -14,44 +23,28 @@ import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.microscopy.LocalWorkspace;
-
-import org.vcell.util.DataAccessException;
-import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-
 import cbit.vcell.simdata.DataServerImpl;
-import cbit.vcell.simdata.MergedDataInfo;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 
 
 
 public class VirtualFrapWindowManager implements DataViewerManager {
 
-	protected transient java.util.Vector aDataListener = null;
-	protected transient java.util.Vector aExportListener = null;
-	protected transient java.util.Vector aDataJobListener = null;
+	protected transient Vector<DataListener> aDataListener = null;
+	protected transient Vector<ExportListener> aExportListener = null;
+	protected transient Vector<DataJobListener> aDataJobListener = null;
 	private LocalWorkspace localWorkSpace = null;
-	private boolean bSaveAsZip = true;
-	private ExportEvent exportEvt = null;
-	
 	/**
 	 * Method to support listener events.
 	 */
-	protected void fireDataJobMessage(cbit.rmi.event.DataJobEvent event) {
+	protected void fireDataJobMessage(DataJobEvent event) {
 		if (aDataJobListener == null) {
 			return;
 		};
 		int currentSize = aDataJobListener.size();
-		cbit.rmi.event.DataJobListener tempListener = null;
+		DataJobListener tempListener = null;
 		for (int index = 0; index < currentSize; index++){
-			tempListener = (cbit.rmi.event.DataJobListener)aDataJobListener.elementAt(index);
+			tempListener = (DataJobListener)aDataJobListener.elementAt(index);
 			if (tempListener != null) {
 				tempListener.dataJobMessage(event);
 			};
@@ -85,9 +78,9 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 			return;
 		};
 		int currentSize = aDataListener.size();
-		cbit.vcell.desktop.controls.DataListener tempListener = null;
+		DataListener tempListener = null;
 		for (int index = 0; index < currentSize; index++){
-			tempListener = (cbit.vcell.desktop.controls.DataListener)aDataListener.elementAt(index);
+			tempListener = (DataListener)aDataListener.elementAt(index);
 			if (tempListener != null) {
 				tempListener.newData(event);
 			};
@@ -105,18 +98,15 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	 * @param exportEvent cbit.rmi.event.ExportEvent
 	 */
 	public void exportMessage(ExportEvent exportEvent) {
-		if(exportEvent.getVCDataIdentifier() instanceof VCSimulationDataIdentifier){
-			VCSimulationDataIdentifier vcSimulationDataIdentifier = (VCSimulationDataIdentifier)(exportEvent.getVCDataIdentifier());
-		}
 		// just pass them along...
 		fireExportMessage(exportEvent);
 	}
 	/**
 	 * Add a cbit.vcell.desktop.controls.ExportListener.
 	 */
-	public void addDataJobListener(cbit.rmi.event.DataJobListener newListener) {
+	public void addDataJobListener(DataJobListener newListener) {
 		if (aDataJobListener == null) {
-			aDataJobListener = new java.util.Vector();
+			aDataJobListener = new Vector<DataJobListener>();
 		};
 		aDataJobListener.addElement(newListener);
 	}
@@ -127,7 +117,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	 */
 	public void addDataListener(DataListener newListener) {
 		if (aDataListener == null) {
-			aDataListener = new java.util.Vector();
+			aDataListener = new Vector<DataListener>();
 		};
 		aDataListener.addElement(newListener);
 	}
@@ -138,7 +128,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	 */
 	public void addExportListener(ExportListener newListener) {
 		if (aExportListener == null) {
-			aExportListener = new java.util.Vector();
+			aExportListener = new Vector<ExportListener>();
 		};
 		aExportListener.addElement(newListener);
 	}
@@ -147,7 +137,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	}
 	public void removeDataListener(DataListener newListener){
 	}
-	public void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames){
+	public void showDataViewerPlotsFrames(JInternalFrame[] plotFrames){
 //		for(int i=0;i<plotFrames.length;i+= 1){
 //			plotFrames[i].setLocation(100,100);
 //			DocumentWindowManager.showFrame(plotFrames[i], jdp);

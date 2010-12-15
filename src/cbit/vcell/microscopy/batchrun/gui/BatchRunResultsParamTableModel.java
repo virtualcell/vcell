@@ -5,15 +5,11 @@ import java.util.ArrayList;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.vcell.util.DescriptiveStatistics;
-
-import sun.security.action.GetBooleanAction;
-
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.opt.Parameter;
+@SuppressWarnings("serial")
 public class BatchRunResultsParamTableModel extends AbstractTableModel
 {
 	public final static int NUM_COLUMNS = 8;

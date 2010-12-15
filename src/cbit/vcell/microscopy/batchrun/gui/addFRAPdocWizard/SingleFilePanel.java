@@ -12,13 +12,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
-import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
 
+@SuppressWarnings("serial")
 public class SingleFilePanel extends JPanel
 {
 	private JTextField fileNameTextField;

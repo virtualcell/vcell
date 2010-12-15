@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+
 import javax.swing.JComponent;
 import javax.swing.plaf.basic.BasicTableHeaderUI;
 import javax.swing.table.TableCellRenderer;
@@ -46,13 +47,13 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
         while (columns.hasMoreElements()) {
             cellRect.height = size.height;
             cellRect.y      = 0;
-            TableColumn aColumn = (TableColumn)columns.nextElement();
+            TableColumn aColumn = columns.nextElement();
             Iterator<ColumnGroup> colGrpIter = cm.getColumnGroups(aColumn);
             if (colGrpIter != null) {
                 int groupHeight = 0;
                 while (colGrpIter.hasNext()) {
-                    ColumnGroup cGroup = (ColumnGroup)colGrpIter.next();
-                    Rectangle groupRect = (Rectangle)h.get(cGroup);
+                    ColumnGroup cGroup = colGrpIter.next();
+                    Rectangle groupRect = h.get(cGroup);
                     if (groupRect == null) {
                         groupRect = new Rectangle(cellRect);
                         Dimension d = cGroup.getSize(header.getTable());
@@ -129,7 +130,7 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
             Component comp = renderer.getTableCellRendererComponent(
             header.getTable(), aColumn.getHeaderValue(), false, false,-1, column);
             int cHeight = comp.getPreferredSize().height;
-            Iterator iter = columnModel.getColumnGroups(aColumn);
+            Iterator<ColumnGroup> iter = columnModel.getColumnGroups(aColumn);
             if (iter != null) {
                 while (iter.hasNext()) {
                     ColumnGroup cGroup = (ColumnGroup)iter.next();
@@ -162,7 +163,7 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
      */
     public Dimension getPreferredSize(JComponent c) {
         long width = 0;
-        Enumeration columns = header.getColumnModel().getColumns();
+        Enumeration<TableColumn> columns = header.getColumnModel().getColumns();
         while (columns.hasMoreElements()) {
             TableColumn aColumn = (TableColumn)columns.nextElement();
             width = width + aColumn.getPreferredWidth();

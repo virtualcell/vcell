@@ -2,10 +2,15 @@ package cbit.vcell.microscopy.gui.estparamwizard;
 
 
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+
+import javax.swing.BorderFactory;
+import javax.swing.JList;
+import javax.swing.JTextField;
 
 
+@SuppressWarnings("serial")
 public class StyleTableEditor extends JTextField {
 
     public StyleTableEditor() {

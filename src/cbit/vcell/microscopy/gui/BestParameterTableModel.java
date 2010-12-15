@@ -6,10 +6,10 @@ import java.beans.PropertyChangeListener;
 import javax.swing.table.AbstractTableModel;
 
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptimization;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.opt.Parameter;
 
+@SuppressWarnings("serial")
 public class BestParameterTableModel extends AbstractTableModel implements PropertyChangeListener
 {
 	public final static int NUM_COLUMNS = 3;

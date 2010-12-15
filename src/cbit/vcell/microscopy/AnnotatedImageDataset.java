@@ -189,9 +189,9 @@ public abstract class AnnotatedImageDataset {
 				}else{
 					//if pixel value after background subtraction is <=0, clamp it to 0
 					//the whole image add up 1 after background subtraction
-					if(((double)imagePixel-preNormalizeOffset) > 0)
+					if((imagePixel-preNormalizeOffset) > 0)
 					{
-						intensityVal += ((double)imagePixel+1-preNormalizeOffset)/(normalizeFactorXYZ[i]);
+						intensityVal += (imagePixel+1-preNormalizeOffset)/(normalizeFactorXYZ[i]);
 					}
 					else
 					{

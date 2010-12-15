@@ -4,12 +4,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import javax.swing.JCheckBox;
 
-import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -22,12 +18,11 @@ import org.vcell.util.NumberUtils;
 
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
 
+@SuppressWarnings("serial")
 public class DefineROI_SummaryPanel extends JPanel
 {
 	public static final String START_IDX_AVAILABLE_STR = "";

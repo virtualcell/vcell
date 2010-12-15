@@ -1,28 +1,13 @@
 package cbit.vcell.microscopy;
 
 import java.awt.Component;
-import java.beans.PropertyVetoException;
 import java.util.Vector;
 
-import javax.swing.JTable;
-
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.ModelQuantity;
-import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Kinetics.KineticsProxyParameter;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.units.VCUnitException;
 import cbit.gui.ScopedExpression;
+import cbit.vcell.parser.ExpressionException;
 
 
+@SuppressWarnings("serial")
 public class EstimatedParameterTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
 
 	private final int NUM_COLUMNS = 5;
@@ -34,15 +19,12 @@ public class EstimatedParameterTableModel extends javax.swing.table.AbstractTabl
 	private String LABELS[] = { "Name", "Description", "Value", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Vector<EstimatedParameter> estParams = new Vector<EstimatedParameter>();
-	private Component errorDialogParent;
-		
-/**
+	/**
  * ReactionSpecsTableModel constructor comment.
  */
 public EstimatedParameterTableModel(Component errorDialogParent) {
 	super();
 	addPropertyChangeListener(this);
-	this.errorDialogParent = errorDialogParent;
 }
 
 /**

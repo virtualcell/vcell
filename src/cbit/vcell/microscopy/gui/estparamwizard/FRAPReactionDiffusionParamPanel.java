@@ -13,10 +13,12 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
 import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
-import cbit.vcell.microscopy.FRAPOptimization;
+import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.opt.Parameter;
 
@@ -31,8 +33,6 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	private final JTextField bleachWhileMonitorRateTextField;
 	private final JLabel immobileValueLabel;
 	
-	private FRAPOptData frapOptData;
-
 	public static String STR_FREE_DIFF_RATE = "Free particle diffusion rate";
 	public static String STR_FREE_FRACTION = "Free particle fraction";
 	public static String STR_BLEACH_MONITOR_RATE = "Bleach while monitoring rate";
@@ -256,28 +256,28 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	private void initialize(){
 		try{
 			Hashtable<Integer, JComponent> diffusionSliderLabelTable = new Hashtable<Integer, JComponent>();
-			diffusionSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound()+""));
-			diffusionSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound()+""));
+			diffusionSliderLabelTable.put(0, new JLabel(FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound()+""));
+			diffusionSliderLabelTable.put(100,new JLabel(FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound()+""));
 			
 			Hashtable<Integer, JComponent> secondDiffusionSliderLabelTable = new Hashtable<Integer, JComponent>();
-			secondDiffusionSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound()+""));
-			secondDiffusionSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound()+""));
+			secondDiffusionSliderLabelTable.put(0, new JLabel(FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound()+""));
+			secondDiffusionSliderLabelTable.put(100,new JLabel(FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound()+""));
 			
 			Hashtable<Integer, JComponent> mobileFractionSliderLabelTable = new Hashtable<Integer, JComponent>();
-			mobileFractionSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()+""));
-			mobileFractionSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()+""));
+			mobileFractionSliderLabelTable.put(0, new JLabel(FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound()+""));
+			mobileFractionSliderLabelTable.put(100,new JLabel(FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound()+""));
 			
 			Hashtable<Integer, JComponent> secondMobileFractionSliderLabelTable = new Hashtable<Integer, JComponent>();
-			secondMobileFractionSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound()+""));
-			secondMobileFractionSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound()+""));
+			secondMobileFractionSliderLabelTable.put(0, new JLabel(FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound()+""));
+			secondMobileFractionSliderLabelTable.put(100,new JLabel(FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound()+""));
 			
 			Hashtable<Integer, JComponent> bleachWhileMonitorSliderLabelTable = new Hashtable<Integer, JComponent>();
-			bleachWhileMonitorSliderLabelTable.put(new Integer(0), new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()+""));
+			bleachWhileMonitorSliderLabelTable.put(new Integer(0), new JLabel(FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()+""));
 			bleachWhileMonitorSliderLabelTable.put(new Integer(20), new JLabel("1e-4"));
 			bleachWhileMonitorSliderLabelTable.put(new Integer(40), new JLabel("1e-3"));
 			bleachWhileMonitorSliderLabelTable.put(new Integer(60), new JLabel("1e-2"));
 			bleachWhileMonitorSliderLabelTable.put(new Integer(80), new JLabel("1e-1"));
-			bleachWhileMonitorSliderLabelTable.put(new Integer(100),new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()+""));
+			bleachWhileMonitorSliderLabelTable.put(new Integer(100),new JLabel(FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()+""));
 		}finally{
 	
 		}
@@ -334,29 +334,29 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 		Parameter[] params = null;
 		
 		Parameter primaryDiff = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE],
-					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
-					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-					                     FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
+										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
+										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+										 FRAPModel.REF_DIFFUSION_RATE_PARAM.getScale(),
 					                     freeDiffRate);
 		Parameter primaryFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
-					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-					                     FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),
+				                         FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+				                         FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+				                         FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(),
 					                     freeFraction);
 		Parameter bleachWhileMonitoringRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE],
-					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-					                     FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
+										 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+										 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+										 FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 					                     monitorBleachRate);
 		Parameter secondaryDiff = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE], 
-      			                         FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
-				                         FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
-				                         FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
+										 FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
+										 FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
+										 FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
 				                         complexDifffRate);
 		Parameter secondaryFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
-				   						 FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
-                                         FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
-                                         FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(), 
+										 FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
+										 FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
+										 FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(), 
                                          complexFraction);
 		Parameter bsConcentration = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BINDING_SITE_CONCENTRATION],
                                          0,
@@ -388,7 +388,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 	}
 	
 	public Parameter[] getCurrentParameters(){
-		double fr, ff, bwmr, cr, cf, imf, bs, on, off;
+		double fr, ff, bwmr, cr, cf, bs, on, off;
 		try
 		{
 			fr = Double.parseDouble(freeDiffRateTextField.getText());
@@ -459,7 +459,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			else
 			{
 				double immobileFrac = 1 - freeFraction - complexFraction;
-				if(immobileFrac > (1-FRAPOptimization.epsilon) && immobileFrac < (1+FRAPOptimization.epsilon))
+				if(immobileFrac > (1-FRAPOptimizationUtils.epsilon) && immobileFrac < (1+FRAPOptimizationUtils.epsilon))
 				{
 					immobileValueLabel.setText("0");
 				}
@@ -487,7 +487,7 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			else
 			{
 				double immobileFrac = 1 - freeFraction - complexFraction;
-				if(immobileFrac > (1-FRAPOptimization.epsilon) && immobileFrac < (1+FRAPOptimization.epsilon))
+				if(immobileFrac > (1-FRAPOptimizationUtils.epsilon) && immobileFrac < (1+FRAPOptimizationUtils.epsilon))
 				{
 					immobileValueLabel.setText("0");
 				}
@@ -523,21 +523,20 @@ public class FRAPReactionDiffusionParamPanel extends JPanel{
 			DialogUtils.showErrorDialog(this, "Reaction off rate is required to calculate Binding Site's concentration!");
 			return;
 		}
-		double freeFrac, complexFrac, fi, ci, kon, koff, BS_conc;
+		double freeFrac,  fi, kon;
 		try
 		{
 			freeFrac = Double.parseDouble(freeFractionTextField.getText());
-			complexFrac = Double.parseDouble(complexFractionTextField.getText());
+//			complexFrac = Double.parseDouble(complexFractionTextField.getText());
 			fi = prebleachAvg * freeFrac;
-			ci = prebleachAvg * complexFrac;
+//			ci = prebleachAvg * complexFrac;
 			kon = Double.parseDouble(onRateTextField.getText());
-			koff = Double.parseDouble(offRateTextField.getText());
+//			koff = Double.parseDouble(offRateTextField.getText());
 			if(kon == 0 || fi == 0)
 			{
 				DialogUtils.showErrorDialog(this, "Divided by 0 error! Kon and Free particle concentration should not be 0. !");
 				return;
 			}
-			BS_conc = ((koff*ci)/(kon*fi))/prebleachAvg;
 		}catch(Exception e)
 		{
 			e.printStackTrace(System.out);

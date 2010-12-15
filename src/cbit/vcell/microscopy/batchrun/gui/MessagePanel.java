@@ -11,6 +11,7 @@ import javax.swing.SwingUtilities;
 
 import cbit.vcell.client.task.ClientTaskStatusSupport;
 
+@SuppressWarnings("serial")
 public class MessagePanel extends JPanel implements ClientTaskStatusSupport
 {
 	private JLabel message = null;

@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 
 import cbit.vcell.client.data.PDEDataViewer;
 
+@SuppressWarnings("serial")
 public class VFrapPDEDataViewer extends PDEDataViewer {
 	public VFrapPDEDataViewer()
 	{

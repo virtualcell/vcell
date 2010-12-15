@@ -9,12 +9,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import javax.swing.JCheckBox;
 
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 
 import cbit.plot.Plot2DPanel;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -22,9 +21,9 @@ import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.gui.ROIImagePanel;
 
+@SuppressWarnings("serial")
 public class DefineROI_RoiForErrorPanel extends JPanel implements ActionListener
 {
-	private JTable table;
 	JPanel centerPanel = null;
 	ROIImagePanel roiImagePanel = null;
 	FRAPSingleWorkspace frapWorkspace = null;

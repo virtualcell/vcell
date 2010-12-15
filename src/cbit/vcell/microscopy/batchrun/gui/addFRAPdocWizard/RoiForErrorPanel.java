@@ -5,32 +5,25 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 
 import cbit.plot.Plot2DPanel;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.microscopy.gui.ROIImagePanel;
-import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 
+@SuppressWarnings("serial")
 public class RoiForErrorPanel extends JPanel implements ActionListener
 {
-	private JTable table;
 	JPanel centerPanel = null;
 	ROIImagePanel roiImagePanel = null;
 	FRAPBatchRunWorkspace batchRunWorkspace = null;

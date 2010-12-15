@@ -1,20 +1,18 @@
 package cbit.vcell.microscopy.gui.loaddatawizard;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+@SuppressWarnings("serial")
 public class LoadFRAPData_FileTypePanel extends JPanel {
 	private JRadioButton singleFileRadioButton = null;
 	private JRadioButton multiFileRadiobutton = null;

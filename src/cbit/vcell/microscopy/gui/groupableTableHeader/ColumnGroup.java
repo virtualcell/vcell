@@ -4,7 +4,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
@@ -48,7 +48,8 @@ public class ColumnGroup {
      * @param text Name of the ColumnGroup which will be displayed
      * when the ColumnGroup is renderered.
      */    
-    public ColumnGroup(TableCellRenderer renderer,String text) {
+    @SuppressWarnings("serial")
+	public ColumnGroup(TableCellRenderer renderer,String text) {
         if (renderer == null) {
             this.renderer = new DefaultTableCellRenderer() {
                 public Component getTableCellRendererComponent(JTable table, Object value,
@@ -91,14 +92,15 @@ public class ColumnGroup {
      * @param c TableColumn
      * @return Vector containing the ColumnGroup/s
      */
-    public ArrayList<ColumnGroup> getColumnGroups(TableColumn c, ArrayList<ColumnGroup> g) {
+	public ArrayList<ColumnGroup> getColumnGroups(TableColumn c, ArrayList<ColumnGroup> g) {
         g.add(this);
         if (v.contains(c)) return g;
         Iterator<Object> iter = v.iterator();
         while (iter.hasNext()) {
             Object obj = iter.next();
             if (obj instanceof ColumnGroup) {
-                ArrayList<ColumnGroup> groups = (ArrayList<ColumnGroup>)((ColumnGroup)obj).getColumnGroups(c,(ArrayList<ColumnGroup>)g.clone());
+            	 @SuppressWarnings("unchecked")
+                ArrayList<ColumnGroup> groups = ((ColumnGroup)obj).getColumnGroups(c,(ArrayList<ColumnGroup>)g.clone());
                 if (groups != null) return groups;
             }
         }

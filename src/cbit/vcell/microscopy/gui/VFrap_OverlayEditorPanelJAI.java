@@ -154,10 +154,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		};
 	private class ComboboxROIName {
 		private String roiName;
-		private boolean bEdit;
 		public ComboboxROIName(String roiName,boolean bEdit){
 			this.roiName = roiName;
-			this.bEdit = bEdit;
 		}
 		public String getROIName(){
 			return roiName;
@@ -166,7 +164,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			return getROIName();
 		}
 	}
-	
+	@SuppressWarnings("serial")
 	public static final UndoableEdit CLEAR_UNDOABLE_EDIT =
 		new AbstractUndoableEdit(){
 			public boolean canUndo() {
@@ -216,9 +214,9 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		return true;
 	}
 	private void waitCursor(boolean bOn){
-		Container topLevelContainer = (JDesktopPane)BeanUtils.findTypeParentOfComponent(this, JDesktopPane.class);
+		Container topLevelContainer = BeanUtils.findTypeParentOfComponent(this, JDesktopPane.class);
 		if(topLevelContainer == null){
-			topLevelContainer = (Frame)BeanUtils.findTypeParentOfComponent(this, Frame.class);
+			topLevelContainer = BeanUtils.findTypeParentOfComponent(this, Frame.class);
 		}
 		BeanUtils.setCursorThroughout(topLevelContainer,
 				(bOn?Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR):Cursor.getDefaultCursor()));
@@ -674,7 +672,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		short[] pixels = image.getPixels();
 		byte[][] byteData = new byte[1][width*height];
 		for (int i = 0; i < byteData[0].length; i++) {
-			byteData[0][i] = (imageStats.maxValue < SHORT_TO_BYTE_FACTOR?(byte)pixels[i]:(byte)(((int)(pixels[i]&0x0000FFFF))/SHORT_TO_BYTE_FACTOR));
+			byteData[0][i] = (imageStats.maxValue < SHORT_TO_BYTE_FACTOR?(byte)pixels[i]:(byte)(((pixels[i]&0x0000FFFF))/SHORT_TO_BYTE_FACTOR));
 //			byteData[1][i] = byteData[0][i];
 //			byteData[2][i] = byteData[0][i];
 		}
@@ -683,7 +681,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 		int[] cmap = new int[256];
 		//colormap (grayscale)
 		for(int i=0;i<256;i+= 1){
-			int iv = (int)(0x000000FF&i);
+			int iv = (0x000000FF&i);
 			cmap[i] = 0xFF000000 | iv<<16 | iv<<8 | i;
 			
 		}
@@ -882,6 +880,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	private static final String EDITTYPE_PAINT = "paint";
 	private static final String EDITTYPE_ERASE = "erase";
 	private static final String EDITTYPE_CLEAR = "clear";
+	@SuppressWarnings("serial")
 	private void fireUndoableEditROI(final String editType){
 		if(undoableROI == null){
 			return;
@@ -1168,7 +1167,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 					sb.append(pix.length > 1 ? "s=(" : "=");
 					for (int i=0; i<pix.length; i++) {
 						if (i > 0) sb.append(", ");
-						sb.append((int)(pix[i]&0x0000FFFF));
+						sb.append((pix[i]&0x0000FFFF));
 					}
 					if (pix.length > 1) sb.append(")");
 				}else{
@@ -1182,7 +1181,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 							if (i > 0) sb.append(", ");
 							sb.append(
 								NumberUtils.formatNumber(
-								(((int)(pix[i]&0x0000FFFF))-originalOffsetFactor)/
+								(((pix[i]&0x0000FFFF))-originalOffsetFactor)/
 								originalScaleFactor
 								, 6));
 						}

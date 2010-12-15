@@ -51,8 +51,6 @@ import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.FileSavePanel;
-import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.RoiForErrorDescriptor;
 import cbit.vcell.microscopy.batchrun.gui.chooseModelWizard.ModelTypesDescriptor;
 import cbit.vcell.microscopy.gui.AboutDialog;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
@@ -61,7 +59,6 @@ import cbit.vcell.microscopy.gui.StatusBar;
 import cbit.vcell.microscopy.gui.ToolBar;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.microscopy.gui.estparamwizard.FRAPDiffOneParamPanel;
 import cbit.vcell.opt.Parameter;
 
 /**
@@ -70,6 +67,7 @@ import cbit.vcell.opt.Parameter;
  * @author Tracy LI
  * Created in Dec 2009.
  */
+@SuppressWarnings("serial")
 public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListener
 {
 	//the application has one local workspace and one FRAP workspace
@@ -115,6 +113,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 	//modeltype wizard
 	private Wizard modelTypeWizard = null;
 	//for drag and drop action 
+	@SuppressWarnings("unused")
 	private DropTarget dt;
 	
     private class BatchRunMenuHandler implements ActionListener
@@ -475,7 +474,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						appendJobStatus("<html><br>Running "+((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx)).getXmlFilename()+"</html>", false);
+						appendJobStatus("<html><br>Running "+(batchRunWorkspace.getFrapStudies().get(finalIdx)).getXmlFilename()+"</html>", false);
 					}
 				};
 				
@@ -483,7 +482,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx));
+						FRAPStudy fStudy = (batchRunWorkspace.getFrapStudies().get(finalIdx));
 //						
 						//reference data is null, it is not stored, we have to run ref simulation then
 						//check external data info
@@ -511,16 +510,16 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx));
+						FRAPStudy fStudy = (batchRunWorkspace.getFrapStudies().get(finalIdx));
 						MessagePanel msgPanel = (MessagePanel)hashTable.get("runRefStatus");
 						//run ref sim
 						if(fStudy.getStoredRefData() != null)//if ref data is stored ,we don't have to re-run
 						{
-							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, localWorkspace, fStudy.getStoredRefData()));
+							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF, localWorkspace, fStudy.getStoredRefData()));
 						}
 						else
 						{
-							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_COMPONENT_DIFFUSION, localWorkspace, msgPanel));
+							fStudy.setFrapOptData(new FRAPOptData(fStudy, FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF, localWorkspace, msgPanel));
 						}
 					}
 				};
@@ -541,14 +540,14 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx));
+						FRAPStudy fStudy = (batchRunWorkspace.getFrapStudies().get(finalIdx));
 						
 						ArrayList<Integer> models = fStudy.getSelectedModels();
 						if(models.size() == 1)
 						{
 							for(int i = 0; i<models.size(); i++)
 							{
-								int model = ((Integer)models.get(i)).intValue();
+								int model = (models.get(i)).intValue();
 								if(model == batchRunWorkspace.getSelectedModel())
 								{
 									if(model == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
@@ -605,7 +604,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 				{
 					public void run(Hashtable<String, Object> hashTable) throws Exception
 					{
-						FRAPStudy fStudy = ((FRAPStudy)batchRunWorkspace.getFrapStudies().get(finalIdx));
+						FRAPStudy fStudy = (batchRunWorkspace.getFrapStudies().get(finalIdx));
 						MessagePanel msgPanel = (MessagePanel)hashTable.get("evaluateCI");
 						//evaluate confidence intervals
 						ArrayList<Integer> models = fStudy.getSelectedModels();
@@ -613,7 +612,7 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 						{
 							for(int i = 0; i<models.size(); i++)
 							{
-								int model = ((Integer)models.get(i)).intValue();
+								int model = (models.get(i)).intValue();
 								if(model == batchRunWorkspace.getSelectedModel())
 								{
 									if(model == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
@@ -965,9 +964,8 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 					if (flavor.isFlavorJavaFileListType()) {
 						// Accept copy and move drops...
 						dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-						// And add the list of file names to our text area
-						boolean b = tr.getTransferData(flavor) instanceof List;
-						List tData = (List)tr.getTransferData(flavor);
+						@SuppressWarnings("unchecked")
+						List<File> tData = (List<File>)tr.getTransferData(flavor);
 						for(Object dataElement:tData)
 						{
 							if(dataElement instanceof File)

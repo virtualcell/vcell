@@ -1,29 +1,19 @@
 package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 
-import java.awt.BorderLayout;
 import java.awt.Point;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.JPanel;
 
-import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.microscopy.DataVerifyInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
-import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_Panel;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_SummaryPanel;
-import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryPanel;
 
 public class ROISummaryDescriptor extends WizardPanelDescriptor {
 	public static final String IDENTIFIER = "BATCHRUN_RoiSummary";

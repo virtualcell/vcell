@@ -1,47 +1,35 @@
 package cbit.vcell.microscopy.gui.loaddatawizard;
 
 import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.util.gui.DialogUtils;
-
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel.MultiFileImportInfo;
 
 /*
  * This dialog is used to input file series.
  * The file series are either time series or Z series.
  * For time series, the total time span and the index for recovery need to be specified.
  */
+@SuppressWarnings("serial")
 public class LoadFRAPData_MultiFilePanel extends JPanel implements ActionListener
 {
 	VirtualFrapMainFrame parent = null;
 	
-	private ButtonGroup butGroup = null;
 	private JLabel tSampleIntervalLabel = null;
 	private JTextField tSampleIntervalTextField = null;
 	private JTextArea fileTextArea = null;
@@ -49,7 +37,7 @@ public class LoadFRAPData_MultiFilePanel extends JPanel implements ActionListene
 	private JButton inputFileButton = null;
 	
 	private File[] files = null;
-	private double zInterval, tInterval;
+	private double tInterval;
 		
 	public LoadFRAPData_MultiFilePanel(VirtualFrapMainFrame arg_parent)
 	{
@@ -69,7 +57,6 @@ public class LoadFRAPData_MultiFilePanel extends JPanel implements ActionListene
 
 		final JLabel timeSeriesLabel = new JLabel();
 		timeSeriesLabel.setText("  Time Series");
-		butGroup = new ButtonGroup();
 		tSampleIntervalLabel = new JLabel("  Time Sample Intv. (s)");
 		tSampleIntervalTextField = new JTextField(8);
 		tSampleIntervalTextField.setText("0.01");
@@ -162,18 +149,6 @@ public class LoadFRAPData_MultiFilePanel extends JPanel implements ActionListene
 //		{
 //			this.setVisible(false);
 //		}
-	}
-	
-	private String checkTimeValidity()
-	{
-		try{
-			tInterval = Double.parseDouble(tSampleIntervalTextField.getText());
-		}catch(Exception e)
-		{
-			return e.getMessage(); 
-		}
-		
-		return "";
 	}
 	
 	public File[] getSelectedFiles()

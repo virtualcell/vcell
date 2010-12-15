@@ -18,11 +18,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -44,7 +40,6 @@ import javax.swing.undo.UndoableEdit;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.wizard.Wizard;
 
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -65,6 +60,7 @@ import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFilePanel;
  */
 
 /** The main frame of the application. */
+@SuppressWarnings("serial")
 public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 {
 	//the application has one local workspace and one FRAP workspace
@@ -127,6 +123,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 	private LoadFRAPData_MultiFilePanel multiFileDialog = null;
 	private VirtualFrapBatchRunFrame batchRunFrame = null;
 	//for drag and drop action 
+	@SuppressWarnings("unused")
 	private DropTarget dt;
 	//Inner class AFileFilter
 	//This class implements both ava.io.FileFilter and javax.swing.filechooser.FileFilter.
@@ -615,9 +612,8 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener
 					if (flavor.isFlavorJavaFileListType()) {
 						// Accept copy and move drops...
 						dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-						// And add the list of file names to our text area
-						boolean b = tr.getTransferData(flavor) instanceof List;
-						List tData = (List)tr.getTransferData(flavor);
+						@SuppressWarnings("unchecked")
+						List<File> tData = (List<File>)tr.getTransferData(flavor);
 						for(Object dataElement:tData)
 						{
 							if(dataElement instanceof File)

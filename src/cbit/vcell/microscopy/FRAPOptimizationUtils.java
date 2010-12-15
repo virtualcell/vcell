@@ -3,6 +3,7 @@ package cbit.vcell.microscopy;
 import org.vcell.optimization.OptSolverResultSet;
 
 import cbit.function.DefaultScalarFunction;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.task.ClientTaskStatusSupport;
@@ -18,7 +19,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 
-public class FRAPOptimization {
+public class FRAPOptimizationUtils {
 	
 	static double FTOL = 1.0e-6;
 	public static double epsilon = 1e-8;
@@ -161,7 +162,7 @@ public class FRAPOptimization {
 				} 
 			}
 						
-			diffData = FRAPOptimization.getValueByDiffRate(refDiffRate,
+			diffData = FRAPOptimizationUtils.getValueByDiffRate(refDiffRate,
                     diffRate,
                     refData,
                     refTimePoints,
@@ -185,7 +186,7 @@ public class FRAPOptimization {
 					{
 						for(int j=0; j<expTimePoints.length; j++)
 						{
-							double difference = expData[i][j] - FRAPOptimization.getValueFromParameters_oneDiffRate(diffData[i][j], mobileFrac, bleachWhileMonitoringRate, firstPostBleach[i], expTimePoints[j]);
+							double difference = expData[i][j] - FRAPOptimizationUtils.getValueFromParameters_oneDiffRate(diffData[i][j], mobileFrac, bleachWhileMonitoringRate, firstPostBleach[i], expTimePoints[j]);
 							if(bApplyMeasurementError)
 							{
 								difference = difference/measurementErrors[i][j];
@@ -273,14 +274,14 @@ public class FRAPOptimization {
 				}
 			}
 			
-			fastData = FRAPOptimization.getValueByDiffRate(refDiffRate,
+			fastData = FRAPOptimizationUtils.getValueByDiffRate(refDiffRate,
                     diffFastRate,
                     refData,
                     refTimePoints,
                     expTimePoints,
                     roiLen);
 			
-			slowData = FRAPOptimization.getValueByDiffRate(refDiffRate,
+			slowData = FRAPOptimizationUtils.getValueByDiffRate(refDiffRate,
                     diffSlowRate,
                     refData,
                     refTimePoints,
@@ -346,7 +347,7 @@ public class FRAPOptimization {
 			double estimateTime = (newDiffRate/refDiffRate) * expTimePoints[j];
 			for( ;idx < refTimePoints.length; idx ++)
 			{
-				if(estimateTime < (refTimePoints[idx] + FRAPOptimization.epsilon))
+				if(estimateTime < (refTimePoints[idx] + FRAPOptimizationUtils.epsilon))
 				{
 					break;
 				}
@@ -360,7 +361,7 @@ public class FRAPOptimization {
 			}
 			else if(postTimeIndex > 0 && postTimeIndex < refTimePoints.length )
 			{
-				if((estimateTime > (refTimePoints[postTimeIndex] - FRAPOptimization.epsilon)) &&  (estimateTime  < (refTimePoints[postTimeIndex] + FRAPOptimization.epsilon)))
+				if((estimateTime > (refTimePoints[postTimeIndex] - FRAPOptimizationUtils.epsilon)) &&  (estimateTime  < (refTimePoints[postTimeIndex] + FRAPOptimizationUtils.epsilon)))
 				{
 					preTimeIndex = postTimeIndex;
 				}
@@ -432,7 +433,7 @@ public class FRAPOptimization {
 		DefaultScalarFunction scalarFunc = new LookupTableObjectiveFunction(argOptData, eoi); // add opt function 
 		optSpec.setObjectiveFunction(new ImplicitObjectiveFunction(scalarFunc));
 		// create solver spec 
-		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL, FRAPOptimization.FTOL);
+		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL, FRAPOptimizationUtils.FTOL);
 		// create solver call back
 		OptSolverCallbacks optSolverCallbacks = new OptSolverCallbacks();
 		// create optimization result set
@@ -687,4 +688,60 @@ public class FRAPOptimization {
 		return results;
 	}
 	
+	/*
+	 * Calculate Measurement error for data that is normalized 
+	 * and averaged at each ROI ring.
+	 * The first dimension is ROI rings(according to the Enum in FRAPData)
+	 * The second dimension is time points (from starting index to the end) 
+	 */
+	public static double[][] refreshNormalizedMeasurementError(FRAPStudy frapStudy) throws Exception
+	{
+		FRAPData fData = frapStudy.getFrapData();
+		ImageDataset imgDataset = fData.getImageDataset();
+		double[] timeStamp = imgDataset.getImageTimeStamps();
+		int startIndexRecovery = frapStudy.getStartingIndexForRecovery();
+		int roiLen = FRAPData.VFRAP_ROI_ENUM.values().length;
+		double[][] sigma = new double[roiLen][timeStamp.length - startIndexRecovery];
+		double[] prebleachAvg = FRAPStudy.calculatePreBleachAverageXYZ(fData, startIndexRecovery);
+		for(int roiIdx =0; roiIdx<roiLen; roiIdx++)
+		{
+			ROI roi = fData.getRoi((FRAPData.VFRAP_ROI_ENUM.values()[roiIdx]).name());
+			if(roi != null)
+			{
+				short[] roiData = roi.getPixelsXYZ();
+				for(int timeIdx = startIndexRecovery; timeIdx < timeStamp.length; timeIdx++)
+				{
+					short[] rawTimeData = AnnotatedImageDataset.collectAllZAtOneTimepointIntoOneArray(imgDataset, timeIdx);
+					if(roiData.length != rawTimeData.length || roiData.length != prebleachAvg.length || rawTimeData.length != prebleachAvg.length)
+					{
+						throw new Exception("ROI data and image data are not in the same length.");
+					}
+					else
+					{
+						//loop through ROI
+						int roiPixelCounter = 0;
+						double sigmaVal = 0;
+						for(int i = 0 ; i<roiData.length; i++)
+						{
+							if(roiData[i] != 0)
+							{
+								sigmaVal = sigmaVal + ((rawTimeData[i] & 0x0000FFFF))/(prebleachAvg[i]*prebleachAvg[i]);
+								roiPixelCounter ++;
+							}
+						}
+						if(roiPixelCounter == 0)
+						{
+							sigmaVal = 0;
+						}
+						else
+						{
+							sigmaVal = Math.sqrt(sigmaVal)/roiPixelCounter;
+						}
+						sigma[roiIdx][timeIdx-startIndexRecovery] = sigmaVal;
+					}
+				}
+			}
+		}
+		return sigma;
+	}
 }

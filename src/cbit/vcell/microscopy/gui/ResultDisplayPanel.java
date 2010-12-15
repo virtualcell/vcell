@@ -2,16 +2,10 @@ package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -19,26 +13,22 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.vcell.util.gui.AdvancedTablePanel;
 
-import cbit.vcell.mapping.gui.StructureMappingTableRenderer;
-import cbit.vcell.microscopy.EstimatedParameterTableRenderer;
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
+import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.ResultPanelButtonHandler;
-import cbit.vcell.microscopy.gui.FRAPStudyPanel.WorkFlowButtonHandler;
 
 
+@SuppressWarnings("serial")
 public class ResultDisplayPanel extends AdvancedTablePanel
 {
 	private JLabel oneDiffComponentLabel = null;

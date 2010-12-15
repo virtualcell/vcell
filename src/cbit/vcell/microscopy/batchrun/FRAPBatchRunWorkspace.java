@@ -16,7 +16,7 @@ import cbit.vcell.client.task.ClientTaskStatusSupport;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPOptData;
-import cbit.vcell.microscopy.FRAPOptimization;
+import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
@@ -202,7 +202,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		}
 		else if(selection instanceof String)//results
 		{
-			firePropertyChange(PROPERTY_CHANGE_BATCHRUN_DISPLAY_PARAM, oldString, ((String)selection));
+			firePropertyChange(PROPERTY_CHANGE_BATCHRUN_DISPLAY_PARAM, oldString, (selection));
 		}
 	}
 	
@@ -299,7 +299,7 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		for(int i=0; i<BatchRunResultsStatTableModel.NUM_STATISTICS; i++)
 		{
 			//fill all elements with 1e8 first
-			Arrays.fill(statisticsData[i], FRAPOptimization.largeNumber);
+			Arrays.fill(statisticsData[i], FRAPOptimizationUtils.largeNumber);
 		}
 		
 		for(int i=0; i<BatchRunResultsParamTableModel.NUM_COLUMNS-2; i++)
@@ -322,19 +322,19 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		if(selectedModel == FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT)
 		{
 			Parameter diff = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE],
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
+								FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound(), 
+								FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+								FRAPModel.REF_DIFFUSION_RATE_PARAM.getScale(),
 			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_DIFF_RATE-1]);
 			Parameter mobileFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(),
+								FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+								FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+								FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(),
 			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_MOBILE_FRACTION-1]);
 			Parameter bleachWhileMonitoringRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE],
-			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
+								FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+								FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+								FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(),
 			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_BMR-1]);
 			//get old parameters
 			oldParameters = getAverageParameters();
@@ -343,29 +343,29 @@ public class FRAPBatchRunWorkspace extends FRAPWorkspace
 		else if (selectedModel == FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS)
 		{
 			Parameter diff = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE], 
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_DIFFUSION_RATE_PARAM.getScale(),
+								FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound(),
+								FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(),
+								FRAPModel.REF_DIFFUSION_RATE_PARAM.getScale(),
 			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_DIFF_RATE-1]);
 			Parameter mobileFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION],
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_MOBILE_FRACTION_PARAM.getScale(), 
+								FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(),
+								FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(),
+								FRAPModel.REF_MOBILE_FRACTION_PARAM.getScale(), 
 			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_PRI_MOBILE_FRACTION-1]);
 			Parameter bleachWhileMonitoringRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE], 
-					            FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
-					            FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
-					            FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
+								FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(),
+								FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(),
+								FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getScale(), 
 					            statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_BMR-1]);
 			Parameter secDiffRate = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE],
-			                    FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
+								FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(),
+								FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(),
+								FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getScale(), 
 			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_SEC_DIFF_RATE-1]);
 			Parameter secMobileFrac = new Parameter(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION],
-			                    FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
-			                    FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
-			                    FRAPOptData.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
+								FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(),
+								FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(),
+								FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getScale(),
 			                    statisticsData[BatchRunResultsStatTableModel.ROW_IDX_AVERAGE][BatchRunResultsParamTableModel.COLUMN_SEC_MOBILE_FRACTION-1]);
 			//get old parameters
 			oldParameters = getAverageParameters();

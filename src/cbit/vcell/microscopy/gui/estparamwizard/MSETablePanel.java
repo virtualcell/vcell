@@ -1,22 +1,27 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.*;
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.TransformerException;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import org.vcell.util.gui.AdvancedTablePanel;
 import org.vcell.util.gui.HyperLinkLabel;
 import org.vcell.util.gui.StyleTable;
 
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.NumericTableCellRenderer;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 
-import java.awt.*;
-import java.awt.event.*;
-
+@SuppressWarnings("serial")
 public class MSETablePanel extends AdvancedTablePanel
 {
 

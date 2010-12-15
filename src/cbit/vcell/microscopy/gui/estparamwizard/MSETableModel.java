@@ -1,13 +1,12 @@
 package cbit.vcell.microscopy.gui.estparamwizard;
 
-import javax.swing.JLabel;
 import javax.swing.table.AbstractTableModel;
 
 import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptimization;
-import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FRAPOptimizationUtils;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 
+@SuppressWarnings("serial")
 public class MSETableModel extends AbstractTableModel {
 
 	public final static String COL_LABELS[] = { "Model Name", "ROI_Bleached", "ROI_Ring1", "ROI_Ring2", "ROI_Ring3",
@@ -62,7 +61,7 @@ public class MSETableModel extends AbstractTableModel {
     	else
     	{
     		//in mseSummaryData there is no model name col, therefore we use col-1 here.
-    		if(mseSummaryData[row][col-1] != FRAPOptimization.largeNumber)
+    		if(mseSummaryData[row][col-1] != FRAPOptimizationUtils.largeNumber)
     		{
     			return mseSummaryData[row][col-1];
     		}
