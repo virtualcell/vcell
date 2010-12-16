@@ -18,7 +18,6 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor.BioModelEditorSelection;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 
@@ -31,8 +30,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends BioModelEditorSubP
 	protected EditorScrollTable table;
 	protected BioModelEditorRightSideTableModel<T> tableModel = null;
 	protected BioModel bioModel;
-	protected JTextField textFieldSearch = null;
-	protected BioModelEditorSelection bioModelEditorSelection = null;
+	protected JTextField textFieldSearch = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 
 	private class InternalEventHandler implements ActionListener, PropertyChangeListener, DocumentListener, ListSelectionListener {

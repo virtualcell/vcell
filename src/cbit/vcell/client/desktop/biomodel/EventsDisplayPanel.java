@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -8,18 +7,13 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.mapping.BioEvent;
 
 @SuppressWarnings("serial")
-public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<BioEvent> {
-	private JSplitPane outerSplitPane = null;
-	private EventPanel eventPanel = null;
-
+public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<BioEvent> {	
 	public EventsDisplayPanel() {
 		super();
 		initialize();
@@ -27,15 +21,14 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 	
 	private void initialize() {
 		setName("EventsPanel");
-		JPanel topPanel = new JPanel();
-		topPanel.setLayout(new GridBagLayout());
+		setLayout(new GridBagLayout());
 
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,4,4,4);
-		topPanel.add(new JLabel("Search "), gbc);
+		add(new JLabel("Search "), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -44,7 +37,7 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
-		topPanel.add(textFieldSearch, gbc);
+		add(textFieldSearch, gbc);
 				
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
@@ -52,14 +45,14 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 		gbc.insets = new Insets(4,100,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		addButton.setPreferredSize(deleteButton.getPreferredSize());
-		topPanel.add(addButton, gbc);
+		add(addButton, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
 		gbc.insets = new Insets(4,4,4,20);
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		topPanel.add(deleteButton, gbc);
+		add(deleteButton, gbc);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
@@ -70,24 +63,7 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 4;
 		gbc.fill = GridBagConstraints.BOTH;
-		topPanel.add(table.getEnclosingScrollPane(), gbc);
-		
-		outerSplitPane = new JSplitPane();
-		outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		outerSplitPane.setDividerLocation(300);			
-		outerSplitPane.setTopComponent(topPanel);
-		outerSplitPane.setBottomComponent(getEventPanel());
-		setLayout(new BorderLayout());			
-		add(outerSplitPane, BorderLayout.CENTER);		
-	}
-	
-	private EventPanel getEventPanel() {
-		if (eventPanel == null) {
-			eventPanel = new EventPanel();
-			eventPanel.setName("EventPanel");
-		}
-		
-		return eventPanel;
+		add(table.getEnclosingScrollPane(), gbc);
 	}
 	
 	@Override
@@ -127,17 +103,6 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 	@Override
 	protected BioModelEditorApplicationRightSideTableModel<BioEvent> createTableModel() {
 		return new EventsSummaryTableModel(table);
-	}
-
-	@Override
-	protected void tableSelectionChanged() {
-		super.tableSelectionChanged();
-		int[] rows = table.getSelectedRows();
-		if (rows != null && rows.length == 1 && rows[0] < tableModel.getDataSize()) {
-			getEventPanel().setBioEvent(tableModel.getValueAt(rows[0]));
-		} else {
-			getEventPanel().setBioEvent(null);
-		}
 	}
 	
 }

@@ -28,8 +28,7 @@ import org.vcell.util.gui.ScrollTable.CheckOption;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor.BioModelEditorSelection;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
@@ -50,8 +49,7 @@ import cbit.vcell.parser.SymbolTableEntry;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class InitialConditionsPanel extends javax.swing.JPanel {
-	private SpeciesContextSpecPanel ivjSpeciesContextSpecPanel = null;
+public class InitialConditionsPanel extends BioModelEditorSubPanel {
 	private SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private SimulationContext ivjsimulationContext1 = null;
@@ -62,10 +60,7 @@ public class InitialConditionsPanel extends javax.swing.JPanel {
 	private ButtonGroup radioGroup = null; //added in July, 2008. Enable selection of initial concentration or amount
 	private JSortTable ivjScrollPaneTable = null;
 	private SpeciesContextSpecsTableModel ivjSpeciesContextSpecsTableModel = null;
-	private boolean ivjConnPtoP5Aligning = false;
-	private javax.swing.ListSelectionModel ivjselectionModel1 = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private javax.swing.JSplitPane ivjJSplitPane1 = null;
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
 	private javax.swing.JPopupMenu ivjJPopupMenuICP = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopy = null;
@@ -81,7 +76,6 @@ public class InitialConditionsPanel extends javax.swing.JPanel {
 	private int selectedColumn = -1;
 	private JLabel setDiffConstantLabel;
 	private JLabel pressEnterLabel;
-	private BioModelEditorSelection bioModelEditorSelection = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -127,16 +121,13 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 			if (evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_USE_CONCENTRATION)) {
 				updateTopScrollPanel();
 			}
-			if (evt.getSource() == InitialConditionsPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("selectionModel"))) {
-				connPtoP5SetTarget();
-			}
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()) {
 				return;
 			}
-			if (e.getSource() == InitialConditionsPanel.this.getselectionModel1()) 
-				tableSelectionChanged(e);
+			if (e.getSource() == getScrollPaneTable().getSelectionModel()) 
+				setSelectedObjectsFromTable(getScrollPaneTable(), getSpeciesContextSpecsTableModel());
 		};
 	};
 
@@ -264,38 +255,6 @@ private void connEtoM2(SimulationContext value) {
 }
 
 /**
- * connEtoM3:  (selectionModel1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> SpeciesContextSpecPanel.setSpeciesContextSpec(Lcbit.vcell.mapping.SpeciesContextSpec;)V)
- * @param arg1 javax.swing.event.ListSelectionEvent
- */
-private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		SpeciesContextSpec newValue = null;
-		int row = getselectionModel1().getMinSelectionIndex();
-		if (row >= 0) {
-			newValue = getSpeciesContextSpecsTableModel().getValueAt(row);
-		}
-		getSpeciesContextSpecPanel().setSpeciesContextSpec(newValue);
-		setBioModelEditorSelection(new BioModelEditorSelection(getSimulationContext(), newValue == null ? null : newValue));
-//			getSpeciesContextSpecPanel().setSpeciesContextSpec(null);
-//		} else {
-//			getSpeciesContextSpecPanel().setSpeciesContextSpec(getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row));
-////			System.out.println("Initial condition selection changed");
-//			if(getSPPRPanel() != null) {
-//				getSPPRPanel().setScrollPaneTreeCurrentRow(getSpeciesContextSpecsTableModel().getSpeciesContextSpec(row).getSpeciesContext());
-//			}
-//		}
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-private void setBioModelEditorSelection(BioModelEditorSelection newValue) {
-	BioModelEditorSelection oldValue = bioModelEditorSelection;
-	bioModelEditorSelection = newValue;
-	firePropertyChange(BioModelEditor.PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION, oldValue, newValue);
-}
-
-/**
  * connPtoP3SetSource:  (InitialConditionsPanel.simulationContext <--> simulationContext1.this)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -359,57 +318,6 @@ private void connPtoP4SetTarget() {
 		// user code begin {1}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connPtoP5SetSource:  (ScrollPaneTable.selectionModel <--> selectionModel1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP5SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP5Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP5Aligning = true;
-			if ((getselectionModel1() != null)) {
-				getScrollPaneTable().setSelectionModel(getselectionModel1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP5Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP5Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP5SetTarget:  (ScrollPaneTable.selectionModel <--> selectionModel1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP5SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP5Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP5Aligning = true;
-			setselectionModel1(getScrollPaneTable().getSelectionModel());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP5Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP5Aligning = false;
 		// user code begin {3}
 		// user code end
 		handleException(ivjExc);
@@ -554,30 +462,6 @@ private javax.swing.JPopupMenu getJPopupMenuICP() {
 		}
 	}
 	return ivjJPopupMenuICP;
-}
-
-/**
- * Return the JSplitPane1 property value.
- * @return javax.swing.JSplitPane
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JSplitPane getJSplitPane1() {
-	if (ivjJSplitPane1 == null) {
-		try {
-			ivjJSplitPane1 = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT);
-			ivjJSplitPane1.setName("JSplitPane1");
-			ivjJSplitPane1.setDividerLocation(300);
-			getJSplitPane1().add(getScrollPanel(), "top");
-			getJSplitPane1().add(getSpeciesContextSpecPanel(), "bottom");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSplitPane1;
 }
 
 // added in july 2008, to accommodate the radio buttons and the scrolltablepane when it is stochastic application.
@@ -738,18 +622,6 @@ private JSortTable getScrollPaneTable() {
 }
 
 /**
- * Return the selectionModel1 property value.
- * @return javax.swing.ListSelectionModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.ListSelectionModel getselectionModel1() {
-	// user code begin {1}
-	// user code end
-	return ivjselectionModel1;
-}
-
-
-/**
  * Gets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
  * @return The simulationContext property value.
  * @see #setSimulationContext
@@ -768,28 +640,6 @@ private SimulationContext getsimulationContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationContext1;
-}
-
-
-/**
- * Return the SpeciesContextSpecPanel property value.
- * @return cbit.vcell.mapping.SpeciesContextSpecPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private SpeciesContextSpecPanel getSpeciesContextSpecPanel() {
-	if (ivjSpeciesContextSpecPanel == null) {
-		try {
-			ivjSpeciesContextSpecPanel = new SpeciesContextSpecPanel();
-			ivjSpeciesContextSpecPanel.setName("SpeciesContextSpecPanel");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjSpeciesContextSpecPanel;
 }
 
 /**
@@ -835,6 +685,7 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().addMouseListener(ivjEventHandler);
+	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 	getJMenuItemPaste().addActionListener(ivjEventHandler);
 	getJMenuItemCopy().addActionListener(ivjEventHandler);
 	getJMenuItemCopyAll().addActionListener(ivjEventHandler);
@@ -846,7 +697,6 @@ private void initConnections() throws java.lang.Exception {
 	getConcentrationRadioButton().addActionListener(ivjEventHandler);
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
-	connPtoP5SetTarget();
 	
 	DefaultTableCellRenderer renderer = new DefaultScrollTableCellRenderer() {
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
@@ -876,37 +726,16 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("InitialConditionsPanel");
-		setLayout(new java.awt.GridBagLayout());
+		setLayout(new BorderLayout());
+		add(getScrollPanel(), BorderLayout.CENTER);
 		//setSize(456, 539);
 
-		java.awt.GridBagConstraints constraintsJSplitPane1 = new java.awt.GridBagConstraints();
-		constraintsJSplitPane1.gridx = 0; constraintsJSplitPane1.gridy = 0;
-		constraintsJSplitPane1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJSplitPane1.weightx = 1.0;
-		constraintsJSplitPane1.weighty = 1.0;
-		constraintsJSplitPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJSplitPane1(), constraintsJSplitPane1);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
 	// user code begin {2}
 	// user code end
-}
-
-public void setScrollPaneTableCurrentRow(SpeciesContextSpec selection) {
-	if (selection == null) {
-		getScrollPaneTable().clearSelection();
-		return;
-	}
-	int numRows = getScrollPaneTable().getRowCount();
-	for(int i=0; i<numRows; i++) {
-		SpeciesContextSpec valueAt = getSpeciesContextSpecsTableModel().getValueAt(i);
-		if(valueAt == selection) {
-			getScrollPaneTable().setRowSelectionInterval(i, i);
-			return;
-		}
-	}
 }
 
 /**
@@ -1269,36 +1098,6 @@ private JLabel getDiffusionConstantLabel() {
 	}
 	return diffConstantLabel;
 }
-/**
- * Set the selectionModel1 to a new value.
- * @param newValue javax.swing.ListSelectionModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setselectionModel1(javax.swing.ListSelectionModel newValue) {
-	if (ivjselectionModel1 != newValue) {
-		try {
-			/* Stop listening for events from the current object */
-			if (ivjselectionModel1 != null) {
-				ivjselectionModel1.removeListSelectionListener(ivjEventHandler);
-			}
-			ivjselectionModel1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjselectionModel1 != null) {
-				ivjselectionModel1.addListSelectionListener(ivjEventHandler);
-			}
-			connPtoP5SetSource();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
 
 /**
  * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
@@ -1371,5 +1170,10 @@ public void setDiffusionConstant() {
 			PopupGenerator.showErrorDialog(this, "Wrong Expression:\n" + e.getMessage());
 		}
 	}
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	setTableSelections(selectedObjects, getScrollPaneTable(), getSpeciesContextSpecsTableModel());
 }
 }

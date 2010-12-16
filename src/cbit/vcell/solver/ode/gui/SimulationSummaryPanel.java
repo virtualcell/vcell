@@ -14,7 +14,6 @@ import java.beans.PropertyVetoException;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -23,6 +22,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.Constant;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -39,7 +39,8 @@ import cbit.vcell.solver.stoch.StochSimOptions;
  * Creation date: (5/2/2001 12:17:49 PM)
  * @author: Ion Moraru
  */
-public class SimulationSummaryPanel extends JPanel {
+@SuppressWarnings("serial")
+public class SimulationSummaryPanel extends BioModelEditorSubPanel {
 	private Simulation fieldSimulation = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JLabel ivjJLabel1 = null;
@@ -1432,4 +1433,12 @@ private void updateAnnotation() {
 	}
 }
 
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	Simulation selectedSimulation = null;
+	if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof Simulation) {
+		selectedSimulation = (Simulation) selectedObjects[0];
+	}
+	setSimulation(selectedSimulation);	
+}
 }

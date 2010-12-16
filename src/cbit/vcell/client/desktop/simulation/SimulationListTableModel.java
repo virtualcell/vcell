@@ -1,8 +1,11 @@
 package cbit.vcell.client.desktop.simulation;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
+
+import org.vcell.util.gui.sorttable.DefaultSortTableModel;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.solver.Simulation;
@@ -12,16 +15,14 @@ import cbit.vcell.solver.Simulation;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public class SimulationListTableModel extends AbstractTableModel implements PropertyChangeListener {
+public class SimulationListTableModel extends DefaultSortTableModel<Simulation> implements PropertyChangeListener {
 	private static final String PROPERTY_NAME_SIMULATION_WORKSPACE = "simulationWorkspace";
 	private final static int COLUMN_NAME = 0;
 	private final static int COLUMN_LASTSAVED = 1;
 	private final static int COLUMN_STATUS = 2;
 	private final static int COLUMN_RESULTS = 3;
 	
-	private transient java.beans.PropertyChangeSupport propertyChange;	
-	
-	private String[] columnNames = new String[] {"Name", "Last Saved", "Running Status", "Results"};
+	private static final String[] columnNames = new String[] {"Name", "Last Saved", "Running Status", "Results"};
 	private SimulationWorkspace simulationWorkspace = null;
 	private JTable ownerTable = null;
 
@@ -31,53 +32,19 @@ public class SimulationListTableModel extends AbstractTableModel implements Prop
 public SimulationListTableModel(JTable table) {
 	super();
 	ownerTable = table;
+	setColumns(columnNames);
 	addPropertyChangeListener(this);
 }
-
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
-}
-
-private java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
-}
-
-/**
- * getColumnCount method comment.
- */
-public int getColumnCount() {
-	return columnNames.length;
-}
-
-
-/**
- * getColumnCount method comment.
- */
-public String getColumnName(int column) {
-	return columnNames[column];
-}
-
 
 /**
  * getRowCount method comment.
  */
-public int getRowCount() {
+private void refreshData() {
 	if (getSimulationWorkspace() != null && getSimulationWorkspace().getSimulations() != null) {
-		return getSimulationWorkspace().getSimulations().length;
+		setData(Arrays.asList(getSimulationWorkspace().getSimulations()));
+	} else {
+		setData(null);
 	}
-	
-	return 0;
 }
 
 
@@ -90,16 +57,13 @@ private SimulationWorkspace getSimulationWorkspace() {
 	return simulationWorkspace;
 }
 
-public Simulation getValueAt(int row) {
-	return getSimulationWorkspace().getSimulations(row);
-}
 /**
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int column) {
 	try{
-		Simulation simulation = getSimulationWorkspace().getSimulations(row);
 		if (row >= 0 && row < getRowCount()) {
+			Simulation simulation = getValueAt(row);
 			switch (column) {
 				case COLUMN_NAME: {
 					return simulation.getName();
@@ -160,10 +124,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(this);
 		}
-		fireTableDataChanged();
+		refreshData();
 	}
 	if (evt.getSource() == getSimulationWorkspace() && evt.getPropertyName().equals("simulations")) {
-		fireTableDataChanged();
+		refreshData();
 	}
 	if (evt.getSource() == getSimulationWorkspace() && evt.getPropertyName().equals("status")) {
 		fireTableRowsUpdated(((Integer)evt.getNewValue()).intValue(), ((Integer)evt.getNewValue()).intValue());
@@ -217,12 +181,13 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	}
 }
 
-public Simulation getSelectedSimulation() {
-	int row = ownerTable.getSelectedRow();
-	if (row < 0) {
-		return null;
-	}
-	Simulation simulation = getSimulationWorkspace().getSimulations(row);
-	return simulation;
+@Override
+protected Comparator<Simulation> getComparator(int col, boolean ascending) {
+	return null;
+}
+
+@Override
+public boolean isSortable(int col) {
+	return false;
 }
 }

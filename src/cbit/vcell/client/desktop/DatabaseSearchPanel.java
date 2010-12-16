@@ -27,6 +27,7 @@ import org.vcell.util.gui.CollapsiblePanel;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.messaging.admin.DatePanel;
 
+@SuppressWarnings("serial")
 public class DatabaseSearchPanel extends CollapsiblePanel {
 	public static interface SearchCriterion {
 		boolean meetCriterion(VCDocumentInfo docInfo);
@@ -153,6 +154,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 	private void initialize() {
 //		JLabel nameLabel = new JLabel("Search ");
 		nameSearchTextField = new TextFieldAutoCompletion();
+		nameSearchTextField.setColumns(20);
 		textFieldAutoComSet.add(nameSearchTextField);
 		
 		advancedButton = new JLabel("<html><u>Advanced &gt;&gt;</u></html>");
@@ -193,7 +195,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc.gridwidth = 2;
 		gbc.insets = new Insets(2, 4, 0, 0);
 		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
 		mainPanel.add(nameSearchTextField, gbc);
 		
 		gridy ++;

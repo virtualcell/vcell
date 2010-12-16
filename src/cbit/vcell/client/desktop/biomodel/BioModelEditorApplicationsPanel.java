@@ -571,17 +571,6 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	}
 	
 	public void onSelectedObjectsChange(Object[] selectedObjects) {
-		table.clearSelection();
-		if (selectedObjects == null || selectedObjects.length != 1) {
-			return;
-		}
-		for (Object object : selectedObjects) {
-			for (int i = 0; i < tableModel.getDataSize(); i ++) {
-				if (tableModel.getValueAt(i) == object) {
-					table.addRowSelectionInterval(i, i);
-					break;
-				}
-			}
-		}
+		setTableSelections(selectedObjects, table, tableModel);
 	}
 }

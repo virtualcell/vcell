@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -12,6 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -29,6 +32,7 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.gui.ParameterTableModel;
@@ -85,12 +89,17 @@ public ReactionPropertiesPanel() {
 
 private void tableSelectionChanged() {
 	int[] rows = getScrollPaneTable().getSelectedRows();
+	List<Object> selectedObjects = new ArrayList<Object>();
 	if (rows != null) {
-		Object[] selectedObjects = new Object[rows.length];
 		for (int i = 0; i < rows.length; i++) {
-			selectedObjects[i] = getParameterTableModel().getValueAt(rows[i]);
+			Parameter object = getParameterTableModel().getValueAt(rows[i]);
+			if (!(object instanceof Kinetics.KineticsProxyParameter)) {
+				selectedObjects.add(object);
+			}
 		}
-		setSelectedObjects(selectedObjects);
+		if (selectedObjects.size() > 0 || rows.length == 0) {
+			setSelectedObjects(selectedObjects.toArray());
+		}
 	}
 }
 
@@ -108,6 +117,7 @@ private ScrollTable getScrollPaneTable() {
 			ivjScrollPaneTable = new ScrollTable();
 			ivjScrollPaneTable.setValidateExpressionBinding(false);
 			ivjScrollPaneTable.setModel(getParameterTableModel());
+			ivjScrollPaneTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -493,12 +503,7 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	} else if (selectedObjects[0] instanceof KineticsParameter) {
 		KineticsParameter kineticsParameter = (KineticsParameter) selectedObjects[0];
 		setReactionStep(kineticsParameter.getKinetics().getReactionStep());
-		for (int i = 0; i < getParameterTableModel().getDataSize(); i ++) {
-			if (kineticsParameter == getParameterTableModel().getValueAt(i)) {
-				getScrollPaneTable().setRowSelectionInterval(i, i);
-				break;
-			}
-		}
+		setTableSelections(selectedObjects, getScrollPaneTable(), getParameterTableModel());
 	}
 }
 }

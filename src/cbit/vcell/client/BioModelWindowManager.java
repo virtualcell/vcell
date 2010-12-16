@@ -881,14 +881,6 @@ public void showSybilWindow() {
 	}
 }
 
-public void BioModelEditor_ApplicationMenu_ActionPerformed(ActionEvent e)
-{
-//	if(getBioModelEditor() != null)
-//	{
-//		getBioModelEditor().applicationMenuItem_ActionPerformed(e);
-//	}
-}
-
 void prepareToLoad(BioModel doc) throws Exception {
 	if (applicationsHash.size() == 0) {
 		return;

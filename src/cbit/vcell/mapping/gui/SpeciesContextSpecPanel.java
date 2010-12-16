@@ -5,20 +5,17 @@ package cbit.vcell.mapping.gui;
 ©*/
 
 import java.awt.BorderLayout;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.gui.ScopedExpression;
-import cbit.gui.TableCellEditorAutoCompletion;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.ExpressionException;
 /**
  * This type was created in VisualAge.
  */
-public class SpeciesContextSpecPanel extends javax.swing.JPanel {
+@SuppressWarnings("serial")
+public class SpeciesContextSpecPanel extends BioModelEditorSubPanel {
 	private JSortTable ivjScrollPaneTable = null;
 	private SpeciesContextSpecParameterTableModel ivjSpeciesContextSpecParameterTableModel1 = null;
 
@@ -128,8 +125,17 @@ public static void main(java.lang.String[] args) {
  * Set the SpeciesContextSpec to a new value.
  * @param newValue cbit.vcell.mapping.SpeciesContextSpec
  */
-public void setSpeciesContextSpec(SpeciesContextSpec newValue) {
+void setSpeciesContextSpec(SpeciesContextSpec newValue) {
 	getSpeciesContextSpecParameterTableModel1().setSpeciesContextSpec(newValue);
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	SpeciesContextSpec speciesContextSpec = null;
+	if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof SpeciesContextSpec) {
+		speciesContextSpec = (SpeciesContextSpec) selectedObjects[0];
+	}
+	setSpeciesContextSpec(speciesContextSpec);	
 }
 
 }

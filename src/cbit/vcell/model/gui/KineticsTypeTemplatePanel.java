@@ -3,23 +3,33 @@ package cbit.vcell.model.gui;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
 
+import com.sun.org.apache.bcel.internal.generic.BALOAD;
+
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
+import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 /**
@@ -28,7 +38,7 @@ import cbit.vcell.model.SimpleReaction;
  * @author: Anuradha Lakshminarayana
  */
 @SuppressWarnings("serial")
-public class KineticsTypeTemplatePanel extends javax.swing.JPanel {
+public class KineticsTypeTemplatePanel extends BioModelEditorSubPanel {
 	private static final String PROPERTY_NAME_REACTION_STEP = "reactionStep";
 	private ReactionStep reactionStep = null;
 	private javax.swing.JComboBox kineticsTypeComboBox = null;
@@ -53,7 +63,7 @@ public class KineticsTypeTemplatePanel extends javax.swing.JPanel {
 			KineticsDescription.Nernst
 	};
 	
-class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListener {
+class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListener, ListSelectionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == KineticsTypeTemplatePanel.this && (evt.getPropertyName().equals(PROPERTY_NAME_REACTION_STEP))) { 
 				getParameterTableModel().setKinetics(getKinetics());
@@ -64,6 +74,26 @@ class IvjEventHandler implements java.beans.PropertyChangeListener, ActionListen
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getKineticsTypeComboBox()) 
 				updateKineticChoice((KineticsDescription)getKineticsTypeComboBox().getSelectedItem());
+		}
+		public void valueChanged(ListSelectionEvent e) {
+			if (e.getValueIsAdjusting()) {
+				return;
+			}
+			if (bEditable) {
+				int[] rows = getScrollPaneTable().getSelectedRows();
+				List<Object> selectedObjects = new ArrayList<Object>();
+				if (rows != null) {
+					for (int i = 0; i < rows.length; i++) {
+						Parameter object = getParameterTableModel().getValueAt(rows[i]);
+						if (!(object instanceof Kinetics.KineticsProxyParameter)) {
+							selectedObjects.add(object);
+						}
+					}
+					if (selectedObjects.size() > 0 || rows.length == 0) {
+						setSelectedObjects(selectedObjects.toArray());
+					}
+				}
+			}
 		}
 	}
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -144,6 +174,7 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getKineticsTypeComboBox().addActionListener(ivjEventHandler);
+	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 }
 /**
  * Initialize the class.
@@ -178,6 +209,7 @@ private void initialize() {
 		gridBagConstraints.gridy = gridy;
 		gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 10);
 		this.add(getJToggleButton(), gridBagConstraints);
+		getJToggleButton().setEnabled(bEditable);
 		
 		gridy ++;
 		java.awt.GridBagConstraints constraintsParameterPanel = new java.awt.GridBagConstraints();
@@ -410,6 +442,27 @@ private void initKineticChoices() {
 	getKineticsTypeComboBox().setModel(model);
 	
 	return;
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	if (selectedObjects == null || selectedObjects.length != 1) {
+		return;
+	}
+	if (selectedObjects[0] instanceof ReactionStep) {
+		setReactionStep((ReactionStep) selectedObjects[0]);
+	} else if (selectedObjects[0] instanceof ReactionSpec) {
+		setReactionStep(((ReactionSpec) selectedObjects[0]).getReactionStep());
+	} else if (selectedObjects[0] instanceof KineticsParameter) {
+		KineticsParameter kineticsParameter = (KineticsParameter) selectedObjects[0];
+		setReactionStep(kineticsParameter.getKinetics().getReactionStep());
+		for (int i = 0; i < getParameterTableModel().getDataSize(); i ++) {
+			if (kineticsParameter == getParameterTableModel().getValueAt(i)) {
+				getScrollPaneTable().setRowSelectionInterval(i, i);
+				break;
+			}
+		}
+	}	
 }
 
 }
