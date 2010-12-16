@@ -57,6 +57,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -116,6 +117,7 @@ import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.VariableType.VariableDomain;
 import cbit.vcell.simdata.gui.MeshDisplayAdapter;
@@ -127,6 +129,8 @@ import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
 /**
@@ -140,6 +144,8 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	public static String StringKey_timeSeriesJobResults =  "timeSeriesJobResults";
 	public static String StringKey_timeSeriesJobException =  "timeSeriesJobException";
 	public static String StringKey_timeSeriesJobSpec =  "timeSeriesJobSpec";
+	
+	public Process visitTestProcess;
 	
 	public static class TimeSeriesDataJobListener implements DataJobListener {
 		private ClientTaskStatusSupport clientTaskStatusSupport = null;
@@ -1685,6 +1691,78 @@ private javax.swing.JButton getJButtonStatistics() {
 	return ivjJButtonStatistics;
 }
 
+private JButton ivjButtonVisit;
+private JButton getJButtonVisit(){
+	if (ivjButtonVisit == null) {
+		ivjButtonVisit = new javax.swing.JButton();
+		ivjButtonVisit.setName("JButtonVisit");
+		ivjButtonVisit.setText("Open in VisIt");
+		ivjButtonVisit.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				
+				try{
+					 /*
+					 VCDataIdentifier vcDId = getPdeDataContext().getDataIdentifier();
+					 if vcDId instanceOf VCSim
+					 KeyValue fieldDataKey = getPdeDataContext().getDataIdentifier(
+					 String simFileToOpen = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);*/
+					KeyValue fieldDataKey = null;
+					int jobIndex = 0;
+					boolean isOldStyle = false;
+					VCDataIdentifier vcdid = getPdeDataContext().getVCDataIdentifier();
+					if(vcdid instanceof VCSimulationDataIdentifier){
+						fieldDataKey = ((VCSimulationDataIdentifier)vcdid).getSimulationKey();
+						jobIndex = ((VCSimulationDataIdentifier)vcdid).getJobIndex();
+					}
+					else if(vcdid instanceof VCSimulationDataIdentifierOldStyle){
+						isOldStyle = true;
+						fieldDataKey = ((VCSimulationDataIdentifierOldStyle)vcdid).getSimulationKey();
+						jobIndex = ((VCSimulationDataIdentifierOldStyle)vcdid).getJobIndex();
+					}else{
+						throw new RuntimeException("Unknown VCDataIdentifier type "+vcdid.getClass().getName());
+					}
+
+					String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
+					String userName = getSimulation().getVersion().getOwner().getName();
+					
+					
+					 //JFileChooser chooser = new JFileChooser();
+					// chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
+					 //chooser.setDialogTitle("Select location of RAID filesystem mount");
+					// int returnVal = chooser.showOpenDialog(PDEDataViewer.this);
+					 //if(returnVal == JFileChooser.APPROVE_OPTION) {
+					  //     System.out.println("You chose to open this file: " +
+					  //          chooser.getSelectedFile().getName());
+//					       if (System.getProperties().getProperty("os.arch").contains("MacOS")) {
+//					    	   //Assume, FOR THE MOMENT, that if we're running MacOSX, we're running on Ed Boyce's machine
+//					    	   String execCommand = "/Users/edboyce/visit/bin/visit -o " + chooser.getSelectedFile().getAbsolutePath() +File.separator+userName+"/"+simlogname;
+					       	   //String execCommand = "/Users/edboyce/visit/bin/visit -cli";
+					       	   
+					    	   
+					    	   //					    	   Runtime.getRuntime().exec(execCommand);
+//					       }
+//					       if (System.getProperties().getProperty("os.arch").contains("Linux")) {
+//					    	   //Assume on Linux that the visit command is in the path.
+			//			       String execCommand = "bash visit -o " + chooser.getSelectedFile().getAbsolutePath() +File.separator+userName+"/"+simlogname;
+							   
+					       	   //ProcessInfo  pi = VisitProcess.spawnProcess(execCommand);
+					     
+//						   }
+					 }
+
+					 
+				
+				
+				catch(Exception e1) {
+					e1.printStackTrace();
+				}
+				
+				}
+		});
+	}
+	return ivjButtonVisit;
+	
+}
 private javax.swing.JButton getJButtonSnapshotROI() {
 	if (ivjJButtonSnapshotROI == null) {
 		try {
@@ -1850,6 +1928,11 @@ private javax.swing.JPanel getJPanelButtons() {
 			constraintsJButtonSnapshotROI.gridx = 5; constraintsJButtonSnapshotROI.gridy = 0;
 			constraintsJButtonSnapshotROI.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanelButtons().add(getJButtonSnapshotROI()/*getJPanelSnapshotROI()*/, constraintsJButtonSnapshotROI);
+			
+			java.awt.GridBagConstraints constraintsJButtonJButtonVisit = new java.awt.GridBagConstraints();
+			constraintsJButtonJButtonVisit.gridx = 6; constraintsJButtonSnapshotROI.gridy = 0;
+			constraintsJButtonJButtonVisit.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJPanelButtons().add(getJButtonVisit(), constraintsJButtonJButtonVisit);
 			
 			// user code begin {1}
 			// user code end
