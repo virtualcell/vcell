@@ -1,11 +1,10 @@
 package cbit.vcell.client.data;
-import javax.swing.JPanel;
-
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.client.DataViewerManager;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.export.ExportMonitorPanel;
 /**
@@ -13,7 +12,8 @@ import cbit.vcell.export.ExportMonitorPanel;
  * Creation date: (6/14/2004 9:48:35 PM)
  * @author: Ion Moraru
  */
-public abstract class DataViewer extends JPanel implements ExportListener, DataJobListener {
+@SuppressWarnings("serial")
+public abstract class DataViewer extends BioModelEditorSubPanel implements ExportListener, DataJobListener {
 	public static final String PROP_SIM_MODEL_INFO = "simulationModelInfo";
 	private DataViewerManager fieldDataViewerManager = null;
 	private SimulationModelInfo fieldSimulationModelInfo = null;
@@ -93,4 +93,10 @@ public void setSimulationModelInfo(SimulationModelInfo simulationModelInfo) {
 }
 
 public void showTimePlotMultipleScans(DataManager dataManager){};
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	// TODO
+	
+}
 }

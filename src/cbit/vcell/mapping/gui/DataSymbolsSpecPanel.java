@@ -4,55 +4,28 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
-import static cbit.vcell.data.VFrapConstants.ADD_ASSOCIATE_EXISTING_FD_MENU;
-import static cbit.vcell.data.VFrapConstants.ADD_COPY_FROM_BIOMODEL_MENU;
-import static cbit.vcell.data.VFrapConstants.ADD_IMAGE_FILE_MENU;
-import static cbit.vcell.data.VFrapConstants.ADD_PSF_MENU;
-import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_DATASET_MENU;
-import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_SPECIALS_MENU;
-
-import java.awt.AWTEventMulticaster;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.text.DecimalFormat;
-import java.util.zip.DataFormatException;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
-import javax.swing.ListSelectionModel;
-import javax.swing.filechooser.FileFilter;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.gui.DialogUtils;
 
-import cbit.image.ImageFile;
 import cbit.image.ImagePaneModel;
 import cbit.image.ImagePaneScrollerTest;
 import cbit.image.ImagePlaneManagerPanel;
 import cbit.image.SourceDataInfo;
-import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.desktop.DocumentWindow;
-import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
-import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.export.ExportMonitorPanel;
-import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.psf.PointSpreadFunctionManagement;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
 public class DataSymbolsSpecPanel extends DataViewer {
@@ -62,15 +35,12 @@ public class DataSymbolsSpecPanel extends DataViewer {
 		return null;
 	}
 
-	private DataSymbolsPanel ivjDataSymbolsPanel = null;
-	private SimulationContext fieldSimulationContext = null;
+//	private SimulationContext fieldSimulationContext = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private JButton ivjJButtonCreateDataSymbol = null;
-	private JButton ivjJButtonDeleteDataSymbol = null;
+//	private JButton ivjJButtonCreateDataSymbol = null;
 	private JButton ivjJButtonViewFieldData = null;
 	private JCheckBox chckbxPointSpreadFunction = null;
 	ImagePlaneManagerPanel ivjImagePlaneManagerPanel = null;
-    protected transient ActionListener actionListener = null;
     
     DataSymbol ivjCurrentSymbol = null;
     int countW = 0;
@@ -78,41 +48,26 @@ public class DataSymbolsSpecPanel extends DataViewer {
 
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == DataSymbolsSpecPanel.this.getJButtonCreateDataSymbol()) 
-				refireIt(e);
-			if (e.getSource() == DataSymbolsSpecPanel.this.getJButtonDeleteDataSymbol()) 
-				refireIt(e);
-			if (e.getSource() == DataSymbolsSpecPanel.this.getJButtonViewFieldData()) 
-				refireIt(e);
+//			if (e.getSource() == DataSymbolsSpecPanel.this.getJButtonCreateDataSymbol()) 
+//				refireIt(e);
+			if (e.getSource() == DataSymbolsSpecPanel.this.getJButtonViewFieldData()) {
+				try {
+					Component requesterComponent = DataSymbolsSpecPanel.this;
+					DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
+					documentWindow.getTopLevelWindowManager().getRequestManager().showFieldDataWindow(null);
+				} catch (java.lang.Throwable ivjExc) {
+					handleException(ivjExc);
+				}
+			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == DataSymbolsSpecPanel.this && (evt.getPropertyName().equals("EnableButtonsEvent"))) 
 			{ 
 				initButtons(evt);
 			}
-			if (evt.getSource() == DataSymbolsSpecPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
-			{
-				setSimulationContext((SimulationContext)evt.getNewValue());
-			}
 		};
 	};
-	private void refireIt(java.awt.event.ActionEvent arg1) {
-		try {
-			if (arg1.getSource() == getJButtonCreateDataSymbol()) {
-				this.createDataSymbol();
-			}
-			if (arg1.getSource() == DataSymbolsSpecPanel.this.getJButtonDeleteDataSymbol()) {
-				fieldSimulationContext.getDataContext().removeDataSymbol(ivjCurrentSymbol);
-			}
-			if (arg1.getSource() == DataSymbolsSpecPanel.this.getJButtonViewFieldData()) {
-				Component requesterComponent = DataSymbolsSpecPanel.this;
-				DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
-				documentWindow.getTopLevelWindowManager().getRequestManager().showFieldDataWindow(null);
-			}
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
+
 	private void initButtons(java.beans.PropertyChangeEvent arg1) {
 		try {
 			this.initButtons();
@@ -122,8 +77,7 @@ public class DataSymbolsSpecPanel extends DataViewer {
 	}
 	private void initButtons() {
 		boolean bSpatial = true;
-		getJButtonCreateDataSymbol().setEnabled(bSpatial);
-		getJButtonDeleteDataSymbol().setEnabled(bSpatial);
+//		getJButtonCreateDataSymbol().setEnabled(bSpatial);
 		getJButtonViewFieldData().setEnabled(bSpatial);
 	}
 /**
@@ -133,18 +87,8 @@ public class DataSymbolsSpecPanel extends DataViewer {
 		super();
 		initialize();
 	}
-	public DataSymbolsSpecPanel(DataSymbolsPanel ivjDataSymbolsPanel) {
-		super();
-		this.ivjDataSymbolsPanel = ivjDataSymbolsPanel;
-		initialize();
-	}
-public Component getComponent() {
-	return this;
-}
-public DataSymbolsPanel getDataSymbolsPanel() {
-	return ivjDataSymbolsPanel;
-}
-public ImagePlaneManagerPanel getImagePlaneManagerPanel() {
+
+private ImagePlaneManagerPanel getImagePlaneManagerPanel() {
 	if (ivjImagePlaneManagerPanel == null) {
 		try {
 			ivjImagePlaneManagerPanel = new ImagePlaneManagerPanel();
@@ -173,8 +117,7 @@ private void handleException(Throwable exception) {
  * Initializes connections
  */
 private void initConnections() throws java.lang.Exception {	
-	getJButtonCreateDataSymbol().addActionListener(ivjEventHandler);
-	getJButtonDeleteDataSymbol().addActionListener(ivjEventHandler);
+//	getJButtonCreateDataSymbol().addActionListener(ivjEventHandler);
 	getJButtonViewFieldData().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 }
@@ -197,17 +140,10 @@ private void initialize() {
 		constraintsDataSymbolImagePanel.insets = new Insets(4, 4, 5, 4);
 		add(getImagePlaneManagerPanel(), constraintsDataSymbolImagePanel);
 
-		GridBagConstraints constraintsJButtonDeleteDataSymbol = new GridBagConstraints();
-		constraintsJButtonDeleteDataSymbol.gridx = 1; constraintsJButtonDeleteDataSymbol.gridy = 1;
-		constraintsJButtonDeleteDataSymbol.anchor = GridBagConstraints.WEST;
-		constraintsJButtonDeleteDataSymbol.weightx = 1.0;
-		constraintsJButtonDeleteDataSymbol.insets = new Insets(4, 4, 4, 5);
-		add(getJButtonDeleteDataSymbol(), constraintsJButtonDeleteDataSymbol);
-
-		GridBagConstraints constraintsJButtonNewDataSymbol = new GridBagConstraints();
-		constraintsJButtonNewDataSymbol.gridx = 0; constraintsJButtonNewDataSymbol.gridy = 1;
-		constraintsJButtonNewDataSymbol.insets = new Insets(4, 4, 4, 5);
-		add(getJButtonCreateDataSymbol(), constraintsJButtonNewDataSymbol);
+//		GridBagConstraints constraintsJButtonNewDataSymbol = new GridBagConstraints();
+//		constraintsJButtonNewDataSymbol.gridx = 0; constraintsJButtonNewDataSymbol.gridy = 1;
+//		constraintsJButtonNewDataSymbol.insets = new Insets(4, 4, 4, 5);
+//		add(getJButtonCreateDataSymbol(), constraintsJButtonNewDataSymbol);
 		
 		GridBagConstraints gbc_chckbxPointSpreadFunction = new GridBagConstraints();
 		gbc_chckbxPointSpreadFunction.insets = new Insets(0, 0, 0, 5);
@@ -241,31 +177,20 @@ private void initialize() {
 public static final String NEW_DATA_SYMBOL_LABEL = "Create New Data Symbol...";
 public static final String DELETE_DATA_SYMBOL_LABEL = "Delete Data Symbol";
 public static final String VIEW_FIELD_DATA_LABEL = "Open Field Data Manager";
-private javax.swing.JButton getJButtonCreateDataSymbol() {
-	if (ivjJButtonCreateDataSymbol == null) {
-		try {
-			ivjJButtonCreateDataSymbol = new javax.swing.JButton();
-			ivjJButtonCreateDataSymbol.setName("JButtonCreateDataSymbol");
-			ivjJButtonCreateDataSymbol.setText(NEW_DATA_SYMBOL_LABEL);
-			ivjJButtonCreateDataSymbol.setActionCommand(GuiConstants.ACTIONCMD_CREATE_DATA_SYMBOL);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonCreateDataSymbol;
-}private javax.swing.JButton getJButtonDeleteDataSymbol() {
-	if (ivjJButtonDeleteDataSymbol == null) {
-		try {
-			ivjJButtonDeleteDataSymbol = new javax.swing.JButton();
-			ivjJButtonDeleteDataSymbol.setName("JButtonDeleteDataSymbol");
-			ivjJButtonDeleteDataSymbol.setText(DELETE_DATA_SYMBOL_LABEL);
-			ivjJButtonDeleteDataSymbol.setActionCommand(GuiConstants.ACTIONCMD_DELETE_DATA_SYMBOL);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJButtonDeleteDataSymbol;
-}
+//private javax.swing.JButton getJButtonCreateDataSymbol() {
+//	if (ivjJButtonCreateDataSymbol == null) {
+//		try {
+//			ivjJButtonCreateDataSymbol = new javax.swing.JButton();
+//			ivjJButtonCreateDataSymbol.setName("JButtonCreateDataSymbol");
+//			ivjJButtonCreateDataSymbol.setText(NEW_DATA_SYMBOL_LABEL);
+//			ivjJButtonCreateDataSymbol.setActionCommand(GuiConstants.ACTIONCMD_CREATE_DATA_SYMBOL);
+//		} catch (java.lang.Throwable ivjExc) {
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjJButtonCreateDataSymbol;
+//}
+
 private javax.swing.JButton getJButtonViewFieldData() {
 	if (ivjJButtonViewFieldData == null) {
 		try {
@@ -280,62 +205,62 @@ private javax.swing.JButton getJButtonViewFieldData() {
 	return ivjJButtonViewFieldData;
 }
 
-public void createDataSymbol() throws Exception, UserCancelException{
-	final int VFRAP_DATASET = 0;
-	final int VFRAP_SPECIALS = 1;
-	final int ASSOCIATE_EXISTING_FD = 2;
-	final int POINT_SPREAD_FUNCTION = 3;
-	final int IMAGE_FILE = 4;
-	final int COPY_FROM_BIOMODEL = 5;
-	int[] dataSymbolSource = null;
-
-	String[][] choices = new String[][] {{ADD_VFRAP_DATASET_MENU},{ADD_VFRAP_SPECIALS_MENU},{ADD_ASSOCIATE_EXISTING_FD_MENU},
-			{ADD_PSF_MENU},{ADD_IMAGE_FILE_MENU},{ADD_COPY_FROM_BIOMODEL_MENU} };
-
-	dataSymbolSource = DialogUtils.showComponentOKCancelTableList(
-			getComponent(), 
-			"Choose a source for the data symbol.",
-			new String[] {"Available Sources:"}, 
-			choices, ListSelectionModel.SINGLE_SELECTION);
-
-	if(dataSymbolSource[0] == VFRAP_DATASET){
-		getDataSymbolsPanel().addVFrapOriginalImages();
-	}else if(dataSymbolSource[0] == VFRAP_SPECIALS){
-		getDataSymbolsPanel().addVFrapDerivedImages();
-	}else if(dataSymbolSource[0] == ASSOCIATE_EXISTING_FD){
-		Component requesterComponent = DataSymbolsSpecPanel.this;
-		DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
-		documentWindow.getTopLevelWindowManager().getRequestManager().showFieldDataWindow(new FieldDataWindowManager.DataSymbolCallBack() {
-			public void createDataSymbol(ExternalDataIdentifier dataSetID,
-					String fieldDataVarName, VariableType fieldDataVarType,
-					double fieldDataVarTime) {
-				
-				System.out.println(dataSetID+" "+fieldDataVarName+" "+fieldDataVarType+" "+fieldDataVarTime);
-				// ex: incomplete 51780592 danv(26766043)      fluor     Volume_VariableType     23.680419921875
-				
-	   	        DecimalFormat df = new  DecimalFormat("###000.00");		// max time interval we can display is about 11 days
-	   			String fluorName = fieldDataVarName + "_" + df.format(fieldDataVarTime).substring(0, df.format(fieldDataVarTime).indexOf(".")) + "s" + df.format(fieldDataVarTime).substring(1+df.format(fieldDataVarTime).indexOf(".")) + "_" + dataSetID.getName();
-// TODO:  symbol names may not be unique, must check for unicity and prompt the user
-				FieldDataSymbol dataSymbol = new FieldDataSymbol(fluorName, DataSymbolType.GENERIC_SYMBOL,
-						getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD,
-						dataSetID, 
-						fieldDataVarName, fieldDataVarType.getTypeName(), fieldDataVarTime);
-				getSimulationContext().getDataContext().addDataSymbol(dataSymbol);
-
-			}
-		});
-	}else if(dataSymbolSource[0] == POINT_SPREAD_FUNCTION){
-		PointSpreadFunctionManagement psfManager = new PointSpreadFunctionManagement(DataSymbolsSpecPanel.this,
-				getSimulationContext());
-		psfManager.importPointSpreadFunction();
-	}else if(dataSymbolSource[0] == IMAGE_FILE){
-		throw new RuntimeException("Option not yet implemented."); 
-	}else if(dataSymbolSource[0] == COPY_FROM_BIOMODEL){
-		throw new RuntimeException("Option not yet implemented."); 
-	}else{
-		throw new IllegalArgumentException("Error selecting data symbol, Unknown Source type " + dataSymbolSource[0]);
-	}
-}
+//public void createDataSymbol() throws Exception, UserCancelException{
+//	final int VFRAP_DATASET = 0;
+//	final int VFRAP_SPECIALS = 1;
+//	final int ASSOCIATE_EXISTING_FD = 2;
+//	final int POINT_SPREAD_FUNCTION = 3;
+//	final int IMAGE_FILE = 4;
+//	final int COPY_FROM_BIOMODEL = 5;
+//	int[] dataSymbolSource = null;
+//
+//	String[][] choices = new String[][] {{ADD_VFRAP_DATASET_MENU},{ADD_VFRAP_SPECIALS_MENU},{ADD_ASSOCIATE_EXISTING_FD_MENU},
+//			{ADD_PSF_MENU},{ADD_IMAGE_FILE_MENU},{ADD_COPY_FROM_BIOMODEL_MENU} };
+//
+//	dataSymbolSource = DialogUtils.showComponentOKCancelTableList(
+//			getComponent(), 
+//			"Choose a source for the data symbol.",
+//			new String[] {"Available Sources:"}, 
+//			choices, ListSelectionModel.SINGLE_SELECTION);
+//
+//	if(dataSymbolSource[0] == VFRAP_DATASET){
+//		getDataSymbolsPanel().addVFrapOriginalImages();
+//	}else if(dataSymbolSource[0] == VFRAP_SPECIALS){
+//		getDataSymbolsPanel().addVFrapDerivedImages();
+//	}else if(dataSymbolSource[0] == ASSOCIATE_EXISTING_FD){
+//		Component requesterComponent = DataSymbolsSpecPanel.this;
+//		DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requesterComponent, DocumentWindow.class);
+//		documentWindow.getTopLevelWindowManager().getRequestManager().showFieldDataWindow(new FieldDataWindowManager.DataSymbolCallBack() {
+//			public void createDataSymbol(ExternalDataIdentifier dataSetID,
+//					String fieldDataVarName, VariableType fieldDataVarType,
+//					double fieldDataVarTime) {
+//				
+//				System.out.println(dataSetID+" "+fieldDataVarName+" "+fieldDataVarType+" "+fieldDataVarTime);
+//				// ex: incomplete 51780592 danv(26766043)      fluor     Volume_VariableType     23.680419921875
+//				
+//	   	        DecimalFormat df = new  DecimalFormat("###000.00");		// max time interval we can display is about 11 days
+//	   			String fluorName = fieldDataVarName + "_" + df.format(fieldDataVarTime).substring(0, df.format(fieldDataVarTime).indexOf(".")) + "s" + df.format(fieldDataVarTime).substring(1+df.format(fieldDataVarTime).indexOf(".")) + "_" + dataSetID.getName();
+//// TODO:  symbol names may not be unique, must check for unicity and prompt the user
+//				FieldDataSymbol dataSymbol = new FieldDataSymbol(fluorName, DataSymbolType.GENERIC_SYMBOL,
+//						getSimulationContext().getDataContext(), VCUnitDefinition.UNIT_TBD,
+//						dataSetID, 
+//						fieldDataVarName, fieldDataVarType.getTypeName(), fieldDataVarTime);
+//				getSimulationContext().getDataContext().addDataSymbol(dataSymbol);
+//
+//			}
+//		});
+//	}else if(dataSymbolSource[0] == POINT_SPREAD_FUNCTION){
+//		PointSpreadFunctionManagement psfManager = new PointSpreadFunctionManagement(DataSymbolsSpecPanel.this,
+//				getSimulationContext());
+//		psfManager.importPointSpreadFunction();
+//	}else if(dataSymbolSource[0] == IMAGE_FILE){
+//		throw new RuntimeException("Option not yet implemented."); 
+//	}else if(dataSymbolSource[0] == COPY_FROM_BIOMODEL){
+//		throw new RuntimeException("Option not yet implemented."); 
+//	}else{
+//		throw new IllegalArgumentException("Error selecting data symbol, Unknown Source type " + dataSymbolSource[0]);
+//	}
+//}
 
 public void setDataSymbol(Object object) {
 	if(object == null) {
@@ -382,29 +307,18 @@ public void setDataSymbol(Object object) {
 	countW++;
 	countH++;
 }
-public DataSymbol getDataSymbol() {
+private DataSymbol getDataSymbol() {
 	return ivjCurrentSymbol;
 }
 
-
-	private void refireActionPerformed(ActionEvent e) {
-	//	TODO: whatever
-	}
-	public synchronized void addActionListener(ActionListener l) {
-		actionListener = AWTEventMulticaster.add(actionListener, l);
-	}
-	public synchronized void removeActionListener(ActionListener l) {
-		actionListener = AWTEventMulticaster.remove(actionListener, l);
-	}
-	
-	public void setSimulationContext(SimulationContext simulationContext) {
-		SimulationContext oldValue = fieldSimulationContext;
-		fieldSimulationContext = simulationContext;
-		firePropertyChange("simulationContext", oldValue, simulationContext);
-	}
-	public SimulationContext getSimulationContext() {
-		return fieldSimulationContext;
-	}
+//	public void setSimulationContext(SimulationContext simulationContext) {
+//		SimulationContext oldValue = fieldSimulationContext;
+//		fieldSimulationContext = simulationContext;
+//		firePropertyChange("simulationContext", oldValue, simulationContext);
+//	}
+//	public SimulationContext getSimulationContext() {
+//		return fieldSimulationContext;
+//	}
 
 	private JCheckBox getChckbxPointSpreadFunction() {
 		if (chckbxPointSpreadFunction == null) {
@@ -420,6 +334,16 @@ public DataSymbol getDataSymbol() {
 		} else if(getDataSymbol().getDataSymbolType().equals(DataSymbolType.POINT_SPREAD_FUNCTION)) {
 			getDataSymbol().setDataSymbolType(DataSymbolType.GENERIC_SYMBOL);
 		}
+	}
+	
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+		DataSymbol dataSymbol = null;
+		if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof DataSymbol) {
+			dataSymbol = (DataSymbol) selectedObjects[0];
+		}
+		setDataSymbol(dataSymbol);	
+		
 	}
 
 }

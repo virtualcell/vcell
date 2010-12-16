@@ -52,7 +52,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
-public class EventPanel extends JPanel {
+public class EventPanel extends BioModelEditorSubPanel {
 		// for trigger and delay 
 		private JPanel labels_n_textfields_Panel = null;
 		private JLabel triggerLabel = null;
@@ -791,5 +791,14 @@ public class EventPanel extends JPanel {
 		}
 		super.setEnabled(enabled);
 		BeanUtils.enableComponents(this, enabled);
+	}
+
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+		BioEvent bioEvent = null;
+		if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof BioEvent) {
+			bioEvent = (BioEvent) selectedObjects[0];
+		}
+		setBioEvent(bioEvent);			
 	}
 }

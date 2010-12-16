@@ -215,41 +215,45 @@ public class BioModelEditorModelPanel extends BioModelEditorSubPanel implements 
 	public void onSelectedObjectsChange(Object[] selectedObjects) {
 		reactionCartoonEditorPanel.getReactionCartoon().setSelectedObjects(selectedObjects);
 		cartoonEditorPanel.getStructureCartoon().setSelectedObjects(selectedObjects);
-		structuresTable.clearSelection();
-		reactionsTable.clearSelection();
-		speciesTable.clearSelection();
-		parametersTable.clearSelection();
-		for (Object object : selectedObjects) {
-			if (object instanceof SpeciesContext) {
-				for (int i = 0; i < speciesTableModel.getDataSize(); i ++) {
-					if (speciesTableModel.getValueAt(i) == object) {
-						speciesTable.addRowSelectionInterval(i, i);
-						break;
-					}
-				}
-			} else 	if (object instanceof Structure) {
-				for (int i = 0; i < structureTableModel.getDataSize(); i ++) {
-					if (structureTableModel.getValueAt(i) == object) {
-						structuresTable.addRowSelectionInterval(i, i);
-						break;
-					}
-				}
-			} else 	if (object instanceof ReactionStep) {
-				for (int i = 0; i < reactionTableModel.getDataSize(); i ++) {
-					if (reactionTableModel.getValueAt(i) == object) {
-						reactionsTable.addRowSelectionInterval(i, i);
-						break;
-					}
-				}
-			} else 	if (object instanceof Parameter) {
-				for (int i = 0; i < parametersTableModel.getDataSize(); i ++) {
-					if (parametersTableModel.getValueAt(i) == object) {
-						parametersTable.addRowSelectionInterval(i, i);
-						break;
-					}
-				}
-			}
-		} 
+		setTableSelections(selectedObjects, structuresTable, structureTableModel);
+		setTableSelections(selectedObjects, reactionsTable, reactionTableModel);
+		setTableSelections(selectedObjects, speciesTable, speciesTableModel);
+		setTableSelections(selectedObjects, parametersTable, parametersTableModel);		
+//		structuresTable.clearSelection();
+//		reactionsTable.clearSelection();
+//		speciesTable.clearSelection();
+//		parametersTable.clearSelection();
+//		for (Object object : selectedObjects) {
+//			if (object instanceof SpeciesContext) {
+//				for (int i = 0; i < speciesTableModel.getDataSize(); i ++) {
+//					if (speciesTableModel.getValueAt(i) == object) {
+//						speciesTable.addRowSelectionInterval(i, i);
+//						break;
+//					}
+//				}
+//			} else 	if (object instanceof Structure) {
+//				for (int i = 0; i < structureTableModel.getDataSize(); i ++) {
+//					if (structureTableModel.getValueAt(i) == object) {
+//						structuresTable.addRowSelectionInterval(i, i);
+//						break;
+//					}
+//				}
+//			} else 	if (object instanceof ReactionStep) {
+//				for (int i = 0; i < reactionTableModel.getDataSize(); i ++) {
+//					if (reactionTableModel.getValueAt(i) == object) {
+//						reactionsTable.addRowSelectionInterval(i, i);
+//						break;
+//					}
+//				}
+//			} else 	if (object instanceof Parameter) {
+//				for (int i = 0; i < parametersTableModel.getDataSize(); i ++) {
+//					if (parametersTableModel.getValueAt(i) == object) {
+//						parametersTable.addRowSelectionInterval(i, i);
+//						break;
+//					}
+//				}
+//			}
+//		} 
 	}
 
 	private void initialize(){

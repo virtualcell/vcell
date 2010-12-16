@@ -7,11 +7,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 
-import javax.swing.DefaultListSelectionModel;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
@@ -21,10 +19,10 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable.CheckOption;
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.gui.KineticsTypeTemplatePanel;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -36,10 +34,8 @@ import cbit.vcell.model.gui.KineticsTypeTemplatePanel;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class ReactionSpecsPanel extends javax.swing.JPanel {
+public class ReactionSpecsPanel extends BioModelEditorSubPanel {
 	public static final String PARAMETER_NAME_SELECTED_REACTION_STEP = "selectedReactionStep";
-	private JSplitPane outerSplitPane;
-	private KineticsTypeTemplatePanel kieKineticsTypeTemplatePanel = null;
 	private JSortTable ivjScrollPaneTable = null;
 	private ReactionSpecsTableModel ivjReactionSpecsTableModel = null;
 	private SimulationContext fieldSimulationContext = null;
@@ -64,9 +60,8 @@ class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.
 			if (e.getValueIsAdjusting()) {
 				return;
 			}
-			if (e.getSource() instanceof DefaultListSelectionModel) {
-//				System.out.println("ReactionSpecsPanel:  valueChanged()");
-				tableSelectionChanged(e);
+			if (e.getSource() == getScrollPaneTable().getSelectionModel()) {
+				setSelectedObjectsFromTable(getScrollPaneTable(), getReactionSpecsTableModel());
 			}
 		}
 		public void actionPerformed(ActionEvent e) {
@@ -103,7 +98,7 @@ private void initialize() {
 		setName("ReactionSpecsPanel");
 		setLayout(new BorderLayout());
 		//setSize(456, 539);
-		add(getOuterSplitPane(), BorderLayout.CENTER);
+		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -210,30 +205,6 @@ private JLabel getEnabledLabel() {
 		enabledLabel.setFont(enabledLabel.getFont().deriveFont(Font.BOLD));
 	}
 	return enabledLabel;
-}
-
-
-private JSplitPane getOuterSplitPane() {
-	if (outerSplitPane == null) {
-		outerSplitPane = new JSplitPane();
-		outerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		outerSplitPane.setDividerLocation(350);
-		outerSplitPane.setTopComponent(getScrollPaneTable().getEnclosingScrollPane());
-		outerSplitPane.setBottomComponent(getKineticsTypeTemplatePanel());	// reaction kinetics editor
-	}
-	return outerSplitPane;
-}
-
-private KineticsTypeTemplatePanel getKineticsTypeTemplatePanel() {
-	if (kieKineticsTypeTemplatePanel == null) {
-		try {
-			kieKineticsTypeTemplatePanel = new KineticsTypeTemplatePanel(false);
-			kieKineticsTypeTemplatePanel.setName("SimpleReactionPanel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return kieKineticsTypeTemplatePanel;
 }
 
 /**
@@ -366,26 +337,7 @@ private void connPtoP5SetTarget() {
 		handleException(ivjExc);
 	}
 }
-/**
- */
-private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		ReactionSpec newValue = null;
-		int row = getScrollPaneTable().getSelectedRow();
-		if((row >= 0)) {
-			newValue = getReactionSpecsTableModel().getValueAt(row);
-		}
-		if (newValue == null) {
-			getKineticsTypeTemplatePanel().setReactionStep(null);
-		} else {
-			getKineticsTypeTemplatePanel().setReactionStep(newValue.getReactionStep());
-		}
-		outerSplitPane.setDividerLocation(350);
-		firePropertyChange(PARAMETER_NAME_SELECTED_REACTION_STEP, null, newValue);
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
+
 /**
  * Return the selectionModel1 property value.
  */
@@ -510,22 +462,6 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP5SetTarget();
 }
 
-public void setScrollPaneTableCurrentRow(ReactionSpec selection) {
-	if (selection == null) {
-		getScrollPaneTable().clearSelection();
-		return;
-	}
-
-	int numRows = getScrollPaneTable().getRowCount();
-	for(int i=0; i<numRows; i++) {
-		ReactionSpec valueAt = getReactionSpecsTableModel().getValueAt(i);
-		if(valueAt == selection) {
-			getScrollPaneTable().setRowSelectionInterval(i, i);
-			break;
-		}
-	}
-}
-
 /**
  * main entrypoint - starts the part when it is run as an application
  * @param args java.lang.String[]
@@ -587,6 +523,11 @@ private void setsimulationContext1(SimulationContext newValue) {
 	};
 	// user code begin {3}
 	// user code end
+}
+
+@Override
+protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	setTableSelections(selectedObjects, getScrollPaneTable(), getReactionSpecsTableModel());
 }
 
 }

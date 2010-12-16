@@ -3,8 +3,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -18,9 +16,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellEditor;
@@ -34,8 +30,7 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor.BioModelEditorSelection;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.Geometry;
@@ -51,18 +46,14 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public class SimulationListPanel extends JPanel {
-	private JPanel buttonsAndSimSummarypanel;
+public class SimulationListPanel extends BioModelEditorSubPanel {
 	private OutputFunctionsPanel outputFunctionsPanel;
-	private JScrollPane scrollPane;
-	private JSplitPane innerSplitPane;
 	private JPanel ivjButtonPanel = null;
 	private JButton ivjEditButton = null;
 	private JButton ivjNewButton = null;
@@ -73,7 +64,6 @@ public class SimulationListPanel extends JPanel {
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
 	private SimulationWorkspace fieldSimulationWorkspace = null;
-	private SimulationSummaryPanel ivjSimulationSummaryPanel1 = null;
 	private DefaultCellEditor ivjcellEditor1 = null;
 	private java.awt.Component ivjComponent1 = null;
 	private JButton moreActionsButton = null;
@@ -81,7 +71,6 @@ public class SimulationListPanel extends JPanel {
 	private JMenuItem menuItemCopy = new JMenuItem("Copy");
 	private JMenuItem menuItemStop = new JMenuItem("Stop");
 	private JMenuItem menuItemStatusDetails = new JMenuItem("Status Details...");
-	private BioModelEditorSelection bioModelEditorSelection = null;
 	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, 
 		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, MouseListener {
@@ -173,16 +162,12 @@ private void connEtoC11(java.awt.event.FocusEvent arg1) {
  */
 private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 	try {
-		this.refreshButtonsAndSummary();
+		int[] selections = getScrollPaneTable().getSelectedRows();
+		refreshButtonsLax(selections);
+		setSelectedObjectsFromTable(getScrollPaneTable(), getSimulationListTableModel1());
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-}
-
-private void setBioModelEditorSelection(BioModelEditorSelection newValue) {
-	BioModelEditorSelection oldValue = bioModelEditorSelection;
-	bioModelEditorSelection = newValue;
-	firePropertyChange(BioModelEditor.PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION, oldValue, newValue);
 }
 
 /**
@@ -496,23 +481,6 @@ private SimulationListTableModel getSimulationListTableModel1() {
 	return ivjSimulationListTableModel1;
 }
 
-/**
- * Return the SimulationSummaryPanel1 property value.
- * @return cbit.vcell.solver.ode.gui.SimulationSummaryPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private SimulationSummaryPanel getSimulationSummaryPanel1() {
-	if (ivjSimulationSummaryPanel1 == null) {
-		try {
-			ivjSimulationSummaryPanel1 = new SimulationSummaryPanel();
-			ivjSimulationSummaryPanel1.setName("SimulationSummaryPanel1");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSimulationSummaryPanel1;
-}
-
 private OutputFunctionsPanel getOutputFunctionsPanel() {
 	if (outputFunctionsPanel == null) {
 		try {
@@ -582,7 +550,8 @@ private void initialize() {
 		setSize(750, 560);
 						
 		setLayout(new BorderLayout());
-		add(getInnerSplitPane(), BorderLayout.CENTER);	
+		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
+		add(getButtonPanel(), BorderLayout.SOUTH);
 		
 		initConnections();
 		getScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -639,22 +608,6 @@ private void newSimulation() {
 	};
 	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
 }
-
-
-/**
- * Comment
- */
-private void refreshButtonsAndSummary() {
-	int[] selections = getScrollPaneTable().getSelectedRows();
-	refreshButtonsLax(selections);
-	Simulation newValue = null;
-	if (selections.length == 1) {
-		newValue = getSimulationWorkspace().getSimulations()[selections[0]];
-	}
-	getSimulationSummaryPanel1().setSimulation(newValue);	
-	setBioModelEditorSelection(new BioModelEditorSelection(getSimulationWorkspace().getSimulationOwner(), newValue));	
-}
-
 
 /**
  * Comment
@@ -968,57 +921,6 @@ private void stopSimulations() {
 	Simulation[] toStop = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().stopSimulations(toStop);
 }
-
-	/**
-	 * @return
-	 */
-	private JSplitPane getInnerSplitPane() {
-		if (innerSplitPane == null) {
-			innerSplitPane = new JSplitPane();
-			innerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-			innerSplitPane.setLeftComponent(getScrollPaneTable().getEnclosingScrollPane());
-			innerSplitPane.setRightComponent(getButtonsAndSimSummarypanel());
-			innerSplitPane.setDividerLocation(180);
-		}
-		return innerSplitPane;
-	}
-
-	/**
-	 * @return
-	 */
-	private JScrollPane getScrollPane() {
-		if (scrollPane == null) {
-			scrollPane = new JScrollPane();
-			scrollPane.setViewportView(getSimulationSummaryPanel1());
-		}
-		return scrollPane;
-	}
-	
-	/**
-	 * @return
-	 */
-	private JPanel getButtonsAndSimSummarypanel() {
-		if (buttonsAndSimSummarypanel == null) {
-			buttonsAndSimSummarypanel = new JPanel();
-			buttonsAndSimSummarypanel.setLayout(new GridBagLayout());
-			
-			GridBagConstraints gridBagConstraints = new GridBagConstraints();
-			gridBagConstraints.fill = GridBagConstraints.BOTH;
-			gridBagConstraints.gridx = 0;
-			gridBagConstraints.gridy = 0;
-			gridBagConstraints.weightx = 1.0;
-			buttonsAndSimSummarypanel.add(getButtonPanel(), gridBagConstraints);
-			
-			gridBagConstraints = new GridBagConstraints();
-			gridBagConstraints.fill = GridBagConstraints.BOTH;
-			gridBagConstraints.gridx = 0;
-			gridBagConstraints.gridy = 1;
-			gridBagConstraints.weightx = 1.0;
-			gridBagConstraints.weighty = 1.0;
-			buttonsAndSimSummarypanel.add(getScrollPane(), gridBagConstraints);
-		}
-		return buttonsAndSimSummarypanel;
-	}
 	
 	public void select(Simulation selection) {
 		if (selection == null) {
@@ -1058,5 +960,11 @@ private void stopSimulations() {
 			}
 		}
 		return moreActionsButton;
+	}
+
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+		setTableSelections(selectedObjects, getScrollPaneTable(), getSimulationListTableModel1());
+		
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"

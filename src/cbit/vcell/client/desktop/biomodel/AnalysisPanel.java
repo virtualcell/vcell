@@ -16,7 +16,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor.BioModelEditorSelection;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -26,9 +25,10 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.gui.AnalysisTaskComboBoxModel;
 import cbit.vcell.modelopt.gui.OptTestPanel;
 import cbit.vcell.opt.solvers.OptimizationService;
+import cbit.vcell.solver.Simulation;
 
 @SuppressWarnings("serial")
-public class AnalysisPanel extends JPanel {
+public class AnalysisPanel extends BioModelEditorSubPanel {
 
 	private static final String PROPERTY_NAME_SIMULATION_CONTEXT = "simulationContext";
 	private JPanel taskTablePanel;
@@ -40,7 +40,6 @@ public class AnalysisPanel extends JPanel {
 	private JButton ivjCopyButton;
 	private JComboBox ivjAnalysisTaskComboBox = null;	
 	private AnalysisTaskComboBoxModel ivjAnalysisTaskComboBoxModel = null;
-	private BioModelEditorSelection bioModelEditorSelection = null;
 	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -247,14 +246,7 @@ public class AnalysisPanel extends JPanel {
 	private void analysisTaskComboBox_ActionPerformed() {
 		ParameterEstimationTask selectedItem = (ParameterEstimationTask)getAnalysisTaskComboBox().getSelectedItem();
 		getOptTestPanel().setParameterEstimationTask(selectedItem);
-		setBioModelEditorSelection(new BioModelEditorSelection(simulationContext, selectedItem));
-		return;
-	}
-	
-	private final void setBioModelEditorSelection(BioModelEditorSelection newValue) {
-		BioModelEditorSelection oldValue = this.bioModelEditorSelection;
-		this.bioModelEditorSelection = newValue;
-		firePropertyChange(BioModelEditor.PROPERTY_NAME_BIOMODEL_EDITOR_SELECTION, oldValue, newValue);
+		setSelectedObjects(new Object[] {selectedItem});
 	}
 	
 	private void refreshAnalysisTaskEnables() {
@@ -278,7 +270,12 @@ public class AnalysisPanel extends JPanel {
 		getOptTestPanel().setUserPreferences(arg1);
 	}
 
-	public void select(ParameterEstimationTask parameterEstimationTask) {
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+		ParameterEstimationTask parameterEstimationTask = null;
+		if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof ParameterEstimationTask) {
+			parameterEstimationTask = (ParameterEstimationTask) selectedObjects[0];
+		}
 		getAnalysisTaskComboBox().setSelectedItem(parameterEstimationTask);
 	}
 }
