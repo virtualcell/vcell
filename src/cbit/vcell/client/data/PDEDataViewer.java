@@ -57,6 +57,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.VisitProcess;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TSJobResultsSpaceStats;
@@ -145,7 +146,7 @@ public class PDEDataViewer extends DataViewer implements DataJobSender {
 	public static String StringKey_timeSeriesJobException =  "timeSeriesJobException";
 	public static String StringKey_timeSeriesJobSpec =  "timeSeriesJobSpec";
 	
-	public Process visitTestProcess;
+	public VisitProcess visitProcess;
 	
 	public static class TimeSeriesDataJobListener implements DataJobListener {
 		private ClientTaskStatusSupport clientTaskStatusSupport = null;
@@ -1724,7 +1725,18 @@ private JButton getJButtonVisit(){
 
 					String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
 					String userName = getSimulation().getVersion().getOwner().getName();
+					visitProcess = new VisitProcess();
+					VisitControlPanel visitControlPanel= new VisitControlPanel();
+					visitControlPanel.init(getPdeDataContext().getDataIdentifier(),visitProcess);
 					
+					showComponentInFrame(visitControlPanel, "Visit Control Panel");
+					
+					String s = "visit.OpenDatabase(\""+ "/share/apps/vcell/users"+File.separator+userName+"/"+simlogname+"\")\n";
+					System.out.println("About to open " + s);
+					visitProcess.sendCommandAndNoteResponse(s);
+					String s2=getPdeDataContext().getVariableName();
+					visitProcess.sendCommandAndNoteResponse("visit.AddPlot(\"Pseudocolor\", \""+s2+"\")\n");
+					visitProcess.sendCommandAndNoteResponse("visit.DrawPlots()\n");
 					
 					 //JFileChooser chooser = new JFileChooser();
 					// chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY );
@@ -2859,7 +2871,7 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 			}
 			MediaTrack videoTrack = new MediaTrack(chunks);
 			MediaMovie newMovie = new MediaMovie(videoTrack, videoTrack.getDuration(), timeScale);
-			newMovie.addUserDataEntry(new UserDataEntry("cpy", "©" + (new GregorianCalendar()).get(Calendar.YEAR) + ", UCHC"));
+			newMovie.addUserDataEntry(new UserDataEntry("cpy", "ï¿½" + (new GregorianCalendar()).get(Calendar.YEAR) + ", UCHC"));
 			newMovie.addUserDataEntry(new UserDataEntry("des", "Dataset name: " + movieVCDataIdentifier.getID()));
 			newMovie.addUserDataEntry(new UserDataEntry("cmt", "Time range: " + timePoints[beginTimeIndex] + " - " + timePoints[endTimeIndex]));
 			for (int k = 0; k < varNames.length; k ++) {
