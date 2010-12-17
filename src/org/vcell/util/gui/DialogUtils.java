@@ -452,19 +452,38 @@ public static class  TableListResult{
 	public int[] selectedTableRows;
 }
 public static TableListResult showComponentOptionsTableList(final Component requester,final String title,
-		final String[] columnNames,final Object[][] rowData,final Integer listSelectionModel_SelectMode,
+		final String[] columnNames,final Object[][] rowDataOrig,final Integer listSelectionModel_SelectMode,
 		final ListSelectionListener listSelectionListener,
 		final String[] options,final String initOption,final Comparator<Object> rowSortComparator)
 			throws UserCancelException{
 	
+//	//Create hidden column with original row index so original row index can
+//	//be returned for user selections even if rows are sorted
+//	final int hiddenColumnIndex = rowDataOrig[0].length;
+//	final Object[][] rowDataHiddenIndex = new Object[rowDataOrig.length][hiddenColumnIndex+1];
+//	for (int i = 0; i < rowDataHiddenIndex.length; i++) {
+//		for (int j = 0; j < rowDataOrig[i].length; j++) {
+//			rowDataHiddenIndex[i][j] = rowDataOrig[i][j];
+//		}
+//		rowDataHiddenIndex[i][hiddenColumnIndex] = i;
+//	}
 	return (TableListResult)
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
-			final Integer[] sortedRowReference = new Integer[rowData.length];
-			for (int i = 0; i < sortedRowReference.length; i++) {
-				sortedRowReference[i] = i;
-			}
 			@SuppressWarnings("serial")
+			//Create hidden column with original row index so original row index can
+			//be returned for user selections even if rows are sorted
+			int hiddenColumnIndex = rowDataOrig[0].length;
+			Object[][] rowDataHiddenIndex = rowDataOrig;
+			if(rowSortComparator != null){
+				rowDataHiddenIndex = new Object[rowDataOrig.length][hiddenColumnIndex+1];
+				for (int i = 0; i < rowDataHiddenIndex.length; i++) {
+					for (int j = 0; j < rowDataOrig[i].length; j++) {
+						rowDataHiddenIndex[i][j] = rowDataOrig[i][j];
+					}
+					rowDataHiddenIndex[i][hiddenColumnIndex] = i;
+				}
+			}
 			DefaultSortTableModel<Object[]> tableModel = new DefaultSortTableModel<Object[]>(columnNames) {
 				@Override
 				public boolean isSortable(int col) {
@@ -490,7 +509,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 					};
 				}
 			};
-			tableModel.setData(Arrays.asList(rowData));
+			tableModel.setData(Arrays.asList(rowDataHiddenIndex));
 			final JTable table = new JSortTable();
 			table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 			table.setModel(tableModel);
@@ -540,9 +559,10 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 				tableListResult.selectedOption = showOptionsDialog(requester, scrollPane, JOptionPane.QUESTION_MESSAGE, options, initOption,tableListOKEnabler,title);
 				tableListResult.selectedTableRows = table.getSelectedRows();
 			}
-			if(rowSortComparator != null && tableListResult != null){
+			if(rowSortComparator != null){
+				//return the index of the original unsorted object array that corresponds to the user row selections
 				for (int i = 0; i < tableListResult.selectedTableRows.length; i++) {
-					tableListResult.selectedTableRows[i] = sortedRowReference[tableListResult.selectedTableRows[i]];
+					tableListResult.selectedTableRows[i] = (Integer)(tableModel.getValueAt(tableListResult.selectedTableRows[i])[hiddenColumnIndex]);
 				}
 			}
 			return tableListResult;
