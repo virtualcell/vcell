@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+
 
 
 public class VisitProcess {
@@ -14,6 +17,10 @@ public class VisitProcess {
 	public static BufferedOutputStream myBOS;
 	public static StreamReader myNormalOutput;
 	public static StreamReader myErrorOutput;
+	private static JTextArea jTextArea;
+	public static void setJTextArea(JTextArea jTextArea){
+		VisitProcess.jTextArea=jTextArea;
+	}
 	
 	public static class ProcessInfo{
 		public StreamReader normalOutput;
@@ -47,6 +54,19 @@ public class VisitProcess {
 				int c;
 				while ((c = is.read()) != -1){
 					stringBuilder.append((char)c);
+					if (stringBuilder.toString().endsWith("\n")) {
+					    if (jTextArea!=null){
+					    	final String textToAppend = stringBuilder.toString();
+					    	System.out.println(stringBuilder.toString());
+					    	stringBuilder.delete(0, stringBuilder.length());
+					    	SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+									jTextArea.append(textToAppend);}
+							});
+					    	
+					    }
+						//stringBuilder = new StringBuilder();
+					} 
 					//System.out.print((char)c);
 				}
 			} catch (Exception e) {
@@ -78,10 +98,20 @@ public class VisitProcess {
 		return new ProcessInfo(normalOutput, errorOutput, exportProcess);
 
 	}
+	
+	public static void openDatabaseFile(String dbFileFullPath){
+		sendVisitCommand("visit.OpenDatabase(\""+dbFileFullPath+"\")\n");
+	}
+	
+	public static Boolean openMDServer(String machine, String pw){
+		
+		return false;
+	}
 
 	
 	public static void sendVisitCommand(String visitCmd){
 		try {
+			
 			myBOS.write(visitCmd.getBytes());
 			myBOS.flush();
 			
@@ -101,17 +131,31 @@ public class VisitProcess {
 		return(myProcessInfo.normalOutput.getString());
 	}
 	
-	public static void sendCommandAndNoteResponse(String visitCmd){
+	public static void sendCommandAndNoteResponse(final String visitCmd){
+		//System.out.println(visitCmd);
+		 if (jTextArea!=null){
+			 if (!SwingUtilities.isEventDispatchThread()) {
+		    	SwingUtilities.invokeLater(
+		    			new Runnable() {
+		    				public void run() {
+		    					jTextArea.append(visitCmd);
+		    				}
+		    			}
+		    	);
+		    }else{
+				jTextArea.append(visitCmd);
+		    }
+		 }
 		sendVisitCommand(visitCmd);
 		waitASec();
-		System.out.println(myProcessInfo.normalOutput.getString());
-		System.out.println(myProcessInfo.errorOutput.getString());
+		//System.out.println(myProcessInfo.normalOutput.getString());
+		//System.out.println(myProcessInfo.errorOutput.getString());
 		return;
 	}
 	
 	public static void waitASec(){
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(10);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -120,16 +164,28 @@ public class VisitProcess {
 	
 	public static void waitNSecs(int n){for (int i=1;i<n;i++) {waitASec();}}
 	
-	/*public VisitProcess() {
-		String execCommand = "python";
-		 try {
+	public VisitProcess() {
+		String execCommand = "python -i";
+		//String execCommand = "/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/bin/cli"; 
+		try {
 			myProcessInfo = VisitProcess.spawnProcess(execCommand);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		myBOS = new BufferedOutputStream(myProcessInfo.getExecProcess().getOutputStream());
-	}*/
+ 
+		waitASec();
+		sendCommandAndNoteResponse("import sys\n");
+		sendCommandAndNoteResponse("import os\n");
+		sendCommandAndNoteResponse("sys.path.append(\"/home/VCELL/eboyce/visit2_1_1/2.1.1/linux-x86_64/lib/\")\n");
+		sendCommandAndNoteResponse("import visit\n");
+		sendCommandAndNoteResponse("from visit import *\n");
+		//sendCommandAndNoteResponse("visit.AddArgument(\"-gui\"\n");
+		waitASec();
+		sendCommandAndNoteResponse("Launch()\n");	
+		waitNSecs(10);
+		sendCommandAndNoteResponse("isCLI = True\n");
+	}
 
 	public static void main(String[] args){
 
@@ -156,7 +212,8 @@ public class VisitProcess {
 		waitNSecs(10);
 		sendCommandAndNoteResponse("isCLI = True\n");
 		waitASec();
-		sendCommandAndNoteResponse("visit.OpenDatabase(\"/home/VCELL/eboyce/visit2_1_1/data/multi_rect3d.silo\")\n");
+		sendCommandAndNoteResponse("visit.OpenMDServer(\"10.84.11.40\")\n");
+		sendCommandAndNoteResponse("visit.OpenDatabase(\"10.84.11.40:/home/VCELL/eboyce/visit2_1_1/data/multi_rect3d.silo\")\n");
 		waitNSecs(4);
 		sendCommandAndNoteResponse("visit.AddPlot(\"Pseudocolor\", \"u\")\n");
 		waitASec();
