@@ -26,8 +26,8 @@ public class VisitControlPanel extends JPanel {
 	private VisitProcess visitProcess;
     private JLabel lblDataset = new JLabel("Database name:");
     private JTextArea jTextArea = new JTextArea();
-    private String[] commandHistory = new String[2000];
-    private int commandIndex = 0;
+    private String[] commandHistory = new String[2000]; //TODO: replace this with a more intelligent container
+    private int commandIndex, maxCommandIndex= 0;
 	/**
 	 * Create the panel.
 	 */
@@ -87,6 +87,10 @@ public class VisitControlPanel extends JPanel {
 					textField.setText(commandHistory[commandIndex-1]);
 					commandIndex--;
 				}
+				if ((k.getKeyCode() == KeyEvent.VK_DOWN) & (commandIndex<maxCommandIndex)){
+					textField.setText(commandHistory[commandIndex+1]);
+					commandIndex++;
+				}
 			}
 			public void keyReleased(KeyEvent k){}
 			public void keyTyped(KeyEvent k){
@@ -123,6 +127,7 @@ public class VisitControlPanel extends JPanel {
 				
 				commandHistory[commandIndex]=textField.getText();
 				commandIndex++;
+				if (commandIndex>maxCommandIndex) maxCommandIndex++;
 				//System.out.println("commandIndex is now: "+ String.valueOf(commandIndex));
 				textField.setText("");
 			    
