@@ -104,7 +104,7 @@ private void initialize() {
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		gbc.anchor = GridBagConstraints.PAGE_START;
+		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
 		add(new JLabel("Annotation"), gbc);
 
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);

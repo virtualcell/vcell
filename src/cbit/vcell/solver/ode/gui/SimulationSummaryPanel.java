@@ -3,6 +3,8 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -14,6 +16,7 @@ import java.beans.PropertyVetoException;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -1091,17 +1094,16 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		
 		// 0
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		panel.add(new JLabel("Simulation Summary: "));
+		panel.add(getJLabel1());
 		java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 		constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
-		constraintsJLabel1.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(new JLabel("Simulation Summary:"), constraintsJLabel1);
-
-		constraintsJLabel1 = new java.awt.GridBagConstraints();
-		constraintsJLabel1.gridx = 1; constraintsJLabel1.gridy = 0;
 		constraintsJLabel1.anchor = java.awt.GridBagConstraints.LINE_START;
 		constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabel1(), constraintsJLabel1);
+		constraintsJLabel1.gridwidth = 7;
+		constraintsJLabel1.fill = GridBagConstraints.HORIZONTAL;
+		add(panel, constraintsJLabel1);
 
 		// 1
 		java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();

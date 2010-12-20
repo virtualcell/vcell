@@ -10,8 +10,8 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -25,13 +25,15 @@ import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
 import org.xml.sax.SAXParseException;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.registry.OpenRegistry;
+import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.biomodel.meta.registry.Registry;
 import cbit.vcell.biomodel.meta.registry.VCellThingFactory;
-import cbit.vcell.biomodel.meta.registry.OpenRegistry.OpenEntry;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.xml.XMLTags;
+
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFWriter;
@@ -305,6 +307,11 @@ public class VCMetaData implements Serializable {
 		StringWriter sw = new StringWriter();
 		writer.write(rdfBox.getData(), sw, getBaseURI());
 		return sw.getBuffer().toString();
+	}
+
+	public void addPathwayModel(BioModel bioModel, Model model) {
+		getSBbox().getRdf().add(model);
+		fireAnnotationEventListener(new AnnotationEvent(bioModel));
 	}
 
 }

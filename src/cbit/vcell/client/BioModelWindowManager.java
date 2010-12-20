@@ -321,16 +321,17 @@ private void createBioModelFrame() {
 	getBioModelEditor().setBioModelWindowManager(this);
 	getBioModelEditor().setBioModel(getBioModel());
 	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("BioModel", true, false, true, true);
-	if (editorFrame.getUI() instanceof BasicInternalFrameUI) {
-		((BasicInternalFrameUI)editorFrame.getUI()).setNorthPane(null);
-	} 
 	editorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/bioModel_16x16.gif")));	
 	editorFrame.add(bioModelEditor, BorderLayout.CENTER);
 	getJDesktopPane().add(editorFrame);
-	editorFrame.setSize(850, 680);
 	editorFrame.setMinimumSize(new Dimension(400, 300));
 	editorFrame.setLocation(0,0);
 	editorFrame.show();
+	try {
+		editorFrame.setMaximum(true);
+	} catch (PropertyVetoException e) {
+		e.printStackTrace();
+	}
 }
 
 

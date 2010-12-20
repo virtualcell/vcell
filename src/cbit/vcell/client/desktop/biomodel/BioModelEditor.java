@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -28,7 +27,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
@@ -38,6 +36,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.vcell.sybil.util.http.pathwaycommons.search.Pathway;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
@@ -48,6 +47,7 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorTreeModel.BioModelEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorTreeModel.BioModelEditorTreeFolderNode;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
@@ -85,7 +85,6 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.KineticsTypeTemplatePanel;
-import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.gui.OptTestPanel;
 import cbit.vcell.opt.solvers.OptimizationService;
 import cbit.vcell.solver.Simulation;
@@ -98,6 +97,7 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  */
 @SuppressWarnings("serial")
 public class BioModelEditor extends JPanel {
+	private static final double DEFAULT_DIVIDER_LOCATION = 0.7;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private BioModelWindowManager bioModelWindowManager = null;
 	private BioModel fieldBioModel = new BioModel(null);
@@ -134,28 +134,40 @@ public class BioModelEditor extends JPanel {
 	private SelectionManager selectionManager = new SelectionManager();
 	private DatabaseWindowPanel databaseWindowPanel = null;
 	private BioModelsNetPanel bioModelsNetPanel = null;
-	private JTabbedPane tabbedPaneBottom = null;
+	private JTabbedPane leftTabbedPaneBottom = null;
+	private JTabbedPane rightBottomTabbedPane = null;
 		
 	private BioModelsNetPropertiesPanel bioModelsNetPropertiesPanel = null;
+	private BioModelEditorPathwayCommonsPanel bioModelEditorPathwayCommonsPanel;
 	
 	private class AnnotationEditorPanel extends JPanel {
 		private JTextArea textArea = null;
 		public AnnotationEditorPanel() {
-			
+			setBackground(Color.WHITE);
 			textArea = new JTextArea("", 10, 45);
 			textArea.setEditable(true);
 			textArea.setLineWrap(true);
 			textArea.setWrapStyleWord(true);
 
-			JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 10));
-			JLabel label = new JLabel("Edit Notes: ");
-			label.setVerticalAlignment(SwingConstants.TOP);
-			label.setAlignmentY(TOP_ALIGNMENT);
-			panel.add(label);
-			panel.add(new JScrollPane(textArea));
+			setLayout(new GridBagLayout());
+			JLabel label = new JLabel("Edit Notes");
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(10,0,4, 0);
+			add(label, gbc);
 			
-			setLayout(new BorderLayout());
-			add(panel, BorderLayout.CENTER);
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.anchor = GridBagConstraints.PAGE_START;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.insets = new Insets(4, 20, 100, 20);
+			add(new JScrollPane(textArea), gbc);
+			
 			
 			textArea.addFocusListener(new FocusListener() {
 				
@@ -399,6 +411,7 @@ private void initConnections() throws java.lang.Exception {
 	getBioModelEditorModelPanel().setSelectionManager(selectionManager);
 	databaseWindowPanel.setSelectionManager(selectionManager);
 	bioModelsNetPanel.setSelectionManager(selectionManager);
+	bioModelEditorPathwayCommonsPanel.setSelectionManager(selectionManager);
 	getBioModelsNetPropertiesPanel().setSelectionManager(selectionManager);
 	getBioModelEditorApplicationsPanel().setSelectionManager(selectionManager);
 	getReactionPropertiesPanel().setSelectionManager(selectionManager);
@@ -413,6 +426,8 @@ private void initConnections() throws java.lang.Exception {
 	getDataSymbolsPanel().setSelectionManager(selectionManager);
 	getParameterEstimationPanel().setSelectionManager(selectionManager);
 	getDataSymbolsSpecPanel().setSelectionManager(selectionManager);
+	getBioModelEditorPathwayPanel().setSelectionManager(selectionManager);
+	getBioModelEditorPathwayDiagramPanel().setSelectionManager(selectionManager);
 	
 	getSimulationListPanel().addPropertyChangeListener(ivjEventHandler);
 	getInitialConditionsPanel().addPropertyChangeListener(ivjEventHandler);
@@ -447,6 +462,21 @@ private KineticsTypeTemplatePanel kineticsTypeTemplatePanel = null;
 private SimulationSummaryPanel simulationSummaryPanel = null;
 private EventPanel eventPanel = null;
 private DataSymbolsSpecPanel dataSymbolsSpecPanel = null;
+private BioModelEditorPathwayPanel bioModelEditorPathwayPanel = null;
+private BioModelEditorPathwayDiagramPanel bioModelEditorPathwayDiagramPanel = null;
+
+private BioModelEditorPathwayDiagramPanel getBioModelEditorPathwayDiagramPanel() {
+	if (bioModelEditorPathwayDiagramPanel == null) {
+		bioModelEditorPathwayDiagramPanel = new BioModelEditorPathwayDiagramPanel();		
+	}
+	return bioModelEditorPathwayDiagramPanel;
+}
+private BioModelEditorPathwayPanel getBioModelEditorPathwayPanel() {
+	if (bioModelEditorPathwayPanel == null) {
+		bioModelEditorPathwayPanel = new BioModelEditorPathwayPanel();		
+	}
+	return bioModelEditorPathwayPanel;
+}
 
 private DataSymbolsSpecPanel getDataSymbolsSpecPanel() {
 	if (dataSymbolsSpecPanel == null) {
@@ -559,17 +589,19 @@ private void initialize() {
 		setLayout(new BorderLayout());
 		
 		JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		tabbedPaneBottom  = new JTabbedPane();
 		databaseWindowPanel = new DatabaseWindowPanel(false, false);
 		bioModelsNetPanel = new BioModelsNetPanel();
-		tabbedPaneBottom.addTab("VCell Database", databaseWindowPanel);
-		tabbedPaneBottom.addTab("BioModels.net", bioModelsNetPanel);
-		tabbedPaneBottom.addChangeListener(ivjEventHandler);
+		bioModelEditorPathwayCommonsPanel = new BioModelEditorPathwayCommonsPanel();
+		leftTabbedPaneBottom  = new JTabbedPane();
+		leftTabbedPaneBottom.addTab("VCell Database", databaseWindowPanel);
+		leftTabbedPaneBottom.addTab("BioModels.net", bioModelsNetPanel);
+		leftTabbedPaneBottom.addTab("Pathway Commons", bioModelEditorPathwayCommonsPanel);
+		leftTabbedPaneBottom.addChangeListener(ivjEventHandler);
 		
 		getTreePanel().setMinimumSize(new java.awt.Dimension(198, 148));
 		leftSplitPane.setTopComponent(getTreePanel());
-		tabbedPaneBottom.setMinimumSize(new java.awt.Dimension(198, 148));
-		leftSplitPane.setBottomComponent(tabbedPaneBottom);
+		leftTabbedPaneBottom.setMinimumSize(new java.awt.Dimension(198, 148));
+		leftSplitPane.setBottomComponent(leftTabbedPaneBottom);
 		leftSplitPane.setResizeWeight(0.5);
 		leftSplitPane.setDividerLocation(300);
 		leftSplitPane.setDividerSize(8);
@@ -588,18 +620,22 @@ private void initialize() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.PAGE_START;
 		rightBottomEmptyPanel.add(label, gbc);
+		
+		rightBottomTabbedPane  = new JTabbedPane();
+		rightBottomTabbedPane.addTab("Properties", rightBottomEmptyPanel);
+
 		rightSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		getBioModelEditorModelPanel().setMinimumSize(new java.awt.Dimension(198, 148));
 		rightBottomEmptyPanel.setMinimumSize(new java.awt.Dimension(198, 148));
 		rightSplitPane.setTopComponent(getBioModelEditorModelPanel());
-		rightSplitPane.setBottomComponent(rightBottomEmptyPanel);
+		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
 		rightSplitPane.setResizeWeight(0.7);
 		rightSplitPane.setDividerLocation(550);
 		rightSplitPane.setDividerSize(8);
 		rightSplitPane.setOneTouchExpandable(true);
 
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		splitPane.setDividerLocation(250);
+		splitPane.setDividerLocation(270);
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setResizeWeight(0.3);
 		splitPane.setDividerSize(8);
@@ -613,8 +649,15 @@ private void initialize() {
 	}
 }
 
+private enum RightBottomTab {
+	properties,
+	pathway,
+}
+
 private void setRightBottomPanelOnSelection(Object[] selections) {
 	JComponent bottomComponent = rightBottomEmptyPanel;
+	int destComponentIndex = RightBottomTab.properties.ordinal();
+	boolean bShowBottom = true;
 	if (selections != null && selections.length == 1) {
 		Object singleSelection = selections[0];
 		if (singleSelection instanceof ReactionStep) {
@@ -671,11 +714,29 @@ private void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getDataSymbolsSpecPanel();
 		} else if (singleSelection instanceof BioEvent) {
 			bottomComponent = getEventPanel();
+		} else if (singleSelection instanceof PathwayData) {			
+			PathwayData pathwayData = (PathwayData)singleSelection;
+			bottomComponent = getBioModelEditorPathwayPanel();
+			destComponentIndex = RightBottomTab.pathway.ordinal();
+			String tabTitle = "Pathway " + pathwayData.getPathway().primaryId();
+			if (rightBottomTabbedPane.getComponentCount() == destComponentIndex) {
+				rightBottomTabbedPane.addTab(tabTitle, new TabCloseIcon(), bottomComponent);
+			} else {
+				rightBottomTabbedPane.setTitleAt(destComponentIndex, tabTitle);
+			}
+			rightSplitPane.setDividerLocation(0.5);
+		} else {
+			bShowBottom = false;
 		}
 	}
-	if (rightSplitPane.getBottomComponent() != bottomComponent) {
-		rightSplitPane.setBottomComponent(bottomComponent);
+	if (bShowBottom && rightSplitPane.getRightComponent() != rightBottomTabbedPane) {
+		rightSplitPane.setRightComponent(rightBottomTabbedPane);
+		rightSplitPane.setDividerLocation(DEFAULT_DIVIDER_LOCATION);
 	}
+	if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
+		rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
+	}
+	rightBottomTabbedPane.setSelectedComponent(bottomComponent);
 }
 
 private javax.swing.JScrollPane getTreePanel() {
@@ -952,11 +1013,12 @@ private void treeSelectionChanged() {
 
 private void setRightTopPanel(BioModelEditorTreeFolderNode folderNode, Object leafObject, SimulationContext simulationContext) {    
 	JComponent newTopPanel = emptyPanel;
-	double dividerLocation = 0.7;
+	double dividerLocation = DEFAULT_DIVIDER_LOCATION;
 	if (folderNode == null) { // could be BioModel or SimulationContext or VCMetaData or MiriamResource,
 		if (leafObject instanceof Model) {
 			newTopPanel = getBioModelEditorModelPanel();
 		} else if (leafObject instanceof VCMetaData || leafObject instanceof MiriamResource) {
+			dividerLocation = 1.0;
 			newTopPanel = getAnnotationEditorPanel();
 			if (getBioModel() != null) {
 				String annot =  getBioModel().getVCMetaData().getFreeTextAnnotation(getBioModel());
@@ -970,6 +1032,9 @@ private void setRightTopPanel(BioModelEditorTreeFolderNode folderNode, Object le
 				|| folderClass == BioModelEditorTreeFolderClass.GLOBAL_PARAMETER_NODE
 				|| folderClass == BioModelEditorTreeFolderClass.REACTIONS_NODE) {
 			newTopPanel = getBioModelEditorModelPanel();
+		} else if (folderClass == BioModelEditorTreeFolderClass.PATHWAY_NODE) {
+			newTopPanel = getBioModelEditorPathwayDiagramPanel();
+			getBioModelEditorPathwayDiagramPanel().setBioModel(getBioModel());
 		} else if (folderClass == BioModelEditorTreeFolderClass.APPLICATTIONS_NODE) {
 			newTopPanel = getBioModelEditorApplicationsPanel();
 		} else if (folderClass == BioModelEditorTreeFolderClass.SCRIPTING_NODE) {
@@ -1037,7 +1102,12 @@ private void setRightTopPanel(BioModelEditorTreeFolderNode folderNode, Object le
 	if (rightTopComponent != newTopPanel) {
 		rightSplitPane.setTopComponent(newTopPanel);
 	}
-	rightSplitPane.setDividerLocation(dividerLocation);
+	if (dividerLocation == 1.0) {
+		rightSplitPane.setRightComponent(null);
+	} else {
+		rightSplitPane.setRightComponent(rightBottomTabbedPane);
+		rightSplitPane.setDividerLocation(dividerLocation);
+	}
 }
 
 private OutputFunctionsPanel getOutputFunctionsPanel() {
@@ -1120,6 +1190,8 @@ public void setBioModel(BioModel bioModel) {
 	getBioModelEditorApplicationsPanel().setBioModel(getBioModel());
 	getBioModelEditorTreeModel().setBioModel(getBioModel());
 	getScriptingPanel().setBioModel(getBioModel());	
+	getBioModelEditorPathwayPanel().setBioModel(getBioModel());
+	getBioModelEditorPathwayDiagramPanel().setBioModel(getBioModel());
 }
 
 /**

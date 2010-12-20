@@ -4,6 +4,7 @@ import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Robot;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -12,10 +13,12 @@ import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -23,8 +26,11 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import cbit.gui.ReactionEquation;
@@ -110,7 +116,7 @@ public class ScrollTable extends JTable {
 	private ComponentAdapter componentListener = null;
 	protected int hoverRow = -1, hoverColumn = -1;
 	private DefaultScrollTableCellRenderer defaultTableCellRenderer = null;
-	
+	private static String javaVersion = System.getProperty("java.version");	
 	public ScrollTable() {
 		super();		
 		initialize();
@@ -137,7 +143,7 @@ public class ScrollTable extends JTable {
 		setDefaultRenderer(Double.class, defaultTableCellRenderer);		
 		setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
 		final TableCellRenderer defaultTableCellHeaderRenderer = getTableHeader().getDefaultRenderer();
-		getTableHeader().setDefaultRenderer(new TableCellRenderer() {
+		TableCellRenderer defaultTableHeaderRenderer = new TableCellRenderer() {
 
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				Component component = defaultTableCellHeaderRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -145,35 +151,37 @@ public class ScrollTable extends JTable {
 					JLabel label = (JLabel)component;
 					label.setHorizontalAlignment(SwingConstants.CENTER);
 					label.setBackground(tableHeaderColor);
-					label.setBorder(BorderFactory.createCompoundBorder(tableCellHeaderBorder, new EmptyBorderBean(2, 0, 2, 0)));
+					label.setBorder(BorderFactory.createCompoundBorder(tableCellHeaderBorder, new EmptyBorder(2, 0, 2, 0)));
 				}
 				return component;
 			}			
-		});
+		};
+		getTableHeader().setDefaultRenderer(defaultTableHeaderRenderer);
 		
 		// to gain focus if being clicked.
 		MouseAdapter mouseListener = new MouseAdapter() {
 			@Override
 			public void mouseClicked(final MouseEvent e) {
-				if (!hasFocus()) {
-					requestFocusInWindow();
-						
-					if (e.getButton() == MouseEvent.BUTTON1) {
-						addFocusListener(new FocusListener() {
-							public void focusLost(FocusEvent e) {
-							}									
-							public void focusGained(FocusEvent e) {
-								removeFocusListener(this);
-								Robot robot;
-								try {
-									robot = new Robot();
-									robot.mousePress(InputEvent.BUTTON1_MASK);
-									robot.mouseRelease(InputEvent.BUTTON1_MASK);
-								} catch (AWTException ex) {
-									ex.printStackTrace();
-								}											
-							}
-						});
+				if (!javaVersion.startsWith("1.5")) {
+					if (!hasFocus()) {
+						if (e.getButton() == MouseEvent.BUTTON1) {
+							addFocusListener(new FocusListener() {
+								public void focusLost(FocusEvent e) {
+								}
+								public void focusGained(FocusEvent e) {
+									removeFocusListener(this);
+									Robot robot;
+									try {
+										robot = new Robot();
+										robot.mousePress(InputEvent.BUTTON1_MASK);
+										robot.mouseRelease(InputEvent.BUTTON1_MASK);
+									} catch (AWTException ex) {
+										ex.printStackTrace();
+									}
+								}
+							});
+						}
+						requestFocusInWindow();
 					}
 				}
 			}
