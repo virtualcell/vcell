@@ -212,25 +212,21 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		gbc.insets = new Insets(4,4,4,4);
 		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		searchPanel.add(searchTextField, gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		gbc.weightx = 1.0;
-		gbc.insets = new Insets(4,4,4,4);
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(0,4,0,0);
 		searchPanel.add(searchButton, gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 1;
-		gbc.weightx = 1.0;
-		gbc.insets = new Insets(4,4,4,4);
+		gbc.gridx = 2;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(0,4,0,0);
 		searchPanel.add(showAllButton, gbc);	
 		
 		setPreferredSize(new Dimension(475, 300));

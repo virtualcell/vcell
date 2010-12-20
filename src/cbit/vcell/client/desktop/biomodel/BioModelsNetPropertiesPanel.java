@@ -96,9 +96,9 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 
 	private void initialize() {
 		setBackground(Color.white);
-		nameTextField = new JTextField(50);
+		nameTextField = new JTextField();
 		nameTextField.setEditable(false);
-		idTextField = new JTextField(50);
+		idTextField = new JTextField();
 		idTextField.setEditable(false);
 		importButton = new JButton("Import");
 		importButton.addActionListener(eventHandler);
@@ -113,14 +113,15 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,4,4,4);
-		gbc.weightx = 0.5;
+		gbc.weightx = 0.2;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(new JLabel("Model Name"), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
-		gbc.weightx = 0.5;
+		gbc.weightx = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(4,4,4,4);
 		add(nameTextField, gbc);
@@ -130,15 +131,16 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,4,4,4);
-		gbc.weightx = 0.5;
+		gbc.weightx = 0.2;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(new JLabel("Entry ID"), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
-		gbc.weightx = 0.5;
+		gbc.weightx = 1;
 		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4,4,4,4);
 		add(idTextField, gbc);
 		
@@ -147,14 +149,14 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,4,4,4);
-		gbc.weightx = 0.5;
+		gbc.weightx = 0.2;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(new JLabel("Link"), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
-		gbc.weightx = 0.5;
+		gbc.weightx = 1;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(4,4,4,4);
 		add(linkLabel, gbc);

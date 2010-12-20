@@ -4,7 +4,7 @@ package org.vcell.sybil.gui.bpimport;
 import org.vcell.sybil.models.sbbox.SBBox.NamedThing;
 import org.vcell.sybil.models.sbbox.SBBox.RDFType;
 
-class EntitySelectionTableRow {
+public class EntitySelectionTableRow {
 	protected NamedThing thing;
 	protected RDFType type;
 	protected Boolean selected = new Boolean(false);

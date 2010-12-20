@@ -88,6 +88,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	}
 	
 	public enum BioModelEditorTreeFolderClass {
+		PATHWAY_NODE,
 		MODEL_NODE,	
 		APPLICATTIONS_NODE,	
 		SCRIPTING_NODE,
@@ -145,14 +146,17 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	
 	// first Level
 	private BioModelEditorTreeFolderNode bioModelChildFolderNodes[] = {
+			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.PATHWAY_NODE, "Pathway", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.MODEL_NODE, "Biological Model", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.APPLICATTIONS_NODE, "Applications", true),
 			new BioModelEditorTreeFolderNode(BioModelEditorTreeFolderClass.SCRIPTING_NODE, "Scripting", true),
 		};
-	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[0], true);
-	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[1], true);	
-	private BioModelNode scriptingNode = new BioModelNode(bioModelChildFolderNodes[2], false);	
+	private BioModelNode pathwayNode = new BioModelNode(bioModelChildFolderNodes[0], false);
+	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[1], true);
+	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[2], true);	
+	private BioModelNode scriptingNode = new BioModelNode(bioModelChildFolderNodes[3], false);	
 	private BioModelNode  bioModelChildNodes[] = {
+			pathwayNode,
 			modelNode,
 			applicationsNode,
 			scriptingNode,
@@ -943,6 +947,7 @@ public class BioModelEditorTreeModel extends DefaultTreeModel
 	public void annotationChanged(AnnotationEvent annotationEvent) {
 		if (annotationEvent.getIdentifiable() == bioModel) {
 			nodeChanged(rootNode);
+			ownerTree.setSelectionPath(new TreePath(pathwayNode.getPath()));
 		}
 	}
 
