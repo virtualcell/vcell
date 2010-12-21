@@ -1,4 +1,4 @@
-package cbit.vcell.client.data;
+package cbit.vcell.visit;
 
 import javax.swing.JPanel;
 import java.awt.GridBagLayout;
@@ -11,9 +11,9 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import org.vcell.util.VisitProcess;
 
 import cbit.vcell.simdata.DataIdentifier;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;

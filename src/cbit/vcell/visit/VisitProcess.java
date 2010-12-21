@@ -1,4 +1,4 @@
-package org.vcell.util;
+package cbit.vcell.visit;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
