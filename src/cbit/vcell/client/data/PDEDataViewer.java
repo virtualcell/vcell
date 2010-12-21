@@ -57,7 +57,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.VisitProcess;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TSJobResultsSpaceStats;
@@ -134,6 +133,8 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
+import cbit.vcell.visit.VisitControlPanel;
+import cbit.vcell.visit.VisitProcess;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
