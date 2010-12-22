@@ -2,7 +2,6 @@ package cbit.vcell.client;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -20,7 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
-import javax.swing.plaf.basic.BasicInternalFrameUI;
 
 import org.vcell.sybil.gui.space.DialogParentProvider;
 import org.vcell.sybil.gui.space.GUIJInternalFrameSpace;
@@ -322,7 +320,7 @@ private void createBioModelFrame() {
 	getBioModelEditor().setBioModel(getBioModel());
 	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("BioModel", true, false, true, true);
 	editorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/bioModel_16x16.gif")));	
-	editorFrame.add(bioModelEditor, BorderLayout.CENTER);
+	editorFrame.add(bioModelEditor);
 	getJDesktopPane().add(editorFrame);
 	editorFrame.setMinimumSize(new Dimension(400, 300));
 	editorFrame.setLocation(0,0);

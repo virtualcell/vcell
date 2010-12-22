@@ -1074,7 +1074,7 @@ public static File showFileChooserDialog(TopLevelWindowManager requester, final 
  */
 private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager requester) {
 	JOptionPane openDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Open","Cancel"});
-	tree.setPreferredSize(new java.awt.Dimension(405, 600));
+	tree.setPreferredSize(new java.awt.Dimension(405, 400));
 	openDialog.setMessage("");
 	openDialog.setMessage(tree);
 	String docType = "document";

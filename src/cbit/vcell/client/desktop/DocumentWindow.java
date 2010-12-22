@@ -2855,7 +2855,6 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getTestingFrameworkMenuItem().setVisible(isTestUser);
 			getTestingFrameworkMenuItem().setEnabled(false);
 			getJMenuItemFieldData().setEnabled(false);
-			getJMenuItemMIRIAM().setEnabled(false);
 			getPermissionsMenuItem().setEnabled(false);
 			break;
 		}

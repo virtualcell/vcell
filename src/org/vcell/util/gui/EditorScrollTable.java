@@ -20,6 +20,8 @@ import javax.swing.ToolTipManager;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 
+import org.vcell.util.gui.sorttable.JSortTable;
+
 import cbit.gui.ReactionEquation;
 import cbit.gui.TableCellEditorAutoCompletion;
 
@@ -35,7 +37,7 @@ import cbit.gui.TableCellEditorAutoCompletion;
  *
  */
 @SuppressWarnings("serial")
-public class EditorScrollTable extends ScrollTable {
+public class EditorScrollTable extends JSortTable {
 	
 	public class DefaultScrollTableComboBoxEditor extends DefaultCellEditor {
 		private JComboBox comboBox = null;

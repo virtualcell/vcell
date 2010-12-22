@@ -310,7 +310,7 @@ public class VCMetaData implements Serializable {
 	}
 
 	public void addPathwayModel(BioModel bioModel, Model model) {
-		getSBbox().getRdf().add(model);
+		getSBbox().getData().add(model);
 		fireAnnotationEventListener(new AnnotationEvent(bioModel));
 	}
 

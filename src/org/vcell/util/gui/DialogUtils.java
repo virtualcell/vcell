@@ -510,7 +510,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 				}
 			};
 			tableModel.setData(Arrays.asList(rowDataHiddenIndex));
-			final JTable table = new JSortTable();
+			final JSortTable table = new JSortTable();
 			table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 			table.setModel(tableModel);
 			if(listSelectionModel_SelectMode != null){
@@ -521,6 +521,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 			}
 			JScrollPane scrollPane = new JScrollPane(table);
 			table.setPreferredScrollableViewportSize(new Dimension(500, 250));
+			table.disableUneditableForeground();
 						
 			OKEnabler tableListOKEnabler = null;
 			if(listSelectionModel_SelectMode != null){

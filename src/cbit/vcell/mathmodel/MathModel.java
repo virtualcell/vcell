@@ -29,12 +29,14 @@ import cbit.vcell.solver.Simulation;
  * Creation date: (10/17/00 3:12:16 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener {
+	public static final String PROPERTY_NAME_MATH_DESCRIPTION = "mathDescription";
 	private Version fieldVersion = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private MathDescription fieldMathDescription = new MathDescription("unnamed");
+	private MathDescription fieldMathDescription = null;
 	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext(this);
 	private Simulation[] fieldSimulations = new Simulation[0];
 	private java.lang.String fieldDescription = new String();
@@ -46,6 +48,7 @@ public MathModel(Version version) {
 	super();
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
+	setMathDescription(new MathDescription("unnamed"));
 	try {
 		setVersion(version);
 	} catch (PropertyVetoException e) {
@@ -449,7 +452,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	//
 	// propagate mathDescription changes from SimulationContexts to Simulations
 	//
-	if (evt.getSource() == this && evt.getPropertyName().equals("mathDescription")){
+	if (evt.getSource() == this && evt.getPropertyName().equals(PROPERTY_NAME_MATH_DESCRIPTION)){
 		Geometry oldGeometry = null;
 		Geometry newGeometry = null;
 		MathDescription oldValue = (MathDescription)evt.getOldValue();
@@ -596,7 +599,7 @@ public void setDescription(java.lang.String description) throws java.beans.Prope
 public void setMathDescription(MathDescription mathDescription) {
 	MathDescription oldValue = fieldMathDescription;
 	fieldMathDescription = mathDescription;
-	firePropertyChange("mathDescription", oldValue, mathDescription);
+	firePropertyChange(PROPERTY_NAME_MATH_DESCRIPTION, oldValue, mathDescription);
 }
 
 

@@ -36,7 +36,7 @@ import org.vcell.util.gui.CollapsiblePanel;
 
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
-import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
@@ -112,7 +112,7 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 	}
 	
 	private static final String BIOMODELS_DATABASE_URL = "http://www.ebi.ac.uk/biomodels-main/";
-	private BioModelWindowManager bioModelWindowManager = null;
+	private DocumentWindowManager documentWindowManager = null;
 	private JTextField searchTextField;
 	private JButton searchButton = null;
 	private JButton showAllButton = null;
@@ -171,10 +171,10 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 				if (xmlInfo == null) {
 					return;
 				}
-				bioModelWindowManager.getRequestManager().openDocument(xmlInfo, bioModelWindowManager, true);
+				documentWindowManager.getRequestManager().openDocument(xmlInfo, documentWindowManager, true);
 			}
 		};
-		ClientTaskDispatcher.dispatch(bioModelWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
+		ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
 	}
 
 	public void treeSelectionChanged() {
@@ -259,8 +259,8 @@ public class BioModelsNetPanel extends BioModelEditorSubPanel {
 		add(importButton, gbc);
 	}
 
-	public void setBioModelWindowManager(BioModelWindowManager newValue) {
-		this.bioModelWindowManager = newValue;
+	public void setDocumentWindowManager(DocumentWindowManager newValue) {
+		this.documentWindowManager = newValue;
 	}
 	
 	private List<BioModelsNetModelInfo> readVCellCompatibleBioModels_ID_Name_Hash() throws IOException, DataConversionException {

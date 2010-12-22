@@ -18,7 +18,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
-import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.xml.XMLInfo;
@@ -31,7 +31,7 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 	private JLabel linkLabel = null;
 	private JButton importButton = null;
 	private BioModelsNetModelInfo bioModelsNetModelInfo = null;
-	private BioModelWindowManager bioModelWindowManager = null;
+	private DocumentWindowManager documentWindowManager = null;
 	
 	private EventHandler eventHandler = new EventHandler();
 	
@@ -87,10 +87,10 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 				if (xmlInfo == null) {
 					return;
 				}
-				bioModelWindowManager.getRequestManager().openDocument(xmlInfo, bioModelWindowManager, true);
+				documentWindowManager.getRequestManager().openDocument(xmlInfo, documentWindowManager, true);
 			}
 		};
-		ClientTaskDispatcher.dispatch(bioModelWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
+		ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
 	}
 
 
@@ -173,8 +173,8 @@ public class BioModelsNetPropertiesPanel extends BioModelEditorSubPanel {
 		add(importButton, gbc);
 	}
 
-	public void setBioModelWindowManager(BioModelWindowManager newValue) {
-		this.bioModelWindowManager = newValue;
+	public void setDocumentWindowManager(DocumentWindowManager newValue) {
+		this.documentWindowManager = newValue;
 	}
 
 	public final void setBioModelsNetModelInfo(BioModelsNetModelInfo bioModelsNetModelInfo) {

@@ -2,14 +2,13 @@ package cbit.vcell.client;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.beans.PropertyVetoException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -25,21 +24,13 @@ import org.vcell.util.gui.JInternalFrameEnhanced;
 import org.vcell.util.gui.JTaskBar;
 
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
-import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
-import cbit.vcell.client.desktop.mathmodel.EquationViewerPanel;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
-import cbit.vcell.client.desktop.mathmodel.VCMLEditorPanel;
-import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.GeometryViewer;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -55,23 +46,11 @@ public class MathModelWindowManager extends DocumentWindowManager implements jav
 	private MathModel mathModel = null;
 	private JDesktopPaneEnhanced jDesktopPane = null;
 	private MathModelEditor mathModelEditor = null;
-
-	private EquationViewerPanel equnsViewer;
-	private GeometrySummaryViewer geoViewer;
-	private SimulationListPanel simsPanel;
-	private VCMLEditorPanel vcmlEditor;
-	private SurfaceViewerPanel surfaceViewer;
-
-	// Internal frames for the above panels ...
-	private JInternalFrameEnhanced VCMLEditorFrame = null;		
-	private JInternalFrameEnhanced equationsViewerEditorFrame = null;
-	private JInternalFrameEnhanced geometryViewerEditorFrame = null;		
-	private JInternalFrameEnhanced simsListEditorFrame = null;
-	private JInternalFrameEnhanced surfaceViewerFrame = null;	
 	
 	// results windows and plots
 	private Hashtable<VCSimulationIdentifier, SimulationWindow> simulationWindowsHash = new Hashtable<VCSimulationIdentifier, SimulationWindow>();
 	private Vector<JInternalFrame> dataViewerPlotsFramesVector = new Vector<JInternalFrame>();
+	private SimulationWorkspace simulationWorkspace;
 	
 	//Field Data help.  Set if copied from a BioModel Application.
 	//Used to substitute Field Data while saving a MathModel.
@@ -85,11 +64,9 @@ public class MathModelWindowManager extends DocumentWindowManager implements jav
  */
 public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, final MathModel aMathModel, int newlyCreatedDesktops) {
 	super(panel, aRequestManager, aMathModel, newlyCreatedDesktops);
-	equnsViewer = new EquationViewerPanel();
-	geoViewer = new GeometrySummaryViewer();
-	simsPanel = new SimulationListPanel();
-	vcmlEditor = new VCMLEditorPanel();
-	surfaceViewer = new SurfaceViewerPanel();
+	mathModel = aMathModel;
+	simulationWorkspace = new SimulationWorkspace(MathModelWindowManager.this, getMathModel());
+	
 	setJDesktopPane(new JDesktopPaneEnhanced());
 	getJPanel().setLayout(new BorderLayout());
 	getJPanel().add(getJDesktopPane(), BorderLayout.CENTER);
@@ -97,14 +74,7 @@ public MathModelWindowManager(JPanel panel, RequestManager aRequestManager, fina
 		JTaskBar taskBar = new JTaskBar(getJDesktopPane());
 		getJPanel().add(taskBar, BorderLayout.SOUTH);
 	}
-	setMathModel(aMathModel);
-	createMathModelEditor();
-
-	initializeInternalFrames();
-
-	geoViewer.addActionListener(MathModelWindowManager.this);
-	getJPanel().add(getMathModelEditor(), BorderLayout.NORTH);
-	showVCMLEditor(true);
+	createMathModelFrame();
 }
 
 
@@ -122,20 +92,17 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					Geometry newGeom = (Geometry)hashTable.get("doc");
 					if(newGeom != null){
-//						DocumentCreationInfo documentCreationInfo = ((DocumentWindowManager.GeometrySelectionInfo)
-//								hashTable.get(DocumentWindowManager.GEOMETRY_SELECTIONINFO_KEY)).getDocumentCreationInfo();
-						if((Boolean)hashTable.get(B_SHOW_OLD_GEOM_EDITOR)
-								/*documentCreationInfo == null || !ClientRequestManager.isImportGeometryType(documentCreationInfo)*/){
+						if((Boolean)hashTable.get(B_SHOW_OLD_GEOM_EDITOR)){
 							GeometryViewer localGeometryViewer = new GeometryViewer();
 							localGeometryViewer.setGeometry(newGeom);
 							localGeometryViewer.setSize(800,600);
 							int result = DialogUtils.showComponentOKCancelDialog(
 									getComponent(), localGeometryViewer, "Edit Geometry: '"+newGeom.getName()+"'");
+							localGeometryViewer.setGeometry(null);
 							if(result != JOptionPane.OK_OPTION){
 								throw UserCancelException.CANCEL_GENERIC;
 							}
 						}
-						showSurfaceViewerFrame(false);
 					}else{
 						throw new Exception("No Geometry found in edit task");
 					}
@@ -158,7 +125,6 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 								ClientRequestManager.generateDateTimeString());
 						}
 						((MathModel)getVCDocument()).getMathDescription().setGeometry(newGeom);
-						vcmlEditor.updateWarningText(((MathModel)getVCDocument()).getMathDescription());
 					}
 			};
 
@@ -168,25 +134,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	}
 
 	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
-		showSurfaceViewerFrame(false);
-		getRequestManager().changeGeometry(this,vcmlEditor);
-	}
-	if (source instanceof GeometrySummaryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_VIEW_SURFACES)) {
-		if(getMathModel() != null && getMathModel().getMathDescription() != null &&
-			getMathModel().getMathDescription().getGeometry() != null &&
-			getMathModel().getMathDescription().getGeometry().getGeometrySurfaceDescription() != null &&
-			(surfaceViewer.getGeometry() == null || 
-				getMathModel().getMathDescription().getGeometry().getGeometrySurfaceDescription().getSurfaceCollection() == null)){
-				try{
-					Geometry geom = getMathModel().getMathDescription().getGeometry();
-					surfaceViewer.setGeometry(geom);
-					setDefaultTitle(surfaceViewerFrame);
-					surfaceViewer.updateSurfaces();					
-				} catch(Exception e2){
-					PopupGenerator.showErrorDialog(this, "Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage(), e2);
-				}
-		}
-		showSurfaceViewerFrame(true);
+		getRequestManager().changeGeometry(this, null);
 	}	
 }
 
@@ -236,66 +184,6 @@ private void checkValidSimulationDataViewerFrames() {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/21/2005 12:36:41 PM)
- */
-private void cleanSimWindowsHash() {
-
-	Enumeration<VCSimulationIdentifier> enum1 = simulationWindowsHash.keys();
-	Vector<VCSimulationIdentifier> toRemove = new Vector<VCSimulationIdentifier>();
-	while(enum1.hasMoreElements()){
-		VCSimulationIdentifier vcsid = enum1.nextElement();
-		Simulation[] sims = getMathModel().getSimulations();
-		boolean bFound = false;
-		for(int i=0;i<sims.length;i+= 1){
-			if(sims[i].getSimulationInfo() != null && sims[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier().equals(vcsid)){
-				bFound = true;
-				break;
-			}
-		}
-		if(!bFound){
-			toRemove.add(vcsid);
-		}
-	}
-	if(toRemove.size() > 0){
-		for(int i=0;i<toRemove.size();i+= 1){
-			simulationWindowsHash.remove(toRemove.elementAt(i));
-		}
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-private void createMathModelEditor() {
-	mathModelEditor = new MathModelEditor();
-	mathModelEditor.setMathDescription(getMathModel().getMathDescription());
-	mathModelEditor.setMathModelWindowManager(this);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-public void equationsViewerButtonPressed(boolean bEqunButtonSelected) {
-	showEquationsViewer(bEqunButtonSelected);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-public void geometryViewerButtonPressed(boolean bGeoButtonSelected) {
-	showGeometryViewer(bGeoButtonSelected);
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (5/27/2004 1:58:14 PM)
@@ -325,16 +213,6 @@ public MathModel getMathModel() {
 	return mathModel;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/19/2004 5:19:11 PM)
- * @return cbit.vcell.desktop.controls.MathWorkspace
- */
-private MathModelEditor getMathModelEditor() {
-	return mathModelEditor;
-}
-
 public VersionableTypeVersion getCopyFromBioModelAppVersionableTypeVersion(){
 	return copyFromBioModelAppVersionableTypeVersion;
 }
@@ -352,10 +230,7 @@ public VCDocument getVCDocument() {
 }
 
 public boolean hasUnappliedChanges() {
-	if (vcmlEditor.hasUnappliedChanges()) {
-		return true;
-	}
-	return false;
+	return mathModelEditor.hasUnappliedChanges();
 }
 
 /**
@@ -377,69 +252,23 @@ SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentif
  * Insert the method's description here.
  * Creation date: (5/5/2004 9:44:15 PM)
  */
-private void initializeInternalFrames() {
-	// Initialize VCML Editor internal frame
-	String vcmlEditorTitle = "VCML Editor";
-	vcmlEditor.setMathModel(getMathModel());
-	VCMLEditorFrame = new JInternalFrameEnhanced(vcmlEditorTitle, true, true, true, true);
-	JMenuBar mb = new JMenuBar();
-	JMenu menu = vcmlEditor.getEditMenu();
-	mb.add(menu);
-	VCMLEditorFrame.setJMenuBar(mb);
-	
-	VCMLEditorFrame.setContentPane(vcmlEditor);
-	VCMLEditorFrame.setSize(550, 550);
-	VCMLEditorFrame.setLocation(10, 10);
-	VCMLEditorFrame.setMinimumSize(new Dimension(250, 250));
-	VCMLEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-			getMathModelEditor().setToggleButtonSelected("VCML Editor", false);
-		};
-	});		
-	
-	
-	// Initialize Equations Viewer internal frame
-	String equnsViewerTitle = "Equations Viewer";
-	equnsViewer.setMathModel(getMathModel());
-	equationsViewerEditorFrame = new JInternalFrameEnhanced(equnsViewerTitle, true, true, true, true);
-	equationsViewerEditorFrame.setContentPane(equnsViewer);
-	equationsViewerEditorFrame.setSize(400, 400);
-	equationsViewerEditorFrame.setLocation(300, 100);
-	equationsViewerEditorFrame.setMinimumSize(new Dimension(250, 250));
-	equationsViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-			getMathModelEditor().setToggleButtonSelected("Equations Viewer", false);
-		};
-	});
-	// Initialize Geometry Viewer internal frame
-	geoViewer.setGeometryOwner(getMathModel());
-	
-	geometryViewerEditorFrame = createDefaultFrame(geoViewer);
-	geometryViewerEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-			getMathModelEditor().setToggleButtonSelected("Geometry Viewer", false);
-		};
-	});
+private void createMathModelFrame() {
+	mathModelEditor = new MathModelEditor();
+	mathModelEditor.setMathModel(getMathModel());
+	mathModelEditor.setMathModelWindowManager(this);
 
-	// Initialize Surface Viewer internal frame
-	surfaceViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
-	surfaceViewerFrame = createDefaultFrame(surfaceViewer);
-
-		
-	// Initialize SimulationsList Viewer internal frame
-	String simsListTitle = "Simulations";
-	simsPanel.setSimulationWorkspace(new SimulationWorkspace(MathModelWindowManager.this, getMathModel()));
-	simsListEditorFrame = new JInternalFrameEnhanced(simsListTitle, true, true, true, true);
-	simsListEditorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/simulations.gif")));
-	simsListEditorFrame.setContentPane(simsPanel);
-	simsListEditorFrame.setSize(800, 600);
-	simsListEditorFrame.setLocation(500, 300);
-	simsListEditorFrame.setMinimumSize(new Dimension(500, 500));
-	simsListEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
-		public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
-			getMathModelEditor().setToggleButtonSelected("Simulations", false);
-		};
-	});
+	JInternalFrameEnhanced editorFrame = new JInternalFrameEnhanced("MathModel", true, false, true, true);
+	editorFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/math_16x16.gif")));	
+	editorFrame.add(mathModelEditor);
+	getJDesktopPane().add(editorFrame);
+	editorFrame.setMinimumSize(new Dimension(400, 300));
+	editorFrame.setLocation(0,0);
+	editorFrame.show();
+	try {
+		editorFrame.setMaximum(true);
+	} catch (PropertyVetoException e) {
+		e.printStackTrace();
+	}	
 }
 
 
@@ -459,90 +288,71 @@ public boolean isRecyclable() {
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if(evt.getSource() instanceof GeometrySpec && evt.getPropertyName().equals("sampledImage") && evt.getNewValue() != null){
-		updateGeometryRegions(false);
-	}
-	if(evt.getSource() instanceof SubVolume && evt.getPropertyName().equals("name")){
-		if(getMathModel() != null && getMathModel().getMathDescription() != null){
-			updateGeometryRegions(false);
-		}
-	}
+//	if(evt.getSource() instanceof GeometrySpec && evt.getPropertyName().equals("sampledImage") && evt.getNewValue() != null){
+//		updateGeometryRegions(false);
+//	}
+//	if(evt.getSource() instanceof SubVolume && evt.getPropertyName().equals("name")){
+//		if(getMathModel() != null && getMathModel().getMathDescription() != null){
+//			updateGeometryRegions(false);
+//		}
+//	}
 
-	if(evt.getSource() instanceof MathDescription && evt.getPropertyName().equals("geometry")){
-		resetGeometryListeners((Geometry)evt.getOldValue(),(Geometry)evt.getNewValue());
-		surfaceViewer.setGeometry(null);
-		if(surfaceViewerFrame != null){
-			close(surfaceViewerFrame,getJDesktopPane());
-		}
-		setDefaultTitle(geometryViewerEditorFrame);
-	}
-	
-	if (evt.getSource() == getMathModel() && evt.getPropertyName().equals("mathDescription")) {
-		resetMathDescriptionListeners((MathDescription)evt.getOldValue(),(MathDescription)evt.getNewValue());
-	}
+//	if(evt.getSource() == getMathModel() && evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)){
+//		resetGeometryListeners((Geometry)evt.getOldValue(),(Geometry)evt.getNewValue());
+//	}
+//	
+//	if (evt.getSource() == getMathModel() && evt.getPropertyName().equals("mathDescription")) {
+//		resetMathDescriptionListeners((MathDescription)evt.getOldValue(),(MathDescription)evt.getNewValue());
+//	}
 	
 	if (evt.getSource() == getMathModel() && evt.getPropertyName().equals("simulations")) {
 		checkValidSimulationDataViewerFrames();
 	}
 }
 
-private void updateGeometryRegions(final boolean bChange){
-	AsynchClientTask closeSurfaceViewer = new AsynchClientTask("Close surface viewer", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				showSurfaceViewerFrame(false);
-			}
-		};
+//private void updateGeometryRegions(final boolean bChange){	
+//	AsynchClientTask geomRegionsTask = new AsynchClientTask("Update Geometric regions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//		@Override
+//			public void run(Hashtable<String, Object> hashTable) throws Exception {
+//				Geometry newGeom = ((MathModel)getVCDocument()).getMathDescription().getGeometry();
+//				if (newGeom.getGeometrySurfaceDescription()!=null){
+//					newGeom.getGeometrySurfaceDescription().updateAll();
+//				}
+//			}
+//	};
+//	
+//	ClientTaskDispatcher.dispatch(getComponent(),
+//			new Hashtable<String, Object>(),
+//			new AsynchClientTask[] {geomRegionsTask}, false);
+//}
 
-	AsynchClientTask geomRegionsTask = new AsynchClientTask("Update Geometric regions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Geometry newGeom = ((MathModel)getVCDocument()).getMathDescription().getGeometry();
-				if (newGeom.getGeometrySurfaceDescription()!=null){
-					newGeom.getGeometrySurfaceDescription().updateAll();
-				}
-			}
-	};
-	
-	AsynchClientTask updateWarningTask = new AsynchClientTask("Update Math warnings", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				vcmlEditor.updateWarningText(((MathModel)getVCDocument()).getMathDescription());
-			}
-	};
-	
-		ClientTaskDispatcher.dispatch(getComponent(),
-				new Hashtable<String, Object>(),
-				new AsynchClientTask[] {closeSurfaceViewer,geomRegionsTask,updateWarningTask}, false);
-}
-
-private void resetGeometryListeners(Geometry oldGeometry, Geometry newGeometry){
-	if(oldGeometry != null){
-		oldGeometry.removePropertyChangeListener(this);
-		if(oldGeometry.getGeometrySpec() != null){
-			oldGeometry.getGeometrySpec().removePropertyChangeListener(this);
-			SubVolume subVolumes[] = oldGeometry.getGeometrySpec().getSubVolumes();
-			for (int i = 0;subVolumes!=null && i < subVolumes.length; i++){
-				subVolumes[i].removePropertyChangeListener(this);
-			}
-		}
-	}
-
-	if(newGeometry != null ){
-		newGeometry.removePropertyChangeListener(this);
-		newGeometry.addPropertyChangeListener(this);
-		if(newGeometry.getGeometrySpec() != null){
-			newGeometry.getGeometrySpec().removePropertyChangeListener(this);
-			newGeometry.getGeometrySpec().addPropertyChangeListener(this);
-			SubVolume subVolumes[] = newGeometry.getGeometrySpec().getSubVolumes();
-			for (int i = 0;subVolumes!=null && i < subVolumes.length; i++){
-				subVolumes[i].removePropertyChangeListener(this);
-				subVolumes[i].addPropertyChangeListener(this);
-			}
-		}
-	}
-
-}
+//private void resetGeometryListeners(Geometry oldGeometry, Geometry newGeometry){
+//	if(oldGeometry != null){
+//		oldGeometry.removePropertyChangeListener(this);
+//		if(oldGeometry.getGeometrySpec() != null){
+//			oldGeometry.getGeometrySpec().removePropertyChangeListener(this);
+//			SubVolume subVolumes[] = oldGeometry.getGeometrySpec().getSubVolumes();
+//			for (int i = 0;subVolumes!=null && i < subVolumes.length; i++){
+//				subVolumes[i].removePropertyChangeListener(this);
+//			}
+//		}
+//	}
+//
+//	if(newGeometry != null ){
+//		newGeometry.removePropertyChangeListener(this);
+//		newGeometry.addPropertyChangeListener(this);
+//		if(newGeometry.getGeometrySpec() != null){
+//			newGeometry.getGeometrySpec().removePropertyChangeListener(this);
+//			newGeometry.getGeometrySpec().addPropertyChangeListener(this);
+//			SubVolume subVolumes[] = newGeometry.getGeometrySpec().getSubVolumes();
+//			for (int i = 0;subVolumes!=null && i < subVolumes.length; i++){
+//				subVolumes[i].removePropertyChangeListener(this);
+//				subVolumes[i].addPropertyChangeListener(this);
+//			}
+//		}
+//	}
+//
+//}
 
 /**
  * Insert the method's description here.
@@ -550,25 +360,16 @@ private void resetGeometryListeners(Geometry oldGeometry, Geometry newGeometry){
  * @param newDocument cbit.vcell.document.VCDocument
  */
 public void resetDocument(VCDocument newDocument) {
-	setMathModel((MathModel)newDocument);
+	mathModel = (MathModel)newDocument;
 	setDocumentID(getMathModel());
-	setMathModel((MathModel)newDocument);
-	vcmlEditor.setMathModel(getMathModel());
-	equnsViewer.setMathModel(getMathModel());
-	geoViewer.setGeometryOwner(getMathModel());
-	SimulationWorkspace simWorkspace = simsPanel.getSimulationWorkspace();
-	if (simWorkspace==null){
-		simsPanel.setSimulationWorkspace(new SimulationWorkspace(this, getMathModel()));
-	}else{
-		simWorkspace.setSimulationOwner((MathModel)newDocument);
-	}
+	simulationWorkspace.setSimulationOwner((MathModel)newDocument);
+	mathModelEditor.setMathModel(mathModel);
+
 	checkValidSimulationDataViewerFrames();
 	Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
 	while (en.hasMoreElements()) {
 		close(en.nextElement(), getJDesktopPane());
 	}
-	setDefaultTitle(geometryViewerEditorFrame);
-	setDefaultTitle(surfaceViewerFrame);
 	getRequestManager().updateStatusNow();
 }
 
@@ -587,38 +388,31 @@ private void setJDesktopPane(JDesktopPaneEnhanced newJDesktopPane) {
  * Creation date: (5/14/2004 11:08:35 AM)
  * @param newMathModel cbit.vcell.mathmodel.MathModel
  */
-private void setMathModel(cbit.vcell.mathmodel.MathModel newMathModel) {
+//private void setMathModel(MathModel newMathModel) {	
+//	resetGeometryListeners((getMathModel() != null?(getMathModel().getMathDescription() != null?getMathModel().getMathDescription().getGeometry():null):null),
+//			(newMathModel != null?(newMathModel.getMathDescription() != null?newMathModel.getMathDescription().getGeometry():null):null));
+//	
+//	resetMathDescriptionListeners(
+//		(getMathModel() != null?getMathModel().getMathDescription():null),
+//		(newMathModel != null?newMathModel.getMathDescription():null));
 	
-	resetGeometryListeners((getMathModel() != null?(getMathModel().getMathDescription() != null?getMathModel().getMathDescription().getGeometry():null):null),
-			(newMathModel != null?(newMathModel.getMathDescription() != null?newMathModel.getMathDescription().getGeometry():null):null));
-	
-	resetMathDescriptionListeners(
-		(getMathModel() != null?getMathModel().getMathDescription():null),
-		(newMathModel != null?newMathModel.getMathDescription():null));
-	
-	if (getMathModel() != null) {
-		getMathModel().removePropertyChangeListener(this);
-//		if(getMathModel().getMathDescription() != null){
-//			getMathModel().getMathDescription().removePropertyChangeListener(this);
-//		}
-	}
-	mathModel = newMathModel;
-	if (getMathModel() != null) {
-		getMathModel().addPropertyChangeListener(this);
-//		if(getMathModel().getMathDescription() != null){
-//			getMathModel().getMathDescription().addPropertyChangeListener(this);
-//		}
-	}
-}
+//	if (getMathModel() != null) {
+//		getMathModel().removePropertyChangeListener(this);
+//	}
+//	mathModel = newMathModel;
+//	if (getMathModel() != null) {
+//		getMathModel().addPropertyChangeListener(this);
+//	}
+//}
 
-private void resetMathDescriptionListeners(MathDescription oldMathDescription,MathDescription newMathDescription){
-	if(oldMathDescription != null){
-		oldMathDescription.removePropertyChangeListener(this);
-	}
-	if(newMathDescription != null){
-		newMathDescription.addPropertyChangeListener(this);
-	}
-}
+//private void resetMathDescriptionListeners(MathDescription oldMathDescription,MathDescription newMathDescription){
+//	if(oldMathDescription != null){
+//		oldMathDescription.removePropertyChangeListener(this);
+//	}
+//	if(newMathDescription != null){
+//		newMathDescription.addPropertyChangeListener(this);
+//	}
+//}
 
 /**
  * Insert the method's description here.
@@ -646,22 +440,6 @@ public void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames) {
 	}
 }
 	
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-private void showEquationsViewer(boolean bEqunButtonSelected) {
-	if (bEqunButtonSelected) {
-		// If toggleButton is selected, check if it is open. If not, open it, add it to desktopPane
-		// If it is iconized, 'de-iconify' it.
-		showFrame(equationsViewerEditorFrame);
-	} else {
-		// If toggleButton is unselected, check if vcmlEditor is iconized. If not closed, dispose it.
-		// If it is iconized on the desktop, de-iconify vcmlEditor & dispose it.
-		close(equationsViewerEditorFrame, getJDesktopPane());
-	}	
-}
-
 
 /**
  * Insert the method's description here.
@@ -670,71 +448,6 @@ private void showEquationsViewer(boolean bEqunButtonSelected) {
 public void showFrame(javax.swing.JInternalFrame frame) {
 	showFrame(frame, getJDesktopPane());
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-private void showGeometryViewer(boolean bGeoButtonSelected) {
-	if (bGeoButtonSelected) {
-		// If toggleButton is selected, check if it is open. If not, open it, add it to desktopPane
-		// If it is iconized, 'de-iconify' it.
-		setDefaultTitle(geometryViewerEditorFrame);
-		showFrame(geometryViewerEditorFrame);
-	} else {
-		// If toggleButton is unselected, check if vcmlEditor is iconized. If not closed, dispose it.
-		// If it is iconized on the desktop, de-iconify vcmlEditor & dispose it.
-		close(geometryViewerEditorFrame, getJDesktopPane());
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-private void showSimulationsList(boolean bSimsButtonSelected) {
-	if (bSimsButtonSelected) {
-		// If toggleButton is selected, check if it is open. If not, open it, add it to desktopPane
-		// If it is iconized, 'de-iconify' it.
-		showFrame(simsListEditorFrame);
-	} else {
-		// If toggleButton is unselected, check if vcmlEditor is iconized. If not closed, dispose it.
-		// If it is iconized on the desktop, de-iconify vcmlEditor & dispose it.
-		close(simsListEditorFrame, getJDesktopPane());
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-private void showSurfaceViewerFrame(boolean bOpen) {
-	if(!bOpen){
-		close(surfaceViewerFrame, getJDesktopPane());
-	}else{
-		showFrame(surfaceViewerFrame);
-	}
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-private void showVCMLEditor(boolean bVCMLButtonSelected) {
-	if (bVCMLButtonSelected) {
-		// If toggleButton is selected, check if it is open. If not, open it, add it to desktopPane
-		// If it is iconized, 'de-iconify' it.
-		showFrame(VCMLEditorFrame);
-	} else {
-		// If toggleButton is unselected, check if vcmlEditor is iconized. If not closed, dispose it.
-		// If it is iconized on the desktop, de-iconify vcmlEditor & dispose it.
-		close(VCMLEditorFrame, getJDesktopPane());
-	}
-}
-
 
 /**
  * Insert the method's description here.
@@ -774,7 +487,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 		PopupGenerator.showErrorDialog(this, qualifier + "Simulation '" + simulation.getName() + "' failed\n" + simStatus.getDetails());
 	}
 	// update status display
-	ClientSimManager simManager = simsPanel.getSimulationWorkspace().getClientSimManager();
+	ClientSimManager simManager = simulationWorkspace.getClientSimManager();
 	simManager.updateStatusFromServer(simulation);
 	// is there new data?
 	if (simStatusEvent.isNewDataEvent()) {
@@ -782,22 +495,8 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-public void simulationsButtonPressed(boolean bSimsButtonSelected) {
-	showSimulationsList(bSimsButtonSelected);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
-public void vcmlEditorButtonPressed(boolean bVCMLButtonSelected) {
-	showVCMLEditor(bVCMLButtonSelected);
+public final SimulationWorkspace getSimulationWorkspace() {
+	return simulationWorkspace;
 }
 
 }

@@ -12,6 +12,7 @@ import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.SymbolTable;
 
@@ -23,7 +24,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	public final static int COLUMN_INSIDE_COMPARTMENT = 2;
 	public final static int COLUMN_OUTSIDE_COMPARTMENT = 3;	
 	public final static int COLUMN_SIZE_NAME = 4;	
-	public final static int COLUMN_OUTSIDE_VOLTAGE_NAME = 5;	
+	public final static int COLUMN_VOLTAGE_NAME = 5;	
 	private static String[] columnNames = new String[] {"Name", "Type", "Inside", "Outside Parent", "Size", "Voltage"};
 
 	public BioModelEditorStructureTableModel(EditorScrollTable table) {
@@ -49,7 +50,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			case COLUMN_SIZE_NAME:{
 				return String.class;
 			}
-			case COLUMN_OUTSIDE_VOLTAGE_NAME:{
+			case COLUMN_VOLTAGE_NAME:{
 				return String.class;
 			}
 		}
@@ -91,7 +92,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					case COLUMN_SIZE_NAME:
 						return structure.getStructureSize().getName();
 						
-					case COLUMN_OUTSIDE_VOLTAGE_NAME:
+					case COLUMN_VOLTAGE_NAME:
 						if (structure instanceof Feature) {
 							return "n/a";
 						}
@@ -116,7 +117,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			return true;
 		}
 		if (row < getDataSize()) {
-			if (column == COLUMN_TYPE || column == COLUMN_SIZE_NAME || column == COLUMN_OUTSIDE_VOLTAGE_NAME) {
+			if (column == COLUMN_TYPE || column == COLUMN_SIZE_NAME || column == COLUMN_VOLTAGE_NAME) {
 				return false;
 			}
 			if (bioModel != null && bioModel.getModel().getNumStructures() < 2) {
@@ -220,13 +221,38 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 
 	@Override
 	public boolean isSortable(int col) {
-		return false;
+		return true;
 	}
 	
 	@Override
-	public Comparator<Structure> getComparator(int col, boolean ascending) {
-		// TODO Auto-generated method stub		
-		return null;
+	public Comparator<Structure> getComparator(final int col, final boolean ascending) {
+		return new Comparator<Structure>() {
+            public int compare(Structure o1, Structure o2) {
+            	int scale = ascending ? 1 : -1;
+                if (col==COLUMN_NAME){
+					return scale * o1.getName().compareTo(o2.getName());
+				} else if (col == COLUMN_TYPE) {
+					return scale * o1.getTypeName().compareTo(o2.getTypeName());
+				} else if (col == COLUMN_INSIDE_COMPARTMENT) {
+					String s1 = o1 instanceof Membrane ? ((Membrane)o1).getInsideFeature().getName() : "";
+					String s2 = o2 instanceof Membrane ? ((Membrane)o2).getInsideFeature().getName() : "";
+					return scale * s1.compareTo(s2);
+				} else if (col == COLUMN_OUTSIDE_COMPARTMENT) {
+					String s1 = o1.getParentStructure() == null ? "" : o1.getParentStructure().getName();
+					String s2 = o2.getParentStructure() == null ? "" : o2.getParentStructure().getName();
+					return scale * s1.compareTo(s2);
+				} else if (col == COLUMN_SIZE_NAME) {
+					String s1 = o1.getStructureSize().getName();
+					String s2 = o2.getStructureSize().getName();
+					return scale * s1.compareTo(s2);
+				} else if (col == COLUMN_VOLTAGE_NAME) {
+					String s1 = o1 instanceof Membrane ? ((Membrane)o1).getMembraneVoltage().getName() : "";
+					String s2 = o2 instanceof Membrane ? ((Membrane)o2).getMembraneVoltage().getName() : "";
+					return scale * s1.compareTo(s2);
+				}
+				return 0;
+            }
+		};
 	}
 
 	public String checkInputValue(String inputValue, int row, int column) {

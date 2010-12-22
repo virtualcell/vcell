@@ -30,6 +30,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TextFieldAutoCompletion;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSubPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.document.SimulationOwner;
@@ -45,8 +46,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.VariableType;
 
 @SuppressWarnings("serial")
-public class OutputFunctionsPanel extends JPanel {
-	public static final String PROPERTY_SELECTED_OUTPUT_FUNCTION = "selectedOutputFunction";
+public class OutputFunctionsPanel extends BioModelEditorSubPanel {
 	private JPanel buttons_n_label_Panel = null;
 	private JButton addButton = null;
 	private JButton deleteButton = null;
@@ -56,7 +56,7 @@ public class OutputFunctionsPanel extends JPanel {
 	private TextFieldAutoCompletion functionExpressionTextField = null;
 	private JTextField functionNameTextField = null;
 	private JPanel functionPanel = null;
-	private OutputFunctionsListTableModel outputFnsListTableModel1 = null;
+	private OutputFunctionsListTableModel outputFnsListTableModel = null;
 	private OutputFunctionContext outputFunctionContext = null;
 	private SimulationWorkspace simulationWorkspace = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -82,7 +82,7 @@ public class OutputFunctionsPanel extends JPanel {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == OutputFunctionsPanel.this && (evt.getPropertyName().equals("outputFunctionContext"))) {
 				if (outputFunctionContext != null && outputFunctionContext.getSimulationOwner() != null) { 
-					getOutputFnsListTableModel1().setOutputFunctionContext(outputFunctionContext);
+					outputFnsListTableModel.setOutputFunctionContext(outputFunctionContext);
 				}
 			}
 			if (evt.getSource() == OutputFunctionsPanel.this && (evt.getPropertyName().equals("simulationWorkspace"))) {
@@ -345,17 +345,6 @@ public class OutputFunctionsPanel extends JPanel {
 		}
 		return subdomainLabel;
 	}
-
-	private OutputFunctionsListTableModel getOutputFnsListTableModel1() {
-		if (outputFnsListTableModel1 == null) {
-			try {
-				outputFnsListTableModel1 = new OutputFunctionsListTableModel(outputFnsScrollPaneTable);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace(System.out);
-			}
-		}
-		return outputFnsListTableModel1;
-	}
 	
 	private void initConnections() {
 		getAddFnButton().addActionListener(ivjEventHandler);
@@ -365,7 +354,8 @@ public class OutputFunctionsPanel extends JPanel {
 		getSubdomainComboBox().addActionListener(ivjEventHandler);
 
 		// for scrollPaneTable, set tableModel and create default columns
-		getFnScrollPaneTable().setModel(getOutputFnsListTableModel1());
+		outputFnsListTableModel = new OutputFunctionsListTableModel(outputFnsScrollPaneTable);
+		getFnScrollPaneTable().setModel(outputFnsListTableModel);
 		getFnScrollPaneTable().createDefaultColumnsFromModel();
 	}
 
@@ -469,7 +459,7 @@ public class OutputFunctionsPanel extends JPanel {
 							newFunction = new AnnotatedFunction(funcName, funcExp, domain, null, vt, FunctionCategory.OUTPUTFUNCTION);
 						}
 						outputFunctionContext.addOutputFunction(newFunction);
-						outputFnsListTableModel1.selectOutputFunction(newFunction);
+						setSelectedObjects(new Object[] {newFunction});
 					} catch (Exception e1) {
 						e1.printStackTrace(System.out);
 						DialogUtils.showErrorDialog(OutputFunctionsPanel.this, "Function '" + newFunction.getName() + "' cannot be added. " + e1.getMessage(), e1);
@@ -484,7 +474,7 @@ public class OutputFunctionsPanel extends JPanel {
 	private void deleteOutputFunction() {
 		int selectedRow = getFnScrollPaneTable().getSelectedRow();
 		if (selectedRow > -1) {
-			AnnotatedFunction function = getOutputFnsListTableModel1().getValueAt(selectedRow);
+			AnnotatedFunction function = outputFnsListTableModel.getValueAt(selectedRow);
 			try {
 				outputFunctionContext.removeOutputFunction(function);
 			} catch (PropertyVetoException e1) {
@@ -543,24 +533,13 @@ public class OutputFunctionsPanel extends JPanel {
 	private Domain getNewFunctionDomain() {
 		return new Domain((GeometryClass)(getSubdomainComboBox().getSelectedItem()));
 	}
-
-	public void select(AnnotatedFunction selection) {
-		if (selection == null) {
-			getFnScrollPaneTable().clearSelection();
-			return;
-		}
-		int numRows = getFnScrollPaneTable().getRowCount();
-		for(int i=0; i<numRows; i++) {
-			AnnotatedFunction valueAt = getOutputFnsListTableModel1().getValueAt(i);
-			if (selection == valueAt) {
-				getFnScrollPaneTable().changeSelection(i, 0, false, false);
-				return;
-			}
-		}
-	}
 	
 	public void tableSelectionChanged() {
-		AnnotatedFunction af = getOutputFnsListTableModel1().getSelectedOutputFunction();
-		firePropertyChange(PROPERTY_SELECTED_OUTPUT_FUNCTION, null, af);		
+		setSelectedObjectsFromTable(getFnScrollPaneTable(), outputFnsListTableModel);		
+	}
+
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+		setTableSelections(selectedObjects, getFnScrollPaneTable(), outputFnsListTableModel);
 	}
 }

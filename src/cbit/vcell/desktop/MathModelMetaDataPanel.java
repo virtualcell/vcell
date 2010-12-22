@@ -1,9 +1,15 @@
 package cbit.vcell.desktop;
 
+import java.awt.BorderLayout;
+
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
+
+import org.vcell.util.document.MathModelInfo;
+
+import cbit.vcell.clientdb.DocumentManager;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -13,17 +19,17 @@ import javax.swing.ToolTipManager;
  * Creation date: (3/29/01 10:39:36 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class MathModelMetaDataPanel extends JPanel {
-	private JPanel ivjJPanel1 = null;
-	private org.vcell.util.gui.JTreeFancy ivjJTree1 = null;
+	private JTree ivjJTree1 = null;
 	private MathModelMetaDataCellRenderer ivjmathModelMetaDataCellRenderer = null;
 	private MathModelMetaDataTreeModel ivjmathModelMetaDataTreeModel = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private DocumentManager fieldDocumentManager = null;
 	private boolean fieldPopupMenuDisabled = false;
-	private org.vcell.util.document.MathModelInfo fieldMathModelInfo = null;
+	private MathModelInfo fieldMathModelInfo = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private org.vcell.util.document.MathModelInfo ivjmathModelInfo1 = null;
+	private MathModelInfo ivjmathModelInfo1 = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -210,20 +216,7 @@ private void connPtoP3SetTarget() {
 		handleException(ivjExc);
 	}
 }
-/**
- * Comment
- */
-private void copyURLJMenuItem_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	
-	javax.swing.tree.DefaultMutableTreeNode currentTreeSelection =
-		(javax.swing.tree.DefaultMutableTreeNode)getJTree1().getLastSelectedPathComponent();
-	if(currentTreeSelection != null){
-		if(currentTreeSelection.getUserObject() != null && currentTreeSelection.getUserObject() instanceof cbit.vcell.export.server.ExportLogEntry){
-			cbit.vcell.export.server.ExportLogEntry ele = (cbit.vcell.export.server.ExportLogEntry)currentTreeSelection.getUserObject();
-			VCellTransferable.sendToClipboard(ele.getLocation());
-		}
-	}
-}
+
 /**
  * Comment
  */
@@ -255,10 +248,10 @@ public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
  * @return cbit.gui.JTreeFancy
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private org.vcell.util.gui.JTreeFancy getJTree1() {
+private JTree getJTree1() {
 	if (ivjJTree1 == null) {
 		try {
-			ivjJTree1 = new org.vcell.util.gui.JTreeFancy();
+			ivjJTree1 = new JTree();
 			ivjJTree1.setName("JTree1");
 			ivjJTree1.setEnabled(true);
 			ivjJTree1.setRootVisible(false);
@@ -372,16 +365,10 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("BioModelMetaDataPanel");
-		setLayout(new java.awt.GridBagLayout());
-		setSize(379, 460);
+		setLayout(new BorderLayout());
+//		setSize(379, 460);
 
-		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 1; constraintsJPanel1.gridy = 1;
-		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel1.weightx = 1.0;
-		constraintsJPanel1.weighty = 1.0;
-		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(new JScrollPane(getJTree1()), constraintsJPanel1);
+		add(new JScrollPane(getJTree1()), BorderLayout.CENTER);
 		initConnections();
 		connEtoC2();
 		connEtoC8();
@@ -407,7 +394,6 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);

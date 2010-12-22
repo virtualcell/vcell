@@ -127,7 +127,10 @@ public final String getEquationRightHand() {
 public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Model model, String equationString) throws ExpressionException, PropertyVetoException {
 	int gotoIndex = equationString.indexOf(REACTION_GOESTO);
 	if (gotoIndex < 1 && equationString.length() == 0) {
-		throw new ExpressionException("Syntax error!");
+		throw new ExpressionException("Syntax error! " + REACTION_GOESTO + " not found. (e.g. a+b->c)");
+	}
+	if (reactionStep == null) {
+		return null;
 	}
 	String leftHand = equationString.substring(0, gotoIndex);
 	String rightHand = equationString.substring(gotoIndex + REACTION_GOESTO.length());
